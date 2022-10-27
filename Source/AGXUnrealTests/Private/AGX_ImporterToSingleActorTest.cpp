@@ -2,12 +2,22 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 
-// AGX Dynamics require the AGX-Wires license for wire import. Our GitLab CI
-// runtime environment currently doesn't have an AGX Dynamics license so the
-// wire import test always fails. For now the test is disabled through this
-// preprocessor flag. See internal issue 495. Remove the preprocessor guards
-// once the GitLab CI runtime has an AGX Dynamics license.
+// AGX Dynamics require a license for wire and track import. Our GitLab CI
+// runtime environment on Linux and Windows currently doesn't have an AGX Dynamics license so the
+// wire and track import test always fails on those platforms. For now the test is disabled through
+// this preprocessor flag for Linux and Windows. See internal issue 495. Remove the preprocessor
+// guards once the Linux and/or Windows GitLab CI runtime has an AGX Dynamics license.
+#if defined(_WIN64)
 #define AGX_TEST_WIRE_IMPORT 0
+#define AGX_TEST_TRACK_IMPORT 0
+#elif defined(__linux__)
+#include "Linux/LinuxPlatformMisc.h"
+#define AGX_TEST_WIRE_IMPORT 0
+#define AGX_TEST_TRACK_IMPORT 0
+#else
+// Unsupported platform.
+static_assert(false);
+#endif
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImporterToSingleActor.h"
@@ -15,9 +25,12 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "AgxAutomationCommon.h"
+#include "AMOR/AGX_ConstraintMergeSplitProperties.h"
+#include "AMOR/AGX_ShapeContactMergeSplitProperties.h"
+#include "AMOR/AGX_WireMergeSplitProperties.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_ConstraintComponent.h"
-#include "Materials/AGX_ContactMaterialBase.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_MaterialBase.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
@@ -27,6 +40,12 @@
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#if AGX_TEST_TRACK_IMPORT
+#include "Vehicle/AGX_TrackComponent.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
+#include "Vehicle/AGX_TrackProperties.h"
+#include "Vehicle/AGX_TrackWheel.h"
+#endif
 #if AGX_TEST_WIRE_IMPORT
 #include "Wire/AGX_WireComponent.h"
 #endif
@@ -72,6 +91,7 @@ bool FImportArchiveSingleActorCommand::Update()
 		Test.AddError(FString::Printf(TEXT("Did not find an archive named '%s'."), *ArchiveName));
 		return true;
 	}
+
 	Contents = AGX_ImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
@@ -956,9 +976,8 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	}
 #endif
 
-	auto GetSphere = [&Components](const TCHAR* Name) -> UAGX_SphereShapeComponent* {
-		return GetByName<UAGX_SphereShapeComponent>(Components, Name);
-	};
+	auto GetSphere = [&Components](const TCHAR* Name) -> UAGX_SphereShapeComponent*
+	{ return GetByName<UAGX_SphereShapeComponent>(Components, Name); };
 
 	// Get the components we know should be there.
 	/// @todo Some of these get auto-generated names because of name conflicts. Happens every time a
@@ -1888,9 +1907,8 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
 
-	// Two Rigid Bodies, one Hinge constraint with two DofGraphicsComponent's and one
-	// DofGraphicsComponent and one Default Scene Root.
-	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
+	// Two Rigid Bodies, one Hinge constraint and one Default Scene Root.
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
 	UAGX_ConstraintComponent* Constraint =
 		GetByName<UAGX_ConstraintComponent>(Components, TEXT("constraint"));
@@ -2212,6 +2230,11 @@ bool FCheckSimpleGeometriesImportedCommand::Update()
 	auto testShape = [this](USceneComponent* c, const FVector& ExpectedAGXWorldPos)
 	{
 		Test.TestNotNull(TEXT("Component exists"), c);
+		if (c == nullptr)
+		{
+			return;
+		}
+
 		const FVector ExpectedUnrealPos = AgxToUnrealVector(ExpectedAGXWorldPos);
 		Test.TestEqual(TEXT("Component position"), c->GetComponentLocation(), ExpectedUnrealPos);
 	};
@@ -2371,13 +2394,31 @@ bool FCheckContactMaterialsImportedCommand::Update()
 			Components, TEXT("AGX_ContactMaterialRegistrar"));
 
 	Test.TestNotNull("Contact Material Registrar", Registrar);
+	if (Registrar == nullptr)
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
+
 	Test.TestEqual("Num Contact Materials in Registrar", Registrar->ContactMaterials.Num(), 2);
 
-	UAGX_ContactMaterialBase** Cm1 = Registrar->ContactMaterials.FindByPredicate(
-		[](UAGX_ContactMaterialBase* Cm) { return Cm->GetName() == "CMMat1Mat2"; });
+	UAGX_ContactMaterial** Cm1 = Registrar->ContactMaterials.FindByPredicate(
+		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CMMat1Mat2"; });
 	Test.TestNotNull("Cm1", Cm1);
+	if (Cm1 == nullptr)
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
+
 	Test.TestNotNull("Cm1 Material1", (*Cm1)->Material1);
 	Test.TestNotNull("Cm1 Material2", (*Cm1)->Material2);
+	if (IsAnyNullptr((*Cm1)->Material1, (*Cm1)->Material2))
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
+
 	Test.TestEqual("Cm1 Material1 name", (*Cm1)->Material1->GetName(), "Mat1");
 	Test.TestEqual("Cm1 Material2 name", (*Cm1)->Material2->GetName(), "Mat2");
 	Test.TestEqual("Cm1 contact solver", (*Cm1)->ContactSolver, EAGX_ContactSolver::Iterative);
@@ -2395,11 +2436,23 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual(
 		"Cm1 adhesive overlap", (float) (*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
 
-	UAGX_ContactMaterialBase** Cm2 = Registrar->ContactMaterials.FindByPredicate(
-		[](UAGX_ContactMaterialBase* Cm) { return Cm->GetName() == "CMMat3Mat4"; });
+	UAGX_ContactMaterial** Cm2 = Registrar->ContactMaterials.FindByPredicate(
+		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CMMat3Mat4"; });
 	Test.TestNotNull("Cm2", Cm2);
+	if (Cm2 == nullptr)
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
+
 	Test.TestNotNull("Cm2 Material1", (*Cm2)->Material1);
 	Test.TestNotNull("Cm2 Material2", (*Cm2)->Material2);
+	if (IsAnyNullptr((*Cm2)->Material1, (*Cm2)->Material2))
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
+
 	Test.TestEqual("Cm2 Material1 name", (*Cm2)->Material1->GetName(), "Mat3");
 	Test.TestEqual("Cm2 Material2 name", (*Cm2)->Material2->GetName(), "Mat4");
 	Test.TestEqual("Cm2 contact solver", (*Cm2)->ContactSolver, EAGX_ContactSolver::Direct);
@@ -2518,8 +2571,9 @@ bool FCheckObserverFramesImportedCommand::Update()
 	// 1 Default Scene Root, 4 groups each containing a Rigid Body, a Shape, and a Scene.
 	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), 13);
 
-	auto TestGroup = [this, &Components](
-						 int32 Id, const FVector& BodyLocation, const FVector& ObserverLocation) {
+	auto TestGroup =
+		[this, &Components](int32 Id, const FVector& BodyLocation, const FVector& ObserverLocation)
+	{
 		const FString BodyName = *FString::Printf(TEXT("Body_%d"), Id);
 		const FString GeometryName = *FString::Printf(TEXT("Geometry_%d"), Id);
 		const FString ObserverName = *FString::Printf(TEXT("Observer_%d"), Id);
@@ -2531,6 +2585,10 @@ bool FCheckObserverFramesImportedCommand::Update()
 		Test.TestNotNull(*BodyName, Body);
 		Test.TestNotNull(*GeometryName, Geometry);
 		Test.TestNotNull(*ObserverName, Observer);
+		if (IsAnyNullptr(Body, Geometry, Observer))
+		{
+			return false;
+		}
 
 		USceneComponent* BodyAsComponent = static_cast<USceneComponent*>(Body);
 		Test.TestEqual(
@@ -2547,11 +2605,27 @@ bool FCheckObserverFramesImportedCommand::Update()
 		Test.TestEqual(
 			*FString::Printf(TEXT("%s location"), *ObserverName), Observer->GetRelativeLocation(),
 			ObserverLocation);
+
+		return true;
 	};
 
-	TestGroup(1, AgxToUnrealVector(0.0, 0.0, 0.0), AgxToUnrealVector(0.0, 0.0, 0.0));
-	TestGroup(2, AgxToUnrealVector(1.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3));
-	TestGroup(3, AgxToUnrealVector(2.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3));
+	if (!TestGroup(1, AgxToUnrealVector(0.0, 0.0, 0.0), AgxToUnrealVector(0.0, 0.0, 0.0)))
+	{
+		Test.AddError(TEXT("TestGroup id 1 returned false, cannot continue the test."));
+		return true;
+	}
+
+	if (!TestGroup(2, AgxToUnrealVector(1.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3)))
+	{
+		Test.AddError(TEXT("TestGroup id 2 returned false, cannot continue the test."));
+		return true;
+	}
+
+	if (!TestGroup(3, AgxToUnrealVector(2.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3)))
+	{
+		Test.AddError(TEXT("TestGroup id 3 returned false, cannot continue the test."));
+		return true;
+	}
 
 	FRotator Rotation = AgxToUnrealEulerAngles(PI / 10, 0.0, 0.0);
 	FVector ObserverLocation = Rotation.RotateVector(AgxToUnrealVector(0.3, 0.3, 0.3));
@@ -2660,6 +2734,11 @@ bool FCheckURDFLinkWithMeshesImportedCommand::Update()
 
 	Test.TestNotNull(TEXT("Urdfmeshvisual"), Urdfmeshvisual);
 	Test.TestNotNull(TEXT("Urdfmeshcollision"), Urdfmeshcollision);
+	if (IsAnyNullptr(Urdfmeshvisual, Urdfmeshcollision))
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
 
 	Test.TestFalse("Urdfmeshvisual collide", Urdfmeshvisual->bCanCollide);
 	Test.TestTrue("Urdfmeshcollision collide", Urdfmeshcollision->bCanCollide);
@@ -2785,9 +2864,8 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
 
-	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components and 2 Constraints with 3 Graphics
-	// components each.
-	Test.TestEqual("Number of components", Components.Num(), 17);
+	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components and 2 Constraints.
+	Test.TestEqual("Number of components", Components.Num(), 11);
 
 	UAGX_RigidBodyComponent* Boxlink =
 		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("boxlink"));
@@ -2847,6 +2925,559 @@ bool FClearURDFLinksGeometriesConstraintsImportedCommand::Update()
 	{
 		World->DestroyActor(Test.Contents);
 	}
+
+	return true;
+}
+#if AGX_TEST_TRACK_IMPORT
+//
+// Track test starts here.
+//
+
+class FImporterToSingleActor_TrackTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckTrackImportedCommand, FImporterToSingleActor_TrackTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearTrackImportedCommand, FImporterToSingleActor_TrackTest&, Test);
+
+class FImporterToSingleActor_TrackTest final : public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FImporterToSingleActor_TrackTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FImporterToSingleActor_TrackTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.Track"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("track_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckTrackImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearTrackImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FImporterToSingleActor_TrackTest ImporterToSingleActor_TrackTest;
+}
+
+/**
+ * Check that the expected state was created during import.
+ *
+ * The object structure and all numbers tested here should match what is being set in the source
+ * script track.agxPy.
+ *
+ * @return True when the check is complete. Never returns false.
+ */
+bool FCheckTrackImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import Track test scene: No content created"));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+
+	// 24 Hinge Constraints (24), 25 Rigid Bodies (49), 20 Sphere Shapes
+	// (69), 24 Cylinder Shapes (93), 3 Box Shapes (96), a Collision Group Disabler (97), a
+	// Contact Material Registrar (98), a Default Scene Root (99), two Tracks (101).
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 101);
+	if (Components.Num() != 173)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Found the following components:"));
+		for (auto Component : Components)
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("  %s: %s"), *Component->GetName(),
+				*Component->GetClass()->GetName());
+		}
+	}
+
+	auto TestTrack = [&](UAGX_TrackComponent* Track) -> bool
+	{
+		Test.TestNotNull("Track Component", Track);
+		if (Track == nullptr)
+		{
+			return false;
+		}
+		const FString TrackName = Track->GetName();
+		Test.TestEqual("Number Of Nodes", Track->NumberOfNodes, 120);
+		Test.TestEqual("Width", Track->Width, 35.f);
+		Test.TestEqual("Thickness", Track->Thickness, 2.5f);
+		Test.TestEqual("Initial Distance Tension", Track->InitialDistanceTension, 0.1f);
+		Test.TestNotNull("Shape Material", Track->ShapeMaterial);
+
+		// Track Properties.
+		Test.TestNotNull("Track Properties", Track->TrackProperties);
+		if (Track->TrackProperties == nullptr)
+		{
+			return false;
+		}
+
+		Test.TestEqual(
+			"Track Properties Name", Track->TrackProperties->GetName(),
+			FString("AGX_TP_") + TrackName);
+		Test.TestEqual(
+			"Hinge Compliance Translational X",
+			Track->TrackProperties->HingeComplianceTranslational_X, 2e-10);
+		Test.TestEqual(
+			"Hinge Compliance Translational Y",
+			Track->TrackProperties->HingeComplianceTranslational_Y, 3e-10);
+		Test.TestEqual(
+			"Hinge Compliance Translational Z",
+			Track->TrackProperties->HingeComplianceTranslational_Z, 4e-10);
+		Test.TestEqual(
+			"Hinge Compliance Rotational X", Track->TrackProperties->HingeComplianceRotational_X,
+			5e-10);
+		Test.TestEqual(
+			"Hinge Compliance Rotational Y", Track->TrackProperties->HingeComplianceRotational_Y,
+			6e-10);
+		Test.TestEqual(
+			"Hinge Damping Translational X",
+			Track->TrackProperties->HingeSpookDampingTranslational_X, 0.01);
+		Test.TestEqual(
+			"Hinge Damping Translational Y",
+			Track->TrackProperties->HingeSpookDampingTranslational_Y, 0.02);
+		Test.TestEqual(
+			"Hinge Damping Translational Z",
+			Track->TrackProperties->HingeSpookDampingTranslational_Z, 0.03);
+		Test.TestEqual(
+			"Hinge Damping Rotational X", Track->TrackProperties->HingeSpookDampingRotational_X,
+			0.04);
+		Test.TestEqual(
+			"Hinge Damping Rotational Y", Track->TrackProperties->HingeSpookDampingRotational_Y,
+			0.05);
+		Test.TestEqual("Hinge Range Enabled", Track->TrackProperties->bEnableHingeRange, false);
+		Test.TestEqual("Hinge Range Min", Track->TrackProperties->HingeRange.Min, -120.0);
+		Test.TestEqual("Hinge Range Max", Track->TrackProperties->HingeRange.Max, 20.0);
+		Test.TestEqual(
+			"On Initialize Merge Nodes to Wheels Enabled",
+			Track->TrackProperties->bEnableOnInitializeMergeNodesToWheels, false);
+		Test.TestEqual(
+			"On Initialize Transform Nodes to Wheels Enabled",
+			Track->TrackProperties->bEnableOnInitializeTransformNodesToWheels, true);
+		Test.TestEqual(
+			"Transform Nodes to Wheels Overlap",
+			Track->TrackProperties->TransformNodesToWheelsOverlap, 0.2);
+		Test.TestEqual(
+			"Nodes to Wheels Merge Threshold", Track->TrackProperties->NodesToWheelsMergeThreshold,
+			-0.14);
+		Test.TestEqual(
+			"Nodes to Wheels Split Threshold", Track->TrackProperties->NodesToWheelsSplitThreshold,
+			-0.17);
+		Test.TestEqual(
+			"Num Nodes Included in Average Direction",
+			Track->TrackProperties->NumNodesIncludedInAverageDirection, 5);
+		Test.TestEqual(
+			"Min Stabilizing Hinge Normal Force",
+			Track->TrackProperties->MinStabilizingHingeNormalForce, 110.0);
+		Test.TestEqual(
+			"Stabilizing Hinge Friction Parameter",
+			Track->TrackProperties->StabilizingHingeFrictionParameter, 0.005);
+
+		// Internal Merge Properties.
+		Test.TestNotNull("Internal Merge Properties", Track->InternalMergeProperties);
+		if (Track->InternalMergeProperties == nullptr)
+		{
+			return false;
+		}
+
+		Test.TestEqual(
+			"Internal Merge Properties Name", Track->InternalMergeProperties->GetName(),
+			FString("AGX_TIMP_") + TrackName);
+		Test.TestEqual("Enable Merge", Track->InternalMergeProperties->bEnableMerge, true);
+		Test.TestEqual(
+			"Num Nodes Per Merge Segment", Track->InternalMergeProperties->NumNodesPerMergeSegment,
+			3);
+		Test.TestEqual(
+			"Contact Reduction", Track->InternalMergeProperties->ContactReduction,
+			EAGX_MergedTrackNodeContactReduction::Moderate);
+		Test.TestEqual(
+			"Enable Lock to Reach Merge Condition",
+			Track->InternalMergeProperties->bEnableLockToReachMergeCondition, true);
+		Test.TestEqual(
+			"Lock to Reach Merge Condition Compliance",
+			Track->InternalMergeProperties->LockToReachMergeConditionCompliance, 1e-11);
+		Test.TestEqual(
+			"Lock to Reach Merge Condition Damping",
+			Track->InternalMergeProperties->LockToReachMergeConditionSpookDamping, 0.05);
+		Test.TestEqual(
+			"Max Angle Merge Condition", Track->InternalMergeProperties->MaxAngleMergeCondition,
+			FMath::RadiansToDegrees(0.00001));
+
+		// Wheels
+		Test.TestEqual("Number of Wheels", Track->Wheels.Num(), 12);
+		for (const FAGX_TrackWheel& Wheel : Track->Wheels)
+		{
+			Test.TestEqual("Rigid Body Name", Wheel.RigidBody.BodyName.IsNone(), false);
+		}
+
+		Test.TestEqual(
+			"Number of Roller Wheels",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.Model == EAGX_TrackWheelModel::Roller; })
+				.Num(),
+			10);
+		Test.TestEqual(
+			"Number of Sprocket Wheels",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.Model == EAGX_TrackWheelModel::Sprocket; })
+				.Num(),
+			1);
+		Test.TestEqual(
+			"Number of Idler Wheels",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.Model == EAGX_TrackWheelModel::Idler; })
+				.Num(),
+			1);
+		Test.TestEqual(
+			"Number of Wheels with Radius 30",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.Radius == 30.f; })
+				.Num(),
+			2);
+		Test.TestEqual(
+			"Number of Wheels with Radius 20",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.Radius == 20.f; })
+				.Num(),
+			2);
+		Test.TestEqual(
+			"Number of Wheels with Radius 15",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.Radius == 15.f; })
+				.Num(),
+			8);
+		Test.TestEqual(
+			"Number of Wheels with MOVE_NODES_TO_ROTATION_PLANE",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.bMoveNodesToRotationPlane; })
+				.Num(),
+			2);
+		Test.TestEqual(
+			"Number of Wheels with SPLIT_SEGMENTS",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.bSplitSegments; })
+				.Num(),
+			2);
+		Test.TestEqual(
+			"Number of Wheels with MOVE_NODES_TO_WHEELS",
+			Track->Wheels
+				.FilterByPredicate([](const FAGX_TrackWheel& Wheel)
+								   { return Wheel.bMoveNodesToWheel; })
+				.Num(),
+			0);
+
+		return true;
+	};
+
+	UAGX_TrackComponent* TrackRight =
+		GetByName<UAGX_TrackComponent>(Components, TEXT("track_right"));
+	UAGX_TrackComponent* TrackLeft = GetByName<UAGX_TrackComponent>(Components, TEXT("track_left"));
+
+	if (!TestTrack(TrackRight))
+	{
+		Test.AddError(TEXT("TestTrack given TrackRight returned false."));
+	}
+
+	if (!TestTrack(TrackLeft))
+	{
+		Test.AddError(TEXT("TestTrack given TrackLeft returned false."));
+	}
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ *
+ * @return True when the clearing is complete. Never returns false.
+ */
+bool FClearTrackImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("ContactMaterial"),
+		TEXT("CMtrackground.uasset"),
+		TEXT("CMtrackwheel.uasset"),
+		TEXT("ShapeMaterial"),
+		TEXT("ground.uasset"),
+		TEXT("track.uasset"),
+		TEXT("wheel.uasset"),
+		TEXT("TrackInternalMergeProperties"),
+		TEXT("AGX_TIMP_track_left.uasset"),
+		TEXT("AGX_TIMP_track_right.uasset"),
+		TEXT("TrackProperties"),
+		TEXT("AGX_TP_track_left.uasset"),
+		TEXT("AGX_TP_track_right.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("track_build"), ExpectedFiles);
+
+	return true;
+}
+#endif // AGX_TEST_TRACK_IMPORT
+
+//
+// AMOR test starts here.
+//
+
+class FImporterToSingleActor_AmorTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FSupressAmorWireImportErrorCommand, FImporterToSingleActor_AmorTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckAmorImportedCommand, FImporterToSingleActor_AmorTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearAmorImportedCommand, FImporterToSingleActor_AmorTest&, Test);
+
+class FImporterToSingleActor_AmorTest final : public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FImporterToSingleActor_AmorTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FImporterToSingleActor_AmorTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.Amor"))
+	{
+	}
+
+public:
+	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(FSupressAmorWireImportErrorCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveSingleActorCommand(TEXT("amor_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckAmorImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearAmorImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FImporterToSingleActor_AmorTest ImporterToSingleActor_AmorTest;
+}
+
+bool FSupressAmorWireImportErrorCommand::Update()
+{
+	// The .agx file about to be imported contains Wires which will generate error printouts from
+	// AGX Dynamics when no AGX Dynamics license is available. Here, we suppress that error
+	// printout.
+#if !AGX_TEST_WIRE_IMPORT
+	Test.AddExpectedError(
+		TEXT("License for AgX-Wires not valid"), EAutomationExpectedErrorFlags::Contains, 0);
+	Test.AddError(TEXT("License for AgX-Wires not valid"));
+#endif
+
+	return true;
+}
+
+bool FCheckAmorImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import Amor test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components. The test for the number of components is a safety check.
+	// It should be updated whenever the test scene is changed.
+	TArray<UActorComponent*> Components;
+	Test.Contents->GetComponents(Components, false);
+#if AGX_TEST_WIRE_IMPORT
+	// Two Rigid Bodies (2), one Shape (3), two Wires with one icon each (7), one Constraint (8),
+	// one Collision Group Disabler (9), one Default Scene Root (10).
+	const int32 ExpectedNumComponents = 10;
+#else
+	// Same as above minus two wires with one icon each.
+	const int32 ExpectedNumComponents = 6;
+#endif
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), ExpectedNumComponents);
+
+	UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(Components, TEXT("Body"));
+	Test.TestTrue("Body Enable Merge", Body->MergeSplitProperties.bEnableMerge);
+	Test.TestFalse("Body Enable Merge", Body->MergeSplitProperties.bEnableSplit);
+	Test.TestNotNull("Body Thresholds", Body->MergeSplitProperties.Thresholds);
+	Test.TestEqual(
+		"Body Thresholds MaxImpactSpeed",
+		(float) Body->MergeSplitProperties.Thresholds->MaxImpactSpeed, AgxToUnrealDistance(13.0));
+	Test.TestEqual(
+		"Body Thresholds MaxRelativeNormalSpeed",
+		(float) Body->MergeSplitProperties.Thresholds->MaxRelativeNormalSpeed,
+		AgxToUnrealDistance(14.0));
+	Test.TestEqual(
+		"Body Thresholds MaxRelativeTangentSpeed",
+		(float) Body->MergeSplitProperties.Thresholds->MaxRelativeTangentSpeed,
+		AgxToUnrealDistance(15.0));
+	Test.TestEqual(
+		"Body Thresholds MaxRollingSpeed",
+		(float) Body->MergeSplitProperties.Thresholds->MaxRollingSpeed, AgxToUnrealDistance(16.0));
+	Test.TestTrue(
+		"Body Thresholds MaySplitInGravityField",
+		Body->MergeSplitProperties.Thresholds->bMaySplitInGravityField);
+	Test.TestEqual(
+		"Body Thresholds NormalAdhesion", Body->MergeSplitProperties.Thresholds->NormalAdhesion,
+		17.0);
+	Test.TestFalse(
+		"Body Thresholds SplitOnLogicalImpact",
+		Body->MergeSplitProperties.Thresholds->bSplitOnLogicalImpact);
+	Test.TestEqual(
+		"Body Thresholds TangentialAdhesion",
+		Body->MergeSplitProperties.Thresholds->TangentialAdhesion, 18.0);
+
+	UAGX_ShapeComponent* Geometry =
+		GetByName<UAGX_ShapeComponent>(Components, TEXT("GeometrySharingThresholds"));
+	Test.TestTrue("Geometry Enable Merge", Geometry->MergeSplitProperties.bEnableMerge);
+	Test.TestTrue("Geometry Enable Merge", Geometry->MergeSplitProperties.bEnableSplit);
+	Test.TestNotNull("Geometry Thresholds", Geometry->MergeSplitProperties.Thresholds);
+	Test.TestEqual(
+		"Geometry share Thresholds", Geometry->MergeSplitProperties.Thresholds,
+		Body->MergeSplitProperties.Thresholds);
+
+#if AGX_TEST_WIRE_IMPORT
+	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(Components, TEXT("Wire"));
+	Test.TestFalse("Wire Enable Merge", Wire->MergeSplitProperties.bEnableMerge);
+	Test.TestTrue("Wire Enable Merge", Wire->MergeSplitProperties.bEnableSplit);
+	Test.TestNotNull("Wire Thresholds", Wire->MergeSplitProperties.Thresholds);
+	Test.TestEqual(
+		"Wire Thresholds ForcePropagationDecayScale",
+		Wire->MergeSplitProperties.Thresholds->ForcePropagationDecayScale, 1.1);
+	Test.TestEqual(
+		"Wire Thresholds ForcePropagationDecayScale",
+		Wire->MergeSplitProperties.Thresholds->MergeTensionScale, 1.2);
+
+	UAGX_WireComponent* WireNoThresholds =
+		GetByName<UAGX_WireComponent>(Components, TEXT("WireNoThresholds"));
+	Test.TestTrue(
+		"WireNoThresholds Enable Merge", WireNoThresholds->MergeSplitProperties.bEnableMerge);
+	Test.TestTrue(
+		"WireNoThresholds Enable Merge", WireNoThresholds->MergeSplitProperties.bEnableSplit);
+	Test.TestNull("WireNoThresholds Thresholds", WireNoThresholds->MergeSplitProperties.Thresholds);
+#endif
+
+	UAGX_ConstraintComponent* Constraint =
+		GetByName<UAGX_ConstraintComponent>(Components, TEXT("Hinge"));
+	Test.TestFalse("Constraint Enable Merge", Constraint->MergeSplitProperties.bEnableMerge);
+	Test.TestFalse("Constraint Enable Merge", Constraint->MergeSplitProperties.bEnableSplit);
+	Test.TestNotNull("Constraint Thresholds", Constraint->MergeSplitProperties.Thresholds);
+	Test.TestEqual(
+		"Constraint Thresholds MaxDesiredForceRangeDiff",
+		Constraint->MergeSplitProperties.Thresholds->MaxDesiredForceRangeDiff, 4.0);
+	Test.TestEqual(
+		"Constraint Thresholds MaxDesiredLockAngleDiff",
+		Constraint->MergeSplitProperties.Thresholds->MaxDesiredLockAngleDiff,
+		FMath::RadiansToDegrees(5.0));
+	Test.TestEqual(
+		"Constraint Thresholds MaxDesiredRangeAngleDiff",
+		Constraint->MergeSplitProperties.Thresholds->MaxDesiredRangeAngleDiff,
+		FMath::RadiansToDegrees(6.0));
+	Test.TestEqual(
+		"Constraint Thresholds MaxDesiredSpeedDiff",
+		Constraint->MergeSplitProperties.Thresholds->MaxDesiredSpeedDiff,
+		FMath::RadiansToDegrees(7.0));
+	Test.TestEqual(
+		"Constraint Thresholds MaxRelativeSpeed",
+		Constraint->MergeSplitProperties.Thresholds->MaxRelativeSpeed,
+		FMath::RadiansToDegrees(8.0));
+
+// Enable this to see the names of the components that was imported. Useful when adding new stuff
+// to the archive.
+#if 0
+	UE_LOG(LogAGX, Warning, TEXT("Imported the following components:"));
+	for (const UActorComponent* Component : Components)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("  %s"), *Component->GetName());
+	}
+#endif
+
+	return true;
+}
+
+bool FClearAmorImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	UWorld* World = Test.Contents->GetWorld();
+	if (World != nullptr)
+	{
+		World->DestroyActor(Test.Contents);
+	}
+
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
+	// Files that are created by the test and thus safe to remove. The GUID values may make this
+	// test cumbersome to update since they will change every time the AGX Dynamics archive is
+	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
+	// names to the render materials in the source .agxPy file.
+	TArray<const TCHAR*> ExpectedFiles = {
+#if AGX_TEST_WIRE_IMPORT
+		TEXT("ShapeMaterial"),
+		TEXT("AGX_WMST_D7334DD013D1E4E7FB04E6ABA3AF5494.uasset"),
+		TEXT("defaultWireMaterial_40.uasset"),
+		TEXT("defaultWireMaterial_550.uasset"),
+#endif
+		TEXT("MergeSplitThresholds"),
+		TEXT("AGX_CMST_E17441363B61A7BC37C1A76C9E0EB9E4.uasset"),
+		TEXT("AGX_SMST_567B4C28966D80460D523D709EA031DF.uasset")
+	};
+
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("amor_build"), ExpectedFiles);
 
 	return true;
 }

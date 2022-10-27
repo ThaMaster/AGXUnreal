@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AMOR/AGX_AmorEnums.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Math/Color.h"
@@ -9,10 +12,16 @@
 class FTrimeshShapeBarrier;
 class FRenderDataBarrier;
 class FShapeBarrier;
+class FMergeSplitThresholdsBarrier;
 class FShapeMaterialBarrier;
+class FTrackBarrier;
+class FTrackPropertiesBarrier;
 class FContactMaterialBarrier;
-class UAGX_ContactMaterialAsset;
-class UAGX_ShapeMaterialAsset;
+class UAGX_ContactMaterial;
+class UAGX_MergeSplitThresholdsBase;
+class UAGX_ShapeMaterial;
+class UAGX_TrackInternalMergeProperties;
+class UAGX_TrackProperties;
 struct FAGX_RenderMaterial;
 
 class AActor;
@@ -21,6 +30,20 @@ class UActorComponent;
 class UMaterialInterface;
 class UMaterialInstanceConstant;
 class UStaticMesh;
+
+struct FAssetToDiskInfo
+{
+	UPackage* Package = nullptr;
+	UObject* Asset = nullptr;
+	FString PackagePath;
+	FString AssetName;
+
+	bool IsValid() const
+	{
+		return Package != nullptr && Asset != nullptr && !PackagePath.IsEmpty() &&
+			   !AssetName.IsEmpty();
+	}
+};
 
 class FAGX_ImportUtilities
 {
@@ -53,7 +76,8 @@ public:
 	 * returned unchanged. Even though the name returned will be valid, it may not be unique and may
 	 * therefore not be the final asset name.
 	 * @param NativeName The name of the restored object.
-	 * @param FileName The name of the source file from which the asset was read.
+	 * @param FallbackName Name to use if NativeName is unusable for some reason, for example is
+	 * empty.
 	 * @param AssetType The type of the asset.
 	 * @return A safe name for the asset.
 	 */
@@ -79,36 +103,37 @@ public:
 	/// and/or asset name.
 
 	/**
-	 * Store the imported Trimesh as an UStaticMesh asset.
+	 * Sets up the imported Trimesh as an UStaticMesh asset, but does not write it to disk.
+	 * Instead returns a AssetToDiskData which in turn can be used to write the asset to disk.
 	 *
 	 * @param Trimesh The imported trimesh to be saved.
 	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @param FallbackName Name to give the asset in case the trimesh doesn't have a source
 	 * name.
-	 * @return The created UStaticMesh asset.
+	 * @return The AssetToDiskData containing all information needed to write the asset to disk.
 	 */
-	static UStaticMesh* SaveImportedStaticMeshAsset(
+	static FAssetToDiskInfo SaveImportedStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName,
 		const FString& FallbackName);
 
 	/**
-	 * Store the imported Render Data Mesh as an UStaticMesh
-	 * asset.
+	 * Sets up the imported Render Data Mesh as an UStaticMesh asset, but does not write it to disk.
+	 * Instead returns a AssetToDiskData which in turn can be used to write the asset to disk.
 	 *
 	 * @param RenderData The Render Data holding the render mesh to store.
 	 * @param DirectoryName The name of the directory where the assets are collected.
-	 * @return The create UStaticMesh asset.
+	 * @return The AssetToDiskData containing all information needed to write the asset to disk.
 	 */
-	static UStaticMesh* SaveImportedStaticMeshAsset(
+	static FAssetToDiskInfo SaveImportedStaticMeshAsset(
 		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
 
 	/**
-	 * Store an imported AGX Dynamics Material as an UAGX_ShapeMaterialAsset.
+	 * Store an imported AGX Dynamics Material as an UAGX_ShapeMaterial.
 	 * @param Material The imported material to be saved.
 	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @return The created ShapeMaterialAsset.
 	 */
-	static UAGX_ShapeMaterialAsset* SaveImportedShapeMaterialAsset(
+	static UAGX_ShapeMaterial* SaveImportedShapeMaterialAsset(
 		const FShapeMaterialBarrier& Material, const FString& DirectoryName);
 
 	/**
@@ -119,9 +144,9 @@ public:
 	 * @param DirectoryName The name of the directory where the assets are collected.
 	 * @return The created ContactMaterialAsset.
 	 */
-	static UAGX_ContactMaterialAsset* SaveImportedContactMaterialAsset(
-		const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterialAsset* Material1,
-		UAGX_ShapeMaterialAsset* Material2, const FString& DirectoryName);
+	static UAGX_ContactMaterial* SaveImportedContactMaterialAsset(
+		const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterial* Material1,
+		UAGX_ShapeMaterial* Material2, const FString& DirectoryName);
 
 	/**
 	 * Save an FAGX_RenderMaterial read from and AGX Dynamics RenderData material as an Unreal
@@ -142,6 +167,42 @@ public:
 	static UMaterialInterface* SaveImportedRenderMaterialAsset(
 		const FAGX_RenderMaterial& Imported, const FString& DirectoryName,
 		const FString& MaterialName);
+
+	/**
+	 * Store an imported AGX Dynamics Merge Split Thresholds as an UAGX_MergeSplitThresholdsBase.
+	 * @param Barrier The imported merge split thresholds to be saved.
+	 * @param OwningType Indicates the type of the underlying AGX Dynamics object owning this
+	 * MergeSplitThresholds.
+	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param Name The name of the asset to be written.
+	 * @return The created MergeSplitThresholds asset.
+	 */
+	static UAGX_MergeSplitThresholdsBase* SaveImportedMergeSplitAsset(
+		const FMergeSplitThresholdsBarrier& Barrier, EAGX_AmorOwningType OwningType,
+		const FString& DirectoryName, const FString& Name);
+
+	/**
+	 * Store an imported AGX Dynamics Track Internal Merge Property as an
+	 * UAGX_TrackInternalMergeProperties asset on drive..
+	 * @param Barrier The imported Track owning the Internal Merge Property.
+	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param Name The name to give to the new asset. A sequence number will be added in case of a
+	 * conflict.
+	 * @return The created UAGX_TrackInternalMergeProperties asset.
+	 */
+	static UAGX_TrackInternalMergeProperties* SaveImportedTrackInternalMergePropertiesAsset(
+		const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name);
+
+	/**
+	 * Store an imported AGX Dynamics Track Property as an UAGX_TrackProperties.
+	 * @param Barrier The imported Track referencing the Track Property.
+	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param Name The name to give to the new asset. A sequence number will be added in case of a
+	 * conflict.
+	 * @return The created UAGX_TrackProperties.
+	 */
+	static UAGX_TrackProperties* SaveImportedTrackPropertiesAsset(
+		const FTrackPropertiesBarrier& Barrier, const FString& DirectoryName, const FString& Name);
 
 	/**
 	 * Rename the object. Generates a fallback name if the given name can't be used.

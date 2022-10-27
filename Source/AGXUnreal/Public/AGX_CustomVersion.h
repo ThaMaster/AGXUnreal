@@ -28,6 +28,10 @@ struct AGXUNREAL_API FAGX_CustomVersion
 		// and ContactMaterial.
 		ScientificNotationInMaterials,
 
+		// The ...MaterialBase, ... MaterialInstance, ...MaterialAsset have all been combined into a
+		// single class for ShapeMaterials, TerrainMaterials and ContactMaterials respectively.
+		BaseAssetInstanceMaterialClassesAreOneClass,
+
 		// <----- New versions can be added above this line. ----->
 		VersionPlusOne,
 

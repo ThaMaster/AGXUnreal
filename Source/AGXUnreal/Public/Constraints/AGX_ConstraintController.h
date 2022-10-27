@@ -60,7 +60,7 @@ struct AGXUNREAL_API FAGX_ConstraintController
 
 	/**
 	 * Elasticity is defined as the inverse of compliance, so setting the compliance will modify
-	 * the compliance. [N/m] or [Nm/rad]
+	 * the compliance [N/m] or [Nm/rad].
 	 */
 	void SetElasticity(double InElasticity);
 

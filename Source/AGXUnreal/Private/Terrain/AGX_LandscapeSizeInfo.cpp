@@ -10,7 +10,7 @@ namespace
 {
 	// \todo find proper way of getting the landscape components per side count. This is a bit of a
 	// hack.
-	std::tuple<int32, int32> GetComponentsPerSide(ALandscape& Landscape)
+	std::tuple<int32, int32> GetComponentsPerSide(const ALandscape& Landscape)
 	{
 		TArray<int32> ComponentUniqueSectionBaseX;
 		TArray<int32> ComponentUniqueSectionBaseY;
@@ -30,7 +30,7 @@ namespace
 	}
 }
 
-FAGX_LandscapeSizeInfo::FAGX_LandscapeSizeInfo(ALandscape& Landscape)
+FAGX_LandscapeSizeInfo::FAGX_LandscapeSizeInfo(const ALandscape& Landscape)
 {
 	NumComponents = Landscape.LandscapeComponents.Num();
 	NumQuadsPerComponentSide = Landscape.ComponentSizeQuads;

@@ -39,6 +39,7 @@
 #include <agxModel/UrdfReader.h>
 #include <agxSDK/Simulation.h>
 #include <agxWire/Wire.h>
+#include <agxVehicle/Track.h>
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
@@ -136,7 +137,8 @@ namespace
 	bool IsRegularBody(agx::RigidBody& Body)
 	{
 		return !Body.isPowerlineBody() && agxWire::Wire::getWire(&Body) == nullptr &&
-			   agxCable::Cable::getCableForBody(&Body) == nullptr;
+			   agxCable::Cable::getCableForBody(&Body) == nullptr &&
+			   agxVehicle::Track::get(&Body) == nullptr;
 	}
 
 	/**
@@ -177,8 +179,8 @@ namespace
 			return false;
 		}
 
-		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire,
-							const FString& Description) {
+		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire, const FString& Description)
+		{
 			if (Body == nullptr)
 			{
 				UE_LOG(
@@ -343,7 +345,8 @@ namespace
 	bool ReadCollisionGroups(
 		agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
-		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString {
+		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString
+		{
 			FString Str = Convert(Cg.name());
 
 			// If the CollisionGroup was stored as an Id (uint32), then it will contain no name
@@ -390,6 +393,24 @@ namespace
 		return true;
 	}
 
+	bool ReadTracks(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
+	{
+		agxVehicle::TrackPtrVector Tracks = agxVehicle::Track::findAll(&Simulation);
+
+		for (agxVehicle::Track* Track : Tracks)
+		{
+			if (Track == nullptr || Track->getRoute() == nullptr)
+			{
+				continue;
+			}
+
+			FTrackBarrier Barrier = AGXBarrierFactories::CreateTrackBarrier(Track);
+			Instantiator.InstantiateTrack(Barrier);
+		}
+
+		return true;
+	}
+
 	bool ReadObserverFrames(
 		agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
 	{
@@ -422,8 +443,11 @@ namespace
 		Result &= ReadRigidBodies(Simulation, Filename, Instantiator);
 
 		ImportTask.EnterProgressFrame(
-			0.79f * WorkLeft, FText::FromString("Importing bodiless Geometries"));
+			0.78f * WorkLeft, FText::FromString("Importing bodiless Geometries"));
 		Result &= ReadBodilessGeometries(Simulation, Filename, Instantiator);
+
+		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Tracks"));
+		Result &= ReadTracks(Simulation, Instantiator);
 
 		// Constraints depend on Rigid Bodies, so those must be read before Constraints.
 		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Constraints"));
@@ -441,6 +465,7 @@ namespace
 			0.01f * WorkLeft, FText::FromString("Importing Observer Frames"));
 		Result &= ReadObserverFrames(Simulation, Instantiator);
 
+		Instantiator.FinalizeImports();
 		return Result;
 	}
 }
@@ -492,8 +517,10 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 	ImportTask.MakeDialog();
 	ImportTask.EnterProgressFrame(WorkRead, FText::FromString("Reading URDF file"));
 #if AGX_VERSION_GREATER_OR_EQUAL(2, 33, 0, 0)
+	agxModel::UrdfReader::Settings UrdfSettings(
+		/*fixToWorld*/ false, /*disableLinkedBodies*/ false, /*mergeKinematicLinks*/ false);
 	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
-		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr);
+		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, UrdfSettings);
 #else
 	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
 		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);

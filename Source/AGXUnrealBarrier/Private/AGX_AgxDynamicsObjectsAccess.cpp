@@ -2,9 +2,12 @@
 
 #include "AGX_AgxDynamicsObjectsAccess.h"
 
+
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGXRefs.h"
+#include "AMOR/MergeSplitPropertiesBarrier.h"
+#include "AMOR/MergeSplitThresholdsBarrier.h"
 #include "Constraints/BallJointBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Constraints/DistanceJointBarrier.h"
@@ -24,22 +27,26 @@
 #include "Terrain/ShovelBarrier.h"
 #include "Tires/TireBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Wire/WireBarrier.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
-#include <agx/RigidBody.h>
 #include <agx/BallJoint.h>
 #include <agx/CylindricalJoint.h>
 #include <agx/DistanceJoint.h>
 #include <agx/Hinge.h>
 #include <agx/LockJoint.h>
 #include <agx/MassProperties.h>
+#include <agx/Material.h>
 #include <agx/Prismatic.h>
-#include <agxSDK/Simulation.h>
+#include <agx/RigidBody.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
 #include <agxModel/Tire.h>
 #include <agxModel/TwoBodyTire.h>
+#include <agxSDK/MergeSplitProperties.h>
+#include <agxSDK/MergeSplitThresholds.h>
+#include <agxSDK/Simulation.h>
 #include <agxTerrain/Terrain.h>
 #include <agxTerrain/TerrainMaterial.h>
 #include <agxWire/Wire.h>
@@ -278,6 +285,24 @@ agxSDK::Simulation* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FSimulationBarr
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxSDK::Simulation>(Barrier);
 }
 
+agxSDK::MergeSplitProperties* FAGX_AgxDynamicsObjectsAccess::GetFrom(
+	const FMergeSplitPropertiesBarrier* Barrier)
+{
+	using namespace AgxDynamicsObjectAccess_Helper;
+	if (!CheckAgxDynamicsObject(Barrier))
+	{
+		return nullptr;
+	}
+
+	return Barrier->GetNative()->Native;
+}
+
+agxSDK::MergeSplitThresholds* FAGX_AgxDynamicsObjectsAccess::GetFrom(
+	const FMergeSplitThresholdsBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agxSDK::MergeSplitThresholds>(Barrier);
+}
+
 // Namespace agxTerrain.
 
 agxTerrain::Terrain* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FTerrainBarrier* Barrier)
@@ -294,4 +319,11 @@ agxTerrain::TerrainMaterial* FAGX_AgxDynamicsObjectsAccess::GetFrom(
 agxTerrain::Shovel* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FShovelBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxTerrain::Shovel>(Barrier);
+}
+
+// Namespace agxWire.
+
+agxWire::Wire* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FWireBarrier* Barrier)
+{
+	return AgxDynamicsObjectAccess_Helper::GetFrom<agxWire::Wire>(Barrier);
 }

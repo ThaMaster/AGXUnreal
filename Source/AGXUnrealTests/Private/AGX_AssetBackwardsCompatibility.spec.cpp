@@ -4,9 +4,9 @@
 #include "AgxAutomationCommon.h"
 #include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
-#include "Materials/AGX_ContactMaterialAsset.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
-#include "Materials/AGX_TerrainMaterialAsset.h"
+#include "Materials/AGX_ContactMaterial.h"
+#include "Materials/AGX_ShapeMaterial.h"
+#include "Materials/AGX_TerrainMaterial.h"
 
 // Unreal Engine includes.
 #include "AssetRegistryModule.h"
@@ -151,7 +151,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #else
 			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("2113ad88f842ea8c583bd8b037b6007b"), *this);
 #endif
-			UAGX_ShapeMaterialAsset* ShapeMaterial = LoadMaterialAsset<UAGX_ShapeMaterialAsset>(PackagePath, ObjectName);
+			UAGX_ShapeMaterial* ShapeMaterial = LoadMaterialAsset<UAGX_ShapeMaterial>(PackagePath, ObjectName);
 			TestEqual(
 				TEXT("The shape material should have restored density"),
 				ShapeMaterial->Bulk.Density, 1100000.0);
@@ -210,7 +210,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #else
 			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("0e6c1159d5b5b0bd0dabdc311a2e361e"), *this);
 #endif
-			UAGX_ContactMaterialAsset* ContactMaterial = LoadMaterialAsset<UAGX_ContactMaterialAsset>(PackagePath, ObjectName);
+			UAGX_ContactMaterial* ContactMaterial = LoadMaterialAsset<UAGX_ContactMaterial>(PackagePath, ObjectName);
 			TestEqual(
 				TEXT("The contact material should have restored friction coefficient"),
 				ContactMaterial->FrictionCoefficient, 1000000.0);
@@ -253,7 +253,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #else
 			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("13761b5e4237e63665da78201924246a"), *this);
 #endif
-			UAGX_TerrainMaterialAsset* TerrainMaterial = LoadMaterialAsset<UAGX_TerrainMaterialAsset>(PackagePath, ObjectName);
+			UAGX_TerrainMaterial* TerrainMaterial = LoadMaterialAsset<UAGX_TerrainMaterial>(PackagePath, ObjectName);
 			TestEqual(
 				TEXT("The terrain material should have restored adhesion overlap factor"),
 				TerrainMaterial->TerrainBulk.AdhesionOverlapFactor, 0.000001);

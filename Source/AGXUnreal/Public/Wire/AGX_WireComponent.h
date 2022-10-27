@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AMOR/AGX_WireMergeSplitProperties.h"
 #include "AGX_RigidBodyReference.h"
 #include "AGX_WireRenderIterator.h"
 #include "Wire/AGX_WireEnums.h"
@@ -16,7 +17,7 @@
 
 #include "AGX_WireComponent.generated.h"
 
-class UAGX_ShapeMaterialBase;
+class UAGX_ShapeMaterial;
 class UAGX_WireWinchComponent;
 
 /// @todo Move FWireRoutingNode to a separate source file pair.
@@ -151,7 +152,10 @@ public:
 	 * with Shapes in the world.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
-	UAGX_ShapeMaterialBase* ShapeMaterial;
+	UAGX_ShapeMaterial* ShapeMaterial;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	bool SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial);
 
 	/*
 	 * Begin winch.
@@ -219,6 +223,12 @@ public:
 			 EditConditionHides,
 			 EditCondition = "BeginWinchType == EWireWinchOwnerType::WireWinch"))
 	FComponentReference BeginWinchComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
+	FAGX_WireMergeSplitProperties MergeSplitProperties;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	void CreateMergeSplitProperties();
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Begin Winch")
 	bool HasBeginWinchComponent() const;
@@ -865,6 +875,7 @@ private:
 #endif
 
 	void CreateNative();
+	bool UpdateNativeMaterial();
 
 private:
 	FWireBarrier NativeBarrier;

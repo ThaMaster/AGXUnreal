@@ -14,9 +14,7 @@
 #include "AGX_LogCategory.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintConstants.h"
-#include "Constraints/AGX_ConstraintDofGraphicsComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
-#include "Constraints/AGX_ConstraintIconGraphicsComponent.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
@@ -94,45 +92,6 @@ UAGX_ConstraintComponent::UAGX_ConstraintComponent(const TArray<EDofFlag>& Locke
 	, Elasticity_DEPRECATED(
 		  ConstraintConstants::DefaultElasticity(), ConvertDofsArrayToBitmask(LockedDofsOrdered))
 {
-	// Using an AGX_ConstraintComponent in a blueprint instance has in some cases caused crashes
-	// during project startup. It seems to happen for one of the 'behind-the-scenes' created objects
-	// that are created for blueprints, typically with name postfix '_GEN_VARIABLE'. This
-	// 'behind-the-scenes' created object crashes for some reason when trying to attach a
-	// DofGraphicsComponent or IconGraphicsComponent to it. Therefore we detect when this
-	// constructor is run for such an object by checking if its parent is null (which will only be
-	// the case for such an object) and in that case we do not attach the GraphicsComponents to it.
-	if (GetOwner() != nullptr)
-	{
-		// Create UAGX_ConstraintDofGraphicsComponent as child component.
-		{
-			DofGraphicsComponent1 = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
-				TEXT("DofGraphicsComponent1"));
-
-			DofGraphicsComponent1->Constraint = this;
-			DofGraphicsComponent1->SetupAttachment(this);
-			DofGraphicsComponent1->bHiddenInGame = true;
-			DofGraphicsComponent1->AttachmentId = 1;
-		}
-		{
-			DofGraphicsComponent2 = CreateDefaultSubobject<UAGX_ConstraintDofGraphicsComponent>(
-				TEXT("DofGraphicsComponent2"));
-
-			DofGraphicsComponent2->Constraint = this;
-			DofGraphicsComponent2->SetupAttachment(this);
-			DofGraphicsComponent2->bHiddenInGame = true;
-			DofGraphicsComponent2->AttachmentId = 2;
-		}
-
-		// Create UAGX_ConstraintIconGraphicsComponent as child component.
-		{
-			IconGraphicsComponent = CreateDefaultSubobject<UAGX_ConstraintIconGraphicsComponent>(
-				TEXT("IconGraphicsComponent"));
-
-			IconGraphicsComponent->Constraint = this;
-			IconGraphicsComponent->SetupAttachment(this);
-			IconGraphicsComponent->bHiddenInGame = true;
-		}
-	}
 }
 
 void UAGX_ConstraintComponent::PostInitProperties()
@@ -558,6 +517,13 @@ void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
 			ForceRange[Dof] = Barrier.GetForceRange(NativeDof);
 		}
 	}
+
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FConstraintBarrier*>(&Barrier));
+	if (Msp.HasNative())
+	{
+		MergeSplitProperties.CopyFrom(Msp);
+	}
 }
 
 void UAGX_ConstraintComponent::SetSolveType(EAGX_SolveType InSolveType)
@@ -596,6 +562,11 @@ void UAGX_ConstraintComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+
+	if (HasNative())
+	{
+		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+	}
 }
 
 FConstraintBarrier* UAGX_ConstraintComponent::GetOrCreateNative()
@@ -740,6 +711,12 @@ bool UAGX_ConstraintComponent::IsDofLocked(EDofFlag Dof) const
 	return static_cast<uint8>(LockedDofsBitmask) & static_cast<uint8>(Dof);
 }
 
+bool UAGX_ConstraintComponent::IsRotational() const
+{
+	return !IsDofLocked(EDofFlag::DofFlagRotational1) ||
+		   !IsDofLocked(EDofFlag::DofFlagRotational2) || !IsDofLocked(EDofFlag::DofFlagRotational3);
+}
+
 namespace
 {
 	FAGX_ConstraintBodyAttachment* SelectByName(
@@ -833,6 +810,10 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, bComputeForces),
 		[](ThisClass* This) { This->SetComputeForces(This->bComputeForces); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, MergeSplitProperties),
+		[](ThisClass* This) { This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
 }
 
 void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -913,6 +894,25 @@ void UAGX_ConstraintComponent::PostEditChangeChainProperty(FPropertyChangedChain
 }
 
 #endif
+
+void UAGX_ConstraintComponent::CreateMergeSplitProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_ConstraintComponent::CreateMergeSplitProperties was called "
+				 "on Constraint '%s' that does not have a Native AGX Dynamics object. Only call this "
+				 "function "
+				 "during play."), *GetName());
+		return;
+	}
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		MergeSplitProperties.CreateNative(*this);
+	}
+}
 
 TStructOnScope<FActorComponentInstanceData> UAGX_ConstraintComponent::GetComponentInstanceData()
 	const
@@ -1042,23 +1042,6 @@ void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
 	BodyAttachment2.OnFrameDefiningComponentChanged(this);
 }
 
-void UAGX_ConstraintComponent::DestroyComponent(bool bPromoteChildren)
-{
-	Super::DestroyComponent(bPromoteChildren);
-	if (DofGraphicsComponent1)
-	{
-		DofGraphicsComponent1->DestroyComponent();
-	}
-	if (DofGraphicsComponent2)
-	{
-		DofGraphicsComponent2->DestroyComponent();
-	}
-	if (IconGraphicsComponent)
-	{
-		IconGraphicsComponent->DestroyComponent();
-	}
-}
-
 #endif
 
 void UAGX_ConstraintComponent::OnUnregister()
@@ -1102,6 +1085,10 @@ void UAGX_ConstraintComponent::BeginPlay()
 		BodyAttachment2.FrameDefiningComponent.CacheCurrentSceneComponent();
 
 		CreateNative();
+		if (HasNative())
+		{
+			MergeSplitProperties.OnBeginPlay(*this);
+		}
 	}
 }
 

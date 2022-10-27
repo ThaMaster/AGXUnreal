@@ -8,6 +8,6 @@ FAGX_ShapeMaterialBulkProperties::FAGX_ShapeMaterialBulkProperties()
 	, Viscosity(0.5)
 	, SpookDamping(4.5 / 60.0)
 	, MinElasticRestLength(0.05)
-	, MaxElasticRestLength(5)
+	, MaxElasticRestLength(5.0)
 {
 }

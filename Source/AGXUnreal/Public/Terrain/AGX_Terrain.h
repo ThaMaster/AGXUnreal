@@ -18,7 +18,7 @@
 ///
 /// on
 ///
-/// UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition =
+/// UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", Meta = (EditCondition =
 /// "bEnableParticleRendering")) UNiagaraSystem* ParticleSystemAsset;
 //#include "NiagaraComponent.h"
 //#include "NiagaraEmitterInstance.h"
@@ -29,7 +29,7 @@
 
 #include "AGX_Terrain.generated.h"
 
-class UAGX_TerrainMaterialBase;
+class UAGX_TerrainMaterial;
 class ALandscape;
 class UNiagaraComponent;
 class UNiagaraSystem;
@@ -101,12 +101,15 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain",
-		meta = (ClampMin = "0", UIMin = "0", ClampMax = "1000", UIMax = "1000"))
+		Meta = (ClampMin = "0", UIMin = "0", ClampMax = "1000", UIMax = "1000"))
 	float MaxDepth = 200.0f;
 
 	/** The physical bulk, compaction, particle and surface properties of the Terrain. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Terrain")
-	UAGX_TerrainMaterialBase* TerrainMaterial;
+	UAGX_TerrainMaterial* TerrainMaterial;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	bool SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial);
 
 	/**
 	 * A list of the rigid body actors that should be used as terrain shovels.
@@ -143,7 +146,7 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Rendering",
-		meta = (EditCondition = "bEnableDisplacementRendering"))
+		Meta = (EditCondition = "bEnableDisplacementRendering"))
 	UTextureRenderTarget2D* LandscapeDisplacementMap;
 
 	/** Whether soil particles should be rendered or not. */
@@ -156,20 +159,20 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Rendering",
-		meta =
+		Meta =
 			(EditCondition = "bEnableParticleRendering", ClampMin = "1", UIMin = "1",
 			 UIMax = "4096"))
 	int32 MaxNumRenderParticles = 2048;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Rendering",
-		meta = (EditCondition = "bEnableParticleRendering"))
+		Meta = (EditCondition = "bEnableParticleRendering"))
 	UNiagaraSystem* ParticleSystemAsset;
 
 	// \todo Should try to find or create this automatically!
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Rendering",
-		meta = (EditCondition = "bEnableParticleRendering"))
+		Meta = (EditCondition = "bEnableParticleRendering"))
 	UTextureRenderTarget2D* TerrainParticlesDataMap;
 
 	/** Whether shovel active zone should be rendered or not. */
@@ -198,7 +201,7 @@ private:
 	void InitializeNative();
 	bool CreateNativeTerrain();
 	void CreateNativeShovels();
-	void CreateTerrainMaterial();
+	bool UpdateNativeMaterial();
 
 	void SetInitialTransform();
 	void InitializeRendering();

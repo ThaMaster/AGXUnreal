@@ -3,9 +3,9 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "SimulationBarrier.h"
-#include "Contacts/ShapeContactBarrier.h"
 #include "AGX_SimulationEnums.h"
+#include "Contacts/ShapeContactBarrier.h"
+#include "SimulationBarrier.h"
 
 // Unreal Engine includes.
 #include "Containers/Map.h"
@@ -18,10 +18,10 @@
 class AAGX_Stepper;
 class AAGX_Terrain;
 class UAGX_ConstraintComponent;
-class UAGX_ContactMaterialInstance;
+class UAGX_ContactMaterial;
 class UAGX_MaterialBase;
 class UAGX_RigidBodyComponent;
-class UAGX_ShapeMaterialInstance;
+class UAGX_ShapeMaterial;
 class UAGX_StaticMeshComponent;
 class UAGX_ShapeComponent;
 class UAGX_TireComponent;
@@ -56,6 +56,22 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 public: // Properties.
+
+	/**
+	 * The number of threads AGX Dynamics will use during Play.
+	 *
+	 * Set to 0 to use all hardware threads.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "AGX Dynamics", Meta = (DisplayName = "Number of Threads"))
+	int32 NumThreads = 1;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetNumThreads(int32 InNumThreads);
+
+	UFUNCTION(BlueprintCallable, Category =  "AGX Dynamics")
+	int32 GetNumThreads() const;
+
 	/**
 	 * Step length of the integrator [s].
 	 */
@@ -97,7 +113,7 @@ public: // Properties.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "Solver",
-		meta =
+		Meta =
 			(ClampMin = 1, UIMin = 1, DisplayName = "Num PPGS Iterations",
 			 EditCondition = "bOverridePPGSIterations"))
 	int32 NumPpgsIterations = 25;
@@ -140,6 +156,41 @@ public: // Properties.
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Statistics")
 	bool bEnableStatistics = false;
 
+	/**
+	 * Globally enable or disable AMOR (Merge Split Handler) in AGX Dynamics.
+	 * Note that each RigidBody / Geometry / Wire / Constraint need to enable merge/split
+	 * individually for AMOR to be used for those.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
+	bool bEnableAMOR = false;
+
+	/**
+	 * Changes the default AMOR Shape Contact Merge Split Thresholds for all Rigid Bodies
+	 * and Shapes that does not specify their own.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "AGX AMOR",
+		Meta = (AllowedClasses = "AGX_ShapeContactMergeSplitThresholds"))
+	FSoftObjectPath GlobalShapeContactMergeSplitThresholds;
+
+	/**
+	 * Changes the default AMOR Constraint Merge Split Thresholds for all Constraints
+	 * that does not specify their own.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "AGX AMOR",
+		Meta = (AllowedClasses = "AGX_ConstraintMergeSplitThresholds"))
+	FSoftObjectPath GlobalConstraintMergeSplitThresholds;
+
+	/**
+	 * Changes the default AMOR Wire Merge Split Thresholds for all Wires
+	 * that does not specify their own.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "AGX AMOR",
+		Meta = (AllowedClasses = "AGX_WireMergeSplitThresholds"))
+	FSoftObjectPath GlobalWireMergeSplitThresholds;
+
 #if WITH_EDITORONLY_DATA
 	/**
 	 * Set to true to write an AGX Dynamics for Unreal archive of the initial state.
@@ -153,7 +204,7 @@ public: // Properties.
 	 * set.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Startup", meta = (EditCondition = "bExportInitialState"))
+		Config, EditAnywhere, Category = "Startup", Meta = (EditCondition = "bExportInitialState"))
 	FString ExportPath;
 #endif
 
@@ -172,7 +223,7 @@ public: // Properties.
 	uint8 bRemoteDebugging : 1;
 
 	/** Network port to use for remote debugging. */
-	UPROPERTY(Config, EditAnywhere, Category = "Debug", meta = (EditCondition = "bRemoteDebugging"))
+	UPROPERTY(Config, EditAnywhere, Category = "Debug", Meta = (EditCondition = "bRemoteDebugging"))
 	int16 RemoteDebuggingPort;
 
 	/**
@@ -183,7 +234,8 @@ public: // Properties.
 	 * When moving the camera further away than this distance the on-screen size of the constraint
 	 * visualization will start to shrink along with the surrounding geometry.
 	 */
-	UPROPERTY(Config, EditAnywhere, Category = "Rendering", Meta = (ClampMin = "0.0", UIMin = "0.0"))
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Rendering", Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float ConstraintVisualizationScalingDistanceMax = 400.f;
 
 public: // Member functions.
@@ -192,6 +244,12 @@ public: // Member functions.
 
 	UFUNCTION(BlueprintCallable, Category = "Solver")
 	bool GetEnableContactWarmstarting() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	void SetEnableAMOR(bool bEnable);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	bool GetEnableAMOR();
 
 	/**
 	 * Set the number of solver resting iterations to use for the Parallel Projected Gauss-Seidel
@@ -247,7 +305,7 @@ public: // Member functions.
 	 */
 	void Add(UAGX_RigidBodyComponent& Body);
 	void Add(UAGX_ShapeComponent& Shape);
-	void Add(UAGX_ShapeMaterialInstance& Shape);
+	void Add(UAGX_ShapeMaterial& Shape);
 	void Add(UAGX_StaticMeshComponent& Body);
 	void Add(AAGX_Terrain& Terrain);
 	void Add(UAGX_TireComponent& Tire);
@@ -256,14 +314,14 @@ public: // Member functions.
 	void Remove(UAGX_ConstraintComponent& Constraint);
 	void Remove(UAGX_RigidBodyComponent& Body);
 	void Remove(UAGX_ShapeComponent& Shape);
-	void Remove(UAGX_ShapeMaterialInstance& Shape);
+	void Remove(UAGX_ShapeMaterial& Shape);
 	void Remove(UAGX_StaticMeshComponent& Body);
 	void Remove(AAGX_Terrain& Terrain);
 	void Remove(UAGX_TireComponent& Tire);
 	void Remove(UAGX_WireComponent& Wire);
 
-	void Register(UAGX_ContactMaterialInstance& Material);
-	void Unregister(UAGX_ContactMaterialInstance& Material);
+	void Register(UAGX_ContactMaterial& Material);
+	void Unregister(UAGX_ContactMaterial& Material);
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);
 
@@ -340,6 +398,8 @@ private:
 
 	void SetGravity();
 
+	void SetGlobalNativeMergeSplitThresholds();
+
 private:
 	FSimulationBarrier NativeBarrier;
 
@@ -355,5 +415,5 @@ private:
 
 	// Record for keeping track of the number of times any Contact Material has been
 	// registered/unregistered. Value is incremented on Register() and decremented on Unregister().
-	TMap<UAGX_ContactMaterialInstance*, int32> ContactMaterials;
+	TMap<UAGX_ContactMaterial*, int32> ContactMaterials;
 };

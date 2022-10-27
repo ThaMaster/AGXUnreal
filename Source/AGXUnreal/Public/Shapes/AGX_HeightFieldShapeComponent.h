@@ -16,7 +16,7 @@ class ALandscape;
 /**
  *
  */
-UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_HeightFieldShapeComponent : public UAGX_ShapeComponent
 {
 	GENERATED_BODY()
@@ -73,7 +73,7 @@ private:
 
 	void OnSourceLandscapeChanged(UObject*, struct FPropertyChangedEvent&);
 
-	void RecenterActorOnLandscape();
+	void RecenterOnLandscape();
 
 private:
 	FHeightFieldShapeBarrier NativeBarrier;

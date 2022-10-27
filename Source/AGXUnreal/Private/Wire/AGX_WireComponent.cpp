@@ -8,8 +8,7 @@
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGXUnrealBarrier.h"
-#include "Materials/AGX_ShapeMaterialAsset.h"
-#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -23,6 +22,9 @@
 #include "Components/BillboardComponent.h"
 #include "CoreGlobals.h"
 #include "Math/UnrealMathUtility.h"
+
+// Standard library includes.
+#include <tuple>
 
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
 
@@ -1105,6 +1107,13 @@ void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
 	MinSegmentLength = 1.0f / Barrier.GetResolutionPerUnitLength();
 	LinearVelocityDamping = static_cast<float>(Barrier.GetLinearVelocityDamping());
 
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FWireBarrier*>(&Barrier));
+	if (Msp.HasNative())
+	{
+		MergeSplitProperties.CopyFrom(Msp);
+	}
+
 	// Physical material, winches, and route nodes not set here since this is a pure data copy. For
 	// AGX Dynamics archive import these are set by AGX_ArchiveImporterHelper.
 }
@@ -1123,6 +1132,11 @@ void UAGX_WireComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+
+	if (HasNative())
+	{
+		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+	}
 }
 
 FWireBarrier* UAGX_WireComponent::GetOrCreateNative()
@@ -1191,7 +1205,8 @@ void UAGX_WireComponent::PostInitProperties()
 
 void UAGX_WireComponent::InitPropertyDispatcher()
 {
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
@@ -1204,6 +1219,10 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, MinSegmentLength),
 		[](ThisClass* Wire) { Wire->SetMinSegmentLength(Wire->MinSegmentLength); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, MergeSplitProperties),
+		[](ThisClass* This) { This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
 
 	// Begin Winch.
 
@@ -1304,7 +1323,6 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 	// apply all our changes before that so that they are carried over to the copy.
 	Super::PostEditChangeChainProperty(Event);
 }
-
 #endif
 
 void UAGX_WireComponent::BeginPlay()
@@ -1317,6 +1335,8 @@ void UAGX_WireComponent::BeginPlay()
 		// soon be assigned the native that the reconstructed Wire Component had, if any.
 		CreateNative();
 		check(HasNative()); /// @todo Consider better error handling than check.
+
+		MergeSplitProperties.OnBeginPlay(*this);
 	}
 }
 
@@ -1326,6 +1346,26 @@ void UAGX_WireComponent::TickComponent(
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	/// @todo Do we need to do anything here?
+}
+
+void UAGX_WireComponent::CreateMergeSplitProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_WireComponent::CreateMergeSplitProperties was called "
+				 "on Wire '%s' that does not have a Native AGX Dynamics object. Only call "
+				 "this function "
+				 "during play."),
+			*GetName());
+		return;
+	}
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		MergeSplitProperties.CreateNative(*this);
+	}
 }
 
 TStructOnScope<FActorComponentInstanceData> UAGX_WireComponent::GetComponentInstanceData() const
@@ -1545,6 +1585,29 @@ namespace AGX_WireComponent_helpers
 	}
 }
 
+bool UAGX_WireComponent::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
+{
+	UAGX_ShapeMaterial* ShapeMaterialOrig = ShapeMaterial;
+	ShapeMaterial = InShapeMaterial;
+
+	if (!HasNative())
+	{
+		// Not in play, we are done.
+		return true;
+	}
+
+	// UpdateNativeMaterial is responsible for creating an instance of none exists and do the
+	// asset/instance swap.
+	if (!UpdateNativeMaterial())
+	{
+		// Something went wrong, restore original ShapeMaterial.
+		ShapeMaterial = ShapeMaterialOrig;
+		return false;
+	}
+
+	return true;
+}
+
 void UAGX_WireComponent::CreateNative()
 {
 	using namespace AGX_WireComponent_helpers;
@@ -1556,20 +1619,12 @@ void UAGX_WireComponent::CreateNative()
 	NativeBarrier.AllocateNative(Radius, ResolutionPerUnitLength);
 	check(HasNative()); /// @todo Consider better error handling than 'check'.
 
-	if (ShapeMaterial)
+	if (!UpdateNativeMaterial())
 	{
-		UWorld* World = GetWorld();
-		UAGX_ShapeMaterialInstance* MaterialInstance =
-			static_cast<UAGX_ShapeMaterialInstance*>(ShapeMaterial->GetOrCreateInstance(World));
-		check(MaterialInstance);
-		if (MaterialInstance != ShapeMaterial && World != nullptr && World->IsGameWorld())
-		{
-			ShapeMaterial = MaterialInstance;
-		}
-		FShapeMaterialBarrier* MaterialBarrier =
-			MaterialInstance->GetOrCreateShapeMaterialNative(World);
-		check(MaterialBarrier);
-		NativeBarrier.SetMaterial(*MaterialBarrier);
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UpdateNativeMaterial returned false in AGX_WireComponent. "
+				 "Ensure the selected Shape Material is valid."));
 	}
 
 	NativeBarrier.SetLinearVelocityDamping(LinearVelocityDamping);
@@ -1702,6 +1757,45 @@ void UAGX_WireComponent::CreateNative()
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
 		}
 	}
+}
+
+bool UAGX_WireComponent::UpdateNativeMaterial()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("UpdateNativeMaterial called on Wire '%s' but it does not have a "
+				 "native AGX Dynamics representation."),
+			*GetName());
+		return false;
+	}
+
+	if (ShapeMaterial == nullptr)
+	{
+		if (HasNative())
+		{
+			GetNative()->ClearMaterial();
+		}
+		return true;
+	}
+
+	UWorld* World = GetWorld();
+	UAGX_ShapeMaterial* MaterialInstance =
+		static_cast<UAGX_ShapeMaterial*>(ShapeMaterial->GetOrCreateInstance(World));
+	check(MaterialInstance);
+
+	if (ShapeMaterial != MaterialInstance)
+	{
+		ShapeMaterial = MaterialInstance;
+	}
+
+	FShapeMaterialBarrier* MaterialBarrier =
+		MaterialInstance->GetOrCreateShapeMaterialNative(World);
+	check(MaterialBarrier);
+	NativeBarrier.SetMaterial(*MaterialBarrier);
+
+	return true;
 }
 
 #undef LOCTEXT_NAMESPACE

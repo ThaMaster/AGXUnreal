@@ -2,7 +2,7 @@
 
 #include "Materials/AGX_ContactMaterialAssetTypeActions.h"
 
-#include "Materials/AGX_ContactMaterialAsset.h"
+#include "Materials/AGX_ContactMaterial.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ContactMaterialAssetTypeActions"
 
@@ -35,7 +35,7 @@ FText FAGX_ContactMaterialAssetTypeActions::GetAssetDescription(const FAssetData
 
 UClass* FAGX_ContactMaterialAssetTypeActions::GetSupportedClass() const
 {
-	return UAGX_ContactMaterialAsset::StaticClass();
+	return UAGX_ContactMaterial::StaticClass();
 }
 
 #undef LOCTEXT_NAMESPACE

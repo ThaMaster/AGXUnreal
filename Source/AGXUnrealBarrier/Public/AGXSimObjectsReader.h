@@ -28,6 +28,7 @@ class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
 class FTwoBodyTireBarrier;
 class FWireBarrier;
+class FTrackBarrier;
 
 /*
 The separation between the Unreal part and the AGX Dynamics part of the plugin
@@ -163,6 +164,8 @@ public:
 
 	virtual void InstantiateWire(const FWireBarrier& Wire) = 0;
 
+	virtual void InstantiateTrack(const FTrackBarrier& Track) = 0;
+
 	/**
 	 * We currently do not have full Observer Frame support in AGX Dynamics for Unreal, i.e. there
 	 * is no Observer Frame Component or Barrier. The coordinate frame defined by an Observer Frame
@@ -177,6 +180,11 @@ public:
 	 * \param Transform The transformation of the Observer Frame relative to the Rigid Body.
 	 */
 	virtual void InstantiateObserverFrame(const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) = 0;
+
+	/*
+	 * Must be called at the end of an import.
+	 */
+	virtual void FinalizeImports() = 0;
 
 	virtual ~FAGXSimObjectsInstantiator() = default;
 };

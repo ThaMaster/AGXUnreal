@@ -3,9 +3,10 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_RigidBodyEnums.h"
+#include "AMOR/AGX_ShapeContactMergeSplitProperties.h"
 #include "AGX_MotionControl.h"
 #include "AGX_NativeOwner.h"
+#include "AGX_RigidBodyEnums.h"
 #include "RigidBodyBarrier.h"
 
 // Unreal Engine includes.
@@ -208,6 +209,12 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_TransformTarget> TransformTarget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
+	FAGX_ShapeContactMergeSplitProperties MergeSplitProperties;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	void CreateMergeSplitProperties();
 
 	/**
 	 * Add an external force, given in the world coordinate frame, that will be affecting this body

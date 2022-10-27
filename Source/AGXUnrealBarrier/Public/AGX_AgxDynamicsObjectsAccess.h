@@ -20,6 +20,13 @@ namespace agx
 	class ContactMaterial;
 }
 
+namespace agxSDK
+{
+	class MergeSplitProperties;
+	class MergeSplitThresholds;
+	class Simulation;
+}
+
 namespace agxCollide
 {
 	class Geometry;
@@ -54,6 +61,11 @@ namespace agxWire
 	class Node;
 }
 
+namespace agxWire
+{
+	class Wire;
+}
+
 class FRigidBodyBarrier;
 class FMassPropertiesBarrier;
 
@@ -65,6 +77,7 @@ class FDistanceJointBarrier;
 class FHingeBarrier;
 class FLockJointBarrier;
 class FPrismaticBarrier;
+class FShapeMaterialBarrier;
 
 class FShapeMaterialBarrier;
 class FContactMaterialBarrier;
@@ -86,6 +99,11 @@ class FShovelBarrier;
 class FWireBarrier;
 class FWireWinchBarrier;
 class FWireNodeBarrier;
+
+class FMergeSplitPropertiesBarrier;
+class FMergeSplitThresholdsBarrier;
+
+class FWireBarrier;
 
 class AGXUNREALBARRIER_API FAGX_AgxDynamicsObjectsAccess
 {
@@ -128,6 +146,8 @@ public:
 	// Namespace agxSDK.
 
 	static agxSDK::Simulation* GetFrom(const FSimulationBarrier* Barrier);
+	static agxSDK::MergeSplitProperties* GetFrom(const FMergeSplitPropertiesBarrier* Barrier);
+	static agxSDK::MergeSplitThresholds* GetFrom(const FMergeSplitThresholdsBarrier* Barrier);
 
 	// Namespace agxTerrain.
 

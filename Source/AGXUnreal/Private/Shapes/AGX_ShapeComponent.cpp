@@ -9,7 +9,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Contacts/AGX_ShapeContact.h"
-#include "Materials/AGX_ShapeMaterialInstance.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -18,6 +18,9 @@
 // Unreal Engine includes.
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
+
+// Standard library includes.
+#include <tuple>
 
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
@@ -39,6 +42,11 @@ void UAGX_ShapeComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	GetNativeBarrier()->SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+
+	if (HasNative())
+	{
+		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+	}	
 }
 
 TStructOnScope<FActorComponentInstanceData> UAGX_ShapeComponent::GetComponentInstanceData() const
@@ -80,22 +88,12 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	GetNative()->SetName(GetName());
 	GetNative()->SetIsSensor(bIsSensor, SensorType == EAGX_ShapeSensorType::ContactsSensor);
 
-	if (ShapeMaterial)
+	if (!UpdateNativeMaterial())
 	{
-		UAGX_ShapeMaterialInstance* MaterialInstance = static_cast<UAGX_ShapeMaterialInstance*>(
-			ShapeMaterial->GetOrCreateInstance(GetWorld()));
-		if (MaterialInstance)
-		{
-			UWorld* PlayingWorld = GetWorld();
-			if (MaterialInstance != ShapeMaterial && PlayingWorld && PlayingWorld->IsGameWorld())
-			{
-				ShapeMaterial = MaterialInstance;
-			}
-			FShapeMaterialBarrier* MaterialBarrier =
-				MaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
-			check(MaterialBarrier);
-			GetNative()->SetMaterial(*MaterialBarrier);
-		}
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UpdateNativeMaterial returned false in AGX_ShapeComponent. "
+				 "Ensure the selected Shape Material is valid."));
 	}
 
 	GetNative()->SetEnableCollisions(bCanCollide);
@@ -106,8 +104,37 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 	}
 }
 
-#if WITH_EDITOR
+bool UAGX_ShapeComponent::UpdateNativeMaterial()
+{
+	if (!HasNative())
+		return false;
 
+	if (!ShapeMaterial)
+	{
+		if (HasNative())
+		{
+			GetNative()->ClearMaterial();
+		}
+		return true;
+	}
+
+	UWorld* World = GetWorld();
+	UAGX_ShapeMaterial* Instance =
+		static_cast<UAGX_ShapeMaterial*>(ShapeMaterial->GetOrCreateInstance(World));
+	check(Instance);
+
+	if (ShapeMaterial != Instance)
+	{
+		ShapeMaterial = Instance;
+	}
+
+	FShapeMaterialBarrier* MaterialBarrier = Instance->GetOrCreateShapeMaterialNative(World);
+	check(MaterialBarrier);
+	GetNative()->SetMaterial(*MaterialBarrier);
+	return true;
+}
+
+#if WITH_EDITOR
 bool UAGX_ShapeComponent::DoesPropertyAffectVisualMesh(
 	const FName& PropertyName, const FName& MemberPropertyName) const
 {
@@ -182,6 +209,10 @@ void UAGX_ShapeComponent::PostInitProperties()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, bIsSensor),
 		[](ThisClass* This) { This->SetIsSensor(This->bIsSensor); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, MergeSplitProperties),
+		[](ThisClass* This) { This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
 #endif
 }
 
@@ -210,6 +241,8 @@ void UAGX_ShapeComponent::BeginPlay()
 		// its world transform. Push the entire Unreal world transform down into the native shape.
 		UpdateNativeGlobalTransform();
 	}
+
+	MergeSplitProperties.OnBeginPlay(*this);
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
@@ -272,8 +305,35 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 		AddCollisionGroup(Group);
 	}
 
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FShapeBarrier*>(&Barrier));
+	if (Msp.HasNative())
+	{
+		MergeSplitProperties.CopyFrom(Msp);
+	}
+
 	/// \todo Should shape material be handled here? If so, how? We don't have access to the
 	/// <Guid, Object> restore tables from here.
+}
+
+void UAGX_ShapeComponent::CreateMergeSplitProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_ShapeComponent::CreateMergeSplitProperties was called "
+				 "on Shape Component '%s' that does not have a Native AGX Dynamics object. Only call "
+				 "this function "
+				 "during play."),
+			*GetName());
+		return;
+	}
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		MergeSplitProperties.CreateNative(*this);
+	}
 }
 
 void UAGX_ShapeComponent::UpdateNativeGlobalTransform()
@@ -284,8 +344,8 @@ void UAGX_ShapeComponent::UpdateNativeGlobalTransform()
 	}
 
 	FShapeBarrier* Shape = GetNative();
-	Shape->SetLocalPosition(GetComponentLocation());
-	Shape->SetLocalRotation(GetComponentQuat());
+	Shape->SetWorldPosition(GetComponentLocation());
+	Shape->SetWorldRotation(GetComponentQuat());
 }
 
 void UAGX_ShapeComponent::AddCollisionGroup(const FName& GroupName)
@@ -307,53 +367,26 @@ void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 	}
 }
 
-bool UAGX_ShapeComponent::SetShapeMaterial(UAGX_ShapeMaterialBase* InShapeMaterial)
+bool UAGX_ShapeComponent::SetShapeMaterial(
+	UAGX_ShapeMaterial* InShapeMaterial)
 {
-	if (InShapeMaterial == nullptr)
-	{
-		if (HasNative())
-		{
-			GetNative()->ClearMaterial();
-		}
-		ShapeMaterial = nullptr;
-		return true;
-	}
+	UAGX_ShapeMaterial* ShapeMaterialOrig = ShapeMaterial;
+	ShapeMaterial = InShapeMaterial;
 
 	if (!HasNative())
 	{
-		// Not initialized yet, so simply assign the material we're given.
-		ShapeMaterial = InShapeMaterial;
+		// Not in play, we are done.		
 		return true;
 	}
 
-	// This Shape has already been initialized. Use the Instance version of the material, which
-	// may be ShapeMaterial itself.
-	UWorld* World = GetWorld();
-	UAGX_ShapeMaterialInstance* Instance =
-		static_cast<UAGX_ShapeMaterialInstance*>(InShapeMaterial->GetOrCreateInstance(World));
-	if (Instance == nullptr)
+	// UpdateNativeMaterial is responsible to create an instance if none exists and do the
+	// asset/instance swap.
+	if(!UpdateNativeMaterial())
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Shape '%s', in Actor '%s', could not create Shape Material Instance for '%s'. "
-				 "Material not changed."),
-			*GetName(), *GetLabelSafe(GetOwner()), *InShapeMaterial->GetName());
+		// Something went wrong, restore original ShapeMaterial.
+		ShapeMaterial = ShapeMaterialOrig;
 		return false;
 	}
-	ShapeMaterial = Instance;
-
-	// Assign the new native Material to the native Shape.
-	FShapeMaterialBarrier* NativeMaterial = Instance->GetOrCreateShapeMaterialNative(World);
-	if (NativeMaterial == nullptr || !NativeMaterial->HasNative())
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Could not create AGX Dynamics representation of Shape Material '%s' when "
-				 "assigned to Shape '%s' in Actor '%s'."),
-			*InShapeMaterial->GetName(), *GetName(), *GetLabelSafe(GetOwner()));
-		return false;
-	}
-	GetNative()->SetMaterial(*NativeMaterial);
 
 	return true;
 }
