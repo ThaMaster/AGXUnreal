@@ -8,6 +8,7 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
+class UStaticMeshComponent;
 class UWorld;
 
 class AGXUNREAL_API AGX_AutoFitShape
