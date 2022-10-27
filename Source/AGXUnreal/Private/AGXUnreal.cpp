@@ -26,17 +26,35 @@ void FAGXUnrealModule::RegisterCoreRedirects()
 	// compatibility). See
 	// https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/Assets/CoreRedirects/
 
-	// Uncomment below once the first Core Redirect is added. Remove this comment when that happens.
-
-	/*
 	TArray<FCoreRedirect> Redirects;
 
 	Redirects.Emplace(
-		ECoreRedirectFlags::Type_Property, TEXT("AGX_ExampleComponent.OldExampleProperty"),
-		TEXT("NewExampleProperty"));
+		ECoreRedirectFlags::Type_Class, TEXT("AGX_ContactMaterialBase"),
+		TEXT("AGX_ContactMaterial"));
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Class, TEXT("AGX_ContactMaterialAsset"),
+		TEXT("AGX_ContactMaterial"));
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Class, TEXT("AGX_ContactMaterialInstance"),
+		TEXT("AGX_ContactMaterial"));
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Class, TEXT("AGX_ShapeMaterialBase"), TEXT("AGX_ShapeMaterial"));
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Class, TEXT("AGX_ShapeMaterialAsset"), TEXT("AGX_ShapeMaterial"));
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Class, TEXT("AGX_ShapeMaterialInstance"),
+		TEXT("AGX_ShapeMaterial"));
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Class, TEXT("AGX_TerrainMaterialBase"),
+		TEXT("AGX_TerrainMaterial"));
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Class, TEXT("AGX_TerrainMaterialAsset"),
+		TEXT("AGX_TerrainMaterial"));
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Class, TEXT("AGX_TerrainMaterialInstance"),
+		TEXT("AGX_TerrainMaterial"));
 
 	FCoreRedirects::AddRedirectList(Redirects, TEXT("AGXUnreal"));
-	*/
 }
 
 #undef LOCTEXT_NAMESPACE
