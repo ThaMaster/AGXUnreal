@@ -140,7 +140,7 @@ void FAGX_ImportUtilities::MakePackageAndAssetNameUnique(FString& PackageName, F
 	if (AssetName != WantedAssetName)
 	{
 		UE_LOG(
-			LogAGX, Warning, TEXT("Asset '%s' imported with name '%s' because of name conflict."),
+			LogAGX, Log, TEXT("Asset '%s' imported with name '%s' because of name conflict."),
 			*WantedAssetName, *AssetName);
 	}
 }
@@ -456,7 +456,7 @@ void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)
 	{
 		FName NewName = MakeUniqueObjectName(Object.GetOuter(), Object.GetClass(), FName(*Name));
 		UE_LOG(
-			LogAGX, Warning, TEXT("%s '%s' imported with name '%s' because of name conflict."),
+			LogAGX, Log, TEXT("%s '%s' imported with name '%s' because of name conflict."),
 			*Object.GetClass()->GetName(), *Name, *NewName.ToString());
 		Object.Rename(*NewName.ToString(), nullptr, REN_DontCreateRedirectors);
 	}
