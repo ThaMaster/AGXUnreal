@@ -150,8 +150,22 @@ void FTerrainBarrier::SetMaximumParticleActivationVolume(double MaximumParticleA
 double FTerrainBarrier::GetMaximumParticleActivationVolume() const
 {
 	check(HasNative());
-	return ConvertVolumeToUnreal<double>(
-		NativeRef->Native->getProperties()->getMaximumParticleActivationVolume());
+
+	static constexpr agx::Real AGX_TO_UNREAL_VOLUME_FACTOR =
+		AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> *
+		AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>;
+	static constexpr agx::Real MAX_VAL =
+		std::numeric_limits<agx::Real>::max() / AGX_TO_UNREAL_VOLUME_FACTOR;
+
+	const agx::Real VolumeAGX =
+		NativeRef->Native->getProperties()->getMaximumParticleActivationVolume();
+
+	// The default value for MaximumParticleActivationVolume is inf, which would cause overflow
+	// here. Therefore, we check for this explicitly.
+	if (VolumeAGX >= MAX_VAL)
+		return std::numeric_limits<agx::Real>::max();
+
+	return ConvertVolumeToUnreal<double>(VolumeAGX);
 }
 
 bool FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)
