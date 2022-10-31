@@ -140,6 +140,20 @@ double FTerrainBarrier::GetPenetrationForceVelocityScaling() const
 	return NativeRef->Native->getProperties()->getPenetrationForceVelocityScaling();
 }
 
+void FTerrainBarrier::SetMaximumParticleActivationVolume(double MaximumParticleActivationVolume)
+{
+	check(HasNative());
+	NativeRef->Native->getProperties()->setMaximumParticleActivationVolume(
+		ConvertVolumeToAGX(MaximumParticleActivationVolume));
+}
+
+double FTerrainBarrier::GetMaximumParticleActivationVolume() const
+{
+	check(HasNative());
+	return ConvertVolumeToUnreal<double>(
+		NativeRef->Native->getProperties()->getMaximumParticleActivationVolume());
+}
+
 bool FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)
 {
 	check(HasNative());

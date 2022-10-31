@@ -141,6 +141,27 @@ float AAGX_Terrain::GetPenetrationForceVelocityScaling() const
 	return PenetrationForceVelocityScaling;
 }
 
+
+double AAGX_Terrain::GetMaximumParticleActivationVolume() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetMaximumParticleActivationVolume();
+	}
+
+	return MaximumParticleActivationVolume;
+}
+
+void AAGX_Terrain::SetMaximumParticleActivationVolume_BP(float InMaximumParticleActivationVolume)
+{
+	SetMaximumParticleActivationVolume(static_cast<double>(InMaximumParticleActivationVolume));
+}
+
+float AAGX_Terrain::GetMaximumParticleActivationVolume_BP() const
+{
+	return static_cast<float>(GetMaximumParticleActivationVolume());
+}
+
 bool AAGX_Terrain::HasNative() const
 {
 	return NativeBarrier.HasNative();

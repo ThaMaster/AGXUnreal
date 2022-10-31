@@ -103,6 +103,21 @@ public:
 		EditAnywhere, Category = "AGX Terrain",
 		Meta = (ClampMin = "0", UIMin = "0", ClampMax = "1000", UIMax = "1000"))
 	float MaxDepth = 200.0f;
+	/**
+	 * Sets the maximum volume of active zone wedges that should wake particles [cm^3].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	FAGX_Real MaximumParticleActivationVolume = std::numeric_limits<double>::max();
+
+	void SetMaximumParticleActivationVolume(double InMaximumParticleActivationVolume);
+
+	double GetMaximumParticleActivationVolume() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	void SetMaximumParticleActivationVolume_BP(float InMaximumParticleActivationVolume);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	float GetMaximumParticleActivationVolume_BP() const;
 
 	/** The physical bulk, compaction, particle and surface properties of the Terrain. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Terrain")
