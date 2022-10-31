@@ -7,6 +7,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Math/UnrealMathUtility.h"
 
 #include "AGX_TerrainCompactionProperties.generated.h"
 
@@ -83,6 +84,16 @@ public:
 		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	FAGX_Real StressCutOffFraction;
+
+	/**
+	 * Set the dilatancy angle scaling factor with respect to compaction in the terrain. The
+	 * dilatancy angle modifies the effective local angle of friction in terrain by the following
+	 * formula:
+	 * eff_friction_angle = friction_angle + scalingFactor * ( voxelCompaction -
+	 * criticalCompaction )
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Compaction")
+	FAGX_Real DilatancyAngleScalingFactor {15.0 * PI / 180};
 
 public:
 	FAGX_TerrainCompactionProperties();

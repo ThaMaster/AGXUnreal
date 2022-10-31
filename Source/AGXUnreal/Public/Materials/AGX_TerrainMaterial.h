@@ -317,6 +317,20 @@ public:
 
 	virtual double GetStressCutOffFraction() const;
 
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Set Dilatancy Angle Scaling Factor"))
+	virtual void SetDilatancyAngleScalingFactor_BP(float DilatancyAngleScalingFactor);
+
+	virtual void SetDilatancyAngleScalingFactor(double DilatancyAngleScalingFactor);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Dilatancy Angle Scaling Factor"))
+	virtual float GetDilatancyAngleScalingFactor_BP() const;
+
+	virtual double GetDilatancyAngleScalingFactor() const;
+
 	void CopyFrom(const FTerrainMaterialBarrier& Source);
 
 	FTerrainMaterialBarrier* GetOrCreateTerrainMaterialNative(UWorld* PlayingWorld);

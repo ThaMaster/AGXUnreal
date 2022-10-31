@@ -83,6 +83,9 @@ public:
 	void SetStressCutOffFraction(double StressCutOffFraction);
 	double GetStressCutOffFraction() const;
 
+	void SetDilatancyAngleScalingFactor(double DilatancyAngleScalingFactor);
+	double GetDilatancyAngleScalingFactor() const;
+
 private:
 	FTerrainMaterialBarrier(const FTerrainMaterialBarrier&) = delete;
 	void operator=(const FTerrainMaterialBarrier&) = delete;
