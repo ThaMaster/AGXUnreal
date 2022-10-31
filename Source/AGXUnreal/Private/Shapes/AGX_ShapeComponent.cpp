@@ -76,8 +76,7 @@ void UAGX_ShapeComponent::UpdateVisualMesh()
 
 bool UAGX_ShapeComponent::ShouldCreateVisualMesh() const
 {
-	/// \todo add && !(bHiddenInGame && IsGamePlaying), but how to get IsGamePlaying?
-	return IsVisible();
+	return ShouldRender();
 }
 
 void UAGX_ShapeComponent::UpdateNativeProperties()
