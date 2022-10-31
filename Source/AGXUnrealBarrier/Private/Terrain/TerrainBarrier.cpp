@@ -2,15 +2,15 @@
 
 #include "Terrain/TerrainBarrier.h"
 
-// AGXUnrealBarrier includes.
-#include "AGX_LogCategory.h"
+// AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
-#include "Shapes/HeightFieldShapeBarrier.h"
-#include "TypeConversions.h"
-#include "Shapes/ShapeBarrierImpl.h"
-#include "Terrain/ShovelBarrier.h"
+#include "AGX_LogCategory.h"
 #include "Materials/TerrainMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "Shapes/HeightFieldShapeBarrier.h"
+#include "Shapes/ShapeBarrierImpl.h"
+#include "Terrain/ShovelBarrier.h"
+#include "TypeConversions.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"

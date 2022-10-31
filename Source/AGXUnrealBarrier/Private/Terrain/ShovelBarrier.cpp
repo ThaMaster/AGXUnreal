@@ -2,13 +2,11 @@
 
 #include "Terrain/ShovelBarrier.h"
 
-// AGXUnrealBarrier includes.
+// AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
-#include "TypeConversions.h"
-
-// AGX Dynamics includes.
 #include "agxTerrain/Shovel.h"
 #include "RigidBodyBarrier.h"
+#include "TypeConversions.h"
 
 // Unreal Engine includes.
 #include "Math/TwoVectors.h"

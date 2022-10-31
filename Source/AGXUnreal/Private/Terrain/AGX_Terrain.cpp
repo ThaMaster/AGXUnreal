@@ -5,24 +5,23 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
+#include "Shapes/HeightFieldShapeBarrier.h"
 #include "Terrain/AGX_CuttingDirectionComponent.h"
 #include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "Terrain/AGX_LandscapeSizeInfo.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
+#include "Terrain/ShovelBarrier.h"
+#include "Terrain/TerrainBarrier.h"
 #include "Utilities/AGX_HeightFieldUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
-
-// AGXUnrealBarrier includes.
-#include "Terrain/TerrainBarrier.h"
-#include "Shapes/HeightFieldShapeBarrier.h"
-#include "Terrain/ShovelBarrier.h"
 
 // Unreal Engine includes.
 #include "Landscape.h"
