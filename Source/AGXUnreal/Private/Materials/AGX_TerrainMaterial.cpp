@@ -560,8 +560,8 @@ void UAGX_TerrainMaterial::SetDilatancyAngleScalingFactor_BP(float DilatancyAngl
 void UAGX_TerrainMaterial::SetDilatancyAngleScalingFactor(double DilatancyAngleScalingFactor)
 {
 	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
-		TerrainCompaction.DilatancyAngleScalingFactor, DilatancyAngleScalingFactor, SetDilatancyAngleScalingFactor,
-		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+		TerrainCompaction.DilatancyAngleScalingFactor, DilatancyAngleScalingFactor,
+		SetDilatancyAngleScalingFactor, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetDilatancyAngleScalingFactor_BP() const
@@ -572,8 +572,8 @@ float UAGX_TerrainMaterial::GetDilatancyAngleScalingFactor_BP() const
 double UAGX_TerrainMaterial::GetDilatancyAngleScalingFactor() const
 {
 	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
-		TerrainCompaction.DilatancyAngleScalingFactor, GetDilatancyAngleScalingFactor, HasTerrainMaterialNative,
-		TerrainMaterialNativeBarrier);
+		TerrainCompaction.DilatancyAngleScalingFactor, GetDilatancyAngleScalingFactor,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
