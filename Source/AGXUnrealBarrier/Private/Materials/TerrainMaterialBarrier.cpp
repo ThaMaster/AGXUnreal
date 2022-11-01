@@ -303,6 +303,19 @@ double FTerrainMaterialBarrier::GetStressCutOffFraction() const
 	return NativeRef->Native->getCompactionProperties()->getStressCutOffFraction();
 }
 
+void FTerrainMaterialBarrier::SetDilatancyAngleScalingFactor(double DilatancyAngleScalingFactor)
+{
+	check(HasNative());
+	NativeRef->Native->getCompactionProperties()->setDilatancyAngleScalingFactor(
+		DilatancyAngleScalingFactor);
+}
+
+double FTerrainMaterialBarrier::GetDilatancyAngleScalingFactor() const
+{
+	check(HasNative());
+	return NativeRef->Native->getCompactionProperties()->getDilatancyAngleScalingFactor();
+}
+
 // Particle properties.
 void FTerrainMaterialBarrier::SetParticleAdhesionOverlapFactor(double ParticleAdhesionOverlapFactor)
 {
@@ -513,7 +526,7 @@ void FTerrainMaterialBarrier::SetMaximumContactDepth(double MaximumContactDepth)
 {
 	check(HasNative());
 	NativeRef->Native->getExcavationContactProperties()->setMaximumContactDepth(
-	 ConvertDistanceToAGX(MaximumContactDepth));
+		ConvertDistanceToAGX(MaximumContactDepth));
 }
 
 double FTerrainMaterialBarrier::GetMaximumContactDepth() const

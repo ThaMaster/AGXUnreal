@@ -85,6 +85,9 @@ public:
 	void SetStressCutOffFraction(double StressCutOffFraction);
 	double GetStressCutOffFraction() const;
 
+	void SetDilatancyAngleScalingFactor(double DilatancyAngleScalingFactor);
+	double GetDilatancyAngleScalingFactor() const;
+
 	// Particle properties.
 	void SetParticleAdhesionOverlapFactor(double ParticleAdhesionOverlapFactor);
 	double GetParticleAdhesionOverlapFactor() const;

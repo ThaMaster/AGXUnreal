@@ -266,9 +266,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Hardening Constant Ke"))
-	virtual void SetHardeningConstantKe_BP(float K_e);
+	virtual void SetHardeningConstantKe_BP(float Ke);
 
-	virtual void SetHardeningConstantKe(double K_e);
+	virtual void SetHardeningConstantKe(double Ke);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
@@ -280,9 +280,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Hardening Constant Ne"))
-	virtual void SetHardeningConstantNe_BP(float N_e);
+	virtual void SetHardeningConstantNe_BP(float Ne);
 
-	virtual void SetHardeningConstantNe(double N_e);
+	virtual void SetHardeningConstantNe(double Ne);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
@@ -318,6 +318,20 @@ public:
 	virtual float GetStressCutOffFraction_BP() const;
 
 	virtual double GetStressCutOffFraction() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Set Dilatancy Angle Scaling Factor"))
+	virtual void SetDilatancyAngleScalingFactor_BP(float DilatancyAngleScalingFactor);
+
+	virtual void SetDilatancyAngleScalingFactor(double DilatancyAngleScalingFactor);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Dilatancy Angle Scaling Factor"))
+	virtual float GetDilatancyAngleScalingFactor_BP() const;
+
+	virtual double GetDilatancyAngleScalingFactor() const;
 
 	// Particle properties.
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
@@ -564,6 +578,8 @@ public:
 	virtual float GetMaximumContactDepth_BP() const;
 
 	virtual double GetMaximumContactDepth() const;
+
+	virtual void Serialize(FArchive& Archive) override;
 
 	void CopyFrom(const FTerrainMaterialBarrier& Source);
 

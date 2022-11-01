@@ -47,6 +47,9 @@ public:
 	void SetPenetrationForceVelocityScaling(double PenetrationForceVelocityScaling);
 	double GetPenetrationForceVelocityScaling() const;
 
+	void SetMaximumParticleActivationVolume(double MaximumParticleActivationVolume);
+	double GetMaximumParticleActivationVolume() const;
+
 	bool AddShovel(FShovelBarrier& Shovel);
 	void SetShapeMaterial(const FShapeMaterialBarrier& Material);
 	void SetTerrainMaterial(const FTerrainMaterialBarrier& TerrainMaterial);
