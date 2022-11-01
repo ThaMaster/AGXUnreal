@@ -7,6 +7,7 @@
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/AGX_TerrainBulkProperties.h"
 #include "Materials/AGX_TerrainCompactionProperties.h"
+#include "Materials/AGX_TerrainParticleProperties.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/TerrainMaterialBarrier.h"
 
@@ -316,6 +317,164 @@ public:
 	virtual float GetStressCutOffFraction_BP() const;
 
 	virtual double GetStressCutOffFraction() const;
+
+	// Particle properties.
+	UPROPERTY(EditAnywhere, Category = "Material Properties")
+	FAGX_TerrainParticleProperties TerrainParticles;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Particle",
+		Meta = (DisplayName = "Set Particle Adhesion Overlap Factor"))
+	void SetParticleAdhesionOverlapFactor_BP(float ParticleAdhesionOverlapFactor);
+
+	void SetParticleAdhesionOverlapFactor(double ParticleAdhesionOverlapFactor);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Particle Adhesion Overlap Factor"))
+	virtual float GetParticleAdhesionOverlapFactor_BP() const;
+
+	virtual double GetParticleAdhesionOverlapFactor() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Particle",
+		Meta = (DisplayName = "Set Particle Cohesion"))
+	void SetParticleCohesion_BP(float ParticleCohesion);
+
+	void SetParticleCohesion(double ParticleCohesion);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Particle Cohesion"))
+	virtual float GetParticleCohesion_BP() const;
+
+	virtual double GetParticleCohesion() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Particle",
+		Meta = (DisplayName = "Set Particle Restitution"))
+	void SetParticleRestitution_BP(float ParticleRestitution);
+
+	void SetParticleRestitution(double ParticleRestitution);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Particle Restitution"))
+	virtual float GetParticleRestitution_BP() const;
+
+	virtual double GetParticleRestitution() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Particle",
+		Meta = (DisplayName = "Set Particle Rolling Resistance"))
+	void SetParticleRollingResistance_BP(float ParticleRollingResistance);
+
+	void SetParticleRollingResistance(double ParticleRollingResistance);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Particle Rolling Resistance"))
+	virtual float GetParticleRollingResistance_BP() const;
+
+	virtual double GetParticleRollingResistance() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Particle",
+		Meta = (DisplayName = "Set Particle Surface Friction"))
+	void SetParticleSurfaceFriction_BP(float ParticleSurfaceFriction);
+
+	void SetParticleSurfaceFriction(double ParticleSurfaceFriction);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Particle Surface Friction"))
+	virtual float GetParticleSurfaceFriction_BP() const;
+
+	virtual double GetParticleSurfaceFriction() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Particle",
+		Meta = (DisplayName = "Set Particle Terrain Cohesion"))
+	void SetParticleTerrainCohesion_BP(float ParticleTerrainCohesion);
+
+	void SetParticleTerrainCohesion(double ParticleTerrainCohesion);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Particle Terrain Cohesion"))
+	virtual float GetParticleTerrainCohesion_BP() const;
+
+	virtual double GetParticleTerrainCohesion() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Particle",
+		Meta = (DisplayName = "Set Particle Terrain Restitution"))
+	void SetParticleTerrainRestitution_BP(float ParticleTerrainRestitution);
+
+	void SetParticleTerrainRestitution(double ParticleTerrainRestitution);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Particle Terrain Restitution"))
+	virtual float GetParticleTerrainRestitution_BP() const;
+
+	virtual double GetParticleTerrainRestitution() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Particle",
+		Meta = (DisplayName = "Set Particle Terrain Rolling Resistance"))
+	void SetParticleTerrainRollingResistance_BP(float ParticleTerrainRollingResistance);
+
+	void SetParticleTerrainRollingResistance(double ParticleTerrainRollingResistance);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Particle Terrain Rolling Resistance"))
+	virtual float GetParticleTerrainRollingResistance_BP() const;
+
+	virtual double GetParticleTerrainRollingResistance() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Particle",
+		Meta = (DisplayName = "Set Particle Terrain Surface Friction"))
+	void SetParticleTerrainSurfaceFriction_BP(float ParticleTerrainSurfaceFriction);
+
+	void SetParticleTerrainSurfaceFriction(double ParticleTerrainSurfaceFriction);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Particle Terrain Surface Friction"))
+	virtual float GetParticleTerrainSurfaceFriction_BP() const;
+
+	virtual double GetParticleTerrainSurfaceFriction() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Particle",
+		Meta = (DisplayName = "Set Particle Terrain Youngs Modulus"))
+	void SetParticleTerrainYoungsModulus_BP(float ParticleTerrainYoungsModulus);
+
+	void SetParticleTerrainYoungsModulus(double ParticleTerrainYoungsModulus);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Particle Terrain Youngs Modulus"))
+	virtual float GetParticleTerrainYoungsModulus_BP() const;
+
+	virtual double GetParticleTerrainYoungsModulus() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Particle",
+		Meta = (DisplayName = "Set Particle Youngs Modulus"))
+	void SetParticleYoungsModulus_BP(float ParticleYoungsModulus);
+
+	void SetParticleYoungsModulus(double ParticleYoungsModulus);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Compaction",
+		Meta = (DisplayName = "Get Particle Youngs Modulus"))
+	virtual float GetParticleYoungsModulus_BP() const;
+
+	virtual double GetParticleYoungsModulus() const;
 
 	void CopyFrom(const FTerrainMaterialBarrier& Source);
 

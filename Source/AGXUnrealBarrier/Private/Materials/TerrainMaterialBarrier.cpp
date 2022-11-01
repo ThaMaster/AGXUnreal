@@ -302,3 +302,144 @@ double FTerrainMaterialBarrier::GetStressCutOffFraction() const
 	check(HasNative());
 	return NativeRef->Native->getCompactionProperties()->getStressCutOffFraction();
 }
+
+// Particle properties.
+void FTerrainMaterialBarrier::SetParticleAdhesionOverlapFactor(double ParticleAdhesionOverlapFactor)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setAdhesionOverlapFactor(
+		ParticleAdhesionOverlapFactor);
+}
+
+double FTerrainMaterialBarrier::GetParticleAdhesionOverlapFactor() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getAdhesionOverlapFactor();
+}
+
+void FTerrainMaterialBarrier::SetParticleCohesion(double ParticleCohesion)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleCohesion(ParticleCohesion);
+}
+
+double FTerrainMaterialBarrier::GetParticleCohesion() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleCohesion();
+}
+
+void FTerrainMaterialBarrier::SetParticleRestitution(double ParticleRestitution)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleRestitution(ParticleRestitution);
+}
+
+double FTerrainMaterialBarrier::GetParticleRestitution() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleRestitution();
+}
+
+void FTerrainMaterialBarrier::SetParticleRollingResistance(double ParticleRollingResistance)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleRollingResistance(
+		ParticleRollingResistance);
+}
+
+double FTerrainMaterialBarrier::GetParticleRollingResistance() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleRollingResistance();
+}
+
+void FTerrainMaterialBarrier::SetParticleSurfaceFriction(double ParticleSurfaceFriction)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleSurfaceFriction(ParticleSurfaceFriction);
+}
+
+double FTerrainMaterialBarrier::GetParticleSurfaceFriction() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleSurfaceFriction();
+}
+
+void FTerrainMaterialBarrier::SetParticleTerrainCohesion(double ParticleTerrainCohesion)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleTerrainCohesion(ParticleTerrainCohesion);
+}
+
+double FTerrainMaterialBarrier::GetParticleTerrainCohesion() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleTerrainCohesion();
+}
+
+void FTerrainMaterialBarrier::SetParticleTerrainRestitution(double ParticleTerrainRestitution)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleTerrainRestitution(
+		ParticleTerrainRestitution);
+}
+
+double FTerrainMaterialBarrier::GetParticleTerrainRestitution() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleTerrainRestitution();
+}
+
+void FTerrainMaterialBarrier::SetParticleTerrainRollingResistance(
+	double ParticleTerrainRollingResistance)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleTerrainRollingResistance(
+		ParticleTerrainRollingResistance);
+}
+
+double FTerrainMaterialBarrier::GetParticleTerrainRollingResistance() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleTerrainRollingResistance();
+}
+
+void FTerrainMaterialBarrier::SetParticleTerrainSurfaceFriction(
+	double ParticleTerrainSurfaceFriction)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleTerrainSurfaceFriction(
+		ParticleTerrainSurfaceFriction);
+}
+
+double FTerrainMaterialBarrier::GetParticleTerrainSurfaceFriction() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleTerrainSurfaceFriction();
+}
+
+void FTerrainMaterialBarrier::SetParticleTerrainYoungsModulus(double ParticleTerrainYoungsModulus)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleTerrainYoungsModulus(
+		ParticleTerrainYoungsModulus);
+}
+
+double FTerrainMaterialBarrier::GetParticleTerrainYoungsModulus() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleTerrainYoungsModulus();
+}
+
+void FTerrainMaterialBarrier::SetParticleYoungsModulus(double ParticleYoungsModulus)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleYoungsModulus(ParticleYoungsModulus);
+}
+
+double FTerrainMaterialBarrier::GetParticleYoungsModulus() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleYoungsModulus();
+}

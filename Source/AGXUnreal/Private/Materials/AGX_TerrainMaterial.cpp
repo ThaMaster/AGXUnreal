@@ -552,6 +552,275 @@ double UAGX_TerrainMaterial::GetStressCutOffFraction() const
 		TerrainMaterialNativeBarrier);
 }
 
+// Particle properties.
+void UAGX_TerrainMaterial::SetParticleAdhesionOverlapFactor_BP(float ParticleAdhesionOverlapFactor)
+{
+	SetParticleAdhesionOverlapFactor(static_cast<double>(ParticleAdhesionOverlapFactor));
+}
+
+void UAGX_TerrainMaterial::SetParticleAdhesionOverlapFactor(double ParticleAdhesionOverlapFactor)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleAdhesionOverlapFactor, ParticleAdhesionOverlapFactor,
+		SetParticleAdhesionOverlapFactor, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetParticleAdhesionOverlapFactor_BP() const
+{
+	return static_cast<float>(GetParticleAdhesionOverlapFactor());
+}
+
+double UAGX_TerrainMaterial::GetParticleAdhesionOverlapFactor() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleAdhesionOverlapFactor, GetParticleAdhesionOverlapFactor,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetParticleCohesion_BP(float ParticleCohesion)
+{
+	SetParticleCohesion(static_cast<double>(ParticleCohesion));
+}
+
+void UAGX_TerrainMaterial::SetParticleCohesion(double ParticleCohesion)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleCohesion, ParticleCohesion, SetParticleCohesion,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetParticleCohesion_BP() const
+{
+	return static_cast<float>(GetParticleCohesion());
+}
+
+double UAGX_TerrainMaterial::GetParticleCohesion() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleCohesion, GetParticleCohesion, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetParticleRestitution_BP(float ParticleRestitution)
+{
+	SetParticleRestitution(static_cast<double>(ParticleRestitution));
+}
+
+void UAGX_TerrainMaterial::SetParticleRestitution(double ParticleRestitution)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleRestitution, ParticleRestitution, SetParticleRestitution,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetParticleRestitution_BP() const
+{
+	return static_cast<float>(GetParticleRestitution());
+}
+
+double UAGX_TerrainMaterial::GetParticleRestitution() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleRestitution, GetParticleRestitution, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetParticleRollingResistance_BP(float ParticleRollingResistance)
+{
+	SetParticleRollingResistance(static_cast<double>(ParticleRollingResistance));
+}
+
+void UAGX_TerrainMaterial::SetParticleRollingResistance(double ParticleRollingResistance)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleRollingResistance, ParticleRollingResistance,
+		SetParticleRollingResistance, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetParticleRollingResistance_BP() const
+{
+	return static_cast<float>(GetParticleRollingResistance());
+}
+
+double UAGX_TerrainMaterial::GetParticleRollingResistance() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleRollingResistance, GetParticleRollingResistance,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetParticleSurfaceFriction_BP(float ParticleSurfaceFriction)
+{
+	SetParticleSurfaceFriction(static_cast<double>(ParticleSurfaceFriction));
+}
+
+void UAGX_TerrainMaterial::SetParticleSurfaceFriction(double ParticleSurfaceFriction)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleSurfaceFriction, ParticleSurfaceFriction,
+		SetParticleSurfaceFriction, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetParticleSurfaceFriction_BP() const
+{
+	return static_cast<float>(GetParticleSurfaceFriction());
+}
+
+double UAGX_TerrainMaterial::GetParticleSurfaceFriction() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleSurfaceFriction, GetParticleSurfaceFriction,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetParticleTerrainCohesion_BP(float ParticleTerrainCohesion)
+{
+	SetParticleTerrainCohesion(static_cast<double>(ParticleTerrainCohesion));
+}
+
+void UAGX_TerrainMaterial::SetParticleTerrainCohesion(double ParticleTerrainCohesion)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleTerrainCohesion, ParticleTerrainCohesion,
+		SetParticleTerrainCohesion, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetParticleTerrainCohesion_BP() const
+{
+	return static_cast<float>(GetParticleTerrainCohesion());
+}
+
+double UAGX_TerrainMaterial::GetParticleTerrainCohesion() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleTerrainCohesion, GetParticleTerrainCohesion,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetParticleTerrainRestitution_BP(float ParticleTerrainRestitution)
+{
+	SetParticleTerrainRestitution(static_cast<double>(ParticleTerrainRestitution));
+}
+
+void UAGX_TerrainMaterial::SetParticleTerrainRestitution(double ParticleTerrainRestitution)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleTerrainRestitution, ParticleTerrainRestitution,
+		SetParticleTerrainRestitution, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetParticleTerrainRestitution_BP() const
+{
+	return static_cast<float>(GetParticleTerrainRestitution());
+}
+
+double UAGX_TerrainMaterial::GetParticleTerrainRestitution() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleTerrainRestitution, GetParticleTerrainRestitution,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetParticleTerrainRollingResistance_BP(
+	float ParticleTerrainRollingResistance)
+{
+	SetParticleTerrainRollingResistance(static_cast<double>(ParticleTerrainRollingResistance));
+}
+
+void UAGX_TerrainMaterial::SetParticleTerrainRollingResistance(
+	double ParticleTerrainRollingResistance)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleTerrainRollingResistance, ParticleTerrainRollingResistance,
+		SetParticleTerrainRollingResistance, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetParticleTerrainRollingResistance_BP() const
+{
+	return static_cast<float>(GetParticleTerrainRollingResistance());
+}
+
+double UAGX_TerrainMaterial::GetParticleTerrainRollingResistance() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleTerrainRollingResistance, GetParticleTerrainRollingResistance,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetParticleTerrainSurfaceFriction_BP(
+	float ParticleTerrainSurfaceFriction)
+{
+	SetParticleTerrainSurfaceFriction(static_cast<double>(ParticleTerrainSurfaceFriction));
+}
+
+void UAGX_TerrainMaterial::SetParticleTerrainSurfaceFriction(double ParticleTerrainSurfaceFriction)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleTerrainSurfaceFriction, ParticleTerrainSurfaceFriction,
+		SetParticleTerrainSurfaceFriction, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetParticleTerrainSurfaceFriction_BP() const
+{
+	return static_cast<float>(GetParticleTerrainSurfaceFriction());
+}
+
+double UAGX_TerrainMaterial::GetParticleTerrainSurfaceFriction() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleTerrainSurfaceFriction, GetParticleTerrainSurfaceFriction,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetParticleTerrainYoungsModulus_BP(float ParticleTerrainYoungsModulus)
+{
+	SetParticleTerrainYoungsModulus(static_cast<double>(ParticleTerrainYoungsModulus));
+}
+
+void UAGX_TerrainMaterial::SetParticleTerrainYoungsModulus(double ParticleTerrainYoungsModulus)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleTerrainYoungsModulus, ParticleTerrainYoungsModulus,
+		SetParticleTerrainYoungsModulus, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetParticleTerrainYoungsModulus_BP() const
+{
+	return static_cast<float>(GetParticleTerrainYoungsModulus());
+}
+
+double UAGX_TerrainMaterial::GetParticleTerrainYoungsModulus() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleTerrainYoungsModulus, GetParticleTerrainYoungsModulus,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetParticleYoungsModulus_BP(float ParticleYoungsModulus)
+{
+	SetParticleYoungsModulus(static_cast<double>(ParticleYoungsModulus));
+}
+
+void UAGX_TerrainMaterial::SetParticleYoungsModulus(double ParticleYoungsModulus)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleYoungsModulus, ParticleYoungsModulus, SetParticleYoungsModulus,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetParticleYoungsModulus_BP() const
+{
+	return static_cast<float>(GetParticleYoungsModulus());
+}
+
+double UAGX_TerrainMaterial::GetParticleYoungsModulus() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainParticles.ParticleYoungsModulus, GetParticleYoungsModulus, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
+}
+
 void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 {
 	TerrainBulk = FAGX_TerrainBulkProperties();
@@ -575,6 +844,20 @@ void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 	TerrainCompaction.N_e = Source.GetHardeningConstantNe();
 	TerrainCompaction.PreconsolidationStress = Source.GetPreconsolidationStress();
 	TerrainCompaction.StressCutOffFraction = Source.GetStressCutOffFraction();
+
+	TerrainParticles = FAGX_TerrainParticleProperties();
+	TerrainParticles.ParticleAdhesionOverlapFactor = Source.GetParticleAdhesionOverlapFactor();
+	TerrainParticles.ParticleCohesion = Source.GetParticleCohesion();
+	TerrainParticles.ParticleRestitution = Source.GetParticleRestitution();
+	TerrainParticles.ParticleRollingResistance = Source.GetParticleRollingResistance();
+	TerrainParticles.ParticleSurfaceFriction = Source.GetParticleSurfaceFriction();
+	TerrainParticles.ParticleTerrainCohesion = Source.GetParticleTerrainCohesion();
+	TerrainParticles.ParticleTerrainRestitution = Source.GetParticleTerrainRestitution();
+	TerrainParticles.ParticleTerrainRollingResistance =
+		Source.GetParticleTerrainRollingResistance();
+	TerrainParticles.ParticleTerrainSurfaceFriction = Source.GetParticleTerrainSurfaceFriction();
+	TerrainParticles.ParticleTerrainYoungsModulus = Source.GetParticleTerrainYoungsModulus();
+	TerrainParticles.ParticleYoungsModulus = Source.GetParticleYoungsModulus();
 }
 
 void UAGX_TerrainMaterial::CopyTerrainMaterialProperties(const UAGX_TerrainMaterial* Source)
@@ -790,6 +1073,106 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 		{
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
 				TerrainCompaction.StressCutOffFraction, SetStressCutOffFraction)
+		});
+
+	// Particle properties.
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleAdhesionOverlapFactor),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainParticles.ParticleAdhesionOverlapFactor, SetParticleAdhesionOverlapFactor)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleCohesion),
+		[](ThisClass* This) {
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainParticles.ParticleCohesion, SetParticleCohesion)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleRestitution),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainParticles.ParticleRestitution, SetParticleRestitution)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleRollingResistance),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainParticles.ParticleRollingResistance, SetParticleRollingResistance)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleSurfaceFriction),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainParticles.ParticleSurfaceFriction, SetParticleSurfaceFriction)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleTerrainCohesion),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainParticles.ParticleTerrainCohesion, SetParticleTerrainCohesion)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleTerrainRestitution),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainParticles.ParticleTerrainRestitution, SetParticleTerrainRestitution)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleTerrainRollingResistance),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainParticles.ParticleTerrainRollingResistance,
+				SetParticleTerrainRollingResistance)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleTerrainSurfaceFriction),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainParticles.ParticleTerrainSurfaceFriction, SetParticleTerrainSurfaceFriction)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleTerrainYoungsModulus),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainParticles.ParticleTerrainYoungsModulus, SetParticleTerrainYoungsModulus)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleYoungsModulus),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainParticles.ParticleYoungsModulus, SetParticleYoungsModulus)
 		});
 }
 #endif
@@ -1008,6 +1391,20 @@ void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
 			TerrainCompaction.PreconsolidationStress);
 		TerrainMaterialNativeBarrier.SetStressCutOffFraction(
 			TerrainCompaction.StressCutOffFraction);
+
+		// Set Particle properties.
+		TerrainMaterialNativeBarrier.SetParticleAdhesionOverlapFactor(
+			TerrainParticles.ParticleAdhesionOverlapFactor);
+		TerrainMaterialNativeBarrier.SetParticleCohesion(TerrainParticles.ParticleCohesion);
+		TerrainMaterialNativeBarrier.SetParticleRestitution(TerrainParticles.ParticleRestitution);
+		TerrainMaterialNativeBarrier.SetParticleRollingResistance(TerrainParticles.ParticleRollingResistance);
+		TerrainMaterialNativeBarrier.SetParticleSurfaceFriction(TerrainParticles.ParticleSurfaceFriction);
+		TerrainMaterialNativeBarrier.SetParticleTerrainCohesion(TerrainParticles.ParticleTerrainCohesion);
+		TerrainMaterialNativeBarrier.SetParticleTerrainRestitution(TerrainParticles.ParticleTerrainRestitution);
+		TerrainMaterialNativeBarrier.SetParticleTerrainRollingResistance(TerrainParticles.ParticleTerrainRollingResistance);
+		TerrainMaterialNativeBarrier.SetParticleTerrainSurfaceFriction(TerrainParticles.ParticleTerrainSurfaceFriction);
+		TerrainMaterialNativeBarrier.SetParticleTerrainYoungsModulus(TerrainParticles.ParticleTerrainYoungsModulus);
+		TerrainMaterialNativeBarrier.SetParticleYoungsModulus(TerrainParticles.ParticleYoungsModulus);
 	}
 }
 

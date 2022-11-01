@@ -2,9 +2,11 @@
 
 #pragma once
 
-#include <memory>
-
+// Unreal Engine includes.
 #include "Containers/UnrealString.h"
+
+// Standard library includes.
+#include <memory>
 
 struct FTerrainMaterialRef;
 
@@ -30,7 +32,7 @@ public:
 	void SetName(const FString& Name);
 	FString GetName() const;
 
-	// Bulk properties
+	// Bulk properties.
 	void SetAdhesionOverlapFactor(double AdhesionOverlapFactor);
 	double GetAdhesionOverlapFactor() const;
 
@@ -58,7 +60,7 @@ public:
 	void SetYoungsModulus(double YoungsModulus);
 	double GetYoungsModulus() const;
 
-	// Compaction properties
+	// Compaction properties.
 	void SetAngleOfReposeCompactionRate(double AngleOfReposeCompactionRate);
 	double GetAngleOfReposeCompactionRate() const;
 
@@ -82,6 +84,40 @@ public:
 
 	void SetStressCutOffFraction(double StressCutOffFraction);
 	double GetStressCutOffFraction() const;
+
+	// Particle properties.
+	void SetParticleAdhesionOverlapFactor(double ParticleAdhesionOverlapFactor);
+	double GetParticleAdhesionOverlapFactor() const;
+
+	void SetParticleCohesion(double ParticleCohesion);
+	double GetParticleCohesion() const;
+
+	void SetParticleRestitution(double ParticleRestitution);
+	double GetParticleRestitution() const;
+
+	void SetParticleRollingResistance(double ParticleRollingResistance);
+	double GetParticleRollingResistance() const;
+
+	void SetParticleSurfaceFriction(double ParticleSurfaceFriction);
+	double GetParticleSurfaceFriction() const;
+
+	void SetParticleTerrainCohesion(double ParticleTerrainCohesion);
+	double GetParticleTerrainCohesion() const;
+
+	void SetParticleTerrainRestitution(double ParticleTerrainRestitution);
+	double GetParticleTerrainRestitution() const;
+
+	void SetParticleTerrainRollingResistance(double ParticleTerrainRollingResistance);
+	double GetParticleTerrainRollingResistance() const;
+
+	void SetParticleTerrainSurfaceFriction(double ParticleTerrainSurfaceFriction);
+	double GetParticleTerrainSurfaceFriction() const;
+
+	void SetParticleTerrainYoungsModulus(double ParticleTerrainYoungsModulus);
+	double GetParticleTerrainYoungsModulus() const;
+
+	void SetParticleYoungsModulus(double ParticleYoungsModulus);
+	double GetParticleYoungsModulus() const;
 
 private:
 	FTerrainMaterialBarrier(const FTerrainMaterialBarrier&) = delete;
