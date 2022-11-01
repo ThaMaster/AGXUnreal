@@ -561,7 +561,7 @@ void UAGX_TerrainMaterial::SetParticleAdhesionOverlapFactor_BP(float ParticleAdh
 void UAGX_TerrainMaterial::SetParticleAdhesionOverlapFactor(double ParticleAdhesionOverlapFactor)
 {
 	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
-		TerrainParticles.ParticleAdhesionOverlapFactor, ParticleAdhesionOverlapFactor,
+		TerrainParticles.AdhesionOverlapFactor, ParticleAdhesionOverlapFactor,
 		SetParticleAdhesionOverlapFactor, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
@@ -573,7 +573,7 @@ float UAGX_TerrainMaterial::GetParticleAdhesionOverlapFactor_BP() const
 double UAGX_TerrainMaterial::GetParticleAdhesionOverlapFactor() const
 {
 	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
-		TerrainParticles.ParticleAdhesionOverlapFactor, GetParticleAdhesionOverlapFactor,
+		TerrainParticles.AdhesionOverlapFactor, GetParticleAdhesionOverlapFactor,
 		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
@@ -846,7 +846,7 @@ void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 	TerrainCompaction.StressCutOffFraction = Source.GetStressCutOffFraction();
 
 	TerrainParticles = FAGX_TerrainParticleProperties();
-	TerrainParticles.ParticleAdhesionOverlapFactor = Source.GetParticleAdhesionOverlapFactor();
+	TerrainParticles.AdhesionOverlapFactor = Source.GetParticleAdhesionOverlapFactor();
 	TerrainParticles.ParticleCohesion = Source.GetParticleCohesion();
 	TerrainParticles.ParticleRestitution = Source.GetParticleRestitution();
 	TerrainParticles.ParticleRollingResistance = Source.GetParticleRollingResistance();
@@ -1078,11 +1078,11 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 	// Particle properties.
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
-		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleAdhesionOverlapFactor),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, AdhesionOverlapFactor),
 		[](ThisClass* This)
 		{
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
-				TerrainParticles.ParticleAdhesionOverlapFactor, SetParticleAdhesionOverlapFactor)
+				TerrainParticles.AdhesionOverlapFactor, SetParticleAdhesionOverlapFactor)
 		});
 
 	PropertyDispatcher.Add(
@@ -1394,7 +1394,7 @@ void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
 
 		// Set Particle properties.
 		TerrainMaterialNativeBarrier.SetParticleAdhesionOverlapFactor(
-			TerrainParticles.ParticleAdhesionOverlapFactor);
+			TerrainParticles.AdhesionOverlapFactor);
 		TerrainMaterialNativeBarrier.SetParticleCohesion(TerrainParticles.ParticleCohesion);
 		TerrainMaterialNativeBarrier.SetParticleRestitution(TerrainParticles.ParticleRestitution);
 		TerrainMaterialNativeBarrier.SetParticleRollingResistance(TerrainParticles.ParticleRollingResistance);

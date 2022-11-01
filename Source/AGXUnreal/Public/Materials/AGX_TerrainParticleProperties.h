@@ -26,7 +26,7 @@ public:
 	 * radius is allowed to overlap to simulate adhesion.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Particle")
-	FAGX_Real ParticleAdhesionOverlapFactor {0.05};
+	FAGX_Real AdhesionOverlapFactor {0.05};
 
 	/**
 	 * The particle cohesion of the bulk material [Pa].
