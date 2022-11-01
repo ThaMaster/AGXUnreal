@@ -589,7 +589,7 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus) const
 		return true;
 	}
 
-	// License is not valid. Attempt to unlock using a legacy license file (.agx) in the plugin's
+	// License is not valid. Attempt to unlock using a legacy license file (.lic) in the plugin's
 	// license directory that might have been put there recently by the user.
 	if (!TryUnlockAgxDynamicsLegacyLicense())
 	{
