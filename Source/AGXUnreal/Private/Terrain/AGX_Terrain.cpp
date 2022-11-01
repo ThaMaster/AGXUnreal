@@ -5,24 +5,23 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
+#include "Shapes/HeightFieldShapeBarrier.h"
 #include "Terrain/AGX_CuttingDirectionComponent.h"
 #include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "Terrain/AGX_LandscapeSizeInfo.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
+#include "Terrain/ShovelBarrier.h"
+#include "Terrain/TerrainBarrier.h"
 #include "Utilities/AGX_HeightFieldUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
-
-// AGXUnrealBarrier includes.
-#include "Terrain/TerrainBarrier.h"
-#include "Shapes/HeightFieldShapeBarrier.h"
-#include "Terrain/ShovelBarrier.h"
 
 // Unreal Engine includes.
 #include "Landscape.h"
@@ -121,25 +120,64 @@ bool AAGX_Terrain::GetDeleteParticlesOutsideBounds() const
 	return bDeleteParticlesOutsideBounds;
 }
 
-void AAGX_Terrain::SetPenetrationForceVelocityScaling(float InPenetrationForceVelocityScaling)
+void AAGX_Terrain::SetPenetrationForceVelocityScaling(double InPenetrationForceVelocityScaling)
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetPenetrationForceVelocityScaling(
-			static_cast<double>(InPenetrationForceVelocityScaling));
+		NativeBarrier.SetPenetrationForceVelocityScaling(InPenetrationForceVelocityScaling);
 	}
 
 	PenetrationForceVelocityScaling = InPenetrationForceVelocityScaling;
 }
 
-float AAGX_Terrain::GetPenetrationForceVelocityScaling() const
+double AAGX_Terrain::GetPenetrationForceVelocityScaling() const
 {
 	if (HasNative())
 	{
-		return static_cast<float>(NativeBarrier.GetPenetrationForceVelocityScaling());
+		return NativeBarrier.GetPenetrationForceVelocityScaling();
 	}
 
 	return PenetrationForceVelocityScaling;
+}
+
+void AAGX_Terrain::SetPenetrationForceVelocityScaling_BP(float InPenetrationForceVelocityScaling)
+{
+	SetPenetrationForceVelocityScaling(static_cast<double>(InPenetrationForceVelocityScaling));
+}
+
+float AAGX_Terrain::GetPenetrationForceVelocityScaling_BP() const
+{
+	return static_cast<float>(GetPenetrationForceVelocityScaling());
+}
+
+void AAGX_Terrain::SetMaximumParticleActivationVolume(double InMaximumParticleActivationVolume)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetMaximumParticleActivationVolume(InMaximumParticleActivationVolume);
+	}
+
+	MaximumParticleActivationVolume = InMaximumParticleActivationVolume;
+}
+
+double AAGX_Terrain::GetMaximumParticleActivationVolume() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetMaximumParticleActivationVolume();
+	}
+
+	return MaximumParticleActivationVolume;
+}
+
+void AAGX_Terrain::SetMaximumParticleActivationVolume_BP(float InMaximumParticleActivationVolume)
+{
+	SetMaximumParticleActivationVolume(static_cast<double>(InMaximumParticleActivationVolume));
+}
+
+float AAGX_Terrain::GetMaximumParticleActivationVolume_BP() const
+{
+	return static_cast<float>(GetMaximumParticleActivationVolume());
 }
 
 bool AAGX_Terrain::HasNative() const
@@ -168,31 +206,42 @@ const FTerrainBarrier* AAGX_Terrain::GetNative() const
 }
 
 #if WITH_EDITOR
-void AAGX_Terrain::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void AAGX_Terrain::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
+	Super::PostEditChangeChainProperty(Event);
+}
 
-	FName PropertyName = (PropertyChangedEvent.Property != nullptr)
-							 ? PropertyChangedEvent.Property->GetFName()
-							 : NAME_None;
-	if ((PropertyName == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, SourceLandscape)))
+void AAGX_Terrain::PostInitProperties()
+{
+	Super::PostInitProperties();
+	InitPropertyDispatcher();
+}
+
+void AAGX_Terrain::InitPropertyDispatcher()
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
 	{
-		if (SourceLandscape == nullptr)
-		{
-			return;
-		}
-
-		FAGX_LandscapeSizeInfo LandscapeSizeInfo(*SourceLandscape);
-		const int32 QuadCountX = LandscapeSizeInfo.NumQuadsSideX;
-		const int32 QuadCountY = LandscapeSizeInfo.NumQuadsSideY;
-		const float QuadSizeX = LandscapeSizeInfo.QuadSideSizeX;
-		const float QuadSizeY = LandscapeSizeInfo.QuadSideSizeY;
-		const float SizeX = QuadSizeX * QuadCountX;
-		const float SizeY = QuadSizeY * QuadCountY;
-		UE_LOG(
-			LogAGX, Display, TEXT("Selected %fcm x %fcm Landscape containing %d x %d quads."),
-			SizeX, SizeY, QuadCountX, QuadCountY);
+		return;
 	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, bCreateParticles),
+		[](ThisClass* This) { This->SetCreateParticles(This->bCreateParticles); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, bDeleteParticlesOutsideBounds), [](ThisClass* This)
+		{ This->SetDeleteParticlesOutsideBounds(This->bDeleteParticlesOutsideBounds); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, PenetrationForceVelocityScaling), [](ThisClass* This)
+		{ This->SetPenetrationForceVelocityScaling(This->PenetrationForceVelocityScaling); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, MaximumParticleActivationVolume), [](ThisClass* This)
+		{ This->SetMaximumParticleActivationVolume(This->MaximumParticleActivationVolume); });
 }
 #endif
 
@@ -331,13 +380,13 @@ void AAGX_Terrain::InitializeNative()
 
 	CreateNativeShovels();
 	InitializeRendering();
-	
+
 	if (!UpdateNativeMaterial())
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("UpdateNativeMaterial returned false in AGX_Terrain. "
-				"Ensure the selected Terrain Material is valid."));
+				 "Ensure the selected Terrain Material is valid."));
 	}
 }
 
@@ -363,8 +412,8 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	OriginalHeights = NativeBarrier.GetHeights();
 	NativeBarrier.SetCreateParticles(bCreateParticles);
 	NativeBarrier.SetDeleteParticlesOutsideBounds(bDeleteParticlesOutsideBounds);
-	NativeBarrier.SetPenetrationForceVelocityScaling(
-		static_cast<double>(PenetrationForceVelocityScaling));
+	NativeBarrier.SetPenetrationForceVelocityScaling(PenetrationForceVelocityScaling);
+	NativeBarrier.SetMaximumParticleActivationVolume(MaximumParticleActivationVolume);
 
 	// Create the AGX Dynamics instance for the terrain.
 	// Note that the AGX Dynamics Terrain messes with the solver parameters on add, parameters that
@@ -509,7 +558,7 @@ void AAGX_Terrain::SetInitialTransform()
 	std::tuple<FVector, FQuat> PosRot =
 		AGX_HeightFieldUtilities::GetTerrainPositionAndRotationFrom(*SourceLandscape);
 	NativeBarrier.SetPosition(std::get<0>(PosRot));
-	NativeBarrier.SetRotation(std::get<1>(PosRot));	
+	NativeBarrier.SetRotation(std::get<1>(PosRot));
 }
 
 void AAGX_Terrain::InitializeRendering()
@@ -540,8 +589,7 @@ bool AAGX_Terrain::UpdateNativeMaterial()
 
 	// Set TerrainMaterial
 	UAGX_TerrainMaterial* TerrainMaterialInstance =
-		static_cast<UAGX_TerrainMaterial*>(
-			TerrainMaterial->GetOrCreateInstance(GetWorld()));
+		static_cast<UAGX_TerrainMaterial*>(TerrainMaterial->GetOrCreateInstance(GetWorld()));
 	check(TerrainMaterialInstance);
 
 	if (TerrainMaterial != TerrainMaterialInstance)

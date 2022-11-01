@@ -143,6 +143,16 @@ inline TU ConvertAreaToUnreal(agx::Real D2)
 }
 
 template <typename TU>
+inline TU ConvertVolumeToUnreal(agx::Real D3)
+{
+	static constexpr agx::Real AGX_TO_UNREAL_VOLUME_FACTOR =
+		AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> * AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real> *
+		AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>;
+
+	return static_cast<TU>(D3 * AGX_TO_UNREAL_VOLUME_FACTOR);
+}
+
+template <typename TU>
 inline TU ConvertDistanceInvToUnreal(agx::Real DInv)
 {
 	return static_cast<TU>(DInv / AGX_TO_UNREAL_DISTANCE_FACTOR<agx::Real>);
@@ -202,6 +212,16 @@ inline agx::Real ConvertAreaToAGX(TU D2)
 {
 	return static_cast<agx::Real>(D2) * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
 		   UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+}
+
+template <typename TU>
+inline agx::Real ConvertVolumeToAGX(TU D3)
+{
+	static constexpr agx::Real UNREAL_TO_AGX_VOLUME_FACTOR =
+		UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> * UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real> *
+		UNREAL_TO_AGX_DISTANCE_FACTOR<agx::Real>;
+
+	return static_cast<agx::Real>(D3) * UNREAL_TO_AGX_VOLUME_FACTOR;
 }
 
 template <typename TU>

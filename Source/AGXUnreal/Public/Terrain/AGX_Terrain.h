@@ -59,7 +59,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	ALandscape* SourceLandscape;
 
-	/** Whether the native terrain simulation should generate soild particles or not. */
+	/** Whether the native terrain should generate particles or not during shovel interactions. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	bool bCreateParticles = true;
 
@@ -85,13 +85,17 @@ public:
 	 * direction according to: ( 1.0 + C * v^2 ).
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
-	float PenetrationForceVelocityScaling = 0.0f;
+	FAGX_Real PenetrationForceVelocityScaling = 0.0f;
+
+	void SetPenetrationForceVelocityScaling(double InPenetrationForceVelocityScaling);
+
+	double GetPenetrationForceVelocityScaling() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
-	void SetPenetrationForceVelocityScaling(float InPenetrationForceVelocityScaling);
+	void SetPenetrationForceVelocityScaling_BP(float InPenetrationForceVelocityScaling);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
-	float GetPenetrationForceVelocityScaling() const;
+	float GetPenetrationForceVelocityScaling_BP() const;
 
 	/**
 	 * The maximum depth of the terrain, from local origin [cm].
@@ -102,7 +106,23 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain",
 		Meta = (ClampMin = "0", UIMin = "0", ClampMax = "1000", UIMax = "1000"))
-	float MaxDepth = 200.0f;
+	FAGX_Real MaxDepth = 200.0f;
+
+	/**
+	 * Sets the maximum volume of active zone wedges that should wake particles [cm^3].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	FAGX_Real MaximumParticleActivationVolume = std::numeric_limits<double>::max();
+
+	void SetMaximumParticleActivationVolume(double InMaximumParticleActivationVolume);
+
+	double GetMaximumParticleActivationVolume() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	void SetMaximumParticleActivationVolume_BP(float InMaximumParticleActivationVolume);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	float GetMaximumParticleActivationVolume_BP() const;
 
 	/** The physical bulk, compaction, particle and surface properties of the Terrain. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Terrain")
@@ -186,7 +206,8 @@ public:
 	const FTerrainBarrier* GetNative() const;
 
 #if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
 
 protected:
@@ -213,6 +234,9 @@ private:
 	bool InitializeParticlesMap();
 	void UpdateParticlesMap();
 	void ClearParticlesMap();
+#if WITH_EDITOR
+	void InitPropertyDispatcher();
+#endif
 
 private:
 	FTerrainBarrier NativeBarrier;

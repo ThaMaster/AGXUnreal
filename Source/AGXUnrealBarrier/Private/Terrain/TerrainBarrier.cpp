@@ -2,15 +2,15 @@
 
 #include "Terrain/TerrainBarrier.h"
 
-// AGXUnrealBarrier includes.
-#include "AGX_LogCategory.h"
+// AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
-#include "Shapes/HeightFieldShapeBarrier.h"
-#include "TypeConversions.h"
-#include "Shapes/ShapeBarrierImpl.h"
-#include "Terrain/ShovelBarrier.h"
+#include "AGX_LogCategory.h"
 #include "Materials/TerrainMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "Shapes/HeightFieldShapeBarrier.h"
+#include "Shapes/ShapeBarrierImpl.h"
+#include "Terrain/ShovelBarrier.h"
+#include "TypeConversions.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -138,6 +138,20 @@ double FTerrainBarrier::GetPenetrationForceVelocityScaling() const
 {
 	check(HasNative());
 	return NativeRef->Native->getProperties()->getPenetrationForceVelocityScaling();
+}
+
+void FTerrainBarrier::SetMaximumParticleActivationVolume(double MaximumParticleActivationVolume)
+{
+	check(HasNative());
+	NativeRef->Native->getProperties()->setMaximumParticleActivationVolume(
+		ConvertVolumeToAGX(MaximumParticleActivationVolume));
+}
+
+double FTerrainBarrier::GetMaximumParticleActivationVolume() const
+{
+	check(HasNative());
+	return ConvertVolumeToUnreal<double>(
+		NativeRef->Native->getProperties()->getMaximumParticleActivationVolume());
 }
 
 bool FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)
