@@ -389,7 +389,7 @@ void UAGX_TerrainMaterial::SetBankStatePhi_BP(float Phi0)
 void UAGX_TerrainMaterial::SetBankStatePhi(double Phi0)
 {
 	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
-		TerrainCompaction.Phi0, Phi0, SetBankStatePhi, HasTerrainMaterialNative,
+		TerrainCompaction.BankStatePhi0, Phi0, SetBankStatePhi, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
 
@@ -401,7 +401,7 @@ float UAGX_TerrainMaterial::GetBankStatePhi_BP() const
 double UAGX_TerrainMaterial::GetBankStatePhi() const
 {
 	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
-		TerrainCompaction.Phi0, GetBankStatePhi, HasTerrainMaterialNative,
+		TerrainCompaction.BankStatePhi0, GetBankStatePhi, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
 
@@ -456,16 +456,16 @@ double UAGX_TerrainMaterial::GetCompressionIndex() const
 		TerrainMaterialNativeBarrier);
 }
 
-void UAGX_TerrainMaterial::SetHardeningConstantKe_BP(float K_e)
+void UAGX_TerrainMaterial::SetHardeningConstantKe_BP(float Ke)
 {
-	SetHardeningConstantKe(static_cast<double>(K_e));
+	SetHardeningConstantKe(static_cast<double>(Ke));
 }
 
-void UAGX_TerrainMaterial::SetHardeningConstantKe(double K_e)
+void UAGX_TerrainMaterial::SetHardeningConstantKe(double Ke)
 {
 	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
-		TerrainCompaction.K_e, K_e, SetHardeningConstantKe, HasTerrainMaterialNative,
-		TerrainMaterialNativeBarrier);
+		TerrainCompaction.HardeningConstantKe, Ke, SetHardeningConstantKe,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetHardeningConstantKe_BP() const
@@ -476,20 +476,20 @@ float UAGX_TerrainMaterial::GetHardeningConstantKe_BP() const
 double UAGX_TerrainMaterial::GetHardeningConstantKe() const
 {
 	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
-		TerrainCompaction.K_e, GetHardeningConstantKe, HasTerrainMaterialNative,
+		TerrainCompaction.HardeningConstantKe, GetHardeningConstantKe, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
 
-void UAGX_TerrainMaterial::SetHardeningConstantNe_BP(float N_e)
+void UAGX_TerrainMaterial::SetHardeningConstantNe_BP(float Ne)
 {
-	SetHardeningConstantNe(static_cast<double>(N_e));
+	SetHardeningConstantNe(static_cast<double>(Ne));
 }
 
-void UAGX_TerrainMaterial::SetHardeningConstantNe(double N_e)
+void UAGX_TerrainMaterial::SetHardeningConstantNe(double Ne)
 {
 	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
-		TerrainCompaction.N_e, N_e, SetHardeningConstantNe, HasTerrainMaterialNative,
-		TerrainMaterialNativeBarrier);
+		TerrainCompaction.HardeningConstantNe, Ne, SetHardeningConstantNe,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
 float UAGX_TerrainMaterial::GetHardeningConstantNe_BP() const
@@ -500,7 +500,7 @@ float UAGX_TerrainMaterial::GetHardeningConstantNe_BP() const
 double UAGX_TerrainMaterial::GetHardeningConstantNe() const
 {
 	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
-		TerrainCompaction.N_e, GetHardeningConstantNe, HasTerrainMaterialNative,
+		TerrainCompaction.HardeningConstantNe, GetHardeningConstantNe, HasTerrainMaterialNative,
 		TerrainMaterialNativeBarrier);
 }
 
@@ -552,6 +552,12 @@ double UAGX_TerrainMaterial::GetStressCutOffFraction() const
 		TerrainMaterialNativeBarrier);
 }
 
+void UAGX_TerrainMaterial::Serialize(FArchive& Archive)
+{
+	Super::Serialize(Archive);
+	TerrainCompaction.Serialize(Archive);
+}
+
 void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 {
 	TerrainBulk = FAGX_TerrainBulkProperties();
@@ -567,12 +573,12 @@ void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 
 	TerrainCompaction = FAGX_TerrainCompactionProperties();
 	TerrainCompaction.AngleOfReposeCompactionRate = Source.GetAngleOfReposeCompactionRate();
-	TerrainCompaction.Phi0 = Source.GetBankStatePhi();
+	TerrainCompaction.BankStatePhi0 = Source.GetBankStatePhi();
 	TerrainCompaction.CompactionTimeRelaxationConstant =
 		Source.GetCompactionTimeRelaxationConstant();
 	TerrainCompaction.CompressionIndex = Source.GetCompressionIndex();
-	TerrainCompaction.K_e = Source.GetHardeningConstantKe();
-	TerrainCompaction.N_e = Source.GetHardeningConstantNe();
+	TerrainCompaction.HardeningConstantKe = Source.GetHardeningConstantKe();
+	TerrainCompaction.HardeningConstantNe = Source.GetHardeningConstantNe();
 	TerrainCompaction.PreconsolidationStress = Source.GetPreconsolidationStress();
 	TerrainCompaction.StressCutOffFraction = Source.GetStressCutOffFraction();
 }
@@ -740,9 +746,9 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
-		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, Phi0),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, BankStatePhi0),
 		[](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainCompaction.Phi0, SetBankStatePhi) });
+		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainCompaction.BankStatePhi0, SetBankStatePhi) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
@@ -764,15 +770,21 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
-		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, K_e),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, HardeningConstantKe),
 		[](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainCompaction.K_e, SetHardeningConstantKe) });
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainCompaction.HardeningConstantKe, SetHardeningConstantKe)
+		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
-		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, N_e),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, HardeningConstantNe),
 		[](ThisClass* This)
-		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainCompaction.N_e, SetHardeningConstantNe) });
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainCompaction.HardeningConstantNe, SetHardeningConstantNe)
+		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
@@ -998,12 +1010,12 @@ void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
 		// Set Compaction properties.
 		TerrainMaterialNativeBarrier.SetAngleOfReposeCompactionRate(
 			TerrainCompaction.AngleOfReposeCompactionRate);
-		TerrainMaterialNativeBarrier.SetBankStatePhi(TerrainCompaction.Phi0);
+		TerrainMaterialNativeBarrier.SetBankStatePhi(TerrainCompaction.BankStatePhi0);
 		TerrainMaterialNativeBarrier.SetCompactionTimeRelaxationConstant(
 			TerrainCompaction.CompactionTimeRelaxationConstant);
 		TerrainMaterialNativeBarrier.SetCompressionIndex(TerrainCompaction.CompressionIndex);
-		TerrainMaterialNativeBarrier.SetHardeningConstantKe(TerrainCompaction.K_e);
-		TerrainMaterialNativeBarrier.SetHardeningConstantNe(TerrainCompaction.N_e);
+		TerrainMaterialNativeBarrier.SetHardeningConstantKe(TerrainCompaction.HardeningConstantKe);
+		TerrainMaterialNativeBarrier.SetHardeningConstantNe(TerrainCompaction.HardeningConstantNe);
 		TerrainMaterialNativeBarrier.SetPreconsolidationStress(
 			TerrainCompaction.PreconsolidationStress);
 		TerrainMaterialNativeBarrier.SetStressCutOffFraction(

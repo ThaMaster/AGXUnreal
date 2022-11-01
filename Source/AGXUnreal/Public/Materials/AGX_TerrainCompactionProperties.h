@@ -23,13 +23,13 @@ public:
 	 * Sets how the compaction should increase the angle of repose.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Compaction")
-	FAGX_Real AngleOfReposeCompactionRate;
+	FAGX_Real AngleOfReposeCompactionRate {1.0};
 
 	/**
 	 * Sets the phi0 value of the bank state soil.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Compaction")
-	FAGX_Real Phi0;
+	FAGX_Real BankStatePhi0 {2.0/3.0};
 
 	/**
 	 * Sets time relaxation for compaction.
@@ -37,7 +37,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	FAGX_Real CompactionTimeRelaxationConstant;
+	FAGX_Real CompactionTimeRelaxationConstant {0.05};
 
 	/**
 	 * Sets the compression index for the soil, which is the constant that determines how fast the
@@ -46,7 +46,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	FAGX_Real CompressionIndex;
+	FAGX_Real CompressionIndex {0.1};
 
 	/**
 	 * Sets the hardening constant k_e of the bulk material, i.e how the Young's modulus of the
@@ -55,7 +55,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	FAGX_Real K_e;
+	FAGX_Real HardeningConstantKe {1.0};
 
 	/**
 	 * Sets the hardening constant n_e of the bulk material, i.e how the Young's modulus  of the
@@ -64,7 +64,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	FAGX_Real N_e;
+	FAGX_Real HardeningConstantNe {0.5};
 
 	/**
 	 * Sets the stress at which the soil in the default state was compressed in, i.e when it has
@@ -73,7 +73,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	FAGX_Real PreconsolidationStress;
+	FAGX_Real PreconsolidationStress {98e3};
 
 	/**
 	 * Set the fraction of the surface stress that should serve as a cutoff value from when the
@@ -82,8 +82,18 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Compaction",
 		Meta = (ClampMin = "0.0", UIMin = "0.0"))
-	FAGX_Real StressCutOffFraction;
+	FAGX_Real StressCutOffFraction {0.01};
 
-public:
-	FAGX_TerrainCompactionProperties();
+	void Serialize(FArchive& Archive);
+
+private:
+
+	UPROPERTY()
+	FAGX_Real Phi0_DEPRECATED;
+
+	UPROPERTY()
+	FAGX_Real K_e_DEPRECATED;
+
+	UPROPERTY()
+	FAGX_Real N_e_DEPRECATED;
 };
