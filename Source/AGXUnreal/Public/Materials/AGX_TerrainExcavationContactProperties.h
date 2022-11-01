@@ -8,6 +8,9 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
+// Standard library includes.
+#include <limits>
+
 #include "AGX_TerrainExcavationContactProperties.generated.h"
 
 /**
