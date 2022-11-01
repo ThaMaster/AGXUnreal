@@ -264,9 +264,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Hardening Constant Ke"))
-	virtual void SetHardeningConstantKe_BP(float K_e);
+	virtual void SetHardeningConstantKe_BP(float Ke);
 
-	virtual void SetHardeningConstantKe(double K_e);
+	virtual void SetHardeningConstantKe(double Ke);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
@@ -278,9 +278,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Hardening Constant Ne"))
-	virtual void SetHardeningConstantNe_BP(float N_e);
+	virtual void SetHardeningConstantNe_BP(float Ne);
 
-	virtual void SetHardeningConstantNe(double N_e);
+	virtual void SetHardeningConstantNe(double Ne);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
@@ -316,6 +316,8 @@ public:
 	virtual float GetStressCutOffFraction_BP() const;
 
 	virtual double GetStressCutOffFraction() const;
+
+	virtual void Serialize(FArchive& Archive) override;
 
 	void CopyFrom(const FTerrainMaterialBarrier& Source);
 
