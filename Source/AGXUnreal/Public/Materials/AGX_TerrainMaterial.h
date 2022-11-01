@@ -79,128 +79,128 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Set Adhesion Overlap Factor"))
-	virtual void SetAdhesionOverlapFactor_BP(float AdhesionOverlapFactor);
+	void SetAdhesionOverlapFactor_BP(float AdhesionOverlapFactor);
 
-	virtual void SetAdhesionOverlapFactor(double AdhesionOverlapFactor);
+	void SetAdhesionOverlapFactor(double AdhesionOverlapFactor);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Get Adhesion Overlap Factor"))
-	virtual float GetAdhesionOverlapFactor_BP() const;
+	float GetAdhesionOverlapFactor_BP() const;
 
-	virtual double GetAdhesionOverlapFactor() const;
+	double GetAdhesionOverlapFactor() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Set Cohesion"))
-	virtual void SetCohesion_BP(float Cohesion);
+	void SetCohesion_BP(float Cohesion);
 
-	virtual void SetCohesion(double Cohesion);
+	void SetCohesion(double Cohesion);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Get Cohesion"))
-	virtual float GetCohesion_BP() const;
+	float GetCohesion_BP() const;
 
-	virtual double GetCohesion() const;
+	double GetCohesion() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		MEta = (DisplayName = "Set Density"))
-	virtual void SetDensity_BP(float Density);
+	void SetDensity_BP(float Density);
 
-	virtual void SetDensity(double Density);
+	void SetDensity(double Density);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Get Density"))
-	virtual float GetDensity_BP() const;
+	float GetDensity_BP() const;
 
-	virtual double GetDensity() const;
+	double GetDensity() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Set Dilatancy Angle"))
-	virtual void SetDilatancyAngle_BP(float DilatancyAngle);
+	void SetDilatancyAngle_BP(float DilatancyAngle);
 
-	virtual void SetDilatancyAngle(double DilatancyAngle);
+	void SetDilatancyAngle(double DilatancyAngle);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Get Dilatancy Angle "))
-	virtual float GetDilatancyAngle_BP() const;
+	float GetDilatancyAngle_BP() const;
 
-	virtual double GetDilatancyAngle() const;
+	double GetDilatancyAngle() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Set Friction Angle"))
-	virtual void SetFrictionAngle_BP(float FrictionAngle);
+	void SetFrictionAngle_BP(float FrictionAngle);
 
-	virtual void SetFrictionAngle(double FrictionAngle);
+	void SetFrictionAngle(double FrictionAngle);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Get Friction Angle"))
-	virtual float GetFrictionAngle_BP() const;
+	float GetFrictionAngle_BP() const;
 
-	virtual double GetFrictionAngle() const;
+	double GetFrictionAngle() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Set Max Density"))
-	virtual void SetMaxDensity_BP(float MaxDensity);
+	void SetMaxDensity_BP(float MaxDensity);
 
-	virtual void SetMaxDensity(double MaxDensity);
+	void SetMaxDensity(double MaxDensity);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Get Max Density"))
-	virtual float GetMaxDensity_BP() const;
+	float GetMaxDensity_BP() const;
 
-	virtual double GetMaxDensity() const;
+	double GetMaxDensity() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Set Poissons Ratio"))
-	virtual void SetPoissonsRatio_BP(float PoissonsRatio);
+	void SetPoissonsRatio_BP(float PoissonsRatio);
 
-	virtual void SetPoissonsRatio(double PoissonsRatio);
+	void SetPoissonsRatio(double PoissonsRatio);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Get Poissons Ratio"))
-	virtual float GetPoissonsRatio_BP() const;
+	float GetPoissonsRatio_BP() const;
 
-	virtual double GetPoissonsRatio() const;
+	double GetPoissonsRatio() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Set Swell Factor"))
-	virtual void SetSwellFactor_BP(float SwellFactor);
+	void SetSwellFactor_BP(float SwellFactor);
 
-	virtual void SetSwellFactor(double SwellFactor);
+	void SetSwellFactor(double SwellFactor);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Get Swell Factor"))
-	virtual float GetSwellFactor_BP() const;
+	float GetSwellFactor_BP() const;
 
-	virtual double GetSwellFactor() const;
+	double GetSwellFactor() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Set Youngs Modulus"))
-	virtual void SetYoungsModulus_BP(float YoungsModulus);
+	void SetYoungsModulus_BP(float YoungsModulus);
 
-	virtual void SetYoungsModulus(double YoungsModulus);
+	void SetYoungsModulus(double YoungsModulus);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Bulk",
 		Meta = (DisplayName = "Get Youngs Modulus"))
-	virtual float GetYoungsModulus_BP() const;
+	float GetYoungsModulus_BP() const;
 
-	virtual double GetYoungsModulus() const;
+	double GetYoungsModulus() const;
 
 	// Compaction properties.
 
@@ -210,128 +210,128 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Angle Of Repose Compaction Rate"))
-	virtual void SetAngleOfReposeCompactionRate_BP(float AngleOfReposeCompactionRate);
+	void SetAngleOfReposeCompactionRate_BP(float AngleOfReposeCompactionRate);
 
-	virtual void SetAngleOfReposeCompactionRate(double AngleOfReposeCompactionRate);
+	void SetAngleOfReposeCompactionRate(double AngleOfReposeCompactionRate);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Angle Of Repose Compaction Rate"))
-	virtual float GetAngleOfReposeCompactionRate_BP() const;
+	float GetAngleOfReposeCompactionRate_BP() const;
 
-	virtual double GetAngleOfReposeCompactionRate() const;
+	double GetAngleOfReposeCompactionRate() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Bank State Phi"))
-	virtual void SetBankStatePhi_BP(float Phi0);
+	void SetBankStatePhi_BP(float Phi0);
 
-	virtual void SetBankStatePhi(double Phi0);
+	void SetBankStatePhi(double Phi0);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Bank State Phi"))
-	virtual float GetBankStatePhi_BP() const;
+	float GetBankStatePhi_BP() const;
 
-	virtual double GetBankStatePhi() const;
+	double GetBankStatePhi() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Compation Time Relaxation Constraint"))
-	virtual void SetCompactionTimeRelaxationConstant_BP(float CompactionTimeRelaxationConstant);
+	void SetCompactionTimeRelaxationConstant_BP(float CompactionTimeRelaxationConstant);
 
-	virtual void SetCompactionTimeRelaxationConstant(double CompactionTimeRelaxationConstant);
+	void SetCompactionTimeRelaxationConstant(double CompactionTimeRelaxationConstant);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Compaction Time Relaxation Constant"))
-	virtual float GetCompactionTimeRelaxationConstant_BP() const;
+	float GetCompactionTimeRelaxationConstant_BP() const;
 
-	virtual double GetCompactionTimeRelaxationConstant() const;
+	double GetCompactionTimeRelaxationConstant() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Compression Index"))
-	virtual void SetCompressionIndex_BP(float CompressionIndex);
+	void SetCompressionIndex_BP(float CompressionIndex);
 
-	virtual void SetCompressionIndex(double CompressionIndex);
+	void SetCompressionIndex(double CompressionIndex);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Compression Index"))
-	virtual float GetCompressionIndex_BP() const;
+	float GetCompressionIndex_BP() const;
 
-	virtual double GetCompressionIndex() const;
+	double GetCompressionIndex() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Hardening Constant Ke"))
-	virtual void SetHardeningConstantKe_BP(float Ke);
+	void SetHardeningConstantKe_BP(float Ke);
 
-	virtual void SetHardeningConstantKe(double Ke);
+	void SetHardeningConstantKe(double Ke);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Hardening Constant Ke"))
-	virtual float GetHardeningConstantKe_BP() const;
+	float GetHardeningConstantKe_BP() const;
 
-	virtual double GetHardeningConstantKe() const;
+	double GetHardeningConstantKe() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Hardening Constant Ne"))
-	virtual void SetHardeningConstantNe_BP(float Ne);
+	void SetHardeningConstantNe_BP(float Ne);
 
-	virtual void SetHardeningConstantNe(double Ne);
+	void SetHardeningConstantNe(double Ne);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Hardening Constant Ne"))
-	virtual float GetHardeningConstantNe_BP() const;
+	float GetHardeningConstantNe_BP() const;
 
-	virtual double GetHardeningConstantNe() const;
+	double GetHardeningConstantNe() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Preconsolidation Stress"))
-	virtual void SetPreconsolidationStress_BP(float PreconsolidationStress);
+	void SetPreconsolidationStress_BP(float PreconsolidationStress);
 
-	virtual void SetPreconsolidationStress(double PreconsolidationStress);
+	void SetPreconsolidationStress(double PreconsolidationStress);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Preconsolidation Stress"))
-	virtual float GetPreconsolidationStress_BP() const;
+	float GetPreconsolidationStress_BP() const;
 
-	virtual double GetPreconsolidationStress() const;
+	double GetPreconsolidationStress() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Stress Cut Off Fraction"))
-	virtual void SetStressCutOffFraction_BP(float StressCutOffFraction);
+	void SetStressCutOffFraction_BP(float StressCutOffFraction);
 
-	virtual void SetStressCutOffFraction(double StressCutOffFraction);
+	void SetStressCutOffFraction(double StressCutOffFraction);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Stress Cut Off Fraction"))
-	virtual float GetStressCutOffFraction_BP() const;
+	float GetStressCutOffFraction_BP() const;
 
-	virtual double GetStressCutOffFraction() const;
+	double GetStressCutOffFraction() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Set Dilatancy Angle Scaling Factor"))
-	virtual void SetDilatancyAngleScalingFactor_BP(float DilatancyAngleScalingFactor);
+	void SetDilatancyAngleScalingFactor_BP(float DilatancyAngleScalingFactor);
 
-	virtual void SetDilatancyAngleScalingFactor(double DilatancyAngleScalingFactor);
+	void SetDilatancyAngleScalingFactor(double DilatancyAngleScalingFactor);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Dilatancy Angle Scaling Factor"))
-	virtual float GetDilatancyAngleScalingFactor_BP() const;
+	float GetDilatancyAngleScalingFactor_BP() const;
 
-	virtual double GetDilatancyAngleScalingFactor() const;
+	double GetDilatancyAngleScalingFactor() const;
 
 	// Particle properties.
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
@@ -347,9 +347,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Particle Adhesion Overlap Factor"))
-	virtual float GetParticleAdhesionOverlapFactor_BP() const;
+	float GetParticleAdhesionOverlapFactor_BP() const;
 
-	virtual double GetParticleAdhesionOverlapFactor() const;
+	double GetParticleAdhesionOverlapFactor() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Particle",
@@ -361,9 +361,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Particle Cohesion"))
-	virtual float GetParticleCohesion_BP() const;
+	float GetParticleCohesion_BP() const;
 
-	virtual double GetParticleCohesion() const;
+	double GetParticleCohesion() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Particle",
@@ -375,9 +375,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Particle Restitution"))
-	virtual float GetParticleRestitution_BP() const;
+	float GetParticleRestitution_BP() const;
 
-	virtual double GetParticleRestitution() const;
+	double GetParticleRestitution() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Particle",
@@ -389,9 +389,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Particle Rolling Resistance"))
-	virtual float GetParticleRollingResistance_BP() const;
+	float GetParticleRollingResistance_BP() const;
 
-	virtual double GetParticleRollingResistance() const;
+	double GetParticleRollingResistance() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Particle",
@@ -403,9 +403,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Particle Surface Friction"))
-	virtual float GetParticleSurfaceFriction_BP() const;
+	float GetParticleSurfaceFriction_BP() const;
 
-	virtual double GetParticleSurfaceFriction() const;
+	double GetParticleSurfaceFriction() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Particle",
@@ -417,9 +417,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Particle Terrain Cohesion"))
-	virtual float GetParticleTerrainCohesion_BP() const;
+	float GetParticleTerrainCohesion_BP() const;
 
-	virtual double GetParticleTerrainCohesion() const;
+	double GetParticleTerrainCohesion() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Particle",
@@ -431,9 +431,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Particle Terrain Restitution"))
-	virtual float GetParticleTerrainRestitution_BP() const;
+	float GetParticleTerrainRestitution_BP() const;
 
-	virtual double GetParticleTerrainRestitution() const;
+	double GetParticleTerrainRestitution() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Particle",
@@ -445,9 +445,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Particle Terrain Rolling Resistance"))
-	virtual float GetParticleTerrainRollingResistance_BP() const;
+	float GetParticleTerrainRollingResistance_BP() const;
 
-	virtual double GetParticleTerrainRollingResistance() const;
+	double GetParticleTerrainRollingResistance() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Particle",
@@ -459,9 +459,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Particle Terrain Surface Friction"))
-	virtual float GetParticleTerrainSurfaceFriction_BP() const;
+	float GetParticleTerrainSurfaceFriction_BP() const;
 
-	virtual double GetParticleTerrainSurfaceFriction() const;
+	double GetParticleTerrainSurfaceFriction() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Particle",
@@ -473,9 +473,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Particle Terrain Youngs Modulus"))
-	virtual float GetParticleTerrainYoungsModulus_BP() const;
+	float GetParticleTerrainYoungsModulus_BP() const;
 
-	virtual double GetParticleTerrainYoungsModulus() const;
+	double GetParticleTerrainYoungsModulus() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Particle",
@@ -487,9 +487,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Compaction",
 		Meta = (DisplayName = "Get Particle Youngs Modulus"))
-	virtual float GetParticleYoungsModulus_BP() const;
+	float GetParticleYoungsModulus_BP() const;
 
-	virtual double GetParticleYoungsModulus() const;
+	double GetParticleYoungsModulus() const;
 
 	// Excavation contact properties.
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
@@ -505,9 +505,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
 		Meta = (DisplayName = "Get Aggregate Stiffness Multiplier"))
-	virtual float GetAggregateStiffnessMultiplier_BP() const;
+	float GetAggregateStiffnessMultiplier_BP() const;
 
-	virtual double GetAggregateStiffnessMultiplier() const;
+	double GetAggregateStiffnessMultiplier() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
@@ -519,9 +519,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
 		Meta = (DisplayName = "Get Excavation Stiffness Multiplier"))
-	virtual float GetExcavationStiffnessMultiplier_BP() const;
+	float GetExcavationStiffnessMultiplier_BP() const;
 
-	virtual double GetExcavationStiffnessMultiplier() const;
+	double GetExcavationStiffnessMultiplier() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
@@ -533,9 +533,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
 		Meta = (DisplayName = "Get Depth Decay Factor"))
-	virtual float GetDepthDecayFactor_BP() const;
+	float GetDepthDecayFactor_BP() const;
 
-	virtual double GetDepthDecayFactor() const;
+	double GetDepthDecayFactor() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
@@ -547,9 +547,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
 		Meta = (DisplayName = "Get Depth Increase Factor"))
-	virtual float GetDepthIncreaseFactor_BP() const;
+	float GetDepthIncreaseFactor_BP() const;
 
-	virtual double GetDepthIncreaseFactor() const;
+	double GetDepthIncreaseFactor() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
@@ -561,9 +561,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
 		Meta = (DisplayName = "Get Maximum Aggregate Normal Force"))
-	virtual float GetMaximumAggregateNormalForce_BP() const;
+	float GetMaximumAggregateNormalForce_BP() const;
 
-	virtual double GetMaximumAggregateNormalForce() const;
+	double GetMaximumAggregateNormalForce() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
@@ -575,9 +575,9 @@ public:
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
 		Meta = (DisplayName = "Get Maximum Contact Depth"))
-	virtual float GetMaximumContactDepth_BP() const;
+	float GetMaximumContactDepth_BP() const;
 
-	virtual double GetMaximumContactDepth() const;
+	double GetMaximumContactDepth() const;
 
 	virtual void Serialize(FArchive& Archive) override;
 
