@@ -552,6 +552,30 @@ double UAGX_TerrainMaterial::GetStressCutOffFraction() const
 		TerrainMaterialNativeBarrier);
 }
 
+void UAGX_TerrainMaterial::SetDilatancyAngleScalingFactor_BP(float DilatancyAngleScalingFactor)
+{
+	SetDilatancyAngleScalingFactor(static_cast<double>(DilatancyAngleScalingFactor));
+}
+
+void UAGX_TerrainMaterial::SetDilatancyAngleScalingFactor(double DilatancyAngleScalingFactor)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainCompaction.DilatancyAngleScalingFactor, DilatancyAngleScalingFactor,
+		SetDilatancyAngleScalingFactor, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetDilatancyAngleScalingFactor_BP() const
+{
+	return static_cast<float>(GetDilatancyAngleScalingFactor());
+}
+
+double UAGX_TerrainMaterial::GetDilatancyAngleScalingFactor() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainCompaction.DilatancyAngleScalingFactor, GetDilatancyAngleScalingFactor,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
 void UAGX_TerrainMaterial::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
@@ -581,6 +605,7 @@ void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 	TerrainCompaction.HardeningConstantNe = Source.GetHardeningConstantNe();
 	TerrainCompaction.PreconsolidationStress = Source.GetPreconsolidationStress();
 	TerrainCompaction.StressCutOffFraction = Source.GetStressCutOffFraction();
+	TerrainCompaction.DilatancyAngleScalingFactor = Source.GetDilatancyAngleScalingFactor();
 }
 
 void UAGX_TerrainMaterial::CopyTerrainMaterialProperties(const UAGX_TerrainMaterial* Source)
@@ -803,6 +828,15 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
 				TerrainCompaction.StressCutOffFraction, SetStressCutOffFraction)
 		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, DilatancyAngleScalingFactor),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainCompaction.DilatancyAngleScalingFactor, SetDilatancyAngleScalingFactor)
+		});
 }
 #endif
 
@@ -1020,6 +1054,8 @@ void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
 			TerrainCompaction.PreconsolidationStress);
 		TerrainMaterialNativeBarrier.SetStressCutOffFraction(
 			TerrainCompaction.StressCutOffFraction);
+		TerrainMaterialNativeBarrier.SetDilatancyAngleScalingFactor(
+			TerrainCompaction.DilatancyAngleScalingFactor);
 	}
 }
 

@@ -302,3 +302,15 @@ double FTerrainMaterialBarrier::GetStressCutOffFraction() const
 	check(HasNative());
 	return NativeRef->Native->getCompactionProperties()->getStressCutOffFraction();
 }
+
+void FTerrainMaterialBarrier::SetDilatancyAngleScalingFactor(double DilatancyAngleScalingFactor)
+{
+	check(HasNative());
+	NativeRef->Native->getCompactionProperties()->setDilatancyAngleScalingFactor(DilatancyAngleScalingFactor);
+}
+
+double FTerrainMaterialBarrier::GetDilatancyAngleScalingFactor() const
+{
+	check(HasNative());
+	return NativeRef->Native->getCompactionProperties()->getDilatancyAngleScalingFactor();
+}
