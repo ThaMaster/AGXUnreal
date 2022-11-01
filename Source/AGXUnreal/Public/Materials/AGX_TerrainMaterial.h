@@ -7,6 +7,7 @@
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/AGX_TerrainBulkProperties.h"
 #include "Materials/AGX_TerrainCompactionProperties.h"
+#include "Materials/AGX_TerrainExcavationContactProperties.h"
 #include "Materials/AGX_TerrainParticleProperties.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/TerrainMaterialBarrier.h"
@@ -475,6 +476,94 @@ public:
 	virtual float GetParticleYoungsModulus_BP() const;
 
 	virtual double GetParticleYoungsModulus() const;
+
+	// Excavation contact properties.
+	UPROPERTY(EditAnywhere, Category = "Material Properties")
+	FAGX_TerrainExcavationContactProperties TerrainExcavationContact;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
+		Meta = (DisplayName = "Set Aggregate Stiffness Multiplier"))
+	void SetAggregateStiffnessMultiplier_BP(float AggregateStiffnessMultiplier);
+
+	void SetAggregateStiffnessMultiplier(double AggregateStiffnessMultiplier);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
+		Meta = (DisplayName = "Get Aggregate Stiffness Multiplier"))
+	virtual float GetAggregateStiffnessMultiplier_BP() const;
+
+	virtual double GetAggregateStiffnessMultiplier() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
+		Meta = (DisplayName = "Set Excavation Stiffness Multiplier"))
+	void SetExcavationStiffnessMultiplier_BP(float ExcavationStiffnessMultiplier);
+
+	void SetExcavationStiffnessMultiplier(double ExcavationStiffnessMultiplier);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
+		Meta = (DisplayName = "Get Excavation Stiffness Multiplier"))
+	virtual float GetExcavationStiffnessMultiplier_BP() const;
+
+	virtual double GetExcavationStiffnessMultiplier() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
+		Meta = (DisplayName = "Set Depth Decay Factor"))
+	void SetDepthDecayFactor_BP(float DepthDecayFactor);
+
+	void SetDepthDecayFactor(double DepthDecayFactor);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
+		Meta = (DisplayName = "Get Depth Decay Factor"))
+	virtual float GetDepthDecayFactor_BP() const;
+
+	virtual double GetDepthDecayFactor() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
+		Meta = (DisplayName = "Set Depth Increase Factor"))
+	void SetDepthIncreaseFactor_BP(float DepthIncreaseFactor);
+
+	void SetDepthIncreaseFactor(double DepthIncreaseFactor);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
+		Meta = (DisplayName = "Get Depth Increase Factor"))
+	virtual float GetDepthIncreaseFactor_BP() const;
+
+	virtual double GetDepthIncreaseFactor() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
+		Meta = (DisplayName = "Set Maximum Aggregate Normal Force"))
+	void SetMaximumAggregateNormalForce_BP(float MaximumAggregateNormalForce);
+
+	void SetMaximumAggregateNormalForce(double MaximumAggregateNormalForce);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
+		Meta = (DisplayName = "Get Maximum Aggregate Normal Force"))
+	virtual float GetMaximumAggregateNormalForce_BP() const;
+
+	virtual double GetMaximumAggregateNormalForce() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
+		Meta = (DisplayName = "Set Maximum Contact Depth"))
+	void SetMaximumContactDepth_BP(float MaximumContactDepth);
+
+	void SetMaximumContactDepth(double MaximumContactDepth);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Terrain Material Excavation Contact",
+		Meta = (DisplayName = "Get Maximum Contact Depth"))
+	virtual float GetMaximumContactDepth_BP() const;
+
+	virtual double GetMaximumContactDepth() const;
 
 	void CopyFrom(const FTerrainMaterialBarrier& Source);
 

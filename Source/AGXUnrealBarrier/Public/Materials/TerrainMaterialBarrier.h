@@ -119,6 +119,25 @@ public:
 	void SetParticleYoungsModulus(double ParticleYoungsModulus);
 	double GetParticleYoungsModulus() const;
 
+	// Excavation contact properties.
+	void SetAggregateStiffnessMultiplier(double AggregateStiffnessMultiplier);
+	double GetAggregateStiffnessMultiplier() const;
+
+	void SetExcavationStiffnessMultiplier(double ExcavationStiffnessMultiplier);
+	double GetExcavationStiffnessMultiplier() const;
+
+	void SetDepthDecayFactor(double DepthDecayFactor);
+	double GetDepthDecayFactor() const;
+
+	void SetDepthIncreaseFactor(double DepthIncreaseFactor);
+	double GetDepthIncreaseFactor() const;
+
+	void SetMaximumAggregateNormalForce(double MaximumAggregateNormalForce);
+	double GetMaximumAggregateNormalForce() const;
+
+	void SetMaximumContactDepth(double MaximumContactDepth);
+	double GetMaximumContactDepth() const;
+
 private:
 	FTerrainMaterialBarrier(const FTerrainMaterialBarrier&) = delete;
 	void operator=(const FTerrainMaterialBarrier&) = delete;

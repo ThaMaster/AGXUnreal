@@ -59,7 +59,7 @@ public:
 
 	/**
 	 * Wheel rotation relative to the Rigid Body,
-	 * or to the FrameDefiningComponent if bUseFrameDefiningComponent is true [degrees].
+	 * or to the FrameDefiningComponent if bUseFrameDefiningComponent is true [deg].
 	 *
 	 * The Y-Axis becomes the rotation-axis, and the Z-axis becomes the up-axis.
 	 */

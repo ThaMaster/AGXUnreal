@@ -180,7 +180,7 @@ public:
 	bool GetHingeRangeEnabled() const;
 
 	/**
-	 * Range used if the hinge range between the nodes is enabled [degrees].
+	 * Range used if the hinge range between the nodes is enabled [deg].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Hinge Range", Meta = (EditCondition = "bEnableHingeRange"))
 	FAGX_RealInterval HingeRange {-120, 20};

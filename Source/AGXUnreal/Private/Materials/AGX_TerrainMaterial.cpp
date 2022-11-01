@@ -821,6 +821,151 @@ double UAGX_TerrainMaterial::GetParticleYoungsModulus() const
 		TerrainMaterialNativeBarrier);
 }
 
+// Excavation contact properties.
+void UAGX_TerrainMaterial::SetAggregateStiffnessMultiplier_BP(float AggregateStiffnessMultiplier)
+{
+	SetAggregateStiffnessMultiplier(static_cast<double>(AggregateStiffnessMultiplier));
+}
+
+void UAGX_TerrainMaterial::SetAggregateStiffnessMultiplier(double AggregateStiffnessMultiplier)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.AggregateStiffnessMultiplier, AggregateStiffnessMultiplier,
+		SetAggregateStiffnessMultiplier, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetAggregateStiffnessMultiplier_BP() const
+{
+	return static_cast<float>(GetAggregateStiffnessMultiplier());
+}
+
+double UAGX_TerrainMaterial::GetAggregateStiffnessMultiplier() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.AggregateStiffnessMultiplier, GetAggregateStiffnessMultiplier,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetExcavationStiffnessMultiplier_BP(float ExcavationStiffnessMultiplier)
+{
+	SetExcavationStiffnessMultiplier(static_cast<double>(ExcavationStiffnessMultiplier));
+}
+
+void UAGX_TerrainMaterial::SetExcavationStiffnessMultiplier(double ExcavationStiffnessMultiplier)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.ExcavationStiffnessMultiplier, ExcavationStiffnessMultiplier,
+		SetExcavationStiffnessMultiplier, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetExcavationStiffnessMultiplier_BP() const
+{
+	return static_cast<float>(GetExcavationStiffnessMultiplier());
+}
+
+double UAGX_TerrainMaterial::GetExcavationStiffnessMultiplier() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.ExcavationStiffnessMultiplier, GetExcavationStiffnessMultiplier,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetDepthDecayFactor_BP(float DepthDecayFactor)
+{
+	SetDepthDecayFactor(static_cast<double>(DepthDecayFactor));
+}
+
+void UAGX_TerrainMaterial::SetDepthDecayFactor(double DepthDecayFactor)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.DepthDecayFactor, DepthDecayFactor, SetDepthDecayFactor,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetDepthDecayFactor_BP() const
+{
+	return static_cast<float>(GetDepthDecayFactor());
+}
+
+double UAGX_TerrainMaterial::GetDepthDecayFactor() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.DepthDecayFactor, GetDepthDecayFactor, HasTerrainMaterialNative,
+		TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetDepthIncreaseFactor_BP(float DepthIncreaseFactor)
+{
+	SetDepthIncreaseFactor(static_cast<double>(DepthIncreaseFactor));
+}
+
+void UAGX_TerrainMaterial::SetDepthIncreaseFactor(double DepthIncreaseFactor)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.DepthIncreaseFactor, DepthIncreaseFactor, SetDepthIncreaseFactor,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetDepthIncreaseFactor_BP() const
+{
+	return static_cast<float>(GetDepthIncreaseFactor());
+}
+
+double UAGX_TerrainMaterial::GetDepthIncreaseFactor() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.DepthIncreaseFactor, GetDepthIncreaseFactor,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetMaximumAggregateNormalForce_BP(float MaximumAggregateNormalForce)
+{
+	SetMaximumAggregateNormalForce(static_cast<double>(MaximumAggregateNormalForce));
+}
+
+void UAGX_TerrainMaterial::SetMaximumAggregateNormalForce(double MaximumAggregateNormalForce)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.MaximumAggregateNormalForce, MaximumAggregateNormalForce,
+		SetMaximumAggregateNormalForce, HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetMaximumAggregateNormalForce_BP() const
+{
+	return static_cast<float>(GetMaximumAggregateNormalForce());
+}
+
+double UAGX_TerrainMaterial::GetMaximumAggregateNormalForce() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.MaximumAggregateNormalForce, GetMaximumAggregateNormalForce,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+void UAGX_TerrainMaterial::SetMaximumContactDepth_BP(float MaximumContactDepth)
+{
+	SetMaximumContactDepth(static_cast<double>(MaximumContactDepth));
+}
+
+void UAGX_TerrainMaterial::SetMaximumContactDepth(double MaximumContactDepth)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.MaximumContactDepth, MaximumContactDepth, SetMaximumContactDepth,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+float UAGX_TerrainMaterial::GetMaximumContactDepth_BP() const
+{
+	return static_cast<float>(GetMaximumContactDepth());
+}
+
+double UAGX_TerrainMaterial::GetMaximumContactDepth() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.MaximumContactDepth, GetMaximumContactDepth,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
 void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 {
 	TerrainBulk = FAGX_TerrainBulkProperties();
@@ -858,6 +1003,16 @@ void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 	TerrainParticles.ParticleTerrainSurfaceFriction = Source.GetParticleTerrainSurfaceFriction();
 	TerrainParticles.ParticleTerrainYoungsModulus = Source.GetParticleTerrainYoungsModulus();
 	TerrainParticles.ParticleYoungsModulus = Source.GetParticleYoungsModulus();
+
+	TerrainExcavationContact = FAGX_TerrainExcavationContactProperties();
+	TerrainExcavationContact.AggregateStiffnessMultiplier =
+		Source.GetAggregateStiffnessMultiplier();
+	TerrainExcavationContact.ExcavationStiffnessMultiplier =
+		Source.GetExcavationStiffnessMultiplier();
+	TerrainExcavationContact.DepthDecayFactor = Source.GetDepthDecayFactor();
+	TerrainExcavationContact.DepthIncreaseFactor = Source.GetDepthIncreaseFactor();
+	TerrainExcavationContact.MaximumAggregateNormalForce = Source.GetMaximumAggregateNormalForce();
+	TerrainExcavationContact.MaximumContactDepth = Source.GetMaximumContactDepth();
 }
 
 void UAGX_TerrainMaterial::CopyTerrainMaterialProperties(const UAGX_TerrainMaterial* Source)
@@ -1089,15 +1244,13 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleCohesion),
 		[](ThisClass* This) {
-			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
-				TerrainParticles.ParticleCohesion, SetParticleCohesion)
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainParticles.ParticleCohesion, SetParticleCohesion)
 		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleRestitution),
-		[](ThisClass* This)
-		{
+		[](ThisClass* This) {
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
 				TerrainParticles.ParticleRestitution, SetParticleRestitution)
 		});
@@ -1173,6 +1326,67 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 		{
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
 				TerrainParticles.ParticleYoungsModulus, SetParticleYoungsModulus)
+		});
+
+	// Excavation contact properties.
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainExcavationContact),
+		GET_MEMBER_NAME_CHECKED(
+			FAGX_TerrainExcavationContactProperties, AggregateStiffnessMultiplier),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainExcavationContact.AggregateStiffnessMultiplier,
+				SetAggregateStiffnessMultiplier)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainExcavationContact),
+		GET_MEMBER_NAME_CHECKED(
+			FAGX_TerrainExcavationContactProperties, ExcavationStiffnessMultiplier),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainExcavationContact.ExcavationStiffnessMultiplier,
+				SetExcavationStiffnessMultiplier)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainExcavationContact),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainExcavationContactProperties, DepthDecayFactor),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainExcavationContact.DepthDecayFactor, SetDepthDecayFactor)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainExcavationContact),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainExcavationContactProperties, DepthIncreaseFactor),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainExcavationContact.DepthIncreaseFactor, SetDepthIncreaseFactor)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainExcavationContact),
+		GET_MEMBER_NAME_CHECKED(
+			FAGX_TerrainExcavationContactProperties, MaximumAggregateNormalForce),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainExcavationContact.MaximumAggregateNormalForce,
+				SetMaximumAggregateNormalForce)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainExcavationContact),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainExcavationContactProperties, MaximumContactDepth),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainExcavationContact.MaximumContactDepth, SetMaximumContactDepth)
 		});
 }
 #endif
@@ -1397,14 +1611,35 @@ void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
 			TerrainParticles.AdhesionOverlapFactor);
 		TerrainMaterialNativeBarrier.SetParticleCohesion(TerrainParticles.ParticleCohesion);
 		TerrainMaterialNativeBarrier.SetParticleRestitution(TerrainParticles.ParticleRestitution);
-		TerrainMaterialNativeBarrier.SetParticleRollingResistance(TerrainParticles.ParticleRollingResistance);
-		TerrainMaterialNativeBarrier.SetParticleSurfaceFriction(TerrainParticles.ParticleSurfaceFriction);
-		TerrainMaterialNativeBarrier.SetParticleTerrainCohesion(TerrainParticles.ParticleTerrainCohesion);
-		TerrainMaterialNativeBarrier.SetParticleTerrainRestitution(TerrainParticles.ParticleTerrainRestitution);
-		TerrainMaterialNativeBarrier.SetParticleTerrainRollingResistance(TerrainParticles.ParticleTerrainRollingResistance);
-		TerrainMaterialNativeBarrier.SetParticleTerrainSurfaceFriction(TerrainParticles.ParticleTerrainSurfaceFriction);
-		TerrainMaterialNativeBarrier.SetParticleTerrainYoungsModulus(TerrainParticles.ParticleTerrainYoungsModulus);
-		TerrainMaterialNativeBarrier.SetParticleYoungsModulus(TerrainParticles.ParticleYoungsModulus);
+		TerrainMaterialNativeBarrier.SetParticleRollingResistance(
+			TerrainParticles.ParticleRollingResistance);
+		TerrainMaterialNativeBarrier.SetParticleSurfaceFriction(
+			TerrainParticles.ParticleSurfaceFriction);
+		TerrainMaterialNativeBarrier.SetParticleTerrainCohesion(
+			TerrainParticles.ParticleTerrainCohesion);
+		TerrainMaterialNativeBarrier.SetParticleTerrainRestitution(
+			TerrainParticles.ParticleTerrainRestitution);
+		TerrainMaterialNativeBarrier.SetParticleTerrainRollingResistance(
+			TerrainParticles.ParticleTerrainRollingResistance);
+		TerrainMaterialNativeBarrier.SetParticleTerrainSurfaceFriction(
+			TerrainParticles.ParticleTerrainSurfaceFriction);
+		TerrainMaterialNativeBarrier.SetParticleTerrainYoungsModulus(
+			TerrainParticles.ParticleTerrainYoungsModulus);
+		TerrainMaterialNativeBarrier.SetParticleYoungsModulus(
+			TerrainParticles.ParticleYoungsModulus);
+
+		// Set Excavation contact properties.
+		TerrainMaterialNativeBarrier.SetAggregateStiffnessMultiplier(
+			TerrainExcavationContact.AggregateStiffnessMultiplier);
+		TerrainMaterialNativeBarrier.SetExcavationStiffnessMultiplier(
+			TerrainExcavationContact.ExcavationStiffnessMultiplier);
+		TerrainMaterialNativeBarrier.SetDepthDecayFactor(TerrainExcavationContact.DepthDecayFactor);
+		TerrainMaterialNativeBarrier.SetDepthIncreaseFactor(
+			TerrainExcavationContact.DepthIncreaseFactor);
+		TerrainMaterialNativeBarrier.SetMaximumAggregateNormalForce(
+			TerrainExcavationContact.MaximumAggregateNormalForce);
+		TerrainMaterialNativeBarrier.SetMaximumContactDepth(
+			TerrainExcavationContact.MaximumContactDepth);
 	}
 }
 

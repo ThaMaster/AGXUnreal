@@ -443,3 +443,82 @@ double FTerrainMaterialBarrier::GetParticleYoungsModulus() const
 	check(HasNative());
 	return NativeRef->Native->getParticleProperties()->getParticleYoungsModulus();
 }
+
+// Excavation contact properties.
+void FTerrainMaterialBarrier::SetAggregateStiffnessMultiplier(double AggregateStiffnessMultiplier)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationContactProperties()->setAggregateStiffnessMultiplier(
+		AggregateStiffnessMultiplier);
+}
+
+double FTerrainMaterialBarrier::GetAggregateStiffnessMultiplier() const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationContactProperties()->getAggregateStiffnessMultiplier();
+}
+
+void FTerrainMaterialBarrier::SetExcavationStiffnessMultiplier(double ExcavationStiffnessMultiplier)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationContactProperties()->setExcavationStiffnessMultiplier(
+		ExcavationStiffnessMultiplier);
+}
+
+double FTerrainMaterialBarrier::GetExcavationStiffnessMultiplier() const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationContactProperties()->getExcavationStiffnessMultiplier();
+}
+
+void FTerrainMaterialBarrier::SetDepthDecayFactor(double DepthDecayFactor)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationContactProperties()->setDepthDecayFactor(DepthDecayFactor);
+}
+
+double FTerrainMaterialBarrier::GetDepthDecayFactor() const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationContactProperties()->getDepthDecayFactor();
+}
+
+void FTerrainMaterialBarrier::SetDepthIncreaseFactor(double DepthIncreaseFactor)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationContactProperties()->setDepthIncreaseFactor(
+		DepthIncreaseFactor);
+}
+
+double FTerrainMaterialBarrier::GetDepthIncreaseFactor() const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationContactProperties()->getDepthIncreaseFactor();
+}
+
+void FTerrainMaterialBarrier::SetMaximumAggregateNormalForce(double MaximumAggregateNormalForce)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationContactProperties()->setMaximumAggregateNormalForce(
+		MaximumAggregateNormalForce);
+}
+
+double FTerrainMaterialBarrier::GetMaximumAggregateNormalForce() const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationContactProperties()->getMaximumAggregateNormalForce();
+}
+
+void FTerrainMaterialBarrier::SetMaximumContactDepth(double MaximumContactDepth)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationContactProperties()->setMaximumContactDepth(
+	 ConvertDistanceToAGX(MaximumContactDepth));
+}
+
+double FTerrainMaterialBarrier::GetMaximumContactDepth() const
+{
+	check(HasNative());
+	return ConvertDistanceToUnreal<double>(
+		NativeRef->Native->getExcavationContactProperties()->getMaximumDepth());
+}

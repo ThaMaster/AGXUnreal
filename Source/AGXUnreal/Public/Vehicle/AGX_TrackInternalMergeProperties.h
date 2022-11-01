@@ -148,7 +148,7 @@ public:
 	float GetLockToReachMergeConditionSpookDamping_BP() const;
 
 	/**
-	 * Maximum angle to trigger merge between nodes [degrees].
+	 * Maximum angle to trigger merge between nodes [deg].
 	 *
 	 * I.e., when the angle between two nodes < maxAngleMergeCondition the nodes will merge.
 	 */
