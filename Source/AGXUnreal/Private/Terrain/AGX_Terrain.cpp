@@ -898,7 +898,7 @@ bool AAGX_Terrain::InitializeParticlesMap()
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("No particles data map configured for terrain '%s'. Terrain rendering will not "
-				 "include particle."),
+				 "include particles."),
 			*GetName());
 		return false;
 	}
