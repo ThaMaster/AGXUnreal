@@ -929,14 +929,8 @@ bool AAGX_Terrain::InitializeParticlesMap()
 	}
 	check(TextureBaseSize % NumPixelsPerParticle == 0);
 	check(TextureBaseSize * TextureBaseSize >= MaxNumRenderParticles * NumPixelsPerParticle);
-
-	const bool TargetLargeEnough =
-		TerrainParticlesDataMap->SizeX * TerrainParticlesDataMap->SizeY >=
-		TextureBaseSize * TextureBaseSize;
-	const bool TargetSquare = TerrainParticlesDataMap->SizeX == TerrainParticlesDataMap->SizeY;
-	const bool TargetSizeMultipleOfPpp = TerrainParticlesDataMap->SizeX % NumPixelsPerParticle == 0;
-
-	if (!TargetLargeEnough || !TargetSquare || !TargetSizeMultipleOfPpp)
+	if (!ParticleDataRenderTargetValid(
+			*TerrainParticlesDataMap, TextureBaseSize, NumPixelsPerParticle))
 	{
 		UE_LOG(
 			LogAGX, Error,
