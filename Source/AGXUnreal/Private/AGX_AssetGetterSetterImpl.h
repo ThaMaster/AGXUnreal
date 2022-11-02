@@ -3,9 +3,23 @@
 #pragma once
 #include <type_traits>
 
+/*
+ * This file contains a number of helper-macros useful for dealing with our asset/instance type
+ * and property updates in general.
+ */
+
 // clang-format off
 
-#define AGX_ASSET_SETTER_IMPL_INTERNAL( \
+/**
+ * @brief Final expansion of the various AGX_ASSET_SETTER macros.
+ * @param PropertyName The name of the property to set. May be a StructName.MemberVariableName identifier.
+ * @param InVar The new value to assign to the property.
+ * @param SetFunc The name of the function to call to set the value, both on an instance and a Barrier.
+ * @param HasNativeFunc Function to call in order to determine if the Barrier has a Native.
+ * @param NativeName The name of the Barrier member variable.
+ * @param BarrierMemberAccess The operator to use to access member functions in the Barrier, either '.' or '->'.
+ */
+ #define AGX_ASSET_SETTER_IMPL_INTERNAL( \
 	PropertyName, InVar, SetFunc, HasNativeFunc, NativeName, BarrierMemberAccess) \
 { \
 	if (IsInstance()) \
@@ -29,15 +43,41 @@
 	} \
 }
 
+/**
+ * @brief Set a new Property value on one of our asset/instance types, where the NativeBarrier is a pointer.
+ * @param PropertyName The name of the property to set. May be a StructNAme.MemberVariableName identifier.
+ * @param InVar The new value to assign to the property.
+ * @param SetFunc The name of the function to call to set the value, both on an instance and a Barrier.
+ */
 #define AGX_ASSET_SETTER_IMPL_POINTER(PropertyName, InVar, SetFunc) \
 	AGX_ASSET_SETTER_IMPL_INTERNAL(PropertyName, InVar, SetFunc, HasNative, NativeBarrier, ->)
 
+/**
+ * @brief Set a new Property value on one of our asset/instance types, where the NativeBarrier is held by-value.
+ * @param PropertyName The name of the property to set. May be a StructNAme.MemberVariableName identifier.
+ * @param InVar The new value to assign to the property.
+ * @param SetFunc The name of the function to call to set the value, both on an instance and a Barrier.
+ */
 #define AGX_ASSET_SETTER_IMPL_VALUE(PropertyName, InVar, SetFunc) \
 	AGX_ASSET_SETTER_IMPL_INTERNAL(PropertyName, InVar, SetFunc, HasNative, NativeBarrier, .)
 
+/**
+ * @brief Set a new Property value on one of our asset/instance types, where there are two NativeBarriers
+ * and the one we want is a pointer.
+ * @param PropertyName The name of the property to set. May be a StructNAme.MemberVariableName identifier.
+ * @param InVar The new value to assign to the property.
+ * @param SetFunc The name of the function to call to set the value, both on an instance and a Barrier.
+ */
 #define AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_POINTER(PropertyName, InVar, SetFunc, HasNativeFunc, NativeName) \
 	AGX_ASSET_SETTER_IMPL_INTERNAL(PropertyName, InVar, SetFunc, HasNativeFunc, NativeName, ->)
 
+/**
+ * @brief Set a new Property value on one of our asset/instance types, where there are two NativeBarriers
+ * and the one we want is held by-value.
+ * @param PropertyName The name of the property to set. May be a StructNAme.MemberVariableName identifier.
+ * @param InVar The new value to assign to the property.
+ * @param SetFunc The name of the function to call to set the value, both on an instance and a Barrier.
+ */
 #define AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(PropertyName, InVar, SetFunc, HasNativeFunc, NativeName) \
 	AGX_ASSET_SETTER_IMPL_INTERNAL(PropertyName, InVar, SetFunc, HasNativeFunc, NativeName, .)
 
