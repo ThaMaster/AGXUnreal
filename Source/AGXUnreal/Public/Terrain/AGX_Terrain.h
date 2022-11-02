@@ -236,6 +236,7 @@ private:
 	void ClearParticlesMap();
 #if WITH_EDITOR
 	void InitPropertyDispatcher();
+	void EnsureParticleDataRenderTargetSize();
 #endif
 
 private:

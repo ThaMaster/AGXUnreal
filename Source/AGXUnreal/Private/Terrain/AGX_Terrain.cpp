@@ -35,6 +35,11 @@
 // Standard library includes.
 #include <algorithm>
 
+#ifdef LOCTEXT_NAMESPACE
+#error "LOCTEXT_NAMESPACE leakage."
+#endif
+#define LOCTEXT_NAMESPACE "AAGX_Terrain"
+
 AAGX_Terrain::AAGX_Terrain()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -205,6 +210,49 @@ const FTerrainBarrier* AAGX_Terrain::GetNative() const
 	return &NativeBarrier;
 }
 
+namespace
+{
+	/**
+	Calculates and returns the smallest base size of a square sized texture,
+	such that the base size is evenly divisible by pixelsPerItem and has a square
+	that is at least minNumItems x pixelsPerItem.
+	*/
+	int32 CalculateTextureBaseSize(int32 MinNumItems, int32 PixelsPerItem)
+	{
+		// Max size taken from UTextureRenderTarget2D::PostEditChangeProperty in
+		// Engine/Source/Runtime/Engine/Private/TextureRenderTarget2D.cpp. Update here
+		// if future versions of Unreal Engine allow larger render targets.
+		const int32 MaxSide = 8192;
+		const int32 NumPixels = MinNumItems * PixelsPerItem;
+		int32 Side = FMath::Clamp(
+			FMath::CeilToInt(static_cast<int32>(FMath::Sqrt(static_cast<double>(NumPixels)))), 0,
+			MaxSide);
+		// We might not get a good side length on the first attempt, so search upwards until we
+		// find one.
+		for (; Side <= MaxSide; ++Side)
+		{
+			if ((Side % PixelsPerItem == 0) && (Side * Side >= NumPixels))
+			{
+				return Side;
+			}
+		}
+		AGX_CHECK(!"CalculateTextureBaseSize failed");
+		return 0;
+	}
+
+	bool ParticleDataRenderTargetValid(
+		const UTextureRenderTarget2D& TerrainParticlesDataMap, int32 TextureBaseSize,
+		int32 NumPixelsPerParticle)
+	{
+		const int32 NumTexels = TerrainParticlesDataMap.SizeX * TerrainParticlesDataMap.SizeY;
+		const bool TargetLargeEnough = NumTexels >= TextureBaseSize * TextureBaseSize;
+		const bool TargetSquare = TerrainParticlesDataMap.SizeX == TerrainParticlesDataMap.SizeY;
+		const bool TargetSizeMultipleOfPpp =
+			TerrainParticlesDataMap.SizeX % NumPixelsPerParticle == 0;
+		return TargetLargeEnough && TargetSquare && TargetSizeMultipleOfPpp;
+	}
+}
+
 #if WITH_EDITOR
 void AAGX_Terrain::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
@@ -242,7 +290,79 @@ void AAGX_Terrain::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, MaximumParticleActivationVolume), [](ThisClass* This)
 		{ This->SetMaximumParticleActivationVolume(This->MaximumParticleActivationVolume); });
+
+	// The MaxNumRenderParticles, ParticleSystemAsset, and TerrainParticlesDataMap Properties
+	// have dependencies between them. The TerrainParticlesDataMap must be large enough to hold
+	// data for all MaxNumRenderParticles particles, and whenever the TerrainParticlesDataMap
+	// is changed, either in size or which asset is pointed to, the ParticleSystemAsset must be
+	// recompiled.
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, MaxNumRenderParticles),
+		[](ThisClass* This) { This->EnsureParticleDataRenderTargetSize(); });
+
+	PropertyDispatcher.Add(
+		AGX_MEMBER_NAME(ParticleSystemAsset),
+		[](ThisClass* This)
+		{
+			if (This->ParticleSystemAsset != nullptr)
+			{
+				This->ParticleSystemAsset->RequestCompile(true);
+			}
+		});
+
+	PropertyDispatcher.Add(
+		AGX_MEMBER_NAME(TerrainParticlesDataMap),
+		[](ThisClass* This) { This->EnsureParticleDataRenderTargetSize(); });
 }
+
+void AAGX_Terrain::EnsureParticleDataRenderTargetSize()
+{
+	if (!TerrainParticlesDataMap)
+	{
+		return;
+	}
+
+	const int32 TextureBaseSize =
+		CalculateTextureBaseSize(MaxNumRenderParticles, NumPixelsPerParticle);
+	if (TextureBaseSize == 0)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not find a render target size able to accomodate %d render particles for "
+				 "AGX_Terrain '%s'."),
+			MaxNumRenderParticles, *GetActorLabel());
+		return;
+	}
+
+	if (!ParticleDataRenderTargetValid(
+			*TerrainParticlesDataMap, TextureBaseSize, NumPixelsPerParticle))
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Terrain Particles Data Map used by Terrain '%s' doesn't have the required "
+				 "size to hold the requested maximum number of render particles. "
+				 "Resizing from %d x %d to %d x %d."),
+			*this->GetActorLabel(), TerrainParticlesDataMap->SizeX, TerrainParticlesDataMap->SizeY,
+			TextureBaseSize, TextureBaseSize);
+
+		const bool DoResizeAndRecompile = FAGX_NotificationUtilities::YesNoQuestion(LOCTEXT(
+			"ResizeRTAndRecompileNiagara?",
+			"Current render target for particle data is too small to hold the requested number of "
+			"render particles. Automatically resize the render target and recompile the selected "
+			"Niagara particle system?"));
+		if (DoResizeAndRecompile)
+		{
+			TerrainParticlesDataMap->ResizeTarget(TextureBaseSize, TextureBaseSize);
+			TerrainParticlesDataMap->Modify(true);
+			if (ParticleSystemAsset != nullptr)
+			{
+				ParticleSystemAsset->RequestCompile(true);
+			}
+		}
+	}
+}
+
 #endif
 
 void AAGX_Terrain::BeginPlay()
@@ -739,28 +859,6 @@ void AAGX_Terrain::ClearDisplacementMap()
 		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
 
-namespace
-{
-	/**
-	Calculates and returns the smallest base size of a square sized texture,
-	such that the base size is evenly divisible by pixelsPerItem and has a square
-	that is at least minNumItems x pixelsPerItem.
-	*/
-	int32 CalculateTextureBaseSize(int32 minNumItems, int32 PixelsPerItem)
-	{
-		const int32 maxSize = 8192;
-		const int32 num_pixels = minNumItems * PixelsPerItem;
-		const int32 side = static_cast<int32>(FMath::Sqrt(static_cast<double>(num_pixels)));
-		for (int32 base = side; base <= maxSize; ++base)
-		{
-			if ((base % PixelsPerItem == 0) && (base * base >= minNumItems * PixelsPerItem))
-				return base;
-		}
-		check(!"CalculateTextureBaseSize failed");
-		return 0;
-	}
-}
-
 bool AAGX_Terrain::InitializeParticleSystem()
 {
 	return InitializeParticleSystemComponent() && InitializeParticlesMap();
@@ -956,3 +1054,5 @@ void AAGX_Terrain::ClearParticlesMap()
 		*TerrainParticlesDataMap, 1, ParticlesDataMapRegions.GetData(),
 		ResolutionX * NumBytesPerPixel, NumBytesPerPixel, PixelData, false);
 }
+
+#undef LOCTEXT_NAMESPACE
