@@ -165,6 +165,9 @@ private:
 	TMap<FAGX_NamePair, UpdatePropertyFunction> Functions;
 };
 
+/// Short version of GET_MEMBER_NAME_CHECKED when we want a member in the current class.
+#define AGX_MEMBER_NAME(MemberName) GET_MEMBER_NAME_CHECKED(ThisClass, MemberName)
+
 template <typename T>
 FAGX_PropertyChangedDispatcher<T>& FAGX_PropertyChangedDispatcher<T>::Get()
 {
