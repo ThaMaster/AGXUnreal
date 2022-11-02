@@ -918,6 +918,15 @@ bool AAGX_Terrain::InitializeParticlesMap()
 	// complexity of the Niagara Module Script).
 	const int32 TextureBaseSize =
 		CalculateTextureBaseSize(MaxNumRenderParticles, NumPixelsPerParticle);
+	if (TextureBaseSize == 0)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not find a render target size able to accomodate %d render particles for "
+				 "AGX_Terrain '%s'. Terrain rendering will not include particles."),
+			MaxNumRenderParticles, *GetLabelSafe(this));
+		return false;
+	}
 	check(TextureBaseSize % NumPixelsPerParticle == 0);
 	check(TextureBaseSize * TextureBaseSize >= MaxNumRenderParticles * NumPixelsPerParticle);
 
