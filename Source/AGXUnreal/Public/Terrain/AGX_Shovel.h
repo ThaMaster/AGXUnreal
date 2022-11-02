@@ -2,16 +2,37 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_Real.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+
+// Standard library includes.
+#include <limits>
 
 #include "AGX_Shovel.generated.h"
 
 class FShovelBarrier;
 
 USTRUCT()
+struct FAGX_ShovelExcavationSettings
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
+	bool bEnabled {true};
+
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
+	bool bEnableCreateDynamicMass {true};
+
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
+	bool bEnableForceFeedback {true};
+};
+
+USTRUCT()
 struct AGXUNREAL_API FAGX_Shovel
 {
-	/// /todo Expose more variables of the native shovel API!
 	/// /todo Consider making this a stand-alone Object/ActorComponent?
 
 	GENERATED_USTRUCT_BODY()
@@ -34,31 +55,97 @@ struct AGXUNREAL_API FAGX_Shovel
 	FString BodyName;
 
 	/**
-	 * Vertical distance under the blade cutting edge that the soil is allowed
-	 * to instantly merge up to [cm].
+	 * Number of teeth of the Shovel.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
-	double VerticalBladeSoilMergeDistance = 40.0f;
+	int NumberOfTeeth {6};
+
+	/**
+	 * The length of each Shovel tooth [cm].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_Real ToothLength {15.0};
+
+	/**
+	 * The minimum radius of each Shovel tooth [cm].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_Real MinimumToothRadius {1.5};
+
+	/**
+	 * The maximum radius of each Shovel tooth [cm].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_Real MaximumToothRadius {7.5};
 
 	/**
 	 * Extension outside the shovel bounding box where soil particle merging
 	 * is forbidden [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
-	double NoMergeExtensionDistance = 50.0f;
+	FAGX_Real NoMergeExtensionDistance {50.0};
+
+	/**
+	 * The minimum submerged cutting edge length fraction that generates submerged cutting.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_Real MinimumSubmergedContactLengthFraction {0.5};
+
+	/**
+	 * Vertical distance under the blade cutting edge that the soil is allowed
+	 * to instantly merge up to [cm].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_Real VerticalBladeSoilMergeDistance {0.0};
+
+	/**
+	 * Sets the dead-load limit where secondary separation will start active where the forward
+	 * direction starts to change according to the virtual separation plate created by the material
+	 * inside the shovel [cm].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_Real SecondarySeparationDeadloadLimit {80.0};
+
+	/**
+	 * Set the vertical penetration depth threshold for when the shovel tooth for penetration
+	 * resistance should reach full effectiveness. The penetration depth is defined as the vertical
+	 * distance between the tip of a shovel tooth and the surface position of the height field. The
+	 * penetration resistance will increase from a baseline of 10% until maximum effectiveness is
+	 * reached when the vertical penetration depth of the shovel reaches the specified value [cm].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_Real PenetrationDepthThreshold {0.5};
 
 	/**
 	 * Linear scaling coefficient for the penetration force that the terrain will
 	 * generated on this shovel.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
-	double PenetrationForceScaling = 1.0f;
+	FAGX_Real PenetrationForceScaling {1.0};
 
 	/**
-	 * Determines if shovel <-> terrain contact should always be removed
+	 * The maximum limit on penetration force that the terrain will generate on this shovel [N].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_Real MaximumPenetrationForce {std::numeric_limits<double>::infinity()};
+
+	/**
+	 * Determines if shovel <-> terrain contact should always be removed.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
 	bool AlwaysRemoveShovelContacts = false;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_ShovelExcavationSettings PrimaryExcavationSettings;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_ShovelExcavationSettings DeformBackExcavationSettings;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_ShovelExcavationSettings DeformRightExcavationSettings;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_ShovelExcavationSettings DeformLeftExcavationSettings;
 
 	static void UpdateNativeShovelProperties(
 		FShovelBarrier& ShovelBarrier, const FAGX_Shovel& Shovel);
