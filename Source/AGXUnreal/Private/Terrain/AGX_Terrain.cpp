@@ -225,7 +225,7 @@ namespace
 		const int32 MaxSide = 8192;
 		const int32 NumPixels = MinNumItems * PixelsPerItem;
 		int32 Side = FMath::Clamp(
-			FMath::CeilToInt(static_cast<int32>(FMath::Sqrt(static_cast<double>(NumPixels)))), 0,
+			static_cast<int32>(FMath::CeilToInt(FMath::Sqrt(static_cast<double>(NumPixels)))), 0,
 			MaxSide);
 		// We might not get a good side length on the first attempt, so search upwards until we
 		// find one.
