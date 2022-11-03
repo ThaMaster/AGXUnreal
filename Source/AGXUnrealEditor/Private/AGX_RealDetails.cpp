@@ -605,26 +605,22 @@ void AGX_RealDetails_helpers::NewValueSet(
 	// Let selected objects know that we are done modifying them.
 	FPropertyChangedEvent ChangedEvent(
 		ValueProperty, EPropertyChangeType::ValueSet, MakeArrayView(SelectedObjects));
+	ChangedEvent.ObjectIteratorIndex = 0;
 
 	// We are responsible for setting up ArrayIndices information in the FPropertyChangedChainEvent
 	// and also stepping the seemingly internal ObjectIteratorIndex when calling
 	// PostEditChangeChainProperty below. This ensures we can do e.g. ´Event.GetArrayIndex());´ from
 	// within PostEditChangeChainProperty and get the correct array index if this is party of an array.
 	TArray<TMap<FString, int32>> ArrayIndicesPerObject;
-	for (int i = 0; i < SelectedObjects.Num(); i++)
+	TOptional<TMap<FString, int32>> IndicesMapMaybe = GetArrayIndicesFromPropertyPath(ValuePath);
+	if (IndicesMapMaybe)
 	{
-		if (auto Map = GetArrayIndicesFromPropertyPath(ValuePath))
+		for (int32 I = 0; I < SelectedObjects.Num(); ++I)
 		{
-			ArrayIndicesPerObject.Add(Map.GetValue());
+			ArrayIndicesPerObject.Add(*IndicesMapMaybe);
 		}
-	}
-
-	if (ArrayIndicesPerObject.Num() > 0)
-	{
 		ChangedEvent.SetArrayIndexPerObject(ArrayIndicesPerObject);
 	}
-
-	ChangedEvent.ObjectIteratorIndex = 0;
 
 	TArray<FProperty*> PropertyChainArray = MakePropertyChain(ValueHandle);
 	FEditPropertyChain PropertyChain;
