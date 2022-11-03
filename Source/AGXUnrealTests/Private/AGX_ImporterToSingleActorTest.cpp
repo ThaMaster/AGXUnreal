@@ -2106,6 +2106,22 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 		Test.TestEqual(TEXT("Sphere angular velocity"), Actual, Expected);
 	}
 
+	// Linear velocity damping.
+	{
+		FVector Actual = SphereBody->LinearVelocityDamping;
+		FVector ExpectedAgx(1.0, 2.0, 3.0);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere linear velocity damping"), Actual, Expected);
+	}
+
+	// Angular velocity damping.
+	{
+		FVector Actual = SphereBody->AngularVelocityDamping;
+		FVector ExpectedAgx(4.0, 5.0, 6.0);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere angular velocity damping"), Actual, Expected);
+	}
+
 	// Mass.
 	{
 		Test.TestEqual(TEXT("Sphere mass"), SphereBody->Mass, 500.f);
