@@ -50,12 +50,6 @@ class AGXUNREALEDITOR_API FAGX_EditorUtilities
 {
 public:
 	/**
-	 * Saves (or re-saves) an asset to disk. The asset must have a valid Package setup before
-	 * passing it to this function.
-	 */
-	static bool SaveAsset(UObject& Asset);
-
-	/**
 	 * Create a new Actor with an empty USceneComponent as its RootComponent.
 	 */
 	static std::tuple<AActor*, USceneComponent*> CreateEmptyActor(

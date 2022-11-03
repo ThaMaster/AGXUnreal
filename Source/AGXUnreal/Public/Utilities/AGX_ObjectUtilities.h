@@ -55,6 +55,14 @@ public:
 	template <typename T>
 	static TArray<T*> GetArchetypeInstances(T& Object);
 
+#if WITH_EDITOR
+	/**
+	 * Saves (or re-saves) an asset to disk. The asset must have a valid Package setup before
+	 * passing it to this function.
+	 */
+	static bool SaveAsset(UObject& Asset);
+#endif
+
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
 };
