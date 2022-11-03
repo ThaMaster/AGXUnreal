@@ -20,6 +20,7 @@
 #include "Terrain/TerrainBarrier.h"
 #include "Utilities/AGX_HeightFieldUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
 
@@ -341,23 +342,20 @@ void AAGX_Terrain::EnsureParticleDataRenderTargetSize()
 			LogAGX, Warning,
 			TEXT("Terrain Particles Data Map used by Terrain '%s' doesn't have the required "
 				 "size to hold the requested maximum number of render particles. "
-				 "Resizing from %d x %d to %d x %d."),
+				 "Requesting resize from %d x %d to %d x %d."),
 			*this->GetActorLabel(), TerrainParticlesDataMap->SizeX, TerrainParticlesDataMap->SizeY,
 			TextureBaseSize, TextureBaseSize);
 
-		const bool DoResizeAndRecompile = FAGX_NotificationUtilities::YesNoQuestion(LOCTEXT(
-			"ResizeRTAndRecompileNiagara?",
-			"Current render target for particle data is too small to hold the requested number of "
-			"render particles. Automatically resize the render target and recompile the selected "
-			"Niagara particle system?"));
-		if (DoResizeAndRecompile)
+		const bool DoResize = FAGX_NotificationUtilities::YesNoQuestion(FText::Format(
+			LOCTEXT(
+				"ResizeRenderTarget?",
+				"Current render target for particle data is too small to hold the requested number "
+				"of render particles. Automatically resize the render target to {0}x{1}?"),
+			TextureBaseSize, TextureBaseSize));
+		if (DoResize)
 		{
 			TerrainParticlesDataMap->ResizeTarget(TextureBaseSize, TextureBaseSize);
-			TerrainParticlesDataMap->Modify(true);
-			if (ParticleSystemAsset != nullptr)
-			{
-				ParticleSystemAsset->RequestCompile(true);
-			}
+			FAGX_ObjectUtilities::SaveAsset(*TerrainParticlesDataMap);
 		}
 	}
 }
