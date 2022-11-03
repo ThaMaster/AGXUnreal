@@ -54,6 +54,12 @@ public:
 	// In degrees/s.
 	FVector GetAngularVelocity() const;
 
+	void SetLinearVelocityDamping(const FVector& LinearVelocityDamping);
+	FVector GetLinearVelocityDamping() const;
+
+	void SetAngularVelocityDamping(const FVector& AngularVelocityDamping);
+	FVector GetAngularVelocityDamping() const;
+
 	FMassPropertiesBarrier& GetMassProperties();
 	const FMassPropertiesBarrier& GetMassProperties() const;
 	void UpdateMassProperties();
