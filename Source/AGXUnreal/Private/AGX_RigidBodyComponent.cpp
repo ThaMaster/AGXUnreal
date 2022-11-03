@@ -186,6 +186,14 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetAngularVelocity(This->Velocity); });
 
 	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, LinearVelocityDamping),
+		[](ThisClass* This) { This->SetLinearVelocityDamping(This->LinearVelocityDamping); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, AngularVelocityDamping),
+		[](ThisClass* This) { This->SetAngularVelocityDamping(This->AngularVelocityDamping); });
+
+	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MotionControl),
 		[](ThisClass* This) { This->SetMotionControl(This->MotionControl); });
 
@@ -453,6 +461,8 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 
 	NativeBarrier.SetVelocity(Velocity);
 	NativeBarrier.SetAngularVelocity(AngularVelocity);
+	NativeBarrier.SetLinearVelocityDamping(LinearVelocityDamping);
+	NativeBarrier.SetAngularVelocityDamping(AngularVelocityDamping);
 	NativeBarrier.SetName(GetName());
 	NativeBarrier.SetEnabled(bEnabled);
 	InitializeMotionControl();
@@ -470,6 +480,8 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 	PrincipalInertia = MassProperties.GetPrincipalInertia();
 	Velocity = Barrier.GetVelocity();
 	AngularVelocity = Barrier.GetAngularVelocity();
+	LinearVelocityDamping = Barrier.GetLinearVelocityDamping();
+	AngularVelocityDamping = Barrier.GetAngularVelocityDamping();
 	MotionControl = Barrier.GetMotionControl();
 	bEnabled = Barrier.GetEnabled();
 
@@ -1009,6 +1021,46 @@ FVector UAGX_RigidBodyComponent::GetAngularVelocity() const
 	}
 
 	return AngularVelocity;
+}
+
+void UAGX_RigidBodyComponent::SetLinearVelocityDamping(const FVector& InLinearVelocityDamping)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetLinearVelocityDamping(InLinearVelocityDamping);
+	}
+
+	LinearVelocityDamping = InLinearVelocityDamping;
+}
+
+FVector UAGX_RigidBodyComponent::GetLinearVelocityDamping() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetLinearVelocityDamping();
+	}
+
+	return LinearVelocityDamping;
+}
+
+void UAGX_RigidBodyComponent::SetAngularVelocityDamping(const FVector& InAngularVelocityDamping)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetAngularVelocityDamping(InAngularVelocityDamping);
+	}
+
+	AngularVelocityDamping = InAngularVelocityDamping;
+}
+
+FVector UAGX_RigidBodyComponent::GetAngularVelocityDamping() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetAngularVelocityDamping();
+	}
+
+	return AngularVelocityDamping;
 }
 
 void UAGX_RigidBodyComponent::SetMotionControl(TEnumAsByte<enum EAGX_MotionControl> InMotionControl)

@@ -373,7 +373,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 		// The position, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(
 			1.00000000000000000000e+01f, 2.00000000000000000000e+01f, 3.00000000000000000000e+01f);
-		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		FVector Expected = AgxToUnrealDisplacement(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere position"), Actual, Expected);
 	}
 
@@ -394,7 +394,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 		// The velocity, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(
 			1.00000000000000000000e+00f, 2.00000000000000000000e+00f, 3.00000000000000000000e+00f);
-		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		FVector Expected = AgxToUnrealDisplacement(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere linear velocity"), Actual, Expected);
 	}
 
@@ -2075,7 +2075,7 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 		FVector Actual = SphereBody->GetComponentLocation();
 		// The position, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(10.f, 20.f, 30.f);
-		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		FVector Expected = AgxToUnrealDisplacement(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere position"), Actual, Expected);
 	}
 
@@ -2093,7 +2093,7 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 		FVector Actual = SphereBody->Velocity;
 		// The velocity, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(1.f, 2.f, 3.f);
-		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		FVector Expected = AgxToUnrealDisplacement(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere linear velocity"), Actual, Expected);
 	}
 
@@ -2104,6 +2104,22 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 		FVector ExpectedAgx(1.1f, 1.2f, 1.3f);
 		FVector Expected = AgxToUnrealAngularVelocity(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere angular velocity"), Actual, Expected);
+	}
+
+	// Linear velocity damping.
+	{
+		FVector Actual = SphereBody->LinearVelocityDamping;
+		FVector ExpectedAgx(1.0, 2.0, 3.0);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere linear velocity damping"), Actual, Expected);
+	}
+
+	// Angular velocity damping.
+	{
+		FVector Actual = SphereBody->AngularVelocityDamping;
+		FVector ExpectedAgx(4.0, 5.0, 6.0);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere angular velocity damping"), Actual, Expected);
 	}
 
 	// Mass.
@@ -2235,7 +2251,7 @@ bool FCheckSimpleGeometriesImportedCommand::Update()
 			return;
 		}
 
-		const FVector ExpectedUnrealPos = AgxToUnrealVector(ExpectedAGXWorldPos);
+		const FVector ExpectedUnrealPos = AgxToUnrealDisplacement(ExpectedAGXWorldPos);
 		Test.TestEqual(TEXT("Component position"), c->GetComponentLocation(), ExpectedUnrealPos);
 	};
 
@@ -2609,27 +2625,27 @@ bool FCheckObserverFramesImportedCommand::Update()
 		return true;
 	};
 
-	if (!TestGroup(1, AgxToUnrealVector(0.0, 0.0, 0.0), AgxToUnrealVector(0.0, 0.0, 0.0)))
+	if (!TestGroup(1, AgxToUnrealDisplacement(0.0, 0.0, 0.0), AgxToUnrealDisplacement(0.0, 0.0, 0.0)))
 	{
 		Test.AddError(TEXT("TestGroup id 1 returned false, cannot continue the test."));
 		return true;
 	}
 
-	if (!TestGroup(2, AgxToUnrealVector(1.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3)))
+	if (!TestGroup(2, AgxToUnrealDisplacement(1.0, 0.0, 0.0), AgxToUnrealDisplacement(0.3, 0.3, 0.3)))
 	{
 		Test.AddError(TEXT("TestGroup id 2 returned false, cannot continue the test."));
 		return true;
 	}
 
-	if (!TestGroup(3, AgxToUnrealVector(2.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3)))
+	if (!TestGroup(3, AgxToUnrealDisplacement(2.0, 0.0, 0.0), AgxToUnrealDisplacement(0.3, 0.3, 0.3)))
 	{
 		Test.AddError(TEXT("TestGroup id 3 returned false, cannot continue the test."));
 		return true;
 	}
 
 	FRotator Rotation = AgxToUnrealEulerAngles(PI / 10, 0.0, 0.0);
-	FVector ObserverLocation = Rotation.RotateVector(AgxToUnrealVector(0.3, 0.3, 0.3));
-	TestGroup(4, AgxToUnrealVector(3.0, 0.0, 0.0), ObserverLocation);
+	FVector ObserverLocation = Rotation.RotateVector(AgxToUnrealDisplacement(0.3, 0.3, 0.3));
+	TestGroup(4, AgxToUnrealDisplacement(3.0, 0.0, 0.0), ObserverLocation);
 
 	// Tests/Test_ArchiveImport.umap
 
@@ -2890,19 +2906,19 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 
 	Test.TestEqual(
 		TEXT("Boxlink position"), Boxlink->GetComponentLocation(),
-		AgxToUnrealVector({0.f, 0.f, 0.f}));
+		AgxToUnrealDisplacement({0.f, 0.f, 0.f}));
 
 	Test.TestEqual(
 		TEXT("Shperelink position"), Shperelink->GetComponentLocation(),
-		AgxToUnrealVector({1.f, 0.f, 0.f}));
+		AgxToUnrealDisplacement({1.f, 0.f, 0.f}));
 
 	Test.TestEqual(
 		TEXT("Cylinderlink position"), Cylinderlink->GetComponentLocation(),
-		AgxToUnrealVector({2.f, 0.f, 0.f}));
+		AgxToUnrealDisplacement({2.f, 0.f, 0.f}));
 
 	Test.TestEqual(
 		TEXT("Freefallinglink position"), Freefallinglink->GetComponentLocation(),
-		AgxToUnrealVector({0.f, 0.f, 0.f}));
+		AgxToUnrealDisplacement({0.f, 0.f, 0.f}));
 
 	return true;
 }

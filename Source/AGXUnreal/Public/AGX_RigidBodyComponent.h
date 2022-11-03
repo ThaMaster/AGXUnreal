@@ -195,6 +195,32 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetAngularVelocity() const;
 
+	/**
+	 * The linear velocity damping of the Rigid Body. Can be used to mimic aerodynamic or
+	 * hydrodynamic effects [kg/s].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	FVector LinearVelocityDamping;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetLinearVelocityDamping(const FVector& InLinearVelocityDamping);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetLinearVelocityDamping() const;
+
+	/**
+	 * The angular velocity damping of the Rigid Body. Can be used to mimic aerodynamic or
+	 * hydrodynamic effects [kg/s].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	FVector AngularVelocityDamping;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetAngularVelocityDamping(const FVector& InAngularVelocityDamping);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetAngularVelocityDamping() const;
+
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
