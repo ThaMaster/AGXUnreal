@@ -97,6 +97,43 @@ bool FShovelBarrier::GetAlwaysRemoveShovelContacts() const
 	return NativeRef->Native->getAlwaysRemoveShovelContacts();
 }
 
+void FShovelBarrier::SetExcavationSettingsEnabled(EAGX_ExcavationMode Mode, bool Enable)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationSettings(Convert(Mode)).setEnable(Enable);
+}
+
+bool FShovelBarrier::GetExcavationSettingsEnabled(EAGX_ExcavationMode Mode) const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationSettings(Convert(Mode)).getEnable();
+}
+
+void FShovelBarrier::SetExcavationSettingsEnableCreateDynamicMass(
+	EAGX_ExcavationMode Mode, bool Enable)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationSettings(Convert(Mode)).setEnableCreateDynamicMass(Enable);
+}
+
+bool FShovelBarrier::GetExcavationSettingsEnableCreateDynamicMass(EAGX_ExcavationMode Mode) const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationSettings(Convert(Mode)).getEnableCreateDynamicMass();
+}
+
+void FShovelBarrier::SetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode, bool Enable)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationSettings(Convert(Mode)).setEnableForceFeedback(Enable);
+}
+
+bool FShovelBarrier::GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode) const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationSettings(Convert(Mode)).getEnableForceFeedback();
+}
+
 bool FShovelBarrier::HasNative() const
 {
 	return NativeRef->Native != nullptr;

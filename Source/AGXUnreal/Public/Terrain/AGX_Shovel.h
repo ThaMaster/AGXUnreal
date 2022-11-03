@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
+#include "Terrain/AGX_ShovelExcavationSettings.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -14,21 +15,6 @@
 #include "AGX_Shovel.generated.h"
 
 class FShovelBarrier;
-
-USTRUCT()
-struct FAGX_ShovelExcavationSettings
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
-	bool bEnabled {true};
-
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
-	bool bEnableCreateDynamicMass {true};
-
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
-	bool bEnableForceFeedback {true};
-};
 
 USTRUCT()
 struct AGXUNREAL_API FAGX_Shovel
@@ -99,7 +85,7 @@ struct AGXUNREAL_API FAGX_Shovel
 	FAGX_Real VerticalBladeSoilMergeDistance {0.0};
 
 	/**
-	 * Sets the dead-load limit where secondary separation will start active where the forward
+	 * Sets the dead-load limit where secondary separation will start to activate where the forward
 	 * direction starts to change according to the virtual separation plate created by the material
 	 * inside the shovel [cm].
 	 */

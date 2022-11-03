@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Math/Vector.h"
 #include "Math/TwoVectors.h"
+#include "Terrain/AGX_ShovelEnums.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -51,6 +52,15 @@ public:
 
 	void SetAlwaysRemoveShovelContacts(bool Enable);
 	bool GetAlwaysRemoveShovelContacts() const;
+
+	void SetExcavationSettingsEnabled(EAGX_ExcavationMode Mode, bool Enable);
+	bool GetExcavationSettingsEnabled(EAGX_ExcavationMode Mode) const;
+
+	void SetExcavationSettingsEnableCreateDynamicMass(EAGX_ExcavationMode Mode, bool Enable);
+	bool GetExcavationSettingsEnableCreateDynamicMass(EAGX_ExcavationMode Mode) const;
+
+	void SetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode, bool Enable);
+	bool GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode) const;
 
 	bool HasNative() const;
 	void AllocateNative(

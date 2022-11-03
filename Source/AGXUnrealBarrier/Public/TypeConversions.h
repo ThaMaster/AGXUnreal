@@ -12,6 +12,7 @@
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "Materials/AGX_ContactMaterialEnums.h"
 #include "RigidBodyBarrier.h"
+#include "Terrain/AGX_ShovelEnums.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/DoubleInterval.h"
 #include "Vehicle/AGX_TrackEnums.h"
@@ -38,6 +39,7 @@
 #include <agx/Vec2.h>
 #include <agx/Vec3.h>
 #include <agxModel/TwoBodyTire.h>
+#include "agxTerrain/Shovel.h"
 #include <agxVehicle/TrackInternalMergeProperties.h>
 #include <agxVehicle/TrackWheel.h>
 #include <agxWire/Node.h>
@@ -846,6 +848,52 @@ inline FTwoBodyTireBarrier::DeformationMode Convert(agxModel::TwoBodyTire::Defor
 					 "literal of unknown type to an FTwoBodyTireBarrier::DeformationMode "
 					 "literal. Returning FTwoBodyTireBarrier::DeformationMode::RADIAL."));
 			return FTwoBodyTireBarrier::DeformationMode::RADIAL;
+	}
+}
+
+//
+// Enumerations, Terrain.
+//
+
+inline EAGX_ExcavationMode Convert(agxTerrain::Shovel::ExcavationMode Mode)
+{
+	switch (Mode)
+	{
+		case agxTerrain::Shovel::ExcavationMode::PRIMARY:
+			return EAGX_ExcavationMode::Primary;
+		case agxTerrain::Shovel::ExcavationMode::DEFORM_BACK:
+			return EAGX_ExcavationMode::DeformBack;
+		case agxTerrain::Shovel::ExcavationMode::DEFORM_RIGHT:
+			return EAGX_ExcavationMode::DeformRight;
+		case agxTerrain::Shovel::ExcavationMode::DEFORM_LEFT:
+			return EAGX_ExcavationMode::DeformLeft;
+		default:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an unknown agxTerrain::Shovel::ExcavationMode "
+					 "literal to an EAGX_ExcavationMode."));
+			return EAGX_ExcavationMode::Primary;
+	}
+}
+
+inline agxTerrain::Shovel::ExcavationMode Convert(EAGX_ExcavationMode Mode)
+{
+	switch (Mode)
+	{
+		case EAGX_ExcavationMode::Primary:
+			return agxTerrain::Shovel::ExcavationMode::PRIMARY;
+		case EAGX_ExcavationMode::DeformBack:
+			return agxTerrain::Shovel::ExcavationMode::DEFORM_BACK;
+		case EAGX_ExcavationMode::DeformRight:
+			return agxTerrain::Shovel::ExcavationMode::DEFORM_RIGHT;
+		case EAGX_ExcavationMode::DeformLeft:
+			return agxTerrain::Shovel::ExcavationMode::DEFORM_LEFT;
+		default:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an unknown EAGX_ExcavationMode "
+					 "literal to an agxTerrain::Shovel::ExcavationMode."));
+			return agxTerrain::Shovel::ExcavationMode::PRIMARY;
 	}
 }
 
