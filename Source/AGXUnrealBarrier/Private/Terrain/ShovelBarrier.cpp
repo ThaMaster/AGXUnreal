@@ -48,13 +48,13 @@ void FShovelBarrier::SetCuttingEdge(const FTwoVectors& CuttingEdge)
 	NativeRef->Native->setCuttingEdge(CuttingEdgeAGX);
 }
 
-void FShovelBarrier::SetNumberOfTeeth(int NumberOfTeeth)
+void FShovelBarrier::SetNumberOfTeeth(int32 NumberOfTeeth)
 {
 	check(HasNative());
 	NativeRef->Native->setNumberOfTeeth(NumberOfTeeth);
 }
 
-int FShovelBarrier::GetNumberOfTeeth() const
+int32 FShovelBarrier::GetNumberOfTeeth() const
 {
 	check(HasNative());
 	return NativeRef->Native->getNumberOfTeeth();

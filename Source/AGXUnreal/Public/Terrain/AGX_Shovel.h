@@ -44,7 +44,7 @@ struct AGXUNREAL_API FAGX_Shovel
 	 * Number of teeth of the Shovel.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
-	int NumberOfTeeth {6};
+	int32 NumberOfTeeth {6};
 
 	/**
 	 * The length of each Shovel tooth [cm].

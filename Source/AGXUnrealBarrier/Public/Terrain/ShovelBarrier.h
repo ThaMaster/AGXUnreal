@@ -41,8 +41,8 @@ public:
 	void SetTopEdge(const FTwoVectors& TopEdge);
 	void SetCuttingEdge(const FTwoVectors& CuttingEdge);
 
-	void SetNumberOfTeeth(int NumberOfTeeth);
-	int GetNumberOfTeeth() const;
+	void SetNumberOfTeeth(int32 NumberOfTeeth);
+	int32 GetNumberOfTeeth() const;
 
 	void SetToothLength(double ToothLength);
 	double GetToothLength() const;
