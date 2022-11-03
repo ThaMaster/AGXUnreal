@@ -333,6 +333,15 @@ inline FVector ConvertDisplacement(const agx::Vec3& V)
 		ConvertDistanceToUnreal<decltype(FVector::X)>(V.z()));
 }
 
+inline FVector ConvertDisplacement(const agx::Vec3f& V)
+{
+	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	return FVector(
+		ConvertDistanceToUnreal<decltype(FVector::X)>(V.x()),
+		-ConvertDistanceToUnreal<decltype(FVector::X)>(V.y()),
+		ConvertDistanceToUnreal<decltype(FVector::X)>(V.z()));
+}
+
 inline FVector ConvertFloatVector(const agx::Vec3f& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.

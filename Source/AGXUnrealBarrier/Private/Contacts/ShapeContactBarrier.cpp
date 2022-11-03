@@ -125,7 +125,7 @@ FVector FShapeContactBarrier::CalculateRelativeVelocity(int32 PointIndex) const
 				 "%zu but only have %zu contact points."),
 			PointIndexAGX, NumPoints);
 	}
-	return ConvertFloatVector(NativeEntity->Native.calculateRelativeVelocity(PointIndexAGX));
+	return ConvertDisplacement(NativeEntity->Native.calculateRelativeVelocity(PointIndexAGX));
 }
 
 TArray<FContactPointBarrier> FShapeContactBarrier::GetContactPoints() const
