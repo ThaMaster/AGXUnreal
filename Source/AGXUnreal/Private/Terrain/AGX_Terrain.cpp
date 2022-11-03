@@ -224,9 +224,8 @@ namespace
 		// if future versions of Unreal Engine allow larger render targets.
 		const int32 MaxSide = 8192;
 		const int32 NumPixels = MinNumItems * PixelsPerItem;
-		int32 Side = FMath::Clamp(
-			static_cast<int32>(FMath::CeilToInt(FMath::Sqrt(static_cast<double>(NumPixels)))), 0,
-			MaxSide);
+		int32 Side =
+			FMath::Clamp(FMath::CeilToInt(FMath::Sqrt(static_cast<double>(NumPixels))), 0, MaxSide);
 		// We might not get a good side length on the first attempt, so search upwards until we
 		// find one.
 		for (; Side <= MaxSide; ++Side)
