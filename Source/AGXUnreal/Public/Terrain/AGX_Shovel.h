@@ -74,7 +74,9 @@ struct AGXUNREAL_API FAGX_Shovel
 	/**
 	 * The minimum submerged cutting edge length fraction that generates submerged cutting.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Shovel",
+		Meta = (ClampMin = "0.0", UIMin = "0.0", ClampMax = "1.0", UIMax = "1.0"))
 	FAGX_Real MinimumSubmergedContactLengthFraction {0.5};
 
 	/**
@@ -87,10 +89,12 @@ struct AGXUNREAL_API FAGX_Shovel
 	/**
 	 * Sets the dead-load limit where secondary separation will start to activate where the forward
 	 * direction starts to change according to the virtual separation plate created by the material
-	 * inside the shovel [cm].
+	 * inside the shovel.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
-	FAGX_Real SecondarySeparationDeadloadLimit {80.0};
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Shovel",
+		Meta = (ClampMin = "0.0", UIMin = "0.0", ClampMax = "1.0", UIMax = "1.0"))
+	FAGX_Real SecondarySeparationDeadloadLimit {0.8};
 
 	/**
 	 * Set the vertical penetration depth threshold for when the shovel tooth for penetration
@@ -100,7 +104,7 @@ struct AGXUNREAL_API FAGX_Shovel
 	 * reached when the vertical penetration depth of the shovel reaches the specified value [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
-	FAGX_Real PenetrationDepthThreshold {0.5};
+	FAGX_Real PenetrationDepthThreshold {50.0};
 
 	/**
 	 * Linear scaling coefficient for the penetration force that the terrain will

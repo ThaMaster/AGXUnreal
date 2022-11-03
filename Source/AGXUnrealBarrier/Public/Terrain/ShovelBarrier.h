@@ -41,14 +41,38 @@ public:
 	void SetTopEdge(const FTwoVectors& TopEdge);
 	void SetCuttingEdge(const FTwoVectors& CuttingEdge);
 
-	void SetVerticalBladeSoilMergeDistance(double VerticalBladeSoilMergeDistance);
-	double GetVerticalBladeSoilMergeDistance() const;
+	void SetNumberOfTeeth(int NumberOfTeeth);
+	int GetNumberOfTeeth() const;
+
+	void SetToothLength(double ToothLength);
+	double GetToothLength() const;
+
+	void SetMinimumToothRadius(double MinimumToothRadius);
+	double GetMinimumToothRadius() const;
+
+	void SetMaximumToothRadius(double MaximumToothRadius);
+	double GetMaximumToothRadius() const;
 
 	void SetNoMergeExtensionDistance(double NoMergeExtensionDistance);
 	double GetNoMergeExtensionDistance() const;
 
+	void SetMinimumSubmergedContactLengthFraction(double MinimumSubmergedContactLengthFraction);
+	double GetMinimumSubmergedContactLengthFraction() const;
+
+	void SetVerticalBladeSoilMergeDistance(double VerticalBladeSoilMergeDistance);
+	double GetVerticalBladeSoilMergeDistance() const;
+
+	void SetSecondarySeparationDeadloadLimit(double SecondarySeparationDeadloadLimit);
+	double GetSecondarySeparationDeadloadLimit() const;
+
+	void SetPenetrationDepthThreshold(double PenetrationDepthThreshold);
+	double GetPenetrationDepthThreshold() const;
+
 	void SetPenetrationForceScaling(double PenetrationForceScaling);
 	double GetPenetrationForceScaling() const;
+
+	void SetMaximumPenetrationForce(double MaximumPenetrationForce);
+	double GetMaximumPenetrationForce() const;
 
 	void SetAlwaysRemoveShovelContacts(bool Enable);
 	bool GetAlwaysRemoveShovelContacts() const;
