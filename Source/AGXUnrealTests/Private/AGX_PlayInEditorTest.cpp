@@ -55,6 +55,11 @@ namespace AGX_PlayInEditorTest_helpers
 // AActor*> directly.
 using ActorMap = TMap<FString, AActor*>;
 
+
+//
+// FallingBox test starts here.
+//
+
 DEFINE_LATENT_AUTOMATION_COMMAND_FOUR_PARAMETER(
 	FCheckFallinBoxMovedCommand, int, TickCurrent, int, TickMax, ActorMap, ActorsOfInterest,
 	FAutomationTestBase&, Test);
@@ -94,7 +99,6 @@ bool FCheckFallinBoxMovedCommand::Update()
 	auto Body =
 		GetComponentByName<UAGX_RigidBodyComponent>(*ActorsOfInterest["BoxActor"], "BoxBody");
 	Test.TestTrue("Body final z pos", Body->GetComponentLocation().Z < 299.0);
-	UE_LOG(LogAGX, Warning, TEXT("Body z: %f"), Body->GetComponentLocation().Z);
 	return true;
 }
 
@@ -121,4 +125,6 @@ bool FFallingBoxTest::RunTest(const FString& Parameters)
 	return true;
 }
 
-
+//
+// PlayingAllExampleLevels starts here.
+//
