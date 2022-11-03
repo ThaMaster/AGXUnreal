@@ -49,7 +49,12 @@ public:
 		const FString& Text, UWorld* World, const FString& Title = "");
 
 	/**
-	* Logs a warning if AMOR is disabled globally (reads from AGX_Simulation CDO).
-	*/
+	 * Logs a warning if AMOR is disabled globally (reads from AGX_Simulation CDO).
+	 */
 	static void LogWarningIfAmorDisabled(const FString& OwningType);
+
+	/**
+	 * Ask if an action should be performed.
+	 */
+	static bool YesNoQuestion(const FText& Question);
 };

@@ -3,29 +3,15 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Real.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/AGX_Shovel.h"
 
 // Unreal Engine includes.
-#include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 #include "Containers/Array.h"
-
-/// \todo Would like to not include this header, and only forward declare
-/// UNiagaraSystem instead. Currently gives
-///
-/// Error: Unrecognized type 'UNiagaraSystem' - type must be a UCLASS, USTRUCT or UENUM
-///
-/// on
-///
-/// UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", Meta = (EditCondition =
-/// "bEnableParticleRendering")) UNiagaraSystem* ParticleSystemAsset;
-//#include "NiagaraComponent.h"
-//#include "NiagaraEmitterInstance.h"
-//#include "NiagaraFunctionLibrary.h"
-//#include "NiagaraSystemInstance.h"
-
+#include "CoreMinimal.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "GameFramework/Actor.h"
 
 #include "AGX_Terrain.generated.h"
 
@@ -112,7 +98,7 @@ public:
 	 * Sets the maximum volume of active zone wedges that should wake particles [cm^3].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
-	FAGX_Real MaximumParticleActivationVolume = std::numeric_limits<double>::max();
+	FAGX_Real MaximumParticleActivationVolume = std::numeric_limits<double>::infinity();
 
 	void SetMaximumParticleActivationVolume(double InMaximumParticleActivationVolume);
 
@@ -236,6 +222,7 @@ private:
 	void ClearParticlesMap();
 #if WITH_EDITOR
 	void InitPropertyDispatcher();
+	void EnsureParticleDataRenderTargetSize();
 #endif
 
 private:

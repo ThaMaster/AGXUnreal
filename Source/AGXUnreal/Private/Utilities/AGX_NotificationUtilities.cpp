@@ -98,3 +98,9 @@ void FAGX_NotificationUtilities::LogWarningIfAmorDisabled(const FString& OwningT
 			*OwningType);
 	}
 }
+
+bool FAGX_NotificationUtilities::YesNoQuestion(const FText& Question)
+{
+	const FText Title = FText::FromString("AGX Dynamics for Unreal");
+	return FMessageDialog::Open(EAppMsgType::YesNo, Question, &Title) == EAppReturnType::Yes;
+}
