@@ -2,23 +2,6 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 
-// AGX Dynamics require a license for wire and track import. Our GitLab CI
-// runtime environment on Linux and Windows currently doesn't have an AGX Dynamics license so the
-// wire and track import test always fails on those platforms. For now the test is disabled through
-// this preprocessor flag for Linux and Windows. See internal issue 495. Remove the preprocessor
-// guards once the Linux and/or Windows GitLab CI runtime has an AGX Dynamics license.
-#if defined(_WIN64)
-#define AGX_TEST_WIRE_IMPORT 0
-#define AGX_TEST_TRACK_IMPORT 0
-#elif defined(__linux__)
-#include "Linux/LinuxPlatformMisc.h"
-#define AGX_TEST_WIRE_IMPORT 0
-#define AGX_TEST_TRACK_IMPORT 0
-#else
-// Unsupported platform.
-static_assert(false);
-#endif
-
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImporterToSingleActor.h"
 #include "AGX_LogCategory.h"
@@ -40,15 +23,11 @@ static_assert(false);
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
-#if AGX_TEST_TRACK_IMPORT
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/AGX_TrackWheel.h"
-#endif
-#if AGX_TEST_WIRE_IMPORT
 #include "Wire/AGX_WireComponent.h"
-#endif
 
 // Unreal Engine includes.
 #include "Engine/Engine.h"
@@ -373,7 +352,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 		// The position, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(
 			1.00000000000000000000e+01f, 2.00000000000000000000e+01f, 3.00000000000000000000e+01f);
-		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		FVector Expected = AgxToUnrealDisplacement(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere position"), Actual, Expected);
 	}
 
@@ -394,7 +373,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 		// The velocity, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(
 			1.00000000000000000000e+00f, 2.00000000000000000000e+00f, 3.00000000000000000000e+00f);
-		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		FVector Expected = AgxToUnrealDisplacement(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere linear velocity"), Actual, Expected);
 	}
 
@@ -1217,7 +1196,7 @@ bool FCheckRenderDataImportedCommand::Update()
 
 	// Enable this to see the names of the components that was imported. Useful when adding new
 	// stuff to the archive.
-#if 1
+#if 0
 	UE_LOG(LogAGX, Warning, TEXT("Imported the following components:"));
 	for (const UActorComponent* Component : Components)
 	{
@@ -1625,7 +1604,6 @@ bool FClearGeometrySensorsImportedCommand::Update()
 	return true;
 }
 
-#if AGX_TEST_WIRE_IMPORT
 //
 // Wire test starts here.
 //
@@ -1835,7 +1813,6 @@ bool FClearWireImportedCommand::Update()
 
 	return true;
 }
-#endif
 
 //
 // Constraint Dynamic Parameters test starts here.
@@ -2075,7 +2052,7 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 		FVector Actual = SphereBody->GetComponentLocation();
 		// The position, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(10.f, 20.f, 30.f);
-		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		FVector Expected = AgxToUnrealDisplacement(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere position"), Actual, Expected);
 	}
 
@@ -2093,7 +2070,7 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 		FVector Actual = SphereBody->Velocity;
 		// The velocity, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(1.f, 2.f, 3.f);
-		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		FVector Expected = AgxToUnrealDisplacement(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere linear velocity"), Actual, Expected);
 	}
 
@@ -2104,6 +2081,22 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 		FVector ExpectedAgx(1.1f, 1.2f, 1.3f);
 		FVector Expected = AgxToUnrealAngularVelocity(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere angular velocity"), Actual, Expected);
+	}
+
+	// Linear velocity damping.
+	{
+		FVector Actual = SphereBody->LinearVelocityDamping;
+		FVector ExpectedAgx(1.0, 2.0, 3.0);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere linear velocity damping"), Actual, Expected);
+	}
+
+	// Angular velocity damping.
+	{
+		FVector Actual = SphereBody->AngularVelocityDamping;
+		FVector ExpectedAgx(4.0, 5.0, 6.0);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere angular velocity damping"), Actual, Expected);
 	}
 
 	// Mass.
@@ -2235,7 +2228,7 @@ bool FCheckSimpleGeometriesImportedCommand::Update()
 			return;
 		}
 
-		const FVector ExpectedUnrealPos = AgxToUnrealVector(ExpectedAGXWorldPos);
+		const FVector ExpectedUnrealPos = AgxToUnrealDisplacement(ExpectedAGXWorldPos);
 		Test.TestEqual(TEXT("Component position"), c->GetComponentLocation(), ExpectedUnrealPos);
 	};
 
@@ -2609,27 +2602,27 @@ bool FCheckObserverFramesImportedCommand::Update()
 		return true;
 	};
 
-	if (!TestGroup(1, AgxToUnrealVector(0.0, 0.0, 0.0), AgxToUnrealVector(0.0, 0.0, 0.0)))
+	if (!TestGroup(1, AgxToUnrealDisplacement(0.0, 0.0, 0.0), AgxToUnrealDisplacement(0.0, 0.0, 0.0)))
 	{
 		Test.AddError(TEXT("TestGroup id 1 returned false, cannot continue the test."));
 		return true;
 	}
 
-	if (!TestGroup(2, AgxToUnrealVector(1.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3)))
+	if (!TestGroup(2, AgxToUnrealDisplacement(1.0, 0.0, 0.0), AgxToUnrealDisplacement(0.3, 0.3, 0.3)))
 	{
 		Test.AddError(TEXT("TestGroup id 2 returned false, cannot continue the test."));
 		return true;
 	}
 
-	if (!TestGroup(3, AgxToUnrealVector(2.0, 0.0, 0.0), AgxToUnrealVector(0.3, 0.3, 0.3)))
+	if (!TestGroup(3, AgxToUnrealDisplacement(2.0, 0.0, 0.0), AgxToUnrealDisplacement(0.3, 0.3, 0.3)))
 	{
 		Test.AddError(TEXT("TestGroup id 3 returned false, cannot continue the test."));
 		return true;
 	}
 
 	FRotator Rotation = AgxToUnrealEulerAngles(PI / 10, 0.0, 0.0);
-	FVector ObserverLocation = Rotation.RotateVector(AgxToUnrealVector(0.3, 0.3, 0.3));
-	TestGroup(4, AgxToUnrealVector(3.0, 0.0, 0.0), ObserverLocation);
+	FVector ObserverLocation = Rotation.RotateVector(AgxToUnrealDisplacement(0.3, 0.3, 0.3));
+	TestGroup(4, AgxToUnrealDisplacement(3.0, 0.0, 0.0), ObserverLocation);
 
 	// Tests/Test_ArchiveImport.umap
 
@@ -2890,19 +2883,19 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 
 	Test.TestEqual(
 		TEXT("Boxlink position"), Boxlink->GetComponentLocation(),
-		AgxToUnrealVector({0.f, 0.f, 0.f}));
+		AgxToUnrealDisplacement({0.f, 0.f, 0.f}));
 
 	Test.TestEqual(
 		TEXT("Shperelink position"), Shperelink->GetComponentLocation(),
-		AgxToUnrealVector({1.f, 0.f, 0.f}));
+		AgxToUnrealDisplacement({1.f, 0.f, 0.f}));
 
 	Test.TestEqual(
 		TEXT("Cylinderlink position"), Cylinderlink->GetComponentLocation(),
-		AgxToUnrealVector({2.f, 0.f, 0.f}));
+		AgxToUnrealDisplacement({2.f, 0.f, 0.f}));
 
 	Test.TestEqual(
 		TEXT("Freefallinglink position"), Freefallinglink->GetComponentLocation(),
-		AgxToUnrealVector({0.f, 0.f, 0.f}));
+		AgxToUnrealDisplacement({0.f, 0.f, 0.f}));
 
 	return true;
 }
@@ -2928,7 +2921,7 @@ bool FClearURDFLinksGeometriesConstraintsImportedCommand::Update()
 
 	return true;
 }
-#if AGX_TEST_TRACK_IMPORT
+
 //
 // Track test starts here.
 //
@@ -3256,7 +3249,6 @@ bool FClearTrackImportedCommand::Update()
 
 	return true;
 }
-#endif // AGX_TEST_TRACK_IMPORT
 
 //
 // AMOR test starts here.
@@ -3309,11 +3301,9 @@ bool FSupressAmorWireImportErrorCommand::Update()
 	// The .agx file about to be imported contains Wires which will generate error printouts from
 	// AGX Dynamics when no AGX Dynamics license is available. Here, we suppress that error
 	// printout.
-#if !AGX_TEST_WIRE_IMPORT
 	Test.AddExpectedError(
 		TEXT("License for AgX-Wires not valid"), EAutomationExpectedErrorFlags::Contains, 0);
 	Test.AddError(TEXT("License for AgX-Wires not valid"));
-#endif
 
 	return true;
 }
@@ -3331,14 +3321,10 @@ bool FCheckAmorImportedCommand::Update()
 	// It should be updated whenever the test scene is changed.
 	TArray<UActorComponent*> Components;
 	Test.Contents->GetComponents(Components, false);
-#if AGX_TEST_WIRE_IMPORT
 	// Two Rigid Bodies (2), one Shape (3), two Wires with one icon each (7), one Constraint (8),
 	// one Collision Group Disabler (9), one Default Scene Root (10).
 	const int32 ExpectedNumComponents = 10;
-#else
-	// Same as above minus two wires with one icon each.
-	const int32 ExpectedNumComponents = 6;
-#endif
+
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), ExpectedNumComponents);
 
 	UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(Components, TEXT("Body"));
@@ -3381,7 +3367,6 @@ bool FCheckAmorImportedCommand::Update()
 		"Geometry share Thresholds", Geometry->MergeSplitProperties.Thresholds,
 		Body->MergeSplitProperties.Thresholds);
 
-#if AGX_TEST_WIRE_IMPORT
 	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(Components, TEXT("Wire"));
 	Test.TestFalse("Wire Enable Merge", Wire->MergeSplitProperties.bEnableMerge);
 	Test.TestTrue("Wire Enable Merge", Wire->MergeSplitProperties.bEnableSplit);
@@ -3400,7 +3385,6 @@ bool FCheckAmorImportedCommand::Update()
 	Test.TestTrue(
 		"WireNoThresholds Enable Merge", WireNoThresholds->MergeSplitProperties.bEnableSplit);
 	Test.TestNull("WireNoThresholds Thresholds", WireNoThresholds->MergeSplitProperties.Thresholds);
-#endif
 
 	UAGX_ConstraintComponent* Constraint =
 		GetByName<UAGX_ConstraintComponent>(Components, TEXT("Hinge"));
@@ -3466,12 +3450,10 @@ bool FClearAmorImportedCommand::Update()
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
-#if AGX_TEST_WIRE_IMPORT
 		TEXT("ShapeMaterial"),
 		TEXT("AGX_WMST_D7334DD013D1E4E7FB04E6ABA3AF5494.uasset"),
 		TEXT("defaultWireMaterial_40.uasset"),
 		TEXT("defaultWireMaterial_550.uasset"),
-#endif
 		TEXT("MergeSplitThresholds"),
 		TEXT("AGX_CMST_E17441363B61A7BC37C1A76C9E0EB9E4.uasset"),
 		TEXT("AGX_SMST_567B4C28966D80460D523D709EA031DF.uasset")
