@@ -13,6 +13,9 @@ struct FAGX_LandscapeSizeInfo
 	GENERATED_USTRUCT_BODY()
 	FAGX_LandscapeSizeInfo() = default;
 	FAGX_LandscapeSizeInfo(const ALandscape& Landscape);
+	static std::tuple<int32, int32> GetComponentsPerSide(const ALandscape& Landscape);
+	static std::tuple<float, float> GetSideLengths(const ALandscape& Landscape);
+	static bool IsOpenWorldLandscape(const ALandscape& Landscape);
 
 	int32 NumComponents;
 	int32 NumQuadsPerComponentSide;
