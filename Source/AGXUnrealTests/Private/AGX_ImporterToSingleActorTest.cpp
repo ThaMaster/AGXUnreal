@@ -1196,7 +1196,7 @@ bool FCheckRenderDataImportedCommand::Update()
 
 	// Enable this to see the names of the components that was imported. Useful when adding new
 	// stuff to the archive.
-#if 1
+#if 0
 	UE_LOG(LogAGX, Warning, TEXT("Imported the following components:"));
 	for (const UActorComponent* Component : Components)
 	{
