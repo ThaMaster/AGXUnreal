@@ -15,6 +15,7 @@
 #include "Terrain/AGX_CuttingDirectionComponent.h"
 #include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "Terrain/AGX_LandscapeSizeInfo.h"
+#include "Terrain/AGX_TerrainBoundsComponent.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
 #include "Terrain/ShovelBarrier.h"
 #include "Terrain/TerrainBarrier.h"
@@ -51,6 +52,9 @@ AAGX_Terrain::AAGX_Terrain()
 	{
 		USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(
 			USceneComponent::GetDefaultSceneRootVariableName());
+
+		TerrainBounds =
+			CreateDefaultSubobject<UAGX_TerrainBoundsComponent>(TEXT("TerrainBounds"));
 
 		Root->Mobility = EComponentMobility::Static;
 		Root->SetFlags(Root->GetFlags() | RF_Transactional); /// \todo What does this mean?

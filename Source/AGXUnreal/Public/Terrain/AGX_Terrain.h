@@ -15,6 +15,7 @@
 
 #include "AGX_Terrain.generated.h"
 
+class UAGX_TerrainBoundsComponent;
 class UAGX_TerrainMaterial;
 class ALandscape;
 class UNiagaraComponent;
@@ -28,6 +29,9 @@ class AGXUNREAL_API AAGX_Terrain : public AActor
 public:
 	// Sets default values for this actor's properties
 	AAGX_Terrain();
+
+	UPROPERTY(Category = "AGX Terrain", VisibleAnywhere, BlueprintReadOnly)
+	UAGX_TerrainBoundsComponent* TerrainBounds;
 
 	/**
 	 * The Landscape that AGX Terrain will use as initialization data, and will also modify
