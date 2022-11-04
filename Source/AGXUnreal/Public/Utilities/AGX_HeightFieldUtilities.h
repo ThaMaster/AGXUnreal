@@ -12,9 +12,12 @@ class ALandscape;
 
 namespace AGX_HeightFieldUtilities
 {
-	AGXUNREAL_API FHeightFieldShapeBarrier CreateHeightField(ALandscape& Landscape);
+	// StartPos is in world coordinate system.
+	AGXUNREAL_API FHeightFieldShapeBarrier
+	CreateHeightField(ALandscape& Landscape, const FVector& StartPos, float LengthX, float LengthY);
 
-	AGXUNREAL_API std::tuple<FVector, FQuat> GetTerrainPositionAndRotationFrom(const ALandscape& Landscape);
+	AGXUNREAL_API std::tuple<FVector, FQuat> GetTerrainPositionAndRotationFrom(
+		const ALandscape& Landscape);
 
 	AGXUNREAL_API std::tuple<FVector, FQuat> GetHeightFieldPositionAndRotationFrom(
 		const ALandscape& Landscape);

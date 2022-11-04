@@ -98,13 +98,13 @@ UAGX_TerrainBoundsComponent::GetLandscapeAdjustedBounds() const
 		// For non-open world Landscapes, we do handled this, which is done here.
 		auto EnsureInBounds = [](FVector& P, auto Xmin, auto Xmax, auto Ymin, auto Ymax)
 		{
-			if (P.X < Xmin)
+			if (P.X <= Xmin)
 				P.X = Xmin;
-			else if (P.X > Xmax)
+			else if (P.X >= Xmax)
 				P.X = Xmax;
-			if (P.Y < Ymin)
+			if (P.Y <= Ymin)
 				P.Y = Ymin;
-			else if (P.Y > Ymax)
+			else if (P.Y >= Ymax)
 				P.Y = Ymax;
 		};
 
@@ -124,6 +124,11 @@ UAGX_TerrainBoundsComponent::GetLandscapeAdjustedBounds() const
 	const FVector CenterPointGlobal = (Corner0AdjustedGlobal + Corner1AdjustedGlobal) * 0.5;
 	const auto HalfExtentX = (Corner1LocalAdjusted.X - Corner0LocalAdjusted.X) / 2.0;
 	const auto HalfExtentY = (Corner1LocalAdjusted.Y - Corner0LocalAdjusted.Y) / 2.0;
+
+	if (HalfExtentX == 0 || HalfExtentY == 0)
+	{
+		return {};
+	}
 
 	FTerrainBoundsInfo BoundsInfo;
 	BoundsInfo.Transform = FTransform(Landscape->GetActorQuat(), CenterPointGlobal);

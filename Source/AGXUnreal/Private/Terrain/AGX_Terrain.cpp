@@ -53,8 +53,7 @@ AAGX_Terrain::AAGX_Terrain()
 		USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(
 			USceneComponent::GetDefaultSceneRootVariableName());
 
-		TerrainBounds =
-			CreateDefaultSubobject<UAGX_TerrainBoundsComponent>(TEXT("TerrainBounds"));
+		TerrainBounds = CreateDefaultSubobject<UAGX_TerrainBoundsComponent>(TEXT("TerrainBounds"));
 
 		Root->Mobility = EComponentMobility::Static;
 		Root->SetFlags(Root->GetFlags() | RF_Transactional); /// \todo What does this mean?
@@ -513,23 +512,34 @@ void AAGX_Terrain::InitializeNative()
 
 bool AAGX_Terrain::CreateNativeTerrain()
 {
-#if UE_VERSION_OLDER_THAN(5, 0, 0) == false
-	const bool IsOpenWorldLandscape = SourceLandscape->LandscapeComponents.Num() <= 0;
-	if (IsOpenWorldLandscape)
+	TOptional<UAGX_TerrainBoundsComponent::FTerrainBoundsInfo> Bounds =
+		TerrainBounds->GetLandscapeAdjustedBounds();
+	if (!Bounds.IsSet())
 	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Attempted to use AGX Terrain with an Open World Landscape. Open World Landscapes "
-			"are currently not supported. Please use a non Open World Level.");
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to create Terrain native; the given Terrain Bounds was invalid."));
 		return false;
 	}
-#endif
 
-	FHeightFieldShapeBarrier HeightField =
-		AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
+	const FVector StartPos = Bounds->Transform.TransformPositionNoScale(-Bounds->HalfExtent);
+	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(
+		*SourceLandscape, StartPos, Bounds->HalfExtent.X * 2.0, Bounds->HalfExtent.Y * 2.0);
 	NativeBarrier.AllocateNative(HeightField, MaxDepth);
 	check(HasNative());
 
-	SetInitialTransform();
+	const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
+	const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
+	const int32 NumQuadsX = FMath::RoundToInt32(Bounds->HalfExtent.X / QuadSideSizeX);
+	const int32 NumQuadsY = FMath::RoundToInt32(Bounds->HalfExtent.Y / QuadSideSizeY);
+	const float TerrainTileCenterOffsetX = (NumQuadsX % 2 == 0) ? 0 : QuadSideSizeX / 2;
+	const float TerrainTileCenterOffsetY = (NumQuadsY % 2 == 0) ? 0 : -QuadSideSizeY / 2;
+	FVector LocalTileOffset(TerrainTileCenterOffsetX, TerrainTileCenterOffsetY, 0);
+
+
+	NativeBarrier.SetRotation(Bounds->Transform.GetRotation());
+	NativeBarrier.SetPosition(Bounds->Transform.TransformPositionNoScale(LocalTileOffset));
+	//SetInitialTransform();
 	OriginalHeights = NativeBarrier.GetHeights();
 	NativeBarrier.SetCreateParticles(bCreateParticles);
 	NativeBarrier.SetDeleteParticlesOutsideBounds(bDeleteParticlesOutsideBounds);

@@ -137,13 +137,19 @@ namespace AGX_HeightFieldUtilities_helpers
 	// will measure along the world z-axis (instead of the Landscapes local z-axis as it should)
 	// such that sharp peaks will be cut off and tilted.
 	TArray<float> GetHeigtsUsingApi(
-		ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
+		ALandscape& Landscape, const FVector& StartPos, float LengthX, float LengthY)
 	{
 		UE_LOG(LogAGX, Log, TEXT("About to read Landscape heights using Landscape API."));
 
+		const auto QuadSideSizeX = Landscape.GetActorScale().X;
+		const auto QuadSideSizeY = Landscape.GetActorScale().Y;
+		const int32 ResolutionX = FMath::RoundToInt32(LengthX / QuadSideSizeX);
+		const int32 ResolutionY = FMath::RoundToInt32(LengthY / QuadSideSizeY);
+		const int32 VerticesSideX = ResolutionX + 1;
+		const int32 VerticesSideY = ResolutionY + 1;
+
 		TArray<float> Heights;
-		const int32 NumVertices =
-			LandscapeSizeInfo.NumVerticesSideX * LandscapeSizeInfo.NumVerticesSideY;
+		const int32 NumVertices = VerticesSideX * VerticesSideY;
 		if (NumVertices <= 0)
 		{
 			UE_LOG(
@@ -151,28 +157,26 @@ namespace AGX_HeightFieldUtilities_helpers
 				TEXT("GetHeightsUsingAPI got zero sized landscape. Cannot read landscape heights "
 					 "from landscape '%s'."),
 				*Landscape.GetName());
+			return Heights;
 		}
 
 		Heights.Reserve(NumVertices);
-		const int32 LastVertIndexX = LandscapeSizeInfo.NumVerticesSideX - 1;
-		const int32 LastVertIndexY = LandscapeSizeInfo.NumVerticesSideY - 1;
-		const float EdgeNudgeDistanceX = LandscapeSizeInfo.QuadSideSizeX / 1000.0f;
-		const float EdgeNudgeDistanceY = LandscapeSizeInfo.QuadSideSizeY / 1000.0f;
+		const float EdgeNudgeDistanceX = QuadSideSizeX / 1000.0f;
+		const float EdgeNudgeDistanceY = QuadSideSizeY / 1000.0f;
+		const FVector StartPosLocal =
+			Landscape.GetActorTransform().InverseTransformPositionNoScale(StartPos);
 
 		// AGX terrains Y axis goes in the opposite direction from Unreal's Y axis (flipped).
-		for (int32 Y = LastVertIndexY; Y >= 0; Y--)
+		const float XMax = StartPosLocal.X + LengthX;
+		float CurrentX = StartPosLocal.X; 
+		float CurrentY = StartPosLocal.Y + LengthY; 
+		static constexpr float Tolerance = 0.5;
+		while (CurrentY >= StartPosLocal.Y - Tolerance)
 		{
-			for (int32 X = 0; X <= LastVertIndexX; X++)
+			while (CurrentX <= XMax + Tolerance)
 			{
-				float Xlocal = static_cast<float>(X) * LandscapeSizeInfo.QuadSideSizeX;
-				float Ylocal = static_cast<float>(Y) * LandscapeSizeInfo.QuadSideSizeY;
-
-				// Measurements right at the edge of the landscape fails for some reason. Nudge
-				// the measurement point slightly towards center at edges as a workaround.
-				NudgeEdgePoint(X, Y, LandscapeSizeInfo, Xlocal, Ylocal, false);
-
-				FVector LocationGlobal =
-					Landscape.GetTransform().TransformPositionNoScale(FVector(Xlocal, Ylocal, 0));
+				FVector LocationGlobal = Landscape.GetTransform().TransformPositionNoScale(
+					FVector(CurrentX, CurrentY, 0));
 				TOptional<float> Height = Landscape.GetHeightAtLocation(LocationGlobal);
 				if (Height.IsSet())
 				{
@@ -191,7 +195,10 @@ namespace AGX_HeightFieldUtilities_helpers
 						*Landscape.GetName(), LocationGlobal.X, LocationGlobal.Y, LocationGlobal.Z);
 					Heights.Add(0.f);
 				}
+				CurrentX += QuadSideSizeX;
 			}
+			CurrentX = StartPosLocal.X;
+			CurrentY -= QuadSideSizeY;
 		}
 
 		check(NumVertices == Heights.Num());
@@ -268,7 +275,8 @@ namespace AGX_HeightFieldUtilities_helpers
 	}
 }
 
-TArray<float> GetHeights(ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
+TArray<float> GetHeights(
+	ALandscape& Landscape, const FVector& StartPos, float LengthX, float LengthY)
 {
 	using namespace AGX_HeightFieldUtilities_helpers;
 	const FRotator LandsapeRotation = Landscape.GetActorRotation();
@@ -277,37 +285,27 @@ TArray<float> GetHeights(ALandscape& Landscape, const FAGX_LandscapeSizeInfo& La
 	{
 		// If the Landscape is not rotated around x or y, we can use the Landscape API to read the
 		// heights which is much faster than ray-casting.
-		return GetHeigtsUsingApi(Landscape, LandscapeSizeInfo);
+		return GetHeigtsUsingApi(Landscape, StartPos, LengthX, LengthY);
 	}
 	else
 	{
-		return GetHeightsUsingRayCasts(Landscape, LandscapeSizeInfo);
+		return TArray<float>();
+		// return GetHeightsUsingRayCasts(Landscape, LandscapeSizeInfo);
 	}
 }
 
-FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(ALandscape& Landscape)
+FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
+	ALandscape& Landscape, const FVector& StartPos, float LengthX, float LengthY)
 {
-	const FAGX_LandscapeSizeInfo LandscapeSizeInfo(Landscape);
-
-	if (LandscapeSizeInfo.NumComponents <= 0)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("AGX_HeightFieldUtilities::CreateHeightField cannot create heightfield "
-				 "from landscape without components."));
-
-		// Return empty FHeightFieldShapeBarrier (no native allocated).
-		return FHeightFieldShapeBarrier();
-	}
-
-	TArray<float> Heights = GetHeights(Landscape, LandscapeSizeInfo);
-	const float SideSizeX = LandscapeSizeInfo.NumQuadsSideX * LandscapeSizeInfo.QuadSideSizeX;
-	const float SideSizeY = LandscapeSizeInfo.NumQuadsSideY * LandscapeSizeInfo.QuadSideSizeY;
-
+	TArray<float> Heights = GetHeights(Landscape, StartPos, LengthX, LengthY);
+	const auto QuadSideSizeX = Landscape.GetActorScale().X;
+	const auto QuadSideSizeY = Landscape.GetActorScale().Y;
+	const int32 ResolutionX = FMath::RoundToInt32(LengthX / QuadSideSizeX) + 1;
+	const int32 ResolutionY = FMath::RoundToInt32(LengthY / QuadSideSizeY) + 1;
 	FHeightFieldShapeBarrier HeightField;
 	HeightField.AllocateNative(
-		LandscapeSizeInfo.NumVerticesSideX, LandscapeSizeInfo.NumVerticesSideY, SideSizeX,
-		SideSizeY, Heights);
+		ResolutionX, ResolutionY, FMath::RoundToFloat(LengthX), FMath::RoundToFloat(LengthY),
+		Heights);
 
 	return HeightField;
 }
