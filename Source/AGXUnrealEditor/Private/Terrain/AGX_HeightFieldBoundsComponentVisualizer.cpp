@@ -1,18 +1,18 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-#include "Terrain/AGX_TerrainBoundsComponentVisualizer.h"
+#include "Terrain/AGX_HeightFieldBoundsComponentVisualizer.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "Terrain/AGX_TerrainBoundsComponent.h"
+#include "Terrain/AGX_HeightFieldBoundsComponent.h"
 
-#define LOCTEXT_NAMESPACE "FAGX_TerrainBoundsComponentVisualizer"
+#define LOCTEXT_NAMESPACE "FAGX_HeightFieldBoundsComponentVisualizer"
 
-namespace AGX_TerrainBoundsComponentVisualizer_helpers
+namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 {
 	void DrawBounds(
-		const FTransform& Transform, const FVector& HalfExtent,
-		const FLinearColor& Color, float LineThickness, FPrimitiveDrawInterface* PDI)
+		const FTransform& Transform, const FVector& HalfExtent, const FLinearColor& Color,
+		float LineThickness, FPrimitiveDrawInterface* PDI)
 	{
 		const FVector Corner0 = Transform.TransformPositionNoScale(
 			FVector(-HalfExtent.X, -HalfExtent.Y, -HalfExtent.Z));
@@ -48,11 +48,12 @@ namespace AGX_TerrainBoundsComponentVisualizer_helpers
 	}
 }
 
-void FAGX_TerrainBoundsComponentVisualizer::DrawVisualization(
+void FAGX_HeightFieldBoundsComponentVisualizer::DrawVisualization(
 	const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 {
-	using namespace AGX_TerrainBoundsComponentVisualizer_helpers;
-	const UAGX_TerrainBoundsComponent* Bounds = Cast<const UAGX_TerrainBoundsComponent>(Component);
+	using namespace AGX_HeightFieldBoundsComponentVisualizer_helpers;
+	const UAGX_HeightFieldBoundsComponent* Bounds =
+		Cast<const UAGX_HeightFieldBoundsComponent>(Component);
 	if (Bounds == nullptr)
 		return;
 

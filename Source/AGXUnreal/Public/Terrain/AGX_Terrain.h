@@ -15,7 +15,7 @@
 
 #include "AGX_Terrain.generated.h"
 
-class UAGX_TerrainBoundsComponent;
+class UAGX_HeightFieldBoundsComponent;
 class UAGX_TerrainMaterial;
 class ALandscape;
 class UNiagaraComponent;
@@ -31,7 +31,7 @@ public:
 	AAGX_Terrain();
 
 	UPROPERTY(Category = "AGX Terrain", VisibleAnywhere, BlueprintReadOnly)
-	UAGX_TerrainBoundsComponent* TerrainBounds;
+	UAGX_HeightFieldBoundsComponent* TerrainBounds;
 
 	/**
 	 * The Landscape that AGX Terrain will use as initialization data, and will also modify

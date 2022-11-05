@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Terrain/AGX_LandscapeSizeInfo.h"
+#include "Terrain/AGX_HeightFieldBoundsComponent.h"
 #include "Utilities/AGX_HeightFieldUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
@@ -30,6 +31,8 @@ UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 	OnPropertyChangedHandleDelegateHandle =
 		FCoreUObjectDelegates::OnObjectPropertyChanged.Add(OnPropertyChangedHandle);
 #endif
+
+	Bounds = CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("Bounds"));
 }
 
 UAGX_HeightFieldShapeComponent::~UAGX_HeightFieldShapeComponent()
@@ -188,10 +191,10 @@ void UAGX_HeightFieldShapeComponent::RecenterOnLandscape()
 	// correctly for the Native Geometry holding the Height Field.
 	check(SourceLandscape != nullptr);
 
-	std::tuple<FVector, FQuat> PosRot =
-		AGX_HeightFieldUtilities::GetHeightFieldPositionAndRotationFrom(*SourceLandscape);
-	SetWorldLocation(std::get<0>(PosRot));
-	SetWorldRotation(std::get<1>(PosRot));
+	//std::tuple<FVector, FQuat> PosRot =
+	//	AGX_HeightFieldUtilities::GetHeightFieldPositionAndRotationFrom(*SourceLandscape);
+	//SetWorldLocation(std::get<0>(PosRot));
+	//SetWorldRotation(std::get<1>(PosRot));
 }
 
 #if WITH_EDITOR
@@ -231,7 +234,7 @@ void UAGX_HeightFieldShapeComponent::CreateNative()
 	}
 #endif
 
-	NativeBarrier = AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
+	//NativeBarrier = AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
 	check(HasNative());
 	UpdateNativeProperties();
 }

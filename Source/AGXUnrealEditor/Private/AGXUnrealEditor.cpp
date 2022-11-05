@@ -68,8 +68,8 @@
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_ShapeComponentCustomization.h"
 #include "Terrain/AGX_Terrain.h"
-#include "Terrain/AGX_TerrainBoundsComponent.h"
-#include "Terrain/AGX_TerrainBoundsComponentVisualizer.h"
+#include "Terrain/AGX_HeightFieldBoundsComponent.h"
+#include "Terrain/AGX_HeightFieldBoundsComponentVisualizer.h"
 #include "Tires/AGX_TireComponentVisualizer.h"
 #include "Tires/AGX_TireComponent.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
@@ -407,8 +407,8 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 		MakeShareable(new FAGX_WireWinchVisualizer));
 
 	RegisterComponentVisualizer(
-		UAGX_TerrainBoundsComponent::StaticClass()->GetFName(),
-		MakeShareable(new FAGX_TerrainBoundsComponentVisualizer));
+		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_HeightFieldBoundsComponentVisualizer));
 }
 
 void FAGXUnrealEditorModule::UnregisterComponentVisualizers()

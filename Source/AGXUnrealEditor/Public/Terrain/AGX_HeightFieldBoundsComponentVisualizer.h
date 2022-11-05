@@ -6,7 +6,7 @@
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 
-class AGXUNREALEDITOR_API FAGX_TerrainBoundsComponentVisualizer : public FComponentVisualizer
+class AGXUNREALEDITOR_API FAGX_HeightFieldBoundsComponentVisualizer : public FComponentVisualizer
 {
 public:
 	//~ Begin FComponentVisualizer Interface

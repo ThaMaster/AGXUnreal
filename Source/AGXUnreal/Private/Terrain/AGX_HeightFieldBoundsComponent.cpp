@@ -1,6 +1,6 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-#include "Terrain/AGX_TerrainBoundsComponent.h"
+#include "Terrain/AGX_HeightFieldBoundsComponent.h"
 
 // AGX Dynamics for Unreal includes.
 #include "Shapes/AGX_HeightFieldShapeComponent.h"
@@ -13,13 +13,13 @@
 // Standard library includes.
 #include <cmath>
 
-UAGX_TerrainBoundsComponent::UAGX_TerrainBoundsComponent()
+UAGX_HeightFieldBoundsComponent::UAGX_HeightFieldBoundsComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-TOptional<UAGX_TerrainBoundsComponent::FTerrainBoundsInfo>
-UAGX_TerrainBoundsComponent::GetUserSetBounds() const
+TOptional<UAGX_HeightFieldBoundsComponent::FTerrainBoundsInfo>
+UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 {
 	TOptional<FTransformAndLandscape> TransformAndLandscape = GetLandscapeAndTransformFromOwner();
 	if (!TransformAndLandscape.IsSet())
@@ -50,8 +50,8 @@ UAGX_TerrainBoundsComponent::GetUserSetBounds() const
  * Only valid if the owner of this Component is an AGX_Terrain Actor and a SourceLandscape is
  * set in that owner.
  */
-TOptional<UAGX_TerrainBoundsComponent::FTerrainBoundsInfo>
-UAGX_TerrainBoundsComponent::GetLandscapeAdjustedBounds() const
+TOptional<UAGX_HeightFieldBoundsComponent::FTerrainBoundsInfo>
+UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 {
 	TOptional<FTransformAndLandscape> TransformAndLandscape = GetLandscapeAndTransformFromOwner();
 	if (!TransformAndLandscape.IsSet())
@@ -139,9 +139,8 @@ UAGX_TerrainBoundsComponent::GetLandscapeAdjustedBounds() const
 	return BoundsInfo;
 }
 
-TOptional<UAGX_TerrainBoundsComponent::FTransformAndLandscape>
-UAGX_TerrainBoundsComponent::GetLandscapeAndTransformFromOwner()
-	const
+TOptional<UAGX_HeightFieldBoundsComponent::FTransformAndLandscape>
+UAGX_HeightFieldBoundsComponent::GetLandscapeAndTransformFromOwner() const
 {
 	if (AAGX_Terrain* Terrain = Cast<AAGX_Terrain>(GetOwner()))
 	{

@@ -12,7 +12,7 @@
 #include "AGX_HeightFieldShapeComponent.generated.h"
 
 class ALandscape;
-class UAGX_TerrainBoundsComponent;
+class UAGX_HeightFieldBoundsComponent;
 
 /**
  *
@@ -27,7 +27,7 @@ public:
 	virtual ~UAGX_HeightFieldShapeComponent();
 
 	UPROPERTY(Category = "AGX Shape", VisibleAnywhere, BlueprintReadOnly)
-	UAGX_TerrainBoundsComponent* Bounds;
+	UAGX_HeightFieldBoundsComponent* Bounds;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
 	ALandscape* SourceLandscape = nullptr;

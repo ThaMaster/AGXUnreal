@@ -6,14 +6,14 @@
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
 
-#include "AGX_TerrainBoundsComponent.generated.h"
+#include "AGX_HeightFieldBoundsComponent.generated.h"
 
 class ALandscape;
 
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX",
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
-class AGXUNREAL_API UAGX_TerrainBoundsComponent : public UActorComponent
+class AGXUNREAL_API UAGX_HeightFieldBoundsComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -24,7 +24,7 @@ public:
 		FVector HalfExtent;
 	};
 
-	UAGX_TerrainBoundsComponent();
+	UAGX_HeightFieldBoundsComponent();
 
 	/**
 	 * The distance from the center of the Terrain to its edges [cm].
