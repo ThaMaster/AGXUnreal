@@ -12,7 +12,7 @@ class ALandscape;
 
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX",
-	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
+	Hidecategories = (Lighting, Tags, Rendering, Physics, Replication), NotPlaceable)
 class AGXUNREAL_API UAGX_HeightFieldBoundsComponent : public UActorComponent
 {
 	GENERATED_BODY()

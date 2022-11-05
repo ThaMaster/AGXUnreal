@@ -41,8 +41,6 @@ std::tuple<int32, int32> FAGX_LandscapeSizeInfo::GetComponentsPerSide(const ALan
 	const int32 ComponentsSideX = ComponentUniqueSectionBaseX.Num();
 	const int32 ComponentsSideY = ComponentUniqueSectionBaseY.Num();
 
-	check(ComponentsSideX * ComponentsSideY == Landscape.LandscapeComponents.Num());
-
 	return std::tuple<int32, int32> {ComponentsSideX, ComponentsSideY};
 }
 

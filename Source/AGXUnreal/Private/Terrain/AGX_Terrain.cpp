@@ -856,7 +856,7 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 	if (!ParticleSystemAsset)
 	{
 		UE_LOG(
-			LogAGX, Error,
+			LogAGX, Warning,
 			TEXT("Terrain '%s' does not have a particle system, cannot render particles"),
 			*GetName());
 		return false;
