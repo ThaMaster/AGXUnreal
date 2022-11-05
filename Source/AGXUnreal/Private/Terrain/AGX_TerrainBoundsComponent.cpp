@@ -3,6 +3,7 @@
 #include "Terrain/AGX_TerrainBoundsComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Shapes/AGX_HeightFieldShapeComponent.h"
 #include "Terrain/AGX_LandscapeSizeInfo.h"
 #include "Terrain/AGX_Terrain.h"
 
@@ -20,25 +21,26 @@ UAGX_TerrainBoundsComponent::UAGX_TerrainBoundsComponent()
 TOptional<UAGX_TerrainBoundsComponent::FTerrainBoundsInfo>
 UAGX_TerrainBoundsComponent::GetUserSetBounds() const
 {
-	AAGX_Terrain* Terrain = Cast<AAGX_Terrain>(GetOwner());
-	if (Terrain == nullptr)
+	TOptional<FTransformAndLandscape> TransformAndLandscape = GetLandscapeAndTransformFromOwner();
+	if (!TransformAndLandscape.IsSet())
+	{
 		return {};
+	}
 
-	ALandscape* Landscape = Terrain->SourceLandscape;
-	if (Landscape == nullptr)
-		return {};
+	const ALandscape& Landscape = TransformAndLandscape->Landscape;
+	const FTransform& OwnerTransform = TransformAndLandscape->Transform;
 
 	if (HalfExtent.X < 0 || HalfExtent.Y < 0 || HalfExtent.Z < 0)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Terrain: '%s' have bounds with negative half extent. This is not supported."),
-			*Terrain->GetName());
+			TEXT("'%s' have bounds with negative half extent. This is not supported."),
+			*GetOuter()->GetName());
 		return {};
 	}
 
 	FTerrainBoundsInfo BoundsInfo;
-	BoundsInfo.Transform = FTransform(Landscape->GetActorQuat(), Terrain->GetActorLocation());
+	BoundsInfo.Transform = FTransform(Landscape.GetActorQuat(), OwnerTransform.GetLocation());
 	BoundsInfo.HalfExtent = HalfExtent;
 	return BoundsInfo;
 }
@@ -51,37 +53,38 @@ UAGX_TerrainBoundsComponent::GetUserSetBounds() const
 TOptional<UAGX_TerrainBoundsComponent::FTerrainBoundsInfo>
 UAGX_TerrainBoundsComponent::GetLandscapeAdjustedBounds() const
 {
-	AAGX_Terrain* Terrain = Cast<AAGX_Terrain>(GetOwner());
-	if (Terrain == nullptr)
+	TOptional<FTransformAndLandscape> TransformAndLandscape = GetLandscapeAndTransformFromOwner();
+	if (!TransformAndLandscape.IsSet())
+	{
 		return {};
-
-	ALandscape* Landscape = Terrain->SourceLandscape;
-	if (Landscape == nullptr)
-		return {};
+	}
 
 	if (HalfExtent.X < 0 || HalfExtent.Y < 0 || HalfExtent.Z < 0)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Terrain: '%s' have bounds with negative half extent. This is not supported."),
-			*Terrain->GetName());
+			TEXT("'%s' have bounds with negative half extent. This is not supported."),
+			*GetOuter()->GetName());
 		return {};
 	}
 
-	const FTransform BoundsWorldTrans(Landscape->GetActorQuat(), Terrain->GetActorLocation());
+	const ALandscape& Landscape = TransformAndLandscape->Landscape;
+	const FTransform& OwnerTransform = TransformAndLandscape->Transform;
+
+	const FTransform BoundsWorldTrans(Landscape.GetActorQuat(), OwnerTransform.GetLocation());
 	const FVector Corner0World = BoundsWorldTrans.TransformPositionNoScale(
 		FVector(-HalfExtent.X, -HalfExtent.Y, -HalfExtent.Z));
 	const FVector Corner1World = BoundsWorldTrans.TransformPositionNoScale(
 		FVector(HalfExtent.X, HalfExtent.Y, HalfExtent.Z));
 
-	const FTransform& LandscapeTrans = Landscape->GetTransform();
+	const FTransform& LandscapeTrans = Landscape.GetTransform();
 
 	// Local here is in Landscapes coordinate system.
 	const FVector Corner0Local = LandscapeTrans.InverseTransformPositionNoScale(Corner0World);
 	const FVector Corner1Local = LandscapeTrans.InverseTransformPositionNoScale(Corner1World);
 
-	const auto QuadSideSizeX = Landscape->GetActorScale().X;
-	const auto QuadSideSizeY = Landscape->GetActorScale().Y;
+	const auto QuadSideSizeX = Landscape.GetActorScale().X;
+	const auto QuadSideSizeY = Landscape.GetActorScale().Y;
 
 	// "Snap" to quad grid.
 	FVector Corner0LocalAdjusted(
@@ -91,7 +94,7 @@ UAGX_TerrainBoundsComponent::GetLandscapeAdjustedBounds() const
 		std::floor(Corner1Local.X / QuadSideSizeX) * QuadSideSizeX,
 		std::floor(Corner1Local.Y / QuadSideSizeY) * QuadSideSizeY, Corner1Local.Z);
 
-	if (!FAGX_LandscapeSizeInfo::IsOpenWorldLandscape(*Landscape))
+	if (!FAGX_LandscapeSizeInfo::IsOpenWorldLandscape(Landscape))
 	{
 		// Currently, we have found no way to detect the overall size of an open world Landscape,
 		// and we will not support moving the TerrainBounds outside the edge of one.
@@ -110,7 +113,7 @@ UAGX_TerrainBoundsComponent::GetLandscapeAdjustedBounds() const
 
 		// Clamp so that we are never outside the Landscape.
 		const std::tuple<float, float> SideLengths =
-			FAGX_LandscapeSizeInfo::GetSideLengths(*Landscape);
+			FAGX_LandscapeSizeInfo::GetSideLengths(Landscape);
 		EnsureInBounds(
 			Corner0LocalAdjusted, 0, std::get<0>(SideLengths), 0, std::get<1>(SideLengths));
 		EnsureInBounds(
@@ -131,7 +134,32 @@ UAGX_TerrainBoundsComponent::GetLandscapeAdjustedBounds() const
 	}
 
 	FTerrainBoundsInfo BoundsInfo;
-	BoundsInfo.Transform = FTransform(Landscape->GetActorQuat(), CenterPointGlobal);
+	BoundsInfo.Transform = FTransform(Landscape.GetActorQuat(), CenterPointGlobal);
 	BoundsInfo.HalfExtent = FVector(HalfExtentX, HalfExtentY, HalfExtent.Z);
 	return BoundsInfo;
+}
+
+TOptional<UAGX_TerrainBoundsComponent::FTransformAndLandscape>
+UAGX_TerrainBoundsComponent::GetLandscapeAndTransformFromOwner()
+	const
+{
+	if (AAGX_Terrain* Terrain = Cast<AAGX_Terrain>(GetOwner()))
+	{
+		if (Terrain->SourceLandscape != nullptr)
+		{
+			return FTransformAndLandscape(*Terrain->SourceLandscape, Terrain->GetActorTransform());
+		}
+	}
+
+	if (UAGX_HeightFieldShapeComponent* HeightField =
+			Cast<UAGX_HeightFieldShapeComponent>(GetOuter()))
+	{
+		if (HeightField->SourceLandscape != nullptr)
+		{
+			return FTransformAndLandscape(
+				*HeightField->SourceLandscape, HeightField->GetComponentTransform());
+		}
+	}
+
+	return {};
 }

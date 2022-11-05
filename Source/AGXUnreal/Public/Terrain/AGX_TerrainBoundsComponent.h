@@ -8,6 +8,8 @@
 
 #include "AGX_TerrainBoundsComponent.generated.h"
 
+class ALandscape;
+
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX",
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
@@ -27,7 +29,7 @@ public:
 	/**
 	 * The distance from the center of the Terrain to its edges [cm].
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	UPROPERTY(EditAnywhere, Category = "AGX Height Field Bounds")
 	FVector HalfExtent {1000.0, 1000.0, 1000.0};
 
 	/**
@@ -43,4 +45,22 @@ public:
 	 * set in that owner.
 	 */
 	TOptional<FTerrainBoundsInfo> GetLandscapeAdjustedBounds() const;
+
+private:
+	struct FTransformAndLandscape
+	{
+		FTransformAndLandscape(const ALandscape& InLandscape, const FTransform& InTransform)
+			: Landscape(InLandscape)
+			, Transform(InTransform)
+		{
+		}
+		const ALandscape& Landscape;
+		FTransform Transform;
+	};
+
+	/**
+	 * Returns the transform of the Owner of this Component and any Landscape owned by that owner if
+	 * possible. Only Terrain and HeightField owners are currently supported.
+	 */
+	TOptional<FTransformAndLandscape> GetLandscapeAndTransformFromOwner() const;
 };
