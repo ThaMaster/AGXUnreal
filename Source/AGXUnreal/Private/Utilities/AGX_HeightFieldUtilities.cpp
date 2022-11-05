@@ -90,6 +90,19 @@ namespace AGX_HeightFieldUtilities_helpers
 		}
 	}
 
+	void NudgePoint(float& X, float& Y, float MinX, float MaxX, float MinY, float MaxY)
+	{
+		static constexpr float NudgeDist = 0.1f;
+		if (X <= MinX)
+			X += NudgeDist;
+		else if (X >= MaxX)
+			X -= NudgeDist;
+		if (Y <= MinY)
+			Y += NudgeDist;
+		else if (Y >= MaxY)
+			Y -= NudgeDist;
+	}
+
 	// Shoot single ray at landscape to measure the height. Returns false if the ray misses the
 	// landscape and true otherwise. If it returns false the OutHeight is set to 0.0 but is not
 	// a valid measurement.
@@ -167,17 +180,31 @@ namespace AGX_HeightFieldUtilities_helpers
 			Landscape.GetActorTransform().InverseTransformPositionNoScale(StartPos);
 
 		// AGX terrains Y axis goes in the opposite direction from Unreal's Y axis (flipped).
-		const float XMax = StartPosLocal.X + LengthX;
-		float CurrentX = StartPosLocal.X; 
-		float CurrentY = StartPosLocal.Y + LengthY; 
-		static constexpr float Tolerance = 0.5;
+		const float MaxX = StartPosLocal.X + LengthX;
+		const float MaxY = StartPosLocal.Y + LengthY;
+		float CurrentX = StartPosLocal.X;
+		float CurrentY = StartPosLocal.Y + LengthY;
+		static constexpr float Tolerance = 0.2;
 		while (CurrentY >= StartPosLocal.Y - Tolerance)
 		{
-			while (CurrentX <= XMax + Tolerance)
+			while (CurrentX <= MaxX + Tolerance)
 			{
 				FVector LocationGlobal = Landscape.GetTransform().TransformPositionNoScale(
 					FVector(CurrentX, CurrentY, 0));
 				TOptional<float> Height = Landscape.GetHeightAtLocation(LocationGlobal);
+				if (!Height.IsSet())
+				{
+					// Attempt to nudge the measuring point a little and do the measurement again.
+					// We do this because sometimes, measuring at the edge of a Landscape does not
+					// work.
+					float NudgedX = CurrentX;
+					float NudgedY = CurrentY;
+					NudgePoint(NudgedX, NudgedY, StartPosLocal.X, MaxX, StartPosLocal.Y, MaxY);
+
+					LocationGlobal = Landscape.GetTransform().TransformPositionNoScale(
+						FVector(NudgedX, NudgedY, 0));
+					Height = Landscape.GetHeightAtLocation(LocationGlobal);
+				}
 				if (Height.IsSet())
 				{
 					// Position of height measurement in Landscapes local coordinate system.
