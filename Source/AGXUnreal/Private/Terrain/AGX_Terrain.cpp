@@ -512,7 +512,7 @@ void AAGX_Terrain::InitializeNative()
 
 bool AAGX_Terrain::CreateNativeTerrain()
 {
-	TOptional<UAGX_HeightFieldBoundsComponent::FTerrainBoundsInfo> Bounds =
+	TOptional<UAGX_HeightFieldBoundsComponent::FHeightFieldBoundsInfo> Bounds =
 		TerrainBounds->GetLandscapeAdjustedBounds();
 	if (!Bounds.IsSet())
 	{

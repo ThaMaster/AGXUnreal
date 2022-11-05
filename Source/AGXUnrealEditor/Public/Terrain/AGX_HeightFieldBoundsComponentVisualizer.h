@@ -13,6 +13,5 @@ public:
 	virtual void DrawVisualization(
 		const UActorComponent* Component, const FSceneView* View,
 		FPrimitiveDrawInterface* PDI) override;
-
 	//~ End FComponentVisualizer Interface
 };

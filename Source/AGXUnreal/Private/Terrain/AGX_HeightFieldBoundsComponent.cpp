@@ -18,7 +18,7 @@ UAGX_HeightFieldBoundsComponent::UAGX_HeightFieldBoundsComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-TOptional<UAGX_HeightFieldBoundsComponent::FTerrainBoundsInfo>
+TOptional<UAGX_HeightFieldBoundsComponent::FHeightFieldBoundsInfo>
 UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 {
 	TOptional<FTransformAndLandscape> TransformAndLandscape = GetLandscapeAndTransformFromOwner();
@@ -39,7 +39,7 @@ UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 		return {};
 	}
 
-	FTerrainBoundsInfo BoundsInfo;
+	FHeightFieldBoundsInfo BoundsInfo;
 	BoundsInfo.Transform = FTransform(Landscape.GetActorQuat(), OwnerTransform.GetLocation());
 	BoundsInfo.HalfExtent = HalfExtent;
 	return BoundsInfo;
@@ -50,7 +50,7 @@ UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
  * Only valid if the owner of this Component is an AGX_Terrain Actor and a SourceLandscape is
  * set in that owner.
  */
-TOptional<UAGX_HeightFieldBoundsComponent::FTerrainBoundsInfo>
+TOptional<UAGX_HeightFieldBoundsComponent::FHeightFieldBoundsInfo>
 UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 {
 	TOptional<FTransformAndLandscape> TransformAndLandscape = GetLandscapeAndTransformFromOwner();
@@ -97,8 +97,8 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	if (!FAGX_LandscapeSizeInfo::IsOpenWorldLandscape(Landscape))
 	{
 		// Currently, we have found no way to detect the overall size of an open world Landscape,
-		// and we will not support moving the TerrainBounds outside the edge of one.
-		// For non-open world Landscapes, we do handled this, which is done here.
+		// and we will not support the case where the Bounds are outside the edge of one.
+		// For non-open world Landscapes we do handled this correctly, which is done here.
 		auto EnsureInBounds = [](FVector& P, auto Xmin, auto Xmax, auto Ymin, auto Ymax)
 		{
 			if (P.X <= Xmin)
@@ -133,7 +133,7 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 		return {};
 	}
 
-	FTerrainBoundsInfo BoundsInfo;
+	FHeightFieldBoundsInfo BoundsInfo;
 	BoundsInfo.Transform = FTransform(Landscape.GetActorQuat(), CenterPointGlobal);
 	BoundsInfo.HalfExtent = FVector(HalfExtentX, HalfExtentY, HalfExtent.Z);
 	return BoundsInfo;

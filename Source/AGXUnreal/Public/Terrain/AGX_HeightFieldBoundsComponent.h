@@ -18,7 +18,7 @@ class AGXUNREAL_API UAGX_HeightFieldBoundsComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	struct FTerrainBoundsInfo
+	struct FHeightFieldBoundsInfo
 	{
 		FTransform Transform;
 		FVector HalfExtent;
@@ -27,24 +27,24 @@ public:
 	UAGX_HeightFieldBoundsComponent();
 
 	/**
-	 * The distance from the center of the Terrain to its edges [cm].
+	 * The distance from the center of the Height Field to its edges [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Height Field Bounds")
 	FVector HalfExtent {1000.0, 1000.0, 1000.0};
 
 	/**
 	 * Get Bounds as defined by the user, i.e. using exactly the HalfExtent UPROPERTY.
-	 * Only valid if the owner of this Component is an AGX_Terrain Actor and a SourceLandscape is
-	 * set in that owner.
+	 * Only valid if the owner of this Component is an AGX_Terrain or AGX_HeightFieldShape and a
+	 * SourceLandscape is set in that owner.
 	 */
-	TOptional<FTerrainBoundsInfo> GetUserSetBounds() const;
+	TOptional<FHeightFieldBoundsInfo> GetUserSetBounds() const;
 
 	/**
 	 * Get Bounds that are adjusted to align with the Landscape quads.
-	 * Only valid if the owner of this Component is an AGX_Terrain Actor and a SourceLandscape is
-	 * set in that owner.
+	 * Only valid if the owner of this Component is an AGX_Terrain or AGX_HeightFieldShape and a
+	 * SourceLandscape is set in that owner.
 	 */
-	TOptional<FTerrainBoundsInfo> GetLandscapeAdjustedBounds() const;
+	TOptional<FHeightFieldBoundsInfo> GetLandscapeAdjustedBounds() const;
 
 private:
 	struct FTransformAndLandscape
