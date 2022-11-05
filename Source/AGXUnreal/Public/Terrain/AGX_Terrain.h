@@ -214,7 +214,6 @@ private:
 	void CreateNativeShovels();
 	bool UpdateNativeMaterial();
 
-	void SetInitialTransform();
 	void InitializeRendering();
 	void InitializeDisplacementMap();
 	void UpdateDisplacementMap();

@@ -17,46 +17,39 @@
 namespace AGX_HeightFieldUtilities_helpers
 {
 
-	std::tuple<FVector, FQuat> GetAGXTransformFrom(const ALandscape& Landscape, bool IsTerrain)
+	FTransform GetAGXTransformUsingBoxFrom(
+		const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent,
+		bool IsTerrain)
 	{
-		// An Unreal landscape has its origin in the bottom left corner.
-		// A AGX Dynamics Terrain (and Geometry having a Hight Field Shape) has their origin
-		// at the center.
-		const FAGX_LandscapeSizeInfo LandscapeSizeInfo(Landscape);
-		const float SideSizeX = LandscapeSizeInfo.NumQuadsSideX * LandscapeSizeInfo.QuadSideSizeX;
-		const float SideSizeY = LandscapeSizeInfo.NumQuadsSideY * LandscapeSizeInfo.QuadSideSizeY;
-
-		const FVector LandscapeToCenterOffsetLocal = [&]()
+		const FVector CenterProjectedLocal = [&]()
 		{
-			if (IsTerrain)
-			{
-				// For a AGX Dynamics Terrain; if there are an odd number of tiles in the
-				// x-direction, the origins x-coordinate is the same as the x-coordinate of the left
-				// edge of the center tile. If there are an odd number of tiles in the y-direction,
-				// the origins y-coordinate is the same as the y-coordinate of the top edge of the
-				// center tile.
-				const float TerrainTileCenterOffsetX = (LandscapeSizeInfo.NumQuadsSideX % 2 == 0)
-														   ? 0
-														   : LandscapeSizeInfo.QuadSideSizeX / 2;
-				const float TerrainTileCenterOffsetY = (LandscapeSizeInfo.NumQuadsSideY % 2 == 0)
-														   ? 0
-														   : -LandscapeSizeInfo.QuadSideSizeY / 2;
-				return FVector(
-					SideSizeX / 2.0f + TerrainTileCenterOffsetX,
-					SideSizeY / 2.0f + TerrainTileCenterOffsetY, 0);
-			}
-			else
-			{
-				return FVector(SideSizeX / 2.0f, SideSizeY / 2.0f, 0);
-			}
+			FVector CenterLocal =
+				Landscape.GetActorTransform().InverseTransformPositionNoScale(Center);
+			CenterLocal.Z = 0.0;
+			return CenterLocal;
 		}();
 
-		// Transform the offset from landscape local coordinate system to the global coordinate
-		// system.
-		const FTransform LandscapeTransform = Landscape.GetTransform();
-		const FVector WorldLocation =
-			LandscapeTransform.TransformPositionNoScale(LandscapeToCenterOffsetLocal);
-		return std::make_tuple(WorldLocation, Landscape.GetActorQuat());
+		if (!IsTerrain)
+		{
+			return FTransform(
+				Landscape.GetActorQuat(),
+				Landscape.GetActorTransform().TransformPositionNoScale(CenterProjectedLocal));
+		}
+
+		// The terrain will be offset half a tile if the number of tiles are odd. This is an AGX
+		// Dynamics thing.
+		const auto QuadSideSizeX = Landscape.GetActorScale().X;
+		const auto QuadSideSizeY = Landscape.GetActorScale().Y;
+		const int32 NumQuadsX = FMath::RoundToInt32(2.0 * HalfExtent.X / QuadSideSizeX);
+		const int32 NumQuadsY = FMath::RoundToInt32(2.0 * HalfExtent.Y / QuadSideSizeY);
+		const float TerrainTileCenterOffsetX = (NumQuadsX % 2 == 0) ? 0 : QuadSideSizeX / 2;
+		const float TerrainTileCenterOffsetY = (NumQuadsY % 2 == 0) ? 0 : -QuadSideSizeY / 2;
+		FVector LocalTileOffset(TerrainTileCenterOffsetX, TerrainTileCenterOffsetY, 0);
+		
+		const FVector CenterProjectedGlobalAdjusted =
+			Landscape.GetActorTransform().TransformPositionNoScale(
+				CenterProjectedLocal + LocalTileOffset);
+		return FTransform(Landscape.GetActorQuat(), CenterProjectedGlobalAdjusted);
 	}
 
 	// Nudge point away from the edge of the landscape if the vertex lies at the edge.
@@ -337,14 +330,15 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
 	return HeightField;
 }
 
-std::tuple<FVector, FQuat> AGX_HeightFieldUtilities::GetTerrainPositionAndRotationFrom(
-	const ALandscape& Landscape)
+FTransform AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(
+	const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent)
 {
-	return AGX_HeightFieldUtilities_helpers::GetAGXTransformFrom(Landscape, true);
+	return AGX_HeightFieldUtilities_helpers::GetAGXTransformUsingBoxFrom(Landscape, Center, HalfExtent, true);
 }
 
-std::tuple<FVector, FQuat> AGX_HeightFieldUtilities::GetHeightFieldPositionAndRotationFrom(
-	const ALandscape& Landscape)
+FTransform AGX_HeightFieldUtilities::GetHeightFieldTransformUsingBoxFrom(
+	const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent)
 {
-	return AGX_HeightFieldUtilities_helpers::GetAGXTransformFrom(Landscape, false);
+	return AGX_HeightFieldUtilities_helpers::GetAGXTransformUsingBoxFrom(
+		Landscape, Center, HalfExtent, false);
 }

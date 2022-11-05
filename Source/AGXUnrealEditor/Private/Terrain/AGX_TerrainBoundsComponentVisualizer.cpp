@@ -61,10 +61,9 @@ void FAGX_TerrainBoundsComponentVisualizer::DrawVisualization(
 		DrawBounds(BoundsInfo->Transform, BoundsInfo->HalfExtent, FLinearColor::Gray, 2.f, PDI);
 	}
 
-	static constexpr FColor Orange {255, 205, 14};
 	if (auto BoundsInfo = Bounds->GetLandscapeAdjustedBounds())
 	{
-		DrawBounds(BoundsInfo->Transform, BoundsInfo->HalfExtent, Orange, 4.f, PDI);
+		DrawBounds(BoundsInfo->Transform, BoundsInfo->HalfExtent, FLinearColor::Green, 4.f, PDI);
 	}
 }
 

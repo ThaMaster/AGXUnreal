@@ -528,18 +528,12 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	NativeBarrier.AllocateNative(HeightField, MaxDepth);
 	check(HasNative());
 
-	const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
-	const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
-	const int32 NumQuadsX = FMath::RoundToInt32(Bounds->HalfExtent.X / QuadSideSizeX);
-	const int32 NumQuadsY = FMath::RoundToInt32(Bounds->HalfExtent.Y / QuadSideSizeY);
-	const float TerrainTileCenterOffsetX = (NumQuadsX % 2 == 0) ? 0 : QuadSideSizeX / 2;
-	const float TerrainTileCenterOffsetY = (NumQuadsY % 2 == 0) ? 0 : -QuadSideSizeY / 2;
-	FVector LocalTileOffset(TerrainTileCenterOffsetX, TerrainTileCenterOffsetY, 0);
+	FTransform Transform = AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(
+		*SourceLandscape, Bounds->Transform.GetLocation(), Bounds->HalfExtent);
 
 
-	NativeBarrier.SetRotation(Bounds->Transform.GetRotation());
-	NativeBarrier.SetPosition(Bounds->Transform.TransformPositionNoScale(LocalTileOffset));
-	//SetInitialTransform();
+	NativeBarrier.SetRotation(Transform.GetRotation());
+	NativeBarrier.SetPosition(Transform.GetLocation());
 	OriginalHeights = NativeBarrier.GetHeights();
 	NativeBarrier.SetCreateParticles(bCreateParticles);
 	NativeBarrier.SetDeleteParticlesOutsideBounds(bDeleteParticlesOutsideBounds);
@@ -672,24 +666,6 @@ void AAGX_Terrain::CreateNativeShovels()
 			LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(),
 			*GetName());
 	}
-}
-
-void AAGX_Terrain::SetInitialTransform()
-{
-	if (!HasNative())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("SetInitialTransform called on Terrain '%s' which doesn't have a native "
-				 "representation."),
-			*GetName());
-		return;
-	}
-
-	std::tuple<FVector, FQuat> PosRot =
-		AGX_HeightFieldUtilities::GetTerrainPositionAndRotationFrom(*SourceLandscape);
-	NativeBarrier.SetPosition(std::get<0>(PosRot));
-	NativeBarrier.SetRotation(std::get<1>(PosRot));
 }
 
 void AAGX_Terrain::InitializeRendering()
