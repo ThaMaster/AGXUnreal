@@ -53,37 +53,6 @@ namespace AGX_HeightFieldUtilities_helpers
 		return FTransform(Landscape.GetActorQuat(), CenterProjectedGlobalAdjusted);
 	}
 
-	// Nudge point away from the edge of the landscape if the vertex lies at the edge.
-	// By setting ForceNudge = true the point will be nudged even if it does not lie at the
-	// landscape edge.
-	/* void NudgeEdgePoint(
-		const int32 VertX, const int32 VertY, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo,
-		float& PointX, float& PointY, bool ForceNudge)
-	{
-		const float NudgeDistX = LandscapeSizeInfo.QuadSideSizeX / 1000.0f;
-		const float NudgeDistY = LandscapeSizeInfo.QuadSideSizeY / 1000.0f;
-		const int32 EdgeVertexX = LandscapeSizeInfo.NumVerticesSideX - 1;
-		const int32 EdgeVertexY = LandscapeSizeInfo.NumVerticesSideY - 1;
-
-		if (VertX == 0)
-		{
-			PointX += NudgeDistX;
-		}
-		else if (VertX == EdgeVertexX || ForceNudge)
-		{
-			PointX -= NudgeDistX;
-		}
-
-		if (VertY == 0)
-		{
-			PointY += NudgeDistY;
-		}
-		else if (VertY == EdgeVertexY || ForceNudge)
-		{
-			PointY -= NudgeDistY;
-		}
-	}*/
-
 	void NudgePoint(float& X, float& Y, float MinX, float MaxX, float MinY, float MaxY)
 	{
 		static constexpr float NudgeDist = 0.1f;
@@ -96,33 +65,21 @@ namespace AGX_HeightFieldUtilities_helpers
 		else if (Y >= MaxY)
 			Y -= NudgeDist;
 	}
-#if 0
+
 	// Shoot single ray at landscape to measure the height. Returns false if the ray misses the
 	// landscape and true otherwise. If it returns false the OutHeight is set to 0.0 but is not
 	// a valid measurement.
 	bool ShootSingleRay(
-		const ALandscape& Landscape, const int32 VertX, const int32 VertY, const float ZOffsetLocal,
-		const FAGX_LandscapeSizeInfo& LandscapeSizeInfo,
-		const FCollisionQueryParams& CollisionParams, FHitResult& HitResult, float& OutHeight,
-		bool ForceNudge = false)
+		const ALandscape& Landscape, float LocalX, float LocalY, float ZOffsetLocal,
+		const FCollisionQueryParams& CollisionParams, FHitResult& HitResult, float& OutHeight)
 	{
 		OutHeight = 0.0f;
 
-		// Vertex position in the landscapes local coordinate system.
-		float Xlocal = VertX * LandscapeSizeInfo.QuadSideSizeX;
-		float Ylocal = VertY * LandscapeSizeInfo.QuadSideSizeY;
-
-		// The line trace will not detect a hit if it goes through a vertex at the edge of
-		// the landscape (might be a floating point precision issue). We fix this by nudging
-		// any point at the edge away from the edge and inwards slightly. If the ForceNudge
-		// parameter is set to true, the point will be nudged even if it is not on the edge.
-//		NudgeEdgePoint(VertX, VertY, LandscapeSizeInfo, Xlocal, Ylocal, ForceNudge);
-
 		// Ray start and end positions in global coordinates.
 		const FVector RayStart = Landscape.GetTransform().TransformPositionNoScale(
-			FVector(Xlocal, Ylocal, ZOffsetLocal));
+			FVector(LocalX, LocalY, ZOffsetLocal));
 		const FVector RayEnd = Landscape.GetTransform().TransformPositionNoScale(
-			FVector(Xlocal, Ylocal, -ZOffsetLocal));
+			FVector(LocalX, LocalY, -ZOffsetLocal));
 
 		if (Landscape.ActorLineTraceSingle(
 				HitResult, RayStart, RayEnd, ECC_Visibility, CollisionParams))
@@ -138,7 +95,7 @@ namespace AGX_HeightFieldUtilities_helpers
 		// Line trace missed.
 		return false;
 	}
-#endif
+
 	// This function should only be used if the landscape is not rotated around world x or y axis.
 	// The reason for this is that the Landscape.GetHeightAtLocaion does not handle that case. It
 	// will measure along the world z-axis (instead of the Landscapes local z-axis as it should)
@@ -226,75 +183,95 @@ namespace AGX_HeightFieldUtilities_helpers
 
 		return Heights;
 	}
-#if 0
+
 	// This is an alternative to AGX_HeightFieldUtilities_helpers::GetHeigtsUsingApi. This function
 	// is slower but can handle any Landscape orientation, which is not the case for
 	// AGX_HeightFieldUtilities_helpers::GetHeigtsUsingApi (see comment above that function).
 	TArray<float> GetHeightsUsingRayCasts(
-		ALandscape& Landscape, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo)
+		ALandscape& Landscape, const FVector& StartPos, float LengthX, float LengthY)
 	{
 		UE_LOG(LogAGX, Log, TEXT("About to read Landscape heights with ray casting."));
+		const auto QuadSideSizeX = Landscape.GetActorScale().X;
+		const auto QuadSideSizeY = Landscape.GetActorScale().Y;
+		const int32 ResolutionX = FMath::RoundToInt32(LengthX / QuadSideSizeX);
+		const int32 ResolutionY = FMath::RoundToInt32(LengthY / QuadSideSizeY);
+		const int32 VerticesSideX = ResolutionX + 1;
+		const int32 VerticesSideY = ResolutionY + 1;
+		const int32 NumVertices = VerticesSideX * VerticesSideY;
+		const FVector StartPosLocal =
+			Landscape.GetActorTransform().InverseTransformPositionNoScale(StartPos);
+
 		TArray<float> Heights;
-		Heights.Reserve(LandscapeSizeInfo.NumVertices);
+		Heights.Reserve(NumVertices);
 		int32 LineTraceMisses = 0;
 
 		// At scale = 1, the height span is +- 256 cm
 		// https://docs.unrealengine.com/en-US/Engine/Landscape/TechnicalGuide/#calculatingheightmapzscale
-		const float HeightSpanHalf = 256.0f * LandscapeSizeInfo.LandscapeScaleZ;
+		const float HeightSpanHalf = 256.0f * Landscape.GetActorScale3D().Z;
 
 		// Line traces will be used to measure the heights of the landscape.
 		const FCollisionQueryParams CollisionParams(FName(TEXT("LandscapeHeightFieldTracess")));
 		FHitResult HitResult(ForceInit);
 
 		// AGX terrains Y axis goes in the opposite direction from Unreal's Y axis (flipped).
-		for (int32 Y = LandscapeSizeInfo.NumVerticesSideY - 1; Y >= 0; Y--)
+		const float MaxX = StartPosLocal.X + LengthX;
+		const float MaxY = StartPosLocal.Y + LengthY;
+		float CurrentX = StartPosLocal.X;
+		float CurrentY = StartPosLocal.Y + LengthY;
+		static constexpr float Tolerance = 0.2f;
+		static constexpr float NudgeDistances[4][2] = {
+			{0.1f, 0.1f}, {-0.1f, -0.1f}, {-0.1f, 0.1f}, {0.1f, -0.1f}};
+		while (CurrentY >= StartPosLocal.Y - Tolerance)
 		{
-			for (int32 X = 0; X < LandscapeSizeInfo.NumVerticesSideX; X++)
+			while (CurrentX <= MaxX + Tolerance)
 			{
 				float Height = 0.0f;
 
 				// Use line trace to read the landscape height for this vertex.
-				if (ShootSingleRay(
-						Landscape, X, Y, HeightSpanHalf, LandscapeSizeInfo, CollisionParams,
-						HitResult, Height))
+				bool Result = ShootSingleRay(
+					Landscape, CurrentX, CurrentY, HeightSpanHalf, CollisionParams, HitResult,
+					Height);
+
+				if (!Result)
 				{
-					Heights.Add(Height);
+					// Line trace missed. This is unusual but has been observed with large
+					// landscapes at the seams between landscape components/sections, similar to
+					// line traces at the very edge being missed. Re-try the line trace but force
+					// the ray's intersection point to be nudged slightly.
+					for (int i = 0; i < 4; i++)
+					{
+						const float NudgedX = CurrentX + NudgeDistances[i][0];
+						const float NudgedY = CurrentY + NudgeDistances[i][1];
+						Result = ShootSingleRay(
+							Landscape, NudgedX, NudgedY, HeightSpanHalf, CollisionParams, HitResult,
+							Height);
+						if (Result)
+							break;
+					}
 				}
 
-				// Line trace missed. This is unusual but has been observed with large
-				// landscapes at the seams between landscape components/sections, similar to
-				// line traces at the very edge being missed. Re-try the line trace but force
-				// the ray's intersection point to be nudged slightly.
-				else if (ShootSingleRay(
-							 Landscape, X, Y, HeightSpanHalf, LandscapeSizeInfo, CollisionParams,
-							 HitResult, Height, true))
-				{
-					Heights.Add(Height);
-				}
-				else
-				{
-					// Line trace missed even after force nudge, which is unexpected. We will log a
-					// warning and set the height value for this vertex to 0.0 and continue. If this
-					// happens rarely enough the results may still be useful.
+				if (!Result)
 					LineTraceMisses++;
-					Heights.Add(0.f);
-				}
+
+				Heights.Add(Height);
+				CurrentX += QuadSideSizeX;
 			}
+			CurrentX = StartPosLocal.X;
+			CurrentY -= QuadSideSizeY;
 		}
 
-		check(Heights.Num() == LandscapeSizeInfo.NumVertices);
+		check(Heights.Num() == NumVertices);
 		if (LineTraceMisses > 0)
 		{
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("%d of %d vertices could not be read from the landscape. The heights of the "
 					 "coresponding vertices in the AGX Terrain may therefore be incorrect."),
-				LineTraceMisses, LandscapeSizeInfo.NumVertices);
+				LineTraceMisses, NumVertices);
 		}
 
 		return Heights;
 	}
-#endif
 }
 
 TArray<float> GetHeights(
@@ -302,7 +279,7 @@ TArray<float> GetHeights(
 {
 	using namespace AGX_HeightFieldUtilities_helpers;
 	const FRotator LandsapeRotation = Landscape.GetActorRotation();
-	if (true || FMath::IsNearlyZero(LandsapeRotation.Roll, KINDA_SMALL_NUMBER) &&
+	if (FMath::IsNearlyZero(LandsapeRotation.Roll, KINDA_SMALL_NUMBER) &&
 		FMath::IsNearlyZero(LandsapeRotation.Pitch, KINDA_SMALL_NUMBER))
 	{
 		// If the Landscape is not rotated around x or y, we can use the Landscape API to read the
@@ -311,8 +288,7 @@ TArray<float> GetHeights(
 	}
 	else
 	{
-		return TArray<float>();
-		// return GetHeightsUsingRayCasts(Landscape, LandscapeSizeInfo);
+		return GetHeightsUsingRayCasts(Landscape, StartPos, LengthX, LengthY);
 	}
 }
 
