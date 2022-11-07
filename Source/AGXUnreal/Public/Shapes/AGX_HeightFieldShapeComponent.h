@@ -67,6 +67,7 @@ protected:
 private:
 	/// Create the AGX Dynamics objects owned by the FBoxShapeBarrier.
 	void CreateNative();
+	virtual void Serialize(FArchive& Archive) override;
 
 private:
 	FHeightFieldShapeBarrier NativeBarrier;

@@ -1076,4 +1076,14 @@ void AAGX_Terrain::ClearParticlesMap()
 		ResolutionX * NumBytesPerPixel, NumBytesPerPixel, PixelData, false);
 }
 
+void AAGX_Terrain::Serialize(FArchive& Archive)
+{
+	Super::Serialize(Archive);
+	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
+	if (ShouldUpgradeTo(Archive, FAGX_CustomVersion::HeightFieldUsesBounds))
+	{
+		TerrainBounds->bInfiniteBounds = true;
+	}
+}
+
 #undef LOCTEXT_NAMESPACE

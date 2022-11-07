@@ -28,8 +28,17 @@ public:
 	/**
 	 * The distance from the center of the Height Field to its edges [cm].
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Height Field Bounds")
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Height Field Bounds",
+		Meta = (EditCondition = "!bInfiniteBounds"))
 	FVector HalfExtent {1000.0, 1000.0, 1000.0};
+
+	/**
+	 * If set to true, the Height Field Bounds will be as large as any selected Landscape.
+	 * Notice that using smaller bounds may increase runtime performance.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Height Field Bounds")
+	bool bInfiniteBounds = false;
 
 	/**
 	 * Get Bounds as defined by the user, i.e. using exactly the HalfExtent UPROPERTY.

@@ -3,6 +3,7 @@
 #include "Terrain/AGX_HeightFieldBoundsComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_CustomVersion.h"
 #include "Shapes/AGX_HeightFieldShapeComponent.h"
 #include "Terrain/AGX_Terrain.h"
 
@@ -29,7 +30,12 @@ UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 	const ALandscape& Landscape = TransformAndLandscape->Landscape;
 	const FTransform& OwnerTransform = TransformAndLandscape->Transform;
 
-	if (HalfExtent.X < 0 || HalfExtent.Y < 0 || HalfExtent.Z < 0)
+	static constexpr float LargeNumber = 1.e+10f;
+	const FVector SelectedHalfExtentBounds =
+		bInfiniteBounds ? FVector(LargeNumber, LargeNumber, 10000.f) : HalfExtent;
+
+	if (SelectedHalfExtentBounds.X < 0 || SelectedHalfExtentBounds.Y < 0 ||
+		SelectedHalfExtentBounds.Z < 0)
 	{
 		UE_LOG(
 			LogAGX, Warning,
@@ -40,7 +46,7 @@ UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 
 	FHeightFieldBoundsInfo BoundsInfo;
 	BoundsInfo.Transform = FTransform(Landscape.GetActorQuat(), OwnerTransform.GetLocation());
-	BoundsInfo.HalfExtent = HalfExtent;
+	BoundsInfo.HalfExtent = SelectedHalfExtentBounds;
 	return BoundsInfo;
 }
 
@@ -58,7 +64,12 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 		return {};
 	}
 
-	if (HalfExtent.X < 0 || HalfExtent.Y < 0 || HalfExtent.Z < 0)
+	static constexpr float LargeNumber = 1.e+10f;
+	const FVector SelectedHalfExtentBounds =
+		bInfiniteBounds ? FVector(LargeNumber, LargeNumber, 10000.f) : HalfExtent;
+
+	if (SelectedHalfExtentBounds.X < 0 || SelectedHalfExtentBounds.Y < 0 ||
+		SelectedHalfExtentBounds.Z < 0)
 	{
 		UE_LOG(
 			LogAGX, Warning,
@@ -71,10 +82,10 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	const FTransform& OwnerTransform = TransformAndLandscape->Transform;
 
 	const FTransform BoundsWorldTrans(Landscape.GetActorQuat(), OwnerTransform.GetLocation());
-	const FVector Corner0World = BoundsWorldTrans.TransformPositionNoScale(
-		FVector(-HalfExtent.X, -HalfExtent.Y, -HalfExtent.Z));
-	const FVector Corner1World = BoundsWorldTrans.TransformPositionNoScale(
-		FVector(HalfExtent.X, HalfExtent.Y, HalfExtent.Z));
+	const FVector Corner0World = BoundsWorldTrans.TransformPositionNoScale(FVector(
+		-SelectedHalfExtentBounds.X, -SelectedHalfExtentBounds.Y, -SelectedHalfExtentBounds.Z));
+	const FVector Corner1World = BoundsWorldTrans.TransformPositionNoScale(FVector(
+		SelectedHalfExtentBounds.X, SelectedHalfExtentBounds.Y, SelectedHalfExtentBounds.Z));
 
 	const FTransform& LandscapeTrans = Landscape.GetTransform();
 
@@ -127,7 +138,7 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 
 	FHeightFieldBoundsInfo BoundsInfo;
 	BoundsInfo.Transform = FTransform(Landscape.GetActorQuat(), CenterPointGlobal);
-	BoundsInfo.HalfExtent = FVector(HalfExtentX, HalfExtentY, HalfExtent.Z);
+	BoundsInfo.HalfExtent = FVector(HalfExtentX, HalfExtentY, SelectedHalfExtentBounds.Z);
 	return BoundsInfo;
 }
 

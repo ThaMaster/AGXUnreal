@@ -209,6 +209,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	virtual void Serialize(FArchive& Archive) override;
 	void InitializeNative();
 	bool CreateNativeTerrain();
 	void CreateNativeShovels();

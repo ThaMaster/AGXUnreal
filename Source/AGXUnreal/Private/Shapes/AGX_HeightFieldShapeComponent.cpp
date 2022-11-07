@@ -3,6 +3,7 @@
 #include "Shapes/AGX_HeightFieldShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
 #include "Terrain/AGX_HeightFieldBoundsComponent.h"
 #include "Utilities/AGX_HeightFieldUtilities.h"
@@ -154,5 +155,15 @@ void UAGX_HeightFieldShapeComponent::ReleaseNative()
 	if (HasNative())
 	{
 		NativeBarrier.ReleaseNative();
+	}
+}
+
+void UAGX_HeightFieldShapeComponent::Serialize(FArchive& Archive)
+{
+	Super::Serialize(Archive);
+	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
+	if (ShouldUpgradeTo(Archive, FAGX_CustomVersion::HeightFieldUsesBounds))
+	{
+		HeightFieldBounds->bInfiniteBounds = true;
 	}
 }
