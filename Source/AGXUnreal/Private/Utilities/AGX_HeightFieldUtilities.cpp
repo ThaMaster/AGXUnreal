@@ -41,8 +41,8 @@ namespace AGX_HeightFieldUtilities_helpers
 		// Dynamics thing.
 		const auto QuadSideSizeX = Landscape.GetActorScale().X;
 		const auto QuadSideSizeY = Landscape.GetActorScale().Y;
-		const int32 NumQuadsX = FMath::RoundToInt32(2.0 * HalfExtent.X / QuadSideSizeX);
-		const int32 NumQuadsY = FMath::RoundToInt32(2.0 * HalfExtent.Y / QuadSideSizeY);
+		const int32 NumQuadsX = FMath::RoundToInt(2.0 * HalfExtent.X / QuadSideSizeX);
+		const int32 NumQuadsY = FMath::RoundToInt(2.0 * HalfExtent.Y / QuadSideSizeY);
 		const double TerrainTileCenterOffsetX = (NumQuadsX % 2 == 0) ? 0 : QuadSideSizeX / 2;
 		const double TerrainTileCenterOffsetY = (NumQuadsY % 2 == 0) ? 0 : -QuadSideSizeY / 2;
 		FVector LocalTileOffset(TerrainTileCenterOffsetX, TerrainTileCenterOffsetY, 0);
@@ -107,8 +107,8 @@ namespace AGX_HeightFieldUtilities_helpers
 
 		const auto QuadSideSizeX = Landscape.GetActorScale().X;
 		const auto QuadSideSizeY = Landscape.GetActorScale().Y;
-		const int32 ResolutionX = FMath::RoundToInt32(LengthX / QuadSideSizeX);
-		const int32 ResolutionY = FMath::RoundToInt32(LengthY / QuadSideSizeY);
+		const int32 ResolutionX = FMath::RoundToInt(LengthX / QuadSideSizeX);
+		const int32 ResolutionY = FMath::RoundToInt(LengthY / QuadSideSizeY);
 		const int32 VerticesSideX = ResolutionX + 1;
 		const int32 VerticesSideY = ResolutionY + 1;
 
@@ -191,8 +191,8 @@ namespace AGX_HeightFieldUtilities_helpers
 		UE_LOG(LogAGX, Log, TEXT("About to read Landscape heights with ray casting."));
 		const auto QuadSideSizeX = Landscape.GetActorScale().X;
 		const auto QuadSideSizeY = Landscape.GetActorScale().Y;
-		const int32 ResolutionX = FMath::RoundToInt32(LengthX / QuadSideSizeX);
-		const int32 ResolutionY = FMath::RoundToInt32(LengthY / QuadSideSizeY);
+		const int32 ResolutionX = FMath::RoundToInt(LengthX / QuadSideSizeX);
+		const int32 ResolutionY = FMath::RoundToInt(LengthY / QuadSideSizeY);
 		const int32 VerticesSideX = ResolutionX + 1;
 		const int32 VerticesSideY = ResolutionY + 1;
 		const int32 NumVertices = VerticesSideX * VerticesSideY;
@@ -296,8 +296,8 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
 	TArray<float> Heights = GetHeights(Landscape, StartPos, LengthX, LengthY);
 	const auto QuadSideSizeX = Landscape.GetActorScale().X;
 	const auto QuadSideSizeY = Landscape.GetActorScale().Y;
-	const int32 ResolutionX = FMath::RoundToInt32(LengthX / QuadSideSizeX) + 1;
-	const int32 ResolutionY = FMath::RoundToInt32(LengthY / QuadSideSizeY) + 1;
+	const int32 ResolutionX = FMath::RoundToInt(LengthX / QuadSideSizeX) + 1;
+	const int32 ResolutionY = FMath::RoundToInt(LengthY / QuadSideSizeY) + 1;
 	FHeightFieldShapeBarrier HeightField;
 	HeightField.AllocateNative(
 		ResolutionX, ResolutionY, FMath::RoundToFloat(LengthX), FMath::RoundToFloat(LengthY),
@@ -331,7 +331,7 @@ std::tuple<int32, int32> AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(
 
 	// @todo Figure out how to get the original landscape size properly. This will not handle
 	// the case where a complete outer side-slice has been removed from the landscape.
-	return std::make_tuple<int32, int32>(Size.X + 1, Size.Y + 1);
+	return std::tuple<int32, int32>(Size.X + 1, Size.Y + 1);
 }
 
 std::tuple<double, double> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const ALandscape& Landscape)

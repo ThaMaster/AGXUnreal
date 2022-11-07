@@ -820,8 +820,8 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	const float TerrainSizeY = QuadSideSizeY * static_cast<float>(GridSizeYTerrain - 1);
 	const FVector TerrainStartCornerLocal =
 		TerrainCenterLocal - FVector(TerrainSizeX / 2.0, TerrainSizeY / 2.0, 0.0);
-	const int32 TerrainStartVertX = FMath::RoundToInt32(TerrainStartCornerLocal.X / QuadSideSizeX);
-	const int32 TerrainStartVertY = FMath::RoundToInt32(TerrainStartCornerLocal.Y / QuadSideSizeY);
+	const int32 TerrainStartVertX = FMath::RoundToInt(TerrainStartCornerLocal.X / QuadSideSizeX);
+	const int32 TerrainStartVertY = FMath::RoundToInt(TerrainStartCornerLocal.Y / QuadSideSizeY);
 	const int32 TerrainEndVertX = TerrainStartVertX + GridSizeXTerrain - 1;
 	const int32 TerrainEndVertY = TerrainStartVertY + GridSizeYTerrain - 1;
 
