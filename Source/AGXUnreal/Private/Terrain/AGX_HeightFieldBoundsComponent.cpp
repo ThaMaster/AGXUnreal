@@ -31,8 +31,9 @@ UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 	const FTransform& OwnerTransform = TransformAndLandscape->Transform;
 
 	static constexpr float LargeNumber = 1.e+10f;
+	static constexpr double KindaLargeNumber = 1.e+4;
 	const FVector SelectedHalfExtentBounds =
-		bInfiniteBounds ? FVector(LargeNumber, LargeNumber, 10000.f) : HalfExtent;
+		bInfiniteBounds ? FVector(LargeNumber, LargeNumber, KindaLargeNumber) : HalfExtent;
 
 	if (SelectedHalfExtentBounds.X < 0 || SelectedHalfExtentBounds.Y < 0 ||
 		SelectedHalfExtentBounds.Z < 0)
@@ -64,9 +65,10 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 		return {};
 	}
 
-	static constexpr float LargeNumber = 1.e+10f;
+	static constexpr double LargeNumber = 1.e+10;
+	static constexpr double KindaLargeNumber = 1.e+4;
 	const FVector SelectedHalfExtentBounds =
-		bInfiniteBounds ? FVector(LargeNumber, LargeNumber, 10000.f) : HalfExtent;
+		bInfiniteBounds ? FVector(LargeNumber, LargeNumber, KindaLargeNumber) : HalfExtent;
 
 	if (SelectedHalfExtentBounds.X < 0 || SelectedHalfExtentBounds.Y < 0 ||
 		SelectedHalfExtentBounds.Z < 0)
@@ -117,7 +119,7 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	};
 
 	// Clamp so that we are never outside the Landscape.
-	const std::tuple<float, float> SideLengths =
+	const std::tuple<double, double> SideLengths =
 		AGX_HeightFieldUtilities::GetLandscapeSizeXY(Landscape);
 	EnsureInBounds(Corner0LocalAdjusted, 0, std::get<0>(SideLengths), 0, std::get<1>(SideLengths));
 	EnsureInBounds(Corner1LocalAdjusted, 0, std::get<0>(SideLengths), 0, std::get<1>(SideLengths));

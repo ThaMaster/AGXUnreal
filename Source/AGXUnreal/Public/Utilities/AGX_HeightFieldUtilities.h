@@ -13,8 +13,8 @@ class ALandscape;
 namespace AGX_HeightFieldUtilities
 {
 	// StartPos is in world coordinate system.
-	AGXUNREAL_API FHeightFieldShapeBarrier
-	CreateHeightField(ALandscape& Landscape, const FVector& StartPos, float LengthX, float LengthY);
+	AGXUNREAL_API FHeightFieldShapeBarrier CreateHeightField(
+		ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY);
 
 	// The resulting Transform's position will always intersect the Landscape, i.e. even in the
 	// given Center point does not lie in the Landscape's plane, it will be projected to it during
@@ -32,7 +32,7 @@ namespace AGX_HeightFieldUtilities
 	AGXUNREAL_API std::tuple<int32, int32> GetLandscapeNumberOfVertsXY(const ALandscape& Landscape);
 
 	// Size (outer bounds) [cm].
-	AGXUNREAL_API std::tuple<float, float> GetLandscapeSizeXY(const ALandscape& Landscape);
+	AGXUNREAL_API std::tuple<double, double> GetLandscapeSizeXY(const ALandscape& Landscape);
 
 	AGXUNREAL_API bool IsOpenWorldLandscape(const ALandscape& Landscape);
 }

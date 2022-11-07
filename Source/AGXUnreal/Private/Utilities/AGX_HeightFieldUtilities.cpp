@@ -43,8 +43,8 @@ namespace AGX_HeightFieldUtilities_helpers
 		const auto QuadSideSizeY = Landscape.GetActorScale().Y;
 		const int32 NumQuadsX = FMath::RoundToInt32(2.0 * HalfExtent.X / QuadSideSizeX);
 		const int32 NumQuadsY = FMath::RoundToInt32(2.0 * HalfExtent.Y / QuadSideSizeY);
-		const float TerrainTileCenterOffsetX = (NumQuadsX % 2 == 0) ? 0 : QuadSideSizeX / 2;
-		const float TerrainTileCenterOffsetY = (NumQuadsY % 2 == 0) ? 0 : -QuadSideSizeY / 2;
+		const double TerrainTileCenterOffsetX = (NumQuadsX % 2 == 0) ? 0 : QuadSideSizeX / 2;
+		const double TerrainTileCenterOffsetY = (NumQuadsY % 2 == 0) ? 0 : -QuadSideSizeY / 2;
 		FVector LocalTileOffset(TerrainTileCenterOffsetX, TerrainTileCenterOffsetY, 0);
 
 		const FVector CenterProjectedGlobalAdjusted =
@@ -53,9 +53,9 @@ namespace AGX_HeightFieldUtilities_helpers
 		return FTransform(Landscape.GetActorQuat(), CenterProjectedGlobalAdjusted);
 	}
 
-	void NudgePoint(float& X, float& Y, float MinX, float MaxX, float MinY, float MaxY)
+	void NudgePoint(double& X, double& Y, double MinX, double MaxX, double MinY, double MaxY)
 	{
-		static constexpr float NudgeDist = 0.1f;
+		static constexpr double NudgeDist = 0.1;
 		if (X <= MinX)
 			X += NudgeDist;
 		else if (X >= MaxX)
@@ -70,7 +70,7 @@ namespace AGX_HeightFieldUtilities_helpers
 	// landscape and true otherwise. If it returns false the OutHeight is set to 0.0 but is not
 	// a valid measurement.
 	bool ShootSingleRay(
-		const ALandscape& Landscape, float LocalX, float LocalY, float ZOffsetLocal,
+		const ALandscape& Landscape, double LocalX, double LocalY, double ZOffsetLocal,
 		const FCollisionQueryParams& CollisionParams, FHitResult& HitResult, float& OutHeight)
 	{
 		OutHeight = 0.0f;
@@ -101,7 +101,7 @@ namespace AGX_HeightFieldUtilities_helpers
 	// will measure along the world z-axis (instead of the Landscapes local z-axis as it should)
 	// such that sharp peaks will be cut off and tilted.
 	TArray<float> GetHeigtsUsingApi(
-		ALandscape& Landscape, const FVector& StartPos, float LengthX, float LengthY)
+		ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY)
 	{
 		UE_LOG(LogAGX, Log, TEXT("About to read Landscape heights using Landscape API."));
 
@@ -125,17 +125,15 @@ namespace AGX_HeightFieldUtilities_helpers
 		}
 
 		Heights.Reserve(NumVertices);
-		const float EdgeNudgeDistanceX = QuadSideSizeX / 1000.0f;
-		const float EdgeNudgeDistanceY = QuadSideSizeY / 1000.0f;
 		const FVector StartPosLocal =
 			Landscape.GetActorTransform().InverseTransformPositionNoScale(StartPos);
 
 		// AGX terrains Y axis goes in the opposite direction from Unreal's Y axis (flipped).
-		const float MaxX = StartPosLocal.X + LengthX;
-		const float MaxY = StartPosLocal.Y + LengthY;
-		float CurrentX = StartPosLocal.X;
-		float CurrentY = StartPosLocal.Y + LengthY;
-		static constexpr float Tolerance = 0.2;
+		const double MaxX = StartPosLocal.X + LengthX;
+		const double MaxY = StartPosLocal.Y + LengthY;
+		double CurrentX = StartPosLocal.X;
+		double CurrentY = StartPosLocal.Y + LengthY;
+		static constexpr double Tolerance = 0.2;
 		while (CurrentY >= StartPosLocal.Y - Tolerance)
 		{
 			while (CurrentX <= MaxX + Tolerance)
@@ -148,8 +146,8 @@ namespace AGX_HeightFieldUtilities_helpers
 					// Attempt to nudge the measuring point a little and do the measurement again.
 					// We do this because sometimes, measuring at the edge of a Landscape does not
 					// work.
-					float NudgedX = CurrentX;
-					float NudgedY = CurrentY;
+					double NudgedX = CurrentX;
+					double NudgedY = CurrentY;
 					NudgePoint(NudgedX, NudgedY, StartPosLocal.X, MaxX, StartPosLocal.Y, MaxY);
 
 					LocationGlobal = Landscape.GetTransform().TransformPositionNoScale(
@@ -188,7 +186,7 @@ namespace AGX_HeightFieldUtilities_helpers
 	// is slower but can handle any Landscape orientation, which is not the case for
 	// AGX_HeightFieldUtilities_helpers::GetHeigtsUsingApi (see comment above that function).
 	TArray<float> GetHeightsUsingRayCasts(
-		ALandscape& Landscape, const FVector& StartPos, float LengthX, float LengthY)
+		ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY)
 	{
 		UE_LOG(LogAGX, Log, TEXT("About to read Landscape heights with ray casting."));
 		const auto QuadSideSizeX = Landscape.GetActorScale().X;
@@ -207,20 +205,20 @@ namespace AGX_HeightFieldUtilities_helpers
 
 		// At scale = 1, the height span is +- 256 cm
 		// https://docs.unrealengine.com/en-US/Engine/Landscape/TechnicalGuide/#calculatingheightmapzscale
-		const float HeightSpanHalf = 256.0f * Landscape.GetActorScale3D().Z;
+		const double HeightSpanHalf = 256.0 * Landscape.GetActorScale3D().Z;
 
 		// Line traces will be used to measure the heights of the landscape.
 		const FCollisionQueryParams CollisionParams(FName(TEXT("LandscapeHeightFieldTracess")));
 		FHitResult HitResult(ForceInit);
 
 		// AGX terrains Y axis goes in the opposite direction from Unreal's Y axis (flipped).
-		const float MaxX = StartPosLocal.X + LengthX;
-		const float MaxY = StartPosLocal.Y + LengthY;
-		float CurrentX = StartPosLocal.X;
-		float CurrentY = StartPosLocal.Y + LengthY;
-		static constexpr float Tolerance = 0.2f;
-		static constexpr float NudgeDistances[4][2] = {
-			{0.1f, 0.1f}, {-0.1f, -0.1f}, {-0.1f, 0.1f}, {0.1f, -0.1f}};
+		const double MaxX = StartPosLocal.X + LengthX;
+		const double MaxY = StartPosLocal.Y + LengthY;
+		double CurrentX = StartPosLocal.X;
+		double CurrentY = StartPosLocal.Y + LengthY;
+		static constexpr double Tolerance = 0.2;
+		static constexpr double NudgeDistances[4][2] = {
+			{0.1, 0.1}, {-0.1, -0.1}, {-0.1, 0.1}, {0.1, -0.1}};
 		while (CurrentY >= StartPosLocal.Y - Tolerance)
 		{
 			while (CurrentX <= MaxX + Tolerance)
@@ -240,8 +238,8 @@ namespace AGX_HeightFieldUtilities_helpers
 					// the ray's intersection point to be nudged slightly.
 					for (int i = 0; i < 4; i++)
 					{
-						const float NudgedX = CurrentX + NudgeDistances[i][0];
-						const float NudgedY = CurrentY + NudgeDistances[i][1];
+						const double NudgedX = CurrentX + NudgeDistances[i][0];
+						const double NudgedY = CurrentY + NudgeDistances[i][1];
 						Result = ShootSingleRay(
 							Landscape, NudgedX, NudgedY, HeightSpanHalf, CollisionParams, HitResult,
 							Height);
@@ -275,7 +273,7 @@ namespace AGX_HeightFieldUtilities_helpers
 }
 
 TArray<float> GetHeights(
-	ALandscape& Landscape, const FVector& StartPos, float LengthX, float LengthY)
+	ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY)
 {
 	using namespace AGX_HeightFieldUtilities_helpers;
 	const FRotator LandsapeRotation = Landscape.GetActorRotation();
@@ -293,7 +291,7 @@ TArray<float> GetHeights(
 }
 
 FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
-	ALandscape& Landscape, const FVector& StartPos, float LengthX, float LengthY)
+	ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY)
 {
 	TArray<float> Heights = GetHeights(Landscape, StartPos, LengthX, LengthY);
 	const auto QuadSideSizeX = Landscape.GetActorScale().X;
@@ -336,17 +334,17 @@ std::tuple<int32, int32> AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(
 	return std::make_tuple<int32, int32>(Size.X + 1, Size.Y + 1);
 }
 
-std::tuple<float, float> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const ALandscape& Landscape)
+std::tuple<double, double> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const ALandscape& Landscape)
 {
 	// @todo Figure out how to get the original landscape size properly. This will not handle
 	// the case where a complete outer side-slice has been removed from the landscape along the
 	// Y-axis.
 	const auto VertsXY = GetLandscapeNumberOfVertsXY(Landscape);
-	const auto QuadSideSizeX = Landscape.GetActorScale().X;
-	const auto QuadSideSizeY = Landscape.GetActorScale().Y;
-	const auto SizeX = static_cast<float>(std::get<0>(VertsXY) - 1) * QuadSideSizeX;
-	const auto SizeY = static_cast<float>(std::get<1>(VertsXY) - 1) * QuadSideSizeY;
-	return std::make_tuple<float, float>(SizeX, SizeY);
+	const double QuadSideSizeX = Landscape.GetActorScale().X;
+	const double QuadSideSizeY = Landscape.GetActorScale().Y;
+	const double SizeX = static_cast<double>(std::get<0>(VertsXY) - 1) * QuadSideSizeX;
+	const double SizeY = static_cast<double>(std::get<1>(VertsXY) - 1) * QuadSideSizeY;
+	return std::tuple<double, double>(SizeX, SizeY);
 }
 
 bool AGX_HeightFieldUtilities::IsOpenWorldLandscape(const ALandscape& Landscape)
