@@ -349,22 +349,43 @@ FTransform AGX_HeightFieldUtilities::GetHeightFieldTransformUsingBoxFrom(
 std::tuple<int32, int32> AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(
 	const ALandscape& Landscape)
 {
+	float SizeX, SizeY;
+	std::tie(SizeX, SizeY) = GetLandscapeSizeXY(Landscape);
+	const auto QuadSideSizeX = Landscape.GetActorScale().X;
+	const auto QuadSideSizeY = Landscape.GetActorScale().Y;
+	return std::make_tuple<int32, int32>(
+		FMath::RoundToInt32(SizeX / QuadSideSizeX) + 1,
+		FMath::RoundToInt32(SizeY / QuadSideSizeY) + 1);
+}
+
+std::tuple<float, float> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const ALandscape& Landscape)
+{
 	const ALandscapeProxy* LandscapeProxy = Cast<ALandscapeProxy>(&Landscape);
 	const ULandscapeInfo* LandscapeInfo = LandscapeProxy->GetLandscapeInfo();
 	FIntRect Rect;
 	LandscapeInfo->GetLandscapeExtent(Rect.Min.X, Rect.Min.Y, Rect.Max.X, Rect.Max.Y);
 	FIntPoint Size = Rect.Size();
-	return std::make_tuple<int32, int32>(Size.X + 1, Size.Y + 1);
-}
 
-std::tuple<float, float> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const ALandscape& Landscape)
-{
-	const auto VertsXY = GetLandscapeNumberOfVertsXY(Landscape);
+	// VertsXY here is the vertex count of the smallest bounded region of the Landscape.
+	// So if Landscape Components has been removed using the Landscape tool, this will not
+	// neccesarily reflect the overall original landscape vertex count.
+	// We do a little trick using this vertex count and the ActorBounds origin below which
+	// we know lies in the center of the smallest bounded region of the Landscape.
+	const auto VertsXY = std::make_tuple<int32, int32>(Size.X + 1, Size.Y + 1);
 	const auto QuadSideSizeX = Landscape.GetActorScale().X;
 	const auto QuadSideSizeY = Landscape.GetActorScale().Y;
-	return std::make_tuple<float, float>(
-		static_cast<float>(std::get<0>(VertsXY) - 1) * QuadSideSizeX,
-		static_cast<float>(std::get<1>(VertsXY) - 1) * QuadSideSizeY);
+
+	FVector ActorOrigin, Unused;
+	LandscapeProxy->GetActorBounds(false, ActorOrigin, Unused);
+
+	const FVector ActorOriginLocal =
+		Landscape.GetActorTransform().InverseTransformPositionNoScale(ActorOrigin);
+
+	const auto SizeX = static_cast<float>(std::get<0>(VertsXY) - 1) * QuadSideSizeX / 2.0 +
+					   FMath::Abs(ActorOriginLocal.X);
+	const auto SizeY = static_cast<float>(std::get<1>(VertsXY) - 1) * QuadSideSizeY / 2.0 +
+					   FMath::Abs(ActorOriginLocal.Y);
+	return std::make_tuple<float, float>(SizeX, SizeY);
 }
 
 bool AGX_HeightFieldUtilities::IsOpenWorldLandscape(const ALandscape& Landscape)

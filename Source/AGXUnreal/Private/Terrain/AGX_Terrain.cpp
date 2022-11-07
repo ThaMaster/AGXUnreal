@@ -740,14 +740,14 @@ void AAGX_Terrain::InitializeDisplacementMap()
 	}
 
 	// There is one displacement map texel per vertex.
-	int32 LandscapeVersX;
-	int32 LandscapeVersY;
+	int32 LandscapeVertsX;
+	int32 LandscapeVertsY;
 	CachedLandscapeVertsXY =
 		AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(*SourceLandscape);
-	std::tie(LandscapeVersX, LandscapeVersY) = CachedLandscapeVertsXY;
+	std::tie(LandscapeVertsX, LandscapeVertsY) = CachedLandscapeVertsXY;
 
-	if (LandscapeDisplacementMap->SizeX != LandscapeVersX ||
-		LandscapeDisplacementMap->SizeY != LandscapeVersY)
+	if (LandscapeDisplacementMap->SizeX != LandscapeVertsX ||
+		LandscapeDisplacementMap->SizeY != LandscapeVertsY)
 	{
 		UE_LOG(
 			LogAGX, Log,
@@ -755,12 +755,12 @@ void AAGX_Terrain::InitializeDisplacementMap()
 				 "AGX Terrain '%s' does not match the vertices in the Source Landscape (%dx%d). "
 				 "Resizing the displacement map."),
 			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(),
-			LandscapeVersX, LandscapeVersY);
+			LandscapeVertsX, LandscapeVertsY);
 
-		LandscapeDisplacementMap->ResizeTarget(LandscapeVersX, LandscapeVersY);
+		LandscapeDisplacementMap->ResizeTarget(LandscapeVertsX, LandscapeVertsY);
 	}
-	if (LandscapeDisplacementMap->SizeX != LandscapeVersX ||
-		LandscapeDisplacementMap->SizeY != LandscapeVersY)
+	if (LandscapeDisplacementMap->SizeX != LandscapeVertsX ||
+		LandscapeDisplacementMap->SizeY != LandscapeVertsY)
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -769,8 +769,8 @@ void AAGX_Terrain::InitializeDisplacementMap()
 			*GetName(), LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY);
 	}
 
-	DisplacementData.SetNum(LandscapeVersX * LandscapeVersY);
-	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, LandscapeVersX, LandscapeVersY));
+	DisplacementData.SetNum(LandscapeVertsX * LandscapeVertsY);
+	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, LandscapeVertsX, LandscapeVertsY));
 
 	/// \todo I'm not sure why we need this. Does the texture sampler "fudge the
 	/// values" when using non-linear gamma?
@@ -797,10 +797,10 @@ void AAGX_Terrain::UpdateDisplacementMap()
 
 	const int32 GridSizeXTerrain = NativeBarrier.GetGridSizeX();
 	const int32 GridSizeYTerrain = NativeBarrier.GetGridSizeY();
-	int32 LandscapeVersX;
-	int32 LandscapeVersY;
-	std::tie(LandscapeVersX, LandscapeVersY) = CachedLandscapeVertsXY;
-	const int32 NumPixels = LandscapeVersX * LandscapeVersY;
+	int32 LandscapeVertsX;
+	int32 LandscapeVertsY;
+	std::tie(LandscapeVertsX, LandscapeVertsY) = CachedLandscapeVertsXY;
+	const int32 NumPixels = LandscapeVertsX * LandscapeVertsY;
 	AGX_CHECK(DisplacementData.Num() == NumPixels);
 	AGX_CHECK(DisplacementMapRegions.Num() == 1);
 
@@ -825,12 +825,15 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	const int32 TerrainEndVertX = TerrainStartVertX + GridSizeXTerrain - 1;
 	const int32 TerrainEndVertY = TerrainStartVertY + GridSizeYTerrain - 1;
 
+	//AGX_CHECK(TerrainEndVertX - TerrainStartVertX == GridSizeXTerrain);
+	//AGX_CHECK(TerrainEndVertY - TerrainStartVertY == GridSizeYTerrain);
+
 	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
-	for (int32 VertX = TerrainStartVertX; VertX <= TerrainEndVertX; VertX++)
+	for (int32 VertY = TerrainStartVertY; VertY <= TerrainEndVertY; VertY++)
 	{
-		for (int32 VertY = TerrainStartVertY; VertY <= TerrainEndVertY; VertY++)
+		for (int32 VertX = TerrainStartVertX; VertX <= TerrainEndVertX; VertX++)
 		{
-			const int32 PixelIndexLandscape = VertX + VertY * LandscapeVersY;
+			const int32 PixelIndexLandscape = VertX + VertY * LandscapeVertsX;
 			const int32 PixelIndexTerrain =
 				(VertX - TerrainStartVertX) + GridSizeXTerrain * (VertY - TerrainStartVertY);
 			const float HeightChange =
@@ -843,7 +846,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
 	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
-		LandscapeVersX * BytesPerPixel, BytesPerPixel, PixelData, false);
+		LandscapeVertsX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
 
 void AAGX_Terrain::ClearDisplacementMap()
