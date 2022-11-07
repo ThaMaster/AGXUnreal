@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
 
 // Unreal Engine includes.
 #include "Containers/Map.h"
@@ -78,8 +79,8 @@ using ComponentMap = TMap<FString, UActorComponent*>;
 // FallingBox test starts here.
 //
 
-DEFINE_LATENT_AUTOMATION_COMMAND_FOUR_PARAMETER(
-	FCheckFallinBoxMovedCommand, int, TickCurrent, int, TickMax, ComponentMap, ComponentsOfInterest,
+DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
+	FCheckFallinBoxMovedCommand, float, SimTimeMax, ComponentMap, ComponentsOfInterest,
 	FAutomationTestBase&, Test);
 
 bool FCheckFallinBoxMovedCommand::Update()
@@ -90,9 +91,9 @@ bool FCheckFallinBoxMovedCommand::Update()
 		return false;
 	}
 
-	if (TickCurrent == 0)
+	UWorld* TestWorld = GEditor->GetPIEWorldContext()->World();
+	if (ComponentsOfInterest.Num() == 0)
 	{
-		UWorld* TestWorld = GEditor->GetPIEWorldContext()->World();
 		ActorMap BoxActors = GetActorsByName(TestWorld, {"BoxActor"});
 
 		Test.TestTrue("Found actor of interest", BoxActors.Contains("BoxActor"));
@@ -110,9 +111,15 @@ bool FCheckFallinBoxMovedCommand::Update()
 		Test.TestTrue("Body initial z pos", Body->GetComponentLocation().Z > 299.0);
 	}
 
-	TickCurrent++;
-	if (TickCurrent < TickMax)
-		return false;
+	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(TestWorld);
+	Test.TestNotNull("Simulation", Sim);
+	if (Sim == nullptr)
+		return true;
+
+	if (Sim->GetTimeStamp() < SimTimeMax)
+	{
+		return false; // Continue ticking..
+	}
 
 	// At this point we have ticked to TickMax.
 	auto Body = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["BoxBody"]);
@@ -133,10 +140,9 @@ bool FFallingBoxTest::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
 
 	ComponentMap ComponentsOfInterest;
-	int TickCurrent = 0;
-	int TickMax = 5;
+	float SimTimeMax = 2.f;
 	ADD_LATENT_AUTOMATION_COMMAND(
-		FCheckFallinBoxMovedCommand(TickCurrent, TickMax, ComponentsOfInterest, *this));
+		FCheckFallinBoxMovedCommand(SimTimeMax, ComponentsOfInterest, *this));
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 	return true;
