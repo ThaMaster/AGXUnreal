@@ -52,7 +52,8 @@ AAGX_Terrain::AAGX_Terrain()
 		USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(
 			USceneComponent::GetDefaultSceneRootVariableName());
 
-		TerrainBounds = CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("TerrainBounds"));
+		TerrainBounds =
+			CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("TerrainBounds"));
 
 		Root->Mobility = EComponentMobility::Static;
 		Root->SetFlags(Root->GetFlags() | RF_Transactional); /// \todo What does this mean?
@@ -530,7 +531,6 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	FTransform Transform = AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(
 		*SourceLandscape, Bounds->Transform.GetLocation(), Bounds->HalfExtent);
 
-
 	NativeBarrier.SetRotation(Transform.GetRotation());
 	NativeBarrier.SetPosition(Transform.GetLocation());
 	OriginalHeights = NativeBarrier.GetHeights();
@@ -739,26 +739,28 @@ void AAGX_Terrain::InitializeDisplacementMap()
 		return;
 	}
 
-	// "Grid" in the Terrain is what the Landscape calls "vertices". There is
-	// one more "grid" element than there is "quads" per side. There is one
-	// displacement map texel per vertex.
-	int32 GridSizeX = NativeBarrier.GetGridSizeX();
-	int32 GridSizeY = NativeBarrier.GetGridSizeY();
-	if (LandscapeDisplacementMap->SizeX != GridSizeX ||
-		LandscapeDisplacementMap->SizeY != GridSizeY)
+	// There is one displacement map texel per vertex.
+	int32 LandscapeVersX;
+	int32 LandscapeVersY;
+	CachedLandscapeVertsXY =
+		AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(*SourceLandscape);
+	std::tie(LandscapeVersX, LandscapeVersY) = CachedLandscapeVertsXY;
+
+	if (LandscapeDisplacementMap->SizeX != LandscapeVersX ||
+		LandscapeDisplacementMap->SizeY != LandscapeVersY)
 	{
 		UE_LOG(
-			LogAGX, Verbose,
+			LogAGX, Log,
 			TEXT("The size of the Displacement Map render target (%dx%d) for "
-				 "AGX Terrain '%s' does not match the vertices in the terrain (%dx%d). "
+				 "AGX Terrain '%s' does not match the vertices in the Source Landscape (%dx%d). "
 				 "Resizing the displacement map."),
-			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(), GridSizeX,
-			GridSizeY);
+			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(),
+			LandscapeVersX, LandscapeVersY);
 
-		LandscapeDisplacementMap->ResizeTarget(GridSizeX, GridSizeY);
+		LandscapeDisplacementMap->ResizeTarget(LandscapeVersX, LandscapeVersY);
 	}
-	if (LandscapeDisplacementMap->SizeX != GridSizeX ||
-		LandscapeDisplacementMap->SizeY != GridSizeY)
+	if (LandscapeDisplacementMap->SizeX != LandscapeVersX ||
+		LandscapeDisplacementMap->SizeY != LandscapeVersY)
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -767,13 +769,12 @@ void AAGX_Terrain::InitializeDisplacementMap()
 			*GetName(), LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY);
 	}
 
-	DisplacementData.SetNum(GridSizeX * GridSizeY);
-	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, GridSizeX, GridSizeY));
+	DisplacementData.SetNum(LandscapeVersX * LandscapeVersY);
+	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, LandscapeVersX, LandscapeVersY));
 
 	/// \todo I'm not sure why we need this. Does the texture sampler "fudge the
 	/// values" when using non-linear gamma?
 	LandscapeDisplacementMap->bForceLinearGamma = true;
-
 	DisplacementMapInitialized = true;
 }
 
@@ -794,24 +795,55 @@ void AAGX_Terrain::UpdateDisplacementMap()
 
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::UpdateDisplacementMap"));
 
-	const int32 NumVerticesX = NativeBarrier.GetGridSizeX();
-	const int32 NumVerticesY = NativeBarrier.GetGridSizeY();
-	const int32 NumPixels = NumVerticesX * NumVerticesY;
+	const int32 GridSizeXTerrain = NativeBarrier.GetGridSizeX();
+	const int32 GridSizeYTerrain = NativeBarrier.GetGridSizeY();
+	int32 LandscapeVersX;
+	int32 LandscapeVersY;
+	std::tie(LandscapeVersX, LandscapeVersY) = CachedLandscapeVertsXY;
+	const int32 NumPixels = LandscapeVersX * LandscapeVersY;
 	AGX_CHECK(DisplacementData.Num() == NumPixels);
 	AGX_CHECK(DisplacementMapRegions.Num() == 1);
 
+	FVector TerrainCenterLocal = NativeBarrier.GetPosition();
+	TerrainCenterLocal =
+		SourceLandscape->GetActorTransform().InverseTransformPositionNoScale(TerrainCenterLocal);
+	const int32 NumTerrainQuadsX = GridSizeXTerrain - 1;
+	const int32 NumTerrainQuadsY = GridSizeYTerrain - 1;
+	const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
+	const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
+	const float TerrainTileCenterOffsetX = (NumTerrainQuadsX % 2 == 0) ? 0 : -QuadSideSizeX / 2;
+	const float TerrainTileCenterOffsetY = (NumTerrainQuadsY % 2 == 0) ? 0 : QuadSideSizeY / 2;
+	TerrainCenterLocal.X += TerrainTileCenterOffsetX;
+	TerrainCenterLocal.Y += TerrainTileCenterOffsetY;
+
+	const float TerrainSizeX = QuadSideSizeX * static_cast<float>(GridSizeXTerrain - 1);
+	const float TerrainSizeY = QuadSideSizeY * static_cast<float>(GridSizeYTerrain - 1);
+	const FVector TerrainStartCornerLocal =
+		TerrainCenterLocal - FVector(TerrainSizeX / 2.0, TerrainSizeY / 2.0, 0.0);
+	const int32 TerrainStartVertX = FMath::RoundToInt32(TerrainStartCornerLocal.X / QuadSideSizeX);
+	const int32 TerrainStartVertY = FMath::RoundToInt32(TerrainStartCornerLocal.Y / QuadSideSizeY);
+	const int32 TerrainEndVertX = TerrainStartVertX + GridSizeXTerrain - 1;
+	const int32 TerrainEndVertY = TerrainStartVertY + GridSizeYTerrain - 1;
+
 	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
-	for (int32 PixelIndex = 0; PixelIndex < NumPixels; ++PixelIndex)
+	for (int32 VertX = TerrainStartVertX; VertX <= TerrainEndVertX; VertX++)
 	{
-		const float HeightChange = CurrentHeights[PixelIndex] - OriginalHeights[PixelIndex];
-		DisplacementData[PixelIndex] = static_cast<FFloat16>(HeightChange);
+		for (int32 VertY = TerrainStartVertY; VertY <= TerrainEndVertY; VertY++)
+		{
+			const int32 PixelIndexLandscape = VertX + VertY * LandscapeVersY;
+			const int32 PixelIndexTerrain =
+				(VertX - TerrainStartVertX) + GridSizeXTerrain * (VertY - TerrainStartVertY);
+			const float HeightChange =
+				CurrentHeights[PixelIndexTerrain] - OriginalHeights[PixelIndexTerrain];
+			DisplacementData[PixelIndexLandscape] = static_cast<FFloat16>(HeightChange);
+		}
 	}
 
 	uint32 BytesPerPixel = sizeof(FFloat16);
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
 	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
-		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
+		LandscapeVersX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
 
 void AAGX_Terrain::ClearDisplacementMap()
