@@ -48,9 +48,10 @@ bool FTerrainBarrier::HasNative() const
 void FTerrainBarrier::AllocateNative(FHeightFieldShapeBarrier& SourceHeightField, double MaxDepth)
 {
 	check(!HasNative());
+	const agx::Real MaxDepthAGX = ConvertDistanceToAGX(MaxDepth);
 	agxCollide::HeightField* HeightFieldAGX =
 		SourceHeightField.GetNativeShape<agxCollide::HeightField>();
-	NativeRef->Native = agxTerrain::Terrain::createFromHeightField(HeightFieldAGX, MaxDepth);
+	NativeRef->Native = agxTerrain::Terrain::createFromHeightField(HeightFieldAGX, MaxDepthAGX);
 	UE_LOG(LogAGX, Log, TEXT("Native terrain allocated."));
 }
 
