@@ -368,9 +368,12 @@ std::tuple<float, float> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const ALan
 
 	// VertsXY here is the vertex count of the smallest bounded region of the Landscape.
 	// So if Landscape Components has been removed using the Landscape tool, this will not
-	// neccesarily reflect the overall original landscape vertex count.
+	// necessarily reflect the overall original landscape vertex count.
 	// We do a little trick using this vertex count and the ActorBounds origin below which
 	// we know lies in the center of the smallest bounded region of the Landscape.
+	// @todo Figure out how to get the original landscape size properly. This will not handle
+	// the case where a complete outer side-slice has been removed from the landscape along the
+	// Y-axis.
 	const auto VertsXY = std::make_tuple<int32, int32>(Size.X + 1, Size.Y + 1);
 	const auto QuadSideSizeX = Landscape.GetActorScale().X;
 	const auto QuadSideSizeY = Landscape.GetActorScale().Y;
