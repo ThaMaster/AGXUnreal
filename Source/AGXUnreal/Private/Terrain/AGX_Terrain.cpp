@@ -825,9 +825,6 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	const int32 TerrainEndVertX = TerrainStartVertX + GridSizeXTerrain - 1;
 	const int32 TerrainEndVertY = TerrainStartVertY + GridSizeYTerrain - 1;
 
-	//AGX_CHECK(TerrainEndVertX - TerrainStartVertX == GridSizeXTerrain);
-	//AGX_CHECK(TerrainEndVertY - TerrainStartVertY == GridSizeYTerrain);
-
 	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
 	for (int32 VertY = TerrainStartVertY; VertY <= TerrainEndVertY; VertY++)
 	{

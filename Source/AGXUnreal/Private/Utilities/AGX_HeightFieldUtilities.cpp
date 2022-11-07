@@ -302,7 +302,7 @@ TArray<float> GetHeights(
 {
 	using namespace AGX_HeightFieldUtilities_helpers;
 	const FRotator LandsapeRotation = Landscape.GetActorRotation();
-	if (FMath::IsNearlyZero(LandsapeRotation.Roll, KINDA_SMALL_NUMBER) &&
+	if (true || FMath::IsNearlyZero(LandsapeRotation.Roll, KINDA_SMALL_NUMBER) &&
 		FMath::IsNearlyZero(LandsapeRotation.Pitch, KINDA_SMALL_NUMBER))
 	{
 		// If the Landscape is not rotated around x or y, we can use the Landscape API to read the
@@ -349,45 +349,27 @@ FTransform AGX_HeightFieldUtilities::GetHeightFieldTransformUsingBoxFrom(
 std::tuple<int32, int32> AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(
 	const ALandscape& Landscape)
 {
-	float SizeX, SizeY;
-	std::tie(SizeX, SizeY) = GetLandscapeSizeXY(Landscape);
-	const auto QuadSideSizeX = Landscape.GetActorScale().X;
-	const auto QuadSideSizeY = Landscape.GetActorScale().Y;
-	return std::make_tuple<int32, int32>(
-		FMath::RoundToInt32(SizeX / QuadSideSizeX) + 1,
-		FMath::RoundToInt32(SizeY / QuadSideSizeY) + 1);
-}
-
-std::tuple<float, float> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const ALandscape& Landscape)
-{
 	const ALandscapeProxy* LandscapeProxy = Cast<ALandscapeProxy>(&Landscape);
 	const ULandscapeInfo* LandscapeInfo = LandscapeProxy->GetLandscapeInfo();
 	FIntRect Rect;
 	LandscapeInfo->GetLandscapeExtent(Rect.Min.X, Rect.Min.Y, Rect.Max.X, Rect.Max.Y);
 	FIntPoint Size = Rect.Size();
 
-	// VertsXY here is the vertex count of the smallest bounded region of the Landscape.
-	// So if Landscape Components has been removed using the Landscape tool, this will not
-	// necessarily reflect the overall original landscape vertex count.
-	// We do a little trick using this vertex count and the ActorBounds origin below which
-	// we know lies in the center of the smallest bounded region of the Landscape.
+	// @todo Figure out how to get the original landscape size properly. This will not handle
+	// the case where a complete outer side-slice has been removed from the landscape.
+	return std::make_tuple<int32, int32>(Size.X + 1, Size.Y + 1);
+}
+
+std::tuple<float, float> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const ALandscape& Landscape)
+{
 	// @todo Figure out how to get the original landscape size properly. This will not handle
 	// the case where a complete outer side-slice has been removed from the landscape along the
 	// Y-axis.
-	const auto VertsXY = std::make_tuple<int32, int32>(Size.X + 1, Size.Y + 1);
+	const auto VertsXY = GetLandscapeNumberOfVertsXY(Landscape);
 	const auto QuadSideSizeX = Landscape.GetActorScale().X;
 	const auto QuadSideSizeY = Landscape.GetActorScale().Y;
-
-	FVector ActorOrigin, Unused;
-	LandscapeProxy->GetActorBounds(false, ActorOrigin, Unused);
-
-	const FVector ActorOriginLocal =
-		Landscape.GetActorTransform().InverseTransformPositionNoScale(ActorOrigin);
-
-	const auto SizeX = static_cast<float>(std::get<0>(VertsXY) - 1) * QuadSideSizeX / 2.0 +
-					   FMath::Abs(ActorOriginLocal.X);
-	const auto SizeY = static_cast<float>(std::get<1>(VertsXY) - 1) * QuadSideSizeY / 2.0 +
-					   FMath::Abs(ActorOriginLocal.Y);
+	const auto SizeX = static_cast<float>(std::get<0>(VertsXY) - 1) * QuadSideSizeX;
+	const auto SizeY = static_cast<float>(std::get<1>(VertsXY) - 1) * QuadSideSizeY;
 	return std::make_tuple<float, float>(SizeX, SizeY);
 }
 
