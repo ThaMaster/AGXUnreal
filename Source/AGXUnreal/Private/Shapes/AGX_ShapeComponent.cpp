@@ -241,7 +241,8 @@ void UAGX_ShapeComponent::BeginPlay()
 		UpdateNativeGlobalTransform();
 	}
 
-	MergeSplitProperties.OnBeginPlay(*this);
+	if (HasNative())
+		MergeSplitProperties.OnBeginPlay(*this);
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)

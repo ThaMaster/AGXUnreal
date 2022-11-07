@@ -14,11 +14,7 @@
 template <typename T>
 void FAGX_ShapeContactMergeSplitProperties::OnBeginPlayInternal(T& Owner)
 {
-	if (!Owner.HasNative())
-	{
-		return;
-	}
-
+	AGX_CHECK(Owner.HasNative());
 	AGX_CHECK(!HasNative());
 
 	// Only allocate native if either EnableMerge or EnableSplit is true.
