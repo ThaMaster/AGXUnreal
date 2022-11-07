@@ -811,13 +811,15 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	const int32 NumTerrainQuadsY = GridSizeYTerrain - 1;
 	const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
 	const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
-	const float TerrainTileCenterOffsetX = (NumTerrainQuadsX % 2 == 0) ? 0 : -QuadSideSizeX / 2;
-	const float TerrainTileCenterOffsetY = (NumTerrainQuadsY % 2 == 0) ? 0 : QuadSideSizeY / 2;
+
+	// Undo the off-by-half-quad that the AGX Dynamics Terrain does for odd number of quads.
+	const auto TerrainTileCenterOffsetX = (NumTerrainQuadsX % 2 == 0) ? 0 : -QuadSideSizeX / 2;
+	const auto TerrainTileCenterOffsetY = (NumTerrainQuadsY % 2 == 0) ? 0 : QuadSideSizeY / 2;
 	TerrainCenterLocal.X += TerrainTileCenterOffsetX;
 	TerrainCenterLocal.Y += TerrainTileCenterOffsetY;
 
-	const float TerrainSizeX = QuadSideSizeX * static_cast<float>(GridSizeXTerrain - 1);
-	const float TerrainSizeY = QuadSideSizeY * static_cast<float>(GridSizeYTerrain - 1);
+	const auto TerrainSizeX = QuadSideSizeX * static_cast<double>(GridSizeXTerrain - 1);
+	const auto TerrainSizeY = QuadSideSizeY * static_cast<double>(GridSizeYTerrain - 1);
 	const FVector TerrainStartCornerLocal =
 		TerrainCenterLocal - FVector(TerrainSizeX / 2.0, TerrainSizeY / 2.0, 0.0);
 	const int32 TerrainStartVertX = FMath::RoundToInt(TerrainStartCornerLocal.X / QuadSideSizeX);
@@ -831,10 +833,10 @@ void AAGX_Terrain::UpdateDisplacementMap()
 		for (int32 VertX = TerrainStartVertX; VertX <= TerrainEndVertX; VertX++)
 		{
 			const int32 PixelIndexLandscape = VertX + VertY * LandscapeVertsX;
-			const int32 PixelIndexTerrain =
+			const int32 IndexTerrain =
 				(VertX - TerrainStartVertX) + GridSizeXTerrain * (VertY - TerrainStartVertY);
 			const float HeightChange =
-				CurrentHeights[PixelIndexTerrain] - OriginalHeights[PixelIndexTerrain];
+				CurrentHeights[IndexTerrain] - OriginalHeights[IndexTerrain];
 			DisplacementData[PixelIndexLandscape] = static_cast<FFloat16>(HeightChange);
 		}
 	}
