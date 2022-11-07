@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Math/Vector.h"
 #include "Math/TwoVectors.h"
+#include "Terrain/AGX_ShovelEnums.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -40,17 +41,50 @@ public:
 	void SetTopEdge(const FTwoVectors& TopEdge);
 	void SetCuttingEdge(const FTwoVectors& CuttingEdge);
 
-	void SetVerticalBladeSoilMergeDistance(double VerticalBladeSoilMergeDistance);
-	double GetVerticalBladeSoilMergeDistance() const;
+	void SetNumberOfTeeth(int32 NumberOfTeeth);
+	int32 GetNumberOfTeeth() const;
+
+	void SetToothLength(double ToothLength);
+	double GetToothLength() const;
+
+	void SetMinimumToothRadius(double MinimumToothRadius);
+	double GetMinimumToothRadius() const;
+
+	void SetMaximumToothRadius(double MaximumToothRadius);
+	double GetMaximumToothRadius() const;
 
 	void SetNoMergeExtensionDistance(double NoMergeExtensionDistance);
 	double GetNoMergeExtensionDistance() const;
 
+	void SetMinimumSubmergedContactLengthFraction(double MinimumSubmergedContactLengthFraction);
+	double GetMinimumSubmergedContactLengthFraction() const;
+
+	void SetVerticalBladeSoilMergeDistance(double VerticalBladeSoilMergeDistance);
+	double GetVerticalBladeSoilMergeDistance() const;
+
+	void SetSecondarySeparationDeadloadLimit(double SecondarySeparationDeadloadLimit);
+	double GetSecondarySeparationDeadloadLimit() const;
+
+	void SetPenetrationDepthThreshold(double PenetrationDepthThreshold);
+	double GetPenetrationDepthThreshold() const;
+
 	void SetPenetrationForceScaling(double PenetrationForceScaling);
 	double GetPenetrationForceScaling() const;
 
+	void SetMaximumPenetrationForce(double MaximumPenetrationForce);
+	double GetMaximumPenetrationForce() const;
+
 	void SetAlwaysRemoveShovelContacts(bool Enable);
 	bool GetAlwaysRemoveShovelContacts() const;
+
+	void SetExcavationSettingsEnabled(EAGX_ExcavationMode Mode, bool Enable);
+	bool GetExcavationSettingsEnabled(EAGX_ExcavationMode Mode) const;
+
+	void SetExcavationSettingsEnableCreateDynamicMass(EAGX_ExcavationMode Mode, bool Enable);
+	bool GetExcavationSettingsEnableCreateDynamicMass(EAGX_ExcavationMode Mode) const;
+
+	void SetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode, bool Enable);
+	bool GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode) const;
 
 	bool HasNative() const;
 	void AllocateNative(
