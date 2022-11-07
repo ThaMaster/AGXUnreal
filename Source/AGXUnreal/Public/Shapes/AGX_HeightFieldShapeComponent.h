@@ -25,11 +25,11 @@ class AGXUNREAL_API UAGX_HeightFieldShapeComponent : public UAGX_ShapeComponent
 public:
 	UAGX_HeightFieldShapeComponent();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
-	ALandscape* SourceLandscape = nullptr;
-
 	UPROPERTY(Category = "AGX Shape", VisibleAnywhere)
 	UAGX_HeightFieldBoundsComponent* HeightFieldBounds;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
+	ALandscape* SourceLandscape = nullptr;
 
 	// ~Begin UAGX_ShapeComponent interface.
 	FShapeBarrier* GetNative() override;
