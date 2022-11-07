@@ -4,11 +4,12 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "Terrain/AGX_LandscapeSizeInfo.h"
 
 // Unreal Engine includes.
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Landscape.h"
+#include "LandscapeInfo.h"
+#include "LandscapeProxy.h"
 #include "Math/UnrealMathUtility.h"
 
 // Standard library includes.
@@ -45,7 +46,7 @@ namespace AGX_HeightFieldUtilities_helpers
 		const float TerrainTileCenterOffsetX = (NumQuadsX % 2 == 0) ? 0 : QuadSideSizeX / 2;
 		const float TerrainTileCenterOffsetY = (NumQuadsY % 2 == 0) ? 0 : -QuadSideSizeY / 2;
 		FVector LocalTileOffset(TerrainTileCenterOffsetX, TerrainTileCenterOffsetY, 0);
-		
+
 		const FVector CenterProjectedGlobalAdjusted =
 			Landscape.GetActorTransform().TransformPositionNoScale(
 				CenterProjectedLocal + LocalTileOffset);
@@ -55,7 +56,7 @@ namespace AGX_HeightFieldUtilities_helpers
 	// Nudge point away from the edge of the landscape if the vertex lies at the edge.
 	// By setting ForceNudge = true the point will be nudged even if it does not lie at the
 	// landscape edge.
-	void NudgeEdgePoint(
+	/* void NudgeEdgePoint(
 		const int32 VertX, const int32 VertY, const FAGX_LandscapeSizeInfo& LandscapeSizeInfo,
 		float& PointX, float& PointY, bool ForceNudge)
 	{
@@ -81,7 +82,7 @@ namespace AGX_HeightFieldUtilities_helpers
 		{
 			PointY -= NudgeDistY;
 		}
-	}
+	}*/
 
 	void NudgePoint(float& X, float& Y, float MinX, float MaxX, float MinY, float MaxY)
 	{
@@ -95,7 +96,7 @@ namespace AGX_HeightFieldUtilities_helpers
 		else if (Y >= MaxY)
 			Y -= NudgeDist;
 	}
-
+#if 0
 	// Shoot single ray at landscape to measure the height. Returns false if the ray misses the
 	// landscape and true otherwise. If it returns false the OutHeight is set to 0.0 but is not
 	// a valid measurement.
@@ -115,7 +116,7 @@ namespace AGX_HeightFieldUtilities_helpers
 		// the landscape (might be a floating point precision issue). We fix this by nudging
 		// any point at the edge away from the edge and inwards slightly. If the ForceNudge
 		// parameter is set to true, the point will be nudged even if it is not on the edge.
-		NudgeEdgePoint(VertX, VertY, LandscapeSizeInfo, Xlocal, Ylocal, ForceNudge);
+//		NudgeEdgePoint(VertX, VertY, LandscapeSizeInfo, Xlocal, Ylocal, ForceNudge);
 
 		// Ray start and end positions in global coordinates.
 		const FVector RayStart = Landscape.GetTransform().TransformPositionNoScale(
@@ -137,7 +138,7 @@ namespace AGX_HeightFieldUtilities_helpers
 		// Line trace missed.
 		return false;
 	}
-
+#endif
 	// This function should only be used if the landscape is not rotated around world x or y axis.
 	// The reason for this is that the Landscape.GetHeightAtLocaion does not handle that case. It
 	// will measure along the world z-axis (instead of the Landscapes local z-axis as it should)
@@ -225,7 +226,7 @@ namespace AGX_HeightFieldUtilities_helpers
 
 		return Heights;
 	}
-
+#if 0
 	// This is an alternative to AGX_HeightFieldUtilities_helpers::GetHeigtsUsingApi. This function
 	// is slower but can handle any Landscape orientation, which is not the case for
 	// AGX_HeightFieldUtilities_helpers::GetHeigtsUsingApi (see comment above that function).
@@ -293,6 +294,7 @@ namespace AGX_HeightFieldUtilities_helpers
 
 		return Heights;
 	}
+#endif
 }
 
 TArray<float> GetHeights(
@@ -333,7 +335,8 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
 FTransform AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(
 	const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent)
 {
-	return AGX_HeightFieldUtilities_helpers::GetAGXTransformUsingBoxFrom(Landscape, Center, HalfExtent, true);
+	return AGX_HeightFieldUtilities_helpers::GetAGXTransformUsingBoxFrom(
+		Landscape, Center, HalfExtent, true);
 }
 
 FTransform AGX_HeightFieldUtilities::GetHeightFieldTransformUsingBoxFrom(
@@ -341,4 +344,32 @@ FTransform AGX_HeightFieldUtilities::GetHeightFieldTransformUsingBoxFrom(
 {
 	return AGX_HeightFieldUtilities_helpers::GetAGXTransformUsingBoxFrom(
 		Landscape, Center, HalfExtent, false);
+}
+
+std::tuple<int32, int32> AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(
+	const ALandscape& Landscape)
+{
+	const ALandscapeProxy* LandscapeProxy = Cast<ALandscapeProxy>(&Landscape);
+	const ULandscapeInfo* LandscapeInfo = LandscapeProxy->GetLandscapeInfo();
+	FIntRect Rect;
+	LandscapeInfo->GetLandscapeExtent(Rect.Min.X, Rect.Min.Y, Rect.Max.X, Rect.Max.Y);
+	FIntPoint Size = Rect.Size();
+	return std::make_tuple<int32, int32>(Size.X + 1, Size.Y + 1);
+}
+
+std::tuple<float, float> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const ALandscape& Landscape)
+{
+	const auto VertsXY = GetLandscapeNumberOfVertsXY(Landscape);
+	const auto QuadSideSizeX = Landscape.GetActorScale().X;
+	const auto QuadSideSizeY = Landscape.GetActorScale().Y;
+	return std::make_tuple<float, float>(
+		static_cast<float>(std::get<0>(VertsXY) - 1) * QuadSideSizeX,
+		static_cast<float>(std::get<1>(VertsXY) - 1) * QuadSideSizeY);
+}
+
+bool AGX_HeightFieldUtilities::IsOpenWorldLandscape(const ALandscape& Landscape)
+{
+	// This is just an observation that holds true for OpenWorldLandscapes, would be better
+	// with a more "correct" way of determining this.
+	return Landscape.LandscapeComponents.Num() == 0;
 }

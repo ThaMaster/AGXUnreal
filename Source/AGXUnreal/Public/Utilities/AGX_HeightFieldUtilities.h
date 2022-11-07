@@ -26,4 +26,13 @@ namespace AGX_HeightFieldUtilities
 	// Same as GetTerrainTransformUsingBoxFrom but for Height Field.
 	AGXUNREAL_API FTransform GetHeightFieldTransformUsingBoxFrom(
 		const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent);
+
+	// Overall resolution using outer bounds (i.e. holes does not affect this value unless a
+	// complete part if a side has been removed using the Landscape tool.
+	AGXUNREAL_API std::tuple<int32, int32> GetLandscapeNumberOfVertsXY(const ALandscape& Landscape);
+
+	// Size (outer bounds) [cm].
+	AGXUNREAL_API std::tuple<float, float> GetLandscapeSizeXY(const ALandscape& Landscape);
+
+	AGXUNREAL_API bool IsOpenWorldLandscape(const ALandscape& Landscape);
 }

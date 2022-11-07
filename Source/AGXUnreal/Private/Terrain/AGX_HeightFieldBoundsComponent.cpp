@@ -4,7 +4,6 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Shapes/AGX_HeightFieldShapeComponent.h"
-#include "Terrain/AGX_LandscapeSizeInfo.h"
 #include "Terrain/AGX_Terrain.h"
 
 // Unreal Engine includes.
@@ -94,31 +93,24 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 		std::floor(Corner1Local.X / QuadSideSizeX) * QuadSideSizeX,
 		std::floor(Corner1Local.Y / QuadSideSizeY) * QuadSideSizeY, Corner1Local.Z);
 
-	if (!FAGX_LandscapeSizeInfo::IsOpenWorldLandscape(Landscape))
+	auto EnsureInBounds = [](FVector& P, auto Xmin, auto Xmax, auto Ymin, auto Ymax)
 	{
-		// Currently, we have found no way to detect the overall size of an open world Landscape,
-		// and we will not support the case where the Bounds are outside the edge of one.
-		// For non-open world Landscapes we do handled this correctly, which is done here.
-		auto EnsureInBounds = [](FVector& P, auto Xmin, auto Xmax, auto Ymin, auto Ymax)
-		{
-			if (P.X <= Xmin)
-				P.X = Xmin;
-			else if (P.X >= Xmax)
-				P.X = Xmax;
-			if (P.Y <= Ymin)
-				P.Y = Ymin;
-			else if (P.Y >= Ymax)
-				P.Y = Ymax;
-		};
+		if (P.X <= Xmin)
+			P.X = Xmin;
+		else if (P.X >= Xmax)
+			P.X = Xmax;
+		if (P.Y <= Ymin)
+			P.Y = Ymin;
+		else if (P.Y >= Ymax)
+			P.Y = Ymax;
+	};
 
-		// Clamp so that we are never outside the Landscape.
-		const std::tuple<float, float> SideLengths =
-			FAGX_LandscapeSizeInfo::GetSideLengths(Landscape);
-		EnsureInBounds(
-			Corner0LocalAdjusted, 0, std::get<0>(SideLengths), 0, std::get<1>(SideLengths));
-		EnsureInBounds(
-			Corner1LocalAdjusted, 0, std::get<0>(SideLengths), 0, std::get<1>(SideLengths));
-	}
+	// Clamp so that we are never outside the Landscape.
+	const std::tuple<float, float> SideLengths =
+		AGX_HeightFieldUtilities::GetLandscapeSizeXY(Landscape);
+	EnsureInBounds(Corner0LocalAdjusted, 0, std::get<0>(SideLengths), 0, std::get<1>(SideLengths));
+	EnsureInBounds(Corner1LocalAdjusted, 0, std::get<0>(SideLengths), 0, std::get<1>(SideLengths));
+
 	const FVector Corner0AdjustedGlobal =
 		LandscapeTrans.TransformPositionNoScale(Corner0LocalAdjusted);
 	const FVector Corner1AdjustedGlobal =
