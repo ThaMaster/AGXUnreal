@@ -522,6 +522,13 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 	return Component;
 }
 
+void FAGX_SimObjectsImporterHelper::UpdateComponent(
+	const FSphereShapeBarrier& Barrier, UAGX_SphereShapeComponent& Component)
+{
+	Component.CopyFrom(Barrier);
+	UpdateShapeComponent(Barrier, Component);
+}
+
 UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 	const FBoxShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
@@ -648,6 +655,19 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	return Component;
 }
 
+void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
+	const FShapeBarrier& Barrier, UAGX_ShapeComponent& Component)
+{
+	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
+	FShapeMaterialBarrier NativeMaterial = Barrier.GetMaterial();
+	if (NativeMaterial.HasNative())
+	{
+		const FGuid Guid = NativeMaterial.GetGuid();
+		UAGX_ShapeMaterial* Material = RestoredShapeMaterials.FindRef(Guid);
+		Component.ShapeMaterial = Material;
+	}
+}
+
 UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 	const FTrimeshShapeBarrier& TrimeshBarrier, AActor& Owner, const FRigidBodyBarrier* Body)
 {
@@ -712,6 +732,13 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 	}
 
 	return RenderDataComponent;
+}
+
+void UpdateComponent(
+	const FShapeBarrier& ShapeBarrier, const FRenderDataBarrier& RenderDataBarrier,
+	UStaticMeshComponent& Component)
+{
+	// todo: update
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateAndSaveAsset(

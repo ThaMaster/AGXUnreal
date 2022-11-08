@@ -964,6 +964,92 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 	}
 
+	template <typename TBarrier, typename TComponent>
+	USCS_Node* AddOrUpdateShape(
+		const TBarrier& Barrier, UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		const FGuid Guid = Barrier.GetShapeGuid();
+		USCS_Node* Node = nullptr;
+		if (SCSNodes.ShapeComponents.Contains(Guid))
+		{
+			Node = SCSNodes.ShapeComponents[Guid];
+		}
+		else
+		{
+			Node = BaseBP.SimpleConstructionScript->CreateNode(
+				TComponent::StaticClass(), FName(GetUnsetImportNodeName()));
+			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(Node);
+		}
+
+		Helper.UpdateComponent(Barrier, *Cast<TComponent>(Node->ComponentTemplate));
+		return Node;
+	}
+
+	void AddOrUpdateRenderData(
+		const FShapeBarrier& ShapeBarrier, USCS_Node& ShapeNode, UBlueprint& BaseBP,
+		SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		if (!ShapeBarrier.HasRenderData())
+			return;
+
+		auto FindRenderDataNode = [&](const FGuid& ShapeGuid) -> USCS_Node*
+		{
+			if (!SCSNodes.StaticMeshComponents.Contains(ShapeGuid))
+				return nullptr;
+
+			if (auto Trimesh = Cast<UAGX_TrimeshShapeComponent>(ShapeNode.ComponentTemplate))
+			{
+				// A Trimesh will have it's render data attached to it's collision Static Mesh Component.
+				for (USCS_Node* SMCNode : SCSNodes.StaticMeshComponents[ShapeGuid])
+				{
+					USCS_Node* SMParent = BaseBP.SimpleConstructionScript->FindParentNode(SMCNode);
+					if (SMParent == nullptr)
+						continue;
+
+					if (Cast<UStaticMeshComponent>(SMParent->ComponentTemplate))
+						return SMCNode;
+				}
+			}
+			else
+			{
+				// This is part of a shape primitive which only holds at most one StaticMeshComponent.
+				AGX_CHECK(SCSNodes.StaticMeshComponents[ShapeGuid].Num() == 1);
+				return SCSNodes.StaticMeshComponents[ShapeGuid][0];
+			}
+			return nullptr;
+		};
+
+		const FGuid ShapeGuid = ShapeBarrier.GetShapeGuid();
+		const FRenderDataBarrier RenderDataBarrier = ShapeBarrier.GetRenderData();
+		USCS_Node* Node = FindRenderDataNode(ShapeGuid);
+		if (Node == nullptr)
+		{
+			Node = BaseBP.SimpleConstructionScript->CreateNode(
+				UStaticMeshComponent::StaticClass(), FName(GetUnsetImportNodeName()));
+			ShapeNode.AddChildNode(Node);
+		}
+
+		// Update the UStaticMeshComponent here.
+		//Helper.UpdateComponent(ShapeBarrier, RenderDataBarrier, *Cast<UStaticMeshComponent>(Node->ComponentTemplate));
+	}
+
+	void AddOrUpdateBodilessShapes(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		for (const auto& Barrier : SimulationObjects.GetSphereShapes())
+		{
+			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_SphereShapeComponent>(
+				Barrier, BaseBP, SCSNodes, Helper);
+			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+		}
+
+		// @todo: we should clean up old collision groups in instance components. Currently, we
+		// always add to them, but never remove. The cleanup must be done after all shapes have been
+		// re-imported.
+	}
+
 	void AddOrUpdateReImportComponent(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper)
 	{
@@ -1011,6 +1097,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		AddOrUpdateShapeMaterials(BaseBP, SimulationObjects, Helper);
 		AddOrUpdateContactMaterials(BaseBP, SimulationObjects, Helper);
 		AddOrUpdateRigidBodies(BaseBP, SCSNodes, SimulationObjects, Helper);
+		AddOrUpdateBodilessShapes(BaseBP, SCSNodes, SimulationObjects, Helper);
 		AddOrUpdateReImportComponent(BaseBP, SCSNodes, Helper);
 
 		Helper.FinalizeImport();

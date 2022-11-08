@@ -427,19 +427,19 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 {
 	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
 
-	AGX_COPY_PROPERTY_FROM_BARRIER(ImportGuid, Barrier.GetGuid, *this)
-	AGX_COPY_PROPERTY_FROM_BARRIER(Mass, MassProperties.GetMass, *this)
-	AGX_COPY_PROPERTY_FROM_BARRIER(bAutoGenerateMass, MassProperties.GetAutoGenerateMass, *this)
-	AGX_COPY_PROPERTY_FROM_BARRIER(
-		bAutoGenerateCenterOfMassOffset, MassProperties.GetAutoGenerateCenterOfMassOffset, *this)
-	AGX_COPY_PROPERTY_FROM_BARRIER(
-		bAutoGeneratePrincipalInertia, MassProperties.GetAutoGeneratePrincipalInertia, *this)
-	AGX_COPY_PROPERTY_FROM_BARRIER(CenterOfMassOffset, Barrier.GetCenterOfMassOffset, *this)
-	AGX_COPY_PROPERTY_FROM_BARRIER(PrincipalInertia, MassProperties.GetPrincipalInertia, *this)
-	AGX_COPY_PROPERTY_FROM_BARRIER(Velocity, Barrier.GetVelocity, *this)
-	AGX_COPY_PROPERTY_FROM_BARRIER(AngularVelocity, Barrier.GetAngularVelocity, *this)
-	AGX_COPY_PROPERTY_FROM_BARRIER(MotionControl, Barrier.GetMotionControl, *this)
-	AGX_COPY_PROPERTY_FROM_BARRIER(bEnabled, Barrier.GetEnabled, *this)
+	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetGuid(), *this)
+	AGX_COPY_PROPERTY_FROM(Mass, MassProperties.GetMass(), *this)
+	AGX_COPY_PROPERTY_FROM(bAutoGenerateMass, MassProperties.GetAutoGenerateMass(), *this)
+	AGX_COPY_PROPERTY_FROM(
+		bAutoGenerateCenterOfMassOffset, MassProperties.GetAutoGenerateCenterOfMassOffset(), *this)
+	AGX_COPY_PROPERTY_FROM(
+		bAutoGeneratePrincipalInertia, MassProperties.GetAutoGeneratePrincipalInertia(), *this)
+	AGX_COPY_PROPERTY_FROM(CenterOfMassOffset, Barrier.GetCenterOfMassOffset(), *this)
+	AGX_COPY_PROPERTY_FROM(PrincipalInertia, MassProperties.GetPrincipalInertia(), *this)
+	AGX_COPY_PROPERTY_FROM(Velocity, Barrier.GetVelocity(), *this)
+	AGX_COPY_PROPERTY_FROM(AngularVelocity, Barrier.GetAngularVelocity(), *this)
+	AGX_COPY_PROPERTY_FROM(MotionControl, Barrier.GetMotionControl(), *this)
+	AGX_COPY_PROPERTY_FROM(bEnabled, Barrier.GetEnabled(), *this)
 
 // We want to do this, but it breaks the move widget in Unreal Editor. Static bodies within Actors
 // that have been imported from an AGX Dynamics archive does not move when the Actor is moved.

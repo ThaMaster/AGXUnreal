@@ -161,7 +161,7 @@ TArray<T*> FAGX_ObjectUtilities::GetArchetypeInstances(T& Object)
 }
 
 // clang-format off
-#define AGX_COPY_PROPERTY_FROM_BARRIER(UpropertyName, BarrierGetFunc, Component) \
+#define AGX_COPY_PROPERTY_FROM(UpropertyName, GetterExpression, Component) \
 { \
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component)) \
 	{ \
@@ -169,10 +169,10 @@ TArray<T*> FAGX_ObjectUtilities::GetArchetypeInstances(T& Object)
 		{ \
 			if (Instance->UpropertyName == (Component).UpropertyName) \
 			{ \
-				Instance->UpropertyName = BarrierGetFunc(); \
+				Instance->UpropertyName = GetterExpression; \
 			} \
 		} \
 	} \
-	(Component).UpropertyName = BarrierGetFunc(); \
+	(Component).UpropertyName = GetterExpression; \
 }
 // clang-format on

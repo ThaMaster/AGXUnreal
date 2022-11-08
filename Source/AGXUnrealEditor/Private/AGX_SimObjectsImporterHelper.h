@@ -62,6 +62,8 @@ public:
 	UAGX_SphereShapeComponent* InstantiateSphere(
 		const FSphereShapeBarrier& Sphere, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
 
+	void UpdateComponent(const FSphereShapeBarrier& Barrier, UAGX_SphereShapeComponent& Component);
+
 	UAGX_BoxShapeComponent* InstantiateBox(
 		const FBoxShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
 
@@ -80,6 +82,10 @@ public:
 	UStaticMeshComponent* InstantiateRenderData(
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
 		const FRigidBodyBarrier* Body = nullptr);
+
+	void UpdateComponent(
+		const FShapeBarrier& ShapeBarrier, const FRenderDataBarrier& RenderDataBarrier,
+		UStaticMeshComponent& Component);
 
 	void UpdateAndSaveAsset(const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset);
 
@@ -169,6 +175,8 @@ public:
 	const FString DirectoryName;
 
 private:
+	void UpdateShapeComponent(const FShapeBarrier& Barrier, UAGX_ShapeComponent& Component);
+
 	TMap<FGuid, FAssetToDiskInfo> RestoredMeshes;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;

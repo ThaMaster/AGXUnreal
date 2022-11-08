@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 UAGX_SphereShapeComponent::UAGX_SphereShapeComponent()
 {
@@ -95,7 +96,7 @@ void UAGX_SphereShapeComponent::UpdateNativeProperties()
 void UAGX_SphereShapeComponent::CopyFrom(const FSphereShapeBarrier& Barrier)
 {
 	Super::CopyFrom(Barrier);
-	Radius = Barrier.GetRadius();
+	AGX_COPY_PROPERTY_FROM(Radius, Barrier.GetRadius(), *this)
 }
 
 void UAGX_SphereShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)

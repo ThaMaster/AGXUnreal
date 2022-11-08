@@ -274,27 +274,49 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 {
-	bCanCollide = Barrier.GetEnableCollisions();
-	bIsSensor = Barrier.GetIsSensor();
-	SensorType = Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactsSensor
-															: EAGX_ShapeSensorType::BooleanSensor;
+	AGX_COPY_PROPERTY_FROM(bCanCollide, Barrier.GetEnableCollisions(), *this)
+	AGX_COPY_PROPERTY_FROM(bIsSensor, Barrier.GetIsSensor(), *this)
+	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetShapeGuid(), *this)
 
-	FVector Position;
-	FQuat Rotation;
-	std::tie(Position, Rotation) = Barrier.GetLocalPositionAndRotation();
-	SetRelativeLocationAndRotation(Position, Rotation);
+	const TEnumAsByte<enum EAGX_ShapeSensorType> BarrierSensorType =
+		Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactsSensor
+												   : EAGX_ShapeSensorType::BooleanSensor;
+	AGX_COPY_PROPERTY_FROM(SensorType, BarrierSensorType, *this)
 
-	TArray<FName> NewCollisionGroups = Barrier.GetCollisionGroups();
-	CollisionGroups.Empty(NewCollisionGroups.Num());
-	for (const FName& Group : NewCollisionGroups)
+	FVector BarrierPosition;
+	FQuat BarrierRotation;
+	std::tie(BarrierPosition, BarrierRotation) = Barrier.GetLocalPositionAndRotation();
+
+	TArray<FName> BarrierCollisionGroups = Barrier.GetCollisionGroups();
+	CollisionGroups.Empty(BarrierCollisionGroups.Num());
+
+	if (FAGX_ObjectUtilities::IsTemplateComponent(*this))
+	{
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))
+		{
+			if (Instance->GetRelativeLocation() == GetRelativeLocation())
+			{
+				Instance->SetRelativeLocation(BarrierPosition);
+			}
+
+			if (Instance->GetRelativeRotation() == GetRelativeRotation())
+			{
+				Instance->SetRelativeRotation(BarrierRotation);
+			}
+
+			for (const FName& Group : BarrierCollisionGroups)
+			{
+				// AddCollisionGroup only adds unique groups.
+				Instance->AddCollisionGroup(Group);
+			}
+		}
+	}
+
+	SetRelativeLocationAndRotation(BarrierPosition, BarrierRotation);
+	for (const FName& Group : BarrierCollisionGroups)
 	{
 		AddCollisionGroup(Group);
 	}
-
-	ImportGuid = Barrier.GetShapeGuid();
-
-	/// \todo Should shape material be handled here? If so, how? We don't have access to the
-	/// <Guid, Object> restore tables from here.
 }
 
 void UAGX_ShapeComponent::UpdateNativeGlobalTransform()
@@ -328,21 +350,20 @@ void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 	}
 }
 
-bool UAGX_ShapeComponent::SetShapeMaterial(
-	UAGX_ShapeMaterial* InShapeMaterial)
+bool UAGX_ShapeComponent::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
 {
 	UAGX_ShapeMaterial* ShapeMaterialOrig = ShapeMaterial;
 	ShapeMaterial = InShapeMaterial;
 
 	if (!HasNative())
 	{
-		// Not in play, we are done.		
+		// Not in play, we are done.
 		return true;
 	}
 
 	// UpdateNativeMaterial is responsible to create an instance if none exists and do the
 	// asset/instance swap.
-	if(!UpdateNativeMaterial())
+	if (!UpdateNativeMaterial())
 	{
 		// Something went wrong, restore original ShapeMaterial.
 		ShapeMaterial = ShapeMaterialOrig;
