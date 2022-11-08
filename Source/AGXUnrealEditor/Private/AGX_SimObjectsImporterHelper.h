@@ -61,7 +61,9 @@ public:
 	/** Create a new UAGX_RigidBodyComponent in the given actor. */
 	UAGX_RigidBodyComponent* InstantiateBody(const FRigidBodyBarrier& Barrier, AActor& Owner);
 
-	void UpdateComponent(const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component);
+	void UpdateComponent(
+		const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
 
 	UAGX_SphereShapeComponent* InstantiateSphere(
 		const FSphereShapeBarrier& Sphere, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);

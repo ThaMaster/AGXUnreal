@@ -953,12 +953,20 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 	}
 
-	// todo: add and update any owned shape as well
-	// todo: get/create and update merge split thresholds as well.
+	// todo: add and update any owned shape as well.
 	void AddOrUpdateRigidBodies(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
 	{
+		const FString MSTDirPath = FString::Printf(
+			TEXT("/Game/%s/%s/%s"), *FAGX_ImportUtilities::GetImportRootDirectoryName(),
+			*Helper.DirectoryName, *FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
+		auto ExistingMSTAssets =
+			FAGX_EditorUtilities::FindAssets<UAGX_MergeSplitThresholdsBase>(MSTDirPath);
+
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*> ExistingMSTMap =
+			CreateGuidToComponentMap(ExistingMSTAssets);
+
 		for (const auto& Barrier : SimulationObjects.GetRigidBodies())
 		{
 			const FGuid Guid = Barrier.GetGuid();
@@ -966,7 +974,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			{
 				Helper.UpdateComponent(
 					Barrier,
-					*Cast<UAGX_RigidBodyComponent>(SCSNodes.RigidBodies[Guid]->ComponentTemplate));
+					*Cast<UAGX_RigidBodyComponent>(SCSNodes.RigidBodies[Guid]->ComponentTemplate),
+					ExistingMSTMap);
 			}
 			else
 			{
@@ -977,7 +986,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 				BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
 
 				Helper.UpdateComponent(
-					Barrier, *Cast<UAGX_RigidBodyComponent>(NewNode->ComponentTemplate));
+					Barrier, *Cast<UAGX_RigidBodyComponent>(NewNode->ComponentTemplate),
+					ExistingMSTMap);
 			}
 		}
 	}

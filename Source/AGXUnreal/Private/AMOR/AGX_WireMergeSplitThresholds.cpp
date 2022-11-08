@@ -254,6 +254,7 @@ void UAGX_WireMergeSplitThresholds::CopyFrom(const FMergeSplitThresholdsBarrier&
 		static_cast<const FWireMergeSplitThresholdsBarrier*>(&Barrier);
 	ForcePropagationDecayScale = WmstBarrier->GetForcePropagationDecayScale();
 	MergeTensionScale = WmstBarrier->GetMergeTensionScale();
+	ImportGuid = WmstBarrier->GetGuid();
 }
 
 void UAGX_WireMergeSplitThresholds::CopyFrom(const UAGX_WireMergeSplitThresholds& Source)

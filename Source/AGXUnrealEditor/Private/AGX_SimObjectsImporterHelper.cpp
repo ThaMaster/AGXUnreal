@@ -462,7 +462,8 @@ namespace
 				const FGuid ShapeBarrierGuid = Barrier.GetShapeGuid();
 				if (!RestoredStaticMeshComponents.Contains(ShapeBarrierGuid))
 				{
-					RestoredStaticMeshComponents.Add(ShapeBarrierGuid, TArray<UStaticMeshComponent*>());
+					RestoredStaticMeshComponents.Add(
+						ShapeBarrierGuid, TArray<UStaticMeshComponent*>());
 				}
 				RestoredStaticMeshComponents[ShapeBarrierGuid].Add(RDStaticMeshComponent);
 			}
@@ -473,44 +474,78 @@ namespace
 		}
 	}
 
+	FString CreateMergeSplitThresholdsAssetName(EAGX_AmorOwningType OwningType, const FGuid& Guid)
+	{
+		switch (OwningType)
+		{
+			case EAGX_AmorOwningType::BodyOrShape:
+				return "AGX_SMST_" + Guid.ToString();
+			case EAGX_AmorOwningType::Constraint:
+				return "AGX_CMST_" + Guid.ToString();
+			case EAGX_AmorOwningType::Wire:
+				return "AGX_WMST_" + Guid.ToString();
+		}
+
+		UE_LOG(LogAGX, Warning, TEXT("Unknown OwningType in CreateMergeSplitThresholdsAssetName."));
+		return "AGX_MST_" + Guid.ToString();
+	}
+
+	void UpdateAndSaveAsset(
+		const FMergeSplitThresholdsBarrier& Barrier, UAGX_MergeSplitThresholdsBase& Asset,
+		EAGX_AmorOwningType OwningType)
+	{
+		const FGuid Guid = Barrier.GetGuid();
+		const FString AssetName = CreateMergeSplitThresholdsAssetName(OwningType, Guid);
+
+		FAGX_EditorUtilities::RenameAsset(Asset, AssetName, "AGX_MST");
+		Asset.CopyFrom(Barrier);
+		FAGX_ObjectUtilities::SaveAsset(Asset);
+	}
+
 	template <typename TBarrier, typename TThresholdsBarrier>
 	UAGX_MergeSplitThresholdsBase* GetOrCreateMergeSplitThresholdsAsset(
 		const TBarrier& Barrier, EAGX_AmorOwningType OwningType,
 		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
 		const FString& DirectoryName)
 	{
-		auto Thresholds = TThresholdsBarrier::CreateFrom(Barrier);
-		if (!Thresholds.HasNative())
+		const FMergeSplitThresholdsBarrier ThresholdsBarrier =
+			TThresholdsBarrier::CreateFrom(Barrier);
+		if (!ThresholdsBarrier.HasNative())
 		{
 			// The native object did not have any MergeSplitThreshold associated with it.
 			return nullptr;
 		}
 
-		const FGuid Guid = Thresholds.GetGuid();
-		const FString AssetName = [&]() -> FString
+		const FGuid Guid = ThresholdsBarrier.GetGuid();
+		const FString AssetName = CreateMergeSplitThresholdsAssetName(OwningType, Guid);
+		auto CreateAsset = [&]() -> UAGX_MergeSplitThresholdsBase*
 		{
+			const FString MSTDir =
+				FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName();
 			switch (OwningType)
 			{
 				case EAGX_AmorOwningType::BodyOrShape:
-					return "AGX_SMST_" + Guid.ToString();
+					return FAGX_ImportUtilities::CreateAsset<UAGX_ShapeContactMergeSplitThresholds>(
+						DirectoryName, AssetName, MSTDir);
 				case EAGX_AmorOwningType::Constraint:
-					return "AGX_CMST_" + Guid.ToString();
+					return FAGX_ImportUtilities::CreateAsset<UAGX_ConstraintMergeSplitThresholds>(
+						DirectoryName, AssetName, MSTDir);
 				case EAGX_AmorOwningType::Wire:
-					return "AGX_WMST_" + Guid.ToString();
+					return FAGX_ImportUtilities::CreateAsset<UAGX_WireMergeSplitThresholds>(
+						DirectoryName, AssetName, MSTDir);
+				default:
+					return nullptr;
 			}
-
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Unknown OwningType in GetOrCreateMergeSplitThresholdsAsset."));
-			return "AGX_MST_" + Guid.ToString();
-		}();
+		};
 
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the asset anyway but without adding it to
 			// the RestoredThresholds Map.
-			return FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
-				Thresholds, OwningType, DirectoryName, AssetName);
+			UAGX_MergeSplitThresholdsBase* Asset = CreateAsset();
+			AGX_CHECK(Asset != nullptr);
+			UpdateAndSaveAsset(ThresholdsBarrier, *Asset, OwningType);
+			return Asset;
 		}
 
 		if (UAGX_MergeSplitThresholdsBase* Asset = RestoredThresholds.FindRef(Guid))
@@ -520,12 +555,14 @@ namespace
 		}
 
 		// This is a new merge split thresholds. Create the asset and add to the cache.
-		UAGX_MergeSplitThresholdsBase* Asset = FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
-			Thresholds, OwningType, DirectoryName, AssetName);
+		UAGX_MergeSplitThresholdsBase* Asset = CreateAsset();
+		AGX_CHECK(Asset != nullptr);
+		UpdateAndSaveAsset(ThresholdsBarrier, *Asset, OwningType);
 		if (Asset != nullptr)
 		{
 			RestoredThresholds.Add(Guid, Asset);
 		}
+
 		return Asset;
 	}
 
@@ -551,16 +588,46 @@ namespace
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateComponent(
-	const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component)
+	const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component,
+	TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
 {
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
 	Component.CopyFrom(Barrier);
+
+	const FMergeSplitThresholdsBarrier ThresholdsBarrier =
+		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+	const FGuid MSTGuid = Barrier.GetGuid();
+	UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
+	if (MSTsOnDisk.Contains(MSTGuid))
+	{
+		MSThresholds = MSTsOnDisk[MSTGuid];
+		::UpdateAndSaveAsset(ThresholdsBarrier, *MSThresholds, EAGX_AmorOwningType::BodyOrShape);
+	}
+	else
+	{
+		MSThresholds = ::GetOrCreateMergeSplitThresholdsAsset<
+			FRigidBodyBarrier, FShapeContactMergeSplitThresholdsBarrier>(
+			Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+	}
 
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
 		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 			&Component, FTransform(Barrier.GetRotation(), Barrier.GetPosition()), true);
+
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		{
+			if (Instance->MergeSplitProperties.Thresholds ==
+				Component.MergeSplitProperties.Thresholds)
+			{
+				Instance->MergeSplitProperties.Thresholds =
+					Cast<UAGX_ShapeContactMergeSplitThresholds>(MSThresholds);
+			}
+		}
 	}
+
+	Component.MergeSplitProperties.Thresholds =
+		Cast<UAGX_ShapeContactMergeSplitThresholds>(MSThresholds);
 
 	AGX_CHECK(!RestoredBodies.Contains(Barrier.GetGuid()));
 	RestoredBodies.Add(Barrier.GetGuid(), &Component);
@@ -585,7 +652,8 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 		return nullptr;
 	}
 
-	UpdateComponent(Barrier, *Component);
+	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
+	UpdateComponent(Barrier, *Component, Unused);
 	Component->SetFlags(RF_Transactional);
 	Actor.AddInstanceComponent(Component);
 
@@ -1314,7 +1382,6 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 			Cast<UAGX_WireMergeSplitThresholds>(ThresholdsAsset);
 	}
 
-
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
 	Component->RegisterComponent();
@@ -1435,9 +1502,8 @@ void FAGX_SimObjectsImporterHelper::UpdateComponent(UAGX_ReImportComponent& Comp
 		{
 			for (UStaticMeshComponent* SMC : RestoredSMCTuple.Value)
 			{
-				C->StaticMeshComponentToOwningShape.Add(
-					SMC->GetName(), RestoredSMCTuple.Key);
-			}			
+				C->StaticMeshComponentToOwningShape.Add(SMC->GetName(), RestoredSMCTuple.Key);
+			}
 		}
 	};
 

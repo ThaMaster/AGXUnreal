@@ -394,6 +394,7 @@ void UAGX_ShapeContactMergeSplitThresholds::CopyFrom(const FMergeSplitThresholds
 	TangentialAdhesion = ScMstBarrier->GetTangentialAdhesion();
 	bMaySplitInGravityField = ScMstBarrier->GetMaySplitInGravityField();
 	bSplitOnLogicalImpact = ScMstBarrier->GetSplitOnLogicalImpact();
+	ImportGuid = ScMstBarrier->GetGuid();
 }
 
 void UAGX_ShapeContactMergeSplitThresholds::CopyFrom(

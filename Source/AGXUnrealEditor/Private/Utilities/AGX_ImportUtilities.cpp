@@ -4,10 +4,6 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
-#include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
-#include "AMOR/AGX_WireMergeSplitThresholds.h"
-#include "AMOR/MergeSplitThresholdsBarrier.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
@@ -379,62 +375,6 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	return Material;
 }
 
-UAGX_MergeSplitThresholdsBase* FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
-	const FMergeSplitThresholdsBarrier& Barrier, EAGX_AmorOwningType OwningType,
-	const FString& DirectoryName, const FString& Name)
-{
-	switch (OwningType)
-	{
-		case EAGX_AmorOwningType::BodyOrShape:
-		{
-			auto InitAsset = [&](UAGX_ShapeContactMergeSplitThresholds& Asset)
-			{ Asset.CopyFrom(Barrier); };
-
-			FAssetToDiskInfo AtdInfo =
-				PrepareWriteAssetToDisk<UAGX_ShapeContactMergeSplitThresholds>(
-					DirectoryName, Name, "AGX_SMST_", TEXT("MergeSplitThresholds"), InitAsset);
-			if (!WriteAssetToDisk(AtdInfo))
-			{
-				return nullptr;
-			}
-			return Cast<UAGX_ShapeContactMergeSplitThresholds>(AtdInfo.Asset);
-		}
-		case EAGX_AmorOwningType::Constraint:
-		{
-			auto InitAsset = [&](UAGX_ConstraintMergeSplitThresholds& Asset)
-			{ Asset.CopyFrom(Barrier); };
-
-			FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ConstraintMergeSplitThresholds>(
-				DirectoryName, Name, "AGX_CMST_", TEXT("MergeSplitThresholds"), InitAsset);
-			if (!WriteAssetToDisk(AtdInfo))
-			{
-				return nullptr;
-			}
-			return Cast<UAGX_ConstraintMergeSplitThresholds>(AtdInfo.Asset);
-
-		}
-		case EAGX_AmorOwningType::Wire:
-		{
-			auto InitAsset = [&](UAGX_WireMergeSplitThresholds& Asset) { Asset.CopyFrom(Barrier); };
-
-			FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_WireMergeSplitThresholds>(
-				DirectoryName, Name, "AGX_WMST_", TEXT("MergeSplitThresholds"), InitAsset);
-			if (!WriteAssetToDisk(AtdInfo))
-			{
-				return nullptr;
-			}
-			return Cast<UAGX_WireMergeSplitThresholds>(AtdInfo.Asset);
-		}
-	}
-
-	UE_LOG(
-		LogAGX, Error,
-		TEXT("Could not create Merge Split Thresholds asset '%s' because the given owning type is "
-			 "unknown."),
-		*Name);
-	return nullptr;
-}
-
 UAGX_TrackInternalMergeProperties*
 FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
 	const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name)
@@ -541,4 +481,9 @@ FString FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName()
 FString FAGX_ImportUtilities::GetImportContactMaterialDirectoryName()
 {
 	return FString("ContactMaterial");
+}
+
+FString FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName()
+{
+	return FString("MergeSplitThresholds");
 }
