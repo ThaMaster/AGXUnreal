@@ -602,6 +602,7 @@ void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	{
 		MSThresholds = MSTsOnDisk[MSTGuid];
 		::UpdateAndSaveAsset(ThresholdsBarrier, *MSThresholds, EAGX_AmorOwningType::BodyOrShape);
+		RestoredThresholds.Add(MSTGuid, MSThresholds);
 	}
 	else
 	{
