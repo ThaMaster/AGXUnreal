@@ -3,29 +3,15 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Real.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/AGX_Shovel.h"
 
 // Unreal Engine includes.
-#include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 #include "Containers/Array.h"
-
-/// \todo Would like to not include this header, and only forward declare
-/// UNiagaraSystem instead. Currently gives
-///
-/// Error: Unrecognized type 'UNiagaraSystem' - type must be a UCLASS, USTRUCT or UENUM
-///
-/// on
-///
-/// UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering", meta = (EditCondition =
-/// "bEnableParticleRendering")) UNiagaraSystem* ParticleSystemAsset;
-//#include "NiagaraComponent.h"
-//#include "NiagaraEmitterInstance.h"
-//#include "NiagaraFunctionLibrary.h"
-//#include "NiagaraSystemInstance.h"
-
+#include "CoreMinimal.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "GameFramework/Actor.h"
 
 #include "AGX_Terrain.generated.h"
 
@@ -59,7 +45,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	ALandscape* SourceLandscape;
 
-	/** Whether the native terrain simulation should generate soild particles or not. */
+	/** Whether the native terrain should generate particles or not during shovel interactions. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	bool bCreateParticles = true;
 
@@ -85,13 +71,17 @@ public:
 	 * direction according to: ( 1.0 + C * v^2 ).
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
-	float PenetrationForceVelocityScaling = 0.0f;
+	FAGX_Real PenetrationForceVelocityScaling = 0.0f;
+
+	void SetPenetrationForceVelocityScaling(double InPenetrationForceVelocityScaling);
+
+	double GetPenetrationForceVelocityScaling() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
-	void SetPenetrationForceVelocityScaling(float InPenetrationForceVelocityScaling);
+	void SetPenetrationForceVelocityScaling_BP(float InPenetrationForceVelocityScaling);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
-	float GetPenetrationForceVelocityScaling() const;
+	float GetPenetrationForceVelocityScaling_BP() const;
 
 	/**
 	 * The maximum depth of the terrain, from local origin [cm].
@@ -101,8 +91,24 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain",
-		meta = (ClampMin = "0", UIMin = "0", ClampMax = "1000", UIMax = "1000"))
-	float MaxDepth = 200.0f;
+		Meta = (ClampMin = "0", UIMin = "0", ClampMax = "1000", UIMax = "1000"))
+	FAGX_Real MaxDepth = 200.0f;
+
+	/**
+	 * Sets the maximum volume of active zone wedges that should wake particles [cm^3].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	FAGX_Real MaximumParticleActivationVolume = std::numeric_limits<double>::infinity();
+
+	void SetMaximumParticleActivationVolume(double InMaximumParticleActivationVolume);
+
+	double GetMaximumParticleActivationVolume() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	void SetMaximumParticleActivationVolume_BP(float InMaximumParticleActivationVolume);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	float GetMaximumParticleActivationVolume_BP() const;
 
 	/** The physical bulk, compaction, particle and surface properties of the Terrain. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Terrain")
@@ -146,7 +152,7 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Rendering",
-		meta = (EditCondition = "bEnableDisplacementRendering"))
+		Meta = (EditCondition = "bEnableDisplacementRendering"))
 	UTextureRenderTarget2D* LandscapeDisplacementMap;
 
 	/** Whether soil particles should be rendered or not. */
@@ -159,20 +165,20 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Rendering",
-		meta =
+		Meta =
 			(EditCondition = "bEnableParticleRendering", ClampMin = "1", UIMin = "1",
 			 UIMax = "4096"))
 	int32 MaxNumRenderParticles = 2048;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Rendering",
-		meta = (EditCondition = "bEnableParticleRendering"))
+		Meta = (EditCondition = "bEnableParticleRendering"))
 	UNiagaraSystem* ParticleSystemAsset;
 
 	// \todo Should try to find or create this automatically!
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Rendering",
-		meta = (EditCondition = "bEnableParticleRendering"))
+		Meta = (EditCondition = "bEnableParticleRendering"))
 	UTextureRenderTarget2D* TerrainParticlesDataMap;
 
 	/** Whether shovel active zone should be rendered or not. */
@@ -186,7 +192,8 @@ public:
 	const FTerrainBarrier* GetNative() const;
 
 #if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
 
 protected:
@@ -213,6 +220,10 @@ private:
 	bool InitializeParticlesMap();
 	void UpdateParticlesMap();
 	void ClearParticlesMap();
+#if WITH_EDITOR
+	void InitPropertyDispatcher();
+	void EnsureParticleDataRenderTargetSize();
+#endif
 
 private:
 	FTerrainBarrier NativeBarrier;

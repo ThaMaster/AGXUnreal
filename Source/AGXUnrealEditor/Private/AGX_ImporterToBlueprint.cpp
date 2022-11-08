@@ -51,6 +51,7 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_PropertyUtilities.h"
+#include "Vehicle/AGX_TrackComponent.h"
 
 // Unreal Engine includes.
 #include "ActorFactories/ActorFactoryEmptyActor.h"
@@ -277,6 +278,19 @@ namespace
 		return Success;
 	}
 
+	bool AddTracks(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& Track : SimObjects.GetTracks())
+		{
+			Success &= Helper.InstantiateTrack(Track, ImportedActor) != nullptr;
+		}
+
+		return Success;
+	}
+
 	bool AddTireModels(
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
 		FAGX_SimObjectsImporterHelper& Helper)
@@ -403,8 +417,11 @@ namespace
 			5.f, FText::FromString("Reading Rigid Bodies and their Shapes"));
 		Success &= AddRigidBodyAndAnyOwnedShape(ImportedActor, SimObjects, Helper);
 
-		ImportTask.EnterProgressFrame(15.f, FText::FromString("Reading Bodiless Shapes"));
+		ImportTask.EnterProgressFrame(10.f, FText::FromString("Reading Bodiless Shapes"));
 		Success &= AddBodilessShapes(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Tracks"));
+		Success &= AddTracks(ImportedActor, SimObjects, Helper);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Tire Models"));
 		Success &= AddTireModels(ImportedActor, SimObjects, Helper);
@@ -915,10 +932,10 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		const FString ContactMaterialDirPath = FString::Printf(
 			TEXT("/Game/%s/%s/%s"), *FAGX_ImportUtilities::GetImportRootDirectoryName(),
 			*Helper.DirectoryName, *FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
-		TArray<UAGX_ContactMaterialAsset*> ExistingContactMaterialAssets =
-			FAGX_EditorUtilities::FindAssets<UAGX_ContactMaterialAsset>(ContactMaterialDirPath);
+		TArray<UAGX_ContactMaterial*> ExistingContactMaterialAssets =
+			FAGX_EditorUtilities::FindAssets<UAGX_ContactMaterial>(ContactMaterialDirPath);
 
-		TMap<FGuid, UAGX_ContactMaterialAsset*> ExistingContactMaterialsMap =
+		TMap<FGuid, UAGX_ContactMaterial*> ExistingContactMaterialsMap =
 			CreateGuidToComponentMap(ExistingContactMaterialAssets);
 
 		for (const auto& Barrier : SimulationObjects.GetContactMaterials())
@@ -937,6 +954,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	}
 
 	// todo: add and update any owned shape as well
+	// todo: get/create and update merge split thresholds as well.
 	void AddOrUpdateRigidBodies(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)

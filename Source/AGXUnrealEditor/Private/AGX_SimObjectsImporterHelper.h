@@ -29,17 +29,21 @@ class UAGX_CylinderShapeComponent;
 class UAGX_CapsuleShapeComponent;
 class UAGX_TrimeshShapeComponent;
 class UAGX_ShapeMaterial;
-class UAGX_ContactMaterialAsset;
+class UAGX_ContactMaterial;
 class UAGX_HingeConstraintComponent;
 class UAGX_PrismaticConstraintComponent;
 class UAGX_BallConstraintComponent;
 class UAGX_CylindricalConstraintComponent;
 class UAGX_DistanceConstraintComponent;
 class UAGX_LockConstraintComponent;
+class UAGX_MergeSplitThresholdsBase;
+class FTwoBodyTireBarrier;
 class UAGX_TwoBodyTireComponent;
 class UAGX_CollisionGroupDisablerComponent;
 class UAGX_ContactMaterialRegistrarComponent;
 class UAGX_WireComponent;
+class UAGX_TrackComponent;
+class UAGX_TrackProperties;
 
 // Unreal Engine classes.
 class AActor;
@@ -93,11 +97,11 @@ public:
 
 	// This function also adds the Asset to the passed Contact Material Registrar, if not yet added.
 	void UpdateAndSaveAsset(
-		const FContactMaterialBarrier& Barrier, UAGX_ContactMaterialAsset& Asset,
+		const FContactMaterialBarrier& Barrier, UAGX_ContactMaterial& Asset,
 		UAGX_ContactMaterialRegistrarComponent& CMRegistrar);
 
 	// This function also adds the new Contact Material to the Contact Material Registrar.
-	UAGX_ContactMaterialAsset* InstantiateContactMaterial(
+	UAGX_ContactMaterial* InstantiateContactMaterial(
 		const FContactMaterialBarrier& Barrier,
 		UAGX_ContactMaterialRegistrarComponent& CMRegistrar);
 
@@ -127,6 +131,8 @@ public:
 		AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs);
 
 	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
+	
+	UAGX_TrackComponent* InstantiateTrack(const FTrackBarrier& Barrier, AActor& Owner);
 
 	void UpdateComponent(UAGX_ReImportComponent& Component);
 
@@ -178,9 +184,11 @@ private:
 	void UpdateShapeComponent(const FShapeBarrier& Barrier, UAGX_ShapeComponent& Component);
 
 	TMap<FGuid, FAssetToDiskInfo> RestoredMeshes;
+	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> RestoredThresholds;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
+	TMap<FGuid, UAGX_TrackProperties*> RestoredTrackProperties;
 
 	// The key is the Guid of the owning Shape. Since multiple Static Mesh Components may be created
 	// from a single Shape (e.g. a Trimesh with RenderData), the value is an array.

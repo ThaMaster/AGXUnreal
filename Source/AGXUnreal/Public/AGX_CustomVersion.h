@@ -32,6 +32,10 @@ struct AGXUNREAL_API FAGX_CustomVersion
 		// single class for ShapeMaterials, TerrainMaterials and ContactMaterials respectively.
 		BaseAssetInstanceMaterialClassesAreOneClass,
 
+		// Renamed Terrain Material Compaction properties K_e, N_e and Phi0 to more readable names
+		// HardeningConstantKe, HardeningConstantNe, BankStatePhi0.
+		RenameTerrainMaterialKeNePhi0,
+
 		// <----- New versions can be added above this line. ----->
 		VersionPlusOne,
 

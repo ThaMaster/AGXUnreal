@@ -117,18 +117,12 @@ void FAGX_Environment::Init()
 	const FString AgxDynamicsResoucePath = GetAGXDynamicsResourcesPath();
 	if (FAGX_Environment::IsSetupEnvRun())
 	{
-		UE_LOG(
-			LogAGX, Log, TEXT("AGX Dynamics installation was detected. Using resources from: %s"),
-			*AgxDynamicsResoucePath);
+		UE_LOG(LogAGX, Log, TEXT("Using AGX Dynamics resources from: %s"), *AgxDynamicsResoucePath);
 		// Only setup AGX Dynamics environment if setup_env has not been called.
 		return;
 	}
 
-	UE_LOG(
-		LogAGX, Log,
-		TEXT("No installation of AGX Dynamics detected. Using AGX Dynamics resources from the "
-			 "AGXUnreal plugin at: %s"),
-		*AgxDynamicsResoucePath);
+	UE_LOG(LogAGX, Log, TEXT("Using AGX Dynamics resources from: %s"), *AgxDynamicsResoucePath);
 
 	LoadDynamicLibraries();
 	SetupAGXDynamicsEnvironment();
@@ -426,6 +420,20 @@ void FAGX_Environment::SetEnvironmentVariableEntries(
 	FCurrentPlatformMisc::SetEnvironmentVar(*EnvVarName, *EnvVarVal);
 }
 
+void FAGX_Environment::SetNumThreads(uint32 NumThreads)
+{
+	if (NumThreads == agx::getNumThreads())
+	{
+		return;
+	}
+
+	UE_LOG(
+		LogAGX, Log, TEXT("Setting number of AGX threads to %i (was previously %i)."), NumThreads,
+		agx::getNumThreads());
+
+	agx::setNumThreads(NumThreads);
+}
+
 bool FAGX_Environment::IsSetupEnvRun()
 {
 	const TArray<FString> AgxDepDirEntries =
@@ -581,7 +589,7 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus) const
 		return true;
 	}
 
-	// License is not valid. Attempt to unlock using a legacy license file (.agx) in the plugin's
+	// License is not valid. Attempt to unlock using a legacy license file (.lic) in the plugin's
 	// license directory that might have been put there recently by the user.
 	if (!TryUnlockAgxDynamicsLegacyLicense())
 	{
@@ -822,7 +830,7 @@ TOptional<FString> FAGX_Environment::ProcessOfflineActivationResponse(
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Unable to process offline activation response using '%s'. "
-				"Please ensure the file is valid."),
+				 "Please ensure the file is valid."),
 			*ResponseFilePath);
 		return TOptional<FString>();
 	}
@@ -842,7 +850,7 @@ TOptional<FString> FAGX_Environment::ProcessOfflineActivationResponse(
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Unable to read license content from the AGX Dynamics runtime. Please ensure "
-			"that the offline acivation response file is valid."));
+				 "that the offline acivation response file is valid."));
 		return TOptional<FString>();
 	}
 

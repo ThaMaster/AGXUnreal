@@ -4,13 +4,20 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "Materials/AGX_ContactMaterialAsset.h"
+#include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
+#include "AMOR/AGX_WireMergeSplitThresholds.h"
+#include "AMOR/MergeSplitThresholdsBarrier.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
+#include "Vehicle/AGX_TrackProperties.h"
+#include "Vehicle/TrackBarrier.h"
 
 // Unreal Engine includes.
 #include "AssetToolsModule.h"
@@ -24,7 +31,6 @@
 #include "RawMesh.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/ComponentEditorUtils.h"
-#include "UObject/SavePackage.h"
 
 namespace
 {
@@ -34,6 +40,28 @@ namespace
 		const FString& AssetType, FInitAssetCallback InitAsset)
 	{
 		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
+
+		// If the asset name ends with lots of numbers then Unreal believes that
+		// it is a counter starts looping trying to find the next available number,
+		// which fails if the number is larger than the largest int32. This hack
+		// twarts that by adding a useless character to the end of the name.
+		int32 NumEndingNumerics = 0;
+		for (int32 CharIndex = AssetName.Len() - 1; CharIndex >= 0; --CharIndex)
+		{
+			bool isNumeric = AssetName[CharIndex] >= TEXT('0') && AssetName[CharIndex] <= TEXT('9');
+			if (!isNumeric)
+				break;
+			NumEndingNumerics++;
+		}
+		if (NumEndingNumerics >= 10)
+		{
+			AssetName = AssetName + "c";
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Asset '%s' was appended with a 'c' to avoid Unreal name processing bug."),
+				*AssetName);
+		}
+
 		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
@@ -351,6 +379,91 @@ UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
 	return Material;
 }
 
+UAGX_MergeSplitThresholdsBase* FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
+	const FMergeSplitThresholdsBarrier& Barrier, EAGX_AmorOwningType OwningType,
+	const FString& DirectoryName, const FString& Name)
+{
+	switch (OwningType)
+	{
+		case EAGX_AmorOwningType::BodyOrShape:
+		{
+			auto InitAsset = [&](UAGX_ShapeContactMergeSplitThresholds& Asset)
+			{ Asset.CopyFrom(Barrier); };
+
+			FAssetToDiskInfo AtdInfo =
+				PrepareWriteAssetToDisk<UAGX_ShapeContactMergeSplitThresholds>(
+					DirectoryName, Name, "AGX_SMST_", TEXT("MergeSplitThresholds"), InitAsset);
+			if (!WriteAssetToDisk(AtdInfo))
+			{
+				return nullptr;
+			}
+			return Cast<UAGX_ShapeContactMergeSplitThresholds>(AtdInfo.Asset);
+		}
+		case EAGX_AmorOwningType::Constraint:
+		{
+			auto InitAsset = [&](UAGX_ConstraintMergeSplitThresholds& Asset)
+			{ Asset.CopyFrom(Barrier); };
+
+			FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ConstraintMergeSplitThresholds>(
+				DirectoryName, Name, "AGX_CMST_", TEXT("MergeSplitThresholds"), InitAsset);
+			if (!WriteAssetToDisk(AtdInfo))
+			{
+				return nullptr;
+			}
+			return Cast<UAGX_ConstraintMergeSplitThresholds>(AtdInfo.Asset);
+
+		}
+		case EAGX_AmorOwningType::Wire:
+		{
+			auto InitAsset = [&](UAGX_WireMergeSplitThresholds& Asset) { Asset.CopyFrom(Barrier); };
+
+			FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_WireMergeSplitThresholds>(
+				DirectoryName, Name, "AGX_WMST_", TEXT("MergeSplitThresholds"), InitAsset);
+			if (!WriteAssetToDisk(AtdInfo))
+			{
+				return nullptr;
+			}
+			return Cast<UAGX_WireMergeSplitThresholds>(AtdInfo.Asset);
+		}
+	}
+
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Could not create Merge Split Thresholds asset '%s' because the given owning type is "
+			 "unknown."),
+		*Name);
+	return nullptr;
+}
+
+UAGX_TrackInternalMergeProperties*
+FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
+	const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name)
+{
+	auto InitAsset = [&](UAGX_TrackInternalMergeProperties& Asset) { Asset.CopyFrom(Barrier); };
+
+	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_TrackInternalMergeProperties>(
+		DirectoryName, Name, TEXT(""), TEXT("TrackInternalMergeProperties"), InitAsset);
+	if (!WriteAssetToDisk(AtdInfo))
+	{
+		return nullptr;
+	}
+	return Cast<UAGX_TrackInternalMergeProperties>(AtdInfo.Asset);
+}
+
+UAGX_TrackProperties* FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
+	const FTrackPropertiesBarrier& Barrier, const FString& DirectoryName, const FString& Name)
+{
+	auto InitAsset = [&](UAGX_TrackProperties& Asset) { Asset.CopyFrom(Barrier); };
+
+	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_TrackProperties>(
+		DirectoryName, Name, TEXT(""), TEXT("TrackProperties"), InitAsset);
+	if (!WriteAssetToDisk(AtdInfo))
+	{
+		return nullptr;
+	}
+	return Cast<UAGX_TrackProperties>(AtdInfo.Asset);
+}
+
 FString FAGX_ImportUtilities::CreateName(UObject& Object, const FString& Name)
 {
 	if (Name.IsEmpty())
@@ -366,7 +479,7 @@ FString FAGX_ImportUtilities::CreateName(UObject& Object, const FString& Name)
 	{
 		FName NewName = MakeUniqueObjectName(Object.GetOuter(), Object.GetClass(), FName(*Name));
 		UE_LOG(
-			LogAGX, Warning, TEXT("%s '%s' imported with name '%s' because of name conflict."),
+			LogAGX, Log, TEXT("%s '%s' imported with name '%s' because of name conflict."),
 			*Object.GetClass()->GetName(), *Name, *NewName.ToString());
 		return NewName.ToString();
 	}

@@ -19,7 +19,7 @@
  * or a specific Static Mesh Asset.
  */
 UCLASS(
-	ClassGroup = "AGX_Shape", Category = "AGX", meta = (BlueprintSpawnableComponent),
+	ClassGroup = "AGX_Shape", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	HideCategories = (HLOD, Lighting, LOD, Materials, MaterialParameters, Rendering))
 class AGXUNREAL_API UAGX_TrimeshShapeComponent final : public UAGX_ShapeComponent
 {

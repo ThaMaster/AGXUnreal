@@ -3,9 +3,10 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_RigidBodyEnums.h"
+#include "AMOR/AGX_ShapeContactMergeSplitProperties.h"
 #include "AGX_MotionControl.h"
 #include "AGX_NativeOwner.h"
+#include "AGX_RigidBodyEnums.h"
 #include "RigidBodyBarrier.h"
 
 // Unreal Engine includes.
@@ -194,6 +195,32 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetAngularVelocity() const;
 
+	/**
+	 * The linear velocity damping of the Rigid Body. Can be used to mimic aerodynamic or
+	 * hydrodynamic effects [kg/s].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	FVector LinearVelocityDamping;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetLinearVelocityDamping(const FVector& InLinearVelocityDamping);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetLinearVelocityDamping() const;
+
+	/**
+	 * The angular velocity damping of the Rigid Body. Can be used to mimic aerodynamic or
+	 * hydrodynamic effects [kg/s].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	FVector AngularVelocityDamping;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SetAngularVelocityDamping(const FVector& InAngularVelocityDamping);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetAngularVelocityDamping() const;
+
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
@@ -208,6 +235,12 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_TransformTarget> TransformTarget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
+	FAGX_ShapeContactMergeSplitProperties MergeSplitProperties;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	void CreateMergeSplitProperties();
 
 	/**
 	 * Add an external force, given in the world coordinate frame, that will be affecting this body

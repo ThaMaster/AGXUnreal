@@ -269,7 +269,7 @@ UBlueprint* FAGX_BlueprintUtilities::GetBlueprintFrom(const UActorComponent& Com
 void FAGX_BlueprintUtilities::SaveAndCompile(UBlueprint& Blueprint, bool IncludeChildBlueprints)
 {
 	FKismetEditorUtilities::CompileBlueprint(&Blueprint);
-	FAGX_EditorUtilities::SaveAsset(Blueprint);
+	FAGX_ObjectUtilities::SaveAsset(Blueprint);
 
 	if (!IncludeChildBlueprints)
 	{
@@ -309,7 +309,7 @@ void FAGX_BlueprintUtilities::SaveAndCompile(UBlueprint& Blueprint, bool Include
 		if (UBlueprint* ChildBp = GetBlueprintFrom(*ComponentInstance))
 		{
 			FKismetEditorUtilities::CompileBlueprint(ChildBp);
-			FAGX_EditorUtilities::SaveAsset(*ChildBp);
+			FAGX_ObjectUtilities::SaveAsset(*ChildBp);
 		}
 	}
 }

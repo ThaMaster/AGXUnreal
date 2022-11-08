@@ -5,24 +5,24 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Materials/AGX_MaterialBase.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
+#include "Shapes/HeightFieldShapeBarrier.h"
 #include "Terrain/AGX_CuttingDirectionComponent.h"
 #include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "Terrain/AGX_LandscapeSizeInfo.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
+#include "Terrain/ShovelBarrier.h"
+#include "Terrain/TerrainBarrier.h"
 #include "Utilities/AGX_HeightFieldUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
-
-// AGXUnrealBarrier includes.
-#include "Terrain/TerrainBarrier.h"
-#include "Shapes/HeightFieldShapeBarrier.h"
-#include "Terrain/ShovelBarrier.h"
 
 // Unreal Engine includes.
 #include "Landscape.h"
@@ -35,6 +35,11 @@
 
 // Standard library includes.
 #include <algorithm>
+
+#ifdef LOCTEXT_NAMESPACE
+#error "LOCTEXT_NAMESPACE leakage."
+#endif
+#define LOCTEXT_NAMESPACE "AAGX_Terrain"
 
 AAGX_Terrain::AAGX_Terrain()
 {
@@ -121,25 +126,64 @@ bool AAGX_Terrain::GetDeleteParticlesOutsideBounds() const
 	return bDeleteParticlesOutsideBounds;
 }
 
-void AAGX_Terrain::SetPenetrationForceVelocityScaling(float InPenetrationForceVelocityScaling)
+void AAGX_Terrain::SetPenetrationForceVelocityScaling(double InPenetrationForceVelocityScaling)
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetPenetrationForceVelocityScaling(
-			static_cast<double>(InPenetrationForceVelocityScaling));
+		NativeBarrier.SetPenetrationForceVelocityScaling(InPenetrationForceVelocityScaling);
 	}
 
 	PenetrationForceVelocityScaling = InPenetrationForceVelocityScaling;
 }
 
-float AAGX_Terrain::GetPenetrationForceVelocityScaling() const
+double AAGX_Terrain::GetPenetrationForceVelocityScaling() const
 {
 	if (HasNative())
 	{
-		return static_cast<float>(NativeBarrier.GetPenetrationForceVelocityScaling());
+		return NativeBarrier.GetPenetrationForceVelocityScaling();
 	}
 
 	return PenetrationForceVelocityScaling;
+}
+
+void AAGX_Terrain::SetPenetrationForceVelocityScaling_BP(float InPenetrationForceVelocityScaling)
+{
+	SetPenetrationForceVelocityScaling(static_cast<double>(InPenetrationForceVelocityScaling));
+}
+
+float AAGX_Terrain::GetPenetrationForceVelocityScaling_BP() const
+{
+	return static_cast<float>(GetPenetrationForceVelocityScaling());
+}
+
+void AAGX_Terrain::SetMaximumParticleActivationVolume(double InMaximumParticleActivationVolume)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetMaximumParticleActivationVolume(InMaximumParticleActivationVolume);
+	}
+
+	MaximumParticleActivationVolume = InMaximumParticleActivationVolume;
+}
+
+double AAGX_Terrain::GetMaximumParticleActivationVolume() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetMaximumParticleActivationVolume();
+	}
+
+	return MaximumParticleActivationVolume;
+}
+
+void AAGX_Terrain::SetMaximumParticleActivationVolume_BP(float InMaximumParticleActivationVolume)
+{
+	SetMaximumParticleActivationVolume(static_cast<double>(InMaximumParticleActivationVolume));
+}
+
+float AAGX_Terrain::GetMaximumParticleActivationVolume_BP() const
+{
+	return static_cast<float>(GetMaximumParticleActivationVolume());
 }
 
 bool AAGX_Terrain::HasNative() const
@@ -167,33 +211,155 @@ const FTerrainBarrier* AAGX_Terrain::GetNative() const
 	return &NativeBarrier;
 }
 
-#if WITH_EDITOR
-void AAGX_Terrain::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+namespace
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	FName PropertyName = (PropertyChangedEvent.Property != nullptr)
-							 ? PropertyChangedEvent.Property->GetFName()
-							 : NAME_None;
-	if ((PropertyName == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, SourceLandscape)))
+	/**
+	Calculates and returns the smallest base size of a square sized texture,
+	such that the base size is evenly divisible by pixelsPerItem and has a square
+	that is at least minNumItems x pixelsPerItem.
+	*/
+	int32 CalculateTextureBaseSize(int32 MinNumItems, int32 PixelsPerItem)
 	{
-		if (SourceLandscape == nullptr)
+		// Max size taken from UTextureRenderTarget2D::PostEditChangeProperty in
+		// Engine/Source/Runtime/Engine/Private/TextureRenderTarget2D.cpp. Update here
+		// if future versions of Unreal Engine allow larger render targets.
+		const int32 MaxSide = 8192;
+		const int32 NumPixels = MinNumItems * PixelsPerItem;
+		int32 Side =
+			FMath::Clamp(FMath::CeilToInt(FMath::Sqrt(static_cast<double>(NumPixels))), 0, MaxSide);
+		// We might not get a good side length on the first attempt, so search upwards until we
+		// find one.
+		for (; Side <= MaxSide; ++Side)
 		{
-			return;
+			if ((Side % PixelsPerItem == 0) && (Side * Side >= NumPixels))
+			{
+				return Side;
+			}
 		}
+		AGX_CHECK(!"CalculateTextureBaseSize failed");
+		return 0;
+	}
 
-		FAGX_LandscapeSizeInfo LandscapeSizeInfo(*SourceLandscape);
-		const int32 QuadCountX = LandscapeSizeInfo.NumQuadsSideX;
-		const int32 QuadCountY = LandscapeSizeInfo.NumQuadsSideY;
-		const float QuadSizeX = LandscapeSizeInfo.QuadSideSizeX;
-		const float QuadSizeY = LandscapeSizeInfo.QuadSideSizeY;
-		const float SizeX = QuadSizeX * QuadCountX;
-		const float SizeY = QuadSizeY * QuadCountY;
-		UE_LOG(
-			LogAGX, Display, TEXT("Selected %fcm x %fcm Landscape containing %d x %d quads."),
-			SizeX, SizeY, QuadCountX, QuadCountY);
+	bool ParticleDataRenderTargetValid(
+		const UTextureRenderTarget2D& TerrainParticlesDataMap, int32 TextureBaseSize,
+		int32 NumPixelsPerParticle)
+	{
+		const int32 NumTexels = TerrainParticlesDataMap.SizeX * TerrainParticlesDataMap.SizeY;
+		const bool TargetLargeEnough = NumTexels >= TextureBaseSize * TextureBaseSize;
+		const bool TargetSquare = TerrainParticlesDataMap.SizeX == TerrainParticlesDataMap.SizeY;
+		const bool TargetSizeMultipleOfPpp =
+			TerrainParticlesDataMap.SizeX % NumPixelsPerParticle == 0;
+		return TargetLargeEnough && TargetSquare && TargetSizeMultipleOfPpp;
 	}
 }
+
+#if WITH_EDITOR
+void AAGX_Terrain::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
+	Super::PostEditChangeChainProperty(Event);
+}
+
+void AAGX_Terrain::PostInitProperties()
+{
+	Super::PostInitProperties();
+	InitPropertyDispatcher();
+}
+
+void AAGX_Terrain::InitPropertyDispatcher()
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, bCreateParticles),
+		[](ThisClass* This) { This->SetCreateParticles(This->bCreateParticles); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, bDeleteParticlesOutsideBounds), [](ThisClass* This)
+		{ This->SetDeleteParticlesOutsideBounds(This->bDeleteParticlesOutsideBounds); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, PenetrationForceVelocityScaling), [](ThisClass* This)
+		{ This->SetPenetrationForceVelocityScaling(This->PenetrationForceVelocityScaling); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, MaximumParticleActivationVolume), [](ThisClass* This)
+		{ This->SetMaximumParticleActivationVolume(This->MaximumParticleActivationVolume); });
+
+	// The MaxNumRenderParticles, ParticleSystemAsset, and TerrainParticlesDataMap Properties
+	// have dependencies between them. The TerrainParticlesDataMap must be large enough to hold
+	// data for all MaxNumRenderParticles particles, and whenever the TerrainParticlesDataMap
+	// is changed, either in size or which asset is pointed to, the ParticleSystemAsset must be
+	// recompiled.
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, MaxNumRenderParticles),
+		[](ThisClass* This) { This->EnsureParticleDataRenderTargetSize(); });
+
+	PropertyDispatcher.Add(
+		AGX_MEMBER_NAME(ParticleSystemAsset),
+		[](ThisClass* This)
+		{
+			if (This->ParticleSystemAsset != nullptr)
+			{
+				This->ParticleSystemAsset->RequestCompile(true);
+			}
+		});
+
+	PropertyDispatcher.Add(
+		AGX_MEMBER_NAME(TerrainParticlesDataMap),
+		[](ThisClass* This) { This->EnsureParticleDataRenderTargetSize(); });
+}
+
+void AAGX_Terrain::EnsureParticleDataRenderTargetSize()
+{
+	if (!TerrainParticlesDataMap)
+	{
+		return;
+	}
+
+	const int32 TextureBaseSize =
+		CalculateTextureBaseSize(MaxNumRenderParticles, NumPixelsPerParticle);
+	if (TextureBaseSize == 0)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not find a render target size able to accomodate %d render particles for "
+				 "AGX_Terrain '%s'."),
+			MaxNumRenderParticles, *GetActorLabel());
+		return;
+	}
+
+	if (!ParticleDataRenderTargetValid(
+			*TerrainParticlesDataMap, TextureBaseSize, NumPixelsPerParticle))
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Terrain Particles Data Map used by Terrain '%s' doesn't have the required "
+				 "size to hold the requested maximum number of render particles. "
+				 "Requesting resize from %d x %d to %d x %d."),
+			*this->GetActorLabel(), TerrainParticlesDataMap->SizeX, TerrainParticlesDataMap->SizeY,
+			TextureBaseSize, TextureBaseSize);
+
+		const bool DoResize = FAGX_NotificationUtilities::YesNoQuestion(FText::Format(
+			LOCTEXT(
+				"ResizeRenderTarget?",
+				"Current render target for particle data is too small to hold the requested number "
+				"of render particles. Automatically resize the render target to {0}x{1}?"),
+			TextureBaseSize, TextureBaseSize));
+		if (DoResize)
+		{
+			TerrainParticlesDataMap->ResizeTarget(TextureBaseSize, TextureBaseSize);
+			FAGX_ObjectUtilities::SaveAsset(*TerrainParticlesDataMap);
+		}
+	}
+}
+
 #endif
 
 void AAGX_Terrain::BeginPlay()
@@ -331,13 +497,13 @@ void AAGX_Terrain::InitializeNative()
 
 	CreateNativeShovels();
 	InitializeRendering();
-	
+
 	if (!UpdateNativeMaterial())
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("UpdateNativeMaterial returned false in AGX_Terrain. "
-				"Ensure the selected Terrain Material is valid."));
+				 "Ensure the selected Terrain Material is valid."));
 	}
 }
 
@@ -363,8 +529,8 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	OriginalHeights = NativeBarrier.GetHeights();
 	NativeBarrier.SetCreateParticles(bCreateParticles);
 	NativeBarrier.SetDeleteParticlesOutsideBounds(bDeleteParticlesOutsideBounds);
-	NativeBarrier.SetPenetrationForceVelocityScaling(
-		static_cast<double>(PenetrationForceVelocityScaling));
+	NativeBarrier.SetPenetrationForceVelocityScaling(PenetrationForceVelocityScaling);
+	NativeBarrier.SetMaximumParticleActivationVolume(MaximumParticleActivationVolume);
 
 	// Create the AGX Dynamics instance for the terrain.
 	// Note that the AGX Dynamics Terrain messes with the solver parameters on add, parameters that
@@ -509,7 +675,7 @@ void AAGX_Terrain::SetInitialTransform()
 	std::tuple<FVector, FQuat> PosRot =
 		AGX_HeightFieldUtilities::GetTerrainPositionAndRotationFrom(*SourceLandscape);
 	NativeBarrier.SetPosition(std::get<0>(PosRot));
-	NativeBarrier.SetRotation(std::get<1>(PosRot));	
+	NativeBarrier.SetRotation(std::get<1>(PosRot));
 }
 
 void AAGX_Terrain::InitializeRendering()
@@ -540,8 +706,7 @@ bool AAGX_Terrain::UpdateNativeMaterial()
 
 	// Set TerrainMaterial
 	UAGX_TerrainMaterial* TerrainMaterialInstance =
-		static_cast<UAGX_TerrainMaterial*>(
-			TerrainMaterial->GetOrCreateInstance(GetWorld()));
+		static_cast<UAGX_TerrainMaterial*>(TerrainMaterial->GetOrCreateInstance(GetWorld()));
 	check(TerrainMaterialInstance);
 
 	if (TerrainMaterial != TerrainMaterialInstance)
@@ -691,28 +856,6 @@ void AAGX_Terrain::ClearDisplacementMap()
 		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
 
-namespace
-{
-	/**
-	Calculates and returns the smallest base size of a square sized texture,
-	such that the base size is evenly divisible by pixelsPerItem and has a square
-	that is at least minNumItems x pixelsPerItem.
-	*/
-	int32 CalculateTextureBaseSize(int32 minNumItems, int32 PixelsPerItem)
-	{
-		const int32 maxSize = 8192;
-		const int32 num_pixels = minNumItems * PixelsPerItem;
-		const int32 side = static_cast<int32>(FMath::Sqrt(static_cast<double>(num_pixels)));
-		for (int32 base = side; base <= maxSize; ++base)
-		{
-			if ((base % PixelsPerItem == 0) && (base * base >= minNumItems * PixelsPerItem))
-				return base;
-		}
-		check(!"CalculateTextureBaseSize failed");
-		return 0;
-	}
-}
-
 bool AAGX_Terrain::InitializeParticleSystem()
 {
 	return InitializeParticleSystemComponent() && InitializeParticlesMap();
@@ -752,7 +895,7 @@ bool AAGX_Terrain::InitializeParticlesMap()
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("No particles data map configured for terrain '%s'. Terrain rendering will not "
-				 "include particle."),
+				 "include particles."),
 			*GetName());
 		return false;
 	}
@@ -772,16 +915,19 @@ bool AAGX_Terrain::InitializeParticlesMap()
 	// complexity of the Niagara Module Script).
 	const int32 TextureBaseSize =
 		CalculateTextureBaseSize(MaxNumRenderParticles, NumPixelsPerParticle);
+	if (TextureBaseSize == 0)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not find a render target size able to accomodate %d render particles for "
+				 "AGX_Terrain '%s'. Terrain rendering will not include particles."),
+			MaxNumRenderParticles, *GetLabelSafe(this));
+		return false;
+	}
 	check(TextureBaseSize % NumPixelsPerParticle == 0);
 	check(TextureBaseSize * TextureBaseSize >= MaxNumRenderParticles * NumPixelsPerParticle);
-
-	const bool TargetLargeEnough =
-		TerrainParticlesDataMap->SizeX * TerrainParticlesDataMap->SizeY >=
-		TextureBaseSize * TextureBaseSize;
-	const bool TargetSquare = TerrainParticlesDataMap->SizeX == TerrainParticlesDataMap->SizeY;
-	const bool TargetSizeMultipleOfPpp = TerrainParticlesDataMap->SizeX % NumPixelsPerParticle == 0;
-
-	if (!TargetLargeEnough || !TargetSquare || !TargetSizeMultipleOfPpp)
+	if (!ParticleDataRenderTargetValid(
+			*TerrainParticlesDataMap, TextureBaseSize, NumPixelsPerParticle))
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -908,3 +1054,5 @@ void AAGX_Terrain::ClearParticlesMap()
 		*TerrainParticlesDataMap, 1, ParticlesDataMapRegions.GetData(),
 		ResolutionX * NumBytesPerPixel, NumBytesPerPixel, PixelData, false);
 }
+
+#undef LOCTEXT_NAMESPACE

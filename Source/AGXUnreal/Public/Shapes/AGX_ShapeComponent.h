@@ -3,8 +3,9 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_SimpleMeshComponent.h"
+#include "AMOR/AGX_ShapeContactMergeSplitProperties.h"
 #include "AGX_NativeOwner.h"
+#include "AGX_SimpleMeshComponent.h"
 #include "Contacts/AGX_ShapeContact.h"
 #include "Shapes/AGX_ShapeEnums.h"
 #include "Shapes/ShapeBarrier.h"
@@ -69,6 +70,12 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shape Contacts")
 	bool bIsSensor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
+	FAGX_ShapeContactMergeSplitProperties MergeSplitProperties;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	void CreateMergeSplitProperties();
 
 	/**
 	 * Determines the sensor type. Only relevant if the Is Sensor property is checked.

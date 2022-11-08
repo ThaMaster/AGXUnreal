@@ -17,7 +17,7 @@ class UAGX_RigidBodyComponent;
  */
 UCLASS(
 	ClassGroup = "AGX", Blueprintable,
-	meta =
+	Meta =
 		(BlueprintSpawnableComponent,
 		 ToolTip = "Actor with an AGX_RigidBodyComponent as RootComponent."))
 class AGXUNREAL_API AAGX_RigidBodyActor : public AActor

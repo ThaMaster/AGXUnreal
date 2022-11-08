@@ -4,7 +4,7 @@
 #include "AgxAutomationCommon.h"
 #include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
-#include "Materials/AGX_ContactMaterialAsset.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
 
@@ -210,7 +210,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #else
 			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("0e6c1159d5b5b0bd0dabdc311a2e361e"), *this);
 #endif
-			UAGX_ContactMaterialAsset* ContactMaterial = LoadMaterialAsset<UAGX_ContactMaterialAsset>(PackagePath, ObjectName);
+			UAGX_ContactMaterial* ContactMaterial = LoadMaterialAsset<UAGX_ContactMaterial>(PackagePath, ObjectName);
 			TestEqual(
 				TEXT("The contact material should have restored friction coefficient"),
 				ContactMaterial->FrictionCoefficient, 1000000.0);
@@ -286,7 +286,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 				TerrainMaterial->TerrainCompaction.AngleOfReposeCompactionRate, 0.000011);
 			TestEqual(
 				TEXT("The terrain material should have restored phi 0"),
-				TerrainMaterial->TerrainCompaction.Phi0, 0.000012);
+				TerrainMaterial->TerrainCompaction.BankStatePhi0, 0.000012);
 			TestEqual(
 				TEXT("The terrain material should have restored compaction time relaxation constant"),
 				TerrainMaterial->TerrainCompaction.CompactionTimeRelaxationConstant, 0.000013);
@@ -295,10 +295,10 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 				TerrainMaterial->TerrainCompaction.CompressionIndex, 0.000014);
 			TestEqual(
 				TEXT("The terrain material should have restored K E"),
-				TerrainMaterial->TerrainCompaction.K_e, 0.000015);
+				TerrainMaterial->TerrainCompaction.HardeningConstantKe, 0.000015);
 			TestEqual(
 				TEXT("The terrain material should have restored N E"),
-				TerrainMaterial->TerrainCompaction.N_e, 0.000016);
+				TerrainMaterial->TerrainCompaction.HardeningConstantNe, 0.000016);
 			TestEqual(
 				TEXT("The terrain material should have restored preconsolidation stress"),
 				TerrainMaterial->TerrainCompaction.PreconsolidationStress, 0.000017);

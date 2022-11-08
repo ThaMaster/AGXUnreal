@@ -1107,6 +1107,13 @@ void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
 	MinSegmentLength = 1.0f / Barrier.GetResolutionPerUnitLength();
 	LinearVelocityDamping = static_cast<float>(Barrier.GetLinearVelocityDamping());
 
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FWireBarrier*>(&Barrier));
+	if (Msp.HasNative())
+	{
+		MergeSplitProperties.CopyFrom(Msp);
+	}
+
 	// Physical material, winches, and route nodes not set here since this is a pure data copy. For
 	// AGX Dynamics archive import these are set by AGX_ArchiveImporterHelper.
 }
@@ -1125,6 +1132,11 @@ void UAGX_WireComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+
+	if (HasNative())
+	{
+		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+	}
 }
 
 FWireBarrier* UAGX_WireComponent::GetOrCreateNative()
@@ -1193,7 +1205,8 @@ void UAGX_WireComponent::PostInitProperties()
 
 void UAGX_WireComponent::InitPropertyDispatcher()
 {
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
@@ -1206,6 +1219,10 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, MinSegmentLength),
 		[](ThisClass* Wire) { Wire->SetMinSegmentLength(Wire->MinSegmentLength); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, MergeSplitProperties),
+		[](ThisClass* This) { This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
 
 	// Begin Winch.
 
@@ -1306,7 +1323,6 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 	// apply all our changes before that so that they are carried over to the copy.
 	Super::PostEditChangeChainProperty(Event);
 }
-
 #endif
 
 void UAGX_WireComponent::BeginPlay()
@@ -1319,6 +1335,8 @@ void UAGX_WireComponent::BeginPlay()
 		// soon be assigned the native that the reconstructed Wire Component had, if any.
 		CreateNative();
 		check(HasNative()); /// @todo Consider better error handling than check.
+
+		MergeSplitProperties.OnBeginPlay(*this);
 	}
 }
 
@@ -1328,6 +1346,26 @@ void UAGX_WireComponent::TickComponent(
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	/// @todo Do we need to do anything here?
+}
+
+void UAGX_WireComponent::CreateMergeSplitProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_WireComponent::CreateMergeSplitProperties was called "
+				 "on Wire '%s' that does not have a Native AGX Dynamics object. Only call "
+				 "this function "
+				 "during play."),
+			*GetName());
+		return;
+	}
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		MergeSplitProperties.CreateNative(*this);
+	}
 }
 
 TStructOnScope<FActorComponentInstanceData> UAGX_WireComponent::GetComponentInstanceData() const
@@ -1725,8 +1763,11 @@ bool UAGX_WireComponent::UpdateNativeMaterial()
 {
 	if (!HasNative())
 	{
-		UE_LOG(LogAGX, Error, TEXT("UpdateNativeMaterial called on Wire '%s' but it does not have a "
-			"native AGX Dynamics representation."), *GetName());
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("UpdateNativeMaterial called on Wire '%s' but it does not have a "
+				 "native AGX Dynamics representation."),
+			*GetName());
 		return false;
 	}
 

@@ -16,6 +16,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_EditorStyle.h"
+#include "AGX_Environment.h"
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyReference.h"
 #include "AGX_RigidBodyReferenceCustomization.h"
@@ -36,6 +37,9 @@
 #include "AgxEdMode/AGX_AgxEdModeFileCustomization.h"
 #include "AgxEdMode/AGX_AgxEdModeTerrain.h"
 #include "AgxEdMode/AGX_AgxEdModeTerrainCustomization.h"
+#include "AMOR/AGX_ConstraintMergeSplitThresholdsTypeActions.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholdsTypeActions.h"
+#include "AMOR/AGX_WireMergeSplitThresholdsTypeActions.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerActor.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponentCustomization.h"
@@ -71,6 +75,13 @@
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Tires/AGX_TwoBodyTireActor.h"
 #include "Tires/AGX_TwoBodyTireComponentCustomization.h"
+#include "Vehicle/AGX_TrackComponent.h"
+#include "Vehicle/AGX_TrackComponentDetails.h"
+#include "Vehicle/AGX_TrackComponentVisualizer.h"
+#include "Vehicle/AGX_TrackPropertiesAssetTypeActions.h"
+#include "Vehicle/AGX_TrackRenderer.h"
+#include "Vehicle/AGX_TrackRendererDetails.h"
+#include "Vehicle/AGX_TrackInternalMergePropertiesAssetTypeActions.h"
 #include "Wire/AGX_WireActor.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireComponentVisualizer.h"
@@ -165,6 +176,20 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 		AssetTools, MakeShareable(new FAGX_ShapeMaterialTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_TerrainMaterialAssetTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools,
+		MakeShareable(new FAGX_ConstraintMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools,
+		MakeShareable(new FAGX_ShapeContactMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools,
+		MakeShareable(new FAGX_WireMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_TrackPropertiesAssetTypeActions(AgxAssetCategoryBit)));
+
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_TrackInternalMergePropertiesAssetTypeActions(AgxAssetCategoryBit)));
 }
 
 void FAGXUnrealEditorModule::UnregisterAssetTypeActions()
@@ -289,6 +314,14 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		UAGX_WireWinchComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_WireWinchDetails::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_TrackComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_TrackComponentDetails::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_TrackRenderer::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_TrackRendererDetails::MakeInstance));
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -348,6 +381,10 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_ShapeComponent::StaticClass()->GetFName());
 
+	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackComponent::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackRenderer::StaticClass()->GetFName());
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -366,6 +403,10 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 		MakeShareable(new FAGX_TireComponentVisualizer));
 
 	RegisterComponentVisualizer(
+		UAGX_TrackComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_TrackComponentVisualizer));
+
+	RegisterComponentVisualizer(
 		UAGX_WireComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_WireComponentVisualizer));
 
@@ -379,6 +420,7 @@ void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
 	UnregisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_TireComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_TrackComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_WireComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_WireWinchComponent::StaticClass()->GetFName());
 }

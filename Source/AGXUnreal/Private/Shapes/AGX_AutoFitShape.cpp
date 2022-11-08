@@ -8,6 +8,7 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 
 // Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 
 bool AGX_AutoFitShape::AutoFit(

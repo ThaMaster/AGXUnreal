@@ -37,7 +37,6 @@ void FAGXUnrealBarrierModule::StartupModule()
 {
 	FAGX_Environment::GetInstance().EnsureEnvironmentSetup();
 
-	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::StartupModule(). Calling agx::init."));
 	agx::init();
 
 	// Start AGX logging.
@@ -51,7 +50,6 @@ void FAGXUnrealBarrierModule::ShutdownModule()
 	// Stop AGX logging.
 	NotifyBarrier.StopAgxNotify();
 
-	UE_LOG(LogAGX, Log, TEXT("FAGXUnrealBarrierModule::ShutdownModule(). Calling agx::shutdown"));
 	agx::shutdown();
 }
 

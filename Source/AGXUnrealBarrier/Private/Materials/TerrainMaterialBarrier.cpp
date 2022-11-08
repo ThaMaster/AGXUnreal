@@ -302,3 +302,236 @@ double FTerrainMaterialBarrier::GetStressCutOffFraction() const
 	check(HasNative());
 	return NativeRef->Native->getCompactionProperties()->getStressCutOffFraction();
 }
+
+void FTerrainMaterialBarrier::SetDilatancyAngleScalingFactor(double DilatancyAngleScalingFactor)
+{
+	check(HasNative());
+	NativeRef->Native->getCompactionProperties()->setDilatancyAngleScalingFactor(
+		DilatancyAngleScalingFactor);
+}
+
+double FTerrainMaterialBarrier::GetDilatancyAngleScalingFactor() const
+{
+	check(HasNative());
+	return NativeRef->Native->getCompactionProperties()->getDilatancyAngleScalingFactor();
+}
+
+// Particle properties.
+void FTerrainMaterialBarrier::SetParticleAdhesionOverlapFactor(double ParticleAdhesionOverlapFactor)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setAdhesionOverlapFactor(
+		ParticleAdhesionOverlapFactor);
+}
+
+double FTerrainMaterialBarrier::GetParticleAdhesionOverlapFactor() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getAdhesionOverlapFactor();
+}
+
+void FTerrainMaterialBarrier::SetParticleCohesion(double ParticleCohesion)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleCohesion(ParticleCohesion);
+}
+
+double FTerrainMaterialBarrier::GetParticleCohesion() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleCohesion();
+}
+
+void FTerrainMaterialBarrier::SetParticleRestitution(double ParticleRestitution)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleRestitution(ParticleRestitution);
+}
+
+double FTerrainMaterialBarrier::GetParticleRestitution() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleRestitution();
+}
+
+void FTerrainMaterialBarrier::SetParticleRollingResistance(double ParticleRollingResistance)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleRollingResistance(
+		ParticleRollingResistance);
+}
+
+double FTerrainMaterialBarrier::GetParticleRollingResistance() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleRollingResistance();
+}
+
+void FTerrainMaterialBarrier::SetParticleSurfaceFriction(double ParticleSurfaceFriction)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleSurfaceFriction(ParticleSurfaceFriction);
+}
+
+double FTerrainMaterialBarrier::GetParticleSurfaceFriction() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleSurfaceFriction();
+}
+
+void FTerrainMaterialBarrier::SetParticleTerrainCohesion(double ParticleTerrainCohesion)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleTerrainCohesion(ParticleTerrainCohesion);
+}
+
+double FTerrainMaterialBarrier::GetParticleTerrainCohesion() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleTerrainCohesion();
+}
+
+void FTerrainMaterialBarrier::SetParticleTerrainRestitution(double ParticleTerrainRestitution)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleTerrainRestitution(
+		ParticleTerrainRestitution);
+}
+
+double FTerrainMaterialBarrier::GetParticleTerrainRestitution() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleTerrainRestitution();
+}
+
+void FTerrainMaterialBarrier::SetParticleTerrainRollingResistance(
+	double ParticleTerrainRollingResistance)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleTerrainRollingResistance(
+		ParticleTerrainRollingResistance);
+}
+
+double FTerrainMaterialBarrier::GetParticleTerrainRollingResistance() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleTerrainRollingResistance();
+}
+
+void FTerrainMaterialBarrier::SetParticleTerrainSurfaceFriction(
+	double ParticleTerrainSurfaceFriction)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleTerrainSurfaceFriction(
+		ParticleTerrainSurfaceFriction);
+}
+
+double FTerrainMaterialBarrier::GetParticleTerrainSurfaceFriction() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleTerrainSurfaceFriction();
+}
+
+void FTerrainMaterialBarrier::SetParticleTerrainYoungsModulus(double ParticleTerrainYoungsModulus)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleTerrainYoungsModulus(
+		ParticleTerrainYoungsModulus);
+}
+
+double FTerrainMaterialBarrier::GetParticleTerrainYoungsModulus() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleTerrainYoungsModulus();
+}
+
+void FTerrainMaterialBarrier::SetParticleYoungsModulus(double ParticleYoungsModulus)
+{
+	check(HasNative());
+	NativeRef->Native->getParticleProperties()->setParticleYoungsModulus(ParticleYoungsModulus);
+}
+
+double FTerrainMaterialBarrier::GetParticleYoungsModulus() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleProperties()->getParticleYoungsModulus();
+}
+
+// Excavation contact properties.
+void FTerrainMaterialBarrier::SetAggregateStiffnessMultiplier(double AggregateStiffnessMultiplier)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationContactProperties()->setAggregateStiffnessMultiplier(
+		AggregateStiffnessMultiplier);
+}
+
+double FTerrainMaterialBarrier::GetAggregateStiffnessMultiplier() const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationContactProperties()->getAggregateStiffnessMultiplier();
+}
+
+void FTerrainMaterialBarrier::SetExcavationStiffnessMultiplier(double ExcavationStiffnessMultiplier)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationContactProperties()->setExcavationStiffnessMultiplier(
+		ExcavationStiffnessMultiplier);
+}
+
+double FTerrainMaterialBarrier::GetExcavationStiffnessMultiplier() const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationContactProperties()->getExcavationStiffnessMultiplier();
+}
+
+void FTerrainMaterialBarrier::SetDepthDecayFactor(double DepthDecayFactor)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationContactProperties()->setDepthDecayFactor(DepthDecayFactor);
+}
+
+double FTerrainMaterialBarrier::GetDepthDecayFactor() const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationContactProperties()->getDepthDecayFactor();
+}
+
+void FTerrainMaterialBarrier::SetDepthIncreaseFactor(double DepthIncreaseFactor)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationContactProperties()->setDepthIncreaseFactor(
+		DepthIncreaseFactor);
+}
+
+double FTerrainMaterialBarrier::GetDepthIncreaseFactor() const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationContactProperties()->getDepthIncreaseFactor();
+}
+
+void FTerrainMaterialBarrier::SetMaximumAggregateNormalForce(double MaximumAggregateNormalForce)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationContactProperties()->setMaximumAggregateNormalForce(
+		MaximumAggregateNormalForce);
+}
+
+double FTerrainMaterialBarrier::GetMaximumAggregateNormalForce() const
+{
+	check(HasNative());
+	return NativeRef->Native->getExcavationContactProperties()->getMaximumAggregateNormalForce();
+}
+
+void FTerrainMaterialBarrier::SetMaximumContactDepth(double MaximumContactDepth)
+{
+	check(HasNative());
+	NativeRef->Native->getExcavationContactProperties()->setMaximumContactDepth(
+		ConvertDistanceToAGX(MaximumContactDepth));
+}
+
+double FTerrainMaterialBarrier::GetMaximumContactDepth() const
+{
+	check(HasNative());
+	return ConvertDistanceToUnreal<double>(
+		NativeRef->Native->getExcavationContactProperties()->getMaximumDepth());
+}

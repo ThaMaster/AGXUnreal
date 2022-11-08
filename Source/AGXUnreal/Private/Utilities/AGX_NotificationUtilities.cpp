@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_Simulation.h"
 
 // Unreal Engine includes.
 #include "Misc/MessageDialog.h"
@@ -78,4 +79,28 @@ void FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
 	{
 		ShowDialogBoxWithErrorLog(Text, Title);
 	}
+}
+
+void FAGX_NotificationUtilities::LogWarningIfAmorDisabled(const FString& OwningType)
+{
+	const UAGX_Simulation* Simulation = GetDefault<UAGX_Simulation>();
+	if (Simulation == nullptr)
+	{
+		return;
+	}
+
+	if (!Simulation->bEnableAMOR)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("AMOR enabled on a %s, but disabled globally. Enable AMOR in Project "
+				 "Settings > Plugins > AGX Dynamics for this change to have an effect."),
+			*OwningType);
+	}
+}
+
+bool FAGX_NotificationUtilities::YesNoQuestion(const FText& Question)
+{
+	const FText Title = FText::FromString("AGX Dynamics for Unreal");
+	return FMessageDialog::Open(EAppMsgType::YesNo, Question, &Title) == EAppReturnType::Yes;
 }
