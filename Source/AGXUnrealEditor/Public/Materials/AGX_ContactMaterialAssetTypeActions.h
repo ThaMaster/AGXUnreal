@@ -7,7 +7,7 @@
 #include "AssetTypeActions_Base.h"
 
 /**
- * Asset Type Actions for UAGX_ContactMaterialAsset, customizing its appearance in the Editor menues
+ * Asset Type Actions for UAGX_ContactMaterial, customizing its appearance in the Editor menues
  * and browsers.
  */
 class AGXUNREALEDITOR_API FAGX_ContactMaterialAssetTypeActions : public FAssetTypeActions_Base

@@ -55,8 +55,6 @@ void FNotifyBarrier::StartAgxNotify(ELogVerbosity::Type LogVerbosity)
 
 	// Allocate native.
 	NativeRef->Native = agx::ref_ptr<FAGXNotify>(new FAGXNotify());
-	UE_LOG(LogAGX, Log, TEXT("Native AGXNotify allocated."));
-
 	NativeRef->Native->StartAgxNotify(LogVerbosity);
 }
 

@@ -15,7 +15,7 @@ class FCylindricalJointBarrier;
 /**
  * Locks all degrees of freedom except for translation and rotation along/around the Z-axis.
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_CylindricalConstraintComponent : public UAGX_Constraint2DofComponent
 {
 	GENERATED_BODY()

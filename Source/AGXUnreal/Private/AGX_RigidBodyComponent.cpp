@@ -7,6 +7,7 @@
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "AMOR/MergeSplitPropertiesBarrier.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -128,21 +129,21 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 	// when moving the Component using the Widget in the Level Viewport. They are instead handled in
 	// PostEditComponentMove. The local transformations, however, the ones at the top of the Details
 	// Panel, are properties and do end up here.
-	PropertyDispatcher.Add(
-		this->GetRelativeLocationPropertyName(),
-		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+	PropertyDispatcher.Add(this->GetRelativeLocationPropertyName(), [](ThisClass* This) {
+		This->TryWriteTransformToNative();
+	});
 
-	PropertyDispatcher.Add(
-		this->GetRelativeRotationPropertyName(),
-		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+	PropertyDispatcher.Add(this->GetRelativeRotationPropertyName(), [](ThisClass* This) {
+		This->TryWriteTransformToNative();
+	});
 
-	PropertyDispatcher.Add(
-		this->GetAbsoluteLocationPropertyName(),
-		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+	PropertyDispatcher.Add(this->GetAbsoluteLocationPropertyName(), [](ThisClass* This) {
+		This->TryWriteTransformToNative();
+	});
 
-	PropertyDispatcher.Add(
-		this->GetAbsoluteRotationPropertyName(),
-		[](ThisClass* This) { This->TryWriteTransformToNative(); });
+	PropertyDispatcher.Add(this->GetAbsoluteRotationPropertyName(), [](ThisClass* This) {
+		This->TryWriteTransformToNative();
+	});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bEnabled),
@@ -162,8 +163,9 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGenerateCenterOfMassOffset),
-		[](ThisClass* This)
-		{ This->SetAutoGenerateCenterOfMassOffset(This->bAutoGenerateCenterOfMassOffset); });
+		[](ThisClass* This) {
+			This->SetAutoGenerateCenterOfMassOffset(This->bAutoGenerateCenterOfMassOffset);
+		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, PrincipalInertia),
@@ -171,8 +173,9 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGeneratePrincipalInertia),
-		[](ThisClass* This)
-		{ This->SetAutoGeneratePrincipalInertia(This->bAutoGeneratePrincipalInertia); });
+		[](ThisClass* This) {
+			This->SetAutoGeneratePrincipalInertia(This->bAutoGeneratePrincipalInertia);
+		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Velocity),
@@ -183,8 +186,20 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetAngularVelocity(This->Velocity); });
 
 	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, LinearVelocityDamping),
+		[](ThisClass* This) { This->SetLinearVelocityDamping(This->LinearVelocityDamping); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, AngularVelocityDamping),
+		[](ThisClass* This) { This->SetAngularVelocityDamping(This->AngularVelocityDamping); });
+
+	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MotionControl),
 		[](ThisClass* This) { This->SetMotionControl(This->MotionControl); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MergeSplitProperties), [](ThisClass* This)
+		{ This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
 
 /// @todo Enable once we get UAGX_RigidBodyComponent::SetTransformTarget.
 #if 0
@@ -243,6 +258,11 @@ void UAGX_RigidBodyComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
+
+	if (HasNative())
+	{
+		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+	}
 }
 
 FRigidBodyBarrier* UAGX_RigidBodyComponent::GetNative()
@@ -273,6 +293,8 @@ void UAGX_RigidBodyComponent::BeginPlay()
 		// Data.
 		InitializeNative();
 		check(HasNative()); /// \todo Consider better error handling than 'check'.
+
+		MergeSplitProperties.OnBeginPlay(*this);
 	}
 }
 
@@ -322,6 +344,25 @@ void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 	if (HasNative())
 	{
 		NativeBarrier.ReleaseNative();
+	}
+}
+
+void UAGX_RigidBodyComponent::CreateMergeSplitProperties()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_RigidBodyComponent::CreateMergeSplitProperties was called on Rigid Body "
+				 "'%s' that does not have a Native AGX Dynamics object. Only call this function "
+				 "during play."),
+			*GetName());
+		return;
+	}
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		MergeSplitProperties.CreateNative(*this);
 	}
 }
 
@@ -416,8 +457,12 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 		MassProperties.SetPrincipalInertia(PrincipalInertia);
 	}
 
+	NativeBarrier.UpdateMassProperties(); // make sure mass properties are really updated
+
 	NativeBarrier.SetVelocity(Velocity);
 	NativeBarrier.SetAngularVelocity(AngularVelocity);
+	NativeBarrier.SetLinearVelocityDamping(LinearVelocityDamping);
+	NativeBarrier.SetAngularVelocityDamping(AngularVelocityDamping);
 	NativeBarrier.SetName(GetName());
 	NativeBarrier.SetEnabled(bEnabled);
 	InitializeMotionControl();
@@ -435,6 +480,8 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 	PrincipalInertia = MassProperties.GetPrincipalInertia();
 	Velocity = Barrier.GetVelocity();
 	AngularVelocity = Barrier.GetAngularVelocity();
+	LinearVelocityDamping = Barrier.GetLinearVelocityDamping();
+	AngularVelocityDamping = Barrier.GetAngularVelocityDamping();
 	MotionControl = Barrier.GetMotionControl();
 	bEnabled = Barrier.GetEnabled();
 
@@ -456,6 +503,13 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 
 	/// \todo Should it always be SetWorld... here, or should we do SetRelative in some cases?
 	SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
+
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FRigidBodyBarrier*>(&Barrier));
+	if (Msp.HasNative())
+	{
+		MergeSplitProperties.CopyFrom(Msp);
+	}
 }
 
 void UAGX_RigidBodyComponent::InitializeMotionControl()
@@ -494,15 +548,13 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 	const FVector NewLocation = NativeBarrier.GetPosition();
 	const FQuat NewRotation = NativeBarrier.GetRotation();
 
-	auto TransformSelf = [this, &NewLocation, &NewRotation]()
-	{
+	auto TransformSelf = [this, &NewLocation, &NewRotation]() {
 		const FVector OldLocation = GetComponentLocation();
 		const FVector LocationDelta = NewLocation - OldLocation;
 		MoveComponent(LocationDelta, NewRotation, false);
 	};
 
-	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor)
-	{
+	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor) {
 		// Where Ancestor is relative to RigidBodyComponent, i.e., how the AGX Dynamics
 		// transformation should be changed in order to be applicable to Ancestor.
 		const FTransform AncestorRelativeToBody =
@@ -523,9 +575,8 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		Ancestor.SetWorldTransform(NewTransform);
 	};
 
-	auto TryTransformAncestor =
-		[this, &NewLocation, &NewRotation, &TransformAncestor](USceneComponent* Ancestor)
-	{
+	auto TryTransformAncestor = [this, &NewLocation, &NewRotation,
+								 &TransformAncestor](USceneComponent* Ancestor) {
 		if (Ancestor == nullptr)
 		{
 			UE_LOG(
@@ -575,7 +626,7 @@ bool UAGX_RigidBodyComponent::CanEditChange(
 #else
 	const FProperty* InProperty
 #endif
-) const
+	) const
 {
 // This code was used when we had a bool property for the transform target and it used to enable
 // or disable the checkbox in the Details Panel. Now that we have a drop-down list instead doing
@@ -637,9 +688,7 @@ TStructOnScope<FActorComponentInstanceData> UAGX_RigidBodyComponent::GetComponen
 	const
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
-		this, this,
-		[](UActorComponent* Component)
-		{
+		this, this, [](UActorComponent* Component) {
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
@@ -773,6 +822,13 @@ void UAGX_RigidBodyComponent::SetMass(float InMass)
 	if (HasNative())
 	{
 		NativeBarrier.GetMassProperties().SetMass(InMass);
+		if (bAutoGeneratePrincipalInertia)
+		{
+			// Principal inertia depend on the mass, so changing the mass on the native may have
+			// changed the principal inertia as well. Read it back from the native so that the
+			// Unreal Engine representation is kept in sync.
+			PrincipalInertia = NativeBarrier.GetMassProperties().GetPrincipalInertia();
+		}
 	}
 	Mass = InMass;
 }
@@ -794,6 +850,7 @@ void UAGX_RigidBodyComponent::SetAutoGenerateMass(bool bInAuto)
 	if (HasNative())
 	{
 		NativeBarrier.GetMassProperties().SetAutoGenerateMass(bInAuto);
+		NativeBarrier.UpdateMassProperties(); // trigger an update of mass properties
 	}
 	bAutoGenerateMass = bInAuto;
 }
@@ -836,6 +893,7 @@ void UAGX_RigidBodyComponent::SetAutoGenerateCenterOfMassOffset(bool bInAuto)
 	if (HasNative())
 	{
 		NativeBarrier.GetMassProperties().SetAutoGenerateCenterOfMassOffset(bInAuto);
+		NativeBarrier.UpdateMassProperties(); // trigger an update of mass properties
 	}
 	bAutoGenerateCenterOfMassOffset = bInAuto;
 }
@@ -885,6 +943,7 @@ void UAGX_RigidBodyComponent::SetAutoGeneratePrincipalInertia(bool bInAuto)
 	if (HasNative())
 	{
 		NativeBarrier.GetMassProperties().SetAutoGeneratePrincipalInertia(bInAuto);
+		NativeBarrier.UpdateMassProperties(); // trigger an update of mass properties
 	}
 	bAutoGeneratePrincipalInertia = bInAuto;
 }
@@ -962,6 +1021,46 @@ FVector UAGX_RigidBodyComponent::GetAngularVelocity() const
 	}
 
 	return AngularVelocity;
+}
+
+void UAGX_RigidBodyComponent::SetLinearVelocityDamping(const FVector& InLinearVelocityDamping)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetLinearVelocityDamping(InLinearVelocityDamping);
+	}
+
+	LinearVelocityDamping = InLinearVelocityDamping;
+}
+
+FVector UAGX_RigidBodyComponent::GetLinearVelocityDamping() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetLinearVelocityDamping();
+	}
+
+	return LinearVelocityDamping;
+}
+
+void UAGX_RigidBodyComponent::SetAngularVelocityDamping(const FVector& InAngularVelocityDamping)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetAngularVelocityDamping(InAngularVelocityDamping);
+	}
+
+	AngularVelocityDamping = InAngularVelocityDamping;
+}
+
+FVector UAGX_RigidBodyComponent::GetAngularVelocityDamping() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetAngularVelocityDamping();
+	}
+
+	return AngularVelocityDamping;
 }
 
 void UAGX_RigidBodyComponent::SetMotionControl(TEnumAsByte<enum EAGX_MotionControl> InMotionControl)

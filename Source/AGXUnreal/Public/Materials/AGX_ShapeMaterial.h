@@ -205,6 +205,7 @@ public:
 	virtual FShapeMaterialBarrier* GetOrCreateShapeMaterialNative(UWorld* PlayingWorld) override;
 
 	FShapeMaterialBarrier* GetNative();
+	const FShapeMaterialBarrier* GetNative() const;
 	bool HasNative() const;
 	void UpdateNativeProperties();
 
@@ -218,9 +219,6 @@ private:
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 	void InitPropertyDispatcher();
 
-	void SynchronizePropertyChangeWithInstance(
-		const FName& MemberPropertyName, const FName& PropertyName);
-
 	void WriteSurfacePropertyToInstance(const FName& PropertyName);
 	void WriteBulkPropertyToInstance(const FName& PropertyName);
 	void WriteWirePropertyToInstance(const FName& PropertyName);
@@ -228,5 +226,5 @@ private:
 
 	TWeakObjectPtr<UAGX_ShapeMaterial> Asset;
 	TWeakObjectPtr<UAGX_ShapeMaterial> Instance;
-	TUniquePtr<FShapeMaterialBarrier> NativeBarrier;
+	FShapeMaterialBarrier NativeBarrier;
 };

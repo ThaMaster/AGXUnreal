@@ -2,9 +2,14 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_Real.h"
+#include "Materials/AGX_ContactMaterialEnums.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "Materials/AGX_ContactMaterialEnums.h"
+
 #include "AGX_ContactMaterialMechanicsApproach.generated.h"
 
 /**
@@ -43,7 +48,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Contact Material Mechanics Approach",
 		Meta = (ClampMin = "0", UIMin = "0", EditCondition = "bUseContactAreaApproach"))
-	double MinElasticRestLength;
+	FAGX_Real MinElasticRestLength;
 
 	/**
 	 * Maximum elastic rest length of the contact material [cm].
@@ -54,7 +59,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Contact Material Mechanics Approach",
 		Meta = (ClampMin = "0", UIMin = "0", EditCondition = "bUseContactAreaApproach"))
-	double MaxElasticRestLength;
+	FAGX_Real MaxElasticRestLength;
 
 public:
 	FAGX_ContactMaterialMechanicsApproach();

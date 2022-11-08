@@ -27,6 +27,7 @@ class FConstraintBarrier;
 class FContactMaterialBarrier;
 class FShapeMaterialBarrier;
 class FTwoBodyTireBarrier;
+class FTrackBarrier;
 
 struct AGXUNREALBARRIER_API FSimulationObjectCollection
 {
@@ -95,6 +96,9 @@ public:
 	TArray<FWireBarrier>& GetWires();
 	const TArray<FWireBarrier>& GetWires() const;
 
+	TArray<FTrackBarrier>& GetTracks();
+	const TArray<FTrackBarrier>& GetTracks() const;
+
 private:
 	FSimulationObjectCollection(const FSimulationObjectCollection&) = delete;
 	void operator=(const FSimulationObjectCollection&) = delete;
@@ -124,4 +128,5 @@ private:
 	TArray<FShapeMaterialBarrier> ShapeMaterials;
 	TArray<FTwoBodyTireBarrier> TwoBodyTires;
 	TArray<FWireBarrier> Wires;
+	TArray<FTrackBarrier> Tracks;
 };

@@ -8,16 +8,34 @@
 
 #include "AGX_Real.generated.h"
 
-USTRUCT()
+/**
+ * A simple wrapper type that holds a double, the native floating-point type in AGX Dynamics.
+ *
+ * Has been designed to be transparently used as a double in AGX Dynamics for Unreal code. It is
+ * meant to be use a UObject subclass properties only, not as parameters, return values, or
+ * temporary variables.
+ *
+ * Required because Unreal Editor doesn't handle double very well. There is no support for
+ * scientific notation, no Blueprint support in Unreal Engine 4, and frequent data loss. FAGX_Real
+ * solves the data loss problem with FAGX_RealInterface, an INumericTypeInterface; the scientific
+ * notation limitation with FAGX_RealDetails, an IPropertyTypeCustomization; and the Blueprint
+ * support with UAGX_Real_FL, a UBlueprintFunctionLibrary.
+ *
+ * All UClass subclasses that contain an FAGX_Real property also provided BlueprintCallable
+ * functions using float since working with FAGX_Real in Blueprints is a bit tedious, but it is
+ * still possible to directly manipulate the FAGX_Real value when necessary through the Blueprint
+ * Function Library.
+ */
+USTRUCT(BlueprintType)
 struct AGXUNREALBARRIER_API FAGX_Real
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	double Value = 0.0;
-	// To follow Unreal Engine convention, we may chose to not initialize Value and instead
+	// To follow Unreal Engine convention, we may choose to not initialize Value and instead
 	// provide a constructor taking an EForceInit and only do value initialization in that
-	// constructor.
+	// constructor. But I like my variables to be initialized.
 
 	FAGX_Real()
 	{
@@ -26,6 +44,21 @@ struct AGXUNREALBARRIER_API FAGX_Real
 	FAGX_Real(double InValue)
 		: Value(InValue)
 	{
+	}
+
+	void SetValue(double InValue)
+	{
+		Value = InValue;
+	}
+
+	double GetValue() const
+	{
+		return Value;
+	}
+
+	double& GetValue()
+	{
+		return Value;
 	}
 
 	operator double() const
@@ -47,6 +80,11 @@ struct AGXUNREALBARRIER_API FAGX_Real
 	/// Called by Unreal Engine when de-serializing an FAGX_Real but some other type was found in
 	/// the archive. Floats and doubles are read but all other types are rejected.
 	bool SerializeFromMismatchedTag(struct FPropertyTag const& Tag, FStructuredArchive::FSlot Slot);
+
+	// Blueprint Library Functions are in AGX_RealBlueprintFunctionLibrary.h in the AGXUnreal module
+	// since we cannot have Unreal Engine stuff in the Barrier module since we aren't allowed to
+	// include UObject headers since the Barrier module is built with RTTI while the Unreal Engine
+	// modules without RTTI. So we get linker errors on typeinfo
 };
 
 /**

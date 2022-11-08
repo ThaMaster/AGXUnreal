@@ -47,7 +47,7 @@ USTRUCT() struct AGXUNREAL_API FAGX_SceneComponentReference
 
 	UPROPERTY(
 		EditInstanceOnly, Category = "AGX Dynamics",
-		meta = (Tooltip = "The Actor that owns the SceneComponent"))
+		Meta = (Tooltip = "The Actor that owns the SceneComponent"))
 	AActor* OwningActor = nullptr;
 
 	/**

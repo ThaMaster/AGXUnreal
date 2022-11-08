@@ -11,6 +11,7 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Vehicle/TrackBarrier.h"
 
 FSimulationObjectCollection::~FSimulationObjectCollection()
 {
@@ -196,4 +197,14 @@ TArray<FWireBarrier>& FSimulationObjectCollection::GetWires()
 const TArray<FWireBarrier>& FSimulationObjectCollection::GetWires() const
 {
 	return Wires;
+}
+
+TArray<FTrackBarrier>& FSimulationObjectCollection::GetTracks()
+{
+	return Tracks;
+}
+
+const TArray<FTrackBarrier>& FSimulationObjectCollection::GetTracks() const
+{
+	return Tracks;
 }

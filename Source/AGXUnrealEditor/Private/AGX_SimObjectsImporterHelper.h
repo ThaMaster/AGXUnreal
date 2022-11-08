@@ -29,17 +29,21 @@ class UAGX_CylinderShapeComponent;
 class UAGX_CapsuleShapeComponent;
 class UAGX_TrimeshShapeComponent;
 class UAGX_ShapeMaterial;
-class UAGX_ContactMaterialAsset;
+class UAGX_ContactMaterial;
 class UAGX_HingeConstraintComponent;
 class UAGX_PrismaticConstraintComponent;
 class UAGX_BallConstraintComponent;
 class UAGX_CylindricalConstraintComponent;
 class UAGX_DistanceConstraintComponent;
 class UAGX_LockConstraintComponent;
+class UAGX_MergeSplitThresholdsBase;
+class FTwoBodyTireBarrier;
 class UAGX_TwoBodyTireComponent;
 class UAGX_CollisionGroupDisablerComponent;
 class UAGX_ContactMaterialRegistrarComponent;
 class UAGX_WireComponent;
+class UAGX_TrackComponent;
+class UAGX_TrackProperties;
 
 // Unreal Engine classes.
 class AActor;
@@ -80,7 +84,7 @@ public:
 
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
-	UAGX_ContactMaterialAsset* InstantiateContactMaterial(
+	UAGX_ContactMaterial* InstantiateContactMaterial(
 		const FContactMaterialBarrier& Barrier, AActor& Owner);
 
 	UAGX_HingeConstraintComponent* InstantiateHinge(const FHingeBarrier& Barrier, AActor& Owner);
@@ -107,6 +111,8 @@ public:
 		AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs);
 
 	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
+
+	UAGX_TrackComponent* InstantiateTrack(const FTrackBarrier& Barrier, AActor& Owner);
 
 	/**
 	 * We currently do not have full Observer Frame support in AGX Dynamics for Unreal, i.e. there
@@ -151,7 +157,9 @@ public:
 
 private:
 	TMap<FGuid, FAssetToDiskInfo> RestoredMeshes;
+	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> RestoredThresholds;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
+	TMap<FGuid, UAGX_TrackProperties*> RestoredTrackProperties;
 };

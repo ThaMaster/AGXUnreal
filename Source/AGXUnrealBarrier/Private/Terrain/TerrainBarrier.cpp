@@ -2,15 +2,15 @@
 
 #include "Terrain/TerrainBarrier.h"
 
-// AGXUnrealBarrier includes.
-#include "AGX_LogCategory.h"
+// AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
-#include "Shapes/HeightFieldShapeBarrier.h"
-#include "TypeConversions.h"
-#include "Shapes/ShapeBarrierImpl.h"
-#include "Terrain/ShovelBarrier.h"
+#include "AGX_LogCategory.h"
 #include "Materials/TerrainMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "Shapes/HeightFieldShapeBarrier.h"
+#include "Shapes/ShapeBarrierImpl.h"
+#include "Terrain/ShovelBarrier.h"
+#include "TypeConversions.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -48,9 +48,10 @@ bool FTerrainBarrier::HasNative() const
 void FTerrainBarrier::AllocateNative(FHeightFieldShapeBarrier& SourceHeightField, double MaxDepth)
 {
 	check(!HasNative());
+	const agx::Real MaxDepthAGX = ConvertDistanceToAGX(MaxDepth);
 	agxCollide::HeightField* HeightFieldAGX =
 		SourceHeightField.GetNativeShape<agxCollide::HeightField>();
-	NativeRef->Native = agxTerrain::Terrain::createFromHeightField(HeightFieldAGX, MaxDepth);
+	NativeRef->Native = agxTerrain::Terrain::createFromHeightField(HeightFieldAGX, MaxDepthAGX);
 	UE_LOG(LogAGX, Log, TEXT("Native terrain allocated."));
 }
 
@@ -138,6 +139,20 @@ double FTerrainBarrier::GetPenetrationForceVelocityScaling() const
 {
 	check(HasNative());
 	return NativeRef->Native->getProperties()->getPenetrationForceVelocityScaling();
+}
+
+void FTerrainBarrier::SetMaximumParticleActivationVolume(double MaximumParticleActivationVolume)
+{
+	check(HasNative());
+	NativeRef->Native->getProperties()->setMaximumParticleActivationVolume(
+		ConvertVolumeToAGX(MaximumParticleActivationVolume));
+}
+
+double FTerrainBarrier::GetMaximumParticleActivationVolume() const
+{
+	check(HasNative());
+	return ConvertVolumeToUnreal<double>(
+		NativeRef->Native->getProperties()->getMaximumParticleActivationVolume());
 }
 
 bool FTerrainBarrier::AddShovel(FShovelBarrier& Shovel)

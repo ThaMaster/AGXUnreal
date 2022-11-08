@@ -19,10 +19,11 @@
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
-#include <agxSDK/Simulation.h>
+#include <agx/PointGravityField.h>
 #include <agx/Statistics.h>
 #include <agx/UniformGravityField.h>
-#include <agx/PointGravityField.h>
+#include <agxSDK/MergeSplitHandler.h>
+#include <agxSDK/Simulation.h>
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
@@ -183,6 +184,18 @@ void FSimulationBarrier::EnableRemoteDebugging(int16 Port)
 {
 	check(HasNative());
 	NativeRef->Native->setEnableRemoteDebugging(true, Port);
+}
+
+void FSimulationBarrier::SetEnableAMOR(bool bEnable)
+{
+	check(HasNative());
+	NativeRef->Native->getMergeSplitHandler()->setEnable(bEnable);
+}
+
+bool FSimulationBarrier::GetEnableAMOR()
+{
+	check(HasNative());
+	return NativeRef->Native->getMergeSplitHandler()->getEnable();
 }
 
 void FSimulationBarrier::SetTimeStep(float TimeStep)
@@ -512,4 +525,25 @@ const FSimulationRef* FSimulationBarrier::GetNative() const
 void FSimulationBarrier::ReleaseNative()
 {
 	NativeRef = nullptr;
+}
+
+FShapeContactMergeSplitThresholdsBarrier FSimulationBarrier::GetGlobalShapeContactTresholds() const
+{
+	check(HasNative());
+	return FShapeContactMergeSplitThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(
+		NativeRef->Native->getMergeSplitHandler()->getGlobalContactThresholds()));
+}
+
+FConstraintMergeSplitThresholdsBarrier FSimulationBarrier::GetGlobalConstraintTresholds() const
+{
+	check(HasNative());
+	return FConstraintMergeSplitThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(
+		NativeRef->Native->getMergeSplitHandler()->getGlobalConstraintThresholds()));
+}
+
+FWireMergeSplitThresholdsBarrier FSimulationBarrier::GetGlobalWireTresholds() const
+{
+	check(HasNative());
+	return FWireMergeSplitThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(
+		NativeRef->Native->getMergeSplitHandler()->getGlobalWireThresholds()));
 }

@@ -165,6 +165,9 @@ private:
 	TMap<FAGX_NamePair, UpdatePropertyFunction> Functions;
 };
 
+/// Short version of GET_MEMBER_NAME_CHECKED when we want a member in the current class.
+#define AGX_MEMBER_NAME(MemberName) GET_MEMBER_NAME_CHECKED(ThisClass, MemberName)
+
 template <typename T>
 FAGX_PropertyChangedDispatcher<T>& FAGX_PropertyChangedDispatcher<T>::Get()
 {
@@ -211,9 +214,9 @@ void FAGX_PropertyChangedDispatcher<T>::Trigger(struct FPropertyChangedChainEven
 		// Changed Dispatcher will be required to support more detailed nesting callbacks.
 		// We search through the Event-chain until we find a match given Member/Property pair. One
 		// example where this is important is for our AGX Actor types, where the AGX Component might
-		// be edited from the Actor's root component in the Details Panel. In that case the event-chain
-		// head will NOT point to the Component, but rather the Actor from within the Component's 
-		// PostEditChangeChainProperty.
+		// be edited from the Actor's root component in the Details Panel. In that case the
+		// event-chain head will NOT point to the Component, but rather the Actor from within the
+		// Component's PostEditChangeChainProperty.
 		const FName Member = Node->GetValue()->GetFName();
 		Node = Node->GetNextNode();
 		const FName Property = Node != nullptr ? Node->GetValue()->GetFName() : Member;
@@ -226,7 +229,7 @@ void FAGX_PropertyChangedDispatcher<T>::Trigger(struct FPropertyChangedChainEven
 
 		Trigger(Member, Property, Event);
 		break;
-	}	
+	}
 }
 
 template <typename T>

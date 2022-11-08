@@ -18,7 +18,7 @@
  *
  * Should only be added to AGX_Constraint1DOF actors.
  */
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_InputTargetSpeed : public USceneComponent
 {
 	GENERATED_BODY()
@@ -28,7 +28,7 @@ public:
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Speed Input",
-		meta = (Tooltip = "Key to trigger forward motion of the constraint."))
+		Meta = (Tooltip = "Key to trigger forward motion of the constraint."))
 	FKey ForwardKey;
 
 	/**
@@ -36,12 +36,12 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Speed Input",
-		meta = (Tooltip = "The constraint speed forward [cm/s] or [deg/s]."))
+		Meta = (Tooltip = "The constraint speed forward [cm/s] or [deg/s]."))
 	float ForwardSpeed;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Speed Input",
-		meta = (Tooltip = "Key to trigger backward motion of the constraint."))
+		Meta = (Tooltip = "Key to trigger backward motion of the constraint."))
 	FKey BackwardKey;
 
 	/**
@@ -49,20 +49,20 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Speed Input",
-		meta = (Tooltip = "The constraint speed backward [cm/s] or [deg/s]."))
+		Meta = (Tooltip = "The constraint speed backward [cm/s] or [deg/s]."))
 	float BackwardSpeed;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Speed Input",
 		// Unreal Header Tool does not support line breaks in Property Specifier strings.
 		// clang-format off
-		meta = (Tooltip = "If checked the constraint will move freely when no key is held. If unchecked the constraint will be stopped when no key is held."))
+		Meta = (Tooltip = "If checked the constraint will move freely when no key is held. If unchecked the constraint will be stopped when no key is held."))
 	// clang-format on
 	bool bDisableOnRelease;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Speed Input",
-		meta = (EditCondition = "bMustSelectDOF"))
+		Meta = (EditCondition = "bMustSelectDOF"))
 	EAGX_Constraint2DOFFreeDOF TargetDOF;
 
 	// I want to make this a private property, but I don't know how. Setting

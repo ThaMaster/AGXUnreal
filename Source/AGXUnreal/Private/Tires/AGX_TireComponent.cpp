@@ -14,7 +14,7 @@ UAGX_TireComponent::UAGX_TireComponent()
 
 bool UAGX_TireComponent::HasNative() const
 {
-	return NativeBarrier.Get() != nullptr && NativeBarrier->HasNative();
+	return NativeBarrier != nullptr && NativeBarrier->HasNative();
 }
 
 FTireBarrier* UAGX_TireComponent::GetOrCreateNative()
@@ -28,26 +28,12 @@ FTireBarrier* UAGX_TireComponent::GetOrCreateNative()
 
 FTireBarrier* UAGX_TireComponent::GetNative()
 {
-	if (NativeBarrier)
-	{
-		return NativeBarrier.Get();
-	}
-	else
-	{
-		return nullptr;
-	}
+	return HasNative() ? NativeBarrier.Get() : nullptr;
 }
 
 const FTireBarrier* UAGX_TireComponent::GetNative() const
 {
-	if (NativeBarrier)
-	{
-		return NativeBarrier.Get();
-	}
-	else
-	{
-		return nullptr;
-	}
+	return HasNative() ? NativeBarrier.Get() : nullptr;
 }
 
 void UAGX_TireComponent::BeginPlay()

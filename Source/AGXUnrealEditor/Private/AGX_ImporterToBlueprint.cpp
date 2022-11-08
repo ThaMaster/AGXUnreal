@@ -46,6 +46,7 @@
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Vehicle/AGX_TrackComponent.h"
 
 // Unreal Engine includes.
 #include "ActorFactories/ActorFactoryEmptyActor.h"
@@ -250,7 +251,8 @@ namespace
 				{
 					if (Trimesh.HasRenderData())
 					{
-						Success &= Helper.InstantiateRenderData(Trimesh, ImportedActor, &Body) != nullptr;
+						Success &=
+							Helper.InstantiateRenderData(Trimesh, ImportedActor, &Body) != nullptr;
 					}
 				}
 				else
@@ -258,6 +260,19 @@ namespace
 					Success &= Helper.InstantiateTrimesh(Trimesh, ImportedActor, &Body) != nullptr;
 				}
 			}
+		}
+
+		return Success;
+	}
+
+	bool AddTracks(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& Track : SimObjects.GetTracks())
+		{
+			Success &= Helper.InstantiateTrack(Track, ImportedActor) != nullptr;
 		}
 
 		return Success;
@@ -389,8 +404,11 @@ namespace
 			5.f, FText::FromString("Reading Rigid Bodies and their Shapes"));
 		Success &= AddRigidBodyAndAnyOwnedShape(ImportedActor, SimObjects, Helper);
 
-		ImportTask.EnterProgressFrame(15.f, FText::FromString("Reading Bodiless Shapes"));
+		ImportTask.EnterProgressFrame(10.f, FText::FromString("Reading Bodiless Shapes"));
 		Success &= AddBodilessShapes(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Tracks"));
+		Success &= AddTracks(ImportedActor, SimObjects, Helper);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Tire Models"));
 		Success &= AddTireModels(ImportedActor, SimObjects, Helper);

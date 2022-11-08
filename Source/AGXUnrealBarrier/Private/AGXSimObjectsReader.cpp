@@ -40,6 +40,7 @@
 #include <agxModel/UrdfReader.h>
 #include <agxSDK/Simulation.h>
 #include <agxWire/Wire.h>
+#include <agxVehicle/Track.h>
 #include "EndAGXIncludes.h"
 
 namespace
@@ -102,7 +103,8 @@ namespace
 	bool IsRegularBody(agx::RigidBody& Body)
 	{
 		return !Body.isPowerlineBody() && agxWire::Wire::getWire(&Body) == nullptr &&
-			   agxCable::Cable::getCableForBody(&Body) == nullptr;
+			   agxCable::Cable::getCableForBody(&Body) == nullptr &&
+			   agxVehicle::Track::get(&Body) == nullptr;
 	}
 
 	/**
@@ -180,6 +182,33 @@ namespace
 			}
 
 			OutSimObjects.GetRigidBodies().Add(AGXBarrierFactories::CreateRigidBodyBarrier(Body));
+		}
+	}
+
+	void ReadTracks(
+		agxSDK::Simulation& Simulation, const FString& Filename,
+		FSimulationObjectCollection& OutSimObjects, TArray<agx::Constraint*>& NonFreeConstraint)
+	{
+		agxVehicle::TrackPtrVector Tracks = agxVehicle::Track::findAll(&Simulation);
+
+		for (agxVehicle::Track* Track : Tracks)
+		{
+			if (Track == nullptr || Track->getRoute() == nullptr)
+			{
+				continue;
+			}
+
+			OutSimObjects.GetTracks().Add(AGXBarrierFactories::CreateTrackBarrier(Track));
+			const int32 NumNodes = Track->getNumNodes();
+			for (int i = 0; i < NumNodes; i++)
+			{
+				agxVehicle::TrackNode* Node = Track->getNode(i);
+				if (Node == nullptr)
+					continue;
+
+				if (agx::Constraint* Constraint = Node->getConstraint())
+					NonFreeConstraint.Add(Constraint);
+			}
 		}
 	}
 
@@ -326,6 +355,7 @@ namespace
 		ReadTireModels(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadBodilessGeometries(Simulation, Filename, OutSimObjects);
 		ReadRigidBodies(Simulation, Filename, OutSimObjects);
+		ReadTracks(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadConstraints(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadCollisionGroups(Simulation, OutSimObjects);
 		ReadWires(Simulation, OutSimObjects);

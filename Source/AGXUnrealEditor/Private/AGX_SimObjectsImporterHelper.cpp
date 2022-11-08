@@ -5,6 +5,10 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AMOR/AGX_AmorEnums.h"
+#include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
+#include "AMOR/ConstraintMergeSplitThresholdsBarrier.h"
+#include "AMOR/WireMergeSplitThresholdsBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
@@ -29,7 +33,7 @@
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Shapes/RenderDataBarrier.h"
-#include "Materials/AGX_ContactMaterialAsset.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
@@ -41,6 +45,11 @@
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
 #include "Wire/AGX_WireComponent.h"
+#include "Vehicle/AGX_TrackComponent.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
+#include "Vehicle/AGX_TrackProperties.h"
+#include "Vehicle/TrackPropertiesBarrier.h"
+#include "Vehicle/TrackWheelBarrier.h"
 
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
@@ -60,65 +69,36 @@ namespace
 			LogAGX, Error, TEXT("Could not import '%s' '%s' from file '%s': %s."), ObjectType,
 			*Name, *FilePath, Message);
 	}
+
+	UAGX_TrackProperties* GetOrCreateTrackPropertiesAsset(
+		const FTrackPropertiesBarrier& Barrier, const FString& Name,
+		TMap<FGuid, UAGX_TrackProperties*>& RestoredTrackProperties, const FString& DirectoryName)
+	{
+		const FGuid Guid = Barrier.GetGuid();
+		if (!Guid.IsValid())
+		{
+			// The GUID is invalid, but try to create the asset anyway but without adding it to
+			// the RestoredTrackProperties cache.
+			return FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
+				Barrier, DirectoryName, Name);
+		}
+
+		if (UAGX_TrackProperties* Asset = RestoredTrackProperties.FindRef(Guid))
+		{
+			// We have seen this asset before, use the one in the cache.
+			return Asset;
+		}
+
+		// This is a new Track Properties. Create the asset and add to the cache.
+		UAGX_TrackProperties* Asset =
+			FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(Barrier, DirectoryName, Name);
+		if (Asset != nullptr)
+		{
+			RestoredTrackProperties.Add(Guid, Asset);
+		}
+		return Asset;
+	}
 };
-
-UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
-	const FRigidBodyBarrier& Barrier, AActor& Actor)
-{
-	// Only instantiate body if it has not already been instantiated. It might have been
-	// instantiated already during import of e.g. Tire model.
-	if (GetBody(Barrier, false) != nullptr)
-	{
-		return nullptr;
-	}
-
-	UAGX_RigidBodyComponent* Component = NewObject<UAGX_RigidBodyComponent>(&Actor);
-	if (Component == nullptr)
-	{
-		WriteImportErrorMessage(
-			TEXT("AGX Dynamics RigidBody"), Barrier.GetName(), ImportSettings.FilePath,
-			TEXT("Could not create new AGX_RigidBodyComponent"));
-		return nullptr;
-	}
-	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
-	Component->CopyFrom(Barrier);
-	Component->SetFlags(RF_Transactional);
-	Actor.AddInstanceComponent(Component);
-
-	/// @todo What does this do, really? Are we required to call it? A side effect of this is that
-	/// BeginPlay is called, which in turn calls AllocateNative. Which means that an AGX Dynamics
-	/// RigidBody is created. I'm not sure if this is consistent with AGX_RigidBodyComponents
-	/// created with using the Editor's Add Component button for an Actor in the Level Viewport.
-	/// <investigating>
-	/// ActorComponent.cpp, RegisterComponentWithWorld, has the following code snippet, somewhat
-	/// simplified:
-	///
-	/// if (!InWorld->IsGameWorld())
-	/// {}
-	/// else if (MyOwner == nullptr)
-	/// {}
-	/// else
-	/// {
-	///    if (MyOwner->HasActorBegunPlay() && !bHasBegunPlay)
-	///    {
-	///        BeginPlay();
-	///     }
-	/// }
-	///
-	/// So, BeginPlay is only called if we don't have a Game world (have Editor world, for example)
-	/// and the owning Actor have had its BeginPlay called already.
-	///
-	/// This makes the Editor situation different from the Automation Test situation since the
-	/// Editor has an Editor world and Automation Tests run with a Game world. So creating an
-	/// AGX_RigidBodyComponent in the editor does not trigger BeginPlay, but creating an
-	/// AGX_RigidBody while importing an AGX Dynamics archive during an Automation Test does trigger
-	/// BeginPlay here. Not sure if this is a problem or not, but something to be aware of.
-	Component->RegisterComponent();
-
-	Component->PostEditChange();
-	RestoredBodies.Add(Barrier.GetGuid(), Component);
-	return Component;
-}
 
 namespace
 {
@@ -405,8 +385,14 @@ namespace
 		const TMap<FGuid, UAGX_ShapeMaterial*>& RestoredShapeMaterials,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials,
 		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes, const FString& DirectoryName,
-		UMeshComponent& VisualMesh)
+		UMeshComponent& VisualMesh, UAGX_MergeSplitThresholdsBase* ThresholdsAsset)
 	{
+		if (ThresholdsAsset != nullptr)
+		{
+			Component.MergeSplitProperties.Thresholds =
+				Cast<UAGX_ShapeContactMergeSplitThresholds>(ThresholdsAsset);
+		}
+
 		Component.UpdateVisualMesh();
 		Component.SetFlags(RF_Transactional);
 		FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
@@ -465,6 +451,62 @@ namespace
 		}
 	}
 
+	template <typename TBarrier, typename TThresholdsBarrier>
+	UAGX_MergeSplitThresholdsBase* GetOrCreateMergeSplitThresholdsAsset(
+		const TBarrier& Barrier, EAGX_AmorOwningType OwningType,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		const FString& DirectoryName)
+	{
+		auto Thresholds = TThresholdsBarrier::CreateFrom(Barrier);
+		if (!Thresholds.HasNative())
+		{
+			// The native object did not have any MergeSplitThreshold associated with it.
+			return nullptr;
+		}
+
+		const FGuid Guid = Thresholds.GetGuid();
+		const FString AssetName = [&]() -> FString
+		{
+			switch (OwningType)
+			{
+				case EAGX_AmorOwningType::BodyOrShape:
+					return "AGX_SMST_" + Guid.ToString();
+				case EAGX_AmorOwningType::Constraint:
+					return "AGX_CMST_" + Guid.ToString();
+				case EAGX_AmorOwningType::Wire:
+					return "AGX_WMST_" + Guid.ToString();
+			}
+
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unknown OwningType in GetOrCreateMergeSplitThresholdsAsset."));
+			return "AGX_MST_" + Guid.ToString();
+		}();
+
+		if (!Guid.IsValid())
+		{
+			// The GUID is invalid, but try to create the asset anyway but without adding it to
+			// the RestoredThresholds Map.
+			return FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
+				Thresholds, OwningType, DirectoryName, AssetName);
+		}
+
+		if (UAGX_MergeSplitThresholdsBase* Asset = RestoredThresholds.FindRef(Guid))
+		{
+			// We have seen this before, use the one in the cache.
+			return Asset;
+		}
+
+		// This is a new merge split thresholds. Create the asset and add to the cache.
+		UAGX_MergeSplitThresholdsBase* Asset = FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
+			Thresholds, OwningType, DirectoryName, AssetName);
+		if (Asset != nullptr)
+		{
+			RestoredThresholds.Add(Guid, Asset);
+		}
+		return Asset;
+	}
+
 	UAGX_ContactMaterialRegistrarComponent* GetOrCreateContactMaterialRegistrar(AActor& Owner)
 	{
 		UAGX_ContactMaterialRegistrarComponent* Component =
@@ -486,6 +528,73 @@ namespace
 	}
 }
 
+UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
+	const FRigidBodyBarrier& Barrier, AActor& Actor)
+{
+	// Only instantiate body if it has not already been instantiated. It might have been
+	// instantiated already during import of e.g. Tire model.
+	if (GetBody(Barrier, false) != nullptr)
+	{
+		return nullptr;
+	}
+
+	UAGX_RigidBodyComponent* Component = NewObject<UAGX_RigidBodyComponent>(&Actor);
+	if (Component == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics RigidBody"), Barrier.GetName(), ImportSettings.FilePath,
+			TEXT("Could not create new AGX_RigidBodyComponent"));
+		return nullptr;
+	}
+	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
+	Component->CopyFrom(Barrier);
+
+	if (auto ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
+			FRigidBodyBarrier, FShapeContactMergeSplitThresholdsBarrier>(
+			Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName))
+	{
+		Component->MergeSplitProperties.Thresholds =
+			Cast<UAGX_ShapeContactMergeSplitThresholds>(ThresholdsAsset);
+	}
+
+	Component->SetFlags(RF_Transactional);
+	Actor.AddInstanceComponent(Component);
+
+	/// @todo What does this do, really? Are we required to call it? A side effect of this is that
+	/// BeginPlay is called, which in turn calls AllocateNative. Which means that an AGX Dynamics
+	/// RigidBody is created. I'm not sure if this is consistent with AGX_RigidBodyComponents
+	/// created with using the Editor's Add Component button for an Actor in the Level Viewport.
+	/// <investigating>
+	/// ActorComponent.cpp, RegisterComponentWithWorld, has the following code snippet, somewhat
+	/// simplified:
+	///
+	/// if (!InWorld->IsGameWorld())
+	/// {}
+	/// else if (MyOwner == nullptr)
+	/// {}
+	/// else
+	/// {
+	///    if (MyOwner->HasActorBegunPlay() && !bHasBegunPlay)
+	///    {
+	///        BeginPlay();
+	///     }
+	/// }
+	///
+	/// So, BeginPlay is only called if we don't have a Game world (have Editor world, for example)
+	/// and the owning Actor have had its BeginPlay called already.
+	///
+	/// This makes the Editor situation different from the Automation Test situation since the
+	/// Editor has an Editor world and Automation Tests run with a Game world. So creating an
+	/// AGX_RigidBodyComponent in the editor does not trigger BeginPlay, but creating an
+	/// AGX_RigidBody while importing an AGX Dynamics archive during an Automation Test does trigger
+	/// BeginPlay here. Not sure if this is a problem or not, but something to be aware of.
+	Component->RegisterComponent();
+
+	Component->PostEditChange();
+	RestoredBodies.Add(Barrier.GetGuid(), Component);
+	return Component;
+}
+
 UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 	const FSphereShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
@@ -498,10 +607,15 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 			TEXT("Could not create new UAGX_SphereShapeComponent"));
 		return nullptr;
 	}
+
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
+		FSphereShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
+		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, ThresholdsAsset);
 	return Component;
 }
 
@@ -517,10 +631,15 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 			TEXT("Could not create new UAGX_BoxShapeComponent"));
 		return nullptr;
 	}
+
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
+		FBoxShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
+		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, ThresholdsAsset);
 	return Component;
 }
 
@@ -537,10 +656,15 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 			TEXT("Could not create new UAGX_CylinderShapeComponent"));
 		return nullptr;
 	}
+
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
+		FCylinderShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
+		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, ThresholdsAsset);
 	return Component;
 }
 
@@ -556,10 +680,15 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 			TEXT("Could not create new UAGX_CapsuleShapeComponent"));
 		return nullptr;
 	}
+
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
+		FCapsuleShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
+		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component);
+		DirectoryName, *Component, ThresholdsAsset);
 	return Component;
 }
 
@@ -618,10 +747,14 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	}
 	Component->RegisterComponent();
 
+	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
+		FTrimeshShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
+		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+
 	Component->CopyFrom(Barrier);
 	::FinalizeShape(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *MeshComponent);
+		DirectoryName, *MeshComponent, ThresholdsAsset);
 	return Component;
 }
 
@@ -659,7 +792,7 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 		const FTransform TrimeshTransform(TrimeshRotation, TrimeshPosition);
 		const FTransform ShapeToGeometry = TrimeshBarrier.GetGeometryToShapeTransform().Inverse();
 		FTransform::Multiply(&RenderDataTransform, &ShapeToGeometry, &TrimeshTransform);
-	}	
+	}
 
 	UStaticMeshComponent* RenderDataComponent = CreateFromRenderData(
 		RenderDataBarrier, Owner, *AttachParent, RenderDataTransform, DirectoryName,
@@ -671,9 +804,10 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 			TEXT("AGX Dynamics Render Data"), TrimeshBarrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create a Static Mesh Component from given RenderDataBarrier."));
 		return nullptr;
-	}	
+	}
 
-	UMaterialInterface* RenderDataMaterial = CreateRenderMaterialFromRenderDataOrDefault(RenderDataBarrier, TrimeshBarrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
+	UMaterialInterface* RenderDataMaterial = CreateRenderMaterialFromRenderDataOrDefault(
+		RenderDataBarrier, TrimeshBarrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
 
 	if (RenderDataMaterial != nullptr)
 	{
@@ -693,11 +827,11 @@ UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	return Asset;
 }
 
-UAGX_ContactMaterialAsset* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
+UAGX_ContactMaterial* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
 	const FContactMaterialBarrier& Barrier, AActor& Owner)
 {
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
-	UAGX_ContactMaterialAsset* Asset = FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
+	UAGX_ContactMaterial* Asset = FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
 		Barrier, Materials.first, Materials.second, DirectoryName);
 
 	UAGX_ContactMaterialRegistrarComponent* CMRegistrar =
@@ -720,7 +854,9 @@ namespace
 {
 	template <typename UComponent, typename FBarrier>
 	UComponent* InstantiateConstraint(
-		const FBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper)
+		const FBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		const FString& DirectoryName)
 	{
 		FAGX_SimObjectsImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
 		if (Bodies.first == nullptr)
@@ -741,6 +877,14 @@ namespace
 			return nullptr;
 		}
 
+		if (auto ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
+				FBarrier, FConstraintMergeSplitThresholdsBarrier>(
+				Barrier, EAGX_AmorOwningType::Constraint, RestoredThresholds, DirectoryName))
+		{
+			Component->MergeSplitProperties.Thresholds =
+				Cast<UAGX_ConstraintMergeSplitThresholds>(ThresholdsAsset);
+		}
+
 		Component->CopyFrom(Barrier);
 		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 			Barrier, *Component, Bodies.first, Bodies.second);
@@ -754,54 +898,66 @@ namespace
 
 	template <typename UComponent>
 	UComponent* InstantiateConstraint1Dof(
-		const FConstraint1DOFBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper)
+		const FConstraint1DOFBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		const FString& DirectoryName)
 	{
-		return InstantiateConstraint<UComponent>(Barrier, Owner, Helper);
+		return InstantiateConstraint<UComponent>(
+			Barrier, Owner, Helper, RestoredThresholds, DirectoryName);
 	}
 
 	template <typename UConstraint>
 	UConstraint* InstantiateConstraint2Dof(
-		const FConstraint2DOFBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper)
+		const FConstraint2DOFBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		const FString& DirectoryName)
 	{
-		return InstantiateConstraint<UConstraint>(Barrier, Owner, Helper);
+		return InstantiateConstraint<UConstraint>(
+			Barrier, Owner, Helper, RestoredThresholds, DirectoryName);
 	}
 }
 
 UAGX_HingeConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateHinge(
 	const FHingeBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint1Dof<UAGX_HingeConstraintComponent>(Barrier, Owner, *this);
+	return ::InstantiateConstraint1Dof<UAGX_HingeConstraintComponent>(
+		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
 UAGX_PrismaticConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiatePrismatic(
 	const FPrismaticBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint1Dof<UAGX_PrismaticConstraintComponent>(Barrier, Owner, *this);
+	return ::InstantiateConstraint1Dof<UAGX_PrismaticConstraintComponent>(
+		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
 UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallConstraint(
 	const FBallJointBarrier& Barrier, AActor& Owner)
 {
-	return InstantiateConstraint<UAGX_BallConstraintComponent>(Barrier, Owner, *this);
+	return InstantiateConstraint<UAGX_BallConstraintComponent>(
+		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
 UAGX_CylindricalConstraintComponent*
 FAGX_SimObjectsImporterHelper::InstantiateCylindricalConstraint(
 	const FCylindricalJointBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint2Dof<UAGX_CylindricalConstraintComponent>(Barrier, Owner, *this);
+	return ::InstantiateConstraint2Dof<UAGX_CylindricalConstraintComponent>(
+		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
 UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDistanceConstraint(
 	const FDistanceJointBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint1Dof<UAGX_DistanceConstraintComponent>(Barrier, Owner, *this);
+	return ::InstantiateConstraint1Dof<UAGX_DistanceConstraintComponent>(
+		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
 UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockConstraint(
 	const FLockJointBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint<UAGX_LockConstraintComponent>(Barrier, Owner, *this);
+	return ::InstantiateConstraint<UAGX_LockConstraintComponent>(
+		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
 UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire(
@@ -1031,11 +1187,116 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 		TryCreateBodyFixedNode(Barrier.GetLastNode());
 	}
 
+	if (auto ThresholdsAsset =
+			::GetOrCreateMergeSplitThresholdsAsset<FWireBarrier, FWireMergeSplitThresholdsBarrier>(
+				Barrier, EAGX_AmorOwningType::Wire, RestoredThresholds, DirectoryName))
+	{
+		Component->MergeSplitProperties.Thresholds =
+			Cast<UAGX_WireMergeSplitThresholds>(ThresholdsAsset);
+	}
+
+
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
 	Component->RegisterComponent();
 	Component->PostEditChange();
 	// May chose to store a table of all imported wires. If so, add this wire to the table here.
+	return Component;
+}
+
+UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
+	const FTrackBarrier& Barrier, AActor& Owner)
+{
+	UAGX_TrackComponent* Component = NewObject<UAGX_TrackComponent>(&Owner);
+	if (Component == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Track"), Barrier.GetName(), ImportSettings.FilePath,
+			TEXT("Could not create new AGX_TrackComponent"));
+		return nullptr;
+	}
+
+	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
+
+	// Copy simple properties such as number of nodes and width. More complicated properties, such
+	// as Wheels, TrackProperties asset etc, are handled below.
+	Component->CopyFrom(Barrier);
+
+	// Apply Shape Material.
+	FShapeMaterialBarrier ShapeMaterial = Barrier.GetMaterial();
+	if (ShapeMaterial.HasNative())
+	{
+		const FGuid Guid = ShapeMaterial.GetGuid();
+		UAGX_ShapeMaterial* Material = RestoredShapeMaterials.FindRef(Guid);
+		Component->ShapeMaterial = Material;
+	}
+
+	const FString BarrierName = Barrier.GetName();
+
+	// Apply Track Properties.
+	{
+		const FString AssetName =
+			BarrierName.IsEmpty() ? FString("AGX_TP_Track") : FString("AGX_TP_") + BarrierName;
+
+		UAGX_TrackProperties* TrackProperties = GetOrCreateTrackPropertiesAsset(
+			Barrier.GetProperties(), AssetName, RestoredTrackProperties, DirectoryName);
+		if (TrackProperties == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unable to create an Asset for the Track Properties '%s' of Track '%s' during "
+					 "import."),
+				*AssetName, *Barrier.GetName());
+		}
+		else
+		{
+			Component->TrackProperties = TrackProperties;
+		}
+	}
+
+	// Apply Internal Merge Properties.
+	{
+		const FString AssetName =
+			BarrierName.IsEmpty() ? FString("AGX_TIMP_Track") : FString("AGX_TIMP_") + BarrierName;
+
+		Component->InternalMergeProperties =
+			FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
+				Barrier, DirectoryName, AssetName);
+	}
+
+	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef)
+	{
+		if (Body == nullptr)
+		{
+			WriteImportErrorMessage(
+				TEXT("AGX Dynamics Track"), Barrier.GetName(), ImportSettings.FilePath,
+				TEXT("Could not set Rigid Body"));
+			return;
+		}
+
+		BodyRef.BodyName = Body->GetFName();
+	};
+
+	// Copy Wheels.
+	for (const FTrackWheelBarrier& WheelBarrier : Barrier.GetWheels())
+	{
+		FAGX_TrackWheel Wheel;
+		SetRigidBody(GetBody(WheelBarrier.GetRigidBody()), Wheel.RigidBody);
+		Wheel.bUseFrameDefiningComponent = false;
+		Wheel.RelativeLocation = WheelBarrier.GetRelativeLocation();
+		Wheel.RelativeRotation = WheelBarrier.GetRelativeRotation();
+		Wheel.Radius = static_cast<float>(WheelBarrier.GetRadius());
+		Wheel.Model = WheelBarrier.GetModel();
+		Wheel.bSplitSegments = WheelBarrier.GetSplitSegments();
+		Wheel.bMoveNodesToRotationPlane = WheelBarrier.GetMoveNodesToRotationPlane();
+		Wheel.bMoveNodesToWheel = WheelBarrier.GetMoveNodesToWheel();
+		Component->Wheels.Add(Wheel);
+	}
+
+	Component->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+	Component->PostEditChange();
 	return Component;
 }
 

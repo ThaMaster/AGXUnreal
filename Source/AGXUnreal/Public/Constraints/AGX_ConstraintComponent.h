@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AMOR/AGX_ConstraintMergeSplitProperties.h"
 #include "AGX_NativeOwner.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RealInterval.h"
@@ -65,6 +66,12 @@ public:
 	// SkipUCSModifiedProperties because we set OwningActor during creation but we still want to
 	// allow the user to override that default from the Details Panel. Normally, Properties set
 	// during creation become read-only.
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
+	FAGX_ConstraintMergeSplitProperties MergeSplitProperties;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	void CreateMergeSplitProperties();
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Attachment")
 	bool SetBody2(UAGX_RigidBodyComponent* Body);
@@ -340,6 +347,8 @@ public:
 	EDofFlag GetLockedDofsBitmask() const;
 
 	bool IsDofLocked(EDofFlag Dof) const;
+
+	bool IsRotational() const;
 
 	// ~Begin IAGX_NativeOwner interface.
 	virtual bool HasNative() const override;

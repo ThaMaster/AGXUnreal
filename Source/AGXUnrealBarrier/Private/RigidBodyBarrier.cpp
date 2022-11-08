@@ -121,6 +121,30 @@ FVector FRigidBodyBarrier::GetAngularVelocity() const
 	return AngularVelocityUnreal;
 }
 
+void FRigidBodyBarrier::SetLinearVelocityDamping(const FVector& LinearVelocityDamping)
+{
+	check(HasNative());
+	NativeRef->Native->setLinearVelocityDamping(ConvertFloatVector(LinearVelocityDamping));
+}
+
+FVector FRigidBodyBarrier::GetLinearVelocityDamping() const
+{
+	check(HasNative());
+	return ConvertFloatVector(NativeRef->Native->getLinearVelocityDamping());
+}
+
+void FRigidBodyBarrier::SetAngularVelocityDamping(const FVector& AngularVelocityDamping)
+{
+	check(HasNative());
+	NativeRef->Native->setAngularVelocityDamping(ConvertFloatVector(AngularVelocityDamping));
+}
+
+FVector FRigidBodyBarrier::GetAngularVelocityDamping() const
+{
+	check(HasNative());
+	return ConvertFloatVector(NativeRef->Native->getAngularVelocityDamping());
+}
+
 FMassPropertiesBarrier& FRigidBodyBarrier::GetMassProperties()
 {
 	return MassProperties;

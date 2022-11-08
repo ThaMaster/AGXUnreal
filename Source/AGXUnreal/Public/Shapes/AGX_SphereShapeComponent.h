@@ -11,7 +11,7 @@
 
 #include "AGX_SphereShapeComponent.generated.h"
 
-UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_SphereShapeComponent final : public UAGX_ShapeComponent
 {
 	GENERATED_BODY()

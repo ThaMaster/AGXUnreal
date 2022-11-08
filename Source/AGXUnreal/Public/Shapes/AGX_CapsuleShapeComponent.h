@@ -14,7 +14,7 @@
 
 class AStaticMeshActor;
 
-UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX_Shape", Category = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_CapsuleShapeComponent final : public UAGX_ShapeComponent,
 													   public AGX_AutoFitShape
 {
@@ -24,7 +24,7 @@ public:
 	UAGX_CapsuleShapeComponent();
 
 	/**
-	 * The distance from the centers of the capsule's half-spheres at each end. [cm].
+	 * The distance from the centers of the capsule's half-spheres at each end [cm].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
 	float Height;

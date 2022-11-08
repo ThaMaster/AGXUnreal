@@ -2,26 +2,15 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Materials/AGX_ContactMaterialEnums.h"
+
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "Materials/AGX_ContactMaterialEnums.h"
+
 #include "AGX_ContactMaterialReductionMode.generated.h"
 
-/**
- * Specifies to what extent contact reduction will be used.
- */
-UENUM(BlueprintType)
-enum class EAGX_ContactReductionMode : uint8
-{
-	/** No contact reduction enabled. */
-	None,
-
-	/** Reduce contacts between geometries. */
-	Geometry,
-
-	/** Two step reduction: first between geometries, and then between rigid bodies. */
-	All
-};
 
 /**
  * Contact reduction mode properties of the AGX Contact Material.
