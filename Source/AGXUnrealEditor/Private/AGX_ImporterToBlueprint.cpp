@@ -886,7 +886,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			const FGuid Guid = Barrier.GetGuid();
 			if (ExistingShapeMaterialsMap.Contains(Guid))
 			{
-				Helper.UpdateAndSaveAsset(Barrier, *ExistingShapeMaterialsMap[Guid]);
+				Helper.UpdateAndSaveShapeMaterialAsset(Barrier, *ExistingShapeMaterialsMap[Guid]);
 			}
 			else
 			{
@@ -943,7 +943,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			const FGuid Guid = Barrier.GetGuid();
 			if (ExistingContactMaterialsMap.Contains(Guid))
 			{
-				Helper.UpdateAndSaveAsset(
+				Helper.UpdateAndSaveContactMaterialAsset(
 					Barrier, *ExistingContactMaterialsMap[Guid], *CMRegistrar);
 			}
 			else
@@ -972,7 +972,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			const FGuid Guid = Barrier.GetGuid();
 			if (SCSNodes.RigidBodies.Contains(Guid))
 			{
-				Helper.UpdateComponent(
+				Helper.UpdateRigidBodyComponent(
 					Barrier,
 					*Cast<UAGX_RigidBodyComponent>(SCSNodes.RigidBodies[Guid]->ComponentTemplate),
 					ExistingMSTMap);
@@ -985,7 +985,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 					UAGX_RigidBodyComponent::StaticClass(), FName(GetUnsetImportNodeName()));
 				BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
 
-				Helper.UpdateComponent(
+				Helper.UpdateRigidBodyComponent(
 					Barrier, *Cast<UAGX_RigidBodyComponent>(NewNode->ComponentTemplate),
 					ExistingMSTMap);
 			}
@@ -1087,11 +1087,11 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 				UAGX_ReImportComponent::StaticClass(), FName(GetUnsetImportNodeName()));
 			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
 
-			Helper.UpdateComponent(*Cast<UAGX_ReImportComponent>(NewNode->ComponentTemplate));
+			Helper.UpdateReImportComponent(*Cast<UAGX_ReImportComponent>(NewNode->ComponentTemplate));
 		}
 		else
 		{
-			Helper.UpdateComponent(
+			Helper.UpdateReImportComponent(
 				*Cast<UAGX_ReImportComponent>(SCSNodes.ReImportComponent->ComponentTemplate));
 		}
 	}

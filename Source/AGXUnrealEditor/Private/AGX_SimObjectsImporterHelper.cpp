@@ -490,7 +490,7 @@ namespace
 		return "AGX_MST_" + Guid.ToString();
 	}
 
-	void UpdateAndSaveAsset(
+	void UpdateAndSaveMergeSplitThresholdsAsset(
 		const FMergeSplitThresholdsBarrier& Barrier, UAGX_MergeSplitThresholdsBase& Asset,
 		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
 		EAGX_AmorOwningType OwningType)
@@ -552,7 +552,7 @@ namespace
 		// This is a new merge split thresholds. Create the asset and add to the cache.
 		UAGX_MergeSplitThresholdsBase* Asset = CreateAsset();
 		AGX_CHECK(Asset != nullptr);
-		UpdateAndSaveAsset(ThresholdsBarrier, *Asset, RestoredThresholds, OwningType);
+		UpdateAndSaveMergeSplitThresholdsAsset(ThresholdsBarrier, *Asset, RestoredThresholds, OwningType);
 
 		return Asset;
 	}
@@ -578,7 +578,7 @@ namespace
 	}
 }
 
-void FAGX_SimObjectsImporterHelper::UpdateComponent(
+void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 	const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component,
 	TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
 {
@@ -592,7 +592,7 @@ void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	if (MSTsOnDisk.Contains(MSTGuid))
 	{
 		MSThresholds = MSTsOnDisk[MSTGuid];
-		::UpdateAndSaveAsset(
+		::UpdateAndSaveMergeSplitThresholdsAsset(
 			ThresholdsBarrier, *MSThresholds, RestoredThresholds, EAGX_AmorOwningType::BodyOrShape);
 	}
 	else
@@ -645,7 +645,7 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 	}
 
 	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
-	UpdateComponent(Barrier, *Component, Unused);
+	UpdateRigidBodyComponent(Barrier, *Component, Unused);
 	Component->SetFlags(RF_Transactional);
 	Actor.AddInstanceComponent(Component);
 
@@ -938,14 +938,14 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 	return RenderDataComponent;
 }
 
-void UpdateComponent(
+void InstantiateRenderData(
 	const FShapeBarrier& ShapeBarrier, const FRenderDataBarrier& RenderDataBarrier,
 	UStaticMeshComponent& Component)
 {
 	// todo: update
 }
 
-void FAGX_SimObjectsImporterHelper::UpdateAndSaveAsset(
+void FAGX_SimObjectsImporterHelper::UpdateAndSaveShapeMaterialAsset(
 	const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset)
 {
 	Asset.CopyFrom(&Barrier);
@@ -969,11 +969,11 @@ UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 		return nullptr;
 	}
 
-	UpdateAndSaveAsset(Barrier, *Asset);
+	UpdateAndSaveShapeMaterialAsset(Barrier, *Asset);
 	return Asset;
 }
 
-void FAGX_SimObjectsImporterHelper::UpdateAndSaveAsset(
+void FAGX_SimObjectsImporterHelper::UpdateAndSaveContactMaterialAsset(
 	const FContactMaterialBarrier& Barrier, UAGX_ContactMaterial& Asset,
 	UAGX_ContactMaterialRegistrarComponent& CMRegistrar)
 {
@@ -1012,7 +1012,7 @@ UAGX_ContactMaterial* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
 		return nullptr;
 	}
 
-	UpdateAndSaveAsset(Barrier, *Asset, CMRegistrar);
+	UpdateAndSaveContactMaterialAsset(Barrier, *Asset, CMRegistrar);
 	return Asset;
 }
 
@@ -1478,7 +1478,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 	return Component;
 }
 
-void FAGX_SimObjectsImporterHelper::UpdateComponent(UAGX_ReImportComponent& Component)
+void FAGX_SimObjectsImporterHelper::UpdateReImportComponent(UAGX_ReImportComponent& Component)
 {
 	auto UpdateReImportComponent = [this](UAGX_ReImportComponent* C)
 	{
@@ -1516,7 +1516,7 @@ UAGX_ReImportComponent* FAGX_SimObjectsImporterHelper::InstantiateReImportCompon
 		return nullptr;
 	}
 
-	UpdateComponent(*ReImportComponent);
+	UpdateReImportComponent(*ReImportComponent);
 	ReImportComponent->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(ReImportComponent);
 	ReImportComponent->RegisterComponent();

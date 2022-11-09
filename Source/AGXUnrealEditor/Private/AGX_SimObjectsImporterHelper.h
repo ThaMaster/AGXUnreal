@@ -61,7 +61,7 @@ public:
 	/** Create a new UAGX_RigidBodyComponent in the given actor. */
 	UAGX_RigidBodyComponent* InstantiateBody(const FRigidBodyBarrier& Barrier, AActor& Owner);
 
-	void UpdateComponent(
+	void UpdateRigidBodyComponent(
 		const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component,
 		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
 
@@ -89,16 +89,16 @@ public:
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
 		const FRigidBodyBarrier* Body = nullptr);
 
-	void UpdateComponent(
+	void InstantiateRenderData(
 		const FShapeBarrier& ShapeBarrier, const FRenderDataBarrier& RenderDataBarrier,
 		UStaticMeshComponent& Component);
 
-	void UpdateAndSaveAsset(const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset);
+	void UpdateAndSaveShapeMaterialAsset(const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset);
 
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
 	// This function also adds the Asset to the passed Contact Material Registrar, if not yet added.
-	void UpdateAndSaveAsset(
+	void UpdateAndSaveContactMaterialAsset(
 		const FContactMaterialBarrier& Barrier, UAGX_ContactMaterial& Asset,
 		UAGX_ContactMaterialRegistrarComponent& CMRegistrar);
 
@@ -136,7 +136,7 @@ public:
 	
 	UAGX_TrackComponent* InstantiateTrack(const FTrackBarrier& Barrier, AActor& Owner);
 
-	void UpdateComponent(UAGX_ReImportComponent& Component);
+	void UpdateReImportComponent(UAGX_ReImportComponent& Component);
 
 	UAGX_ReImportComponent* InstantiateReImportComponent(AActor& Owner);
 
