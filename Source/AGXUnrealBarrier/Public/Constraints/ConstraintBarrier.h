@@ -108,6 +108,8 @@ public:
 	/// Dynamics object of the correct type.
 	void SetNativeAddress(uintptr_t NativeAddress);
 
+	bool IsRotational() const;
+
 private:
 	FConstraintBarrier(const FConstraintBarrier&) = delete;
 	void operator=(const FConstraintBarrier&) = delete;

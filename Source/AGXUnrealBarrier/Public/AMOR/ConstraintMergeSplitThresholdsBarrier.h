@@ -32,6 +32,9 @@ public:
 	void SetMaxRelativeSpeed(double InMaxRelativeSpeed);
 	double GetMaxRelativeSpeed() const;
 
+	void SetIsRotational(bool InIsRotational);
+	bool GetIsRotational() const;
+
 	static FConstraintMergeSplitThresholdsBarrier CreateFrom(const FConstraintBarrier& Barrier);
 
 private:

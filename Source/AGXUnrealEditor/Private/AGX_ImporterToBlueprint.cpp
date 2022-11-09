@@ -173,7 +173,7 @@ namespace
 				: nullptr;
 		if (CMRegistrar == nullptr)
 		{
-			return false;
+			return true;
 		}
 
 		bool Success = true;
@@ -405,7 +405,7 @@ namespace
 	{
 		FScopedSlowTask ImportTask(100.f, LOCTEXT("ImportModel", "Importing model"), true);
 		ImportTask.MakeDialog();
-		bool Success = true;
+		volatile bool Success = true;
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Shape Materials"));
 		Success &= AddShapeMaterials(SimObjects, Helper);
