@@ -595,6 +595,13 @@ namespace
 #endif
 		return false;
 	}
+
+	bool IsMeshEquivalent(const FTrimeshShapeBarrier& TrimeshBarrier, UStaticMesh* StaticMesh)
+	{
+		// @todo : see comment in IsMeshEquivalent(const FRenderDataBarrier& RenderDataBarrier,
+		// UStaticMesh* StaticMesh) above.
+		return false;
+	}
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
@@ -903,17 +910,95 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	return Component;
 }
 
+void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
+	const FTrimeshShapeBarrier& ShapeBarrier, UStaticMeshComponent& Component)
+{
+	FTransform StaticMeshRelTransform = FTransform::Identity;
+	{
+		FVector ShapePosition;
+		FQuat ShapeRotation;
+		std::tie(ShapePosition, ShapeRotation) = ShapeBarrier.GetLocalPositionAndRotation();
+		const FTransform ShapeTransform(ShapeRotation, ShapePosition);
+		const FTransform ShapeToGeometry = ShapeBarrier.GetGeometryToShapeTransform().Inverse();
+		FTransform::Multiply(&StaticMeshRelTransform, &ShapeToGeometry, &ShapeTransform);
+	}
+
+	UStaticMesh* NewMeshAsset = nullptr;
+	if (IsMeshEquivalent(ShapeBarrier, Component.GetStaticMesh()))
+	{
+		NewMeshAsset = Component.GetStaticMesh();
+	}
+	else
+	{
+		FAssetToDiskInfo AtdInfo = GetOrCreateStaticMeshAsset(
+			ShapeBarrier, "TrimeshCollisionMesh", RestoredMeshes, DirectoryName);
+		NewMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
+	}
+
+	FAGX_ImportUtilities::Rename(Component, *NewMeshAsset->GetName());
+
+	const bool Visible = !ShapeBarrier.HasRenderData();
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		// Sync all component instances.
+		for (UStaticMeshComponent* Instance :
+			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		{
+			// Update transforms.
+			if (Instance->GetRelativeLocation() == Component.GetRelativeLocation() &&
+				Instance->GetRelativeRotation() == Component.GetRelativeRotation() &&
+				Instance->GetRelativeScale3D() == Component.GetRelativeScale3D())
+			{
+				Instance->SetRelativeTransform(StaticMeshRelTransform);
+			}
+
+			// Update Render Materials.
+			if (Visible && Instance->GetMaterial(0) == Component.GetMaterial(0))
+			{
+				SetDefaultRenderMaterial(*Instance, ShapeBarrier.GetIsSensor());
+			}
+
+			// Update Mesh asset.
+			if (Instance->GetStaticMesh() == Component.GetStaticMesh())
+			{
+				Instance->SetStaticMesh(NewMeshAsset);
+			}
+
+			// Update visibility.
+			if (Instance->GetVisibleFlag() == Component.GetVisibleFlag())
+			{
+				Instance->SetVisibility(Visible);
+			}
+		}
+	}
+
+	Component.SetRelativeTransform(StaticMeshRelTransform);
+	Component.SetStaticMesh(NewMeshAsset);
+	Component.SetVisibility(Visible);
+	if (Visible)
+		SetDefaultRenderMaterial(Component, ShapeBarrier.GetIsSensor());
+}
+
+void FAGX_SimObjectsImporterHelper::UpdateComponent(
+	const FTrimeshShapeBarrier& Barrier, UAGX_TrimeshShapeComponent& Component,
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
+{
+	Component.CopyFrom(Barrier);
+	UpdateShapeComponent(Barrier, Component, MSTsOnDisk);
+}
+
 void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 	const FShapeBarrier& Barrier, UAGX_ShapeComponent& Component,
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
 {
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
+
 	FShapeMaterialBarrier NativeMaterial = Barrier.GetMaterial();
+	UAGX_ShapeMaterial* NewShapeMaterial = nullptr;
 	if (NativeMaterial.HasNative())
 	{
 		const FGuid Guid = NativeMaterial.GetGuid();
-		UAGX_ShapeMaterial* Material = RestoredShapeMaterials.FindRef(Guid);
-		Component.ShapeMaterial = Material;
+		NewShapeMaterial = RestoredShapeMaterials.FindRef(Guid);
 	}
 
 	const FMergeSplitThresholdsBarrier ThresholdsBarrier =
@@ -932,6 +1017,32 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 			FShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
 			Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
 	}
+
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		// Sync all component instances.
+		for (UAGX_ShapeComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		{
+			Instance->UpdateVisualMesh();
+
+			if (Instance->ShapeMaterial == Component.ShapeMaterial)
+			{
+				Instance->ShapeMaterial = NewShapeMaterial;
+			}
+
+			if (Instance->MergeSplitProperties.Thresholds ==
+				Component.MergeSplitProperties.Thresholds)
+			{
+				Instance->MergeSplitProperties.Thresholds =
+					Cast<UAGX_ShapeContactMergeSplitThresholds>(MSThresholds);
+			}
+		}
+	}
+
+	Component.UpdateVisualMesh();
+	Component.ShapeMaterial = NewShapeMaterial;
+	Component.MergeSplitProperties.Thresholds =
+		Cast<UAGX_ShapeContactMergeSplitThresholds>(MSThresholds);
 }
 
 UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
@@ -1034,8 +1145,12 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 		NewMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
 	}
 
+	FAGX_ImportUtilities::Rename(Component, *NewMeshAsset->GetName());
+
+	const bool Visible = RenderDataBarrier.GetShouldRender();
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
+		// Sync all component instances.
 		for (UStaticMeshComponent* Instance :
 			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
@@ -1058,12 +1173,19 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 			{
 				Instance->SetStaticMesh(NewMeshAsset);
 			}
+
+			// Update visibility.
+			if (Instance->GetVisibleFlag() == Component.GetVisibleFlag())
+			{
+				Instance->SetVisibility(Visible);
+			}
 		}
 	}
 
 	Component.SetRelativeTransform(RenderDataRelTransform);
 	Component.SetMaterial(0, NewRenderMaterial);
 	Component.SetStaticMesh(NewMeshAsset);
+	Component.SetVisibility(Visible);
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateAndSaveShapeMaterialAsset(

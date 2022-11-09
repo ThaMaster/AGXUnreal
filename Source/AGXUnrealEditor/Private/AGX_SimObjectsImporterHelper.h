@@ -99,11 +99,20 @@ public:
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
 		const FRigidBodyBarrier* Body = nullptr);
 
+	// Updates only the Trimesh Component itself, does not create any static meshes.
+	void UpdateComponent(
+		const FTrimeshShapeBarrier& Barrier, UAGX_TrimeshShapeComponent& Component,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
+
+	// This also updates/creates the corresponding static mesh asset and material.
+	void UpdateTrimeshCollisionMeshComponent(
+		const FTrimeshShapeBarrier& Barrier, UStaticMeshComponent& Component);
+
 	UStaticMeshComponent* InstantiateRenderData(
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
 		const FRigidBodyBarrier* Body = nullptr);
 
-	// This also updates/creates the corresponding static mesh asset.
+	// This also updates/creates the corresponding static mesh asset and material.
 	void UpdateRenderDataComponent(
 		const FShapeBarrier& ShapeBarrier, const FRenderDataBarrier& RenderDataBarrier,
 		UStaticMeshComponent& Component);

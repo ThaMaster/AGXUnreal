@@ -1011,6 +1011,12 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			Node = BaseBP.SimpleConstructionScript->CreateNode(
 				TComponent::StaticClass(), FName(GetUnsetImportNodeName()));
 			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(Node);
+			if constexpr (std::is_same<TComponent, UAGX_TrimeshShapeComponent>::value)
+			{
+				USCS_Node* CollisionMesh = BaseBP.SimpleConstructionScript->CreateNode(
+					UStaticMeshComponent::StaticClass(), FName(GetUnsetImportNodeName()));
+				Node->AddChildNode(CollisionMesh);
+			}
 		}
 
 		Helper.UpdateComponent(Barrier, *Cast<TComponent>(Node->ComponentTemplate), MSTsOnDisk);
@@ -1028,12 +1034,14 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		if (!RenderDataBarrier.HasMesh())
 			return;
 
+		const bool IsTrimesh =
+			Cast<UAGX_TrimeshShapeComponent>(ShapeNode.ComponentTemplate) != nullptr;
 		auto FindRenderDataNode = [&](const FGuid& ShapeGuid) -> USCS_Node*
 		{
 			if (!SCSNodes.StaticMeshComponents.Contains(ShapeGuid))
 				return nullptr;
 
-			if (auto Trimesh = Cast<UAGX_TrimeshShapeComponent>(ShapeNode.ComponentTemplate))
+			if (IsTrimesh)
 			{
 				// A Trimesh will have it's render data attached to it's collision Static Mesh
 				// Component.
@@ -1062,7 +1070,16 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		{
 			Node = BaseBP.SimpleConstructionScript->CreateNode(
 				UStaticMeshComponent::StaticClass(), FName(GetUnsetImportNodeName()));
-			ShapeNode.AddChildNode(Node);
+			if (IsTrimesh)
+			{
+				AGX_CHECK(ShapeNode.GetChildNodes().Num() == 1);
+				USCS_Node* CollisionMesh = ShapeNode.GetChildNodes()[0];
+				CollisionMesh->AddChildNode(Node);
+			}
+			else
+			{
+				ShapeNode.AddChildNode(Node);
+			}
 		}
 
 		Helper.UpdateRenderDataComponent(
@@ -1106,7 +1123,21 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 		}
 
-		// todo add trimesh here as well!
+		for (const auto& Barrier : SimulationObjects.GetTrimeshShapes())
+		{
+			if (Barrier.GetNumTriangles() == 0)
+				continue;
+
+			// @todo: import only render data if disabled and import settings uses ignore disabled
+			// trimesh!
+			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_TrimeshShapeComponent>(
+				Barrier, BaseBP, SCSNodes, Helper, ExistingMSTMap);
+			AGX_CHECK(ShapeNode->GetChildNodes().Num() == 1); // non-recursive
+			USCS_Node* CollisionMesh = ShapeNode->GetChildNodes()[0];
+			Helper.UpdateTrimeshCollisionMeshComponent(
+				Barrier, *Cast<UStaticMeshComponent>(CollisionMesh->ComponentTemplate));
+			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+		}
 
 		// @todo: we should clean up old collision groups in instance components. Currently, we
 		// always add to them, but never remove. The cleanup must be done after all shapes have been
