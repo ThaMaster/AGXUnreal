@@ -492,6 +492,7 @@ namespace
 
 	void UpdateAndSaveAsset(
 		const FMergeSplitThresholdsBarrier& Barrier, UAGX_MergeSplitThresholdsBase& Asset,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
 		EAGX_AmorOwningType OwningType)
 	{
 		const FGuid Guid = Barrier.GetGuid();
@@ -500,6 +501,10 @@ namespace
 		FAGX_EditorUtilities::RenameAsset(Asset, AssetName, "AGX_MST");
 		Asset.CopyFrom(Barrier);
 		FAGX_ObjectUtilities::SaveAsset(Asset);
+		if (Guid.IsValid())
+		{
+			RestoredThresholds.Add(Guid, &Asset);
+		}
 	}
 
 	template <typename TBarrier, typename TThresholdsBarrier>
@@ -538,16 +543,6 @@ namespace
 			}
 		};
 
-		if (!Guid.IsValid())
-		{
-			// The GUID is invalid, but try to create the asset anyway but without adding it to
-			// the RestoredThresholds Map.
-			UAGX_MergeSplitThresholdsBase* Asset = CreateAsset();
-			AGX_CHECK(Asset != nullptr);
-			UpdateAndSaveAsset(ThresholdsBarrier, *Asset, OwningType);
-			return Asset;
-		}
-
 		if (UAGX_MergeSplitThresholdsBase* Asset = RestoredThresholds.FindRef(Guid))
 		{
 			// We have seen this before, use the one in the cache.
@@ -557,11 +552,7 @@ namespace
 		// This is a new merge split thresholds. Create the asset and add to the cache.
 		UAGX_MergeSplitThresholdsBase* Asset = CreateAsset();
 		AGX_CHECK(Asset != nullptr);
-		UpdateAndSaveAsset(ThresholdsBarrier, *Asset, OwningType);
-		if (Asset != nullptr)
-		{
-			RestoredThresholds.Add(Guid, Asset);
-		}
+		UpdateAndSaveAsset(ThresholdsBarrier, *Asset, RestoredThresholds, OwningType);
 
 		return Asset;
 	}
@@ -601,8 +592,8 @@ void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	if (MSTsOnDisk.Contains(MSTGuid))
 	{
 		MSThresholds = MSTsOnDisk[MSTGuid];
-		::UpdateAndSaveAsset(ThresholdsBarrier, *MSThresholds, EAGX_AmorOwningType::BodyOrShape);
-		RestoredThresholds.Add(MSTGuid, MSThresholds);
+		::UpdateAndSaveAsset(
+			ThresholdsBarrier, *MSThresholds, RestoredThresholds, EAGX_AmorOwningType::BodyOrShape);
 	}
 	else
 	{
