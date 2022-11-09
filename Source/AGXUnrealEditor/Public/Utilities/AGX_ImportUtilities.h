@@ -199,7 +199,10 @@ public:
 	static FString GetImportRootDirectoryName();
 	static FString GetImportShapeMaterialDirectoryName();
 	static FString GetImportContactMaterialDirectoryName();
+	static FString GetImportRenderMaterialDirectoryName();
 	static FString GetImportMergeSplitThresholdsDirectoryName();
+	static FString GetImportStaticMeshDirectoryName();
+	static FString GetImportRenderMeshDirectoryName();
 
 	/**
 	 * Create a new asset destined for the import directory. This functions will only create the

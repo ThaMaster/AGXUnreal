@@ -68,18 +68,32 @@ public:
 	UAGX_SphereShapeComponent* InstantiateSphere(
 		const FSphereShapeBarrier& Sphere, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
 
-	void UpdateComponent(const FSphereShapeBarrier& Barrier, UAGX_SphereShapeComponent& Component);
+	void UpdateComponent(
+		const FSphereShapeBarrier& Barrier, UAGX_SphereShapeComponent& Component,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
 
 	UAGX_BoxShapeComponent* InstantiateBox(
 		const FBoxShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
+
+	void UpdateComponent(
+		const FBoxShapeBarrier& Barrier, UAGX_BoxShapeComponent& Component,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
 
 	UAGX_CylinderShapeComponent* InstantiateCylinder(
 		const FCylinderShapeBarrier& Barrier, AActor& Owner,
 		const FRigidBodyBarrier* Body = nullptr);
 
+	void UpdateComponent(
+		const FCylinderShapeBarrier& Barrier, UAGX_CylinderShapeComponent& Component,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
+
 	UAGX_CapsuleShapeComponent* InstantiateCapsule(
 		const FCapsuleShapeBarrier& Barrier, AActor& Owner,
 		const FRigidBodyBarrier* Body = nullptr);
+
+	void UpdateComponent(
+		const FCapsuleShapeBarrier& Barrier, UAGX_CapsuleShapeComponent& Component,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
 
 	UAGX_TrimeshShapeComponent* InstantiateTrimesh(
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
@@ -89,11 +103,13 @@ public:
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
 		const FRigidBodyBarrier* Body = nullptr);
 
-	void InstantiateRenderData(
+	// This also updates/creates the corresponding static mesh asset.
+	void UpdateRenderDataComponent(
 		const FShapeBarrier& ShapeBarrier, const FRenderDataBarrier& RenderDataBarrier,
 		UStaticMeshComponent& Component);
 
-	void UpdateAndSaveShapeMaterialAsset(const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset);
+	void UpdateAndSaveShapeMaterialAsset(
+		const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset);
 
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
@@ -133,7 +149,7 @@ public:
 		AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs);
 
 	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
-	
+
 	UAGX_TrackComponent* InstantiateTrack(const FTrackBarrier& Barrier, AActor& Owner);
 
 	void UpdateReImportComponent(UAGX_ReImportComponent& Component);
@@ -183,7 +199,9 @@ public:
 	const FString DirectoryName;
 
 private:
-	void UpdateShapeComponent(const FShapeBarrier& Barrier, UAGX_ShapeComponent& Component);
+	void UpdateShapeComponent(
+		const FShapeBarrier& Barrier, UAGX_ShapeComponent& Component,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
 
 	TMap<FGuid, FAssetToDiskInfo> RestoredMeshes;
 	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> RestoredThresholds;

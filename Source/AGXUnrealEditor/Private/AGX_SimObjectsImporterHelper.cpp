@@ -552,7 +552,8 @@ namespace
 		// This is a new merge split thresholds. Create the asset and add to the cache.
 		UAGX_MergeSplitThresholdsBase* Asset = CreateAsset();
 		AGX_CHECK(Asset != nullptr);
-		UpdateAndSaveMergeSplitThresholdsAsset(ThresholdsBarrier, *Asset, RestoredThresholds, OwningType);
+		UpdateAndSaveMergeSplitThresholdsAsset(
+			ThresholdsBarrier, *Asset, RestoredThresholds, OwningType);
 
 		return Asset;
 	}
@@ -576,6 +577,24 @@ namespace
 		Component->RegisterComponent();
 		return Component;
 	}
+
+	bool IsMeshEquivalent(const FRenderDataBarrier& RenderDataBarrier, UStaticMesh* StaticMesh)
+	{
+		if (StaticMesh == nullptr)
+		{
+			return false;
+		}
+
+		// @todo: figure out how to get the mesh vertices from the StatcMesh. The below code will
+		// get a RawMesh, but RawMesh.VertexPositions will be an empty array always.
+#if 0
+		FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModel(0);
+		FRawMesh RawMesh;
+		SourceModel.RawMeshBulkData->LoadRawMesh(RawMesh);
+		// Compare vertex count and positions here.
+#endif
+		return false;
+	}
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
@@ -589,7 +608,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
 	const FGuid MSTGuid = Barrier.GetGuid();
 	UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
-	if (MSTsOnDisk.Contains(MSTGuid))
+	if (MSTsOnDisk.Contains(MSTGuid) && ThresholdsBarrier.HasNative())
 	{
 		MSThresholds = MSTsOnDisk[MSTGuid];
 		::UpdateAndSaveMergeSplitThresholdsAsset(
@@ -708,10 +727,11 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateComponent(
-	const FSphereShapeBarrier& Barrier, UAGX_SphereShapeComponent& Component)
+	const FSphereShapeBarrier& Barrier, UAGX_SphereShapeComponent& Component,
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
 {
 	Component.CopyFrom(Barrier);
-	UpdateShapeComponent(Barrier, Component);
+	UpdateShapeComponent(Barrier, Component, MSTsOnDisk);
 }
 
 UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
@@ -736,6 +756,14 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
 		DirectoryName, *Component, ThresholdsAsset, RestoredStaticMeshComponents);
 	return Component;
+}
+
+void FAGX_SimObjectsImporterHelper::UpdateComponent(
+	const FBoxShapeBarrier& Barrier, UAGX_BoxShapeComponent& Component,
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
+{
+	Component.CopyFrom(Barrier);
+	UpdateShapeComponent(Barrier, Component, MSTsOnDisk);
 }
 
 UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
@@ -763,6 +791,14 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 	return Component;
 }
 
+void FAGX_SimObjectsImporterHelper::UpdateComponent(
+	const FCylinderShapeBarrier& Barrier, UAGX_CylinderShapeComponent& Component,
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
+{
+	Component.CopyFrom(Barrier);
+	UpdateShapeComponent(Barrier, Component, MSTsOnDisk);
+}
+
 UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 	const FCapsuleShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
@@ -785,6 +821,14 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
 		DirectoryName, *Component, ThresholdsAsset, RestoredStaticMeshComponents);
 	return Component;
+}
+
+void FAGX_SimObjectsImporterHelper::UpdateComponent(
+	const FCapsuleShapeBarrier& Barrier, UAGX_CapsuleShapeComponent& Component,
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
+{
+	Component.CopyFrom(Barrier);
+	UpdateShapeComponent(Barrier, Component, MSTsOnDisk);
 }
 
 UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
@@ -860,7 +904,8 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
-	const FShapeBarrier& Barrier, UAGX_ShapeComponent& Component)
+	const FShapeBarrier& Barrier, UAGX_ShapeComponent& Component,
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
 {
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
 	FShapeMaterialBarrier NativeMaterial = Barrier.GetMaterial();
@@ -869,6 +914,23 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 		const FGuid Guid = NativeMaterial.GetGuid();
 		UAGX_ShapeMaterial* Material = RestoredShapeMaterials.FindRef(Guid);
 		Component.ShapeMaterial = Material;
+	}
+
+	const FMergeSplitThresholdsBarrier ThresholdsBarrier =
+		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+	const FGuid MSTGuid = Barrier.GetShapeGuid();
+	UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
+	if (MSTsOnDisk.Contains(MSTGuid) && ThresholdsBarrier.HasNative())
+	{
+		MSThresholds = MSTsOnDisk[MSTGuid];
+		::UpdateAndSaveMergeSplitThresholdsAsset(
+			ThresholdsBarrier, *MSThresholds, RestoredThresholds, EAGX_AmorOwningType::BodyOrShape);
+	}
+	else
+	{
+		MSThresholds = ::GetOrCreateMergeSplitThresholdsAsset<
+			FShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
+			Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
 	}
 }
 
@@ -938,11 +1000,70 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 	return RenderDataComponent;
 }
 
-void InstantiateRenderData(
+void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	const FShapeBarrier& ShapeBarrier, const FRenderDataBarrier& RenderDataBarrier,
 	UStaticMeshComponent& Component)
 {
-	// todo: update
+	AGX_CHECK(RenderDataBarrier.HasMesh());
+	FTransform RenderDataRelTransform = FTransform::Identity;
+	{
+		FVector ShapePosition;
+		FQuat ShapeRotation;
+		std::tie(ShapePosition, ShapeRotation) = ShapeBarrier.GetLocalPositionAndRotation();
+		const FTransform ShapeTransform(ShapeRotation, ShapePosition);
+		const FTransform ShapeToGeometry = ShapeBarrier.GetGeometryToShapeTransform().Inverse();
+		FTransform::Multiply(&RenderDataRelTransform, &ShapeToGeometry, &ShapeTransform);
+	}
+
+	UMaterialInterface* OriginalRenderMaterial = Component.GetMaterial(0);
+
+	// We always create a new Render Material because it is not trivial to determine if the original
+	// render material corresponds to the data in the RenderDataBarrier.
+	UMaterialInterface* NewRenderMaterial = CreateRenderMaterialFromRenderDataOrDefault(
+		RenderDataBarrier, ShapeBarrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
+	UStaticMesh* NewMeshAsset = nullptr;
+
+	if (IsMeshEquivalent(RenderDataBarrier, Component.GetStaticMesh()))
+	{
+		NewMeshAsset = Component.GetStaticMesh();
+	}
+	else
+	{
+		FAssetToDiskInfo AtdInfo =
+			GetOrCreateStaticMeshAsset(RenderDataBarrier, RestoredMeshes, DirectoryName);
+		NewMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
+	}
+
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		for (UStaticMeshComponent* Instance :
+			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		{
+			// Update transforms.
+			if (Instance->GetRelativeLocation() == Component.GetRelativeLocation() &&
+				Instance->GetRelativeRotation() == Component.GetRelativeRotation() &&
+				Instance->GetRelativeScale3D() == Component.GetRelativeScale3D())
+			{
+				Instance->SetRelativeTransform(RenderDataRelTransform);
+			}
+
+			// Update Render Materials.
+			if (Instance->GetMaterial(0) == OriginalRenderMaterial)
+			{
+				Instance->SetMaterial(0, NewRenderMaterial);
+			}
+
+			// Update Mesh asset.
+			if (Instance->GetStaticMesh() == Component.GetStaticMesh())
+			{
+				Instance->SetStaticMesh(NewMeshAsset);
+			}
+		}
+	}
+
+	Component.SetRelativeTransform(RenderDataRelTransform);
+	Component.SetMaterial(0, NewRenderMaterial);
+	Component.SetStaticMesh(NewMeshAsset);
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateAndSaveShapeMaterialAsset(

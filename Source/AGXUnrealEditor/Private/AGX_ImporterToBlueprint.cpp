@@ -685,6 +685,20 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		return Map;
 	}
 
+	template <typename T>
+	TMap<FGuid, T*> FindAGXAssetComponents(const FString& AssetDirPath)
+	{
+		TArray<T*> FoundAssets = FAGX_EditorUtilities::FindAssets<T>(AssetDirPath);
+		return CreateGuidToComponentMap<T>(FoundAssets);
+	}
+
+	FString GetImportDirPath(
+		const FAGX_SimObjectsImporterHelper& Helper, const FString& Subdir = "")
+	{
+		return FPaths::Combine(
+			FAGX_ImportUtilities::GetImportRootDirectoryName(), Helper.DirectoryName, Subdir);
+	}
+
 	// Returns the Collision Enabled status for all Shapes in a FSimulationObjectCollection
 	// including those owned by a Rigid Body.
 	TMap<FGuid, bool> GetCollisionEnabledForAllShapes(
@@ -872,14 +886,10 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		FAGX_SimObjectsImporterHelper& Helper)
 	{
 		// Find all existing assets that might be of interest from the previous import.
-		const FString ShapeMaterialDirPath = FString::Printf(
-			TEXT("/Game/%s/%s/%s"), *FAGX_ImportUtilities::GetImportRootDirectoryName(),
-			*Helper.DirectoryName, *FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName());
-		TArray<UAGX_ShapeMaterial*> ExistingShapeMaterialAssets =
-			FAGX_EditorUtilities::FindAssets<UAGX_ShapeMaterial>(ShapeMaterialDirPath);
-
+		const FString ShapeMaterialDirPath =
+			GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName());
 		TMap<FGuid, UAGX_ShapeMaterial*> ExistingShapeMaterialsMap =
-			CreateGuidToComponentMap(ExistingShapeMaterialAssets);
+			FindAGXAssetComponents<UAGX_ShapeMaterial>(ShapeMaterialDirPath);
 
 		for (const auto& Barrier : SimulationObjects.GetShapeMaterials())
 		{
@@ -929,14 +939,10 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		auto CMRegistrar = GetOrCreateContactMaterialRegistrarComponent(BaseBP);
 
 		// Find all existing assets that might be of interest from the previous import.
-		const FString ContactMaterialDirPath = FString::Printf(
-			TEXT("/Game/%s/%s/%s"), *FAGX_ImportUtilities::GetImportRootDirectoryName(),
-			*Helper.DirectoryName, *FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
-		TArray<UAGX_ContactMaterial*> ExistingContactMaterialAssets =
-			FAGX_EditorUtilities::FindAssets<UAGX_ContactMaterial>(ContactMaterialDirPath);
-
+		const FString ContactMaterialDirPath =
+			GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
 		TMap<FGuid, UAGX_ContactMaterial*> ExistingContactMaterialsMap =
-			CreateGuidToComponentMap(ExistingContactMaterialAssets);
+			FindAGXAssetComponents<UAGX_ContactMaterial>(ContactMaterialDirPath);
 
 		for (const auto& Barrier : SimulationObjects.GetContactMaterials())
 		{
@@ -958,14 +964,10 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
 	{
-		const FString MSTDirPath = FString::Printf(
-			TEXT("/Game/%s/%s/%s"), *FAGX_ImportUtilities::GetImportRootDirectoryName(),
-			*Helper.DirectoryName, *FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
-		auto ExistingMSTAssets =
-			FAGX_EditorUtilities::FindAssets<UAGX_MergeSplitThresholdsBase>(MSTDirPath);
-
+		const FString MSTDirPath = GetImportDirPath(
+			Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
 		TMap<FGuid, UAGX_MergeSplitThresholdsBase*> ExistingMSTMap =
-			CreateGuidToComponentMap(ExistingMSTAssets);
+			FindAGXAssetComponents<UAGX_MergeSplitThresholdsBase>(MSTDirPath);
 
 		for (const auto& Barrier : SimulationObjects.GetRigidBodies())
 		{
@@ -995,7 +997,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	template <typename TBarrier, typename TComponent>
 	USCS_Node* AddOrUpdateShape(
 		const TBarrier& Barrier, UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
-		FAGX_SimObjectsImporterHelper& Helper)
+		FAGX_SimObjectsImporterHelper& Helper,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
 	{
 		const FGuid Guid = Barrier.GetShapeGuid();
 		USCS_Node* Node = nullptr;
@@ -1010,7 +1013,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(Node);
 		}
 
-		Helper.UpdateComponent(Barrier, *Cast<TComponent>(Node->ComponentTemplate));
+		Helper.UpdateComponent(Barrier, *Cast<TComponent>(Node->ComponentTemplate), MSTsOnDisk);
 		return Node;
 	}
 
@@ -1021,6 +1024,10 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		if (!ShapeBarrier.HasRenderData())
 			return;
 
+		const FRenderDataBarrier RenderDataBarrier = ShapeBarrier.GetRenderData();
+		if (!RenderDataBarrier.HasMesh())
+			return;
+
 		auto FindRenderDataNode = [&](const FGuid& ShapeGuid) -> USCS_Node*
 		{
 			if (!SCSNodes.StaticMeshComponents.Contains(ShapeGuid))
@@ -1028,7 +1035,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 			if (auto Trimesh = Cast<UAGX_TrimeshShapeComponent>(ShapeNode.ComponentTemplate))
 			{
-				// A Trimesh will have it's render data attached to it's collision Static Mesh Component.
+				// A Trimesh will have it's render data attached to it's collision Static Mesh
+				// Component.
 				for (USCS_Node* SMCNode : SCSNodes.StaticMeshComponents[ShapeGuid])
 				{
 					USCS_Node* SMParent = BaseBP.SimpleConstructionScript->FindParentNode(SMCNode);
@@ -1041,7 +1049,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			}
 			else
 			{
-				// This is part of a shape primitive which only holds at most one StaticMeshComponent.
+				// This is part of a shape primitive which holds at most one StaticMeshComponent.
 				AGX_CHECK(SCSNodes.StaticMeshComponents[ShapeGuid].Num() == 1);
 				return SCSNodes.StaticMeshComponents[ShapeGuid][0];
 			}
@@ -1049,7 +1057,6 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		};
 
 		const FGuid ShapeGuid = ShapeBarrier.GetShapeGuid();
-		const FRenderDataBarrier RenderDataBarrier = ShapeBarrier.GetRenderData();
 		USCS_Node* Node = FindRenderDataNode(ShapeGuid);
 		if (Node == nullptr)
 		{
@@ -1058,20 +1065,48 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			ShapeNode.AddChildNode(Node);
 		}
 
-		// Update the UStaticMeshComponent here.
-		//Helper.UpdateComponent(ShapeBarrier, RenderDataBarrier, *Cast<UStaticMeshComponent>(Node->ComponentTemplate));
+		Helper.UpdateRenderDataComponent(
+			ShapeBarrier, RenderDataBarrier, *Cast<UStaticMeshComponent>(Node->ComponentTemplate));
 	}
 
 	void AddOrUpdateBodilessShapes(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
 	{
+		const FString MSTDirPath = GetImportDirPath(
+			Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*> ExistingMSTMap =
+			FindAGXAssetComponents<UAGX_MergeSplitThresholdsBase>(MSTDirPath);
+
 		for (const auto& Barrier : SimulationObjects.GetSphereShapes())
 		{
 			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_SphereShapeComponent>(
-				Barrier, BaseBP, SCSNodes, Helper);
+				Barrier, BaseBP, SCSNodes, Helper, ExistingMSTMap);
 			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 		}
+
+		for (const auto& Barrier : SimulationObjects.GetBoxShapes())
+		{
+			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_BoxShapeComponent>(
+				Barrier, BaseBP, SCSNodes, Helper, ExistingMSTMap);
+			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+		}
+
+		for (const auto& Barrier : SimulationObjects.GetCylinderShapes())
+		{
+			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_CylinderShapeComponent>(
+				Barrier, BaseBP, SCSNodes, Helper, ExistingMSTMap);
+			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+		}
+
+		for (const auto& Barrier : SimulationObjects.GetCapsuleShapes())
+		{
+			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_CapsuleShapeComponent>(
+				Barrier, BaseBP, SCSNodes, Helper, ExistingMSTMap);
+			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+		}
+
+		// todo add trimesh here as well!
 
 		// @todo: we should clean up old collision groups in instance components. Currently, we
 		// always add to them, but never remove. The cleanup must be done after all shapes have been
@@ -1087,7 +1122,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 				UAGX_ReImportComponent::StaticClass(), FName(GetUnsetImportNodeName()));
 			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
 
-			Helper.UpdateReImportComponent(*Cast<UAGX_ReImportComponent>(NewNode->ComponentTemplate));
+			Helper.UpdateReImportComponent(
+				*Cast<UAGX_ReImportComponent>(NewNode->ComponentTemplate));
 		}
 		else
 		{

@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_ShapeUtilities.h"
 
 // Unreal Engine includes.
@@ -173,8 +174,8 @@ void UAGX_CapsuleShapeComponent::UpdateNativeProperties()
 void UAGX_CapsuleShapeComponent::CopyFrom(const FCapsuleShapeBarrier& Barrier)
 {
 	Super::CopyFrom(Barrier);
-	Height = Barrier.GetHeight();
-	Radius = Barrier.GetRadius();
+	AGX_COPY_PROPERTY_FROM(Height, Barrier.GetHeight(), *this)
+	AGX_COPY_PROPERTY_FROM(Radius, Barrier.GetRadius(), *this)
 }
 
 void UAGX_CapsuleShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)

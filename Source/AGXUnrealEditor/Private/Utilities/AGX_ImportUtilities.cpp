@@ -483,7 +483,22 @@ FString FAGX_ImportUtilities::GetImportContactMaterialDirectoryName()
 	return FString("ContactMaterial");
 }
 
+FString FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName()
+{
+	return FString("RenderMaterial");
+}
+
 FString FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName()
 {
 	return FString("MergeSplitThresholds");
+}
+
+FString FAGX_ImportUtilities::GetImportStaticMeshDirectoryName()
+{
+	return FString("StaticMesh");
+}
+
+FString FAGX_ImportUtilities::GetImportRenderMeshDirectoryName()
+{
+	return FString("RenderMesh");
 }

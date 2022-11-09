@@ -7,6 +7,7 @@
 #include "AGX_MeshWithTransform.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_ShapeUtilities.h"
 
 // Unreal Engine includes.
@@ -147,7 +148,7 @@ bool UAGX_BoxShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices
 void UAGX_BoxShapeComponent::CopyFrom(const FBoxShapeBarrier& Barrier)
 {
 	Super::CopyFrom(Barrier);
-	HalfExtent = Barrier.GetHalfExtents();
+	AGX_COPY_PROPERTY_FROM(HalfExtent, Barrier.GetHalfExtents(), *this)
 }
 
 void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)

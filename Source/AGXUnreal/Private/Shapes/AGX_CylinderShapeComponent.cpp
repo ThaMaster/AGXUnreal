@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_ShapeUtilities.h"
 
 // Unreal Engine includes.
@@ -194,11 +195,10 @@ void UAGX_CylinderShapeComponent::UpdateNativeProperties()
 void UAGX_CylinderShapeComponent::CopyFrom(const FCylinderShapeBarrier& Barrier)
 {
 	Super::CopyFrom(Barrier);
-	Height = Barrier.GetHeight();
-	Radius = Barrier.GetRadius();
-
-	bPulley = Barrier.GetPulleyProperty();
-	bGypsy = Barrier.GetGypsyProperty();
+	AGX_COPY_PROPERTY_FROM(Height, Barrier.GetHeight(), *this)
+	AGX_COPY_PROPERTY_FROM(Radius, Barrier.GetRadius(), *this)
+	AGX_COPY_PROPERTY_FROM(bPulley, Barrier.GetPulleyProperty(), *this)
+	AGX_COPY_PROPERTY_FROM(bGypsy, Barrier.GetGypsyProperty(), *this)
 }
 
 void UAGX_CylinderShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
