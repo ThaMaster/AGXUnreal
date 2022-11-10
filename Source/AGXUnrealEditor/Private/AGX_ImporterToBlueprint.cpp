@@ -1050,7 +1050,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 
 		Helper.UpdateRenderDataComponent(
-			ShapeBarrier, RenderDataBarrier, *Cast<UStaticMeshComponent>(Node->ComponentTemplate));
+			ShapeBarrier, RenderDataBarrier, *Cast<UStaticMeshComponent>(Node->ComponentTemplate),
+			IsTrimesh);
 	}
 
 	void AddOrUpdateRigidBodies(

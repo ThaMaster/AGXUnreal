@@ -109,13 +109,17 @@ public:
 		const FTrimeshShapeBarrier& Barrier, UStaticMeshComponent& Component);
 
 	UStaticMeshComponent* InstantiateRenderData(
+		const FShapeBarrier& ShapeBarrier, AActor& Owner, USceneComponent& AttachParent,
+		bool UseSameTransformAsAttachParent);
+
+	UStaticMeshComponent* InstantiateRenderData(
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
 		const FRigidBodyBarrier* Body = nullptr);
 
 	// This also updates/creates the corresponding static mesh asset and material.
 	void UpdateRenderDataComponent(
 		const FShapeBarrier& ShapeBarrier, const FRenderDataBarrier& RenderDataBarrier,
-		UStaticMeshComponent& Component);
+		UStaticMeshComponent& Component, bool UseSameTransformAsAttachParent);
 
 	void UpdateAndSaveShapeMaterialAsset(
 		const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset);

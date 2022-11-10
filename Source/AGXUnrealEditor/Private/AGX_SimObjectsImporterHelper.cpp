@@ -723,14 +723,15 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 		return nullptr;
 	}
 
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
-		FSphereShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
-		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+	Component->SetFlags(RF_Transactional);
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
+	UpdateComponent(Barrier, *Component, Unused);
+	
+	if (Barrier.HasRenderData())
+	{
+		InstantiateRenderData(Barrier, Owner, *Component, false);
+	}
 
-	Component->CopyFrom(Barrier);
-	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component, ThresholdsAsset, RestoredStaticMeshComponents);
 	return Component;
 }
 
@@ -755,14 +756,15 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 		return nullptr;
 	}
 
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
-		FBoxShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
-		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+	Component->SetFlags(RF_Transactional);
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
+	UpdateComponent(Barrier, *Component, Unused);
 
-	Component->CopyFrom(Barrier);
-	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component, ThresholdsAsset, RestoredStaticMeshComponents);
+	if (Barrier.HasRenderData())
+	{
+		InstantiateRenderData(Barrier, Owner, *Component, false);
+	}
+
 	return Component;
 }
 
@@ -788,14 +790,15 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 		return nullptr;
 	}
 
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
-		FCylinderShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
-		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+	Component->SetFlags(RF_Transactional);
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
+	UpdateComponent(Barrier, *Component, Unused);
 
-	Component->CopyFrom(Barrier);
-	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component, ThresholdsAsset, RestoredStaticMeshComponents);
+	if (Barrier.HasRenderData())
+	{
+		InstantiateRenderData(Barrier, Owner, *Component, false);
+	}
+
 	return Component;
 }
 
@@ -820,14 +823,15 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 		return nullptr;
 	}
 
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
-		FCapsuleShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
-		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+	Component->SetFlags(RF_Transactional);
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
+	UpdateComponent(Barrier, *Component, Unused);
 
-	Component->CopyFrom(Barrier);
-	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *Component, ThresholdsAsset, RestoredStaticMeshComponents);
+	if (Barrier.HasRenderData())
+	{
+		InstantiateRenderData(Barrier, Owner, *Component, false);
+	}
+
 	return Component;
 }
 
@@ -852,62 +856,24 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 			TEXT("Could not instantiate a new Trimesh Shape Component."));
 		return nullptr;
 	}
+
 	Component->MeshSourceLocation = EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
-	const FString FallbackName = Body != nullptr ? Body->GetName() : Owner.GetName();
-	FAssetToDiskInfo AtdInfo =
-		GetOrCreateStaticMeshAsset(Barrier, FallbackName, RestoredMeshes, DirectoryName);
-	UStaticMesh* MeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
-	if (MeshAsset == nullptr)
+	Component->SetFlags(RF_Transactional);
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
+	UpdateComponent(Barrier, *Component, Unused);
+
+	// Add collision Static mesh.
+	UStaticMeshComponent* CollisionMesh =
+		FAGX_ImportUtilities::CreateComponent<UStaticMeshComponent>(Owner, *Component);
+	UpdateTrimeshCollisionMeshComponent(Barrier, *CollisionMesh);
+
+	if (Barrier.HasRenderData())
 	{
-		// No point in continuing further. Logging handled in GetOrCreateStaticMeshAsset.
-		/// \todo Consider moving logging in here, using WriteImportErrorMessage.
-		return nullptr;
+		InstantiateRenderData(Barrier, Owner, *CollisionMesh, true);
 	}
 
-	UStaticMeshComponent* MeshComponent =
-		FAGX_EditorUtilities::CreateStaticMeshComponent(Owner, *Component, *MeshAsset, false);
-	FString SourceName = Barrier.GetSourceName();
-	if (SourceName.Contains("\\") || SourceName.Contains("/"))
-	{
-		SourceName = FPaths::GetBaseFilename(SourceName);
-	}
-
-	FString MeshName = !SourceName.IsEmpty() ? SourceName : (Barrier.GetName() + TEXT("Mesh"));
-	if (MeshComponent == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("Could not create MeshComponent for imported trimesh '%s'."),
-			*MeshName);
-	}
-	if (MeshComponent != nullptr)
-	{
-		FAGX_ImportUtilities::Rename(*MeshComponent, *MeshName);
-		const FGuid ShapeBarrierGuid = Barrier.GetShapeGuid();
-		if (!RestoredStaticMeshComponents.Contains(ShapeBarrierGuid))
-		{
-			RestoredStaticMeshComponents.Add(ShapeBarrierGuid, TArray<UStaticMeshComponent*>());
-		}
-		RestoredStaticMeshComponents[ShapeBarrierGuid].Add(MeshComponent);
-	}
-
-	// Both components must be created and attached before they are registered because BeginPlay
-	// may be called by RegisterComponent and the TrimeshMeshComponent must know of the
-	// StaticMeshComponent before that happens.
-	/// @todo In which order should these be? Does it matter?
-	if (MeshComponent != nullptr)
-	{
-		MeshComponent->RegisterComponent();
-	}
 	Component->RegisterComponent();
 
-	UAGX_MergeSplitThresholdsBase* ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
-		FTrimeshShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
-		Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
-
-	Component->CopyFrom(Barrier);
-	::FinalizeShape(
-		*Component, Barrier, RestoredShapeMaterials, RestoredRenderMaterials, RestoredMeshes,
-		DirectoryName, *MeshComponent, ThresholdsAsset, RestoredStaticMeshComponents);
 	return Component;
 }
 
@@ -1056,6 +1022,23 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 }
 
 UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
+	const FShapeBarrier& ShapeBarrier, AActor& Owner, USceneComponent& AttachParent,
+	bool UseSameTransformAsAttachParent)
+{
+	const FRenderDataBarrier RenderDataBarrier = ShapeBarrier.GetRenderData();
+	if (!RenderDataBarrier.HasMesh())
+		return nullptr;
+
+	UStaticMeshComponent* RenderMeshComponent =
+		FAGX_ImportUtilities::CreateComponent<UStaticMeshComponent>(Owner, AttachParent);
+
+	UpdateRenderDataComponent(
+		ShapeBarrier, RenderDataBarrier, *RenderMeshComponent, UseSameTransformAsAttachParent);
+
+	return RenderMeshComponent;
+}
+
+UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 	const FTrimeshShapeBarrier& TrimeshBarrier, AActor& Owner, const FRigidBodyBarrier* Body)
 {
 	USceneComponent* AttachParent = [&]() -> USceneComponent*
@@ -1123,10 +1106,11 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 
 void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	const FShapeBarrier& ShapeBarrier, const FRenderDataBarrier& RenderDataBarrier,
-	UStaticMeshComponent& Component)
+	UStaticMeshComponent& Component, bool UseSameTransformAsAttachParent)
 {
 	AGX_CHECK(RenderDataBarrier.HasMesh());
 	FTransform RenderDataRelTransform = FTransform::Identity;
+	if (!UseSameTransformAsAttachParent)
 	{
 		FVector ShapePosition;
 		FQuat ShapeRotation;

@@ -214,6 +214,13 @@ public:
 	template <typename UAsset>
 	static UAsset* CreateAsset(
 		const FString& DirectoryName, FString AssetName, const FString& AssetType);
+
+	/**
+	 * Create a new Component and add it to an Actor and attach it to the given attach parent.
+	 * The Component will be given a temporary unique name.
+	 */
+	template <typename TComponent>
+	static TComponent* CreateComponent(AActor& Owner, USceneComponent& AttachParent);
 };
 
 template <typename UAsset>
@@ -234,4 +241,17 @@ UAsset* FAGX_ImportUtilities::CreateAsset(
 	}
 
 	return Asset;
+}
+
+template <typename TComponent>
+TComponent* FAGX_ImportUtilities::CreateComponent(AActor& Owner, USceneComponent& AttachParent)
+{
+	TComponent* Component = NewObject<TComponent>(
+		&AttachParent, FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+
+	Owner.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+	Component->AttachToComponent(
+		&AttachParent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	return Component;
 }
