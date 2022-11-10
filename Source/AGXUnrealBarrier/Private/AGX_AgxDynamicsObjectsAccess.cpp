@@ -210,7 +210,7 @@ agx::MassProperties* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FMassPropertie
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agx::MassProperties>(Barrier);
 }
 
-agx::Constraint* GetFrom(const FConstraintBarrier* Barrier)
+agx::Constraint* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FConstraintBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agx::Constraint>(Barrier);
 }
@@ -357,17 +357,17 @@ agxTerrain::Shovel* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FShovelBarrier*
 }
 
 // Namespace agxVehicle.
-agxVehicle::Track* GetFrom(const FTrackBarrier* Barrier)
+agxVehicle::Track* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FTrackBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxVehicle::Track>(Barrier);
 }
 
-agxVehicle::TrackProperties* GetFrom(const FTrackPropertiesBarrier* Barrier)
+agxVehicle::TrackProperties* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FTrackPropertiesBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxVehicle::TrackProperties>(Barrier);
 }
 
-agxVehicle::TrackWheel* GetFrom(const FTrackWheelBarrier* Barrier)
+agxVehicle::TrackWheel* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FTrackWheelBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxVehicle::TrackWheel>(Barrier);
 }
@@ -375,7 +375,7 @@ agxVehicle::TrackWheel* GetFrom(const FTrackWheelBarrier* Barrier)
 
 // Namespace agxWire.
 
-agxWire::Node* GetFrom(const FWireNodeBarrier* Barrier)
+agxWire::Node* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FWireNodeBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxWire::Node>(Barrier);
 }
@@ -385,7 +385,7 @@ agxWire::Wire* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FWireBarrier* Barrie
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxWire::Wire>(Barrier);
 }
 
-agxWire::WireWinchController* GetFrom(const FWireWinchBarrier* Barrier)
+agxWire::WireWinchController* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FWireWinchBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxWire::WireWinchController>(Barrier);
 }
