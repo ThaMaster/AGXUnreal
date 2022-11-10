@@ -300,91 +300,14 @@ void FAGX_EditorUtilities::MakePackageAndAssetNameUnique(FString& PackageName, F
 	AssetTools.CreateUniqueAssetName(PackageName, AssetName, PackageName, AssetName);
 }
 
-bool FAGX_EditorUtilities::FinalizeAndSavePackage(FAssetToDiskInfo& AtdInfo)
+bool FAGX_EditorUtilities::SaveStaticMeshAssetsInBulk(const TArray<UStaticMesh*>& Meshes)
 {
-	/// \todo Can the PackagePath and AssetName be read from the Package and Asset? To reduce
-	/// the number of parameters and avoid passing mismatching arguments. When would we want
-	/// to custom PackagePath and AssetName?
-
-	if (!AtdInfo.IsValid())
-	{
-		return false;
-	}
-
-	FAssetRegistryModule::AssetCreated(AtdInfo.Asset);
-	AtdInfo.Asset->MarkPackageDirty();
-	AtdInfo.Asset->PostEditChange();
-	AtdInfo.Asset->AddToRoot();
-	AtdInfo.Package->SetDirtyFlag(true);
-
-	// Store our new package to disk.
-	const FString PackageFilename = FPackageName::LongPackageNameToFilename(
-		AtdInfo.PackagePath, FPackageName::GetAssetPackageExtension());
-	if (PackageFilename.IsEmpty())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Unreal Engine unable to provide a package filename for package path '%s'."),
-			*AtdInfo.PackagePath);
-		return false;
-	}
-
-	// A package must have meta-data in order to be saved. It seems to be created automatically
-	// most of the time but sometimes, during unit tests for example, the engine tries to create it
-	// on-demand while saving the package which leads to a fatal error because this type of object
-	// look-up isn't allowed while saving packages. So try to force it here before calling
-	// SavePackage.
-	//
-	// The error message sometimes printed while within UPackage::SavePackage called below is:
-	// Illegal call to StaticFindObjectFast() while serializing object data or garbage collecting!
-	AtdInfo.Package->GetMetaData();
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-	bool bSaved =
-		UPackage::SavePackage(AtdInfo.Package, AtdInfo.Asset, RF_NoFlags, *PackageFilename);
-#else
-	FSavePackageArgs SaveArgs;
-	// SaveArgs.TargetPlatform = ???; // I think we can leave this at the default: not cooking.
-	SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-	// SaveArgs.SaveFlags = ???; // I think we can leave this at the default: None.
-	// SaveArgs.bForceByteSwapping = ???; // I think we can leave this at the default: false.
-	// SaveArgs.bWarnOfLongFilename = ???; // I think we can leave this at the default: true.
-	// SaveArgs.bSlowTask = ???; // I think we can leave this at the default: true.
-	// SaveArgs.Error = ???; // I think we can leave this at the default: GError.
-	// SaveArgs.SavePAckageContext = ???; // I think we can leave this at the default: nullptr.
-	bool bSaved = UPackage::SavePackage(AtdInfo.Package, AtdInfo.Asset, *PackageFilename, SaveArgs);
-#endif
-	if (!bSaved)
-	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Unreal Engine unable to save package '%s' to file '%s'."),
-			*AtdInfo.PackagePath, *PackageFilename);
-		return false;
-	}
-
-	return true;
-}
-
-bool FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(
-	TArray<FAssetToDiskInfo>& StaticMeshAssetInfos)
-{
-	TArray<UStaticMesh*> Meshes;
-	for (auto& AtdInfo : StaticMeshAssetInfos)
-	{
-		if (!AtdInfo.IsValid())
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Found invalid Mesh in FinalizeAndSaveStaticMeshPackages."
-					 "Mesh assets will not be written to disk."));
-			return false;
-		}
-
-		Meshes.Add(static_cast<UStaticMesh*>(AtdInfo.Asset));
-	}
-
 	bool EncounteredIssue = false;
-	for (auto& Mesh : Meshes)
+	for (auto Mesh : Meshes)
 	{
+		if (Mesh == nullptr)
+			continue;
+
 		FAssetRegistryModule::AssetCreated(Mesh);
 		Mesh->MarkPackageDirty();
 	}
@@ -392,45 +315,56 @@ bool FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(
 	// Do the costly Build as a batch Build.
 	UStaticMesh::BatchBuild(Meshes);
 
-	for (auto& AtdInfo : StaticMeshAssetInfos)
+	for (auto Mesh : Meshes)
 	{
+		if (Mesh == nullptr)
+			continue;
+
+		UPackage* Package = Mesh->GetPackage();
+		if (Package == nullptr || Package->GetPathName().IsEmpty())
+		{
+			EncounteredIssue = true;
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Got invalid package from asset '%s' in SaveStaticMeshAssetInBulk. The asset "
+					 "will not be saved."), *Mesh->GetName());
+		}
 		// The below PostEditChange call is what normally takes a lot of time, since it internally
 		// calls Build() each time. But since we have already done the Build (in batch) above, it
 		// will not actually Build the asset again. So the PostEditChange call below will execute
 		// really fast and we get the benefit of still getting everything else done in
 		// PostEditChange.
-		AtdInfo.Asset->PostEditChange();
-		AtdInfo.Asset->AddToRoot();
-		AtdInfo.Package->SetDirtyFlag(true);
+		Mesh->PostEditChange();
+		Mesh->AddToRoot();
+		Package->SetDirtyFlag(true);
 
 		// Store our new package to disk.
 		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
-			AtdInfo.PackagePath, FPackageName::GetAssetPackageExtension());
+			Package->GetPathName(), FPackageName::GetAssetPackageExtension());
 		if (PackageFilename.IsEmpty())
 		{
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Unreal Engine unable to provide a package filename for package path '%s'."),
-				*AtdInfo.PackagePath);
+				*Package->GetPathName());
 			EncounteredIssue = true;
 			continue;
 		}
 
-		AtdInfo.Package->GetMetaData();
+		Package->GetMetaData();
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-		bool bSaved =
-			UPackage::SavePackage(AtdInfo.Package, AtdInfo.Asset, RF_NoFlags, *PackageFilename);
+		bool bSaved = UPackage::SavePackage(Package, Mesh, RF_NoFlags, *PackageFilename);
 #else
 		FSavePackageArgs SaveArgs;
 		SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
 		bool bSaved =
-			UPackage::SavePackage(AtdInfo.Package, AtdInfo.Asset, *PackageFilename, SaveArgs);
+			UPackage::SavePackage(Package, Mesh, *PackageFilename, SaveArgs);
 #endif
 		if (!bSaved)
 		{
 			UE_LOG(
 				LogAGX, Error, TEXT("Unreal Engine unable to save package '%s' to file '%s'."),
-				*AtdInfo.PackagePath, *PackageFilename);
+				*Package->GetPathName(), *PackageFilename);
 			EncounteredIssue = true;
 		}
 	}
@@ -734,7 +668,6 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 	BuildSettings.bUseFullPrecisionUVs = false;
 	BuildSettings.bUseHighPrecisionTangentBasis = false;
 }
-
 
 AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	UClass* ConstraintType, UAGX_RigidBodyComponent* RigidBody1,

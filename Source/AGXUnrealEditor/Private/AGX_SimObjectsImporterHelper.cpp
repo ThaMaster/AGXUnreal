@@ -205,9 +205,9 @@ namespace
 	 * stored.
 	 * @return
 	 */
-	FAssetToDiskInfo GetOrCreateStaticMeshAsset(
+	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
-		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes, const FString& DirectoryName)
+		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
 	{
 		const FGuid Guid = Trimesh.GetMeshDataGuid();
 		if (!Guid.IsValid())
@@ -225,13 +225,13 @@ namespace
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
-		FAssetToDiskInfo AtdInfo =
+		UStaticMesh* Asset =
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryName, FallbackName);
-		if (AtdInfo.Asset != nullptr)
+		if (Asset != nullptr)
 		{
-			RestoredMeshes.Add(Guid, AtdInfo);
+			RestoredMeshes.Add(Guid, Asset);
 		}
-		return AtdInfo;
+		return Asset;
 	}
 
 	/**
@@ -246,8 +246,8 @@ namespace
 	 * stored.
 	 * @return The Static Mesh asset for the given Render Data.
 	 */
-	FAssetToDiskInfo GetOrCreateStaticMeshAsset(
-		const FRenderDataBarrier& RenderData, TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes,
+	UStaticMesh* GetOrCreateStaticMeshAsset(
+		const FRenderDataBarrier& RenderData, TMap<FGuid, UStaticMesh*>& RestoredMeshes,
 		const FString& DirectoryName)
 	{
 		const FGuid Guid = RenderData.GetGuid();
@@ -265,13 +265,13 @@ namespace
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
-		FAssetToDiskInfo AtdInfo =
+		UStaticMesh* Asset =
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
-		if (AtdInfo.Asset != nullptr)
+		if (Asset != nullptr)
 		{
-			RestoredMeshes.Add(Guid, AtdInfo);
+			RestoredMeshes.Add(Guid, Asset);
 		}
-		return AtdInfo;
+		return Asset;
 	}
 
 	/*
@@ -724,9 +724,9 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 		const FString FallbackName = ShapeBarrier.GetName().IsEmpty()
 										 ? "CollisionMesh"
 										 : ShapeBarrier.GetName() + FString("_CollisionMesh");
-		FAssetToDiskInfo AtdInfo = GetOrCreateStaticMeshAsset(
-			ShapeBarrier, FallbackName, RestoredMeshes, DirectoryName);
-		NewMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
+		UStaticMesh* Asset =
+			GetOrCreateStaticMeshAsset(ShapeBarrier, FallbackName, RestoredMeshes, DirectoryName);
+		NewMeshAsset = Asset;
 	}
 
 	FAGX_ImportUtilities::Rename(Component, *NewMeshAsset->GetName());
@@ -948,9 +948,9 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 			FAGX_ObjectUtilities::SaveAsset(*OriginalMeshAsset);
 		}
 
-		FAssetToDiskInfo AtdInfo =
+		UStaticMesh* Asset =
 			GetOrCreateStaticMeshAsset(RenderDataBarrier, RestoredMeshes, DirectoryName);
-		NewMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
+		NewMeshAsset = Asset;
 	}
 
 	FAGX_ImportUtilities::Rename(Component, *NewMeshAsset->GetName());
@@ -1681,9 +1681,9 @@ FAGX_SimObjectsImporterHelper::FShapeMaterialPair FAGX_SimObjectsImporterHelper:
 void FAGX_SimObjectsImporterHelper::FinalizeImport()
 {
 	// Build mesh assets.
-	TArray<FAssetToDiskInfo> AtdInfos;
-	RestoredMeshes.GenerateValueArray(AtdInfos);
-	FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(AtdInfos);
+	TArray<UStaticMesh*> StaticMeshes;
+	RestoredMeshes.GenerateValueArray(StaticMeshes);
+	FAGX_EditorUtilities::SaveStaticMeshAssetsInBulk(StaticMeshes);
 }
 
 namespace

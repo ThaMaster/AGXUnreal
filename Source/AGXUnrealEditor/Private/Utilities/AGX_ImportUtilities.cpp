@@ -31,7 +31,7 @@
 namespace
 {
 	template <typename UAsset, typename FInitAssetCallback>
-	FAssetToDiskInfo PrepareWriteAssetToDisk(
+	UAsset* PrepareWriteAssetToDisk(
 		const FString& DirectoryName, FString AssetName, const FString& FallbackName,
 		const FString& AssetType, FInitAssetCallback InitAsset)
 	{
@@ -72,21 +72,21 @@ namespace
 		Package->FullyLoad();
 #endif
 		UAsset* Asset = NewObject<UAsset>(Package, FName(*AssetName), RF_Public | RF_Standalone);
-		if (!Asset)
+		if (Asset == nullptr)
 		{
 			UE_LOG(
 				LogAGX, Error, TEXT("Could not create asset '%s' from '%s'."), *AssetName,
 				*DirectoryName);
-			return FAssetToDiskInfo();
+			return nullptr;
 		}
 		InitAsset(*Asset);
 
-		return FAssetToDiskInfo {Package, Asset, PackagePath, AssetName};
+		return Asset;
 	}
 
-	bool WriteAssetToDisk(FAssetToDiskInfo& AtdInfo)
+	bool WriteAssetToDisk(UObject& Asset)
 	{
-		return FAGX_EditorUtilities::FinalizeAndSavePackage(AtdInfo);
+		return FAGX_ObjectUtilities::SaveAsset(Asset);
 	}
 }
 
@@ -163,7 +163,7 @@ namespace AGX_ImportUtilities_helpers
 	}
 }
 
-FAssetToDiskInfo FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName, const FString& FallbackName)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
@@ -182,7 +182,7 @@ FAssetToDiskInfo FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 		DirectoryName, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset);
 }
 
-FAssetToDiskInfo FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	const FRenderDataBarrier& RenderData, const FString& DirectoryName)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
@@ -381,13 +381,14 @@ FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
 {
 	auto InitAsset = [&](UAGX_TrackInternalMergeProperties& Asset) { Asset.CopyFrom(Barrier); };
 
-	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_TrackInternalMergeProperties>(
+	UAGX_TrackInternalMergeProperties* Asset =
+		PrepareWriteAssetToDisk<UAGX_TrackInternalMergeProperties>(
 		DirectoryName, Name, TEXT(""), TEXT("TrackInternalMergeProperties"), InitAsset);
-	if (!WriteAssetToDisk(AtdInfo))
+	if (Asset == nullptr || !WriteAssetToDisk(*Asset))
 	{
 		return nullptr;
 	}
-	return Cast<UAGX_TrackInternalMergeProperties>(AtdInfo.Asset);
+	return Asset;
 }
 
 UAGX_TrackProperties* FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
@@ -395,13 +396,14 @@ UAGX_TrackProperties* FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
 {
 	auto InitAsset = [&](UAGX_TrackProperties& Asset) { Asset.CopyFrom(Barrier); };
 
-	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_TrackProperties>(
+	UAGX_TrackProperties* Asset = PrepareWriteAssetToDisk<UAGX_TrackProperties>(
 		DirectoryName, Name, TEXT(""), TEXT("TrackProperties"), InitAsset);
-	if (!WriteAssetToDisk(AtdInfo))
+	if (Asset == nullptr || !WriteAssetToDisk(*Asset))
 	{
 		return nullptr;
 	}
-	return Cast<UAGX_TrackProperties>(AtdInfo.Asset);
+
+	return Asset;
 }
 
 FString FAGX_ImportUtilities::CreateName(UObject& Object, const FString& Name)
