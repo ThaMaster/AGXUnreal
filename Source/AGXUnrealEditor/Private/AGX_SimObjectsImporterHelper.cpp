@@ -882,6 +882,7 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 {
 	UStaticMesh* NewMeshAsset = nullptr;
 	UStaticMesh* OriginalMeshAsset = Component.GetStaticMesh();
+
 	if (IsMeshEquivalent(ShapeBarrier, OriginalMeshAsset))
 	{
 		NewMeshAsset = OriginalMeshAsset;
@@ -896,8 +897,11 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 			FAGX_ObjectUtilities::SaveAsset(*OriginalMeshAsset);
 		}
 
+		const FString FallbackName = ShapeBarrier.GetName().IsEmpty()
+										 ? "CollisionMesh"
+										 : ShapeBarrier.GetName() + FString("_CollisionMesh");
 		FAssetToDiskInfo AtdInfo = GetOrCreateStaticMeshAsset(
-			ShapeBarrier, "TrimeshCollisionMesh", RestoredMeshes, DirectoryName);
+			ShapeBarrier, FallbackName, RestoredMeshes, DirectoryName);
 		NewMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
 	}
 
@@ -1094,7 +1098,8 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	//                                   Geometry-to-Shape
 	//                                   transformation.
 	FTransform NewRelTransform = RelTransformOverride != nullptr
-		? *RelTransformOverride : ShapeBarrier.GetGeometryToShapeTransform().Inverse();
+									 ? *RelTransformOverride
+									 : ShapeBarrier.GetGeometryToShapeTransform().Inverse();
 
 	UMaterialInterface* OriginalRenderMaterial = Component.GetMaterial(0);
 
