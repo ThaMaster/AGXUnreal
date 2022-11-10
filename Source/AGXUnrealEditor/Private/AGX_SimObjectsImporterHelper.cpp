@@ -58,6 +58,7 @@
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
 #include "Materials/MaterialInstanceConstant.h"
+#include "MeshDescription.h"
 #include "Misc/Paths.h"
 #include "UObject/UObjectGlobals.h"
 
@@ -585,13 +586,13 @@ namespace
 			return false;
 		}
 
-		// @todo: figure out how to get the mesh vertices from the StatcMesh. The below code will
-		// get a RawMesh, but RawMesh.VertexPositions will be an empty array always.
+		// @todo: can we match the meshes in a fast way? The vertex count does not generally match
+		// apparently, probably because UE does some optimizations when building the original
+		// StaticMesh.
 #if 0
-		FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModel(0);
-		FRawMesh RawMesh;
-		SourceModel.RawMeshBulkData->LoadRawMesh(RawMesh);
-		// Compare vertex count and positions here.
+		FMeshDescription* MeshDescr = StaticMesh->GetMeshDescription(0);
+		const auto& Vertices = MeshDescr->Vertices();
+		// etc...
 #endif
 		return false;
 	}
@@ -924,12 +925,21 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	}
 
 	UStaticMesh* NewMeshAsset = nullptr;
-	if (IsMeshEquivalent(ShapeBarrier, Component.GetStaticMesh()))
+	UStaticMesh* OriginalMeshAsset = Component.GetStaticMesh();
+	if (IsMeshEquivalent(ShapeBarrier, OriginalMeshAsset))
 	{
-		NewMeshAsset = Component.GetStaticMesh();
+		NewMeshAsset = OriginalMeshAsset;
 	}
 	else
 	{
+		// First, we rename the original Mesh asset to avoid name collision with the new one.
+		if (OriginalMeshAsset != nullptr)
+		{
+			FAGX_EditorUtilities::RenameAsset(
+				*OriginalMeshAsset, FAGX_ImportUtilities::GetUnsetUniqueImportName(), "StaticMesh");
+			FAGX_ObjectUtilities::SaveAsset(*OriginalMeshAsset);
+		}
+
 		FAssetToDiskInfo AtdInfo = GetOrCreateStaticMeshAsset(
 			ShapeBarrier, "TrimeshCollisionMesh", RestoredMeshes, DirectoryName);
 		NewMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
@@ -1134,12 +1144,21 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 		RenderDataBarrier, ShapeBarrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
 	UStaticMesh* NewMeshAsset = nullptr;
 
-	if (IsMeshEquivalent(RenderDataBarrier, Component.GetStaticMesh()))
+	UStaticMesh* OriginalMeshAsset = Component.GetStaticMesh();
+	if (IsMeshEquivalent(RenderDataBarrier, OriginalMeshAsset))
 	{
-		NewMeshAsset = Component.GetStaticMesh();
+		NewMeshAsset = OriginalMeshAsset;
 	}
 	else
 	{
+		// First, we rename the original Mesh asset to avoid name collision with the new one.
+		if (OriginalMeshAsset != nullptr)
+		{
+			FAGX_EditorUtilities::RenameAsset(
+				*OriginalMeshAsset, FAGX_ImportUtilities::GetUnsetUniqueImportName(), "StaticMesh");
+			FAGX_ObjectUtilities::SaveAsset(*OriginalMeshAsset);
+		}
+
 		FAssetToDiskInfo AtdInfo =
 			GetOrCreateStaticMeshAsset(RenderDataBarrier, RestoredMeshes, DirectoryName);
 		NewMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);

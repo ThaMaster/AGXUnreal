@@ -653,11 +653,6 @@ UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSet
 
 namespace AGX_ImporterToBlueprint_reimport_helpers
 {
-	FString GetUnsetImportNodeName()
-	{
-		return FString("AGX_Import_Unnamed_") + FGuid::NewGuid().ToString();
-	}
-
 	template <typename T>
 	TArray<FGuid> GetGuidsFromBarriers(const TArray<T>& Barriers)
 	{
@@ -914,7 +909,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		{
 			USCS_Node* NewNode = BaseBP.SimpleConstructionScript->CreateNode(
 				UAGX_ContactMaterialRegistrarComponent::StaticClass(),
-				FName(GetUnsetImportNodeName()));
+				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
 			CMRegistrar = Cast<UAGX_ContactMaterialRegistrarComponent>(NewNode->ComponentTemplate);
 		}
@@ -979,12 +974,13 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 					? OverrideParent
 					: BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode();
 			Node = BaseBP.SimpleConstructionScript->CreateNode(
-				TComponent::StaticClass(), FName(GetUnsetImportNodeName()));
+				TComponent::StaticClass(), FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 			ShapeParent->AddChildNode(Node);
 			if constexpr (std::is_same<TComponent, UAGX_TrimeshShapeComponent>::value)
 			{
 				USCS_Node* CollisionMesh = BaseBP.SimpleConstructionScript->CreateNode(
-					UStaticMeshComponent::StaticClass(), FName(GetUnsetImportNodeName()));
+					UStaticMeshComponent::StaticClass(),
+					FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 				Node->AddChildNode(CollisionMesh);
 			}
 		}
@@ -1039,7 +1035,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		if (Node == nullptr)
 		{
 			Node = BaseBP.SimpleConstructionScript->CreateNode(
-				UStaticMeshComponent::StaticClass(), FName(GetUnsetImportNodeName()));
+				UStaticMeshComponent::StaticClass(),
+				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 			if (IsTrimesh)
 			{
 				AGX_CHECK(ShapeNode.GetChildNodes().Num() == 1);
@@ -1081,7 +1078,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 				// This object is new and does not exist in the Blueprint. Add it and then update
 				// it.Helper);
 				RigidBodyNode = BaseBP.SimpleConstructionScript->CreateNode(
-					UAGX_RigidBodyComponent::StaticClass(), FName(GetUnsetImportNodeName()));
+					UAGX_RigidBodyComponent::StaticClass(),
+					FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 				BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(
 					RigidBodyNode);
 
@@ -1206,7 +1204,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		if (SCSNodes.ReImportComponent == nullptr)
 		{
 			USCS_Node* NewNode = BaseBP.SimpleConstructionScript->CreateNode(
-				UAGX_ReImportComponent::StaticClass(), FName(GetUnsetImportNodeName()));
+				UAGX_ReImportComponent::StaticClass(),
+				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
 
 			Helper.UpdateReImportComponent(
@@ -1378,7 +1377,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	{
 		for (USCS_Node* Node : BaseBP.SimpleConstructionScript->GetAllNodes())
 		{
-			Node->SetVariableName(*GetUnsetImportNodeName());
+			Node->SetVariableName(*FAGX_ImportUtilities::GetUnsetUniqueImportName());
 		}
 	}
 

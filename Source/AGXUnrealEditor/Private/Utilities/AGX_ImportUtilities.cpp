@@ -502,3 +502,8 @@ FString FAGX_ImportUtilities::GetImportRenderMeshDirectoryName()
 {
 	return FString("RenderMesh");
 }
+
+FString FAGX_ImportUtilities::GetUnsetUniqueImportName()
+{
+	return FString("AGX_Import_Unnamed_") + FGuid::NewGuid().ToString();
+}

@@ -204,6 +204,8 @@ public:
 	static FString GetImportStaticMeshDirectoryName();
 	static FString GetImportRenderMeshDirectoryName();
 
+	static FString GetUnsetUniqueImportName();
+
 	/**
 	 * Create a new asset destined for the import directory. This functions will only create the
 	 * asset and setup it's Package, it will not actually save it to disk. That is the
