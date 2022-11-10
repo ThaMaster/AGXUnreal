@@ -46,7 +46,7 @@ void UAGX_ShapeComponent::SetNativeAddress(uint64 NativeAddress)
 	if (HasNative())
 	{
 		MergeSplitProperties.BindBarrierToOwner(*GetNative());
-	}	
+	}
 }
 
 TStructOnScope<FActorComponentInstanceData> UAGX_ShapeComponent::GetComponentInstanceData() const
@@ -374,7 +374,7 @@ bool UAGX_ShapeComponent::SetShapeMaterial(
 
 	if (!HasNative())
 	{
-		// Not in play, we are done.		
+		// Not in play, we are done.
 		return true;
 	}
 
