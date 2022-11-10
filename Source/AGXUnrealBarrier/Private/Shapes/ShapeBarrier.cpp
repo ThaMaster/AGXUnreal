@@ -253,6 +253,17 @@ bool FShapeBarrier::HasRenderData() const
 	return NativeRef->NativeShape->getRenderData() != nullptr;
 }
 
+bool FShapeBarrier::HasValidRenderData() const
+{
+	check(HasNative());
+	if (agxCollide::RenderData* RenderDataAGX = NativeRef->NativeShape->getRenderData())
+	{
+		return RenderDataAGX->getIndexArray().size() > 0;
+	}
+
+	return false;
+}
+
 FRenderDataBarrier FShapeBarrier::GetRenderData() const
 {
 	check(HasNative());

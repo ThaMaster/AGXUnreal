@@ -114,6 +114,11 @@ public:
 	bool HasRenderData() const;
 
 	/**
+	 * @return True if the native shape contains render data that also has triangle data.
+	 */
+	bool HasValidRenderData() const;
+
+	/**
 	 * Provide access to any render data that may be associated with the Shape. This data is
 	 * optional and only exists if HasRenderData returns true.
 	 * 

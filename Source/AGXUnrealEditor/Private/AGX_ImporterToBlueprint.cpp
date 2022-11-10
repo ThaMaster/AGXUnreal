@@ -216,7 +216,8 @@ namespace
 			{
 				if (Shape.HasRenderData())
 				{
-					Success &= Helper.InstantiateRenderData(Shape, ImportedActor) != nullptr;
+					Success &=
+						Helper.InstantiateRenderDataInBodyOrRoot(Shape, ImportedActor) != nullptr;
 				}
 			}
 			else
@@ -264,8 +265,8 @@ namespace
 				{
 					if (Trimesh.HasRenderData())
 					{
-						Success &=
-							Helper.InstantiateRenderData(Trimesh, ImportedActor, &Body) != nullptr;
+						Success &= Helper.InstantiateRenderDataInBodyOrRoot(
+									   Trimesh, ImportedActor, &Body) != nullptr;
 					}
 				}
 				else
@@ -1050,8 +1051,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 
 		Helper.UpdateRenderDataComponent(
-			ShapeBarrier, RenderDataBarrier, *Cast<UStaticMeshComponent>(Node->ComponentTemplate),
-			IsTrimesh);
+			ShapeBarrier, RenderDataBarrier, *Cast<UStaticMeshComponent>(Node->ComponentTemplate));
 	}
 
 	void AddOrUpdateRigidBodies(

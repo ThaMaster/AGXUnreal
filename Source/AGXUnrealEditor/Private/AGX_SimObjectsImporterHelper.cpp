@@ -726,10 +726,10 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 	Component->SetFlags(RF_Transactional);
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
 	UpdateComponent(Barrier, *Component, Unused);
-	
-	if (Barrier.HasRenderData())
+
+	if (Barrier.HasValidRenderData())
 	{
-		InstantiateRenderData(Barrier, Owner, *Component, false);
+		InstantiateRenderData(Barrier, Owner, *Component);
 	}
 
 	return Component;
@@ -760,9 +760,9 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
 	UpdateComponent(Barrier, *Component, Unused);
 
-	if (Barrier.HasRenderData())
+	if (Barrier.HasValidRenderData())
 	{
-		InstantiateRenderData(Barrier, Owner, *Component, false);
+		InstantiateRenderData(Barrier, Owner, *Component);
 	}
 
 	return Component;
@@ -794,9 +794,9 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
 	UpdateComponent(Barrier, *Component, Unused);
 
-	if (Barrier.HasRenderData())
+	if (Barrier.HasValidRenderData())
 	{
-		InstantiateRenderData(Barrier, Owner, *Component, false);
+		InstantiateRenderData(Barrier, Owner, *Component);
 	}
 
 	return Component;
@@ -827,9 +827,9 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
 	UpdateComponent(Barrier, *Component, Unused);
 
-	if (Barrier.HasRenderData())
+	if (Barrier.HasValidRenderData())
 	{
-		InstantiateRenderData(Barrier, Owner, *Component, false);
+		InstantiateRenderData(Barrier, Owner, *Component);
 	}
 
 	return Component;
@@ -867,9 +867,9 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 		FAGX_ImportUtilities::CreateComponent<UStaticMeshComponent>(Owner, *Component);
 	UpdateTrimeshCollisionMeshComponent(Barrier, *CollisionMesh);
 
-	if (Barrier.HasRenderData())
+	if (Barrier.HasValidRenderData())
 	{
-		InstantiateRenderData(Barrier, Owner, *CollisionMesh, true);
+		InstantiateRenderData(Barrier, Owner, *CollisionMesh);
 	}
 
 	Component->RegisterComponent();
@@ -880,16 +880,6 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	const FTrimeshShapeBarrier& ShapeBarrier, UStaticMeshComponent& Component)
 {
-	FTransform StaticMeshRelTransform = FTransform::Identity;
-	{
-		FVector ShapePosition;
-		FQuat ShapeRotation;
-		std::tie(ShapePosition, ShapeRotation) = ShapeBarrier.GetLocalPositionAndRotation();
-		const FTransform ShapeTransform(ShapeRotation, ShapePosition);
-		const FTransform ShapeToGeometry = ShapeBarrier.GetGeometryToShapeTransform().Inverse();
-		FTransform::Multiply(&StaticMeshRelTransform, &ShapeToGeometry, &ShapeTransform);
-	}
-
 	UStaticMesh* NewMeshAsset = nullptr;
 	UStaticMesh* OriginalMeshAsset = Component.GetStaticMesh();
 	if (IsMeshEquivalent(ShapeBarrier, OriginalMeshAsset))
@@ -913,21 +903,13 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 
 	FAGX_ImportUtilities::Rename(Component, *NewMeshAsset->GetName());
 
-	const bool Visible = !ShapeBarrier.HasRenderData();
+	const bool Visible = !ShapeBarrier.HasValidRenderData();
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
 		// Sync all component instances.
 		for (UStaticMeshComponent* Instance :
 			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
-			// Update transforms.
-			if (Instance->GetRelativeLocation() == Component.GetRelativeLocation() &&
-				Instance->GetRelativeRotation() == Component.GetRelativeRotation() &&
-				Instance->GetRelativeScale3D() == Component.GetRelativeScale3D())
-			{
-				Instance->SetRelativeTransform(StaticMeshRelTransform);
-			}
-
 			// Update Render Materials.
 			if (Visible && Instance->GetMaterial(0) == Component.GetMaterial(0))
 			{
@@ -948,7 +930,6 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 		}
 	}
 
-	Component.SetRelativeTransform(StaticMeshRelTransform);
 	Component.SetStaticMesh(NewMeshAsset);
 	Component.SetVisibility(Visible);
 	if (Visible)
@@ -994,6 +975,7 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 			Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
 	}
 
+	const bool Visible = !Barrier.HasValidRenderData();
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
 		// Sync all component instances.
@@ -1012,6 +994,11 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 				Instance->MergeSplitProperties.Thresholds =
 					Cast<UAGX_ShapeContactMergeSplitThresholds>(MSThresholds);
 			}
+
+			if (Instance->GetVisibleFlag() == Component.GetVisibleFlag())
+			{
+				Instance->SetVisibility(Visible);
+			}
 		}
 	}
 
@@ -1019,11 +1006,12 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 	Component.ShapeMaterial = NewShapeMaterial;
 	Component.MergeSplitProperties.Thresholds =
 		Cast<UAGX_ShapeContactMergeSplitThresholds>(MSThresholds);
+	Component.SetVisibility(Visible);
 }
 
 UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 	const FShapeBarrier& ShapeBarrier, AActor& Owner, USceneComponent& AttachParent,
-	bool UseSameTransformAsAttachParent)
+	FTransform* RelTransformOverride)
 {
 	const FRenderDataBarrier RenderDataBarrier = ShapeBarrier.GetRenderData();
 	if (!RenderDataBarrier.HasMesh())
@@ -1033,12 +1021,12 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 		FAGX_ImportUtilities::CreateComponent<UStaticMeshComponent>(Owner, AttachParent);
 
 	UpdateRenderDataComponent(
-		ShapeBarrier, RenderDataBarrier, *RenderMeshComponent, UseSameTransformAsAttachParent);
+		ShapeBarrier, RenderDataBarrier, *RenderMeshComponent, RelTransformOverride);
 
 	return RenderMeshComponent;
 }
 
-UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
+UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderDataInBodyOrRoot(
 	const FTrimeshShapeBarrier& TrimeshBarrier, AActor& Owner, const FRigidBodyBarrier* Body)
 {
 	USceneComponent* AttachParent = [&]() -> USceneComponent*
@@ -1054,16 +1042,6 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 		return Owner.GetRootComponent();
 	}();
 
-	FRenderDataBarrier RenderDataBarrier = TrimeshBarrier.GetRenderData();
-
-	if (!RenderDataBarrier.HasNative() || !RenderDataBarrier.HasMesh())
-	{
-		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Render Data"), TrimeshBarrier.GetName(), ImportSettings.FilePath,
-			TEXT("Got a RenderDataBarrier without a mesh."));
-		return nullptr;
-	}
-
 	FTransform RenderDataTransform = FTransform::Identity;
 	{
 		FVector TrimeshPosition;
@@ -1074,51 +1052,49 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 		FTransform::Multiply(&RenderDataTransform, &ShapeToGeometry, &TrimeshTransform);
 	}
 
-	UStaticMeshComponent* RenderDataComponent = CreateFromRenderData(
-		RenderDataBarrier, Owner, *AttachParent, RenderDataTransform, DirectoryName,
-		RestoredMeshes);
-
-	if (RenderDataComponent == nullptr)
-	{
-		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Render Data"), TrimeshBarrier.GetName(), ImportSettings.FilePath,
-			TEXT("Could not create a Static Mesh Component from given RenderDataBarrier."));
-		return nullptr;
-	}
-
-	const FGuid ShapeBarrierGuid = TrimeshBarrier.GetShapeGuid();
-	if (!RestoredStaticMeshComponents.Contains(ShapeBarrierGuid))
-	{
-		RestoredStaticMeshComponents.Add(ShapeBarrierGuid, TArray<UStaticMeshComponent*>());
-	}
-	RestoredStaticMeshComponents[ShapeBarrierGuid].Add(RenderDataComponent);
-
-	UMaterialInterface* RenderDataMaterial = CreateRenderMaterialFromRenderDataOrDefault(
-		RenderDataBarrier, TrimeshBarrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
-
-	if (RenderDataMaterial != nullptr)
-	{
-		RenderDataComponent->SetMaterial(0, RenderDataMaterial);
-	}
-
-	return RenderDataComponent;
+	return InstantiateRenderData(TrimeshBarrier, Owner, *AttachParent, &RenderDataTransform);
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	const FShapeBarrier& ShapeBarrier, const FRenderDataBarrier& RenderDataBarrier,
-	UStaticMeshComponent& Component, bool UseSameTransformAsAttachParent)
+	UStaticMeshComponent& Component, FTransform* RelTransformOverride)
 {
 	AGX_CHECK(RenderDataBarrier.HasMesh());
-	FTransform RenderDataRelTransform = FTransform::Identity;
-	if (!UseSameTransformAsAttachParent)
-	{
-		FVector ShapePosition;
-		FQuat ShapeRotation;
-		std::tie(ShapePosition, ShapeRotation) = ShapeBarrier.GetLocalPositionAndRotation();
-		const FTransform ShapeTransform(ShapeRotation, ShapePosition);
-		const FTransform ShapeToGeometry = ShapeBarrier.GetGeometryToShapeTransform().Inverse();
-		FTransform::Multiply(&RenderDataRelTransform, &ShapeToGeometry, &ShapeTransform);
-	}
+
+	// The triangles in the AGX Dynamics render data are relative to the Geometry, but the
+	// Unreal Engine Component we create is placed at the position of the AGX Dynamics
+	// Shape. There is no Component for the Geometry. To get the triangles in the right
+	// place we need to offset the render data Component by the inverse of the
+	// Geometry-to-Shape transformation in the source AGX Dynamics data.
+	//
+	// In AGX Dynamics:
+	//
+	//   Geometry           Shape       A
+	//   origin             origin   triangle
+	//     X                  O         |
+	//     '-----------28-------------->'
+	//           The vertex position
+	//     '--------18------->'
+	//      The Shape position
+	//      relative to the
+	//      geometry
+	//
+	//
+	// In Unreal Engine:
+	//
+	//                      Shape       A
+	//                      origin   triangle
+	//                        O         |                  |
+	//                        '-------------28------------>'
+	//                         Where the triangle would end
+	//                         up if the vertex position is
+	//                         used as-is.
+	//                                  '<------18---------'
+	//                                   The inverse of the
+	//                                   Geometry-to-Shape
+	//                                   transformation.
+	FTransform NewRelTransform = RelTransformOverride != nullptr
+		? *RelTransformOverride : ShapeBarrier.GetGeometryToShapeTransform().Inverse();
 
 	UMaterialInterface* OriginalRenderMaterial = Component.GetMaterial(0);
 
@@ -1162,7 +1138,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 				Instance->GetRelativeRotation() == Component.GetRelativeRotation() &&
 				Instance->GetRelativeScale3D() == Component.GetRelativeScale3D())
 			{
-				Instance->SetRelativeTransform(RenderDataRelTransform);
+				Instance->SetRelativeTransform(NewRelTransform);
 			}
 
 			// Update Render Materials.
@@ -1185,7 +1161,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 		}
 	}
 
-	Component.SetRelativeTransform(RenderDataRelTransform);
+	Component.SetRelativeTransform(NewRelTransform);
 	Component.SetMaterial(0, NewRenderMaterial);
 	Component.SetStaticMesh(NewMeshAsset);
 	Component.SetVisibility(Visible);
