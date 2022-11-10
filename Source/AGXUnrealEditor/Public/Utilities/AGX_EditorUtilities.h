@@ -215,34 +215,6 @@ public:
 		const FString& FallbackName);
 
 	/**
-	 * Create a new UStaticMeshComponent. The UStaticMeshComponent will be added as a child to the
-	 * given USceneComponent.
-	 *
-	 * @param Owner The Actor to which the StaticMeshComponent should be added.
-	 * @param Outer The USceneComponent that the StaticMeshComponent should be a child of.
-	 * @param MeshAsset The Mesh asset to assign the UStaticMeshComponent's static mesh to.
-	 * @param bRegister True if AActor::RegisterComponent should be called. Must be called later if
-	 * false.
-	 */
-	static UStaticMeshComponent* CreateStaticMeshComponent(
-		AActor& Owner, USceneComponent& Outer, UStaticMesh& MeshAsset, bool bRegister);
-
-	/**
-	 * Creates a new UAGX_ShapeMaterial for a shape material and returns the shape material
-	 * asset path. Returns empty string if the asset could not be created.
-	 */
-	static FString CreateShapeMaterialAsset(
-		const FString& DirName, const FShapeMaterialBarrier& Material);
-
-	/**
-	 * Creates a new UAGX_ContactMaterial for a contact material and returns the contact
-	 * material asset path. Returns empty string if the asset could not be created.
-	 */
-	static FString CreateContactMaterialAsset(
-		const FString& DirName, const FContactMaterialBarrier& ContactMaterial,
-		const FString& Material1, const FString& Material2);
-
-	/**
 	 * Create a new constraint of the specified type.
 	 */
 	static AAGX_ConstraintActor* CreateConstraintActor(
@@ -341,13 +313,6 @@ public:
 	template <typename T>
 	static T* GetSingleObjectBeingCustomized(
 		IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true);
-
-	/**
-	 * Assigns a shape material asset to the physical material of a UAGX_ShapeComponent, if the
-	 * asset is found. The ShapeMaterialAsset FString contains the path to the asset along with its
-	 * name.
-	 */
-	static bool ApplyShapeMaterial(UAGX_ShapeComponent* Shape, const FString& ShapeMaterialAsset);
 
 	/**
 	 * Convert a bool to a Slate visibility flag. True means visible, false means Collapsed (not

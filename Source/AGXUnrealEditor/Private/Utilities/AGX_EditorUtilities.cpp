@@ -735,71 +735,6 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 	BuildSettings.bUseHighPrecisionTangentBasis = false;
 }
 
-UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
-	AActor& Owner, USceneComponent& Outer, UStaticMesh& MeshAsset, bool bRegisterComponent)
-{
-	/// \todo Which EObjectFlags should be passed to NewObject?
-	UStaticMeshComponent* StaticMeshComponent =
-		NewObject<UStaticMeshComponent>(&Outer, FName(*MeshAsset.GetName()));
-	StaticMeshComponent->SetStaticMesh(&MeshAsset);
-	Owner.AddInstanceComponent(StaticMeshComponent);
-	if (bRegisterComponent)
-	{
-		StaticMeshComponent->RegisterComponent();
-	}
-	if (!StaticMeshComponent->AttachToComponent(
-			&Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale))
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Failed to attach imported StaticMeshComponent '%s' to parent Component '%s' in "
-				 "Actor '%s'."),
-			*StaticMeshComponent->GetName(), *Outer.GetName(), *Owner.GetName());
-	}
-	return StaticMeshComponent;
-}
-
-FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
-	const FString& DirName, const FShapeMaterialBarrier& Material)
-{
-	FString MaterialName =
-		CreateAssetName(Material.GetName(), DirName, TEXT("ImportedAGXMaterial"));
-
-	// Find actual package path and a unique asset name.
-	FString PackagePath = FString::Printf(TEXT("/Game/ImportedAGXShapeMaterials/%s/"), *DirName);
-	IAssetTools& AssetTools =
-		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-	AssetTools.CreateUniqueAssetName(PackagePath, MaterialName, PackagePath, MaterialName);
-
-	// Create the package that will hold our shape material asset.
-#if UE_VERSION_OLDER_THAN(4, 26, 0)
-	UPackage* Package = CreatePackage(nullptr, *PackagePath);
-#else
-	UPackage* Package = CreatePackage(*PackagePath);
-#endif
-
-#if 0
-		/// \todo Unclear if this is needed or not. Leaving it out for now but
-		/// test with it restored if there are problems.
-		Package->FullyLoad();
-#endif
-
-	UAGX_ShapeMaterial* MaterialAsset =
-		NewObject<UAGX_ShapeMaterial>(Package, FName(*MaterialName), RF_Public | RF_Standalone);
-
-	// Copy material properties to the new material asset.
-	MaterialAsset->CopyFrom(&Material);
-
-	FAssetToDiskInfo AtdInfo {Package, MaterialAsset, PackagePath, MaterialName};
-	bool Saved = FinalizeAndSavePackage(AtdInfo);
-	if (!Saved)
-	{
-		// Return empty string if asset was not created properly.
-		return FString();
-	}
-
-	return PackagePath;
-}
 
 AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	UClass* ConstraintType, UAGX_RigidBodyComponent* RigidBody1,
@@ -1153,27 +1088,6 @@ void FAGX_EditorUtilities::GetAllClassesOfType(
 			}
 		}
 	}
-}
-
-bool FAGX_EditorUtilities::ApplyShapeMaterial(
-	UAGX_ShapeComponent* Shape, const FString& ShapeMaterialAsset)
-{
-	if (!Shape)
-	{
-		return false;
-	}
-
-	// Get the ShapeMaterialAsset.
-	UAGX_ShapeMaterial* MaterialAsset = GetAssetByPath<UAGX_ShapeMaterial>(ShapeMaterialAsset);
-
-	if (!MaterialAsset)
-	{
-		// Logging handled by GetAssetByPath().
-		return false;
-	}
-
-	Shape->ShapeMaterial = MaterialAsset;
-	return true;
 }
 
 EVisibility FAGX_EditorUtilities::VisibleIf(bool bVisible)
