@@ -254,6 +254,7 @@ namespace
 }
 
 #if WITH_EDITOR
+
 void AAGX_Terrain::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
@@ -264,6 +265,31 @@ void AAGX_Terrain::PostInitProperties()
 {
 	Super::PostInitProperties();
 	InitPropertyDispatcher();
+}
+
+namespace AGX_Terrain_helpers
+{
+	void EnsureUseDynamicMaterialInstance(AAGX_Terrain& Terrain)
+	{
+		if (Terrain.SourceLandscape == nullptr ||
+			Terrain.SourceLandscape->bUseDynamicMaterialInstance)
+		{
+			return;
+		}
+
+		FText AskEnableDynamicMaterial = LOCTEXT(
+			"EnableDynamicMaterial?",
+			"The selected Landscape does not have Use Dynamic Material Instance enabled, "
+			"meaning that the material parameters for Landsacpe size and position cannot "
+			"be set automatically. Should Use Dynamic Material Instance be enabled on the "
+			"Landscape?");
+		if (FAGX_NotificationUtilities::YesNoQuestion(AskEnableDynamicMaterial))
+		{
+			Terrain.SourceLandscape->bUseDynamicMaterialInstance = true;
+			Terrain.SourceLandscape->Modify();
+			Terrain.SourceLandscape->PostEditChange();
+		}
+	}
 }
 
 void AAGX_Terrain::InitPropertyDispatcher()
@@ -277,26 +303,7 @@ void AAGX_Terrain::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, SourceLandscape),
-		[](ThisClass* This)
-		{
-			if (This->SourceLandscape == nullptr || This->SourceLandscape->bUseDynamicMaterialInstance)
-			{
-				return;
-			}
-
-			FText AskEnableDynamicMaterial = LOCTEXT(
-				"EnableDynamicMaterial?",
-				"The selected Landscape does not have Use Dynamic Material Instance enabled, "
-				"meaning that the material parameters for Landsacpe size and position cannot "
-				"be set automatically. Should Use Dynamic Material Instance be enabled on the "
-				"Landscape?");
-			if (FAGX_NotificationUtilities::YesNoQuestion(AskEnableDynamicMaterial))
-			{
-				This->SourceLandscape->bUseDynamicMaterialInstance = true;
-				This->SourceLandscape->Modify();
-				This->SourceLandscape->PostEditChange();
-			}
-		});
+		[](ThisClass* This) { AGX_Terrain_helpers::EnsureUseDynamicMaterialInstance(*This); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, bCreateParticles),
