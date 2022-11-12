@@ -848,7 +848,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 								continue;
 
 							AGX_CHECK(!CollisionStaticMeshComponents.Contains(Guid));
-							CollisionStaticMeshComponents[Guid] = StaticMeshComponentNode;
+							CollisionStaticMeshComponents.Add(Guid, StaticMeshComponentNode);
 						}
 					}
 					for (const auto& SMCTuple : Re->StaticMeshComponentToOwningRenderData)
@@ -861,7 +861,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 								continue;
 
 							AGX_CHECK(!RenderStaticMeshComponents.Contains(Guid));
-							RenderStaticMeshComponents[Guid] = StaticMeshComponentNode;
+							RenderStaticMeshComponents.Add(Guid, StaticMeshComponentNode);
 						}
 					}
 				}
@@ -968,13 +968,15 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		return CMRegistrar;
 	}
 
-	void ReParentNode(USCS_Node& Node, USCS_Node& NewParent)
+	void ReParentNode(UBlueprint& BaseBP, USCS_Node& Node, USCS_Node& NewParent)
 	{
-		// todo implement!!
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("ReParentNode called for Node %s new parent %s but it is not yet implemented."),
-			*Node.GetName(), *NewParent.GetName());
+		USCS_Node* OldParent = BaseBP.SimpleConstructionScript->FindParentNode(&Node);
+		if (OldParent != nullptr)
+		{
+			OldParent->RemoveChildNode(&Node);
+		}
+		
+		NewParent.AddChildNode(&Node);
 	}
 
 	void AddOrUpdateContactMaterials(
@@ -1025,7 +1027,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		if (SCSNodes.ShapeComponents.Contains(Guid))
 		{
 			Node = SCSNodes.ShapeComponents[Guid];
-			ReParentNode(*Node, *AttachParent);
+			ReParentNode(BaseBP, *Node, *AttachParent);
 		}
 		else
 		{
@@ -1057,7 +1059,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 			// Render Data may need to re-parent in the case that this model was imported with a
 			// different import setting for "Ignore Disabled Trimeshes" than the original import.
-			ReParentNode(*RenderDataNode, AttachParent);
+			ReParentNode(BaseBP, *RenderDataNode, AttachParent);
 		}
 		else
 		{
@@ -1146,13 +1148,25 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 							ShapeBarrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets,
 							RigidBodyNode);
 
-					USCS_Node* CollisionMesh = BaseBP.SimpleConstructionScript->CreateNode(
-						UStaticMeshComponent::StaticClass(),
-						FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
-					ShapeNode->AddChildNode(CollisionMesh);
+					// The ShapeNode Trimesh returned from AddOrUpdateShape above may or may not be a new
+					// Trimesh. If it is new, we need to create a new collision mesh for it.
+					USCS_Node* CollisionMesh = nullptr;
+					if (ShapeNode->GetChildNodes().Num() == 0)
+					{
+						CollisionMesh = BaseBP.SimpleConstructionScript->CreateNode(
+							UStaticMeshComponent::StaticClass(),
+							FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+						ShapeNode->AddChildNode(CollisionMesh);
+					}
+					else
+					{
+						CollisionMesh = ShapeNode->GetChildNodes()[0];
+					}
+
 					Helper.UpdateTrimeshCollisionMeshComponent(
 						ShapeBarrier,
 						*Cast<UStaticMeshComponent>(CollisionMesh->ComponentTemplate));
+					RenderDataParent = CollisionMesh;
 				}
 
 				AddOrUpdateRenderData(ShapeBarrier, *RenderDataParent, BaseBP, SCSNodes, Helper);
@@ -1207,12 +1221,25 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 					AddOrUpdateShape<decltype(Barrier), UAGX_TrimeshShapeComponent>(
 						Barrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets);
 
-				USCS_Node* CollisionMesh = BaseBP.SimpleConstructionScript->CreateNode(
-					UStaticMeshComponent::StaticClass(),
-					FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
-				ShapeNode->AddChildNode(CollisionMesh);
+				// The ShapeNode Trimesh returned from AddOrUpdateShape above may or may not be a
+				// new Trimesh. If it is new, we need to create a new collision mesh for it.
+				USCS_Node* CollisionMesh = nullptr;
+				if (ShapeNode->GetChildNodes().Num() == 0)
+				{
+					CollisionMesh = BaseBP.SimpleConstructionScript->CreateNode(
+						UStaticMeshComponent::StaticClass(),
+						FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+					ShapeNode->AddChildNode(CollisionMesh);
+				}
+				else
+				{
+					CollisionMesh = ShapeNode->GetChildNodes()[0];
+				}
+
 				Helper.UpdateTrimeshCollisionMeshComponent(
 					Barrier, *Cast<UStaticMeshComponent>(CollisionMesh->ComponentTemplate));
+
+				RenderDataParent = CollisionMesh;
 			}
 
 			AddOrUpdateRenderData(Barrier, *RenderDataParent, BaseBP, SCSNodes, Helper);
@@ -1304,7 +1331,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	}
 
 	void RemoveDeletedShapes(
-		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, const FShapeGuidsCollection& NewShapeGuids)
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FAGX_ImportSettings& ImportSettings, const FShapeGuidsCollection& NewShapeGuids)
 	{
 		for (auto It = SCSNodes.ShapeComponents.CreateIterator(); It; ++It)
 		{
@@ -1313,6 +1341,17 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			{
 				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
 				It.RemoveCurrent();
+			}
+			else if (NewShapeGuids.TrimeshShapeGuids.Contains(It->Key))
+			{
+				// If we re-import with the "Ignore disabled Trimeshes" import setting and this Trimesh
+				// has collision disabled, it should be removed.
+				const bool CollisionEnabled = NewShapeGuids.TrimeshShapeGuids[It->Key];
+				if (!CollisionEnabled && ImportSettings.bIgnoreDisabledTrimeshes)
+				{
+					BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
+					It.RemoveCurrent();
+				}				
 			}
 		}
 	}
@@ -1381,7 +1420,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		const FShapeGuidsCollection NewShapeGuids = GetShapeGuids(SimulationObjects);
 
 		RemoveDeletedStaticMeshComponents(BaseBP, SCSNodes, NewShapeGuids, ImportSettings);
-		RemoveDeletedShapes(BaseBP, SCSNodes, NewShapeGuids);
+		RemoveDeletedShapes(BaseBP, SCSNodes, ImportSettings, NewShapeGuids);
 		RemoveDeletedRigidBodies(BaseBP, SCSNodes, SimulationObjects);
 	}
 
