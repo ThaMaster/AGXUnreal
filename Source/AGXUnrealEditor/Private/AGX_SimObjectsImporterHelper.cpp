@@ -431,7 +431,7 @@ namespace
 
 void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 	const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component,
-	TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
 {
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
 	Component.CopyFrom(Barrier);
@@ -762,6 +762,12 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	Component.SetVisibility(Visible);
 	if (Visible)
 		SetDefaultRenderMaterial(Component, ShapeBarrier.GetIsSensor());
+
+	const FGuid ShapeGuid = ShapeBarrier.GetShapeGuid();
+	if (!RestoredCollisionStaticMeshComponents.Contains(ShapeGuid))
+	{
+		RestoredCollisionStaticMeshComponents.Add(ShapeGuid);
+	}
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateComponent(
@@ -994,6 +1000,12 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	Component.SetMaterial(0, NewRenderMaterial);
 	Component.SetStaticMesh(NewMeshAsset);
 	Component.SetVisibility(Visible);
+
+	const FGuid RenderDataGuid = RenderDataBarrier.GetGuid();
+	if (!RestoredRenderStaticMeshComponents.Contains(RenderDataGuid))
+	{
+		RestoredRenderStaticMeshComponents.Add(RenderDataGuid);
+	}	
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateAndSaveShapeMaterialAsset(
@@ -1540,13 +1552,20 @@ void FAGX_SimObjectsImporterHelper::UpdateReImportComponent(UAGX_ReImportCompone
 
 		C->FilePath = ImportSettings.FilePath;
 		C->bIgnoreDisabledTrimeshes = ImportSettings.bIgnoreDisabledTrimeshes;
-		C->StaticMeshComponentToOwningShape.Empty();
-		for (const auto& RestoredSMCTuple : RestoredStaticMeshComponents)
+		C->StaticMeshComponentToOwningTrimesh.Empty();
+		for (const auto& RestoredSMCTuple : RestoredCollisionStaticMeshComponents)
 		{
-			for (UStaticMeshComponent* SMC : RestoredSMCTuple.Value)
-			{
-				C->StaticMeshComponentToOwningShape.Add(SMC->GetName(), RestoredSMCTuple.Key);
-			}
+			const FString Name = RestoredSMCTuple.Value->GetName();
+			AGX_CHECK(!C->StaticMeshComponentToOwningTrimesh.Contains(Name));
+			C->StaticMeshComponentToOwningTrimesh.Add(Name, RestoredSMCTuple.Key);
+		}
+
+		C->StaticMeshComponentToOwningRenderData.Empty();
+		for (const auto& RestoredSMCTuple : RestoredRenderStaticMeshComponents)
+		{
+			const FString Name = RestoredSMCTuple.Value->GetName();
+			AGX_CHECK(!C->StaticMeshComponentToOwningTrimesh.Contains(Name));
+			C->StaticMeshComponentToOwningRenderData.Add(Name, RestoredSMCTuple.Key);
 		}
 	};
 

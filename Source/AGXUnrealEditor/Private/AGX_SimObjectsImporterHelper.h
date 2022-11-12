@@ -63,7 +63,7 @@ public:
 
 	void UpdateRigidBodyComponent(
 		const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
 
 	UAGX_SphereShapeComponent* InstantiateSphere(
 		const FSphereShapeBarrier& Sphere, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
@@ -223,7 +223,9 @@ private:
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
 	TMap<FGuid, UAGX_TrackProperties*> RestoredTrackProperties;
 
-	// The key is the Guid of the owning Shape. Since multiple Static Mesh Components may be created
-	// from a single Shape (e.g. a Trimesh with RenderData), the value is an array.
-	TMap<FGuid, TArray<UStaticMeshComponent*>> RestoredStaticMeshComponents;
+	// The key is the Guid of the corresponding AGX Dynamics RenderData.
+	TMap<FGuid, UStaticMeshComponent*> RestoredRenderStaticMeshComponents;
+
+	// The key is the Guid of the corresponding AGX Dynamics Trimesh.
+	TMap<FGuid, UStaticMeshComponent*> RestoredCollisionStaticMeshComponents;
 };

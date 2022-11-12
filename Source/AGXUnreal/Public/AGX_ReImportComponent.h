@@ -22,10 +22,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Re-import Info")
 	bool bIgnoreDisabledTrimeshes = false;
 
-	// Key is the name of the imported Static Mesh Component and the value is the guid of the
-	// owning Shape's native. The reason why this data is stored in this Component is that
-	// we cannot store an ImportGuid into Static Mesh Components as we do for any imported AGXUnreal
-	// Components.
+
+	// The reason why these Guid maps are stored in this Component is
+	// that we cannot store an ImportGuid into Static Mesh Components as we do for any imported
+	// AGXUnreal Components.
+
+	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the guid
+	// of the owning Trimesh.
 	UPROPERTY(EditAnywhere, Category = "AGX Re-import Info")
-	TMap<FString, FGuid> StaticMeshComponentToOwningShape;
+	TMap<FString, FGuid> StaticMeshComponentToOwningTrimesh;
+
+	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the guid
+	// of the owning RenderData. 
+	UPROPERTY(EditAnywhere, Category = "AGX Re-import Info")
+	TMap<FString, FGuid> StaticMeshComponentToOwningRenderData;
 };

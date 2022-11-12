@@ -84,6 +84,12 @@ namespace
 				case agxCollide::Shape::TRIMESH:
 				{
 					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
+					if (Trimesh->getNumTriangles() == 0)
+					{
+						// Skip Trimeshes with no collision data.
+						break;
+					}						
+
 					OutSimObjects.GetTrimeshShapes().Add(
 						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh));
 					break;
