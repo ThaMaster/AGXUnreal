@@ -216,7 +216,7 @@ private:
 		const FShapeBarrier& Barrier, UAGX_ShapeComponent& Component,
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
 
-	TMap<FGuid, UStaticMesh*> RestoredMeshes;
+	TMap<FGuid, UStaticMesh*> RestoredMeshes; // Static Mesh Assets.
 	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> RestoredThresholds;
 	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
 	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;

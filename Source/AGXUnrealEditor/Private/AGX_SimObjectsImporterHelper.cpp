@@ -766,7 +766,7 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	const FGuid ShapeGuid = ShapeBarrier.GetShapeGuid();
 	if (!RestoredCollisionStaticMeshComponents.Contains(ShapeGuid))
 	{
-		RestoredCollisionStaticMeshComponents.Add(ShapeGuid);
+		RestoredCollisionStaticMeshComponents.Add(ShapeGuid, &Component);
 	}
 }
 
@@ -1004,7 +1004,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	const FGuid RenderDataGuid = RenderDataBarrier.GetGuid();
 	if (!RestoredRenderStaticMeshComponents.Contains(RenderDataGuid))
 	{
-		RestoredRenderStaticMeshComponents.Add(RenderDataGuid);
+		RestoredRenderStaticMeshComponents.Add(RenderDataGuid, &Component);
 	}	
 }
 
