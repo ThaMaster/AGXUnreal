@@ -97,7 +97,7 @@ namespace AGX_HeightFieldUtilities_helpers
 	}
 
 	// This function should only be used if the landscape is not rotated around world x or y axis.
-	// The reason for this is that the Landscape.GetHeightAtLocaion does not handle that case. It
+	// The reason for this is that the Landscape.GetHeightAtLocation does not handle that case. It
 	// will measure along the world z-axis (instead of the Landscapes local z-axis as it should)
 	// such that sharp peaks will be cut off and tilted.
 	TArray<float> GetHeigtsUsingApi(

@@ -217,6 +217,7 @@ private:
 
 	void InitializeRendering();
 	void InitializeDisplacementMap();
+	void UpdateLandscapeMaterialParameters();
 	void UpdateDisplacementMap();
 	void ClearDisplacementMap();
 	bool InitializeParticleSystem();
