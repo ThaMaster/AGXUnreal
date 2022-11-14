@@ -30,10 +30,21 @@ UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 	const ALandscape& Landscape = TransformAndLandscape->Landscape;
 	const FTransform& OwnerTransform = TransformAndLandscape->Transform;
 
-	static constexpr float LargeNumber = 1.e+10f;
-	static constexpr double KindaLargeNumber = 1.e+4;
-	const FVector SelectedHalfExtentBounds =
-		bInfiniteBounds ? FVector(LargeNumber, LargeNumber, KindaLargeNumber) : HalfExtent;
+	const FVector SelectedHalfExtentBounds = [&]()
+	{
+		if (!bInfiniteBounds)
+			return HalfExtent;
+
+		// Use the Landscape size.
+		// At scale = 1, the height span is +- 256 cm
+		// https://docs.unrealengine.com/en-US/Engine/Landscape/TechnicalGuide/#calculatingheightmapzscale
+		const double HeightSpanHalf = 256.0 * Landscape.GetActorScale3D().Z;
+
+		double LandscapeSizeX, LandscapeSizeY;
+		std::tie(LandscapeSizeX, LandscapeSizeY) =
+			AGX_HeightFieldUtilities::GetLandscapeSizeXY(Landscape);
+		return FVector(LandscapeSizeX, LandscapeSizeY, HeightSpanHalf);
+	}();
 
 	if (SelectedHalfExtentBounds.X < 0 || SelectedHalfExtentBounds.Y < 0 ||
 		SelectedHalfExtentBounds.Z < 0)

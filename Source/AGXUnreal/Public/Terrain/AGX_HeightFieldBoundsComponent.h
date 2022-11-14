@@ -48,7 +48,7 @@ public:
 
 	/**
 	 * Get Bounds that are adjusted to align with the Landscape quads.
-	 * Each edge of this Bound will allign with the neareast Landscape grid line inside the
+	 * Each edge of this Bound will align with the nearest Landscape grid line inside the
 	 * UserSetBounds. Only valid if the owner of this Component is an AGX_Terrain or
 	 * AGX_HeightFieldShape and a SourceLandscape is set in that owner.
 	 */
