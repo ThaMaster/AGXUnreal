@@ -12,6 +12,7 @@
 #include "AGX_HeightFieldShapeComponent.generated.h"
 
 class ALandscape;
+class UAGX_HeightFieldBoundsComponent;
 
 /**
  *
@@ -23,7 +24,9 @@ class AGXUNREAL_API UAGX_HeightFieldShapeComponent : public UAGX_ShapeComponent
 
 public:
 	UAGX_HeightFieldShapeComponent();
-	virtual ~UAGX_HeightFieldShapeComponent();
+
+	UPROPERTY(Category = "AGX Shape", VisibleAnywhere)
+	UAGX_HeightFieldBoundsComponent* HeightFieldBounds;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
 	ALandscape* SourceLandscape = nullptr;
@@ -47,12 +50,6 @@ public:
 	 */
 	void CopyFrom(const FHeightFieldShapeBarrier& Barrier);
 
-	// ~Begin UObject interface.
-#if WITH_EDITOR
-	virtual void PostEditChangeChainProperty(
-		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
-#endif
-	// ~End UObject interface.
 
 protected:
 	// ~Begin UAGX_ShapeComponent interface.
@@ -70,16 +67,8 @@ protected:
 private:
 	/// Create the AGX Dynamics objects owned by the FBoxShapeBarrier.
 	void CreateNative();
-
-	void OnSourceLandscapeChanged(UObject*, struct FPropertyChangedEvent&);
-
-	void RecenterOnLandscape();
+	virtual void Serialize(FArchive& Archive) override;
 
 private:
 	FHeightFieldShapeBarrier NativeBarrier;
-
-#if WITH_EDITORONLY_DATA
-	FCoreUObjectDelegates::FOnObjectPropertyChanged::FDelegate OnPropertyChangedHandle;
-	FDelegateHandle OnPropertyChangedHandleDelegateHandle;
-#endif
 };

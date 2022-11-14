@@ -15,6 +15,7 @@
 
 #include "AGX_Terrain.generated.h"
 
+class UAGX_HeightFieldBoundsComponent;
 class UAGX_TerrainMaterial;
 class ALandscape;
 class UNiagaraComponent;
@@ -28,6 +29,9 @@ class AGXUNREAL_API AAGX_Terrain : public AActor
 public:
 	// Sets default values for this actor's properties
 	AAGX_Terrain();
+
+	UPROPERTY(Category = "AGX Terrain", VisibleAnywhere, BlueprintReadOnly)
+	UAGX_HeightFieldBoundsComponent* TerrainBounds;
 
 	/**
 	 * The Landscape that AGX Terrain will use as initialization data, and will also modify
@@ -210,7 +214,6 @@ private:
 	void CreateNativeShovels();
 	bool UpdateNativeMaterial();
 
-	void SetInitialTransform();
 	void InitializeRendering();
 	void InitializeDisplacementMap();
 	void UpdateLandscapeMaterialParameters();
@@ -225,6 +228,7 @@ private:
 	void InitPropertyDispatcher();
 	void EnsureParticleDataRenderTargetSize();
 #endif
+	virtual void Serialize(FArchive& Archive) override;
 
 private:
 	FTerrainBarrier NativeBarrier;
@@ -234,6 +238,7 @@ private:
 	TArray<FFloat16> DisplacementData;
 	TArray<FUpdateTextureRegion2D> DisplacementMapRegions; // TODO: Remove!
 	bool DisplacementMapInitialized = false;
+	std::tuple<int32, int32> CachedLandscapeVertsXY;
 
 /// \todo Cannot use AGX Dynamics types in the AGXUnreal module. Must live in the Barrier.
 #if 0

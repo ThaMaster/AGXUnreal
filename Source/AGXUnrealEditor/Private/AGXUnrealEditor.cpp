@@ -68,6 +68,9 @@
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_ShapeComponentCustomization.h"
 #include "Terrain/AGX_Terrain.h"
+#include "Terrain/AGX_HeightFieldBoundsComponent.h"
+#include "Terrain/AGX_HeightFieldBoundsComponentCustomization.h"
+#include "Terrain/AGX_HeightFieldBoundsComponentVisualizer.h"
 #include "Tires/AGX_TireComponentVisualizer.h"
 #include "Tires/AGX_TireComponent.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
@@ -187,7 +190,8 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 		AssetTools, MakeShareable(new FAGX_TrackPropertiesAssetTypeActions(AgxAssetCategoryBit)));
 
 	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_TrackInternalMergePropertiesAssetTypeActions(AgxAssetCategoryBit)));
+		AssetTools,
+		MakeShareable(new FAGX_TrackInternalMergePropertiesAssetTypeActions(AgxAssetCategoryBit)));
 }
 
 void FAGXUnrealEditorModule::UnregisterAssetTypeActions()
@@ -315,6 +319,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		UAGX_TrackRenderer::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_TrackRendererDetails::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_HeightFieldBoundsComponentCustomization::MakeInstance));
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -375,6 +384,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackRenderer::StaticClass()->GetFName());
 
+	PropertyModule.UnregisterCustomClassLayout(UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -403,6 +414,10 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 	RegisterComponentVisualizer(
 		UAGX_WireWinchComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_WireWinchVisualizer));
+
+	RegisterComponentVisualizer(
+		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_HeightFieldBoundsComponentVisualizer));
 }
 
 void FAGXUnrealEditorModule::UnregisterComponentVisualizers()

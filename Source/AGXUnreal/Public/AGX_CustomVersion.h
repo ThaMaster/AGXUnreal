@@ -36,6 +36,10 @@ struct AGXUNREAL_API FAGX_CustomVersion
 		// HardeningConstantKe, HardeningConstantNe, BankStatePhi0.
 		RenameTerrainMaterialKeNePhi0,
 
+		// Use Height Field Bounds to select samping area of Landscapes in Terrain and
+		// HeightFieldShapeComponent.
+		HeightFieldUsesBounds,
+
 		// <----- New versions can be added above this line. ----->
 		VersionPlusOne,
 
