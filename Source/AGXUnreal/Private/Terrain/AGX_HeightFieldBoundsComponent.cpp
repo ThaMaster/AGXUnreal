@@ -62,11 +62,6 @@ UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 	return BoundsInfo;
 }
 
-/**
- * Get Bounds that are adjusted to align with the Landscape quads.
- * Only valid if the owner of this Component is an AGX_Terrain Actor and a SourceLandscape is
- * set in that owner.
- */
 TOptional<UAGX_HeightFieldBoundsComponent::FHeightFieldBoundsInfo>
 UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 {
