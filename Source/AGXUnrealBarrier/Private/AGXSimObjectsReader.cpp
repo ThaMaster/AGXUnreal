@@ -256,6 +256,11 @@ namespace
 				continue;
 			}
 
+			if (Constraint->getNumBodies() == 0)
+			{
+				continue;
+			}
+
 			if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
 			{
 				OutSimObjects.GetHingeConstraints().Add(

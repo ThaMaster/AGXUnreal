@@ -524,6 +524,8 @@ void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
 	{
 		MergeSplitProperties.CopyFrom(Msp);
 	}
+
+	ImportGuid = Barrier.GetGuid();
 }
 
 void UAGX_ConstraintComponent::SetSolveType(EAGX_SolveType InSolveType)

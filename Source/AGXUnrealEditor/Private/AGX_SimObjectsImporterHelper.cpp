@@ -1134,42 +1134,25 @@ namespace
 		FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
 		return Component;
 	}
-
-	/// \todo Consider removing the 1Dof and 2Dof instantiatior functions. Does not seem to be
-	/// needed, just call the generic InstantiateConstraint immediately.
-
-	template <typename UComponent>
-	UComponent* InstantiateConstraint1Dof(
-		const FConstraint1DOFBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
-		const FString& DirectoryName)
-	{
-		return InstantiateConstraint<UComponent>(
-			Barrier, Owner, Helper, RestoredThresholds, DirectoryName);
-	}
-
-	template <typename UConstraint>
-	UConstraint* InstantiateConstraint2Dof(
-		const FConstraint2DOFBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
-		const FString& DirectoryName)
-	{
-		return InstantiateConstraint<UConstraint>(
-			Barrier, Owner, Helper, RestoredThresholds, DirectoryName);
-	}
 }
 
 UAGX_HingeConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateHinge(
 	const FHingeBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint1Dof<UAGX_HingeConstraintComponent>(
+	return ::InstantiateConstraint<UAGX_HingeConstraintComponent>(
 		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
+}
+
+void UpdateConstraintComponent(
+	const FHingeBarrier& Barrier, UAGX_HingeConstraintComponent& Component)
+{
+	// todo: impl.
 }
 
 UAGX_PrismaticConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiatePrismatic(
 	const FPrismaticBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint1Dof<UAGX_PrismaticConstraintComponent>(
+	return ::InstantiateConstraint<UAGX_PrismaticConstraintComponent>(
 		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
@@ -1184,14 +1167,14 @@ UAGX_CylindricalConstraintComponent*
 FAGX_SimObjectsImporterHelper::InstantiateCylindricalConstraint(
 	const FCylindricalJointBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint2Dof<UAGX_CylindricalConstraintComponent>(
+	return ::InstantiateConstraint<UAGX_CylindricalConstraintComponent>(
 		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
 UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDistanceConstraint(
 	const FDistanceJointBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint1Dof<UAGX_DistanceConstraintComponent>(
+	return ::InstantiateConstraint<UAGX_DistanceConstraintComponent>(
 		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 

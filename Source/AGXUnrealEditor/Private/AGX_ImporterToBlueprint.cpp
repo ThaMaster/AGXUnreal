@@ -830,9 +830,49 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 				}
 				else if (auto Co = Cast<UAGX_ConstraintComponent>(Component))
 				{
-					AGX_CHECK(!ConstraintComponents.Contains(Co->ImportGuid));
-					if (Co->ImportGuid.IsValid())
-						ConstraintComponents.Add(Co->ImportGuid, Node);
+					if (auto Hi = Cast<UAGX_HingeConstraintComponent>(Component))
+					{
+						AGX_CHECK(!HingeConstraints.Contains(Hi->ImportGuid));
+						if (Hi->ImportGuid.IsValid())
+							HingeConstraints.Add(Hi->ImportGuid, Node);
+					}
+					else if (auto Pr = Cast<UAGX_PrismaticConstraintComponent>(Component))
+					{
+						AGX_CHECK(!PrismaticConstraints.Contains(Pr->ImportGuid));
+						if (Pr->ImportGuid.IsValid())
+							PrismaticConstraints.Add(Pr->ImportGuid, Node);
+					}
+					else if (auto Ba = Cast<UAGX_BallConstraintComponent>(Component))
+					{
+						AGX_CHECK(!BallConstraints.Contains(Ba->ImportGuid));
+						if (Ba->ImportGuid.IsValid())
+							BallConstraints.Add(Ba->ImportGuid, Node);
+					}
+					else if (auto Cy = Cast<UAGX_CylindricalConstraintComponent>(Component))
+					{
+						AGX_CHECK(!CylindricalConstraints.Contains(Cy->ImportGuid));
+						if (Cy->ImportGuid.IsValid())
+							CylindricalConstraints.Add(Cy->ImportGuid, Node);
+					}
+					else if (auto Di = Cast<UAGX_DistanceConstraintComponent>(Component))
+					{
+						AGX_CHECK(!DistanceConstraints.Contains(Di->ImportGuid));
+						if (Di->ImportGuid.IsValid())
+							DistanceConstraints.Add(Di->ImportGuid, Node);
+					}
+					else if (auto Lo = Cast<UAGX_LockConstraintComponent>(Component))
+					{
+						AGX_CHECK(!LockConstraints.Contains(Lo->ImportGuid));
+						if (Lo->ImportGuid.IsValid())
+							LockConstraints.Add(Lo->ImportGuid, Node);
+					}
+					else
+					{
+						UE_LOG(
+							LogAGX, Error, TEXT("Found Node: '%s' with unsupported type."),
+							*Node->GetName());
+						AGX_CHECK(false);
+					}
 				}
 				else if (auto Re = Cast<UAGX_ReImportComponent>(Component))
 				{
@@ -891,7 +931,12 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		// previous import.
 		TMap<FGuid, USCS_Node*> RigidBodies;
 		TMap<FGuid, USCS_Node*> ShapeComponents; // Including Shapes owned by Rigid Bodies.
-		TMap<FGuid, USCS_Node*> ConstraintComponents;
+		TMap<FGuid, USCS_Node*> HingeConstraints;
+		TMap<FGuid, USCS_Node*> PrismaticConstraints;
+		TMap<FGuid, USCS_Node*> BallConstraints;
+		TMap<FGuid, USCS_Node*> CylindricalConstraints;
+		TMap<FGuid, USCS_Node*> DistanceConstraints;
+		TMap<FGuid, USCS_Node*> LockConstraints;
 
 		// Guid is the AGX Dynamics shape (Trimesh) guid.
 		TMap<FGuid, USCS_Node*> CollisionStaticMeshComponents;
@@ -975,7 +1020,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		{
 			OldParent->RemoveChildNode(&Node);
 		}
-		
+
 		NewParent.AddChildNode(&Node);
 	}
 
@@ -1148,8 +1193,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 							ShapeBarrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets,
 							RigidBodyNode);
 
-					// The ShapeNode Trimesh returned from AddOrUpdateShape above may or may not be a new
-					// Trimesh. If it is new, we need to create a new collision mesh for it.
+					// The ShapeNode Trimesh returned from AddOrUpdateShape above may or may not be
+					// a new Trimesh. If it is new, we need to create a new collision mesh for it.
 					USCS_Node* CollisionMesh = nullptr;
 					if (ShapeNode->GetChildNodes().Num() == 0)
 					{
@@ -1270,6 +1315,59 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 	}
 
+	void AddOrUpdateConstraints(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		USCS_Node* RootNode = BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode();
+
+		auto AddOrUpdateConstraint = [&](const auto& NewConstraints,
+										 const TMap<FGuid, USCS_Node*>& OldConstraints,
+										 UClass* ConstraintClass)
+		{
+			for (const auto& Barrier : NewConstraints)
+			{
+				const FGuid ConstraintGuid = Barrier.GetGuid();
+				USCS_Node* Constraint = nullptr;
+				if (OldConstraints.Contains(ConstraintGuid))
+				{
+					Constraint = OldConstraints[ConstraintGuid];
+				}
+				else
+				{
+					Constraint = BaseBP.SimpleConstructionScript->CreateNode(
+						ConstraintClass, FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+					RootNode->AddChildNode(Constraint);
+				}
+				// Helper.UpdateConstraintComponent()...
+			}
+		};
+
+		AddOrUpdateConstraint(
+			SimulationObjects.GetHingeConstraints(), SCSNodes.HingeConstraints,
+			UAGX_HingeConstraintComponent::StaticClass());
+
+		AddOrUpdateConstraint(
+			SimulationObjects.GetPrismaticConstraints(), SCSNodes.PrismaticConstraints,
+			UAGX_PrismaticConstraintComponent::StaticClass());
+
+		AddOrUpdateConstraint(
+			SimulationObjects.GetBallConstraints(), SCSNodes.BallConstraints,
+			UAGX_BallConstraintComponent::StaticClass());
+
+		AddOrUpdateConstraint(
+			SimulationObjects.GetCylindricalConstraints(), SCSNodes.CylindricalConstraints,
+			UAGX_CylindricalConstraintComponent::StaticClass());
+
+		AddOrUpdateConstraint(
+			SimulationObjects.GetDistanceConstraints(), SCSNodes.DistanceConstraints,
+			UAGX_DistanceConstraintComponent::StaticClass());
+
+		AddOrUpdateConstraint(
+			SimulationObjects.GetLockConstraints(), SCSNodes.LockConstraints,
+			UAGX_LockConstraintComponent::StaticClass());
+	}
+
 	FString GetModelDirectoryFromAsset(UObject* Asset)
 	{
 		if (Asset == nullptr)
@@ -1310,6 +1408,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			BaseBP, SCSNodes, SimulationObjects, Helper, ImportSettings, ExistingMSTAssets);
 		AddOrUpdateBodilessShapes(
 			BaseBP, SCSNodes, SimulationObjects, Helper, ImportSettings, ExistingMSTAssets);
+		AddOrUpdateConstraints(BaseBP, SCSNodes, SimulationObjects, Helper);
 		AddOrUpdateReImportComponent(BaseBP, SCSNodes, Helper);
 
 		Helper.FinalizeImport();
@@ -1331,8 +1430,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	}
 
 	void RemoveDeletedShapes(
-		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
-		const FAGX_ImportSettings& ImportSettings, const FShapeGuidsCollection& NewShapeGuids)
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, const FAGX_ImportSettings& ImportSettings,
+		const FShapeGuidsCollection& NewShapeGuids)
 	{
 		for (auto It = SCSNodes.ShapeComponents.CreateIterator(); It; ++It)
 		{
@@ -1344,14 +1443,14 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			}
 			else if (NewShapeGuids.TrimeshShapeGuids.Contains(It->Key))
 			{
-				// If we re-import with the "Ignore disabled Trimeshes" import setting and this Trimesh
-				// has collision disabled, it should be removed.
+				// If we re-import with the "Ignore disabled Trimeshes" import setting and this
+				// Trimesh has collision disabled, it should be removed.
 				const bool CollisionEnabled = NewShapeGuids.TrimeshShapeGuids[It->Key];
 				if (!CollisionEnabled && ImportSettings.bIgnoreDisabledTrimeshes)
 				{
 					BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
 					It.RemoveCurrent();
-				}				
+				}
 			}
 		}
 	}
@@ -1408,6 +1507,35 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		// references to it.
 	}
 
+	void RemoveDeletedConstraints(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects)
+	{
+		auto RemoveDeletedConstraint =
+			[&](const auto& NewConstraints, TMap<FGuid, USCS_Node*>& OldConstraints)
+		{
+			const TArray<FGuid> NewConstraintGuids = GetGuidsFromBarriers(NewConstraints);
+			for (auto It = OldConstraints.CreateIterator(); It; ++It)
+			{
+				if (!NewConstraintGuids.Contains(It->Key))
+				{
+					BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
+					It.RemoveCurrent();
+				}
+			}
+		};
+
+		RemoveDeletedConstraint(SimulationObjects.GetHingeConstraints(), SCSNodes.HingeConstraints);
+		RemoveDeletedConstraint(
+			SimulationObjects.GetPrismaticConstraints(), SCSNodes.PrismaticConstraints);
+		RemoveDeletedConstraint(SimulationObjects.GetBallConstraints(), SCSNodes.BallConstraints);
+		RemoveDeletedConstraint(
+			SimulationObjects.GetCylindricalConstraints(), SCSNodes.CylindricalConstraints);
+		RemoveDeletedConstraint(
+			SimulationObjects.GetDistanceConstraints(), SCSNodes.DistanceConstraints);
+		RemoveDeletedConstraint(SimulationObjects.GetLockConstraints(), SCSNodes.LockConstraints);
+	}
+
 	// Removes Components that are not present in the new SimulationObjectCollection, meaning they
 	// were deleted from the source file since the previous import. The passed SCSNodes will also
 	// be kept up to date, i.e. elements removed from BaseBP will have their corresponding SCS Node
@@ -1422,6 +1550,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		RemoveDeletedStaticMeshComponents(BaseBP, SCSNodes, NewShapeGuids, ImportSettings);
 		RemoveDeletedShapes(BaseBP, SCSNodes, ImportSettings, NewShapeGuids);
 		RemoveDeletedRigidBodies(BaseBP, SCSNodes, SimulationObjects);
+		RemoveDeletedConstraints(BaseBP, SCSNodes, SimulationObjects);
 	}
 
 	void SetUnnamedNameForAll(UBlueprint& BaseBP)
