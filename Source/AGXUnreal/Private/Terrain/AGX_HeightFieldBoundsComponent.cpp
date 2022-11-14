@@ -125,10 +125,14 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	// Clamp so that we are never outside the Landscape.
 	const std::tuple<double, double> SideLengths =
 		AGX_HeightFieldUtilities::GetLandscapeSizeXY(Landscape);
-	Corner0LocalAdjusted.X = FMath::Clamp(Corner0LocalAdjusted.X, 0.0, std::get<0>(SideLengths));
-	Corner0LocalAdjusted.Y = FMath::Clamp(Corner0LocalAdjusted.Y, 0.0, std::get<1>(SideLengths));
-	Corner1LocalAdjusted.X = FMath::Clamp(Corner1LocalAdjusted.X, 0.0, std::get<0>(SideLengths));
-	Corner1LocalAdjusted.Y = FMath::Clamp(Corner1LocalAdjusted.Y, 0.0, std::get<1>(SideLengths));
+	Corner0LocalAdjusted.X = 
+		FMath::Clamp<double>(Corner0LocalAdjusted.X, 0.0, std::get<0>(SideLengths));
+	Corner0LocalAdjusted.Y =
+		FMath::Clamp<double>(Corner0LocalAdjusted.Y, 0.0, std::get<1>(SideLengths));
+	Corner1LocalAdjusted.X =
+		FMath::Clamp<double>(Corner1LocalAdjusted.X, 0.0, std::get<0>(SideLengths));
+	Corner1LocalAdjusted.Y =
+		FMath::Clamp<double>(Corner1LocalAdjusted.Y, 0.0, std::get<1>(SideLengths));
 
 	const FVector Corner0AdjustedGlobal =
 		LandscapeTrans.TransformPositionNoScale(Corner0LocalAdjusted);
