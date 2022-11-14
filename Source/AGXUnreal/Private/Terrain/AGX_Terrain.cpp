@@ -254,6 +254,7 @@ namespace
 }
 
 #if WITH_EDITOR
+
 void AAGX_Terrain::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
@@ -266,6 +267,31 @@ void AAGX_Terrain::PostInitProperties()
 	InitPropertyDispatcher();
 }
 
+namespace AGX_Terrain_helpers
+{
+	void EnsureUseDynamicMaterialInstance(AAGX_Terrain& Terrain)
+	{
+		if (Terrain.SourceLandscape == nullptr ||
+			Terrain.SourceLandscape->bUseDynamicMaterialInstance)
+		{
+			return;
+		}
+
+		FText AskEnableDynamicMaterial = LOCTEXT(
+			"EnableDynamicMaterial?",
+			"The selected Landscape does not have Use Dynamic Material Instance enabled, "
+			"meaning that the material parameters for Landsacpe size and position cannot "
+			"be set automatically. Should Use Dynamic Material Instance be enabled on the "
+			"Landscape?");
+		if (FAGX_NotificationUtilities::YesNoQuestion(AskEnableDynamicMaterial))
+		{
+			Terrain.SourceLandscape->bUseDynamicMaterialInstance = true;
+			Terrain.SourceLandscape->Modify();
+			Terrain.SourceLandscape->PostEditChange();
+		}
+	}
+}
+
 void AAGX_Terrain::InitPropertyDispatcher()
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
@@ -274,6 +300,10 @@ void AAGX_Terrain::InitPropertyDispatcher()
 	{
 		return;
 	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, SourceLandscape),
+		[](ThisClass* This) { AGX_Terrain_helpers::EnsureUseDynamicMaterialInstance(*This); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, bCreateParticles),
@@ -688,6 +718,8 @@ void AAGX_Terrain::InitializeRendering()
 	{
 		ParticleSystemInitialized = InitializeParticleSystem();
 	}
+
+	UpdateLandscapeMaterialParameters();
 }
 
 bool AAGX_Terrain::UpdateNativeMaterial()
@@ -818,7 +850,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 		DisplacementData[PixelIndex] = static_cast<FFloat16>(HeightChange);
 	}
 
-	uint32 BytesPerPixel = sizeof(FFloat16);
+	const uint32 BytesPerPixel = sizeof(FFloat16);
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
 	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
@@ -1053,6 +1085,31 @@ void AAGX_Terrain::ClearParticlesMap()
 	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*TerrainParticlesDataMap, 1, ParticlesDataMapRegions.GetData(),
 		ResolutionX * NumBytesPerPixel, NumBytesPerPixel, PixelData, false);
+}
+
+void AAGX_Terrain::UpdateLandscapeMaterialParameters()
+{
+	if (!IsValid(SourceLandscape) || GetWorld() == nullptr || !GetWorld()->IsGameWorld())
+	{
+		return;
+	}
+
+	// Set scalar material parameters for Landscape size and position.
+	// It is the Landscape material's responsibility to declare and implement displacement map
+	// sampling and passing on to World Position Offset.
+	const FAGX_LandscapeSizeInfo LandscapeSizeInfo(*SourceLandscape);
+	const float SizeX = LandscapeSizeInfo.QuadSideSizeX * LandscapeSizeInfo.NumQuadsSideX;
+	const float SizeY = LandscapeSizeInfo.QuadSideSizeY * LandscapeSizeInfo.NumQuadsSideY;
+	const float PositionX = SourceLandscape->GetActorLocation().X;
+	const float PositionY = SourceLandscape->GetActorLocation().Y;
+	// Parameter for materials supporting only square Landscape.
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapeSize", SizeX);
+	// Parameters for materials supporting rectangular Landscape.
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapeSizeX", SizeX);
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapeSizeY", SizeY);
+	// Parameters for Landscape position.
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapePositionX", PositionX);
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapePositionY", PositionY);
 }
 
 #undef LOCTEXT_NAMESPACE
