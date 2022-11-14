@@ -10,8 +10,7 @@
 
 class ALandscape;
 
-UCLASS(
-	ClassGroup = "AGX", Category = "AGX", NotPlaceable)
+UCLASS(ClassGroup = "AGX", Category = "AGX", NotPlaceable)
 class AGXUNREAL_API UAGX_HeightFieldBoundsComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -49,8 +48,9 @@ public:
 
 	/**
 	 * Get Bounds that are adjusted to align with the Landscape quads.
-	 * Only valid if the owner of this Component is an AGX_Terrain or AGX_HeightFieldShape and a
-	 * SourceLandscape is set in that owner.
+	 * Each edge of this Bound will allign with the neareast Landscape grid line inside the
+	 * UserSetBounds. Only valid if the owner of this Component is an AGX_Terrain or
+	 * AGX_HeightFieldShape and a SourceLandscape is set in that owner.
 	 */
 	TOptional<FHeightFieldBoundsInfo> GetLandscapeAdjustedBounds() const;
 
