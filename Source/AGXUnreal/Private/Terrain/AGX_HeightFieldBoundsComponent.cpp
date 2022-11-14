@@ -18,22 +18,15 @@ UAGX_HeightFieldBoundsComponent::UAGX_HeightFieldBoundsComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-TOptional<UAGX_HeightFieldBoundsComponent::FHeightFieldBoundsInfo>
-UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
+namespace AGX_HeightFieldBoundsComponent_helpers
 {
-	TOptional<FTransformAndLandscape> TransformAndLandscape = GetLandscapeAndTransformFromOwner();
-	if (!TransformAndLandscape.IsSet())
+	FVector GetInfinateOrUserSelectedBounds(
+		bool Infinite, const ALandscape& Landscape, const FVector& UserSelected)
 	{
-		return {};
-	}
-
-	const ALandscape& Landscape = TransformAndLandscape->Landscape;
-	const FTransform& OwnerTransform = TransformAndLandscape->Transform;
-
-	const FVector SelectedHalfExtentBounds = [&]()
-	{
-		if (!bInfiniteBounds)
-			return HalfExtent;
+		if (!Infinite)
+		{
+			return UserSelected;
+		}
 
 		// Use the Landscape size.
 		// At scale = 1, the height span is +- 256 cm
@@ -44,7 +37,24 @@ UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 		std::tie(LandscapeSizeX, LandscapeSizeY) =
 			AGX_HeightFieldUtilities::GetLandscapeSizeXY(Landscape);
 		return FVector(LandscapeSizeX, LandscapeSizeY, HeightSpanHalf);
-	}();
+	}
+}
+
+TOptional<UAGX_HeightFieldBoundsComponent::FHeightFieldBoundsInfo>
+UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
+{
+	using namespace AGX_HeightFieldBoundsComponent_helpers;
+	TOptional<FTransformAndLandscape> TransformAndLandscape = GetLandscapeAndTransformFromOwner();
+	if (!TransformAndLandscape.IsSet())
+	{
+		return {};
+	}
+
+	const ALandscape& Landscape = TransformAndLandscape->Landscape;
+	const FTransform& OwnerTransform = TransformAndLandscape->Transform;
+
+	const FVector SelectedHalfExtentBounds =
+		GetInfinateOrUserSelectedBounds(bInfiniteBounds, Landscape, HalfExtent);
 
 	if (SelectedHalfExtentBounds.X < 0 || SelectedHalfExtentBounds.Y < 0 ||
 		SelectedHalfExtentBounds.Z < 0)
@@ -65,16 +75,17 @@ UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 TOptional<UAGX_HeightFieldBoundsComponent::FHeightFieldBoundsInfo>
 UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 {
+	using namespace AGX_HeightFieldBoundsComponent_helpers;
 	TOptional<FTransformAndLandscape> TransformAndLandscape = GetLandscapeAndTransformFromOwner();
 	if (!TransformAndLandscape.IsSet())
 	{
 		return {};
 	}
 
-	static constexpr double LargeNumber = 1.e+10;
-	static constexpr double KindaLargeNumber = 1.e+4;
+	const ALandscape& Landscape = TransformAndLandscape->Landscape;
+
 	const FVector SelectedHalfExtentBounds =
-		bInfiniteBounds ? FVector(LargeNumber, LargeNumber, KindaLargeNumber) : HalfExtent;
+		GetInfinateOrUserSelectedBounds(bInfiniteBounds, Landscape, HalfExtent);
 
 	if (SelectedHalfExtentBounds.X < 0 || SelectedHalfExtentBounds.Y < 0 ||
 		SelectedHalfExtentBounds.Z < 0)
@@ -86,7 +97,6 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 		return {};
 	}
 
-	const ALandscape& Landscape = TransformAndLandscape->Landscape;
 	const FTransform& OwnerTransform = TransformAndLandscape->Transform;
 
 	const FTransform BoundsWorldTrans(Landscape.GetActorQuat(), OwnerTransform.GetLocation());
@@ -115,10 +125,10 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	// Clamp so that we are never outside the Landscape.
 	const std::tuple<double, double> SideLengths =
 		AGX_HeightFieldUtilities::GetLandscapeSizeXY(Landscape);
-	Corner0LocalAdjusted.X = FMath::Clamp(0.0, std::get<0>(SideLengths));
-	Corner0LocalAdjusted.Y = FMath::Clamp(0.0, std::get<1>(SideLengths));
-	Corner1LocalAdjusted.X = FMath::Clamp(0.0, std::get<0>(SideLengths));
-	Corner1LocalAdjusted.Y = FMath::Clamp(0.0, std::get<1>(SideLengths));
+	Corner0LocalAdjusted.X = FMath::Clamp(Corner0LocalAdjusted.X, 0.0, std::get<0>(SideLengths));
+	Corner0LocalAdjusted.Y = FMath::Clamp(Corner0LocalAdjusted.Y, 0.0, std::get<1>(SideLengths));
+	Corner1LocalAdjusted.X = FMath::Clamp(Corner1LocalAdjusted.X, 0.0, std::get<0>(SideLengths));
+	Corner1LocalAdjusted.Y = FMath::Clamp(Corner1LocalAdjusted.Y, 0.0, std::get<1>(SideLengths));
 
 	const FVector Corner0AdjustedGlobal =
 		LandscapeTrans.TransformPositionNoScale(Corner0LocalAdjusted);
