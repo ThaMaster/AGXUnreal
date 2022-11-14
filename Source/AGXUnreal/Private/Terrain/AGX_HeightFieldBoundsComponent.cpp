@@ -90,10 +90,10 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	const FTransform& OwnerTransform = TransformAndLandscape->Transform;
 
 	const FTransform BoundsWorldTrans(Landscape.GetActorQuat(), OwnerTransform.GetLocation());
-	const FVector Corner0World = BoundsWorldTrans.TransformPositionNoScale(FVector(
-		-SelectedHalfExtentBounds.X, -SelectedHalfExtentBounds.Y, -SelectedHalfExtentBounds.Z));
-	const FVector Corner1World = BoundsWorldTrans.TransformPositionNoScale(FVector(
-		SelectedHalfExtentBounds.X, SelectedHalfExtentBounds.Y, SelectedHalfExtentBounds.Z));
+	const FVector Corner0World =
+		BoundsWorldTrans.TransformPositionNoScale(-SelectedHalfExtentBounds);
+	const FVector Corner1World =
+		BoundsWorldTrans.TransformPositionNoScale(SelectedHalfExtentBounds);
 
 	const FTransform& LandscapeTrans = Landscape.GetTransform();
 
