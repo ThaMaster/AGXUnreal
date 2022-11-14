@@ -341,8 +341,6 @@ std::tuple<int32, int32> AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(
 	LandscapeInfo->GetLandscapeExtent(Rect.Min.X, Rect.Min.Y, Rect.Max.X, Rect.Max.Y);
 	FIntPoint Size = Rect.Size();
 
-	// @todo Figure out how to get the original landscape size properly. This will not handle
-	// the case where a complete outer side-slice has been removed from the landscape.
 	return std::tuple<int32, int32>(Size.X + 1, Size.Y + 1);
 }
 
