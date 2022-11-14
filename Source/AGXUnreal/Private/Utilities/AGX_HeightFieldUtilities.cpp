@@ -53,17 +53,18 @@ namespace AGX_HeightFieldUtilities_helpers
 		return FTransform(Landscape.GetActorQuat(), CenterProjectedGlobalAdjusted);
 	}
 
-	void NudgePoint(double& X, double& Y, double MinX, double MaxX, double MinY, double MaxY)
+	void NudgePoint(
+		double& X, double& Y, double MinX, double MaxX, double MinY, double MaxY,
+		double NudgeDistanceX, double NudgeDistanceY)
 	{
-		static constexpr double NudgeDist = 0.1;
 		if (X <= MinX)
-			X += NudgeDist;
+			X += NudgeDistanceX;
 		else if (X >= MaxX)
-			X -= NudgeDist;
+			X -= NudgeDistanceX;
 		if (Y <= MinY)
-			Y += NudgeDist;
+			Y += NudgeDistanceY;
 		else if (Y >= MaxY)
-			Y -= NudgeDist;
+			Y -= NudgeDistanceY;
 	}
 
 	// Shoot single ray at landscape to measure the height. Returns false if the ray misses the
@@ -133,10 +134,13 @@ namespace AGX_HeightFieldUtilities_helpers
 		const double MaxY = StartPosLocal.Y + LengthY;
 		double CurrentX = StartPosLocal.X;
 		double CurrentY = StartPosLocal.Y + LengthY;
-		static constexpr double Tolerance = 0.2;
-		while (CurrentY >= StartPosLocal.Y - Tolerance)
+		const double NudgeDistanceX = QuadSideSizeX / 1000.0;
+		const double NudgeDistanceY = QuadSideSizeY / 1000.0;
+		const double ToleranceX = QuadSideSizeX / 2.0;
+		const double ToleranceY = QuadSideSizeY / 2.0;
+		while (CurrentY >= StartPosLocal.Y - ToleranceY)
 		{
-			while (CurrentX <= MaxX + Tolerance)
+			while (CurrentX <= MaxX + ToleranceX)
 			{
 				FVector LocationGlobal = Landscape.GetTransform().TransformPositionNoScale(
 					FVector(CurrentX, CurrentY, 0));
@@ -148,7 +152,9 @@ namespace AGX_HeightFieldUtilities_helpers
 					// work.
 					double NudgedX = CurrentX;
 					double NudgedY = CurrentY;
-					NudgePoint(NudgedX, NudgedY, StartPosLocal.X, MaxX, StartPosLocal.Y, MaxY);
+					NudgePoint(
+						NudgedX, NudgedY, StartPosLocal.X, MaxX, StartPosLocal.Y, MaxY,
+						NudgeDistanceX, NudgeDistanceY);
 
 					LocationGlobal = Landscape.GetTransform().TransformPositionNoScale(
 						FVector(NudgedX, NudgedY, 0));
@@ -216,12 +222,18 @@ namespace AGX_HeightFieldUtilities_helpers
 		const double MaxY = StartPosLocal.Y + LengthY;
 		double CurrentX = StartPosLocal.X;
 		double CurrentY = StartPosLocal.Y + LengthY;
-		static constexpr double Tolerance = 0.2;
-		static constexpr double NudgeDistances[4][2] = {
-			{0.1, 0.1}, {-0.1, -0.1}, {-0.1, 0.1}, {0.1, -0.1}};
-		while (CurrentY >= StartPosLocal.Y - Tolerance)
+		const double NudgeDistanceX = QuadSideSizeX / 1000.0;
+		const double NudgeDistanceY = QuadSideSizeY / 1000.0;
+		const double ToleranceX = QuadSideSizeX / 2.0;
+		const double ToleranceY = QuadSideSizeY / 2.0;
+		const double NudgeDistances[4][2] = {
+			{NudgeDistanceX, NudgeDistanceY},
+			{-NudgeDistanceX, -NudgeDistanceY},
+			{-NudgeDistanceX, NudgeDistanceY},
+			{NudgeDistanceX, -NudgeDistanceY}};
+		while (CurrentY >= StartPosLocal.Y - ToleranceY)
 		{
-			while (CurrentX <= MaxX + Tolerance)
+			while (CurrentX <= MaxX + ToleranceX)
 			{
 				float Height = 0.0f;
 
