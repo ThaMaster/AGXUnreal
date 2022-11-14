@@ -139,7 +139,7 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	const auto HalfExtentX = (Corner1LocalAdjusted.X - Corner0LocalAdjusted.X) / 2.0;
 	const auto HalfExtentY = (Corner1LocalAdjusted.Y - Corner0LocalAdjusted.Y) / 2.0;
 
-	if (HalfExtentX == 0 || HalfExtentY == 0)
+	if (HalfExtentX <= 0.0 || HalfExtentY <= 0.0)
 	{
 		return {};
 	}
