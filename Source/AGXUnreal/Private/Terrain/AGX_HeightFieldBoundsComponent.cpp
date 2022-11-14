@@ -112,23 +112,13 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 		std::floor(Corner1Local.X / QuadSideSizeX) * QuadSideSizeX,
 		std::floor(Corner1Local.Y / QuadSideSizeY) * QuadSideSizeY, Corner1Local.Z);
 
-	auto EnsureInBounds = [](FVector& P, auto Xmin, auto Xmax, auto Ymin, auto Ymax)
-	{
-		if (P.X <= Xmin)
-			P.X = Xmin;
-		else if (P.X >= Xmax)
-			P.X = Xmax;
-		if (P.Y <= Ymin)
-			P.Y = Ymin;
-		else if (P.Y >= Ymax)
-			P.Y = Ymax;
-	};
-
 	// Clamp so that we are never outside the Landscape.
 	const std::tuple<double, double> SideLengths =
 		AGX_HeightFieldUtilities::GetLandscapeSizeXY(Landscape);
-	EnsureInBounds(Corner0LocalAdjusted, 0, std::get<0>(SideLengths), 0, std::get<1>(SideLengths));
-	EnsureInBounds(Corner1LocalAdjusted, 0, std::get<0>(SideLengths), 0, std::get<1>(SideLengths));
+	Corner0LocalAdjusted.X = FMath::Clamp(0.0, std::get<0>(SideLengths));
+	Corner0LocalAdjusted.Y = FMath::Clamp(0.0, std::get<1>(SideLengths));
+	Corner1LocalAdjusted.X = FMath::Clamp(0.0, std::get<0>(SideLengths));
+	Corner1LocalAdjusted.Y = FMath::Clamp(0.0, std::get<1>(SideLengths));
 
 	const FVector Corner0AdjustedGlobal =
 		LandscapeTrans.TransformPositionNoScale(Corner0LocalAdjusted);
