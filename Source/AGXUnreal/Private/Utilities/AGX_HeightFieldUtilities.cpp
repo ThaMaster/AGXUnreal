@@ -335,26 +335,31 @@ FTransform AGX_HeightFieldUtilities::GetHeightFieldTransformUsingBoxFrom(
 std::tuple<int32, int32> AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(
 	const ALandscape& Landscape)
 {
-	const ALandscapeProxy* LandscapeProxy = Cast<ALandscapeProxy>(&Landscape);
-	const ULandscapeInfo* LandscapeInfo = LandscapeProxy->GetLandscapeInfo();
-	FIntRect Rect;
-	LandscapeInfo->GetLandscapeExtent(Rect.Min.X, Rect.Min.Y, Rect.Max.X, Rect.Max.Y);
-	FIntPoint Size = Rect.Size();
+	std::tuple<double, double> Size = GetLandscapeSizeXY(Landscape);
+	const double QuadSideSizeX = Landscape.GetActorScale().X;
+	const double QuadSideSizeY = Landscape.GetActorScale().Y;
 
-	return std::tuple<int32, int32>(Size.X + 1, Size.Y + 1);
+	const int32 QuadCountX = FMath::RoundToInt(std::get<0>(Size) / QuadSideSizeX);
+	const int32 QuadCountY = FMath::RoundToInt(std::get<1>(Size) / QuadSideSizeY);
+	return std::tuple<int32, int32>(QuadCountX, QuadCountY);
 }
 
 std::tuple<double, double> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const ALandscape& Landscape)
 {
-	// @todo Figure out how to get the original landscape size properly. This will not handle
-	// the case where a complete outer side-slice has been removed from the landscape along the
-	// Y-axis.
-	const auto VertsXY = GetLandscapeNumberOfVertsXY(Landscape);
-	const double QuadSideSizeX = Landscape.GetActorScale().X;
-	const double QuadSideSizeY = Landscape.GetActorScale().Y;
-	const double SizeX = static_cast<double>(std::get<0>(VertsXY) - 1) * QuadSideSizeX;
-	const double SizeY = static_cast<double>(std::get<1>(VertsXY) - 1) * QuadSideSizeY;
-	return std::tuple<double, double>(SizeX, SizeY);
+	FVector BoxExtentGlobal;
+	FVector ActorCenterGLobal;
+	Landscape.GetActorBounds(true, ActorCenterGLobal, BoxExtentGlobal);
+
+	const FVector FarthestPointGlobal = ActorCenterGLobal + BoxExtentGlobal;
+
+	// @todo In the future, we likely should ignore the Landscape actor location all together
+	// and instead just use the ActorCenter + BoxExtent above and use that as the real landscape
+	// size.
+
+	const FVector FarthestPointLocal =
+		Landscape.GetActorTransform().InverseTransformPositionNoScale(FarthestPointGlobal);
+
+	return std::tuple<double, double>(FarthestPointLocal.X, FarthestPointLocal.Y);
 }
 
 bool AGX_HeightFieldUtilities::IsOpenWorldLandscape(const ALandscape& Landscape)
