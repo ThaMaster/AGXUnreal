@@ -11,6 +11,7 @@
 #include "LandscapeInfo.h"
 #include "LandscapeProxy.h"
 #include "Math/UnrealMathUtility.h"
+#include "Misc/EngineVersionComparison.h"
 
 // Standard library includes.
 #include <limits>
@@ -98,6 +99,10 @@ namespace AGX_HeightFieldUtilities_helpers
 
 	std::tuple<double, double> GetLandscapeSizeXYOpenWorld(const ALandscape& Landscape)
 	{
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+		return std::tuple<double, double>(0.0, 0.0);
+#else
+
 		// @todo limitation: this will only yield the correct result if the Landscape is not rotated
 		// around world Z axis. We are yet to find a reliable way to find the size in that case for
 		// open world landscapes.
@@ -111,6 +116,7 @@ namespace AGX_HeightFieldUtilities_helpers
 		const double Dy = Bounds.Max.Y - Bounds.Min.Y;
 
 		return std::tuple<double, double>(FMath::Abs(Dx), FMath::Abs(Dy));
+#endif
 	}
 
 	void NudgePoint(
