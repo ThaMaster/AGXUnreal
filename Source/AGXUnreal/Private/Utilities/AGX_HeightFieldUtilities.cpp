@@ -359,7 +359,7 @@ std::tuple<double, double> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const AL
 	const FVector FarthestPointLocal =
 		Landscape.GetActorTransform().InverseTransformPositionNoScale(FarthestPointGlobal);
 
-	return std::tuple<double, double>(FarthestPointLocal.X, FarthestPointLocal.Y);
+	return std::tuple<double, double>(FMath::Abs(FarthestPointLocal.X), FMath::Abs(FarthestPointLocal.Y));
 }
 
 bool AGX_HeightFieldUtilities::IsOpenWorldLandscape(const ALandscape& Landscape)
