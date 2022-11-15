@@ -401,7 +401,7 @@ std::tuple<int32, int32> AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(
 
 	const int32 QuadCountX = FMath::RoundToInt(std::get<0>(Size) / QuadSideSizeX);
 	const int32 QuadCountY = FMath::RoundToInt(std::get<1>(Size) / QuadSideSizeY);
-	return std::tuple<int32, int32>(QuadCountX, QuadCountY);
+	return std::tuple<int32, int32>(QuadCountX + 1, QuadCountY + 1);
 }
 
 std::tuple<double, double> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const ALandscape& Landscape)
