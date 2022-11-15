@@ -53,6 +53,66 @@ namespace AGX_HeightFieldUtilities_helpers
 		return FTransform(Landscape.GetActorQuat(), CenterProjectedGlobalAdjusted);
 	}
 
+	std::tuple<int32, int32> GetLandscapeQuadCountXYNonOpenWorld(const ALandscape& Landscape)
+	{
+		if (Landscape.LandscapeComponents.Num() == 0)
+		{
+			return std::tuple<int32, int32>(0, 0);
+		}
+
+		int32 MaxX = 0;
+		int32 MaxY = 0;
+
+		for (int i = 0; i < Landscape.LandscapeComponents.Num(); i++)
+		{
+			if (Landscape.LandscapeComponents[i]->SectionBaseX > MaxX)
+			{
+				MaxX = Landscape.LandscapeComponents[i]->SectionBaseX;
+			}
+
+			if (Landscape.LandscapeComponents[i]->SectionBaseY > MaxY)
+			{
+				MaxY = Landscape.LandscapeComponents[i]->SectionBaseY;
+			}
+		}
+
+		// MaxX and MaxY is the bottom corner of the furthest away section. We need to add the
+		// number of quads per section to this result to get the final count.
+		const int32 NumQuadsPerComponentSide = Landscape.ComponentSizeQuads;
+		const int32 QuadCountX = MaxX + NumQuadsPerComponentSide - 1;
+		const int32 QuadCountY = MaxY + NumQuadsPerComponentSide - 1;
+
+		return std::tuple<int32, int32> {QuadCountX, QuadCountY};
+	}
+
+	std::tuple<double, double> GetLandscapeSizeXYNonOpenWorld(const ALandscape& Landscape)
+	{
+		std::tuple<int32, int32> NumQuadsXY = GetLandscapeQuadCountXYNonOpenWorld(Landscape);
+		const double QuadSideSizeX = Landscape.GetActorScale().X;
+		const double QuadSideSizeY = Landscape.GetActorScale().Y;
+		const double SizeX = static_cast<double>(std::get<0>(NumQuadsXY)) * QuadSideSizeX;
+		const double SizeY = static_cast<double>(std::get<1>(NumQuadsXY)) * QuadSideSizeY;
+
+		return std::tuple<double, double>(SizeX, SizeX);
+	}
+
+	std::tuple<double, double> GetLandscapeSizeXYOpenWorld(const ALandscape& Landscape)
+	{
+		// @todo limitation: this will only yield the correct result if the Landscape is not rotated
+		// around world Z axis. We are yet to find a reliable way to find the size in that case for
+		// open world landscapes.
+		// Also, this requires the landscape to be loaded in the world partitioner which is a big
+		// limitation.
+
+		AGX_CHECK(Landscape.LandscapeComponents.Num() == 0); // Open World check.
+		const FBox Bounds = Landscape.GetLoadedBounds();
+
+		const double Dx = Bounds.Max.X - Bounds.Min.X;
+		const double Dy = Bounds.Max.Y - Bounds.Min.Y;
+
+		return std::tuple<double, double>(FMath::Abs(Dx), FMath::Abs(Dy));
+	}
+
 	void NudgePoint(
 		double& X, double& Y, double MinX, double MaxX, double MinY, double MaxY,
 		double NudgeDistanceX, double NudgeDistanceY)
@@ -346,20 +406,15 @@ std::tuple<int32, int32> AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(
 
 std::tuple<double, double> AGX_HeightFieldUtilities::GetLandscapeSizeXY(const ALandscape& Landscape)
 {
-	FVector BoxExtentGlobal;
-	FVector ActorCenterGLobal;
-	Landscape.GetActorBounds(true, ActorCenterGLobal, BoxExtentGlobal);
-
-	const FVector FarthestPointGlobal = ActorCenterGLobal + BoxExtentGlobal;
-
-	// @todo In the future, we likely should ignore the Landscape actor location all together
-	// and instead just use the ActorCenter + BoxExtent above and use that as the real landscape
-	// size.
-
-	const FVector FarthestPointLocal =
-		Landscape.GetActorTransform().InverseTransformPositionNoScale(FarthestPointGlobal);
-
-	return std::tuple<double, double>(FMath::Abs(FarthestPointLocal.X), FMath::Abs(FarthestPointLocal.Y));
+	using namespace AGX_HeightFieldUtilities_helpers;
+	if (IsOpenWorldLandscape(Landscape))
+	{
+		return GetLandscapeSizeXYOpenWorld(Landscape);
+	}
+	else
+	{
+		return GetLandscapeSizeXYNonOpenWorld(Landscape);
+	}
 }
 
 bool AGX_HeightFieldUtilities::IsOpenWorldLandscape(const ALandscape& Landscape)
