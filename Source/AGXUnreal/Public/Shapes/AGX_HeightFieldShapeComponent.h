@@ -50,6 +50,9 @@ public:
 	 */
 	void CopyFrom(const FHeightFieldShapeBarrier& Barrier);
 
+#if WITH_EDITOR
+	virtual void DestroyComponent(bool bPromoteChildren) override;
+#endif
 
 protected:
 	// ~Begin UAGX_ShapeComponent interface.
