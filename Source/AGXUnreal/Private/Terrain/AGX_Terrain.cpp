@@ -549,7 +549,8 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Unable to create Terrain native; the given Terrain Bounds was invalid."));
+			TEXT("Unable to create Terrain native for '%s'; the given Terrain Bounds was invalid."),
+			*GetName());
 		return false;
 	}
 
@@ -557,6 +558,17 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(
 		*SourceLandscape, StartPos, Bounds->HalfExtent.X * 2.0, Bounds->HalfExtent.Y * 2.0);
 	NativeBarrier.AllocateNative(HeightField, MaxDepth);
+
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to create Terrain native for '%s'. The Output log may include more "
+				 "details."),
+			*GetName());
+		return false;
+	}
+
 	check(HasNative());
 
 	FTransform Transform = AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(

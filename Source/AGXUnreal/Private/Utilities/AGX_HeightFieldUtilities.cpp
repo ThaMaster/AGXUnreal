@@ -378,7 +378,7 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
 	const int32 ResolutionY = FMath::RoundToInt(LengthY / QuadSideSizeY) + 1;
 	FHeightFieldShapeBarrier HeightField;
 	HeightField.AllocateNative(
-		ResolutionX, ResolutionY, static_cast<float>(LengthX), static_cast<float>(LengthY),
+		ResolutionX, ResolutionY, LengthX, LengthY,
 		Heights);
 
 	return HeightField;
