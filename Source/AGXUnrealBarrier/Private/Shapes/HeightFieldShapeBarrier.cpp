@@ -38,7 +38,8 @@ FHeightFieldShapeBarrier::~FHeightFieldShapeBarrier()
 }
 
 void FHeightFieldShapeBarrier::AllocateNative(
-	int32 NumVerticesX, int32 NumVerticesY, float SizeX, float SizeY, const TArray<float>& Heights)
+	int32 NumVerticesX, int32 NumVerticesY, double SizeX, double SizeY,
+	const TArray<float>& Heights)
 {
 	FShapeBarrier::AllocateNative(
 		[=, &Heights]()
@@ -46,7 +47,8 @@ void FHeightFieldShapeBarrier::AllocateNative(
 }
 
 void FHeightFieldShapeBarrier::AllocateNativeHeightField(
-	int32 NumVerticesX, int32 NumVerticesY, float SizeX, float SizeY, const TArray<float>& Heights)
+	int32 NumVerticesX, int32 NumVerticesY, double SizeX, double SizeY,
+	const TArray<float>& Heights)
 {
 	check(!HasNative());
 	check(Heights.Num() >= 0);
