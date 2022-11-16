@@ -33,10 +33,13 @@ namespace AGX_HeightFieldBoundsComponent_helpers
 		// https://docs.unrealengine.com/en-US/Engine/Landscape/TechnicalGuide/#calculatingheightmapzscale
 		const double HeightSpanHalf = 256.0 * Landscape.GetActorScale3D().Z;
 
-		double LandscapeSizeX, LandscapeSizeY;
-		std::tie(LandscapeSizeX, LandscapeSizeY) =
-			AGX_HeightFieldUtilities::GetLandscapeSizeXY(Landscape);
-		return FVector(LandscapeSizeX, LandscapeSizeY, HeightSpanHalf);
+		// Here, we take a "shortcut" of using an arbitrary large value. Calculating a bounding box
+		// given the Landscape transform and this Component's owning transform along with Landscape
+		// size information, taking into account the rotation of the landscape etc could be done,
+		// but is is unnecessarily complicated. Really, we just want a really large bound that will
+		// include everything.
+		static constexpr double LargeNumber = 1.e+10f;
+		return FVector(LargeNumber, LargeNumber, HeightSpanHalf);
 	}
 }
 
@@ -125,7 +128,7 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	// Clamp so that we are never outside the Landscape.
 	const std::tuple<double, double> SideLengths =
 		AGX_HeightFieldUtilities::GetLandscapeSizeXY(Landscape);
-	Corner0LocalAdjusted.X = 
+	Corner0LocalAdjusted.X =
 		FMath::Clamp<double>(Corner0LocalAdjusted.X, 0.0, std::get<0>(SideLengths));
 	Corner0LocalAdjusted.Y =
 		FMath::Clamp<double>(Corner0LocalAdjusted.Y, 0.0, std::get<1>(SideLengths));
