@@ -158,7 +158,6 @@ void UAGX_HeightFieldShapeComponent::ReleaseNative()
 	}
 }
 
-#if WITH_EDITOR
 void UAGX_HeightFieldShapeComponent::DestroyComponent(bool bPromoteChildren)
 {
 	Super::DestroyComponent(bPromoteChildren);
@@ -167,7 +166,6 @@ void UAGX_HeightFieldShapeComponent::DestroyComponent(bool bPromoteChildren)
 		HeightFieldBounds->DestroyComponent();
 	}
 }
-#endif
 
 void UAGX_HeightFieldShapeComponent::Serialize(FArchive& Archive)
 {
