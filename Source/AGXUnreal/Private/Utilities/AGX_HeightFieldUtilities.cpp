@@ -80,8 +80,8 @@ namespace AGX_HeightFieldUtilities_helpers
 		// MaxX and MaxY is the bottom corner of the furthest away section. We need to add the
 		// number of quads per section to this result to get the final count.
 		const int32 NumQuadsPerComponentSide = Landscape.ComponentSizeQuads;
-		const int32 QuadCountX = MaxX + NumQuadsPerComponentSide - 1;
-		const int32 QuadCountY = MaxY + NumQuadsPerComponentSide - 1;
+		const int32 QuadCountX = MaxX + NumQuadsPerComponentSide;
+		const int32 QuadCountY = MaxY + NumQuadsPerComponentSide;
 
 		return std::tuple<int32, int32> {QuadCountX, QuadCountY};
 	}
