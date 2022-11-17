@@ -376,10 +376,17 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
 	const auto QuadSideSizeY = Landscape.GetActorScale().Y;
 	const int32 ResolutionX = FMath::RoundToInt(LengthX / QuadSideSizeX) + 1;
 	const int32 ResolutionY = FMath::RoundToInt(LengthY / QuadSideSizeY) + 1;
+
+	// Terrain sets a very strict x-y tile scale equivalence check internally which may get
+	// triggered if the given LengthX and LengthY are not exact down to double floating point
+	// precision. Therefore, we recalculate the same value here, using the resolution and QuadSize
+	// to ensure they are accurate.
+	const double LengthXDoublePrecision = static_cast<double>(ResolutionX - 1) * QuadSideSizeX;
+	const double LengthYDoublePrecision = static_cast<double>(ResolutionY - 1) * QuadSideSizeY;
+
 	FHeightFieldShapeBarrier HeightField;
 	HeightField.AllocateNative(
-		ResolutionX, ResolutionY, LengthX, LengthY,
-		Heights);
+		ResolutionX, ResolutionY, LengthXDoublePrecision, LengthYDoublePrecision, Heights);
 
 	return HeightField;
 }
