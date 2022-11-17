@@ -371,18 +371,31 @@ TArray<float> GetHeights(
 FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
 	ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY)
 {
-	TArray<float> Heights = GetHeights(Landscape, StartPos, LengthX, LengthY);
-	const auto QuadSideSizeX = Landscape.GetActorScale().X;
-	const auto QuadSideSizeY = Landscape.GetActorScale().Y;
-	const int32 ResolutionX = FMath::RoundToInt(LengthX / QuadSideSizeX) + 1;
-	const int32 ResolutionY = FMath::RoundToInt(LengthY / QuadSideSizeY) + 1;
+	TArray<float> Heights = GetHeights(Landscape, StartPos, LengthX, LengthY);	
+
+	const FVector LandscapeScale = Landscape.GetActorScale();
+	const auto QuadSideSize = LandscapeScale.X;
+	if (!FMath::IsNearlyEqual(LandscapeScale.X, LandscapeScale.Y))
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Landscape '%s' has scale X: %f, Y: %f and are not equal. Height Field supports "
+				 "uniform scale only. The scale (quad size) %f will be used in both the X and Y "
+				 "directions when creating the Height Field."),
+			*Landscape.GetName(), LandscapeScale.X, LandscapeScale.Y, QuadSideSize);
+	}
+
+	
+
+	const int32 ResolutionX = FMath::RoundToInt(LengthX / QuadSideSize) + 1;
+	const int32 ResolutionY = FMath::RoundToInt(LengthY / QuadSideSize) + 1;
 
 	// Terrain sets a very strict x-y tile scale equivalence check internally which may get
 	// triggered if the given LengthX and LengthY are not exact down to double floating point
 	// precision. Therefore, we recalculate the same value here, using the resolution and QuadSize
 	// to ensure they are accurate.
-	const double LengthXDoublePrecision = static_cast<double>(ResolutionX - 1) * QuadSideSizeX;
-	const double LengthYDoublePrecision = static_cast<double>(ResolutionY - 1) * QuadSideSizeY;
+	const double LengthXDoublePrecision = static_cast<double>(ResolutionX - 1) * QuadSideSize;
+	const double LengthYDoublePrecision = static_cast<double>(ResolutionY - 1) * QuadSideSize;
 
 	FHeightFieldShapeBarrier HeightField;
 	HeightField.AllocateNative(
