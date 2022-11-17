@@ -940,9 +940,13 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 		return false;
 	}
 
+	// It is important that we attach the ParticleSystemComponent using "KeepRelativeOffset" so that
+	// it's world position becomes the same as the Terrain's. Otherwise it will be spawned at
+	// the world origin which in turn may result in particles being culled and not rendered if the
+	// terrain is located far away from the world origin (see Fixed Bounds in the Particle System).
 	ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 		ParticleSystemAsset, RootComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
-		FVector::OneVector, EAttachLocation::Type::KeepWorldPosition, false,
+		FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset, false,
 #if UE_VERSION_OLDER_THAN(4, 24, 0)
 		EPSCPoolMethod::None
 #else
