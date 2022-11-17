@@ -841,12 +841,10 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	const int32 TerrainVerticesX = NativeBarrier.GetGridSizeX();
 	const int32 TerrainVerticesY = NativeBarrier.GetGridSizeY();
 
-	//DisplacementData[TerrainVerticesX + 1] = static_cast<FFloat16>(300.f);
-	//DisplacementData[TerrainVerticesX + 30] = static_cast<FFloat16>(300.f);
 	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
 	for (int32 VertY = 0; VertY < TerrainVerticesY; VertY++)
 	{
-		for (int32 VertX = 0; VertX < TerrainVerticesY; VertX++)
+		for (int32 VertX = 0; VertX < TerrainVerticesX; VertX++)
 		{
 			const int32 Index = VertX + VertY * TerrainVerticesX;
 			const float HeightChange = CurrentHeights[Index] - OriginalHeights[Index];
