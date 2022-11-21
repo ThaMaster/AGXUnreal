@@ -235,6 +235,7 @@ private:
 
 	// Height field related variables.
 	TArray<float> OriginalHeights;
+	TArray<float> CurrentHeights;
 	TArray<FFloat16> DisplacementData;
 	TArray<FUpdateTextureRegion2D> DisplacementMapRegions; // TODO: Remove!
 	bool DisplacementMapInitialized = false;

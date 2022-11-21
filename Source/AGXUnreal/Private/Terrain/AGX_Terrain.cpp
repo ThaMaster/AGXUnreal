@@ -576,7 +576,7 @@ bool AAGX_Terrain::CreateNativeTerrain()
 
 	NativeBarrier.SetRotation(Transform.GetRotation());
 	NativeBarrier.SetPosition(Transform.GetLocation());
-	OriginalHeights = NativeBarrier.GetHeights();
+	NativeBarrier.GetHeights(OriginalHeights);
 	NativeBarrier.SetCreateParticles(bCreateParticles);
 	NativeBarrier.SetDeleteParticlesOutsideBounds(bDeleteParticlesOutsideBounds);
 	NativeBarrier.SetPenetrationForceVelocityScaling(PenetrationForceVelocityScaling);
@@ -791,6 +791,9 @@ void AAGX_Terrain::InitializeDisplacementMap()
 		AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(*SourceLandscape);
 	std::tie(LandscapeVertsX, LandscapeVertsY) = CachedLandscapeVertsXY;
 
+	OriginalHeights.Reserve(LandscapeVertsX * LandscapeVertsY);
+	CurrentHeights.Reserve(LandscapeVertsX * LandscapeVertsY);	
+
 	if (LandscapeDisplacementMap->SizeX != LandscapeVertsX ||
 		LandscapeDisplacementMap->SizeY != LandscapeVertsY)
 	{
@@ -872,7 +875,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	const int32 TerrainEndVertX = TerrainStartVertX + GridSizeXTerrain - 1;
 	const int32 TerrainEndVertY = TerrainStartVertY + GridSizeYTerrain - 1;
 
-	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
+	NativeBarrier.GetHeights(CurrentHeights);
 	for (int32 VertY = TerrainStartVertY; VertY <= TerrainEndVertY; VertY++)
 	{
 		for (int32 VertX = TerrainStartVertX; VertX <= TerrainEndVertX; VertX++)
@@ -880,8 +883,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 			const int32 PixelIndexLandscape = VertX + VertY * LandscapeVertsX;
 			const int32 IndexTerrain =
 				(VertX - TerrainStartVertX) + GridSizeXTerrain * (VertY - TerrainStartVertY);
-			const float HeightChange =
-				CurrentHeights[IndexTerrain] - OriginalHeights[IndexTerrain];
+			const float HeightChange = CurrentHeights[IndexTerrain] - OriginalHeights[IndexTerrain];
 			DisplacementData[PixelIndexLandscape] = static_cast<FFloat16>(HeightChange);
 		}
 	}
