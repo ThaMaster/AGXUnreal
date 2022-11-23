@@ -168,9 +168,9 @@ void FStepExampleLevelsTest::GetTests(
 {
 	// ComponentGallery ignored because it produces several errors on Play: for example Constraints
 	// without a Body.
-	// SmallTerrain is ignored because it will attempt to resize the Landscape Displacement map
-	// Texture which is not allowed in this Unit test context apparently.
-	const TArray<FString> IgnoreLevels {"ComponentGallery", "SmallTerrain"};
+	// SimpleTerrain and AdvancedTerrain are ignored because they will attempt to resize the
+	// Landscape Displacement map texture which is not allowed in this Unit test context apparently.
+	const TArray<FString> IgnoreLevels {"ComponentGallery", "SimpleTerrain", "AdvancedTerrain"};
 
 	const FString LevelsDir = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Levels"));
 	TArray<FString> FoundAssetes;
