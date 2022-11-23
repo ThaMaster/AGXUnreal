@@ -63,11 +63,11 @@ public:
 	int32 GetGridSizeY() const;
 
 	/**
-	 * Get an array with all the heights in the height field, stored in X major
+	 * Fill an array with all the heights in the height field, stored in X major
 	 * order, meaning that heights with increasing the X coordinates are next to
 	 * each other in memory.
 	 */
-	TArray<float> GetHeights() const;
+	void GetHeights(TArray<float>& OutHeights) const;
 
 	/**
 	 * Get an array with the positions of the currently existing particles.

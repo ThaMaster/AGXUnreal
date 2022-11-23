@@ -183,7 +183,7 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, AngularVelocity),
-		[](ThisClass* This) { This->SetAngularVelocity(This->Velocity); });
+		[](ThisClass* This) { This->SetAngularVelocity(This->AngularVelocity); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, LinearVelocityDamping),

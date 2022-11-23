@@ -199,31 +199,30 @@ int32 FTerrainBarrier::GetGridSizeY() const
 	return static_cast<int32>(GridSize);
 }
 
-TArray<float> FTerrainBarrier::GetHeights() const
+void FTerrainBarrier::GetHeights(TArray<float>& Heights) const
 {
 	check(HasNative());
 	const agxCollide::HeightField* HeightField = NativeRef->Native->getHeightField();
 	const size_t SizeXAGX = HeightField->getResolutionX();
 	const size_t SizeYAGX = HeightField->getResolutionY();
 
-	TArray<float> Heights;
 	if (SizeXAGX == 0 || SizeYAGX == 0)
 	{
 		/// \todo Unclear if this really should be a warning or not. When would
 		/// zero-sized terrains be used?
 		UE_LOG(LogAGX, Warning, TEXT("Cannot get heights from terrain with zero size."));
-		return Heights;
+		return;
 	}
 	if (SizeXAGX * SizeYAGX > static_cast<size_t>(std::numeric_limits<int32>::max()))
 	{
 		UE_LOG(LogAGX, Error, TEXT("Cannot get heights, terrain has too many vertices."));
-		return Heights;
+		return;
 	}
 
 	int32 SizeX = static_cast<int32>(SizeXAGX);
 	int32 SizeY = static_cast<int32>(SizeYAGX);
 
-	Heights.Reserve(SizeX * SizeY);
+	Heights.Reset(SizeX * SizeY);
 
 	// AGX Dynamics and Unreal have different coordinate systems, so we must
 	// flip the Y axis for the vertex locations.
@@ -260,7 +259,6 @@ TArray<float> FTerrainBarrier::GetHeights() const
 			Heights.Add(ConvertDistanceToUnreal<float>(HeightField->getHeight(X, Y)));
 		}
 	}
-	return Heights;
 }
 
 namespace
