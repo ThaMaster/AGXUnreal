@@ -170,7 +170,8 @@ void FStepExampleLevelsTest::GetTests(
 	// without a Body.
 	// SmallTerrain is ignored because it will attempt to resize the Landscape Displacement map
 	// Texture which is not allowed in this Unit test context apparently.
-	const TArray<FString> IgnoreLevels {"ComponentGallery", "SmallTerrain"};
+	// RectangularTerrain is ignored for the same reasons as SmallTerrain.
+	const TArray<FString> IgnoreLevels {"ComponentGallery", "SmallTerrain", "RectangularTerrain"};
 
 	const FString LevelsDir = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Levels"));
 	TArray<FString> FoundAssetes;
