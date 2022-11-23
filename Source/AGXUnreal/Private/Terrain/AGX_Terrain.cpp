@@ -789,8 +789,8 @@ void AAGX_Terrain::InitializeDisplacementMap()
 	const int32 TerrainVertsX = NativeBarrier.GetGridSizeX();
 	const int32 TerrainVertsY = NativeBarrier.GetGridSizeY();
 
-	OriginalHeights.Reserve(LandscapeVertsX * LandscapeVertsY);
-	CurrentHeights.Reserve(LandscapeVertsX * LandscapeVertsY);	
+	OriginalHeights.Reserve(TerrainVertsX * TerrainVertsY);
+	CurrentHeights.Reserve(TerrainVertsX * TerrainVertsY);
 
 
 	if (LandscapeDisplacementMap->SizeX != TerrainVertsX ||
