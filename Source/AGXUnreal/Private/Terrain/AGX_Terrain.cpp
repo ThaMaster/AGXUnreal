@@ -576,7 +576,7 @@ bool AAGX_Terrain::CreateNativeTerrain()
 
 	NativeBarrier.SetRotation(Transform.GetRotation());
 	NativeBarrier.SetPosition(Transform.GetLocation());
-	OriginalHeights = NativeBarrier.GetHeights();
+	NativeBarrier.GetHeights(OriginalHeights);
 	NativeBarrier.SetCreateParticles(bCreateParticles);
 	NativeBarrier.SetDeleteParticlesOutsideBounds(bDeleteParticlesOutsideBounds);
 	NativeBarrier.SetPenetrationForceVelocityScaling(PenetrationForceVelocityScaling);
@@ -789,6 +789,10 @@ void AAGX_Terrain::InitializeDisplacementMap()
 	const int32 TerrainVertsX = NativeBarrier.GetGridSizeX();
 	const int32 TerrainVertsY = NativeBarrier.GetGridSizeY();
 
+	OriginalHeights.Reserve(LandscapeVertsX * LandscapeVertsY);
+	CurrentHeights.Reserve(LandscapeVertsX * LandscapeVertsY);	
+
+
 	if (LandscapeDisplacementMap->SizeX != TerrainVertsX ||
 		LandscapeDisplacementMap->SizeY != TerrainVertsY)
 	{
@@ -841,7 +845,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	const int32 TerrainVerticesX = NativeBarrier.GetGridSizeX();
 	const int32 TerrainVerticesY = NativeBarrier.GetGridSizeY();
 
-	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
+	NativeBarrier.GetHeights(CurrentHeights);
 	for (int32 VertY = 0; VertY < TerrainVerticesY; VertY++)
 	{
 		for (int32 VertX = 0; VertX < TerrainVerticesX; VertX++)
@@ -906,9 +910,13 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 		return false;
 	}
 
+	// It is important that we attach the ParticleSystemComponent using "KeepRelativeOffset" so that
+	// it's world position becomes the same as the Terrain's. Otherwise it will be spawned at
+	// the world origin which in turn may result in particles being culled and not rendered if the
+	// terrain is located far away from the world origin (see Fixed Bounds in the Particle System).
 	ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 		ParticleSystemAsset, RootComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
-		FVector::OneVector, EAttachLocation::Type::KeepWorldPosition, false,
+		FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset, false,
 #if UE_VERSION_OLDER_THAN(4, 24, 0)
 		EPSCPoolMethod::None
 #else
