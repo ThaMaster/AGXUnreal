@@ -239,7 +239,6 @@ private:
 	TArray<FFloat16> DisplacementData;
 	TArray<FUpdateTextureRegion2D> DisplacementMapRegions; // TODO: Remove!
 	bool DisplacementMapInitialized = false;
-	std::tuple<int32, int32> CachedLandscapeVertsXY;
 
 /// \todo Cannot use AGX Dynamics types in the AGXUnreal module. Must live in the Barrier.
 #if 0

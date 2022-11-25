@@ -785,30 +785,29 @@ void AAGX_Terrain::InitializeDisplacementMap()
 	}
 
 	// There is one displacement map texel per vertex.
-	int32 LandscapeVertsX;
-	int32 LandscapeVertsY;
-	CachedLandscapeVertsXY =
-		AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(*SourceLandscape);
-	std::tie(LandscapeVertsX, LandscapeVertsY) = CachedLandscapeVertsXY;
 
-	OriginalHeights.Reserve(LandscapeVertsX * LandscapeVertsY);
-	CurrentHeights.Reserve(LandscapeVertsX * LandscapeVertsY);	
+	const int32 TerrainVertsX = NativeBarrier.GetGridSizeX();
+	const int32 TerrainVertsY = NativeBarrier.GetGridSizeY();
 
-	if (LandscapeDisplacementMap->SizeX != LandscapeVertsX ||
-		LandscapeDisplacementMap->SizeY != LandscapeVertsY)
+	OriginalHeights.Reserve(TerrainVertsX * TerrainVertsY);
+	CurrentHeights.Reserve(TerrainVertsX * TerrainVertsY);
+
+
+	if (LandscapeDisplacementMap->SizeX != TerrainVertsX ||
+		LandscapeDisplacementMap->SizeY != TerrainVertsY)
 	{
 		UE_LOG(
 			LogAGX, Log,
 			TEXT("The size of the Displacement Map render target (%dx%d) for "
-				 "AGX Terrain '%s' does not match the vertices in the Source Landscape (%dx%d). "
+				 "AGX Terrain '%s' does not match the vertices in the Terrain (%dx%d). "
 				 "Resizing the displacement map."),
 			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(),
-			LandscapeVertsX, LandscapeVertsY);
+			TerrainVertsX, TerrainVertsY);
 
-		LandscapeDisplacementMap->ResizeTarget(LandscapeVertsX, LandscapeVertsY);
+		LandscapeDisplacementMap->ResizeTarget(TerrainVertsX, TerrainVertsY);
 	}
-	if (LandscapeDisplacementMap->SizeX != LandscapeVertsX ||
-		LandscapeDisplacementMap->SizeY != LandscapeVertsY)
+	if (LandscapeDisplacementMap->SizeX != TerrainVertsX ||
+		LandscapeDisplacementMap->SizeY != TerrainVertsY)
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -817,8 +816,8 @@ void AAGX_Terrain::InitializeDisplacementMap()
 			*GetName(), LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY);
 	}
 
-	DisplacementData.SetNum(LandscapeVertsX * LandscapeVertsY);
-	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, LandscapeVertsX, LandscapeVertsY));
+	DisplacementData.SetNum(TerrainVertsX * TerrainVertsY);
+	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, TerrainVertsX, TerrainVertsY));
 
 	/// \todo I'm not sure why we need this. Does the texture sampler "fudge the
 	/// values" when using non-linear gamma?
@@ -843,48 +842,17 @@ void AAGX_Terrain::UpdateDisplacementMap()
 
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::UpdateDisplacementMap"));
 
-	const int32 GridSizeXTerrain = NativeBarrier.GetGridSizeX();
-	const int32 GridSizeYTerrain = NativeBarrier.GetGridSizeY();
-	int32 LandscapeVertsX;
-	int32 LandscapeVertsY;
-	std::tie(LandscapeVertsX, LandscapeVertsY) = CachedLandscapeVertsXY;
-	const int32 NumPixels = LandscapeVertsX * LandscapeVertsY;
-	AGX_CHECK(DisplacementData.Num() == NumPixels);
-	AGX_CHECK(DisplacementMapRegions.Num() == 1);
-
-	FVector TerrainCenterLocal = NativeBarrier.GetPosition();
-	TerrainCenterLocal =
-		SourceLandscape->GetActorTransform().InverseTransformPositionNoScale(TerrainCenterLocal);
-	const int32 NumTerrainQuadsX = GridSizeXTerrain - 1;
-	const int32 NumTerrainQuadsY = GridSizeYTerrain - 1;
-	const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
-	const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
-
-	// Undo the off-by-half-quad that the AGX Dynamics Terrain does for odd number of quads.
-	const auto TerrainTileCenterOffsetX = (NumTerrainQuadsX % 2 == 0) ? 0 : -QuadSideSizeX / 2;
-	const auto TerrainTileCenterOffsetY = (NumTerrainQuadsY % 2 == 0) ? 0 : QuadSideSizeY / 2;
-	TerrainCenterLocal.X += TerrainTileCenterOffsetX;
-	TerrainCenterLocal.Y += TerrainTileCenterOffsetY;
-
-	const auto TerrainSizeX = QuadSideSizeX * static_cast<double>(GridSizeXTerrain - 1);
-	const auto TerrainSizeY = QuadSideSizeY * static_cast<double>(GridSizeYTerrain - 1);
-	const FVector TerrainStartCornerLocal =
-		TerrainCenterLocal - FVector(TerrainSizeX / 2.0, TerrainSizeY / 2.0, 0.0);
-	const int32 TerrainStartVertX = FMath::RoundToInt(TerrainStartCornerLocal.X / QuadSideSizeX);
-	const int32 TerrainStartVertY = FMath::RoundToInt(TerrainStartCornerLocal.Y / QuadSideSizeY);
-	const int32 TerrainEndVertX = TerrainStartVertX + GridSizeXTerrain - 1;
-	const int32 TerrainEndVertY = TerrainStartVertY + GridSizeYTerrain - 1;
+	const int32 TerrainVerticesX = NativeBarrier.GetGridSizeX();
+	const int32 TerrainVerticesY = NativeBarrier.GetGridSizeY();
 
 	NativeBarrier.GetHeights(CurrentHeights);
-	for (int32 VertY = TerrainStartVertY; VertY <= TerrainEndVertY; VertY++)
+	for (int32 VertY = 0; VertY < TerrainVerticesY; VertY++)
 	{
-		for (int32 VertX = TerrainStartVertX; VertX <= TerrainEndVertX; VertX++)
+		for (int32 VertX = 0; VertX < TerrainVerticesX; VertX++)
 		{
-			const int32 PixelIndexLandscape = VertX + VertY * LandscapeVertsX;
-			const int32 IndexTerrain =
-				(VertX - TerrainStartVertX) + GridSizeXTerrain * (VertY - TerrainStartVertY);
-			const float HeightChange = CurrentHeights[IndexTerrain] - OriginalHeights[IndexTerrain];
-			DisplacementData[PixelIndexLandscape] = static_cast<FFloat16>(HeightChange);
+			const int32 Index = VertX + VertY * TerrainVerticesX;
+			const float HeightChange = CurrentHeights[Index] - OriginalHeights[Index];
+			DisplacementData[Index] = static_cast<FFloat16>(HeightChange);
 		}
 	}
 
@@ -892,7 +860,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
 	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
-		LandscapeVertsX * BytesPerPixel, BytesPerPixel, PixelData, false);
+		TerrainVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
 
 void AAGX_Terrain::ClearDisplacementMap()
@@ -1140,16 +1108,35 @@ void AAGX_Terrain::UpdateLandscapeMaterialParameters()
 	// It is the Landscape material's responsibility to declare and implement displacement map
 	// sampling and passing on to World Position Offset.
 
-	double SizeX, SizeY;
-	std::tie(SizeX, SizeY) = AGX_HeightFieldUtilities::GetLandscapeSizeXY(*SourceLandscape);
+	const int32 TerrainVerticesX = NativeBarrier.GetGridSizeX();
+	const int32 TerrainVerticesY = NativeBarrier.GetGridSizeY();
+	const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
+	const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
 
-	const float PositionX = SourceLandscape->GetActorLocation().X;
-	const float PositionY = SourceLandscape->GetActorLocation().Y;
+	// This assumes that the Terrain and Landscape resolution (quad size) is the same.
+	const double TerrainSizeX = static_cast<double>(TerrainVerticesX - 1) * QuadSideSizeX;
+	const double TerrainSizeY = static_cast<double>(TerrainVerticesY - 1) * QuadSideSizeY;
+
+	const FVector TerrainCenterGlobal = NativeBarrier.GetPosition();
+
+	const FVector TerrainCenterLocal =
+		SourceLandscape->GetActorTransform().InverseTransformPositionNoScale(TerrainCenterGlobal);
+	const FVector TerrainCornerLocal =
+		TerrainCenterLocal - FVector(TerrainSizeX / 2.0, TerrainSizeY / 2.0, 0.0);
+	const FVector TerrainCornerGlobal =
+		SourceLandscape->GetActorTransform().TransformPositionNoScale(TerrainCornerLocal);
+
+	const double PositionX = TerrainCornerGlobal.X;
+	const double PositionY = TerrainCornerGlobal.Y;
+
 	// Parameter for materials supporting only square Landscape.
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapeSize", static_cast<float>(SizeX));
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue(
+		"LandscapeSize", static_cast<float>(TerrainSizeX));
 	// Parameters for materials supporting rectangular Landscape.
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapeSizeX", static_cast<float>(SizeX));
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapeSizeY", static_cast<float>(SizeY));
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue(
+		"LandscapeSizeX", static_cast<float>(TerrainSizeX));
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue(
+		"LandscapeSizeY", static_cast<float>(TerrainSizeY));
 	// Parameters for Landscape position.
 	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapePositionX", PositionX);
 	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapePositionY", PositionY);
