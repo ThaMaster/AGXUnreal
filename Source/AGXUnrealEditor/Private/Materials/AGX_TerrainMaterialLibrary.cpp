@@ -8,9 +8,8 @@
 #include "Materials/TerrainMaterialLibraryBarrier.h"
 
 // Unreal Engine includes.
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
-#include "AssetRegistryModule.h"
 #include "Modules/ModuleManager.h"
 #include "PackageTools.h"
 #include "Misc/EngineVersionComparison.h"

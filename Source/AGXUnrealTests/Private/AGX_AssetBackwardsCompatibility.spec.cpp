@@ -9,9 +9,9 @@
 #include "Materials/AGX_TerrainMaterial.h"
 
 // Unreal Engine includes.
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistry/IAssetRegistry.h"
 #include "HAL/FileManager.h"
-#include "IAssetRegistry.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/EngineVersion.h"
 #include "Misc/EngineVersionComparison.h"
@@ -115,8 +115,16 @@ namespace RealInMaterialsBackwardsCompatibilitySpec_helpers
 		FAssetRegistryModule& AssetRegistryModule =
 			FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 		IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
-		const FString ObjectPath = FString::Printf(TEXT("%s.%s"), *PackagePath, *ObjectName);
-		FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(*ObjectPath);
+		// ObjectPath is either FString or FSoftObjectPath depending on Engine version.
+		const auto ObjectPath = [&PackagePath, &ObjectName]() {
+			const FString ObjectPath = FString::Printf(TEXT("%s.%s"), *PackagePath, *ObjectName);
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+			return FName(ObjectPath);
+#else
+			return FSoftObjectPath(ObjectPath);
+#endif
+		}();
+		FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(ObjectPath);
 		check(AssetData.IsValid());
 		MaterialT* Material = Cast<MaterialT>(AssetData.GetAsset());
 		check(Material != nullptr);

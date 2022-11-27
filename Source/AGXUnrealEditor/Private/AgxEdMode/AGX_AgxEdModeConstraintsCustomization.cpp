@@ -17,6 +17,7 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "EditorStyleSet.h"
 #include "IDetailPropertyRow.h"
 #include "Misc/Attribute.h"
 #include "Modules/ModuleManager.h"
@@ -252,7 +253,7 @@ void FAGX_AgxEdModeConstraintsCustomization::CreateFrameSourceRadioButtons(
 		RadioButtonsBox->AddSlot().Padding(FMargin(
 			0.0f,
 			1.0f))[SNew(SCheckBox)
-					   .Style(FEditorStyle::Get(), "RadioButton")
+					   .Style(FAGX_EditorUtilities::GetStyle(), "RadioButton")
 					   .Padding(FMargin(4.0f, 0.0f))
 					   .ToolTipText(FrameSourceEnum->GetToolTipTextByIndex(EnumIndex))
 					   .IsChecked_Lambda(

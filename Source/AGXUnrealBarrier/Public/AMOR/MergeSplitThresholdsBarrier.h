@@ -2,6 +2,8 @@
 
 #pragma once
 
+// Unreal Engine includes.
+#include "Misc/Guid.h"
 
 // Standard library includes.
 #include <memory>

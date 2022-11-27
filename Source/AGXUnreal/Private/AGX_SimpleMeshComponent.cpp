@@ -249,8 +249,9 @@ public:
 					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap,
 					PreviousLocalToWorld, SingleCaptureIndex);
 #else
-				/// \todo Replace Unknown with proper name or use some getter function to get a
-				/// proper value.
+				/// \todo Unreal Engine 4.23 introduced bOutputVelocity. I don't know what that
+				/// should be set to. Replace Unknown with proper name or use some getter function
+				/// to get a proper value.
 				bool Unknown = false;
 				GetScene().GetPrimitiveUniformShaderParameters_RenderThread(
 					GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap,
@@ -262,10 +263,14 @@ public:
 				DynamicPrimitiveUniformBuffer.Set(
 					GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), GetLocalBounds(), true,
 					bHasPrecomputedVolumetricLightmap, UseEditorDepthTest());
-#else
+#elif UE_VERSION_OLDER_THAN(5, 1, 0)
 				DynamicPrimitiveUniformBuffer.Set(
 					GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), GetLocalBounds(), true,
 					bHasPrecomputedVolumetricLightmap, DrawsVelocity(), Unknown);
+#else
+				DynamicPrimitiveUniformBuffer.Set(
+					GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), GetLocalBounds(), true,
+					bHasPrecomputedVolumetricLightmap, Unknown);
 #endif
 				BatchElement.PrimitiveUniformBufferResource =
 					&DynamicPrimitiveUniformBuffer.UniformBuffer;
