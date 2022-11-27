@@ -11,6 +11,7 @@
 
 // Unreal Engine includes.
 #include "Engine/World.h"
+#include "UObject/UObjectIterator.h"
 
 UAGX_CollisionGroupDisablerComponent::UAGX_CollisionGroupDisablerComponent()
 {

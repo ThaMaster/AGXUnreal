@@ -7,6 +7,9 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_LogCategory.h"
 
+// Unreal Engine includes.
+#include "UObject/UObjectIterator.h"
+
 FAGX_ShapeContact::FAGX_ShapeContact(FShapeContactBarrier&& InBarrier)
 	: Barrier(std::move(InBarrier))
 {
