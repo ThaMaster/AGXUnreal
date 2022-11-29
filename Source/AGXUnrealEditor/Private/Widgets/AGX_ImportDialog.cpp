@@ -110,7 +110,7 @@ TSharedRef<SWidget> SAGX_ImportDialog::CreateBrowseFileGui()
 	using namespace AGX_ImportDialog_helpers;
 
 	// clang-format off
-return SNew(SVerticalBox)
+	return SNew(SVerticalBox)
 		+ SVerticalBox::Slot()
 		.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
 		.AutoHeight()
