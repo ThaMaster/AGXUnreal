@@ -1815,7 +1815,23 @@ bool FCheckWireImportedCommand::Update()
 	RangeHasType(12, 22, EWireNodeType::Free);
 	RangeHasType(22, 23, EWireNodeType::BodyFixed);
 
-	UAGX_RigidBodyComponent* WinchBodyRef = Winch.BodyAttachment.GetRigidBody();
+	const FString WinchBodyName = Winch.BodyAttachment.BodyName.ToString();
+	Test.TestEqual(TEXT("Winch Body Name"), WinchBodyName, FString("Winch Body"));
+
+	auto RangeHasBody =
+		[this, &Nodes = Wire->RouteNodes](int32 Begin, int32 End, const FString& BodyName)
+	{
+		for (int32 I = Begin; I < End; ++I)
+		{
+			const FString NodeBodyName = Nodes[I].RigidBody.BodyName.ToString();
+			Test.TestEqual(TEXT("NodeBodyName"), NodeBodyName, BodyName);
+		}
+	};
+
+	RangeHasBody(0, 11, "None");
+	RangeHasBody(11, 12, "Eye Body");
+	RangeHasBody(12, 22, "None");
+	RangeHasBody(22, 23, "Bead Body");
 
 	return true;
 }

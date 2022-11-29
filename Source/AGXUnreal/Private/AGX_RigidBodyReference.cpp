@@ -30,6 +30,12 @@ namespace
 
 UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
 {
+	// If the Rigid Body that we reference is in a Blueprint, i.e. a Template Component, this will
+	// currently always return nullptr. It would be nice to be able to detect this case, and find
+	// the Rigid Body Template Component by searching the Blueprint SCS Node tree and returning it.
+	// Since this is only a Struct, we are not able to get the Blueprint from here, if we are in
+	// one. A bit of re-design of this Struct may be needed to get this to work properly.
+
 	if (Cache != nullptr)
 	{
 		return Cache;
