@@ -631,7 +631,7 @@ void FAGX_AutoFitShapeDetails::OnAssetSelected(const FAssetData& AssetData)
 FString FAGX_AutoFitShapeDetails::GetCurrentAssetPath() const
 {
 	return CurrentlySelectedAsset.IsValid() ?
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
+#if UE_VERSION_OLDER_THAN(5, 1, 0)
 											CurrentlySelectedAsset.ObjectPath.ToString()
 #else
 											CurrentlySelectedAsset.GetObjectPathString()

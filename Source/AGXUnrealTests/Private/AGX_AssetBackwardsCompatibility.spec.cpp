@@ -118,7 +118,7 @@ namespace RealInMaterialsBackwardsCompatibilitySpec_helpers
 		// ObjectPath is either FString or FSoftObjectPath depending on Engine version.
 		const auto ObjectPath = [&PackagePath, &ObjectName]() {
 			const FString ObjectPath = FString::Printf(TEXT("%s.%s"), *PackagePath, *ObjectName);
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
+#if UE_VERSION_OLDER_THAN(5, 1, 0)
 			return FName(ObjectPath);
 #else
 			return FSoftObjectPath(ObjectPath);

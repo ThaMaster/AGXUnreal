@@ -365,7 +365,7 @@ public:
 
 	static const ISlateStyle& GetStyle()
 	{
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
+#if UE_VERSION_OLDER_THAN(5, 1, 0)
 		return FEditorStyle::Get();
 #else
 		return FAppStyle::Get();
@@ -374,7 +374,7 @@ public:
 
 	static const FSlateBrush* GetBrush(FName PropertyName)
 	{
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
+#if UE_VERSION_OLDER_THAN(5, 1, 0)
 		return FEditorStyle::GetBrush(PropertyName);
 #else
 		return FAppStyle::GetBrush(PropertyName);
