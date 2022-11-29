@@ -9,6 +9,7 @@
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
+#include "SimulationObjectCollection.h"
 #include "TypeConversions.h"
 
 // AGX Dynamics includes.
@@ -42,16 +43,10 @@
 #include <agxVehicle/Track.h>
 #include "EndAGXIncludes.h"
 
-// Unreal Engine includes.
-#include "Misc/ScopedSlowTask.h"
-
-#define LOCTEXT_NAMESPACE "AGX_SIM_OBJECTS_READER"
-
 namespace
 {
-	void InstantiateShapes(
-		const agxCollide::ShapeRefVector& Shapes, FAGXSimObjectsInstantiator& Instantiator,
-		FAGXSimObjectBody* SimObjBody = nullptr)
+	void ReadShapes(
+		const agxCollide::ShapeRefVector& Shapes, FSimulationObjectCollection& OutSimObjects)
 	{
 		for (const agxCollide::ShapeRef& Shape : Shapes)
 		{
@@ -60,80 +55,51 @@ namespace
 				case agxCollide::Shape::SPHERE:
 				{
 					agxCollide::Sphere* Sphere {Shape->as<agxCollide::Sphere>()};
-					Instantiator.InstantiateSphere(
-						AGXBarrierFactories::CreateSphereShapeBarrier(Sphere), SimObjBody);
+					OutSimObjects.GetSphereShapes().Add(
+						AGXBarrierFactories::CreateSphereShapeBarrier(Sphere));
 					break;
 				}
 				case agxCollide::Shape::BOX:
 				{
 					agxCollide::Box* Box {Shape->as<agxCollide::Box>()};
-					Instantiator.InstantiateBox(
-						AGXBarrierFactories::CreateBoxShapeBarrier(Box), SimObjBody);
+					OutSimObjects.GetBoxShapes().Add(
+						AGXBarrierFactories::CreateBoxShapeBarrier(Box));
 					break;
 				}
 				case agxCollide::Shape::CYLINDER:
 				{
 					agxCollide::Cylinder* Cylinder {Shape->as<agxCollide::Cylinder>()};
-					Instantiator.InstantiateCylinder(
-						AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder), SimObjBody);
+					OutSimObjects.GetCylinderShapes().Add(
+						AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder));
 					break;
 				}
 				case agxCollide::Shape::CAPSULE:
 				{
 					agxCollide::Capsule* Capsule {Shape->as<agxCollide::Capsule>()};
-					Instantiator.InstantiateCapsule(
-						AGXBarrierFactories::CreateCapsuleShapeBarrier(Capsule), SimObjBody);
+					OutSimObjects.GetCapsuleShapes().Add(
+						AGXBarrierFactories::CreateCapsuleShapeBarrier(Capsule));
 					break;
 				}
 				case agxCollide::Shape::TRIMESH:
 				{
 					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
-					Instantiator.InstantiateTrimesh(
-						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh), SimObjBody);
+					OutSimObjects.GetTrimeshShapes().Add(
+						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh));
 					break;
 				}
 				case agxCollide::Shape::GROUP:
 				{
 					agxCollide::ShapeGroup* Group {Shape->as<agxCollide::ShapeGroup>()};
-					InstantiateShapes(Group->getChildren(), Instantiator, SimObjBody);
+					ReadShapes(Group->getChildren(), OutSimObjects);
 					break;
 				}
 			}
-		}
-	}
-
-	void InstantiateShapesInBody(
-		agx::RigidBody* Body, FAGXSimObjectBody& SimObjBody,
-		FAGXSimObjectsInstantiator& Instantiator)
-	{
-		if (Body == nullptr)
-		{
-			return;
-		}
-
-		const agxCollide::GeometryRefVector& Geometries {Body->getGeometries()};
-		for (const agxCollide::GeometryRef& Geometry : Geometries)
-		{
-			::InstantiateShapes(Geometry->getShapes(), Instantiator, &SimObjBody);
 		}
 	}
 }
 
 namespace
 {
-	bool VerifyImportSize(size_t Actual, size_t Limit, const FString& Filename, const FString& Type)
-	{
-		if (Actual > Limit)
-		{
-			UE_LOG(
-				LogAGX, Error, TEXT("Import source file '%s' contains too many %s."), *Filename,
-				*Type);
-			return false;
-		}
-
-		return true;
-	}
-
 	bool IsRegularBody(agx::RigidBody& Body)
 	{
 		return !Body.isPowerlineBody() && agxWire::Wire::getWire(&Body) == nullptr &&
@@ -142,58 +108,37 @@ namespace
 	}
 
 	/**
-	 * Get all materials and create one shape material asset for each. Each agx::Material have a
-	 * unique name. Several agx::Geometries may use the same agx::Material.
+	 * Several agx::Geometries may use the same agx::Material.
 	 */
-	bool ReadMaterials(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
+	void ReadMaterials(agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
 	{
 		const agxSDK::StringMaterialRefTable& MaterialsTable =
 			Simulation.getMaterialManager()->getMaterials();
+		OutSimObjects.GetShapeMaterials().Reserve(MaterialsTable.size());
 		for (auto& It : MaterialsTable)
 		{
 			agx::Material* Mat = It.second.get();
-			Instantiator.InstantiateShapeMaterial(
+			OutSimObjects.GetShapeMaterials().Add(
 				AGXBarrierFactories::CreateShapeMaterialBarrier(Mat));
 		}
 
 		const agxSDK::MaterialSPairContactMaterialRefTable& ContactMaterialsTable =
 			Simulation.getMaterialManager()->getContactMaterials();
+		OutSimObjects.GetContactMaterials().Reserve(ContactMaterialsTable.size());
 		for (auto& It : ContactMaterialsTable)
 		{
 			agx::ContactMaterial* ContMat = It.second.get();
-			Instantiator.InstantiateContactMaterial(
+			OutSimObjects.GetContactMaterials().Add(
 				AGXBarrierFactories::CreateContactMaterialBarrier(ContMat));
 		}
-
-		return true;
 	}
 
-	bool ReadTireModels(
+	void ReadTireModels(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXSimObjectsInstantiator& Instantiator)
+		FSimulationObjectCollection& OutSimObjects, TArray<agx::Constraint*>& NonFreeConstraint)
 	{
 		const agxSDK::AssemblyHash& Assemblies = Simulation.getAssemblies();
-		if (!VerifyImportSize(
-				Assemblies.size(), std::numeric_limits<int32>::max(), Filename, "assemblies"))
-		{
-			return false;
-		}
 
-		auto CheckBody = [](agx::RigidBody* Body, agxModel::Tire* Tire, const FString& Description)
-		{
-			if (Body == nullptr)
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("The %s used by agxModel::TwoBodyTire: %s "
-						 "was nullptr. The agxModel::TwoBodyTire will not be imported."),
-					*Description, *Convert(Tire->getName()));
-				return false;
-			}
-			return true;
-		};
-
-		int32 IssuesEncountered = 0;
 		for (const auto& Assembly : Assemblies)
 		{
 			agxModel::TwoBodyTire* Tire = dynamic_cast<agxModel::TwoBodyTire*>(Assembly.first);
@@ -202,42 +147,29 @@ namespace
 				continue;
 			}
 
-			if (!CheckBody(Tire->getTireRigidBody(), Tire, FString("Tire Rigid Body")) ||
-				!CheckBody(Tire->getHubRigidBody(), Tire, FString("Hub Rigid Body")))
+			if (Tire->getHubRigidBody() == nullptr || Tire->getTireRigidBody() == nullptr)
 			{
-				IssuesEncountered++;
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Tire '%s' is missing Hub or Tire Rigid Body. It will not be imported."),
+					*Convert(Tire->getName()));
 				continue;
 			}
 
-			FTwoBodyTireSimObjectBodies TireSimObject = Instantiator.InstantiateTwoBodyTire(
+			// Add the Tire owned Hinge to the list of non-free Constraints. These are used later to
+			// avoid duplicate imports of those Constraints.
+			NonFreeConstraint.Add(Tire->getHinge());
+
+			OutSimObjects.GetTwoBodyTires().Add(
 				AGXBarrierFactories::CreateTwoBodyTireBarrier(Tire));
-
-			if (TireSimObject.TireBodySimObject)
-			{
-				::InstantiateShapesInBody(
-					Tire->getTireRigidBody(), *TireSimObject.TireBodySimObject, Instantiator);
-			}
-
-			if (TireSimObject.HubBodySimObject)
-			{
-				::InstantiateShapesInBody(
-					Tire->getHubRigidBody(), *TireSimObject.HubBodySimObject, Instantiator);
-			}
 		}
-
-		return IssuesEncountered == 0;
 	}
 
-	bool ReadRigidBodies(
+	void ReadRigidBodies(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXSimObjectsInstantiator& Instantiator)
+		FSimulationObjectCollection& OutSimObjects)
 	{
 		agx::RigidBodyRefVector& Bodies {Simulation.getRigidBodies()};
-		if (!VerifyImportSize(Bodies.size(), std::numeric_limits<int32>::max(), Filename, "bodies"))
-		{
-			return false;
-		}
-
 		for (agx::RigidBodyRef& Body : Bodies)
 		{
 			if (Body == nullptr)
@@ -249,30 +181,43 @@ namespace
 				continue;
 			}
 
-			FRigidBodyBarrier BodyBarrier {AGXBarrierFactories::CreateRigidBodyBarrier(Body)};
-			std::unique_ptr<FAGXSimObjectBody> SimObjBody {
-				Instantiator.InstantiateBody(BodyBarrier)};
+			OutSimObjects.GetRigidBodies().Add(AGXBarrierFactories::CreateRigidBodyBarrier(Body));
+		}
+	}
 
-			if (SimObjBody)
+	void ReadTracks(
+		agxSDK::Simulation& Simulation, const FString& Filename,
+		FSimulationObjectCollection& OutSimObjects, TArray<agx::Constraint*>& NonFreeConstraint)
+	{
+		agxVehicle::TrackPtrVector Tracks = agxVehicle::Track::findAll(&Simulation);
+
+		for (agxVehicle::Track* Track : Tracks)
+		{
+			if (Track == nullptr || Track->getRoute() == nullptr)
 			{
-				::InstantiateShapesInBody(Body, *SimObjBody, Instantiator);
+				continue;
+			}
+
+			OutSimObjects.GetTracks().Add(AGXBarrierFactories::CreateTrackBarrier(Track));
+			const int32 NumNodes = Track->getNumNodes();
+			for (int i = 0; i < NumNodes; i++)
+			{
+				agxVehicle::TrackNode* Node = Track->getNode(i);
+				if (Node == nullptr)
+					continue;
+
+				if (agx::Constraint* Constraint = Node->getConstraint())
+					NonFreeConstraint.Add(Constraint);
 			}
 		}
-
-		return true;
 	}
 
 	// Reads and instantiates all Geometries not owned by a RigidBody.
-	bool ReadBodilessGeometries(
+	void ReadBodilessGeometries(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXSimObjectsInstantiator& Instantiator)
+		FSimulationObjectCollection& OutSimObjects)
 	{
 		const agxCollide::GeometryRefVector& Geometries = Simulation.getGeometries();
-		if (!VerifyImportSize(
-				Geometries.size(), std::numeric_limits<int32>::max(), Filename, "geometries"))
-		{
-			return false;
-		}
 
 		for (const agxCollide::GeometryRef& Geometry : Geometries)
 		{
@@ -281,69 +226,66 @@ namespace
 				continue;
 			}
 
-			::InstantiateShapes(Geometry->getShapes(), Instantiator);
+			::ReadShapes(Geometry->getShapes(), OutSimObjects);
 		}
-
-		return true;
 	}
 
-	bool ReadConstraints(
+	void ReadConstraints(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXSimObjectsInstantiator& Instantiator)
+		FSimulationObjectCollection& OutSimObjects,
+		const TArray<agx::Constraint*>& NonFreeConstraint)
 	{
 		agx::ConstraintRefSetVector& Constraints = Simulation.getConstraints();
-		if (!VerifyImportSize(
-				Constraints.size(), std::numeric_limits<int32>::max(), Filename, "constraints"))
-		{
-			return false;
-		}
-
 		for (agx::ConstraintRef& Constraint : Constraints)
 		{
+			if (Constraint == nullptr)
+			{
+				continue;
+			}
+
+			if (NonFreeConstraint.Contains(Constraint.get()))
+			{
+				// This is a non-free constraint, and will be imported by the thing owning it.
+				continue;
+			}
+
 			if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
 			{
-				Instantiator.InstantiateHinge(AGXBarrierFactories::CreateHingeBarrier(Hinge));
+				OutSimObjects.GetHingeConstraints().Add(
+					AGXBarrierFactories::CreateHingeBarrier(Hinge));
 			}
 			else if (agx::Prismatic* Prismatic = Constraint->asSafe<agx::Prismatic>())
 			{
-				Instantiator.InstantiatePrismatic(
+				OutSimObjects.GetPrismaticConstraints().Add(
 					AGXBarrierFactories::CreatePrismaticBarrier(Prismatic));
 			}
 			else if (agx::BallJoint* BallJoint = Constraint->asSafe<agx::BallJoint>())
 			{
-				Instantiator.InstantiateBallJoint(
+				OutSimObjects.GetBallConstraints().Add(
 					AGXBarrierFactories::CreateBallJointBarrier(BallJoint));
 			}
 			else if (
 				agx::CylindricalJoint* CylindricalJoint =
 					Constraint->asSafe<agx::CylindricalJoint>())
 			{
-				Instantiator.InstantiateCylindricalJoint(
+				OutSimObjects.GetCylindricalConstraints().Add(
 					AGXBarrierFactories::CreateCylindricalJointBarrier(CylindricalJoint));
 			}
 			else if (agx::DistanceJoint* DistanceJoint = Constraint->asSafe<agx::DistanceJoint>())
 			{
-				Instantiator.InstantiateDistanceJoint(
+				OutSimObjects.GetDistanceConstraints().Add(
 					AGXBarrierFactories::CreateDistanceJointBarrier(DistanceJoint));
 			}
 			else if (agx::LockJoint* LockJoint = Constraint->asSafe<agx::LockJoint>())
 			{
-				Instantiator.InstantiateLockJoint(
+				OutSimObjects.GetLockConstraints().Add(
 					AGXBarrierFactories::CreateLockJointBarrier(LockJoint));
 			}
-			else
-			{
-				UE_LOG(
-					LogAGX, Log, TEXT("Constraint '%s' has unupported type."),
-					*Convert(Constraint->getName()));
-			}
 		}
-
-		return true;
 	}
 
-	bool ReadCollisionGroups(
-		agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
+	void ReadCollisionGroups(
+		agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
 	{
 		auto GetCollisionGroupString = [](const agx::Physics::CollisionGroupPtr& Cg) -> FString
 		{
@@ -363,22 +305,21 @@ namespace
 			Simulation.getSpace()->getCollisionGroupManager();
 		agxCollide::CollisionGroupManager::SymmetricCollisionGroupVector DisabledGroupPairs =
 			CollisionGroupManager->getDisabledCollisionGroupPairs();
-		TArray<std::pair<FString, FString>> DisabledGroups;
-		DisabledGroups.Reserve(static_cast<int32>(DisabledGroupPairs.size()));
+
+		OutSimObjects.GetDisabledCollisionGroups().Reserve(
+			static_cast<int32>(DisabledGroupPairs.size()));
 		for (agx::SymmetricPair<agx::Physics::CollisionGroupPtr>& Pair : DisabledGroupPairs)
 		{
 			FString Group1 = GetCollisionGroupString(Pair.first);
 			FString Group2 = GetCollisionGroupString(Pair.second);
-			DisabledGroups.Add({Group1, Group2});
+			OutSimObjects.GetDisabledCollisionGroups().Add({Group1, Group2});
 		}
-		Instantiator.DisabledCollisionGroups(DisabledGroups);
-
-		return true;
 	}
 
-	bool ReadWires(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
+	void ReadWires(agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
 	{
 		agxWire::WirePtrVector Wires = agxWire::Wire::findAll(&Simulation);
+		OutSimObjects.GetWires().Reserve(Wires.size());
 		for (agxWire::Wire* Wire : Wires)
 		{
 			if (Wire == nullptr)
@@ -386,136 +327,70 @@ namespace
 				continue;
 			}
 
-			FWireBarrier Barrier = AGXBarrierFactories::CreateWireBarrier(Wire);
-			Instantiator.InstantiateWire(Barrier);
+			OutSimObjects.GetWires().Add(AGXBarrierFactories::CreateWireBarrier(Wire));
 		}
-
-		return true;
 	}
 
-	bool ReadTracks(agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
-	{
-		agxVehicle::TrackPtrVector Tracks = agxVehicle::Track::findAll(&Simulation);
-
-		for (agxVehicle::Track* Track : Tracks)
-		{
-			if (Track == nullptr || Track->getRoute() == nullptr)
-			{
-				continue;
-			}
-
-			FTrackBarrier Barrier = AGXBarrierFactories::CreateTrackBarrier(Track);
-			Instantiator.InstantiateTrack(Barrier);
-		}
-
-		return true;
-	}
-
-	bool ReadObserverFrames(
-		agxSDK::Simulation& Simulation, FAGXSimObjectsInstantiator& Instantiator)
+	void ReadObserverFrames(
+		agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
 	{
 		const agx::ObserverFrameRefSetVector& ObserverFrames = Simulation.getObserverFrames();
+		OutSimObjects.GetObserverFrames().Reserve(ObserverFrames.size());
 		for (const agx::ObserverFrameRef& ObserverFrame : ObserverFrames)
 		{
 			const FString Name = Convert(ObserverFrame->getName());
 			const FGuid BodyGuid = Convert(ObserverFrame->getRigidBody()->getUuid());
 			const FTransform Transform = Convert(ObserverFrame->getLocalTransform());
-			Instantiator.InstantiateObserverFrame(Name, BodyGuid, Transform);
+			OutSimObjects.GetObserverFrames().Add({Name, BodyGuid, Transform});
 		}
-		return true;
 	}
 
-	bool ReadAll(
+	void ReadAll(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FAGXSimObjectsInstantiator& Instantiator, FScopedSlowTask& ImportTask, float WorkLeft)
+		FSimulationObjectCollection& OutSimObjects)
 	{
-		bool Result = true;
+		TArray<agx::Constraint*> NonFreeConstraints;
 
-		// The sum of all fractions multiplied with WorkLeft below should equal to 1.
-		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Materials"));
-		Result &= ReadMaterials(Simulation, Instantiator);
-
-		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Tire Models"));
-		Result &= ReadTireModels(Simulation, Filename, Instantiator);
-
-		ImportTask.EnterProgressFrame(
-			0.15f * WorkLeft, FText::FromString("Importing Rigid Bodies and Geometries"));
-		Result &= ReadRigidBodies(Simulation, Filename, Instantiator);
-
-		ImportTask.EnterProgressFrame(
-			0.78f * WorkLeft, FText::FromString("Importing bodiless Geometries"));
-		Result &= ReadBodilessGeometries(Simulation, Filename, Instantiator);
-
-		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Tracks"));
-		Result &= ReadTracks(Simulation, Instantiator);
-
-		// Constraints depend on Rigid Bodies, so those must be read before Constraints.
-		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Constraints"));
-		Result &= ReadConstraints(Simulation, Filename, Instantiator);
-
-		ImportTask.EnterProgressFrame(
-			0.01f * WorkLeft, FText::FromString("Importing Collision Groups"));
-		Result &= ReadCollisionGroups(Simulation, Instantiator);
-
-		ImportTask.EnterProgressFrame(0.01f * WorkLeft, FText::FromString("Importing Wires"));
-		Result &= ReadWires(Simulation, Instantiator);
-
-		// Observer Frames depend on Rigid Bodies, so those must be read before Observer Frames.
-		ImportTask.EnterProgressFrame(
-			0.01f * WorkLeft, FText::FromString("Importing Observer Frames"));
-		Result &= ReadObserverFrames(Simulation, Instantiator);
-
-		Instantiator.FinalizeImports();
-		return Result;
+		ReadMaterials(Simulation, OutSimObjects);
+		ReadTireModels(Simulation, Filename, OutSimObjects, NonFreeConstraints);
+		ReadBodilessGeometries(Simulation, Filename, OutSimObjects);
+		ReadRigidBodies(Simulation, Filename, OutSimObjects);
+		ReadTracks(Simulation, Filename, OutSimObjects, NonFreeConstraints);
+		ReadConstraints(Simulation, Filename, OutSimObjects, NonFreeConstraints);
+		ReadCollisionGroups(Simulation, OutSimObjects);
+		ReadWires(Simulation, OutSimObjects);
+		ReadObserverFrames(Simulation, OutSimObjects);
 	}
 }
 
-FSuccessOrError FAGXSimObjectsReader::ReadAGXArchive(
-	const FString& Filename, FAGXSimObjectsInstantiator& Instantiator)
+bool FAGXSimObjectsReader::ReadAGXArchive(
+	const FString& Filename, FSimulationObjectCollection& OutSimObjects)
 {
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
-	const float WorkTot = 100.0f;
-	const float WorkRead = 0.05f * WorkTot;
-	FScopedSlowTask ImportTask(WorkTot, LOCTEXT("ReadAGXArchive", "Reading AGX archive"), true);
-	ImportTask.MakeDialog();
-	ImportTask.EnterProgressFrame(WorkRead, FText::FromString("Reading AGX Dynamics archive"));
 	try
 	{
 		size_t NumRead = Simulation->read(Convert(Filename));
 		if (NumRead == 0)
 		{
-			return FSuccessOrError(
-				FString::Printf(TEXT("Could not read .agx file '%s'."), *Filename));
+			UE_LOG(LogAGX, Error, TEXT("Could not read .agx file '%s'."), *Filename);
+			return false;
 		}
 	}
 	catch (const std::runtime_error& Error)
 	{
-		FString What = Error.what();
-		return FSuccessOrError(
-			FString::Printf(TEXT("Could not read .agx file '%s':\n\n%s"), *Filename, *What));
+		UE_LOG(
+			LogAGX, Error, TEXT("Could not read .agx file '%s':\n\n%s"), *Filename, *Error.what());
+		return false;
 	}
 
-	if (::ReadAll(*Simulation, Filename, Instantiator, ImportTask, WorkTot - WorkRead) == false)
-	{
-		FSuccessOrError Result(true);
-		Result.AddWarning(
-			"The import is complete but some unexpected issue occurred. Please check the "
-			"log for more information.");
-		return Result;
-	}
-
-	return FSuccessOrError(true);
+	::ReadAll(*Simulation, Filename, OutSimObjects);
+	return true;
 }
 
-AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
+AGXUNREALBARRIER_API bool FAGXSimObjectsReader::ReadUrdf(
 	const FString& UrdfFilePath, const FString& UrdfPackagePath,
-	FAGXSimObjectsInstantiator& Instantiator)
+	FSimulationObjectCollection& OutSimObjects)
 {
-	const float WorkTot = 100.0f;
-	const float WorkRead = 0.05f * WorkTot;
-	FScopedSlowTask ImportTask(WorkTot, LOCTEXT("ReadUrdfFile", "Reading URDF file"), true);
-	ImportTask.MakeDialog();
-	ImportTask.EnterProgressFrame(WorkRead, FText::FromString("Reading URDF file"));
 #if AGX_VERSION_GREATER_OR_EQUAL(2, 33, 0, 0)
 	agxModel::UrdfReader::Settings UrdfSettings(
 		/*fixToWorld*/ false, /*disableLinkedBodies*/ false, /*mergeKinematicLinks*/ false);
@@ -524,30 +399,21 @@ AGXUNREALBARRIER_API FSuccessOrError FAGXSimObjectsReader::ReadUrdf(
 #else
 	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
 		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
-#endif // AGX_VERSION_GREATER_OR_EQUAL > 2.33
-
+#endif
 
 	if (Model == nullptr)
 	{
-		return FSuccessOrError(FString::Printf(
+		UE_LOG(
+			LogAGX, Error,
 			TEXT("Could not read URDF file '%s'. The Log category LogAGXDynamics may include more "
 				 "details."),
-			*UrdfFilePath));
+			*UrdfFilePath);
+		return false;
 	}
 
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
 	Simulation->add(Model);
+	::ReadAll(*Simulation, UrdfFilePath, OutSimObjects);
 
-	if (::ReadAll(*Simulation, UrdfFilePath, Instantiator, ImportTask, WorkTot - WorkRead) == false)
-	{
-		FSuccessOrError Result(true);
-		Result.AddWarning(
-			"The import is complete but some unexpected issue occurred. Please check the "
-			"log for more information.");
-		return Result;
-	}
-
-	return FSuccessOrError(true);
+	return true;
 }
-
-#undef LOCTEXT_NAMESPACE

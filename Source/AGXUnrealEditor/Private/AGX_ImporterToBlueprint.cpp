@@ -4,10 +4,10 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImportEnums.h"
+#include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SimObjectsImporterHelper.h"
-#include "AGX_UrdfImporterHelper.h"
 #include "AGXSimObjectsReader.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
@@ -41,6 +41,8 @@
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Shapes/RenderDataBarrier.h"
+#include "SimulationObjectCollection.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -57,9 +59,12 @@
 #include "GameFramework/Actor.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/ScopedSlowTask.h"
 #include "PackageTools.h"
 #include "UObject/Package.h"
 #include "UObject/SavePackage.h"
+
+#define LOCTEXT_NAMESPACE "AGX_ImporterToBlueprint"
 
 namespace
 {
@@ -125,313 +130,342 @@ namespace
 		return Package;
 	}
 
-	class FBlueprintBody final : public FAGXSimObjectBody
+	void ClearOwningActors(UAGX_ConstraintComponent* Constraint)
 	{
-	public:
-		FBlueprintBody(UAGX_RigidBodyComponent& InBody, FAGX_SimObjectsImporterHelper& InHelper)
-			: Body(InBody)
-			, Helper(InHelper)
+		if (Constraint == nullptr)
 		{
+			return;
 		}
 
-		virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
-		{
-			Helper.InstantiateSphere(Barrier, *Body.GetOwner(), &Body);
-		}
+		// By default the BodyAttachments are created with the OwningActor set to the owner of
+		// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
+		// OwningActor points to the temporary template Actor from which the Blueprint is
+		// created. By setting them to nullptr instead we restore the constructor / Class
+		// Default Object value which won't be serialized and PostInitProperties in the final
+		// ConstraintComponent will set OwningActor to GetTypedOuter<AActor>() which is correct
+		// in the Blueprint case.
+		Constraint->BodyAttachment1.RigidBody.OwningActor = nullptr;
+		Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
+	}
 
-		virtual void InstantiateBox(const FBoxShapeBarrier& Barrier) override
-		{
-			Helper.InstantiateBox(Barrier, *Body.GetOwner(), &Body);
-		}
-
-		virtual void InstantiateCylinder(const FCylinderShapeBarrier& Barrier) override
-		{
-			Helper.InstantiateCylinder(Barrier, *Body.GetOwner(), &Body);
-		}
-
-		virtual void InstantiateCapsule(const FCapsuleShapeBarrier& Barrier) override
-		{
-			Helper.InstantiateCapsule(Barrier, *Body.GetOwner(), &Body);
-		}
-
-		virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Barrier) override
-		{
-			Helper.InstantiateTrimesh(Barrier, *Body.GetOwner(), &Body);
-		}
-
-	private:
-		UAGX_RigidBodyComponent& Body;
-		FAGX_SimObjectsImporterHelper& Helper;
-	};
-
-	class FBlueprintInstantiator final : public FAGXSimObjectsInstantiator
+	bool AddShapeMaterials(
+		const FSimulationObjectCollection& SimObjects, FAGX_SimObjectsImporterHelper& Helper)
 	{
-	public:
-		FBlueprintInstantiator(AActor& InBlueprintTemplate, FAGX_SimObjectsImporterHelper& InHelper)
-			: Helper(InHelper)
-			, BlueprintTemplate(InBlueprintTemplate)
+		bool Success = true;
+		for (const auto& ShapeMaterial : SimObjects.GetShapeMaterials())
 		{
+			Success &= Helper.InstantiateShapeMaterial(ShapeMaterial) != nullptr;
 		}
 
-		virtual FAGXSimObjectBody* InstantiateBody(const FRigidBodyBarrier& Barrier) override
+		return Success;
+	}
+
+	bool AddContactMaterials(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& ContactMaterial : SimObjects.GetContactMaterials())
 		{
-			UAGX_RigidBodyComponent* Component = Helper.InstantiateBody(Barrier, BlueprintTemplate);
-			if (Component == nullptr)
+			Success &= Helper.InstantiateContactMaterial(ContactMaterial, ImportedActor) != nullptr;
+		}
+
+		return Success;
+	}
+
+	bool AddBodilessShapes(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& Shape : SimObjects.GetSphereShapes())
+		{
+			Success &= Helper.InstantiateSphere(Shape, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Shape : SimObjects.GetBoxShapes())
+		{
+			Success &= Helper.InstantiateBox(Shape, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Shape : SimObjects.GetCylinderShapes())
+		{
+			Success &= Helper.InstantiateCylinder(Shape, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Shape : SimObjects.GetCapsuleShapes())
+		{
+			Success &= Helper.InstantiateCapsule(Shape, ImportedActor) != nullptr;
+		}
+
+		for (const auto& Shape : SimObjects.GetTrimeshShapes())
+		{
+			if (Helper.ImportSettings.IgnoreDisabledTrimeshes && !Shape.GetEnableCollisions())
 			{
-				return new NopEditorBody();
-			}
-			// This is the attach part of the RootComponent strangeness. I would like to call
-			// AttachToComponent here, but I don't have a RootComponent. See comment in
-			// CreateTemplate.
-#if 0
-			Component->AttachToComponent(
-				BlueprintTemplate->GetRootComponent(),
-				FAttachmentTransformRules::KeepWorldTransform);
-#endif
-			return new FBlueprintBody(*Component, Helper);
-		}
-
-		virtual void InstantiateHinge(const FHingeBarrier& Barrier) override
-		{
-			UAGX_ConstraintComponent* Constraint =
-				Helper.InstantiateHinge(Barrier, BlueprintTemplate);
-			ClearOwningActors(Constraint);
-		}
-
-		virtual void InstantiatePrismatic(const FPrismaticBarrier& Barrier) override
-		{
-			UAGX_ConstraintComponent* Constraint =
-				Helper.InstantiatePrismatic(Barrier, BlueprintTemplate);
-			ClearOwningActors(Constraint);
-		}
-
-		virtual void InstantiateBallJoint(const FBallJointBarrier& Barrier) override
-		{
-			UAGX_ConstraintComponent* Constraint =
-				Helper.InstantiateBallJoint(Barrier, BlueprintTemplate);
-			ClearOwningActors(Constraint);
-		}
-
-		virtual void InstantiateCylindricalJoint(const FCylindricalJointBarrier& Barrier) override
-		{
-			UAGX_ConstraintComponent* Constraint =
-				Helper.InstantiateCylindricalJoint(Barrier, BlueprintTemplate);
-			ClearOwningActors(Constraint);
-		}
-
-		virtual void InstantiateDistanceJoint(const FDistanceJointBarrier& Barrier) override
-		{
-			UAGX_ConstraintComponent* Constraint =
-				Helper.InstantiateDistanceJoint(Barrier, BlueprintTemplate);
-			ClearOwningActors(Constraint);
-		}
-
-		virtual void InstantiateLockJoint(const FLockJointBarrier& Barrier) override
-		{
-			UAGX_ConstraintComponent* Constraint =
-				Helper.InstantiateLockJoint(Barrier, BlueprintTemplate);
-			ClearOwningActors(Constraint);
-		}
-
-		virtual void InstantiateSphere(
-			const FSphereShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
-		{
-			if (Body != nullptr)
-			{
-				Body->InstantiateSphere(Barrier);
+				if (Shape.HasRenderData())
+				{
+					Success &= Helper.InstantiateRenderData(Shape, ImportedActor) != nullptr;
+				}
 			}
 			else
 			{
-				Helper.InstantiateSphere(Barrier, BlueprintTemplate);
+				Success &= Helper.InstantiateTrimesh(Shape, ImportedActor) != nullptr;
 			}
 		}
 
-		virtual void InstantiateBox(
-			const FBoxShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
+		return Success;
+	}
+
+	bool AddRigidBodyAndAnyOwnedShape(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const FRigidBodyBarrier& Body : SimObjects.GetRigidBodies())
 		{
-			if (Body != nullptr)
+			Success &= Helper.InstantiateBody(Body, ImportedActor) != nullptr;
+
+			for (const auto& Sphere : Body.GetSphereShapes())
 			{
-				Body->InstantiateBox(Barrier);
+				Success &= Helper.InstantiateSphere(Sphere, ImportedActor, &Body) != nullptr;
 			}
-			else
+
+			for (const auto& Box : Body.GetBoxShapes())
 			{
-				Helper.InstantiateBox(Barrier, BlueprintTemplate);
+				Success &= Helper.InstantiateBox(Box, ImportedActor, &Body) != nullptr;
 			}
-		}
 
-		virtual void InstantiateCylinder(
-			const FCylinderShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
-		{
-			if (Body != nullptr)
+			for (const auto& Capsule : Body.GetCapsuleShapes())
 			{
-				Body->InstantiateCylinder(Barrier);
+				Success &= Helper.InstantiateCapsule(Capsule, ImportedActor, &Body) != nullptr;
 			}
-			else
+
+			for (const auto& Cylinder : Body.GetCylinderShapes())
 			{
-				Helper.InstantiateCylinder(Barrier, BlueprintTemplate);
+				Success &= Helper.InstantiateCylinder(Cylinder, ImportedActor, &Body) != nullptr;
 			}
-		}
 
-		virtual void InstantiateCapsule(
-			const FCapsuleShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
-		{
-			if (Body != nullptr)
+			for (const auto& Trimesh : Body.GetTrimeshShapes())
 			{
-				Body->InstantiateCapsule(Barrier);
-			}
-			else
-			{
-				Helper.InstantiateCapsule(Barrier, BlueprintTemplate);
-			}
-		}
-
-		virtual void InstantiateTrimesh(
-			const FTrimeshShapeBarrier& Barrier, FAGXSimObjectBody* Body) override
-		{
-			if (Body != nullptr)
-			{
-				Body->InstantiateTrimesh(Barrier);
-			}
-			else
-			{
-				Helper.InstantiateTrimesh(Barrier, BlueprintTemplate);
+				if (Helper.ImportSettings.IgnoreDisabledTrimeshes && !Trimesh.GetEnableCollisions())
+				{
+					if (Trimesh.HasRenderData())
+					{
+						Success &=
+							Helper.InstantiateRenderData(Trimesh, ImportedActor, &Body) != nullptr;
+					}
+				}
+				else
+				{
+					Success &= Helper.InstantiateTrimesh(Trimesh, ImportedActor, &Body) != nullptr;
+				}
 			}
 		}
 
-		void ClearOwningActors(UAGX_ConstraintComponent* Constraint)
-		{
-			if (Constraint == nullptr)
-			{
-				return;
-			}
+		return Success;
+	}
 
-			// By default the BodyAttachments are created with the OwningActor set to the owner of
-			// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
-			// OwningActor points to the temporary template Actor from which the Blueprint is
-			// created. By setting them to nullptr instead we restore the constructor / Class
-			// Default Object value which won't be serialized and PostInitProperties in the final
-			// ConstraintComponent will set OwningActor to GetTypedOuter<AActor>() which is correct
-			// in the Blueprint case.
-			Constraint->BodyAttachment1.RigidBody.OwningActor = nullptr;
-			Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
+	bool AddTracks(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& Track : SimObjects.GetTracks())
+		{
+			Success &= Helper.InstantiateTrack(Track, ImportedActor) != nullptr;
 		}
 
-		virtual void DisabledCollisionGroups(
-			const TArray<std::pair<FString, FString>>& DisabledPairs) override
-		{
-			if (DisabledPairs.Num() == 0)
-			{
-				return;
-			}
+		return Success;
+	}
 
-			Helper.InstantiateCollisionGroupDisabler(BlueprintTemplate, DisabledPairs);
+	bool AddTireModels(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& Tire : SimObjects.GetTwoBodyTires())
+		{
+			check(Tire.GetTireRigidBody().HasNative());
+			check(Tire.GetHubRigidBody().HasNative());
+			Helper.InstantiateTwoBodyTire(Tire, ImportedActor, true);
 		}
 
-		virtual void InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier) override
+		return Success;
+	}
+
+	bool AddConstraints(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& Constraint : SimObjects.GetHingeConstraints())
 		{
-			Helper.InstantiateShapeMaterial(Barrier);
+			auto Hinge = Helper.InstantiateHinge(Constraint, ImportedActor);
+			ClearOwningActors(Hinge);
+			Success &= Hinge != nullptr;
 		}
 
-		virtual void InstantiateContactMaterial(const FContactMaterialBarrier& Barrier) override
+		for (const auto& Constraint : SimObjects.GetPrismaticConstraints())
 		{
-			Helper.InstantiateContactMaterial(Barrier, BlueprintTemplate);
+			auto Prismatic = Helper.InstantiatePrismatic(Constraint, ImportedActor);
+			ClearOwningActors(Prismatic);
+			Success &= Prismatic != nullptr;
 		}
 
-		virtual FTwoBodyTireSimObjectBodies InstantiateTwoBodyTire(
-			const FTwoBodyTireBarrier& Barrier) override
+		for (const auto& Constraint : SimObjects.GetBallConstraints())
 		{
-			// Instantiate the Tire and Hub Rigid Bodies. This adds them to the RestoredBodies TMap
-			// and can thus be found and used when the TwoBodyTire component is instantiated.
-			const FRigidBodyBarrier TireBody = Barrier.GetTireRigidBody();
-			const FRigidBodyBarrier HubBody = Barrier.GetHubRigidBody();
-			if (TireBody.HasNative() == false || HubBody.HasNative() == false)
-			{
-				UE_LOG(
-					LogAGX, Error,
-					TEXT("At lest one of the Rigid Bodies referenced by the TwoBodyTire %s did not "
-						 "have a native Rigid Body. The TwoBodyTire will not be instantiated."),
-					*Barrier.GetName());
-				return FTwoBodyTireSimObjectBodies(new NopEditorBody(), new NopEditorBody());
-			}
-
-			FTwoBodyTireSimObjectBodies TireBodies;
-			TireBodies.TireBodySimObject.reset(InstantiateBody(TireBody));
-			TireBodies.HubBodySimObject.reset(InstantiateBody(HubBody));
-
-			Helper.InstantiateTwoBodyTire(Barrier, BlueprintTemplate, true);
-			return TireBodies;
+			auto BallConstraint = Helper.InstantiateBallConstraint(Constraint, ImportedActor);
+			ClearOwningActors(BallConstraint);
+			Success &= BallConstraint != nullptr;
 		}
 
-		virtual void InstantiateWire(const FWireBarrier& Barrier) override
+		for (const auto& Constraint : SimObjects.GetCylindricalConstraints())
 		{
-			Helper.InstantiateWire(Barrier, BlueprintTemplate);
+			auto CylindricalConstraint =
+				Helper.InstantiateCylindricalConstraint(Constraint, ImportedActor);
+			ClearOwningActors(CylindricalConstraint);
+			Success &= CylindricalConstraint != nullptr;
 		}
 
-		virtual void InstantiateTrack(
-			const FTrackBarrier& Barrier) override
+		for (const auto& Constraint : SimObjects.GetDistanceConstraints())
 		{
-			Helper.InstantiateTrack(Barrier, BlueprintTemplate, true);
+			auto DistanceConstraint =
+				Helper.InstantiateDistanceConstraint(Constraint, ImportedActor);
+			ClearOwningActors(DistanceConstraint);
+			Success &= DistanceConstraint != nullptr;
 		}
 
-		virtual void InstantiateObserverFrame(const FString& Name, const FGuid& BodyGuid, const FTransform& Transform) override
+		for (const auto& Constraint : SimObjects.GetLockConstraints())
 		{
-			Helper.InstantiateObserverFrame(Name, BodyGuid, Transform, BlueprintTemplate);
+			auto LockConstraint = Helper.InstantiateLockConstraint(Constraint, ImportedActor);
+			ClearOwningActors(LockConstraint);
+			Success &= LockConstraint != nullptr;
 		}
 
-		virtual void FinalizeImports() override
+		return Success;
+	}
+
+	bool AddDisabledCollisionGroups(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		const auto DisabledGroups = SimObjects.GetDisabledCollisionGroups();
+		if (DisabledGroups.Num() == 0)
 		{
-			Helper.FinalizeImports();
+			return true;
 		}
 
-		virtual ~FBlueprintInstantiator() = default;
+		return Helper.InstantiateCollisionGroupDisabler(ImportedActor, DisabledGroups) != nullptr;
+	}
 
-	private:
-		using FBodyPair = std::pair<UAGX_RigidBodyComponent*, UAGX_RigidBodyComponent*>;
-		using FShapeMaterialPair = std::pair<UAGX_ShapeMaterial*, UAGX_ShapeMaterial*>;
+	bool AddWires(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& Wire : SimObjects.GetWires())
+		{
+			Success &= Helper.InstantiateWire(Wire, ImportedActor) != nullptr;
+		}
 
-	private:
-		FAGX_SimObjectsImporterHelper& Helper;
-		AActor& BlueprintTemplate;
-	};
+		return Success;
+	}
+
+	bool AddObserverFrames(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool Success = true;
+		for (const auto& ObserverFr : SimObjects.GetObserverFrames())
+		{
+			Success &= Helper.InstantiateObserverFrame(
+						   ObserverFr.Name, ObserverFr.BodyGuid, ObserverFr.Transform,
+						   ImportedActor) != nullptr;
+		}
+
+		return Success;
+	}
+
+	bool AddAllComponents(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		FScopedSlowTask ImportTask(100.f, LOCTEXT("ImportModel", "Importing model"), true);
+		ImportTask.MakeDialog();
+		bool Success = true;
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Shape Materials"));
+		Success &= AddShapeMaterials(SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Contact Materials"));
+		Success &= AddContactMaterials(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(
+			5.f, FText::FromString("Reading Rigid Bodies and their Shapes"));
+		Success &= AddRigidBodyAndAnyOwnedShape(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(10.f, FText::FromString("Reading Bodiless Shapes"));
+		Success &= AddBodilessShapes(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Tracks"));
+		Success &= AddTracks(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Tire Models"));
+		Success &= AddTireModels(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Constraints"));
+		Success &= AddConstraints(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Disabled Collision Groups"));
+		Success &= AddDisabledCollisionGroups(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Wires"));
+		Success &= AddWires(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Observer Frames"));
+		Success &= AddObserverFrames(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Static Mesh Assets"));
+		Helper.FinalizeStaticMeshAssets();
+
+		ImportTask.EnterProgressFrame(40.f, FText::FromString("Import complete"));
+		return Success;
+	}
 
 	bool AddComponentsFromAGXArchive(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
-		FSuccessOrError SuccessOrError =
-			FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, Instantiator);
-
-		if (!SuccessOrError.Success)
+		FSimulationObjectCollection SimObjects;
+		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.ImportSettings.FilePath, SimObjects) ||
+			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				SuccessOrError.Error, "Import AGX Dynamics archive to Blueprint");
+				"Some issues occurred during import. Log category LogAGX in the Console may "
+				"contain "
+				"more information.",
+				"Import AGX Dynamics archive to Blueprint");
+			return false;
 		}
-		else if (SuccessOrError.HasWarning)
-		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
-				SuccessOrError.Warning, "Import AGX Dynamics archive to Blueprint");
-		}
-		return SuccessOrError.Success;
+
+		return true;
 	}
 
 	bool AddComponentsFromUrdf(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FAGX_UrdfImporterHelper* HelperUrdf = static_cast<FAGX_UrdfImporterHelper*>(&Helper);
-
-		FBlueprintInstantiator Instantiator(ImportedActor, Helper);
-		FSuccessOrError SuccessOrError = FAGXSimObjectsReader::ReadUrdf(
-			HelperUrdf->SourceFilePath, HelperUrdf->UrdfPackagePath, Instantiator);
-
-		if (!SuccessOrError.Success)
+		FSimulationObjectCollection SimObjects;
+		if (!FAGXSimObjectsReader::ReadUrdf(
+				Helper.ImportSettings.FilePath, Helper.ImportSettings.UrdfPackagePath,
+				SimObjects) ||
+			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				SuccessOrError.Error, "Import URDF model to Blueprint");
+				"Some issues occurred during import. Log category LogAGX in the Console may "
+				"contain "
+				"more information.",
+				"Import AGX Dynamics archive to Blueprint");
+			return false;
 		}
-		else if (SuccessOrError.HasWarning)
-		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
-				SuccessOrError.Warning, "Import URDF model to Blueprint");
-		}
-		return SuccessOrError.Success;
+
+		return true;
 	}
 
 	AActor* CreateTemplate(FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType)
@@ -486,22 +520,17 @@ namespace
 		return RootActorContainer;
 	}
 
-	UBlueprint* CreateBlueprint(UPackage* Package, AActor* Template)
+	UBlueprint* CreateBlueprint(UPackage* Package, AActor* Template, bool OpenBlueprintEditor)
 	{
 		static constexpr bool ReplaceInWorld = false;
 		static constexpr bool KeepMobility = true;
-#if UE_VERSION_OLDER_THAN(4, 26, 0)
-		UBlueprint* Blueprint = FKismetEditorUtilities::CreateBlueprintFromActor(
-			Package->GetName(), Template, ReplaceInWorld, KeepMobility);
-#else
 		FKismetEditorUtilities::FCreateBlueprintFromActorParams Params;
 		Params.bReplaceActor = ReplaceInWorld;
 		Params.bKeepMobility = KeepMobility;
+		Params.bOpenBlueprint = OpenBlueprintEditor;
 
 		UBlueprint* Blueprint =
 			FKismetEditorUtilities::CreateBlueprintFromActor(Package->GetName(), Template, Params);
-#endif
-
 		check(Blueprint);
 		return Blueprint;
 	}
@@ -533,7 +562,9 @@ namespace
 #endif
 	}
 
-	UBlueprint* ImportToBlueprint(FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType)
+	UBlueprint* ImportToBlueprint(
+		FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType,
+		bool OpenBlueprintEditor = true)
 	{
 		PreCreationSetup();
 		FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper);
@@ -543,21 +574,17 @@ namespace
 		{
 			return nullptr;
 		}
-		UBlueprint* Blueprint = CreateBlueprint(Package, Template);
+		UBlueprint* Blueprint = CreateBlueprint(Package, Template, OpenBlueprintEditor);
 		PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
 		return Blueprint;
 	}
 }
 
-UBlueprint* AGX_ImporterToBlueprint::ImportAGXArchive(const FString& ArchivePath)
+UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSettings)
 {
-	FAGX_SimObjectsImporterHelper Helper(ArchivePath);
-	return ImportToBlueprint(Helper, EAGX_ImportType::Agx);
+	FAGX_SimObjectsImporterHelper Helper(ImportSettings);
+	return ImportToBlueprint(
+		Helper, ImportSettings.ImportType, ImportSettings.OpenBlueprintEditorAfterImport);
 }
 
-UBlueprint* AGX_ImporterToBlueprint::ImportURDF(
-	const FString& UrdfFilePath, const FString& UrdfPackagePath)
-{
-	FAGX_UrdfImporterHelper Helper(UrdfFilePath, UrdfPackagePath);
-	return ImportToBlueprint(Helper, EAGX_ImportType::Urdf);
-}
+#undef LOCTEXT_NAMESPACE

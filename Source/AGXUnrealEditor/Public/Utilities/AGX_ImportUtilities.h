@@ -137,7 +137,7 @@ public:
 		const FShapeMaterialBarrier& Material, const FString& DirectoryName);
 
 	/**
-	 * Store an imported AGX Dynamics ContactMaterial as an UAGX_ContactMaterialAsset.
+	 * Store an imported AGX Dynamics ContactMaterial as an UAGX_ContactMaterial.
 	 * @param ContactMaterial The imported contact material to be saved.
 	 * @param Material1 The AGXUnreal ShapeMaterial for the first AGX Dynamics material.
 	 * @param Material2 The AGXUnreal ShapeMaterial for the second AGX Dynamics material.

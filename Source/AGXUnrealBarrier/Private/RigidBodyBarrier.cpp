@@ -3,12 +3,23 @@
 #include "RigidBodyBarrier.h"
 #include "Shapes/ShapeBarrier.h"
 
+#include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
+#include "Shapes/BoxShapeBarrier.h"
+#include "Shapes/CylinderShapeBarrier.h"
+#include "Shapes/CapsuleShapeBarrier.h"
+#include "Shapes/SphereShapeBarrier.h"
+#include "Shapes/TrimeshShapeBarrier.h"
 #include "TypeConversions.h"
 
 #include "BeginAGXIncludes.h"
 #include <agx/Vec3.h>
 #include <agx/Quat.h>
+#include <agxCollide/Box.h>
+#include <agxCollide/Capsule.h>
+#include <agxCollide/Cylinder.h>
+#include <agxCollide/Geometry.h>
+#include <agxCollide/Trimesh.h>
 #include "EndAGXIncludes.h"
 
 FRigidBodyBarrier::FRigidBodyBarrier()
@@ -330,4 +341,186 @@ void FRigidBodyBarrier::SetNativeAddress(uintptr_t NativeAddress)
 void FRigidBodyBarrier::ReleaseNative()
 {
 	NativeRef->Native = nullptr;
+}
+
+namespace RigidBodyBarrier_helpers
+{
+	template <typename TShape, typename BarrierCreateFunc>
+	void CollectShapeOfType(
+		const agxCollide::ShapeRefVector& Shapes, TArray<TShape>& OutShapes,
+		agxCollide::Shape::Type ShapeType, BarrierCreateFunc CreateFunc)
+	{
+		for (const agxCollide::ShapeRef& Shape : Shapes)
+		{
+			if (Shape->getType() == ShapeType)
+			{
+				OutShapes.Add(CreateFunc(Shape));
+			}
+			else if (Shape->getType() == agxCollide::Shape::GROUP)
+			{
+				agxCollide::ShapeGroup* Group {Shape->as<agxCollide::ShapeGroup>()};
+				CollectShapeOfType(Group->getChildren(), OutShapes, ShapeType, CreateFunc);
+			}
+		}
+	}
+
+	TArray<FSphereShapeBarrier> GetAllSpheres(agx::RigidBody& Body)
+	{
+		TArray<FSphereShapeBarrier> Spheres;
+		for (const agxCollide::GeometryRef& Geometry : Body.getGeometries())
+		{
+			if (Geometry == nullptr)
+			{
+				continue;
+			}
+
+			auto CreateSphere = [](const agxCollide::ShapeRef& Shape) -> FSphereShapeBarrier
+			{
+				agxCollide::Sphere* Sphere {Shape->as<agxCollide::Sphere>()};
+				return AGXBarrierFactories::CreateSphereShapeBarrier(Sphere);
+			};
+
+			CollectShapeOfType<FSphereShapeBarrier>(
+				Geometry->getShapes(), Spheres, agxCollide::Shape::SPHERE, CreateSphere);
+		}
+
+		return Spheres;
+	}
+
+	TArray<FBoxShapeBarrier> GetAllBoxes(agx::RigidBody& Body)
+	{
+		TArray<FBoxShapeBarrier> Boxes;
+		for (const agxCollide::GeometryRef& Geometry : Body.getGeometries())
+		{
+			if (Geometry == nullptr)
+			{
+				continue;
+			}
+
+			auto CreateBox = [](const agxCollide::ShapeRef& Shape) -> FBoxShapeBarrier
+			{
+				agxCollide::Box* Box {Shape->as<agxCollide::Box>()};
+				return AGXBarrierFactories::CreateBoxShapeBarrier(Box);
+			};
+
+			CollectShapeOfType<FBoxShapeBarrier>(
+				Geometry->getShapes(), Boxes, agxCollide::Shape::BOX, CreateBox);
+		}
+
+		return Boxes;
+	}
+
+	TArray<FCapsuleShapeBarrier> GetAllCapsules(agx::RigidBody& Body)
+	{
+		TArray<FCapsuleShapeBarrier> Capsules;
+		for (const agxCollide::GeometryRef& Geometry : Body.getGeometries())
+		{
+			if (Geometry == nullptr)
+			{
+				continue;
+			}
+
+			auto CreateCapsule = [](const agxCollide::ShapeRef& Shape) -> FCapsuleShapeBarrier
+			{
+				agxCollide::Capsule* Capsule {Shape->as<agxCollide::Capsule>()};
+				return AGXBarrierFactories::CreateCapsuleShapeBarrier(Capsule);
+			};
+
+			CollectShapeOfType<FCapsuleShapeBarrier>(
+				Geometry->getShapes(), Capsules, agxCollide::Shape::CAPSULE, CreateCapsule);
+		}
+
+		return Capsules;
+	}
+
+	TArray<FCylinderShapeBarrier> GetAllCylinders(agx::RigidBody& Body)
+	{
+		TArray<FCylinderShapeBarrier> Cylinders;
+		for (const agxCollide::GeometryRef& Geometry : Body.getGeometries())
+		{
+			if (Geometry == nullptr)
+			{
+				continue;
+			}
+
+			auto CreateCylinder = [](const agxCollide::ShapeRef& Shape) -> FCylinderShapeBarrier
+			{
+				agxCollide::Cylinder* Cylinder {Shape->as<agxCollide::Cylinder>()};
+				return AGXBarrierFactories::CreateCylinderShapeBarrier(Cylinder);
+			};
+
+			CollectShapeOfType<FCylinderShapeBarrier>(
+				Geometry->getShapes(), Cylinders, agxCollide::Shape::CYLINDER, CreateCylinder);
+		}
+
+		return Cylinders;
+	}
+
+	TArray<FTrimeshShapeBarrier> GetAllTrimeshs(agx::RigidBody& Body)
+	{
+		TArray<FTrimeshShapeBarrier> Trimeshes;
+		for (const agxCollide::GeometryRef& Geometry : Body.getGeometries())
+		{
+			if (Geometry == nullptr)
+			{
+				continue;
+			}
+
+			auto CreateTrimesh = [](const agxCollide::ShapeRef& Shape) -> FTrimeshShapeBarrier
+			{
+				agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
+				return AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh);
+			};
+
+			CollectShapeOfType<FTrimeshShapeBarrier>(
+				Geometry->getShapes(), Trimeshes, agxCollide::Shape::TRIMESH, CreateTrimesh);
+		}
+
+		return Trimeshes;
+	}
+}
+
+TArray<FSphereShapeBarrier> FRigidBodyBarrier::GetSphereShapes() const
+{
+	if (!HasNative())
+	{
+		return TArray<FSphereShapeBarrier>();
+	}
+	return RigidBodyBarrier_helpers::GetAllSpheres(*NativeRef->Native);
+}
+
+TArray<FBoxShapeBarrier> FRigidBodyBarrier::GetBoxShapes() const
+{
+	if (!HasNative())
+	{
+		return TArray<FBoxShapeBarrier>();
+	}
+	return RigidBodyBarrier_helpers::GetAllBoxes(*NativeRef->Native);
+}
+
+TArray<FCylinderShapeBarrier> FRigidBodyBarrier::GetCylinderShapes() const
+{
+	if (!HasNative())
+	{
+		return TArray<FCylinderShapeBarrier>();
+	}
+	return RigidBodyBarrier_helpers::GetAllCylinders(*NativeRef->Native);
+}
+
+TArray<FCapsuleShapeBarrier> FRigidBodyBarrier::GetCapsuleShapes() const
+{
+	if (!HasNative())
+	{
+		return TArray<FCapsuleShapeBarrier>();
+	}
+	return RigidBodyBarrier_helpers::GetAllCapsules(*NativeRef->Native);
+}
+
+TArray<FTrimeshShapeBarrier> FRigidBodyBarrier::GetTrimeshShapes() const
+{
+	if (!HasNative())
+	{
+		return TArray<FTrimeshShapeBarrier>();
+	}
+	return RigidBodyBarrier_helpers::GetAllTrimeshs(*NativeRef->Native);
 }

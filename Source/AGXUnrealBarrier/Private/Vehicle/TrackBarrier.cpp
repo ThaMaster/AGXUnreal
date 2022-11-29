@@ -305,33 +305,6 @@ double FTrackBarrier::GetInitialDistanceTension() const
 		NativeRef->Native->getRoute()->getInitialDistanceTension());
 }
 
-TArray<FGuid> FTrackBarrier::GetInternalConstraintGuids() const
-{
-	check(HasNative());
-	const int32 NumNodes = GetNumNodes();
-	TArray<FGuid> ConstraintGuids;
-	ConstraintGuids.Reserve(NumNodes);
-
-	for (int i = 0; i < NumNodes; i++)
-	{
-		agxVehicle::TrackNode* Node = NativeRef->Native->getNode(i);
-		if (Node == nullptr)
-		{
-			continue;
-		}
-
-		agx::Constraint* Constraint = Node->getConstraint();
-		if (Constraint == nullptr)
-		{
-			continue;
-		}
-
-		ConstraintGuids.Add(Convert(Constraint->getUuid()));
-	}
-
-	return ConstraintGuids;
-}
-
 FRigidBodyBarrier FTrackBarrier::GetNodeBody(int index) const
 {
 	check(HasNative());

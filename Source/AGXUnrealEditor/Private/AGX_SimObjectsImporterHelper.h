@@ -3,7 +3,6 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGXSimObjectsReader.h"
 #include "AGX_ImportEnums.h"
 #include "Utilities/AGX_ImportUtilities.h"
 
@@ -12,7 +11,17 @@
 #include "Misc/Guid.h"
 
 // AGXUnreal classes.
+class FBallJointBarrier;
+class FContactMaterialBarrier;
 class FConstraintBarrier;
+class FCylindricalJointBarrier;
+class FDistanceJointBarrier;
+class FHingeBarrier;
+class FLockJointBarrier;
+class FPrismaticBarrier;
+class FShapeMaterialBarrier;
+class FTwoBodyTireBarrier;
+class FWireBarrier;
 class UAGX_RigidBodyComponent;
 class UAGX_SphereShapeComponent;
 class UAGX_BoxShapeComponent;
@@ -53,22 +62,25 @@ public:
 	UAGX_RigidBodyComponent* InstantiateBody(const FRigidBodyBarrier& Barrier, AActor& Owner);
 
 	UAGX_SphereShapeComponent* InstantiateSphere(
-		const FSphereShapeBarrier& Sphere, AActor& Owner, UAGX_RigidBodyComponent* Body = nullptr);
+		const FSphereShapeBarrier& Sphere, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
 
 	UAGX_BoxShapeComponent* InstantiateBox(
-		const FBoxShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body = nullptr);
+		const FBoxShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
 
 	UAGX_CylinderShapeComponent* InstantiateCylinder(
 		const FCylinderShapeBarrier& Barrier, AActor& Owner,
-		UAGX_RigidBodyComponent* Body = nullptr);
+		const FRigidBodyBarrier* Body = nullptr);
 
 	UAGX_CapsuleShapeComponent* InstantiateCapsule(
 		const FCapsuleShapeBarrier& Barrier, AActor& Owner,
-		UAGX_RigidBodyComponent* Body = nullptr);
+		const FRigidBodyBarrier* Body = nullptr);
 
 	UAGX_TrimeshShapeComponent* InstantiateTrimesh(
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
-		UAGX_RigidBodyComponent* Body = nullptr);
+		const FRigidBodyBarrier* Body = nullptr);
+
+	UStaticMeshComponent* InstantiateRenderData(
+		const FTrimeshShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
 
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
@@ -80,16 +92,16 @@ public:
 	UAGX_PrismaticConstraintComponent* InstantiatePrismatic(
 		const FPrismaticBarrier& Barrier, AActor& Owner);
 
-	UAGX_BallConstraintComponent* InstantiateBallJoint(
+	UAGX_BallConstraintComponent* InstantiateBallConstraint(
 		const FBallJointBarrier& Barrier, AActor& Owner);
 
-	UAGX_CylindricalConstraintComponent* InstantiateCylindricalJoint(
+	UAGX_CylindricalConstraintComponent* InstantiateCylindricalConstraint(
 		const FCylindricalJointBarrier& Barrier, AActor& Owner);
 
-	UAGX_DistanceConstraintComponent* InstantiateDistanceJoint(
+	UAGX_DistanceConstraintComponent* InstantiateDistanceConstraint(
 		const FDistanceJointBarrier& Barrier, AActor& Owner);
 
-	UAGX_LockConstraintComponent* InstantiateLockJoint(
+	UAGX_LockConstraintComponent* InstantiateLockConstraint(
 		const FLockJointBarrier& Barrier, AActor& Owner);
 
 	UAGX_TwoBodyTireComponent* InstantiateTwoBodyTire(
@@ -100,8 +112,7 @@ public:
 
 	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
 
-	UAGX_TrackComponent* InstantiateTrack(
-		const FTrackBarrier& Barrier, AActor& Owner, bool IsBlueprintOwner);
+	UAGX_TrackComponent* InstantiateTrack(const FTrackBarrier& Barrier, AActor& Owner);
 
 	/**
 	 * We currently do not have full Observer Frame support in AGX Dynamics for Unreal, i.e. there
@@ -135,11 +146,11 @@ public:
 	/*
 	 * Must be called at the end of an import.
 	 */
-	void FinalizeImports();
+	void FinalizeStaticMeshAssets();
 
-	explicit FAGX_SimObjectsImporterHelper(const FString& InSourceFilePath);
+	explicit FAGX_SimObjectsImporterHelper(const FAGX_ImportSettings& InImportSettings);
 
-	const FString SourceFilePath;
+	const FAGX_ImportSettings ImportSettings;
 	const FString SourceFileName;
 	const FString ModelName;
 	const FString DirectoryName;
@@ -151,38 +162,4 @@ private:
 	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;
 	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
 	TMap<FGuid, UAGX_TrackProperties*> RestoredTrackProperties;
-
-	// List of Constraints that should not be imported the usual way, i.e. through the
-	// Instantiate<Constraint-type>() functions. These may be owned by higher level models such as
-	// e.g. TwoBodyTire and it is up to those models to handle import of their own Constraints.
-	TArray<FGuid> ConstraintIgnoreList;
-};
-
-/// \todo Consider creating a FEditorBody inheriting from FAGXSimObjectBody that has a Body and a
-/// Helper and simply forwards each call to the helper.
-
-/**
- * A SimObjectBody that creates nothing. Used when the Unreal object couldn't be created.
- */
-class NopEditorBody final : public FAGXSimObjectBody
-{
-	virtual void InstantiateSphere(const FSphereShapeBarrier& Barrier) override
-	{
-	}
-
-	virtual void InstantiateBox(const FBoxShapeBarrier& Barrier) override
-	{
-	}
-
-	virtual void InstantiateCylinder(const FCylinderShapeBarrier& Barrier) override
-	{
-	}
-
-	virtual void InstantiateCapsule(const FCapsuleShapeBarrier& Barrier) override
-	{
-	}
-
-	virtual void InstantiateTrimesh(const FTrimeshShapeBarrier& Barrier) override
-	{
-	}
 };
