@@ -126,9 +126,9 @@ void UAGX_TrackRenderer::PostEditChangeProperty(FPropertyChangedEvent& PropertyC
 	// Update the render data both regardless of playing or not.
 	// If not playing, we do no only update render data when something changes, so do it here.
 	// If playing, we update it every tick, so not strictly necessary here, but in the scenario
-	// were the user has paused the simulation and is fine tuning the visual scale and offset,
-	// we want to react to those changing and update the render data directly here (since the
-	// next tick doesn't happen until game is un-paused).
+	// were the user has paused the simulation and is fine tuning the visual scale, offset and
+	// rotation, we want to react to those changing and update the render data directly here (since
+	// the next tick doesn't happen until game is un-paused).
 	SynchronizeVisuals();
 
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -341,7 +341,7 @@ bool UAGX_TrackRenderer::ComputeNodeTransforms(
 			VisualOffset = Offset;
 		}
 
-		Track->GetNodeTransforms(OutTransforms, VisualScale, VisualOffset);
+		Track->GetNodeTransforms(OutTransforms, VisualScale, VisualOffset, Rotation.Quaternion());
 	}
 	else
 	{
@@ -375,7 +375,8 @@ bool UAGX_TrackRenderer::ComputeNodeTransforms(
 				VisualOffset + BodyFrameToNodeCenter);
 
 			OutTransforms[i].SetScale3D(VisualScale);
-			OutTransforms[i].SetRotation(Preview->NodeTransforms[i].GetRotation());
+			OutTransforms[i].SetRotation(
+				Preview->NodeTransforms[i].GetRotation() * Rotation.Quaternion());
 			OutTransforms[i].SetLocation(Preview->NodeTransforms[i].GetTranslation() + WorldOffset);
 		}
 	}

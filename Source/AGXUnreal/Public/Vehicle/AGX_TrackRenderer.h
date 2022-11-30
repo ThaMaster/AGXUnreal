@@ -27,6 +27,13 @@ public:
 	UAGX_TrackRenderer();
 
 	/**
+	 * Local Rotation to apply to the Static Mesh before synchronizing its position and
+	 * rotation with a track node [deg].
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMesh)
+	FRotator Rotation;
+
+	/**
 	 * Local Scale to apply to the Static Mesh before synchronizing its position and rotation
 	 * with a track node. Scale is relative to the original mesh size, not to the track node.
 	 */
