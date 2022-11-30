@@ -376,7 +376,7 @@ bool UAGX_TrackRenderer::ComputeNodeTransforms(
 
 			OutTransforms[i].SetScale3D(VisualScale);
 			OutTransforms[i].SetRotation(
-				Preview->NodeTransforms[i].GetRotation() * Rotation.Quaternion().Inverse());
+				Preview->NodeTransforms[i].GetRotation() * Rotation.Quaternion());
 			OutTransforms[i].SetLocation(Preview->NodeTransforms[i].GetTranslation() + WorldOffset);
 		}
 	}

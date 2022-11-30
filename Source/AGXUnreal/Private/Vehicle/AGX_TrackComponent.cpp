@@ -172,8 +172,8 @@ void UAGX_TrackComponent::GetNodeTransforms(
 			const FTransform& Source = TrackPreview->NodeTransforms[I];
 			FTransform& Target = OutTransforms[I];
 			Target.SetScale3D(LocalScale);
-			Target.SetRotation(Source.GetRotation() * LocalRotation.Inverse());
-			const FVector WorldOffset = Target.GetRotation().RotateVector(LocalOffset);
+			Target.SetRotation(Source.GetRotation() * LocalRotation);
+			const FVector WorldOffset = Source.GetRotation().RotateVector(LocalOffset);
 			Target.SetLocation(Source.GetLocation() + WorldOffset);
 		}
 	}

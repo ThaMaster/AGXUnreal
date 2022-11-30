@@ -373,7 +373,7 @@ void FTrackBarrier::GetNodeTransforms(
 		OutTransforms[i].SetScale3D(LocalScale);
 
 		const FQuat RigidBodyRotation = Convert(It->getRigidBody()->getRotation());
-		OutTransforms[i].SetRotation(RigidBodyRotation * LocalRotation.Inverse());
+		OutTransforms[i].SetRotation(RigidBodyRotation * LocalRotation);
 
 		const FVector WorldOffset = RigidBodyRotation.Rotator().RotateVector(LocalOffset);
 		OutTransforms[i].SetLocation(ConvertDisplacement(It->getCenterPosition()) + WorldOffset);
