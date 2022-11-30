@@ -1159,6 +1159,7 @@ void UAGX_ConstraintComponent::CreateNative()
 		return;
 	}
 
+	NativeBarrier->SetName(GetName());
 	UpdateNativeProperties();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
