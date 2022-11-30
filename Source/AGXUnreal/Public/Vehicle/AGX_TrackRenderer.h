@@ -54,6 +54,13 @@ public:
 	bool bAutoScaleAndOffset {true};
 
 	/**
+	 * Local Rotation to apply to the Static Mesh before synchronizing its position and
+	 * rotation with a track node [deg].
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMesh)
+	FRotator Rotation;
+
+	/**
 	 * The max-point of the axis-aligned local box volume which should be fitted to the
 	 * physical track node box when  auto-computing mesh scale and offset.
 	 *

@@ -154,11 +154,12 @@ int32 UAGX_TrackComponent::GetNumNodes() const
 }
 
 void UAGX_TrackComponent::GetNodeTransforms(
-	TArray<FTransform>& OutTransforms, const FVector& LocalScale, const FVector& LocalOffset) const
+	TArray<FTransform>& OutTransforms, const FVector& LocalScale, const FVector& LocalOffset,
+	const FQuat& LocalRotation) const
 {
 	if (HasNative())
 	{
-		GetNative()->GetNodeTransforms(OutTransforms, LocalScale, LocalOffset);
+		GetNative()->GetNodeTransforms(OutTransforms, LocalScale, LocalOffset, LocalRotation);
 	}
 	else if (TrackPreview.IsValid())
 	{
@@ -171,7 +172,7 @@ void UAGX_TrackComponent::GetNodeTransforms(
 			const FTransform& Source = TrackPreview->NodeTransforms[I];
 			FTransform& Target = OutTransforms[I];
 			Target.SetScale3D(LocalScale);
-			Target.SetRotation(Source.GetRotation());
+			Target.SetRotation(Source.GetRotation() * LocalRotation.Inverse());
 			const FVector WorldOffset = Target.GetRotation().RotateVector(LocalOffset);
 			Target.SetLocation(Source.GetLocation() + WorldOffset);
 		}

@@ -351,7 +351,8 @@ FVector FTrackBarrier::GetNodeSize(uint64 index) const
 }
 
 void FTrackBarrier::GetNodeTransforms(
-	TArray<FTransform>& OutTransforms, const FVector& LocalScale, const FVector& LocalOffset) const
+	TArray<FTransform>& OutTransforms, const FVector& LocalScale, const FVector& LocalOffset,
+	const FQuat& LocalRotation) const
 {
 	check(HasNative());
 
@@ -371,9 +372,10 @@ void FTrackBarrier::GetNodeTransforms(
 		// \todo Could optimize this since we currently set the same passed-in scale on all nodes.
 		OutTransforms[i].SetScale3D(LocalScale);
 
-		OutTransforms[i].SetRotation(Convert(It->getRigidBody()->getRotation()));
+		const FQuat RigidBodyRotation = Convert(It->getRigidBody()->getRotation());
+		OutTransforms[i].SetRotation(RigidBodyRotation * LocalRotation.Inverse());
 
-		FVector WorldOffset = OutTransforms[i].GetRotation().RotateVector(LocalOffset);
+		const FVector WorldOffset = RigidBodyRotation.Rotator().RotateVector(LocalOffset);
 		OutTransforms[i].SetLocation(ConvertDisplacement(It->getCenterPosition()) + WorldOffset);
 
 		++i;
