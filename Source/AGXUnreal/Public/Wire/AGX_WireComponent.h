@@ -219,7 +219,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire Begin Winch",
 		Meta =
-			(AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "", AllowAnyActor,
+			(AllowedClasses = "/Script/AGXUnreal.AGX_WireWinchComponent", DisallowedClasses = "", AllowAnyActor,
 			 EditConditionHides,
 			 EditCondition = "BeginWinchType == EWireWinchOwnerType::WireWinch"))
 	FComponentReference BeginWinchComponent;
@@ -426,7 +426,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire End Winch",
 		Meta =
-			(AllowedClasses = "AGX_WireWinchComponent", DisallowedClasses = "", AllowAnyActor,
+			(AllowedClasses = "/Script/AGXUnreal.AGX_WireWinchComponent", DisallowedClasses = "", AllowAnyActor,
 			 EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::WireWinch"))
 	FComponentReference EndWinchComponent;
 

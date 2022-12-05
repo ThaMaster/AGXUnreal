@@ -48,14 +48,14 @@ public:
 	FAGX_SceneComponentReference FrameDefiningComponent;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel", Meta = (InlineEditConditionToggle))
-	bool bUseFrameDefiningComponent;
+	bool bUseFrameDefiningComponent {false};
 
 	/**
 	 * Wheel location relative to the Rigid Body,
 	 * or to the FrameDefiningComponent if bUseFrameDefiningComponent is true [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel")
-	FVector RelativeLocation;
+	FVector RelativeLocation {FVector::ZeroVector};
 
 	/**
 	 * Wheel rotation relative to the Rigid Body,
@@ -64,7 +64,7 @@ public:
 	 * The Y-Axis becomes the rotation-axis, and the Z-axis becomes the up-axis.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel")
-	FRotator RelativeRotation;
+	FRotator RelativeRotation {FRotator::ZeroRotator};
 
 	/**
 	 * Radius of the wheel [cm].
@@ -84,7 +84,7 @@ public:
 	 * Use this property on ROLLER models where the track changes angle.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel")
-	bool bSplitSegments;
+	bool bSplitSegments {false};
 
 	/**
 	 * If enabled - when a node is merged to the wheel, move the node into the plane defined by
@@ -94,7 +94,7 @@ public:
 	 * Only relevant for Idler or Sprocket wheels.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel")
-	bool bMoveNodesToRotationPlane;
+	bool bMoveNodesToRotationPlane {false};
 
 	/**
 	 * Similar to 'Move Nodes To Rotation Plane' but this property will also make sure
@@ -103,7 +103,7 @@ public:
 	 * Only relevant for Idler or Sprocket wheels.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel")
-	bool bMoveNodesToWheel;
+	bool bMoveNodesToWheel {false};
 
 	// \note Not exposing the MERGE_NODES flag here because it seems to automatically be set
 	// internally by AgxDynamics dependent on Model, so it is redundant and therefore unnecessary to

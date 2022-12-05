@@ -8,9 +8,6 @@
 
 FAGX_ConstraintElectricMotorController::FAGX_ConstraintElectricMotorController(bool bRotational)
 	: FAGX_ConstraintController(bRotational)
-	, Voltage(24.0)
-	, ArmatureResistance(1.0)
-	, TorqueConstant(1.0)
 {
 }
 

@@ -32,11 +32,11 @@ public:
 
 private:
 	UPROPERTY()
-	uint64 NativeWireAddress;
+	uint64 NativeWireAddress {0};
 
 	UPROPERTY()
-	uint64 NativeBeginWinchAddress;
+	uint64 NativeBeginWinchAddress {0};
 
 	UPROPERTY()
-	uint64 NativeEndWinchAddress;
+	uint64 NativeEndWinchAddress {0};
 };

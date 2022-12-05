@@ -7,7 +7,6 @@
 
 FAGX_ConstraintScrewController::FAGX_ConstraintScrewController(bool bRotational)
 	: FAGX_ConstraintController(bRotational)
-	, Lead(0.0)
 {
 }
 

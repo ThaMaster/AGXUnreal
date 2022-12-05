@@ -29,7 +29,7 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_Constr
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Electric Motor Controller",
 		Meta = (EditCondition = "bEnable"))
-	double Voltage;
+	double Voltage {24.0};
 
 	void SetVoltage(double InVoltage);
 
@@ -41,7 +41,7 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_Constr
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Electric Motor Controller",
 		Meta = (EditCondition = "bEnable"))
-	double ArmatureResistance;
+	double ArmatureResistance {1.0};
 
 	void SetArmatureRestistance(double InArmatureResistance);
 
@@ -54,7 +54,7 @@ struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_Constr
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Electric Motor Controller",
 		Meta = (EditCondition = "bEnable"))
-	double TorqueConstant;
+	double TorqueConstant {1.0};
 
 	void SetTorqueConstant(double InTorqueConstant);
 
