@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Materials/AGX_ContactMaterial.h"
 
-UAGX_ContactMaterialAssetFactory::UAGX_ContactMaterialAssetFactory(
+UAGX_ContactMaterialFactory::UAGX_ContactMaterialFactory(
 	const class FObjectInitializer& OBJ)
 	: Super(OBJ)
 {
@@ -14,7 +14,7 @@ UAGX_ContactMaterialAssetFactory::UAGX_ContactMaterialAssetFactory(
 	bCreateNew = true;
 }
 
-UObject* UAGX_ContactMaterialAssetFactory::FactoryCreateNew(
+UObject* UAGX_ContactMaterialFactory::FactoryCreateNew(
 	UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context,
 	FFeedbackContext* Warn)
 {

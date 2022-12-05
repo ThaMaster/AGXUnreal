@@ -116,8 +116,7 @@ public:
 	/**
 	 * Provide access to any render data that may be associated with the Shape. This data is
 	 * optional and only exists if HasRenderData returns true.
-	 *
-	 * Should only be called on Shapes for which HasRenderData returns true.
+	 * 
 	 * @return The render data associated with the shape.
 	 */
 	FRenderDataBarrier GetRenderData() const;

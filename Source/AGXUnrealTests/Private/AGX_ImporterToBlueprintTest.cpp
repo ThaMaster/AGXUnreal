@@ -3,14 +3,12 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ImporterToSingleActor.h"
+#include "AGX_ImporterToBlueprint.h"
+#include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "AgxAutomationCommon.h"
-#include "AMOR/AGX_ConstraintMergeSplitProperties.h"
-#include "AMOR/AGX_ShapeContactMergeSplitProperties.h"
-#include "AMOR/AGX_WireMergeSplitProperties.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
@@ -21,6 +19,7 @@
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
@@ -39,7 +38,7 @@
 #include "Tests/AutomationCommon.h"
 
 /*
- * This file contains a set of tests for AGX_ImporterToSingleActor, which imports an AGX
+ * This file contains a set of tests for AGX_ImporterToBlueprint, which imports an AGX
  * Dynamics archive into the current world as a single Actor that contains ActorComponents for each
  * imported object.
  *
@@ -54,14 +53,14 @@
  * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
-	FImportArchiveSingleActorCommand, FString, ArchiveName, AActor*&, Contents,
+	FImportArchiveBlueprintCommand, FString, ArchiveName, UBlueprint*&, Contents,
 	FAutomationTestBase&, Test);
 
-bool FImportArchiveSingleActorCommand::Update()
+bool FImportArchiveBlueprintCommand::Update()
 {
 	if (ArchiveName.IsEmpty())
 	{
-		Test.AddError(TEXT("FImportArchiveSingleActorCommand not given an archive to import."));
+		Test.AddError(TEXT("FImportArchiveBlueprintCommand not given an archive to import."));
 		return true;
 	}
 	FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(ArchiveName);
@@ -71,7 +70,13 @@ bool FImportArchiveSingleActorCommand::Update()
 		return true;
 	}
 
-	Contents = AGX_ImporterToSingleActor::ImportAGXArchive(ArchiveFilePath);
+	FAGX_ImportSettings Settings;
+	Settings.FilePath = ArchiveFilePath;
+	Settings.IgnoreDisabledTrimeshes = false;
+	Settings.ImportType = EAGX_ImportType::Agx;
+	Settings.OpenBlueprintEditorAfterImport = false;
+
+	Contents = AGX_ImporterToBlueprint::Import(Settings);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
 }
@@ -84,14 +89,14 @@ bool FImportArchiveSingleActorCommand::Update()
  * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_FOUR_PARAMETER(
-	FImportURDFSingleActorCommand, FString, FileName, FString, PackagePath, AActor*&, Contents,
+	FImportURDFBlueprintCommand, FString, FileName, FString, PackagePath, UBlueprint*&, Contents,
 	FAutomationTestBase&, Test);
 
-bool FImportURDFSingleActorCommand::Update()
+bool FImportURDFBlueprintCommand::Update()
 {
 	if (FileName.IsEmpty())
 	{
-		Test.AddError(TEXT("FImportURDFSingleActorCommand not given a file to import."));
+		Test.AddError(TEXT("FImportURDFBlueprintCommand not given a file to import."));
 		return true;
 	}
 	FString UrdfFilePath = AgxAutomationCommon::GetTestScenePath(FileName);
@@ -100,7 +105,15 @@ bool FImportURDFSingleActorCommand::Update()
 		Test.AddError(FString::Printf(TEXT("Did not find an URDF file named '%s'."), *FileName));
 		return true;
 	}
-	Contents = AGX_ImporterToSingleActor::ImportURDF(UrdfFilePath, PackagePath);
+
+	FAGX_ImportSettings Settings;
+	Settings.FilePath = UrdfFilePath;
+	Settings.UrdfPackagePath = PackagePath;
+	Settings.IgnoreDisabledTrimeshes = false;
+	Settings.ImportType = EAGX_ImportType::Urdf;
+	Settings.OpenBlueprintEditorAfterImport = false;
+
+	Contents = AGX_ImporterToBlueprint::Import(Settings);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
 }
@@ -115,28 +128,26 @@ bool FImportURDFSingleActorCommand::Update()
  * @param Test The Automation test that contains this Latent Command.
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
-	FCheckEmptySceneImportedCommand, AActor*&, Contents, FAutomationTestBase&, Test);
+	FCheckEmptySceneImportedCommand, UBlueprint*&, Contents, FAutomationTestBase&, Test);
 
 bool FCheckEmptySceneImportedCommand::Update()
 {
-	UWorld* World = AgxAutomationCommon::GetTestWorld();
+	using namespace AgxAutomationCommon;
+	UWorld* World = GetTestWorld();
 	if (World == nullptr || Contents == nullptr)
 	{
 		return true;
 	}
 
 	// The Actor's only component should be the root component.
-	TArray<UActorComponent*> Components;
-	Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components = FAGX_BlueprintUtilities::GetTemplateComponents(Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 1);
-	USceneComponent* SceneRoot =
-		AgxAutomationCommon::GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
+	USceneComponent* SceneRoot = AgxAutomationCommon::GetByName<USceneComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
 
 	// The Actor should have been created in the test world.
 	Test.TestEqual(TEXT("The actor should be in the test world."), Contents->GetWorld(), World);
-	Test.TestTrue(TEXT("The actor should be in the test world."), World->ContainsActor(Contents));
-
 	return true;
 }
 
@@ -145,7 +156,8 @@ bool FCheckEmptySceneImportedCommand::Update()
  * removal isn't done immediately by Unreal Engine so the first call to Update will return false
  * so that the removal is completed before the next Latent Command starts.
  */
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FClearEmptySceneImportedCommand, AActor*&, Contents);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearEmptySceneImportedCommand, UBlueprint*&, Contents);
 bool FClearEmptySceneImportedCommand::Update()
 {
 	if (Contents == nullptr)
@@ -160,7 +172,7 @@ bool FClearEmptySceneImportedCommand::Update()
 	{
 		return true;
 	}
-	World->DestroyActor(Contents);
+
 	Contents = nullptr;
 
 	// Return false so the engine get a tick to do the actual removal.
@@ -171,13 +183,13 @@ bool FClearEmptySceneImportedCommand::Update()
  * Test that an empty AGX Dynamics archive can be imported, that the archive Actor root is created
  * as it should, and that it is added to the world.
  */
-class FImporterToSingleActor_EmptySceneTest final : public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_EmptySceneTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_EmptySceneTest()
+	FImporterToBlueprint_EmptySceneTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_EmptySceneTest"),
-			  TEXT("AGXUnreal.Game.ImporterToSingleActor.EmptyScene"))
+			  TEXT("FImporterToBlueprint_EmptySceneTest"),
+			  TEXT("AGXUnreal.Game.ImporterToBlueprint.EmptyScene"))
 	{
 	}
 
@@ -200,7 +212,7 @@ protected:
 #endif
 
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand("empty_scene.agx", Contents, *this));
+			FImportArchiveBlueprintCommand("empty_scene.agx", Contents, *this));
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckEmptySceneImportedCommand(Contents, *this));
 		ADD_LATENT_AUTOMATION_COMMAND(FClearEmptySceneImportedCommand(Contents));
 		ADD_LATENT_AUTOMATION_COMMAND(AgxAutomationCommon::FWaitNTicksCommand(1));
@@ -209,49 +221,49 @@ protected:
 	}
 
 private:
-	AActor* Contents = nullptr;
+	UBlueprint* Contents = nullptr;
 };
 
 namespace
 {
-	FImporterToSingleActor_EmptySceneTest ImporterToSingleActor_EmptySceneTest;
+	FImporterToBlueprint_EmptySceneTest ImporterToBlueprint_EmptySceneTest;
 }
 
 //
 // SingleSphere test starts here.
 //
 
-class FImporterToSingleActor_SingleSphereTest;
+class FImporterToBlueprint_SingleSphereTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSingleSphereImportedCommand, FImporterToSingleActor_SingleSphereTest&, Test);
+	FCheckSingleSphereImportedCommand, FImporterToBlueprint_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FStoreInitialTimes, FImporterToSingleActor_SingleSphereTest&, Test);
+	FStoreInitialTimes, FImporterToBlueprint_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FStoreResultingTimes, FImporterToSingleActor_SingleSphereTest&, Test);
+	FStoreResultingTimes, FImporterToBlueprint_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSphereHasMoved, FImporterToSingleActor_SingleSphereTest&, Test);
+	FCheckSphereHasMoved, FImporterToBlueprint_SingleSphereTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearSingleSphereImportedCommand, AActor*&, Contents);
+	FClearSingleSphereImportedCommand, UBlueprint*&, Contents);
 
-class FImporterToSingleActor_SingleSphereTest final : public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_SingleSphereTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_SingleSphereTest()
+	FImporterToBlueprint_SingleSphereTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_SingleSphereTest"),
-			  TEXT("AGXUnreal.Game.ImporterToSingleActor.SingleSphere"))
+			  TEXT("FImporterToBlueprint_SingleSphereTest"),
+			  TEXT("AGXUnreal.Game.ImporterToBlueprint.SingleSphere"))
 	{
 	}
 
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* SphereBody = nullptr;
 	FVector StartPosition;
 	FVector StartVelocity;
@@ -277,7 +289,7 @@ protected:
 			AddError(TEXT("Do not have a simulation, cannot test SingleSphere import."));
 		}
 
-		// See comment in FImporterToSingleActor_EmptySceneTest.
+		// See comment in FImporterToBlueprint_EmptySceneTest.
 		// In short, loading a map stops world ticking.
 #if 0
 		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
@@ -285,7 +297,7 @@ protected:
 #endif
 
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand("single_sphere_build.agx", Contents, *this))
+			FImportArchiveBlueprintCommand("single_sphere_build.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSingleSphereImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FStoreInitialTimes(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FWaitWorldDuration(World, 1.0f))
@@ -300,7 +312,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_SingleSphereTest ImporterToSingleActor_SingleSphereTest;
+	FImporterToBlueprint_SingleSphereTest ImporterToBlueprint_SingleSphereTest;
 }
 
 /*
@@ -319,16 +331,17 @@ bool FCheckSingleSphereImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
 
 	// Get the components we know should be there.
-	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
-	UAGX_RigidBodyComponent* SphereBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("SphereBody"));
-	UAGX_SphereShapeComponent* SphereShape =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("SphereGeometry"));
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* SphereBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("SphereBody"));
+	UAGX_SphereShapeComponent* SphereShape = GetByName<UAGX_SphereShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("SphereGeometry"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -348,7 +361,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Position.
 	{
-		FVector Actual = SphereBody->GetComponentLocation();
+		FVector Actual = FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(SphereBody);
 		// The position, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(
 			1.00000000000000000000e+01f, 2.00000000000000000000e+01f, 3.00000000000000000000e+01f);
@@ -358,7 +371,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Rotation.
 	{
-		FRotator Actual = SphereBody->GetComponentRotation();
+		FRotator Actual = FAGX_BlueprintUtilities::GetTemplateComponentWorldRotation(SphereBody);
 		// The rotation, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(
 			1.01770284974289526581e+00f, -2.65482457436691521302e-01f,
@@ -434,7 +447,7 @@ bool FCheckSingleSphereImportedCommand::Update()
 
 	// Publish the important bits to the rest of the test.
 	Test.SphereBody = SphereBody;
-	Test.StartPosition = SphereBody->GetComponentLocation();
+	Test.StartPosition = FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(SphereBody);
 	Test.StartVelocity = SphereBody->Velocity;
 
 	return true;
@@ -466,7 +479,8 @@ bool FCheckSphereHasMoved::Update()
 		return true;
 	}
 
-	FVector EndPosition = Test.SphereBody->GetComponentLocation();
+	FVector EndPosition =
+		FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(Test.SphereBody);
 	FVector EndVelocity = Test.SphereBody->Velocity;
 	float Duration = Test.EndAgxTime - Test.StartAgxTime;
 
@@ -508,7 +522,6 @@ bool FClearSingleSphereImportedCommand::Update()
 	{
 		return true;
 	}
-	World->DestroyActor(Contents);
 	Contents = nullptr;
 	return true;
 }
@@ -517,33 +530,32 @@ bool FClearSingleSphereImportedCommand::Update()
 // MotionControl test starts here.
 //
 
-class FImporterToSingleActor_MotionControlTest;
+class FImporterToBlueprint_MotionControlTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckMotionControlImportedCommand, FImporterToSingleActor_MotionControlTest&, Test);
+	FCheckMotionControlImportedCommand, FImporterToBlueprint_MotionControlTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearMotionControlImportedCommand, FImporterToSingleActor_MotionControlTest&, Test);
+	FClearMotionControlImportedCommand, FImporterToBlueprint_MotionControlTest&, Test);
 
-class FImporterToSingleActor_MotionControlTest final
-	: public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_MotionControlTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_MotionControlTest()
+	FImporterToBlueprint_MotionControlTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_MotionControlTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.MotionControl"))
+			  TEXT("FImporterToBlueprint_MotionControlTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.MotionControl"))
 	{
 	}
 
 public:
-	AActor* Contents = nullptr; // <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
 	{
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand("motion_control_build.agx", Contents, *this))
+			FImportArchiveBlueprintCommand("motion_control_build.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckMotionControlImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearMotionControlImportedCommand(*this))
 		return true;
@@ -552,7 +564,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_MotionControlTest FImporterToSingleActor_MotionControlTest;
+	FImporterToBlueprint_MotionControlTest FImporterToBlueprint_MotionControlTest;
 }
 
 bool FCheckMotionControlImportedCommand::Update()
@@ -565,24 +577,25 @@ bool FCheckMotionControlImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
 
 	// Get the components we know should be there.
-	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
-	UAGX_RigidBodyComponent* StaticBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("StaticBody"));
-	UAGX_SphereShapeComponent* StaticShape =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("StaticShape"));
-	UAGX_RigidBodyComponent* KinematicsBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("KinematicBody"));
-	UAGX_SphereShapeComponent* KinematicsShape =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("KinematicShape"));
-	UAGX_RigidBodyComponent* DynamicsBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("DynamicBody"));
-	UAGX_SphereShapeComponent* DynamicsShape =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("DynamicShape"));
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* StaticBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("StaticBody"));
+	UAGX_SphereShapeComponent* StaticShape = GetByName<UAGX_SphereShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("StaticShape"));
+	UAGX_RigidBodyComponent* KinematicsBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("KinematicBody"));
+	UAGX_SphereShapeComponent* KinematicsShape = GetByName<UAGX_SphereShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("KinematicShape"));
+	UAGX_RigidBodyComponent* DynamicsBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DynamicBody"));
+	UAGX_SphereShapeComponent* DynamicsShape = GetByName<UAGX_SphereShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DynamicShape"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -636,11 +649,18 @@ bool FClearMotionControlImportedCommand::Update()
 	{
 		return true;
 	}
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
+
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
+	TArray<const TCHAR*> ExpectedFiles {TEXT("Blueprint"), TEXT("BP_motion_control_build.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("motion_control_build"), ExpectedFiles);
+
 	return true;
 }
 
@@ -648,29 +668,28 @@ bool FClearMotionControlImportedCommand::Update()
 // SimpleTrimesh test starts here.
 //
 
-class FImporterToSingleActor_SimpleTrimeshTest;
+class FImporterToBlueprint_SimpleTrimeshTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSimpleTrimeshImportedCommand, FImporterToSingleActor_SimpleTrimeshTest&, Test);
+	FCheckSimpleTrimeshImportedCommand, FImporterToBlueprint_SimpleTrimeshTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearSimpleTrimeshImportedCommand, FImporterToSingleActor_SimpleTrimeshTest&, Test);
+	FClearSimpleTrimeshImportedCommand, FImporterToBlueprint_SimpleTrimeshTest&, Test);
 
-class FImporterToSingleActor_SimpleTrimeshTest final
-	: public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_SimpleTrimeshTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_SimpleTrimeshTest()
+	FImporterToBlueprint_SimpleTrimeshTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_SimpleTrimeshTest"),
-			  TEXT("AGXUnreal.Game.ImporterToSingleActor.SimpleTrimesh"))
+			  TEXT("FImporterToBlueprint_SimpleTrimeshTest"),
+			  TEXT("AGXUnreal.Game.ImporterToBlueprint.SimpleTrimesh"))
 	{
 	}
 
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
 
 protected:
@@ -682,7 +701,7 @@ protected:
 		World = AgxAutomationCommon::GetTestWorld();
 		Simulation = UAGX_Simulation::GetFrom(World);
 
-		// See comment in FImporterToSingleActor_EmptySceneTest.
+		// See comment in FImporterToBlueprint_EmptySceneTest.
 		// In short, loading a map stops world ticking.
 #if 0
 		ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")))
@@ -690,7 +709,7 @@ protected:
 #endif
 
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand("simple_trimesh_build.agx", Contents, *this))
+			FImportArchiveBlueprintCommand("simple_trimesh_build.agx", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSimpleTrimeshImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearSimpleTrimeshImportedCommand(*this))
 		return true;
@@ -699,7 +718,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_SimpleTrimeshTest ImporterToSingleActor_SimpleTrimeshTest;
+	FImporterToBlueprint_SimpleTrimeshTest ImporterToBlueprint_SimpleTrimeshTest;
 }
 
 /**
@@ -719,18 +738,19 @@ bool FCheckSimpleTrimeshImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
 	// Get the components we know should be there.
-	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
-	UAGX_RigidBodyComponent* TrimeshBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("TrimeshBody"));
-	UAGX_TrimeshShapeComponent* TrimeshShape =
-		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("TrimeshGeometry"));
-	UStaticMeshComponent* StaticMesh =
-		GetByName<UStaticMeshComponent>(Components, TEXT("simple_trimesh"));
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* TrimeshBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("TrimeshBody"));
+	UAGX_TrimeshShapeComponent* TrimeshShape = GetByName<UAGX_TrimeshShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("TrimeshGeometry"));
+	UStaticMeshComponent* StaticMesh = GetByName<UStaticMeshComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("simple_trimesh"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -776,7 +796,6 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 	{
 		return true;
 	}
-	Test.World->DestroyActor(Test.Contents);
 
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
@@ -796,34 +815,33 @@ bool FClearSimpleTrimeshImportedCommand::Update()
 // RenderMaterial test starts here.
 //
 
-class FImporterToSingleActor_RenderMaterialTest;
+class FImporterToBlueprint_RenderMaterialTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckRenderMaterialImportedCommand, FImporterToSingleActor_RenderMaterialTest&, Test);
+	FCheckRenderMaterialImportedCommand, FImporterToBlueprint_RenderMaterialTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearRenderMaterialImportedCommand, FImporterToSingleActor_RenderMaterialTest&, Test);
+	FClearRenderMaterialImportedCommand, FImporterToBlueprint_RenderMaterialTest&, Test);
 
-class FImporterToSingleActor_RenderMaterialTest final
-	: public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_RenderMaterialTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_RenderMaterialTest()
+	FImporterToBlueprint_RenderMaterialTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_RenderMaterialTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.RenderMaterial"))
+			  TEXT("FImporterToBlueprint_RenderMaterialTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.RenderMaterial"))
 	{
 	}
 
 public:
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("render_materials_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("render_materials_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckRenderMaterialImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearRenderMaterialImportedCommand(*this))
 		return true;
@@ -832,7 +850,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_RenderMaterialTest ImporterToSingleActor_RenderMaterialTest;
+	FImporterToBlueprint_RenderMaterialTest ImporterToBlueprint_RenderMaterialTest;
 }
 
 namespace
@@ -941,8 +959,8 @@ bool FCheckRenderMaterialImportedCommand::Update()
 
 	// Get all the imported components. The test for the number of components is a safety check.
 	// It should be updated whenever the test scene is changed.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 16);
 
 // Enable this to see the names of the components that was imported. Useful when adding new stuff
@@ -964,24 +982,38 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	/// Geometry. So far the generated names have been consistent between runs, but I'm not sure if
 	/// we're guaranteed that. Especially if we run multiple tests in the same invocation of the
 	/// editor. The fix is to fetch objects based on UUID/GUID instead of names.
-	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
-	UAGX_RigidBodyComponent* Body =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("RenderMaterialBody"));
-	UAGX_SphereShapeComponent* Ambient = GetSphere(TEXT("AmbientGeometry"));
-	UAGX_SphereShapeComponent* Diffuse = GetSphere(TEXT("DiffuseGeometry"));
-	UAGX_SphereShapeComponent* Emissive = GetSphere(TEXT("EmissiveGeometry"));
-	UAGX_SphereShapeComponent* Shininess = GetSphere(TEXT("ShininessGeometry"));
-	UAGX_SphereShapeComponent* AmbientDiffuse = GetSphere(TEXT("AmbientDiffuseGeometry"));
-	UAGX_SphereShapeComponent* AmbientEmissive = GetSphere(TEXT("AmbientEmissiveGeometry"));
-	UAGX_SphereShapeComponent* DiffuseShininessLow = GetSphere(TEXT("DiffuseShininessLowGeometry"));
-	UAGX_SphereShapeComponent* DiffuseShininessHigh =
-		GetSphere(TEXT("DiffuseShininessHighGeometry"));
-	UAGX_SphereShapeComponent* SharedSphere1 = GetSphere(TEXT("SharedGeometry"));
-	UAGX_SphereShapeComponent* SharedSphere2 = GetSphere(TEXT("SharedGeometry_10"));
-	UAGX_SphereShapeComponent* NameConflictSphere1 = GetSphere(TEXT("MaterialNameConflict"));
-	UAGX_SphereShapeComponent* NameConflictSphere2 = GetSphere(TEXT("MaterialNameConflict_13"));
-	UAGX_SphereShapeComponent* VisibleSphere = GetSphere(TEXT("VisibleSphere"));
-	UAGX_SphereShapeComponent* InvisibleSphere = GetSphere(TEXT("InvisibleSphere"));
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("RenderMaterialBody"));
+	UAGX_SphereShapeComponent* Ambient =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("AmbientGeometry"));
+	UAGX_SphereShapeComponent* Diffuse =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("DiffuseGeometry"));
+	UAGX_SphereShapeComponent* Emissive =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("EmissiveGeometry"));
+	UAGX_SphereShapeComponent* Shininess =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("ShininessGeometry"));
+	UAGX_SphereShapeComponent* AmbientDiffuse =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("AmbientDiffuseGeometry"));
+	UAGX_SphereShapeComponent* AmbientEmissive =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("AmbientEmissiveGeometry"));
+	UAGX_SphereShapeComponent* DiffuseShininessLow =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("DiffuseShininessLowGeometry"));
+	UAGX_SphereShapeComponent* DiffuseShininessHigh = GetSphere(
+		*FAGX_BlueprintUtilities::ToTemplateComponentName("DiffuseShininessHighGeometry"));
+	UAGX_SphereShapeComponent* SharedSphere1 =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("SharedGeometry"));
+	UAGX_SphereShapeComponent* SharedSphere2 =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("SharedGeometry_10"));
+	UAGX_SphereShapeComponent* NameConflictSphere1 =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("MaterialNameConflict"));
+	UAGX_SphereShapeComponent* NameConflictSphere2 =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("MaterialNameConflict_13"));
+	UAGX_SphereShapeComponent* VisibleSphere =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("VisibleSphere"));
+	UAGX_SphereShapeComponent* InvisibleSphere =
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("InvisibleSphere"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -1100,12 +1132,6 @@ bool FClearRenderMaterialImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
 	Test.AddExpectedError(
@@ -1119,6 +1145,8 @@ bool FClearRenderMaterialImportedCommand::Update()
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("Blueprint"),
+		TEXT("BP_render_materials_build.uasset"),
 		TEXT("RenderMaterial"),
 		TEXT("RenderMaterial_0371489EAC6B66145E4DAEEFA9B4B6BC.uasset"),
 		TEXT("RenderMaterial_29524C99D524BAD2D65ED4EEA25BE374.uasset"),
@@ -1141,33 +1169,33 @@ bool FClearRenderMaterialImportedCommand::Update()
 // Render Data test starts here.
 //
 
-class FImporterToSingleActor_RenderDataTest;
+class FImporterToBlueprint_RenderDataTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckRenderDataImportedCommand, FImporterToSingleActor_RenderDataTest&, Test);
+	FCheckRenderDataImportedCommand, FImporterToBlueprint_RenderDataTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearRenderDataImportedCommand, FImporterToSingleActor_RenderDataTest&, Test);
+	FClearRenderDataImportedCommand, FImporterToBlueprint_RenderDataTest&, Test);
 
-class FImporterToSingleActor_RenderDataTest final : public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_RenderDataTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_RenderDataTest()
+	FImporterToBlueprint_RenderDataTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_RenderDataTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.RenderData"))
+			  TEXT("FImporterToBlueprint_RenderDataTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.RenderData"))
 	{
 	}
 
 public:
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("render_data_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("render_data_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckRenderDataImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearRenderDataImportedCommand(*this))
 		return true;
@@ -1176,7 +1204,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_RenderDataTest ImporterToSingleActor_RenderDataTest;
+	FImporterToBlueprint_RenderDataTest ImporterToBlueprint_RenderDataTest;
 }
 
 bool FCheckRenderDataImportedCommand::Update()
@@ -1189,14 +1217,14 @@ bool FCheckRenderDataImportedCommand::Update()
 		return true;
 	}
 
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	// Root(1), Rigid Body(2), Shape(3), Static Mesh(4).
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
 	// Enable this to see the names of the components that was imported. Useful when adding new
 	// stuff to the archive.
-#if 0
+#if 1
 	UE_LOG(LogAGX, Warning, TEXT("Imported the following components:"));
 	for (const UActorComponent* Component : Components)
 	{
@@ -1204,10 +1232,11 @@ bool FCheckRenderDataImportedCommand::Update()
 	}
 #endif
 
-	UAGX_SphereShapeComponent* Sphere =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("Render Data Geometry"));
+	UAGX_SphereShapeComponent* Sphere = GetByName<UAGX_SphereShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Render Data Geometry"));
 	UStaticMeshComponent* Mesh = GetByName<UStaticMeshComponent>(
-		Components, TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(
+						"RenderMesh_F42A4C942C9E27E9B873D061BAF66764"));
 
 	Test.TestNotNull(TEXT("Sphere"), Sphere);
 	Test.TestNotNull(TEXT("Mesh"), Mesh);
@@ -1219,7 +1248,8 @@ bool FCheckRenderDataImportedCommand::Update()
 	}
 
 	Test.TestTrue(
-		TEXT("The mesh should be a child of the sphere"), Mesh->GetAttachParent() == Sphere);
+		TEXT("The mesh should be a child of the sphere"),
+		FAGX_BlueprintUtilities::GetTemplateComponentAttachParent(Mesh) == Sphere);
 
 	return true;
 }
@@ -1229,12 +1259,6 @@ bool FClearRenderDataImportedCommand::Update()
 	if (Test.Contents == nullptr)
 	{
 		return true;
-	}
-
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
 	}
 
 #if defined(__linux__)
@@ -1250,7 +1274,8 @@ bool FClearRenderDataImportedCommand::Update()
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("RenderMesh"), TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764.uasset")};
+		TEXT("Blueprint"), TEXT("BP_render_data_build.uasset"), TEXT("RenderMesh"),
+		TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764.uasset")};
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_data_build"), ExpectedFiles);
 
@@ -1261,29 +1286,29 @@ bool FClearRenderDataImportedCommand::Update()
 // CollisionGroups test starts here.
 //
 
-class FImporterToSingleActor_CollisionGroupsTest;
+class FImporterToBlueprint_CollisionGroupsTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckCollisionGroupsImportedCommand, FImporterToSingleActor_CollisionGroupsTest&, Test);
+	FCheckCollisionGroupsImportedCommand, FImporterToBlueprint_CollisionGroupsTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearCollisionGroupsImportedCommand, FImporterToSingleActor_CollisionGroupsTest&, Test);
+	FClearCollisionGroupsImportedCommand, FImporterToBlueprint_CollisionGroupsTest&, Test);
 
-class FImporterToSingleActor_CollisionGroupsTest final
+class FImporterToBlueprint_CollisionGroupsTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_CollisionGroupsTest()
+	FImporterToBlueprint_CollisionGroupsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_CollisionGroupsTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.CollisionGroups"))
+			  TEXT("FImporterToBlueprint_CollisionGroupsTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.CollisionGroups"))
 	{
 	}
 
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
 
 protected:
@@ -1291,7 +1316,7 @@ protected:
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("collision_groups_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("collision_groups_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckCollisionGroupsImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearCollisionGroupsImportedCommand(*this))
 		return true;
@@ -1300,7 +1325,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_CollisionGroupsTest ImporterToSingleActor_CollisionGroupsTest;
+	FImporterToBlueprint_CollisionGroupsTest ImporterToBlueprint_CollisionGroupsTest;
 }
 
 /**
@@ -1320,8 +1345,9 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	UE_LOG(LogTemp, Warning, TEXT("DELETEME: Getting components..."));
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 18);
 
 	auto GetBox = [&Components](
@@ -1344,26 +1370,44 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 
 	TArray<UAGX_RigidBodyComponent*> RbArr;
 	TArray<UAGX_BoxShapeComponent*> BoxArr;
-	USceneComponent* SceneRoot = GetByName<USceneComponent>(Components, TEXT("DefaultSceneRoot"));
-	UAGX_RigidBodyComponent* rb_0_brown = GetBody(TEXT("rb_0_brown"), RbArr);
-	UAGX_BoxShapeComponent* geom_0_brown = GetBox(TEXT("geom_0_brown"), BoxArr);
-	UAGX_RigidBodyComponent* rb_left_1_brown = GetBody(TEXT("rb_left_1_brown"), RbArr);
-	UAGX_BoxShapeComponent* geom_left_1_brown = GetBox(TEXT("geom_left_1_brown"), BoxArr);
-	UAGX_RigidBodyComponent* rb_right_1_orange = GetBody(TEXT("rb_right_1_orange"), RbArr);
-	UAGX_BoxShapeComponent* geom_right_1_orange = GetBox(TEXT("geom_right_1_orange"), BoxArr);
-	UAGX_RigidBodyComponent* rb_left_2_orange = GetBody(TEXT("rb_left_2_orange"), RbArr);
-	UAGX_BoxShapeComponent* geom_left_2_orange = GetBox(TEXT("geom_left_2_orange"), BoxArr);
-	UAGX_RigidBodyComponent* rb_right_2_orange = GetBody(TEXT("rb_right_2_orange"), RbArr);
-	UAGX_BoxShapeComponent* geom_right_2_orange = GetBox(TEXT("geom_right_2_orange"), BoxArr);
-	UAGX_RigidBodyComponent* rb_left_3_brown = GetBody(TEXT("rb_left_3_brown"), RbArr);
-	UAGX_BoxShapeComponent* geom_left_3_brown = GetBox(TEXT("geom_left_3_brown"), BoxArr);
-	UAGX_RigidBodyComponent* rb_4_blue = GetBody(TEXT("rb_4_blue"), RbArr);
-	UAGX_BoxShapeComponent* geom_4_blue = GetBox(TEXT("geom_4_blue"), BoxArr);
-	UAGX_RigidBodyComponent* rb_left_5_blue = GetBody(TEXT("rb_left_5_blue"), RbArr);
-	UAGX_BoxShapeComponent* geom_left_5_blue = GetBox(TEXT("geom_left_5_blue"), BoxArr);
+	USceneComponent* SceneRoot = GetByName<USceneComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("DefaultSceneRoot"));
+	UAGX_RigidBodyComponent* rb_0_brown =
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_0_brown"), RbArr);
+	UAGX_BoxShapeComponent* geom_0_brown =
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_0_brown"), BoxArr);
+	UAGX_RigidBodyComponent* rb_left_1_brown =
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_left_1_brown"), RbArr);
+	UAGX_BoxShapeComponent* geom_left_1_brown =
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_left_1_brown"), BoxArr);
+	UAGX_RigidBodyComponent* rb_right_1_orange =
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_right_1_orange"), RbArr);
+	UAGX_BoxShapeComponent* geom_right_1_orange =
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_right_1_orange"), BoxArr);
+	UAGX_RigidBodyComponent* rb_left_2_orange =
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_left_2_orange"), RbArr);
+	UAGX_BoxShapeComponent* geom_left_2_orange =
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_left_2_orange"), BoxArr);
+	UAGX_RigidBodyComponent* rb_right_2_orange =
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_right_2_orange"), RbArr);
+	UAGX_BoxShapeComponent* geom_right_2_orange =
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_right_2_orange"), BoxArr);
+	UAGX_RigidBodyComponent* rb_left_3_brown =
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_left_3_brown"), RbArr);
+	UAGX_BoxShapeComponent* geom_left_3_brown =
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_left_3_brown"), BoxArr);
+	UAGX_RigidBodyComponent* rb_4_blue =
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_4_blue"), RbArr);
+	UAGX_BoxShapeComponent* geom_4_blue =
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_4_blue"), BoxArr);
+	UAGX_RigidBodyComponent* rb_left_5_blue =
+		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_left_5_blue"), RbArr);
+	UAGX_BoxShapeComponent* geom_left_5_blue =
+		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_left_5_blue"), BoxArr);
 	UAGX_CollisionGroupDisablerComponent* AGX_CollisionGroupDisabler =
 		GetByName<UAGX_CollisionGroupDisablerComponent>(
-			Components, TEXT("AGX_CollisionGroupDisabler"));
+			Components,
+			*FAGX_BlueprintUtilities::ToTemplateComponentName("AGX_CollisionGroupDisabler"));
 
 	Test.TestEqual(TEXT("Number of Rigid Bodies"), RbArr.Num(), 8);
 	Test.TestEqual(TEXT("Number of Box Shapes"), BoxArr.Num(), 8);
@@ -1448,12 +1492,17 @@ bool FClearCollisionGroupsImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("Blueprint"), TEXT("BP_collision_groups_build.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("collision_groups_build"), ExpectedFiles);
 	return true;
 }
 
@@ -1461,29 +1510,29 @@ bool FClearCollisionGroupsImportedCommand::Update()
 // GeometrySensors test starts here.
 //
 
-class FImporterToSingleActor_GeometrySensorsTest;
+class FImporterToBlueprint_GeometrySensorsTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckGeometrySensorsImportedCommand, FImporterToSingleActor_GeometrySensorsTest&, Test);
+	FCheckGeometrySensorsImportedCommand, FImporterToBlueprint_GeometrySensorsTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearGeometrySensorsImportedCommand, FImporterToSingleActor_GeometrySensorsTest&, Test);
+	FClearGeometrySensorsImportedCommand, FImporterToBlueprint_GeometrySensorsTest&, Test);
 
-class FImporterToSingleActor_GeometrySensorsTest final
+class FImporterToBlueprint_GeometrySensorsTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_GeometrySensorsTest()
+	FImporterToBlueprint_GeometrySensorsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_GeometrySensorsTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.GeometrySensors"))
+			  TEXT("FImporterToBlueprint_GeometrySensorsTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.GeometrySensors"))
 	{
 	}
 
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
 
 protected:
@@ -1491,7 +1540,7 @@ protected:
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("geometry_sensors_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("geometry_sensors_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckGeometrySensorsImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearGeometrySensorsImportedCommand(*this))
 		return true;
@@ -1500,7 +1549,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_GeometrySensorsTest ImporterToSingleActor_GeometrySensorsTest;
+	FImporterToBlueprint_GeometrySensorsTest ImporterToBlueprint_GeometrySensorsTest;
 }
 
 /**
@@ -1520,20 +1569,20 @@ bool FCheckGeometrySensorsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// Three Rigid Bodies, three Geometries and one Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 7);
 
-	UAGX_SphereShapeComponent* BoolSensor =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("boolSensor"));
+	UAGX_SphereShapeComponent* BoolSensor = GetByName<UAGX_SphereShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("boolSensor"));
 
-	UAGX_CylinderShapeComponent* ContactsSensor =
-		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("contactsSensor"));
+	UAGX_CylinderShapeComponent* ContactsSensor = GetByName<UAGX_CylinderShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("contactsSensor"));
 
-	UAGX_BoxShapeComponent* NotASensor =
-		GetByName<UAGX_BoxShapeComponent>(Components, TEXT("notASensor"));
+	UAGX_BoxShapeComponent* NotASensor = GetByName<UAGX_BoxShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("notASensor"));
 
 	Test.TestNotNull(TEXT("boolSensor"), BoolSensor);
 	Test.TestNotNull(TEXT("contactsSensor"), ContactsSensor);
@@ -1595,11 +1644,17 @@ bool FClearGeometrySensorsImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("Blueprint"), TEXT("BP_geometry_sensors_build.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("geometry_sensors_build"), ExpectedFiles);
 
 	return true;
 }
@@ -1608,35 +1663,35 @@ bool FClearGeometrySensorsImportedCommand::Update()
 // Wire test starts here.
 //
 
-class FImporterToSingleActor_WireTest;
+class FImporterToBlueprint_WireTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckWireImportedCommand, FImporterToSingleActor_WireTest&, Test);
+	FCheckWireImportedCommand, FImporterToBlueprint_WireTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearWireImportedCommand, FImporterToSingleActor_WireTest&, Test);
+	FClearWireImportedCommand, FImporterToBlueprint_WireTest&, Test);
 
-class FImporterToSingleActor_WireTest final : public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_WireTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_WireTest()
+	FImporterToBlueprint_WireTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_WireTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.Wire"))
+			  TEXT("FImporterToBlueprint_WireTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.Wire"))
 	{
 	}
 
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("wire_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("wire_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckWireImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearWireImportedCommand(*this))
 		return true;
@@ -1645,7 +1700,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_WireTest ImporterToSingleActor_WireTest;
+	FImporterToBlueprint_WireTest ImporterToBlueprint_WireTest;
 }
 
 /**
@@ -1666,13 +1721,13 @@ bool FCheckWireImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
-	// A Wire (1) and its icon (2), three Rigid Bodies (5), three Shapes (8), a Collision Group
-	// Disabler (9), and a Default Scene Root (10).
-	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
-	if (Components.Num() != 10)
+	// A Wire (1) three Rigid Bodies (4), three Shapes (7), a Collision Group
+	// Disabler (8), and a Default Scene Root (9).
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 9);
+	if (Components.Num() != 9)
 	{
 		UE_LOG(LogAGX, Warning, TEXT("Found the following components:"));
 		for (auto Component : Components)
@@ -1683,19 +1738,19 @@ bool FCheckWireImportedCommand::Update()
 		}
 	}
 
-	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(Components, TEXT("Wire"));
-	UAGX_RigidBodyComponent* WinchBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("Winch Body"));
-	UAGX_CylinderShapeComponent* WinchShape =
-		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("Winch Shape"));
-	UAGX_RigidBodyComponent* EyeBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("Eye Body"));
-	UAGX_SphereShapeComponent* EyeShape =
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("Eye Shape"));
-	UAGX_RigidBodyComponent* BeadBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("Bead Body"));
-	UAGX_CapsuleShapeComponent* BeadShape =
-		GetByName<UAGX_CapsuleShapeComponent>(Components, TEXT("Bead Shape"));
+	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Wire"));
+	UAGX_RigidBodyComponent* WinchBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Winch Body"));
+	UAGX_CylinderShapeComponent* WinchShape = GetByName<UAGX_CylinderShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Winch Shape"));
+	UAGX_RigidBodyComponent* EyeBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Eye Body"));
+	UAGX_SphereShapeComponent* EyeShape = GetByName<UAGX_SphereShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Eye Shape"));
+	UAGX_RigidBodyComponent* BeadBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Bead Body"));
+	UAGX_CapsuleShapeComponent* BeadShape = GetByName<UAGX_CapsuleShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Bead Shape"));
 
 	Test.TestNotNull(TEXT("Wire"), Wire);
 	Test.TestNotNull(TEXT("Winch Body"), WinchBody);
@@ -1760,23 +1815,23 @@ bool FCheckWireImportedCommand::Update()
 	RangeHasType(12, 22, EWireNodeType::Free);
 	RangeHasType(22, 23, EWireNodeType::BodyFixed);
 
-	UAGX_RigidBodyComponent* WinchBodyRef = Winch.BodyAttachment.GetRigidBody();
-	Test.TestEqual(TEXT("Winch Body"), WinchBodyRef, WinchBody);
+	const FString WinchBodyName = Winch.BodyAttachment.BodyName.ToString();
+	Test.TestEqual(TEXT("Winch Body Name"), WinchBodyName, FString("Winch Body"));
 
 	auto RangeHasBody =
-		[this, &Nodes = Wire->RouteNodes](int32 Begin, int32 End, UAGX_RigidBodyComponent* Body)
+		[this, &Nodes = Wire->RouteNodes](int32 Begin, int32 End, const FString& BodyName)
 	{
 		for (int32 I = Begin; I < End; ++I)
 		{
-			UAGX_RigidBodyComponent* NodeBodyRef = Nodes[I].RigidBody.GetRigidBody();
-			Test.TestEqual(TEXT("NodeBody"), NodeBodyRef, Body);
+			const FString NodeBodyName = Nodes[I].RigidBody.BodyName.ToString();
+			Test.TestEqual(TEXT("NodeBodyName"), NodeBodyName, BodyName);
 		}
 	};
 
-	RangeHasBody(0, 11, nullptr);
-	RangeHasBody(11, 12, EyeBody);
-	RangeHasBody(12, 22, nullptr);
-	RangeHasBody(22, 23, BeadBody);
+	RangeHasBody(0, 11, "None");
+	RangeHasBody(11, 12, "Eye Body");
+	RangeHasBody(12, 22, "None");
+	RangeHasBody(22, 23, "Bead Body");
 
 	return true;
 }
@@ -1793,12 +1848,6 @@ bool FClearWireImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
 	Test.AddExpectedError(
@@ -1808,7 +1857,8 @@ bool FClearWireImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles {
-		TEXT("ShapeMaterial"), TEXT("defaultWireMaterial_57.uasset")};
+		TEXT("Blueprint"), TEXT("BP_wire_build.uasset"), TEXT("ShapeMaterial"),
+		TEXT("defaultWireMaterial_57.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("wire_build"), ExpectedFiles);
 
 	return true;
@@ -1818,38 +1868,38 @@ bool FClearWireImportedCommand::Update()
 // Constraint Dynamic Parameters test starts here.
 //
 
-class FImporterToSingleActor_ConstraintDynamicParametersTest;
+class FImporterToBlueprint_ConstraintDynamicParametersTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FCheckConstraintDynamicParametersImportedCommand,
-	FImporterToSingleActor_ConstraintDynamicParametersTest&, Test);
+	FImporterToBlueprint_ConstraintDynamicParametersTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FClearConstraintDynamicParametersImportedCommand,
-	FImporterToSingleActor_ConstraintDynamicParametersTest&, Test);
+	FImporterToBlueprint_ConstraintDynamicParametersTest&, Test);
 
-class FImporterToSingleActor_ConstraintDynamicParametersTest final
+class FImporterToBlueprint_ConstraintDynamicParametersTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_ConstraintDynamicParametersTest()
+	FImporterToBlueprint_ConstraintDynamicParametersTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_ConstraintDynamicParametersTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.ConstraintDynamicParameters"))
+			  TEXT("FImporterToBlueprint_ConstraintDynamicParametersTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.ConstraintDynamicParameters"))
 	{
 	}
 
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
-		ADD_LATENT_AUTOMATION_COMMAND(FImportArchiveSingleActorCommand(
+		ADD_LATENT_AUTOMATION_COMMAND(FImportArchiveBlueprintCommand(
 			TEXT("constraint_dynamic_parameters_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckConstraintDynamicParametersImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearConstraintDynamicParametersImportedCommand(*this))
@@ -1859,8 +1909,8 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_ConstraintDynamicParametersTest
-		ImporterToSingleActor_ConstraintDynamicParametersTest;
+	FImporterToBlueprint_ConstraintDynamicParametersTest
+		ImporterToBlueprint_ConstraintDynamicParametersTest;
 }
 
 /**
@@ -1881,14 +1931,14 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// Two Rigid Bodies, one Hinge constraint and one Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
-	UAGX_ConstraintComponent* Constraint =
-		GetByName<UAGX_ConstraintComponent>(Components, TEXT("constraint"));
+	UAGX_ConstraintComponent* Constraint = GetByName<UAGX_ConstraintComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("constraint"));
 
 	// Compliance.
 	Test.TestEqual(
@@ -1959,11 +2009,18 @@ bool FClearConstraintDynamicParametersImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("Blueprint"), TEXT("BP_constraint_dynamic_parameters_build.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(
+		TEXT("constraint_dynamic_parameters_build"), ExpectedFiles);
 
 	return true;
 }
@@ -1972,39 +2029,37 @@ bool FClearConstraintDynamicParametersImportedCommand::Update()
 // Rigid Body properties test starts here.
 //
 
-class FImporterToSingleActor_RigidBodyPropertiesTest;
+class FImporterToBlueprint_RigidBodyPropertiesTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckRigidBodyPropertiesImportedCommand, FImporterToSingleActor_RigidBodyPropertiesTest&,
-	Test);
+	FCheckRigidBodyPropertiesImportedCommand, FImporterToBlueprint_RigidBodyPropertiesTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearRigidBodyPropertiesImportedCommand, FImporterToSingleActor_RigidBodyPropertiesTest&,
-	Test);
+	FClearRigidBodyPropertiesImportedCommand, FImporterToBlueprint_RigidBodyPropertiesTest&, Test);
 
-class FImporterToSingleActor_RigidBodyPropertiesTest final
+class FImporterToBlueprint_RigidBodyPropertiesTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_RigidBodyPropertiesTest()
+	FImporterToBlueprint_RigidBodyPropertiesTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_RigidBodyPropertiesTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.RigidBodyProperties"))
+			  TEXT("FImporterToBlueprint_RigidBodyPropertiesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.RigidBodyProperties"))
 	{
 	}
 
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
-		ADD_LATENT_AUTOMATION_COMMAND(FImportArchiveSingleActorCommand(
-			TEXT("rigidbody_properties_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveBlueprintCommand(TEXT("rigidbody_properties_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckRigidBodyPropertiesImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearRigidBodyPropertiesImportedCommand(*this))
 		return true;
@@ -2013,7 +2068,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_RigidBodyPropertiesTest ImporterToSingleActor_RigidBodyPropertiesTest;
+	FImporterToBlueprint_RigidBodyPropertiesTest ImporterToBlueprint_RigidBodyPropertiesTest;
 }
 
 /**
@@ -2033,23 +2088,25 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// One Rigid Bodies, one Geometry and one Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 3);
 
-	UAGX_RigidBodyComponent* SphereBody =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("SphereBody"));
+	UAGX_RigidBodyComponent* SphereBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("SphereBody"));
 
 	// Name.
 	{
-		Test.TestEqual("Sphere name", SphereBody->GetFName(), FName(TEXT("SphereBody")));
+		Test.TestEqual(
+			"Sphere name", SphereBody->GetName(),
+			FAGX_BlueprintUtilities::ToTemplateComponentName("SphereBody"));
 	}
 
 	// Position.
 	{
-		FVector Actual = SphereBody->GetComponentLocation();
+		FVector Actual = FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(SphereBody);
 		// The position, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(10.f, 20.f, 30.f);
 		FVector Expected = AgxToUnrealDisplacement(ExpectedAgx);
@@ -2058,7 +2115,7 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 
 	// Rotation.
 	{
-		FRotator Actual = SphereBody->GetComponentRotation();
+		FRotator Actual = FAGX_BlueprintUtilities::GetTemplateComponentWorldRotation(SphereBody);
 		// The rotation, in AGX Dynamics' units, that was given to the sphere when created.
 		FVector ExpectedAgx(0.1f, 0.2f, 0.3f);
 		FRotator Expected = AgxToUnrealEulerAngles(ExpectedAgx);
@@ -2098,6 +2155,7 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 		FVector Expected = AgxToUnrealVector(ExpectedAgx);
 		Test.TestEqual(TEXT("Sphere angular velocity damping"), Actual, Expected);
 	}
+
 
 	// Mass.
 	{
@@ -2149,11 +2207,17 @@ bool FClearRigidBodyPropertiesImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("Blueprint"), TEXT("BP_rigidbody_properties_build.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("rigidbody_properties_build"), ExpectedFiles);
 
 	return true;
 }
@@ -2162,29 +2226,29 @@ bool FClearRigidBodyPropertiesImportedCommand::Update()
 // Simple geometries test starts here.
 //
 
-class FImporterToSingleActor_SimpleGeometriesTest;
+class FImporterToBlueprint_SimpleGeometriesTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckSimpleGeometriesImportedCommand, FImporterToSingleActor_SimpleGeometriesTest&, Test);
+	FCheckSimpleGeometriesImportedCommand, FImporterToBlueprint_SimpleGeometriesTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearSimpleGeometriesImportedCommand, FImporterToSingleActor_SimpleGeometriesTest&, Test);
+	FClearSimpleGeometriesImportedCommand, FImporterToBlueprint_SimpleGeometriesTest&, Test);
 
-class FImporterToSingleActor_SimpleGeometriesTest final
+class FImporterToBlueprint_SimpleGeometriesTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_SimpleGeometriesTest()
+	FImporterToBlueprint_SimpleGeometriesTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_SimpleGeometriesTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.SimpleGeometries"))
+			  TEXT("FImporterToBlueprint_SimpleGeometriesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.SimpleGeometries"))
 	{
 	}
 
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 	UAGX_RigidBodyComponent* TrimeshBody = nullptr;
 
 protected:
@@ -2192,7 +2256,7 @@ protected:
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("single_geometries_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("single_geometries_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckSimpleGeometriesImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearSimpleGeometriesImportedCommand(*this))
 		return true;
@@ -2201,7 +2265,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_SimpleGeometriesTest ImporterToSingleActor_SimpleGeometriesTest;
+	FImporterToBlueprint_SimpleGeometriesTest ImporterToBlueprint_SimpleGeometriesTest;
 }
 
 /**
@@ -2229,53 +2293,66 @@ bool FCheckSimpleGeometriesImportedCommand::Update()
 		}
 
 		const FVector ExpectedUnrealPos = AgxToUnrealDisplacement(ExpectedAGXWorldPos);
-		Test.TestEqual(TEXT("Component position"), c->GetComponentLocation(), ExpectedUnrealPos);
+		Test.TestEqual(
+			TEXT("Component position"),
+			FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(c), ExpectedUnrealPos);
 	};
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// 5 Rigid Bodies, 10 Geometries, 2 Static Meshes and 1 Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 18);
 
 	testShape(
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("sphereGeometry")),
+		GetByName<UAGX_SphereShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("sphereGeometry")),
 		FVector(0.f, 0.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_BoxShapeComponent>(Components, TEXT("boxGeometry")), FVector(2.f, 0.f, 0.f));
+		GetByName<UAGX_BoxShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("boxGeometry")),
+		FVector(2.f, 0.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("cylinderGeometry")),
+		GetByName<UAGX_CylinderShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("cylinderGeometry")),
 		FVector(4.f, 0.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_CapsuleShapeComponent>(Components, TEXT("capsuleGeometry")),
+		GetByName<UAGX_CapsuleShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("capsuleGeometry")),
 		FVector(6.f, 0.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("trimeshGeometry")),
+		GetByName<UAGX_TrimeshShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("trimeshGeometry")),
 		FVector(8.f, 0.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_SphereShapeComponent>(Components, TEXT("sphereGeometryFree")),
+		GetByName<UAGX_SphereShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("sphereGeometryFree")),
 		FVector(0.f, 2.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_BoxShapeComponent>(Components, TEXT("boxGeometryFree")),
+		GetByName<UAGX_BoxShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("boxGeometryFree")),
 		FVector(2.f, 2.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_CylinderShapeComponent>(Components, TEXT("cylinderGeometryFree")),
+		GetByName<UAGX_CylinderShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("cylinderGeometryFree")),
 		FVector(4.f, 2.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_CapsuleShapeComponent>(Components, TEXT("capsuleGeometryFree")),
+		GetByName<UAGX_CapsuleShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("capsuleGeometryFree")),
 		FVector(6.f, 2.f, 0.f));
 
 	testShape(
-		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("trimeshGeometryFree")),
+		GetByName<UAGX_TrimeshShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("trimeshGeometryFree")),
 		FVector(8.f, 2.f, 0.f));
 
 	return true;
@@ -2292,12 +2369,6 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
 	Test.AddExpectedError(
@@ -2307,7 +2378,8 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("StaticMesh"), TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
+		TEXT("Blueprint"), TEXT("BP_single_geometries_build.uasset"), TEXT("StaticMesh"),
+		TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("single_geometries_build"), ExpectedFiles);
 
 	return true;
@@ -2317,36 +2389,34 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 // Contact materials test starts here.
 //
 
-class FArchiveImporterToSingleActor_ContactMaterialsTest;
+class FArchiveImporterToBlueprint_ContactMaterialsTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckContactMaterialsImportedCommand, FArchiveImporterToSingleActor_ContactMaterialsTest&,
-	Test);
+	FCheckContactMaterialsImportedCommand, FArchiveImporterToBlueprint_ContactMaterialsTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearContactMaterialsImportedCommand, FArchiveImporterToSingleActor_ContactMaterialsTest&,
-	Test);
+	FClearContactMaterialsImportedCommand, FArchiveImporterToBlueprint_ContactMaterialsTest&, Test);
 
-class FArchiveImporterToSingleActor_ContactMaterialsTest final
+class FArchiveImporterToBlueprint_ContactMaterialsTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_ContactMaterialsTest()
+	FArchiveImporterToBlueprint_ContactMaterialsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImporterToSingleActor_ContactMaterialsTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.ContactMaterials"))
+			  TEXT("FArchiveImporterToBlueprint_ContactMaterialsTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.ContactMaterials"))
 	{
 	}
 
 public:
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("contact_materials_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("contact_materials_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckContactMaterialsImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearContactMaterialsImportedCommand(*this))
 		return true;
@@ -2355,8 +2425,8 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_ContactMaterialsTest
-		ArchiveImporterToSingleActor_ContactMaterialsTest;
+	FArchiveImporterToBlueprint_ContactMaterialsTest
+		ArchiveImporterToBlueprint_ContactMaterialsTest;
 }
 
 /**
@@ -2376,15 +2446,16 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// 4 Rigid Bodies, 4 Geometries, 1 Contact Material Registrar and 1 Default Scene Root.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
 
 	UAGX_ContactMaterialRegistrarComponent* Registrar =
 		GetByName<UAGX_ContactMaterialRegistrarComponent>(
-			Components, TEXT("AGX_ContactMaterialRegistrar"));
+			Components,
+			*FAGX_BlueprintUtilities::ToTemplateComponentName("AGX_ContactMaterialRegistrar"));
 
 	Test.TestNotNull("Contact Material Registrar", Registrar);
 	if (Registrar == nullptr)
@@ -2475,12 +2546,6 @@ bool FClearContactMaterialsImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
 	Test.AddExpectedError(
@@ -2489,10 +2554,12 @@ bool FClearContactMaterialsImportedCommand::Update()
 	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
-	TArray<const TCHAR*> ExpectedFiles = {TEXT("ContactMaterial"),	 TEXT("CMMat1Mat2.uasset"),
-										  TEXT("CMMat3Mat4.uasset"), TEXT("ShapeMaterial"),
-										  TEXT("Mat1.uasset"),		 TEXT("Mat2.uasset"),
-										  TEXT("Mat3.uasset"),		 TEXT("Mat4.uasset")};
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("Blueprint"),		   TEXT("BP_contact_materials_build.uasset"),
+		TEXT("ContactMaterial"),   TEXT("CMMat1Mat2.uasset"),
+		TEXT("CMMat3Mat4.uasset"), TEXT("ShapeMaterial"),
+		TEXT("Mat1.uasset"),	   TEXT("Mat2.uasset"),
+		TEXT("Mat3.uasset"),	   TEXT("Mat4.uasset")};
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("contact_materials_build"), ExpectedFiles);
 
 	return true;
@@ -2502,34 +2569,34 @@ bool FClearContactMaterialsImportedCommand::Update()
 // Observer Frame test starts here.
 //
 
-class FArchiveImporterToSingleActor_ObserverFramesTest;
+class FArchiveImporterToBlueprint_ObserverFramesTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckObserverFramesImportedCommand, FArchiveImporterToSingleActor_ObserverFramesTest&, Test);
+	FCheckObserverFramesImportedCommand, FArchiveImporterToBlueprint_ObserverFramesTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearObserverFramesImportedCommand, FArchiveImporterToSingleActor_ObserverFramesTest&, Test);
+	FClearObserverFramesImportedCommand, FArchiveImporterToBlueprint_ObserverFramesTest&, Test);
 
-class FArchiveImporterToSingleActor_ObserverFramesTest final
+class FArchiveImporterToBlueprint_ObserverFramesTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FArchiveImporterToSingleActor_ObserverFramesTest()
+	FArchiveImporterToBlueprint_ObserverFramesTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FArchiveImpoterToSingleActor_ObserverFramesTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.ObserverFrames"))
+			  TEXT("FArchiveImpoterToBlueprint_ObserverFramesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.ObserverFrames"))
 	{
 	}
 
 public:
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("observer_frames_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("observer_frames_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckObserverFramesImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearObserverFramesImportedCommand(*this))
 		return true;
@@ -2538,8 +2605,7 @@ protected:
 
 namespace
 {
-	FArchiveImporterToSingleActor_ObserverFramesTest
-		ArchiveImpoterterToSingleActor_ObserverFramesTest;
+	FArchiveImporterToBlueprint_ObserverFramesTest ArchiveImpoterterToBlueprint_ObserverFramesTest;
 }
 
 /**
@@ -2558,8 +2624,8 @@ bool FCheckObserverFramesImportedCommand::Update()
 	}
 
 	// Get all the imported Components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// 1 Default Scene Root, 4 groups each containing a Rigid Body, a Shape, and a Scene.
 	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), 13);
@@ -2570,25 +2636,32 @@ bool FCheckObserverFramesImportedCommand::Update()
 		const FString BodyName = *FString::Printf(TEXT("Body_%d"), Id);
 		const FString GeometryName = *FString::Printf(TEXT("Geometry_%d"), Id);
 		const FString ObserverName = *FString::Printf(TEXT("Observer_%d"), Id);
-		UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(Components, *BodyName);
-		UAGX_BoxShapeComponent* Geometry =
-			GetByName<UAGX_BoxShapeComponent>(Components, *GeometryName);
-		USceneComponent* Observer = GetByName<USceneComponent>(Components, *ObserverName);
+		UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(BodyName));
+		UAGX_BoxShapeComponent* Geometry = GetByName<UAGX_BoxShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(GeometryName));
+		USceneComponent* Observer = GetByName<USceneComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(ObserverName));
 
 		Test.TestNotNull(*BodyName, Body);
 		Test.TestNotNull(*GeometryName, Geometry);
 		Test.TestNotNull(*ObserverName, Observer);
 		if (IsAnyNullptr(Body, Geometry, Observer))
 		{
-			return false;
+			return;
 		}
+
 
 		USceneComponent* BodyAsComponent = static_cast<USceneComponent*>(Body);
 		Test.TestEqual(
-			*FString::Printf(TEXT("%s parent"), *GeometryName), Geometry->GetAttachParent(),
+			*FString::Printf(TEXT("%s parent"), *GeometryName),
+			Cast<USceneComponent>(
+				FAGX_BlueprintUtilities::GetTemplateComponentAttachParent(Geometry)),
 			BodyAsComponent);
 		Test.TestEqual(
-			*FString::Printf(TEXT("%s parent"), *ObserverName), Observer->GetAttachParent(),
+			*FString::Printf(TEXT("%s parent"), *ObserverName),
+			Cast<USceneComponent>(
+				FAGX_BlueprintUtilities::GetTemplateComponentAttachParent(Observer)),
 			BodyAsComponent);
 
 		Test.TestEqual(
@@ -2598,27 +2671,11 @@ bool FCheckObserverFramesImportedCommand::Update()
 		Test.TestEqual(
 			*FString::Printf(TEXT("%s location"), *ObserverName), Observer->GetRelativeLocation(),
 			ObserverLocation);
-
-		return true;
 	};
 
-	if (!TestGroup(1, AgxToUnrealDisplacement(0.0, 0.0, 0.0), AgxToUnrealDisplacement(0.0, 0.0, 0.0)))
-	{
-		Test.AddError(TEXT("TestGroup id 1 returned false, cannot continue the test."));
-		return true;
-	}
-
-	if (!TestGroup(2, AgxToUnrealDisplacement(1.0, 0.0, 0.0), AgxToUnrealDisplacement(0.3, 0.3, 0.3)))
-	{
-		Test.AddError(TEXT("TestGroup id 2 returned false, cannot continue the test."));
-		return true;
-	}
-
-	if (!TestGroup(3, AgxToUnrealDisplacement(2.0, 0.0, 0.0), AgxToUnrealDisplacement(0.3, 0.3, 0.3)))
-	{
-		Test.AddError(TEXT("TestGroup id 3 returned false, cannot continue the test."));
-		return true;
-	}
+	TestGroup(1, AgxToUnrealDisplacement(0.0, 0.0, 0.0), AgxToUnrealDisplacement(0.0, 0.0, 0.0));
+	TestGroup(2, AgxToUnrealDisplacement(1.0, 0.0, 0.0), AgxToUnrealDisplacement(0.3, 0.3, 0.3));
+	TestGroup(3, AgxToUnrealDisplacement(2.0, 0.0, 0.0), AgxToUnrealDisplacement(0.3, 0.3, 0.3));
 
 	FRotator Rotation = AgxToUnrealEulerAngles(PI / 10, 0.0, 0.0);
 	FVector ObserverLocation = Rotation.RotateVector(AgxToUnrealDisplacement(0.3, 0.3, 0.3));
@@ -2640,13 +2697,16 @@ bool FClearObserverFramesImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
-	// This AGX Dynamics archive doesn't generate any assets when imported, so nothing to delete.
+	TArray<const TCHAR*> ExpectedFiles {TEXT("Blueprint"), TEXT("BP_observer_frames_build.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("observer_frames_build"), ExpectedFiles);
 
 	return true;
 }
@@ -2654,35 +2714,35 @@ bool FClearObserverFramesImportedCommand::Update()
 // URDF link with meshes test starts here.
 //
 
-class FImporterToSingleActor_URDFLinkWithMeshesTest;
+class FImporterToBlueprint_URDFLinkWithMeshesTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckURDFLinkWithMeshesImportedCommand, FImporterToSingleActor_URDFLinkWithMeshesTest&, Test);
+	FCheckURDFLinkWithMeshesImportedCommand, FImporterToBlueprint_URDFLinkWithMeshesTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearURDFLinkWithMeshesImportedCommand, FImporterToSingleActor_URDFLinkWithMeshesTest&, Test);
+	FClearURDFLinkWithMeshesImportedCommand, FImporterToBlueprint_URDFLinkWithMeshesTest&, Test);
 
-class FImporterToSingleActor_URDFLinkWithMeshesTest final
+class FImporterToBlueprint_URDFLinkWithMeshesTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_URDFLinkWithMeshesTest()
+	FImporterToBlueprint_URDFLinkWithMeshesTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_URDFLinkWithMeshesTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.URDFLinkWithMeshes"))
+			  TEXT("FImporterToBlueprint_URDFLinkWithMeshesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.URDFLinkWithMeshes"))
 	{
 	}
 
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
-		ADD_LATENT_AUTOMATION_COMMAND(FImportURDFSingleActorCommand(
+		ADD_LATENT_AUTOMATION_COMMAND(FImportURDFBlueprintCommand(
 			TEXT("link_with_meshes.urdf"), AgxAutomationCommon::GetTestSceneDirPath(), Contents,
 			*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckURDFLinkWithMeshesImportedCommand(*this))
@@ -2693,7 +2753,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_URDFLinkWithMeshesTest ImporterToSingleActor_URDFLinkWithMeshesTest;
+	FImporterToBlueprint_URDFLinkWithMeshesTest ImporterToBlueprint_URDFLinkWithMeshesTest;
 }
 
 /**
@@ -2713,17 +2773,17 @@ bool FCheckURDFLinkWithMeshesImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// One DefaultSceneRoot, one Rigid Body, one Trimesh with a render mesh and a collision mesh
 	// and one Trimesh with only one collision mesh.
 	Test.TestEqual("Number of components", Components.Num(), 7);
 
-	UAGX_TrimeshShapeComponent* Urdfmeshvisual =
-		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("urdfmeshvisual"));
-	UAGX_TrimeshShapeComponent* Urdfmeshcollision =
-		GetByName<UAGX_TrimeshShapeComponent>(Components, TEXT("urdfmeshcollision"));
+	UAGX_TrimeshShapeComponent* Urdfmeshvisual = GetByName<UAGX_TrimeshShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("urdfmeshvisual"));
+	UAGX_TrimeshShapeComponent* Urdfmeshcollision = GetByName<UAGX_TrimeshShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("urdfmeshcollision"));
 
 	Test.TestNotNull(TEXT("Urdfmeshvisual"), Urdfmeshvisual);
 	Test.TestNotNull(TEXT("Urdfmeshcollision"), Urdfmeshcollision);
@@ -2732,6 +2792,7 @@ bool FCheckURDFLinkWithMeshesImportedCommand::Update()
 		// Abort the test. It will fail since TestNotNull above will have failed.
 		return true;
 	}
+
 
 	Test.TestFalse("Urdfmeshvisual collide", Urdfmeshvisual->bCanCollide);
 	Test.TestTrue("Urdfmeshcollision collide", Urdfmeshcollision->bCanCollide);
@@ -2752,8 +2813,8 @@ bool FClearURDFLinkWithMeshesImportedCommand::Update()
 		return true;
 	}
 
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	TArray<FString> Assets = GetReferencedStaticMeshAssets(Components);
 	if (Assets.Num() != 3)
 	{
@@ -2762,17 +2823,13 @@ bool FClearURDFLinkWithMeshesImportedCommand::Update()
 	}
 
 	TArray<const TCHAR*> FilesAndDirsToRemove;
+	FilesAndDirsToRemove.Add(TEXT("Blueprint"));
+	FilesAndDirsToRemove.Add(TEXT("BP_link_with_meshes.uasset"));
 	FilesAndDirsToRemove.Add(TEXT("RenderMesh"));
 	FilesAndDirsToRemove.Add(TEXT("StaticMesh"));
 	for (const FString& Asset : Assets)
 	{
 		FilesAndDirsToRemove.Add(*Asset);
-	}
-
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
 	}
 
 #if defined(__linux__)
@@ -2792,37 +2849,37 @@ bool FClearURDFLinkWithMeshesImportedCommand::Update()
 // URDF links geometries constraints test starts here.
 //
 
-class FImporterToSingleActor_URDFLinksGeometriesConstraintsTest;
+class FImporterToBlueprint_URDFLinksGeometriesConstraintsTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FCheckURDFLinksGeometriesConstraintsImportedCommand,
-	FImporterToSingleActor_URDFLinksGeometriesConstraintsTest&, Test);
+	FImporterToBlueprint_URDFLinksGeometriesConstraintsTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 	FClearURDFLinksGeometriesConstraintsImportedCommand,
-	FImporterToSingleActor_URDFLinksGeometriesConstraintsTest&, Test);
+	FImporterToBlueprint_URDFLinksGeometriesConstraintsTest&, Test);
 
-class FImporterToSingleActor_URDFLinksGeometriesConstraintsTest final
+class FImporterToBlueprint_URDFLinksGeometriesConstraintsTest final
 	: public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_URDFLinksGeometriesConstraintsTest()
+	FImporterToBlueprint_URDFLinksGeometriesConstraintsTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_URDFLinksGeometriesConstraintsTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.URDFLinksGeometriesConstraints"))
+			  TEXT("FImporterToBlueprint_URDFLinksGeometriesConstraintsTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.URDFLinksGeometriesConstraints"))
 	{
 	}
 
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
-		ADD_LATENT_AUTOMATION_COMMAND(FImportURDFSingleActorCommand(
+		ADD_LATENT_AUTOMATION_COMMAND(FImportURDFBlueprintCommand(
 			TEXT("links_geometries_constraints.urdf"), "", Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckURDFLinksGeometriesConstraintsImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearURDFLinksGeometriesConstraintsImportedCommand(*this))
@@ -2832,8 +2889,8 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_URDFLinksGeometriesConstraintsTest
-		ImporterToSingleActor_URDFLinksGeometriesConstraintsTest;
+	FImporterToBlueprint_URDFLinksGeometriesConstraintsTest
+		ImporterToBlueprint_URDFLinksGeometriesConstraintsTest;
 }
 
 /**
@@ -2854,25 +2911,31 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components and 2 Constraints.
 	Test.TestEqual("Number of components", Components.Num(), 11);
 
-	UAGX_RigidBodyComponent* Boxlink =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("boxlink"));
-	UAGX_RigidBodyComponent* Shperelink =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("spherelink"));
-	UAGX_RigidBodyComponent* Cylinderlink =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("cylinderlink"));
-	UAGX_RigidBodyComponent* Freefallinglink =
-		GetByName<UAGX_RigidBodyComponent>(Components, TEXT("freefallinglink"));
+	UAGX_RigidBodyComponent* Boxlink = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("boxlink"));
+	UAGX_RigidBodyComponent* Shperelink = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("spherelink"));
+	UAGX_RigidBodyComponent* Cylinderlink = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("cylinderlink"));
+	UAGX_RigidBodyComponent* Freefallinglink = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("freefallinglink"));
 
 	Test.TestNotNull(TEXT("Boxlink"), Boxlink);
 	Test.TestNotNull(TEXT("Shperelink"), Shperelink);
 	Test.TestNotNull(TEXT("Cylinderlink"), Cylinderlink);
 	Test.TestNotNull(TEXT("Freefallinglink"), Freefallinglink);
+	if (IsAnyNullptr(Boxlink, Shperelink, Cylinderlink, Freefallinglink))
+	{
+		Test.AddError("At least one Rigid Body was nullptr, cannot continue.");
+		return true;
+	}
+
 
 	if (Boxlink == nullptr || Shperelink == nullptr || Cylinderlink == nullptr ||
 		Freefallinglink == nullptr)
@@ -2882,19 +2945,23 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 	}
 
 	Test.TestEqual(
-		TEXT("Boxlink position"), Boxlink->GetComponentLocation(),
+		TEXT("Boxlink position"),
+		FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(Boxlink),
 		AgxToUnrealDisplacement({0.f, 0.f, 0.f}));
 
 	Test.TestEqual(
-		TEXT("Shperelink position"), Shperelink->GetComponentLocation(),
+		TEXT("Shperelink position"),
+		FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(Shperelink),
 		AgxToUnrealDisplacement({1.f, 0.f, 0.f}));
 
 	Test.TestEqual(
-		TEXT("Cylinderlink position"), Cylinderlink->GetComponentLocation(),
+		TEXT("Cylinderlink position"),
+		FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(Cylinderlink),
 		AgxToUnrealDisplacement({2.f, 0.f, 0.f}));
 
 	Test.TestEqual(
-		TEXT("Freefallinglink position"), Freefallinglink->GetComponentLocation(),
+		TEXT("Freefallinglink position"),
+		FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(Freefallinglink),
 		AgxToUnrealDisplacement({0.f, 0.f, 0.f}));
 
 	return true;
@@ -2906,18 +2973,22 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
  */
 bool FClearURDFLinksGeometriesConstraintsImportedCommand::Update()
 {
-	using namespace AgxAutomationCommon;
-
 	if (Test.Contents == nullptr)
 	{
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("Blueprint"), TEXT("BP_links_geometries_constraints.uasset")};
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("links_geometries_constraints"), ExpectedFiles);
 
 	return true;
 }
@@ -2926,35 +2997,35 @@ bool FClearURDFLinksGeometriesConstraintsImportedCommand::Update()
 // Track test starts here.
 //
 
-class FImporterToSingleActor_TrackTest;
+class FImporterToBlueprint_TrackTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckTrackImportedCommand, FImporterToSingleActor_TrackTest&, Test);
+	FCheckTrackImportedCommand, FImporterToBlueprint_TrackTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearTrackImportedCommand, FImporterToSingleActor_TrackTest&, Test);
+	FClearTrackImportedCommand, FImporterToBlueprint_TrackTest&, Test);
 
-class FImporterToSingleActor_TrackTest final : public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_TrackTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_TrackTest()
+	FImporterToBlueprint_TrackTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_TrackTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.Track"))
+			  TEXT("FImporterToBlueprint_TrackTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.Track"))
 	{
 	}
 
 public:
 	UWorld* World = nullptr;
 	UAGX_Simulation* Simulation = nullptr;
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
 	{
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("track_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("track_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckTrackImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearTrackImportedCommand(*this))
 		return true;
@@ -2963,7 +3034,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_TrackTest ImporterToSingleActor_TrackTest;
+	FImporterToBlueprint_TrackTest ImporterToBlueprint_TrackTest;
 }
 
 /**
@@ -2984,14 +3055,14 @@ bool FCheckTrackImportedCommand::Update()
 	}
 
 	// Get all the imported components.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// 24 Hinge Constraints (24), 25 Rigid Bodies (49), 20 Sphere Shapes
 	// (69), 24 Cylinder Shapes (93), 3 Box Shapes (96), a Collision Group Disabler (97), a
 	// Contact Material Registrar (98), a Default Scene Root (99), two Tracks (101).
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 101);
-	if (Components.Num() != 173)
+	if (Components.Num() != 101)
 	{
 		UE_LOG(LogAGX, Warning, TEXT("Found the following components:"));
 		for (auto Component : Components)
@@ -3007,9 +3078,9 @@ bool FCheckTrackImportedCommand::Update()
 		Test.TestNotNull("Track Component", Track);
 		if (Track == nullptr)
 		{
-			return false;
+			return true;
 		}
-		const FString TrackName = Track->GetName();
+
 		Test.TestEqual("Number Of Nodes", Track->NumberOfNodes, 120);
 		Test.TestEqual("Width", Track->Width, 35.f);
 		Test.TestEqual("Thickness", Track->Thickness, 2.5f);
@@ -3020,12 +3091,14 @@ bool FCheckTrackImportedCommand::Update()
 		Test.TestNotNull("Track Properties", Track->TrackProperties);
 		if (Track->TrackProperties == nullptr)
 		{
-			return false;
+			return true;
 		}
 
+		FString BeautifiedTrackName = Track->GetName();
+		BeautifiedTrackName.RemoveFromEnd("_GEN_VARIABLE");
 		Test.TestEqual(
 			"Track Properties Name", Track->TrackProperties->GetName(),
-			FString("AGX_TP_") + TrackName);
+			FString("AGX_TP_") + BeautifiedTrackName);
 		Test.TestEqual(
 			"Hinge Compliance Translational X",
 			Track->TrackProperties->HingeComplianceTranslational_X, 2e-10);
@@ -3088,12 +3161,12 @@ bool FCheckTrackImportedCommand::Update()
 		Test.TestNotNull("Internal Merge Properties", Track->InternalMergeProperties);
 		if (Track->InternalMergeProperties == nullptr)
 		{
-			return false;
+			return true;
 		}
 
 		Test.TestEqual(
 			"Internal Merge Properties Name", Track->InternalMergeProperties->GetName(),
-			FString("AGX_TIMP_") + TrackName);
+			FString("AGX_TIMP_") + BeautifiedTrackName);
 		Test.TestEqual("Enable Merge", Track->InternalMergeProperties->bEnableMerge, true);
 		Test.TestEqual(
 			"Num Nodes Per Merge Segment", Track->InternalMergeProperties->NumNodesPerMergeSegment,
@@ -3188,9 +3261,10 @@ bool FCheckTrackImportedCommand::Update()
 		return true;
 	};
 
-	UAGX_TrackComponent* TrackRight =
-		GetByName<UAGX_TrackComponent>(Components, TEXT("track_right"));
-	UAGX_TrackComponent* TrackLeft = GetByName<UAGX_TrackComponent>(Components, TEXT("track_left"));
+	UAGX_TrackComponent* TrackRight = GetByName<UAGX_TrackComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("track_right"));
+	UAGX_TrackComponent* TrackLeft = GetByName<UAGX_TrackComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("track_left"));
 
 	if (!TestTrack(TrackRight))
 	{
@@ -3217,12 +3291,6 @@ bool FClearTrackImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
 	Test.AddExpectedError(
@@ -3232,6 +3300,8 @@ bool FClearTrackImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("Blueprint"),
+		TEXT("BP_track_build.uasset"),
 		TEXT("ContactMaterial"),
 		TEXT("CMtrackground.uasset"),
 		TEXT("CMtrackwheel.uasset"),
@@ -3254,29 +3324,29 @@ bool FClearTrackImportedCommand::Update()
 // AMOR test starts here.
 //
 
-class FImporterToSingleActor_AmorTest;
+class FImporterToBlueprint_AmorTest;
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FSupressAmorWireImportErrorCommand, FImporterToSingleActor_AmorTest&, Test);
+	FSupressAmorWireImportErrorCommand, FImporterToBlueprint_AmorTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCheckAmorImportedCommand, FImporterToSingleActor_AmorTest&, Test);
+	FCheckAmorImportedCommand, FImporterToBlueprint_AmorTest&, Test);
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FClearAmorImportedCommand, FImporterToSingleActor_AmorTest&, Test);
+	FClearAmorImportedCommand, FImporterToBlueprint_AmorTest&, Test);
 
-class FImporterToSingleActor_AmorTest final : public AgxAutomationCommon::FAgxAutomationTest
+class FImporterToBlueprint_AmorTest final : public AgxAutomationCommon::FAgxAutomationTest
 {
 public:
-	FImporterToSingleActor_AmorTest()
+	FImporterToBlueprint_AmorTest()
 		: AgxAutomationCommon::FAgxAutomationTest(
-			  TEXT("FImporterToSingleActor_AmorTest"),
-			  TEXT("AGXUnreal.Editor.ImporterToSingleActor.Amor"))
+			  TEXT("FImporterToBlueprint_AmorTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.Amor"))
 	{
 	}
 
 public:
-	AActor* Contents = nullptr; /// <! The Actor created to hold the archive contents.
+	UBlueprint* Contents = nullptr;
 
 protected:
 	virtual bool RunTest(const FString&) override
@@ -3284,7 +3354,7 @@ protected:
 		BAIL_TEST_IF_NOT_EDITOR(false)
 		ADD_LATENT_AUTOMATION_COMMAND(FSupressAmorWireImportErrorCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(
-			FImportArchiveSingleActorCommand(TEXT("amor_build.agx"), Contents, *this))
+			FImportArchiveBlueprintCommand(TEXT("amor_build.agx"), Contents, *this))
 		ADD_LATENT_AUTOMATION_COMMAND(FCheckAmorImportedCommand(*this))
 		ADD_LATENT_AUTOMATION_COMMAND(FClearAmorImportedCommand(*this))
 		return true;
@@ -3293,7 +3363,7 @@ protected:
 
 namespace
 {
-	FImporterToSingleActor_AmorTest ImporterToSingleActor_AmorTest;
+	FImporterToBlueprint_AmorTest ImporterToBlueprint_AmorTest;
 }
 
 bool FSupressAmorWireImportErrorCommand::Update()
@@ -3319,18 +3389,23 @@ bool FCheckAmorImportedCommand::Update()
 
 	// Get all the imported components. The test for the number of components is a safety check.
 	// It should be updated whenever the test scene is changed.
-	TArray<UActorComponent*> Components;
-	Test.Contents->GetComponents(Components, false);
-	// Two Rigid Bodies (2), one Shape (3), two Wires with one icon each (7), one Constraint (8),
-	// one Collision Group Disabler (9), one Default Scene Root (10).
-	const int32 ExpectedNumComponents = 10;
-
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
+	// Two Rigid Bodies (2), one Shape (3), two Wires (5), one Constraint (6),
+	// one Collision Group Disabler (7), one Default Scene Root (8).
+	const int32 ExpectedNumComponents = 8;
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), ExpectedNumComponents);
 
-	UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(Components, TEXT("Body"));
+	UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Body"));
 	Test.TestTrue("Body Enable Merge", Body->MergeSplitProperties.bEnableMerge);
 	Test.TestFalse("Body Enable Merge", Body->MergeSplitProperties.bEnableSplit);
 	Test.TestNotNull("Body Thresholds", Body->MergeSplitProperties.Thresholds);
+	if (Body->MergeSplitProperties.Thresholds == nullptr)
+	{
+		return true;
+	}
+
 	Test.TestEqual(
 		"Body Thresholds MaxImpactSpeed",
 		(float) Body->MergeSplitProperties.Thresholds->MaxImpactSpeed, AgxToUnrealDistance(13.0));
@@ -3358,19 +3433,30 @@ bool FCheckAmorImportedCommand::Update()
 		"Body Thresholds TangentialAdhesion",
 		Body->MergeSplitProperties.Thresholds->TangentialAdhesion, 18.0);
 
-	UAGX_ShapeComponent* Geometry =
-		GetByName<UAGX_ShapeComponent>(Components, TEXT("GeometrySharingThresholds"));
+	UAGX_ShapeComponent* Geometry = GetByName<UAGX_ShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("GeometrySharingThresholds"));
 	Test.TestTrue("Geometry Enable Merge", Geometry->MergeSplitProperties.bEnableMerge);
 	Test.TestTrue("Geometry Enable Merge", Geometry->MergeSplitProperties.bEnableSplit);
 	Test.TestNotNull("Geometry Thresholds", Geometry->MergeSplitProperties.Thresholds);
+	if (Geometry->MergeSplitProperties.Thresholds == nullptr)
+	{
+		return true;
+	}
+
 	Test.TestEqual(
 		"Geometry share Thresholds", Geometry->MergeSplitProperties.Thresholds,
 		Body->MergeSplitProperties.Thresholds);
 
-	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(Components, TEXT("Wire"));
+	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Wire"));
 	Test.TestFalse("Wire Enable Merge", Wire->MergeSplitProperties.bEnableMerge);
 	Test.TestTrue("Wire Enable Merge", Wire->MergeSplitProperties.bEnableSplit);
 	Test.TestNotNull("Wire Thresholds", Wire->MergeSplitProperties.Thresholds);
+	if (Wire->MergeSplitProperties.Thresholds == nullptr)
+	{
+		return true;
+	}
+
 	Test.TestEqual(
 		"Wire Thresholds ForcePropagationDecayScale",
 		Wire->MergeSplitProperties.Thresholds->ForcePropagationDecayScale, 1.1);
@@ -3378,19 +3464,24 @@ bool FCheckAmorImportedCommand::Update()
 		"Wire Thresholds ForcePropagationDecayScale",
 		Wire->MergeSplitProperties.Thresholds->MergeTensionScale, 1.2);
 
-	UAGX_WireComponent* WireNoThresholds =
-		GetByName<UAGX_WireComponent>(Components, TEXT("WireNoThresholds"));
+	UAGX_WireComponent* WireNoThresholds = GetByName<UAGX_WireComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("WireNoThresholds"));
 	Test.TestTrue(
 		"WireNoThresholds Enable Merge", WireNoThresholds->MergeSplitProperties.bEnableMerge);
 	Test.TestTrue(
 		"WireNoThresholds Enable Merge", WireNoThresholds->MergeSplitProperties.bEnableSplit);
 	Test.TestNull("WireNoThresholds Thresholds", WireNoThresholds->MergeSplitProperties.Thresholds);
 
-	UAGX_ConstraintComponent* Constraint =
-		GetByName<UAGX_ConstraintComponent>(Components, TEXT("Hinge"));
+	UAGX_ConstraintComponent* Constraint = GetByName<UAGX_ConstraintComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Hinge"));
 	Test.TestFalse("Constraint Enable Merge", Constraint->MergeSplitProperties.bEnableMerge);
 	Test.TestFalse("Constraint Enable Merge", Constraint->MergeSplitProperties.bEnableSplit);
 	Test.TestNotNull("Constraint Thresholds", Constraint->MergeSplitProperties.Thresholds);
+	if (Constraint->MergeSplitProperties.Thresholds == nullptr)
+	{
+		return true;
+	}
+
 	Test.TestEqual(
 		"Constraint Thresholds MaxDesiredForceRangeDiff",
 		Constraint->MergeSplitProperties.Thresholds->MaxDesiredForceRangeDiff, 4.0);
@@ -3431,12 +3522,6 @@ bool FClearAmorImportedCommand::Update()
 		return true;
 	}
 
-	UWorld* World = Test.Contents->GetWorld();
-	if (World != nullptr)
-	{
-		World->DestroyActor(Test.Contents);
-	}
-
 #if defined(__linux__)
 	/// @todo Workaround for internal issue #213.
 	Test.AddExpectedError(
@@ -3450,14 +3535,15 @@ bool FClearAmorImportedCommand::Update()
 	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("Blueprint"),
+		TEXT("BP_amor_build.uasset"),
 		TEXT("ShapeMaterial"),
 		TEXT("AGX_WMST_D7334DD013D1E4E7FB04E6ABA3AF5494.uasset"),
 		TEXT("defaultWireMaterial_40.uasset"),
 		TEXT("defaultWireMaterial_550.uasset"),
 		TEXT("MergeSplitThresholds"),
 		TEXT("AGX_CMST_E17441363B61A7BC37C1A76C9E0EB9E4.uasset"),
-		TEXT("AGX_SMST_567B4C28966D80460D523D709EA031DF.uasset")
-	};
+		TEXT("AGX_SMST_567B4C28966D80460D523D709EA031DF.uasset")};
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("amor_build"), ExpectedFiles);
 

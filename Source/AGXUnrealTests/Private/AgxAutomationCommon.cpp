@@ -12,6 +12,7 @@
 #include "Editor.h"
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
+#include "Engine/SCS_Node.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"

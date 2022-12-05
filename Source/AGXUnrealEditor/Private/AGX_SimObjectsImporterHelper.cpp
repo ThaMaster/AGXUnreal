@@ -62,6 +62,46 @@
 
 namespace
 {
+	void WriteImportErrorMessage(
+		const TCHAR* ObjectType, const FString& Name, const FString& FilePath, const TCHAR* Message)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Could not import '%s' '%s' from file '%s': %s."), ObjectType,
+			*Name, *FilePath, Message);
+	}
+
+	UAGX_TrackProperties* GetOrCreateTrackPropertiesAsset(
+		const FTrackPropertiesBarrier& Barrier, const FString& Name,
+		TMap<FGuid, UAGX_TrackProperties*>& RestoredTrackProperties, const FString& DirectoryName)
+	{
+		const FGuid Guid = Barrier.GetGuid();
+		if (!Guid.IsValid())
+		{
+			// The GUID is invalid, but try to create the asset anyway but without adding it to
+			// the RestoredTrackProperties cache.
+			return FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
+				Barrier, DirectoryName, Name);
+		}
+
+		if (UAGX_TrackProperties* Asset = RestoredTrackProperties.FindRef(Guid))
+		{
+			// We have seen this asset before, use the one in the cache.
+			return Asset;
+		}
+
+		// This is a new Track Properties. Create the asset and add to the cache.
+		UAGX_TrackProperties* Asset =
+			FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(Barrier, DirectoryName, Name);
+		if (Asset != nullptr)
+		{
+			RestoredTrackProperties.Add(Guid, Asset);
+		}
+		return Asset;
+	}
+};
+
+namespace
+{
 	/**
 	 * Convert an AGX Dynamics Render Material to an Unreal Engine Render Material and store it
 	 * as an asset in the given directory. Will cache and reuse Render Materials if the same one
@@ -226,34 +266,67 @@ namespace
 		return AtdInfo;
 	}
 
-	UAGX_TrackProperties* GetOrCreateTrackPropertiesAsset(
-		const FTrackPropertiesBarrier& Barrier,
-		const FString& Name, TMap<FGuid, UAGX_TrackProperties*>& RestoredTrackProperties,
-		const FString& DirectoryName)
+	/*
+	 * Creates a RenderMaterial from a RenderDataBarrier if it has a material. Otherwise returns
+	 * the default RenderMaterial.
+	 */
+	UMaterialInterface* CreateRenderMaterialFromRenderDataOrDefault(
+		const FRenderDataBarrier& RenderDataBarrier, bool IsSensor, const FString& DirectoryName,
+		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials)
 	{
-		const FGuid Guid = Barrier.GetGuid();
-		if (!Guid.IsValid())
+		// Create the RenderMaterial (if any).
+		// Convert Render Data Material, if there is one. May fall back to the base import Material,
+		// and may also fail completely, leaving RenderDataMaterial being nullptr.
+		UMaterialInterface* RenderDataMaterial = nullptr;
+		if (RenderDataBarrier.HasMaterial() && GIsEditor)
 		{
-			// The GUID is invalid, but try to create the asset anyway but without adding it to
-			// the RestoredTrackProperties cache.
-			return FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
-				Barrier, DirectoryName, Name);
+			RenderDataMaterial = GetOrCreateRenderMaterialInstance(
+				RenderDataBarrier.GetMaterial(), DirectoryName, RestoredRenderMaterials);
+		}
+		else
+		{
+			RenderDataMaterial = GetDefaultRenderMaterial(IsSensor);
 		}
 
-		if (UAGX_TrackProperties* Asset = RestoredTrackProperties.FindRef(Guid))
+		return RenderDataMaterial;
+	}
+
+	/*
+	 * Creates a StaticMeshComponent, a StaticMeshAsset from a RenderDataBarrier.
+	 */
+	UStaticMeshComponent* CreateFromRenderData(
+		const FRenderDataBarrier& RenderDataBarrier, AActor& Owner, USceneComponent& AttachParent,
+		const FTransform& RelativeTransform, const FString& DirectoryName,
+		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes)
+	{
+		if (!RenderDataBarrier.HasNative() || !RenderDataBarrier.HasMesh())
 		{
-			// We have seen this asset before, use the one in the cache.
-			return Asset;
+			return nullptr;
 		}
 
-		// This is a new Track Properties. Create the asset and add to the cache.
-		UAGX_TrackProperties* Asset =
-			FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(Barrier, DirectoryName, Name);
-		if (Asset != nullptr)
+		// Create the asset.
+		FAssetToDiskInfo AtdInfo =
+			GetOrCreateStaticMeshAsset(RenderDataBarrier, RestoredMeshes, DirectoryName);
+		UStaticMesh* RenderDataMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
+		if (RenderDataMeshAsset == nullptr)
 		{
-			RestoredTrackProperties.Add(Guid, Asset);
+			// Logging done in GetOrCreateStaticMeshAsset.
+			return nullptr;
 		}
-		return Asset;
+
+		// Create the component.
+		UStaticMeshComponent* RenderDataComponent = FAGX_EditorUtilities::CreateStaticMeshComponent(
+			Owner, AttachParent, *RenderDataMeshAsset, true);
+		if (RenderDataComponent == nullptr)
+		{
+			// Logging done in CreateStaticMeshComponent.
+			return nullptr;
+		}
+
+		RenderDataComponent->SetVisibility(RenderDataBarrier.GetShouldRender());
+		RenderDataComponent->SetRelativeTransform(RelativeTransform);
+
+		return RenderDataComponent;
 	}
 
 	/**
@@ -265,64 +338,23 @@ namespace
 	 * Render Material and applied to both VisualMesh and the newly created Static Mesh Component,
 	 * if any. This makes it possible to hide the Render Data mesh and instead use the collision
 	 * data also for rendering.
-	 *
-	 * @param RenderData The AGX Dynamics representation of the Render Data.
-	 * @param RenderMeshTransform The local transform to give the render mesh Static Mesh Component.
-	 * @param Component The Shape Component that is being created.
-	 * @param VisualMesh The default Component used for visualization. Often the Shape itself.
 	 */
 	void ApplyRenderingData(
-		const FRenderDataBarrier& RenderData, const FTransform& RenderMeshTransform,
-		UAGX_ShapeComponent& Component, UMeshComponent& VisualMesh,
-		TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes,
+		const FRenderDataBarrier& RenderData, const FTransform& RenderMeshTransform, bool IsSensor,
+		UMeshComponent& VisualMesh, TMap<FGuid, FAssetToDiskInfo>& RestoredMeshes,
 		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials, const FString& DirectoryName)
 	{
 		VisualMesh.SetVisibility(false);
 
 		// Convert Render Data Mesh, if there is one.
-		UStaticMeshComponent* RenderDataComponent = nullptr;
-		if (RenderData.HasMesh())
-		{
-			FAssetToDiskInfo AtdInfo =
-				GetOrCreateStaticMeshAsset(RenderData, RestoredMeshes, DirectoryName);
-			UStaticMesh* RenderDataMeshAsset = Cast<UStaticMesh>(AtdInfo.Asset);
-			if (RenderDataMeshAsset != nullptr)
-			{
-				// The new Static Mesh Component must be a child of the Visual Mesh and not the
-				// Shape Component because the Trimesh Shape Component assume that it only has a
-				// single child Static Mesh Component and will use the first one it finds to read
-				// collision triangles from. We do not want it to find the rendering mesh.
-				RenderDataComponent = FAGX_EditorUtilities::CreateStaticMeshComponent(
-					*Component.GetOwner(), VisualMesh, *RenderDataMeshAsset, true);
-				if (RenderDataComponent != nullptr)
-				{
-					RenderDataComponent->SetVisibility(RenderData.GetShouldRender());
-					RenderDataComponent->SetRelativeTransform(RenderMeshTransform);
-				}
-			}
-		}
+		UStaticMeshComponent* RenderDataComponent = CreateFromRenderData(
+			RenderData, *VisualMesh.GetOwner(), VisualMesh, RenderMeshTransform, DirectoryName,
+			RestoredMeshes);
 
 		// Convert Render Data Material, if there is one. May fall back to the base import Material,
 		// and may also fail completely, leaving RenderDataMaterial being nullptr.
-		UMaterialInterface* RenderDataMaterial = nullptr;
-		if (RenderData.HasMaterial() && GIsEditor)
-		{
-			RenderDataMaterial = GetOrCreateRenderMaterialInstance(
-				RenderData.GetMaterial(), DirectoryName, RestoredMaterials);
-		}
-		else
-		{
-			// Use base import material if the Render Data didn't have one. Also use the
-			// base when not in the Editor since creating new Materials is an Editor only
-			// operation.
-			//
-			// We are only allowed to create new assets, such as a MaterialInstance, when running
-			// within the Unreal Editor.
-			/// @todo This is not true. It seems we are allowed to create StaticMeshes. What's the
-			/// difference between a StaticMesh and a MaterialInstance? Is it because we create
-			/// Constant Material Instances?
-			RenderDataMaterial = GetDefaultRenderMaterial(Component.bIsSensor);
-		}
+		UMaterialInterface* RenderDataMaterial = CreateRenderMaterialFromRenderDataOrDefault(
+			RenderData, IsSensor, DirectoryName, RestoredMaterials);
 
 		// Apply the Material we got, either from the Render Data or the base one, to all the
 		// rendering meshes we have.
@@ -410,41 +442,13 @@ namespace
 			const FTransform ShapeTransform = Barrier.GetGeometryToShapeTransform();
 			const FTransform ShapeInvTransform = ShapeTransform.Inverse();
 			ApplyRenderingData(
-				Barrier.GetRenderData(), ShapeInvTransform, Component, VisualMesh, RestoredMeshes,
-				RestoredRenderMaterials, DirectoryName);
+				Barrier.GetRenderData(), ShapeInvTransform, Component.bIsSensor, VisualMesh,
+				RestoredMeshes, RestoredRenderMaterials, DirectoryName);
 		}
 		else
 		{
 			SetDefaultRenderMaterial(VisualMesh, Component.bIsSensor);
 		}
-	}
-
-	UAGX_ContactMaterialRegistrarComponent* GetOrCreateContactMaterialRegistrar(AActor& Owner)
-	{
-		UAGX_ContactMaterialRegistrarComponent* Component =
-			Owner.FindComponentByClass<UAGX_ContactMaterialRegistrarComponent>();
-
-		if (Component != nullptr)
-		{
-			return Component;
-		}
-
-		// No UAGX_ContactMaterialRegistrarComponent exists in Owner. Create and add one.
-		Component = NewObject<UAGX_ContactMaterialRegistrarComponent>(
-			&Owner, TEXT("AGX_ContactMaterialRegistrar"));
-
-		Component->SetFlags(RF_Transactional);
-		Owner.AddInstanceComponent(Component);
-		Component->RegisterComponent();
-		return Component;
-	}
-
-	void WriteImportErrorMessage(
-		const TCHAR* ObjectType, const FString& Name, const FString& FilePath, const TCHAR* Message)
-	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Could not import '%s' '%s' from file '%s': %s."), ObjectType,
-			*Name, *FilePath, Message);
 	}
 
 	template <typename TBarrier, typename TThresholdsBarrier>
@@ -502,6 +506,26 @@ namespace
 		}
 		return Asset;
 	}
+
+	UAGX_ContactMaterialRegistrarComponent* GetOrCreateContactMaterialRegistrar(AActor& Owner)
+	{
+		UAGX_ContactMaterialRegistrarComponent* Component =
+			Owner.FindComponentByClass<UAGX_ContactMaterialRegistrarComponent>();
+
+		if (Component != nullptr)
+		{
+			return Component;
+		}
+
+		// No UAGX_ContactMaterialRegistrarComponent exists in Owner. Create and add one.
+		Component = NewObject<UAGX_ContactMaterialRegistrarComponent>(
+			&Owner, TEXT("AGX_ContactMaterialRegistrar"));
+
+		Component->SetFlags(RF_Transactional);
+		Owner.AddInstanceComponent(Component);
+		Component->RegisterComponent();
+		return Component;
+	}
 }
 
 UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
@@ -518,7 +542,7 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics RigidBody"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics RigidBody"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new AGX_RigidBodyComponent"));
 		return nullptr;
 	}
@@ -535,6 +559,35 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 
 	Component->SetFlags(RF_Transactional);
 	Actor.AddInstanceComponent(Component);
+
+	/// @todo What does this do, really? Are we required to call it? A side effect of this is that
+	/// BeginPlay is called, which in turn calls AllocateNative. Which means that an AGX Dynamics
+	/// RigidBody is created. I'm not sure if this is consistent with AGX_RigidBodyComponents
+	/// created with using the Editor's Add Component button for an Actor in the Level Viewport.
+	/// <investigating>
+	/// ActorComponent.cpp, RegisterComponentWithWorld, has the following code snippet, somewhat
+	/// simplified:
+	///
+	/// if (!InWorld->IsGameWorld())
+	/// {}
+	/// else if (MyOwner == nullptr)
+	/// {}
+	/// else
+	/// {
+	///    if (MyOwner->HasActorBegunPlay() && !bHasBegunPlay)
+	///    {
+	///        BeginPlay();
+	///     }
+	/// }
+	///
+	/// So, BeginPlay is only called if we don't have a Game world (have Editor world, for example)
+	/// and the owning Actor have had its BeginPlay called already.
+	///
+	/// This makes the Editor situation different from the Automation Test situation since the
+	/// Editor has an Editor world and Automation Tests run with a Game world. So creating an
+	/// AGX_RigidBodyComponent in the editor does not trigger BeginPlay, but creating an
+	/// AGX_RigidBody while importing an AGX Dynamics archive during an Automation Test does trigger
+	/// BeginPlay here. Not sure if this is a problem or not, but something to be aware of.
 	Component->RegisterComponent();
 
 	Component->PostEditChange();
@@ -543,13 +596,14 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 }
 
 UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
-	const FSphereShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
+	const FSphereShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
+	UAGX_RigidBodyComponent* Body = BodyBarrier != nullptr ? GetBody(*BodyBarrier) : nullptr;
 	UAGX_SphereShapeComponent* Component = FAGX_EditorUtilities::CreateSphereShape(&Owner, Body);
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Sphere"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Sphere"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new UAGX_SphereShapeComponent"));
 		return nullptr;
 	}
@@ -566,13 +620,14 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 }
 
 UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
-	const FBoxShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
+	const FBoxShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
+	UAGX_RigidBodyComponent* Body = BodyBarrier != nullptr ? GetBody(*BodyBarrier) : nullptr;
 	UAGX_BoxShapeComponent* Component = FAGX_EditorUtilities::CreateBoxShape(&Owner, Body);
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Box"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Box"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new UAGX_BoxShapeComponent"));
 		return nullptr;
 	}
@@ -589,14 +644,15 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 }
 
 UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
-	const FCylinderShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
+	const FCylinderShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
+	UAGX_RigidBodyComponent* Body = BodyBarrier != nullptr ? GetBody(*BodyBarrier) : nullptr;
 	UAGX_CylinderShapeComponent* Component =
 		FAGX_EditorUtilities::CreateCylinderShape(&Owner, Body);
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Cylinder"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Cylinder"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new UAGX_CylinderShapeComponent"));
 		return nullptr;
 	}
@@ -613,13 +669,14 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 }
 
 UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
-	const FCapsuleShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
+	const FCapsuleShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
+	UAGX_RigidBodyComponent* Body = BodyBarrier != nullptr ? GetBody(*BodyBarrier) : nullptr;
 	UAGX_CapsuleShapeComponent* Component = FAGX_EditorUtilities::CreateCapsuleShape(&Owner, Body);
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Capsule"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Capsule"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new UAGX_CapsuleShapeComponent"));
 		return nullptr;
 	}
@@ -636,14 +693,15 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 }
 
 UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
-	const FTrimeshShapeBarrier& Barrier, AActor& Owner, UAGX_RigidBodyComponent* Body)
+	const FTrimeshShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* BodyBarrier)
 {
+	UAGX_RigidBodyComponent* Body = BodyBarrier != nullptr ? GetBody(*BodyBarrier) : nullptr;
 	UAGX_TrimeshShapeComponent* Component =
 		FAGX_EditorUtilities::CreateTrimeshShape(&Owner, Body, false);
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Trimesh"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Trimesh"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not instantiate a new Trimesh Shape Component."));
 		return nullptr;
 	}
@@ -700,6 +758,65 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	return Component;
 }
 
+UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
+	const FTrimeshShapeBarrier& TrimeshBarrier, AActor& Owner, const FRigidBodyBarrier* Body)
+{
+	USceneComponent* AttachParent = [&]() -> USceneComponent*
+	{
+		if (Body != nullptr)
+		{
+			if (auto BodyComponent = GetBody(*Body))
+			{
+				return BodyComponent;
+			}
+		}
+
+		return Owner.GetRootComponent();
+	}();
+
+	FRenderDataBarrier RenderDataBarrier = TrimeshBarrier.GetRenderData();
+
+	if (!RenderDataBarrier.HasNative() || !RenderDataBarrier.HasMesh())
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Render Data"), TrimeshBarrier.GetName(), ImportSettings.FilePath,
+			TEXT("Got a RenderDataBarrier without a mesh."));
+		return nullptr;
+	}
+
+	FTransform RenderDataTransform = FTransform::Identity;
+	{
+		FVector TrimeshPosition;
+		FQuat TrimeshRotation;
+		std::tie(TrimeshPosition, TrimeshRotation) = TrimeshBarrier.GetLocalPositionAndRotation();
+		const FTransform TrimeshTransform(TrimeshRotation, TrimeshPosition);
+		const FTransform ShapeToGeometry = TrimeshBarrier.GetGeometryToShapeTransform().Inverse();
+		FTransform::Multiply(&RenderDataTransform, &ShapeToGeometry, &TrimeshTransform);
+	}
+
+	UStaticMeshComponent* RenderDataComponent = CreateFromRenderData(
+		RenderDataBarrier, Owner, *AttachParent, RenderDataTransform, DirectoryName,
+		RestoredMeshes);
+
+	if (RenderDataComponent == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Render Data"), TrimeshBarrier.GetName(), ImportSettings.FilePath,
+			TEXT("Could not create a Static Mesh Component from given RenderDataBarrier."));
+		return nullptr;
+	}
+
+	UMaterialInterface* RenderDataMaterial = CreateRenderMaterialFromRenderDataOrDefault(
+		RenderDataBarrier, TrimeshBarrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
+
+	if (RenderDataMaterial != nullptr)
+	{
+		RenderDataComponent->SetMaterial(0, RenderDataMaterial);
+	}
+
+	return RenderDataComponent;
+}
+
 UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
@@ -738,17 +855,9 @@ namespace
 	template <typename UComponent, typename FBarrier>
 	UComponent* InstantiateConstraint(
 		const FBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
-		const TArray<FGuid>& IgnoreList,
 		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
 		const FString& DirectoryName)
 	{
-		if (IgnoreList.Contains(Barrier.GetGuid()))
-		{
-			// Don't instantiate the Constraint if it is in the ignore list. This might be the case
-			// for e.g. the Hinge constraint owned by a native TwoBodyTire object.
-			return nullptr;
-		}
-
 		FAGX_SimObjectsImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
 		if (Bodies.first == nullptr)
 		{
@@ -757,7 +866,7 @@ namespace
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("Constraint '%s' imported from '%s' does not have a first body. Ignoring."),
-				*Barrier.GetName(), *Helper.SourceFilePath);
+				*Barrier.GetName(), *Helper.ImportSettings.FilePath);
 			return nullptr;
 		}
 
@@ -768,8 +877,6 @@ namespace
 			return nullptr;
 		}
 
-		Component->CopyFrom(Barrier);
-
 		if (auto ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
 				FBarrier, FConstraintMergeSplitThresholdsBarrier>(
 				Barrier, EAGX_AmorOwningType::Constraint, RestoredThresholds, DirectoryName))
@@ -778,6 +885,7 @@ namespace
 				Cast<UAGX_ConstraintMergeSplitThresholds>(ThresholdsAsset);
 		}
 
+		Component->CopyFrom(Barrier);
 		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 			Barrier, *Component, Bodies.first, Bodies.second);
 		FAGX_ConstraintUtilities::CopyControllersFrom(*Component, Barrier);
@@ -791,23 +899,21 @@ namespace
 	template <typename UComponent>
 	UComponent* InstantiateConstraint1Dof(
 		const FConstraint1DOFBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
-		const TArray<FGuid>& IgnoreList,
 		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
 		const FString& DirectoryName)
 	{
 		return InstantiateConstraint<UComponent>(
-			Barrier, Owner, Helper, IgnoreList, RestoredThresholds, DirectoryName);
+			Barrier, Owner, Helper, RestoredThresholds, DirectoryName);
 	}
 
 	template <typename UConstraint>
 	UConstraint* InstantiateConstraint2Dof(
 		const FConstraint2DOFBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
-		const TArray<FGuid>& IgnoreList,
 		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
 		const FString& DirectoryName)
 	{
 		return InstantiateConstraint<UConstraint>(
-			Barrier, Owner, Helper, IgnoreList, RestoredThresholds, DirectoryName);
+			Barrier, Owner, Helper, RestoredThresholds, DirectoryName);
 	}
 }
 
@@ -815,42 +921,43 @@ UAGX_HingeConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateHinge(
 	const FHingeBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_HingeConstraintComponent>(
-		Barrier, Owner, *this, ConstraintIgnoreList, RestoredThresholds, DirectoryName);
+		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
 UAGX_PrismaticConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiatePrismatic(
 	const FPrismaticBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_PrismaticConstraintComponent>(
-		Barrier, Owner, *this, ConstraintIgnoreList, RestoredThresholds, DirectoryName);
+		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
-UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallJoint(
+UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallConstraint(
 	const FBallJointBarrier& Barrier, AActor& Owner)
 {
 	return InstantiateConstraint<UAGX_BallConstraintComponent>(
-		Barrier, Owner, *this, ConstraintIgnoreList, RestoredThresholds, DirectoryName);
+		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
-UAGX_CylindricalConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateCylindricalJoint(
+UAGX_CylindricalConstraintComponent*
+FAGX_SimObjectsImporterHelper::InstantiateCylindricalConstraint(
 	const FCylindricalJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint2Dof<UAGX_CylindricalConstraintComponent>(
-		Barrier, Owner, *this, ConstraintIgnoreList, RestoredThresholds, DirectoryName);
+		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
-UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDistanceJoint(
+UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDistanceConstraint(
 	const FDistanceJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint1Dof<UAGX_DistanceConstraintComponent>(
-		Barrier, Owner, *this, ConstraintIgnoreList, RestoredThresholds, DirectoryName);
+		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
-UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockJoint(
+UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockConstraint(
 	const FLockJointBarrier& Barrier, AActor& Owner)
 {
 	return ::InstantiateConstraint<UAGX_LockConstraintComponent>(
-		Barrier, Owner, *this, ConstraintIgnoreList, RestoredThresholds, DirectoryName);
+		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
 }
 
 UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire(
@@ -860,7 +967,7 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new AGX_TwoBodyTireComponent"));
 		return nullptr;
 	}
@@ -870,7 +977,7 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 		if (Body == nullptr)
 		{
 			WriteImportErrorMessage(
-				TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), SourceFilePath,
+				TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ImportSettings.FilePath,
 				TEXT("Could not set Rigid Body"));
 			return;
 		}
@@ -889,10 +996,6 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
 	Component->RegisterComponent();
-
-	// The internal constraint owned by the TwoBodyTire should not be imported, but is created after
-	// BeginPlay by the native TwoBodyTire.
-	ConstraintIgnoreList.Add(Barrier.GetHingeGuid());
 
 	return Component;
 }
@@ -923,7 +1026,7 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Wire"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Wire"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new AGX_WireComponent"));
 		return nullptr;
 	}
@@ -931,16 +1034,8 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
 
 	// Copy simple properties such as radius and segment length. More complicated properties, such
-	// as physical material, winches route nodes and Merge Split Thresholds, are handled below.
+	// as physical material, winches and route nodes, are handled below.
 	Component->CopyFrom(Barrier);
-
-	if (auto ThresholdsAsset =
-			::GetOrCreateMergeSplitThresholdsAsset<FWireBarrier, FWireMergeSplitThresholdsBarrier>(
-				Barrier, EAGX_AmorOwningType::Wire, RestoredThresholds, DirectoryName))
-	{
-		Component->MergeSplitProperties.Thresholds =
-			Cast<UAGX_WireMergeSplitThresholds>(ThresholdsAsset);
-	}
 
 	// Find and assign the physical material asset.
 	FShapeMaterialBarrier NativeMaterial = Barrier.GetMaterial();
@@ -1092,6 +1187,15 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 		TryCreateBodyFixedNode(Barrier.GetLastNode());
 	}
 
+	if (auto ThresholdsAsset =
+			::GetOrCreateMergeSplitThresholdsAsset<FWireBarrier, FWireMergeSplitThresholdsBarrier>(
+				Barrier, EAGX_AmorOwningType::Wire, RestoredThresholds, DirectoryName))
+	{
+		Component->MergeSplitProperties.Thresholds =
+			Cast<UAGX_WireMergeSplitThresholds>(ThresholdsAsset);
+	}
+
+
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
 	Component->RegisterComponent();
@@ -1101,18 +1205,16 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 }
 
 UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
-	const FTrackBarrier& Barrier, AActor& Owner, bool IsBlueprintOwner)
+	const FTrackBarrier& Barrier, AActor& Owner)
 {
 	UAGX_TrackComponent* Component = NewObject<UAGX_TrackComponent>(&Owner);
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Track"), Barrier.GetName(), SourceFilePath,
+			TEXT("AGX Dynamics Track"), Barrier.GetName(), ImportSettings.FilePath,
 			TEXT("Could not create new AGX_TrackComponent"));
 		return nullptr;
 	}
-
-	ConstraintIgnoreList.Append(Barrier.GetInternalConstraintGuids());
 
 	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
 
@@ -1167,16 +1269,12 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 		if (Body == nullptr)
 		{
 			WriteImportErrorMessage(
-				TEXT("AGX Dynamics Track"), Barrier.GetName(), SourceFilePath,
+				TEXT("AGX Dynamics Track"), Barrier.GetName(), ImportSettings.FilePath,
 				TEXT("Could not set Rigid Body"));
 			return;
 		}
 
 		BodyRef.BodyName = Body->GetFName();
-		if (!IsBlueprintOwner)
-		{
-			BodyRef.OwningActor = Body->GetOwner();
-		}
 	};
 
 	// Copy Wheels.
@@ -1214,7 +1312,7 @@ USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 			TEXT("While importing from '%s': Observer Frame %s is attached to a Rigid Body that "
 				 "has not been restored. Cannot create Unreal Engine representation. Tried to find "
 				 "Rigid Body with GUID %s."),
-			*SourceFilePath, *Name, *BodyGuid.ToString());
+			*ImportSettings.FilePath, *Name, *BodyGuid.ToString());
 		return nullptr;
 	}
 
@@ -1226,7 +1324,7 @@ USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 			LogAGX, Error,
 			TEXT("While importing from '%s': Could not create Scene Component for Observer Frame "
 				 "named %s in Actor %s, the Observer Frame is lost."),
-			*SourceFilePath, *Name, *Owner.GetName());
+			*ImportSettings.FilePath, *Name, *Owner.GetName());
 		return nullptr;
 	}
 	FAGX_ImportUtilities::Rename(*Component, Name);
@@ -1246,7 +1344,7 @@ USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 			LogAGX, Error,
 			TEXT("While importing '%s': Could not attach Observer Frame %s to Rigid Body %s. The "
 				 "Observer Frame is not imported."),
-			*SourceFilePath, *Name, *Body->GetName());
+			*ImportSettings.FilePath, *Name, *Body->GetName());
 		Component->DestroyComponent();
 		return nullptr;
 	}
@@ -1278,7 +1376,7 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::GetBody(
 			LogAGX, Error,
 			TEXT("While importing from '%s': A component references a body '%s', but that body "
 				 "hasn't been restored."),
-			*SourceFilePath, *Barrier.GetName());
+			*ImportSettings.FilePath, *Barrier.GetName());
 	}
 
 	return Component;
@@ -1304,7 +1402,7 @@ FAGX_SimObjectsImporterHelper::FShapeMaterialPair FAGX_SimObjectsImporterHelper:
 		GetShapeMaterial(ContactMaterial.GetMaterial2())};
 }
 
-void FAGX_SimObjectsImporterHelper::FinalizeImports()
+void FAGX_SimObjectsImporterHelper::FinalizeStaticMeshAssets()
 {
 	TArray<FAssetToDiskInfo> AtdInfos;
 	RestoredMeshes.GenerateValueArray(AtdInfos);
@@ -1348,9 +1446,10 @@ namespace
 	}
 }
 
-FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(const FString& InSourceFilePath)
-	: SourceFilePath(InSourceFilePath)
-	, SourceFileName(FPaths::GetBaseFilename(InSourceFilePath))
+FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(
+	const FAGX_ImportSettings& InImportSettings)
+	: ImportSettings(InImportSettings)
+	, SourceFileName(FPaths::GetBaseFilename(InImportSettings.FilePath))
 	, ModelName(MakeModelName(SourceFileName))
 	, DirectoryName(MakeDirectoryName(ModelName))
 {

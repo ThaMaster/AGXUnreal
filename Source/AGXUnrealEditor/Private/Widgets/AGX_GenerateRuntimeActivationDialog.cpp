@@ -1,3 +1,5 @@
+// Copyright 2022, Algoryx Simulation AB.
+
 #include "Widgets/AGX_GenerateRuntimeActivationDialog.h"
 
 // AGX Dynamics for Unreal includes.

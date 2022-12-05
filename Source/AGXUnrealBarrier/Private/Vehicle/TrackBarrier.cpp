@@ -305,33 +305,6 @@ double FTrackBarrier::GetInitialDistanceTension() const
 		NativeRef->Native->getRoute()->getInitialDistanceTension());
 }
 
-TArray<FGuid> FTrackBarrier::GetInternalConstraintGuids() const
-{
-	check(HasNative());
-	const int32 NumNodes = GetNumNodes();
-	TArray<FGuid> ConstraintGuids;
-	ConstraintGuids.Reserve(NumNodes);
-
-	for (int i = 0; i < NumNodes; i++)
-	{
-		agxVehicle::TrackNode* Node = NativeRef->Native->getNode(i);
-		if (Node == nullptr)
-		{
-			continue;
-		}
-
-		agx::Constraint* Constraint = Node->getConstraint();
-		if (Constraint == nullptr)
-		{
-			continue;
-		}
-
-		ConstraintGuids.Add(Convert(Constraint->getUuid()));
-	}
-
-	return ConstraintGuids;
-}
-
 FRigidBodyBarrier FTrackBarrier::GetNodeBody(int index) const
 {
 	check(HasNative());
@@ -378,7 +351,8 @@ FVector FTrackBarrier::GetNodeSize(uint64 index) const
 }
 
 void FTrackBarrier::GetNodeTransforms(
-	TArray<FTransform>& OutTransforms, const FVector& LocalScale, const FVector& LocalOffset) const
+	TArray<FTransform>& OutTransforms, const FVector& LocalScale, const FVector& LocalOffset,
+	const FQuat& LocalRotation) const
 {
 	check(HasNative());
 
@@ -398,9 +372,10 @@ void FTrackBarrier::GetNodeTransforms(
 		// \todo Could optimize this since we currently set the same passed-in scale on all nodes.
 		OutTransforms[i].SetScale3D(LocalScale);
 
-		OutTransforms[i].SetRotation(Convert(It->getRigidBody()->getRotation()));
+		const FQuat RigidBodyRotation = Convert(It->getRigidBody()->getRotation());
+		OutTransforms[i].SetRotation(RigidBodyRotation * LocalRotation);
 
-		FVector WorldOffset = OutTransforms[i].GetRotation().RotateVector(LocalOffset);
+		const FVector WorldOffset = RigidBodyRotation.Rotator().RotateVector(LocalOffset);
 		OutTransforms[i].SetLocation(ConvertDisplacement(It->getCenterPosition()) + WorldOffset);
 
 		++i;

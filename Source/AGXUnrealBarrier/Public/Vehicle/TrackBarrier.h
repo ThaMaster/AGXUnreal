@@ -83,8 +83,6 @@ public:
 
 	double GetInitialDistanceTension() const;
 
-	TArray<FGuid> GetInternalConstraintGuids() const;
-
 	FRigidBodyBarrier GetNodeBody(int index) const;
 
 	void GetNodeSizes(TArray<FVector>& OutNodeSizes) const;
@@ -100,8 +98,8 @@ public:
 	 * location is offset by LocalOffset * Rotation. Used for track rendering while playing.
 	 */
 	void GetNodeTransforms(
-		TArray<FTransform>& OutTransforms, const FVector& LocalScale,
-		const FVector& LocalOffset) const;
+		TArray<FTransform>& OutTransforms, const FVector& LocalScale, const FVector& LocalOffset,
+		const FQuat& LocalRotation) const;
 
 	/**
 	 * Get debug data for all nodes. Used for track debug visualization while playing.
