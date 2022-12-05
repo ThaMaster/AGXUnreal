@@ -9,6 +9,9 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
 
+// Unreal Engine includes.
+#include "Engine/World.h"
+
 void UAGX_ShapeContactMergeSplitThresholds::SetMaxImpactSpeed_BP(float InMaxImpactSpeed)
 {
 	SetMaxImpactSpeed(static_cast<double>(InMaxImpactSpeed));
