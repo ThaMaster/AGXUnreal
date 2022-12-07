@@ -85,7 +85,6 @@ DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
 
 bool FCheckFallinBoxMovedCommand::Update()
 {
-	UE_LOG(LogAGX, Warning, TEXT("FallingBox update called."));
 	using namespace AGX_PlayInEditorTest_helpers;
 	if (!GEditor->IsPlayingSessionInEditor())
 	{
@@ -117,11 +116,6 @@ bool FCheckFallinBoxMovedCommand::Update()
 	if (Sim == nullptr)
 		return true;
 
-
-	UE_LOG(LogAGX, Warning, TEXT("TimeStamp current: %f of %f"), Sim->GetTimeStamp(), SimTimeMax);
-	
-	auto TempBody = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["BoxBody"]);
-	UE_LOG(LogAGX, Warning, TEXT("Body z pos %f "), TempBody->GetComponentLocation().Z);
 	if (Sim->GetTimeStamp() < SimTimeMax)
 	{
 		return false; // Continue ticking..
@@ -146,7 +140,7 @@ bool FFallingBoxTest::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
 
 	ComponentMap ComponentsOfInterest;
-	float SimTimeMax = 0.2f;
+	float SimTimeMax = 0.5f;
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FCheckFallinBoxMovedCommand(SimTimeMax, ComponentsOfInterest, *this));
 
