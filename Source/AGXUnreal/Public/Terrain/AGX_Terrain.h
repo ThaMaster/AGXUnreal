@@ -122,6 +122,13 @@ public:
 	bool SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial);
 
 	/**
+	 * If a Particle System Component has been spawned by the Terrain, this function will return it.
+	 * Returns nullptr otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	UNiagaraComponent* GetSpawnedParticleSystemComponent();
+
+	/**
 	 * A list of the rigid body actors that should be used as terrain shovels.
 	 *
 	 * Every actor used as shovel MUST have the following components:
