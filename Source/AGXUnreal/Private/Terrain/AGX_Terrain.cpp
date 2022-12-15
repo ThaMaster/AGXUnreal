@@ -90,6 +90,11 @@ bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 	return true;
 }
 
+const UNiagaraComponent* AAGX_Terrain::GetSpawnedParticleSystemComponent()
+{
+	return ParticleSystemComponent;
+}
+
 void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
 {
 	if (HasNative())
