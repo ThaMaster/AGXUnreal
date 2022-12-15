@@ -126,7 +126,7 @@ public:
 	 * Returns nullptr otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
-	const UNiagaraComponent* GetSpawnedParticleSystemComponent();
+	UNiagaraComponent* GetSpawnedParticleSystemComponent();
 
 	/**
 	 * A list of the rigid body actors that should be used as terrain shovels.

@@ -90,7 +90,7 @@ bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 	return true;
 }
 
-const UNiagaraComponent* AAGX_Terrain::GetSpawnedParticleSystemComponent()
+UNiagaraComponent* AAGX_Terrain::GetSpawnedParticleSystemComponent()
 {
 	return ParticleSystemComponent;
 }
