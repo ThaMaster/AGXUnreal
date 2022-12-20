@@ -30,6 +30,9 @@
 #include "Misc/Paths.h"
 #include "RawMesh.h"
 #include "Kismet2/ComponentEditorUtils.h"
+#if ! UE_VERSION_OLDER_THAN(5, 0, 0)
+#include "UObject/SavePackage.h"
+#endif
 
 namespace
 {
