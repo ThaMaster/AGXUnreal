@@ -24,7 +24,7 @@
 #include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "DesktopPlatformModule.h"
 #include "Editor.h"
@@ -894,7 +894,7 @@ void FAGX_EditorUtilities::SelectActor(AActor* Actor, bool bDeselectPrevious)
 void FAGX_EditorUtilities::ShowNotification(const FText& Text)
 {
 	FNotificationInfo Info(Text);
-	Info.Image = FEditorStyle::GetBrush(TEXT("LevelEditor.RecompileGameCode"));
+	Info.Image = FAGX_EditorUtilities::GetBrush(TEXT("LevelEditor.RecompileGameCode"));
 	Info.FadeInDuration = 0.1f;
 	Info.FadeOutDuration = 0.5f;
 	Info.ExpireDuration = 5.0f;

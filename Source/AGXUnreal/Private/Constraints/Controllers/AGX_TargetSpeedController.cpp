@@ -7,8 +7,6 @@
 
 FAGX_ConstraintTargetSpeedController::FAGX_ConstraintTargetSpeedController(bool bRotational)
 	: FAGX_ConstraintController(bRotational)
-	, Speed(0.0)
-	, bLockedAtZeroSpeed(false)
 {
 }
 

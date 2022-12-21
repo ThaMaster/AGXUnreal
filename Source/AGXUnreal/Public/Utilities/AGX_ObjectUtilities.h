@@ -8,6 +8,7 @@
 #include "CoreMinimal.h"
 #include "Engine/EngineTypes.h"
 #include "GameFramework/Actor.h"
+#include "Misc/EngineVersionComparison.h"
 
 /**
  * A collection of generic helper functions that can be compiled for Runtime.
@@ -45,6 +46,18 @@ public:
 
 	template <typename T>
 	static T* Get(const FComponentReference& Reference, const AActor* FallbackOwner);
+
+	static const AActor* GetActor(
+		const FComponentReference& Reference, const AActor* FallbackActor = nullptr)
+	{
+		const AActor* Actor =
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+			Reference.OtherActor;
+#else
+			Reference.OtherActor.Get();
+#endif
+		return Actor != nullptr ? Actor : FallbackActor;
+	}
 
 	/*
 	 * Returns any Archetype instances of the passed object. If the passed object is not an
@@ -121,8 +134,7 @@ T* FAGX_ObjectUtilities::Get(const FComponentReference& Reference, const AActor*
 	}
 
 	// Search among all Components with the correct type.
-	const AActor* SearchActor =
-		(Reference.OtherActor != nullptr) ? Reference.OtherActor : FallbackOwner;
+	const AActor* SearchActor = FAGX_ObjectUtilities::GetActor(Reference, FallbackOwner);
 	if (SearchActor == nullptr)
 	{
 		return nullptr;

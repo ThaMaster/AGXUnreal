@@ -170,7 +170,7 @@ public: // Properties.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "AGX AMOR",
-		Meta = (AllowedClasses = "AGX_ShapeContactMergeSplitThresholds"))
+		Meta = (AllowedClasses = "/Script/AGXUnreal.AGX_ShapeContactMergeSplitThresholds"))
 	FSoftObjectPath GlobalShapeContactMergeSplitThresholds;
 
 	/**
@@ -179,7 +179,7 @@ public: // Properties.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "AGX AMOR",
-		Meta = (AllowedClasses = "AGX_ConstraintMergeSplitThresholds"))
+		Meta = (AllowedClasses = "/Script/AGXUnreal.AGX_ConstraintMergeSplitThresholds"))
 	FSoftObjectPath GlobalConstraintMergeSplitThresholds;
 
 	/**
@@ -188,7 +188,7 @@ public: // Properties.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "AGX AMOR",
-		Meta = (AllowedClasses = "AGX_WireMergeSplitThresholds"))
+		Meta = (AllowedClasses = "/Script/AGXUnreal.AGX_WireMergeSplitThresholds"))
 	FSoftObjectPath GlobalWireMergeSplitThresholds;
 
 #if WITH_EDITORONLY_DATA

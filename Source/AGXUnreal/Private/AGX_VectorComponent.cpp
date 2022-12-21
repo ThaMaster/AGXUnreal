@@ -118,11 +118,16 @@ namespace
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(),
 						GetLocalBounds(), true, false, DrawsVelocity(), (LpvBiasMultiplier == 0.f));
-#else
+#elif UE_VERSION_OLDER_THAN(5, 1, 0)
 					DynamicPrimitiveUniformBuffer.Set(
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(),
 						GetLocalBounds(), true, false, DrawsVelocity(), false);
+#else
+					DynamicPrimitiveUniformBuffer.Set(
+						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
+						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(),
+						GetLocalBounds(), true, false, false);
 #endif
 
 					BatchElement.PrimitiveUniformBufferResource =

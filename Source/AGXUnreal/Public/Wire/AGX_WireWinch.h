@@ -43,7 +43,7 @@ public:
 	 * Only used during setup, cannot be changed after Begin Play.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
-	FVector Location;
+	FVector Location {FVector::ZeroVector};
 
 	/**
 	 * The orientation of the winch relative to some parent object [deg].
@@ -57,7 +57,7 @@ public:
 	 * Only used during setup, cannot be changed once Begin Play has been called.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Winch")
-	FRotator Rotation;
+	FRotator Rotation {FRotator::ZeroRotator};
 
 	/**
 	 * The location passed to AGX Dynamics when the native wire winch is created. It is computed
@@ -65,7 +65,7 @@ public:
 	 * Location's parent object, according to the documentation for Location. It holds either the
 	 * world space or the body-relative location of the winch based on the Location UProperty.
 	 */
-	FVector LocationSim;
+	FVector LocationSim {FVector::ZeroVector};
 
 	/**
 	 * The rotation passed to AGX Dynamics when the native wire winch is created. It is computed
@@ -73,7 +73,7 @@ public:
 	 * Rotation's parent object, according to the documentation for Rotation. It holds either the
 	 * world space or the body-relative rotation of the winch based on the Rotation UProperty.
 	 */
-	FRotator RotationSim;
+	FRotator RotationSim {FRotator::ZeroRotator};
 
 	// I would perhaps like to make this a BlueprintReadWrite property, but FAGX_RigidBodyReference
 	// is currently not a BlueprintType. Should it be? We deliberately did not make it a Blueprint

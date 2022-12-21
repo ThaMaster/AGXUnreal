@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Environment.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -62,7 +63,7 @@ void SAGX_LicenseDialog::Construct(const FArguments& InArgs)
 			[
 				SNew(SBorder)
 				.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
-				.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+				.BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
 				.Padding(FMargin(5.0f, 5.0f))
 				.Content()
 				[
@@ -75,7 +76,7 @@ void SAGX_LicenseDialog::Construct(const FArguments& InArgs)
 			[
 				SNew(SBorder)
 				.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
-				.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+				.BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
 				.Padding(FMargin(5.0f, 5.0f))
 				.Content()
 				[

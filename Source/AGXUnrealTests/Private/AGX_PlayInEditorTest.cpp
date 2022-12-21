@@ -140,7 +140,7 @@ bool FFallingBoxTest::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
 
 	ComponentMap ComponentsOfInterest;
-	float SimTimeMax = 2.f;
+	float SimTimeMax = 0.5f;
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FCheckFallinBoxMovedCommand(SimTimeMax, ComponentsOfInterest, *this));
 

@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_EditorStyle.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "AgxEdMode/AGX_AgxEdModeSubMode.h"
 #include "AgxEdMode/AGX_AgxEdMode.h"
 
@@ -47,7 +48,7 @@ void SAGX_AgxEdModeWidget::Construct(const FArguments& InArgs, FAGX_AgxEdMode* I
 			  /** Toolbar buttons for switching between sub-modes */
 			  + SVerticalBox::Slot()
 					.AutoHeight()[SNew(SBorder)
-									  .BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+									  .BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
 									  .HAlign(HAlign_Center)[CreateSubModesToolbar()]]
 
 			  /** Header for the current sub-mode */
@@ -58,7 +59,7 @@ void SAGX_AgxEdModeWidget::Construct(const FArguments& InArgs, FAGX_AgxEdMode* I
 					.VAlign(VAlign_Fill)[SNew(
 						SHeader)[SNew(STextBlock)
 									 .Text_Lambda(GetCurrentSubModeName)
-									 .TextStyle(FEditorStyle::Get(), "ContentBrowser.TopBar.Font")]]
+									 .TextStyle(FAGX_EditorUtilities::GetStyle(), "ContentBrowser.TopBar.Font")]]
 
 			  /** DetailsView for the current sub-mode */
 			  + SVerticalBox::Slot().AutoHeight()[CreateSubModeDetailsView()]]];

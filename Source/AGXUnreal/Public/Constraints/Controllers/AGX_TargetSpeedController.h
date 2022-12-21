@@ -29,7 +29,7 @@ struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_Constrai
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Target Speed Controller", Meta = (EditCondition = "bEnable"))
-	double Speed;
+	double Speed {0.0};
 
 	void SetSpeed(double InSpeed);
 	double GetSpeed() const;
@@ -41,7 +41,7 @@ struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_Constrai
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Target Speed Controller", Meta = (EditCondition = "bEnable"))
-	bool bLockedAtZeroSpeed;
+	bool bLockedAtZeroSpeed {false};
 
 	void SetLockedAtZeroSpeed(bool bInLockedAtZeroSpeed);
 	bool GetLockedAtZeroSpeed() const;

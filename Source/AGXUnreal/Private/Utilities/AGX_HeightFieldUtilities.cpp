@@ -3,6 +3,7 @@
 #include "Utilities/AGX_HeightFieldUtilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 
 // Unreal Engine includes.
@@ -15,6 +16,7 @@
 
 // Standard library includes.
 #include <limits>
+
 
 namespace AGX_HeightFieldUtilities_helpers
 {
