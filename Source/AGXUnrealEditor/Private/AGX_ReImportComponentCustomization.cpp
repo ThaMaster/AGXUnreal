@@ -74,7 +74,7 @@ namespace AGX_ReImportComponentCustomization_helpers
 				DetailBuilder);
 		if (ReImportComponent == nullptr)
 		{
-			nullptr;
+			return nullptr;
 		}
 
 		if (!ReImportComponent->IsInBlueprint())
