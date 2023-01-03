@@ -25,6 +25,8 @@ public:
 	// We must provide operator = because the Unreal framework will attempt to invoke it.
 	FAGX_MergeSplitPropertiesBase& operator=(const FAGX_MergeSplitPropertiesBase& Other);
 
+	bool operator==(const FAGX_MergeSplitPropertiesBase& Other) const;
+
 	UPROPERTY(EditAnywhere, Category = "AGX AMOR")
 	bool bEnableMerge = false;
 

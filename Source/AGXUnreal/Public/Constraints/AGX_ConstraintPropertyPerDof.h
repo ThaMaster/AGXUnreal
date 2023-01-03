@@ -123,6 +123,14 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 		return operator[](static_cast<int32>(Index));
 	}
 
+	bool operator==(const FAGX_ConstraintDoublePropertyPerDof& Other) const
+	{
+		return Translational_1 == Other.Translational_1 &&
+			   Translational_2 == Other.Translational_2 &&
+			   Translational_3 == Other.Translational_3 && Rotational_1 == Other.Rotational_1 &&
+			   Rotational_2 == Other.Rotational_2 && Rotational_3 == Other.Rotational_3;
+	}
+
 	void Set(EGenericDofIndex Index, double Value)
 	{
 		if (Index == EGenericDofIndex::AllDof)
@@ -300,6 +308,14 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 	{
 		return operator[](static_cast<int32>(Index));
 	};
+
+	bool operator==(const FAGX_ConstraintRangePropertyPerDof& Other) const
+	{
+		return Translational_1 == Other.Translational_1 &&
+			   Translational_2 == Other.Translational_2 &&
+			   Translational_3 == Other.Translational_3 && Rotational_1 == Other.Rotational_1 &&
+			   Rotational_2 == Other.Rotational_2 && Rotational_3 == Other.Rotational_3;
+	}
 
 	void Set(EGenericDofIndex Index, FAGX_RealInterval Interval)
 	{

@@ -314,9 +314,10 @@ void UAGX_ConstraintComponent::SetCompliance(EGenericDofIndex Index, float InCom
 
 void UAGX_ConstraintComponent::SetCompliance(EGenericDofIndex Index, double InCompliance)
 {
-	SetOnBarrier(*this, Index, TEXT("SetCompliance"), [this, InCompliance](int32 NativeDof) {
-		NativeBarrier->SetCompliance(InCompliance, NativeDof);
-	});
+	SetOnBarrier(
+		*this, Index, TEXT("SetCompliance"),
+		[this, InCompliance](int32 NativeDof)
+		{ NativeBarrier->SetCompliance(InCompliance, NativeDof); });
 	Compliance.Set(Index, InCompliance);
 }
 
@@ -359,9 +360,10 @@ void UAGX_ConstraintComponent::SetSpookDamping(EGenericDofIndex Index, float InS
 
 void UAGX_ConstraintComponent::SetSpookDamping(EGenericDofIndex Index, double InSpookDamping)
 {
-	SetOnBarrier(*this, Index, TEXT("SetSpookDamping"), [this, InSpookDamping](int32 NativeDof) {
-		NativeBarrier->SetSpookDamping(InSpookDamping, NativeDof);
-	});
+	SetOnBarrier(
+		*this, Index, TEXT("SetSpookDamping"),
+		[this, InSpookDamping](int32 NativeDof)
+		{ NativeBarrier->SetSpookDamping(InSpookDamping, NativeDof); });
 	SpookDamping.Set(Index, InSpookDamping);
 }
 
@@ -386,9 +388,10 @@ void UAGX_ConstraintComponent::SetForceRange(EGenericDofIndex Index, float Range
 void UAGX_ConstraintComponent::SetForceRange(
 	EGenericDofIndex Index, const FAGX_RealInterval& InForceRange)
 {
-	SetOnBarrier(*this, Index, TEXT("SetForceRange"), [this, InForceRange](int32 NativeDof) {
-		NativeBarrier->SetForceRange(InForceRange.Min, InForceRange.Max, NativeDof);
-	});
+	SetOnBarrier(
+		*this, Index, TEXT("SetForceRange"),
+		[this, InForceRange](int32 NativeDof)
+		{ NativeBarrier->SetForceRange(InForceRange.Min, InForceRange.Max, NativeDof); });
 	ForceRange.Set(Index, InForceRange);
 }
 
@@ -499,14 +502,58 @@ bool UAGX_ConstraintComponent::GetLastLocalForceBody(
 
 void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
 {
-	bEnable = Barrier.GetEnable();
-	SolveType = static_cast<EAGX_SolveType>(Barrier.GetSolveType());
+	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetGuid(), *this)
+	AGX_COPY_PROPERTY_FROM(bEnable, Barrier.GetEnable(), *this)
+
+	EAGX_SolveType SolveTypeBarrier = static_cast<EAGX_SolveType>(Barrier.GetSolveType());
+	AGX_COPY_PROPERTY_FROM(SolveType, SolveTypeBarrier, *this)
 
 	const static TArray<EGenericDofIndex> Dofs {
 		EGenericDofIndex::Translational1, EGenericDofIndex::Translational2,
 		EGenericDofIndex::Translational3, EGenericDofIndex::Rotational1,
-		EGenericDofIndex::Rotational2,	EGenericDofIndex::Rotational3};
+		EGenericDofIndex::Rotational2,	  EGenericDofIndex::Rotational3};
 
+	// Manually update archetype instances for properties that the AGX_COPY_PROPERTY_FROM macro
+	// cannot handle.
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FConstraintBarrier*>(&Barrier));
+	if (FAGX_ObjectUtilities::IsTemplateComponent(*this))
+	{
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))
+		{
+			// Compliance, Damping and Force Range.
+			const bool ComplianceInSync = Instance->Compliance == Compliance;
+			const bool SpookDampingInSync = Instance->SpookDamping == SpookDamping;
+			const bool ForceRangeInSync = Instance->ForceRange == ForceRange;
+			for (const auto& Dof : Dofs)
+			{
+				if (const int32* NativeDofPtr = NativeDofIndexMap.Find(Dof))
+				{
+					const int32 NativeDof = *NativeDofPtr;
+					if (ComplianceInSync)
+						Instance->Compliance[Dof] = Barrier.GetCompliance(NativeDof);
+
+					if (SpookDampingInSync)
+						Instance->SpookDamping[Dof] = Barrier.GetSpookDamping(NativeDof);
+
+					if (ForceRangeInSync)
+						Instance->ForceRange[Dof] = Barrier.GetForceRange(NativeDof);
+				}
+			}
+
+			// Merge Split Properties.
+			if (Msp.HasNative())
+			{
+				if (Instance->MergeSplitProperties == MergeSplitProperties)
+				{
+					Instance->MergeSplitProperties.CopyFrom(Msp);
+				}
+			}
+		}
+	}
+
+	// Finally, update this component for properties that the AGX_COPY_PROPERTY_FROM macro
+	// cannot handle.
 	for (const auto& Dof : Dofs)
 	{
 		if (const int32* NativeDofPtr = NativeDofIndexMap.Find(Dof))
@@ -518,14 +565,10 @@ void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
 		}
 	}
 
-	const FMergeSplitPropertiesBarrier Msp =
-		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FConstraintBarrier*>(&Barrier));
 	if (Msp.HasNative())
 	{
 		MergeSplitProperties.CopyFrom(Msp);
 	}
-
-	ImportGuid = Barrier.GetGuid();
 }
 
 void UAGX_ConstraintComponent::SetSolveType(EAGX_SolveType InSolveType)
@@ -624,7 +667,8 @@ const FConstraintBarrier* UAGX_ConstraintComponent::GetNative() const
 
 bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString* OutMessage) const
 {
-	auto WriteMessage = [OutMessage](EDofFlag Dof, float Error) {
+	auto WriteMessage = [OutMessage](EDofFlag Dof, float Error)
+	{
 		if (OutMessage == nullptr)
 		{
 			return;
@@ -791,23 +835,20 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_1),
-		[](ThisClass* This) {
-			This->SetForceRange(EGenericDofIndex::Rotational1, This->ForceRange.Rotational_1);
-		});
+		[](ThisClass* This)
+		{ This->SetForceRange(EGenericDofIndex::Rotational1, This->ForceRange.Rotational_1); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_2),
-		[](ThisClass* This) {
-			This->SetForceRange(EGenericDofIndex::Rotational2, This->ForceRange.Rotational_2);
-		});
+		[](ThisClass* This)
+		{ This->SetForceRange(EGenericDofIndex::Rotational2, This->ForceRange.Rotational_2); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, ForceRange),
 		GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangePropertyPerDof, Rotational_3),
-		[](ThisClass* This) {
-			This->SetForceRange(EGenericDofIndex::Rotational3, This->ForceRange.Rotational_3);
-		});
+		[](ThisClass* This)
+		{ This->SetForceRange(EGenericDofIndex::Rotational3, This->ForceRange.Rotational_3); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, bComputeForces),
@@ -904,9 +945,11 @@ void UAGX_ConstraintComponent::CreateMergeSplitProperties()
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("UAGX_ConstraintComponent::CreateMergeSplitProperties was called "
-				 "on Constraint '%s' that does not have a Native AGX Dynamics object. Only call this "
+				 "on Constraint '%s' that does not have a Native AGX Dynamics object. Only call "
+				 "this "
 				 "function "
-				 "during play."), *GetName());
+				 "during play."),
+			*GetName());
 		return;
 	}
 
@@ -920,7 +963,9 @@ TStructOnScope<FActorComponentInstanceData> UAGX_ConstraintComponent::GetCompone
 	const
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
-		this, this, [](UActorComponent* Component) {
+		this, this,
+		[](UActorComponent* Component)
+		{
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
@@ -1013,17 +1058,17 @@ namespace
 void UAGX_ConstraintComponent::UpdateNativeCompliance()
 {
 	UpdateNativePerDof(
-		HasNative(), NativeDofIndexMap, [this](EGenericDofIndex GenericDof, int32 NativeDof) {
-			NativeBarrier->SetCompliance(Compliance[GenericDof], NativeDof);
-		});
+		HasNative(), NativeDofIndexMap,
+		[this](EGenericDofIndex GenericDof, int32 NativeDof)
+		{ NativeBarrier->SetCompliance(Compliance[GenericDof], NativeDof); });
 }
 
 void UAGX_ConstraintComponent::UpdateNativeSpookDamping()
 {
 	UpdateNativePerDof(
-		HasNative(), NativeDofIndexMap, [this](EGenericDofIndex GenericDof, int32 NativeDof) {
-			NativeBarrier->SetSpookDamping(SpookDamping[GenericDof], NativeDof);
-		});
+		HasNative(), NativeDofIndexMap,
+		[this](EGenericDofIndex GenericDof, int32 NativeDof)
+		{ NativeBarrier->SetSpookDamping(SpookDamping[GenericDof], NativeDof); });
 }
 
 #undef TRY_SET_DOF_VAlUE

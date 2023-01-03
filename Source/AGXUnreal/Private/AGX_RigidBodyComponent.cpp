@@ -504,8 +504,28 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 	}
 #endif
 
+
+	// Manually update archetype instances for properties that the AGX_COPY_PROPERTY_FROM macro
+	// cannot handle.
 	const FMergeSplitPropertiesBarrier Msp =
 		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FRigidBodyBarrier*>(&Barrier));
+	if (FAGX_ObjectUtilities::IsTemplateComponent(*this))
+	{
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))
+		{
+			// Merge Split Properties.
+			if (Msp.HasNative())
+			{
+				if (Instance->MergeSplitProperties == MergeSplitProperties)
+				{
+					Instance->MergeSplitProperties.CopyFrom(Msp);
+				}
+			}
+		}
+	}
+
+	// Finally, update this component for properties that the AGX_COPY_PROPERTY_FROM macro
+	// cannot handle.
 	if (Msp.HasNative())
 	{
 		MergeSplitProperties.CopyFrom(Msp);

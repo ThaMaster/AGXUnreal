@@ -303,6 +303,8 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 	TArray<FName> BarrierCollisionGroups = Barrier.GetCollisionGroups();
 	CollisionGroups.Empty(BarrierCollisionGroups.Num());
 
+	const FMergeSplitPropertiesBarrier Msp =
+		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FShapeBarrier*>(&Barrier));
 	if (FAGX_ObjectUtilities::IsTemplateComponent(*this))
 	{
 		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))
@@ -322,6 +324,15 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 				// AddCollisionGroup only adds unique groups.
 				Instance->AddCollisionGroup(Group);
 			}
+
+			// Merge Split Properties.
+			if (Msp.HasNative())
+			{
+				if (Instance->MergeSplitProperties == MergeSplitProperties)
+				{
+					Instance->MergeSplitProperties.CopyFrom(Msp);
+				}
+			}
 		}
 	}
 
@@ -331,8 +342,6 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 		AddCollisionGroup(Group);
 	}
 
-	const FMergeSplitPropertiesBarrier Msp =
-		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FShapeBarrier*>(&Barrier));
 	if (Msp.HasNative())
 	{
 		MergeSplitProperties.CopyFrom(Msp);
