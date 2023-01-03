@@ -167,6 +167,10 @@ public:
 	UAGX_CollisionGroupDisablerComponent* InstantiateCollisionGroupDisabler(
 		AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs);
 
+	void UpdateCollisionGroupDisabler(
+		const TArray<std::pair<FString, FString>>&
+			DisabledPairs, UAGX_CollisionGroupDisablerComponent& Component);
+
 	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
 
 	UAGX_TrackComponent* InstantiateTrack(const FTrackBarrier& Barrier, AActor& Owner);

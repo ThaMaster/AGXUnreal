@@ -133,11 +133,6 @@ void UAGX_CollisionGroupDisablerComponent::UpdateAvailableCollisionGroupsFromWor
 	{
 		UAGX_ShapeComponent* Shape = *ObjectIt;
 
-		if (IsValid(Shape))
-		{
-			continue;
-		}
-
 		for (const auto& CollisionGroup : Shape->CollisionGroups)
 		{
 			AvailableCollisionGroups.AddUnique(CollisionGroup);

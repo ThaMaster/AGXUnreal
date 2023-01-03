@@ -152,6 +152,7 @@ TArray<std::pair<FString, FString>>& FSimulationObjectCollection::GetDisabledCol
 {
 	return DisabledCollisionGroups;
 }
+
 const TArray<std::pair<FString, FString>>& FSimulationObjectCollection::GetDisabledCollisionGroups()
 	const
 {

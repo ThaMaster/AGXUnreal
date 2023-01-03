@@ -887,10 +887,15 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 					// Handled by gathering information from the ReImportComponent since a Static
 					// Mesh Component does not have an Import Guid.
 				}
-				else if (auto Cor = Cast<UAGX_ContactMaterialRegistrarComponent>(Component))
+				else if (auto Con = Cast<UAGX_ContactMaterialRegistrarComponent>(Component))
 				{
 					AGX_CHECK(ContactMaterialRegistrarComponent == nullptr);
 					ContactMaterialRegistrarComponent = Node;
+				}
+				else if (auto Col = Cast<UAGX_CollisionGroupDisablerComponent>(Component))
+				{
+					AGX_CHECK(CollisionGroupDisablerComponent == nullptr);
+					CollisionGroupDisablerComponent = Node;
 				}
 				else if (auto Tw = Cast<UAGX_TwoBodyTireComponent>(Component))
 				{
@@ -936,6 +941,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		// Guid is the AGX Dynamics RenderData guid.
 		TMap<FGuid, USCS_Node*> RenderStaticMeshComponents;
 
+		USCS_Node* CollisionGroupDisablerComponent = nullptr;
 		USCS_Node* ContactMaterialRegistrarComponent = nullptr;
 		USCS_Node* ReImportComponent = nullptr;
 		USCS_Node* RootComponent = nullptr;
@@ -1287,26 +1293,6 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		// re-imported.
 	}
 
-	void AddOrUpdateReImportComponent(
-		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper)
-	{
-		if (SCSNodes.ReImportComponent == nullptr)
-		{
-			USCS_Node* NewNode = BaseBP.SimpleConstructionScript->CreateNode(
-				UAGX_ReImportComponent::StaticClass(),
-				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
-			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
-
-			Helper.UpdateReImportComponent(
-				*Cast<UAGX_ReImportComponent>(NewNode->ComponentTemplate));
-		}
-		else
-		{
-			Helper.UpdateReImportComponent(
-				*Cast<UAGX_ReImportComponent>(SCSNodes.ReImportComponent->ComponentTemplate));
-		}
-	}
-
 	void AddOrUpdateConstraints(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
@@ -1360,7 +1346,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			UAGX_LockConstraintComponent::StaticClass());
 	}
 
-	void AddOrUpdateTwoBodyTireComponents(
+	void AddOrUpdateTwoBodyTires(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
 	{
@@ -1382,6 +1368,48 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 			Helper.UpdateTwoBodyTire(
 				Barrier, *Cast<UAGX_TwoBodyTireComponent>(TireNode->ComponentTemplate));
+		}
+	}
+
+	void AddOrUpdateCollisionGroupDisabler(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		USCS_Node* DisablerNode = nullptr;
+		if (SCSNodes.CollisionGroupDisablerComponent != nullptr)
+		{
+			DisablerNode = SCSNodes.CollisionGroupDisablerComponent;
+		}
+		else
+		{
+			DisablerNode = BaseBP.SimpleConstructionScript->CreateNode(
+				UAGX_CollisionGroupDisablerComponent::StaticClass(),
+				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(DisablerNode);
+		}
+
+		Helper.UpdateCollisionGroupDisabler(
+			SimulationObjects.GetDisabledCollisionGroups(),
+			*Cast<UAGX_CollisionGroupDisablerComponent>(DisablerNode->ComponentTemplate));
+	}
+
+	void AddOrUpdateReImportComponent(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		if (SCSNodes.ReImportComponent == nullptr)
+		{
+			USCS_Node* NewNode = BaseBP.SimpleConstructionScript->CreateNode(
+				UAGX_ReImportComponent::StaticClass(),
+				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
+
+			Helper.UpdateReImportComponent(
+				*Cast<UAGX_ReImportComponent>(NewNode->ComponentTemplate));
+		}
+		else
+		{
+			Helper.UpdateReImportComponent(
+				*Cast<UAGX_ReImportComponent>(SCSNodes.ReImportComponent->ComponentTemplate));
 		}
 	}
 
@@ -1426,7 +1454,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		AddOrUpdateBodilessShapes(
 			BaseBP, SCSNodes, SimulationObjects, Helper, ImportSettings, ExistingMSTAssets);
 		AddOrUpdateConstraints(BaseBP, SCSNodes, SimulationObjects, Helper);
-		AddOrUpdateTwoBodyTireComponents(BaseBP, SCSNodes, SimulationObjects, Helper);
+		AddOrUpdateTwoBodyTires(BaseBP, SCSNodes, SimulationObjects, Helper);
+		AddOrUpdateCollisionGroupDisabler(BaseBP, SCSNodes, SimulationObjects, Helper);
 		AddOrUpdateReImportComponent(BaseBP, SCSNodes, Helper);
 
 		Helper.FinalizeImport();

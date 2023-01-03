@@ -1290,18 +1290,44 @@ FAGX_SimObjectsImporterHelper::InstantiateCollisionGroupDisabler(
 	AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs)
 {
 	UAGX_CollisionGroupDisablerComponent* Component =
-		NewObject<UAGX_CollisionGroupDisablerComponent>(&Owner, TEXT("AGX_CollisionGroupDisabler"));
+		NewObject<UAGX_CollisionGroupDisablerComponent>(&Owner);
+
+	UpdateCollisionGroupDisabler(DisabledPairs, *Component);
 
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
 	Component->RegisterComponent();
-	for (const std::pair<FString, FString>& DisabledPair : DisabledPairs)
-	{
-		Component->DisableCollisionGroupPair(
-			FName(*DisabledPair.first), FName(*DisabledPair.second));
-	}
 
 	return Component;
+}
+
+void FAGX_SimObjectsImporterHelper::UpdateCollisionGroupDisabler(
+	const TArray<std::pair<FString, FString>>& DisabledPairs,
+	UAGX_CollisionGroupDisablerComponent& Component)
+{
+	FAGX_ImportUtilities::Rename(Component, TEXT("AGX_CollisionGroupDisabler"));
+
+	// Update any archetype instance with the new groups.
+	for (UAGX_CollisionGroupDisablerComponent* Instance :
+		 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+	{
+		Instance->UpdateAvailableCollisionGroupsFromWorld();
+		Instance->RemoveDeprecatedCollisionGroups();
+
+		for (const std::pair<FString, FString>& DisabledPair : DisabledPairs)
+		{
+			Instance->DisableCollisionGroupPair(
+				FName(*DisabledPair.first), FName(*DisabledPair.second), true);
+		}
+	}
+
+	Component.UpdateAvailableCollisionGroupsFromWorld();
+	Component.RemoveDeprecatedCollisionGroups();
+	for (const std::pair<FString, FString>& DisabledPair : DisabledPairs)
+	{
+		Component.DisableCollisionGroupPair(
+			FName(*DisabledPair.first), FName(*DisabledPair.second), true);
+	}
 }
 
 UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
