@@ -891,6 +891,14 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 					AGX_CHECK(ContactMaterialRegistrarComponent == nullptr);
 					ContactMaterialRegistrarComponent = Node;
 				}
+				else if (auto Wi = Cast<UAGX_WireComponent>(Component))
+				{
+					// Not supported, will be ignored.
+				}
+				else if (auto Tr = Cast<UAGX_TrackComponent>(Component))
+				{
+					// Not supported, will be ignored.
+				}
 				else
 				{
 					// We should never encounter a Component type that does not match any of the
@@ -1533,9 +1541,28 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	{
 		for (USCS_Node* Node : BaseBP.SimpleConstructionScript->GetAllNodes())
 		{
+			if (Node == nullptr)
+			{
+				continue;
+			}
+
 			// Do not rename the root component.
 			if (Node == BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode())
 			{
+				continue;
+			}
+
+			if (auto C = Cast<UAGX_WireComponent>(Node->ComponentTemplate))
+			{
+				// Wires are not supported by the re-import pipeline, meaning we should not make any
+				// changes to it.
+				continue;
+			}
+
+			if (auto C = Cast<UAGX_TrackComponent>(Node->ComponentTemplate))
+			{
+				// Tracks are not supported by the re-import pipeline, meaning we should not make any
+				// changes to it.
 				continue;
 			}
 
