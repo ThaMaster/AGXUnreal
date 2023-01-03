@@ -50,17 +50,6 @@ void FAGX_ConstraintUtilities::CopyControllersFrom(
 	StoreTargetSpeedController(Barrier, Component.TargetSpeedController2, Second);
 }
 
-void FAGX_ConstraintUtilities::CopyControllersFrom(
-	UAGX_ConstraintComponent& Component, const FConstraintBarrier& Barrier)
-{
-	// This exists only to provide a complete overload resolution set for the constraint types. Only
-	// 1Dof and 2Dof constraints, the other overloads, have any controllers to store. Make sure you
-	// end up in the correct overload of CopyControllersFrom for the type of constraint you actually
-	// have.
-	/// \todo Consider making this a virtual member function instead, to avoid ending up in this
-	/// empty version unintentionally.
-}
-
 void FAGX_ConstraintUtilities::StoreElectricMotorController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller)
 {
@@ -159,15 +148,13 @@ void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks(
 {
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, bEnable),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetEnable(GetController(EditedObject)->bEnable);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetEnable(GetController(EditedObject)->bEnable); });
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, Compliance),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetCompliance(GetController(EditedObject)->Compliance);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetCompliance(GetController(EditedObject)->Compliance); });
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, SpookDamping),
@@ -177,19 +164,18 @@ void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, ForceRange),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetForceRange(GetController(EditedObject)->ForceRange);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetForceRange(GetController(EditedObject)->ForceRange); });
 }
 
-template AGXUNREAL_API void
-FAGX_ConstraintUtilities::AddControllerPropertyCallbacks<UAGX_Constraint1DofComponent, FAGX_ConstraintController>(
+template AGXUNREAL_API void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks<
+	UAGX_Constraint1DofComponent, FAGX_ConstraintController>(
 	FAGX_PropertyChangedDispatcher<UAGX_Constraint1DofComponent>& PropertyDispatcher,
 	TFunction<FAGX_ConstraintController*(UAGX_Constraint1DofComponent*)> GetController,
 	const FName& Member);
 
-template AGXUNREAL_API void
-FAGX_ConstraintUtilities::AddControllerPropertyCallbacks<UAGX_Constraint2DofComponent, FAGX_ConstraintController>(
+template AGXUNREAL_API void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks<
+	UAGX_Constraint2DofComponent, FAGX_ConstraintController>(
 	FAGX_PropertyChangedDispatcher<UAGX_Constraint2DofComponent>& PropertyDispatcher,
 	TFunction<FAGX_ConstraintController*(UAGX_Constraint2DofComponent*)> GetController,
 	const FName& Member);
@@ -204,13 +190,13 @@ void FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintElectricMotorController, Voltage),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetVoltage(GetController(EditedObject)->Voltage);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetVoltage(GetController(EditedObject)->Voltage); });
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintElectricMotorController, ArmatureResistance),
-		[GetController](UConstraintClass* EditedObject) {
+		[GetController](UConstraintClass* EditedObject)
+		{
 			GetController(EditedObject)
 				->SetArmatureRestistance(GetController(EditedObject)->ArmatureResistance);
 		});
@@ -245,7 +231,8 @@ void FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintFrictionController, FrictionCoefficient),
-		[GetController](UConstraintClass* EditedObject) {
+		[GetController](UConstraintClass* EditedObject)
+		{
 			GetController(EditedObject)
 				->SetFrictionCoefficient(GetController(EditedObject)->FrictionCoefficient);
 		});
@@ -254,7 +241,8 @@ void FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks(
 		Member,
 		GET_MEMBER_NAME_CHECKED(
 			FAGX_ConstraintFrictionController, bEnableNonLinearDirectSolveUpdate),
-		[GetController](UConstraintClass* EditedObject) {
+		[GetController](UConstraintClass* EditedObject)
+		{
 			GetController(EditedObject)
 				->SetEnableNonLinearDirectSolveUpdate(
 					GetController(EditedObject)->bEnableNonLinearDirectSolveUpdate);
@@ -282,9 +270,8 @@ void FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintLockController, Position),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetPosition(GetController(EditedObject)->Position);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetPosition(GetController(EditedObject)->Position); });
 }
 
 template AGXUNREAL_API void
@@ -299,8 +286,8 @@ FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks<UAGX_Constraint2Dof
 	TFunction<FAGX_ConstraintLockController*(UAGX_Constraint2DofComponent*)> GetController,
 	const FName& Member);
 
-template <typename UConstraintClass> void
-FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
+template <typename UConstraintClass>
+void FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
 	FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
 	TFunction<FAGX_ConstraintRangeController*(UConstraintClass*)> GetController,
 	const FName& Member)
@@ -309,9 +296,8 @@ FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangeController, Range),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetRange(GetController(EditedObject)->Range);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetRange(GetController(EditedObject)->Range); });
 }
 
 template AGXUNREAL_API void
@@ -336,13 +322,13 @@ void FAGX_ConstraintUtilities::AddTargetSpeedControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintTargetSpeedController, Speed),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetSpeed(GetController(EditedObject)->Speed);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetSpeed(GetController(EditedObject)->Speed); });
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintTargetSpeedController, bLockedAtZeroSpeed),
-		[GetController](UConstraintClass* EditedObject) {
+		[GetController](UConstraintClass* EditedObject)
+		{
 			GetController(EditedObject)
 				->SetLockedAtZeroSpeed(GetController(EditedObject)->bLockedAtZeroSpeed);
 		});
@@ -370,9 +356,8 @@ void FAGX_ConstraintUtilities::AddScrewControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintScrewController, Lead),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetLead(GetController(EditedObject)->Lead);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetLead(GetController(EditedObject)->Lead); });
 }
 
 template AGXUNREAL_API void
@@ -429,15 +414,19 @@ void FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	// (nullptr) implicitly means the world. Also, the sign of the rotation/translation of the
 	// secondary constraints support this ordering.
 
-	if (!RigidBody1)
-	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Could not setup Constraint frames since RigidBody1 was nullptr."));
-		return;
-	}
-
 	Component.BodyAttachment1.FrameDefiningSource = EAGX_FrameDefiningSource::Constraint;
 	Component.BodyAttachment2.FrameDefiningSource = EAGX_FrameDefiningSource::Constraint;
+
+	// Having a nullptr RigidBody1 is technically valid from AGX Dynamics perspective, but in >99%
+	// of cases it is unexpected. Therefore, we opt to give the user a warning, and we still set the
+	// FrameDefiningSource to be EAGX_FrameDefiningSource::Constraint before returning.
+	if (RigidBody1 == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Could not setup Constraint frames since RigidBody1 was nullptr."));
+		return;
+	}
 
 	const FVector Attach1GlobalPos =
 		GetGlobalAttachmentFramePos(RigidBody1, Barrier.GetLocalLocation(0));

@@ -140,9 +140,6 @@ public:
 
 	UAGX_HingeConstraintComponent* InstantiateHinge(const FHingeBarrier& Barrier, AActor& Owner);
 
-	void UpdateConstraintComponent(
-		const FHingeBarrier& Barrier, UAGX_HingeConstraintComponent& Component);
-
 	UAGX_PrismaticConstraintComponent* InstantiatePrismatic(
 		const FPrismaticBarrier& Barrier, AActor& Owner);
 
@@ -158,8 +155,11 @@ public:
 	UAGX_LockConstraintComponent* InstantiateLockConstraint(
 		const FLockJointBarrier& Barrier, AActor& Owner);
 
+	void UpdateConstraintComponent(
+		const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component);
+
 	UAGX_TwoBodyTireComponent* InstantiateTwoBodyTire(
-		const FTwoBodyTireBarrier& Barrier, AActor& Owner, bool IsBlueprintOwner = false);
+		const FTwoBodyTireBarrier& Barrier, AActor& Owner);
 
 	UAGX_CollisionGroupDisablerComponent* InstantiateCollisionGroupDisabler(
 		AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs);

@@ -72,6 +72,16 @@ namespace
 			*Name, *FilePath, Message);
 	}
 
+	template <typename TComponent>
+	TComponent* CreateAndAddComponent(AActor& Owner)
+	{
+		TComponent* Component = NewObject<TComponent>(&Owner);
+		Component->SetFlags(RF_Transactional);
+		Owner.AddInstanceComponent(Component);
+		Component->RegisterComponent();
+		return Component;
+	}
+
 	UAGX_TrackProperties* GetOrCreateTrackPropertiesAsset(
 		const FTrackPropertiesBarrier& Barrier, const FString& Name,
 		TMap<FGuid, UAGX_TrackProperties*>& RestoredTrackProperties, const FString& DirectoryName)
@@ -1005,7 +1015,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	if (!RestoredRenderStaticMeshComponents.Contains(RenderDataGuid))
 	{
 		RestoredRenderStaticMeshComponents.Add(RenderDataGuid, &Component);
-	}	
+	}
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateAndSaveShapeMaterialAsset(
@@ -1094,99 +1104,155 @@ FAGX_SimObjectsImporterHelper::InstantiateContactMaterialRegistrar(AActor& Owner
 
 namespace
 {
-	template <typename UComponent, typename FBarrier>
-	UComponent* InstantiateConstraint(
-		const FBarrier& Barrier, AActor& Owner, FAGX_SimObjectsImporterHelper& Helper,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
-		const FString& DirectoryName)
+	// This function does not update Constraint Controllers and should not be called in isolation
+	// for 1 or 2 DOF Constraints. Instead, one of the UpdateConstraintNDofComponent functions
+	// should be called to completely update those.
+	void UpdateConstraintComponentNoControllers(
+		UAGX_ConstraintComponent& Constraint, const FConstraintBarrier& Barrier,
+		FAGX_SimObjectsImporterHelper& Helper,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds)
 	{
 		FAGX_SimObjectsImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
 		if (Bodies.first == nullptr)
 		{
 			// Not having a second body is fine, means that the first body is constrained to the
-			// world. Not having a first body is bad.
+			// world. Not having a first body is unexpected.
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Constraint '%s' imported from '%s' does not have a first body. Ignoring."),
+				TEXT("Constraint '%s' imported from '%s' does not have a first body."),
 				*Barrier.GetName(), *Helper.ImportSettings.FilePath);
-			return nullptr;
 		}
 
-		UComponent* Component = FAGX_EditorUtilities::CreateConstraintComponent<UComponent>(
-			&Owner, Bodies.first, Bodies.second);
-		if (Component == nullptr)
+		if (Bodies.first != nullptr)
 		{
-			return nullptr;
+			Constraint.BodyAttachment1.RigidBody.BodyName = Bodies.first->GetFName();
 		}
+		if (Bodies.second != nullptr)
+		{
+			Constraint.BodyAttachment2.RigidBody.BodyName = Bodies.second->GetFName();
+		}
+
+		FAGX_ImportUtilities::Rename(Constraint, Barrier.GetName());
+		Constraint.CopyFrom(Barrier);
+		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
+			Barrier, Constraint, Bodies.first, Bodies.second);
 
 		if (auto ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
-				FBarrier, FConstraintMergeSplitThresholdsBarrier>(
-				Barrier, EAGX_AmorOwningType::Constraint, RestoredThresholds, DirectoryName))
+				FConstraintBarrier, FConstraintMergeSplitThresholdsBarrier>(
+				Barrier, EAGX_AmorOwningType::Constraint, RestoredThresholds, Helper.DirectoryName))
 		{
-			Component->MergeSplitProperties.Thresholds =
+			Constraint.MergeSplitProperties.Thresholds =
 				Cast<UAGX_ConstraintMergeSplitThresholds>(ThresholdsAsset);
 		}
+	}
 
-		Component->CopyFrom(Barrier);
-		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
-			Barrier, *Component, Bodies.first, Bodies.second);
-		FAGX_ConstraintUtilities::CopyControllersFrom(*Component, Barrier);
-		FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
-		return Component;
+	void UpdateConstraint1DofComponent(
+		UAGX_Constraint1DofComponent& Constraint, const FConstraintBarrier& Barrier,
+		FAGX_SimObjectsImporterHelper& Helper,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds)
+	{
+		UpdateConstraintComponentNoControllers(Constraint, Barrier, Helper, RestoredThresholds);
+		FAGX_ConstraintUtilities::CopyControllersFrom(
+			Constraint, *static_cast<const FConstraint1DOFBarrier*>(&Barrier));
+	}
+
+	void UpdateConstraint2DofComponent(
+		UAGX_Constraint2DofComponent& Constraint, const FConstraintBarrier& Barrier,
+		FAGX_SimObjectsImporterHelper& Helper,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds)
+	{
+		UpdateConstraintComponentNoControllers(Constraint, Barrier, Helper, RestoredThresholds);
+		FAGX_ConstraintUtilities::CopyControllersFrom(
+			Constraint, *static_cast<const FConstraint2DOFBarrier*>(&Barrier));
 	}
 }
 
 UAGX_HingeConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateHinge(
 	const FHingeBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint<UAGX_HingeConstraintComponent>(
-		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
-}
+	UAGX_HingeConstraintComponent* Constraint =
+		CreateAndAddComponent<UAGX_HingeConstraintComponent>(Owner);
+	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds);
 
-void UpdateConstraintComponent(
-	const FHingeBarrier& Barrier, UAGX_HingeConstraintComponent& Component)
-{
-	// todo: impl.
+	return Constraint;
 }
 
 UAGX_PrismaticConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiatePrismatic(
 	const FPrismaticBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint<UAGX_PrismaticConstraintComponent>(
-		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
+	UAGX_PrismaticConstraintComponent* Constraint =
+		CreateAndAddComponent<UAGX_PrismaticConstraintComponent>(Owner);
+	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds);
+
+	return Constraint;
 }
 
 UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallConstraint(
 	const FBallJointBarrier& Barrier, AActor& Owner)
 {
-	return InstantiateConstraint<UAGX_BallConstraintComponent>(
-		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
+	UAGX_BallConstraintComponent* Constraint =
+		CreateAndAddComponent<UAGX_BallConstraintComponent>(Owner);
+	UpdateConstraintComponentNoControllers(*Constraint, Barrier, *this, RestoredThresholds);
+
+	return Constraint;
 }
 
 UAGX_CylindricalConstraintComponent*
 FAGX_SimObjectsImporterHelper::InstantiateCylindricalConstraint(
 	const FCylindricalJointBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint<UAGX_CylindricalConstraintComponent>(
-		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
+	UAGX_CylindricalConstraintComponent* Constraint =
+		CreateAndAddComponent<UAGX_CylindricalConstraintComponent>(Owner);
+	UpdateConstraint2DofComponent(*Constraint, Barrier, *this, RestoredThresholds);
+
+	return Constraint;
 }
 
 UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDistanceConstraint(
 	const FDistanceJointBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint<UAGX_DistanceConstraintComponent>(
-		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
+	UAGX_DistanceConstraintComponent* Constraint =
+		CreateAndAddComponent<UAGX_DistanceConstraintComponent>(Owner);
+	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds);
+
+	return Constraint;
 }
 
 UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockConstraint(
 	const FLockJointBarrier& Barrier, AActor& Owner)
 {
-	return ::InstantiateConstraint<UAGX_LockConstraintComponent>(
-		Barrier, Owner, *this, RestoredThresholds, DirectoryName);
+	UAGX_LockConstraintComponent* Constraint =
+		CreateAndAddComponent<UAGX_LockConstraintComponent>(Owner);
+	UpdateConstraintComponentNoControllers(*Constraint, Barrier, *this, RestoredThresholds);
+
+	return Constraint;
+}
+
+void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
+	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component)
+{
+	if (UAGX_Constraint1DofComponent* Constraint1Dof =
+			Cast<UAGX_Constraint1DofComponent>(&Component))
+	{
+		UpdateConstraint1DofComponent(*Constraint1Dof, Barrier, *this, RestoredThresholds);
+	}
+	else if (
+		UAGX_Constraint2DofComponent* Constraint2Dof =
+			Cast<UAGX_Constraint2DofComponent>(&Component))
+	{
+		UpdateConstraint2DofComponent(*Constraint2Dof, Barrier, *this, RestoredThresholds);
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unsupported type for Constraint Component '%s' in UpdateConstraintComponent."),
+			*Barrier.GetName());
+	}
 }
 
 UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire(
-	const FTwoBodyTireBarrier& Barrier, AActor& Owner, bool IsBlueprintOwner)
+	const FTwoBodyTireBarrier& Barrier, AActor& Owner)
 {
 	UAGX_TwoBodyTireComponent* Component = NewObject<UAGX_TwoBodyTireComponent>(&Owner);
 	if (Component == nullptr)
@@ -1208,10 +1274,6 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 		}
 
 		BodyRef.BodyName = Body->GetFName();
-		if (!IsBlueprintOwner)
-		{
-			BodyRef.OwningActor = Body->GetOwner();
-		}
 	};
 
 	SetRigidBody(GetBody(Barrier.GetTireRigidBody()), Component->TireRigidBody);

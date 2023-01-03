@@ -49,17 +49,6 @@ public:
 	static void CopyControllersFrom(
 		UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier);
 
-	/**
-	 * Base class overload that does nothing. Only 1Dof- and 2Dof constraints have controllers so
-	 * make sure one of those overloads are called when appropriate. This overload is required
-	 * because the call is made from a function template that is sometimes given a non-1/2Dof
-	 * constraint.
-	 * @param Component
-	 * @param Barrier
-	 */
-	static void CopyControllersFrom(
-		UAGX_ConstraintComponent& Component, const FConstraintBarrier& Barrier);
-
 	static void StoreElectricMotorController(
 		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller);
 

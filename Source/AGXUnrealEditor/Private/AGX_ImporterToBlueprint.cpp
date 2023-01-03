@@ -133,24 +133,6 @@ namespace
 		return Package;
 	}
 
-	void ClearOwningActors(UAGX_ConstraintComponent* Constraint)
-	{
-		if (Constraint == nullptr)
-		{
-			return;
-		}
-
-		// By default the BodyAttachments are created with the OwningActor set to the owner of
-		// the RigidBodyComponents passed to CreateConstraintComponent. In this case the
-		// OwningActor points to the temporary template Actor from which the Blueprint is
-		// created. By setting them to nullptr instead we restore the constructor / Class
-		// Default Object value which won't be serialized and PostInitProperties in the final
-		// ConstraintComponent will set OwningActor to GetTypedOuter<AActor>() which is correct
-		// in the Blueprint case.
-		Constraint->BodyAttachment1.RigidBody.OwningActor = nullptr;
-		Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
-	}
-
 	bool AddShapeMaterials(
 		const FSimulationObjectCollection& SimObjects, FAGX_SimObjectsImporterHelper& Helper)
 	{
@@ -301,7 +283,7 @@ namespace
 		{
 			check(Tire.GetTireRigidBody().HasNative());
 			check(Tire.GetHubRigidBody().HasNative());
-			Helper.InstantiateTwoBodyTire(Tire, ImportedActor, true);
+			Helper.InstantiateTwoBodyTire(Tire, ImportedActor);
 		}
 
 		return Success;
@@ -315,21 +297,18 @@ namespace
 		for (const auto& Constraint : SimObjects.GetHingeConstraints())
 		{
 			auto Hinge = Helper.InstantiateHinge(Constraint, ImportedActor);
-			ClearOwningActors(Hinge);
 			Success &= Hinge != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetPrismaticConstraints())
 		{
 			auto Prismatic = Helper.InstantiatePrismatic(Constraint, ImportedActor);
-			ClearOwningActors(Prismatic);
 			Success &= Prismatic != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetBallConstraints())
 		{
 			auto BallConstraint = Helper.InstantiateBallConstraint(Constraint, ImportedActor);
-			ClearOwningActors(BallConstraint);
 			Success &= BallConstraint != nullptr;
 		}
 
@@ -337,7 +316,6 @@ namespace
 		{
 			auto CylindricalConstraint =
 				Helper.InstantiateCylindricalConstraint(Constraint, ImportedActor);
-			ClearOwningActors(CylindricalConstraint);
 			Success &= CylindricalConstraint != nullptr;
 		}
 
@@ -345,14 +323,12 @@ namespace
 		{
 			auto DistanceConstraint =
 				Helper.InstantiateDistanceConstraint(Constraint, ImportedActor);
-			ClearOwningActors(DistanceConstraint);
 			Success &= DistanceConstraint != nullptr;
 		}
 
 		for (const auto& Constraint : SimObjects.GetLockConstraints())
 		{
 			auto LockConstraint = Helper.InstantiateLockConstraint(Constraint, ImportedActor);
-			ClearOwningActors(LockConstraint);
 			Success &= LockConstraint != nullptr;
 		}
 
@@ -1339,7 +1315,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 						ConstraintClass, FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 					RootNode->AddChildNode(Constraint);
 				}
-				// Helper.UpdateConstraintComponent()...
+				// Helper.UpdateConstraintComponent(Constraint)...
 			}
 		};
 
