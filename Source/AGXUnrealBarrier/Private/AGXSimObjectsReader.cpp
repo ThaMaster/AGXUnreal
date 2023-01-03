@@ -350,6 +350,11 @@ namespace
 		OutSimObjects.GetObserverFrames().Reserve(ObserverFrames.size());
 		for (const agx::ObserverFrameRef& ObserverFrame : ObserverFrames)
 		{
+			if (ObserverFrame->getRigidBody() == nullptr)
+			{
+				continue;
+			}
+
 			const FString Name = Convert(ObserverFrame->getName());
 			const FGuid BodyGuid = Convert(ObserverFrame->getRigidBody()->getUuid());
 			const FTransform Transform = Convert(ObserverFrame->getLocalTransform());
