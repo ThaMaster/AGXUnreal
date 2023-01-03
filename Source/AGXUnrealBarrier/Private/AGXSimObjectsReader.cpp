@@ -357,8 +357,9 @@ namespace
 
 			const FString Name = Convert(ObserverFrame->getName());
 			const FGuid BodyGuid = Convert(ObserverFrame->getRigidBody()->getUuid());
+			const FGuid ObserverGuid = Convert(ObserverFrame->getUuid());
 			const FTransform Transform = Convert(ObserverFrame->getLocalTransform());
-			OutSimObjects.GetObserverFrames().Add({Name, BodyGuid, Transform});
+			OutSimObjects.GetObserverFrames().Add({Name, BodyGuid, ObserverGuid, Transform});
 		}
 	}
 

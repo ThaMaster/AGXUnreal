@@ -39,6 +39,7 @@ public:
 	{
 		FString Name;
 		FGuid BodyGuid;
+		FGuid ObserverGuid;
 		FTransform Transform;
 	};
 
