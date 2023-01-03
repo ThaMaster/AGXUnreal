@@ -72,16 +72,6 @@ namespace
 			*Name, *FilePath, Message);
 	}
 
-	template <typename TComponent>
-	TComponent* CreateAndAddComponent(AActor& Owner)
-	{
-		TComponent* Component = NewObject<TComponent>(&Owner);
-		Component->SetFlags(RF_Transactional);
-		Owner.AddInstanceComponent(Component);
-		Component->RegisterComponent();
-		return Component;
-	}
-
 	UAGX_TrackProperties* GetOrCreateTrackPropertiesAsset(
 		const FTrackPropertiesBarrier& Barrier, const FString& Name,
 		TMap<FGuid, UAGX_TrackProperties*>& RestoredTrackProperties, const FString& DirectoryName)
@@ -1170,10 +1160,11 @@ namespace
 UAGX_HingeConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateHinge(
 	const FHingeBarrier& Barrier, AActor& Owner)
 {
-	UAGX_HingeConstraintComponent* Constraint =
-		CreateAndAddComponent<UAGX_HingeConstraintComponent>(Owner);
+	UAGX_HingeConstraintComponent* Constraint = NewObject<UAGX_HingeConstraintComponent>(&Owner);
 	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds);
-
+	Constraint->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Constraint);
+	Constraint->RegisterComponent();
 	return Constraint;
 }
 
@@ -1181,19 +1172,22 @@ UAGX_PrismaticConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiatePri
 	const FPrismaticBarrier& Barrier, AActor& Owner)
 {
 	UAGX_PrismaticConstraintComponent* Constraint =
-		CreateAndAddComponent<UAGX_PrismaticConstraintComponent>(Owner);
+		NewObject<UAGX_PrismaticConstraintComponent>(&Owner);
 	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds);
-
+	Constraint->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Constraint);
+	Constraint->RegisterComponent();
 	return Constraint;
 }
 
 UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallConstraint(
 	const FBallJointBarrier& Barrier, AActor& Owner)
 {
-	UAGX_BallConstraintComponent* Constraint =
-		CreateAndAddComponent<UAGX_BallConstraintComponent>(Owner);
+	UAGX_BallConstraintComponent* Constraint = NewObject<UAGX_BallConstraintComponent>(&Owner);
 	UpdateConstraintComponentNoControllers(*Constraint, Barrier, *this, RestoredThresholds);
-
+	Constraint->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Constraint);
+	Constraint->RegisterComponent();
 	return Constraint;
 }
 
@@ -1202,9 +1196,11 @@ FAGX_SimObjectsImporterHelper::InstantiateCylindricalConstraint(
 	const FCylindricalJointBarrier& Barrier, AActor& Owner)
 {
 	UAGX_CylindricalConstraintComponent* Constraint =
-		CreateAndAddComponent<UAGX_CylindricalConstraintComponent>(Owner);
+		NewObject<UAGX_CylindricalConstraintComponent>(&Owner);
 	UpdateConstraint2DofComponent(*Constraint, Barrier, *this, RestoredThresholds);
-
+	Constraint->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Constraint);
+	Constraint->RegisterComponent();
 	return Constraint;
 }
 
@@ -1212,19 +1208,22 @@ UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDist
 	const FDistanceJointBarrier& Barrier, AActor& Owner)
 {
 	UAGX_DistanceConstraintComponent* Constraint =
-		CreateAndAddComponent<UAGX_DistanceConstraintComponent>(Owner);
+		NewObject<UAGX_DistanceConstraintComponent>(&Owner);
 	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds);
-
+	Constraint->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Constraint);
+	Constraint->RegisterComponent();
 	return Constraint;
 }
 
 UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockConstraint(
 	const FLockJointBarrier& Barrier, AActor& Owner)
 {
-	UAGX_LockConstraintComponent* Constraint =
-		CreateAndAddComponent<UAGX_LockConstraintComponent>(Owner);
+	UAGX_LockConstraintComponent* Constraint = NewObject<UAGX_LockConstraintComponent>(&Owner);
 	UpdateConstraintComponentNoControllers(*Constraint, Barrier, *this, RestoredThresholds);
-
+	Constraint->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Constraint);
+	Constraint->RegisterComponent();
 	return Constraint;
 }
 
@@ -1255,14 +1254,18 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 	const FTwoBodyTireBarrier& Barrier, AActor& Owner)
 {
 	UAGX_TwoBodyTireComponent* Component = NewObject<UAGX_TwoBodyTireComponent>(&Owner);
-	if (Component == nullptr)
-	{
-		WriteImportErrorMessage(
-			TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ImportSettings.FilePath,
-			TEXT("Could not create new AGX_TwoBodyTireComponent"));
-		return nullptr;
-	}
 
+	UpdateTwoBodyTire(Barrier, *Component);	
+
+	Component->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+	return Component;
+}
+
+void FAGX_SimObjectsImporterHelper::UpdateTwoBodyTire(
+	const FTwoBodyTireBarrier& Barrier, UAGX_TwoBodyTireComponent& Component)
+{
 	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef)
 	{
 		if (Body == nullptr)
@@ -1276,15 +1279,10 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 		BodyRef.BodyName = Body->GetFName();
 	};
 
-	SetRigidBody(GetBody(Barrier.GetTireRigidBody()), Component->TireRigidBody);
-	SetRigidBody(GetBody(Barrier.GetHubRigidBody()), Component->HubRigidBody);
-	FAGX_ImportUtilities::Rename(*Component, Barrier.GetName());
-	Component->CopyFrom(Barrier);
-	Component->SetFlags(RF_Transactional);
-	Owner.AddInstanceComponent(Component);
-	Component->RegisterComponent();
-
-	return Component;
+	SetRigidBody(GetBody(Barrier.GetTireRigidBody()), Component.TireRigidBody);
+	SetRigidBody(GetBody(Barrier.GetHubRigidBody()), Component.HubRigidBody);
+	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
+	Component.CopyFrom(Barrier);
 }
 
 UAGX_CollisionGroupDisablerComponent*

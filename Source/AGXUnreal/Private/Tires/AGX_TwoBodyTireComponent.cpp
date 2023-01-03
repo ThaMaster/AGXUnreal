@@ -3,10 +3,12 @@
 #include "Tires/AGX_TwoBodyTireComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
 #include "Tires/AGX_TwoBodyTireActor.h"
 #include "Tires/TwoBodyTireBarrier.h"
-#include "AGX_RigidBodyComponent.h"
-#include "AGX_LogCategory.h"
+#include "Utilities/AGX_ObjectUtilities.h"
+
 
 UAGX_TwoBodyTireComponent::UAGX_TwoBodyTireComponent()
 {
@@ -56,24 +58,31 @@ void UAGX_TwoBodyTireComponent::CopyFrom(const FTwoBodyTireBarrier& Barrier)
 		return;
 	}
 
-	OuterRadius = Barrier.GetOuterRadius();
-	InnerRadius = Barrier.GetInnerRadius();
+	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetGuid(), *this)
+	AGX_COPY_PROPERTY_FROM(OuterRadius, Barrier.GetOuterRadius(), *this)
+	AGX_COPY_PROPERTY_FROM(InnerRadius, Barrier.GetInnerRadius(), *this)
 
-	FTransform LocalTransform = Barrier.GetLocalTransform();
-	LocalLocation = LocalTransform.GetLocation();
-	LocalRotation = FRotator(LocalTransform.GetRotation());
+	const FTransform LocalTransform = Barrier.GetLocalTransform();
+	AGX_COPY_PROPERTY_FROM(LocalLocation, LocalTransform.GetLocation(), *this)
+	AGX_COPY_PROPERTY_FROM(LocalRotation, FRotator(LocalTransform.GetRotation()), *this)
 
-	RadialStiffness = Barrier.GetStiffness(FTwoBodyTireBarrier::RADIAL);
-	LateralStiffness = Barrier.GetStiffness(FTwoBodyTireBarrier::LATERAL);
-	BendingStiffness = Barrier.GetStiffness(FTwoBodyTireBarrier::BENDING);
-	TorsionalStiffness = Barrier.GetStiffness(FTwoBodyTireBarrier::TORSIONAL);
+	AGX_COPY_PROPERTY_FROM(
+		RadialStiffness, Barrier.GetStiffness(FTwoBodyTireBarrier::RADIAL), *this)
+	AGX_COPY_PROPERTY_FROM(
+		LateralStiffness, Barrier.GetStiffness(FTwoBodyTireBarrier::LATERAL), *this)
+	AGX_COPY_PROPERTY_FROM(
+		BendingStiffness, Barrier.GetStiffness(FTwoBodyTireBarrier::BENDING), *this)
+	AGX_COPY_PROPERTY_FROM(
+		TorsionalStiffness, Barrier.GetStiffness(FTwoBodyTireBarrier::TORSIONAL), *this)
 
-	RadialDamping = Barrier.GetDamping(FTwoBodyTireBarrier::RADIAL);
-	LateralDamping = Barrier.GetDamping(FTwoBodyTireBarrier::LATERAL);
-	BendingDamping = Barrier.GetDamping(FTwoBodyTireBarrier::BENDING);
-	TorsionalDamping = Barrier.GetDamping(FTwoBodyTireBarrier::TORSIONAL);
+	AGX_COPY_PROPERTY_FROM(RadialDamping, Barrier.GetDamping(FTwoBodyTireBarrier::RADIAL), *this)
+	AGX_COPY_PROPERTY_FROM(LateralDamping, Barrier.GetDamping(FTwoBodyTireBarrier::LATERAL), *this)
+	AGX_COPY_PROPERTY_FROM(BendingDamping, Barrier.GetDamping(FTwoBodyTireBarrier::BENDING), *this)
+	AGX_COPY_PROPERTY_FROM(
+		TorsionalDamping, Barrier.GetDamping(FTwoBodyTireBarrier::TORSIONAL), *this)
 
-	ImplicitFrictionMultiplier = Barrier.GetImplicitFrictionMultiplier();
+	AGX_COPY_PROPERTY_FROM(
+		ImplicitFrictionMultiplier, Barrier.GetImplicitFrictionMultiplier(), *this)
 }
 
 bool UAGX_TwoBodyTireComponent::IsDefaultSubObjectOfTwoBodyTireActor() const

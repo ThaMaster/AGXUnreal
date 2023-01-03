@@ -161,6 +161,9 @@ public:
 	UAGX_TwoBodyTireComponent* InstantiateTwoBodyTire(
 		const FTwoBodyTireBarrier& Barrier, AActor& Owner);
 
+	void UpdateTwoBodyTire(
+		const FTwoBodyTireBarrier& Barrier, UAGX_TwoBodyTireComponent& Component);
+
 	UAGX_CollisionGroupDisablerComponent* InstantiateCollisionGroupDisabler(
 		AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs);
 

@@ -331,6 +331,7 @@ public:
 		const UAGX_RigidBodyComponent* Body, FVector& OutForce, FVector& OutTorque,
 		bool bForceAtCm = false) const;
 
+	// Does not setup body attachments. This must be done by the caller of this function.
 	void CopyFrom(const FConstraintBarrier& Barrier);
 
 	/**

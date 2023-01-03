@@ -46,6 +46,7 @@
 #include "Shapes/RenderDataBarrier.h"
 #include "SimulationObjectCollection.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -891,6 +892,12 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 					AGX_CHECK(ContactMaterialRegistrarComponent == nullptr);
 					ContactMaterialRegistrarComponent = Node;
 				}
+				else if (auto Tw = Cast<UAGX_TwoBodyTireComponent>(Component))
+				{
+					AGX_CHECK(!TwoBodyTires.Contains(Tw->ImportGuid));
+					if (Tw->ImportGuid.IsValid())
+						TwoBodyTires.Add(Tw->ImportGuid, Node);
+				}
 				else if (auto Wi = Cast<UAGX_WireComponent>(Component))
 				{
 					// Not supported, will be ignored.
@@ -921,6 +928,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		TMap<FGuid, USCS_Node*> CylindricalConstraints;
 		TMap<FGuid, USCS_Node*> DistanceConstraints;
 		TMap<FGuid, USCS_Node*> LockConstraints;
+		TMap<FGuid, USCS_Node*> TwoBodyTires;
 
 		// Guid is the AGX Dynamics shape (Trimesh) guid.
 		TMap<FGuid, USCS_Node*> CollisionStaticMeshComponents;
@@ -1103,7 +1111,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			*Cast<UStaticMeshComponent>(RenderDataNode->ComponentTemplate));
 	}
 
-	void AddOrUpdateRigidBodies(
+	void AddOrUpdateRigidBodiesAndOwnedShapes(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
 		const FAGX_ImportSettings& ImportSettings,
@@ -1352,6 +1360,31 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			UAGX_LockConstraintComponent::StaticClass());
 	}
 
+	void AddOrUpdateTwoBodyTireComponents(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		for (const auto& Barrier : SimulationObjects.GetTwoBodyTires())
+		{
+			const FGuid Guid = Barrier.GetGuid();
+			USCS_Node* TireNode = nullptr;
+			if (SCSNodes.TwoBodyTires.Contains(Guid))
+			{
+				TireNode = SCSNodes.TwoBodyTires[Guid];
+			}
+			else
+			{
+				TireNode = BaseBP.SimpleConstructionScript->CreateNode(
+					UAGX_TwoBodyTireComponent::StaticClass(),
+					FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+				BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(TireNode);
+			}
+
+			Helper.UpdateTwoBodyTire(
+				Barrier, *Cast<UAGX_TwoBodyTireComponent>(TireNode->ComponentTemplate));
+		}
+	}
+
 	FString GetModelDirectoryFromAsset(UObject* Asset)
 	{
 		if (Asset == nullptr)
@@ -1388,11 +1421,12 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 		AddOrUpdateShapeMaterials(BaseBP, SimulationObjects, Helper);
 		AddOrUpdateContactMaterials(BaseBP, SimulationObjects, Helper);
-		AddOrUpdateRigidBodies(
+		AddOrUpdateRigidBodiesAndOwnedShapes(
 			BaseBP, SCSNodes, SimulationObjects, Helper, ImportSettings, ExistingMSTAssets);
 		AddOrUpdateBodilessShapes(
 			BaseBP, SCSNodes, SimulationObjects, Helper, ImportSettings, ExistingMSTAssets);
 		AddOrUpdateConstraints(BaseBP, SCSNodes, SimulationObjects, Helper);
+		AddOrUpdateTwoBodyTireComponents(BaseBP, SCSNodes, SimulationObjects, Helper);
 		AddOrUpdateReImportComponent(BaseBP, SCSNodes, Helper);
 
 		Helper.FinalizeImport();
@@ -1520,6 +1554,22 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		RemoveDeletedConstraint(SimulationObjects.GetLockConstraints(), SCSNodes.LockConstraints);
 	}
 
+	void RemoveDeletedTireModels(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects)
+	{
+		const TArray<FGuid> BarrierGuids =
+			GetGuidsFromBarriers(SimulationObjects.GetTwoBodyTires());
+		for (auto It = SCSNodes.TwoBodyTires.CreateIterator(); It; ++It)
+		{
+			if (!BarrierGuids.Contains(It->Key))
+			{
+				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
+				It.RemoveCurrent();
+			}
+		}
+	}
+
 	// Removes Components that are not present in the new SimulationObjectCollection, meaning they
 	// were deleted from the source file since the previous import. The passed SCSNodes will also
 	// be kept up to date, i.e. elements removed from BaseBP will have their corresponding SCS Node
@@ -1535,6 +1585,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		RemoveDeletedShapes(BaseBP, SCSNodes, ImportSettings, NewShapeGuids);
 		RemoveDeletedRigidBodies(BaseBP, SCSNodes, SimulationObjects);
 		RemoveDeletedConstraints(BaseBP, SCSNodes, SimulationObjects);
+		RemoveDeletedTireModels(BaseBP, SCSNodes, SimulationObjects);
 	}
 
 	void SetUnnamedNameForAll(UBlueprint& BaseBP)
@@ -1561,8 +1612,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 			if (auto C = Cast<UAGX_TrackComponent>(Node->ComponentTemplate))
 			{
-				// Tracks are not supported by the re-import pipeline, meaning we should not make any
-				// changes to it.
+				// Tracks are not supported by the re-import pipeline, meaning we should not make
+				// any changes to it.
 				continue;
 			}
 

@@ -59,3 +59,9 @@ void FTireBarrier::ReleaseNative()
 	check(HasNative());
 	NativeRef->Native = nullptr;
 }
+
+FGuid FTireBarrier::GetGuid() const
+{
+	check(HasNative());
+	return Convert(NativeRef->Native->getUuid());
+}
