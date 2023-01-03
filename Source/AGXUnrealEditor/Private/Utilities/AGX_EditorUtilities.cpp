@@ -24,7 +24,6 @@
 #include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
-#include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "DesktopPlatformModule.h"
 #include "Editor.h"

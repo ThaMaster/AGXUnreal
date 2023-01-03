@@ -3,6 +3,7 @@
 #pragma once
 
 // Unreal Engine includes.
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "CoreMinimal.h"
 #include "DetailLayoutBuilder.h"
 #include "Misc/EngineVersionComparison.h"
