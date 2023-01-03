@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
+#include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
@@ -14,7 +15,7 @@
 #include "Shapes/HeightFieldShapeBarrier.h"
 #include "Terrain/AGX_CuttingDirectionComponent.h"
 #include "Terrain/AGX_CuttingEdgeComponent.h"
-#include "Terrain/AGX_LandscapeSizeInfo.h"
+#include "Terrain/AGX_HeightFieldBoundsComponent.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
 #include "Terrain/ShovelBarrier.h"
 #include "Terrain/TerrainBarrier.h"
@@ -52,6 +53,9 @@ AAGX_Terrain::AAGX_Terrain()
 		USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(
 			USceneComponent::GetDefaultSceneRootVariableName());
 
+		TerrainBounds =
+			CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("TerrainBounds"));
+
 		Root->Mobility = EComponentMobility::Static;
 		Root->SetFlags(Root->GetFlags() | RF_Transactional); /// \todo What does this mean?
 
@@ -84,6 +88,11 @@ bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 	}
 
 	return true;
+}
+
+UNiagaraComponent* AAGX_Terrain::GetSpawnedParticleSystemComponent()
+{
+	return ParticleSystemComponent;
 }
 
 void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
@@ -254,6 +263,7 @@ namespace
 }
 
 #if WITH_EDITOR
+
 void AAGX_Terrain::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
@@ -266,6 +276,31 @@ void AAGX_Terrain::PostInitProperties()
 	InitPropertyDispatcher();
 }
 
+namespace AGX_Terrain_helpers
+{
+	void EnsureUseDynamicMaterialInstance(AAGX_Terrain& Terrain)
+	{
+		if (Terrain.SourceLandscape == nullptr ||
+			Terrain.SourceLandscape->bUseDynamicMaterialInstance)
+		{
+			return;
+		}
+
+		FText AskEnableDynamicMaterial = LOCTEXT(
+			"EnableDynamicMaterial?",
+			"The selected Landscape does not have Use Dynamic Material Instance enabled, "
+			"meaning that the material parameters for Landsacpe size and position cannot "
+			"be set automatically. Should Use Dynamic Material Instance be enabled on the "
+			"Landscape?");
+		if (FAGX_NotificationUtilities::YesNoQuestion(AskEnableDynamicMaterial))
+		{
+			Terrain.SourceLandscape->bUseDynamicMaterialInstance = true;
+			Terrain.SourceLandscape->Modify();
+			Terrain.SourceLandscape->PostEditChange();
+		}
+	}
+}
+
 void AAGX_Terrain::InitPropertyDispatcher()
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
@@ -274,6 +309,10 @@ void AAGX_Terrain::InitPropertyDispatcher()
 	{
 		return;
 	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, SourceLandscape),
+		[](ThisClass* This) { AGX_Terrain_helpers::EnsureUseDynamicMaterialInstance(*This); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(AAGX_Terrain, bCreateParticles),
@@ -509,24 +548,40 @@ void AAGX_Terrain::InitializeNative()
 
 bool AAGX_Terrain::CreateNativeTerrain()
 {
-#if UE_VERSION_OLDER_THAN(5, 0, 0) == false
-	const bool IsOpenWorldLandscape = SourceLandscape->LandscapeComponents.Num() <= 0;
-	if (IsOpenWorldLandscape)
+	TOptional<UAGX_HeightFieldBoundsComponent::FHeightFieldBoundsInfo> Bounds =
+		TerrainBounds->GetLandscapeAdjustedBounds();
+	if (!Bounds.IsSet())
 	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Attempted to use AGX Terrain with an Open World Landscape. Open World Landscapes "
-			"are currently not supported. Please use a non Open World Level.");
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to create Terrain native for '%s'; the given Terrain Bounds was invalid."),
+			*GetName());
 		return false;
 	}
-#endif
 
-	FHeightFieldShapeBarrier HeightField =
-		AGX_HeightFieldUtilities::CreateHeightField(*SourceLandscape);
+	const FVector StartPos = Bounds->Transform.TransformPositionNoScale(-Bounds->HalfExtent);
+	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(
+		*SourceLandscape, StartPos, Bounds->HalfExtent.X * 2.0, Bounds->HalfExtent.Y * 2.0);
 	NativeBarrier.AllocateNative(HeightField, MaxDepth);
+
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to create Terrain native for '%s'. The Output log may include more "
+				 "details."),
+			*GetName());
+		return false;
+	}
+
 	check(HasNative());
 
-	SetInitialTransform();
-	OriginalHeights = NativeBarrier.GetHeights();
+	FTransform Transform = AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(
+		*SourceLandscape, Bounds->Transform.GetLocation(), Bounds->HalfExtent);
+
+	NativeBarrier.SetRotation(Transform.GetRotation());
+	NativeBarrier.SetPosition(Transform.GetLocation());
+	NativeBarrier.GetHeights(OriginalHeights);
 	NativeBarrier.SetCreateParticles(bCreateParticles);
 	NativeBarrier.SetDeleteParticlesOutsideBounds(bDeleteParticlesOutsideBounds);
 	NativeBarrier.SetPenetrationForceVelocityScaling(PenetrationForceVelocityScaling);
@@ -660,24 +715,6 @@ void AAGX_Terrain::CreateNativeShovels()
 	}
 }
 
-void AAGX_Terrain::SetInitialTransform()
-{
-	if (!HasNative())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("SetInitialTransform called on Terrain '%s' which doesn't have a native "
-				 "representation."),
-			*GetName());
-		return;
-	}
-
-	std::tuple<FVector, FQuat> PosRot =
-		AGX_HeightFieldUtilities::GetTerrainPositionAndRotationFrom(*SourceLandscape);
-	NativeBarrier.SetPosition(std::get<0>(PosRot));
-	NativeBarrier.SetRotation(std::get<1>(PosRot));
-}
-
 void AAGX_Terrain::InitializeRendering()
 {
 	if (bEnableDisplacementRendering)
@@ -688,6 +725,8 @@ void AAGX_Terrain::InitializeRendering()
 	{
 		ParticleSystemInitialized = InitializeParticleSystem();
 	}
+
+	UpdateLandscapeMaterialParameters();
 }
 
 bool AAGX_Terrain::UpdateNativeMaterial()
@@ -750,26 +789,30 @@ void AAGX_Terrain::InitializeDisplacementMap()
 		return;
 	}
 
-	// "Grid" in the Terrain is what the Landscape calls "vertices". There is
-	// one more "grid" element than there is "quads" per side. There is one
-	// displacement map texel per vertex.
-	int32 GridSizeX = NativeBarrier.GetGridSizeX();
-	int32 GridSizeY = NativeBarrier.GetGridSizeY();
-	if (LandscapeDisplacementMap->SizeX != GridSizeX ||
-		LandscapeDisplacementMap->SizeY != GridSizeY)
+	// There is one displacement map texel per vertex.
+
+	const int32 TerrainVertsX = NativeBarrier.GetGridSizeX();
+	const int32 TerrainVertsY = NativeBarrier.GetGridSizeY();
+
+	OriginalHeights.Reserve(TerrainVertsX * TerrainVertsY);
+	CurrentHeights.Reserve(TerrainVertsX * TerrainVertsY);
+
+
+	if (LandscapeDisplacementMap->SizeX != TerrainVertsX ||
+		LandscapeDisplacementMap->SizeY != TerrainVertsY)
 	{
 		UE_LOG(
-			LogAGX, Verbose,
+			LogAGX, Log,
 			TEXT("The size of the Displacement Map render target (%dx%d) for "
-				 "AGX Terrain '%s' does not match the vertices in the terrain (%dx%d). "
+				 "AGX Terrain '%s' does not match the vertices in the Terrain (%dx%d). "
 				 "Resizing the displacement map."),
-			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(), GridSizeX,
-			GridSizeY);
+			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(),
+			TerrainVertsX, TerrainVertsY);
 
-		LandscapeDisplacementMap->ResizeTarget(GridSizeX, GridSizeY);
+		LandscapeDisplacementMap->ResizeTarget(TerrainVertsX, TerrainVertsY);
 	}
-	if (LandscapeDisplacementMap->SizeX != GridSizeX ||
-		LandscapeDisplacementMap->SizeY != GridSizeY)
+	if (LandscapeDisplacementMap->SizeX != TerrainVertsX ||
+		LandscapeDisplacementMap->SizeY != TerrainVertsY)
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -778,13 +821,12 @@ void AAGX_Terrain::InitializeDisplacementMap()
 			*GetName(), LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY);
 	}
 
-	DisplacementData.SetNum(GridSizeX * GridSizeY);
-	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, GridSizeX, GridSizeY));
+	DisplacementData.SetNum(TerrainVertsX * TerrainVertsY);
+	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, TerrainVertsX, TerrainVertsY));
 
 	/// \todo I'm not sure why we need this. Does the texture sampler "fudge the
 	/// values" when using non-linear gamma?
 	LandscapeDisplacementMap->bForceLinearGamma = true;
-
 	DisplacementMapInitialized = true;
 }
 
@@ -805,24 +847,25 @@ void AAGX_Terrain::UpdateDisplacementMap()
 
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::UpdateDisplacementMap"));
 
-	const int32 NumVerticesX = NativeBarrier.GetGridSizeX();
-	const int32 NumVerticesY = NativeBarrier.GetGridSizeY();
-	const int32 NumPixels = NumVerticesX * NumVerticesY;
-	AGX_CHECK(DisplacementData.Num() == NumPixels);
-	AGX_CHECK(DisplacementMapRegions.Num() == 1);
+	const int32 TerrainVerticesX = NativeBarrier.GetGridSizeX();
+	const int32 TerrainVerticesY = NativeBarrier.GetGridSizeY();
 
-	TArray<float> CurrentHeights = NativeBarrier.GetHeights();
-	for (int32 PixelIndex = 0; PixelIndex < NumPixels; ++PixelIndex)
+	NativeBarrier.GetHeights(CurrentHeights);
+	for (int32 VertY = 0; VertY < TerrainVerticesY; VertY++)
 	{
-		const float HeightChange = CurrentHeights[PixelIndex] - OriginalHeights[PixelIndex];
-		DisplacementData[PixelIndex] = static_cast<FFloat16>(HeightChange);
+		for (int32 VertX = 0; VertX < TerrainVerticesX; VertX++)
+		{
+			const int32 Index = VertX + VertY * TerrainVerticesX;
+			const float HeightChange = CurrentHeights[Index] - OriginalHeights[Index];
+			DisplacementData[Index] = static_cast<FFloat16>(HeightChange);
+		}
 	}
 
-	uint32 BytesPerPixel = sizeof(FFloat16);
+	const uint32 BytesPerPixel = sizeof(FFloat16);
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
 	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
-		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
+		TerrainVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
 
 void AAGX_Terrain::ClearDisplacementMap()
@@ -866,15 +909,19 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 	if (!ParticleSystemAsset)
 	{
 		UE_LOG(
-			LogAGX, Error,
+			LogAGX, Warning,
 			TEXT("Terrain '%s' does not have a particle system, cannot render particles"),
 			*GetName());
 		return false;
 	}
 
+	// It is important that we attach the ParticleSystemComponent using "KeepRelativeOffset" so that
+	// it's world position becomes the same as the Terrain's. Otherwise it will be spawned at
+	// the world origin which in turn may result in particles being culled and not rendered if the
+	// terrain is located far away from the world origin (see Fixed Bounds in the Particle System).
 	ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 		ParticleSystemAsset, RootComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
-		FVector::OneVector, EAttachLocation::Type::KeepWorldPosition, false,
+		FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset, false,
 #if UE_VERSION_OLDER_THAN(4, 24, 0)
 		EPSCPoolMethod::None
 #else
@@ -1053,6 +1100,61 @@ void AAGX_Terrain::ClearParticlesMap()
 	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*TerrainParticlesDataMap, 1, ParticlesDataMapRegions.GetData(),
 		ResolutionX * NumBytesPerPixel, NumBytesPerPixel, PixelData, false);
+}
+
+void AAGX_Terrain::UpdateLandscapeMaterialParameters()
+{
+	if (!IsValid(SourceLandscape) || GetWorld() == nullptr || !GetWorld()->IsGameWorld())
+	{
+		return;
+	}
+
+	// Set scalar material parameters for Landscape size and position.
+	// It is the Landscape material's responsibility to declare and implement displacement map
+	// sampling and passing on to World Position Offset.
+
+	const int32 TerrainVerticesX = NativeBarrier.GetGridSizeX();
+	const int32 TerrainVerticesY = NativeBarrier.GetGridSizeY();
+	const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
+	const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
+
+	// This assumes that the Terrain and Landscape resolution (quad size) is the same.
+	const double TerrainSizeX = static_cast<double>(TerrainVerticesX - 1) * QuadSideSizeX;
+	const double TerrainSizeY = static_cast<double>(TerrainVerticesY - 1) * QuadSideSizeY;
+
+	const FVector TerrainCenterGlobal = NativeBarrier.GetPosition();
+
+	const FVector TerrainCenterLocal =
+		SourceLandscape->GetActorTransform().InverseTransformPositionNoScale(TerrainCenterGlobal);
+	const FVector TerrainCornerLocal =
+		TerrainCenterLocal - FVector(TerrainSizeX / 2.0, TerrainSizeY / 2.0, 0.0);
+	const FVector TerrainCornerGlobal =
+		SourceLandscape->GetActorTransform().TransformPositionNoScale(TerrainCornerLocal);
+
+	const double PositionX = TerrainCornerGlobal.X;
+	const double PositionY = TerrainCornerGlobal.Y;
+
+	// Parameter for materials supporting only square Landscape.
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue(
+		"LandscapeSize", static_cast<float>(TerrainSizeX));
+	// Parameters for materials supporting rectangular Landscape.
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue(
+		"LandscapeSizeX", static_cast<float>(TerrainSizeX));
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue(
+		"LandscapeSizeY", static_cast<float>(TerrainSizeY));
+	// Parameters for Landscape position.
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapePositionX", PositionX);
+	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapePositionY", PositionY);
+}
+
+void AAGX_Terrain::Serialize(FArchive& Archive)
+{
+	Super::Serialize(Archive);
+	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
+	if (ShouldUpgradeTo(Archive, FAGX_CustomVersion::HeightFieldUsesBounds))
+	{
+		TerrainBounds->bInfiniteBounds = true;
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

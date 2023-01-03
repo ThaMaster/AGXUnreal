@@ -6,7 +6,6 @@
 
 FAGX_ConstraintLockController::FAGX_ConstraintLockController(bool bRotational)
 	: FAGX_ConstraintController(bRotational)
-	, Position(0.0)
 {
 }
 

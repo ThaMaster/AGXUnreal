@@ -626,9 +626,20 @@ namespace AGX_Simulation_helpers
 					TEXT("Cannot export initial state to archive: Export path '%s' does not "
 						 "specify a "
 						 "'.agx' or '.aagx' path."),
-					*ExportPath)
+					*ExportPath);
 				return;
 			}
+
+			if (!FPaths::DirectoryExists(FPaths::GetPath(ExportPath)))
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Cannot export initial state to archive: The directory for Export path "
+						 "'%s' does not exist."),
+					*ExportPath);
+				return;
+			}
+
 			FString FullPath = FPaths::ConvertRelativePathToFull(ExportPath);
 			Simulation.WriteAGXArchive(FullPath);
 		}

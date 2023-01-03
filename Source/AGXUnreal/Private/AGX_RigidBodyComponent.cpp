@@ -183,7 +183,7 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, AngularVelocity),
-		[](ThisClass* This) { This->SetAngularVelocity(This->Velocity); });
+		[](ThisClass* This) { This->SetAngularVelocity(This->AngularVelocity); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, LinearVelocityDamping),
@@ -488,22 +488,6 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 	AGX_COPY_PROPERTY_FROM(LinearVelocityDamping, Barrier.GetLinearVelocityDamping(), *this)
 	AGX_COPY_PROPERTY_FROM(AngularVelocityDamping, Barrier.GetAngularVelocityDamping(), *this)
 
-// We want to do this, but it breaks the move widget in Unreal Editor. Static bodies within Actors
-// that have been imported from an AGX Dynamics archive does not move when the Actor is moved.
-// Figure out why and fix it.
-#if 0
-	switch (MotionControl)
-	{
-		case MC_DYNAMICS:
-		case MC_KINEMATICS:
-			SetMobility(EComponentMobility::Movable);
-			break;
-		case MC_STATIC:
-			SetMobility(EComponentMobility::Static);
-			break;
-	}
-#endif
-
 
 	// Manually update archetype instances for properties that the AGX_COPY_PROPERTY_FROM macro
 	// cannot handle.
@@ -544,19 +528,7 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 {
 	NativeBarrier.SetMotionControl(MotionControl);
 
-	if (MotionControl == MC_STATIC && Mobility != EComponentMobility::Static)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("The Rigid Body Component \"%s\" in \"%s\" has a RigidBody with Static AGX "
-				 "MotionControl but Non-Static Unreal Mobility. Unreal Mobility will automatically "
-				 "be changed to Static this game session, but should also be changed manually in "
-				 "the Editor to ensure best performance!"),
-			*GetName(), *GetLabelSafe(GetOwner()));
-
-		SetMobility(EComponentMobility::Type::Static);
-	}
-	else if (MotionControl == MC_DYNAMICS && Mobility != EComponentMobility::Movable)
+	if (MotionControl == MC_DYNAMICS && Mobility != EComponentMobility::Movable)
 	{
 		UE_LOG(
 			LogAGX, Warning,

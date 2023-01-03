@@ -5,7 +5,14 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "DetailLayoutBuilder.h"
+#include "Misc/EngineVersionComparison.h"
 #include "RawMesh.h"
+
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+#include "EditorStyle.h"
+#else
+#include "Styling/AppStyle.h"
+#endif
 
 // Standard library includes.
 #include <tuple>
@@ -307,6 +314,24 @@ public:
 		const FString& DialogTitle, const FString& FileExtension, const FString& FileTypes,
 		const FString& DefaultFile = "", const FString& InStartDir = "");
 
+	static const ISlateStyle& GetStyle()
+	{
+#if UE_VERSION_OLDER_THAN(5, 1, 0)
+		return FEditorStyle::Get();
+#else
+		return FAppStyle::Get();
+#endif
+	}
+
+	static const FSlateBrush* GetBrush(FName PropertyName)
+	{
+#if UE_VERSION_OLDER_THAN(5, 1, 0)
+		return FEditorStyle::GetBrush(PropertyName);
+#else
+		return FAppStyle::GetBrush(PropertyName);
+#endif
+	}
+	
 	/**
 	 * Find (and loads) all assets of the type specified by ClassName that resides in AssetDirPath.
 	 * Does not search recursively, so the AssetDirPath must be the directory which the Asset

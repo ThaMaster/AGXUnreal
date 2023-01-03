@@ -1842,7 +1842,23 @@ bool FCheckWireImportedCommand::Update()
 	RangeHasType(12, 22, EWireNodeType::Free);
 	RangeHasType(22, 23, EWireNodeType::BodyFixed);
 
-	UAGX_RigidBodyComponent* WinchBodyRef = Winch.BodyAttachment.GetRigidBody();
+	const FString WinchBodyName = Winch.BodyAttachment.BodyName.ToString();
+	Test.TestEqual(TEXT("Winch Body Name"), WinchBodyName, FString("Winch Body"));
+
+	auto RangeHasBody =
+		[this, &Nodes = Wire->RouteNodes](int32 Begin, int32 End, const FString& BodyName)
+	{
+		for (int32 I = Begin; I < End; ++I)
+		{
+			const FString NodeBodyName = Nodes[I].RigidBody.BodyName.ToString();
+			Test.TestEqual(TEXT("NodeBodyName"), NodeBodyName, BodyName);
+		}
+	};
+
+	RangeHasBody(0, 11, "None");
+	RangeHasBody(11, 12, "Eye Body");
+	RangeHasBody(12, 22, "None");
+	RangeHasBody(22, 23, "Bead Body");
 
 	return true;
 }
@@ -2159,6 +2175,23 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 		Test.TestEqual(TEXT("Sphere angular velocity"), Actual, Expected);
 	}
 
+	// Linear velocity damping.
+	{
+		FVector Actual = SphereBody->LinearVelocityDamping;
+		FVector ExpectedAgx(1.0, 2.0, 3.0);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere linear velocity damping"), Actual, Expected);
+	}
+
+	// Angular velocity damping.
+	{
+		FVector Actual = SphereBody->AngularVelocityDamping;
+		FVector ExpectedAgx(4.0, 5.0, 6.0);
+		FVector Expected = AgxToUnrealVector(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere angular velocity damping"), Actual, Expected);
+	}
+
+
 	// Mass.
 	{
 		Test.TestEqual(TEXT("Sphere mass"), SphereBody->Mass, 500.f);
@@ -2293,6 +2326,11 @@ bool FCheckSimpleGeometriesImportedCommand::Update()
 	auto testShape = [this](USceneComponent* c, const FVector& ExpectedAGXWorldPos)
 	{
 		Test.TestNotNull(TEXT("Component exists"), c);
+		if (c == nullptr)
+		{
+			return;
+		}
+
 		const FVector ExpectedUnrealPos = AgxToUnrealDisplacement(ExpectedAGXWorldPos);
 		Test.TestEqual(
 			TEXT("Component position"),
@@ -2466,7 +2504,10 @@ bool FCheckContactMaterialsImportedCommand::Update()
 
 	Test.TestNotNull("Contact Material Registrar", Registrar);
 	if (Registrar == nullptr)
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
 		return true;
+	}
 
 	Test.TestEqual("Num Contact Materials in Registrar", Registrar->ContactMaterials.Num(), 2);
 
@@ -2474,15 +2515,21 @@ bool FCheckContactMaterialsImportedCommand::Update()
 		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat1Mat2"; });
 	Test.TestNotNull("Cm1", Cm1);
 	if (Cm1 == nullptr)
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
 		return true;
+	}
 
 	Test.TestNotNull("Cm1 Material1", (*Cm1)->Material1);
 	if ((*Cm1)->Material1 == nullptr)
 		return true;
 
 	Test.TestNotNull("Cm1 Material2", (*Cm1)->Material2);
-	if ((*Cm1)->Material2 == nullptr)
+	if (IsAnyNullptr((*Cm1)->Material1, (*Cm1)->Material2))
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
 		return true;
+	}
 
 	Test.TestEqual("Cm1 Material1 name", (*Cm1)->Material1->GetName(), "Mat1");
 	Test.TestEqual("Cm1 Material2 name", (*Cm1)->Material2->GetName(), "Mat2");
@@ -2505,15 +2552,21 @@ bool FCheckContactMaterialsImportedCommand::Update()
 		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat3Mat4"; });
 	Test.TestNotNull("Cm2", Cm2);
 	if (Cm2 == nullptr)
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
 		return true;
+	}
 
 	Test.TestNotNull("Cm2 Material1", (*Cm2)->Material1);
 	if ((*Cm2)->Material1 == nullptr)
 		return true;
 
 	Test.TestNotNull("Cm2 Material2", (*Cm2)->Material2);
-	if ((*Cm2)->Material2 == nullptr)
+	if (IsAnyNullptr((*Cm2)->Material1, (*Cm2)->Material2))
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
 		return true;
+	}
 
 	Test.TestEqual("Cm2 Material1 name", (*Cm2)->Material1->GetName(), "Mat3");
 	Test.TestEqual("Cm2 Material2 name", (*Cm2)->Material2->GetName(), "Mat4");
@@ -2649,6 +2702,11 @@ bool FCheckObserverFramesImportedCommand::Update()
 		Test.TestNotNull(*BodyName, Body);
 		Test.TestNotNull(*GeometryName, Geometry);
 		Test.TestNotNull(*ObserverName, Observer);
+		if (IsAnyNullptr(Body, Geometry, Observer))
+		{
+			return;
+		}
+
 
 		USceneComponent* BodyAsComponent = static_cast<USceneComponent*>(Body);
 		Test.TestEqual(
@@ -2789,6 +2847,12 @@ bool FCheckURDFLinkWithMeshesImportedCommand::Update()
 
 	Test.TestNotNull(TEXT("Urdfmeshvisual"), Urdfmeshvisual);
 	Test.TestNotNull(TEXT("Urdfmeshcollision"), Urdfmeshcollision);
+	if (IsAnyNullptr(Urdfmeshvisual, Urdfmeshcollision))
+	{
+		// Abort the test. It will fail since TestNotNull above will have failed.
+		return true;
+	}
+
 
 	Test.TestFalse("Urdfmeshvisual collide", Urdfmeshvisual->bCanCollide);
 	Test.TestTrue("Urdfmeshcollision collide", Urdfmeshcollision->bCanCollide);
@@ -2930,6 +2994,12 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 	Test.TestNotNull(TEXT("Shperelink"), Shperelink);
 	Test.TestNotNull(TEXT("Cylinderlink"), Cylinderlink);
 	Test.TestNotNull(TEXT("Freefallinglink"), Freefallinglink);
+	if (IsAnyNullptr(Boxlink, Shperelink, Cylinderlink, Freefallinglink))
+	{
+		Test.AddError("At least one Rigid Body was nullptr, cannot continue.");
+		return true;
+	}
+
 
 	if (Boxlink == nullptr || Shperelink == nullptr || Cylinderlink == nullptr ||
 		Freefallinglink == nullptr)
@@ -3077,7 +3147,7 @@ bool FCheckTrackImportedCommand::Update()
 		Test.TestNotNull("Track Component", Track);
 		if (Track == nullptr)
 		{
-			return false;
+			return true;
 		}
 
 		Test.TestEqual("Number Of Nodes", Track->NumberOfNodes, 120);
@@ -3090,7 +3160,7 @@ bool FCheckTrackImportedCommand::Update()
 		Test.TestNotNull("Track Properties", Track->TrackProperties);
 		if (Track->TrackProperties == nullptr)
 		{
-			return false;
+			return true;
 		}
 
 		FString BeautifiedTrackName = Track->GetName();
@@ -3160,7 +3230,7 @@ bool FCheckTrackImportedCommand::Update()
 		Test.TestNotNull("Internal Merge Properties", Track->InternalMergeProperties);
 		if (Track->InternalMergeProperties == nullptr)
 		{
-			return false;
+			return true;
 		}
 
 		Test.TestEqual(
@@ -3404,6 +3474,11 @@ bool FCheckAmorImportedCommand::Update()
 	Test.TestTrue("Body Enable Merge", Body->MergeSplitProperties.bEnableMerge);
 	Test.TestFalse("Body Enable Merge", Body->MergeSplitProperties.bEnableSplit);
 	Test.TestNotNull("Body Thresholds", Body->MergeSplitProperties.Thresholds);
+	if (Body->MergeSplitProperties.Thresholds == nullptr)
+	{
+		return true;
+	}
+
 	Test.TestEqual(
 		"Body Thresholds MaxImpactSpeed",
 		(float) Body->MergeSplitProperties.Thresholds->MaxImpactSpeed, AgxToUnrealDistance(13.0));
@@ -3436,6 +3511,11 @@ bool FCheckAmorImportedCommand::Update()
 	Test.TestTrue("Geometry Enable Merge", Geometry->MergeSplitProperties.bEnableMerge);
 	Test.TestTrue("Geometry Enable Merge", Geometry->MergeSplitProperties.bEnableSplit);
 	Test.TestNotNull("Geometry Thresholds", Geometry->MergeSplitProperties.Thresholds);
+	if (Geometry->MergeSplitProperties.Thresholds == nullptr)
+	{
+		return true;
+	}
+
 	Test.TestEqual(
 		"Geometry share Thresholds", Geometry->MergeSplitProperties.Thresholds,
 		Body->MergeSplitProperties.Thresholds);
@@ -3445,6 +3525,11 @@ bool FCheckAmorImportedCommand::Update()
 	Test.TestFalse("Wire Enable Merge", Wire->MergeSplitProperties.bEnableMerge);
 	Test.TestTrue("Wire Enable Merge", Wire->MergeSplitProperties.bEnableSplit);
 	Test.TestNotNull("Wire Thresholds", Wire->MergeSplitProperties.Thresholds);
+	if (Wire->MergeSplitProperties.Thresholds == nullptr)
+	{
+		return true;
+	}
+
 	Test.TestEqual(
 		"Wire Thresholds ForcePropagationDecayScale",
 		Wire->MergeSplitProperties.Thresholds->ForcePropagationDecayScale, 1.1);
@@ -3465,6 +3550,11 @@ bool FCheckAmorImportedCommand::Update()
 	Test.TestFalse("Constraint Enable Merge", Constraint->MergeSplitProperties.bEnableMerge);
 	Test.TestFalse("Constraint Enable Merge", Constraint->MergeSplitProperties.bEnableSplit);
 	Test.TestNotNull("Constraint Thresholds", Constraint->MergeSplitProperties.Thresholds);
+	if (Constraint->MergeSplitProperties.Thresholds == nullptr)
+	{
+		return true;
+	}
+
 	Test.TestEqual(
 		"Constraint Thresholds MaxDesiredForceRangeDiff",
 		Constraint->MergeSplitProperties.Thresholds->MaxDesiredForceRangeDiff, 4.0);

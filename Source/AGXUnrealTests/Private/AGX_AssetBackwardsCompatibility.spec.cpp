@@ -9,9 +9,9 @@
 #include "Materials/AGX_TerrainMaterial.h"
 
 // Unreal Engine includes.
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistry/IAssetRegistry.h"
 #include "HAL/FileManager.h"
-#include "IAssetRegistry.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/EngineVersion.h"
 #include "Misc/EngineVersionComparison.h"
@@ -115,8 +115,16 @@ namespace RealInMaterialsBackwardsCompatibilitySpec_helpers
 		FAssetRegistryModule& AssetRegistryModule =
 			FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 		IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
-		const FString ObjectPath = FString::Printf(TEXT("%s.%s"), *PackagePath, *ObjectName);
-		FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(*ObjectPath);
+		// ObjectPath is either FString or FSoftObjectPath depending on Engine version.
+		const auto ObjectPath = [&PackagePath, &ObjectName]() {
+			const FString ObjectPath = FString::Printf(TEXT("%s.%s"), *PackagePath, *ObjectName);
+#if UE_VERSION_OLDER_THAN(5, 1, 0)
+			return FName(ObjectPath);
+#else
+			return FSoftObjectPath(ObjectPath);
+#endif
+		}();
+		FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(ObjectPath);
 		check(AssetData.IsValid());
 		MaterialT* Material = Cast<MaterialT>(AssetData.GetAsset());
 		check(Material != nullptr);
@@ -254,81 +262,81 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("13761b5e4237e63665da78201924246a"), *this);
 #endif
 			UAGX_TerrainMaterial* TerrainMaterial = LoadMaterialAsset<UAGX_TerrainMaterial>(PackagePath, ObjectName);
-			TestEqual(
+			TestTrue(
 				TEXT("The terrain material should have restored adhesion overlap factor"),
-				TerrainMaterial->TerrainBulk.AdhesionOverlapFactor, 0.000001);
-			TestEqual(
+				TerrainMaterial->TerrainBulk.AdhesionOverlapFactor == 0.000001);
+			TestTrue(
 				TEXT("The terrain material should have restored cohesion"),
-				TerrainMaterial->TerrainBulk.Cohesion, 0.000002);
-			TestEqual(
+				TerrainMaterial->TerrainBulk.Cohesion == 0.000002);
+			TestTrue(
 				TEXT("The terrain material should have restored density"),
-				TerrainMaterial->TerrainBulk.Density, 0.000003);
-			TestEqual(
+				TerrainMaterial->TerrainBulk.Density == 0.000003);
+			TestTrue(
 				TEXT("The terrain material should have restored dilatancy angle"),
-				TerrainMaterial->TerrainBulk.DilatancyAngle, 0.000004);
-			TestEqual(
+				TerrainMaterial->TerrainBulk.DilatancyAngle == 0.000004);
+			TestTrue(
 				TEXT("The terrain material should have restored friction angle"),
-				TerrainMaterial->TerrainBulk.FrictionAngle, 0.000005);
-			TestEqual(
+				TerrainMaterial->TerrainBulk.FrictionAngle == 0.000005);
+			TestTrue(
 				TEXT("The terrain material should have restored max density"),
-				TerrainMaterial->TerrainBulk.MaxDensity, 0.000006);
-			TestEqual(
+				TerrainMaterial->TerrainBulk.MaxDensity == 0.000006);
+			TestTrue(
 				TEXT("The terrain material should have restored Poisson's ration"),
-				TerrainMaterial->TerrainBulk.PoissonsRatio, 0.000007);
-			TestEqual(
+				TerrainMaterial->TerrainBulk.PoissonsRatio == 0.000007);
+			TestTrue(
 				TEXT("The terrain material should have restored swell factor"),
-				TerrainMaterial->TerrainBulk.SwellFactor, 0.000008);
-			TestEqual(
+				TerrainMaterial->TerrainBulk.SwellFactor == 0.000008);
+			TestTrue(
 				TEXT("The terrain material should have restored Young's modulus"),
-				TerrainMaterial->TerrainBulk.YoungsModulus, 0.000009);
-			TestEqual(
+				TerrainMaterial->TerrainBulk.YoungsModulus == 0.000009);
+			TestTrue(
 				TEXT("The terrain material should have restored angle of repose compaction rate"),
-				TerrainMaterial->TerrainCompaction.AngleOfReposeCompactionRate, 0.000011);
-			TestEqual(
+				TerrainMaterial->TerrainCompaction.AngleOfReposeCompactionRate == 0.000011);
+			TestTrue(
 				TEXT("The terrain material should have restored phi 0"),
-				TerrainMaterial->TerrainCompaction.BankStatePhi0, 0.000012);
-			TestEqual(
+				TerrainMaterial->TerrainCompaction.BankStatePhi0 == 0.000012);
+			TestTrue(
 				TEXT("The terrain material should have restored compaction time relaxation constant"),
-				TerrainMaterial->TerrainCompaction.CompactionTimeRelaxationConstant, 0.000013);
-			TestEqual(
+				TerrainMaterial->TerrainCompaction.CompactionTimeRelaxationConstant == 0.000013);
+			TestTrue(
 				TEXT("The terrain material should have restored compression index"),
-				TerrainMaterial->TerrainCompaction.CompressionIndex, 0.000014);
-			TestEqual(
+				TerrainMaterial->TerrainCompaction.CompressionIndex == 0.000014);
+			TestTrue(
 				TEXT("The terrain material should have restored K E"),
-				TerrainMaterial->TerrainCompaction.HardeningConstantKe, 0.000015);
-			TestEqual(
+				TerrainMaterial->TerrainCompaction.HardeningConstantKe == 0.000015);
+			TestTrue(
 				TEXT("The terrain material should have restored N E"),
-				TerrainMaterial->TerrainCompaction.HardeningConstantNe, 0.000016);
-			TestEqual(
+				TerrainMaterial->TerrainCompaction.HardeningConstantNe == 0.000016);
+			TestTrue(
 				TEXT("The terrain material should have restored preconsolidation stress"),
-				TerrainMaterial->TerrainCompaction.PreconsolidationStress, 0.000017);
-			TestEqual(
+				TerrainMaterial->TerrainCompaction.PreconsolidationStress == 0.000017);
+			TestTrue(
 				TEXT("The terrain material should have restored stress cut off fraction"),
-				TerrainMaterial->TerrainCompaction.StressCutOffFraction, 0.000018);
-			TestEqual(
+				TerrainMaterial->TerrainCompaction.StressCutOffFraction == 0.000018);
+			TestTrue(
 				TEXT("The shape material should have restored Roughness"),
-				TerrainMaterial->Surface.Roughness, 0.000019);
-			TestEqual(
+				TerrainMaterial->Surface.Roughness == 0.000019);
+			TestTrue(
 				TEXT("The shape material should have restored viscosity"),
-				TerrainMaterial->Surface.Viscosity, 0.000021);
-			TestEqual(
+				TerrainMaterial->Surface.Viscosity == 0.000021);
+			TestTrue(
 				TEXT("The shape material should have restored adhesive force"),
-				TerrainMaterial->Surface.AdhesiveForce, 0.000022);
-			TestEqual(
+				TerrainMaterial->Surface.AdhesiveForce == 0.000022);
+			TestTrue(
 				TEXT("The shape material should have restored adhesive overlap"),
-				TerrainMaterial->Surface.AdhesiveOverlap, 0.000023);
-			TestEqual(
+				TerrainMaterial->Surface.AdhesiveOverlap == 0.000023);
+			TestTrue(
 				TEXT("The shape material should have restored Young's modulus stretch"),
-				TerrainMaterial->Wire.YoungsModulusStretch, 0.000024);
-			TestEqual(
+				TerrainMaterial->Wire.YoungsModulusStretch == 0.000024);
+			TestTrue(
 				TEXT("The shape material should have restored Spook damping stretch"),
-				TerrainMaterial->Wire.SpookDampingStretch, 0.000025);
-			TestEqual(
+				TerrainMaterial->Wire.SpookDampingStretch == 0.000025);
+			TestTrue(
 				TEXT("The shape material should have restored Young's modulus bend"),
-				TerrainMaterial->Wire.YoungsModulusBend, 0.000026);
-			TestEqual(
+				TerrainMaterial->Wire.YoungsModulusBend == 0.000026);
+			TestTrue(
 				TEXT("The shape material should have restored Spook damping bend"),
-				TerrainMaterial->Wire.SpookDampingBend, 0.000027);
+				TerrainMaterial->Wire.SpookDampingBend == 0.000027);
 		});
 	});
 }

@@ -15,6 +15,7 @@
 
 #include "AGX_Terrain.generated.h"
 
+class UAGX_HeightFieldBoundsComponent;
 class UAGX_TerrainMaterial;
 class ALandscape;
 class UNiagaraComponent;
@@ -28,6 +29,9 @@ class AGXUNREAL_API AAGX_Terrain : public AActor
 public:
 	// Sets default values for this actor's properties
 	AAGX_Terrain();
+
+	UPROPERTY(Category = "AGX Terrain", VisibleAnywhere, BlueprintReadOnly)
+	UAGX_HeightFieldBoundsComponent* TerrainBounds;
 
 	/**
 	 * The Landscape that AGX Terrain will use as initialization data, and will also modify
@@ -116,6 +120,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
 	bool SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial);
+
+	/**
+	 * If a Particle System Component has been spawned by the Terrain, this function will return it.
+	 * Returns nullptr otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	UNiagaraComponent* GetSpawnedParticleSystemComponent();
 
 	/**
 	 * A list of the rigid body actors that should be used as terrain shovels.
@@ -210,9 +221,9 @@ private:
 	void CreateNativeShovels();
 	bool UpdateNativeMaterial();
 
-	void SetInitialTransform();
 	void InitializeRendering();
 	void InitializeDisplacementMap();
+	void UpdateLandscapeMaterialParameters();
 	void UpdateDisplacementMap();
 	void ClearDisplacementMap();
 	bool InitializeParticleSystem();
@@ -224,12 +235,14 @@ private:
 	void InitPropertyDispatcher();
 	void EnsureParticleDataRenderTargetSize();
 #endif
+	virtual void Serialize(FArchive& Archive) override;
 
 private:
 	FTerrainBarrier NativeBarrier;
 
 	// Height field related variables.
 	TArray<float> OriginalHeights;
+	TArray<float> CurrentHeights;
 	TArray<FFloat16> DisplacementData;
 	TArray<FUpdateTextureRegion2D> DisplacementMapRegions; // TODO: Remove!
 	bool DisplacementMapInitialized = false;

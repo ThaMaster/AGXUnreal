@@ -6,8 +6,6 @@
 
 FAGX_ConstraintFrictionController::FAGX_ConstraintFrictionController(bool bRotational)
 	: FAGX_ConstraintController(bRotational)
-	, FrictionCoefficient(0.416667)
-	, bEnableNonLinearDirectSolveUpdate(false)
 {
 }
 

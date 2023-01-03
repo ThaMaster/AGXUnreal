@@ -28,7 +28,7 @@ struct AGXUNREAL_API FAGX_ConstraintLockController : public FAGX_ConstraintContr
 	 * Degree-Of-Freedom, else in centimeters[cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Lock Controller", Meta = (EditCondition = "bEnable"))
-	double Position;
+	double Position {0.0};
 
 	void SetPosition(double InPosisiton);
 	double GetPosition();

@@ -251,7 +251,7 @@ public:
 	 */
 	void GetNodeTransforms(
 		TArray<FTransform>& OutTransforms, const FVector& LocalScale,
-		const FVector& LocalOffset) const;
+		const FVector& LocalOffset, const FQuat& LocalRotation) const;
 
 	/**
 	 * Get the sizes of all track nodes.

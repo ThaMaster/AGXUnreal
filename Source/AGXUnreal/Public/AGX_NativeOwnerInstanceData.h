@@ -57,7 +57,7 @@ struct AGXUNREAL_API FAGX_NativeOwnerInstanceData : public FSceneComponentInstan
 
 private:
 	UPROPERTY()
-	uint64 NativeAddress;
+	uint64 NativeAddress {0};
 
 	TFunction<IAGX_NativeOwner*(UActorComponent*)> Downcaster;
 };

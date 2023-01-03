@@ -4,6 +4,8 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImportSettings.h"
+#include "AGX_LogCategory.h"
+#include "AGX_ImporterToBlueprint.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 
@@ -32,7 +34,7 @@ void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 			[
 				SNew(SBorder)
 				.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
-				.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+				.BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
 				.Padding(FMargin(5.0f, 5.0f))
 				.Content()
 				[
@@ -154,7 +156,7 @@ TSharedRef<SWidget> SAGX_ImportDialog::CreateBrowseFileGui()
 	using namespace AGX_ImportDialog_helpers;
 
 	// clang-format off
-return SNew(SVerticalBox)
+	return SNew(SVerticalBox)
 		+ SVerticalBox::Slot()
 		.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
 		.AutoHeight()
@@ -207,7 +209,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateImportButtonGui()
 	// clang-format off
 	return SNew(SBorder)
 				.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
-				.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+				.BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
 				.Padding(FMargin(5.0f, 5.0f))
 				.Content()
 				[
@@ -238,7 +240,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateSettingsGui()
 	// clang-format off
 	return SNew(SBorder)
 		.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
-		.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+		.BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
 		.Padding(FMargin(5.0f, 5.0f))
 		.Content()
 		[
@@ -282,7 +284,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateImportURDFFileGui()
 	// clang-format off
 	return SNew(SBorder)
 				.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
-				.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+				.BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
 				.Padding(FMargin(5.0f, 5.0f))
 				.Content()
 				[

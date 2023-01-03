@@ -31,7 +31,7 @@ struct AGXUNREAL_API FAGX_ConstraintFrictionController : public FAGX_ConstraintC
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Friction Controller", Meta = (EditCondition = "bEnable"))
-	double FrictionCoefficient;
+	double FrictionCoefficient {0.416667};
 
 	void SetFrictionCoefficient(double InFrictionCoefficient);
 
@@ -48,7 +48,7 @@ struct AGXUNREAL_API FAGX_ConstraintFrictionController : public FAGX_ConstraintC
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Friction Controller", Meta = (EditCondition = "bEnable"))
-	bool bEnableNonLinearDirectSolveUpdate;
+	bool bEnableNonLinearDirectSolveUpdate {false};
 
 	void SetEnableNonLinearDirectSolveUpdate(bool bInEnableNonLinearDirectSolveUpdate);
 

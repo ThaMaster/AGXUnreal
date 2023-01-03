@@ -66,12 +66,12 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	/** Frame location relative to either the Constraint, the Rigid Body Actor or from the Frame
 	 * Defining Actor. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
-	FVector LocalFrameLocation;
+	FVector LocalFrameLocation {FVector::ZeroVector};
 
 	/** Frame rotation relative to to either the Constraint, the Rigid Body Actor or from the Frame
 	 * Defining Actor. */
 	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
-	FRotator LocalFrameRotation;
+	FRotator LocalFrameRotation {FRotator::ZeroRotator};
 
 	UAGX_RigidBodyComponent* GetRigidBody() const;
 

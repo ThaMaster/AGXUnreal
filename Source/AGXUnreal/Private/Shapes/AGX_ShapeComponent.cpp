@@ -46,7 +46,7 @@ void UAGX_ShapeComponent::SetNativeAddress(uint64 NativeAddress)
 	if (HasNative())
 	{
 		MergeSplitProperties.BindBarrierToOwner(*GetNative());
-	}	
+	}
 }
 
 TStructOnScope<FActorComponentInstanceData> UAGX_ShapeComponent::GetComponentInstanceData() const
@@ -241,7 +241,8 @@ void UAGX_ShapeComponent::BeginPlay()
 		UpdateNativeGlobalTransform();
 	}
 
-	MergeSplitProperties.OnBeginPlay(*this);
+	if (HasNative())
+		MergeSplitProperties.OnBeginPlay(*this);
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)

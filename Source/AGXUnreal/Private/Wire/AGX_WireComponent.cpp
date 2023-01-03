@@ -1504,7 +1504,7 @@ namespace AGX_WireComponent_helpers
 		{
 			const FComponentReference* Reference = Wire.GetWinchComponentReference(Side);
 			const FString WinchName = Reference->ComponentProperty.ToString();
-			const FString ActorName = GetLabelSafe(Reference->OtherActor);
+			const FString ActorName = GetLabelSafe(FAGX_ObjectUtilities::GetActor(*Reference));
 			UE_LOG(
 				LogAGX, Error, Message, *Wire.GetName(), *GetLabelSafe(Wire.GetOwner()), *WinchName,
 				*ActorName);

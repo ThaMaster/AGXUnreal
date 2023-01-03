@@ -28,7 +28,7 @@ struct AGXUNREAL_API FAGX_ConstraintScrewController : public FAGX_ConstraintCont
 	 * [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Screw Controller", Meta = (EditCondition = "bEnable"))
-	double Lead;
+	double Lead {0.0};
 
 	void SetLead(double InLead);
 	double GetLead() const;

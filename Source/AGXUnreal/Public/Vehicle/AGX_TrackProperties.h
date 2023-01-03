@@ -42,9 +42,7 @@ public:
 	 * Compliance of the hinges between track nodes, along the axis pointing sideways
 	 * (i.e. the rotation axis) [m/N].
 	 */
-	UPROPERTY(
-		EditAnywhere, Category = "Hinge Compliance",
-		Meta = (DisplayName = "SetHingeComplianceTranslational", ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, Category = "Hinge Compliance", Meta = (ClampMin = "0.0"))
 	FAGX_Real HingeComplianceTranslational_Z = DefaultHingeCompliance;
 
 	void SetHingeComplianceTranslational(

@@ -365,6 +365,13 @@ inline FVector ConvertAngularVelocity(const agx::Vec3& V)
 	 * Unreal Engine, at least according to the rotation widget in the Details Panel, uses
 	 * right-handed rotations for the X and Y axes, and left-handed rotations for the Z axis.
 	 *
+	 * Axis | Rotation
+	 *      | Handedness
+	 * ---------------
+	 *  X	| Right
+	 *  Y	| Right
+	 *  Z	| Left
+	 *
 	 * AGX Dynamics is right-handed throughout. There are two sets of flips going on, one because of
 	 * the left-vs-right-handedness of the coordinate system itself and one for the
 	 * left-vs-right-handedness of each axis' rotation. The X axis point in the same direction in

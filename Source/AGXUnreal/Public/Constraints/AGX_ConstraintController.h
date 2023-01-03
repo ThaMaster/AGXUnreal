@@ -75,7 +75,7 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	double GetSpookDamping() const;
 
 	/**
-	 * The minimum and maximum force that the constraint controller can produce [N].
+	 * The minimum and maximum force or torque that the constraint controller can produce [N] or [Nm].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))

@@ -29,7 +29,7 @@ void FAGXUnrealModule::RegisterCoreRedirects()
 	TArray<FCoreRedirect> Redirects;
 
 	Redirects.Emplace(
-		ECoreRedirectFlags::Type_Class, TEXT("AGX_ContactMaterial"),
+		ECoreRedirectFlags::Type_Class, TEXT("AGX_ContactMaterialBase"),
 		TEXT("AGX_ContactMaterial"));
 	Redirects.Emplace(
 		ECoreRedirectFlags::Type_Class, TEXT("AGX_ContactMaterialAsset"),
