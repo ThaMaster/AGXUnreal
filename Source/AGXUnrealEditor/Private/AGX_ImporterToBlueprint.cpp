@@ -7,6 +7,8 @@
 #include "AGX_ImportEnums.h"
 #include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
+#include "AGX_ObserverFrameComponent.h"
+#include "AGX_ReImportComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SimObjectsImporterHelper.h"
 #include "AGXSimObjectsReader.h"
@@ -370,8 +372,8 @@ namespace
 		for (const auto& ObserverFr : SimObjects.GetObserverFrames())
 		{
 			Success &= Helper.InstantiateObserverFrame(
-						   ObserverFr.Name, ObserverFr.BodyGuid, ObserverFr.Transform,
-						   ImportedActor) != nullptr;
+						   ObserverFr.Name, ObserverFr.BodyGuid, ObserverFr.ObserverGuid,
+						   ObserverFr.Transform, ImportedActor) != nullptr;
 		}
 
 		return Success;
@@ -903,6 +905,12 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 					if (Tw->ImportGuid.IsValid())
 						TwoBodyTires.Add(Tw->ImportGuid, Node);
 				}
+				else if (auto Ob = Cast<UAGX_ObserverFrameComponent>(Component))
+				{
+					AGX_CHECK(!ObserverFrames.Contains(Ob->ImportGuid));
+					if (Ob->ImportGuid.IsValid())
+						ObserverFrames.Add(Ob->ImportGuid, Node);
+				}
 				else if (auto Wi = Cast<UAGX_WireComponent>(Component))
 				{
 					// Not supported, will be ignored.
@@ -934,6 +942,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		TMap<FGuid, USCS_Node*> DistanceConstraints;
 		TMap<FGuid, USCS_Node*> LockConstraints;
 		TMap<FGuid, USCS_Node*> TwoBodyTires;
+		TMap<FGuid, USCS_Node*> ObserverFrames;
 
 		// Guid is the AGX Dynamics shape (Trimesh) guid.
 		TMap<FGuid, USCS_Node*> CollisionStaticMeshComponents;
@@ -989,26 +998,21 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 	}
 
-	UAGX_ContactMaterialRegistrarComponent* GetOrCreateContactMaterialRegistrarComponent(
-		UBlueprint& BaseBP)
+	USCS_Node* GetOrCreateContactMaterialRegistrarNode(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes)
 	{
-		auto CMRegistrar = FAGX_BlueprintUtilities::GetFirstComponentOfType<
-			UAGX_ContactMaterialRegistrarComponent>(&BaseBP);
-		if (CMRegistrar == nullptr)
+		if (SCSNodes.ContactMaterialRegistrarComponent != nullptr)
 		{
-			USCS_Node* NewNode = BaseBP.SimpleConstructionScript->CreateNode(
-				UAGX_ContactMaterialRegistrarComponent::StaticClass(),
-				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
-			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
-			CMRegistrar = Cast<UAGX_ContactMaterialRegistrarComponent>(NewNode->ComponentTemplate);
+			return SCSNodes.ContactMaterialRegistrarComponent;
 		}
 
-		if (USCS_Node* Node = FAGX_BlueprintUtilities::GetSCSNodeFromComponent(CMRegistrar))
-		{
-			Node->SetVariableName(TEXT("AGX_ContactMaterialRegistrar"));
-		}
+		USCS_Node* NewNode = BaseBP.SimpleConstructionScript->CreateNode(
+			UAGX_ContactMaterialRegistrarComponent::StaticClass(),
+			FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+		BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
+		SCSNodes.ContactMaterialRegistrarComponent = NewNode;
 
-		return CMRegistrar;
+		return NewNode;
 	}
 
 	void ReParentNode(UBlueprint& BaseBP, USCS_Node& Node, USCS_Node& NewParent)
@@ -1023,15 +1027,18 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	}
 
 	void AddOrUpdateContactMaterials(
-		UBlueprint& BaseBP, const FSimulationObjectCollection& SimulationObjects,
-		FAGX_SimObjectsImporterHelper& Helper)
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
 	{
 		if (SimulationObjects.GetContactMaterials().Num() == 0)
 		{
 			return;
 		}
 
-		auto CMRegistrar = GetOrCreateContactMaterialRegistrarComponent(BaseBP);
+		USCS_Node* CMRegistrarNode = GetOrCreateContactMaterialRegistrarNode(BaseBP, SCSNodes);
+		CMRegistrarNode->SetVariableName(TEXT("AGX_ContactMaterialRegistrar"));
+		auto CMRegistrar =
+			Cast<UAGX_ContactMaterialRegistrarComponent>(CMRegistrarNode->ComponentTemplate);
 
 		// Find all existing assets that might be of interest from the previous import.
 		const FString ContactMaterialDirPath =
@@ -1077,6 +1084,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			Node = BaseBP.SimpleConstructionScript->CreateNode(
 				TComponent::StaticClass(), FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 			AttachParent->AddChildNode(Node);
+			SCSNodes.ShapeComponents.Add(Guid, Node);
 		}
 
 		Helper.UpdateComponent(Barrier, *Cast<TComponent>(Node->ComponentTemplate), MSTsOnDisk);
@@ -1110,6 +1118,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 				UStaticMeshComponent::StaticClass(),
 				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 			AttachParent.AddChildNode(RenderDataNode);
+			SCSNodes.RenderStaticMeshComponents.Add(RenderDataGuid, RenderDataNode);
 		}
 
 		Helper.UpdateRenderDataComponent(
@@ -1138,6 +1147,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 					FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 				BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(
 					RigidBodyNode);
+				SCSNodes.RigidBodies.Add(Guid, RigidBodyNode);
 			}
 
 			Helper.UpdateRigidBodyComponent(
@@ -1200,6 +1210,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 							UStaticMeshComponent::StaticClass(),
 							FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 						ShapeNode->AddChildNode(CollisionMesh);
+						SCSNodes.CollisionStaticMeshComponents.Add(
+							ShapeBarrier.GetShapeGuid(), CollisionMesh);
 					}
 					else
 					{
@@ -1273,6 +1285,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 						UStaticMeshComponent::StaticClass(),
 						FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 					ShapeNode->AddChildNode(CollisionMesh);
+					SCSNodes.CollisionStaticMeshComponents.Add(
+						Barrier.GetShapeGuid(), CollisionMesh);
 				}
 				else
 				{
@@ -1299,51 +1313,80 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 	{
 		USCS_Node* RootNode = BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode();
 
+		// Returns true if a new Constraint was created, false otherwise.
 		auto AddOrUpdateConstraint = [&](const auto& NewConstraints,
-										 const TMap<FGuid, USCS_Node*>& OldConstraints,
-										 UClass* ConstraintClass)
+										 const TMap<FGuid, USCS_Node*>& BPConstraints,
+										 UClass* ConstraintClass) -> TMap<FGuid, USCS_Node*>
 		{
+			TMap<FGuid, USCS_Node*> CreatedConstraints;
 			for (const auto& Barrier : NewConstraints)
 			{
 				const FGuid ConstraintGuid = Barrier.GetGuid();
 				USCS_Node* Constraint = nullptr;
-				if (OldConstraints.Contains(ConstraintGuid))
+				if (BPConstraints.Contains(ConstraintGuid))
 				{
-					Constraint = OldConstraints[ConstraintGuid];
+					Constraint = BPConstraints[ConstraintGuid];
 				}
 				else
 				{
 					Constraint = BaseBP.SimpleConstructionScript->CreateNode(
 						ConstraintClass, FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 					RootNode->AddChildNode(Constraint);
+					CreatedConstraints.Add(ConstraintGuid, Constraint);
 				}
-				// Helper.UpdateConstraintComponent(Constraint)...
+				Helper.UpdateConstraintComponent(
+					Barrier, *Cast<UAGX_ConstraintComponent>(Constraint->ComponentTemplate));
 			}
+			return CreatedConstraints;
 		};
 
-		AddOrUpdateConstraint(
-			SimulationObjects.GetHingeConstraints(), SCSNodes.HingeConstraints,
-			UAGX_HingeConstraintComponent::StaticClass());
+		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraint(
+				 SimulationObjects.GetHingeConstraints(), SCSNodes.HingeConstraints,
+				 UAGX_HingeConstraintComponent::StaticClass()))
+		{
+			SCSNodes.HingeConstraints.Add(
+				CreatedConstraintsTuple.Key, CreatedConstraintsTuple.Value);
+		}
 
-		AddOrUpdateConstraint(
-			SimulationObjects.GetPrismaticConstraints(), SCSNodes.PrismaticConstraints,
-			UAGX_PrismaticConstraintComponent::StaticClass());
+		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraint(
+				 SimulationObjects.GetPrismaticConstraints(), SCSNodes.PrismaticConstraints,
+				 UAGX_PrismaticConstraintComponent::StaticClass()))
+		{
+			SCSNodes.PrismaticConstraints.Add(
+				CreatedConstraintsTuple.Key, CreatedConstraintsTuple.Value);
+		}
 
-		AddOrUpdateConstraint(
-			SimulationObjects.GetBallConstraints(), SCSNodes.BallConstraints,
-			UAGX_BallConstraintComponent::StaticClass());
+		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraint(
+				 SimulationObjects.GetBallConstraints(), SCSNodes.BallConstraints,
+				 UAGX_BallConstraintComponent::StaticClass()))
+		{
+			SCSNodes.BallConstraints.Add(
+				CreatedConstraintsTuple.Key, CreatedConstraintsTuple.Value);
+		}
 
-		AddOrUpdateConstraint(
-			SimulationObjects.GetCylindricalConstraints(), SCSNodes.CylindricalConstraints,
-			UAGX_CylindricalConstraintComponent::StaticClass());
+		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraint(
+				 SimulationObjects.GetCylindricalConstraints(), SCSNodes.CylindricalConstraints,
+				 UAGX_CylindricalConstraintComponent::StaticClass()))
+		{
+			SCSNodes.CylindricalConstraints.Add(
+				CreatedConstraintsTuple.Key, CreatedConstraintsTuple.Value);
+		}
 
-		AddOrUpdateConstraint(
-			SimulationObjects.GetDistanceConstraints(), SCSNodes.DistanceConstraints,
-			UAGX_DistanceConstraintComponent::StaticClass());
+		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraint(
+				 SimulationObjects.GetDistanceConstraints(), SCSNodes.DistanceConstraints,
+				 UAGX_DistanceConstraintComponent::StaticClass()))
+		{
+			SCSNodes.DistanceConstraints.Add(
+				CreatedConstraintsTuple.Key, CreatedConstraintsTuple.Value);
+		}
 
-		AddOrUpdateConstraint(
-			SimulationObjects.GetLockConstraints(), SCSNodes.LockConstraints,
-			UAGX_LockConstraintComponent::StaticClass());
+		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraint(
+				 SimulationObjects.GetLockConstraints(), SCSNodes.LockConstraints,
+				 UAGX_LockConstraintComponent::StaticClass()))
+		{
+			SCSNodes.LockConstraints.Add(
+				CreatedConstraintsTuple.Key, CreatedConstraintsTuple.Value);
+		}
 	}
 
 	void AddOrUpdateTwoBodyTires(
@@ -1364,6 +1407,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 					UAGX_TwoBodyTireComponent::StaticClass(),
 					FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 				BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(TireNode);
+				SCSNodes.TwoBodyTires.Add(Guid, TireNode);
 			}
 
 			Helper.UpdateTwoBodyTire(
@@ -1382,10 +1426,19 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 		else
 		{
+			if (SimulationObjects.GetDisabledCollisionGroups().Num() == 0)
+			{
+				// In the case that no CollisionGroupDisablerComponent existed before the re-import,
+				// and there are no disabled Collision Groups in the model being re-imported, there
+				// is no need to create a CollisionGroupDisablerComponent. We are done.
+				return;
+			}
+
 			DisablerNode = BaseBP.SimpleConstructionScript->CreateNode(
 				UAGX_CollisionGroupDisablerComponent::StaticClass(),
 				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(DisablerNode);
+			SCSNodes.CollisionGroupDisablerComponent = DisablerNode;
 		}
 
 		Helper.UpdateCollisionGroupDisabler(
@@ -1393,24 +1446,70 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			*Cast<UAGX_CollisionGroupDisablerComponent>(DisablerNode->ComponentTemplate));
 	}
 
+	void AddOrUpdateObserverFrames(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		for (const auto& ObserverFrame : SimulationObjects.GetObserverFrames())
+		{
+			const FGuid Guid = ObserverFrame.ObserverGuid;
+			USCS_Node* ObserverNode = nullptr;
+			USCS_Node* AttachParent = nullptr;
+			if (SCSNodes.RigidBodies.Contains(ObserverFrame.BodyGuid))
+			{
+				AttachParent = SCSNodes.RigidBodies[ObserverFrame.BodyGuid];
+			}
+			else
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Could not find Rigid Body with Guid '%s' that should act as the "
+						 "attach parent for Observer Frame '%s'. The Observer Frame will be "
+						 "attached to the root Component instead."),
+					*ObserverFrame.BodyGuid.ToString(), *ObserverFrame.Name);
+				AttachParent = BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode();
+			}
+
+			if (SCSNodes.ObserverFrames.Contains(Guid))
+			{
+				ObserverNode = SCSNodes.ObserverFrames[Guid];
+				ReParentNode(BaseBP, *ObserverNode, *AttachParent);
+			}
+			else
+			{
+				ObserverNode = BaseBP.SimpleConstructionScript->CreateNode(
+					UAGX_ObserverFrameComponent::StaticClass(),
+					FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+				AttachParent->AddChildNode(ObserverNode);
+				SCSNodes.ObserverFrames.Add(ObserverFrame.ObserverGuid, ObserverNode);
+			}
+
+			Helper.UpdateObserverFrameComponent(
+				ObserverFrame.Name, ObserverFrame.ObserverGuid, ObserverFrame.Transform,
+				*Cast<UAGX_ObserverFrameComponent>(ObserverNode->ComponentTemplate));
+		}
+	}
+
 	void AddOrUpdateReImportComponent(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper)
 	{
+		USCS_Node* ReImportComponent = nullptr;
 		if (SCSNodes.ReImportComponent == nullptr)
 		{
-			USCS_Node* NewNode = BaseBP.SimpleConstructionScript->CreateNode(
+			ReImportComponent = BaseBP.SimpleConstructionScript->CreateNode(
 				UAGX_ReImportComponent::StaticClass(),
 				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
-			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(NewNode);
-
-			Helper.UpdateReImportComponent(
-				*Cast<UAGX_ReImportComponent>(NewNode->ComponentTemplate));
+			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(
+				ReImportComponent);
+			SCSNodes.ReImportComponent = ReImportComponent;
 		}
 		else
 		{
-			Helper.UpdateReImportComponent(
-				*Cast<UAGX_ReImportComponent>(SCSNodes.ReImportComponent->ComponentTemplate));
+			ReImportComponent = SCSNodes.ReImportComponent;
 		}
+
+		Helper.UpdateReImportComponent(
+			*Cast<UAGX_ReImportComponent>(ReImportComponent->ComponentTemplate));
 	}
 
 	FString GetModelDirectoryFromAsset(UObject* Asset)
@@ -1432,6 +1531,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		return "";
 	}
 
+	// The passed SCSNodes will be kept up to date, i.e. elements added to BaseBP will have their
+	// corresponding SCS Node removed from SCSNodes as well.
 	void AddOrUpdateAll(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects,
@@ -1448,7 +1549,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			FindAGXAssetComponents<UAGX_MergeSplitThresholdsBase>(MSTDirPath);
 
 		AddOrUpdateShapeMaterials(BaseBP, SimulationObjects, Helper);
-		AddOrUpdateContactMaterials(BaseBP, SimulationObjects, Helper);
+		AddOrUpdateContactMaterials(BaseBP, SCSNodes, SimulationObjects, Helper);
 		AddOrUpdateRigidBodiesAndOwnedShapes(
 			BaseBP, SCSNodes, SimulationObjects, Helper, ImportSettings, ExistingMSTAssets);
 		AddOrUpdateBodilessShapes(
@@ -1456,6 +1557,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		AddOrUpdateConstraints(BaseBP, SCSNodes, SimulationObjects, Helper);
 		AddOrUpdateTwoBodyTires(BaseBP, SCSNodes, SimulationObjects, Helper);
 		AddOrUpdateCollisionGroupDisabler(BaseBP, SCSNodes, SimulationObjects, Helper);
+		AddOrUpdateObserverFrames(BaseBP, SCSNodes, SimulationObjects, Helper);
 		AddOrUpdateReImportComponent(BaseBP, SCSNodes, Helper);
 
 		Helper.FinalizeImport();
@@ -1599,6 +1701,27 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 	}
 
+	void RemoveDeletedObserverFrames(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects)
+	{
+		TArray<FGuid> ObserverGuids;
+		ObserverGuids.Reserve(SimulationObjects.GetObserverFrames().Num());
+		for (const auto& ObserverFrame : SimulationObjects.GetObserverFrames())
+		{
+			ObserverGuids.Add(ObserverFrame.ObserverGuid);
+		}
+
+		for (auto It = SCSNodes.ObserverFrames.CreateIterator(); It; ++It)
+		{
+			if (!ObserverGuids.Contains(It->Key))
+			{
+				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
+				It.RemoveCurrent();
+			}
+		}
+	}
+
 	// Removes Components that are not present in the new SimulationObjectCollection, meaning they
 	// were deleted from the source file since the previous import. The passed SCSNodes will also
 	// be kept up to date, i.e. elements removed from BaseBP will have their corresponding SCS Node
@@ -1615,6 +1738,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		RemoveDeletedRigidBodies(BaseBP, SCSNodes, SimulationObjects);
 		RemoveDeletedConstraints(BaseBP, SCSNodes, SimulationObjects);
 		RemoveDeletedTireModels(BaseBP, SCSNodes, SimulationObjects);
+		RemoveDeletedObserverFrames(BaseBP, SCSNodes, SimulationObjects);
 	}
 
 	void SetUnnamedNameForAll(UBlueprint& BaseBP)
@@ -1671,7 +1795,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects, ImportSettings);
 
-		// This overwrites all Node names with temporary names.
+		// This overwrites all (supported) Node names with temporary names.
 		// We do this since old to-be-removed or to-be-renamed Nodes may "block" the availability of
 		// a certain name (all Node names must be unique) that would otherwise be used for a new
 		// Component name. This would make the result of a ReImport non-deterministic in terms of

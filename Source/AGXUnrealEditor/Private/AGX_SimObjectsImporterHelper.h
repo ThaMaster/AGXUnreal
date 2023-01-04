@@ -31,6 +31,7 @@ class UAGX_TrimeshShapeComponent;
 class UAGX_ShapeMaterial;
 class UAGX_ContactMaterial;
 class UAGX_HingeConstraintComponent;
+class UAGX_ObserverFrameComponent;
 class UAGX_PrismaticConstraintComponent;
 class UAGX_BallConstraintComponent;
 class UAGX_CylindricalConstraintComponent;
@@ -179,23 +180,13 @@ public:
 
 	UAGX_ReImportComponent* InstantiateReImportComponent(AActor& Owner);
 
-	/**
-	 * We currently do not have full Observer Frame support in AGX Dynamics for Unreal, i.e. there
-	 * is no Observer Frame Component or Barrier. The coordinate frame defined by an Observer Frame
-	 * can still be useful, for example to act as attachment points for constraints, so for now we
-	 * instantiate a plain Scene Component for each imported Observer Frame.
-	 *
-	 * Replace all parameters with a FObserverFrameBarrier once we implement full Observer Frame
-	 * support.
-	 *
-	 * \param Name The name of the Observer Frame.
-	 * \param BodyGuid The GUID of the Rigid Body that the Observer Frame is attached to.
-	 * \param Transform The transformation of the Observer Frame relative to the Rigid Body.
-	 * \param Owner The Actor in which the new Scene Component is to be created.
-	 * \return The Scene Component created at the location of the Observer Frame.
-	 */
-	USceneComponent* InstantiateObserverFrame(
-		const FString& Name, const FGuid& BodyGuid, const FTransform& Transform, AActor& Owner);
+	UAGX_ObserverFrameComponent* InstantiateObserverFrame(
+		const FString& Name, const FGuid& BodyGuid, const FGuid& ObserverGuid,
+		const FTransform& Transform, AActor& Owner);
+
+	void UpdateObserverFrameComponent(
+		const FString& Name, const FGuid& ObserverGuid, const FTransform& Transform,
+		UAGX_ObserverFrameComponent& Component);
 
 	UAGX_RigidBodyComponent* GetBody(
 		const FRigidBodyBarrier& Barrier, bool LogErrorIfNotFound = true);

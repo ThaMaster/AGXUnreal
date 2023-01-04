@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_ObserverFrameComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_AmorEnums.h"
 #include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
@@ -1255,7 +1256,7 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 {
 	UAGX_TwoBodyTireComponent* Component = NewObject<UAGX_TwoBodyTireComponent>(&Owner);
 
-	UpdateTwoBodyTire(Barrier, *Component);	
+	UpdateTwoBodyTire(Barrier, *Component);
 
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
@@ -1664,8 +1665,9 @@ UAGX_ReImportComponent* FAGX_SimObjectsImporterHelper::InstantiateReImportCompon
 	return ReImportComponent;
 }
 
-USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
-	const FString& Name, const FGuid& BodyGuid, const FTransform& Transform, AActor& Owner)
+UAGX_ObserverFrameComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
+	const FString& Name, const FGuid& BodyGuid, const FGuid& ObserverGuid,
+	const FTransform& Transform, AActor& Owner)
 {
 	// Get the Rigid Body the imported Observer Frame should be attached to.
 	UAGX_RigidBodyComponent* Body = RestoredBodies.FindRef(BodyGuid);
@@ -1680,42 +1682,45 @@ USceneComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(
 		return nullptr;
 	}
 
-	// Create a Scene Component to represent the Observer Frame.
-	USceneComponent* Component = NewObject<USceneComponent>(&Owner);
-	if (Component == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("While importing from '%s': Could not create Scene Component for Observer Frame "
-				 "named %s in Actor %s, the Observer Frame is lost."),
-			*ImportSettings.FilePath, *Name, *Owner.GetName());
-		return nullptr;
-	}
-	FAGX_ImportUtilities::Rename(*Component, Name);
+	UAGX_ObserverFrameComponent* Component =
+		FAGX_ImportUtilities::CreateComponent<UAGX_ObserverFrameComponent>(Owner, *Body);
+
+	UpdateObserverFrameComponent(Name, ObserverGuid, Transform, *Component);
+
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
 	Component->RegisterComponent();
 
-	// From now on any early out due to an error should call Component->DestroyComponent() before
-	// returning.
+	return Component;
+}
 
-	// Attach the Observer Frame Scene Component to the Rigid Body with the restored relative
-	// transformation.
-	if (!Component->AttachToComponent(
-			Body, FAttachmentTransformRules::SnapToTargetNotIncludingScale))
+void FAGX_SimObjectsImporterHelper::UpdateObserverFrameComponent(
+	const FString& Name, const FGuid& ObserverGuid, const FTransform& Transform,
+	UAGX_ObserverFrameComponent& Component)
+{
+	FAGX_ImportUtilities::Rename(Component, Name);
+
+	// Update any archetype instances.
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("While importing '%s': Could not attach Observer Frame %s to Rigid Body %s. The "
-				 "Observer Frame is not imported."),
-			*ImportSettings.FilePath, *Name, *Body->GetName());
-		Component->DestroyComponent();
-		return nullptr;
+		for (UAGX_ObserverFrameComponent* Instance :
+			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		{
+			// Update transforms.
+			if (Instance->GetRelativeLocation() == Component.GetRelativeLocation() &&
+				Instance->GetRelativeRotation() == Component.GetRelativeRotation() &&
+				Instance->GetRelativeScale3D() == Component.GetRelativeScale3D())
+			{
+				Instance->SetRelativeTransform(Transform);
+			}
+
+			// Update Import Guid.
+			Instance->ImportGuid = ObserverGuid;
+		}
 	}
 
-	Component->SetRelativeTransform(Transform);
-
-	return Component;
+	Component.SetRelativeTransform(Transform);
+	Component.ImportGuid = ObserverGuid;
 }
 
 UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::GetBody(
