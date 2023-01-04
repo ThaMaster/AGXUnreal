@@ -963,6 +963,10 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	FAGX_ImportUtilities::Rename(Component, *NewMeshAsset->GetName());
 
 	const bool Visible = RenderDataBarrier.GetShouldRender();
+	const FVector OrigRelLocation = Component.GetRelativeLocation();
+	const FRotator OrigRelRotation = Component.GetRelativeRotation();
+	Component.SetRelativeTransform(NewRelTransform);
+
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
 		// Sync all component instances.
@@ -970,11 +974,21 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
 			// Update transforms.
-			if (Instance->GetRelativeLocation() == Component.GetRelativeLocation() &&
-				Instance->GetRelativeRotation() == Component.GetRelativeRotation() &&
-				Instance->GetRelativeScale3D() == Component.GetRelativeScale3D())
+			if (Instance->GetRelativeLocation() == OrigRelLocation &&
+				Instance->GetRelativeRotation() == OrigRelRotation)
 			{
 				Instance->SetRelativeTransform(NewRelTransform);
+
+				// The purpose of this is to make sure the Instances get exactly the same
+				// relative transform as the Archetype. The SetRelativeTransform does
+				// some transformation calculations internally which in some cases result in (small)
+				// rounding errors, which is enough to break the state in the Blueprint. We call the
+				// Set..._Direct functions here to ensure that the RelativeLocation/Rotation matches
+				// exactly with the archetype. The above call is still needed because that makes
+				// sure the component is updated in the viewport without the need to recompile the
+				// Blueprint.
+				Instance->SetRelativeLocation_Direct(Component.GetRelativeLocation());
+				Instance->SetRelativeRotation_Direct(Component.GetRelativeRotation());
 			}
 
 			// Update Render Materials.
@@ -997,7 +1011,6 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 		}
 	}
 
-	Component.SetRelativeTransform(NewRelTransform);
 	Component.SetMaterial(0, NewRenderMaterial);
 	Component.SetStaticMesh(NewMeshAsset);
 	Component.SetVisibility(Visible);
@@ -1700,6 +1713,10 @@ void FAGX_SimObjectsImporterHelper::UpdateObserverFrameComponent(
 {
 	FAGX_ImportUtilities::Rename(Component, Name);
 
+	const FVector OrigRelLocation = Component.GetRelativeLocation();
+	const FRotator OrigRelRotation = Component.GetRelativeRotation();
+	Component.SetRelativeTransform(Transform);
+
 	// Update any archetype instances.
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
@@ -1707,11 +1724,21 @@ void FAGX_SimObjectsImporterHelper::UpdateObserverFrameComponent(
 			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
 			// Update transforms.
-			if (Instance->GetRelativeLocation() == Component.GetRelativeLocation() &&
-				Instance->GetRelativeRotation() == Component.GetRelativeRotation() &&
-				Instance->GetRelativeScale3D() == Component.GetRelativeScale3D())
+			if (Instance->GetRelativeLocation() == OrigRelLocation &&
+				Instance->GetRelativeRotation() == OrigRelRotation)
 			{
 				Instance->SetRelativeTransform(Transform);
+
+				// The purpose of this is to make sure the Instances get exactly the same
+				// relative transform as the Archetype. The SetRelativeTransform does
+				// some transformation calculations internally which in some cases result in (small)
+				// rounding errors, which is enough to break the state in the Blueprint. We call the
+				// Set..._Direct functions here to ensure that the RelativeLocation/Rotation matches
+				// exactly with the archetype. The above call is still needed because that makes
+				// sure the component is updated in the viewport without the need to recompile the
+				// Blueprint.
+				Instance->SetRelativeLocation_Direct(Component.GetRelativeLocation());
+				Instance->SetRelativeRotation_Direct(Component.GetRelativeRotation());
 			}
 
 			// Update Import Guid.
@@ -1719,7 +1746,6 @@ void FAGX_SimObjectsImporterHelper::UpdateObserverFrameComponent(
 		}
 	}
 
-	Component.SetRelativeTransform(Transform);
 	Component.ImportGuid = ObserverGuid;
 }
 
