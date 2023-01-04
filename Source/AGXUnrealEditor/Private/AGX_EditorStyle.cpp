@@ -140,6 +140,10 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set(
 		"ClassIcon.AGX_PrismaticConstraintComponent",
 		new IMAGE_BRUSH("Icons/constraint_prismatic_32x32", IconSize16));
+	// Observer Frame.
+	Style->Set(
+		"ClassIcon.AGX_ObserverFrameComponent",
+		new IMAGE_BRUSH("Icons/observer_frame_32x32", IconSize16));
 	// Shapes.
 	Style->Set(
 		"ClassIcon.AGX_BoxShapeComponent", new IMAGE_BRUSH("Icons/box_shape_32x32", IconSize16));
