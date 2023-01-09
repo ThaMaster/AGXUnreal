@@ -3,7 +3,9 @@
 #include "Utilities/AGX_ConstraintUtilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
@@ -15,8 +17,8 @@
 #include "Constraints/Controllers/AGX_RangeController.h"
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
 #include "Constraints/ControllerConstraintBarriers.h"
-#include "AGX_RigidBodyComponent.h"
-#include "AGX_LogCategory.h"
+#include "Utilities/AGX_ObjectUtilities.h"
+
 
 void FAGX_ConstraintUtilities::CopyControllersFrom(
 	UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier)
@@ -393,7 +395,7 @@ namespace
 	}
 }
 
-void FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
+FTransform FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
 	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2)
 {
@@ -414,8 +416,10 @@ void FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	// (nullptr) implicitly means the world. Also, the sign of the rotation/translation of the
 	// secondary constraints support this ordering.
 
-	Component.BodyAttachment1.FrameDefiningSource = EAGX_FrameDefiningSource::Constraint;
-	Component.BodyAttachment2.FrameDefiningSource = EAGX_FrameDefiningSource::Constraint;
+	AGX_COPY_PROPERTY_FROM(
+		BodyAttachment1.FrameDefiningSource, EAGX_FrameDefiningSource::Constraint, Component)
+	AGX_COPY_PROPERTY_FROM(
+		BodyAttachment2.FrameDefiningSource, EAGX_FrameDefiningSource::Constraint, Component)
 
 	// Having a nullptr RigidBody1 is technically valid from AGX Dynamics perspective, but in >99%
 	// of cases it is unexpected. Therefore, we opt to give the user a warning, and we still set the
@@ -425,7 +429,7 @@ void FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Could not setup Constraint frames since RigidBody1 was nullptr."));
-		return;
+		return FTransform::Identity;
 	}
 
 	const FVector Attach1GlobalPos =
@@ -437,20 +441,30 @@ void FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	const FQuat Attach2GlobalRot =
 		GetGlobalAttachmentFrameRot(RigidBody2, Barrier.GetLocalRotation(1));
 
-	// Set the Constraint's transform same as attachment frame 2.
-	Component.SetWorldLocationAndRotation(Attach2GlobalPos, Attach2GlobalRot);
+	// The Constraint's new World transform is the attachment frame 2.
+	const FTransform NewWorldTransform(Attach2GlobalRot, Attach2GlobalPos);
+	if (!FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{		
+		Component.SetWorldTransform(NewWorldTransform);
+	}	
 
 	// The LocalFrameLocation and Rotation of BodyAttachment2 is always zero since the Constraint is
 	// placed at the attachment frame 2.
-	Component.BodyAttachment2.LocalFrameLocation = FVector::ZeroVector;
-	Component.BodyAttachment2.LocalFrameRotation = FRotator(FQuat::Identity);
+	AGX_COPY_PROPERTY_FROM(BodyAttachment2.LocalFrameLocation, FVector::ZeroVector, Component)
+	AGX_COPY_PROPERTY_FROM(BodyAttachment2.LocalFrameRotation, FRotator(FQuat::Identity), Component)
 
 	// The LocalFrameLocation and Rotation of BodyAttachment1 is the (global) attachment frame 1
 	// expressed in the constraints (new) global frame.
-	Component.BodyAttachment1.LocalFrameLocation =
-		Component.GetComponentTransform().InverseTransformPositionNoScale(Attach1GlobalPos);
-	Component.BodyAttachment1.LocalFrameRotation =
-		FRotator(Component.GetComponentTransform().InverseTransformRotation(Attach1GlobalRot));
+	const FVector BodyAttachment1LocalLocation =
+		NewWorldTransform.InverseTransformPositionNoScale(Attach1GlobalPos);
+	const FRotator BodyAttachment1LocalRotation =
+		FRotator(NewWorldTransform.InverseTransformRotation(Attach1GlobalRot));
+	AGX_COPY_PROPERTY_FROM(
+		BodyAttachment1.LocalFrameLocation, BodyAttachment1LocalLocation, Component)
+	AGX_COPY_PROPERTY_FROM(
+		BodyAttachment1.LocalFrameRotation, BodyAttachment1LocalRotation, Component)
+
+	return NewWorldTransform;
 }
 
 namespace FAGX_ConstraintUtilities_helpers

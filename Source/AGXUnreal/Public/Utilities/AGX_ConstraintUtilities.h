@@ -88,8 +88,7 @@ public:
 	template <typename UConstraintClass, typename FControllerClass>
 	static void AddControllerPropertyCallbacks(
 		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
-		TFunction<FControllerClass*(UConstraintClass*)> GetController,
-		const FName& Member);
+		TFunction<FControllerClass*(UConstraintClass*)> GetController, const FName& Member);
 
 	template <typename UConstraintClass>
 	static void AddElectricMotorControllerPropertyCallbacks(
@@ -131,9 +130,11 @@ public:
 	/**
 	 * Sets up the constraint 'Component' and its BodyAttachments in accordance with
 	 * FrameDefiningSource = Constraint, given an FConstraintBarrier and the constrained
-	 * RigidBodies.
+	 * RigidBodies. Returns the new World Transform of the Constraint. If Component is a Component
+	 * template, the caller of this function is responsible for setting the Component's world's
+	 * transform and updating its archetype instances. The returned Transform holds this data.
 	 */
-	static void SetupConstraintAsFrameDefiningSource(
+	static FTransform SetupConstraintAsFrameDefiningSource(
 		const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
 		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2);
 
