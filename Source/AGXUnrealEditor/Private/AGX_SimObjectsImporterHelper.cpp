@@ -794,6 +794,11 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 		NewShapeMaterial = RestoredShapeMaterials.FindRef(Guid);
 	}
 
+	if (!Barrier.HasRenderData())
+	{
+		SetDefaultRenderMaterial(Component, Component.bIsSensor);
+	}
+	
 	const FMergeSplitThresholdsBarrier ThresholdsBarrier =
 		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
 	const FGuid MSTGuid = Barrier.GetShapeGuid();
