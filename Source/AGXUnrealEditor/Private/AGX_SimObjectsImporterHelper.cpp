@@ -42,6 +42,7 @@
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -963,9 +964,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	FAGX_ImportUtilities::Rename(Component, *NewMeshAsset->GetName());
 
 	const bool Visible = RenderDataBarrier.GetShouldRender();
-	const FVector OrigRelLocation = Component.GetRelativeLocation();
-	const FRotator OrigRelRotation = Component.GetRelativeRotation();
-	Component.SetRelativeTransform(NewRelTransform);
+	FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(Component, NewRelTransform);
 
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
@@ -973,24 +972,6 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 		for (UStaticMeshComponent* Instance :
 			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
-			// Update transforms.
-			if (Instance->GetRelativeLocation() == OrigRelLocation &&
-				Instance->GetRelativeRotation() == OrigRelRotation)
-			{
-				Instance->SetRelativeTransform(NewRelTransform);
-
-				// The purpose of this is to make sure the Instances get exactly the same
-				// relative transform as the Archetype. The SetRelativeTransform does
-				// some transformation calculations internally which in some cases result in (small)
-				// rounding errors, which is enough to break the state in the Blueprint. We call the
-				// Set..._Direct functions here to ensure that the RelativeLocation/Rotation matches
-				// exactly with the archetype. The above call is still needed because that makes
-				// sure the component is updated in the viewport without the need to recompile the
-				// Blueprint.
-				Instance->SetRelativeLocation_Direct(Component.GetRelativeLocation());
-				Instance->SetRelativeRotation_Direct(Component.GetRelativeRotation());
-			}
-
 			// Update Render Materials.
 			if (Instance->GetMaterial(0) == OriginalRenderMaterial)
 			{
@@ -1138,8 +1119,12 @@ namespace
 
 		FAGX_ImportUtilities::Rename(Constraint, Barrier.GetName());
 		Constraint.CopyFrom(Barrier);
-		FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
+		const FTransform NewWorldTransform = FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 			Barrier, Constraint, Bodies.first, Bodies.second);
+		if (FAGX_ObjectUtilities::IsTemplateComponent(Constraint))
+		{
+			FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(&Constraint, NewWorldTransform);
+		}
 
 		if (auto ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
 				FConstraintBarrier, FConstraintMergeSplitThresholdsBarrier>(
@@ -1712,10 +1697,7 @@ void FAGX_SimObjectsImporterHelper::UpdateObserverFrameComponent(
 	UAGX_ObserverFrameComponent& Component)
 {
 	FAGX_ImportUtilities::Rename(Component, Name);
-
-	const FVector OrigRelLocation = Component.GetRelativeLocation();
-	const FRotator OrigRelRotation = Component.GetRelativeRotation();
-	Component.SetRelativeTransform(Transform);
+	FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(Component, Transform);
 
 	// Update any archetype instances.
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
@@ -1723,24 +1705,6 @@ void FAGX_SimObjectsImporterHelper::UpdateObserverFrameComponent(
 		for (UAGX_ObserverFrameComponent* Instance :
 			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
-			// Update transforms.
-			if (Instance->GetRelativeLocation() == OrigRelLocation &&
-				Instance->GetRelativeRotation() == OrigRelRotation)
-			{
-				Instance->SetRelativeTransform(Transform);
-
-				// The purpose of this is to make sure the Instances get exactly the same
-				// relative transform as the Archetype. The SetRelativeTransform does
-				// some transformation calculations internally which in some cases result in (small)
-				// rounding errors, which is enough to break the state in the Blueprint. We call the
-				// Set..._Direct functions here to ensure that the RelativeLocation/Rotation matches
-				// exactly with the archetype. The above call is still needed because that makes
-				// sure the component is updated in the viewport without the need to recompile the
-				// Blueprint.
-				Instance->SetRelativeLocation_Direct(Component.GetRelativeLocation());
-				Instance->SetRelativeRotation_Direct(Component.GetRelativeRotation());
-			}
-
 			// Update Import Guid.
 			Instance->ImportGuid = ObserverGuid;
 		}
