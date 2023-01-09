@@ -97,11 +97,11 @@ public:
 	 * type.
 	 */
 	template <typename T>
-	static T* GetFirstComponentOfType(UBlueprint* Blueprint);
+	static T* GetFirstComponentOfType(UBlueprint* Blueprint, bool SkipSceneRoot = false);
 };
 
 template <typename T>
-T* FAGX_BlueprintUtilities::GetFirstComponentOfType(UBlueprint* Blueprint)
+T* FAGX_BlueprintUtilities::GetFirstComponentOfType(UBlueprint* Blueprint, bool SkipSceneRoot)
 {
 	if (Blueprint == nullptr || Blueprint->SimpleConstructionScript == nullptr)
 	{
@@ -112,7 +112,17 @@ T* FAGX_BlueprintUtilities::GetFirstComponentOfType(UBlueprint* Blueprint)
 	{
 		if (T* Component = Cast<T>(Node->ComponentTemplate))
 		{
-			return Component;
+			if (SkipSceneRoot)
+			{
+				if (Node != Blueprint->SimpleConstructionScript->GetDefaultSceneRootNode())
+				{
+					return Component;
+				}
+			}
+			else
+			{
+				return Component;
+			}			
 		}
 	}
 

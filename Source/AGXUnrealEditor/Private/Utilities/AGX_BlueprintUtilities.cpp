@@ -335,7 +335,7 @@ void FAGX_BlueprintUtilities::SaveAndCompile(UBlueprint& Blueprint, bool Include
 		return;
 	}
 
-	UActorComponent* Component = GetFirstComponentOfType<UActorComponent>(&Blueprint);
+	UActorComponent* Component = GetFirstComponentOfType<UActorComponent>(&Blueprint, true);
 	if (Component == nullptr)
 	{
 		UE_LOG(
