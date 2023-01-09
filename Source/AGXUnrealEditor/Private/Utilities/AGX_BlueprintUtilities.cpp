@@ -196,6 +196,48 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 	return true;
 }
 
+void FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(
+	USceneComponent& Component, const FTransform& Transform, bool UpdateArchetypeInstances)
+{
+	const FVector OrigRelLocation = Component.GetRelativeLocation();
+	const FRotator OrigRelRotation = Component.GetRelativeRotation();
+
+	Component.Modify();
+	Component.SetRelativeTransform(Transform);
+
+	if (!UpdateArchetypeInstances)
+	{
+		// We are done.
+		return;
+	}
+
+	// Update any archetype instances that are "in sync" with the template component.
+	for (USceneComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+	{
+		// Only write to the Archetype Instances if they are currently in sync with this
+		// template.
+		if (Instance->GetRelativeLocation() == OrigRelLocation &&
+			Instance->GetRelativeRotation() == OrigRelRotation)
+		{
+			Instance->Modify();
+			Instance->SetRelativeLocation(Component.GetRelativeLocation());
+			Instance->SetRelativeRotation(Component.GetRelativeRotation());
+
+			// The purpose of this function is to make sure the Instances get exactly the same
+			// relative transform as the Archetype. However, SetRelativeLocation/Rotation does
+			// some transformation calculations internally which in some cases result in (small)
+			// rounding errors, which is enough to break the state in the Blueprint. We call the
+			// Set..._Direct functions here to ensure that the RelativeLocation/Rotation matches
+			// exactly with the archetype. The above calls are still needed because those make
+			// sure the component is updated in the viewport without the need to recompile the
+			// Blueprint.
+			Instance->SetRelativeLocation_Direct(Component.GetRelativeLocation());
+			Instance->SetRelativeRotation_Direct(Component.GetRelativeRotation());
+		}
+	}
+}
+
+
 TArray<UActorComponent*> FAGX_BlueprintUtilities::GetTemplateComponents(
 	UBlueprintGeneratedClass* Bp)
 {

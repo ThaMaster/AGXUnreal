@@ -39,6 +39,13 @@ public:
 		bool UpdateArchetypeInstances = true);
 
 	/**
+	 * Sets the relative transform of a template object in a Blueprint.
+	 */
+	static void SetTemplateComponentRelativeTransform(
+		USceneComponent& Component, const FTransform& Transform,
+		bool UpdateArchetypeInstances = true);
+
+	/**
 	 * Returns the location of a template component inside a Blueprint in relation to the root
 	 * component of that Blueprint. If the passed component is not inside a Blueprint, or is
 	 * nullptr, the identity FVector is returned.
