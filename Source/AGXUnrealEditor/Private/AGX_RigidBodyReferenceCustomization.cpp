@@ -104,19 +104,27 @@ void FetchBodyNamesFromBlueprint(
 		return;
 	}
 
-	for (USCS_Node* Node : Blueprint->SimpleConstructionScript->GetAllNodes())
-	{
-		if (UAGX_RigidBodyComponent* RigidBody =
-				Cast<UAGX_RigidBodyComponent>(Node->ComponentTemplate))
-		{
-			const FString Name = [RigidBody, Blueprint]()
-			{
-				FString N = RigidBody->GetName();
-				N.RemoveFromEnd(Blueprint->SimpleConstructionScript->ComponentTemplateNameSuffix);
-				return N;
-			}();
+	// We need to iterate over all parent Blueprints as well since derived Rigid Body Components
+	// will not show up in a child Blueprint.
+	TArray<UBlueprint*> BlueprintChain;
+	UBlueprint::GetBlueprintHierarchyFromClass(Blueprint, BlueprintChain);
 
-			BodyNames.Add(MakeShareable(new FName(*Name)));
+	for (UBlueprint* BP : BlueprintChain)
+	{
+		for (USCS_Node* Node : BP->SimpleConstructionScript->GetAllNodes())
+		{
+			if (UAGX_RigidBodyComponent* RigidBody =
+					Cast<UAGX_RigidBodyComponent>(Node->ComponentTemplate))
+			{
+				const FString Name = [RigidBody, BP]()
+				{
+					FString N = RigidBody->GetName();
+					N.RemoveFromEnd(BP->SimpleConstructionScript->ComponentTemplateNameSuffix);
+					return N;
+				}();
+
+				BodyNames.Add(MakeShareable(new FName(*Name)));
+			}
 		}
 	}
 }
@@ -165,7 +173,7 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	FDetailWidgetRow& NameRow =
 		StructBuilder.AddCustomRow(FText::FromString("Rigid Body Component"));
 	NameRow.NameContent()[SNew(STextBlock)
-							  .Text(FText::FromString("RigidBodyComponent"))
+							  .Text(FText::FromString("Rigid Body Component"))
 							  .Font(IPropertyTypeCustomizationUtils::GetRegularFont())];
 
 	TSharedRef<SComboBox<TSharedPtr<FName>>> ComboBox =
@@ -189,7 +197,7 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 		/// corresponding RigidBody with the same name? Should an entry for that name be added? That
 		/// would be deceptive since it would be an illegal selection for the current Actor. Should
 		/// it be added but marked somehow? Should we invalidate the underlying data store
-		/// immediately? I'm not confortable with GUI validation altering the data store. Feels odd.
+		/// immediately? I'm not comfortable with GUI validation altering the data store. Feels odd.
 	}
 
 	TSharedRef<SEditableTextBox> NameBox =
