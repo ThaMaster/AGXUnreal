@@ -165,22 +165,22 @@ struct AGXUNREAL_API FAGX_ConstraintDoublePropertyPerDof
 	}
 
 private:
-	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
+	UPROPERTY(Transient)
 	bool Translational_1_IsEditable;
 
-	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
+	UPROPERTY(Transient)
 	bool Translational_2_IsEditable;
 
-	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
+	UPROPERTY(Transient)
 	bool Translational_3_IsEditable;
 
-	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
+	UPROPERTY(Transient)
 	bool Rotational_1_IsEditable;
 
-	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
+	UPROPERTY(Transient)
 	bool Rotational_2_IsEditable;
 
-	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
+	UPROPERTY(Transient)
 	bool Rotational_3_IsEditable;
 };
 
@@ -343,21 +343,21 @@ struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 	}
 
 private:
-	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
+	UPROPERTY(Transient)
 	bool Translational_1_IsEditable;
 
-	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
+	UPROPERTY(Transient)
 	bool Translational_2_IsEditable;
 
-	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
+	UPROPERTY(Transient)
 	bool Translational_3_IsEditable;
 
-	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
+	UPROPERTY(Transient)
 	bool Rotational_1_IsEditable;
 
-	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
+	UPROPERTY(Transient)
 	bool Rotational_2_IsEditable;
 
-	UPROPERTY(Transient, Category = "AGX Constraint Property Per Dof", VisibleDefaultsOnly)
+	UPROPERTY(Transient)
 	bool Rotational_3_IsEditable;
 };
