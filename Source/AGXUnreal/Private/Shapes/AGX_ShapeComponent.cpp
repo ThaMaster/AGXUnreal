@@ -483,14 +483,7 @@ void UAGX_ShapeComponent::ApplySensorMaterial(UMeshComponent& Mesh)
 	{
 		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Mesh))
 		{
-			for (int32 I = 0; I < Instance->GetNumMaterials(); ++I)
-			{
-				if (Instance->GetMaterial(I) != nullptr)
-				{
-					continue;
-				}
-				Instance->SetMaterial(I, SensorMaterial);
-			}
+			ApplySensorMaterial(*Instance);
 		}
 	}
 }
@@ -516,19 +509,7 @@ void UAGX_ShapeComponent::RemoveSensorMaterial(UMeshComponent& Mesh)
 	{
 		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Mesh))
 		{
-			for (int32 I = 0; I < Instance->GetNumMaterials(); ++I)
-			{
-				const UMaterialInterface* const Material = Instance->GetMaterial(I);
-				if (Material == nullptr)
-				{
-					continue;
-				}
-				if (Material->GetName() != TEXT("M_SensorMaterial"))
-				{
-					continue;
-				}
-				Instance->SetMaterial(I, nullptr);
-			}
+			RemoveSensorMaterial(*Instance);
 		}
 	}
 }
