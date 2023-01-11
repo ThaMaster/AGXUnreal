@@ -671,7 +671,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		const FAGX_SimObjectsImporterHelper& Helper, const FString& Subdir = "")
 	{
 		return FPaths::Combine(
-			FAGX_ImportUtilities::GetImportRootDirectoryName(), Helper.DirectoryName, Subdir);
+			"/Game", FAGX_ImportUtilities::GetImportRootDirectoryName(), Helper.DirectoryName, Subdir);
 	}
 
 	struct FShapeGuidsCollection

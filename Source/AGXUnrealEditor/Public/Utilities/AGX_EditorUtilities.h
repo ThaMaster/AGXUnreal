@@ -381,7 +381,22 @@ TArray<T*> FAGX_EditorUtilities::FindAssets(const FString& AssetDirPath)
 		FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 	TArray<FAssetData> AssetData;
 	FARFilter Filter;
+#if UE_VERSION_OLDER_THAN(5, 1, 0)
 	Filter.ClassNames.Add(FName(T::StaticClass()->GetName()));
+#else
+	FTopLevelAssetPath ClassPathName =
+		UClass::TryConvertShortTypeNameToPathName<UStruct>(T::StaticClass()->GetName());
+	if (ClassPathName.IsNull())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to convert Class name '%s' to path name. FindAssets failed."),
+			*T::StaticClass()->GetName());
+		return Assets;
+	}
+
+	Filter.ClassPaths.Add(ClassPathName);
+#endif
 	Filter.PackagePaths.Add(FName(AssetDirPath));
 	AssetRegistryModule.Get().GetAssets(Filter, AssetData);
 
@@ -389,6 +404,7 @@ TArray<T*> FAGX_EditorUtilities::FindAssets(const FString& AssetDirPath)
 	{
 		if (T* Asset = Cast<T>(Data.GetAsset()))
 		{
+			UE_LOG(LogAGX, Warning, TEXT("Yeeeeeeeeey, found asset"));
 			Assets.Add(Asset);
 		}
 	}
