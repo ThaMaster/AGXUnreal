@@ -733,6 +733,18 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 
 	FAGX_ImportUtilities::Rename(Component, *NewMeshAsset->GetName());
 
+	UMaterialInterface* RenderMaterial = nullptr;
+	if (ShapeBarrier.HasRenderData())
+	{
+		RenderMaterial = CreateRenderMaterialFromRenderDataOrDefault(
+			ShapeBarrier.GetRenderData(), ShapeBarrier.GetIsSensor(), DirectoryName,
+			RestoredRenderMaterials);
+	}
+	else
+	{
+		RenderMaterial = GetDefaultRenderMaterial(ShapeBarrier.GetIsSensor());
+	}
+
 	const bool Visible = !ShapeBarrier.HasValidRenderData();
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
@@ -743,7 +755,7 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 			// Update Render Materials.
 			if (Visible && Instance->GetMaterial(0) == Component.GetMaterial(0))
 			{
-				SetDefaultRenderMaterial(*Instance, ShapeBarrier.GetIsSensor());
+				Instance->SetMaterial(0, RenderMaterial);
 			}
 
 			// Update Mesh asset.
@@ -760,6 +772,7 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 		}
 	}
 
+	Component.SetMaterial(0, RenderMaterial);
 	Component.SetStaticMesh(NewMeshAsset);
 	Component.SetVisibility(Visible);
 	if (Visible)
@@ -794,11 +807,17 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 		NewShapeMaterial = RestoredShapeMaterials.FindRef(Guid);
 	}
 
-	if (!Barrier.HasRenderData())
+	UMaterialInterface* RenderMaterial = nullptr;
+	if (Barrier.HasRenderData())
 	{
-		SetDefaultRenderMaterial(Component, Component.bIsSensor);
+		RenderMaterial = CreateRenderMaterialFromRenderDataOrDefault(
+			Barrier.GetRenderData(), Barrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
 	}
-	
+	else
+	{
+		RenderMaterial = GetDefaultRenderMaterial(Barrier.GetIsSensor());
+	}
+
 	const FMergeSplitThresholdsBarrier ThresholdsBarrier =
 		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
 	const FGuid MSTGuid = Barrier.GetShapeGuid();
@@ -816,12 +835,18 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 			Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
 	}
 
-	const bool Visible = !Barrier.HasValidRenderData();
+	const bool Visible = !Barrier.HasRenderData() || (!Barrier.HasValidRenderData() &&
+													  Barrier.GetRenderData().GetShouldRender());
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
 		// Sync all component instances.
 		for (UAGX_ShapeComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
+			if (Instance->GetMaterial(0) == Component.GetMaterial(0))
+			{
+				Instance->SetMaterial(0, RenderMaterial);
+			}
+
 			Instance->UpdateVisualMesh();
 
 			if (Instance->ShapeMaterial == Component.ShapeMaterial)
@@ -843,6 +868,7 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 		}
 	}
 
+	Component.SetMaterial(0, RenderMaterial);
 	Component.UpdateVisualMesh();
 	Component.ShapeMaterial = NewShapeMaterial;
 	Component.MergeSplitProperties.Thresholds =
@@ -1124,11 +1150,13 @@ namespace
 
 		FAGX_ImportUtilities::Rename(Constraint, Barrier.GetName());
 		Constraint.CopyFrom(Barrier);
-		const FTransform NewWorldTransform = FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
-			Barrier, Constraint, Bodies.first, Bodies.second);
+		const FTransform NewWorldTransform =
+			FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
+				Barrier, Constraint, Bodies.first, Bodies.second);
 		if (FAGX_ObjectUtilities::IsTemplateComponent(Constraint))
 		{
-			FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(&Constraint, NewWorldTransform);
+			FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
+				&Constraint, NewWorldTransform);
 		}
 
 		if (auto ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
