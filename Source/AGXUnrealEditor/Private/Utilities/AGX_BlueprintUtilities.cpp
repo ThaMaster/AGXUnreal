@@ -308,50 +308,8 @@ UBlueprint* FAGX_BlueprintUtilities::GetBlueprintFrom(const UActorComponent& Com
 	return Bpgc->SimpleConstructionScript->GetBlueprint();
 }
 
-void FAGX_BlueprintUtilities::SaveAndCompile(UBlueprint& Blueprint, bool IncludeChildBlueprints)
+void FAGX_BlueprintUtilities::SaveAndCompile(UBlueprint& Blueprint)
 {
 	FKismetEditorUtilities::CompileBlueprint(&Blueprint);
 	FAGX_ObjectUtilities::SaveAsset(Blueprint);
-
-	if (!IncludeChildBlueprints)
-	{
-		// We are done.
-		return;
-	}
-
-	// The following strategy is used to find all child Blueprints (Blueprints deriving from the
-	// given Blueprint):
-	// 1. We find any template component in the Blueprint.
-	// 2. We loop over the template components archetype instances. Those belong to the child
-	// Blueprints.
-	// 3. We get the child Blueprints by calling GetBlueprintFrom with the instance Components.
-
-	if (Blueprint.SimpleConstructionScript == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("SaveAndCompile called for Blueprint with nullptr SimpleConstructionScript. "
-				 "Compiling and saving child Blueprints will not be possible."));
-		return;
-	}
-
-	UActorComponent* Component = GetFirstComponentOfType<UActorComponent>(&Blueprint, true);
-	if (Component == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("SaveAndCompile called for Blueprint with no Component templates. "
-				 "Compiling and saving child Blueprints will not be possible."));
-		return;
-	}
-
-	for (UActorComponent* ComponentInstance :
-		 FAGX_ObjectUtilities::GetArchetypeInstances(*Component))
-	{
-		if (UBlueprint* ChildBp = GetBlueprintFrom(*ComponentInstance))
-		{
-			FKismetEditorUtilities::CompileBlueprint(ChildBp);
-			FAGX_ObjectUtilities::SaveAsset(*ChildBp);
-		}
-	}
 }

@@ -1804,7 +1804,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, ImportSettings);
 
 		// Re-import is completed, we end by compiling and saving the Blueprint and any children.
-		FAGX_BlueprintUtilities::SaveAndCompile(BaseBP, true);
+		FAGX_BlueprintUtilities::SaveAndCompile(BaseBP);
 
 		return true;
 	}

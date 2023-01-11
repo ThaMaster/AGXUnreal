@@ -67,7 +67,7 @@ void FAGX_ReImportComponentCustomization::CustomizeDetails(IDetailLayoutBuilder&
 
 namespace AGX_ReImportComponentCustomization_helpers
 {
-	UBlueprint* GetOutermostParent(IDetailLayoutBuilder& DetailBuilder)
+	UBlueprint* GetBlueprint(IDetailLayoutBuilder& DetailBuilder)
 	{
 		UAGX_ReImportComponent* ReImportComponent =
 			FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_ReImportComponent>(
@@ -84,17 +84,23 @@ namespace AGX_ReImportComponentCustomization_helpers
 			return nullptr;
 		}
 
-		// Get outermost parent Blueprint, which is the "original" and should match the result of
-		// the previous import.
-		UBlueprint* OuterMostParent = nullptr;
 		if (auto Bp = Cast<UBlueprintGeneratedClass>(ReImportComponent->GetOuter()))
 		{
 			if (Bp->SimpleConstructionScript != nullptr)
 			{
-				OuterMostParent = FAGX_BlueprintUtilities::GetOutermostParent(
-					Bp->SimpleConstructionScript->GetBlueprint());
+				return Bp->SimpleConstructionScript->GetBlueprint();
 			}
 		}
+
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Unable to get the Blueprint from the Re-import Component. Re-import will not be "
+			"possible.");
+		return nullptr;
+	}
+
+	UBlueprint* GetOutermostParent(IDetailLayoutBuilder& DetailBuilder, UBlueprint& Blueprint)
+	{
+		UBlueprint* OuterMostParent = FAGX_BlueprintUtilities::GetOutermostParent(&Blueprint);
 
 		if (OuterMostParent == nullptr)
 		{
@@ -111,7 +117,14 @@ FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
 {
 	AGX_CHECK(DetailBuilder);
 	using namespace AGX_ReImportComponentCustomization_helpers;
-	UBlueprint* OutermostParent = GetOutermostParent(*DetailBuilder);
+	UBlueprint* Blueprint = GetBlueprint(*DetailBuilder);
+	if (Blueprint == nullptr)
+	{
+		// Logging done in GetBlueprint.
+		return FReply::Handled();
+	}
+
+	UBlueprint* OutermostParent = GetOutermostParent(*DetailBuilder, *Blueprint);
 	if (OutermostParent == nullptr)
 	{
 		// Logging done in GetOutermostParent.
@@ -150,7 +163,10 @@ FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
 			return FReply::Handled();
 		}
 
-		AGX_ImporterToBlueprint::ReImport(*OutermostParent, *ImportSettings);
+		if (AGX_ImporterToBlueprint::ReImport(*OutermostParent, *ImportSettings))
+		{
+			FAGX_BlueprintUtilities::SaveAndCompile(*Blueprint);
+		}
 	}
 
 	// Any logging is done in ReImport and ToImportSettings.

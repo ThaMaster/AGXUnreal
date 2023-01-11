@@ -87,10 +87,9 @@ public:
 	static UBlueprint* GetBlueprintFrom(const UActorComponent& Component);
 
 	/**
-	* Save and compile the passed Blueprint (asset). If IncludeChildBlueprints is true then
-	* all children deriving from this Blueprint will also be saved and compiled.
+	* Save and compile the passed Blueprint (asset). 
 	*/
-	static void SaveAndCompile(UBlueprint& Blueprint, bool IncludeChildBlueprints = true);
+	static void SaveAndCompile(UBlueprint& Blueprint);
 
 	/**
 	 * Searches through the node tree and returns the first Template Component matching the given
