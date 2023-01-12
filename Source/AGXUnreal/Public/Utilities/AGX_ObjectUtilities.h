@@ -27,6 +27,11 @@ public:
 	 */
 	static void GetChildActorsOfActor(AActor* Parent, TArray<AActor*>& ChildActors);
 
+	/*
+	 * Checks whether the component is a template Component, i.e. it may have archetype instances.
+	 */
+	static bool IsTemplateComponent(const UActorComponent& Component);
+
 	/**
 	 * Give a list of pointer-to-base, return a new list with the elements that
 	 * are of a particular derived type.

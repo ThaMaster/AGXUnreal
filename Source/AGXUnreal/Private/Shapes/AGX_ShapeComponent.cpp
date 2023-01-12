@@ -477,6 +477,15 @@ void UAGX_ShapeComponent::ApplySensorMaterial(UMeshComponent& Mesh)
 		}
 		Mesh.SetMaterial(I, SensorMaterial);
 	}
+
+	// Update any archetype instance.
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Mesh))
+	{
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Mesh))
+		{
+			ApplySensorMaterial(*Instance);
+		}
+	}
 }
 
 void UAGX_ShapeComponent::RemoveSensorMaterial(UMeshComponent& Mesh)
@@ -493,6 +502,15 @@ void UAGX_ShapeComponent::RemoveSensorMaterial(UMeshComponent& Mesh)
 			continue;
 		}
 		Mesh.SetMaterial(I, nullptr);
+	}
+
+	// Update any archetype instance.
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Mesh))
+	{
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Mesh))
+		{
+			RemoveSensorMaterial(*Instance);
+		}
 	}
 }
 
