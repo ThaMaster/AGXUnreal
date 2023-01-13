@@ -340,7 +340,7 @@ namespace
 		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
 		const FString& DirectoryName)
 	{
-		const FMergeSplitThresholdsBarrier ThresholdsBarrier =
+		const TThresholdsBarrier ThresholdsBarrier =
 			TThresholdsBarrier::CreateFrom(Barrier);
 		if (!ThresholdsBarrier.HasNative())
 		{
