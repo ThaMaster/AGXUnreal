@@ -35,13 +35,18 @@ namespace AGX_AutoFitShapeDetals_helpers
 			return nullptr;
 		}
 
-		USCS_Node* Current = FAGX_BlueprintUtilities::GetSCSNodeFromComponent(Component);
+		const FString ComponentName =
+			FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Component->GetName());
+		FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult Result =
+			FAGX_BlueprintUtilities::GetSCSNodeFromName(
+				*Blueprint->SimpleConstructionScript->GetBlueprint(), ComponentName, true);
+		USCS_Node* Current = Result.FoundNode;
 		if (Current == nullptr)
 		{
 			return nullptr;
 		}
 
-		while (USCS_Node* Parent = Blueprint->SimpleConstructionScript->FindParentNode(Current))
+		while (USCS_Node* Parent = Result.Blueprint.SimpleConstructionScript->FindParentNode(Current))
 		{
 			if (UStaticMeshComponent* S = Cast<UStaticMeshComponent>(Parent->ComponentTemplate))
 			{
@@ -95,7 +100,12 @@ namespace AGX_AutoFitShapeDetals_helpers
 			return Children;
 		}
 
-		USCS_Node* ComponentNode = FAGX_BlueprintUtilities::GetSCSNodeFromComponent(Component);
+		const FString ComponentName =
+			FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Component->GetName());
+		USCS_Node* ComponentNode =
+			FAGX_BlueprintUtilities::GetSCSNodeFromName(
+				*Blueprint->SimpleConstructionScript->GetBlueprint(), ComponentName, true)
+				.FoundNode;
 		if (ComponentNode == nullptr)
 		{
 			return Children;

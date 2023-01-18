@@ -448,7 +448,8 @@ void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Nam
 
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
-		FAGX_BlueprintUtilities::GetSCSNodeFromComponent(&Component)->SetVariableName(
+		UBlueprint* Bp = FAGX_BlueprintUtilities::GetBlueprintFrom(Component);
+		FAGX_BlueprintUtilities::GetSCSNodeFromComponent(*Bp, &Component, false).FoundNode->SetVariableName(
 			FName(FinalName), true);
 	}
 	else

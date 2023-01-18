@@ -14,14 +14,41 @@ class AGXUNREALEDITOR_API FAGX_BlueprintUtilities
 {
 public:
 	/**
-	 * If the Component is inside a Blueprint, this function returns the USCS_Node that has this
-	 * component as its Component Template. Otherwise, this functions returns nullptr.
+	 * Convenience structure for representing a SCS Node search result.
 	 */
-	static USCS_Node* GetSCSNodeFromComponent(UActorComponent* Component);
+	struct FAGX_BlueprintNodeSearchResult
+	{
+		FAGX_BlueprintNodeSearchResult(const UBlueprint& InBlueprint, USCS_Node* InNode)
+			: Blueprint(InBlueprint)
+			, FoundNode(InNode)
+		{
+		}
+		const UBlueprint& Blueprint;
+		USCS_Node* FoundNode = nullptr;
+	};
 
 	/**
-	* Check if the node name exists in the Blueprint.
-	*/
+	 * If the Component is inside a Blueprint, this function returns the SCS Node that has this
+	 * component as its Component Template. If "SearchParentBlueprints" is
+	 * set, any Blueprint parents will be searched as well. Returns the found SCS Node (if any) and
+	 * the Blueprint it was found in, or the last Blueprint searched if no matching SCS Node
+	 * was found.
+	 */
+	static FAGX_BlueprintNodeSearchResult GetSCSNodeFromComponent(
+		const UBlueprint& Blueprint, UActorComponent* Component, bool SearchParentBlueprints);
+
+	/**
+	 * Searches the Blueprint for an SCS Node of the given name. If "SearchParentBlueprints" is
+	 * set, any Blueprint parents will be searched as well. Returns the found SCS Node (if any) and
+	 * the Blueprint it was found in, or the last Blueprint searched if no matching SCS Node
+	 * was found.
+	 */
+	static FAGX_BlueprintNodeSearchResult GetSCSNodeFromName(
+		const UBlueprint& Blueprint, const FString& Name, bool SearchParentBlueprints);
+
+	/**
+	 * Check if the node name exists in the Blueprint.
+	 */
 	static bool NameExists(UBlueprint& Blueprint, const FString& Name);
 
 	/**
@@ -71,9 +98,21 @@ public:
 	static FString ToTemplateComponentName(const FString& RegularName);
 
 	/**
+	 * Returns the regular name of a template component, i.e. the template component suffix is
+	 * removed if present.
+	 */
+	static FString GetRegularNameFromTemplateComponentName(FString Name);
+
+	/**
 	 * Returns the attach parent of a template component.
 	 */
 	static UActorComponent* GetTemplateComponentAttachParent(UActorComponent* Component);
+
+	/**
+	 * Walks up the Blueprint inheritance chain one step and returns the immediate parent if it
+	 * exists.
+	 */
+	static UBlueprint* GetParent(const UBlueprint& Child);
 
 	/**
 	 * Walks up the Blueprint inheritance chain and returns the "root" or outermost parent if it
@@ -82,13 +121,13 @@ public:
 	static UBlueprint* GetOutermostParent(UBlueprint* Child);
 
 	/**
-	* Retrurns the Blueprint that the template Component resides in.
-	*/
+	 * Returns the Blueprint that the template Component resides in.
+	 */
 	static UBlueprint* GetBlueprintFrom(const UActorComponent& Component);
 
 	/**
-	* Save and compile the passed Blueprint (asset). 
-	*/
+	 * Save and compile the passed Blueprint (asset).
+	 */
 	static void SaveAndCompile(UBlueprint& Blueprint);
 
 	/**
@@ -121,7 +160,7 @@ T* FAGX_BlueprintUtilities::GetFirstComponentOfType(UBlueprint* Blueprint, bool 
 			else
 			{
 				return Component;
-			}			
+			}
 		}
 	}
 

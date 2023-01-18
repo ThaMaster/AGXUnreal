@@ -38,29 +38,61 @@ namespace AGX_BlueprintUtilities_helpers
 	}
 }
 
-USCS_Node* FAGX_BlueprintUtilities::GetSCSNodeFromComponent(UActorComponent* Component)
+FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult
+FAGX_BlueprintUtilities::GetSCSNodeFromComponent(
+	const UBlueprint& Blueprint, UActorComponent* Component, bool SearchParentBlueprints)
 {
 	using namespace AGX_BlueprintUtilities_helpers;
 	if (Component == nullptr)
 	{
-		return nullptr;
+		return FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult(Blueprint, nullptr);
 	}
 
-	UBlueprintGeneratedClass* Blueprint = GetBlueprintGeneratedClass(Component);
-	if (Blueprint == nullptr)
-	{
-		return nullptr;
-	}
-
-	TArray<USCS_Node*> Nodes = Blueprint->SimpleConstructionScript->GetAllNodes();
+	TArray<USCS_Node*> Nodes = Blueprint.SimpleConstructionScript->GetAllNodes();
 	USCS_Node** ComponentNode = Nodes.FindByPredicate(
 		[Component](USCS_Node* Node) { return Node->ComponentTemplate == Component; });
-	if (ComponentNode == nullptr)
+	if (ComponentNode != nullptr)
 	{
-		return nullptr;
+		return FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult(Blueprint, *ComponentNode);
 	}
 
-	return *ComponentNode;
+	if (!SearchParentBlueprints)
+	{
+		// Nothing found, we are done.
+		return FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult(Blueprint, nullptr);
+	}
+
+	// Try with the next parent Blueprint.
+	if (UBlueprint* Parent = GetParent(Blueprint))
+	{
+		return GetSCSNodeFromComponent(*Parent, Component, SearchParentBlueprints);
+	}
+
+	return FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult(Blueprint, nullptr);
+}
+
+FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult FAGX_BlueprintUtilities::GetSCSNodeFromName(
+	const UBlueprint& Blueprint, const FString& Name, bool SearchParentBlueprints)
+{
+	USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
+	if (Node != nullptr)
+	{
+		return FAGX_BlueprintNodeSearchResult(Blueprint, Node);
+	}
+
+	if (!SearchParentBlueprints)
+	{
+		// Nothing found, we are done.
+		return FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult(Blueprint, nullptr);
+	}
+
+	// Try with the next parent Blueprint.
+	if (UBlueprint* Parent = GetParent(Blueprint))
+	{
+		return GetSCSNodeFromName(*Parent, Name, SearchParentBlueprints);
+	}
+
+	return FAGX_BlueprintNodeSearchResult(Blueprint, nullptr);
 }
 
 bool FAGX_BlueprintUtilities::NameExists(UBlueprint& Blueprint, const FString& Name)
@@ -82,7 +114,10 @@ FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(USceneCom
 		return FTransform::Identity;
 	}
 
-	USCS_Node* ComponentNode = GetSCSNodeFromComponent(Component);
+	USCS_Node* ComponentNode =
+		GetSCSNodeFromComponent(
+			*Blueprint->SimpleConstructionScript->GetBlueprint(), Component, false)
+			.FoundNode;
 	if (ComponentNode == nullptr)
 	{
 		return FTransform::Identity;
@@ -131,7 +166,10 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 		return false;
 	}
 
-	USCS_Node* ComponentNode = GetSCSNodeFromComponent(Component);
+	USCS_Node* ComponentNode =
+		GetSCSNodeFromComponent(
+			*Blueprint->SimpleConstructionScript->GetBlueprint(), Component, false)
+			.FoundNode;
 	if (ComponentNode == nullptr)
 	{
 		return false;
@@ -237,7 +275,6 @@ void FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(
 	}
 }
 
-
 TArray<UActorComponent*> FAGX_BlueprintUtilities::GetTemplateComponents(
 	UBlueprintGeneratedClass* Bp)
 {
@@ -252,6 +289,12 @@ TArray<UActorComponent*> FAGX_BlueprintUtilities::GetTemplateComponents(UBluepri
 FString FAGX_BlueprintUtilities::ToTemplateComponentName(const FString& RegularName)
 {
 	return RegularName + UActorComponent::ComponentTemplateNameSuffix;
+}
+
+FString FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(FString Name)
+{
+	Name.RemoveFromEnd(UActorComponent::ComponentTemplateNameSuffix);
+	return Name;
 }
 
 FVector FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(USceneComponent* Component)
@@ -276,12 +319,26 @@ UActorComponent* FAGX_BlueprintUtilities::GetTemplateComponentAttachParent(
 	if (Blueprint == nullptr)
 		return nullptr;
 
-	USCS_Node* ParentNode =
-		Blueprint->SimpleConstructionScript->FindParentNode(GetSCSNodeFromComponent(Component));
+	USCS_Node* ParentNode = Blueprint->SimpleConstructionScript->FindParentNode(
+		GetSCSNodeFromComponent(
+			*Blueprint->SimpleConstructionScript->GetBlueprint(), Component, false)
+			.FoundNode);
 	if (ParentNode == nullptr)
 		return nullptr;
 
 	return ParentNode->ComponentTemplate;
+}
+
+UBlueprint* FAGX_BlueprintUtilities::GetParent(const UBlueprint& Child)
+{
+	TArray<UBlueprint*> Parents;
+	UBlueprint::GetBlueprintHierarchyFromClass(Child.GeneratedClass, Parents);
+	if (Parents.Num() <= 1)
+	{
+		return nullptr;
+	}
+
+	return Parents[1];
 }
 
 UBlueprint* FAGX_BlueprintUtilities::GetOutermostParent(UBlueprint* Child)
