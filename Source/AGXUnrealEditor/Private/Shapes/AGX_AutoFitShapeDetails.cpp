@@ -46,11 +46,19 @@ namespace AGX_AutoFitShapeDetals_helpers
 			return nullptr;
 		}
 
-		while (USCS_Node* Parent = Result.Blueprint.SimpleConstructionScript->FindParentNode(Current))
+		while (USCS_Node* Parent =
+				   Result.Blueprint.SimpleConstructionScript->FindParentNode(Current))
 		{
 			if (UStaticMeshComponent* S = Cast<UStaticMeshComponent>(Parent->ComponentTemplate))
 			{
-				return S;
+				// The ComponentTemaplte might reside in a parent Blueprint of the Blueprint holding
+				// the Component. Therefore, we need to go down the archetype instance chain and
+				// find the matching arhctetype instance such that it resides in the same Blueprint
+				// as Component.
+				auto MatchedMesh =
+					FAGX_ObjectUtilities::GetMatchedInstance(S, Component->GetOuter());
+				if (MatchedMesh != nullptr)
+					return MatchedMesh;
 			}
 			Current = Parent;
 		}
@@ -121,7 +129,14 @@ namespace AGX_AutoFitShapeDetals_helpers
 
 			if (UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Child->ComponentTemplate))
 			{
-				Children.Add(Mesh);
+				// The ComponentTemaplte might reside in a parent Blueprint of the Blueprint holding
+				// the Component. Therefore, we need to go down the archetype instance chain and
+				// find the matching arhctetype instance such that it resides in the same Blueprint
+				// as Component.
+				auto MatchedMesh =
+					FAGX_ObjectUtilities::GetMatchedInstance(Mesh, Component->GetOuter());
+				if (MatchedMesh != nullptr)
+					Children.Add(MatchedMesh);
 			}
 		}
 
@@ -411,8 +426,6 @@ namespace AGX_AutoFitShapeDetals_helpers
 				continue;
 			}
 
-			const FVector MeshOrigLocation = MeshChild->GetRelativeLocation();
-			const FRotator MeshOrigRotation = MeshChild->GetRelativeRotation();
 			FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 				MeshChild, MeshOrigTransform[MeshChild]);
 		}

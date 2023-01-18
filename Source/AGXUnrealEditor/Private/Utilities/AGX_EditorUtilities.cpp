@@ -22,6 +22,7 @@
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
 #include "AssetToolsModule.h"
@@ -35,6 +36,7 @@
 #include "Engine/StaticMesh.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/Char.h"
 #include "Misc/EngineVersionComparison.h"
 #include "RawMesh.h"
@@ -1074,6 +1076,12 @@ FString FAGX_EditorUtilities::SelectNewFileDialog(
 	}
 
 	return FPaths::ConvertRelativePathToFull(Filename);
+}
+
+void FAGX_EditorUtilities::SaveAndCompile(UBlueprint& Blueprint)
+{
+	FKismetEditorUtilities::CompileBlueprint(&Blueprint);
+	FAGX_ObjectUtilities::SaveAsset(Blueprint);
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -3,9 +3,12 @@
 #include "Utilities/AGX_BlueprintUtilities.h"
 
 // AGX Dynamics for Unreal includes.
-#include "Components/ActorComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
+// Unreal Engine includes.
+#include "Components/ActorComponent.h"
+
+#if WITH_EDITOR
 namespace AGX_BlueprintUtilities_helpers
 {
 	UBlueprintGeneratedClass* GetBlueprintGeneratedClass(const UActorComponent* Component)
@@ -45,7 +48,7 @@ FAGX_BlueprintUtilities::GetSCSNodeFromComponent(
 	using namespace AGX_BlueprintUtilities_helpers;
 	if (Component == nullptr)
 	{
-		return FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult(Blueprint, nullptr);
+		return FAGX_BlueprintNodeSearchResult(Blueprint, nullptr);
 	}
 
 	TArray<USCS_Node*> Nodes = Blueprint.SimpleConstructionScript->GetAllNodes();
@@ -53,22 +56,18 @@ FAGX_BlueprintUtilities::GetSCSNodeFromComponent(
 		[Component](USCS_Node* Node) { return Node->ComponentTemplate == Component; });
 	if (ComponentNode != nullptr)
 	{
-		return FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult(Blueprint, *ComponentNode);
+		return FAGX_BlueprintNodeSearchResult(Blueprint, *ComponentNode);
 	}
 
 	if (!SearchParentBlueprints)
 	{
 		// Nothing found, we are done.
-		return FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult(Blueprint, nullptr);
+		return FAGX_BlueprintNodeSearchResult(Blueprint, nullptr);
 	}
 
-	// Try with the next parent Blueprint.
-	if (UBlueprint* Parent = GetParent(Blueprint))
-	{
-		return GetSCSNodeFromComponent(*Parent, Component, SearchParentBlueprints);
-	}
-
-	return FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult(Blueprint, nullptr);
+	// Search in parent Blueprints, by name.
+	return GetSCSNodeFromName(
+		Blueprint, GetRegularNameFromTemplateComponentName(Component->GetName()), true);
 }
 
 FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult FAGX_BlueprintUtilities::GetSCSNodeFromName(
@@ -108,16 +107,28 @@ FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(USceneCom
 		return FTransform::Identity;
 	}
 
-	UBlueprintGeneratedClass* Blueprint = GetBlueprintGeneratedClass(Component);
-	if (Blueprint == nullptr)
+	UBlueprintGeneratedClass* BlueprintGC = GetBlueprintGeneratedClass(Component);
+	if (BlueprintGC == nullptr)
 	{
 		return FTransform::Identity;
 	}
 
-	USCS_Node* ComponentNode =
-		GetSCSNodeFromComponent(
-			*Blueprint->SimpleConstructionScript->GetBlueprint(), Component, false)
-			.FoundNode;
+	UBlueprint* Blueprint = BlueprintGC->SimpleConstructionScript->GetBlueprint();
+
+	USCS_Node* ComponentNode = GetSCSNodeFromComponent(*Blueprint, Component, false).FoundNode;
+	if (ComponentNode == nullptr)
+	{
+		// We could not find a SCS Node matching the passed Component. This may be because we are in
+		// a child Blueprint which does not hold any SCS Nodes itself, but it resides in a parent
+		// Blueprint. Attempt to get the SCS Node via name and look through parent Blueprints.
+		const FString ComponentName = GetRegularNameFromTemplateComponentName(Component->GetName());
+
+		FAGX_BlueprintNodeSearchResult Result = GetSCSNodeFromName(
+			*Blueprint->SimpleConstructionScript->GetBlueprint(), ComponentName, true);
+		ComponentNode = Result.FoundNode;
+		Blueprint = const_cast<UBlueprint*>(&Result.Blueprint);
+	}
+
 	if (ComponentNode == nullptr)
 	{
 		return FTransform::Identity;
@@ -141,7 +152,10 @@ FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(USceneCom
 		{
 			continue;
 		}
-		if (USceneComponent* SceneComponent = Cast<USceneComponent>(Node->ComponentTemplate))
+
+		UActorComponent* ComponentTemplate = FAGX_ObjectUtilities::GetMatchedInstance(
+			Node->ComponentTemplate.Get(), Component->GetOuter());
+		if (USceneComponent* SceneComponent = Cast<USceneComponent>(ComponentTemplate))
 		{
 			const FTransform RelativeTransform = SceneComponent->GetRelativeTransform();
 			FTransform::Multiply(&WorldTransform, &RelativeTransform, &WorldTransform);
@@ -160,7 +174,13 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 		return false;
 	}
 
-	UBlueprintGeneratedClass* Blueprint = GetBlueprintGeneratedClass(Component);
+	UBlueprintGeneratedClass* BlueprintGC = GetBlueprintGeneratedClass(Component);
+	if (BlueprintGC == nullptr)
+	{
+		return false;
+	}
+
+	UBlueprint* Blueprint = BlueprintGC->SimpleConstructionScript->GetBlueprint();
 	if (Blueprint == nullptr)
 	{
 		return false;
@@ -172,6 +192,19 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 			.FoundNode;
 	if (ComponentNode == nullptr)
 	{
+		// We could not find a SCS Node matching the passed Component. This may be because we are in
+		// a child Blueprint which does not hold any SCS Nodes itself, but it resides in a parent
+		// Blueprint. Attempt to get the SCS Node via name and look through parent Blueprints.
+		const FString ComponentName = GetRegularNameFromTemplateComponentName(Component->GetName());
+
+		FAGX_BlueprintNodeSearchResult Result = GetSCSNodeFromName(
+			*Blueprint->SimpleConstructionScript->GetBlueprint(), ComponentName, true);
+		ComponentNode = Result.FoundNode;
+		Blueprint = const_cast<UBlueprint*>(&Result.Blueprint);
+	}
+
+	if (ComponentNode == nullptr)
+	{
 		return false;
 	}
 
@@ -181,17 +214,31 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 		return false;
 	}
 
-	USceneComponent* ParentSceneComponent = Cast<USceneComponent>(ParentNode->ComponentTemplate);
-	if (ParentSceneComponent == nullptr)
+	const FTransform ParentWorldTransform = [&]()
 	{
-		return false;
-	}
+		if (ParentNode->ComponentTemplate ==
+			Blueprint->SimpleConstructionScript->GetDefaultSceneRootNode()->ComponentTemplate)
+		{
+			return FTransform::Identity;
+		}
+
+		USceneComponent* ParentSceneComponentTemplate =
+			Cast<USceneComponent>(ParentNode->ComponentTemplate);
+
+		// In the case where we used the parent Blueprint of the Blueprint that Component resides in
+		// to find the parent SCS Node, we must ensure we are operating on the correct object.
+		USceneComponent* ParentSceneComponent = FAGX_ObjectUtilities::GetMatchedInstance(
+			ParentSceneComponentTemplate, Component->GetOuter());
+		if (ParentSceneComponent == nullptr)
+		{
+			return FTransform::Identity;
+		}
+		return GetTemplateComponentWorldTransform(ParentSceneComponent);
+	}();
 
 	const FVector OrigRelLocation = Component->GetRelativeLocation();
 	const FRotator OrigRelRotation = Component->GetRelativeRotation();
 
-	const FTransform ParentWorldTransform =
-		GetTemplateComponentWorldTransform(ParentSceneComponent);
 	const FTransform NewRelTransform = Transform.GetRelativeTransform(ParentWorldTransform);
 	Component->Modify();
 	Component->SetRelativeTransform(NewRelTransform);
@@ -364,9 +411,4 @@ UBlueprint* FAGX_BlueprintUtilities::GetBlueprintFrom(const UActorComponent& Com
 
 	return Bpgc->SimpleConstructionScript->GetBlueprint();
 }
-
-void FAGX_BlueprintUtilities::SaveAndCompile(UBlueprint& Blueprint)
-{
-	FKismetEditorUtilities::CompileBlueprint(&Blueprint);
-	FAGX_ObjectUtilities::SaveAsset(Blueprint);
-}
+#endif // WITH_EDITOR

@@ -73,6 +73,13 @@ public:
 	template <typename T>
 	static TArray<T*> GetArchetypeInstances(T& Object);
 
+	/**
+	 * Finds archetype instance with the given outer object. If the TemplateComponent has Outer as
+	 * its outer, than TemplateComponent is returned. If non could be found, nullptr is returned.
+	 */
+	template <typename T>
+	static T* GetMatchedInstance(T* TemplateComponent, UObject* Outer);
+
 #if WITH_EDITOR
 	/**
 	 * Saves (or re-saves) an asset to disk. The asset must have a valid Package setup before
@@ -178,6 +185,26 @@ TArray<T*> FAGX_ObjectUtilities::GetArchetypeInstances(T& Object)
 	}
 
 	return Arr;
+}
+
+template <typename T>
+T* FAGX_ObjectUtilities::GetMatchedInstance(T* TemplateComponent, UObject* Outer)
+{
+	if (TemplateComponent == nullptr || Outer == nullptr)
+		return nullptr;
+
+	if (TemplateComponent->GetOuter() == Outer)
+		return TemplateComponent;
+
+	for (auto Instance : GetArchetypeInstances(*TemplateComponent))
+	{
+		if (Instance->GetOuter() == Outer)
+		{
+			return Instance;
+		}
+	}
+
+	return nullptr;
 }
 
 // clang-format off

@@ -165,7 +165,7 @@ FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
 
 		if (AGX_ImporterToBlueprint::ReImport(*OutermostParent, *ImportSettings))
 		{
-			FAGX_BlueprintUtilities::SaveAndCompile(*Blueprint);
+			FAGX_EditorUtilities::SaveAndCompile(*Blueprint);
 		}
 	}
 

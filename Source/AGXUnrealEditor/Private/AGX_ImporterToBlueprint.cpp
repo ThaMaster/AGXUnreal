@@ -50,6 +50,7 @@
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -1804,7 +1805,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, ImportSettings);
 
 		// Re-import is completed, we end by compiling and saving the Blueprint and any children.
-		FAGX_BlueprintUtilities::SaveAndCompile(BaseBP);
+		FAGX_EditorUtilities::SaveAndCompile(BaseBP);
 
 		return true;
 	}

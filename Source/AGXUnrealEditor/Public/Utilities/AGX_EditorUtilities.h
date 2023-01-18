@@ -332,7 +332,7 @@ public:
 		return FAppStyle::GetBrush(PropertyName);
 #endif
 	}
-	
+
 	/**
 	 * Find (and loads) all assets of the type specified by ClassName that resides in AssetDirPath.
 	 * Does not search recursively, so the AssetDirPath must be the directory which the Asset
@@ -341,6 +341,12 @@ public:
 	 */
 	template <typename T>
 	static TArray<T*> FindAssets(const FString& AssetDirPath);
+
+	/**
+	 * Save and Compile the passed Blueprint. This function cannot reside in AGX_BlueprintUtilities
+	 * since its implementation depends on an Editor module function.
+	 */
+	static void SaveAndCompile(UBlueprint& Blueprint);
 };
 
 template <typename T>
@@ -404,7 +410,6 @@ TArray<T*> FAGX_EditorUtilities::FindAssets(const FString& AssetDirPath)
 	{
 		if (T* Asset = Cast<T>(Data.GetAsset()))
 		{
-			UE_LOG(LogAGX, Warning, TEXT("Yeeeeeeeeey, found asset"));
 			Assets.Add(Asset);
 		}
 	}

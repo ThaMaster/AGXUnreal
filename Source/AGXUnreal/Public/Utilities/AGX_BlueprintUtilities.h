@@ -7,10 +7,12 @@
 #include "Engine/Blueprint.h"
 #include "Engine/SCS_Node.h"
 
+#if WITH_EDITOR
+
 /**
  * A collection of utility functions for working with Blueprints.
  */
-class AGXUNREALEDITOR_API FAGX_BlueprintUtilities
+class AGXUNREAL_API FAGX_BlueprintUtilities
 {
 public:
 	/**
@@ -126,11 +128,6 @@ public:
 	static UBlueprint* GetBlueprintFrom(const UActorComponent& Component);
 
 	/**
-	 * Save and compile the passed Blueprint (asset).
-	 */
-	static void SaveAndCompile(UBlueprint& Blueprint);
-
-	/**
 	 * Searches through the node tree and returns the first Template Component matching the given
 	 * type.
 	 */
@@ -166,3 +163,4 @@ T* FAGX_BlueprintUtilities::GetFirstComponentOfType(UBlueprint* Blueprint, bool 
 
 	return nullptr;
 }
+#endif // WITH_EDITOR

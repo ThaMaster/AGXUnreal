@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_MeshWithTransform.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_ShapeUtilities.h"
@@ -140,7 +141,18 @@ bool UAGX_BoxShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices
 		return false;
 	}
 
+#if WITH_EDITOR
+	if (FAGX_ObjectUtilities::IsTemplateComponent(*this))
+	{
+		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(this, TransformBounding, true);
+	}
+	else
+	{
+		SetWorldTransform(TransformBounding);
+	}
+#else
 	SetWorldTransform(TransformBounding);
+#endif	
 	SetHalfExtent(HalfExtentsBounding);
 	return true;
 }
