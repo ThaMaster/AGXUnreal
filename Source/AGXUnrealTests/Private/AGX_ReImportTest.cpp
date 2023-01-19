@@ -14,15 +14,23 @@
 
 namespace AGX_ReImportTest_helpers
 {
-	bool CheckNodeNameAndEnsureNoParent(const UBlueprint& Blueprint, const FString& Name)
+	USCS_Node* GetNodeChecked(const UBlueprint& Blueprint, const FString& Name)
 	{
 		USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
-
 		if (Node == nullptr)
 		{
 			UE_LOG(LogAGX, Error, TEXT("Did not find SCS Node '%s' in the Blueprint."), *Name);
-			return false;
+			return nullptr;
 		}
+
+		return Node;
+	}
+
+	bool CheckNodeNameAndEnsureNoParent(const UBlueprint& Blueprint, const FString& Name)
+	{
+		USCS_Node* Node = GetNodeChecked(Blueprint, Name);
+		if (Node == nullptr)
+			return false;
 
 		if (USCS_Node* Parent = Blueprint.SimpleConstructionScript->FindParentNode(Node))
 		{
@@ -36,15 +44,30 @@ namespace AGX_ReImportTest_helpers
 		return true;
 	}
 
-	bool CheckNodeNameAndParent(
-		const UBlueprint& Blueprint, const FString& Name, const FString& ParentNodeName)
+	bool CheckNoChild(const UBlueprint& Blueprint, const FString& Name)
 	{
-		USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
+		USCS_Node* Node = GetNodeChecked(Blueprint, Name);
 		if (Node == nullptr)
+			return false;
+
+		if (Node->GetChildNodes().Num() != 0)
 		{
-			UE_LOG(LogAGX, Error, TEXT("Did not find SCS Node '%s' in the Blueprint."), *Name);
+			UE_LOG(
+				LogAGX, Error, TEXT("Expected node '%s' not to have zero children, but it had %d"),
+				*Name, Node->GetChildNodes().Num());
 			return false;
 		}
+
+		return true;
+	}
+
+	bool CheckNodeNameAndParent(
+		const UBlueprint& Blueprint, const FString& Name, const FString& ParentNodeName,
+		bool EnsureNoChild)
+	{
+		USCS_Node* Node = GetNodeChecked(Blueprint, Name);
+		if (Node == nullptr)
+			return false;
 
 		USCS_Node* Parent = Blueprint.SimpleConstructionScript->FindParentNode(Node);
 		if (Parent == nullptr)
@@ -53,7 +76,7 @@ namespace AGX_ReImportTest_helpers
 			return false;
 		}
 
-		if (Parent->GetName() != ParentNodeName)
+		if (Parent->GetVariableName().ToString() != ParentNodeName)
 		{
 			UE_LOG(
 				LogAGX, Error,
@@ -62,7 +85,35 @@ namespace AGX_ReImportTest_helpers
 			return false;
 		}
 
+		if (EnsureNoChild)
+		{
+			return CheckNoChild(Blueprint, Name);
+		}
+
 		return true;
+	}
+
+	USCS_Node* GetOnlyAttachChildChecked(USCS_Node* Node)
+	{
+		if (Node == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("GetOnlyAttachChildChecked failed because the passed Node was nullptr."));
+			return nullptr;
+		}
+
+		const auto& Children = Node->GetChildNodes();
+		if (Children.Num() != 1)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Number of children of node '%s' was expected to be 1 but was %d."),
+				*Node->GetVariableName().ToString(), Children.Num());
+			return nullptr;
+		}
+
+		return Children[0];
 	}
 
 	UBlueprint* Import(const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
@@ -82,6 +133,25 @@ namespace AGX_ReImportTest_helpers
 		ImportSettings.ImportType = EAGX_ImportType::Agx;
 
 		return AGX_ImporterToBlueprint::Import(ImportSettings);
+	}
+
+	bool ReImport(UBlueprint& BaseBp, const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
+	{
+		FString ArchiveFilePath =
+			AgxAutomationCommon::GetTestScenePath(FPaths::Combine("ReImport", ArchiveFileName));
+		if (ArchiveFilePath.IsEmpty())
+		{
+			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
+			return nullptr;
+		}
+
+		FAGX_ImportSettings ImportSettings;
+		ImportSettings.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
+		ImportSettings.bOpenBlueprintEditorAfterImport = false;
+		ImportSettings.FilePath = ArchiveFilePath;
+		ImportSettings.ImportType = EAGX_ImportType::Agx;
+
+		return AGX_ImporterToBlueprint::ReImport(BaseBp, ImportSettings);
 	}
 }
 
@@ -143,10 +213,104 @@ bool FSameTwiceCommand::Update()
 		return true;
 	}
 
-	const FString SceneRootName =
-		BlueprintBase->SimpleConstructionScript->GetDefaultSceneRootNode()->GetName();
+	const int NumNodesFirstImport = BlueprintBase->SimpleConstructionScript->GetAllNodes().Num();
 
-	if (!CheckNodeNameAndParent(*BlueprintBase, "SphereBodyToChange", SceneRootName))
+	if (!ReImport(*BlueprintBase, ArchiveFileName, false))
+	{
+		Test.AddError("ReImport returned false.");
+		return true;
+	}
+
+	// Ensure we have the same number of nodes after re-import as before.
+	const int NumNodesReImport = BlueprintBase->SimpleConstructionScript->GetAllNodes().Num();
+	if (NumNodesReImport != NumNodesFirstImport)
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Number of nodes was %d after import and %d after re-import. "
+				 "They are expected to be the same."),
+			NumNodesFirstImport, NumNodesReImport));
+		return true;
+	}
+
+	if (!CheckNodeNameAndParent(*BlueprintBase, "SphereBodyToChange", "DefaultSceneRoot", false))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	if (!CheckNodeNameAndParent(
+			*BlueprintBase, "SphereGeometryToChange", "SphereBodyToChange", true))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	if (!CheckNodeNameAndParent(*BlueprintBase, "SphereBodyNoChange", "DefaultSceneRoot", false))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	if (!CheckNodeNameAndParent(
+			*BlueprintBase, "SphereGeometryNoChange", "SphereBodyNoChange", true))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	if (!CheckNodeNameAndParent(*BlueprintBase, "BoxBodyToLooseGeom", "DefaultSceneRoot", false))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	if (!CheckNodeNameAndParent(*BlueprintBase, "BoxGeometryToMove", "BoxBodyToLooseGeom", true))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	if (!CheckNodeNameAndParent(*BlueprintBase, "BoxBodyToGainGeom", "DefaultSceneRoot", true))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	if (!CheckNodeNameAndParent(*BlueprintBase, "StandaloneCylToChange", "DefaultSceneRoot", true))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshBody", "DefaultSceneRoot", false))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshGeomToChange", "TrimeshBody", false))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	{
+		USCS_Node* TrimeshGeomToChangeNode = GetNodeChecked(*BlueprintBase, "TrimeshGeomToChange");
+		USCS_Node* TGTCCollisionMeshNode = GetOnlyAttachChildChecked(TrimeshGeomToChangeNode);
+		USCS_Node* TGTCRenderMeshNode = GetOnlyAttachChildChecked(TGTCCollisionMeshNode);
+		if (TGTCRenderMeshNode == nullptr)
+		{
+			Test.AddError("TGTCRenderMeshNode was nullptr");
+			return true;
+		}
+
+		if (TGTCRenderMeshNode->GetChildNodes().Num() != 0)
+		{
+			Test.AddError(FString::Printf(
+				TEXT("Expected TGTCRenderMeshNode to have zero children but it has %d."),
+				TGTCRenderMeshNode->GetChildNodes().Num()));
+			return true;
+		}
+	}
+
+	if (!CheckNodeNameAndParent(
+			*BlueprintBase, "TrimeshBodyToLooseGeom", "DefaultSceneRoot", false))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	if (!CheckNodeNameAndParent(
+			*BlueprintBase, "TrimeshGeomToMove", "TrimeshBodyToLooseGeom", false))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	{
+		USCS_Node* TrimeshGeomToMoveNode = GetNodeChecked(*BlueprintBase, "TrimeshGeomToMove");
+		USCS_Node* TGTMCollisionMeshNode = GetOnlyAttachChildChecked(TrimeshGeomToMoveNode);
+		USCS_Node* TGTMRenderMeshNode = GetOnlyAttachChildChecked(TGTMCollisionMeshNode);
+		if (TGTMRenderMeshNode == nullptr)
+		{
+			Test.AddError("TGTMRenderMeshNode was nullptr");
+			return true;
+		}
+
+		if (TGTMRenderMeshNode->GetChildNodes().Num() != 0)
+		{
+			Test.AddError(FString::Printf(
+				TEXT("Expected TGTMRenderMeshNode to have zero children but it has %d."),
+				TGTMRenderMeshNode->GetChildNodes().Num()));
+			return true;
+		}
+	}
+
+	if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshBodyToGainGeom", "DefaultSceneRoot", true))
 		return true; // Logging done in CheckNodeNameAndParent.
 
 	if (!CheckNodeNameAndEnsureNoParent(*BlueprintBase, "AGX_ReImport"))
@@ -163,8 +327,9 @@ bool FReImportSameTwiceTest::RunTest(const FString& Parameters)
 {
 	UBlueprint* Blueprint = nullptr;
 	const FString ArchiveFileName = "reimport_build.agx";
-	ADD_LATENT_AUTOMATION_COMMAND(FSameTwiceCommand(ArchiveFileName, *this));	
-	ADD_LATENT_AUTOMATION_COMMAND(FDeleteImportedAssets(FPaths::GetBaseFilename(ArchiveFileName), *this));
+	ADD_LATENT_AUTOMATION_COMMAND(FSameTwiceCommand(ArchiveFileName, *this));
+	ADD_LATENT_AUTOMATION_COMMAND(
+		FDeleteImportedAssets(FPaths::GetBaseFilename(ArchiveFileName), *this));
 
 	return true;
 }
