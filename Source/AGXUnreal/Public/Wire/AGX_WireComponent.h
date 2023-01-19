@@ -219,13 +219,20 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire Begin Winch",
 		Meta =
-			(AllowedClasses = "/Script/AGXUnreal.AGX_WireWinchComponent", DisallowedClasses = "", AllowAnyActor,
-			 EditConditionHides,
+			(AllowedClasses = "/Script/AGXUnreal.AGX_WireWinchComponent", DisallowedClasses = "",
+			 AllowAnyActor, EditConditionHides,
 			 EditCondition = "BeginWinchType == EWireWinchOwnerType::WireWinch"))
 	FComponentReference BeginWinchComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
 	FAGX_WireMergeSplitProperties MergeSplitProperties;
+
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	void CreateMergeSplitProperties();
@@ -426,8 +433,9 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire End Winch",
 		Meta =
-			(AllowedClasses = "/Script/AGXUnreal.AGX_WireWinchComponent", DisallowedClasses = "", AllowAnyActor,
-			 EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::WireWinch"))
+			(AllowedClasses = "/Script/AGXUnreal.AGX_WireWinchComponent", DisallowedClasses = "",
+			 AllowAnyActor, EditConditionHides,
+			 EditCondition = "EndWinchType == EWireWinchOwnerType::WireWinch"))
 	FComponentReference EndWinchComponent;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire End Winch")

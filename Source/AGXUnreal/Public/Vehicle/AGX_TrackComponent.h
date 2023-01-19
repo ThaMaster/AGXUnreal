@@ -200,6 +200,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Track Debug Visual")
 	bool bAutoUpdateTrackPreview = true;
 
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
+
 	/**
 	 * Event that broadcasts whenever the outside-of-play Track Preview Data has changed.
 	 * Typically useful for a track rendering component that outside of Play want to update its
@@ -250,8 +257,8 @@ public:
 	 * transforms' rotation.
 	 */
 	void GetNodeTransforms(
-		TArray<FTransform>& OutTransforms, const FVector& LocalScale,
-		const FVector& LocalOffset, const FQuat& LocalRotation) const;
+		TArray<FTransform>& OutTransforms, const FVector& LocalScale, const FVector& LocalOffset,
+		const FQuat& LocalRotation) const;
 
 	/**
 	 * Get the sizes of all track nodes.

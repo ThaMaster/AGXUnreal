@@ -340,6 +340,12 @@ void FTrackBarrier::GetNodeSizes(TArray<FVector>& OutNodeSizes) const
 	}
 }
 
+FGuid FTrackBarrier::GetGuid() const
+{
+	check(HasNative());
+	return Convert(NativeRef->Native->getUuid());
+}
+
 FVector FTrackBarrier::GetNodeSize(uint64 index) const
 {
 	check(HasNative());

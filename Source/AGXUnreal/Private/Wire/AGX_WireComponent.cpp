@@ -1114,6 +1114,8 @@ void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
 		MergeSplitProperties.CopyFrom(Msp);
 	}
 
+	ImportGuid = Barrier.GetGuid();
+
 	// Physical material, winches, and route nodes not set here since this is a pure data copy. For
 	// AGX Dynamics archive import these are set by AGX_ArchiveImporterHelper.
 }
