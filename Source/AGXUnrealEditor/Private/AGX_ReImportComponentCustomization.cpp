@@ -63,6 +63,7 @@ void FAGX_ReImportComponentCustomization::CustomizeDetails(IDetailLayoutBuilder&
 	InDetailBuilder.HideCategory(FName("Events"));
 	InDetailBuilder.HideCategory(FName("AssetUserData"));
 	InDetailBuilder.HideCategory(FName("Collision"));
+	InDetailBuilder.HideCategory(FName("Replication"));
 }
 
 namespace AGX_ReImportComponentCustomization_helpers

@@ -5,6 +5,7 @@
 #include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
+#include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
 #include "Misc/AutomationTest.h"
@@ -63,11 +64,96 @@ namespace AGX_ReImportTest_helpers
 
 		return true;
 	}
+
+	UBlueprint* Import(const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
+	{
+		FString ArchiveFilePath =
+			AgxAutomationCommon::GetTestScenePath(FPaths::Combine("ReImport", ArchiveFileName));
+		if (ArchiveFilePath.IsEmpty())
+		{
+			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
+			return nullptr;
+		}
+
+		FAGX_ImportSettings ImportSettings;
+		ImportSettings.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
+		ImportSettings.bOpenBlueprintEditorAfterImport = false;
+		ImportSettings.FilePath = ArchiveFilePath;
+		ImportSettings.ImportType = EAGX_ImportType::Agx;
+
+		return AGX_ImporterToBlueprint::Import(ImportSettings);
+	}
+}
+
+//
+// Common functionality
+//
+DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
+	FDeleteImportedAssets, FString, ArchiveName, FAutomationTestBase&, Test);
+
+bool FDeleteImportedAssets::Update()
+{
+	const FString Root = FPaths::ProjectContentDir();
+	const FString ImportsLocal =
+		FPaths::Combine(FAGX_ImportUtilities::GetImportRootDirectoryName(), ArchiveName);
+	const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
+	const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
+	if (!FPaths::DirectoryExists(ImportsAbsolute))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Unable to delete files directory '%s' because it does not exist."),
+			*ImportsAbsolute));
+		return true;
+	}
+
+	if (!IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("IFileManager::DeleteDirectory returned false trying to remove: '%s'"),
+			*ImportsAbsolute));
+		return true;
+	}
+
+	return true;
 }
 
 //
 // Re-import same twice test starts here.
 //
+
+DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
+	FSameTwiceCommand, FString, ArchiveFileName, FAutomationTestBase&, Test);
+
+bool FSameTwiceCommand::Update()
+{
+	using namespace AGX_ReImportTest_helpers;
+
+	UBlueprint* Blueprint = Import(ArchiveFileName, false);
+	if (Blueprint == nullptr)
+	{
+		Test.AddError("Imported Blueprint was nullptr.");
+		return true;
+	}
+
+	UBlueprint* BlueprintBase = FAGX_BlueprintUtilities::GetOutermostParent(Blueprint);
+	if (BlueprintBase == nullptr)
+	{
+		Test.AddError(
+			"Could not get Blueprint parent (base) from the returned Blueprint after import.");
+		return true;
+	}
+
+	const FString SceneRootName =
+		BlueprintBase->SimpleConstructionScript->GetDefaultSceneRootNode()->GetName();
+
+	if (!CheckNodeNameAndParent(*BlueprintBase, "SphereBodyToChange", SceneRootName))
+		return true; // Logging done in CheckNodeNameAndParent.
+
+	if (!CheckNodeNameAndEnsureNoParent(*BlueprintBase, "AGX_ReImport"))
+		return true; // Logging done in CheckNodeNameAndEnsureNoParent.
+
+	return true;
+}
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FReImportSameTwiceTest, "AGXUnreal.Editor.AGX_ReImportTest.ReImportSameTwice",
@@ -75,45 +161,10 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FReImportSameTwiceTest::RunTest(const FString& Parameters)
 {
-	using namespace AGX_ReImportTest_helpers;
-
-	const FString ArchiveFileName = "same_twice_build.agx";
-	FString ArchiveFilePath =
-		AgxAutomationCommon::GetTestScenePath(FPaths::Combine("ReImport", ArchiveFileName));
-	if (ArchiveFilePath.IsEmpty())
-	{
-		AddError(FString::Printf(TEXT("Did not find an archive named '%s'."), *ArchiveFileName));
-		return true;
-	}
-
-	FAGX_ImportSettings ImportSettings;
-	ImportSettings.bIgnoreDisabledTrimeshes = false;
-	ImportSettings.bOpenBlueprintEditorAfterImport = false;
-	ImportSettings.FilePath = ArchiveFilePath;
-	ImportSettings.ImportType = EAGX_ImportType::Agx;
-
-	UBlueprint* BlueprintChild = AGX_ImporterToBlueprint::Import(ImportSettings);
-	if (BlueprintChild == nullptr)
-	{
-		AddError("The Blueprint returned after import was nullptr.");
-	}
-
-	UBlueprint* Blueprint = FAGX_BlueprintUtilities::GetOutermostParent(BlueprintChild);
-	if (Blueprint == nullptr)
-	{
-		AddError("Could not get Blueprint parent (base) from the returned Blueprint after import.");
-	}
-
-	const FString SceneRootName =
-		Blueprint->SimpleConstructionScript->GetDefaultSceneRootNode()->GetName();
-
-	if (!CheckNodeNameAndParent(*Blueprint, "SphereBody", SceneRootName))
-		return true; // Logging done in CheckNodeNameAndParent.
-
-	if (!CheckNodeNameAndEnsureNoParent(*Blueprint, "AGX_ReImport"))
-		return true; // Logging done in CheckNodeNameAndEnsureNoParent.
-
-	// Todo: Add more stuff to the test scene, and also re-import and check content the same way again.
+	UBlueprint* Blueprint = nullptr;
+	const FString ArchiveFileName = "reimport_build.agx";
+	ADD_LATENT_AUTOMATION_COMMAND(FSameTwiceCommand(ArchiveFileName, *this));	
+	ADD_LATENT_AUTOMATION_COMMAND(FDeleteImportedAssets(FPaths::GetBaseFilename(ArchiveFileName), *this));
 
 	return true;
 }
