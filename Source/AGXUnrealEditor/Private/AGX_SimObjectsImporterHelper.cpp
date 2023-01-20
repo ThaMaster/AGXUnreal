@@ -715,14 +715,6 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	}
 	else
 	{
-		// First, we rename the original Mesh asset to avoid name collision with the new one.
-		if (OriginalMeshAsset != nullptr)
-		{
-			FAGX_EditorUtilities::RenameAsset(
-				*OriginalMeshAsset, FAGX_ImportUtilities::GetUnsetUniqueImportName(), "StaticMesh");
-			FAGX_ObjectUtilities::SaveAsset(*OriginalMeshAsset);
-		}
-
 		const FString FallbackName = ShapeBarrier.GetName().IsEmpty()
 										 ? "CollisionMesh"
 										 : ShapeBarrier.GetName() + FString("_CollisionMesh");
@@ -979,14 +971,6 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	}
 	else
 	{
-		// First, we rename the original Mesh asset to avoid name collision with the new one.
-		if (OriginalMeshAsset != nullptr)
-		{
-			FAGX_EditorUtilities::RenameAsset(
-				*OriginalMeshAsset, FAGX_ImportUtilities::GetUnsetUniqueImportName(), "StaticMesh");
-			FAGX_ObjectUtilities::SaveAsset(*OriginalMeshAsset);
-		}
-
 		UStaticMesh* Asset =
 			GetOrCreateStaticMeshAsset(RenderDataBarrier, RestoredMeshes, DirectoryName);
 		NewMeshAsset = Asset;
