@@ -386,7 +386,7 @@ namespace
 	{
 		FScopedSlowTask ImportTask(100.f, LOCTEXT("ImportModel", "Importing model"), true);
 		ImportTask.MakeDialog();
-		volatile bool Success = true;
+		bool Success = true;
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Shape Materials"));
 		Success &= AddShapeMaterials(SimObjects, Helper);
@@ -672,7 +672,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		const FAGX_SimObjectsImporterHelper& Helper, const FString& Subdir = "")
 	{
 		return FPaths::Combine(
-			"/Game", FAGX_ImportUtilities::GetImportRootDirectoryName(), Helper.DirectoryName, Subdir);
+			"/Game", FAGX_ImportUtilities::GetImportRootDirectoryName(), Helper.DirectoryName,
+			Subdir);
 	}
 
 	struct FShapeGuidsCollection
@@ -1540,6 +1541,9 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		const FAGX_ImportSettings& ImportSettings)
 	{
 		FAGX_SimObjectsImporterHelper Helper(ImportSettings, GetModelDirectoryFromAsset(&BaseBP));
+		FScopedSlowTask ImportTask(100.f, LOCTEXT("AddOrUpdateAll", "Adding new data"), true);
+		ImportTask.MakeDialog();
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Adding data"));
 
 		// We collect all existing merge split thresholds assets here once, and pass it down to the
 		// relevant AddOrUpdate functions below, instead of looking it up several times from within
@@ -1548,19 +1552,29 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
 		TMap<FGuid, UAGX_MergeSplitThresholdsBase*> ExistingMSTAssets =
 			FindAGXAssetComponents<UAGX_MergeSplitThresholdsBase>(MSTDirPath);
-
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Shape Materials"));
 		AddOrUpdateShapeMaterials(BaseBP, SimulationObjects, Helper);
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Contact Materials"));
 		AddOrUpdateContactMaterials(BaseBP, SCSNodes, SimulationObjects, Helper);
+		ImportTask.EnterProgressFrame(
+			5.f, FText::FromString("Synchronizing Rigid Bodies and Shapes"));
 		AddOrUpdateRigidBodiesAndOwnedShapes(
 			BaseBP, SCSNodes, SimulationObjects, Helper, ImportSettings, ExistingMSTAssets);
+		ImportTask.EnterProgressFrame(15.f, FText::FromString("Synchronizing Bodiless Shapes"));
 		AddOrUpdateBodilessShapes(
 			BaseBP, SCSNodes, SimulationObjects, Helper, ImportSettings, ExistingMSTAssets);
+		ImportTask.EnterProgressFrame(15.f, FText::FromString("Synchronizing Constraints"));
 		AddOrUpdateConstraints(BaseBP, SCSNodes, SimulationObjects, Helper);
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Tire Models"));
 		AddOrUpdateTwoBodyTires(BaseBP, SCSNodes, SimulationObjects, Helper);
+		ImportTask.EnterProgressFrame(
+			5.f, FText::FromString("Synchronizing Collision Groups Disabler"));
 		AddOrUpdateCollisionGroupDisabler(BaseBP, SCSNodes, SimulationObjects, Helper);
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Observer Frames"));
 		AddOrUpdateObserverFrames(BaseBP, SCSNodes, SimulationObjects, Helper);
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing ReImport Component"));
 		AddOrUpdateReImportComponent(BaseBP, SCSNodes, Helper);
-
+		ImportTask.EnterProgressFrame(35.f, FText::FromString("Finalizing Synchronization"));
 		Helper.FinalizeImport();
 	}
 
@@ -1777,6 +1791,10 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 	bool ReImport(UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings)
 	{
+		FScopedSlowTask ImportTask(100.f, LOCTEXT("SynchronizeModel", "Synchronize Model"), true);
+		ImportTask.MakeDialog();
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Collecting data"));
+
 		SCSNodeCollection SCSNodes(BaseBP);
 		FSimulationObjectCollection SimObjects;
 		if (!FAGXSimObjectsReader::ReadAGXArchive(ImportSettings.FilePath, SimObjects))
@@ -1794,6 +1812,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			return false;
 		}
 
+		ImportTask.EnterProgressFrame(10.f, FText::FromString("Deleting old Components"));
 		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects, ImportSettings);
 
 		// This overwrites all (supported) Node names with temporary names.
@@ -1802,7 +1821,11 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		// Component name. This would make the result of a ReImport non-deterministic in terms of
 		// Node naming.
 		SetUnnamedNameForAll(BaseBP);
+		ImportTask.EnterProgressFrame(
+			80.f, FText::FromString("Adding and Updating Components and Assets"));
 		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, ImportSettings);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Synchronization"));
 
 		// Re-import is completed, we end by compiling and saving the Blueprint and any children.
 		FAGX_EditorUtilities::SaveAndCompile(BaseBP);
