@@ -10,7 +10,9 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/TrackBarrier.h"
@@ -27,7 +29,7 @@
 #include "RawMesh.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/ComponentEditorUtils.h"
-#if ! UE_VERSION_OLDER_THAN(5, 0, 0)
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 #include "UObject/SavePackage.h"
 #endif
 
@@ -91,6 +93,77 @@ namespace
 	{
 		return FAGX_ObjectUtilities::SaveAsset(Asset);
 	}
+
+	/*
+	 * Renames given template Component and also updates any archetype instances. Only updates the
+	 * archetype instance if it's name matches the original template Component name.
+	 */
+	void RenameTemplateComponentSafe(UActorComponent* Component, const FString& Name)
+	{
+		if (Component == nullptr)
+			return;
+
+		const FString OrigComponentRegularName =
+			FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Component->GetName());
+
+		for (auto Inst : FAGX_ObjectUtilities::GetArchetypeInstances(*Component))
+		{
+			if (FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Inst->GetName()) !=
+				OrigComponentRegularName)
+			{
+				continue;
+			}
+
+			RenameTemplateComponentSafe(Inst, Name);
+			const FString FinalName =
+				Inst->GetName().EndsWith(UActorComponent::ComponentTemplateNameSuffix)
+					? Name + UActorComponent::ComponentTemplateNameSuffix
+					: Name;
+			if (Inst->Rename(*FinalName, nullptr, REN_Test))
+			{
+				Inst->Rename(*FinalName);
+			}
+			else
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Tried to rename Archetype Instance Component '%s' '%s' but was unable "
+						 "to."),
+					*Inst->GetName(), *Name);
+			}
+		}
+
+		const FString FinalName =
+			Component->GetName().EndsWith(UActorComponent::ComponentTemplateNameSuffix)
+				? Name + UActorComponent::ComponentTemplateNameSuffix
+				: Name;
+		if (Component->Rename(*FinalName, nullptr, REN_Test))
+		{
+			Component->Rename(*FinalName);
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("Tried to rename Component '%s' '%s' but was unable to."),
+				*Component->GetName(), *Name);
+		}
+	}
+
+	/*
+	 * Solves issue where some Component's sometimes lists an archetype instance that does not
+	 * belong to it, causing the regular re-name to crash. It does this by calling
+	 * RenameTemplateComponentSafe that only renames archetype instances with matching original
+	 * name. The reason for the issue is not yet known unfortunately, so this was a last-resort type
+	 * of fix.
+	 */
+	void RenameSCSNodeSafe(USCS_Node* Node, const FString& Name)
+	{
+		if (Node == nullptr)
+			return;
+
+		Node->SetVariableName(FName(Name), false);
+		RenameTemplateComponentSafe(Node->ComponentTemplate, Name);
+	}
 }
 
 FString FAGX_ImportUtilities::CreatePackagePath(FString FileName, FString AssetType)
@@ -101,7 +174,8 @@ FString FAGX_ImportUtilities::CreatePackagePath(FString FileName, FString AssetT
 	{
 		return FString();
 	}
-	return FString::Printf(TEXT("/Game/%s/%s/%s/"), *GetImportRootDirectoryName(), *FileName, *AssetType);
+	return FString::Printf(
+		TEXT("/Game/%s/%s/%s/"), *GetImportRootDirectoryName(), *FileName, *AssetType);
 }
 
 FString FAGX_ImportUtilities::CreatePackagePath(FString FileName)
@@ -201,7 +275,8 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 
 namespace
 {
-	FString GetUniqueNameForComponentTemplate(const UActorComponent& Component, const FString& WantedName)
+	FString GetUniqueNameForComponentTemplate(
+		const UActorComponent& Component, const FString& WantedName)
 	{
 		AGX_CHECK(FAGX_ObjectUtilities::IsTemplateComponent(Component));
 		FString Name = WantedName;
@@ -386,7 +461,7 @@ FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
 
 	UAGX_TrackInternalMergeProperties* Asset =
 		PrepareWriteAssetToDisk<UAGX_TrackInternalMergeProperties>(
-		DirectoryName, Name, TEXT(""), TEXT("TrackInternalMergeProperties"), InitAsset);
+			DirectoryName, Name, TEXT(""), TEXT("TrackInternalMergeProperties"), InitAsset);
 	if (Asset == nullptr || !WriteAssetToDisk(*Asset))
 	{
 		return nullptr;
@@ -435,7 +510,7 @@ void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Nam
 	const FString ValidName = [&]()
 	{
 		if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
-		{			
+		{
 			return GetUniqueNameForComponentTemplate(Component, Name);
 		}
 		else
@@ -443,14 +518,16 @@ void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Nam
 			return CreateName(static_cast<UObject&>(Component), Name);
 		}
 	}();
-	
+
 	const FString FinalName = GetFinalizedComponentName(Component, ValidName);
 
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
 		UBlueprint* Bp = FAGX_BlueprintUtilities::GetBlueprintFrom(Component);
-		FAGX_BlueprintUtilities::GetSCSNodeFromComponent(*Bp, &Component, false).FoundNode->SetVariableName(
-			FName(FinalName), true);
+
+		USCS_Node* Node =
+			FAGX_BlueprintUtilities::GetSCSNodeFromComponent(*Bp, &Component, false).FoundNode;
+		RenameSCSNodeSafe(Node, FinalName);
 	}
 	else
 	{
