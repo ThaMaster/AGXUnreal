@@ -28,7 +28,7 @@ public:
 	static void GetChildActorsOfActor(AActor* Parent, TArray<AActor*>& ChildActors);
 
 	/*
-	 * Checks whether the component is a template Component.
+	 * Checks whether the component is a template Component, i.e. it may have archetype instances.
 	 */
 	static bool IsTemplateComponent(const UActorComponent& Component);
 

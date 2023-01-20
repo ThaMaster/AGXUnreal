@@ -236,7 +236,7 @@ namespace
 				CIRCLE_SCALE, FMath::DegreesToRadians(View->FOV), Distance);
 
 			DrawCircle(
-				PDI, Attachment.GetGlobalFrameLocation(), View->GetViewRight(), View->GetViewUp(),
+				PDI, Body->GetComponentLocation(), View->GetViewRight(), View->GetViewUp(),
 				Color, Radius, 32, SDPG_Foreground, Thickness, /*DepthBias*/ 0.0f,
 				/*bScreenSpace*/ true);
 		}
