@@ -85,3 +85,36 @@ bool FAGX_ObjectUtilities::SaveAsset(UObject& Asset)
 #endif
 }
 #endif
+
+FTransform FAGX_ObjectUtilities::GetAnyComponentWorldTransform(const USceneComponent& Component)
+{
+#if WITH_EDITOR
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		return FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(&Component);
+	}
+	else
+	{
+		return Component.GetComponentTransform();
+	}
+#else
+	return Component.GetComponentTransform();
+#endif
+}
+
+void FAGX_ObjectUtilities::SetAnyComponentWorldTransform(
+	USceneComponent& Component, const FTransform& Transform)
+{
+#if WITH_EDITOR
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(&Component, Transform, true);
+	}
+	else
+	{
+		Component.SetWorldTransform(Transform);
+	}
+#else
+	Component.SetWorldTransform(Transform);
+#endif
+}

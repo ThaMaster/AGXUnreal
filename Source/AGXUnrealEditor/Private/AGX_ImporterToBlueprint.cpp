@@ -1791,7 +1791,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 	bool ReImport(UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings)
 	{
-		FScopedSlowTask ImportTask(100.f, LOCTEXT("SynchronizeModel", "Synchronize Model"), true);
+		FScopedSlowTask ImportTask(100.f, LOCTEXT("SynchronizeModel", "Synchronizing Model"), true);
 		ImportTask.MakeDialog();
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Collecting data"));
 

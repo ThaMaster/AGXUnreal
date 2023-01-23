@@ -340,8 +340,7 @@ namespace
 		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
 		const FString& DirectoryName)
 	{
-		const TThresholdsBarrier ThresholdsBarrier =
-			TThresholdsBarrier::CreateFrom(Barrier);
+		const TThresholdsBarrier ThresholdsBarrier = TThresholdsBarrier::CreateFrom(Barrier);
 		if (!ThresholdsBarrier.HasNative())
 		{
 			// The native object did not have any MergeSplitThreshold associated with it.
@@ -457,9 +456,6 @@ void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
-		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
-			&Component, FTransform(Barrier.GetRotation(), Barrier.GetPosition()), true);
-
 		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
 			if (Instance->MergeSplitProperties.Thresholds ==
@@ -1123,13 +1119,46 @@ namespace
 				*Barrier.GetName(), *Helper.ImportSettings.FilePath);
 		}
 
-		if (Bodies.first != nullptr)
+		auto ToFName = [](const UAGX_RigidBodyComponent& Body)
 		{
-			Constraint.BodyAttachment1.RigidBody.BodyName = Bodies.first->GetFName();
+			if (FAGX_ObjectUtilities::IsTemplateComponent(Body))
+			{
+				return FName(FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(
+					Body.GetName()));
+			}
+			return Body.GetFName();
+		};
+
+		const TOptional<FName> BodyName1 =
+			Bodies.first != nullptr ? ToFName(*Bodies.first) : TOptional<FName>();
+		const TOptional<FName> BodyName2 =
+			Bodies.second != nullptr ? ToFName(*Bodies.second) : TOptional<FName>();
+
+		// Update Body Name of the attachments.
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Constraint))
+		{
+			if (Instance->BodyAttachment1.RigidBody.BodyName ==
+					Constraint.BodyAttachment1.RigidBody.BodyName &&
+				BodyName1.IsSet())
+			{
+				Instance->BodyAttachment1.RigidBody.BodyName = BodyName1.GetValue();
+			}
+
+			if (Instance->BodyAttachment2.RigidBody.BodyName ==
+					Constraint.BodyAttachment2.RigidBody.BodyName &&
+				BodyName2.IsSet())
+			{
+				Instance->BodyAttachment2.RigidBody.BodyName = BodyName2.GetValue();
+			}
 		}
-		if (Bodies.second != nullptr)
+
+		if (BodyName1.IsSet())
 		{
-			Constraint.BodyAttachment2.RigidBody.BodyName = Bodies.second->GetFName();
+			Constraint.BodyAttachment1.RigidBody.BodyName = BodyName1.GetValue();
+		}
+		if (BodyName2.IsSet())
+		{
+			Constraint.BodyAttachment2.RigidBody.BodyName = BodyName2.GetValue();
 		}
 
 		FAGX_ImportUtilities::Rename(Constraint, Barrier.GetName());
@@ -1259,10 +1288,7 @@ void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
 	}
 	else
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Unsupported type for Constraint Component '%s' in UpdateConstraintComponent."),
-			*Barrier.GetName());
+		UpdateConstraintComponentNoControllers(Component, Barrier, *this, RestoredThresholds);
 	}
 }
 

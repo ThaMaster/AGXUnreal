@@ -104,8 +104,8 @@ void FetchBodyNamesFromBlueprint(
 		return;
 	}
 
-	// We need to iterate over all parent Blueprints as well since derived Rigid Body Components
-	// will not show up in a child Blueprint.
+	// We need to iterate over all parent Blueprints as well since the SCS Nodes of interest may
+	// reside in a parent Blueprint, and will in that case not show up in a child Blueprint.
 	TArray<UBlueprint*> BlueprintChain;
 	UBlueprint::GetBlueprintHierarchyFromClass(Blueprint, BlueprintChain);
 

@@ -5,7 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
-#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_ShapeUtilities.h"
@@ -162,18 +161,7 @@ bool UAGX_CylinderShapeComponent::AutoFitFromVertices(const TArray<FVector>& Ver
 		return false;
 	}
 
-	#if WITH_EDITOR
-	if (FAGX_ObjectUtilities::IsTemplateComponent(*this))
-	{
-		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(this, TransformBounding, true);
-	}
-	else
-	{
-		SetWorldTransform(TransformBounding);
-	}
-#else
-	SetWorldTransform(TransformBounding);
-#endif	
+	FAGX_ObjectUtilities::SetAnyComponentWorldTransform(*this, TransformBounding);
 	SetRadius(RadiusBounding);
 	SetHeight(HeightBounding);
 	return true;

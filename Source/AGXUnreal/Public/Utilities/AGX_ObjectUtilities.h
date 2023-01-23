@@ -88,6 +88,18 @@ public:
 	static bool SaveAsset(UObject& Asset);
 #endif
 
+	/**
+	 * Get the transform of any Component, even template Components residing in a Blueprint.
+	 */
+	static FTransform GetAnyComponentWorldTransform(const USceneComponent& Component);
+
+	/**
+	 * Set the transform of any Component, even template Components residing in a Blueprint. If the
+	 * Component resides in a Blueprint and is a Component template, any archetype instance
+	 * currently "in sync" with the Component will be updated as well.
+	 */
+	static void SetAnyComponentWorldTransform(USceneComponent& Component, const FTransform& Transform);
+
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
 };

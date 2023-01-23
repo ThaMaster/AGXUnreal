@@ -515,13 +515,8 @@ void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
 		MergeSplitProperties.CopyFrom(Msp);
 	}
 
-	// Calling SetWorldLocationAndRotation on a template Component does not work since it does not
-	// have it's attachment parents setup yet. Instead,
-	// FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform should be used.
-	if (!FAGX_ObjectUtilities::IsTemplateComponent(*this))
-	{
-		SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
-	}
+	FAGX_ObjectUtilities::SetAnyComponentWorldTransform(
+		*this, FTransform(Barrier.GetRotation(), Barrier.GetPosition()));
 }
 
 void UAGX_RigidBodyComponent::InitializeMotionControl()

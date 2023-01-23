@@ -374,24 +374,30 @@ namespace
 {
 	FVector GetGlobalAttachmentFramePos(UAGX_RigidBodyComponent* RigidBody, const FVector LocalPos)
 	{
-		if (RigidBody)
+		if (RigidBody == nullptr)
 		{
-			return RigidBody->GetComponentTransform().TransformPositionNoScale(LocalPos);
+			// When RigidBody is nullptr the LocalPos is relative to the world.
+			return LocalPos;
 		}
 
-		// When RigidBody is nullptr the LocalPos is relative to the world.
-		return LocalPos;
+		const FTransform BodyWorldTransform =
+			FAGX_ObjectUtilities::GetAnyComponentWorldTransform(*RigidBody);
+
+		return BodyWorldTransform.TransformPositionNoScale(LocalPos);
 	}
 
 	FQuat GetGlobalAttachmentFrameRot(UAGX_RigidBodyComponent* RigidBody, const FQuat LocalRot)
 	{
-		if (RigidBody)
+		if (RigidBody == nullptr)
 		{
-			return RigidBody->GetComponentTransform().TransformRotation(LocalRot);
+			// When RigidBody is nullptr the LocalRot is relative to the world.
+			return LocalRot;
 		}
 
-		// When RigidBody is nullptr the LocalRot is relative to the world.
-		return LocalRot;
+		const FTransform BodyWorldTransform =
+			FAGX_ObjectUtilities::GetAnyComponentWorldTransform(*RigidBody);
+
+		return BodyWorldTransform.TransformRotation(LocalRot);
 	}
 }
 
