@@ -37,7 +37,7 @@ public:
 	 * was found.
 	 */
 	static FAGX_BlueprintNodeSearchResult GetSCSNodeFromComponent(
-		const UBlueprint& Blueprint, UActorComponent* Component, bool SearchParentBlueprints);
+		const UBlueprint& Blueprint, const UActorComponent* Component, bool SearchParentBlueprints);
 
 	/**
 	 * Searches the Blueprint for an SCS Node of the given name. If "SearchParentBlueprints" is
@@ -58,7 +58,7 @@ public:
 	 * component of that Blueprint. If the passed component is not inside a Blueprint, or is
 	 * nullptr, the identity FTransform is returned.
 	 */
-	static FTransform GetTemplateComponentWorldTransform(USceneComponent* Component);
+	static FTransform GetTemplateComponentWorldTransform(const USceneComponent* Component);
 
 	/**
 	 * Sets the world transform of a template object in a Blueprint.

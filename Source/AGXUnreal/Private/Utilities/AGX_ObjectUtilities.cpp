@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 
 // Unreal Engine includes.
 #include "Misc/EngineVersionComparison.h"

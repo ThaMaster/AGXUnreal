@@ -43,7 +43,7 @@ namespace AGX_BlueprintUtilities_helpers
 
 FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult
 FAGX_BlueprintUtilities::GetSCSNodeFromComponent(
-	const UBlueprint& Blueprint, UActorComponent* Component, bool SearchParentBlueprints)
+	const UBlueprint& Blueprint, const UActorComponent* Component, bool SearchParentBlueprints)
 {
 	using namespace AGX_BlueprintUtilities_helpers;
 	if (Component == nullptr)
@@ -99,7 +99,7 @@ bool FAGX_BlueprintUtilities::NameExists(UBlueprint& Blueprint, const FString& N
 	return Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name)) != nullptr;
 }
 
-FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(USceneComponent* Component)
+FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(const USceneComponent* Component)
 {
 	using namespace AGX_BlueprintUtilities_helpers;
 	if (Component == nullptr)
@@ -113,7 +113,7 @@ FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(USceneCom
 		return FTransform::Identity;
 	}
 
-	UBlueprint* Blueprint = BlueprintGC->SimpleConstructionScript->GetBlueprint();
+	const UBlueprint* Blueprint = BlueprintGC->SimpleConstructionScript->GetBlueprint();
 
 	USCS_Node* ComponentNode = GetSCSNodeFromComponent(*Blueprint, Component, false).FoundNode;
 	if (ComponentNode == nullptr)
@@ -126,7 +126,7 @@ FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(USceneCom
 		FAGX_BlueprintNodeSearchResult Result = GetSCSNodeFromName(
 			*Blueprint->SimpleConstructionScript->GetBlueprint(), ComponentName, true);
 		ComponentNode = Result.FoundNode;
-		Blueprint = const_cast<UBlueprint*>(&Result.Blueprint);
+		Blueprint = &Result.Blueprint;
 	}
 
 	if (ComponentNode == nullptr)
@@ -180,7 +180,7 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 		return false;
 	}
 
-	UBlueprint* Blueprint = BlueprintGC->SimpleConstructionScript->GetBlueprint();
+	const UBlueprint* Blueprint = BlueprintGC->SimpleConstructionScript->GetBlueprint();
 	if (Blueprint == nullptr)
 	{
 		return false;
@@ -200,7 +200,7 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 		FAGX_BlueprintNodeSearchResult Result = GetSCSNodeFromName(
 			*Blueprint->SimpleConstructionScript->GetBlueprint(), ComponentName, true);
 		ComponentNode = Result.FoundNode;
-		Blueprint = const_cast<UBlueprint*>(&Result.Blueprint);
+		Blueprint = &Result.Blueprint;
 	}
 
 	if (ComponentNode == nullptr)
