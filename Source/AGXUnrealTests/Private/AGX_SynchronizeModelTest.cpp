@@ -118,8 +118,8 @@ namespace AGX_SynchronizeModelTest_helpers
 
 	UBlueprint* Import(const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
 	{
-		FString ArchiveFilePath =
-			AgxAutomationCommon::GetTestScenePath(FPaths::Combine("large_model", ArchiveFileName));
+		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
+			FPaths::Combine("SynchronizeModel", ArchiveFileName));
 		if (ArchiveFilePath.IsEmpty())
 		{
 			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
@@ -138,8 +138,8 @@ namespace AGX_SynchronizeModelTest_helpers
 	bool SynchronizeModel(
 		UBlueprint& BaseBp, const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
 	{
-		FString ArchiveFilePath =
-			AgxAutomationCommon::GetTestScenePath(FPaths::Combine("large_model", ArchiveFileName));
+		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
+			FPaths::Combine("SynchronizeModel", ArchiveFileName));
 		if (ArchiveFilePath.IsEmpty())
 		{
 			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
@@ -234,6 +234,69 @@ bool FSynchronizeSameCommand::Update()
 		return true;
 	}
 
+	// Ensure no nodes have the name "AGX_Import_Unnamed..." name that is set in the beginning of a
+	// model synchronization.
+	const FString UnnamedName = "AGX_Import_Unnamed";
+	const FString UnsetUniqueImportName = FAGX_ImportUtilities::GetUnsetUniqueImportName();
+	Test.TestTrue(
+		"Unexpected Unset Unique Import Name unexpected",
+		UnsetUniqueImportName.StartsWith(UnnamedName));
+	for (USCS_Node* Node : BlueprintBase->SimpleConstructionScript->GetAllNodes())
+	{
+		Test.TestFalse("Invalid name", Node->GetVariableName().ToString().StartsWith(UnnamedName));
+	}
+
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FSynchronizeSameTest, "AGXUnreal.Editor.AGX_SynchronizeModelTest.SyncronizeSame",
+	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
+
+bool FSynchronizeSameTest::RunTest(const FString& Parameters)
+{
+	UBlueprint* Blueprint = nullptr;
+	const FString ArchiveFileName = "large_model_build.agx";
+	ADD_LATENT_AUTOMATION_COMMAND(FSynchronizeSameCommand(ArchiveFileName, *this));
+	ADD_LATENT_AUTOMATION_COMMAND(
+		FDeleteImportedAssets(FPaths::GetBaseFilename(ArchiveFileName), *this));
+
+	return true;
+}
+
+//
+// Synchronize large model test starts here.
+//
+
+DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
+	FSynchronizeLargeModelCommand, FString, ArchiveFileName, FString, UpdatedArchiveFileName,
+	FAutomationTestBase&, Test);
+
+bool FSynchronizeLargeModelCommand::Update()
+{
+	using namespace AGX_SynchronizeModelTest_helpers;
+
+	UBlueprint* Blueprint = Import(ArchiveFileName, false);
+	if (Blueprint == nullptr)
+	{
+		Test.AddError("Imported Blueprint was nullptr.");
+		return true;
+	}
+
+	UBlueprint* BlueprintBase = FAGX_BlueprintUtilities::GetOutermostParent(Blueprint);
+	if (BlueprintBase == nullptr)
+	{
+		Test.AddError(
+			"Could not get Blueprint parent (base) from the returned Blueprint after import.");
+		return true;
+	}
+
+	if (!SynchronizeModel(*BlueprintBase, UpdatedArchiveFileName, false))
+	{
+		Test.AddError("SynchronizeModel returned false.");
+		return true;
+	}
+
 	if (!CheckNodeNameAndParent(*BlueprintBase, "SphereBodyToChange", "DefaultSceneRoot", false))
 		return true; // Logging done in CheckNodeNameAndParent.
 
@@ -321,15 +384,21 @@ bool FSynchronizeSameCommand::Update()
 	return true;
 }
 
+/**
+ * Imports the large_model.agx file and then synchronizes against large_model_updated.agx where many
+ * things are changed from the original.
+ */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-	FSynchronizeSameTest, "AGXUnreal.Editor.AGX_SynchronizeModelTest.SyncronizeSame",
+	FSynchronizeSameTest, "AGXUnreal.Editor.AGX_SynchronizeModelTest.SyncronizeLargeModel",
 	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
 
 bool FSynchronizeSameTest::RunTest(const FString& Parameters)
 {
 	UBlueprint* Blueprint = nullptr;
 	const FString ArchiveFileName = "large_model_build.agx";
-	ADD_LATENT_AUTOMATION_COMMAND(FSynchronizeSameCommand(ArchiveFileName, *this));
+	const FString UpdatedArchiveFileName = "large_model_updated_build.agx";
+	ADD_LATENT_AUTOMATION_COMMAND(
+		FSynchronizeLargeModelCommand(ArchiveFileName, UpdatedArchiveFileName, *this));
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FDeleteImportedAssets(FPaths::GetBaseFilename(ArchiveFileName), *this));
 
