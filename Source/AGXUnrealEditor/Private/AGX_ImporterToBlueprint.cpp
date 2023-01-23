@@ -1574,7 +1574,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		AddOrUpdateObserverFrames(BaseBP, SCSNodes, SimulationObjects, Helper);
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing ReImport Component"));
 		AddOrUpdateReImportComponent(BaseBP, SCSNodes, Helper);
-		ImportTask.EnterProgressFrame(35.f, FText::FromString("Finalizing Synchronization"));
+		ImportTask.EnterProgressFrame(30.f, FText::FromString("Finalizing Synchronization"));
 		Helper.FinalizeImport();
 	}
 
