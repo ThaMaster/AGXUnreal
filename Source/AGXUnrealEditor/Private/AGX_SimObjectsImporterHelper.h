@@ -176,9 +176,9 @@ public:
 
 	UAGX_TrackComponent* InstantiateTrack(const FTrackBarrier& Barrier, AActor& Owner);
 
-	void UpdateReImportComponent(UAGX_ReImportComponent& Component);
+	void UpdateModelSourceComponent(UAGX_ModelSourceComponent& Component);
 
-	UAGX_ReImportComponent* InstantiateReImportComponent(AActor& Owner);
+	UAGX_ModelSourceComponent* InstantiateModelSourceComponent(AActor& Owner);
 
 	UAGX_ObserverFrameComponent* InstantiateObserverFrame(
 		const FString& Name, const FGuid& BodyGuid, const FGuid& ObserverGuid,

@@ -5,21 +5,21 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-#include "AGX_ReImportComponent.generated.h"
+#include "AGX_ModelSourceComponent.generated.h"
 
 /*
  * @todo add description
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_ReImportComponent : public UActorComponent
+class AGXUNREAL_API UAGX_ModelSourceComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Category = "AGX Re-import Info")
+	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
 	FString FilePath;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Re-import Info")
+	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
 	bool bIgnoreDisabledTrimeshes = false;
 
 
@@ -29,11 +29,11 @@ public:
 
 	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the guid
 	// of the owning Trimesh.
-	UPROPERTY(EditAnywhere, Category = "AGX Re-import Info")
+	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
 	TMap<FString, FGuid> StaticMeshComponentToOwningTrimesh;
 
 	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the guid
 	// of the owning RenderData. 
-	UPROPERTY(EditAnywhere, Category = "AGX Re-import Info")
+	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
 	TMap<FString, FGuid> StaticMeshComponentToOwningRenderData;
 };

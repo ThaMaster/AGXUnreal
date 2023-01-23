@@ -8,7 +8,7 @@
 #include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
 #include "AGX_ObserverFrameComponent.h"
-#include "AGX_ReImportComponent.h"
+#include "AGX_ModelSourceComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SimObjectsImporterHelper.h"
 #include "AGXSimObjectsReader.h"
@@ -420,7 +420,7 @@ namespace
 		Success &= AddObserverFrames(ImportedActor, SimObjects, Helper);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Import"));
-		Helper.InstantiateReImportComponent(ImportedActor);
+		Helper.InstantiateModelSourceComponent(ImportedActor);
 		Helper.FinalizeImport();
 
 		ImportTask.EnterProgressFrame(40.f, FText::FromString("Import complete"));
@@ -597,7 +597,8 @@ namespace
 		// The result of the import is stored in the BlueprintBase which is placed in the
 		// 'Blueprint' directory in the context browser and should never be edited by the user. It
 		// is the "original". The BlueprintChild is what the user will interact directly with, and
-		// it is a child of the BlueprintBase. This way, we can ensure re-import works as intended.
+		// it is a child of the BlueprintBase. This way, we can ensure model synchronization works
+		// as intended.
 		UBlueprint* BlueprintBase = ImportToBaseBlueprint(Helper, ImportType);
 		if (BlueprintBase == nullptr)
 		{
@@ -632,7 +633,7 @@ UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSet
 	return Bp;
 }
 
-namespace AGX_ImporterToBlueprint_reimport_helpers
+namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 {
 	template <typename T>
 	TArray<FGuid> GetGuidsFromBarriers(const TArray<T>& Barriers)
@@ -855,10 +856,10 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 						AGX_CHECK(false);
 					}
 				}
-				else if (auto Re = Cast<UAGX_ReImportComponent>(Component))
+				else if (auto Re = Cast<UAGX_ModelSourceComponent>(Component))
 				{
-					AGX_CHECK(ReImportComponent == nullptr);
-					ReImportComponent = Node;
+					AGX_CHECK(ModelSourceComponent == nullptr);
+					ModelSourceComponent = Node;
 					for (const auto& SMCTuple : Re->StaticMeshComponentToOwningTrimesh)
 					{
 						if (USCS_Node* StaticMeshComponentNode =
@@ -888,7 +889,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 				}
 				else if (auto St = Cast<UStaticMeshComponent>(Component))
 				{
-					// Handled by gathering information from the ReImportComponent since a Static
+					// Handled by gathering information from the ModelSourceComponent since a Static
 					// Mesh Component does not have an Import Guid.
 				}
 				else if (auto Con = Cast<UAGX_ContactMaterialRegistrarComponent>(Component))
@@ -954,7 +955,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 		USCS_Node* CollisionGroupDisablerComponent = nullptr;
 		USCS_Node* ContactMaterialRegistrarComponent = nullptr;
-		USCS_Node* ReImportComponent = nullptr;
+		USCS_Node* ModelSourceComponent = nullptr;
 		USCS_Node* RootComponent = nullptr;
 		// @todo Append rest of the types here...
 	};
@@ -1306,7 +1307,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 		// @todo: we should clean up old collision groups in instance components. Currently, we
 		// always add to them, but never remove. The cleanup must be done after all shapes have been
-		// re-imported.
+		// synchronized.
 	}
 
 	void AddOrUpdateConstraints(
@@ -1430,9 +1431,10 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		{
 			if (SimulationObjects.GetDisabledCollisionGroups().Num() == 0)
 			{
-				// In the case that no CollisionGroupDisablerComponent existed before the re-import,
-				// and there are no disabled Collision Groups in the model being re-imported, there
-				// is no need to create a CollisionGroupDisablerComponent. We are done.
+				// In the case that no CollisionGroupDisablerComponent existed before the model
+				// synchronization, and there are no disabled Collision Groups in the model being
+				// imported, there is no need to create a CollisionGroupDisablerComponent. We
+				// are done.
 				return;
 			}
 
@@ -1492,26 +1494,26 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 	}
 
-	void AddOrUpdateReImportComponent(
+	void AddOrUpdateModelSourceComponent(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper)
 	{
-		USCS_Node* ReImportComponent = nullptr;
-		if (SCSNodes.ReImportComponent == nullptr)
+		USCS_Node* ModelSourceComponent = nullptr;
+		if (SCSNodes.ModelSourceComponent == nullptr)
 		{
-			ReImportComponent = BaseBP.SimpleConstructionScript->CreateNode(
-				UAGX_ReImportComponent::StaticClass(),
+			ModelSourceComponent = BaseBP.SimpleConstructionScript->CreateNode(
+				UAGX_ModelSourceComponent::StaticClass(),
 				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(
-				ReImportComponent);
-			SCSNodes.ReImportComponent = ReImportComponent;
+				ModelSourceComponent);
+			SCSNodes.ModelSourceComponent = ModelSourceComponent;
 		}
 		else
 		{
-			ReImportComponent = SCSNodes.ReImportComponent;
+			ModelSourceComponent = SCSNodes.ModelSourceComponent;
 		}
 
-		Helper.UpdateReImportComponent(
-			*Cast<UAGX_ReImportComponent>(ReImportComponent->ComponentTemplate));
+		Helper.UpdateModelSourceComponent(
+			*Cast<UAGX_ModelSourceComponent>(ModelSourceComponent->ComponentTemplate));
 	}
 
 	FString GetModelDirectoryFromAsset(UObject* Asset)
@@ -1572,8 +1574,9 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		AddOrUpdateCollisionGroupDisabler(BaseBP, SCSNodes, SimulationObjects, Helper);
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Observer Frames"));
 		AddOrUpdateObserverFrames(BaseBP, SCSNodes, SimulationObjects, Helper);
-		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing ReImport Component"));
-		AddOrUpdateReImportComponent(BaseBP, SCSNodes, Helper);
+		ImportTask.EnterProgressFrame(
+			5.f, FText::FromString("Synchronizing Model Source Component"));
+		AddOrUpdateModelSourceComponent(BaseBP, SCSNodes, Helper);
 		ImportTask.EnterProgressFrame(30.f, FText::FromString("Finalizing Synchronization"));
 		Helper.FinalizeImport();
 	}
@@ -1607,7 +1610,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 			}
 			else if (NewShapeGuids.TrimeshShapeGuids.Contains(It->Key))
 			{
-				// If we re-import with the "Ignore disabled Trimeshes" import setting and this
+				// If we synchronize with the "Ignore disabled Trimeshes" import setting and this
 				// Trimesh has collision disabled, it should be removed.
 				const bool CollisionEnabled = NewShapeGuids.TrimeshShapeGuids[It->Key];
 				if (!CollisionEnabled && ImportSettings.bIgnoreDisabledTrimeshes)
@@ -1648,8 +1651,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 				// A collision Static Mesh Component should be removed even if it's owning Trimesh
 				// exists in SimulationObjects if the following conditions are true:
 				// 1. The import setting 'bIgnoreDisabledTrimeshes' is used during this
-				// re-import.
-				// 2. The AGX Trimesh that is being re-imported has collision disabled.
+				// model synchronization.
+				// 2. The AGX Trimesh that is being imported has collision disabled.
 				if (!ImportSettings.bIgnoreDisabledTrimeshes)
 				{
 					continue;
@@ -1773,15 +1776,15 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 			if (auto C = Cast<UAGX_WireComponent>(Node->ComponentTemplate))
 			{
-				// Wires are not supported by the re-import pipeline, meaning we should not make any
-				// changes to it.
+				// Wires are not supported by the model synchronization pipeline, meaning we should
+				// not make any changes to it.
 				continue;
 			}
 
 			if (auto C = Cast<UAGX_TrackComponent>(Node->ComponentTemplate))
 			{
-				// Tracks are not supported by the re-import pipeline, meaning we should not make
-				// any changes to it.
+				// Tracks are not supported by the model synchronization pipeline, meaning we should
+				// not make any changes to it.
 				continue;
 			}
 
@@ -1789,7 +1792,7 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		}
 	}
 
-	bool ReImport(UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings)
+	bool SynchronizeModel(UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings)
 	{
 		FScopedSlowTask ImportTask(100.f, LOCTEXT("SynchronizeModel", "Synchronizing Model"), true);
 		ImportTask.MakeDialog();
@@ -1818,8 +1821,8 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 		// This overwrites all (supported) Node names with temporary names.
 		// We do this since old to-be-removed or to-be-renamed Nodes may "block" the availability of
 		// a certain name (all Node names must be unique) that would otherwise be used for a new
-		// Component name. This would make the result of a ReImport non-deterministic in terms of
-		// Node naming.
+		// Component name. This would make the result of a Model Synchronization non-deterministic
+		// in terms of Node naming.
 		SetUnnamedNameForAll(BaseBP);
 		ImportTask.EnterProgressFrame(
 			80.f, FText::FromString("Adding and Updating Components and Assets"));
@@ -1827,22 +1830,22 @@ namespace AGX_ImporterToBlueprint_reimport_helpers
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Synchronization"));
 
-		// Re-import is completed, we end by compiling and saving the Blueprint and any children.
+		// Model synchronization is completed, we end by compiling and saving the Blueprint and any children.
 		FAGX_EditorUtilities::SaveAndCompile(BaseBP);
 
 		return true;
 	}
 }
 
-bool AGX_ImporterToBlueprint::ReImport(
+bool AGX_ImporterToBlueprint::SynchronizeModel(
 	UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings)
 {
-	if (!AGX_ImporterToBlueprint_reimport_helpers::ReImport(BaseBP, ImportSettings))
+	if (!AGX_ImporterToBlueprint_SynchronizeModel_helpers::SynchronizeModel(BaseBP, ImportSettings))
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Some issues occurred during re-import. Log category LogAGX in the Console may "
+			"Some issues occurred during model synchronization. Log category LogAGX in the Console may "
 			"contain more information.",
-			"Re-import model to Blueprint");
+			"Synchronize model");
 		return false;
 	}
 

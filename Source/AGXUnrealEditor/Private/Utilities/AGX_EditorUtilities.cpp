@@ -997,7 +997,7 @@ EVisibility FAGX_EditorUtilities::VisibleIf(bool bVisible)
 FString FAGX_EditorUtilities::SelectExistingFileDialog(
 	const FString& FileDescription, const FString& FileExtension)
 {
-	const FString DialogTitle = FString("Select an ") + FileDescription;
+	const FString DialogTitle = FString("Select a ") + FileDescription;
 	const FString FileTypes = FileDescription + FString("|*") + FileExtension;
 	// For a discussion on window handles see
 	// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html

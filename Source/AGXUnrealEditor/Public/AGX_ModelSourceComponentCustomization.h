@@ -10,9 +10,9 @@ class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
 
 /**
- * Defines the design of the Re-Import Component in the Editor.
+ * Defines the design of the Model Source Component in the Editor.
  */
-class AGXUNREALEDITOR_API FAGX_ReImportComponentCustomization
+class AGXUNREALEDITOR_API FAGX_ModelSourceComponentCustomization
 	: public IDetailCustomization
 {
 public:
@@ -21,7 +21,7 @@ public:
 	virtual void CustomizeDetails(IDetailLayoutBuilder& InDetailBuilder) override;
 
 private:
-	FReply OnReImportButtonClicked();
+	FReply OnSynchronizeModelButtonClicked();
 
 	IDetailLayoutBuilder* DetailBuilder;
 };

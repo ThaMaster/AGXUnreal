@@ -1652,9 +1652,9 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 	return Component;
 }
 
-void FAGX_SimObjectsImporterHelper::UpdateReImportComponent(UAGX_ReImportComponent& Component)
+void FAGX_SimObjectsImporterHelper::UpdateModelSourceComponent(UAGX_ModelSourceComponent& Component)
 {
-	auto UpdateReImportComponent = [this](UAGX_ReImportComponent* C)
+	auto UpdateModelSourceComponent = [this](UAGX_ModelSourceComponent* C)
 	{
 		if (C == nullptr)
 		{
@@ -1680,30 +1680,30 @@ void FAGX_SimObjectsImporterHelper::UpdateReImportComponent(UAGX_ReImportCompone
 		}
 	};
 
-	for (UAGX_ReImportComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+	for (UAGX_ModelSourceComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 	{
-		UpdateReImportComponent(Instance);
+		UpdateModelSourceComponent(Instance);
 	}
 
-	UpdateReImportComponent(&Component);
-	FAGX_ImportUtilities::Rename(Component, "AGX_ReImport");
+	UpdateModelSourceComponent(&Component);
+	FAGX_ImportUtilities::Rename(Component, "AGX_ModelSource");
 }
 
-UAGX_ReImportComponent* FAGX_SimObjectsImporterHelper::InstantiateReImportComponent(AActor& Owner)
+UAGX_ModelSourceComponent* FAGX_SimObjectsImporterHelper::InstantiateModelSourceComponent(AActor& Owner)
 {
-	UAGX_ReImportComponent* ReImportComponent = NewObject<UAGX_ReImportComponent>(&Owner);
-	if (ReImportComponent == nullptr)
+	UAGX_ModelSourceComponent* ModelSourceComponent = NewObject<UAGX_ModelSourceComponent>(&Owner);
+	if (ModelSourceComponent == nullptr)
 	{
 		return nullptr;
 	}
 
-	UpdateReImportComponent(*ReImportComponent);
-	ReImportComponent->SetFlags(RF_Transactional);
-	Owner.AddInstanceComponent(ReImportComponent);
-	ReImportComponent->RegisterComponent();
-	ReImportComponent->PostEditChange();
+	UpdateModelSourceComponent(*ModelSourceComponent);
+	ModelSourceComponent->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(ModelSourceComponent);
+	ModelSourceComponent->RegisterComponent();
+	ModelSourceComponent->PostEditChange();
 
-	return ReImportComponent;
+	return ModelSourceComponent;
 }
 
 UAGX_ObserverFrameComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverFrame(

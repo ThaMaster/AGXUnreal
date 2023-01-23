@@ -1,10 +1,10 @@
 // Copyright 2022, Algoryx Simulation AB.
 
-#include "AGX_ReImportComponentCustomization.h"
+#include "AGX_ModelSourceComponentCustomization.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImporterToBlueprint.h"
-#include "AGX_ReImportComponent.h"
+#include "AGX_ModelSourceComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -14,26 +14,26 @@
 #include "DetailLayoutBuilder.h"
 #include "Widgets/Input/SButton.h"
 
-#define LOCTEXT_NAMESPACE "FAGX_ReImportComponentCustomization"
+#define LOCTEXT_NAMESPACE "FAGX_ModelSourceComponentCustomization"
 
-TSharedRef<IDetailCustomization> FAGX_ReImportComponentCustomization::MakeInstance()
+TSharedRef<IDetailCustomization> FAGX_ModelSourceComponentCustomization::MakeInstance()
 {
-	return MakeShareable(new FAGX_ReImportComponentCustomization);
+	return MakeShareable(new FAGX_ModelSourceComponentCustomization);
 }
 
-void FAGX_ReImportComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& InDetailBuilder)
+void FAGX_ModelSourceComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& InDetailBuilder)
 {
 	DetailBuilder = &InDetailBuilder;
 
-	UAGX_ReImportComponent* ReImportComponent =
-		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_ReImportComponent>(
+	UAGX_ModelSourceComponent* ModelSourceComponent =
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_ModelSourceComponent>(
 			InDetailBuilder);
-	if (!ReImportComponent)
+	if (!ModelSourceComponent)
 	{
 		return;
 	}
 
-	IDetailCategoryBuilder& CategoryBuilder = InDetailBuilder.EditCategory("AGX Re-Import");
+	IDetailCategoryBuilder& CategoryBuilder = InDetailBuilder.EditCategory("AGX Synchronize Model");
 
 	// clang-format off
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
@@ -43,16 +43,17 @@ void FAGX_ReImportComponentCustomization::CustomizeDetails(IDetailLayoutBuilder&
 		.AutoWidth()
 		[
 			SNew(SButton)
-			.Text(LOCTEXT("ReImportButtonText", "Re-import"))
+			.Text(LOCTEXT("SynchronizeModelButtonText", "Synchronize Model"))
 			.ToolTipText(LOCTEXT(
-				"ReImportButtonTooltip",
-				"Re-imports the model and updates the Components and Assets to match the source file."))
-			.OnClicked(this, &FAGX_ReImportComponentCustomization::OnReImportButtonClicked)
+				"SynchronizeModelTooltip",
+				"Synchronizes the model against the source file of the original "
+				"import and updates the Components and Assets to match said source file."))
+			.OnClicked(this, &FAGX_ModelSourceComponentCustomization::OnSynchronizeModelButtonClicked)
 		]
 	];
 	// clang-format on
 
-	InDetailBuilder.HideCategory(FName("AGX Re-import Info"));
+	InDetailBuilder.HideCategory(FName("AGX Synchronize Model Info"));
 	InDetailBuilder.HideCategory(FName("Variable"));
 	InDetailBuilder.HideCategory(FName("Sockets"));
 	InDetailBuilder.HideCategory(FName("Tags"));
@@ -66,26 +67,26 @@ void FAGX_ReImportComponentCustomization::CustomizeDetails(IDetailLayoutBuilder&
 	InDetailBuilder.HideCategory(FName("Replication"));
 }
 
-namespace AGX_ReImportComponentCustomization_helpers
+namespace AGX_ModelSourceComponentCustomization_helpers
 {
 	UBlueprint* GetBlueprint(IDetailLayoutBuilder& DetailBuilder)
 	{
-		UAGX_ReImportComponent* ReImportComponent =
-			FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_ReImportComponent>(
+		UAGX_ModelSourceComponent* ModelSourceComponent =
+			FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_ModelSourceComponent>(
 				DetailBuilder);
-		if (ReImportComponent == nullptr)
+		if (ModelSourceComponent == nullptr)
 		{
 			return nullptr;
 		}
 
-		if (!ReImportComponent->IsInBlueprint())
+		if (!ModelSourceComponent->IsInBlueprint())
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				"Re-import is only supported when in a Blueprint.");
+				"Model synchronization is only supported when in a Blueprint.");
 			return nullptr;
 		}
 
-		if (auto Bp = Cast<UBlueprintGeneratedClass>(ReImportComponent->GetOuter()))
+		if (auto Bp = Cast<UBlueprintGeneratedClass>(ModelSourceComponent->GetOuter()))
 		{
 			if (Bp->SimpleConstructionScript != nullptr)
 			{
@@ -94,8 +95,8 @@ namespace AGX_ReImportComponentCustomization_helpers
 		}
 
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Unable to get the Blueprint from the Re-import Component. Re-import will not be "
-			"possible.");
+			"Unable to get the Blueprint from the AGX Model Source Component. Model "
+			"synchronization will not be possible.");
 		return nullptr;
 	}
 
@@ -106,7 +107,8 @@ namespace AGX_ReImportComponentCustomization_helpers
 		if (OuterMostParent == nullptr)
 		{
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				"Could not get the original parent Blueprint. Re-import will not be performed.");
+				"Could not get the original parent Blueprint. Model synchronization will not be "
+				"performed.");
 			return nullptr;
 		}
 
@@ -114,10 +116,10 @@ namespace AGX_ReImportComponentCustomization_helpers
 	}
 }
 
-FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
+FReply FAGX_ModelSourceComponentCustomization::OnSynchronizeModelButtonClicked()
 {
 	AGX_CHECK(DetailBuilder);
-	using namespace AGX_ReImportComponentCustomization_helpers;
+	using namespace AGX_ModelSourceComponentCustomization_helpers;
 	UBlueprint* Blueprint = GetBlueprint(*DetailBuilder);
 	if (Blueprint == nullptr)
 	{
@@ -138,13 +140,15 @@ FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
 			.SupportsMinimize(false)
 			.SupportsMaximize(false)
 			.SizingRule(ESizingRule::Autosized)
-			.Title(NSLOCTEXT("AGX", "AGXUnrealReImport", "Re-import AGX Dynamics archive"));
+			.Title(NSLOCTEXT(
+				"AGX", "AGXUnrealSynchronizeModel", "Synchronize model with source file"));
 
-	UAGX_ReImportComponent* ReImportComponent =
-		FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ReImportComponent>(OutermostParent);
-	const FString FilePath = ReImportComponent != nullptr ? ReImportComponent->FilePath : "";
+	UAGX_ModelSourceComponent* ModelSourceComponent =
+		FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ModelSourceComponent>(
+			OutermostParent);
+	const FString FilePath = ModelSourceComponent != nullptr ? ModelSourceComponent->FilePath : "";
 	const bool IgnoreDisabledTrimeshes =
-		ReImportComponent != nullptr ? ReImportComponent->bIgnoreDisabledTrimeshes : false;
+		ModelSourceComponent != nullptr ? ModelSourceComponent->bIgnoreDisabledTrimeshes : false;
 
 	TSharedRef<SAGX_ImportDialog> ImportDialog = SNew(SAGX_ImportDialog);
 	ImportDialog->SetFilePath(FilePath);
@@ -157,20 +161,21 @@ FReply FAGX_ReImportComponentCustomization::OnReImportButtonClicked()
 
 	if (auto ImportSettings = ImportDialog->ToImportSettings())
 	{
-		const static FString Info = "Re-import may remove or overwrite existing data.\nContinue?";
+		const static FString Info =
+			"Model synchronization may permanently remove or overwrite existing data.\nContinue?";
 		if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) !=
 			EAppReturnType::Yes)
 		{
 			return FReply::Handled();
 		}
 
-		if (AGX_ImporterToBlueprint::ReImport(*OutermostParent, *ImportSettings))
+		if (AGX_ImporterToBlueprint::SynchronizeModel(*OutermostParent, *ImportSettings))
 		{
 			FAGX_EditorUtilities::SaveAndCompile(*Blueprint);
 		}
 	}
 
-	// Any logging is done in ReImport and ToImportSettings.
+	// Any logging is done in SynchronizeModel and ToImportSettings.
 	return FReply::Handled();
 }
 

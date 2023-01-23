@@ -21,8 +21,16 @@ namespace AGX_ImporterToBlueprint
 	AGXUNREALEDITOR_API UBlueprint* Import(const FAGX_ImportSettings& ImportSettings);
 
 	/*
-	* @todo Add description.
-	*/
-	AGXUNREALEDITOR_API bool ReImport(
+	 * Synchronize the model (imported Blueprint) with the source file on disk.
+	 * Assets and Components are updated according to the source file.
+	 * Any child Blueprint of the passed Blueprint will also be updated but properties will only be
+	 * updated for Components in child Blueprints if they have not been changed by a user.
+	 *
+	 * @param BaseBP - The Blueprint (base) containing the ModelSourceComponent.
+	 * @param ImportSettings - Struct containing all information needed to perform the
+	 * synchronization.
+	 * @return True if the Model synchronization was successful, false otherwise.
+	 */
+	AGXUNREALEDITOR_API bool SynchronizeModel(
 		UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings);
 }

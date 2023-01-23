@@ -24,8 +24,8 @@
 #include "AGX_RigidBodyComponentCustomization.h"
 #include "AGX_Real.h"
 #include "AGX_RealDetails.h"
-#include "AGX_ReImportComponent.h"
-#include "AGX_ReImportComponentCustomization.h"
+#include "AGX_ModelSourceComponent.h"
+#include "AGX_ModelSourceComponentCustomization.h"
 #include "AGX_Simulation.h"
 #include "AGX_StaticMeshComponent.h"
 #include "AGX_StaticMeshComponentCustomization.h"
@@ -278,9 +278,9 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_CollisionGroupAdderComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
-		UAGX_ReImportComponent::StaticClass()->GetFName(),
+		UAGX_ModelSourceComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_ReImportComponentCustomization::MakeInstance));
+			&FAGX_ModelSourceComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_RigidBodyComponent::StaticClass()->GetFName(),
@@ -382,7 +382,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 		UAGX_RigidBodyComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_ReImportComponent::StaticClass()->GetFName());
+		UAGX_ModelSourceComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());

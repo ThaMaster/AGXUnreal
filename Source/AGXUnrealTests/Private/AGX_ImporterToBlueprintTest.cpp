@@ -1751,7 +1751,7 @@ bool FCheckWireImportedCommand::Update()
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// A Wire (1) three Rigid Bodies (4), three Shapes (7), a Collision Group
-	// Disabler (8), a Default Scene Root (9) and one ReImportComponent (10).
+	// Disabler (8), a Default Scene Root (9) and one ModelSourceComponent (10).
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 10);
 	if (Components.Num() != 10)
 	{
@@ -1965,7 +1965,7 @@ bool FCheckConstraintDynamicParametersImportedCommand::Update()
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
-	// Two Rigid Bodies, one Hinge constraint, one Default Scene Root and one ReImportComponent.
+	// Two Rigid Bodies, one Hinge constraint, one Default Scene Root and one ModelSourceComponent.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 5);
 
 	UAGX_ConstraintComponent* Constraint = GetByName<UAGX_ConstraintComponent>(
@@ -3465,7 +3465,7 @@ bool FCheckAmorImportedCommand::Update()
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 	// Two Rigid Bodies (2), one Shape (3), two Wires (5), one Constraint (6),
-	// one Collision Group Disabler (7), one Default Scene Root (8), one ReImportComponent (9).
+	// one Collision Group Disabler (7), one Default Scene Root (8), one ModelSourceComponent (9).
 	const int32 ExpectedNumComponents = 9;
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), ExpectedNumComponents);
 

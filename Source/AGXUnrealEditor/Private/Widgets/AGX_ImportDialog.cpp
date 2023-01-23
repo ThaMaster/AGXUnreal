@@ -369,7 +369,7 @@ TSharedRef<SWidget> SAGX_ImportDialog::CreateCheckboxGui()
 
 FReply SAGX_ImportDialog::OnBrowseFileButtonClicked()
 {
-	FilePath = FAGX_EditorUtilities::SelectExistingFileDialog("All files", FileTypes);
+	FilePath = FAGX_EditorUtilities::SelectExistingFileDialog("file", FileTypes);
 	ImportType = AGX_ImportDialog_helpers::GetFrom(FilePath);
 
 	RefreshGui();

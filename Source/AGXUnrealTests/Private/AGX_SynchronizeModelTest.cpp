@@ -12,7 +12,7 @@
 #include "Tests/AutomationCommon.h"
 #include "Tests/AutomationEditorCommon.h"
 
-namespace AGX_ReImportTest_helpers
+namespace AGX_SynchronizeModelTest_helpers
 {
 	USCS_Node* GetNodeChecked(const UBlueprint& Blueprint, const FString& Name)
 	{
@@ -119,7 +119,7 @@ namespace AGX_ReImportTest_helpers
 	UBlueprint* Import(const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
 	{
 		FString ArchiveFilePath =
-			AgxAutomationCommon::GetTestScenePath(FPaths::Combine("ReImport", ArchiveFileName));
+			AgxAutomationCommon::GetTestScenePath(FPaths::Combine("large_model", ArchiveFileName));
 		if (ArchiveFilePath.IsEmpty())
 		{
 			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
@@ -135,10 +135,11 @@ namespace AGX_ReImportTest_helpers
 		return AGX_ImporterToBlueprint::Import(ImportSettings);
 	}
 
-	bool ReImport(UBlueprint& BaseBp, const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
+	bool SynchronizeModel(
+		UBlueprint& BaseBp, const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
 	{
 		FString ArchiveFilePath =
-			AgxAutomationCommon::GetTestScenePath(FPaths::Combine("ReImport", ArchiveFileName));
+			AgxAutomationCommon::GetTestScenePath(FPaths::Combine("large_model", ArchiveFileName));
 		if (ArchiveFilePath.IsEmpty())
 		{
 			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
@@ -151,7 +152,7 @@ namespace AGX_ReImportTest_helpers
 		ImportSettings.FilePath = ArchiveFilePath;
 		ImportSettings.ImportType = EAGX_ImportType::Agx;
 
-		return AGX_ImporterToBlueprint::ReImport(BaseBp, ImportSettings);
+		return AGX_ImporterToBlueprint::SynchronizeModel(BaseBp, ImportSettings);
 	}
 }
 
@@ -188,15 +189,15 @@ bool FDeleteImportedAssets::Update()
 }
 
 //
-// Re-import same twice test starts here.
+// Synchronize same twice test starts here.
 //
 
 DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
-	FSameTwiceCommand, FString, ArchiveFileName, FAutomationTestBase&, Test);
+	FSynchronizeSameCommand, FString, ArchiveFileName, FAutomationTestBase&, Test);
 
-bool FSameTwiceCommand::Update()
+bool FSynchronizeSameCommand::Update()
 {
-	using namespace AGX_ReImportTest_helpers;
+	using namespace AGX_SynchronizeModelTest_helpers;
 
 	UBlueprint* Blueprint = Import(ArchiveFileName, false);
 	if (Blueprint == nullptr)
@@ -215,20 +216,21 @@ bool FSameTwiceCommand::Update()
 
 	const int NumNodesFirstImport = BlueprintBase->SimpleConstructionScript->GetAllNodes().Num();
 
-	if (!ReImport(*BlueprintBase, ArchiveFileName, false))
+	if (!SynchronizeModel(*BlueprintBase, ArchiveFileName, false))
 	{
-		Test.AddError("ReImport returned false.");
+		Test.AddError("SynchronizeModel returned false.");
 		return true;
 	}
 
-	// Ensure we have the same number of nodes after re-import as before.
-	const int NumNodesReImport = BlueprintBase->SimpleConstructionScript->GetAllNodes().Num();
-	if (NumNodesReImport != NumNodesFirstImport)
+	// Ensure we have the same number of nodes after the model Synchronization as before.
+	const int NumNodesSynchronizeModel =
+		BlueprintBase->SimpleConstructionScript->GetAllNodes().Num();
+	if (NumNodesSynchronizeModel != NumNodesFirstImport)
 	{
 		Test.AddError(FString::Printf(
-			TEXT("Number of nodes was %d after import and %d after re-import. "
+			TEXT("Number of nodes was %d after import and %d after model synchronization. "
 				 "They are expected to be the same."),
-			NumNodesFirstImport, NumNodesReImport));
+			NumNodesFirstImport, NumNodesSynchronizeModel));
 		return true;
 	}
 
@@ -313,21 +315,21 @@ bool FSameTwiceCommand::Update()
 	if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshBodyToGainGeom", "DefaultSceneRoot", true))
 		return true; // Logging done in CheckNodeNameAndParent.
 
-	if (!CheckNodeNameAndEnsureNoParent(*BlueprintBase, "AGX_ReImport"))
+	if (!CheckNodeNameAndEnsureNoParent(*BlueprintBase, "AGX_ModelSource"))
 		return true; // Logging done in CheckNodeNameAndEnsureNoParent.
 
 	return true;
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-	FReImportSameTwiceTest, "AGXUnreal.Editor.AGX_ReImportTest.ReImportSameTwice",
+	FSynchronizeSameTest, "AGXUnreal.Editor.AGX_SynchronizeModelTest.SyncronizeSame",
 	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
 
-bool FReImportSameTwiceTest::RunTest(const FString& Parameters)
+bool FSynchronizeSameTest::RunTest(const FString& Parameters)
 {
 	UBlueprint* Blueprint = nullptr;
-	const FString ArchiveFileName = "reimport_build.agx";
-	ADD_LATENT_AUTOMATION_COMMAND(FSameTwiceCommand(ArchiveFileName, *this));
+	const FString ArchiveFileName = "large_model_build.agx";
+	ADD_LATENT_AUTOMATION_COMMAND(FSynchronizeSameCommand(ArchiveFileName, *this));
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FDeleteImportedAssets(FPaths::GetBaseFilename(ArchiveFileName), *this));
 
