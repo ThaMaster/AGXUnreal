@@ -154,7 +154,12 @@ FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(const USc
 		}
 
 		UActorComponent* ComponentTemplate = FAGX_ObjectUtilities::GetMatchedInstance(
-			Node->ComponentTemplate.Get(), Component->GetOuter());
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+			Node->ComponentTemplate,
+#else
+			Node->ComponentTemplate.Get(),
+#endif
+			Component->GetOuter());
 		if (USceneComponent* SceneComponent = Cast<USceneComponent>(ComponentTemplate))
 		{
 			const FTransform RelativeTransform = SceneComponent->GetRelativeTransform();

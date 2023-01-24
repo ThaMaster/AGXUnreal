@@ -4,6 +4,7 @@
 #include "AGX_ImporterToBlueprint.h"
 #include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
+#include "AgxAutomationCommon.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 
@@ -143,7 +144,7 @@ namespace AGX_SynchronizeModelTest_helpers
 		if (ArchiveFilePath.IsEmpty())
 		{
 			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
-			return nullptr;
+			return false;
 		}
 
 		FAGX_ImportSettings ImportSettings;
@@ -389,10 +390,10 @@ bool FSynchronizeLargeModelCommand::Update()
  * things are changed from the original.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-	FSynchronizeSameTest, "AGXUnreal.Editor.AGX_SynchronizeModelTest.SyncronizeLargeModel",
+	FSynchronizeLargeModelTest, "AGXUnreal.Editor.AGX_SynchronizeModelTest.SyncronizeLargeModel",
 	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
 
-bool FSynchronizeSameTest::RunTest(const FString& Parameters)
+bool FSynchronizeLargeModelTest::RunTest(const FString& Parameters)
 {
 	UBlueprint* Blueprint = nullptr;
 	const FString ArchiveFileName = "large_model_build.agx";
