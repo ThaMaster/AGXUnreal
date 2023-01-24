@@ -188,6 +188,7 @@ public:
 	static FString GetImportStaticMeshDirectoryName();
 	static FString GetImportRenderMeshDirectoryName();
 	static FString GetContactMaterialRegistrarDefaultName();
+	static FString GetCollisionGroupDisablerDefaultName();
 
 	static FString GetUnsetUniqueImportName();
 
