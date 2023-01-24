@@ -376,6 +376,20 @@ bool FSynchronizeLargeModelCommand::Update()
 
 	Test.TestTrue("Synchronized Components found.", Components.Num() > 0);
 
+
+	// BodyToBeRenamed.
+	{
+		if (!CheckNodeNonExisting(*BlueprintBase, "BodyToBeRenamed"))
+			return true; // Logging done in CheckNodeNonExisting.
+	}
+
+	// BodyWithNewName.
+	{
+		if (!CheckNodeNameAndParent(
+				*BlueprintBase, "BodyWithNewName", "DefaultSceneRoot", true))
+			return true; // Logging done in CheckNodeNameAndParent.
+	}
+
 	// SphereBodyToBeRemoved and any children.
 	{
 		if (!CheckNodeNonExisting(*BlueprintBase, "SphereBodyToBeRemoved"))
@@ -617,8 +631,7 @@ bool FSynchronizeLargeModelCommand::Update()
 
 	// HingeToChange
 	{
-		if (!CheckNodeNameAndParent(
-				*BlueprintBase, "HingeToChange", "DefaultSceneRoot", true))
+		if (!CheckNodeNameAndParent(*BlueprintBase, "HingeToChange", "DefaultSceneRoot", true))
 			return true; // Logging done in CheckNodeNameAndParent.
 
 		auto Constraint = AgxAutomationCommon::GetByName<UAGX_HingeConstraintComponent>(
@@ -630,7 +643,11 @@ bool FSynchronizeLargeModelCommand::Update()
 		}
 
 		Test.TestEqual(
-			"HingeToChange Compliance", Constraint->GetCompliance(EGenericDofIndex::Translational1), 102.0);
+			"HingeToChange Compliance", Constraint->GetCompliance(EGenericDofIndex::Translational1),
+			102.0);
+		Test.TestEqual(
+			"HingeToChange Body1", Constraint->BodyAttachment1.RigidBody.BodyName,
+			FName("BodyWithNewName"));
 	}
 
 	// PrismaticToChange
@@ -647,8 +664,8 @@ bool FSynchronizeLargeModelCommand::Update()
 		}
 
 		Test.TestEqual(
-			"PrismaticToChange Damping", Constraint->GetSpookDamping(EGenericDofIndex::Translational2),
-			202.0);
+			"PrismaticToChange Damping",
+			Constraint->GetSpookDamping(EGenericDofIndex::Translational2), 202.0);
 	}
 
 	// BallCToBeRemoved
