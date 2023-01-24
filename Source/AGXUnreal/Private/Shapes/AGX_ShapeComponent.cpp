@@ -302,7 +302,14 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 	std::tie(BarrierPosition, BarrierRotation) = Barrier.GetLocalPositionAndRotation();
 
 	TArray<FName> BarrierCollisionGroups = Barrier.GetCollisionGroups();
-	CollisionGroups.Empty(BarrierCollisionGroups.Num());
+	TArray<FName> CollisionGroupsToRemove;
+	for (const FName& Group : CollisionGroups)
+	{
+		if (!BarrierCollisionGroups.Contains(Group))
+		{
+			CollisionGroupsToRemove.Add(Group);
+		}
+	}
 
 	const FMergeSplitPropertiesBarrier Msp =
 		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FShapeBarrier*>(&Barrier));
@@ -319,6 +326,11 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 			{
 				Instance->SetRelativeRotation(BarrierRotation);
 			}
+
+			for (const FName& GroupToRem : CollisionGroupsToRemove)
+			{
+				Instance->RemoveCollisionGroupIfExists(GroupToRem);
+			}			
 
 			for (const FName& Group : BarrierCollisionGroups)
 			{
@@ -338,6 +350,12 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
 	}
 
 	SetRelativeLocationAndRotation(BarrierPosition, BarrierRotation);
+
+	for (const FName& GroupToRem : CollisionGroupsToRemove)
+	{
+		RemoveCollisionGroupIfExists(GroupToRem);
+	}	
+
 	for (const FName& Group : BarrierCollisionGroups)
 	{
 		AddCollisionGroup(Group);

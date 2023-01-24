@@ -5,6 +5,7 @@
 #include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
@@ -313,6 +314,10 @@ bool FSynchronizeSameCommand::Update()
 	return true;
 }
 
+/**
+ * Import a model and simply synchronize against the same file as the original import. This is
+ * somewhat a sanity-check test.
+ */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FSynchronizeSameTest, "AGXUnreal.Editor.AGX_SynchronizeModelTest.SyncronizeSame",
 	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
@@ -361,8 +366,6 @@ bool FSynchronizeLargeModelCommand::Update()
 		return true;
 	}
 
-	return true;
-
 	// Remember: Components in Blueprints have no attach parents setup. We need to check the SCS
 	// Node tree for that information. We can do this by using the helper functions in the
 	// AGX_SynchronizeModelTest_helpers namespace.
@@ -375,6 +378,18 @@ bool FSynchronizeLargeModelCommand::Update()
 		FAGX_BlueprintUtilities::GetTemplateComponents(BlueprintBase);
 
 	Test.TestTrue("Synchronized Components found.", Components.Num() > 0);
+
+	// BodyToBeRenamed.
+	{
+		if (!CheckNodeNonExisting(*BlueprintBase, "BodyToBeRenamed"))
+			return true; // Logging done in CheckNodeNonExisting.
+	}
+
+	// BodyWithNewName.
+	{
+		if (!CheckNodeNameAndParent(*BlueprintBase, "BodyWithNewName", "DefaultSceneRoot", true))
+			return true; // Logging done in CheckNodeNameAndParent.
+	}
 
 	// SphereBodyToBeRemoved and any children.
 	{
@@ -617,8 +632,7 @@ bool FSynchronizeLargeModelCommand::Update()
 
 	// HingeToChange
 	{
-		if (!CheckNodeNameAndParent(
-				*BlueprintBase, "HingeToChange", "DefaultSceneRoot", true))
+		if (!CheckNodeNameAndParent(*BlueprintBase, "HingeToChange", "DefaultSceneRoot", true))
 			return true; // Logging done in CheckNodeNameAndParent.
 
 		auto Constraint = AgxAutomationCommon::GetByName<UAGX_HingeConstraintComponent>(
@@ -630,7 +644,11 @@ bool FSynchronizeLargeModelCommand::Update()
 		}
 
 		Test.TestEqual(
-			"HingeToChange Compliance", Constraint->GetCompliance(EGenericDofIndex::Translational1), 102.0);
+			"HingeToChange Compliance", Constraint->GetCompliance(EGenericDofIndex::Translational1),
+			102.0);
+		Test.TestEqual(
+			"HingeToChange Body1", Constraint->BodyAttachment1.RigidBody.BodyName,
+			FName("BodyWithNewName"));
 	}
 
 	// PrismaticToChange
@@ -647,8 +665,8 @@ bool FSynchronizeLargeModelCommand::Update()
 		}
 
 		Test.TestEqual(
-			"PrismaticToChange Damping", Constraint->GetSpookDamping(EGenericDofIndex::Translational2),
-			202.0);
+			"PrismaticToChange Damping",
+			Constraint->GetSpookDamping(EGenericDofIndex::Rotational2), 202.0);
 	}
 
 	// BallCToBeRemoved
@@ -697,6 +715,38 @@ bool FSynchronizeLargeModelCommand::Update()
 		{
 			Test.AddError("Contact Material Registrar was nullptr. Cannot continue.");
 			return true;
+		}
+
+		// Todo: Check contact materials here.
+	}
+
+	// AGX_CollisionGroupDisabler
+	{
+		const FString CGDName = FAGX_ImportUtilities::GetCollisionGroupDisablerDefaultName();
+		if (!CheckNodeNameAndEnsureNoParent(*BlueprintBase, *CGDName))
+			return true; // Logging done in CheckNodeNameAndEnsureNoParent.
+
+		auto CGDisabler = AgxAutomationCommon::GetByName<UAGX_CollisionGroupDisablerComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(CGDName));
+		if (CGDisabler == nullptr)
+		{
+			Test.AddError("Collision Group Disabler was nullptr. Cannot continue.");
+			return true;
+		}
+
+		Test.TestEqual("CGDisabler num groups", CGDisabler->DisabledCollisionGroupPairs.Num(), 2);
+		const TArray<FAGX_CollisionGroupPair> ExpectedGroups = {
+			{"Sphere1", "Box2"}, {"Sphere2", "Sphere2"}};
+
+		if (CGDisabler->DisabledCollisionGroupPairs.Num() >= 2)
+		{
+			Test.TestTrue(
+				"CGDisabler group 0",
+				CGDisabler->DisabledCollisionGroupPairs[0].IsIn(ExpectedGroups));
+
+			Test.TestTrue(
+				"CGDisabler group 1",
+				CGDisabler->DisabledCollisionGroupPairs[1].IsIn(ExpectedGroups));
 		}
 	}
 

@@ -1347,29 +1347,62 @@ void FAGX_SimObjectsImporterHelper::UpdateCollisionGroupDisabler(
 	const TArray<std::pair<FString, FString>>& DisabledPairs,
 	UAGX_CollisionGroupDisablerComponent& Component)
 {
-	FAGX_ImportUtilities::Rename(Component, TEXT("AGX_CollisionGroupDisabler"));
+	const FString CGDName = FAGX_ImportUtilities::GetCollisionGroupDisablerDefaultName();
+	FAGX_ImportUtilities::Rename(Component, *CGDName);
+
+	TArray<FAGX_CollisionGroupPair> BarrierPairs;
+	BarrierPairs.Reserve(DisabledPairs.Num());
+	for (const auto& Pair : DisabledPairs)
+	{
+		BarrierPairs.Add({FName(std::get<0>(Pair)), FName(std::get<1>(Pair))});
+	}
+
+	// Collect pairs to remove (i.e. pairs not present in the DisabledPairs list).
+	TArray<FAGX_CollisionGroupPair> CGPairsToRemove;
+	for (const auto& Pair : Component.DisabledCollisionGroupPairs)
+	{
+		if (!Pair.IsIn(BarrierPairs))
+		{
+			CGPairsToRemove.Add(Pair);
+		}
+	}
 
 	// Update any archetype instance with the new groups.
 	for (UAGX_CollisionGroupDisablerComponent* Instance :
 		 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 	{
-		Instance->UpdateAvailableCollisionGroupsFromWorld();
-		Instance->RemoveDeprecatedCollisionGroups();
+		for (const auto& PairToRemove : CGPairsToRemove)
+		{
+			if (Instance->IsCollisionGroupPairDisabled(PairToRemove.Group1, PairToRemove.Group2))
+			{
+				Instance->EnableCollisionGroupPair(PairToRemove.Group1, PairToRemove.Group2, true);
+			}
+		}
 
 		for (const std::pair<FString, FString>& DisabledPair : DisabledPairs)
 		{
 			Instance->DisableCollisionGroupPair(
 				FName(*DisabledPair.first), FName(*DisabledPair.second), true);
 		}
+
+		Instance->UpdateAvailableCollisionGroupsFromWorld();
 	}
 
-	Component.UpdateAvailableCollisionGroupsFromWorld();
-	Component.RemoveDeprecatedCollisionGroups();
+	for (const auto& PairToRemove : CGPairsToRemove)
+	{
+		if (Component.IsCollisionGroupPairDisabled(PairToRemove.Group1, PairToRemove.Group2))
+		{
+			Component.EnableCollisionGroupPair(PairToRemove.Group1, PairToRemove.Group2, true);
+		}
+	}
+
 	for (const std::pair<FString, FString>& DisabledPair : DisabledPairs)
 	{
 		Component.DisableCollisionGroupPair(
 			FName(*DisabledPair.first), FName(*DisabledPair.second), true);
 	}
+
+	Component.UpdateAvailableCollisionGroupsFromWorld();
 }
 
 UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
@@ -1680,7 +1713,8 @@ void FAGX_SimObjectsImporterHelper::UpdateModelSourceComponent(UAGX_ModelSourceC
 		}
 	};
 
-	for (UAGX_ModelSourceComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+	for (UAGX_ModelSourceComponent* Instance :
+		 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 	{
 		UpdateModelSourceComponent(Instance);
 	}
@@ -1689,7 +1723,8 @@ void FAGX_SimObjectsImporterHelper::UpdateModelSourceComponent(UAGX_ModelSourceC
 	FAGX_ImportUtilities::Rename(Component, "AGX_ModelSource");
 }
 
-UAGX_ModelSourceComponent* FAGX_SimObjectsImporterHelper::InstantiateModelSourceComponent(AActor& Owner)
+UAGX_ModelSourceComponent* FAGX_SimObjectsImporterHelper::InstantiateModelSourceComponent(
+	AActor& Owner)
 {
 	UAGX_ModelSourceComponent* ModelSourceComponent = NewObject<UAGX_ModelSourceComponent>(&Owner);
 	if (ModelSourceComponent == nullptr)
