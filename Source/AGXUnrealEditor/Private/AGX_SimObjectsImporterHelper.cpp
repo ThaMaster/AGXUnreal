@@ -395,8 +395,8 @@ namespace
 		}
 
 		// No UAGX_ContactMaterialRegistrarComponent exists in Owner. Create and add one.
-		Component = NewObject<UAGX_ContactMaterialRegistrarComponent>(
-			&Owner, TEXT("AGX_ContactMaterialRegistrar"));
+		const FString CMRName = FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName();
+		Component = NewObject<UAGX_ContactMaterialRegistrarComponent>(&Owner, *CMRName);
 
 		Component->SetFlags(RF_Transactional);
 		Owner.AddInstanceComponent(Component);
@@ -1088,9 +1088,9 @@ UAGX_ContactMaterial* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
 UAGX_ContactMaterialRegistrarComponent*
 FAGX_SimObjectsImporterHelper::InstantiateContactMaterialRegistrar(AActor& Owner)
 {
+	const FString CMRName = FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName();
 	UAGX_ContactMaterialRegistrarComponent* Component =
-		NewObject<UAGX_ContactMaterialRegistrarComponent>(
-			&Owner, TEXT("AGX_ContactMaterialRegistrar"));
+		NewObject<UAGX_ContactMaterialRegistrarComponent>(&Owner, *CMRName);
 
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);

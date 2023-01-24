@@ -187,6 +187,7 @@ public:
 	static FString GetImportMergeSplitThresholdsDirectoryName();
 	static FString GetImportStaticMeshDirectoryName();
 	static FString GetImportRenderMeshDirectoryName();
+	static FString GetContactMaterialRegistrarDefaultName();
 
 	static FString GetUnsetUniqueImportName();
 

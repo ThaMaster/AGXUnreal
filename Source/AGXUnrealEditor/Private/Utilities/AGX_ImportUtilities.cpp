@@ -586,6 +586,11 @@ FString FAGX_ImportUtilities::GetImportRenderMeshDirectoryName()
 	return FString("RenderMesh");
 }
 
+FString FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName()
+{
+	return FString("AGX_ContactMaterialRegistrar");
+}
+
 FString FAGX_ImportUtilities::GetUnsetUniqueImportName()
 {
 	return FString("AGX_Import_Unnamed_") + FGuid::NewGuid().ToString();

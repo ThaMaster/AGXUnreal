@@ -1039,7 +1039,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 
 		USCS_Node* CMRegistrarNode = GetOrCreateContactMaterialRegistrarNode(BaseBP, SCSNodes);
-		CMRegistrarNode->SetVariableName(TEXT("AGX_ContactMaterialRegistrar"));
+		const FString CMRName = FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName();
+		CMRegistrarNode->SetVariableName(*CMRName);
 		auto CMRegistrar =
 			Cast<UAGX_ContactMaterialRegistrarComponent>(CMRegistrarNode->ComponentTemplate);
 

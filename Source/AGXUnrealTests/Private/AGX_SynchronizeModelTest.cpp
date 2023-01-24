@@ -4,8 +4,20 @@
 #include "AGX_ImporterToBlueprint.h"
 #include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
+#include "Constraints/AGX_BallConstraintComponent.h"
+#include "Constraints/AGX_HingeConstraintComponent.h"
+#include "Constraints/AGX_PrismaticConstraintComponent.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponent.h"
+#include "Materials/AGX_ShapeMaterial.h"
+#include "Shapes/AGX_BoxShapeComponent.h"
+#include "Shapes/AGX_CylinderShapeComponent.h"
+#include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "AgxAutomationCommon.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
 #include "Misc/AutomationTest.h"
@@ -14,6 +26,42 @@
 
 namespace AGX_SynchronizeModelTest_helpers
 {
+	// Child Blueprints, like the one produced after an Import does not necessarily contain any SCS
+	// Nodes themselves. Instead one have to get the SCS Nodes from the base Blueprint, then get the
+	// template Components from them, and go through the archetype instances to find the Components
+	// of interest.
+
+#if 0
+	// todo: important; the found template Components from the GetTemplateComponents
+	// call below are retrieved as expected. But calling GetArchetypeInstances on any of those components
+	// gives nothing, which is really unexpected. It is just as if it is only from this test that
+	// the issue exists, doing the anywhere in the Editor module of the plugin works as
+	// expected.
+	// Update: it seems that the archetype instances of the base Blueprint are created on-demand
+	// when the Blueprint Editor is opened. This was confirmed by printing out the number of
+	// archetype instances right after a regular Import but before the Blueprint Editor was opened.
+	// The number was then zero.
+	TArray<UActorComponent*> GetComponentsFromChildBlueprint(
+		UBlueprint& BaseBp, UBlueprint& ChildBlueprint)
+	{
+		TArray<UActorComponent*> BaseComponents =
+			FAGX_BlueprintUtilities::GetTemplateComponents(&BaseBp);
+
+		TArray<UActorComponent*> ChildComponents;
+		ChildComponents.Reserve(BaseComponents.Num());
+		for (UActorComponent* BaseComponent : BaseComponents)
+		{
+			if (auto MatchedComponent =
+					FAGX_ObjectUtilities::GetMatchedInstance(BaseComponent, &ChildBlueprint))
+			{
+				ChildComponents.Add(MatchedComponent);
+			}
+		}
+
+		return ChildComponents;
+	}
+#endif
+
 	USCS_Node* GetNodeChecked(const UBlueprint& Blueprint, const FString& Name)
 	{
 		USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
@@ -24,6 +72,21 @@ namespace AGX_SynchronizeModelTest_helpers
 		}
 
 		return Node;
+	}
+
+	bool CheckNodeNonExisting(const UBlueprint& Blueprint, const FString& Name)
+	{
+		USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
+		if (Node != nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Found SCS Node '%s' that was expected not to exist in the Blueprint."),
+				*Name);
+			return false;
+		}
+
+		return true;
 	}
 
 	bool CheckNodeNameAndEnsureNoParent(const UBlueprint& Blueprint, const FString& Name)
@@ -44,11 +107,11 @@ namespace AGX_SynchronizeModelTest_helpers
 		return true;
 	}
 
-	bool CheckNoChild(const UBlueprint& Blueprint, const FString& Name)
+	bool CheckNodeNoChild(const UBlueprint& Blueprint, const FString& Name)
 	{
 		USCS_Node* Node = GetNodeChecked(Blueprint, Name);
 		if (Node == nullptr)
-			return false;
+			return false; // Logging/error done in GetNodeChecked.
 
 		if (Node->GetChildNodes().Num() != 0)
 		{
@@ -81,13 +144,13 @@ namespace AGX_SynchronizeModelTest_helpers
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("The SCS Node '%s' has a parent Node named '%s', expected it to be '%s'."),
-				*Name, *Parent->GetName(), *ParentNodeName);
+				*Name, *Parent->GetVariableName().ToString(), *ParentNodeName);
 			return false;
 		}
 
 		if (EnsureNoChild)
 		{
-			return CheckNoChild(Blueprint, Name);
+			return CheckNodeNoChild(Blueprint, Name);
 		}
 
 		return true;
@@ -235,7 +298,8 @@ bool FSynchronizeSameCommand::Update()
 	}
 
 	// Ensure no nodes have the name "AGX_Import_Unnamed..." name that is set in the beginning of a
-	// model synchronization.
+	// model synchronization. Note that a random GUID is appended after this, so we need to check
+	// against the first part of the name.
 	const FString UnnamedName = "AGX_Import_Unnamed";
 	const FString UnsetUniqueImportName = FAGX_ImportUtilities::GetUnsetUniqueImportName();
 	Test.TestTrue(
@@ -255,8 +319,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FSynchronizeSameTest::RunTest(const FString& Parameters)
 {
-	UBlueprint* Blueprint = nullptr;
-	const FString ArchiveFileName = "large_model_build.agx";
+	const FString ArchiveFileName = "synchronize_same_build.agx";
 	ADD_LATENT_AUTOMATION_COMMAND(FSynchronizeSameCommand(ArchiveFileName, *this));
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FDeleteImportedAssets(FPaths::GetBaseFilename(ArchiveFileName), *this));
@@ -275,6 +338,7 @@ DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
 bool FSynchronizeLargeModelCommand::Update()
 {
 	using namespace AGX_SynchronizeModelTest_helpers;
+	using namespace AgxAutomationCommon;
 
 	UBlueprint* Blueprint = Import(ArchiveFileName, false);
 	if (Blueprint == nullptr)
@@ -297,39 +361,175 @@ bool FSynchronizeLargeModelCommand::Update()
 		return true;
 	}
 
-	if (!CheckNodeNameAndParent(*BlueprintBase, "SphereBodyToChange", "DefaultSceneRoot", false))
-		return true; // Logging done in CheckNodeNameAndParent.
+	return true;
 
-	if (!CheckNodeNameAndParent(
-			*BlueprintBase, "SphereGeometryToChange", "SphereBodyToChange", true))
-		return true; // Logging done in CheckNodeNameAndParent.
+	// Remember: Components in Blueprints have no attach parents setup. We need to check the SCS
+	// Node tree for that information. We can do this by using the helper functions in the
+	// AGX_SynchronizeModelTest_helpers namespace.
 
-	if (!CheckNodeNameAndParent(*BlueprintBase, "SphereBodyNoChange", "DefaultSceneRoot", false))
-		return true; // Logging done in CheckNodeNameAndParent.
+	// Important: we would like to get the components from the Blueprint child using the
+	// GetComponentsFromChildBlueprint function in this file. Unfortunately that does not work while
+	// Testing for some reason (see comment above that function). So we will have to look at the
+	// base blueprint only.
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(BlueprintBase);
 
-	if (!CheckNodeNameAndParent(
-			*BlueprintBase, "SphereGeometryNoChange", "SphereBodyNoChange", true))
-		return true; // Logging done in CheckNodeNameAndParent.
+	Test.TestTrue("Synchronized Components found.", Components.Num() > 0);
 
-	if (!CheckNodeNameAndParent(*BlueprintBase, "BoxBodyToLooseGeom", "DefaultSceneRoot", false))
-		return true; // Logging done in CheckNodeNameAndParent.
-
-	if (!CheckNodeNameAndParent(*BlueprintBase, "BoxGeometryToMove", "BoxBodyToLooseGeom", true))
-		return true; // Logging done in CheckNodeNameAndParent.
-
-	if (!CheckNodeNameAndParent(*BlueprintBase, "BoxBodyToGainGeom", "DefaultSceneRoot", true))
-		return true; // Logging done in CheckNodeNameAndParent.
-
-	if (!CheckNodeNameAndParent(*BlueprintBase, "StandaloneCylToChange", "DefaultSceneRoot", true))
-		return true; // Logging done in CheckNodeNameAndParent.
-
-	if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshBody", "DefaultSceneRoot", false))
-		return true; // Logging done in CheckNodeNameAndParent.
-
-	if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshGeomToChange", "TrimeshBody", false))
-		return true; // Logging done in CheckNodeNameAndParent.
-
+	// SphereBodyToBeRemoved and any children.
 	{
+		if (!CheckNodeNonExisting(*BlueprintBase, "SphereBodyToBeRemoved"))
+			return true; // Logging done in CheckNodeNonExisting.
+
+		if (!CheckNodeNonExisting(*BlueprintBase, "SphereGeometryToBeRemoved"))
+			return true; // Logging done in CheckNodeNonExisting.
+	}
+
+	// SphereBodyToChange and any children.
+	{
+		if (!CheckNodeNameAndParent(
+				*BlueprintBase, "SphereBodyToChange", "DefaultSceneRoot", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		if (!CheckNodeNameAndParent(
+				*BlueprintBase, "SphereGeometryToChange", "SphereBodyToChange", true))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		auto BodyToChange = AgxAutomationCommon::GetByName<UAGX_RigidBodyComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("SphereBodyToChange"));
+
+		auto ShapeToChange = AgxAutomationCommon::GetByName<UAGX_SphereShapeComponent>(
+			Components,
+			*FAGX_BlueprintUtilities::ToTemplateComponentName("SphereGeometryToChange"));
+
+		auto ShapeMat = ShapeToChange != nullptr ? ShapeToChange->ShapeMaterial : nullptr;
+
+		auto MergeSplitThresholds =
+			BodyToChange != nullptr ? BodyToChange->MergeSplitProperties.Thresholds : nullptr;
+
+		if (IsAnyNullptr(BodyToChange, ShapeToChange, ShapeMat, MergeSplitThresholds))
+		{
+			Test.AddError(
+				TEXT("At least one required objects owned by SphereBodyToChange was nullptr, "
+					 "cannot continue."));
+			return true;
+		}
+
+		Test.TestEqual(
+			"SphereBodyToChange location", AgxToUnrealDisplacement(-10.0, 1.0, 0.0),
+			BodyToChange->GetRelativeLocation());
+		Test.TestEqual("SphereBodyToChange mass", BodyToChange->GetMass(), 9.f);
+		Test.TestEqual("SphereBodyToChange MST", MergeSplitThresholds->GetNormalAdhesion(), 132.0);
+
+		Test.TestEqual(
+			"SphereGeometryToChange location", AgxToUnrealDisplacement(0.0, 1.5, 0.0),
+			ShapeToChange->GetRelativeLocation());
+		Test.TestEqual(
+			"SphereGeometryToChange radius", ShapeToChange->GetRadius(), AgxToUnrealDistance(0.25));
+		Test.TestEqual("SharedMaterial roughness", ShapeMat->GetRoughness(), 0.23);
+		Test.TestEqual(
+			"SphereGeometryToChange num collision groups", ShapeToChange->CollisionGroups.Num(), 3);
+		Test.TestTrue(
+			"SphereGeometryToChange collision groups",
+			ShapeToChange->CollisionGroups.Contains(FName("Sphere1")) &&
+				ShapeToChange->CollisionGroups.Contains(FName("Sphere2")) &&
+				ShapeToChange->CollisionGroups.Contains(FName("Sphere3")));
+	}
+
+	// BoxBodyToLooseGeom
+	{
+		if (!CheckNodeNameAndParent(
+				*BlueprintBase, "BoxBodyToLooseGeom", "DefaultSceneRoot", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		if (!CheckNodeNameAndParent(
+				*BlueprintBase, "ObserverToChangeOwner", "BoxBodyToLooseGeom", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+	}
+
+	// BoxBodyToGainGeom and any children.
+	{
+		if (!CheckNodeNameAndParent(*BlueprintBase, "BoxBodyToGainGeom", "DefaultSceneRoot", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		if (!CheckNodeNameAndParent(*BlueprintBase, "BoxGeometryToMove", "BoxBodyToGainGeom", true))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		auto Body = AgxAutomationCommon::GetByName<UAGX_RigidBodyComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("BoxBodyToGainGeom"));
+		auto Shape = AgxAutomationCommon::GetByName<UAGX_BoxShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("BoxGeometryToMove"));
+		auto ShapeMat = Shape != nullptr ? Shape->ShapeMaterial : nullptr;
+
+		if (IsAnyNullptr(Body, Shape, ShapeMat))
+		{
+			Test.AddError(
+				TEXT("At least one required objects owned by BoxBodyToGainGeom was nullptr, "
+					 "cannot continue."));
+			return true;
+		}
+
+		Test.TestEqual("BoxGeometryToMove num collision groups", Shape->CollisionGroups.Num(), 1);
+		Test.TestTrue(
+			"BoxGeometryToMove collision groups", Shape->CollisionGroups.Contains(FName("Box2")));
+		Test.TestEqual("SharedMaterial roughness", ShapeMat->GetRoughness(), 0.23);
+
+		// We also want to ensure that the BoxGeometryToMove and the SphereGeometryToChange Shape
+		// Materials point to the same asset.
+		auto ShapeToChange = AgxAutomationCommon::GetByName<UAGX_SphereShapeComponent>(
+			Components,
+			*FAGX_BlueprintUtilities::ToTemplateComponentName("SphereGeometryToChange"));
+		auto ShapeMat2 = ShapeToChange != nullptr ? ShapeToChange->ShapeMaterial : nullptr;
+		if (IsAnyNullptr(ShapeToChange, ShapeMat2))
+		{
+			Test.AddError(
+				TEXT("At least one required objects for testing BoxBodyToGainGeom was nullptr, "
+					 "cannot continue."));
+			return true;
+		}
+		Test.TestEqual("Shared Shape Material same", ShapeMat, ShapeMat2);
+	}
+
+	// StandaloneCylToChange
+	{
+		if (!CheckNodeNameAndParent(
+				*BlueprintBase, "StandaloneCylToChange", "DefaultSceneRoot", true))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		auto Shape = AgxAutomationCommon::GetByName<UAGX_CylinderShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("StandaloneCylToChange"));
+		auto ShapeMat = Shape != nullptr ? Shape->ShapeMaterial : nullptr;
+
+		if (IsAnyNullptr(Shape, ShapeMat))
+		{
+			Test.AddError(
+				TEXT("At least one required objects owned by StandaloneCylToChange was nullptr, "
+					 "cannot continue."));
+			return true;
+		}
+
+		Test.TestEqual("CylinderMaterial roughness", ShapeMat->GetRoughness(), 0.24);
+		Test.TestEqual(
+			"StandaloneCylToChange height", Shape->GetHeight(), AgxToUnrealDistance(0.3f));
+		Test.TestEqual(
+			"StandaloneCylToChange location", AgxToUnrealDisplacement(-6.0, 1.0, 0.0),
+			Shape->GetRelativeLocation());
+		Test.TestEqual(
+			"StandaloneCylToChange Shape Material Roughness", ShapeMat->GetRoughness(), 0.24);
+		Test.TestTrue(
+			"StandaloneCylToChange MSP",
+			!Shape->MergeSplitProperties.bEnableMerge && !Shape->MergeSplitProperties.bEnableSplit);
+	}
+
+	// TrimeshBody and any children.
+	{
+		if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshBody", "DefaultSceneRoot", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshGeomToChange", "TrimeshBody", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		// Ensure currect attach parent/child tree under the trimesh node.
 		USCS_Node* TrimeshGeomToChangeNode = GetNodeChecked(*BlueprintBase, "TrimeshGeomToChange");
 		USCS_Node* TGTCCollisionMeshNode = GetOnlyAttachChildChecked(TrimeshGeomToChangeNode);
 		USCS_Node* TGTCRenderMeshNode = GetOnlyAttachChildChecked(TGTCCollisionMeshNode);
@@ -346,17 +546,62 @@ bool FSynchronizeLargeModelCommand::Update()
 				TGTCRenderMeshNode->GetChildNodes().Num()));
 			return true;
 		}
+
+		auto Shape = AgxAutomationCommon::GetByName<UAGX_TrimeshShapeComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("TrimeshGeomToChange"));
+		auto ShapeMat = Shape != nullptr ? Shape->ShapeMaterial : nullptr;
+		auto RenderMesh = Cast<UStaticMeshComponent>(TGTCRenderMeshNode->ComponentTemplate);
+		UMaterialInterface* RenderMat =
+			RenderMesh != nullptr ? RenderMesh->GetMaterial(0) : nullptr;
+		if (IsAnyNullptr(Shape, ShapeMat, RenderMesh, RenderMat))
+		{
+			Test.AddError(
+				TEXT("At least one required objects owned by TrimeshBody was nullptr, "
+					 "cannot continue."));
+			return true;
+		}
+
+		Test.TestEqual(
+			"TrimeshGeomToChange location", AgxToUnrealDisplacement(0.0, 1.0, 0.0),
+			Shape->GetRelativeLocation());
+
+		// Check the Diffuse Color.
+		FVector4 ExpectedLinear(0.6f, 0.14f, 0.01f, 1.0f);
+		FMaterialParameterInfo Info;
+		Info.Name = FName("Diffuse");
+		FLinearColor ActualLinear;
+		if (!RenderMat->GetVectorParameterValue(Info, ActualLinear, false))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("Could not get diffuse color from RenderMaterial '%s'."),
+				*RenderMat->GetName()));
+			return true;
+		}
+
+		FVector4 Actual = FAGX_ImportUtilities::LinearToSRGB(ActualLinear);
+		float Tolerance = 1.0f / 255.0f; // This is all the precision we have in a byte.
+		AgxAutomationCommon::TestEqual(
+			Test, *FString::Printf(TEXT("%s in %s"), *Info.Name.ToString(), *RenderMat->GetName()),
+			Actual, ExpectedLinear, Tolerance);
 	}
 
-	if (!CheckNodeNameAndParent(
-			*BlueprintBase, "TrimeshBodyToLooseGeom", "DefaultSceneRoot", false))
-		return true; // Logging done in CheckNodeNameAndParent.
-
-	if (!CheckNodeNameAndParent(
-			*BlueprintBase, "TrimeshGeomToMove", "TrimeshBodyToLooseGeom", false))
-		return true; // Logging done in CheckNodeNameAndParent.
-
+	// TrimeshBodyToLooseGeom.
 	{
+		if (!CheckNodeNameAndParent(
+				*BlueprintBase, "TrimeshBodyToLooseGeom", "DefaultSceneRoot", true))
+			return true; // Logging done in CheckNodeNameAndParent.
+	}
+
+	// TrimeshBodyToGainGeom and any children.
+	{
+		if (!CheckNodeNameAndParent(
+				*BlueprintBase, "TrimeshBodyToGainGeom", "DefaultSceneRoot", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		if (!CheckNodeNameAndParent(
+				*BlueprintBase, "TrimeshGeomToMove", "TrimeshBodyToGainGeom", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
 		USCS_Node* TrimeshGeomToMoveNode = GetNodeChecked(*BlueprintBase, "TrimeshGeomToMove");
 		USCS_Node* TGTMCollisionMeshNode = GetOnlyAttachChildChecked(TrimeshGeomToMoveNode);
 		USCS_Node* TGTMRenderMeshNode = GetOnlyAttachChildChecked(TGTMCollisionMeshNode);
@@ -366,20 +611,94 @@ bool FSynchronizeLargeModelCommand::Update()
 			return true;
 		}
 
-		if (TGTMRenderMeshNode->GetChildNodes().Num() != 0)
+		if (!CheckNodeNoChild(*BlueprintBase, TGTMRenderMeshNode->GetVariableName().ToString()))
+			return true; // Logging done in CheckNodeNoChild.
+	}
+
+	// HingeToChange
+	{
+		if (!CheckNodeNameAndParent(
+				*BlueprintBase, "HingeToChange", "DefaultSceneRoot", true))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		auto Constraint = AgxAutomationCommon::GetByName<UAGX_HingeConstraintComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("HingeToChange"));
+		if (Constraint == nullptr)
 		{
-			Test.AddError(FString::Printf(
-				TEXT("Expected TGTMRenderMeshNode to have zero children but it has %d."),
-				TGTMRenderMeshNode->GetChildNodes().Num()));
+			Test.AddError("HingeToChange was nullptr, cannot continue.");
+			return true;
+		}
+
+		Test.TestEqual(
+			"HingeToChange Compliance", Constraint->GetCompliance(EGenericDofIndex::Translational1), 102.0);
+	}
+
+	// PrismaticToChange
+	{
+		if (!CheckNodeNameAndParent(*BlueprintBase, "PrismaticToChange", "DefaultSceneRoot", true))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		auto Constraint = AgxAutomationCommon::GetByName<UAGX_PrismaticConstraintComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("PrismaticToChange"));
+		if (Constraint == nullptr)
+		{
+			Test.AddError("PrismaticToChange was nullptr, cannot continue.");
+			return true;
+		}
+
+		Test.TestEqual(
+			"PrismaticToChange Damping", Constraint->GetSpookDamping(EGenericDofIndex::Translational2),
+			202.0);
+	}
+
+	// BallCToBeRemoved
+	{
+		if (!CheckNodeNonExisting(*BlueprintBase, "BallCToBeRemoved"))
+			return true; // Logging done in CheckNodeNonExisting.
+	}
+
+	// NewHinge
+	{
+		if (!CheckNodeNameAndParent(*BlueprintBase, "NewHinge", "DefaultSceneRoot", true))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		auto Constraint = AgxAutomationCommon::GetByName<UAGX_HingeConstraintComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("NewHinge"));
+		if (Constraint == nullptr)
+		{
+			Test.AddError("NewHinge was nullptr, cannot continue.");
+			return true;
+		}
+
+		Test.TestEqual(
+			"NewHinge Body1", Constraint->BodyAttachment1.RigidBody.BodyName,
+			FName("TrimeshBodyToGainGeom"));
+
+		Test.TestEqual(
+			"NewHinge Body2", Constraint->BodyAttachment2.RigidBody.BodyName,
+			FName("TrimeshBodyToLooseGeom"));
+	}
+
+	// AGX_ModelSource.
+	{
+		if (!CheckNodeNameAndEnsureNoParent(*BlueprintBase, "AGX_ModelSource"))
+			return true; // Logging done in CheckNodeNameAndEnsureNoParent.
+	}
+
+	// AGX_ContactmaterialRegistrar.
+	{
+		const FString CMRName = FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName();
+		if (!CheckNodeNameAndEnsureNoParent(*BlueprintBase, CMRName))
+			return true; // Logging done in CheckNodeNameAndEnsureNoParent.
+
+		auto CMRegistrar = AgxAutomationCommon::GetByName<UAGX_ContactMaterialRegistrarComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(CMRName));
+		if (CMRegistrar == nullptr)
+		{
+			Test.AddError("Contact Material Registrar was nullptr. Cannot continue.");
 			return true;
 		}
 	}
-
-	if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshBodyToGainGeom", "DefaultSceneRoot", true))
-		return true; // Logging done in CheckNodeNameAndParent.
-
-	if (!CheckNodeNameAndEnsureNoParent(*BlueprintBase, "AGX_ModelSource"))
-		return true; // Logging done in CheckNodeNameAndEnsureNoParent.
 
 	return true;
 }
@@ -389,12 +708,11 @@ bool FSynchronizeLargeModelCommand::Update()
  * things are changed from the original.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-	FSynchronizeSameTest, "AGXUnreal.Editor.AGX_SynchronizeModelTest.SyncronizeLargeModel",
+	FSynchronizeLargeModelTest, "AGXUnreal.Editor.AGX_SynchronizeModelTest.SyncronizeLargeModel",
 	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
 
-bool FSynchronizeSameTest::RunTest(const FString& Parameters)
+bool FSynchronizeLargeModelTest::RunTest(const FString& Parameters)
 {
-	UBlueprint* Blueprint = nullptr;
 	const FString ArchiveFileName = "large_model_build.agx";
 	const FString UpdatedArchiveFileName = "large_model_updated_build.agx";
 	ADD_LATENT_AUTOMATION_COMMAND(
