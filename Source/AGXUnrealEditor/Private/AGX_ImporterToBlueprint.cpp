@@ -36,6 +36,7 @@
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
@@ -159,6 +160,7 @@ namespace
 				: nullptr;
 		if (CMRegistrar == nullptr)
 		{
+			// Imported model has no ContactMaterials, we are done.
 			return true;
 		}
 
@@ -1038,11 +1040,35 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			return;
 		}
 
+		auto DeleteRemovedCMs = [&SimulationObjects](UAGX_ContactMaterialRegistrarComponent& CMReg)
+		{
+			TArray<UAGX_ContactMaterial*> CMsToDelete;
+			for (const auto Cm : CMReg.ContactMaterials)
+			{
+				if (!SimulationObjects.GetContactMaterials().ContainsByPredicate(
+						[Cm](const auto& C) { return C.GetGuid() == Cm->ImportGuid; }))
+				{
+					CMsToDelete.Add(Cm);
+				}
+			}
+
+			CMReg.ContactMaterials.RemoveAll([&CMsToDelete](auto Cm)
+											 { return CMsToDelete.Contains(Cm); });
+
+			// Update any archetype instance as well.
+			for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(CMReg))
+			{
+				Instance->ContactMaterials.RemoveAll([&CMsToDelete](auto Cm)
+													 { return CMsToDelete.Contains(Cm); });
+			}
+		};
+
 		USCS_Node* CMRegistrarNode = GetOrCreateContactMaterialRegistrarNode(BaseBP, SCSNodes);
 		const FString CMRName = FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName();
 		CMRegistrarNode->SetVariableName(*CMRName);
 		auto CMRegistrar =
 			Cast<UAGX_ContactMaterialRegistrarComponent>(CMRegistrarNode->ComponentTemplate);
+		DeleteRemovedCMs(*CMRegistrar);
 
 		// Find all existing assets that might be of interest from the previous import.
 		const FString ContactMaterialDirPath =
@@ -1831,7 +1857,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Synchronization"));
 
-		// Model synchronization is completed, we end by compiling and saving the Blueprint and any children.
+		// Model synchronization is completed, we end by compiling and saving the Blueprint and any
+		// children.
 		FAGX_EditorUtilities::SaveAndCompile(BaseBP);
 
 		return true;
@@ -1844,7 +1871,8 @@ bool AGX_ImporterToBlueprint::SynchronizeModel(
 	if (!AGX_ImporterToBlueprint_SynchronizeModel_helpers::SynchronizeModel(BaseBP, ImportSettings))
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Some issues occurred during model synchronization. Log category LogAGX in the Console may "
+			"Some issues occurred during model synchronization. Log category LogAGX in the Console "
+			"may "
 			"contain more information.",
 			"Synchronize model");
 		return false;

@@ -9,6 +9,7 @@
 #include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
@@ -665,8 +666,8 @@ bool FSynchronizeLargeModelCommand::Update()
 		}
 
 		Test.TestEqual(
-			"PrismaticToChange Damping",
-			Constraint->GetSpookDamping(EGenericDofIndex::Rotational2), 202.0);
+			"PrismaticToChange Damping", Constraint->GetSpookDamping(EGenericDofIndex::Rotational2),
+			202.0);
 	}
 
 	// BallCToBeRemoved
@@ -717,7 +718,27 @@ bool FSynchronizeLargeModelCommand::Update()
 			return true;
 		}
 
-		// Todo: Check contact materials here.
+		Test.TestEqual("CMRegistrar num CM", CMRegistrar->ContactMaterials.Num(), 2);
+		if (CMRegistrar->ContactMaterials.Num() == 2)
+		{
+			auto CmSharedCyl = CMRegistrar->ContactMaterials.FindByPredicate(
+				[](auto* Cm) { return Cm->GetName().Contains("Shared"); });
+			auto CmCylTri = CMRegistrar->ContactMaterials.FindByPredicate(
+				[](auto* Cm) { return Cm->GetName().Contains("Trimesh"); });
+
+			if (IsAnyNullptr(CmSharedCyl, CmCylTri))
+			{
+				Test.AddError(
+					TEXT("At least one required Contact Material could not be found in the Contact "
+						 "Material Registrar, cannot continue."));
+				return true;
+			}
+
+			Test.TestEqual(
+				"CmSharedCyl Friction Coefficient", (*CmSharedCyl)->GetFrictionCoefficient(), 0.12);
+			Test.TestEqual(
+				"CmCylTri Friction Coefficient", (*CmCylTri)->GetFrictionCoefficient(), 0.23);
+		}
 	}
 
 	// AGX_CollisionGroupDisabler
@@ -738,7 +759,7 @@ bool FSynchronizeLargeModelCommand::Update()
 		const TArray<FAGX_CollisionGroupPair> ExpectedGroups = {
 			{"Sphere1", "Box2"}, {"Sphere2", "Sphere2"}};
 
-		if (CGDisabler->DisabledCollisionGroupPairs.Num() >= 2)
+		if (CGDisabler->DisabledCollisionGroupPairs.Num() == 2)
 		{
 			Test.TestTrue(
 				"CGDisabler group 0",
