@@ -3,15 +3,19 @@
 #include "AGX_ModelSourceComponentCustomization.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_ImporterToBlueprint.h"
+#include "AGX_ImportSettings.h"
 #include "AGX_ModelSourceComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Widgets/AGX_ImportDialog.h"
 
 // Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
+#include "DetailWidgetRow.h"
 #include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ModelSourceComponentCustomization"

@@ -206,7 +206,7 @@ namespace AGX_SynchronizeModelTest_helpers
 		if (ArchiveFilePath.IsEmpty())
 		{
 			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
-			return nullptr;
+			return false;
 		}
 
 		FAGX_ImportSettings ImportSettings;
