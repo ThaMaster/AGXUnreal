@@ -313,6 +313,10 @@ bool FSynchronizeSameCommand::Update()
 	return true;
 }
 
+/**
+ * Import a model and simply synchronize against the same file as the original import. This is
+ * somewhat a sanity-check test.
+ */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FSynchronizeSameTest, "AGXUnreal.Editor.AGX_SynchronizeModelTest.SyncronizeSame",
 	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
@@ -376,7 +380,6 @@ bool FSynchronizeLargeModelCommand::Update()
 
 	Test.TestTrue("Synchronized Components found.", Components.Num() > 0);
 
-
 	// BodyToBeRenamed.
 	{
 		if (!CheckNodeNonExisting(*BlueprintBase, "BodyToBeRenamed"))
@@ -385,8 +388,7 @@ bool FSynchronizeLargeModelCommand::Update()
 
 	// BodyWithNewName.
 	{
-		if (!CheckNodeNameAndParent(
-				*BlueprintBase, "BodyWithNewName", "DefaultSceneRoot", true))
+		if (!CheckNodeNameAndParent(*BlueprintBase, "BodyWithNewName", "DefaultSceneRoot", true))
 			return true; // Logging done in CheckNodeNameAndParent.
 	}
 
