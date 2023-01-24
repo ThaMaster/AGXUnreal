@@ -25,6 +25,7 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
+#include "ObjectTools.h"
 #include "AssetToolsModule.h"
 #include "DesktopPlatformModule.h"
 #include "Editor.h"
@@ -96,6 +97,142 @@ bool FAGX_EditorUtilities::RenameAsset(
 	FAssetRegistryModule::AssetRenamed(&Asset, OldPath);
 	Asset.MarkPackageDirty();
 	Asset.GetOuter()->MarkPackageDirty();
+
+	return true;
+}
+
+
+namespace AGX_EditorUtilities_helpers
+{
+	/**
+	 * Delete function based on BlueprintEditorPromotionTestHelper::Cleanup in
+	 * BlueprintEditorTests.cpp in the engine code. It consists of four steps:
+	 *  - AssetRegistry.AssetDeleted
+	 *  - NullReferencesToObject
+	 *  - ObjectTools::DeleteSingleObject
+	 *  - Filesystem delete.
+	 *
+	 * The first step is straight-forward, get the asset registry and call AssetDeleted on it.
+	 *
+	 * The second step is implemented behind FAutomationEditorCommonUtils. I don't think we should
+	 * call that directly, calling into test code from production editor code is backwards. Here I
+	 * have recreated the bits of the code I think are important for our use-case as a helper
+	 * function.
+	 *
+	 * The call to NullReferencesToObject may be expensive, so the BlueprintEditorTest first tries
+	 * to call DeleteSingleObject and only if that fails does to call NullReferencesToObject.
+	 *
+	 * The filesystem delete deletes an entire directory. In our case I think it is enough to
+	 * delete a single .uasset file.
+	 */
+
+	void NullReferencesToObject(UObject* ToDelete)
+	{
+		TArray<UObject*> ReplaceableObjects;
+		TMap<UObject*, UObject*> ReplacementMap;
+		ReplacementMap.Add(ToDelete, nullptr);
+		ReplacementMap.GenerateKeyArray(ReplaceableObjects);
+
+		// Find all the properties (and their corresponding objects) that refer to any of the
+		// objects to be replaced
+		TMap<UObject*, TArray<FProperty*>> ReferencingPropertiesMap;
+		for (FThreadSafeObjectIterator ObjIter; ObjIter; ++ObjIter)
+		{
+			UObject* CurObject = *ObjIter;
+
+			// Find the referencers of the objects to be replaced
+			FFindReferencersArchive FindRefsArchive(CurObject, ReplaceableObjects);
+
+			// Inform the object referencing any of the objects to be replaced about the properties
+			// that are being forcefully changed, and store both the object doing the referencing as
+			// well as the properties that were changed in a map (so that we can correctly call
+			// PostEditChange later)
+			TMap<UObject*, int32> CurNumReferencesMap;
+			TMultiMap<UObject*, FProperty*> CurReferencingPropertiesMMap;
+			if (FindRefsArchive.GetReferenceCounts(
+					CurNumReferencesMap, CurReferencingPropertiesMMap) > 0)
+			{
+				TArray<FProperty*> CurReferencedProperties;
+				CurReferencingPropertiesMMap.GenerateValueArray(CurReferencedProperties);
+				ReferencingPropertiesMap.Add(CurObject, CurReferencedProperties);
+				for (TArray<FProperty*>::TConstIterator RefPropIter(CurReferencedProperties);
+					 RefPropIter; ++RefPropIter)
+				{
+					CurObject->PreEditChange(*RefPropIter);
+				}
+			}
+		}
+
+		// Iterate over the map of referencing objects/changed properties, forcefully replacing the
+		// references and then alerting the referencing objects the change has completed via
+		// PostEditChange
+		int32 NumObjsReplaced = 0;
+		for (TMap<UObject*, TArray<FProperty*>>::TConstIterator MapIter(ReferencingPropertiesMap);
+			 MapIter; ++MapIter)
+		{
+			++NumObjsReplaced;
+
+			UObject* CurReplaceObj = MapIter.Key();
+			const TArray<FProperty*>& RefPropArray = MapIter.Value();
+			FArchiveReplaceObjectRef<UObject> ReplaceAr(
+				CurReplaceObj, ReplacementMap,
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				false, true, false
+#else
+				EArchiveReplaceObjectFlags::IgnoreOuterRef
+#endif
+			);
+			for (TArray<FProperty*>::TConstIterator RefPropIter(RefPropArray); RefPropIter;
+				 ++RefPropIter)
+			{
+				FPropertyChangedEvent PropertyEvent(*RefPropIter);
+				CurReplaceObj->PostEditChangeProperty(PropertyEvent);
+			}
+
+			if (!CurReplaceObj->HasAnyFlags(RF_Transient) &&
+				CurReplaceObj->GetOutermost() != GetTransientPackage())
+			{
+				if (!CurReplaceObj->RootPackageHasAnyFlags(PKG_CompiledIn))
+				{
+					CurReplaceObj->MarkPackageDirty();
+				}
+			}
+		}
+	}
+}
+
+bool FAGX_EditorUtilities::DeleteAsset(UObject& Asset)
+{
+	const FString AssetPath = Asset.GetPathName();
+	UE_LOG(LogAGX, Warning, TEXT("FullPath='%s'"), *AssetPath);
+	const FString BasePath = [&AssetPath]()
+	{
+		FString Result;
+		AssetPath.Split(
+			TEXT("."), &Result, nullptr, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+		return Result + TEXT(".uasset");
+	}();
+	const FString RelativeFileSystemPath = FPackageName::LongPackageNameToFilename(BasePath);
+	const FString FileSystemPath = FPaths::ConvertRelativePathToFull(RelativeFileSystemPath);
+
+	UE_LOG(LogAGX, Warning, TEXT("AssetPath='%s'"), *AssetPath);
+	UE_LOG(LogAGX, Warning, TEXT("BasePath='%s'"), *BasePath);
+	UE_LOG(LogAGX, Warning, TEXT("FilesystemPath='%s'"), *FileSystemPath);
+
+	IAssetRegistry& AssetRegistry = IAssetRegistry::GetChecked();
+
+	if (GEditor != nullptr)
+	{
+		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllEditorsForAsset(&Asset);
+	}
+
+	AssetRegistry.AssetDeleted(&Asset);
+	AGX_EditorUtilities_helpers::NullReferencesToObject(&Asset);
+	ObjectTools::DeleteSingleObject(&Asset);
+
+	// Try to delete the corresponding asset file. This file may not exist, in case a new asset was
+	// created and immediately deleted without ever being saved.
+	IFileManager::Get().Delete(*FileSystemPath, /*RequireExists*/ false);
 
 	return true;
 }

@@ -66,6 +66,8 @@ public:
 	 */
 	static bool RenameAsset(UObject& Asset, const FString& WantedName, const FString& AssetType);
 
+	static bool DeleteAsset(UObject& Asset);
+
 	/**
 	 * Create a new Actor with an empty USceneComponent as its RootComponent.
 	 */
