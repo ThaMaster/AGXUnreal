@@ -675,7 +675,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		const FAGX_SimObjectsImporterHelper& Helper, const FString& Subdir = "")
 	{
 		return FPaths::Combine(
-			"/Game", FAGX_ImportUtilities::GetImportRootDirectoryName(), Helper.DirectoryName,
+			FString("/Game"), FAGX_ImportUtilities::GetImportRootDirectoryName(), Helper.DirectoryName,
 			Subdir);
 	}
 

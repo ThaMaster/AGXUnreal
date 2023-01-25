@@ -6,8 +6,8 @@
 #include "Tires/TireBarrier.h"
 
 // Unreal Engine includes.
-#include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "CoreMinimal.h"
 
 #include "AGX_TireComponent.generated.h"
 

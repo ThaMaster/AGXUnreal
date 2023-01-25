@@ -242,6 +242,14 @@ bool FDeleteImportedAssets::Update()
 		return true;
 	}
 
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
 	if (!IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true))
 	{
 		Test.AddError(FString::Printf(
