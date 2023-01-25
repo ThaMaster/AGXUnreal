@@ -184,7 +184,7 @@ namespace AGX_SynchronizeModelTest_helpers
 	UBlueprint* Import(const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
 	{
 		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
-			FPaths::Combine("SynchronizeModel", ArchiveFileName));
+			FPaths::Combine(FString("SynchronizeModel"), ArchiveFileName));
 		if (ArchiveFilePath.IsEmpty())
 		{
 			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
@@ -204,7 +204,7 @@ namespace AGX_SynchronizeModelTest_helpers
 		UBlueprint& BaseBp, const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
 	{
 		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
-			FPaths::Combine("SynchronizeModel", ArchiveFileName));
+			FPaths::Combine(FString("SynchronizeModel"), ArchiveFileName));
 		if (ArchiveFilePath.IsEmpty())
 		{
 			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
