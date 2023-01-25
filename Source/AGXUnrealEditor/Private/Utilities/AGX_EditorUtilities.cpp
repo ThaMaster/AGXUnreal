@@ -41,6 +41,8 @@
 #include "Misc/Char.h"
 #include "Misc/EngineVersionComparison.h"
 #include "RawMesh.h"
+#include "Serialization/ArchiveReplaceObjectRef.h"
+#include "Serialization/FindReferencersArchive.h"
 #include "UObject/SavePackage.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectGlobals.h"
