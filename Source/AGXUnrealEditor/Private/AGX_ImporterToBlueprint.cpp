@@ -929,7 +929,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					// We should never encounter a Component type that does not match any of the
 					// above.
 					UE_LOG(
-						LogAGX, Error, TEXT("Found Node: '%s' with unsupported type."),
+						LogAGX, Warning, TEXT("Found Node: '%s' with unsupported type."),
 						*Node->GetName());
 					AGX_CHECK(false);
 				}
@@ -959,7 +959,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		USCS_Node* ContactMaterialRegistrarComponent = nullptr;
 		USCS_Node* ModelSourceComponent = nullptr;
 		USCS_Node* RootComponent = nullptr;
-		// @todo Append rest of the types here...
 	};
 
 	// Returns true if at least one Guid could be matched, false otherwise.
@@ -1356,10 +1355,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 			AddOrUpdateRenderData(Barrier, *RenderDataParent, BaseBP, SCSNodes, Helper);
 		}
-
-		// @todo: we should clean up old collision groups in instance components. Currently, we
-		// always add to them, but never remove. The cleanup must be done after all shapes have been
-		// synchronized.
 	}
 
 	void AddOrUpdateConstraints(
