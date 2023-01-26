@@ -675,8 +675,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		const FAGX_SimObjectsImporterHelper& Helper, const FString& Subdir = "")
 	{
 		return FPaths::Combine(
-			FString("/Game"), FAGX_ImportUtilities::GetImportRootDirectoryName(), Helper.DirectoryName,
-			Subdir);
+			FString("/Game"), FAGX_ImportUtilities::GetImportRootDirectoryName(),
+			Helper.DirectoryName, Subdir);
 	}
 
 	struct FShapeGuidsCollection
@@ -966,14 +966,39 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	bool EnsureSameSource(
 		const SCSNodeCollection& SCSNodes, const FSimulationObjectCollection& SimulationObjects)
 	{
+		auto Contains = [](TMap<FGuid, USCS_Node*> OldNodes, const TArray<FGuid>& NewGuids)
+		{
+			for (auto& NodeTuple : OldNodes)
+			{
+				if (NewGuids.Contains(NodeTuple.Key))
+				{
+					return true;
+				}
+			}
+			return false;
+		};
+
+		// Check against all Rigid Bodies.
 		const TArray<FGuid> BodyBarrierGuids =
 			GetGuidsFromBarriers(SimulationObjects.GetRigidBodies());
-		for (auto& NodeTuple : SCSNodes.RigidBodies)
+		if (Contains(SCSNodes.RigidBodies, BodyBarrierGuids))
 		{
-			if (BodyBarrierGuids.Contains(NodeTuple.Key))
-			{
-				return true;
-			}
+			return true;
+		}
+
+		// Check against all Shapes.
+		const FShapeGuidsCollection NewShapeGuids = GetShapeGuids(SimulationObjects);
+		TArray<FGuid> ShapeBarrierGuids;
+		TArray<FGuid> PrimitiveShapeBarrierGuids;
+		TArray<FGuid> TrimeshShapeBarrerGuids;
+		NewShapeGuids.PrimitiveShapeGuids.GenerateKeyArray(PrimitiveShapeBarrierGuids);
+		NewShapeGuids.TrimeshShapeGuids.GenerateKeyArray(TrimeshShapeBarrerGuids);
+		ShapeBarrierGuids.Append(PrimitiveShapeBarrierGuids);
+		ShapeBarrierGuids.Append(TrimeshShapeBarrerGuids);
+
+		if (Contains(SCSNodes.ShapeComponents, ShapeBarrierGuids))
+		{
+			return true;
 		}
 
 		return false;
