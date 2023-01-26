@@ -179,6 +179,8 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set("ClassIcon.AGX_WireComponent", new IMAGE_BRUSH("Icons/wire_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_WireWinchComponent", new IMAGE_BRUSH("Icons/wire_winch_32x32", IconSize16));
+	// Others.
+	Style->Set("ClassIcon.AGX_ModelSourceComponent", new IMAGE_BRUSH("Icons/file_32x32", IconSize16));
 
 	// Actor icons, visible in the Place Actors panel. Currently only works with UE >= 5.0.
 	Style->Set(
