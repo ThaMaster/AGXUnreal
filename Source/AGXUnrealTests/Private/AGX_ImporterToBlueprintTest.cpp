@@ -1018,11 +1018,11 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	UAGX_SphereShapeComponent* SharedSphere1 =
 		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("SharedGeometry"));
 	UAGX_SphereShapeComponent* SharedSphere2 =
-		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("SharedGeometry_10"));
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("SharedGeometry_0"));
 	UAGX_SphereShapeComponent* NameConflictSphere1 =
 		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("MaterialNameConflict"));
 	UAGX_SphereShapeComponent* NameConflictSphere2 =
-		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("MaterialNameConflict_13"));
+		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("MaterialNameConflict_1"));
 	UAGX_SphereShapeComponent* VisibleSphere =
 		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("VisibleSphere"));
 	UAGX_SphereShapeComponent* InvisibleSphere =
