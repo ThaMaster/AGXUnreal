@@ -288,7 +288,8 @@ namespace
 		/// \todo Is the Owner pointless here since we do `AttachToComponent`
 		/// immediately afterwards?
 		UClass* Class = TShapeComponent::StaticClass();
-		TShapeComponent* Shape = NewObject<TShapeComponent>(Owner, Class);
+		TShapeComponent* Shape = NewObject<TShapeComponent>(
+			Owner, FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 		Owner->AddInstanceComponent(Shape);
 		if (bRegister)
 		{

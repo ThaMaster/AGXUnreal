@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_ModelSourceComponent.h"
 #include "AGX_ObserverFrameComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_AmorEnums.h"
@@ -713,13 +714,13 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	{
 		const FString FallbackName = ShapeBarrier.GetName().IsEmpty()
 										 ? "CollisionMesh"
-										 : ShapeBarrier.GetName() + FString("_CollisionMesh");
+										 : FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
 		UStaticMesh* Asset =
 			GetOrCreateStaticMeshAsset(ShapeBarrier, FallbackName, RestoredMeshes, DirectoryName);
 		NewMeshAsset = Asset;
 	}
 
-	FAGX_ImportUtilities::Rename(Component, *NewMeshAsset->GetName());
+	FAGX_ImportUtilities::Rename(Component, FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString());
 
 	UMaterialInterface* RenderMaterial = nullptr;
 	if (ShapeBarrier.HasRenderData())
@@ -972,7 +973,8 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 		NewMeshAsset = Asset;
 	}
 
-	FAGX_ImportUtilities::Rename(Component, *NewMeshAsset->GetName());
+	FAGX_ImportUtilities::Rename(
+		Component, FString("RenderMesh_") + RenderDataBarrier.GetGuid().ToString());
 
 	const bool Visible = RenderDataBarrier.GetShouldRender();
 	FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(Component, NewRelTransform);

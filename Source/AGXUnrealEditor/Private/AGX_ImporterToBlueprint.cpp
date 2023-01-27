@@ -1806,37 +1806,60 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		RemoveDeletedObserverFrames(BaseBP, SCSNodes, SimulationObjects);
 	}
 
-	void SetUnnamedNameForAll(UBlueprint& BaseBP)
+	// Set unset/unique names on (almost) all SCS Nodes to avoid future name collisions during
+	// synchronization.
+	void SetUnnamedNameForPossibleCollisions(SCSNodeCollection& SCSNodes)
 	{
-		for (USCS_Node* Node : BaseBP.SimpleConstructionScript->GetAllNodes())
+		auto SetUnnamedName = [](USCS_Node* Node)
 		{
 			if (Node == nullptr)
-			{
-				continue;
-			}
-
-			// Do not rename the root component.
-			if (Node == BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode())
-			{
-				continue;
-			}
-
-			if (auto C = Cast<UAGX_WireComponent>(Node->ComponentTemplate))
-			{
-				// Wires are not supported by the model synchronization pipeline, meaning we should
-				// not make any changes to it.
-				continue;
-			}
-
-			if (auto C = Cast<UAGX_TrackComponent>(Node->ComponentTemplate))
-			{
-				// Tracks are not supported by the model synchronization pipeline, meaning we should
-				// not make any changes to it.
-				continue;
-			}
-
+				return;
 			Node->SetVariableName(*FAGX_ImportUtilities::GetUnsetUniqueImportName());
-		}
+		};
+
+		auto SetUnnamedNameForAll = [&SetUnnamedName](TMap<FGuid, USCS_Node*>& Nodes)
+		{
+			for (auto& NodeTuple : Nodes)
+			{
+				SetUnnamedName(NodeTuple.Value);
+			}
+		};
+
+		SetUnnamedNameForAll(SCSNodes.RigidBodies);
+		SetUnnamedNameForAll(SCSNodes.ShapeComponents);
+		SetUnnamedNameForAll(SCSNodes.HingeConstraints);
+		SetUnnamedNameForAll(SCSNodes.PrismaticConstraints);
+		SetUnnamedNameForAll(SCSNodes.BallConstraints);
+		SetUnnamedNameForAll(SCSNodes.CylindricalConstraints);
+		SetUnnamedNameForAll(SCSNodes.DistanceConstraints);
+		SetUnnamedNameForAll(SCSNodes.LockConstraints);
+		SetUnnamedNameForAll(SCSNodes.TwoBodyTires);
+		SetUnnamedNameForAll(SCSNodes.ObserverFrames);
+
+		SetUnnamedName(SCSNodes.CollisionGroupDisablerComponent);
+		SetUnnamedName(SCSNodes.ContactMaterialRegistrarComponent);
+		SetUnnamedName(SCSNodes.ModelSourceComponent);
+
+		// Important note: it turns out that calling ´USCS_Node::SetVariableName´ is extremely slow
+		// performance wise, taking tens of milliseconds. For large models it is not uncommon that
+		// we get several hundreds of Components in the Blueprint after an import. This means we are
+		// spending a huge amount of time simply renaming SCS Nodes during the model
+		// synchronization. Therefore, we can to some optimizations here where we can avoid setting
+		// unnamed names for some Components that we can prove is safe to omit renaming. This is
+		// done for some Component types below with explanations.
+
+		// USCSNodes.RenderStaticMeshComponents - omitted.
+		// USCSNodes.CollisionStaticMeshComponents - omitted.
+
+		// We can omit the RenderStaticMeshComponents and CollisionStaticMeshComponents because
+		// those contain the actual GUID itself in their names after import and thus they are by
+		// definition already unique and cannot give rise to naming collision during model
+		// synchronization. To ensure this stays true also in the future, this is tested in an
+		// internal Unit test, which also refers back to this text from a comment in it.
+
+		// We purposely omit renaming the root component since that will never be updated.
+		// We also do not rename Track or Wire Components since they are currently not supported for
+		// synchronization.
 	}
 
 	bool SynchronizeModel(UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings)
@@ -1870,7 +1893,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// a certain name (all Node names must be unique) that would otherwise be used for a new
 		// Component name. This would make the result of a Model Synchronization non-deterministic
 		// in terms of Node naming.
-		SetUnnamedNameForAll(BaseBP);
+		SetUnnamedNameForPossibleCollisions(SCSNodes);
 		ImportTask.EnterProgressFrame(
 			80.f, FText::FromString("Adding and Updating Components and Assets"));
 		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, ImportSettings);
