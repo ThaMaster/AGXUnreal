@@ -289,11 +289,58 @@ bool FSynchronizeSameCommand::Update()
 
 	const int NumNodesFirstImport = BlueprintBase->SimpleConstructionScript->GetAllNodes().Num();
 
+	auto NameEndsWithGuid = [](const FString& Name, const FString& StartToOmit)
+	{
+		FString GuidPart = Name;
+		GuidPart.RemoveFromStart(StartToOmit);
+		FGuid TestGuid(GuidPart);
+		return TestGuid.IsValid();
+	};
+
+	// Ensure a GUID is part of the Node name for the collision Mesh as well as the render Mesh.
+	// This is an important detail for the Model Synchronization pipeline. See comment in free
+	// function SetUnnamedNameForPossibleCollisions in AGX_ImporterToBlueprint.cpp for more details.
+	USCS_Node* TrimeshGeomToChangeNode = GetNodeChecked(*BlueprintBase, "TrimeshGeomToChange");
+	USCS_Node* TGTCCollisionMeshNode = GetOnlyAttachChildChecked(TrimeshGeomToChangeNode);
+	USCS_Node* TGTCRenderMeshNode = GetOnlyAttachChildChecked(TGTCCollisionMeshNode);
+	if (TGTCRenderMeshNode == nullptr)
+	{
+		Test.AddError("Render Mesh Component was nullptr. Cannot continue.");
+		return true;
+	}
+
+	const FString CollisionMeshNamePreSync = TGTCCollisionMeshNode->GetVariableName().ToString();
+	const FString RenderMeshNamePreSync = TGTCRenderMeshNode->GetVariableName().ToString();
+	Test.TestTrue(
+		"Collision Mesh Guid Naming", NameEndsWithGuid(CollisionMeshNamePreSync, "CollisionMesh_"));
+	Test.TestTrue(
+		"Render Mesh Guid Naming", NameEndsWithGuid(RenderMeshNamePreSync, "RenderMesh_"));
+
 	if (!SynchronizeModel(*BlueprintBase, ArchiveFileName, false))
 	{
 		Test.AddError("SynchronizeModel returned false.");
 		return true;
 	}
+
+	// Ensure the names for collision mesh / render mesh are still the same. These are tested
+	// explicitly here to ensure naming conventions for those types are not changed without taking
+	// into account the details outlined in SetUnnamedNameForPossibleCollisions in
+	// AGX_ImporterToBlueprint.cpp.
+	if (AgxAutomationCommon::IsAnyNullptr(TGTCCollisionMeshNode, TGTCRenderMeshNode))
+	{
+		Test.AddError(
+			"Collision or render mesh Components was removed unexpectedly after model "
+			"synchronization.");
+		return true;
+	}
+
+	Test.TestEqual(
+		"Collision Mesh name", TGTCCollisionMeshNode->GetVariableName().ToString(),
+		CollisionMeshNamePreSync);
+
+	Test.TestEqual(
+		"Render Mesh name", TGTCRenderMeshNode->GetVariableName().ToString(),
+		RenderMeshNamePreSync);
 
 	// Ensure we have the same number of nodes after the model Synchronization as before.
 	const int NumNodesSynchronizeModel =
@@ -871,7 +918,6 @@ bool FIgnoreDisabledTrimeshFTCommand::Update()
 
 		if (!CheckNodeNonExisting(*BlueprintBase, "TrimeshGeomDisabled"))
 			return true; // Logging done in CheckNodeNonExisting.
-
 
 		// Ensure correct attach parent/child tree under the Body node.
 		USCS_Node* TrimeshBodyNode = GetNodeChecked(*BlueprintBase, "TrimeshBody");
