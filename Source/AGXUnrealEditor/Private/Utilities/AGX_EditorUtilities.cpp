@@ -3,7 +3,9 @@
 #include "Utilities/AGX_EditorUtilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_ImporterToBlueprint.h"
 #include "AGX_LogCategory.h"
+#include "AGX_ModelSourceComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
@@ -21,8 +23,11 @@
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterial.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Widgets/AGX_ImportDialog.h"
 
 // Unreal Engine includes.
 #include "ObjectTools.h"
@@ -49,6 +54,71 @@
 #include "Widgets/Notifications/SNotificationList.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
+
+bool FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint)
+{
+	UBlueprint* OuterMostParent = FAGX_BlueprintUtilities::GetOutermostParent(&Blueprint);
+
+	if (OuterMostParent == nullptr)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Could not get the original parent Blueprint. Model synchronization will not be "
+			"performed.");
+		return false;
+	}
+
+	// Ensure there exists a Model Source Component.
+	UAGX_ModelSourceComponent* ModelSourceComponent =
+		FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ModelSourceComponent>(
+			OuterMostParent);
+	if (ModelSourceComponent == nullptr)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Could not find an AGX Model Source Component in the selected Blueprint. The selected "
+			"Blueprint is not valid for Model Synchronization.");
+		return false;
+	}
+
+	// Open up the import settings Window to get user import settings.
+	TSharedRef<SWindow> Window =
+		SNew(SWindow)
+			.SupportsMinimize(false)
+			.SupportsMaximize(false)
+			.SizingRule(ESizingRule::Autosized)
+			.Title(NSLOCTEXT(
+				"AGX", "AGXUnrealSynchronizeModel", "Synchronize model with source file"));
+
+	const FString FilePath = ModelSourceComponent != nullptr ? ModelSourceComponent->FilePath : "";
+	const bool IgnoreDisabledTrimeshes =
+		ModelSourceComponent != nullptr ? ModelSourceComponent->bIgnoreDisabledTrimeshes : false;
+
+	TSharedRef<SAGX_ImportDialog> ImportDialog = SNew(SAGX_ImportDialog);
+	ImportDialog->SetFilePath(FilePath);
+	ImportDialog->SetIgnoreDisabledTrimeshes(IgnoreDisabledTrimeshes);
+	ImportDialog->SetImportType(EAGX_ImportType::Agx);
+	ImportDialog->SetFileTypes(".agx");
+	ImportDialog->RefreshGui();
+	Window->SetContent(ImportDialog);
+	FSlateApplication::Get().AddModalWindow(Window, nullptr);
+
+	if (auto ImportSettings = ImportDialog->ToImportSettings())
+	{
+		const static FString Info =
+			"Model synchronization may permanently remove or overwrite existing data.\nContinue?";
+		if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) !=
+			EAppReturnType::Yes)
+		{
+			return false;
+		}
+
+		if (AGX_ImporterToBlueprint::SynchronizeModel(*OuterMostParent, *ImportSettings))
+		{
+			SaveAndCompile(Blueprint);
+		}
+	}
+
+	return true;
+}
 
 bool FAGX_EditorUtilities::RenameAsset(
 	UObject& Asset, const FString& WantedName, const FString& AssetType)
@@ -102,7 +172,6 @@ bool FAGX_EditorUtilities::RenameAsset(
 
 	return true;
 }
-
 
 namespace AGX_EditorUtilities_helpers
 {
@@ -210,8 +279,7 @@ bool FAGX_EditorUtilities::DeleteAsset(UObject& Asset)
 	const FString BasePath = [&AssetPath]()
 	{
 		FString Result;
-		AssetPath.Split(
-			TEXT("."), &Result, nullptr, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+		AssetPath.Split(TEXT("."), &Result, nullptr, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
 		return Result + TEXT(".uasset");
 	}();
 	const FString RelativeFileSystemPath = FPackageName::LongPackageNameToFilename(BasePath);
@@ -468,7 +536,8 @@ bool FAGX_EditorUtilities::SaveStaticMeshAssetsInBulk(const TArray<UStaticMesh*>
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("Got invalid package from asset '%s' in SaveStaticMeshAssetInBulk. The asset "
-					 "will not be saved."), *Mesh->GetName());
+					 "will not be saved."),
+				*Mesh->GetName());
 		}
 		// The below PostEditChange call is what normally takes a lot of time, since it internally
 		// calls Build() each time. But since we have already done the Build (in batch) above, it
@@ -498,8 +567,7 @@ bool FAGX_EditorUtilities::SaveStaticMeshAssetsInBulk(const TArray<UStaticMesh*>
 #else
 		FSavePackageArgs SaveArgs;
 		SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-		bool bSaved =
-			UPackage::SavePackage(Package, Mesh, *PackageFilename, SaveArgs);
+		bool bSaved = UPackage::SavePackage(Package, Mesh, *PackageFilename, SaveArgs);
 #endif
 		if (!bSaved)
 		{
