@@ -141,7 +141,8 @@ FTrimeshShapeBarrier::FTrimeshShapeBarrier(std::unique_ptr<FGeometryAndShapeRef>
 	///     #define dynamic_cast UE4Casts_Private::DynamicCast
 	/// in Casts.h
 	// check(NativeRef->NativeShape->is<agxCollide::Trimesh>());
-	check(NativeRef->NativeShape->getType() == agxCollide::Shape::TRIMESH);
+	check(NativeRef->NativeShape->getType() == agxCollide::Shape::TRIMESH ||
+		NativeRef->NativeShape->getType() == agxCollide::Shape::CONVEX);
 }
 
 FTrimeshShapeBarrier::FTrimeshShapeBarrier(FTrimeshShapeBarrier&& Other)

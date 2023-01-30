@@ -456,7 +456,7 @@ namespace RigidBodyBarrier_helpers
 		return Cylinders;
 	}
 
-	TArray<FTrimeshShapeBarrier> GetAllTrimeshs(agx::RigidBody& Body)
+	TArray<FTrimeshShapeBarrier> GetAllTrimeshes(agx::RigidBody& Body)
 	{
 		TArray<FTrimeshShapeBarrier> Trimeshes;
 		for (const agxCollide::GeometryRef& Geometry : Body.getGeometries())
@@ -474,6 +474,12 @@ namespace RigidBodyBarrier_helpers
 
 			CollectShapeOfType<FTrimeshShapeBarrier>(
 				Geometry->getShapes(), Trimeshes, agxCollide::Shape::TRIMESH, CreateTrimesh);
+
+			// We have to collect all Convex shapes as well, which inherits from Trimesh.
+			// We have no special handling/support for Convex shapes so they are treaded as regular
+			// Trimeshes.
+			CollectShapeOfType<FTrimeshShapeBarrier>(
+				Geometry->getShapes(), Trimeshes, agxCollide::Shape::CONVEX, CreateTrimesh);
 		}
 
 		return Trimeshes;
@@ -522,5 +528,5 @@ TArray<FTrimeshShapeBarrier> FRigidBodyBarrier::GetTrimeshShapes() const
 	{
 		return TArray<FTrimeshShapeBarrier>();
 	}
-	return RigidBodyBarrier_helpers::GetAllTrimeshs(*NativeRef->Native);
+	return RigidBodyBarrier_helpers::GetAllTrimeshes(*NativeRef->Native);
 }

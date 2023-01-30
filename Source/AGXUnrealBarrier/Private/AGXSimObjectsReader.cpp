@@ -88,7 +88,22 @@ namespace
 					{
 						// Skip Trimeshes with no collision data.
 						break;
-					}						
+					}
+
+					OutSimObjects.GetTrimeshShapes().Add(
+						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh));
+					break;
+				}
+				case agxCollide::Shape::CONVEX:
+				{
+					// We have no special handling for Convex types, so they are treated as a
+					// regular Trimesh since Convex inherits from Trimesh.
+					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
+					if (Trimesh->getNumTriangles() == 0)
+					{
+						// Skip Trimeshes with no collision data.
+						break;
+					}
 
 					OutSimObjects.GetTrimeshShapes().Add(
 						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh));
