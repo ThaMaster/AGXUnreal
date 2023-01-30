@@ -12,10 +12,14 @@
 #include "Shapes/RenderDataRef.h"
 
 // AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
 #include "agxCollide/CollisionGroupManager.h"
+#include <agxUtil/agxUtil.h>
+#include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
 #include "Misc/AssertionMacros.h"
+
 
 FShapeBarrier::FShapeBarrier()
 	: NativeRef {new FGeometryAndShapeRef}
@@ -298,8 +302,15 @@ FAGX_RenderMaterial FShapeBarrier::GetRenderMaterial() const
 	const agxCollide::RenderMaterial* RenderMaterialAgx = RenderDataAgx->getRenderMaterial();
 
 	RenderMaterialUnreal.Guid = Convert(RenderMaterialAgx->getUuid());
-	const agx::String& NameAgx = RenderMaterialAgx->getName();
-	RenderMaterialUnreal.Name = NameAgx.empty() ? NAME_None : FName(*Convert(NameAgx));
+
+	{
+		agx::String NameAGX = RenderMaterialAgx->getName();
+		RenderMaterialUnreal.Name = NameAGX.empty() ? NAME_None : FName(*Convert(NameAGX));
+
+		// Must be called to avoid crash due to different allocators used by AGX Dynamics and
+		// Unreal Engine.
+		agxUtil::freeContainerMemory(NameAGX);
+	}
 
 	if ((RenderMaterialUnreal.bHasDiffuse = RenderMaterialAgx->hasDiffuseColor()) == true)
 	{
