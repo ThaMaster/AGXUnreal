@@ -764,8 +764,6 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	Component.SetMaterial(0, RenderMaterial);
 	Component.SetStaticMesh(NewMeshAsset);
 	Component.SetVisibility(Visible);
-	if (Visible)
-		SetDefaultRenderMaterial(Component, ShapeBarrier.GetIsSensor());
 
 	const FGuid ShapeGuid = ShapeBarrier.GetShapeGuid();
 	if (!RestoredCollisionStaticMeshComponents.Contains(ShapeGuid))
