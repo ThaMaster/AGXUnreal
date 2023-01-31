@@ -1148,17 +1148,17 @@ bool FClearRenderMaterialImportedCommand::Update()
 		TEXT("Blueprint"),
 		TEXT("BP_render_materials_build.uasset"),
 		TEXT("RenderMaterial"),
-		TEXT("RenderMaterial_0371489EAC6B66145E4DAEEFA9B4B6BC.uasset"),
-		TEXT("RenderMaterial_29524C99D524BAD2D65ED4EEA25BE374.uasset"),
-		TEXT("RenderMaterial_2C1C438F862A19CB2E1618C7B73F3D2E.uasset"),
-		TEXT("RenderMaterial_5928446AC6D455AF9FFF7C9BACFEA7B4.uasset"),
-		TEXT("RenderMaterial_61674EB1E1568AF222ED9F4C8840B70B.uasset"),
-		TEXT("RenderMaterial_87A0492CA6F19D8C434FCF80A8D8A9FF.uasset"),
-		TEXT("RenderMaterial_8DAE4BA30D3EA367D30FC0699240725B.uasset"),
-		TEXT("RenderMaterial_CF1F4CAD342CCF1863EFCC4093609BA4.uasset"),
-		TEXT("RenderMaterial_D28B4DA2420D497375E97FA4B5365ADC.uasset"),
-		TEXT("RenderMaterial_D4164CD0F7CD4A1706FC2B7E85ACE0F0.uasset"),
-		TEXT("RenderMaterial_F41041270F6DCA5B49388F72978AFC64.uasset")};
+		TEXT("RenderMaterial_274110F45BCA6D0F728F384964FC8A97.uasset"),
+		TEXT("RenderMaterial_2C49A0878C9DF1A680CF4F43FFA9D8A8.uasset"),
+		TEXT("RenderMaterial_6A442859AF55D4C69B7CFF9FB4A7FEAC.uasset"),
+		TEXT("RenderMaterial_8F431C2CCB192A86C718162E2E3D3FB7.uasset"),
+		TEXT("RenderMaterial_994C5229D2BA24D5EED45ED674E35BA2.uasset"),
+		TEXT("RenderMaterial_9E48710314666BACEFAE4D5EBCB6B4A9.uasset"),
+		TEXT("RenderMaterial_A24D8BD273490D42A47FE975DC5A36B5.uasset"),
+		TEXT("RenderMaterial_A34BAE8D67A33E0D69C00FD35B724092.uasset"),
+		TEXT("RenderMaterial_AD4C1FCF18CF2C3440CCEF63A49B6093.uasset"),
+		TEXT("RenderMaterial_B14E6761F28A56E14C9FED220BB74088.uasset"),
+		TEXT("RenderMaterial_D04C16D4174ACDF77E2BFC06F0E0AC85.uasset")};
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"), ExpectedFiles);
 
@@ -1236,7 +1236,7 @@ bool FCheckRenderDataImportedCommand::Update()
 		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Render Data Geometry"));
 	UStaticMeshComponent* Mesh = GetByName<UStaticMeshComponent>(
 		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(
-						"RenderMesh_F42A4C942C9E27E9B873D061BAF66764"));
+						"RenderMesh_944C2AF4E9279E2C61D073B86467F6BA"));
 
 	Test.TestNotNull(TEXT("Sphere"), Sphere);
 	Test.TestNotNull(TEXT("Mesh"), Mesh);
@@ -1275,7 +1275,7 @@ bool FClearRenderDataImportedCommand::Update()
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
 		TEXT("Blueprint"), TEXT("BP_render_data_build.uasset"), TEXT("RenderMesh"),
-		TEXT("RenderMesh_F42A4C942C9E27E9B873D061BAF66764.uasset")};
+		TEXT("RenderMesh_944C2AF4E9279E2C61D073B86467F6BA.uasset")};
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_data_build"), ExpectedFiles);
 
@@ -3538,12 +3538,12 @@ bool FClearAmorImportedCommand::Update()
 		TEXT("Blueprint"),
 		TEXT("BP_amor_build.uasset"),
 		TEXT("ShapeMaterial"),
-		TEXT("AGX_WMST_D7334DD013D1E4E7FB04E6ABA3AF5494.uasset"),
+		TEXT("AGX_WMST_D04D33D7E7E4D113ABE604FB9454AFA3.uasset"),
 		TEXT("defaultWireMaterial_40.uasset"),
 		TEXT("defaultWireMaterial_550.uasset"),
 		TEXT("MergeSplitThresholds"),
-		TEXT("AGX_CMST_E17441363B61A7BC37C1A76C9E0EB9E4.uasset"),
-		TEXT("AGX_SMST_567B4C28966D80460D523D709EA031DF.uasset")};
+		TEXT("AGX_CMST_364174E1BCA7613B6CA7C137E4B90E9E.uasset"),
+		TEXT("AGX_SMST_284C7B5646806D96703D520DDF31A09E.uasset")};
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("amor_build"), ExpectedFiles);
 

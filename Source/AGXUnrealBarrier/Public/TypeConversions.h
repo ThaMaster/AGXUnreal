@@ -40,6 +40,7 @@
 #include <agx/Vec3.h>
 #include <agxModel/TwoBodyTire.h>
 #include "agxTerrain/Shovel.h"
+#include <agxUtil/agxUtil.h>
 #include <agxVehicle/TrackInternalMergeProperties.h>
 #include <agxVehicle/TrackWheel.h>
 #include <agxWire/Node.h>
@@ -657,26 +658,37 @@ inline uint32 StringTo32BitFnvHash(const FString& StringUnreal)
 
 inline FGuid Convert(const agx::Uuid& Uuid)
 {
-	// Would like to use Uuid::size here, since that is the size of the data
-	// pointed to by Uuid::data, but it's not constexpr.
-	static_assert(
-		sizeof(Uuid) == 4 * sizeof(uint32),
-		"Unreal Guid and AGX Dynamics Uuid must be the same size.");
-	uint32 Abcd[4];
-	memcpy(Abcd, Uuid.data(), sizeof(Abcd));
-	return FGuid(Abcd[0], Abcd[1], Abcd[2], Abcd[3]);
+	// To ensure the same textual representations (i.e. if printed out to a log for example) we go
+	// via string representations when converting the Uuid. The underlying data storage of each type
+	// may not be bitwise equal.
+	FString UuidStrUnreal;
+	{
+		agx::String UuidStrAGX = Uuid.str();
+		UuidStrUnreal = Convert(UuidStrAGX);
+
+		// Must be called to avoid crash due to different allocators used by AGX Dynamics and
+		// Unreal Engine.
+		agxUtil::freeContainerMemory(UuidStrAGX);
+	}
+
+	return FGuid(UuidStrUnreal);
 }
 
 inline agx::Uuid Convert(const FGuid& Guid)
 {
-	uint32 Abcd[4];
-	for (int i = 0; i < 4; ++i)
-	{
-		Abcd[i] = Guid[i];
-	}
-	agx::Uuid Uuid;
-	memcpy(Uuid.data(), Abcd, Uuid.size());
-	return Uuid;
+	// To ensure the same textual representations (i.e. if printed out to a log for example) we go
+	// via string representations when converting the Guid. The underlying data storage of each type
+	// may not be bitwise equal.
+	const FString GuidStr = Guid.ToString().ToLower();
+	agx::String GuidStrAGX = Convert(GuidStr);
+
+	// AGX Uuids requires formatting with groupings with '-' separators accordingly.
+	GuidStrAGX.insert(20, "-");
+	GuidStrAGX.insert(16, "-");
+	GuidStrAGX.insert(12, "-");
+	GuidStrAGX.insert(8, "-");
+
+	return agx::Uuid(GuidStrAGX);
 }
 
 //
