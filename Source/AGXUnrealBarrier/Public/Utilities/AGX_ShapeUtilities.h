@@ -2,6 +2,7 @@
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 
 class AGXUNREALBARRIER_API FAGX_ShapeUtilities
