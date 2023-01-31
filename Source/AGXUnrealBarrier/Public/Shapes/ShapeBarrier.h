@@ -91,6 +91,9 @@ public:
 	void SetEnableCollisions(bool CanCollide);
 	bool GetEnableCollisions() const;
 
+	void SetEnabled(bool Enabled);
+	bool GetEnabled() const;
+
 	void AddCollisionGroup(const FName& GroupName);
 	void AddCollisionGroups(const TArray<FName>& GroupNames);
 

@@ -712,15 +712,17 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	}
 	else
 	{
-		const FString FallbackName = ShapeBarrier.GetName().IsEmpty()
-										 ? "CollisionMesh"
-										 : FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
+		const FString FallbackName =
+			ShapeBarrier.GetName().IsEmpty()
+				? "CollisionMesh"
+				: FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
 		UStaticMesh* Asset =
 			GetOrCreateStaticMeshAsset(ShapeBarrier, FallbackName, RestoredMeshes, DirectoryName);
 		NewMeshAsset = Asset;
 	}
 
-	FAGX_ImportUtilities::Rename(Component, FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString());
+	FAGX_ImportUtilities::Rename(
+		Component, FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString());
 
 	UMaterialInterface* RenderMaterial = nullptr;
 	if (ShapeBarrier.HasRenderData())
@@ -734,7 +736,12 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 		RenderMaterial = GetDefaultRenderMaterial(ShapeBarrier.GetIsSensor());
 	}
 
-	const bool Visible = !ShapeBarrier.HasValidRenderData();
+	// The reason we let GetEnableCollisions determine whether or not the Collision Static Mesh
+	// should be visible or not has to do with the behavior of agxViewer which we want to mimic. If
+	// a shape in a agxCollide::Geometry which has canCollide == false is written to a AGX
+	// archive and then read by agxViewer, the shape will not be visible (unless it has RenderData).
+	const bool Visible = ShapeBarrier.GetEnableCollisions() && ShapeBarrier.GetEnabled() &&
+						 !ShapeBarrier.HasRenderData();
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
 		// Sync all component instances.
@@ -822,8 +829,12 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 			Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
 	}
 
-	const bool Visible = !Barrier.HasRenderData() || (!Barrier.HasValidRenderData() &&
-													  Barrier.GetRenderData().GetShouldRender());
+	// The reason we let GetEnableCollisions and GetEnable determine whether or not this Shape
+	// should be visible or not has to do with the behavior of agxViewer which we want to mimic. If
+	// a shape in a agxCollide::Geometry which has canCollide == false is written to a AGX archive
+	// and then read by agxViewer, the shape will not be visible (unless it has RenderData).
+	const bool Visible =
+		Barrier.GetEnableCollisions() && Barrier.GetEnabled() && !Barrier.HasRenderData();
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
 		// Sync all component instances.
