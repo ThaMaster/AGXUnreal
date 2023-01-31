@@ -10,6 +10,9 @@
 #include <agxUtil/agxUtil.h>
 #include "EndAGXIncludes.h"
 
+// Unreal Engine includes.
+#include "Misc/Guid.h"
+
 
 FString FTestUtilities::ConvertToAGXUuidStr(const FGuid& Guid)
 {
