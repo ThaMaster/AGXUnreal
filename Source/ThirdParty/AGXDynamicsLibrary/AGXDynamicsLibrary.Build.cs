@@ -1171,7 +1171,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
 				null, null,
-				Path.Combine(SourceDir, "data", "TerrainMaterials")
+				Path.Combine(SourceDir, "data", "MaterialLibrary", "TerrainMaterials")
 			));
 		}
 
@@ -1212,7 +1212,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
 				null, null,
-				Path.Combine(BaseDir, "data", "TerrainMaterials")
+				Path.Combine(BaseDir, "data", "MaterialLibrary", "TerrainMaterials")
 			));
 		}
 
@@ -1252,7 +1252,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
 				null, null,
-				Path.Combine(BaseDir, "data", "TerrainMaterials")
+				Path.Combine(BaseDir, "data", "MaterialLibrary", "TerrainMaterials")
 			));
 		}
 
@@ -1293,7 +1293,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
 				null, null,
-				Path.Combine(DataDir, "TerrainMaterials")
+				Path.Combine(DataDir, "MaterialLibrary", "TerrainMaterials")
 			));
 		}
 
@@ -1331,7 +1331,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
 				null, null,
-				Path.Combine(BaseDir, "data", "TerrainMaterials")
+				Path.Combine(BaseDir, "data", "MaterialLibrary", "TerrainMaterials")
 			));
 		}
 
