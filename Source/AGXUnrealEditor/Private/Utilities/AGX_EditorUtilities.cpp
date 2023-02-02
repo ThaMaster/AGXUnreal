@@ -1202,11 +1202,16 @@ FString FAGX_EditorUtilities::SelectNewFileDialog(
 		return "";
 	}
 
-	const FString Filename = Filenames[0];
+	FString Filename = Filenames[0];
 	if (Filename.IsEmpty())
 	{
 		UE_LOG(LogAGX, Warning, TEXT("Selected file has empty file name. Doing nothing."));
 		return "";
+	}
+
+	if (FPaths::GetExtension(Filename) != FileExtension)
+	{
+		Filename += FileExtension;
 	}
 
 	return FPaths::ConvertRelativePathToFull(Filename);
