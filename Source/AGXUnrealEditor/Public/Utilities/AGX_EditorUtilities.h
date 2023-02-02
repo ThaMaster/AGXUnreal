@@ -338,7 +338,7 @@ public:
 	 */
 	template <typename T>
 	static T* GetSingleObjectBeingCustomized(
-		IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true);
+		const IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true);
 
 	/**
 	 * Assigns a shape material asset to the physical material of a UAGX_ShapeComponent, if the
@@ -360,7 +360,7 @@ public:
 		const FString& DialogTitle, const FString& InStartDir = "", bool AllowNoneSelected = false);
 
 	static FString SelectNewFileDialog(
-		const FString& DialogTitle, const FString& FileExtension, const FString& FileTypes,
+		const FString& DialogTitle, const FString& FileTypes,
 		const FString& DefaultFile = "", const FString& InStartDir = "");
 
 	static const ISlateStyle& GetStyle()
@@ -418,7 +418,7 @@ UConstraint* FAGX_EditorUtilities::CreateConstraintComponent(
 
 template <typename T>
 T* FAGX_EditorUtilities::GetSingleObjectBeingCustomized(
-	IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple)
+	const IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple)
 {
 	static_assert(std::is_base_of<UObject, T>::value, "T must inherit from UObject");
 
