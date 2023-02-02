@@ -37,13 +37,6 @@ void FAGX_SimulationCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 
 	IDetailCategoryBuilder& CategoryBuilder = InDetailBuilder.EditCategory("Startup");
 
-	auto CreateFont = [](int Size) -> FSlateFontInfo
-	{
-		FSlateFontInfo F = IPropertyTypeCustomizationUtils::GetRegularFont();
-		F.Size = Size;
-		return F;
-	};
-
 	CategoryBuilder.AddProperty(
 		InDetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bExportInitialState)));
 
@@ -59,7 +52,7 @@ void FAGX_SimulationCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
 			.AutoHeight()
-			.Padding(FMargin(0.f, 5.f))
+			.Padding(FMargin(3.f, 5.f))
 			[
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
@@ -68,7 +61,7 @@ void FAGX_SimulationCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 				[
 					SNew(STextBlock)
 					.Text(LOCTEXT("OutputFilePathText", "Output File:"))
-					.Font(CreateFont(10))
+					.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
 				]
 				+ SHorizontalBox::Slot()
 				.Padding(FMargin(0.f, 0.f, 5.f, 0.f))
@@ -138,7 +131,7 @@ FReply FAGX_SimulationCustomization::OnBrowseFileButtonClicked()
 	}();
 
 	FString OutputFilePath = FAGX_EditorUtilities::SelectNewFileDialog(
-		"Output file", ".agx", "AGX Dynamics Archive|*.agx", "AGXUnreal", StartDir);
+		"Output file", "AGX Dynamics Archive|*.agx", "AGXUnreal", StartDir);
 
 	if (OutputFilePath.IsEmpty())
 		return FReply::Handled();

@@ -66,7 +66,7 @@ void UAGX_AgxEdModeFile::ExportAgxArchive()
 	}
 
 	FString Filename = FAGX_EditorUtilities::SelectNewFileDialog(
-		"Select an AGX Archive to export", ".agx", "AGX Dynamics Archive|*.agx", "unreal.agx", "");
+		"Select an AGX Archive to export", "AGX Dynamics Archive|*.agx", "unreal.agx", "");
 
 	if (Filename.IsEmpty())
 	{

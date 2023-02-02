@@ -360,7 +360,7 @@ public:
 		const FString& DialogTitle, const FString& InStartDir = "", bool AllowNoneSelected = false);
 
 	static FString SelectNewFileDialog(
-		const FString& DialogTitle, const FString& FileExtension, const FString& FileTypes,
+		const FString& DialogTitle, const FString& FileTypes,
 		const FString& DefaultFile = "", const FString& InStartDir = "");
 
 	static const ISlateStyle& GetStyle()
