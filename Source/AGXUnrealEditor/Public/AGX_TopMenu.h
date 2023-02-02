@@ -34,6 +34,8 @@ private:
 		Function MenuItemClickCallbackFunction);
 
 	void OnCreateConstraintClicked(UClass* ConstraintClass);
+	void OnVisitDemoPageClicked();
+	void OnVisitUserManualPageClicked();
 	void OnOpenAboutDialogClicked();
 
 	void OnOpenLicenseActivationDialogClicked();

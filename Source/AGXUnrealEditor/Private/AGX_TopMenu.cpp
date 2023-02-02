@@ -24,6 +24,7 @@
 
 // Unreal Engine includes.
 #include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "GenericPlatform/GenericPlatformProcess.h"
 #include "LevelEditor.h"
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
@@ -183,7 +184,30 @@ FAGX_TopMenu::~FAGX_TopMenu()
 			LOCTEXT("LicenseMenuTooltip", "Manage your AGX Dynamics for Unreal license."),
 			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillLicenseMenu), false, LicenseIcon);
 	}
+
 	Builder.AddMenuSeparator();
+
+	{
+		const FSlateIcon AgxIcon(
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIconSmall,
+			FAGX_EditorStyle::AgxIconSmall);
+		Builder.AddMenuEntry(
+			LOCTEXT("DemoProjectsLabel", "Demo Projects"),
+			LOCTEXT("DemoProjectsToolTip", "Visit the demo projects download page."), AgxIcon,
+			FExecuteAction::CreateRaw(this, &FAGX_TopMenu::OnVisitDemoPageClicked), NAME_None,
+			EUserInterfaceActionType::Button);
+	}
+
+	{
+		const FSlateIcon AgxIcon(
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIconSmall,
+			FAGX_EditorStyle::AgxIconSmall);
+		Builder.AddMenuEntry(
+			LOCTEXT("UserManualLabel", "User Manual"),
+			LOCTEXT("UserManualToolTip", "Visit the user manual page."), AgxIcon,
+			FExecuteAction::CreateRaw(this, &FAGX_TopMenu::OnVisitUserManualPageClicked), NAME_None,
+			EUserInterfaceActionType::Button);
+	}
 
 	{
 		const FSlateIcon AgxIcon(
@@ -258,9 +282,7 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 {
 	AddFileMenuEntry(
-		Builder,
-		LOCTEXT(
-			"FileMEnuEntryLabelImportBluePrint", "Import model to Blueprint..."),
+		Builder, LOCTEXT("FileMEnuEntryLabelImportBluePrint", "Import model to Blueprint..."),
 		LOCTEXT(
 			"FileMenuEntryhTooltopImportBluePrint",
 			"Import an AGX Dynamics archive or URDF to a Blueprint."),
@@ -366,6 +388,19 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 	}
 }
 
+void FAGX_TopMenu::OnVisitDemoPageClicked()
+{
+	static constexpr auto DemoPageUrl = TEXT("https://us.download.algoryx.se/AGXUnreal/demo_projects/");
+	FPlatformProcess::LaunchURL(DemoPageUrl, NULL, NULL);
+}
+
+void FAGX_TopMenu::OnVisitUserManualPageClicked()
+{
+	static constexpr auto UserManualPageUrl =
+		TEXT("https://us.download.algoryx.se/AGXUnreal/documentation/current/index.html");
+	FPlatformProcess::LaunchURL(UserManualPageUrl, NULL, NULL);
+}
+
 void FAGX_TopMenu::OnOpenAboutDialogClicked()
 {
 	const FString Title = "About AGX Dynamics for Unreal";
@@ -425,8 +460,7 @@ void FAGX_TopMenu::OnOpenOfflineActivationDialogClicked()
 			.SizingRule(ESizingRule::Autosized)
 			.Title(NSLOCTEXT("AGX", "AGXUnrealLicense", "Offline activation of service license"));
 
-	TSharedRef<SAGX_OfflineActivationDialog> Dialog =
-		SNew(SAGX_OfflineActivationDialog);
+	TSharedRef<SAGX_OfflineActivationDialog> Dialog = SNew(SAGX_OfflineActivationDialog);
 	Window->SetContent(Dialog);
 	FSlateApplication::Get().AddModalWindow(Window, nullptr);
 }
