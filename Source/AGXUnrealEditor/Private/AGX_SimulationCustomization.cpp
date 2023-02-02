@@ -48,39 +48,28 @@ void FAGX_SimulationCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 		SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
 		.AutoWidth()
+		.Padding(FMargin(0.f, 7.f, 25.f, 0.f))
 		[
-			SNew(SVerticalBox)
-			+ SVerticalBox::Slot()
-			.AutoHeight()
-			.Padding(FMargin(3.f, 5.f))
-			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot()
-				.AutoWidth()
-				.Padding(FMargin(0.f, 0.f, 33.f, 0.f))
-				[
-					SNew(STextBlock)
-					.Text(LOCTEXT("OutputFilePathText", "Output File:"))
-					.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
-				]
-				+ SHorizontalBox::Slot()
-				.Padding(FMargin(0.f, 0.f, 5.f, 0.f))
-				.AutoWidth()
-				[
-					SNew(SEditableTextBox)
-					.MinDesiredWidth(150.0f)
-					.Text(this, &FAGX_SimulationCustomization::GetOutputFilePathText)
-				]
-				+ SHorizontalBox::Slot()
-				.AutoWidth()
-				[
-					SNew(SButton)
-					.Text(LOCTEXT("BrowseButtonText", "Browse..."))
-					.ToolTipText(LOCTEXT("BrowseButtonTooltip",
-						"Specify an output file for the initial state."))
-					.OnClicked(this, &FAGX_SimulationCustomization::OnBrowseFileButtonClicked)
-				]
-			]
+			SNew(STextBlock)
+			.Text(LOCTEXT("OutputFilePathText", "Output File:"))
+			.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
+		]
+		+ SHorizontalBox::Slot()
+		.Padding(FMargin(0.f, 0.f, 5.f, 0.f))
+		.AutoWidth()
+		[
+			SNew(SEditableTextBox)
+			.MinDesiredWidth(150.0f)
+			.Text(this, &FAGX_SimulationCustomization::GetOutputFilePathText)
+		]
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("BrowseButtonText", "Browse..."))
+			.ToolTipText(LOCTEXT("BrowseButtonTooltip",
+				"Specify an output file for the initial state."))
+			.OnClicked(this, &FAGX_SimulationCustomization::OnBrowseFileButtonClicked)
 		]
 	];
 	// clang-format on
@@ -96,11 +85,6 @@ FText FAGX_SimulationCustomization::GetOutputFilePathText() const
 	if (Simulation == nullptr)
 		return FText();
 
-	// We hide paths that does not exist, since it may come from a different computer, saved to
-	// the configuration .ini file of a project.
-	if (!FPaths::DirectoryExists(FPaths::GetPath(Simulation->ExportPath)))
-		return FText();
-
 	return FText::FromString(Simulation->ExportPath);
 }
 
@@ -109,8 +93,8 @@ FReply FAGX_SimulationCustomization::OnBrowseFileButtonClicked()
 	if (DetailBuilder == nullptr)
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
-			"Unexpected error, unable to get the Detail Builder. Please contact the Algoryx "
-			"support.");
+			"Unexpected error, unable to get the Detail Builder. Browsing for an output file "
+			"will not be possible.");
 		return FReply::Handled();
 	}
 
@@ -119,8 +103,8 @@ FReply FAGX_SimulationCustomization::OnBrowseFileButtonClicked()
 	if (Simulation == nullptr)
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
-			"Unexpected error, unable to get the Simulation object. Please contact the Algoryx "
-			"support.");
+			"Unexpected error, unable to get the Simulation object. Browsing for an output file "
+			"will not be possible.");
 		return FReply::Handled();
 	}
 
