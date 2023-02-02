@@ -629,15 +629,10 @@ public class AGXDynamicsLibrary : ModuleRules
 			string Source = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
 			string Dest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
 
-			// We don't yet include the Terrain Material Library in the Docker images.
-			// Remove this check once the images has been rebuilt.
-			if (Directory.Exists(Source))
+			if (!CopyDirectoryRecursively(Source, Dest))
 			{
-				if (!CopyDirectoryRecursively(Source, Dest))
-				{
-					CleanBundledAGXDynamicsResources();
-					return;
-				}
+				CleanBundledAGXDynamicsResources();
+				return;
 			}
 		}
 
@@ -714,6 +709,13 @@ public class AGXDynamicsLibrary : ModuleRules
 	private bool CopyDirectoryRecursively(string SourceDir, string DestDir,
 		List<string> FilesToIgnore = null)
 	{
+		if (!Directory.Exists(SourceDir))
+		{
+			Console.Error.WriteLine("Unable to copy source directory '{0}' recursively," +
+				" the directory does not exist.", SourceDir);
+			return false;
+		}
+
 		foreach (string FilePath in Directory.GetFiles(SourceDir, "*", SearchOption.AllDirectories))
 		{
 			if (FilesToIgnore != null && FilesToIgnore.Contains(Path.GetFileName(FilePath)))
