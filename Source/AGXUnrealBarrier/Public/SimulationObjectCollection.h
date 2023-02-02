@@ -1,3 +1,5 @@
+// Copyright 2023, Algoryx Simulation AB.
+
 #pragma once
 
 // AGX Dynamics for Unreal includes.
