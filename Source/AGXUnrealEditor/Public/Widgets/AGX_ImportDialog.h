@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImportEnums.h"
+#include "AGX_ImportSettings.h"
 
 // Unreal Engine includes.
 #include "Widgets/SCompoundWidget.h"
