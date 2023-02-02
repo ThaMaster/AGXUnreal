@@ -25,6 +25,7 @@
 #include "AGX_Real.h"
 #include "AGX_RealDetails.h"
 #include "AGX_Simulation.h"
+#include "AGX_SimulationCustomization.h"
 #include "AGX_StaticMeshComponent.h"
 #include "AGX_StaticMeshComponentCustomization.h"
 #include "AGX_TopMenu.h"
@@ -324,6 +325,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_HeightFieldBoundsComponentCustomization::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_Simulation::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_SimulationCustomization::MakeInstance));
+
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -385,6 +391,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackRenderer::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomClassLayout(UAGX_Simulation::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
