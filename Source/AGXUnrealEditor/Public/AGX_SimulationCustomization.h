@@ -10,7 +10,8 @@ class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
 
 /**
- * Defines the design of the RigidBody Component in the Editor.
+ * Defines the design of the Simulation (config) Component in the Editor.
+ * This is what is seen in Project Settings > AGX Dynamics.
  */
 class AGXUNREALEDITOR_API FAGX_SimulationCustomization : public IDetailCustomization
 {
