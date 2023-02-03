@@ -1,9 +1,10 @@
-// Copyright 2022, Algoryx Simulation AB.
+// Copyright 2023, Algoryx Simulation AB.
 
 #include "AGX_SimObjectsImporterHelper.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_ModelSourceComponent.h"
 #include "AGX_ObserverFrameComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_AmorEnums.h"
@@ -711,15 +712,17 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	}
 	else
 	{
-		const FString FallbackName = ShapeBarrier.GetName().IsEmpty()
-										 ? "CollisionMesh"
-										 : ShapeBarrier.GetName() + FString("_CollisionMesh");
+		const FString FallbackName =
+			ShapeBarrier.GetName().IsEmpty()
+				? "CollisionMesh"
+				: FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
 		UStaticMesh* Asset =
 			GetOrCreateStaticMeshAsset(ShapeBarrier, FallbackName, RestoredMeshes, DirectoryName);
 		NewMeshAsset = Asset;
 	}
 
-	FAGX_ImportUtilities::Rename(Component, *NewMeshAsset->GetName());
+	FAGX_ImportUtilities::Rename(
+		Component, FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString());
 
 	UMaterialInterface* RenderMaterial = nullptr;
 	if (ShapeBarrier.HasRenderData())
@@ -733,7 +736,12 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 		RenderMaterial = GetDefaultRenderMaterial(ShapeBarrier.GetIsSensor());
 	}
 
-	const bool Visible = !ShapeBarrier.HasValidRenderData();
+	// The reason we let GetEnableCollisions determine whether or not the Collision Static Mesh
+	// should be visible or not has to do with the behavior of agxViewer which we want to mimic. If
+	// a shape in a agxCollide::Geometry which has canCollide == false is written to a AGX
+	// archive and then read by agxViewer, the shape will not be visible (unless it has RenderData).
+	const bool Visible = ShapeBarrier.GetEnableCollisions() && ShapeBarrier.GetEnabled() &&
+						 !ShapeBarrier.HasRenderData();
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
 		// Sync all component instances.
@@ -763,8 +771,6 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	Component.SetMaterial(0, RenderMaterial);
 	Component.SetStaticMesh(NewMeshAsset);
 	Component.SetVisibility(Visible);
-	if (Visible)
-		SetDefaultRenderMaterial(Component, ShapeBarrier.GetIsSensor());
 
 	const FGuid ShapeGuid = ShapeBarrier.GetShapeGuid();
 	if (!RestoredCollisionStaticMeshComponents.Contains(ShapeGuid))
@@ -823,8 +829,12 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 			Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
 	}
 
-	const bool Visible = !Barrier.HasRenderData() || (!Barrier.HasValidRenderData() &&
-													  Barrier.GetRenderData().GetShouldRender());
+	// The reason we let GetEnableCollisions and GetEnable determine whether or not this Shape
+	// should be visible or not has to do with the behavior of agxViewer which we want to mimic. If
+	// a shape in a agxCollide::Geometry which has canCollide == false is written to a AGX archive
+	// and then read by agxViewer, the shape will not be visible (unless it has RenderData).
+	const bool Visible =
+		Barrier.GetEnableCollisions() && Barrier.GetEnabled() && !Barrier.HasRenderData();
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
 		// Sync all component instances.
@@ -972,7 +982,8 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 		NewMeshAsset = Asset;
 	}
 
-	FAGX_ImportUtilities::Rename(Component, *NewMeshAsset->GetName());
+	FAGX_ImportUtilities::Rename(
+		Component, FString("RenderMesh_") + RenderDataBarrier.GetGuid().ToString());
 
 	const bool Visible = RenderDataBarrier.GetShouldRender();
 	FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(Component, NewRelTransform);

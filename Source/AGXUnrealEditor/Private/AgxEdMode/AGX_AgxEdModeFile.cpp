@@ -1,4 +1,4 @@
-// Copyright 2022, Algoryx Simulation AB.
+// Copyright 2023, Algoryx Simulation AB.
 
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 
@@ -93,6 +93,15 @@ void UAGX_AgxEdModeFile::ExportAgxArchive()
 	{
 		UE_LOG(LogAGX, Warning, TEXT("AGX Dynamics archive could not be saved to %s."), *Filename);
 	}
+}
+
+bool UAGX_AgxEdModeFile::SynchronizeModel_BP(UObject* Bp)
+{
+	UBlueprint* Blueprint = Cast<UBlueprint>(Bp);
+	if (Blueprint == nullptr)
+		return false;
+
+	return FAGX_EditorUtilities::SynchronizeModel(*Blueprint);
 }
 
 FText UAGX_AgxEdModeFile::GetDisplayName() const

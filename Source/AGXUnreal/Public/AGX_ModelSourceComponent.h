@@ -3,6 +3,7 @@
 #pragma once
 
 // Unreal Engine includes.
+#include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
 
 #include "AGX_ModelSourceComponent.generated.h"

@@ -9,6 +9,7 @@
 #include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
@@ -171,7 +172,7 @@ namespace AGX_SynchronizeModelTest_helpers
 		if (Children.Num() != 1)
 		{
 			UE_LOG(
-				LogAGX, Warning,
+				LogAGX, Error,
 				TEXT("Number of children of node '%s' was expected to be 1 but was %d."),
 				*Node->GetVariableName().ToString(), Children.Num());
 			return nullptr;
@@ -183,7 +184,7 @@ namespace AGX_SynchronizeModelTest_helpers
 	UBlueprint* Import(const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
 	{
 		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
-			FPaths::Combine("SynchronizeModel", ArchiveFileName));
+			FPaths::Combine(FString("SynchronizeModel"), ArchiveFileName));
 		if (ArchiveFilePath.IsEmpty())
 		{
 			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
@@ -203,7 +204,7 @@ namespace AGX_SynchronizeModelTest_helpers
 		UBlueprint& BaseBp, const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
 	{
 		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
-			FPaths::Combine("SynchronizeModel", ArchiveFileName));
+			FPaths::Combine(FString("SynchronizeModel"), ArchiveFileName));
 		if (ArchiveFilePath.IsEmpty())
 		{
 			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
@@ -240,6 +241,14 @@ bool FDeleteImportedAssets::Update()
 			*ImportsAbsolute));
 		return true;
 	}
+
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
 	if (!IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true))
 	{
@@ -280,11 +289,58 @@ bool FSynchronizeSameCommand::Update()
 
 	const int NumNodesFirstImport = BlueprintBase->SimpleConstructionScript->GetAllNodes().Num();
 
+	auto NameEndsWithGuid = [](const FString& Name, const FString& StartToOmit)
+	{
+		FString GuidPart = Name;
+		GuidPart.RemoveFromStart(StartToOmit);
+		FGuid TestGuid(GuidPart);
+		return TestGuid.IsValid();
+	};
+
+	// Ensure a GUID is part of the Node name for the collision Mesh as well as the render Mesh.
+	// This is an important detail for the Model Synchronization pipeline. See comment in free
+	// function SetUnnamedNameForPossibleCollisions in AGX_ImporterToBlueprint.cpp for more details.
+	USCS_Node* TrimeshGeomToChangeNode = GetNodeChecked(*BlueprintBase, "TrimeshGeomToChange");
+	USCS_Node* TGTCCollisionMeshNode = GetOnlyAttachChildChecked(TrimeshGeomToChangeNode);
+	USCS_Node* TGTCRenderMeshNode = GetOnlyAttachChildChecked(TGTCCollisionMeshNode);
+	if (TGTCRenderMeshNode == nullptr)
+	{
+		Test.AddError("Render Mesh Component was nullptr. Cannot continue.");
+		return true;
+	}
+
+	const FString CollisionMeshNamePreSync = TGTCCollisionMeshNode->GetVariableName().ToString();
+	const FString RenderMeshNamePreSync = TGTCRenderMeshNode->GetVariableName().ToString();
+	Test.TestTrue(
+		"Collision Mesh Guid Naming", NameEndsWithGuid(CollisionMeshNamePreSync, "CollisionMesh_"));
+	Test.TestTrue(
+		"Render Mesh Guid Naming", NameEndsWithGuid(RenderMeshNamePreSync, "RenderMesh_"));
+
 	if (!SynchronizeModel(*BlueprintBase, ArchiveFileName, false))
 	{
 		Test.AddError("SynchronizeModel returned false.");
 		return true;
 	}
+
+	// Ensure the names for collision mesh / render mesh are still the same. These are tested
+	// explicitly here to ensure naming conventions for those types are not changed without taking
+	// into account the details outlined in SetUnnamedNameForPossibleCollisions in
+	// AGX_ImporterToBlueprint.cpp.
+	if (AgxAutomationCommon::IsAnyNullptr(TGTCCollisionMeshNode, TGTCRenderMeshNode))
+	{
+		Test.AddError(
+			"Collision or render mesh Components was removed unexpectedly after model "
+			"synchronization.");
+		return true;
+	}
+
+	Test.TestEqual(
+		"Collision Mesh name", TGTCCollisionMeshNode->GetVariableName().ToString(),
+		CollisionMeshNamePreSync);
+
+	Test.TestEqual(
+		"Render Mesh name", TGTCRenderMeshNode->GetVariableName().ToString(),
+		RenderMeshNamePreSync);
 
 	// Ensure we have the same number of nodes after the model Synchronization as before.
 	const int NumNodesSynchronizeModel =
@@ -458,7 +514,7 @@ bool FSynchronizeLargeModelCommand::Update()
 			return true; // Logging done in CheckNodeNameAndParent.
 
 		if (!CheckNodeNameAndParent(
-				*BlueprintBase, "ObserverToChangeOwner", "BoxBodyToLooseGeom", false))
+				*BlueprintBase, "ObserverToChangeOwner", "BoxBodyToLooseGeom", true))
 			return true; // Logging done in CheckNodeNameAndParent.
 	}
 
@@ -544,7 +600,7 @@ bool FSynchronizeLargeModelCommand::Update()
 		if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshGeomToChange", "TrimeshBody", false))
 			return true; // Logging done in CheckNodeNameAndParent.
 
-		// Ensure currect attach parent/child tree under the trimesh node.
+		// Ensure correct attach parent/child tree under the Trimesh node.
 		USCS_Node* TrimeshGeomToChangeNode = GetNodeChecked(*BlueprintBase, "TrimeshGeomToChange");
 		USCS_Node* TGTCCollisionMeshNode = GetOnlyAttachChildChecked(TrimeshGeomToChangeNode);
 		USCS_Node* TGTCRenderMeshNode = GetOnlyAttachChildChecked(TGTCCollisionMeshNode);
@@ -665,8 +721,8 @@ bool FSynchronizeLargeModelCommand::Update()
 		}
 
 		Test.TestEqual(
-			"PrismaticToChange Damping",
-			Constraint->GetSpookDamping(EGenericDofIndex::Rotational2), 202.0);
+			"PrismaticToChange Damping", Constraint->GetSpookDamping(EGenericDofIndex::Rotational2),
+			202.0);
 	}
 
 	// BallCToBeRemoved
@@ -717,7 +773,27 @@ bool FSynchronizeLargeModelCommand::Update()
 			return true;
 		}
 
-		// Todo: Check contact materials here.
+		Test.TestEqual("CMRegistrar num CM", CMRegistrar->ContactMaterials.Num(), 2);
+		if (CMRegistrar->ContactMaterials.Num() == 2)
+		{
+			auto CmSharedCyl = CMRegistrar->ContactMaterials.FindByPredicate(
+				[](auto* Cm) { return Cm->GetName().Contains("Shared"); });
+			auto CmCylTri = CMRegistrar->ContactMaterials.FindByPredicate(
+				[](auto* Cm) { return Cm->GetName().Contains("Trimesh"); });
+
+			if (IsAnyNullptr(CmSharedCyl, CmCylTri))
+			{
+				Test.AddError(
+					TEXT("At least one required Contact Material could not be found in the Contact "
+						 "Material Registrar, cannot continue."));
+				return true;
+			}
+
+			Test.TestEqual(
+				"CmSharedCyl Friction Coefficient", (*CmSharedCyl)->GetFrictionCoefficient(), 0.12);
+			Test.TestEqual(
+				"CmCylTri Friction Coefficient", (*CmCylTri)->GetFrictionCoefficient(), 0.23);
+		}
 	}
 
 	// AGX_CollisionGroupDisabler
@@ -738,7 +814,7 @@ bool FSynchronizeLargeModelCommand::Update()
 		const TArray<FAGX_CollisionGroupPair> ExpectedGroups = {
 			{"Sphere1", "Box2"}, {"Sphere2", "Sphere2"}};
 
-		if (CGDisabler->DisabledCollisionGroupPairs.Num() >= 2)
+		if (CGDisabler->DisabledCollisionGroupPairs.Num() == 2)
 		{
 			Test.TestTrue(
 				"CGDisabler group 0",
@@ -758,7 +834,7 @@ bool FSynchronizeLargeModelCommand::Update()
  * things are changed from the original.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-	FSynchronizeLargeModelTest, "AGXUnreal.Editor.AGX_SynchronizeModelTest.SyncronizeLargeModel",
+	FSynchronizeLargeModelTest, "AGXUnreal.Editor.AGX_SynchronizeModelTest.SynchronizeLargeModel",
 	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
 
 bool FSynchronizeLargeModelTest::RunTest(const FString& Parameters)
@@ -767,6 +843,226 @@ bool FSynchronizeLargeModelTest::RunTest(const FString& Parameters)
 	const FString UpdatedArchiveFileName = "large_model_updated_build.agx";
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FSynchronizeLargeModelCommand(ArchiveFileName, UpdatedArchiveFileName, *this));
+	ADD_LATENT_AUTOMATION_COMMAND(
+		FDeleteImportedAssets(FPaths::GetBaseFilename(ArchiveFileName), *this));
+
+	return true;
+}
+
+//
+// IgnoreDisabledTrimesh false then true test starts here.
+//
+
+DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
+	FIgnoreDisabledTrimeshFTCommand, FString, ArchiveFileName, FAutomationTestBase&, Test);
+
+bool FIgnoreDisabledTrimeshFTCommand::Update()
+{
+	using namespace AGX_SynchronizeModelTest_helpers;
+
+	// Import with IgnoreDisabledTrimesh set to false.
+	UBlueprint* Blueprint = Import(ArchiveFileName, false);
+	if (Blueprint == nullptr)
+	{
+		Test.AddError("Imported Blueprint was nullptr.");
+		return true;
+	}
+
+	UBlueprint* BlueprintBase = FAGX_BlueprintUtilities::GetOutermostParent(Blueprint);
+	if (BlueprintBase == nullptr)
+	{
+		Test.AddError(
+			"Could not get Blueprint parent (base) from the returned Blueprint after import.");
+		return true;
+	}
+
+	// Pre-synchronize.
+	{
+		if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshBody", "DefaultSceneRoot", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshGeomDisabled", "TrimeshBody", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		// Ensure correct attach parent/child tree under the Trimesh node.
+		USCS_Node* TrimeshGeomToChangeNode = GetNodeChecked(*BlueprintBase, "TrimeshGeomDisabled");
+		USCS_Node* CollisionMeshNode = GetOnlyAttachChildChecked(TrimeshGeomToChangeNode);
+		USCS_Node* RenderMeshNode = GetOnlyAttachChildChecked(CollisionMeshNode);
+		if (RenderMeshNode == nullptr)
+		{
+			Test.AddError("RenderMeshNode was nullptr");
+			return true;
+		}
+
+		if (RenderMeshNode->GetChildNodes().Num() != 0)
+		{
+			Test.AddError(FString::Printf(
+				TEXT("Expected RenderMeshNode to have zero children but it has %d."),
+				RenderMeshNode->GetChildNodes().Num()));
+			return true;
+		}
+	}
+
+	// Synchronize with the IgnoreDisabledTrimesh setting true.
+	if (!SynchronizeModel(*BlueprintBase, ArchiveFileName, true))
+	{
+		Test.AddError("SynchronizeModel returned false.");
+		return true;
+	}
+
+	// Post-synchronize. Now the render mesh should be attached immediately under
+	// the body.
+	{
+		if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshBody", "DefaultSceneRoot", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		if (!CheckNodeNonExisting(*BlueprintBase, "TrimeshGeomDisabled"))
+			return true; // Logging done in CheckNodeNonExisting.
+
+		// Ensure correct attach parent/child tree under the Body node.
+		USCS_Node* TrimeshBodyNode = GetNodeChecked(*BlueprintBase, "TrimeshBody");
+		USCS_Node* RenderMeshNode = GetOnlyAttachChildChecked(TrimeshBodyNode);
+		if (RenderMeshNode == nullptr)
+		{
+			Test.AddError("RenderMeshNode was nullptr");
+			return true;
+		}
+
+		if (RenderMeshNode->GetChildNodes().Num() != 0)
+		{
+			Test.AddError(FString::Printf(
+				TEXT("Expected RenderMeshNode to have zero children but it has %d."),
+				RenderMeshNode->GetChildNodes().Num()));
+			return true;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Import model with a disabled Trimesh first with IgnoreDisabledTrimesh false, then synchronize
+ * against the same model but this time with IgnoreDisabledTrimesh true.
+ */
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FIgnoreDisabledTrimeshFTTest,
+	"AGXUnreal.Editor.AGX_SynchronizeModelTest.IgnoreDisabledTrimeshFT",
+	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
+
+bool FIgnoreDisabledTrimeshFTTest::RunTest(const FString& Parameters)
+{
+	const FString ArchiveFileName = "disabled_trimesh_ft.agx";
+	ADD_LATENT_AUTOMATION_COMMAND(FIgnoreDisabledTrimeshFTCommand(ArchiveFileName, *this));
+	ADD_LATENT_AUTOMATION_COMMAND(
+		FDeleteImportedAssets(FPaths::GetBaseFilename(ArchiveFileName), *this));
+
+	return true;
+}
+
+//
+// IgnoreDisabledTrimesh true then false test starts here.
+//
+
+DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
+	FIgnoreDisabledTrimeshTFCommand, FString, ArchiveFileName, FAutomationTestBase&, Test);
+
+bool FIgnoreDisabledTrimeshTFCommand::Update()
+{
+	using namespace AGX_SynchronizeModelTest_helpers;
+
+	// Import with IgnoreDisabledTrimesh true.
+	UBlueprint* Blueprint = Import(ArchiveFileName, true);
+	if (Blueprint == nullptr)
+	{
+		Test.AddError("Imported Blueprint was nullptr.");
+		return true;
+	}
+
+	UBlueprint* BlueprintBase = FAGX_BlueprintUtilities::GetOutermostParent(Blueprint);
+	if (BlueprintBase == nullptr)
+	{
+		Test.AddError(
+			"Could not get Blueprint parent (base) from the returned Blueprint after import.");
+		return true;
+	}
+
+	// Pre-synchronize. Now the collision mesh + render mesh should be attached immediately under
+	// the body.
+	{
+		if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshBody", "DefaultSceneRoot", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		if (!CheckNodeNonExisting(*BlueprintBase, "TrimeshGeomDisabled"))
+			return true; // Logging done in CheckNodeNonExisting.
+
+		// Ensure correct attach parent/child tree under the Body node.
+		USCS_Node* TrimeshBodyNode = GetNodeChecked(*BlueprintBase, "TrimeshBody");
+		USCS_Node* RenderMeshNode = GetOnlyAttachChildChecked(TrimeshBodyNode);
+		if (RenderMeshNode == nullptr)
+		{
+			Test.AddError("RenderMeshNode was nullptr");
+			return true;
+		}
+
+		if (RenderMeshNode->GetChildNodes().Num() != 0)
+		{
+			Test.AddError(FString::Printf(
+				TEXT("Expected RenderMeshNode to have zero children but it has %d."),
+				RenderMeshNode->GetChildNodes().Num()));
+			return true;
+		}
+	}
+
+	// Synchronize with the the IgnoreDisabledTrimesh setting false.
+	if (!SynchronizeModel(*BlueprintBase, ArchiveFileName, false))
+	{
+		Test.AddError("SynchronizeModel returned false.");
+		return true;
+	}
+
+	// Post-synchronize. The Disabled Trimesh should now exist again.
+	{
+		if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshBody", "DefaultSceneRoot", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		if (!CheckNodeNameAndParent(*BlueprintBase, "TrimeshGeomDisabled", "TrimeshBody", false))
+			return true; // Logging done in CheckNodeNameAndParent.
+
+		// Ensure correct attach parent/child tree under the Trimesh node.
+		USCS_Node* TrimeshGeomToChangeNode = GetNodeChecked(*BlueprintBase, "TrimeshGeomDisabled");
+		USCS_Node* CollisionMeshNode = GetOnlyAttachChildChecked(TrimeshGeomToChangeNode);
+		USCS_Node* RenderMeshNode = GetOnlyAttachChildChecked(CollisionMeshNode);
+		if (RenderMeshNode == nullptr)
+		{
+			Test.AddError("RenderMeshNode was nullptr");
+			return true;
+		}
+
+		if (RenderMeshNode->GetChildNodes().Num() != 0)
+		{
+			Test.AddError(FString::Printf(
+				TEXT("Expected RenderMeshNode to have zero children but it has %d."),
+				RenderMeshNode->GetChildNodes().Num()));
+			return true;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Import model with a disabled Trimesh first with IgnoreDisabledTrimesh true, then synchronize
+ * against the same model but this time with IgnoreDisabledTrimesh false.
+ */
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FIgnoreDisabledTrimeshTFTest,
+	"AGXUnreal.Editor.AGX_SynchronizeModelTest.IgnoreDisabledTrimeshTF",
+	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
+
+bool FIgnoreDisabledTrimeshTFTest::RunTest(const FString& Parameters)
+{
+	const FString ArchiveFileName = "disabled_trimesh_tf.agx";
+	ADD_LATENT_AUTOMATION_COMMAND(FIgnoreDisabledTrimeshTFCommand(ArchiveFileName, *this));
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FDeleteImportedAssets(FPaths::GetBaseFilename(ArchiveFileName), *this));
 

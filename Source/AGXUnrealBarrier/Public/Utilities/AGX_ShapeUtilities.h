@@ -1,7 +1,8 @@
-// Copyright 2022, Algoryx Simulation AB.
+// Copyright 2023, Algoryx Simulation AB.
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 
 class AGXUNREALBARRIER_API FAGX_ShapeUtilities

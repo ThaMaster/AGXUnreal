@@ -1,4 +1,4 @@
-// Copyright 2022, Algoryx Simulation AB.
+// Copyright 2023, Algoryx Simulation AB.
 
 #include "Materials/TerrainMaterialLibraryBarrier.h"
 
@@ -10,11 +10,12 @@
 #include <BeginAGXIncludes.h>
 #include <agxTerrain/TerrainMaterial.h>
 #include <agxTerrain/TerrainMaterialLibrary.h>
+#include <agxUtil/agxUtil.h>
 #include <EndAGXIncludes.h>
 
 TArray<FString> AGX_TerrainMaterialLibraryBarrier::GetAvailableLibraryMaterials()
 {
-	const agx::StringVector NamesAGX =
+	agx::StringVector NamesAGX =
 		agxTerrain::TerrainMaterialLibrary::getAvailableLibraryMaterials();
 	TArray<FString> NamesUnreal;
 	NamesUnreal.Reserve(NamesAGX.size());
@@ -22,6 +23,11 @@ TArray<FString> AGX_TerrainMaterialLibraryBarrier::GetAvailableLibraryMaterials(
 	{
 		NamesUnreal.Add(Convert(NameAGX));
 	}
+
+	// Must be called to avoid crash due to different allocators used by AGX Dynamics and
+	// Unreal Engine.
+	agxUtil::freeContainerMemory(NamesAGX);
+
 	return NamesUnreal;
 }
 

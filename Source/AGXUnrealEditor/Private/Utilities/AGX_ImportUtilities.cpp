@@ -1,4 +1,4 @@
-// Copyright 2022, Algoryx Simulation AB.
+// Copyright 2023, Algoryx Simulation AB.
 
 #include "Utilities/AGX_ImportUtilities.h"
 
@@ -158,11 +158,33 @@ namespace
 	 */
 	void RenameSCSNodeSafe(USCS_Node* Node, const FString& Name)
 	{
-		if (Node == nullptr)
+		if (Node == nullptr || Node->ComponentTemplate == nullptr)
 			return;
 
-		Node->SetVariableName(FName(Name), false);
-		RenameTemplateComponentSafe(Node->ComponentTemplate, Name);
+		const FString OrigComponentRegularName =
+			FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Node->ComponentTemplate->GetName());
+
+		bool HasUnmatchedInstances = false;
+		for (auto Inst : FAGX_ObjectUtilities::GetArchetypeInstances(*Node->ComponentTemplate))
+		{
+			if (FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Inst->GetName()) !=
+				OrigComponentRegularName)
+			{
+				HasUnmatchedInstances = true;
+			}
+		}
+
+		if (HasUnmatchedInstances)
+		{
+			// Do it the "safe" but unconventional way.
+			Node->SetVariableName(FName(Name), false);
+			RenameTemplateComponentSafe(Node->ComponentTemplate, Name);
+		}
+		else
+		{
+			// Do it the regular way.
+			Node->SetVariableName(FName(Name), true);
+		}		
 	}
 }
 
@@ -507,6 +529,18 @@ FString FAGX_ImportUtilities::CreateName(UObject& Object, const FString& Name)
 
 void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Name)
 {
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		if (FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Component.GetName()) ==
+			Name)
+			return; // Wanted name is already set, we are done.
+	}
+	else
+	{
+		if (Component.GetName() == Name)
+			return; // Wanted name is already set, we are done.
+	}
+
 	const FString ValidName = [&]()
 	{
 		if (FAGX_ObjectUtilities::IsTemplateComponent(Component))

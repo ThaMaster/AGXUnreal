@@ -1,4 +1,4 @@
-// Copyright 2022, Algoryx Simulation AB.
+// Copyright 2023, Algoryx Simulation AB.
 
 #pragma once
 
@@ -21,12 +21,13 @@ class AGXUNREALEDITOR_API UAGX_AgxEdModeFile : public UAGX_AgxEdModeSubMode
 public:
 	static UAGX_AgxEdModeFile* GetInstance();
 
-public:
 	virtual FText GetDisplayName() const override;
 	virtual FText GetTooltip() const override;
 	virtual FSlateIcon GetIcon() const override;
 
-public:
 	static void ImportToBlueprint();
 	static void ExportAgxArchive();
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	static bool SynchronizeModel_BP(UObject* Blueprint);
 };

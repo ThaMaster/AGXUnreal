@@ -1,4 +1,4 @@
-// Copyright 2022, Algoryx Simulation AB.
+// Copyright 2023, Algoryx Simulation AB.
 
 #pragma once
 
@@ -9,7 +9,7 @@ struct FAGX_ImportSettings
 {
 	EAGX_ImportType ImportType = EAGX_ImportType::Invalid;
 	FString FilePath;
-	bool bIgnoreDisabledTrimeshes = false;
+	bool bIgnoreDisabledTrimeshes = true;
 	bool bOpenBlueprintEditorAfterImport = true;
 
 	// The path to the URDF package directory. Corresponds to the `package://` part of any filepath

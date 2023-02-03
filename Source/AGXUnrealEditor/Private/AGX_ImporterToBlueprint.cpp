@@ -1,4 +1,4 @@
-// Copyright 2022, Algoryx Simulation AB.
+// Copyright 2023, Algoryx Simulation AB.
 
 #include "AGX_ImporterToBlueprint.h"
 
@@ -36,13 +36,14 @@
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
-#include "Shapes/AGX_CylinderShapeComponent.h"
+#include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Shapes/RenderDataBarrier.h"
@@ -159,6 +160,7 @@ namespace
 				: nullptr;
 		if (CMRegistrar == nullptr)
 		{
+			// Imported model has no ContactMaterials, we are done.
 			return true;
 		}
 
@@ -673,14 +675,17 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		const FAGX_SimObjectsImporterHelper& Helper, const FString& Subdir = "")
 	{
 		return FPaths::Combine(
-			"/Game", FAGX_ImportUtilities::GetImportRootDirectoryName(), Helper.DirectoryName,
-			Subdir);
+			FString("/Game"), FAGX_ImportUtilities::GetImportRootDirectoryName(),
+			Helper.DirectoryName, Subdir);
 	}
 
 	struct FShapeGuidsCollection
 	{
 		// Values of the TMaps indicates collision enabled status.
-		TMap<FGuid, bool> PrimitiveShapeGuids;
+		TMap<FGuid, bool> SphereShapeGuids;
+		TMap<FGuid, bool> BoxShapeGuids;
+		TMap<FGuid, bool> CylinderShapeGuids;
+		TMap<FGuid, bool> CapsuleShapeGuids;
 		TMap<FGuid, bool> TrimeshShapeGuids;
 		TArray<FGuid> RenderDataGuids;
 	};
@@ -705,25 +710,25 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		{
 			for (const auto& Shape : Body.GetSphereShapes())
 			{
-				Infos.PrimitiveShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
+				Infos.SphereShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 				if (auto RenderDataGuid = GetRenderDataGuidFrom(Shape))
 					Infos.RenderDataGuids.Add(*RenderDataGuid);
 			}
 			for (const auto& Shape : Body.GetBoxShapes())
 			{
-				Infos.PrimitiveShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
+				Infos.BoxShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 				if (auto RenderDataGuid = GetRenderDataGuidFrom(Shape))
 					Infos.RenderDataGuids.Add(*RenderDataGuid);
 			}
 			for (const auto& Shape : Body.GetCylinderShapes())
 			{
-				Infos.PrimitiveShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
+				Infos.CylinderShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 				if (auto RenderDataGuid = GetRenderDataGuidFrom(Shape))
 					Infos.RenderDataGuids.Add(*RenderDataGuid);
 			}
 			for (const auto& Shape : Body.GetCapsuleShapes())
 			{
-				Infos.PrimitiveShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
+				Infos.CapsuleShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 				if (auto RenderDataGuid = GetRenderDataGuidFrom(Shape))
 					Infos.RenderDataGuids.Add(*RenderDataGuid);
 			}
@@ -738,25 +743,25 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// Iterate all "free" Shapes, not owned by a Rigid Body.
 		for (const auto& Barrier : SimulationObjects.GetSphereShapes())
 		{
-			Infos.PrimitiveShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
+			Infos.SphereShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 			if (auto RenderDataGuid = GetRenderDataGuidFrom(Barrier))
 				Infos.RenderDataGuids.Add(*RenderDataGuid);
 		}
 		for (const auto& Barrier : SimulationObjects.GetBoxShapes())
 		{
-			Infos.PrimitiveShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
+			Infos.BoxShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 			if (auto RenderDataGuid = GetRenderDataGuidFrom(Barrier))
 				Infos.RenderDataGuids.Add(*RenderDataGuid);
 		}
 		for (const auto& Barrier : SimulationObjects.GetCylinderShapes())
 		{
-			Infos.PrimitiveShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
+			Infos.CylinderShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 			if (auto RenderDataGuid = GetRenderDataGuidFrom(Barrier))
 				Infos.RenderDataGuids.Add(*RenderDataGuid);
 		}
 		for (const auto& Barrier : SimulationObjects.GetCapsuleShapes())
 		{
-			Infos.PrimitiveShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
+			Infos.CapsuleShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 			if (auto RenderDataGuid = GetRenderDataGuidFrom(Barrier))
 				Infos.RenderDataGuids.Add(*RenderDataGuid);
 		}
@@ -764,7 +769,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		{
 			Infos.TrimeshShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 			if (auto RenderDataGuid = GetRenderDataGuidFrom(Barrier))
-				Infos.PrimitiveShapeGuids.Add(*RenderDataGuid);
+				Infos.TrimeshShapeGuids.Add(*RenderDataGuid);
 		}
 
 		return Infos;
@@ -804,11 +809,35 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					if (Ri->ImportGuid.IsValid())
 						RigidBodies.Add(Ri->ImportGuid, Node);
 				}
-				else if (auto Sh = Cast<UAGX_ShapeComponent>(Component))
+				else if (auto Sph = Cast<UAGX_SphereShapeComponent>(Component))
 				{
-					AGX_CHECK(!ShapeComponents.Contains(Sh->ImportGuid));
-					if (Sh->ImportGuid.IsValid())
-						ShapeComponents.Add(Sh->ImportGuid, Node);
+					AGX_CHECK(!SphereShapes.Contains(Sph->ImportGuid));
+					if (Sph->ImportGuid.IsValid())
+						SphereShapes.Add(Sph->ImportGuid, Node);
+				}
+				else if (auto Box = Cast<UAGX_BoxShapeComponent>(Component))
+				{
+					AGX_CHECK(!BoxShapes.Contains(Box->ImportGuid));
+					if (Box->ImportGuid.IsValid())
+						BoxShapes.Add(Box->ImportGuid, Node);
+				}
+				else if (auto Cyl = Cast<UAGX_CylinderShapeComponent>(Component))
+				{
+					AGX_CHECK(!CylinderShapes.Contains(Cyl->ImportGuid));
+					if (Cyl->ImportGuid.IsValid())
+						CylinderShapes.Add(Cyl->ImportGuid, Node);
+				}
+				else if (auto Cap = Cast<UAGX_CapsuleShapeComponent>(Component))
+				{
+					AGX_CHECK(!CapsuleShapes.Contains(Cap->ImportGuid));
+					if (Cap->ImportGuid.IsValid())
+						CapsuleShapes.Add(Cap->ImportGuid, Node);
+				}
+				else if (auto Tri = Cast<UAGX_TrimeshShapeComponent>(Component))
+				{
+					AGX_CHECK(!TrimeshShapes.Contains(Tri->ImportGuid));
+					if (Tri->ImportGuid.IsValid())
+						TrimeshShapes.Add(Tri->ImportGuid, Node);
 				}
 				else if (auto Co = Cast<UAGX_ConstraintComponent>(Component))
 				{
@@ -927,7 +956,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					// We should never encounter a Component type that does not match any of the
 					// above.
 					UE_LOG(
-						LogAGX, Error, TEXT("Found Node: '%s' with unsupported type."),
+						LogAGX, Warning, TEXT("Found Node: '%s' with unsupported type."),
 						*Node->GetName());
 					AGX_CHECK(false);
 				}
@@ -937,7 +966,14 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// The key is the AGX Dynamics object's UUID converted to an FGuid at the time of the
 		// previous import.
 		TMap<FGuid, USCS_Node*> RigidBodies;
-		TMap<FGuid, USCS_Node*> ShapeComponents; // Including Shapes owned by Rigid Bodies.
+
+		// Shapes are all Shapes, including Shapes owned by Rigid Bodies.
+		TMap<FGuid, USCS_Node*> SphereShapes;
+		TMap<FGuid, USCS_Node*> BoxShapes;
+		TMap<FGuid, USCS_Node*> CylinderShapes;
+		TMap<FGuid, USCS_Node*> CapsuleShapes;
+		TMap<FGuid, USCS_Node*> TrimeshShapes;
+
 		TMap<FGuid, USCS_Node*> HingeConstraints;
 		TMap<FGuid, USCS_Node*> PrismaticConstraints;
 		TMap<FGuid, USCS_Node*> BallConstraints;
@@ -957,21 +993,67 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		USCS_Node* ContactMaterialRegistrarComponent = nullptr;
 		USCS_Node* ModelSourceComponent = nullptr;
 		USCS_Node* RootComponent = nullptr;
-		// @todo Append rest of the types here...
 	};
 
 	// Returns true if at least one Guid could be matched, false otherwise.
 	bool EnsureSameSource(
 		const SCSNodeCollection& SCSNodes, const FSimulationObjectCollection& SimulationObjects)
 	{
+		auto Contains = [](const TMap<FGuid, USCS_Node*>& OldNodes, const TArray<FGuid>& NewGuids)
+		{
+			for (auto& NodeTuple : OldNodes)
+			{
+				if (NewGuids.Contains(NodeTuple.Key))
+				{
+					return true;
+				}
+			}
+			return false;
+		};
+
+		// Check against all Rigid Bodies.
 		const TArray<FGuid> BodyBarrierGuids =
 			GetGuidsFromBarriers(SimulationObjects.GetRigidBodies());
-		for (auto& NodeTuple : SCSNodes.RigidBodies)
+		if (Contains(SCSNodes.RigidBodies, BodyBarrierGuids))
 		{
-			if (BodyBarrierGuids.Contains(NodeTuple.Key))
-			{
-				return true;
-			}
+			return true;
+		}
+
+		// Check against all Shapes.
+		const FShapeGuidsCollection NewShapeGuids = GetShapeGuids(SimulationObjects);
+		TArray<FGuid> SphereShapeBarrierGuids;
+		NewShapeGuids.SphereShapeGuids.GenerateKeyArray(SphereShapeBarrierGuids);
+		if (Contains(SCSNodes.SphereShapes, SphereShapeBarrierGuids))
+		{
+			return true;
+		}
+
+		TArray<FGuid> BoxShapeBarrierGuids;
+		NewShapeGuids.BoxShapeGuids.GenerateKeyArray(BoxShapeBarrierGuids);
+		if (Contains(SCSNodes.BoxShapes, BoxShapeBarrierGuids))
+		{
+			return true;
+		}
+
+		TArray<FGuid> CylinderShapeBarrierGuids;
+		NewShapeGuids.CylinderShapeGuids.GenerateKeyArray(CylinderShapeBarrierGuids);
+		if (Contains(SCSNodes.CylinderShapes, CylinderShapeBarrierGuids))
+		{
+			return true;
+		}
+
+		TArray<FGuid> CapsuleShapeBarrierGuids;
+		NewShapeGuids.CapsuleShapeGuids.GenerateKeyArray(CapsuleShapeBarrierGuids);
+		if (Contains(SCSNodes.CapsuleShapes, CapsuleShapeBarrierGuids))
+		{
+			return true;
+		}
+
+		TArray<FGuid> TrimeshShapeBarrierGuids;
+		NewShapeGuids.TrimeshShapeGuids.GenerateKeyArray(TrimeshShapeBarrierGuids);
+		if (Contains(SCSNodes.TrimeshShapes, TrimeshShapeBarrierGuids))
+		{
+			return true;
 		}
 
 		return false;
@@ -1038,11 +1120,35 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			return;
 		}
 
+		auto DeleteRemovedCMs = [&SimulationObjects](UAGX_ContactMaterialRegistrarComponent& CMReg)
+		{
+			TArray<UAGX_ContactMaterial*> CMsToDelete;
+			for (const auto Cm : CMReg.ContactMaterials)
+			{
+				if (!SimulationObjects.GetContactMaterials().ContainsByPredicate(
+						[Cm](const auto& C) { return C.GetGuid() == Cm->ImportGuid; }))
+				{
+					CMsToDelete.Add(Cm);
+				}
+			}
+
+			CMReg.ContactMaterials.RemoveAll([&CMsToDelete](auto Cm)
+											 { return CMsToDelete.Contains(Cm); });
+
+			// Update any archetype instance as well.
+			for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(CMReg))
+			{
+				Instance->ContactMaterials.RemoveAll([&CMsToDelete](auto Cm)
+													 { return CMsToDelete.Contains(Cm); });
+			}
+		};
+
 		USCS_Node* CMRegistrarNode = GetOrCreateContactMaterialRegistrarNode(BaseBP, SCSNodes);
 		const FString CMRName = FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName();
 		CMRegistrarNode->SetVariableName(*CMRName);
 		auto CMRegistrar =
 			Cast<UAGX_ContactMaterialRegistrarComponent>(CMRegistrarNode->ComponentTemplate);
+		DeleteRemovedCMs(*CMRegistrar);
 
 		// Find all existing assets that might be of interest from the previous import.
 		const FString ContactMaterialDirPath =
@@ -1067,7 +1173,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 	template <typename TBarrier, typename TComponent>
 	USCS_Node* AddOrUpdateShape(
-		const TBarrier& Barrier, UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const TBarrier& Barrier, UBlueprint& BaseBP, TMap<FGuid, USCS_Node*>& ExistingShapes,
 		FAGX_SimObjectsImporterHelper& Helper,
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
 		USCS_Node* OverrideAttachParent = nullptr)
@@ -1078,9 +1184,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		const FGuid Guid = Barrier.GetShapeGuid();
 		USCS_Node* Node = nullptr;
-		if (SCSNodes.ShapeComponents.Contains(Guid))
+		if (ExistingShapes.Contains(Guid))
 		{
-			Node = SCSNodes.ShapeComponents[Guid];
+			Node = ExistingShapes[Guid];
 			ReParentNode(BaseBP, *Node, *AttachParent);
 		}
 		else
@@ -1088,7 +1194,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			Node = BaseBP.SimpleConstructionScript->CreateNode(
 				TComponent::StaticClass(), FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 			AttachParent->AddChildNode(Node);
-			SCSNodes.ShapeComponents.Add(Guid, Node);
+			ExistingShapes.Add(Guid, Node);
 		}
 
 		Helper.UpdateComponent(Barrier, *Cast<TComponent>(Node->ComponentTemplate), MSTsOnDisk);
@@ -1163,7 +1269,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_SphereShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets, RigidBodyNode);
+						ShapeBarrier, BaseBP, SCSNodes.SphereShapes, Helper, ExistingMSTAssets, RigidBodyNode);
 				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 			}
 
@@ -1171,7 +1277,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_BoxShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets, RigidBodyNode);
+						ShapeBarrier, BaseBP, SCSNodes.BoxShapes, Helper, ExistingMSTAssets, RigidBodyNode);
 				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 			}
 
@@ -1179,7 +1285,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_CylinderShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets, RigidBodyNode);
+						ShapeBarrier, BaseBP, SCSNodes.CylinderShapes, Helper, ExistingMSTAssets, RigidBodyNode);
 				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 			}
 
@@ -1187,7 +1293,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_CapsuleShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets, RigidBodyNode);
+						ShapeBarrier, BaseBP, SCSNodes.CapsuleShapes, Helper, ExistingMSTAssets, RigidBodyNode);
 				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 			}
 
@@ -1202,7 +1308,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				{
 					USCS_Node* ShapeNode =
 						AddOrUpdateShape<decltype(ShapeBarrier), UAGX_TrimeshShapeComponent>(
-							ShapeBarrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets,
+							ShapeBarrier, BaseBP, SCSNodes.TrimeshShapes, Helper, ExistingMSTAssets,
 							RigidBodyNode);
 
 					// The ShapeNode Trimesh returned from AddOrUpdateShape above may or may not be
@@ -1242,28 +1348,28 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		for (const auto& Barrier : SimulationObjects.GetSphereShapes())
 		{
 			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_SphereShapeComponent>(
-				Barrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets);
+				Barrier, BaseBP, SCSNodes.SphereShapes, Helper, ExistingMSTAssets);
 			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 		}
 
 		for (const auto& Barrier : SimulationObjects.GetBoxShapes())
 		{
 			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_BoxShapeComponent>(
-				Barrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets);
+				Barrier, BaseBP, SCSNodes.BoxShapes, Helper, ExistingMSTAssets);
 			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 		}
 
 		for (const auto& Barrier : SimulationObjects.GetCylinderShapes())
 		{
 			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_CylinderShapeComponent>(
-				Barrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets);
+				Barrier, BaseBP, SCSNodes.CylinderShapes, Helper, ExistingMSTAssets);
 			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 		}
 
 		for (const auto& Barrier : SimulationObjects.GetCapsuleShapes())
 		{
 			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_CapsuleShapeComponent>(
-				Barrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets);
+				Barrier, BaseBP, SCSNodes.CapsuleShapes, Helper, ExistingMSTAssets);
 			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 		}
 
@@ -1278,7 +1384,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(Barrier), UAGX_TrimeshShapeComponent>(
-						Barrier, BaseBP, SCSNodes, Helper, ExistingMSTAssets);
+						Barrier, BaseBP, SCSNodes.TrimeshShapes, Helper, ExistingMSTAssets);
 
 				// The ShapeNode Trimesh returned from AddOrUpdateShape above may or may not be a
 				// new Trimesh. If it is new, we need to create a new collision mesh for it.
@@ -1305,10 +1411,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 			AddOrUpdateRenderData(Barrier, *RenderDataParent, BaseBP, SCSNodes, Helper);
 		}
-
-		// @todo: we should clean up old collision groups in instance components. Currently, we
-		// always add to them, but never remove. The cleanup must be done after all shapes have been
-		// synchronized.
 	}
 
 	void AddOrUpdateConstraints(
@@ -1601,15 +1703,34 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, const FAGX_ImportSettings& ImportSettings,
 		const FShapeGuidsCollection& NewShapeGuids)
 	{
-		for (auto It = SCSNodes.ShapeComponents.CreateIterator(); It; ++It)
+		auto RemoveUnmatched =
+			[&BaseBP](const TMap<FGuid, bool>& NewGuids, TMap<FGuid, USCS_Node*>& ExistingGuids)
 		{
-			if (!NewShapeGuids.PrimitiveShapeGuids.Contains(It->Key) &&
-				!NewShapeGuids.TrimeshShapeGuids.Contains(It->Key))
+			for (auto It = ExistingGuids.CreateIterator(); It; ++It)
+			{
+				if (!NewGuids.Contains(It->Key))
+				{
+					BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
+					It.RemoveCurrent();
+				}
+			}
+		};
+
+		// Primitive Shapes.
+		RemoveUnmatched(NewShapeGuids.SphereShapeGuids, SCSNodes.SphereShapes);
+		RemoveUnmatched(NewShapeGuids.BoxShapeGuids, SCSNodes.BoxShapes);
+		RemoveUnmatched(NewShapeGuids.CylinderShapeGuids, SCSNodes.CylinderShapes);
+		RemoveUnmatched(NewShapeGuids.CapsuleShapeGuids, SCSNodes.CapsuleShapes);
+
+		// Trimesh Shapes, needing some special handing due to import settings.
+		for (auto It = SCSNodes.TrimeshShapes.CreateIterator(); It; ++It)
+		{
+			if (!NewShapeGuids.TrimeshShapeGuids.Contains(It->Key))
 			{
 				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
 				It.RemoveCurrent();
 			}
-			else if (NewShapeGuids.TrimeshShapeGuids.Contains(It->Key))
+			else
 			{
 				// If we synchronize with the "Ignore disabled Trimeshes" import setting and this
 				// Trimesh has collision disabled, it should be removed.
@@ -1760,37 +1881,64 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		RemoveDeletedObserverFrames(BaseBP, SCSNodes, SimulationObjects);
 	}
 
-	void SetUnnamedNameForAll(UBlueprint& BaseBP)
+	// Set unset/unique names on (almost) all SCS Nodes to avoid future name collisions during
+	// synchronization.
+	void SetUnnamedNameForPossibleCollisions(SCSNodeCollection& SCSNodes)
 	{
-		for (USCS_Node* Node : BaseBP.SimpleConstructionScript->GetAllNodes())
+		auto SetUnnamedName = [](USCS_Node* Node)
 		{
 			if (Node == nullptr)
-			{
-				continue;
-			}
-
-			// Do not rename the root component.
-			if (Node == BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode())
-			{
-				continue;
-			}
-
-			if (auto C = Cast<UAGX_WireComponent>(Node->ComponentTemplate))
-			{
-				// Wires are not supported by the model synchronization pipeline, meaning we should
-				// not make any changes to it.
-				continue;
-			}
-
-			if (auto C = Cast<UAGX_TrackComponent>(Node->ComponentTemplate))
-			{
-				// Tracks are not supported by the model synchronization pipeline, meaning we should
-				// not make any changes to it.
-				continue;
-			}
-
+				return;
 			Node->SetVariableName(*FAGX_ImportUtilities::GetUnsetUniqueImportName());
-		}
+		};
+
+		auto SetUnnamedNameForAll = [&SetUnnamedName](TMap<FGuid, USCS_Node*>& Nodes)
+		{
+			for (auto& NodeTuple : Nodes)
+			{
+				SetUnnamedName(NodeTuple.Value);
+			}
+		};
+
+		SetUnnamedNameForAll(SCSNodes.RigidBodies);
+		SetUnnamedNameForAll(SCSNodes.SphereShapes);
+		SetUnnamedNameForAll(SCSNodes.BoxShapes);
+		SetUnnamedNameForAll(SCSNodes.CylinderShapes);
+		SetUnnamedNameForAll(SCSNodes.CapsuleShapes);
+		SetUnnamedNameForAll(SCSNodes.TrimeshShapes);
+		SetUnnamedNameForAll(SCSNodes.HingeConstraints);
+		SetUnnamedNameForAll(SCSNodes.PrismaticConstraints);
+		SetUnnamedNameForAll(SCSNodes.BallConstraints);
+		SetUnnamedNameForAll(SCSNodes.CylindricalConstraints);
+		SetUnnamedNameForAll(SCSNodes.DistanceConstraints);
+		SetUnnamedNameForAll(SCSNodes.LockConstraints);
+		SetUnnamedNameForAll(SCSNodes.TwoBodyTires);
+		SetUnnamedNameForAll(SCSNodes.ObserverFrames);
+
+		SetUnnamedName(SCSNodes.CollisionGroupDisablerComponent);
+		SetUnnamedName(SCSNodes.ContactMaterialRegistrarComponent);
+		SetUnnamedName(SCSNodes.ModelSourceComponent);
+
+		// Important note: it turns out that calling ´USCS_Node::SetVariableName´ is extremely slow
+		// performance wise, taking tens of milliseconds. For large models it is not uncommon that
+		// we get several hundreds of Components in the Blueprint after an import. This means we are
+		// spending a huge amount of time simply renaming SCS Nodes during the model
+		// synchronization. Therefore, we can to some optimizations here where we can avoid setting
+		// unnamed names for some Components that we can prove is safe to omit renaming. This is
+		// done for some Component types below with explanations.
+
+		// USCSNodes.RenderStaticMeshComponents - omitted.
+		// USCSNodes.CollisionStaticMeshComponents - omitted.
+
+		// We can omit the RenderStaticMeshComponents and CollisionStaticMeshComponents because
+		// those contain the actual GUID itself in their names after import and thus they are by
+		// definition already unique and cannot give rise to naming collision during model
+		// synchronization. To ensure this stays true also in the future, this is tested in an
+		// internal Unit test, which also refers back to this text from a comment in it.
+
+		// We purposely omit renaming the root component since that will never be updated.
+		// We also do not rename Track or Wire Components since they are currently not supported for
+		// synchronization.
 	}
 
 	bool SynchronizeModel(UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings)
@@ -1824,14 +1972,15 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// a certain name (all Node names must be unique) that would otherwise be used for a new
 		// Component name. This would make the result of a Model Synchronization non-deterministic
 		// in terms of Node naming.
-		SetUnnamedNameForAll(BaseBP);
+		SetUnnamedNameForPossibleCollisions(SCSNodes);
 		ImportTask.EnterProgressFrame(
 			80.f, FText::FromString("Adding and Updating Components and Assets"));
 		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, ImportSettings);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Synchronization"));
 
-		// Model synchronization is completed, we end by compiling and saving the Blueprint and any children.
+		// Model synchronization is completed, we end by compiling and saving the Blueprint and any
+		// children.
 		FAGX_EditorUtilities::SaveAndCompile(BaseBP);
 
 		return true;
@@ -1844,7 +1993,8 @@ bool AGX_ImporterToBlueprint::SynchronizeModel(
 	if (!AGX_ImporterToBlueprint_SynchronizeModel_helpers::SynchronizeModel(BaseBP, ImportSettings))
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Some issues occurred during model synchronization. Log category LogAGX in the Console may "
+			"Some issues occurred during model synchronization. Log category LogAGX in the Console "
+			"may "
 			"contain more information.",
 			"Synchronize model");
 		return false;

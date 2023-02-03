@@ -1,4 +1,4 @@
-// Copyright 2022, Algoryx Simulation AB.
+// Copyright 2023, Algoryx Simulation AB.
 
 #pragma once
 
@@ -90,6 +90,9 @@ public:
 
 	void SetEnableCollisions(bool CanCollide);
 	bool GetEnableCollisions() const;
+
+	void SetEnabled(bool Enabled);
+	bool GetEnabled() const;
 
 	void AddCollisionGroup(const FName& GroupName);
 	void AddCollisionGroups(const TArray<FName>& GroupNames);

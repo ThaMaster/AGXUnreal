@@ -103,21 +103,6 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 			"synchronization will not be possible.");
 		return nullptr;
 	}
-
-	UBlueprint* GetOutermostParent(IDetailLayoutBuilder& DetailBuilder, UBlueprint& Blueprint)
-	{
-		UBlueprint* OuterMostParent = FAGX_BlueprintUtilities::GetOutermostParent(&Blueprint);
-
-		if (OuterMostParent == nullptr)
-		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				"Could not get the original parent Blueprint. Model synchronization will not be "
-				"performed.");
-			return nullptr;
-		}
-
-		return OuterMostParent;
-	}
 }
 
 FReply FAGX_ModelSourceComponentCustomization::OnSynchronizeModelButtonClicked()
@@ -131,55 +116,9 @@ FReply FAGX_ModelSourceComponentCustomization::OnSynchronizeModelButtonClicked()
 		return FReply::Handled();
 	}
 
-	UBlueprint* OutermostParent = GetOutermostParent(*DetailBuilder, *Blueprint);
-	if (OutermostParent == nullptr)
-	{
-		// Logging done in GetOutermostParent.
-		return FReply::Handled();
-	}
+	FAGX_EditorUtilities::SynchronizeModel(*Blueprint);
 
-	// Open up the import settings Window to get user import settings.
-	TSharedRef<SWindow> Window =
-		SNew(SWindow)
-			.SupportsMinimize(false)
-			.SupportsMaximize(false)
-			.SizingRule(ESizingRule::Autosized)
-			.Title(NSLOCTEXT(
-				"AGX", "AGXUnrealSynchronizeModel", "Synchronize model with source file"));
-
-	UAGX_ModelSourceComponent* ModelSourceComponent =
-		FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ModelSourceComponent>(
-			OutermostParent);
-	const FString FilePath = ModelSourceComponent != nullptr ? ModelSourceComponent->FilePath : "";
-	const bool IgnoreDisabledTrimeshes =
-		ModelSourceComponent != nullptr ? ModelSourceComponent->bIgnoreDisabledTrimeshes : false;
-
-	TSharedRef<SAGX_ImportDialog> ImportDialog = SNew(SAGX_ImportDialog);
-	ImportDialog->SetFilePath(FilePath);
-	ImportDialog->SetIgnoreDisabledTrimeshes(IgnoreDisabledTrimeshes);
-	ImportDialog->SetImportType(EAGX_ImportType::Agx);
-	ImportDialog->SetFileTypes(".agx");
-	ImportDialog->RefreshGui();
-	Window->SetContent(ImportDialog);
-	FSlateApplication::Get().AddModalWindow(Window, nullptr);
-
-	if (auto ImportSettings = ImportDialog->ToImportSettings())
-	{
-		const static FString Info =
-			"Model synchronization may permanently remove or overwrite existing data.\nContinue?";
-		if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) !=
-			EAppReturnType::Yes)
-		{
-			return FReply::Handled();
-		}
-
-		if (AGX_ImporterToBlueprint::SynchronizeModel(*OutermostParent, *ImportSettings))
-		{
-			FAGX_EditorUtilities::SaveAndCompile(*Blueprint);
-		}
-	}
-
-	// Any logging is done in SynchronizeModel and ToImportSettings.
+	// Any logging is done in SynchronizeModel.
 	return FReply::Handled();
 }
 

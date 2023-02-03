@@ -1,4 +1,4 @@
-// Copyright 2022, Algoryx Simulation AB.
+// Copyright 2023, Algoryx Simulation AB.
 
 #include "Shapes/RenderDataBarrier.h"
 
@@ -6,6 +6,11 @@
 #include "Shapes/RenderDataRef.h"
 #include "Shapes/RenderMaterial.h"
 #include "TypeConversions.h"
+
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agxUtil/agxUtil.h>
+#include "EndAGXIncludes.h"
 
 FRenderDataBarrier::FRenderDataBarrier()
 	: NativeRef(new FRenderDataRef())
@@ -202,8 +207,14 @@ FAGX_RenderMaterial FRenderDataBarrier::GetMaterial() const
 	const agxCollide::RenderMaterial* RenderMaterialAGX = RenderDataAGX->getRenderMaterial();
 
 	RenderMaterial.Guid = Convert(RenderMaterialAGX->getUuid());
-	const agx::String& NameAGX = RenderMaterialAGX->getName();
-	RenderMaterial.Name = NameAGX.empty() ? NAME_None : FName(*Convert(NameAGX));
+	{
+		agx::String NameAGX = RenderMaterialAGX->getName();
+		RenderMaterial.Name = NameAGX.empty() ? NAME_None : FName(*Convert(NameAGX));
+
+		// Must be called to avoid crash due to different allocators used by AGX Dynamics and
+		// Unreal Engine.
+		agxUtil::freeContainerMemory(NameAGX);
+	}
 
 	if ((RenderMaterial.bHasDiffuse = RenderMaterialAGX->hasDiffuseColor()) == true)
 	{

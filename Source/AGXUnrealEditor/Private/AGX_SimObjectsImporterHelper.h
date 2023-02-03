@@ -1,4 +1,4 @@
-// Copyright 2022, Algoryx Simulation AB.
+// Copyright 2023, Algoryx Simulation AB.
 
 #pragma once
 
@@ -38,6 +38,7 @@ class UAGX_CylindricalConstraintComponent;
 class UAGX_DistanceConstraintComponent;
 class UAGX_LockConstraintComponent;
 class UAGX_MergeSplitThresholdsBase;
+class UAGX_ModelSourceComponent;
 class FTwoBodyTireBarrier;
 class UAGX_TwoBodyTireComponent;
 class UAGX_CollisionGroupDisablerComponent;

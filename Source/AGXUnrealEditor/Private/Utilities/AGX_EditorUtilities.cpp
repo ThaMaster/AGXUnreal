@@ -1,9 +1,11 @@
-// Copyright 2022, Algoryx Simulation AB.
+// Copyright 2023, Algoryx Simulation AB.
 
 #include "Utilities/AGX_EditorUtilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_ImporterToBlueprint.h"
 #include "AGX_LogCategory.h"
+#include "AGX_ModelSourceComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
@@ -21,11 +23,14 @@
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterial.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Widgets/AGX_ImportDialog.h"
 
 // Unreal Engine includes.
-#include "ObjectTools.h"
+#include "AssetDeleteModel.h"
 #include "AssetToolsModule.h"
 #include "DesktopPlatformModule.h"
 #include "Editor.h"
@@ -40,13 +45,82 @@
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/Char.h"
 #include "Misc/EngineVersionComparison.h"
+#include "ObjectTools.h"
+#include "PackageTools.h"
 #include "RawMesh.h"
+#include "Serialization/ArchiveReplaceObjectRef.h"
+#include "Serialization/FindReferencersArchive.h"
 #include "UObject/SavePackage.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectGlobals.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
+
+bool FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint)
+{
+	UBlueprint* OuterMostParent = FAGX_BlueprintUtilities::GetOutermostParent(&Blueprint);
+
+	if (OuterMostParent == nullptr)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Could not get the original parent Blueprint. Model synchronization will not be "
+			"performed.");
+		return false;
+	}
+
+	// Ensure there exists a Model Source Component.
+	UAGX_ModelSourceComponent* ModelSourceComponent =
+		FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ModelSourceComponent>(
+			OuterMostParent);
+	if (ModelSourceComponent == nullptr)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Could not find an AGX Model Source Component in the selected Blueprint. The selected "
+			"Blueprint is not valid for Model Synchronization.");
+		return false;
+	}
+
+	// Open up the import settings Window to get user import settings.
+	TSharedRef<SWindow> Window =
+		SNew(SWindow)
+			.SupportsMinimize(false)
+			.SupportsMaximize(false)
+			.SizingRule(ESizingRule::Autosized)
+			.Title(NSLOCTEXT(
+				"AGX", "AGXUnrealSynchronizeModel", "Synchronize model with source file"));
+
+	const FString FilePath = ModelSourceComponent != nullptr ? ModelSourceComponent->FilePath : "";
+	const bool IgnoreDisabledTrimeshes =
+		ModelSourceComponent != nullptr ? ModelSourceComponent->bIgnoreDisabledTrimeshes : false;
+
+	TSharedRef<SAGX_ImportDialog> ImportDialog = SNew(SAGX_ImportDialog);
+	ImportDialog->SetFilePath(FilePath);
+	ImportDialog->SetIgnoreDisabledTrimeshes(IgnoreDisabledTrimeshes);
+	ImportDialog->SetImportType(EAGX_ImportType::Agx);
+	ImportDialog->SetFileTypes(".agx");
+	ImportDialog->RefreshGui();
+	Window->SetContent(ImportDialog);
+	FSlateApplication::Get().AddModalWindow(Window, nullptr);
+
+	if (auto ImportSettings = ImportDialog->ToImportSettings())
+	{
+		const static FString Info =
+			"Model synchronization may permanently remove or overwrite existing data.\nContinue?";
+		if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) !=
+			EAppReturnType::Yes)
+		{
+			return false;
+		}
+
+		if (AGX_ImporterToBlueprint::SynchronizeModel(*OuterMostParent, *ImportSettings))
+		{
+			SaveAndCompile(Blueprint);
+		}
+	}
+
+	return true;
+}
 
 bool FAGX_EditorUtilities::RenameAsset(
 	UObject& Asset, const FString& WantedName, const FString& AssetType)
@@ -100,7 +174,6 @@ bool FAGX_EditorUtilities::RenameAsset(
 
 	return true;
 }
-
 
 namespace AGX_EditorUtilities_helpers
 {
@@ -205,11 +278,9 @@ bool FAGX_EditorUtilities::DeleteAsset(UObject& Asset)
 {
 	const FString AssetPath = Asset.GetPathName();
 	UE_LOG(LogAGX, Warning, TEXT("FullPath='%s'"), *AssetPath);
-	const FString BasePath = [&AssetPath]()
-	{
+	const FString BasePath = [&AssetPath]() {
 		FString Result;
-		AssetPath.Split(
-			TEXT("."), &Result, nullptr, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+		AssetPath.Split(TEXT("."), &Result, nullptr, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
 		return Result + TEXT(".uasset");
 	}();
 	const FString RelativeFileSystemPath = FPackageName::LongPackageNameToFilename(BasePath);
@@ -235,6 +306,114 @@ bool FAGX_EditorUtilities::DeleteAsset(UObject& Asset)
 	IFileManager::Get().Delete(*FileSystemPath, /*RequireExists*/ false);
 
 	return true;
+}
+
+int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets)
+{
+	/*
+	 * This function is a subset/variant of Unreal Engine's ObjectTools::DeleteObjects. We can't use
+	 * that directly because it doesn't handle references to the deleted assets properly. In
+	 * particular, it always calls FAssetDeleteModel::DoDelete even though in some cases it is
+	 * necessary to call DoForceDelete.
+	 *
+	 * Not sure how regularly ObjectTools::DeleteObjects is updated by Epic Games, and how closely
+	 * we need to track that implementation over time. The initial implementation of this function
+	 * is based on Unreal Engine 4.27.
+	 *
+	 * There is also ObjectTools::DeleteAssets which sounds like exactly what we want to do, but
+	 * that is basically just a call to ObjectTools::DeleteObjects followed by
+	 * CleanupAfterSuccessfulDelete. The latter is called by the former, which makes me believe that
+	 * the call from ObjectTools::DeleteAssets is redundant, and the former is what we are doing a
+	 * variant of here since it is incomplete.
+	 */
+
+	// Here the engine implementation creates an FScopedBusyCursor. Should we too?
+
+	// Here the engine implementation calls ObjectTools::AddExtraObjectsToDelete. As of Unreal
+	// Engine 4.27 that only involves UWorld objects, which we don't create during model import and
+	// thus don't currently need to handle here.
+
+	// There the engine implementation does stuff for sounds. We don't do anything with sound assets
+	// so skipping that for now.
+
+	// Here the engine implementation calls the OnAssetsCanDelete delegate. I don't know what that
+	// is or what it is for, so holding off on doing that for now.
+
+	// Only packages that are fully loaded can be deleted, so ask for them to be loaded.
+	//
+	// Here the engine implementation calls a non-exported helper function in ObjectTools,
+	// HandleFullyLoadedPackages. We can't call that from our module, so doing something similar
+	// in-line instead.
+	{
+		TArray<UPackage*> Packages;
+		for (UObject* Asset : InAssets)
+		{
+			Packages.AddUnique(Asset->GetOutermost());
+		}
+		if (!UPackageTools::HandleFullyLoadingPackages(
+				Packages, LOCTEXT("DeleteImportedAssets", "Delete imported assets.")))
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Cannot delete assets because at least one asset could not be fully loaded."));
+			return 0;
+		}
+	}
+
+	// We cannot delete assets if the asset registry is currently busy loading assets.
+	if (IAssetRegistry::GetChecked().IsLoadingAssets())
+	{
+		// Is there a better way to handle this case? Can we wait a bit? Is asset loading
+		// asynchronous, i.e. can we spin here for a second or two?
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot delete assets because the asset registry is currently loading assets."));
+		return 0;
+	}
+
+	// Here the engine implementation checks if the list of assets to delete include an active
+	// world, including all editor world contexts and streaming levels. We currently don't create
+	// any worlds during import so don't need to handle that case yet.
+
+	// Let everyone know that these assets are about to disappear, so they can clear any references
+	// they may have to the assets.
+	FEditorDelegates::OnAssetsPreDelete.Broadcast(InAssets);
+
+	// The delete model helps us find references to the deleted assets.
+	/// \todo Engine code creates a shared pointer here. Is that necessary?
+	FAssetDeleteModel DeleteModel(InAssets);
+
+	// Here the engine implementation uses GWarn to begin a slow task. The model
+	// synchronize code already have a progress bar created with FScopedSlowTask, not sure how
+	// those would interact.
+
+	while (DeleteModel.GetState() != FAssetDeleteModel::Finished)
+	{
+		DeleteModel.Tick(0);
+
+		// Here the engine implementation does stuff with GWarn status update and user canceling.
+		// The model synchronize code already have a progress bar created with FScopedSlowTask, not
+		// sure how those would interact.
+	}
+
+	if (DeleteModel.CanDelete())
+	{
+		DeleteModel.DoDelete();
+		return DeleteModel.GetDeletedObjectCount();
+	}
+	else if (DeleteModel.CanForceDelete())
+	{
+		DeleteModel.DoForceDelete();
+		return DeleteModel.GetDeletedObjectCount();
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Coult not verify safe asset deletion, old model assets remain in the Content "
+				 "Browser and on drive."));
+		return 0;
+	}
 }
 
 std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(
@@ -286,7 +465,8 @@ namespace
 		/// \todo Is the Owner pointless here since we do `AttachToComponent`
 		/// immediately afterwards?
 		UClass* Class = TShapeComponent::StaticClass();
-		TShapeComponent* Shape = NewObject<TShapeComponent>(Owner, Class);
+		TShapeComponent* Shape = NewObject<TShapeComponent>(
+			Owner, FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 		Owner->AddInstanceComponent(Shape);
 		if (bRegister)
 		{
@@ -465,7 +645,8 @@ bool FAGX_EditorUtilities::SaveStaticMeshAssetsInBulk(const TArray<UStaticMesh*>
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("Got invalid package from asset '%s' in SaveStaticMeshAssetInBulk. The asset "
-					 "will not be saved."), *Mesh->GetName());
+					 "will not be saved."),
+				*Mesh->GetName());
 		}
 		// The below PostEditChange call is what normally takes a lot of time, since it internally
 		// calls Build() each time. But since we have already done the Build (in batch) above, it
@@ -495,8 +676,7 @@ bool FAGX_EditorUtilities::SaveStaticMeshAssetsInBulk(const TArray<UStaticMesh*>
 #else
 		FSavePackageArgs SaveArgs;
 		SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-		bool bSaved =
-			UPackage::SavePackage(Package, Mesh, *PackageFilename, SaveArgs);
+		bool bSaved = UPackage::SavePackage(Package, Mesh, *PackageFilename, SaveArgs);
 #endif
 		if (!bSaved)
 		{
@@ -984,8 +1164,7 @@ void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
 
 	// Assigns to first available of OutActor1 and OutActor2, and returns whether
 	// at least one of them is afterwards still available for assignment.
-	auto AssignOutActors = [OutActor1, OutActor2](AActor* RigidBodyActor)
-	{
+	auto AssignOutActors = [OutActor1, OutActor2](AActor* RigidBodyActor) {
 		if (OutActor1 && *OutActor1 == nullptr)
 		{
 			*OutActor1 = RigidBodyActor;
