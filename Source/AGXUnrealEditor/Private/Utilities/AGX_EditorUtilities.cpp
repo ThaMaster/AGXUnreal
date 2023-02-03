@@ -327,17 +327,31 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	 * variant of here since it is incomplete.
 	 */
 
+	TArray<UObject*> ObjectsToDelete = InAssets;
+
 	// Here the engine implementation creates an FScopedBusyCursor. Should we too?
 
 	// Here the engine implementation calls ObjectTools::AddExtraObjectsToDelete. As of Unreal
 	// Engine 4.27 that only involves UWorld objects, which we don't create during model import and
 	// thus don't currently need to handle here.
+	//
+	/// @todo Attempt to prevent crash, adding extra objects to delete.
+	ObjectTools::AddExtraObjectsToDelete(ObjectsToDelete);
 
 	// There the engine implementation does stuff for sounds. We don't do anything with sound assets
 	// so skipping that for now.
 
 	// Here the engine implementation calls the OnAssetsCanDelete delegate. I don't know what that
 	// is or what it is for, so holding off on doing that for now.
+	//
+	/// @todo Attempt to prevent crash, checking can delete.
+	FCanDeleteAssetResult CanDeleteResult;
+	FEditorDelegates::OnAssetsCanDelete.Broadcast(ObjectsToDelete, CanDeleteResult);
+	if (!CanDeleteResult.Get())
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Cannot currently delete selected objects. See log for details."));
+		return 0;
+	}
 
 	// Only packages that are fully loaded can be deleted, so ask for them to be loaded.
 	//
@@ -346,9 +360,9 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	// in-line instead.
 	{
 		TArray<UPackage*> Packages;
-		for (UObject* Asset : InAssets)
+		for (UObject* Object : ObjectsToDelete)
 		{
-			Packages.AddUnique(Asset->GetOutermost());
+			Packages.AddUnique(Object->GetOutermost());
 		}
 		if (!UPackageTools::HandleFullyLoadingPackages(
 				Packages, LOCTEXT("DeleteImportedAssets", "Delete imported assets.")))
@@ -374,14 +388,86 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	// Here the engine implementation checks if the list of assets to delete include an active
 	// world, including all editor world contexts and streaming levels. We currently don't create
 	// any worlds during import so don't need to handle that case yet.
+	//
+	/// @todo Attempt to prevent crash, bail if attempt to delete world in use.
+	{
+		bool bContainsWorldInUse = [&ObjectsToDelete]()
+		{
+			TArray<const UWorld*> WorldsToDelete;
+
+			for (const UObject* ObjectToDelete : ObjectsToDelete)
+			{
+				if (const UWorld* World = Cast<UWorld>(ObjectToDelete))
+				{
+					WorldsToDelete.AddUnique(World);
+				}
+			}
+
+			if (WorldsToDelete.Num() == 0)
+			{
+				return false;
+			}
+
+			auto GetCombinedWorldNames = [](const TArray<const UWorld*>& Worlds) -> FString
+			{
+				return FString::JoinBy(Worlds, TEXT(", "),
+					[](const UWorld* World) -> FString
+					{
+						return World->GetPathName();
+					});
+			};
+
+			UE_LOG(LogAGX, Log, TEXT("Deleting %d worlds: %s"), WorldsToDelete.Num(), *GetCombinedWorldNames(WorldsToDelete));
+
+			TArray<const UWorld*> ActiveWorlds;
+
+			for (const FWorldContext& WorldContext : GEditor->GetWorldContexts())
+			{
+				if (const UWorld* World = WorldContext.World())
+				{
+					ActiveWorlds.AddUnique(World);
+
+					for (const ULevelStreaming* StreamingLevel : World->GetStreamingLevels())
+					{
+						if (StreamingLevel && StreamingLevel->GetLoadedLevel() && StreamingLevel->GetLoadedLevel()->GetOuter())
+						{
+							if (const UWorld* StreamingWorld = Cast<UWorld>(StreamingLevel->GetLoadedLevel()->GetOuter()))
+							{
+								ActiveWorlds.AddUnique(StreamingWorld);
+							}
+						}
+					}
+				}
+			}
+
+			UE_LOG(LogAGX, Log, TEXT("Currently %d active worlds: %s"), ActiveWorlds.Num(), *GetCombinedWorldNames(ActiveWorlds));
+
+			for (const UWorld* World : WorldsToDelete)
+			{
+				if (ActiveWorlds.Contains(World))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}();
+		if (bContainsWorldInUse)
+		{
+			UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot delete assets because try to delete world in use."));
+			return 0;
+		}
+	}
 
 	// Let everyone know that these assets are about to disappear, so they can clear any references
 	// they may have to the assets.
-	FEditorDelegates::OnAssetsPreDelete.Broadcast(InAssets);
+	FEditorDelegates::OnAssetsPreDelete.Broadcast(ObjectsToDelete);
 
 	// The delete model helps us find references to the deleted assets.
 	/// \todo Engine code creates a shared pointer here. Is that necessary?
-	FAssetDeleteModel DeleteModel(InAssets);
+	FAssetDeleteModel DeleteModel(ObjectsToDelete);
 
 	// Here the engine implementation uses GWarn to begin a slow task. The model
 	// synchronize code already have a progress bar created with FScopedSlowTask, not sure how
