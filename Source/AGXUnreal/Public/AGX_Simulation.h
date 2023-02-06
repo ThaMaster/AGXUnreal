@@ -34,6 +34,8 @@ class FShapeBarrier;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPreStepForward);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPostStepForward);
+DECLARE_MULTICAST_DELEGATE(FOnPreStepForwardInternal);
+DECLARE_MULTICAST_DELEGATE(FOnPostStepForwardInternal);
 
 /**
  * Manages an AGX simulation instance.
@@ -435,4 +437,10 @@ private:
 	// Record for keeping track of the number of times any Contact Material has been
 	// registered/unregistered. Value is incremented on Register() and decremented on Unregister().
 	TMap<UAGX_ContactMaterial*, int32> ContactMaterials;
+
+	// Internal post/pre step forward delegates.
+	FOnPreStepForwardInternal PreStepForwardInternal;
+	FOnPostStepForwardInternal PostStepForwardInternal;	
+
+	friend class FAGX_InternalDelegateAccessor;
 };

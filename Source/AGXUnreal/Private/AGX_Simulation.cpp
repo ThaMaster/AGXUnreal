@@ -778,6 +778,11 @@ int32 UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
 			PreStepForward.Broadcast();
 		}
 
+		if (PreStepForwardInternal.IsBound())
+		{
+			PreStepForwardInternal.Broadcast();
+		}
+
 		{
 			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 			NativeBarrier.Step();
@@ -787,6 +792,11 @@ int32 UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
 		if (bEnableStatistics)
 		{
 			AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
+		}
+
+		if (PostStepForwardInternal.IsBound())
+		{
+			PostStepForwardInternal.Broadcast();
 		}
 		
 		if (PostStepForward.IsBound())
@@ -814,6 +824,11 @@ int32 UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
 				PreStepForward.Broadcast();
 			}
 
+			if (PreStepForwardInternal.IsBound())
+			{
+				PreStepForwardInternal.Broadcast();
+			}
+
 			{
 				TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 				NativeBarrier.Step();
@@ -823,6 +838,11 @@ int32 UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
 			if (bEnableStatistics)
 			{
 				AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
+			}
+
+			if (PostStepForwardInternal.IsBound())
+			{
+				PostStepForwardInternal.Broadcast();
 			}
 			
 			if (PostStepForward.IsBound())
@@ -852,6 +872,11 @@ int32 UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 				PreStepForward.Broadcast();
 			}
 
+			if (PreStepForwardInternal.IsBound())
+			{
+				PreStepForwardInternal.Broadcast();
+			}
+
 			{
 				TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 				NativeBarrier.Step();
@@ -861,6 +886,11 @@ int32 UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 			if (bEnableStatistics)
 			{
 				AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
+			}
+
+			if (PostStepForwardInternal.IsBound())
+			{
+				PostStepForwardInternal.Broadcast();
 			}
 			
 			if (PostStepForward.IsBound())
@@ -888,6 +918,11 @@ int32 UAGX_Simulation::StepDropImmediately(float DeltaTime)
 			PreStepForward.Broadcast();
 		}
 
+		if (PreStepForwardInternal.IsBound())
+		{
+			PreStepForwardInternal.Broadcast();
+		}
+
 		{
 			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 			NativeBarrier.Step();
@@ -897,6 +932,11 @@ int32 UAGX_Simulation::StepDropImmediately(float DeltaTime)
 		if (bEnableStatistics)
 		{
 			AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
+		}
+
+		if (PostStepForwardInternal.IsBound())
+		{
+			PostStepForwardInternal.Broadcast();
 		}
 		
 		if (PostStepForward.IsBound())
@@ -928,6 +968,11 @@ void UAGX_Simulation::StepOnce()
 		PreStepForward.Broadcast();
 	}
 
+	if (PreStepForwardInternal.IsBound())
+	{
+		PreStepForwardInternal.Broadcast();
+	}
+
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 		NativeBarrier.Step();
@@ -943,6 +988,11 @@ void UAGX_Simulation::StepOnce()
 		// We don't know if there are going to be more steps taken this frame or not, so we report
 		// step statistics every time just in case.
 		ReportStepStatistics(Statistics);
+	}
+
+	if (PostStepForwardInternal.IsBound())
+	{
+		PostStepForwardInternal.Broadcast();
 	}
 
 	if (PostStepForward.IsBound())
