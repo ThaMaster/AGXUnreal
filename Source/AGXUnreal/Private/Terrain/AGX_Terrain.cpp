@@ -867,7 +867,8 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	NativeBarrier.GetHeights(CurrentHeights, true);
 	for (const auto& VertexTuple : NativeBarrier.GetModifiedVertices())
 	{
-		const auto [VertX, VertY] = VertexTuple;
+		const int32 VertX = std::get<0>(VertexTuple);
+		const int32 VertY = std::get<1>(VertexTuple);
 		const int32 Index = VertX + VertY * TerrainVerticesX;
 		const float HeightChange = CurrentHeights[Index] - OriginalHeights[Index];
 		DisplacementData[Index] = static_cast<FFloat16>(HeightChange);
