@@ -2,11 +2,14 @@
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Math/Vector.h"
 #include "Math/Quat.h"
 
+// Standard library includes.
 #include <memory>
+#include <tuple>
 
 struct FTerrainRef;
 
@@ -63,11 +66,21 @@ public:
 	int32 GetGridSizeY() const;
 
 	/**
+	 * Returns the modified vertices since the last AGX Dynamics Step Forward.
+	 * The x/y layout matches that of an Unreal Landscape coordinate system.
+	 */
+	TArray<std::tuple<int32, int32>> GetModifiedVertices() const;
+
+	/**
 	 * Fill an array with all the heights in the height field, stored in X major
 	 * order, meaning that heights with increasing the X coordinates are next to
 	 * each other in memory.
+	 * If the ChangesOnly parameter is set to true, only height changes from the previous AGX
+	 * Dynamics Step Forward is read. This can be used as a performance optimization, but use with
+	 * caution; the caller may miss height changes if this is not called each AGX Dynamics Step
+	 * Forward.
 	 */
-	void GetHeights(TArray<float>& OutHeights) const;
+	void GetHeights(TArray<float>& OutHeights, bool bChangesOnly) const;
 
 	/**
 	 * Get an array with the positions of the currently existing particles.
