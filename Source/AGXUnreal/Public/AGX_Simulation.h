@@ -32,6 +32,9 @@ class UActorComponent;
 class UWorld;
 class FShapeBarrier;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPreStepForward);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPostStepForward);
+
 /**
  * Manages an AGX simulation instance.
  *
@@ -69,7 +72,7 @@ public: // Properties.
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetNumThreads(int32 InNumThreads);
 
-	UFUNCTION(BlueprintCallable, Category =  "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	int32 GetNumThreads() const;
 
 	/**
@@ -296,6 +299,22 @@ public: // Member functions.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Simulation")
 	void SetTimeStamp(float NewTimeStamp);
+
+	/**
+	 * Delegate that is executed before each Simulation step forward.
+	 * Users may bind to this delegate in order to get a callback before each Simulation step
+	 * forward.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Simulation")
+	FOnPreStepForward PreStepForward;
+
+	/**
+	 * Delegate that is executed after each Simulation step forward.
+	 * Users may bind to this delegate in order to get a callback after each Simulation step
+	 * forward.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Simulation")
+	FOnPreStepForward PostStepForward;
 
 	void Add(UAGX_ConstraintComponent& Constraint);
 

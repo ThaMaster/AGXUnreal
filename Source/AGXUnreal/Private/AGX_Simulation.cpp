@@ -773,6 +773,7 @@ int32 UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
 	int32 NumSteps = 0;
 	while (DeltaTime >= TimeStep)
 	{
+		PreStepForward.Broadcast();
 		{
 			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 			NativeBarrier.Step();
@@ -783,6 +784,7 @@ int32 UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
 		{
 			AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
 		}
+		PostStepForward.Broadcast();
 	}
 	LeftoverTime = DeltaTime;
 	return NumSteps;
@@ -799,6 +801,7 @@ int32 UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
 	{
 		if (DeltaTime >= TimeStep)
 		{
+			PreStepForward.Broadcast();
 			{
 				TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 				NativeBarrier.Step();
@@ -809,6 +812,7 @@ int32 UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
 			{
 				AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
 			}
+			PostStepForward.Broadcast();
 		}
 	}
 
@@ -827,6 +831,7 @@ int32 UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 	{
 		if (DeltaTime >= TimeStep)
 		{
+			PreStepForward.Broadcast();
 			{
 				TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 				NativeBarrier.Step();
@@ -837,6 +842,7 @@ int32 UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 			{
 				AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
 			}
+			PostStepForward.Broadcast();
 		}
 	}
 
@@ -853,6 +859,7 @@ int32 UAGX_Simulation::StepDropImmediately(float DeltaTime)
 	int32 NumSteps = 0;
 	if (DeltaTime >= TimeStep)
 	{
+		PreStepForward.Broadcast();
 		{
 			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 			NativeBarrier.Step();
@@ -863,6 +870,7 @@ int32 UAGX_Simulation::StepDropImmediately(float DeltaTime)
 		{
 			AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
 		}
+		PostStepForward.Broadcast();
 	}
 
 	// Keep LeftoverTime updated in case the information is needed in the future.
@@ -883,6 +891,7 @@ void UAGX_Simulation::StepOnce()
 #endif
 
 	const uint64 StartCycle = FPlatformTime::Cycles64();
+	PreStepForward.Broadcast();
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 		NativeBarrier.Step();
@@ -899,6 +908,7 @@ void UAGX_Simulation::StepOnce()
 		// step statistics every time just in case.
 		ReportStepStatistics(Statistics);
 	}
+	PostStepForward.Broadcast();
 }
 
 float UAGX_Simulation::GetTimeStamp() const
