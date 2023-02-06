@@ -314,7 +314,7 @@ public: // Member functions.
 	 * forward.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Simulation")
-	FOnPreStepForward PostStepForward;
+	FOnPostStepForward PostStepForward;
 
 	void Add(UAGX_ConstraintComponent& Constraint);
 
