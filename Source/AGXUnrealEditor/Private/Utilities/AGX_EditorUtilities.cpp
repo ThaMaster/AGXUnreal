@@ -447,6 +447,9 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	// Here the engine implementation calls the OnAssetsCanDelete delegate. I don't know what that
 	// is or what it is for, so holding off on doing that for now.
 
+	// This is an experiment, the FAssetData experiment.
+	TArray<FAssetData> AssetData;
+
 	// Only packages that are fully loaded can be deleted, so ask for them to be loaded.
 	//
 	// Here the engine implementation calls a non-exported helper function in ObjectTools,
@@ -457,6 +460,9 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 		for (UObject* Asset : InAssets)
 		{
 			Packages.AddUnique(Asset->GetOutermost());
+
+			// Part of FAssetData experiment.
+			IAssetRegistry::GetChecked().GetAssetsByPath(FName(*Asset->GetPathName()), AssetData);
 		}
 		if (!UPackageTools::HandleFullyLoadingPackages(
 				Packages, LOCTEXT("DeleteImportedAssets", "Delete imported assets.")))
@@ -466,6 +472,13 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 				TEXT("Cannot delete assets because at least one asset could not be fully loaded."));
 			return 0;
 		}
+	}
+
+	// Part of FAssetData experiment.
+	UE_LOG(LogAGX, Warning, TEXT("FAssetData found:"));
+	for (FAssetData& AssetDatum : AssetData)
+	{
+		UE_LOG(LogAGX, Warning, TEXT(" %s"), *AssetDatum.ObjectPath.ToString());
 	}
 
 	// We cannot delete assets if the asset registry is currently busy loading assets.
