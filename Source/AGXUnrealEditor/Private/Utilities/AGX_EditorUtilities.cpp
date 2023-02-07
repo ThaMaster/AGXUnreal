@@ -399,7 +399,7 @@ bool FAGX_EditorUtilities::DeleteAsset(UObject& Asset)
 	}
 
 	AssetRegistry.AssetDeleted(&Asset);
-	AGX_EditorUtilities_helpers::NullReferencesToObject(&Asset);
+	NullReferencesToObject(&Asset);
 	ObjectTools::DeleteSingleObject(&Asset);
 
 	// Try to delete the corresponding asset file. This file may not exist, in case a new asset was
