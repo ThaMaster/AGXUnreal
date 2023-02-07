@@ -379,7 +379,8 @@ bool FAGX_EditorUtilities::DeleteAsset(UObject& Asset)
 {
 	const FString AssetPath = Asset.GetPathName();
 	UE_LOG(LogAGX, Warning, TEXT("FullPath='%s'"), *AssetPath);
-	const FString BasePath = [&AssetPath]() {
+	const FString BasePath = [&AssetPath]()
+	{
 		FString Result;
 		AssetPath.Split(TEXT("."), &Result, nullptr, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
 		return Result + TEXT(".uasset");
@@ -1330,7 +1331,8 @@ void FAGX_EditorUtilities::GetRigidBodyActorsFromSelection(
 
 	// Assigns to first available of OutActor1 and OutActor2, and returns whether
 	// at least one of them is afterwards still available for assignment.
-	auto AssignOutActors = [OutActor1, OutActor2](AActor* RigidBodyActor) {
+	auto AssignOutActors = [OutActor1, OutActor2](AActor* RigidBodyActor)
+	{
 		if (OutActor1 && *OutActor1 == nullptr)
 		{
 			*OutActor1 = RigidBodyActor;
