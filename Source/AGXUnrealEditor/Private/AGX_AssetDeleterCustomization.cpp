@@ -242,7 +242,8 @@ void FAGX_AssetDeleterCustomization::CustomizeDetails(IDetailLayoutBuilder& Deta
 		.OnClicked_Lambda([&DetailBuilder]()
 		{
 			UE_LOG(LogAGX, Warning, TEXT("Delete Asset clicked"));
-			bool AnyDeleted = false;
+			bool NeedGarbageCollection = false;
+			TArray<UObject*> AssetsToDelete;
 			TArray<TWeakObjectPtr<UObject>> SelectedObjects;
 			DetailBuilder.GetObjectsBeingCustomized(SelectedObjects);
 			TArray<UObject*> AssetsToDelete;
@@ -279,19 +280,24 @@ void FAGX_AssetDeleterCustomization::CustomizeDetails(IDetailLayoutBuilder& Deta
 // AutomationEditorCommon.cpp.
 #if 0
 				AGX_AssetDeleterCustomization_helpers::DeleteAsset(ToDelete);
+				NeedGarbageCollection = true;
 #else
 				// FAGX_EditorUtilities::DeleteAsset(*ToDelete);
-				AssetsToDelete.Add(ToDelete);
-#endif
 
-				AnyDeleted = true;
+				// Version based on ObjectTools code that support both in-memory and on-drive objects
+				// and references.
+				AssetsToDelete.AddUnique(ToDelete);
+#endif
 			}
 
-			FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
+			if (AssetsToDelete.Num() > 0)
+			{
+				FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
+			}
 
 #if 0
 			/// \todo Test without this part.
-			if (AnyDeleted)
+			if (NeedGarbageCollection)
 			{
 				UE_LOG(LogAGX, Warning, TEXT("At least one asset deleted, running garbage collection."));
 				if (GEngine != nullptr)
@@ -312,3 +318,4 @@ void FAGX_AssetDeleterCustomization::CustomizeDetails(IDetailLayoutBuilder& Deta
 }
 
 #undef LOCTEXT_NAMESPACE
+

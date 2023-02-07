@@ -466,6 +466,8 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	 * variant of here since it is incomplete.
 	 */
 
+
+
 	/// @todo We get a crash in FEditorViewportClient and don't know why.
 	/// This is an attempt to work around that by cloasing all editors, which will close a bunch of
 	/// viewport. Not the Level Viewport though, we can't close that one.
@@ -473,17 +475,35 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	/// Causes a different, but very similar, crash so commenting this out again.
 	// GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
 
+#if 0
+	TArray<UObject*> ObjectsToDelete = InAssets;
+#endif
+
 	// Here the engine implementation creates an FScopedBusyCursor. Should we too?
 
 	// Here the engine implementation calls ObjectTools::AddExtraObjectsToDelete. As of Unreal
 	// Engine 4.27 that only involves UWorld objects, which we don't create during model import and
 	// thus don't currently need to handle here.
+	//
+	/// @todo Attempt to prevent crash, adding extra objects to delete.
+#if 0
+	ObjectTools::AddExtraObjectsToDelete(ObjectsToDelete);
+#endif
 
 	// There the engine implementation does stuff for sounds. We don't do anything with sound assets
 	// so skipping that for now.
 
 	// Here the engine implementation calls the OnAssetsCanDelete delegate. I don't know what that
 	// is or what it is for, so holding off on doing that for now.
+	//
+	/// @todo Attempt to prevent crash, checking can delete.
+	FCanDeleteAssetResult CanDeleteResult;
+	FEditorDelegates::OnAssetsCanDelete.Broadcast(ObjectsToDelete, CanDeleteResult);
+	if (!CanDeleteResult.Get())
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Cannot currently delete selected objects. See log for details."));
+		return 0;
+	}
 
 	// This is an experiment, the FAssetData experiment.
 	TArray<FAssetData> AssetData;
@@ -495,7 +515,7 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	// in-line instead.
 	{
 		TArray<UPackage*> Packages;
-		for (UObject* Asset : InAssets)
+		for (UObject* Object : ObjectsToDelete)
 		{
 			Packages.AddUnique(Asset->GetOutermost());
 
@@ -533,7 +553,79 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	// Here the engine implementation checks if the list of assets to delete include an active
 	// world, including all editor world contexts and streaming levels. We currently don't create
 	// any worlds during import so don't need to handle that case yet.
+#if 0
+	/// @todo Attempt to prevent crash, bail if attempt to delete world in use.
+	{
+		bool bContainsWorldInUse = [&ObjectsToDelete]()
+		{
+			TArray<const UWorld*> WorldsToDelete;
 
+			for (const UObject* ObjectToDelete : ObjectsToDelete)
+			{
+				if (const UWorld* World = Cast<UWorld>(ObjectToDelete))
+				{
+					WorldsToDelete.AddUnique(World);
+				}
+			}
+
+			if (WorldsToDelete.Num() == 0)
+			{
+				return false;
+			}
+
+			auto GetCombinedWorldNames = [](const TArray<const UWorld*>& Worlds) -> FString
+			{
+				return FString::JoinBy(Worlds, TEXT(", "),
+					[](const UWorld* World) -> FString
+					{
+						return World->GetPathName();
+					});
+			};
+
+			UE_LOG(LogAGX, Log, TEXT("Deleting %d worlds: %s"), WorldsToDelete.Num(), *GetCombinedWorldNames(WorldsToDelete));
+
+			TArray<const UWorld*> ActiveWorlds;
+
+			for (const FWorldContext& WorldContext : GEditor->GetWorldContexts())
+			{
+				if (const UWorld* World = WorldContext.World())
+				{
+					ActiveWorlds.AddUnique(World);
+
+					for (const ULevelStreaming* StreamingLevel : World->GetStreamingLevels())
+					{
+						if (StreamingLevel && StreamingLevel->GetLoadedLevel() && StreamingLevel->GetLoadedLevel()->GetOuter())
+						{
+							if (const UWorld* StreamingWorld = Cast<UWorld>(StreamingLevel->GetLoadedLevel()->GetOuter()))
+							{
+								ActiveWorlds.AddUnique(StreamingWorld);
+							}
+						}
+					}
+				}
+			}
+
+			UE_LOG(LogAGX, Log, TEXT("Currently %d active worlds: %s"), ActiveWorlds.Num(), *GetCombinedWorldNames(ActiveWorlds));
+
+			for (const UWorld* World : WorldsToDelete)
+			{
+				if (ActiveWorlds.Contains(World))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}();
+		if (bContainsWorldInUse)
+		{
+			UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot delete assets because try to delete world in use."));
+			return 0;
+		}
+	}
+#endif
 	// Let everyone know that these assets are about to disappear, so they can clear any references
 	// they may have to the assets.
 	FEditorDelegates::OnAssetsPreDelete.Broadcast(InAssets);
