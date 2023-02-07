@@ -246,7 +246,6 @@ void FAGX_AssetDeleterCustomization::CustomizeDetails(IDetailLayoutBuilder& Deta
 			TArray<UObject*> AssetsToDelete;
 			TArray<TWeakObjectPtr<UObject>> SelectedObjects;
 			DetailBuilder.GetObjectsBeingCustomized(SelectedObjects);
-			TArray<UObject*> AssetsToDelete;
 			for (TWeakObjectPtr<UObject> ObjectPtr : SelectedObjects)
 			{
 				if (!ObjectPtr.IsValid())
@@ -318,4 +317,3 @@ void FAGX_AssetDeleterCustomization::CustomizeDetails(IDetailLayoutBuilder& Deta
 }
 
 #undef LOCTEXT_NAMESPACE
-
