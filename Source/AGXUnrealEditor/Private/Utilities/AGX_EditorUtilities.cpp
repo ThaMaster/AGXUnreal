@@ -500,6 +500,13 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	// they may have to the assets.
 	FEditorDelegates::OnAssetsPreDelete.Broadcast(InAssets);
 
+	/// @todo I don't see why I would need to do this, but it seems to fix the crash in
+	/// FEditorViewportClient.
+	for (UObject* Asset : InAssets)
+	{
+		NullReferencesToObject(Asset);
+	}
+
 	// The delete model helps us find references to the deleted assets.
 	/// \todo Engine code creates a shared pointer here. Is that necessary?
 	FAssetDeleteModel DeleteModel(InAssets);
