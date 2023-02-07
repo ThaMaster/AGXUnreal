@@ -411,6 +411,43 @@ bool FAGX_EditorUtilities::DeleteAsset(UObject& Asset)
 
 int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets)
 {
+#if 1
+	UE_LOG(LogAGX, Warning, TEXT("Deleting %d assets with ObjectTools::DeleteAssets."), InAssets.Num());
+	// The other implementation tries to recreate ObjectTools::(Force)DeleteObjects but without the
+	// modal dialog. That causes crashes.
+	//
+	// This implementation tries to recreate hitting the Delete key, i.e., just call
+	// ObjectTools::DeleteAssets with bShowConfirmation=true.
+	TArray<FAssetData> AssetsToDelete;
+	for (UObject* Asset : InAssets)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Asked to delete asset for object %s"), *Asset->GetPathName());
+		FAssetData AssetToDelete =
+			IAssetRegistry::GetChecked().GetAssetByObjectPath(FName(*Asset->GetPathName()));
+		if (AssetToDelete.IsValid() && AssetToDelete.GetAsset() != nullptr)
+		{
+			AssetsToDelete.Add(AssetToDelete);
+		}
+	}
+	if (AssetsToDelete.Num() == 0)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Did not find any assets to delete."));
+		return 0;
+	}
+	for (FAssetData& Asset : AssetsToDelete)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("About to delete asset %s"), *Asset.GetFullName());
+	}
+
+	for (FAssetData& AssetData : AssetsToDelete)
+	{
+		NullReferencesToObject(AssetData.GetAsset());
+	}
+	return ObjectTools::DeleteAssets(AssetsToDelete, true);
+
+#else
+	UE_LOG(LogAGX, Warning, TEXT("Deleting %d assets with FAssetDeleteModel."), InAssets.Num());
+
 	/*
 	 * This function is a subset/variant of Unreal Engine's ObjectTools::DeleteObjects. We can't use
 	 * that directly because it doesn't handle references to the deleted assets properly. In
@@ -542,6 +579,7 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 				 "Browser and on drive."));
 		return 0;
 	}
+#endif
 }
 
 std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(
