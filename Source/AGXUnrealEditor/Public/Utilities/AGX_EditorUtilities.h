@@ -76,6 +76,8 @@ public:
 
 	static int32 DeleteImportedAssets(const TArray<UObject*> Assets);
 
+	static void NullReferencesToObject(UObject* ToDelete);
+
 	/**
 	 * Create a new Actor with an empty USceneComponent as its RootComponent.
 	 */

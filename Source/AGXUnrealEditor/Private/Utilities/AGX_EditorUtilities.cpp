@@ -177,6 +177,10 @@ bool FAGX_EditorUtilities::RenameAsset(
 
 namespace AGX_EditorUtilities_helpers
 {
+
+/// @todo This has been moved to a public member function instead. Ensure they are the same and then
+/// delete this.
+#if 0
 	/**
 	 * Delete function based on BlueprintEditorPromotionTestHelper::Cleanup in
 	 * BlueprintEditorTests.cpp in the engine code. It consists of four steps:
@@ -269,6 +273,103 @@ namespace AGX_EditorUtilities_helpers
 				{
 					CurReplaceObj->MarkPackageDirty();
 				}
+			}
+		}
+	}
+#endif
+}
+
+/**
+ * Delete function based on BlueprintEditorPromotionTestHelper::Cleanup in
+ * BlueprintEditorTests.cpp in the engine code. It consists of four steps:
+ *  - AssetRegistry.AssetDeleted
+ *  - NullReferencesToObject
+ *  - ObjectTools::DeleteSingleObject
+ *  - Filesystem delete.
+ *
+ * The first step is straight-forward, get the asset registry and call AssetDeleted on it.
+ *
+ * The second step is implemented behind FAutomationEditorCommonUtils. I don't think we should
+ * call that directly, calling into test code from production editor code is backwards. Here I
+ * have recreated the bits of the code I think are important for our use-case as a helper
+ * function.
+ *
+ * The call to NullReferencesToObject may be expensive, so the BlueprintEditorTest first tries
+ * to call DeleteSingleObject and only if that fails does to call NullReferencesToObject.
+ *
+ * The filesystem delete deletes an entire directory. In our case I think it is enough to
+ * delete a single .uasset file.
+ */
+
+void FAGX_EditorUtilities::NullReferencesToObject(UObject* ToDelete)
+{
+	TArray<UObject*> ReplaceableObjects;
+	TMap<UObject*, UObject*> ReplacementMap;
+	ReplacementMap.Add(ToDelete, nullptr);
+	ReplacementMap.GenerateKeyArray(ReplaceableObjects);
+
+	// Find all the properties (and their corresponding objects) that refer to any of the
+	// objects to be replaced
+	TMap<UObject*, TArray<FProperty*>> ReferencingPropertiesMap;
+	for (FThreadSafeObjectIterator ObjIter; ObjIter; ++ObjIter)
+	{
+		UObject* CurObject = *ObjIter;
+
+		// Find the referencers of the objects to be replaced
+		FFindReferencersArchive FindRefsArchive(CurObject, ReplaceableObjects);
+
+		// Inform the object referencing any of the objects to be replaced about the properties
+		// that are being forcefully changed, and store both the object doing the referencing as
+		// well as the properties that were changed in a map (so that we can correctly call
+		// PostEditChange later)
+		TMap<UObject*, int32> CurNumReferencesMap;
+		TMultiMap<UObject*, FProperty*> CurReferencingPropertiesMMap;
+		if (FindRefsArchive.GetReferenceCounts(CurNumReferencesMap, CurReferencingPropertiesMMap) >
+			0)
+		{
+			TArray<FProperty*> CurReferencedProperties;
+			CurReferencingPropertiesMMap.GenerateValueArray(CurReferencedProperties);
+			ReferencingPropertiesMap.Add(CurObject, CurReferencedProperties);
+			for (TArray<FProperty*>::TConstIterator RefPropIter(CurReferencedProperties);
+				 RefPropIter; ++RefPropIter)
+			{
+				CurObject->PreEditChange(*RefPropIter);
+			}
+		}
+	}
+
+	// Iterate over the map of referencing objects/changed properties, forcefully replacing the
+	// references and then alerting the referencing objects the change has completed via
+	// PostEditChange
+	int32 NumObjsReplaced = 0;
+	for (TMap<UObject*, TArray<FProperty*>>::TConstIterator MapIter(ReferencingPropertiesMap);
+		 MapIter; ++MapIter)
+	{
+		++NumObjsReplaced;
+
+		UObject* CurReplaceObj = MapIter.Key();
+		const TArray<FProperty*>& RefPropArray = MapIter.Value();
+		FArchiveReplaceObjectRef<UObject> ReplaceAr(
+			CurReplaceObj, ReplacementMap,
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+			false, true, false
+#else
+			EArchiveReplaceObjectFlags::IgnoreOuterRef
+#endif
+		);
+		for (TArray<FProperty*>::TConstIterator RefPropIter(RefPropArray); RefPropIter;
+			 ++RefPropIter)
+		{
+			FPropertyChangedEvent PropertyEvent(*RefPropIter);
+			CurReplaceObj->PostEditChangeProperty(PropertyEvent);
+		}
+
+		if (!CurReplaceObj->HasAnyFlags(RF_Transient) &&
+			CurReplaceObj->GetOutermost() != GetTransientPackage())
+		{
+			if (!CurReplaceObj->RootPackageHasAnyFlags(PKG_CompiledIn))
+			{
+				CurReplaceObj->MarkPackageDirty();
 			}
 		}
 	}
