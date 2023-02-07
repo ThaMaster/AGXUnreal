@@ -3,7 +3,6 @@
 /// @todo Experimental code, do not merge to master.
 #pragma message("Experimental code, do not merge to master.")
 
-
 #include "AGX_AssetDeleterCustomization.h"
 
 // AGX Dynamics for Unreal includes.
@@ -246,6 +245,7 @@ void FAGX_AssetDeleterCustomization::CustomizeDetails(IDetailLayoutBuilder& Deta
 			bool AnyDeleted = false;
 			TArray<TWeakObjectPtr<UObject>> SelectedObjects;
 			DetailBuilder.GetObjectsBeingCustomized(SelectedObjects);
+			TArray<UObject*> AssetsToDelete;
 			for (TWeakObjectPtr<UObject> ObjectPtr : SelectedObjects)
 			{
 				if (!ObjectPtr.IsValid())
@@ -267,15 +267,29 @@ void FAGX_AssetDeleterCustomization::CustomizeDetails(IDetailLayoutBuilder& Deta
 				}
 				UE_LOG(LogAGX, Warning, TEXT("Deleting '%s'."), *ToDelete->GetPathName());
 
+				// This shouldn't be needed, but it removed the `FEditorViewportClient` crash at
+				// least once. Want to replace the same non-crashing behavior without any
+				// FAGX_AssetDeleter custom handling. First attempt is to call NullReferencesToObject
+				// from  DeleteImportedAssets.
+#if 0
+				// Deleter->ToDelete = nullptr;
+#endif
+
+// First implementation that only deletes a single asset, using code similar to some I found in
+// AutomationEditorCommon.cpp.
 #if 0
 				AGX_AssetDeleterCustomization_helpers::DeleteAsset(ToDelete);
 #else
-				FAGX_EditorUtilities::DeleteAsset(*ToDelete);
+				// FAGX_EditorUtilities::DeleteAsset(*ToDelete);
+				AssetsToDelete.Add(ToDelete);
 #endif
 
 				AnyDeleted = true;
 			}
 
+			FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
+
+#if 0
 			/// \todo Test without this part.
 			if (AnyDeleted)
 			{
@@ -289,10 +303,12 @@ void FAGX_AssetDeleterCustomization::CustomizeDetails(IDetailLayoutBuilder& Deta
                     UE_LOG(LogAGX, Warning, TEXT("GEngine is nullptr, cannot run garbage collection."));
 				}
 			}
-
+#endif
 
 			return FReply::Handled();
 		})
 	];
 	// clang-format on
 }
+
+#undef LOCTEXT_NAMESPACE
