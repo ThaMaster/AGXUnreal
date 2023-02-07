@@ -428,6 +428,13 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	 * variant of here since it is incomplete.
 	 */
 
+	/// @todo We get a crash in FEditorViewportClient and don't know why.
+	/// This is an attempt to work around that by cloasing all editors, which will close a bunch of
+	/// viewport. Not the Level Viewport though, we can't close that one.
+	///
+	/// Causes a different, but very similar, crash so commenting this out again.
+	// GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
+
 	// Here the engine implementation creates an FScopedBusyCursor. Should we too?
 
 	// Here the engine implementation calls ObjectTools::AddExtraObjectsToDelete. As of Unreal
