@@ -27,7 +27,7 @@
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
-#include "Widgets/AGX_ImportDialog.h"
+#include "Widgets/AGX_SynchronizeModelDialog.h"
 
 // Unreal Engine includes.
 #include "AssetDeleteModel.h"
@@ -94,16 +94,14 @@ bool FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint)
 	const bool IgnoreDisabledTrimeshes =
 		ModelSourceComponent != nullptr ? ModelSourceComponent->bIgnoreDisabledTrimeshes : false;
 
-	TSharedRef<SAGX_ImportDialog> ImportDialog = SNew(SAGX_ImportDialog);
-	ImportDialog->SetFilePath(FilePath);
-	ImportDialog->SetIgnoreDisabledTrimeshes(IgnoreDisabledTrimeshes);
-	ImportDialog->SetImportType(EAGX_ImportType::Agx);
-	ImportDialog->SetFileTypes(".agx");
-	ImportDialog->RefreshGui();
-	Window->SetContent(ImportDialog);
+	TSharedRef<SAGX_SynchronizeModelDialog> SynchronizeDialog = SNew(SAGX_SynchronizeModelDialog);
+	SynchronizeDialog->SetFilePath(FilePath);
+	SynchronizeDialog->SetIgnoreDisabledTrimeshes(IgnoreDisabledTrimeshes);
+	SynchronizeDialog->RefreshGui();
+	Window->SetContent(SynchronizeDialog);
 	FSlateApplication::Get().AddModalWindow(Window, nullptr);
 
-	if (auto ImportSettings = ImportDialog->ToImportSettings())
+	if (auto Settings = SynchronizeDialog->ToSynchronizeModelSettings())
 	{
 		const static FString Info =
 			"Model synchronization may permanently remove or overwrite existing data.\nContinue?";
@@ -113,7 +111,7 @@ bool FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint)
 			return false;
 		}
 
-		if (AGX_ImporterToBlueprint::SynchronizeModel(*OuterMostParent, *ImportSettings))
+		if (AGX_ImporterToBlueprint::SynchronizeModel(*OuterMostParent, *Settings))
 		{
 			SaveAndCompile(Blueprint);
 		}

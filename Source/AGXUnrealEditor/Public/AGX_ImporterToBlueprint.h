@@ -8,6 +8,7 @@
 class UBlueprint;
 class FString;
 struct FAGX_ImportSettings;
+struct FAGX_SynchronizeModelSettings;
 
 namespace AGX_ImporterToBlueprint
 {
@@ -27,10 +28,10 @@ namespace AGX_ImporterToBlueprint
 	 * updated for Components in child Blueprints if they have not been changed by a user.
 	 *
 	 * @param BaseBP - The Blueprint (base) containing the ModelSourceComponent.
-	 * @param ImportSettings - Struct containing all information needed to perform the
+	 * @param Settings - Struct containing all information needed to perform the
 	 * synchronization.
 	 * @return True if the Model synchronization was successful, false otherwise.
 	 */
 	AGXUNREALEDITOR_API bool SynchronizeModel(
-		UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings);
+		UBlueprint& BaseBP, const FAGX_SynchronizeModelSettings& Settings);
 }

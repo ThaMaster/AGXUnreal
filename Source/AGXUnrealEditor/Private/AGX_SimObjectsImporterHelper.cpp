@@ -489,7 +489,7 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics RigidBody"), Barrier.GetName(), ImportSettings.FilePath,
+			TEXT("AGX Dynamics RigidBody"), Barrier.GetName(), SourceFilePath,
 			TEXT("Could not create new AGX_RigidBodyComponent"));
 		return nullptr;
 	}
@@ -541,7 +541,7 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Sphere"), Barrier.GetName(), ImportSettings.FilePath,
+			TEXT("AGX Dynamics Sphere"), Barrier.GetName(), SourceFilePath,
 			TEXT("Could not create new UAGX_SphereShapeComponent"));
 		return nullptr;
 	}
@@ -574,7 +574,7 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Box"), Barrier.GetName(), ImportSettings.FilePath,
+			TEXT("AGX Dynamics Box"), Barrier.GetName(), SourceFilePath,
 			TEXT("Could not create new UAGX_BoxShapeComponent"));
 		return nullptr;
 	}
@@ -608,7 +608,7 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Cylinder"), Barrier.GetName(), ImportSettings.FilePath,
+			TEXT("AGX Dynamics Cylinder"), Barrier.GetName(), SourceFilePath,
 			TEXT("Could not create new UAGX_CylinderShapeComponent"));
 		return nullptr;
 	}
@@ -641,7 +641,7 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Capsule"), Barrier.GetName(), ImportSettings.FilePath,
+			TEXT("AGX Dynamics Capsule"), Barrier.GetName(), SourceFilePath,
 			TEXT("Could not create new UAGX_CapsuleShapeComponent"));
 		return nullptr;
 	}
@@ -675,7 +675,7 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Trimesh"), Barrier.GetName(), ImportSettings.FilePath,
+			TEXT("AGX Dynamics Trimesh"), Barrier.GetName(), SourceFilePath,
 			TEXT("Could not instantiate a new Trimesh Shape Component."));
 		return nullptr;
 	}
@@ -1044,7 +1044,7 @@ UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	if (Asset == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Shape Material"), Barrier.GetName(), ImportSettings.FilePath,
+			TEXT("AGX Dynamics Shape Material"), Barrier.GetName(), SourceFilePath,
 			TEXT("Could not create a Shape Material Asset from given ShapeMaterialBarrier."));
 		return nullptr;
 	}
@@ -1087,7 +1087,7 @@ UAGX_ContactMaterial* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
 	if (Asset == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Contact Material"), Name, ImportSettings.FilePath,
+			TEXT("AGX Dynamics Contact Material"), Name, SourceFilePath,
 			TEXT("Could not create a Contact Material Asset from given ContactMaterialBarrier."));
 		return nullptr;
 	}
@@ -1127,7 +1127,7 @@ namespace
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("Constraint '%s' imported from '%s' does not have a first body."),
-				*Barrier.GetName(), *Helper.ImportSettings.FilePath);
+				*Barrier.GetName(), *Helper.SourceFilePath);
 		}
 
 		auto ToFName = [](const UAGX_RigidBodyComponent& Body)
@@ -1324,7 +1324,7 @@ void FAGX_SimObjectsImporterHelper::UpdateTwoBodyTire(
 		if (Body == nullptr)
 		{
 			WriteImportErrorMessage(
-				TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), ImportSettings.FilePath,
+				TEXT("AGX Dynamics TwoBodyTire"), Barrier.GetName(), SourceFilePath,
 				TEXT("Could not set Rigid Body"));
 			return;
 		}
@@ -1423,7 +1423,7 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Wire"), Barrier.GetName(), ImportSettings.FilePath,
+			TEXT("AGX Dynamics Wire"), Barrier.GetName(), SourceFilePath,
 			TEXT("Could not create new AGX_WireComponent"));
 		return nullptr;
 	}
@@ -1607,7 +1607,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 	if (Component == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Track"), Barrier.GetName(), ImportSettings.FilePath,
+			TEXT("AGX Dynamics Track"), Barrier.GetName(), SourceFilePath,
 			TEXT("Could not create new AGX_TrackComponent"));
 		return nullptr;
 	}
@@ -1665,7 +1665,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 		if (Body == nullptr)
 		{
 			WriteImportErrorMessage(
-				TEXT("AGX Dynamics Track"), Barrier.GetName(), ImportSettings.FilePath,
+				TEXT("AGX Dynamics Track"), Barrier.GetName(), SourceFilePath,
 				TEXT("Could not set Rigid Body"));
 			return;
 		}
@@ -1705,8 +1705,8 @@ void FAGX_SimObjectsImporterHelper::UpdateModelSourceComponent(UAGX_ModelSourceC
 			return;
 		}
 
-		C->FilePath = ImportSettings.FilePath;
-		C->bIgnoreDisabledTrimeshes = ImportSettings.bIgnoreDisabledTrimeshes;
+		C->FilePath = SourceFilePath;
+		C->bIgnoreDisabledTrimeshes = bIgnoreDisabledTrimeshes;
 		C->StaticMeshComponentToOwningTrimesh.Empty();
 		for (const auto& RestoredSMCTuple : RestoredCollisionStaticMeshComponents)
 		{
@@ -1765,7 +1765,7 @@ UAGX_ObserverFrameComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverF
 			TEXT("While importing from '%s': Observer Frame %s is attached to a Rigid Body that "
 				 "has not been restored. Cannot create Unreal Engine representation. Tried to find "
 				 "Rigid Body with GUID %s."),
-			*ImportSettings.FilePath, *Name, *BodyGuid.ToString());
+			*SourceFilePath, *Name, *BodyGuid.ToString());
 		return nullptr;
 	}
 
@@ -1824,7 +1824,7 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::GetBody(
 			LogAGX, Error,
 			TEXT("While importing from '%s': A component references a body '%s', but that body "
 				 "hasn't been restored."),
-			*ImportSettings.FilePath, *Barrier.GetName());
+			*SourceFilePath, *Barrier.GetName());
 	}
 
 	return Component;
@@ -1897,17 +1897,20 @@ namespace
 }
 
 FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(
-	const FAGX_ImportSettings& InImportSettings)
-	: ImportSettings(InImportSettings)
-	, SourceFileName(FPaths::GetBaseFilename(InImportSettings.FilePath))
+	const FString& InSourceFilePath, bool bInIgnoreDisabledTrimeshes)
+	: SourceFilePath(InSourceFilePath)
+	, SourceFileName(FPaths::GetBaseFilename(SourceFilePath))
 	, DirectoryName(MakeDirectoryName(MakeModelName(SourceFileName)))
+	, bIgnoreDisabledTrimeshes(bInIgnoreDisabledTrimeshes)
 {
 }
 
 FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(
-	const FAGX_ImportSettings& InImportSettings, const FString& InDirectoryName)
-	: ImportSettings(InImportSettings)
-	, SourceFileName(FPaths::GetBaseFilename(InImportSettings.FilePath))
+	const FString& InSourceFilePath, bool bInIgnoreDisabledTrimeshes,
+	const FString& InDirectoryName)
+	: SourceFilePath(InSourceFilePath)
+	, SourceFileName(FPaths::GetBaseFilename(SourceFilePath))
 	, DirectoryName(InDirectoryName)
+	, bIgnoreDisabledTrimeshes(bInIgnoreDisabledTrimeshes)
 {
 }

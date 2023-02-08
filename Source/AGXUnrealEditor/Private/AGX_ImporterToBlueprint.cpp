@@ -200,7 +200,7 @@ namespace
 
 		for (const auto& Shape : SimObjects.GetTrimeshShapes())
 		{
-			if (Helper.ImportSettings.bIgnoreDisabledTrimeshes && !Shape.GetEnableCollisions())
+			if (Helper.bIgnoreDisabledTrimeshes && !Shape.GetEnableCollisions())
 			{
 				if (Shape.HasRenderData())
 				{
@@ -248,8 +248,7 @@ namespace
 
 			for (const auto& Trimesh : Body.GetTrimeshShapes())
 			{
-				if (Helper.ImportSettings.bIgnoreDisabledTrimeshes &&
-					!Trimesh.GetEnableCollisions())
+				if (Helper.bIgnoreDisabledTrimeshes && !Trimesh.GetEnableCollisions())
 				{
 					if (Trimesh.HasRenderData())
 					{
@@ -432,7 +431,7 @@ namespace
 	bool AddComponentsFromAGXArchive(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
 		FSimulationObjectCollection SimObjects;
-		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.ImportSettings.FilePath, SimObjects) ||
+		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, SimObjects) ||
 			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
 			return false;
@@ -441,12 +440,13 @@ namespace
 		return true;
 	}
 
-	bool AddComponentsFromUrdf(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
+	bool AddComponentsFromUrdf(
+		AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper,
+		const FAGX_ImportSettings& ImportSettings)
 	{
 		FSimulationObjectCollection SimObjects;
 		if (!FAGXSimObjectsReader::ReadUrdf(
-				Helper.ImportSettings.FilePath, Helper.ImportSettings.UrdfPackagePath,
-				SimObjects) ||
+				ImportSettings.FilePath, ImportSettings.UrdfPackagePath, SimObjects) ||
 			!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
 			return false;
@@ -455,7 +455,8 @@ namespace
 		return true;
 	}
 
-	AActor* CreateTemplate(FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType)
+	AActor* CreateTemplate(
+		FAGX_SimObjectsImporterHelper& Helper, const FAGX_ImportSettings& ImportSettings)
 	{
 		UActorFactory* Factory =
 			GEditor->FindActorFactoryByClass(UActorFactoryEmptyActor::StaticClass());
@@ -489,8 +490,8 @@ namespace
 		RootActorContainer->SetRootComponent(ActorRootComponent);
 #endif
 
-		const bool Result = ImportType == EAGX_ImportType::Urdf
-								? AddComponentsFromUrdf(*RootActorContainer, Helper)
+		const bool Result = ImportSettings.ImportType == EAGX_ImportType::Urdf
+								? AddComponentsFromUrdf(*RootActorContainer, Helper, ImportSettings)
 								: AddComponentsFromAGXArchive(*RootActorContainer, Helper);
 
 		if (!Result)
@@ -554,12 +555,12 @@ namespace
 	}
 
 	UBlueprint* ImportToBaseBlueprint(
-		FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType)
+		FAGX_SimObjectsImporterHelper& Helper, const FAGX_ImportSettings& ImportSettings)
 	{
 		PreCreationSetup();
 		FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper, true);
 		UPackage* Package = GetPackage(BlueprintPackagePath);
-		AActor* Template = CreateTemplate(Helper, ImportType);
+		AActor* Template = CreateTemplate(Helper, ImportSettings);
 		if (Template == nullptr)
 		{
 			return nullptr;
@@ -593,15 +594,14 @@ namespace
 	}
 
 	UBlueprint* ImportToBlueprint(
-		FAGX_SimObjectsImporterHelper& Helper, EAGX_ImportType ImportType,
-		bool OpenBlueprintEditor = true)
+		FAGX_SimObjectsImporterHelper& Helper, const FAGX_ImportSettings& ImportSettings)
 	{
 		// The result of the import is stored in the BlueprintBase which is placed in the
 		// 'Blueprint' directory in the context browser and should never be edited by the user. It
 		// is the "original". The BlueprintChild is what the user will interact directly with, and
 		// it is a child of the BlueprintBase. This way, we can ensure model synchronization works
 		// as intended.
-		UBlueprint* BlueprintBase = ImportToBaseBlueprint(Helper, ImportType);
+		UBlueprint* BlueprintBase = ImportToBaseBlueprint(Helper, ImportSettings);
 		if (BlueprintBase == nullptr)
 		{
 			return nullptr;
@@ -609,7 +609,7 @@ namespace
 
 		UBlueprint* BlueprintChild = CreateChildBlueprint(BlueprintBase, Helper);
 
-		if (BlueprintChild != nullptr && OpenBlueprintEditor)
+		if (BlueprintChild != nullptr && ImportSettings.bOpenBlueprintEditorAfterImport)
 		{
 			GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(
 				BlueprintChild);
@@ -621,9 +621,9 @@ namespace
 
 UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSettings)
 {
-	FAGX_SimObjectsImporterHelper Helper(ImportSettings);
-	UBlueprint* Bp = ImportToBlueprint(
-		Helper, ImportSettings.ImportType, ImportSettings.bOpenBlueprintEditorAfterImport);
+	FAGX_SimObjectsImporterHelper Helper(
+		ImportSettings.FilePath, ImportSettings.bIgnoreDisabledTrimeshes);
+	UBlueprint* Bp = ImportToBlueprint(Helper, ImportSettings);
 	if (Bp == nullptr)
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
@@ -1239,7 +1239,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void AddOrUpdateRigidBodiesAndOwnedShapes(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
-		const FAGX_ImportSettings& ImportSettings,
+		const FAGX_SynchronizeModelSettings& Settings,
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& ExistingMSTAssets)
 	{
 		for (const auto& RbBarrier : SimulationObjects.GetRigidBodies())
@@ -1269,7 +1269,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_SphereShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes.SphereShapes, Helper, ExistingMSTAssets, RigidBodyNode);
+						ShapeBarrier, BaseBP, SCSNodes.SphereShapes, Helper, ExistingMSTAssets,
+						RigidBodyNode);
 				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 			}
 
@@ -1277,7 +1278,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_BoxShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes.BoxShapes, Helper, ExistingMSTAssets, RigidBodyNode);
+						ShapeBarrier, BaseBP, SCSNodes.BoxShapes, Helper, ExistingMSTAssets,
+						RigidBodyNode);
 				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 			}
 
@@ -1285,7 +1287,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_CylinderShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes.CylinderShapes, Helper, ExistingMSTAssets, RigidBodyNode);
+						ShapeBarrier, BaseBP, SCSNodes.CylinderShapes, Helper, ExistingMSTAssets,
+						RigidBodyNode);
 				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 			}
 
@@ -1293,14 +1296,15 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_CapsuleShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes.CapsuleShapes, Helper, ExistingMSTAssets, RigidBodyNode);
+						ShapeBarrier, BaseBP, SCSNodes.CapsuleShapes, Helper, ExistingMSTAssets,
+						RigidBodyNode);
 				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 			}
 
 			for (const auto& ShapeBarrier : RbBarrier.GetTrimeshShapes())
 			{
 				USCS_Node* RenderDataParent = nullptr;
-				if (!ShapeBarrier.GetEnableCollisions() && ImportSettings.bIgnoreDisabledTrimeshes)
+				if (!ShapeBarrier.GetEnableCollisions() && Settings.bIgnoreDisabledTrimeshes)
 				{
 					RenderDataParent = RigidBodyNode;
 				}
@@ -1342,7 +1346,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void AddOrUpdateBodilessShapes(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
-		const FAGX_ImportSettings& ImportSettings,
+		const FAGX_SynchronizeModelSettings& Settings,
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& ExistingMSTAssets)
 	{
 		for (const auto& Barrier : SimulationObjects.GetSphereShapes())
@@ -1376,7 +1380,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		for (const auto& Barrier : SimulationObjects.GetTrimeshShapes())
 		{
 			USCS_Node* RenderDataParent = nullptr;
-			if (!Barrier.GetEnableCollisions() && ImportSettings.bIgnoreDisabledTrimeshes)
+			if (!Barrier.GetEnableCollisions() && Settings.bIgnoreDisabledTrimeshes)
 			{
 				RenderDataParent = BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode();
 			}
@@ -1643,9 +1647,11 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void AddOrUpdateAll(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects,
-		const FAGX_ImportSettings& ImportSettings)
+		const FAGX_SynchronizeModelSettings& Settings)
 	{
-		FAGX_SimObjectsImporterHelper Helper(ImportSettings, GetModelDirectoryFromAsset(&BaseBP));
+		FAGX_SimObjectsImporterHelper Helper(
+			Settings.FilePath, Settings.bIgnoreDisabledTrimeshes,
+			GetModelDirectoryFromAsset(&BaseBP));
 		FScopedSlowTask ImportTask(100.f, LOCTEXT("AddOrUpdateAll", "Adding new data"), true);
 		ImportTask.MakeDialog();
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Adding data"));
@@ -1664,10 +1670,10 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		ImportTask.EnterProgressFrame(
 			5.f, FText::FromString("Synchronizing Rigid Bodies and Shapes"));
 		AddOrUpdateRigidBodiesAndOwnedShapes(
-			BaseBP, SCSNodes, SimulationObjects, Helper, ImportSettings, ExistingMSTAssets);
+			BaseBP, SCSNodes, SimulationObjects, Helper, Settings, ExistingMSTAssets);
 		ImportTask.EnterProgressFrame(15.f, FText::FromString("Synchronizing Bodiless Shapes"));
 		AddOrUpdateBodilessShapes(
-			BaseBP, SCSNodes, SimulationObjects, Helper, ImportSettings, ExistingMSTAssets);
+			BaseBP, SCSNodes, SimulationObjects, Helper, Settings, ExistingMSTAssets);
 		ImportTask.EnterProgressFrame(15.f, FText::FromString("Synchronizing Constraints"));
 		AddOrUpdateConstraints(BaseBP, SCSNodes, SimulationObjects, Helper);
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Tire Models"));
@@ -1700,8 +1706,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	}
 
 	void RemoveDeletedShapes(
-		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, const FAGX_ImportSettings& ImportSettings,
-		const FShapeGuidsCollection& NewShapeGuids)
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FAGX_SynchronizeModelSettings& Settings, const FShapeGuidsCollection& NewShapeGuids)
 	{
 		auto RemoveUnmatched =
 			[&BaseBP](const TMap<FGuid, bool>& NewGuids, TMap<FGuid, USCS_Node*>& ExistingGuids)
@@ -1735,7 +1741,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				// If we synchronize with the "Ignore disabled Trimeshes" import setting and this
 				// Trimesh has collision disabled, it should be removed.
 				const bool CollisionEnabled = NewShapeGuids.TrimeshShapeGuids[It->Key];
-				if (!CollisionEnabled && ImportSettings.bIgnoreDisabledTrimeshes)
+				if (!CollisionEnabled && Settings.bIgnoreDisabledTrimeshes)
 				{
 					BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
 					It.RemoveCurrent();
@@ -1746,7 +1752,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 	void RemoveDeletedStaticMeshComponents(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, const FShapeGuidsCollection& NewShapeGuids,
-		const FAGX_ImportSettings& ImportSettings)
+		const FAGX_SynchronizeModelSettings& Settings)
 	{
 		// Remove deleted Render Data.
 		for (auto It = SCSNodes.RenderStaticMeshComponents.CreateIterator(); It; ++It)
@@ -1775,7 +1781,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				// 1. The import setting 'bIgnoreDisabledTrimeshes' is used during this
 				// model synchronization.
 				// 2. The AGX Trimesh that is being imported has collision disabled.
-				if (!ImportSettings.bIgnoreDisabledTrimeshes)
+				if (!Settings.bIgnoreDisabledTrimeshes)
 				{
 					continue;
 				}
@@ -1869,12 +1875,12 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void RemoveDeletedComponents(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects,
-		const FAGX_ImportSettings& ImportSettings)
+		const FAGX_SynchronizeModelSettings& Settings)
 	{
 		const FShapeGuidsCollection NewShapeGuids = GetShapeGuids(SimulationObjects);
 
-		RemoveDeletedStaticMeshComponents(BaseBP, SCSNodes, NewShapeGuids, ImportSettings);
-		RemoveDeletedShapes(BaseBP, SCSNodes, ImportSettings, NewShapeGuids);
+		RemoveDeletedStaticMeshComponents(BaseBP, SCSNodes, NewShapeGuids, Settings);
+		RemoveDeletedShapes(BaseBP, SCSNodes, Settings, NewShapeGuids);
 		RemoveDeletedRigidBodies(BaseBP, SCSNodes, SimulationObjects);
 		RemoveDeletedConstraints(BaseBP, SCSNodes, SimulationObjects);
 		RemoveDeletedTireModels(BaseBP, SCSNodes, SimulationObjects);
@@ -1941,7 +1947,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// synchronization.
 	}
 
-	bool SynchronizeModel(UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings)
+	bool SynchronizeModel(UBlueprint& BaseBP, const FAGX_SynchronizeModelSettings& Settings)
 	{
 		FScopedSlowTask ImportTask(100.f, LOCTEXT("SynchronizeModel", "Synchronizing Model"), true);
 		ImportTask.MakeDialog();
@@ -1949,7 +1955,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		SCSNodeCollection SCSNodes(BaseBP);
 		FSimulationObjectCollection SimObjects;
-		if (!FAGXSimObjectsReader::ReadAGXArchive(ImportSettings.FilePath, SimObjects))
+		if (!FAGXSimObjectsReader::ReadAGXArchive(Settings.FilePath, SimObjects))
 		{
 			return false;
 		}
@@ -1965,7 +1971,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 
 		ImportTask.EnterProgressFrame(10.f, FText::FromString("Deleting old Components"));
-		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects, ImportSettings);
+		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects, Settings);
 
 		// This overwrites all (supported) Node names with temporary names.
 		// We do this since old to-be-removed or to-be-renamed Nodes may "block" the availability of
@@ -1975,7 +1981,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		SetUnnamedNameForPossibleCollisions(SCSNodes);
 		ImportTask.EnterProgressFrame(
 			80.f, FText::FromString("Adding and Updating Components and Assets"));
-		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, ImportSettings);
+		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, Settings);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Synchronization"));
 
@@ -1988,9 +1994,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 }
 
 bool AGX_ImporterToBlueprint::SynchronizeModel(
-	UBlueprint& BaseBP, const FAGX_ImportSettings& ImportSettings)
+	UBlueprint& BaseBP, const FAGX_SynchronizeModelSettings& Settings)
 {
-	if (!AGX_ImporterToBlueprint_SynchronizeModel_helpers::SynchronizeModel(BaseBP, ImportSettings))
+	if (!AGX_ImporterToBlueprint_SynchronizeModel_helpers::SynchronizeModel(BaseBP, Settings))
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 			"Some issues occurred during model synchronization. Log category LogAGX in the Console "

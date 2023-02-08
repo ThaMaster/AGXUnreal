@@ -3,55 +3,24 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ImportEnums.h"
-#include "AGX_ImportSettings.h"
-
-// Unreal Engine includes.
-#include "Widgets/SCompoundWidget.h"
+#include "Widgets/AGX_ImportDialogBase.h"
 
 struct FAGX_ImportSettings;
 
-class SAGX_ImportDialog : public SCompoundWidget
+class SAGX_ImportDialog : public SAGX_ImportDialogBase
 {
 public:
-	SLATE_BEGIN_ARGS(SAGX_ImportDialog)
-	{
-	}
-	SLATE_END_ARGS()
-
-	void Construct(const FArguments& InArgs);
-
-	void SetFilePath(const FString& InFilePath);
-	void SetIgnoreDisabledTrimeshes(bool bInIgnoreDisabledTrimesh);
-	void SetFileTypes(const FString& InFileTypes);
-	void SetImportType(EAGX_ImportType InImportType);
-
-	void RefreshGui();
+	void Construct(const FArguments& InArgs) override;
 
 	TOptional<FAGX_ImportSettings> ToImportSettings();
 
-private:
-	TSharedRef<SWidget> CreateBrowseFileGui();
+private:	
 	TSharedRef<SBorder> CreateSettingsGui();
-	TSharedRef<SBorder> CreateImportAGXFileGui();
-	TSharedRef<SBorder> CreateImportURDFFileGui();	
 	TSharedRef<SBorder> CreateImportButtonGui();
-	TSharedRef<SWidget> CreateCheckboxGui();	
-
-	FReply OnBrowseFileButtonClicked();
-	FText GetFilePathText() const;
-
-	FReply OnBrowseUrdfPackageButtonClicked();
+	TSharedRef<SBorder> CreateImportURDFFileGui();
 	FText GetUrdfPackagePathText() const;
-
+	FReply OnBrowseUrdfPackageButtonClicked();
 	FReply OnImportButtonClicked();
 
-	void OnIgnoreDisabledTrimeshCheckboxClicked(ECheckBoxState NewCheckedState);
-
-	FString FileTypes = ".agx;*.urdf";
-	EAGX_ImportType ImportType = EAGX_ImportType::Invalid;
-	FString FilePath;
 	FString UrdfPackagePath;
-	bool bIgnoreDisabledTrimesh = true;
-	bool bUserHasPressedImport = false;
 };

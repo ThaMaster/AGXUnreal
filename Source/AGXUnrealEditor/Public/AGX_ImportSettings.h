@@ -17,3 +17,10 @@ struct FAGX_ImportSettings
 	// file does not have any file paths in it, or obviously, if ImportType is not Urdf.
 	FString UrdfPackagePath;
 };
+
+struct FAGX_SynchronizeModelSettings
+{
+	FString FilePath;
+	bool bIgnoreDisabledTrimeshes = true;
+	bool bOpenBlueprintEditorAfterImport = true;
+};

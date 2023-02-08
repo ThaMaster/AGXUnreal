@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_ImportEnums.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Math/Color.h"
@@ -207,6 +210,8 @@ public:
 	 */
 	template <typename TComponent>
 	static TComponent* CreateComponent(AActor& Owner, USceneComponent& AttachParent);
+
+	static EAGX_ImportType GetFrom(const FString& FilePath);
 };
 
 template <typename UAsset>

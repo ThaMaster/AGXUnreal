@@ -634,3 +634,18 @@ FString FAGX_ImportUtilities::GetUnsetUniqueImportName()
 {
 	return FString("AGX_Import_Unnamed_") + FGuid::NewGuid().ToString();
 }
+
+EAGX_ImportType FAGX_ImportUtilities::GetFrom(const FString& FilePath)
+{
+	const FString FileExtension = FPaths::GetExtension(FilePath);
+	if (FileExtension.Equals("agx"))
+	{
+		return EAGX_ImportType::Agx;
+	}
+	else if (FileExtension.Equals("urdf"))
+	{
+		return EAGX_ImportType::Urdf;
+	}
+
+	return EAGX_ImportType::Invalid;
+}

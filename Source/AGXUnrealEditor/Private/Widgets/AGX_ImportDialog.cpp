@@ -4,21 +4,31 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImportSettings.h"
-#include "AGX_LogCategory.h"
-#include "AGX_ImporterToBlueprint.h"
-#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_SlateUtilities.h"
 
-// Unreal Engine includes.
-#include "Misc/FileHelper.h"
-#include "Misc/Paths.h"
-#include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "SAGX_ImportDialog"
 
+namespace AGX_ImportDialog_helpers
+{
+	bool UrdfHasFilenameAttribute(const FString& FilePath)
+	{
+		FString Content;
+		if (!FFileHelper::LoadFileToString(Content, *FilePath))
+		{
+			UE_LOG(LogAGX, Warning, TEXT("Unable to read file '%s'"), *FilePath);
+			return false;
+		}
+
+		return Content.Contains("filename", ESearchCase::IgnoreCase);
+	}
+}
 
 void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 {
+	FileTypes = ".agx;*.urdf";
+
 	// clang-format off
 	ChildSlot
 	[
@@ -70,26 +80,6 @@ void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 	// clang-format on
 }
 
-void SAGX_ImportDialog::SetFilePath(const FString& InFilePath)
-{
-	FilePath = InFilePath;
-}
-
-void SAGX_ImportDialog::SetIgnoreDisabledTrimeshes(bool bInIgnoreDisabledTrimesh)
-{
-	bIgnoreDisabledTrimesh = bInIgnoreDisabledTrimesh;
-}
-
-void SAGX_ImportDialog::SetFileTypes(const FString& InFileTypes)
-{
-	FileTypes = InFileTypes;
-}
-
-void SAGX_ImportDialog::SetImportType(EAGX_ImportType InImportType)
-{
-	ImportType = InImportType;
-}
-
 TOptional<FAGX_ImportSettings> SAGX_ImportDialog::ToImportSettings()
 {
 	if (!bUserHasPressedImport)
@@ -114,87 +104,35 @@ TOptional<FAGX_ImportSettings> SAGX_ImportDialog::ToImportSettings()
 	return Settings;
 }
 
-namespace AGX_ImportDialog_helpers
+TSharedRef<SBorder> SAGX_ImportDialog::CreateSettingsGui()
 {
-	FSlateFontInfo CreateFont(int Size)
+	if (ImportType == EAGX_ImportType::Invalid)
 	{
-		FSlateFontInfo F = IPropertyTypeCustomizationUtils::GetRegularFont();
-		F.Size = Size;
-		return F;
-	};
-
-	EAGX_ImportType GetFrom(const FString& FilePath)
-	{
-		const FString FileExtension = FPaths::GetExtension(FilePath);
-		if (FileExtension.Equals("agx"))
-		{
-			return EAGX_ImportType::Agx;
-		}
-		else if (FileExtension.Equals("urdf"))
-		{
-			return EAGX_ImportType::Urdf;
-		}
-
-		return EAGX_ImportType::Invalid;
+		return MakeShared<SBorder>();
 	}
-
-	bool UrdfHasFilenameAttribute(const FString& FilePath)
-	{
-		FString Content;
-		if (!FFileHelper::LoadFileToString(Content, *FilePath))
-		{
-			UE_LOG(LogAGX, Warning, TEXT("Unable to read file '%s'"), *FilePath);
-			return false;
-		}
-
-		return Content.Contains("filename", ESearchCase::IgnoreCase);
-	}
-}
-
-TSharedRef<SWidget> SAGX_ImportDialog::CreateBrowseFileGui()
-{
-	using namespace AGX_ImportDialog_helpers;
 
 	// clang-format off
-	return SNew(SVerticalBox)
-		+ SVerticalBox::Slot()
-		.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
-		.AutoHeight()
+	return SNew(SBorder)
+		.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
+		.BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
+		.Padding(FMargin(5.0f, 5.0f))
+		.Content()
 		[
-			SNew(STextBlock)
-			.Text(LOCTEXT("BrowseFileText", "Select file to import"))
-			.Font(CreateFont(12))
-		]
-		+ SVerticalBox::Slot()
-		.AutoHeight()
-		.Padding(FMargin(5.f, 5.f))
-		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot()
-			.AutoWidth()
-			.Padding(FMargin(0.f, 0.f, 33.f, 0.f))
+			SNew(SVerticalBox)	
+			+ SVerticalBox::Slot()
+			.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
+			.AutoHeight()
 			[
 				SNew(STextBlock)
-				.Text(LOCTEXT("FilePathText", "File:"))
-				.Font(CreateFont(10))
+				.Text(LOCTEXT("SettingsText", "Settings"))
+				.Font(FAGX_SlateUtilities::CreateFont(12))
 			]
-			+ SHorizontalBox::Slot()
-			.Padding(FMargin(0.f, 0.f, 5.f, 0.f))
-			.AutoWidth()
+			+ SVerticalBox::Slot()
+			.Padding(FMargin(50.0f, 10.0f, 10.f, 10.f))
+			.AutoHeight()
 			[
-				SNew(SEditableTextBox)
-				.MinDesiredWidth(150.0f)
-				.Text(this, &SAGX_ImportDialog::GetFilePathText)
-			]
-			+ SHorizontalBox::Slot()
-			.AutoWidth()
-			[
-				SNew(SButton)
-				.Text(LOCTEXT("BrowseButtonText", "Browse..."))
-				.ToolTipText(LOCTEXT("BrowseButtonTooltip",
-					"Browse to file to import."))
-				.OnClicked(this, &SAGX_ImportDialog::OnBrowseFileButtonClicked)
-			]
+				CreateCheckboxGui()
+			]			
 		];
 	// clang-format on
 }
@@ -228,46 +166,6 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateImportButtonGui()
 	// clang-format on
 }
 
-TSharedRef<SBorder> SAGX_ImportDialog::CreateSettingsGui()
-{
-	if (ImportType == EAGX_ImportType::Invalid)
-	{
-		return MakeShared<SBorder>();
-	}
-
-	using namespace AGX_ImportDialog_helpers;
-
-	// clang-format off
-	return SNew(SBorder)
-		.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
-		.BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
-		.Padding(FMargin(5.0f, 5.0f))
-		.Content()
-		[
-			SNew(SVerticalBox)	
-			+ SVerticalBox::Slot()
-			.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
-			.AutoHeight()
-			[
-				SNew(STextBlock)
-				.Text(LOCTEXT("SettingsText", "Settings"))
-				.Font(CreateFont(12))
-			]
-			+ SVerticalBox::Slot()
-			.Padding(FMargin(50.0f, 10.0f, 10.f, 10.f))
-			.AutoHeight()
-			[
-				CreateCheckboxGui()
-			]			
-		];
-	// clang-format on
-}
-
-TSharedRef<SBorder> SAGX_ImportDialog::CreateImportAGXFileGui()
-{
-	return MakeShared<SBorder>();
-}
-
 TSharedRef<SBorder> SAGX_ImportDialog::CreateImportURDFFileGui()
 {
 	if (ImportType != EAGX_ImportType::Urdf)
@@ -275,8 +173,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateImportURDFFileGui()
 		return MakeShared<SBorder>();
 	}
 
-	using namespace AGX_ImportDialog_helpers;
-	if (!UrdfHasFilenameAttribute(FilePath))
+	if (!AGX_ImportDialog_helpers::UrdfHasFilenameAttribute(FilePath))
 	{
 		return MakeShared<SBorder>();
 	}
@@ -295,7 +192,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateImportURDFFileGui()
 						[
 							SNew(STextBlock)
 							.Text(LOCTEXT("BrowseUrdfPackagePathText", "Select URDF package path"))
-							.Font(CreateFont(12))
+							.Font(FAGX_SlateUtilities::CreateFont(12))
 						]
 						+ SVerticalBox::Slot()
 						.AutoHeight()
@@ -308,7 +205,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateImportURDFFileGui()
 							[
 								SNew(STextBlock)
 								.Text(LOCTEXT("UrdfPackagePathText", "URDF Package:"))
-								.Font(CreateFont(10))
+								.Font(FAGX_SlateUtilities::CreateFont(10))
 							]
 							+ SHorizontalBox::Slot()
 							.Padding(FMargin(0.f, 0.f, 5.f, 0.f))
@@ -333,72 +230,6 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateImportURDFFileGui()
 	// clang-format on
 }
 
-TSharedRef<SWidget> SAGX_ImportDialog::CreateCheckboxGui()
-{
-	using namespace AGX_ImportDialog_helpers;
-
-	// clang-format off
-	return SNew(SVerticalBox)
-		+ SVerticalBox::Slot()
-		.AutoHeight()
-		.Padding(FMargin(5.f, 5.f))
-		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot()
-			.Padding(FMargin(0.f, 0.f, 5.f, 0.f))
-			.AutoWidth()
-			[
-				SNew(SCheckBox)
-					.ToolTipText(LOCTEXT("IgnoreDisabledTrimeshCheckBoxTooltip",
-						"Any Trimesh that has collision disabled will be ignored. "
-						"Only its visual representation will be imported."))
-					.OnCheckStateChanged(this, &SAGX_ImportDialog::OnIgnoreDisabledTrimeshCheckboxClicked)
-					.IsChecked(bIgnoreDisabledTrimesh)
-			]
-			+ SHorizontalBox::Slot()
-			.AutoWidth()
-			.Padding(FMargin(0.f, 0.f, 33.f, 0.f))
-			[
-				SNew(STextBlock)
-				.Text(LOCTEXT("IgnoreDisabledTrimeshText", "Ignore disabled Trimeshes (recommended for large models)"))
-				.Font(CreateFont(10))
-			]
-		];
-	// clang-format on
-}
-
-FReply SAGX_ImportDialog::OnBrowseFileButtonClicked()
-{
-	FilePath = FAGX_EditorUtilities::SelectExistingFileDialog("file", FileTypes);
-	ImportType = AGX_ImportDialog_helpers::GetFrom(FilePath);
-
-	RefreshGui();
-
-	if (ImportType == EAGX_ImportType::Invalid && !FilePath.IsEmpty())
-	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Unable to detect file type for selected type.");
-		FilePath = "";
-		return FReply::Handled();
-	}
-
-	return FReply::Handled();
-}
-
-FText SAGX_ImportDialog::GetFilePathText() const
-{
-	return FText::FromString(FilePath);
-}
-
-FReply SAGX_ImportDialog::OnBrowseUrdfPackageButtonClicked()
-{
-	const FString UrdfDir = FPaths::GetPath(FilePath);
-	const FString StartDir = FPaths::DirectoryExists(UrdfDir) ? UrdfDir : FString("");
-	UrdfPackagePath = FAGX_EditorUtilities::SelectExistingDirectoryDialog(
-		"Select URDF package directory", StartDir, true);
-	return FReply::Handled();
-}
-
 FText SAGX_ImportDialog::GetUrdfPackagePathText() const
 {
 	return FText::FromString(UrdfPackagePath);
@@ -417,14 +248,13 @@ FReply SAGX_ImportDialog::OnImportButtonClicked()
 	return FReply::Handled();
 }
 
-void SAGX_ImportDialog::OnIgnoreDisabledTrimeshCheckboxClicked(ECheckBoxState NewCheckedState)
+FReply SAGX_ImportDialog::OnBrowseUrdfPackageButtonClicked()
 {
-	bIgnoreDisabledTrimesh = NewCheckedState == ECheckBoxState::Checked;
-}
-
-void SAGX_ImportDialog::RefreshGui()
-{
-	Construct(FArguments());
+	const FString UrdfDir = FPaths::GetPath(FilePath);
+	const FString StartDir = FPaths::DirectoryExists(UrdfDir) ? UrdfDir : FString("");
+	UrdfPackagePath = FAGX_EditorUtilities::SelectExistingDirectoryDialog(
+		"Select URDF package directory", StartDir, true);
+	return FReply::Handled();
 }
 
 #undef LOCTEXT_NAMESPACE

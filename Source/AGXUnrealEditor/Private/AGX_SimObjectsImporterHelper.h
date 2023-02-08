@@ -205,13 +205,16 @@ public:
 	 */
 	void FinalizeImport();
 
-	explicit FAGX_SimObjectsImporterHelper(const FAGX_ImportSettings& InImportSettings);
 	explicit FAGX_SimObjectsImporterHelper(
-		const FAGX_ImportSettings& InImportSettings, const FString& InDirectoryName);
+		const FString& InSourceFilePath, bool bInIgnoreDisabledTrimeshes);
+	explicit FAGX_SimObjectsImporterHelper(
+		const FString& InSourceFilePath, bool bInIgnoreDisabledTrimeshes,
+		const FString& InDirectoryName);
 
-	const FAGX_ImportSettings ImportSettings;
+	const FString SourceFilePath;
 	const FString SourceFileName;
 	const FString DirectoryName;
+	const bool bIgnoreDisabledTrimeshes;
 
 private:
 	void UpdateShapeComponent(

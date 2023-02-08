@@ -211,13 +211,12 @@ namespace AGX_SynchronizeModelTest_helpers
 			return false;
 		}
 
-		FAGX_ImportSettings ImportSettings;
-		ImportSettings.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
-		ImportSettings.bOpenBlueprintEditorAfterImport = false;
-		ImportSettings.FilePath = ArchiveFilePath;
-		ImportSettings.ImportType = EAGX_ImportType::Agx;
+		FAGX_SynchronizeModelSettings Settigns;
+		Settigns.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
+		Settigns.bOpenBlueprintEditorAfterImport = false;
+		Settigns.FilePath = ArchiveFilePath;
 
-		return AGX_ImporterToBlueprint::SynchronizeModel(BaseBp, ImportSettings);
+		return AGX_ImporterToBlueprint::SynchronizeModel(BaseBp, Settigns);
 	}
 }
 
