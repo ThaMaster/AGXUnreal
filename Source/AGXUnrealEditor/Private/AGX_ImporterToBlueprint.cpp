@@ -1642,10 +1642,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	// corresponding SCS Node removed from SCSNodes as well.
 	void AddOrUpdateAll(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
-		const FSimulationObjectCollection& SimulationObjects,
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
 		const FAGX_ImportSettings& ImportSettings)
 	{
-		FAGX_SimObjectsImporterHelper Helper(ImportSettings, GetModelDirectoryFromAsset(&BaseBP));
 		FScopedSlowTask ImportTask(100.f, LOCTEXT("AddOrUpdateAll", "Adding new data"), true);
 		ImportTask.MakeDialog();
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Adding data"));
@@ -1862,6 +1861,30 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
+	/**
+	 * Delete assets that are no longer used.
+	 *
+	 * We find such assets by enumerating the SCS collection and comparing each with the simulation
+	 * object collection. Any asset that is found in the SCS collection but not found in the
+	 * simulation object collection is deleted.
+	 *
+	 * Comparison is done on GUID/UUIDs.
+	 *
+	 * Mesh assets are currently not comparable, i.e. they can get new triangle data but keep the
+	 * same GUID, and we cannot compare triangle by triangle because Unreal Engine modifies them
+	 * when building the Static Mesh asset, so they are always deleted and recreated.
+	 */
+	void DeleteRemovedAssets(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
+		const FAGX_ImportSettings& ImportSettings)
+	{
+		TArray<UObject*> AssetsToDelete;
+
+		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
+
+	}
+
 	// Removes Components that are not present in the new SimulationObjectCollection, meaning they
 	// were deleted from the source file since the previous import. The passed SCSNodes will also
 	// be kept up to date, i.e. elements removed from BaseBP will have their corresponding SCS Node
@@ -1964,6 +1987,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			return false;
 		}
 
+		FAGX_SimObjectsImporterHelper Helper(ImportSettings, GetModelDirectoryFromAsset(&BaseBP));
+
 		ImportTask.EnterProgressFrame(10.f, FText::FromString("Deleting old Components"));
 		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects, ImportSettings);
 
@@ -1975,7 +2000,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		SetUnnamedNameForPossibleCollisions(SCSNodes);
 		ImportTask.EnterProgressFrame(
 			80.f, FText::FromString("Adding and Updating Components and Assets"));
-		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, ImportSettings);
+		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, Helper, ImportSettings);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Synchronization"));
 
