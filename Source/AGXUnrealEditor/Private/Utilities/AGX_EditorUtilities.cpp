@@ -475,9 +475,7 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	/// Causes a different, but very similar, crash so commenting this out again.
 	// GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
 
-#if 0
 	TArray<UObject*> ObjectsToDelete = InAssets;
-#endif
 
 	// Here the engine implementation creates an FScopedBusyCursor. Should we too?
 
@@ -517,10 +515,10 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 		TArray<UPackage*> Packages;
 		for (UObject* Object : ObjectsToDelete)
 		{
-			Packages.AddUnique(Asset->GetOutermost());
+			Packages.AddUnique(Object->GetOutermost());
 
 			// Part of FAssetData experiment.
-			IAssetRegistry::GetChecked().GetAssetsByPath(FName(*Asset->GetPathName()), AssetData);
+			IAssetRegistry::GetChecked().GetAssetsByPath(FName(*Object->GetPathName()), AssetData);
 		}
 		if (!UPackageTools::HandleFullyLoadingPackages(
 				Packages, LOCTEXT("DeleteImportedAssets", "Delete imported assets.")))
@@ -626,20 +624,21 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 		}
 	}
 #endif
+
 	// Let everyone know that these assets are about to disappear, so they can clear any references
 	// they may have to the assets.
-	FEditorDelegates::OnAssetsPreDelete.Broadcast(InAssets);
+	FEditorDelegates::OnAssetsPreDelete.Broadcast(ObjectsToDelete);
 
 	/// @todo I don't see why I would need to do this, but it seems to fix the crash in
 	/// FEditorViewportClient.
-	for (UObject* Asset : InAssets)
+	for (UObject* Object : ObjectsToDelete)
 	{
-		NullReferencesToObject(Asset);
+		NullReferencesToObject(Object);
 	}
 
 	// The delete model helps us find references to the deleted assets.
 	/// \todo Engine code creates a shared pointer here. Is that necessary?
-	FAssetDeleteModel DeleteModel(InAssets);
+	FAssetDeleteModel DeleteModel(ObjectsToDelete);
 
 	// Here the engine implementation uses GWarn to begin a slow task. The model
 	// synchronize code already have a progress bar created with FScopedSlowTask, not sure how
