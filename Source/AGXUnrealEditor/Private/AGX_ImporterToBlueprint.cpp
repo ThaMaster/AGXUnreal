@@ -1947,7 +1947,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		SetUnnamedName(SCSNodes.ContactMaterialRegistrarComponent);
 		SetUnnamedName(SCSNodes.ModelSourceComponent);
 
-		// Important note: it turns out that calling ´USCS_Node::SetVariableName´ is extremely slow
+		// Important note: it turns out that calling USCS_Node::SetVariableName is extremely slow
 		// performance wise, taking tens of milliseconds. For large models it is not uncommon that
 		// we get several hundreds of Components in the Blueprint after an import. This means we are
 		// spending a huge amount of time simply renaming SCS Nodes during the model
