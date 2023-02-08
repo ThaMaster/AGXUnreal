@@ -1916,6 +1916,39 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				}
 			}
 		}
+
+		// Delete all render and collision meshes.
+		//
+		// We currently can't reuse the old assets because we have no way of knowing if they have
+		// been changed or not since we, unfortunately, store these meshes as Unreal Engine Static
+		// Mesh assets which Unreal Engine changes during import. For the render mesh we may not
+		// have a choice since they are for rendering, but the collision mesh should perhaps be
+		// a custom asset whose storage is byte-compatible with AGX Dynamics trimesh.
+		{
+			const FString RenderMeshDirPath =
+				GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportRenderMeshDirectoryName());
+			const FString CollisionMeshDirPath =
+				GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportStaticMeshDirectoryName());
+
+			TArray<UStaticMesh*> RenderMeshes =
+				FAGX_EditorUtilities::FindAssets<UStaticMesh>(RenderMeshDirPath);
+			TArray<UStaticMesh*> CollisionMeshes =
+				FAGX_EditorUtilities::FindAssets<UStaticMesh>(CollisionMeshDirPath);
+
+			UE_LOG(LogAGX, Warning, TEXT("Render meshes: "), *RenderMeshDirPath);
+			for (UStaticMesh* Mesh : RenderMeshes)
+			{
+				UE_LOG(LogAGX, Warning, TEXT("  %s"), *Mesh->GetPathName());
+				AssetsToDelete.AddUnique(Mesh);
+			}
+			UE_LOG(LogAGX, Warning, TEXT("Collision meshes: "), *CollisionMeshDirPath);
+			for (UStaticMesh* Mesh : CollisionMeshes)
+			{
+				UE_LOG(LogAGX, Warning, TEXT("  %s"), *Mesh->GetPathName());
+				AssetsToDelete.AddUnique(Mesh);
+			}
+		}
+
 		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
 
 	}
