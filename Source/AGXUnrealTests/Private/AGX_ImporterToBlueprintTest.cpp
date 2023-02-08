@@ -937,9 +937,9 @@ namespace CheckRenderMaterialImportedCommand_helpers
 		// These are the default material properties in AGX Dynamics. Each test override a subset of
 		// these.
 		FVector4 Ambient = LinearToSRGB({0.01f, 0.0028806f, 0.0f, 1.0f});
-		FVector4 Diffuse = LinearToSRGB({0.8962694f, 0.258183f, 0.0f, 1.0f});
+		FVector4 Diffuse = LinearToSRGB({0.822786f, 0.822786f, 0.822786f, 1.0f});
 		FVector4 Emissive = LinearToSRGB({0.0f, 0.0f, 0.0f, 1.0f});
-		float Shininess {0.0f};
+		float Shininess {0.6f};
 	};
 
 	void TestMaterial(
