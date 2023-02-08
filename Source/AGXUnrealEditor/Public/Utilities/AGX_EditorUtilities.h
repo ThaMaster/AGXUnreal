@@ -74,7 +74,7 @@ public:
 
 	static bool DeleteAsset(UObject& Asset);
 
-	static int32 DeleteImportedAssets(const TArray<UObject*> Assets);
+	static int32 DeleteImportedAssets(const TArray<UObject*>& Assets);
 
 	static void NullReferencesToObject(UObject* ToDelete);
 

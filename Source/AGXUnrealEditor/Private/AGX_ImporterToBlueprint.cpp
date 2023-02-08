@@ -57,6 +57,7 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_PropertyUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
+#include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
 #include "ActorFactories/ActorFactoryEmptyActor.h"
@@ -1647,11 +1648,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void AddOrUpdateAll(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects,
-		const FAGX_SynchronizeModelSettings& Settings)
+		const FAGX_SynchronizeModelSettings& Settings, FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FAGX_SimObjectsImporterHelper Helper(
-			Settings.FilePath, Settings.bIgnoreDisabledTrimeshes,
-			GetModelDirectoryFromAsset(&BaseBP));
 		FScopedSlowTask ImportTask(100.f, LOCTEXT("AddOrUpdateAll", "Adding new data"), true);
 		ImportTask.MakeDialog();
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Adding data"));
@@ -1868,6 +1866,93 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
+	/**
+	 * Delete assets that are no longer used.
+	 *
+	 * We find such assets by enumerating the SCS collection and comparing each with the simulation
+	 * object collection. Any asset that is found in the SCS collection but not found in the
+	 * simulation object collection is deleted.
+	 *
+	 * Comparison is done on GUID/UUIDs.
+	 *
+	 * Mesh assets are currently not comparable, i.e. they can get new triangle data but keep the
+	 * same GUID, and we cannot compare triangle by triangle because Unreal Engine modifies them
+	 * when building the Static Mesh asset, so they are always deleted and recreated.
+	 */
+	void DeleteRemovedAssets(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
+		const FAGX_SynchronizeModelSettings& Settings)
+	{
+		TArray<UObject*> AssetsToDelete;
+
+		// Delete removed contact materials.
+		UE_LOG(LogAGX, Warning, TEXT("Contact Materials:"));
+		if (SCSNodes.ContactMaterialRegistrarComponent != nullptr)
+		{
+			const TArray<FContactMaterialBarrier>& Barriers =
+				SimulationObjects.GetContactMaterials();
+
+			if (auto Registrar = Cast<UAGX_ContactMaterialRegistrarComponent>(
+					SCSNodes.ContactMaterialRegistrarComponent->ComponentTemplate))
+			{
+				for (UAGX_ContactMaterial* Asset : Registrar->ContactMaterials)
+				{
+					const FGuid Guid = Asset->ImportGuid;
+					UE_LOG(LogAGX, Warning, TEXT("  Checking asset GUID %s..."), *Guid.ToString());
+					auto Predicate = [&Guid](const FContactMaterialBarrier& Barrier)
+					{
+						UE_LOG(
+							LogAGX, Warning, TEXT("    ...against imported GUID %s: %s"),
+							*Barrier.GetGuid().ToString(),
+							(Guid == Barrier.GetGuid() ? TEXT("Match") : TEXT("No")));
+						return Guid == Barrier.GetGuid();
+					};
+					if (!Barriers.ContainsByPredicate(Predicate))
+					{
+						UE_LOG(LogAGX, Warning, TEXT("Did not find a match, adding asset to delete list."));
+						AssetsToDelete.AddUnique(Asset);
+					}
+				}
+			}
+		}
+
+		// Delete all render and collision meshes.
+		//
+		// We currently can't reuse the old assets because we have no way of knowing if they have
+		// been changed or not since we, unfortunately, store these meshes as Unreal Engine Static
+		// Mesh assets which Unreal Engine changes during import. For the render mesh we may not
+		// have a choice since they are for rendering, but the collision mesh should perhaps be
+		// a custom asset whose storage is byte-compatible with AGX Dynamics trimesh.
+		{
+			const FString RenderMeshDirPath =
+				GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportRenderMeshDirectoryName());
+			const FString CollisionMeshDirPath =
+				GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportStaticMeshDirectoryName());
+
+			TArray<UStaticMesh*> RenderMeshes =
+				FAGX_EditorUtilities::FindAssets<UStaticMesh>(RenderMeshDirPath);
+			TArray<UStaticMesh*> CollisionMeshes =
+				FAGX_EditorUtilities::FindAssets<UStaticMesh>(CollisionMeshDirPath);
+
+			UE_LOG(LogAGX, Warning, TEXT("Render meshes: "), *RenderMeshDirPath);
+			for (UStaticMesh* Mesh : RenderMeshes)
+			{
+				UE_LOG(LogAGX, Warning, TEXT("  %s"), *Mesh->GetPathName());
+				AssetsToDelete.AddUnique(Mesh);
+			}
+			UE_LOG(LogAGX, Warning, TEXT("Collision meshes: "), *CollisionMeshDirPath);
+			for (UStaticMesh* Mesh : CollisionMeshes)
+			{
+				UE_LOG(LogAGX, Warning, TEXT("  %s"), *Mesh->GetPathName());
+				AssetsToDelete.AddUnique(Mesh);
+			}
+		}
+
+		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
+
+	}
+
 	// Removes Components that are not present in the new SimulationObjectCollection, meaning they
 	// were deleted from the source file since the previous import. The passed SCSNodes will also
 	// be kept up to date, i.e. elements removed from BaseBP will have their corresponding SCS Node
@@ -1925,7 +2010,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		SetUnnamedName(SCSNodes.ContactMaterialRegistrarComponent);
 		SetUnnamedName(SCSNodes.ModelSourceComponent);
 
-		// Important note: it turns out that calling ´USCS_Node::SetVariableName´ is extremely slow
+		// Important note: it turns out that calling USCS_Node::SetVariableName is extremely slow
 		// performance wise, taking tens of milliseconds. For large models it is not uncommon that
 		// we get several hundreds of Components in the Blueprint after an import. This means we are
 		// spending a huge amount of time simply renaming SCS Nodes during the model
@@ -1970,7 +2055,20 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			return false;
 		}
 
-		ImportTask.EnterProgressFrame(10.f, FText::FromString("Deleting old Components"));
+		FAGX_SimObjectsImporterHelper Helper(
+			Settings.FilePath, Settings.bIgnoreDisabledTrimeshes,
+			GetModelDirectoryFromAsset(&BaseBP));
+
+		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Deleting old assets"));
+// Asset deletion disabled until first pass complete. Still very experimental.
+#if 0
+		DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, Settings);
+
+		/// @todo Early out for testing purposes, should not be merged to master.
+		return true;
+#endif
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Deleting old Components"));
 		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects, Settings);
 
 		// This overwrites all (supported) Node names with temporary names.
@@ -1981,7 +2079,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		SetUnnamedNameForPossibleCollisions(SCSNodes);
 		ImportTask.EnterProgressFrame(
 			80.f, FText::FromString("Adding and Updating Components and Assets"));
-		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, Settings);
+		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, Settings, Helper);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Synchronization"));
 
@@ -2000,8 +2098,7 @@ bool AGX_ImporterToBlueprint::SynchronizeModel(
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 			"Some issues occurred during model synchronization. Log category LogAGX in the Console "
-			"may "
-			"contain more information.",
+			"may contain more information.",
 			"Synchronize model");
 		return false;
 	}

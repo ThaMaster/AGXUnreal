@@ -408,9 +408,9 @@ bool FAGX_EditorUtilities::DeleteAsset(UObject& Asset)
 	return true;
 }
 
-int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets)
+int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAssets)
 {
-#if 1
+#if 0
 	UE_LOG(LogAGX, Warning, TEXT("Deleting %d assets with ObjectTools::DeleteAssets."), InAssets.Num());
 	// The other implementation tries to recreate ObjectTools::(Force)DeleteObjects but without the
 	// modal dialog. That causes crashes.
@@ -421,6 +421,14 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	for (UObject* Asset : InAssets)
 	{
 		UE_LOG(LogAGX, Warning, TEXT("Asked to delete asset for object %s"), *Asset->GetPathName());
+		/*
+		AGX_EditorUtilities.cpp(427): warning C4996:
+		'IAssetRegistry::GetAssetByObjectPath':
+		Asset path FNames have been deprecated,
+		use Soft Object Path instead.
+		Please update your code to the new API before upgrading to the next release,
+		otherwise your project will no longer compile.``
+		*/
 		FAssetData AssetToDelete =
 			IAssetRegistry::GetChecked().GetAssetByObjectPath(FName(*Asset->GetPathName()));
 		if (AssetToDelete.IsValid() && AssetToDelete.GetAsset() != nullptr)
@@ -464,8 +472,6 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	 * variant of here since it is incomplete.
 	 */
 
-
-
 	/// @todo We get a crash in FEditorViewportClient and don't know why.
 	/// This is an attempt to work around that by cloasing all editors, which will close a bunch of
 	/// viewport. Not the Level Viewport though, we can't close that one.
@@ -473,9 +479,7 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	/// Causes a different, but very similar, crash so commenting this out again.
 	// GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
 
-#if 0
 	TArray<UObject*> ObjectsToDelete = InAssets;
-#endif
 
 	// Here the engine implementation creates an FScopedBusyCursor. Should we too?
 
@@ -499,7 +503,9 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	FEditorDelegates::OnAssetsCanDelete.Broadcast(ObjectsToDelete, CanDeleteResult);
 	if (!CanDeleteResult.Get())
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Cannot currently delete selected objects. See log for details."));
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot currently delete selected objects. See log for details."));
 		return 0;
 	}
 
@@ -515,10 +521,10 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 		TArray<UPackage*> Packages;
 		for (UObject* Object : ObjectsToDelete)
 		{
-			Packages.AddUnique(Asset->GetOutermost());
+			Packages.AddUnique(Object->GetOutermost());
 
 			// Part of FAssetData experiment.
-			IAssetRegistry::GetChecked().GetAssetsByPath(FName(*Asset->GetPathName()), AssetData);
+			IAssetRegistry::GetChecked().GetAssetsByPath(FName(*Object->GetPathName()), AssetData);
 		}
 		if (!UPackageTools::HandleFullyLoadingPackages(
 				Packages, LOCTEXT("DeleteImportedAssets", "Delete imported assets.")))
@@ -549,8 +555,12 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	}
 
 	// Here the engine implementation checks if the list of assets to delete include an active
-	// world, including all editor world contexts and streaming levels. We currently don't create
-	// any worlds during import so don't need to handle that case yet.
+	// world, including all editor world contexts and streaming levels, by calling
+	// ObjectTools::ContainsWorldInUse. That function isn't available to use, so copy-pasted it
+	// here. I don't like it, and not sure we're even allowed to since this is a sizable chunk of
+	// code, larger than the 30 lines mentioned in section 4.a.i of the Unreal Engine EULA.
+	// Different context, but the 30 lines limit is still a decent guideline. We currently don't
+	// create any worlds during import so don't need to handle that case yet.
 #if 0
 	/// @todo Attempt to prevent crash, bail if attempt to delete world in use.
 	{
@@ -624,20 +634,21 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 		}
 	}
 #endif
+
 	// Let everyone know that these assets are about to disappear, so they can clear any references
 	// they may have to the assets.
-	FEditorDelegates::OnAssetsPreDelete.Broadcast(InAssets);
+	FEditorDelegates::OnAssetsPreDelete.Broadcast(ObjectsToDelete);
 
 	/// @todo I don't see why I would need to do this, but it seems to fix the crash in
 	/// FEditorViewportClient.
-	for (UObject* Asset : InAssets)
+	for (UObject* Object : ObjectsToDelete)
 	{
-		NullReferencesToObject(Asset);
+		NullReferencesToObject(Object);
 	}
 
 	// The delete model helps us find references to the deleted assets.
 	/// \todo Engine code creates a shared pointer here. Is that necessary?
-	FAssetDeleteModel DeleteModel(InAssets);
+	FAssetDeleteModel DeleteModel(ObjectsToDelete);
 
 	// Here the engine implementation uses GWarn to begin a slow task. The model
 	// synchronize code already have a progress bar created with FScopedSlowTask, not sure how

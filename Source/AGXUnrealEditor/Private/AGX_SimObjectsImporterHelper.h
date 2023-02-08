@@ -4,31 +4,42 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImportEnums.h"
+#include "AGX_ImportSettings.h"
 #include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
 #include "Containers/Map.h"
 #include "Misc/Guid.h"
 
-// AGXUnreal classes.
+// AGX Dynamics for Unreal structs.
+struct FAGX_ImportSettings;
+
+// AGX Dynamics for Unreal classes.
 class FBallJointBarrier;
+class FBoxShapeBarrier;
+class FCapsuleShapeBarrier;
 class FContactMaterialBarrier;
 class FConstraintBarrier;
+class FCylinderShapeBarrier;
 class FCylindricalJointBarrier;
 class FDistanceJointBarrier;
 class FHingeBarrier;
 class FLockJointBarrier;
 class FPrismaticBarrier;
+class FRigidBodyBarrier;
+class FSphereShapeBarrier;
 class FShapeMaterialBarrier;
 class FTwoBodyTireBarrier;
 class FWireBarrier;
 class UAGX_RigidBodyComponent;
 class UAGX_SphereShapeComponent;
 class UAGX_BoxShapeComponent;
+class UAGX_ConstraintComponent;
 class UAGX_CylinderShapeComponent;
 class UAGX_CapsuleShapeComponent;
 class UAGX_TrimeshShapeComponent;
 class UAGX_ShapeMaterial;
+class UAGX_ShapeComponent;
 class UAGX_ContactMaterial;
 class UAGX_HingeConstraintComponent;
 class UAGX_ObserverFrameComponent;
