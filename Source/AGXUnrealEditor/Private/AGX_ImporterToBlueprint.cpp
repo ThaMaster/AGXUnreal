@@ -1886,6 +1886,36 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	{
 		TArray<UObject*> AssetsToDelete;
 
+		// Delete removed contact materials.
+		UE_LOG(LogAGX, Warning, TEXT("Contact Materials:"));
+		if (SCSNodes.ContactMaterialRegistrarComponent != nullptr)
+		{
+			const TArray<FContactMaterialBarrier>& Barriers =
+				SimulationObjects.GetContactMaterials();
+
+			if (auto Registrar = Cast<UAGX_ContactMaterialRegistrarComponent>(
+					SCSNodes.ContactMaterialRegistrarComponent->ComponentTemplate))
+			{
+				for (UAGX_ContactMaterial* Asset : Registrar->ContactMaterials)
+				{
+					const FGuid Guid = Asset->ImportGuid;
+					UE_LOG(LogAGX, Warning, TEXT("  Checking asset GUID %s..."), *Guid.ToString());
+					auto Predicate = [&Guid](const FContactMaterialBarrier& Barrier)
+					{
+						UE_LOG(
+							LogAGX, Warning, TEXT("    ...against imported GUID %s: %s"),
+							*Barrier.GetGuid().ToString(),
+							(Guid == Barrier.GetGuid() ? TEXT("Match") : TEXT("No")));
+						return Guid == Barrier.GetGuid();
+					};
+					if (!Barriers.ContainsByPredicate(Predicate))
+					{
+						UE_LOG(LogAGX, Warning, TEXT("Did not find a match, adding asset to delete list."));
+						AssetsToDelete.AddUnique(Asset);
+					}
+				}
+			}
+		}
 		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
 
 	}
