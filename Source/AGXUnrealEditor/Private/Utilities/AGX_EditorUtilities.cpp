@@ -555,8 +555,12 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 	}
 
 	// Here the engine implementation checks if the list of assets to delete include an active
-	// world, including all editor world contexts and streaming levels. We currently don't create
-	// any worlds during import so don't need to handle that case yet.
+	// world, including all editor world contexts and streaming levels, by calling
+	// ObjectTools::ContainsWorldInUse. That function isn't available to use, so copy-pasted it
+	// here. I don't like it, and not sure we're even allowed to since this is a sizable chunk of
+	// code, larger than the 30 lines mentioned in section 4.a.i of the Unreal Engine EULA.
+	// Different context, but the 30 lines limit is still a decent guideline. We currently don't
+	// create any worlds during import so don't need to handle that case yet.
 #if 0
 	/// @todo Attempt to prevent crash, bail if attempt to delete world in use.
 	{
