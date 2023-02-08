@@ -412,7 +412,7 @@ bool FAGX_EditorUtilities::DeleteAsset(UObject& Asset)
 
 int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets)
 {
-#if 1
+#if 0
 	UE_LOG(LogAGX, Warning, TEXT("Deleting %d assets with ObjectTools::DeleteAssets."), InAssets.Num());
 	// The other implementation tries to recreate ObjectTools::(Force)DeleteObjects but without the
 	// modal dialog. That causes crashes.
@@ -473,8 +473,6 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	 * the call from ObjectTools::DeleteAssets is redundant, and the former is what we are doing a
 	 * variant of here since it is incomplete.
 	 */
-
-
 
 	/// @todo We get a crash in FEditorViewportClient and don't know why.
 	/// This is an attempt to work around that by cloasing all editors, which will close a bunch of
