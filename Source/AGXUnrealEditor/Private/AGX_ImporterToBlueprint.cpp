@@ -57,6 +57,7 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_PropertyUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
+#include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
 #include "ActorFactories/ActorFactoryEmptyActor.h"
