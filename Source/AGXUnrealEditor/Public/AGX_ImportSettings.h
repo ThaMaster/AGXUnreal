@@ -22,5 +22,6 @@ struct FAGX_SynchronizeModelSettings
 {
 	FString FilePath;
 	bool bIgnoreDisabledTrimeshes = true;
-	bool bOpenBlueprintEditorAfterImport = true;
+	bool bForceOverwriteProperties = false;
+	bool bForceReassignRenderMaterials = false;
 };

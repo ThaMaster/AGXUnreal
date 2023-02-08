@@ -213,7 +213,6 @@ namespace AGX_SynchronizeModelTest_helpers
 
 		FAGX_SynchronizeModelSettings Settigns;
 		Settigns.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
-		Settigns.bOpenBlueprintEditorAfterImport = false;
 		Settigns.FilePath = ArchiveFilePath;
 
 		return AGX_ImporterToBlueprint::SynchronizeModel(BaseBp, Settigns);

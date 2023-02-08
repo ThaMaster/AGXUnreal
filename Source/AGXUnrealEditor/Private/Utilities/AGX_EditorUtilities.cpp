@@ -540,7 +540,11 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 	UE_LOG(LogAGX, Warning, TEXT("FAssetData found:"));
 	for (FAssetData& AssetDatum : AssetData)
 	{
+#if UE_VERSION_OLDER_THAN(5, 1, 0)
 		UE_LOG(LogAGX, Warning, TEXT(" %s"), *AssetDatum.ObjectPath.ToString());
+#else
+		UE_LOG(LogAGX, Warning, TEXT(" %s"), *AssetDatum.GetObjectPathString());
+#endif
 	}
 
 	// We cannot delete assets if the asset registry is currently busy loading assets.

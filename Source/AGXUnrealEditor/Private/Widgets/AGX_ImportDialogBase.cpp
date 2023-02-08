@@ -72,19 +72,19 @@ TSharedRef<SWidget> SAGX_ImportDialogBase::CreateBrowseFileGui()
 	// clang-format on
 }
 
-
-TSharedRef<SBorder> SAGX_ImportDialogBase::CreateImportAGXFileGui()
+TSharedRef<SBorder> SAGX_ImportDialogBase::CreateAGXFileGui()
 {
+	// Currently no AGX File specific GUI elements to show. This can be expanded in the future if
+	// needed.
 	return MakeShared<SBorder>();
 }
 
-TSharedRef<SWidget> SAGX_ImportDialogBase::CreateCheckboxGui()
+TSharedRef<SWidget> SAGX_ImportDialogBase::CreateIgnoreDisabledTrimeshGui()
 {
 	// clang-format off
 	return SNew(SVerticalBox)
 		+ SVerticalBox::Slot()
 		.AutoHeight()
-		.Padding(FMargin(5.f, 5.f))
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()

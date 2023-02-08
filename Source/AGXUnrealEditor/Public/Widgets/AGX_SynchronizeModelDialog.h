@@ -17,6 +17,14 @@ public:
 private:
 	TSharedRef<SBorder> CreateSettingsGui();
 	TSharedRef<SBorder> CreateSynchronizeButtonGui();
+	TSharedRef<SWidget> CreateForceOverwritePropertiesGui();
+	TSharedRef<SWidget> CreateForceReassignRenderMaterialsGui();
 
 	FReply OnSynchronizeButtonClicked();
+	void OnForceOverwritePropertiesClicked(ECheckBoxState NewCheckedState);
+	void OnForceReassignRenderMaterialsClicked(ECheckBoxState NewCheckedState);
+
+	bool bIgnoreDisabledTrimesh = true;
+	bool bForceOverwriteProperties = false;
+	bool bForceReassignRenderMaterials = false;
 };

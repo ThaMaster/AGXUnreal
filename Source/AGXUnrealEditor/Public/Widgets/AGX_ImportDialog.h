@@ -17,7 +17,7 @@ public:
 private:	
 	TSharedRef<SBorder> CreateSettingsGui();
 	TSharedRef<SBorder> CreateImportButtonGui();
-	TSharedRef<SBorder> CreateImportURDFFileGui();
+	TSharedRef<SBorder> CreateURDFFileGui();
 	FText GetUrdfPackagePathText() const;
 	FReply OnBrowseUrdfPackageButtonClicked();
 	FReply OnImportButtonClicked();

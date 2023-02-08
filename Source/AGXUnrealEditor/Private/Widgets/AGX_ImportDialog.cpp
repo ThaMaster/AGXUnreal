@@ -55,13 +55,13 @@ void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 			.Padding(FMargin(5.0f, 0.0f))
 			.AutoHeight()
 			[
-				CreateImportAGXFileGui()
+				CreateAGXFileGui()
 			]
 			+ SVerticalBox::Slot()
 			.Padding(FMargin(5.0f, 0.0f))
 			.AutoHeight()
 			[
-				CreateImportURDFFileGui()
+				CreateURDFFileGui()
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
@@ -82,7 +82,7 @@ void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 
 TOptional<FAGX_ImportSettings> SAGX_ImportDialog::ToImportSettings()
 {
-	if (!bUserHasPressedImport)
+	if (!bUserHasPressedImportOrSynchronize)
 	{
 		// The Window containing this Widget was closed, the user never pressed Import.
 		return {};
@@ -131,7 +131,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateSettingsGui()
 			.Padding(FMargin(50.0f, 10.0f, 10.f, 10.f))
 			.AutoHeight()
 			[
-				CreateCheckboxGui()
+				CreateIgnoreDisabledTrimeshGui()
 			]			
 		];
 	// clang-format on
@@ -166,7 +166,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateImportButtonGui()
 	// clang-format on
 }
 
-TSharedRef<SBorder> SAGX_ImportDialog::CreateImportURDFFileGui()
+TSharedRef<SBorder> SAGX_ImportDialog::CreateURDFFileGui()
 {
 	if (ImportType != EAGX_ImportType::Urdf)
 	{
@@ -237,7 +237,7 @@ FText SAGX_ImportDialog::GetUrdfPackagePathText() const
 
 FReply SAGX_ImportDialog::OnImportButtonClicked()
 {
-	bUserHasPressedImport = true;
+	bUserHasPressedImportOrSynchronize = true;
 
 	// We are done, close the Window containing this Widget. The user of this Widget should get
 	// the user's input via the ToImportSettings function when the Window has closed.

@@ -26,8 +26,8 @@ public:
 
 protected:
 	TSharedRef<SWidget> CreateBrowseFileGui();
-	TSharedRef<SBorder> CreateImportAGXFileGui();	
-	TSharedRef<SWidget> CreateCheckboxGui();
+	TSharedRef<SBorder> CreateAGXFileGui();	
+	TSharedRef<SWidget> CreateIgnoreDisabledTrimeshGui();
 
 	FReply OnBrowseFileButtonClicked();
 	FText GetFilePathText() const;
@@ -37,5 +37,5 @@ protected:
 	EAGX_ImportType ImportType = EAGX_ImportType::Invalid;
 	FString FilePath;
 	bool bIgnoreDisabledTrimesh = true;
-	bool bUserHasPressedImport = false;
+	bool bUserHasPressedImportOrSynchronize = false;
 };
