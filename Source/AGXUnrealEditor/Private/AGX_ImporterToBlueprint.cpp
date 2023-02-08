@@ -1270,7 +1270,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_SphereShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes.SphereShapes, Helper, ExistingMSTAssets, RigidBodyNode);
+						ShapeBarrier, BaseBP, SCSNodes.SphereShapes, Helper, ExistingMSTAssets,
+						RigidBodyNode);
 				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 			}
 
@@ -1278,7 +1279,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_BoxShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes.BoxShapes, Helper, ExistingMSTAssets, RigidBodyNode);
+						ShapeBarrier, BaseBP, SCSNodes.BoxShapes, Helper, ExistingMSTAssets,
+						RigidBodyNode);
 				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 			}
 
@@ -1286,7 +1288,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_CylinderShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes.CylinderShapes, Helper, ExistingMSTAssets, RigidBodyNode);
+						ShapeBarrier, BaseBP, SCSNodes.CylinderShapes, Helper, ExistingMSTAssets,
+						RigidBodyNode);
 				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 			}
 
@@ -1294,7 +1297,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_CapsuleShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes.CapsuleShapes, Helper, ExistingMSTAssets, RigidBodyNode);
+						ShapeBarrier, BaseBP, SCSNodes.CapsuleShapes, Helper, ExistingMSTAssets,
+						RigidBodyNode);
 				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
 			}
 
@@ -2029,8 +2033,7 @@ bool AGX_ImporterToBlueprint::SynchronizeModel(
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 			"Some issues occurred during model synchronization. Log category LogAGX in the Console "
-			"may "
-			"contain more information.",
+			"may contain more information.",
 			"Synchronize model");
 		return false;
 	}
