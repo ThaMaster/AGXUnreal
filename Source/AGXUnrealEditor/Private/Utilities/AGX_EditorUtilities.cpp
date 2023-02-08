@@ -410,7 +410,7 @@ bool FAGX_EditorUtilities::DeleteAsset(UObject& Asset)
 	return true;
 }
 
-int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets)
+int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAssets)
 {
 #if 0
 	UE_LOG(LogAGX, Warning, TEXT("Deleting %d assets with ObjectTools::DeleteAssets."), InAssets.Num());
