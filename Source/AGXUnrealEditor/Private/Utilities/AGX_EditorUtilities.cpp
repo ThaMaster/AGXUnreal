@@ -505,7 +505,9 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 	FEditorDelegates::OnAssetsCanDelete.Broadcast(ObjectsToDelete, CanDeleteResult);
 	if (!CanDeleteResult.Get())
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Cannot currently delete selected objects. See log for details."));
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot currently delete selected objects. See log for details."));
 		return 0;
 	}
 
