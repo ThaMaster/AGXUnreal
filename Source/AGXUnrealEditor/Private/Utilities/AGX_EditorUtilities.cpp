@@ -423,6 +423,14 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*> InAssets
 	for (UObject* Asset : InAssets)
 	{
 		UE_LOG(LogAGX, Warning, TEXT("Asked to delete asset for object %s"), *Asset->GetPathName());
+		/*
+		AGX_EditorUtilities.cpp(427): warning C4996:
+		'IAssetRegistry::GetAssetByObjectPath':
+		Asset path FNames have been deprecated,
+		use Soft Object Path instead.
+		Please update your code to the new API before upgrading to the next release,
+		otherwise your project will no longer compile.``
+		*/
 		FAssetData AssetToDelete =
 			IAssetRegistry::GetChecked().GetAssetByObjectPath(FName(*Asset->GetPathName()));
 		if (AssetToDelete.IsValid() && AssetToDelete.GetAsset() != nullptr)
