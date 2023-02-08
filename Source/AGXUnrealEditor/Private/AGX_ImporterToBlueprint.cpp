@@ -1990,7 +1990,16 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		FAGX_SimObjectsImporterHelper Helper(ImportSettings, GetModelDirectoryFromAsset(&BaseBP));
 
-		ImportTask.EnterProgressFrame(10.f, FText::FromString("Deleting old Components"));
+		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Deleting old assets"));
+// Asset deletion disabled until first pass complete. Still very experimental.
+#if 0
+		DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, ImportSettings);
+
+		/// @todo Early out for testing purposes, should not be merged to master.
+		return true;
+#endif
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Deleting old Components"));
 		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects, ImportSettings);
 
 		// This overwrites all (supported) Node names with temporary names.
