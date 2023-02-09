@@ -65,14 +65,14 @@ public:
 	 */
 	static bool SetTemplateComponentWorldTransform(
 		USceneComponent* Component, const FTransform& Transform,
-		bool UpdateArchetypeInstances = true);
+		bool UpdateArchetypeInstances = true, bool ForceOverwriteInstances = false);
 
 	/**
 	 * Sets the relative transform of a template object in a Blueprint.
 	 */
 	static void SetTemplateComponentRelativeTransform(
 		USceneComponent& Component, const FTransform& Transform,
-		bool UpdateArchetypeInstances = true);
+		bool UpdateArchetypeInstances = true, bool ForceOverwriteInstances = false);
 
 	/**
 	 * Returns the location of a template component inside a Blueprint in relation to the root

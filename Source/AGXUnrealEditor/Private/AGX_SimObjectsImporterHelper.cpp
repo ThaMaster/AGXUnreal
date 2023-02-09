@@ -433,10 +433,10 @@ namespace
 
 void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 	const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component,
-	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool ForceOverwriteInstances)
 {
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
-	Component.CopyFrom(Barrier);
+	Component.CopyFrom(Barrier, ForceOverwriteInstances);
 
 	const FMergeSplitThresholdsBarrier ThresholdsBarrier =
 		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
@@ -459,8 +459,8 @@ void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 	{
 		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
-			if (Instance->MergeSplitProperties.Thresholds ==
-				Component.MergeSplitProperties.Thresholds)
+			if (ForceOverwriteInstances || Instance->MergeSplitProperties.Thresholds ==
+											   Component.MergeSplitProperties.Thresholds)
 			{
 				Instance->MergeSplitProperties.Thresholds =
 					Cast<UAGX_ShapeContactMergeSplitThresholds>(MSThresholds);
@@ -495,7 +495,7 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 	}
 
 	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
-	UpdateRigidBodyComponent(Barrier, *Component, Unused);
+	UpdateRigidBodyComponent(Barrier, *Component, Unused, false);
 	Component->SetFlags(RF_Transactional);
 	Actor.AddInstanceComponent(Component);
 
@@ -548,7 +548,7 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 
 	Component->SetFlags(RF_Transactional);
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
-	UpdateComponent(Barrier, *Component, Unused);
+	UpdateComponent(Barrier, *Component, Unused, false, false);
 
 	if (Barrier.HasValidRenderData())
 	{
@@ -560,10 +560,13 @@ UAGX_SphereShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateSphere(
 
 void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const FSphereShapeBarrier& Barrier, UAGX_SphereShapeComponent& Component,
-	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+	bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances)
 {
-	Component.CopyFrom(Barrier);
-	UpdateShapeComponent(Barrier, Component, MSTsOnDisk);
+	Component.CopyFrom(Barrier, ForceOverwritePropertiesInInstances);
+	UpdateShapeComponent(
+		Barrier, Component, MSTsOnDisk, ForceOverwritePropertiesInInstances,
+		ForceReassignRenderMaterialInInstances);
 }
 
 UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
@@ -581,7 +584,7 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 
 	Component->SetFlags(RF_Transactional);
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
-	UpdateComponent(Barrier, *Component, Unused);
+	UpdateComponent(Barrier, *Component, Unused, false, false);
 
 	if (Barrier.HasValidRenderData())
 	{
@@ -593,10 +596,13 @@ UAGX_BoxShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateBox(
 
 void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const FBoxShapeBarrier& Barrier, UAGX_BoxShapeComponent& Component,
-	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+	bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances)
 {
-	Component.CopyFrom(Barrier);
-	UpdateShapeComponent(Barrier, Component, MSTsOnDisk);
+	Component.CopyFrom(Barrier, ForceOverwritePropertiesInInstances);
+	UpdateShapeComponent(
+		Barrier, Component, MSTsOnDisk, ForceOverwritePropertiesInInstances,
+		ForceReassignRenderMaterialInInstances);
 }
 
 UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
@@ -615,7 +621,7 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 
 	Component->SetFlags(RF_Transactional);
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
-	UpdateComponent(Barrier, *Component, Unused);
+	UpdateComponent(Barrier, *Component, Unused, false, false);
 
 	if (Barrier.HasValidRenderData())
 	{
@@ -627,10 +633,13 @@ UAGX_CylinderShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCylinder(
 
 void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const FCylinderShapeBarrier& Barrier, UAGX_CylinderShapeComponent& Component,
-	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+	bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances)
 {
-	Component.CopyFrom(Barrier);
-	UpdateShapeComponent(Barrier, Component, MSTsOnDisk);
+	Component.CopyFrom(Barrier, ForceOverwritePropertiesInInstances);
+	UpdateShapeComponent(
+		Barrier, Component, MSTsOnDisk, ForceOverwritePropertiesInInstances,
+		ForceReassignRenderMaterialInInstances);
 }
 
 UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
@@ -648,7 +657,7 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 
 	Component->SetFlags(RF_Transactional);
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
-	UpdateComponent(Barrier, *Component, Unused);
+	UpdateComponent(Barrier, *Component, Unused, false, false);
 
 	if (Barrier.HasValidRenderData())
 	{
@@ -660,10 +669,13 @@ UAGX_CapsuleShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateCapsule(
 
 void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const FCapsuleShapeBarrier& Barrier, UAGX_CapsuleShapeComponent& Component,
-	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+	bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances)
 {
-	Component.CopyFrom(Barrier);
-	UpdateShapeComponent(Barrier, Component, MSTsOnDisk);
+	Component.CopyFrom(Barrier, ForceOverwritePropertiesInInstances);
+	UpdateShapeComponent(
+		Barrier, Component, MSTsOnDisk, ForceOverwritePropertiesInInstances,
+		ForceReassignRenderMaterialInInstances);
 }
 
 UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
@@ -683,12 +695,12 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 	Component->MeshSourceLocation = EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 	Component->SetFlags(RF_Transactional);
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
-	UpdateComponent(Barrier, *Component, Unused);
+	UpdateComponent(Barrier, *Component, Unused, false, false);
 
 	// Add collision Static mesh.
 	UStaticMeshComponent* CollisionMesh =
 		FAGX_ImportUtilities::CreateComponent<UStaticMeshComponent>(Owner, *Component);
-	UpdateTrimeshCollisionMeshComponent(Barrier, *CollisionMesh);
+	UpdateTrimeshCollisionMeshComponent(Barrier, *CollisionMesh, false, false);
 
 	if (Barrier.HasValidRenderData())
 	{
@@ -701,7 +713,8 @@ UAGX_TrimeshShapeComponent* FAGX_SimObjectsImporterHelper::InstantiateTrimesh(
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
-	const FTrimeshShapeBarrier& ShapeBarrier, UStaticMeshComponent& Component)
+	const FTrimeshShapeBarrier& ShapeBarrier, UStaticMeshComponent& Component,
+	bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances)
 {
 	UStaticMesh* NewMeshAsset = nullptr;
 	UStaticMesh* OriginalMeshAsset = Component.GetStaticMesh();
@@ -749,19 +762,22 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
 			// Update Render Materials.
-			if (Visible && Instance->GetMaterial(0) == Component.GetMaterial(0))
+			if (Visible && (ForceReassignRenderMaterialInInstances ||
+							Instance->GetMaterial(0) == Component.GetMaterial(0)))
 			{
 				Instance->SetMaterial(0, RenderMaterial);
 			}
 
 			// Update Mesh asset.
-			if (Instance->GetStaticMesh() == Component.GetStaticMesh())
+			if (ForceOverwritePropertiesInInstances ||
+				Instance->GetStaticMesh() == Component.GetStaticMesh())
 			{
 				Instance->SetStaticMesh(NewMeshAsset);
 			}
 
 			// Update visibility.
-			if (Instance->GetVisibleFlag() == Component.GetVisibleFlag())
+			if (ForceOverwritePropertiesInInstances ||
+				Instance->GetVisibleFlag() == Component.GetVisibleFlag())
 			{
 				Instance->SetVisibility(Visible);
 			}
@@ -781,15 +797,19 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 
 void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const FTrimeshShapeBarrier& Barrier, UAGX_TrimeshShapeComponent& Component,
-	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+	bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances)
 {
-	Component.CopyFrom(Barrier);
-	UpdateShapeComponent(Barrier, Component, MSTsOnDisk);
+	Component.CopyFrom(Barrier, ForceOverwritePropertiesInInstances);
+	UpdateShapeComponent(
+		Barrier, Component, MSTsOnDisk, ForceOverwritePropertiesInInstances,
+		ForceReassignRenderMaterialInInstances);
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 	const FShapeBarrier& Barrier, UAGX_ShapeComponent& Component,
-	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk)
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+	bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances)
 {
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
 
@@ -840,26 +860,30 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 		// Sync all component instances.
 		for (UAGX_ShapeComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
-			if (Instance->GetMaterial(0) == Component.GetMaterial(0))
+			if (ForceReassignRenderMaterialInInstances ||
+				Instance->GetMaterial(0) == Component.GetMaterial(0))
 			{
 				Instance->SetMaterial(0, RenderMaterial);
 			}
 
 			Instance->UpdateVisualMesh();
 
-			if (Instance->ShapeMaterial == Component.ShapeMaterial)
+			if (ForceOverwritePropertiesInInstances ||
+				Instance->ShapeMaterial == Component.ShapeMaterial)
 			{
 				Instance->ShapeMaterial = NewShapeMaterial;
 			}
 
-			if (Instance->MergeSplitProperties.Thresholds ==
-				Component.MergeSplitProperties.Thresholds)
+			if (ForceOverwritePropertiesInInstances ||
+				Instance->MergeSplitProperties.Thresholds ==
+					Component.MergeSplitProperties.Thresholds)
 			{
 				Instance->MergeSplitProperties.Thresholds =
 					Cast<UAGX_ShapeContactMergeSplitThresholds>(MSThresholds);
 			}
 
-			if (Instance->GetVisibleFlag() == Component.GetVisibleFlag())
+			if (ForceOverwritePropertiesInInstances ||
+				Instance->GetVisibleFlag() == Component.GetVisibleFlag())
 			{
 				Instance->SetVisibility(Visible);
 			}
@@ -886,7 +910,7 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderData(
 		FAGX_ImportUtilities::CreateComponent<UStaticMeshComponent>(Owner, AttachParent);
 
 	UpdateRenderDataComponent(
-		ShapeBarrier, RenderDataBarrier, *RenderMeshComponent, RelTransformOverride);
+		ShapeBarrier, RenderDataBarrier, *RenderMeshComponent, false, false, RelTransformOverride);
 
 	return RenderMeshComponent;
 }
@@ -922,7 +946,8 @@ UStaticMeshComponent* FAGX_SimObjectsImporterHelper::InstantiateRenderDataInBody
 
 void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	const FShapeBarrier& ShapeBarrier, const FRenderDataBarrier& RenderDataBarrier,
-	UStaticMeshComponent& Component, FTransform* RelTransformOverride)
+	UStaticMeshComponent& Component, bool ForceOverwritePropertiesInInstances,
+	bool ForceReassignRenderMaterialInInstances, FTransform* RelTransformOverride)
 {
 	AGX_CHECK(RenderDataBarrier.HasMesh());
 
@@ -995,19 +1020,22 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
 			// Update Render Materials.
-			if (Instance->GetMaterial(0) == OriginalRenderMaterial)
+			if (ForceReassignRenderMaterialInInstances ||
+				Instance->GetMaterial(0) == OriginalRenderMaterial)
 			{
 				Instance->SetMaterial(0, NewRenderMaterial);
 			}
 
 			// Update Mesh asset.
-			if (Instance->GetStaticMesh() == Component.GetStaticMesh())
+			if (ForceOverwritePropertiesInInstances ||
+				Instance->GetStaticMesh() == Component.GetStaticMesh())
 			{
 				Instance->SetStaticMesh(NewMeshAsset);
 			}
 
 			// Update visibility.
-			if (Instance->GetVisibleFlag() == Component.GetVisibleFlag())
+			if (ForceOverwritePropertiesInInstances ||
+				Instance->GetVisibleFlag() == Component.GetVisibleFlag())
 			{
 				Instance->SetVisibility(Visible);
 			}
@@ -1117,7 +1145,8 @@ namespace
 	void UpdateConstraintComponentNoControllers(
 		UAGX_ConstraintComponent& Constraint, const FConstraintBarrier& Barrier,
 		FAGX_SimObjectsImporterHelper& Helper,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds)
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool ForceOverwriteInstances)
 	{
 		FAGX_SimObjectsImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
 		if (Bodies.first == nullptr)
@@ -1140,26 +1169,50 @@ namespace
 			return Body.GetFName();
 		};
 
+		const FMergeSplitThresholdsBarrier ThresholdsBarrier =
+			FConstraintMergeSplitThresholdsBarrier::CreateFrom(Barrier);
+		const FGuid MSTGuid = Barrier.GetGuid();
+		UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
+		if (MSTsOnDisk.Contains(MSTGuid) && ThresholdsBarrier.HasNative())
+		{
+			MSThresholds = MSTsOnDisk[MSTGuid];
+			::UpdateAndSaveMergeSplitThresholdsAsset(
+				ThresholdsBarrier, *MSThresholds, RestoredThresholds,
+				EAGX_AmorOwningType::Constraint);
+		}
+		else
+		{
+			MSThresholds = ::GetOrCreateMergeSplitThresholdsAsset<
+				FConstraintBarrier, FConstraintMergeSplitThresholdsBarrier>(
+				Barrier, EAGX_AmorOwningType::Constraint, RestoredThresholds, Helper.DirectoryName);
+		}
+
 		const TOptional<FName> BodyName1 =
 			Bodies.first != nullptr ? ToFName(*Bodies.first) : TOptional<FName>();
 		const TOptional<FName> BodyName2 =
 			Bodies.second != nullptr ? ToFName(*Bodies.second) : TOptional<FName>();
 
-		// Update Body Name of the attachments.
 		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Constraint))
 		{
-			if (Instance->BodyAttachment1.RigidBody.BodyName ==
-					Constraint.BodyAttachment1.RigidBody.BodyName &&
-				BodyName1.IsSet())
+			if (BodyName1.IsSet() &&
+				(ForceOverwriteInstances || Instance->BodyAttachment1.RigidBody.BodyName ==
+												Constraint.BodyAttachment1.RigidBody.BodyName))
 			{
 				Instance->BodyAttachment1.RigidBody.BodyName = BodyName1.GetValue();
 			}
 
-			if (Instance->BodyAttachment2.RigidBody.BodyName ==
-					Constraint.BodyAttachment2.RigidBody.BodyName &&
-				BodyName2.IsSet())
+			if (BodyName2.IsSet() &&
+				(ForceOverwriteInstances || Instance->BodyAttachment2.RigidBody.BodyName ==
+												Constraint.BodyAttachment2.RigidBody.BodyName))
 			{
 				Instance->BodyAttachment2.RigidBody.BodyName = BodyName2.GetValue();
+			}
+
+			if (ForceOverwriteInstances || Instance->MergeSplitProperties.Thresholds ==
+											   Constraint.MergeSplitProperties.Thresholds)
+			{
+				Instance->MergeSplitProperties.Thresholds =
+					Cast<UAGX_ConstraintMergeSplitThresholds>(MSThresholds);
 			}
 		}
 
@@ -1180,24 +1233,21 @@ namespace
 		if (FAGX_ObjectUtilities::IsTemplateComponent(Constraint))
 		{
 			FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
-				&Constraint, NewWorldTransform);
+				&Constraint, NewWorldTransform, true, ForceOverwriteInstances);
 		}
 
-		if (auto ThresholdsAsset = ::GetOrCreateMergeSplitThresholdsAsset<
-				FConstraintBarrier, FConstraintMergeSplitThresholdsBarrier>(
-				Barrier, EAGX_AmorOwningType::Constraint, RestoredThresholds, Helper.DirectoryName))
-		{
-			Constraint.MergeSplitProperties.Thresholds =
-				Cast<UAGX_ConstraintMergeSplitThresholds>(ThresholdsAsset);
-		}
+		Constraint.MergeSplitProperties.Thresholds =
+			Cast<UAGX_ConstraintMergeSplitThresholds>(MSThresholds);
 	}
 
 	void UpdateConstraint1DofComponent(
 		UAGX_Constraint1DofComponent& Constraint, const FConstraintBarrier& Barrier,
 		FAGX_SimObjectsImporterHelper& Helper,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds)
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool ForceOverwriteInstances)
 	{
-		UpdateConstraintComponentNoControllers(Constraint, Barrier, Helper, RestoredThresholds);
+		UpdateConstraintComponentNoControllers(
+			Constraint, Barrier, Helper, RestoredThresholds, MSTsOnDisk, ForceOverwriteInstances);
 		FAGX_ConstraintUtilities::CopyControllersFrom(
 			Constraint, *static_cast<const FConstraint1DOFBarrier*>(&Barrier));
 	}
@@ -1205,9 +1255,11 @@ namespace
 	void UpdateConstraint2DofComponent(
 		UAGX_Constraint2DofComponent& Constraint, const FConstraintBarrier& Barrier,
 		FAGX_SimObjectsImporterHelper& Helper,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds)
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool ForceOverwriteInstances)
 	{
-		UpdateConstraintComponentNoControllers(Constraint, Barrier, Helper, RestoredThresholds);
+		UpdateConstraintComponentNoControllers(
+			Constraint, Barrier, Helper, RestoredThresholds, MSTsOnDisk, ForceOverwriteInstances);
 		FAGX_ConstraintUtilities::CopyControllersFrom(
 			Constraint, *static_cast<const FConstraint2DOFBarrier*>(&Barrier));
 	}
@@ -1217,7 +1269,8 @@ UAGX_HingeConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateHinge(
 	const FHingeBarrier& Barrier, AActor& Owner)
 {
 	UAGX_HingeConstraintComponent* Constraint = NewObject<UAGX_HingeConstraintComponent>(&Owner);
-	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds);
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
+	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds, Unused, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1229,7 +1282,8 @@ UAGX_PrismaticConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiatePri
 {
 	UAGX_PrismaticConstraintComponent* Constraint =
 		NewObject<UAGX_PrismaticConstraintComponent>(&Owner);
-	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds);
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
+	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds, Unused, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1240,7 +1294,9 @@ UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallCons
 	const FBallJointBarrier& Barrier, AActor& Owner)
 {
 	UAGX_BallConstraintComponent* Constraint = NewObject<UAGX_BallConstraintComponent>(&Owner);
-	UpdateConstraintComponentNoControllers(*Constraint, Barrier, *this, RestoredThresholds);
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
+	UpdateConstraintComponentNoControllers(
+		*Constraint, Barrier, *this, RestoredThresholds, Unused, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1253,7 +1309,8 @@ FAGX_SimObjectsImporterHelper::InstantiateCylindricalConstraint(
 {
 	UAGX_CylindricalConstraintComponent* Constraint =
 		NewObject<UAGX_CylindricalConstraintComponent>(&Owner);
-	UpdateConstraint2DofComponent(*Constraint, Barrier, *this, RestoredThresholds);
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
+	UpdateConstraint2DofComponent(*Constraint, Barrier, *this, RestoredThresholds, Unused, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1265,7 +1322,8 @@ UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDist
 {
 	UAGX_DistanceConstraintComponent* Constraint =
 		NewObject<UAGX_DistanceConstraintComponent>(&Owner);
-	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds);
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
+	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds, Unused, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1276,7 +1334,9 @@ UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockCons
 	const FLockJointBarrier& Barrier, AActor& Owner)
 {
 	UAGX_LockConstraintComponent* Constraint = NewObject<UAGX_LockConstraintComponent>(&Owner);
-	UpdateConstraintComponentNoControllers(*Constraint, Barrier, *this, RestoredThresholds);
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
+	UpdateConstraintComponentNoControllers(
+		*Constraint, Barrier, *this, RestoredThresholds, Unused, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1284,22 +1344,28 @@ UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockCons
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
-	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component)
+	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool ForceOverwriteInstances)
 {
 	if (UAGX_Constraint1DofComponent* Constraint1Dof =
 			Cast<UAGX_Constraint1DofComponent>(&Component))
 	{
-		UpdateConstraint1DofComponent(*Constraint1Dof, Barrier, *this, RestoredThresholds);
+		UpdateConstraint1DofComponent(
+			*Constraint1Dof, Barrier, *this, RestoredThresholds, MSTsOnDisk,
+			ForceOverwriteInstances);
 	}
 	else if (
 		UAGX_Constraint2DofComponent* Constraint2Dof =
 			Cast<UAGX_Constraint2DofComponent>(&Component))
 	{
-		UpdateConstraint2DofComponent(*Constraint2Dof, Barrier, *this, RestoredThresholds);
+		UpdateConstraint2DofComponent(
+			*Constraint2Dof, Barrier, *this, RestoredThresholds, MSTsOnDisk,
+			ForceOverwriteInstances);
 	}
 	else
 	{
-		UpdateConstraintComponentNoControllers(Component, Barrier, *this, RestoredThresholds);
+		UpdateConstraintComponentNoControllers(
+			Component, Barrier, *this, RestoredThresholds, MSTsOnDisk, ForceOverwriteInstances);
 	}
 }
 

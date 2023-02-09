@@ -241,7 +241,7 @@ protected:
 	 * Called from each subclass' type-specific CopyFrom.
 	 * @param Barrier The AGX Dynamics shape to copy from.
 	 */
-	void CopyFrom(const FShapeBarrier& Barrier);
+	void CopyFrom(const FShapeBarrier& Barrier, bool ForceOverwriteInstances = false);
 
 	/**
 	 * Updates the local transform of the native geometry to match this component's

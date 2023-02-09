@@ -103,12 +103,13 @@ FTransform FAGX_ObjectUtilities::GetAnyComponentWorldTransform(const USceneCompo
 }
 
 void FAGX_ObjectUtilities::SetAnyComponentWorldTransform(
-	USceneComponent& Component, const FTransform& Transform)
+	USceneComponent& Component, const FTransform& Transform, bool ForceOverwriteInstances)
 {
 #if WITH_EDITOR
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
-		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(&Component, Transform, true);
+		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
+			&Component, Transform, true, ForceOverwriteInstances);
 	}
 	else
 	{

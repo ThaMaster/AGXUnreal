@@ -76,21 +76,24 @@ public:
 
 	void UpdateRigidBodyComponent(
 		const FRigidBodyBarrier& Barrier, UAGX_RigidBodyComponent& Component,
-		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+		bool ForceOverwriteInstances);
 
 	UAGX_SphereShapeComponent* InstantiateSphere(
 		const FSphereShapeBarrier& Sphere, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
 
 	void UpdateComponent(
 		const FSphereShapeBarrier& Barrier, UAGX_SphereShapeComponent& Component,
-		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+		bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances);
 
 	UAGX_BoxShapeComponent* InstantiateBox(
 		const FBoxShapeBarrier& Barrier, AActor& Owner, const FRigidBodyBarrier* Body = nullptr);
 
 	void UpdateComponent(
 		const FBoxShapeBarrier& Barrier, UAGX_BoxShapeComponent& Component,
-		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+		bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances);
 
 	UAGX_CylinderShapeComponent* InstantiateCylinder(
 		const FCylinderShapeBarrier& Barrier, AActor& Owner,
@@ -98,7 +101,8 @@ public:
 
 	void UpdateComponent(
 		const FCylinderShapeBarrier& Barrier, UAGX_CylinderShapeComponent& Component,
-		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+		bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances);
 
 	UAGX_CapsuleShapeComponent* InstantiateCapsule(
 		const FCapsuleShapeBarrier& Barrier, AActor& Owner,
@@ -106,7 +110,8 @@ public:
 
 	void UpdateComponent(
 		const FCapsuleShapeBarrier& Barrier, UAGX_CapsuleShapeComponent& Component,
-		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+		bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances);
 
 	UAGX_TrimeshShapeComponent* InstantiateTrimesh(
 		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
@@ -115,11 +120,13 @@ public:
 	// Updates only the Trimesh Component itself, does not create any static meshes.
 	void UpdateComponent(
 		const FTrimeshShapeBarrier& Barrier, UAGX_TrimeshShapeComponent& Component,
-		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+		bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances);
 
 	// This also updates/creates the corresponding static mesh asset and material.
 	void UpdateTrimeshCollisionMeshComponent(
-		const FTrimeshShapeBarrier& Barrier, UStaticMeshComponent& Component);
+		const FTrimeshShapeBarrier& Barrier, UStaticMeshComponent& Component,
+		bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances);
 
 	UStaticMeshComponent* InstantiateRenderData(
 		const FShapeBarrier& ShapeBarrier, AActor& Owner, USceneComponent& AttachParent,
@@ -132,7 +139,8 @@ public:
 	// This also updates/creates the corresponding static mesh asset and material.
 	void UpdateRenderDataComponent(
 		const FShapeBarrier& ShapeBarrier, const FRenderDataBarrier& RenderDataBarrier,
-		UStaticMeshComponent& Component, FTransform* RelTransformOverride = nullptr);
+		UStaticMeshComponent& Component, bool ForceOverwritePropertiesInInstances,
+		bool ForceReassignRenderMaterialInInstances, FTransform* RelTransformOverride = nullptr);
 
 	void UpdateAndSaveShapeMaterialAsset(
 		const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset);
@@ -169,7 +177,9 @@ public:
 		const FLockJointBarrier& Barrier, AActor& Owner);
 
 	void UpdateConstraintComponent(
-		const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component);
+		const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+		bool ForceOverwriteInstances);
 
 	UAGX_TwoBodyTireComponent* InstantiateTwoBodyTire(
 		const FTwoBodyTireBarrier& Barrier, AActor& Owner);
@@ -181,8 +191,8 @@ public:
 		AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs);
 
 	void UpdateCollisionGroupDisabler(
-		const TArray<std::pair<FString, FString>>&
-			DisabledPairs, UAGX_CollisionGroupDisablerComponent& Component);
+		const TArray<std::pair<FString, FString>>& DisabledPairs,
+		UAGX_CollisionGroupDisablerComponent& Component);
 
 	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
 
@@ -230,7 +240,8 @@ public:
 private:
 	void UpdateShapeComponent(
 		const FShapeBarrier& Barrier, UAGX_ShapeComponent& Component,
-		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk);
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+		bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances);
 
 	TMap<FGuid, UStaticMesh*> RestoredMeshes; // Static Mesh Assets.
 	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> RestoredThresholds;

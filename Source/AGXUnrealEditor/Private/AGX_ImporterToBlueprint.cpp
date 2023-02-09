@@ -1174,8 +1174,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 	template <typename TBarrier, typename TComponent>
 	USCS_Node* AddOrUpdateShape(
-		const TBarrier& Barrier, UBlueprint& BaseBP, TMap<FGuid, USCS_Node*>& ExistingShapes,
-		FAGX_SimObjectsImporterHelper& Helper,
+		const TBarrier& Barrier, UBlueprint& BaseBP, const FAGX_SynchronizeModelSettings& Settings,
+		TMap<FGuid, USCS_Node*>& ExistingShapes, FAGX_SimObjectsImporterHelper& Helper,
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
 		USCS_Node* OverrideAttachParent = nullptr)
 	{
@@ -1198,13 +1198,16 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			ExistingShapes.Add(Guid, Node);
 		}
 
-		Helper.UpdateComponent(Barrier, *Cast<TComponent>(Node->ComponentTemplate), MSTsOnDisk);
+		Helper.UpdateComponent(
+			Barrier, *Cast<TComponent>(Node->ComponentTemplate), MSTsOnDisk,
+			Settings.bForceOverwriteProperties, Settings.bForceReassignRenderMaterials);
 		return Node;
 	}
 
 	void AddOrUpdateRenderData(
 		const FShapeBarrier& ShapeBarrier, USCS_Node& AttachParent, UBlueprint& BaseBP,
-		SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper)
+		SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper,
+		const FAGX_SynchronizeModelSettings& Settings)
 	{
 		if (!ShapeBarrier.HasRenderData())
 			return;
@@ -1234,7 +1237,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		Helper.UpdateRenderDataComponent(
 			ShapeBarrier, RenderDataBarrier,
-			*Cast<UStaticMeshComponent>(RenderDataNode->ComponentTemplate));
+			*Cast<UStaticMeshComponent>(RenderDataNode->ComponentTemplate),
+			Settings.bForceOverwriteProperties, Settings.bForceReassignRenderMaterials);
 	}
 
 	void AddOrUpdateRigidBodiesAndOwnedShapes(
@@ -1263,43 +1267,43 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 			Helper.UpdateRigidBodyComponent(
 				RbBarrier, *Cast<UAGX_RigidBodyComponent>(RigidBodyNode->ComponentTemplate),
-				ExistingMSTAssets);
+				ExistingMSTAssets, Settings.bForceOverwriteProperties);
 
 			// Add or update all shapes in the current Rigid Body.
 			for (const auto& ShapeBarrier : RbBarrier.GetSphereShapes())
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_SphereShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes.SphereShapes, Helper, ExistingMSTAssets,
-						RigidBodyNode);
-				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+						ShapeBarrier, BaseBP, Settings, SCSNodes.SphereShapes, Helper,
+						ExistingMSTAssets, RigidBodyNode);
+				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper, Settings);
 			}
 
 			for (const auto& ShapeBarrier : RbBarrier.GetBoxShapes())
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_BoxShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes.BoxShapes, Helper, ExistingMSTAssets,
-						RigidBodyNode);
-				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+						ShapeBarrier, BaseBP, Settings, SCSNodes.BoxShapes, Helper,
+						ExistingMSTAssets, RigidBodyNode);
+				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper, Settings);
 			}
 
 			for (const auto& ShapeBarrier : RbBarrier.GetCylinderShapes())
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_CylinderShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes.CylinderShapes, Helper, ExistingMSTAssets,
-						RigidBodyNode);
-				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+						ShapeBarrier, BaseBP, Settings, SCSNodes.CylinderShapes, Helper,
+						ExistingMSTAssets, RigidBodyNode);
+				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper, Settings);
 			}
 
 			for (const auto& ShapeBarrier : RbBarrier.GetCapsuleShapes())
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(ShapeBarrier), UAGX_CapsuleShapeComponent>(
-						ShapeBarrier, BaseBP, SCSNodes.CapsuleShapes, Helper, ExistingMSTAssets,
-						RigidBodyNode);
-				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+						ShapeBarrier, BaseBP, Settings, SCSNodes.CapsuleShapes, Helper,
+						ExistingMSTAssets, RigidBodyNode);
+				AddOrUpdateRenderData(ShapeBarrier, *ShapeNode, BaseBP, SCSNodes, Helper, Settings);
 			}
 
 			for (const auto& ShapeBarrier : RbBarrier.GetTrimeshShapes())
@@ -1313,8 +1317,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				{
 					USCS_Node* ShapeNode =
 						AddOrUpdateShape<decltype(ShapeBarrier), UAGX_TrimeshShapeComponent>(
-							ShapeBarrier, BaseBP, SCSNodes.TrimeshShapes, Helper, ExistingMSTAssets,
-							RigidBodyNode);
+							ShapeBarrier, BaseBP, Settings, SCSNodes.TrimeshShapes, Helper,
+							ExistingMSTAssets, RigidBodyNode);
 
 					// The ShapeNode Trimesh returned from AddOrUpdateShape above may or may not be
 					// a new Trimesh. If it is new, we need to create a new collision mesh for it.
@@ -1334,12 +1338,13 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					}
 
 					Helper.UpdateTrimeshCollisionMeshComponent(
-						ShapeBarrier,
-						*Cast<UStaticMeshComponent>(CollisionMesh->ComponentTemplate));
+						ShapeBarrier, *Cast<UStaticMeshComponent>(CollisionMesh->ComponentTemplate),
+						Settings.bForceOverwriteProperties, Settings.bForceReassignRenderMaterials);
 					RenderDataParent = CollisionMesh;
 				}
 
-				AddOrUpdateRenderData(ShapeBarrier, *RenderDataParent, BaseBP, SCSNodes, Helper);
+				AddOrUpdateRenderData(
+					ShapeBarrier, *RenderDataParent, BaseBP, SCSNodes, Helper, Settings);
 			}
 		}
 	}
@@ -1353,29 +1358,29 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		for (const auto& Barrier : SimulationObjects.GetSphereShapes())
 		{
 			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_SphereShapeComponent>(
-				Barrier, BaseBP, SCSNodes.SphereShapes, Helper, ExistingMSTAssets);
-			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+				Barrier, BaseBP, Settings, SCSNodes.SphereShapes, Helper, ExistingMSTAssets);
+			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper, Settings);
 		}
 
 		for (const auto& Barrier : SimulationObjects.GetBoxShapes())
 		{
 			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_BoxShapeComponent>(
-				Barrier, BaseBP, SCSNodes.BoxShapes, Helper, ExistingMSTAssets);
-			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+				Barrier, BaseBP, Settings, SCSNodes.BoxShapes, Helper, ExistingMSTAssets);
+			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper, Settings);
 		}
 
 		for (const auto& Barrier : SimulationObjects.GetCylinderShapes())
 		{
 			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_CylinderShapeComponent>(
-				Barrier, BaseBP, SCSNodes.CylinderShapes, Helper, ExistingMSTAssets);
-			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+				Barrier, BaseBP, Settings, SCSNodes.CylinderShapes, Helper, ExistingMSTAssets);
+			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper, Settings);
 		}
 
 		for (const auto& Barrier : SimulationObjects.GetCapsuleShapes())
 		{
 			USCS_Node* ShapeNode = AddOrUpdateShape<decltype(Barrier), UAGX_CapsuleShapeComponent>(
-				Barrier, BaseBP, SCSNodes.CapsuleShapes, Helper, ExistingMSTAssets);
-			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper);
+				Barrier, BaseBP, Settings, SCSNodes.CapsuleShapes, Helper, ExistingMSTAssets);
+			AddOrUpdateRenderData(Barrier, *ShapeNode, BaseBP, SCSNodes, Helper, Settings);
 		}
 
 		for (const auto& Barrier : SimulationObjects.GetTrimeshShapes())
@@ -1389,7 +1394,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* ShapeNode =
 					AddOrUpdateShape<decltype(Barrier), UAGX_TrimeshShapeComponent>(
-						Barrier, BaseBP, SCSNodes.TrimeshShapes, Helper, ExistingMSTAssets);
+						Barrier, BaseBP, Settings, SCSNodes.TrimeshShapes, Helper,
+						ExistingMSTAssets);
 
 				// The ShapeNode Trimesh returned from AddOrUpdateShape above may or may not be a
 				// new Trimesh. If it is new, we need to create a new collision mesh for it.
@@ -1409,18 +1415,21 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				}
 
 				Helper.UpdateTrimeshCollisionMeshComponent(
-					Barrier, *Cast<UStaticMeshComponent>(CollisionMesh->ComponentTemplate));
+					Barrier, *Cast<UStaticMeshComponent>(CollisionMesh->ComponentTemplate),
+					Settings.bForceOverwriteProperties, Settings.bForceReassignRenderMaterials);
 
 				RenderDataParent = CollisionMesh;
 			}
 
-			AddOrUpdateRenderData(Barrier, *RenderDataParent, BaseBP, SCSNodes, Helper);
+			AddOrUpdateRenderData(Barrier, *RenderDataParent, BaseBP, SCSNodes, Helper, Settings);
 		}
 	}
 
 	void AddOrUpdateConstraints(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
-		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
+		const FAGX_SynchronizeModelSettings& Settings,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& ExistingMSTAssets)
 	{
 		USCS_Node* RootNode = BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode();
 
@@ -1446,7 +1455,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					CreatedConstraints.Add(ConstraintGuid, Constraint);
 				}
 				Helper.UpdateConstraintComponent(
-					Barrier, *Cast<UAGX_ConstraintComponent>(Constraint->ComponentTemplate));
+					Barrier, *Cast<UAGX_ConstraintComponent>(Constraint->ComponentTemplate),
+					ExistingMSTAssets, Settings.bForceOverwriteProperties);
 			}
 			return CreatedConstraints;
 		};
@@ -1661,6 +1671,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
 		TMap<FGuid, UAGX_MergeSplitThresholdsBase*> ExistingMSTAssets =
 			FindAGXAssetComponents<UAGX_MergeSplitThresholdsBase>(MSTDirPath);
+
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Shape Materials"));
 		AddOrUpdateShapeMaterials(BaseBP, SimulationObjects, Helper);
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Contact Materials"));
@@ -1673,7 +1684,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		AddOrUpdateBodilessShapes(
 			BaseBP, SCSNodes, SimulationObjects, Helper, Settings, ExistingMSTAssets);
 		ImportTask.EnterProgressFrame(15.f, FText::FromString("Synchronizing Constraints"));
-		AddOrUpdateConstraints(BaseBP, SCSNodes, SimulationObjects, Helper);
+		AddOrUpdateConstraints(
+			BaseBP, SCSNodes, SimulationObjects, Helper, Settings, ExistingMSTAssets);
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Tire Models"));
 		AddOrUpdateTwoBodyTires(BaseBP, SCSNodes, SimulationObjects, Helper);
 		ImportTask.EnterProgressFrame(
@@ -1910,7 +1922,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					};
 					if (!Barriers.ContainsByPredicate(Predicate))
 					{
-						UE_LOG(LogAGX, Warning, TEXT("Did not find a match, adding asset to delete list."));
+						UE_LOG(
+							LogAGX, Warning,
+							TEXT("Did not find a match, adding asset to delete list."));
 						AssetsToDelete.AddUnique(Asset);
 					}
 				}
@@ -1950,7 +1964,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 
 		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
-
 	}
 
 	// Removes Components that are not present in the new SimulationObjectCollection, meaning they

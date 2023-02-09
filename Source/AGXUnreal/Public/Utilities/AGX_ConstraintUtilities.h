@@ -136,7 +136,8 @@ public:
 	 */
 	static FTransform SetupConstraintAsFrameDefiningSource(
 		const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
-		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2);
+		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2,
+		bool ForceOverwriteInstances = false);
 
 	static void CreateNative(
 		FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& Attachment1,

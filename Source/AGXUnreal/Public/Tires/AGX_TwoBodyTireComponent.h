@@ -154,7 +154,7 @@ public:
 
 	// Does not set references to hub/tire Rigid Bodies. This must be done by the caller of this
 	// function.
-	void CopyFrom(const FTwoBodyTireBarrier& Barrier);
+	void CopyFrom(const FTwoBodyTireBarrier& Barrier, bool ForceOverwriteInstances = false);
 
 	bool IsDefaultSubObjectOfTwoBodyTireActor() const;
 

@@ -145,10 +145,10 @@ bool UAGX_BoxShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices
 	return true;
 }
 
-void UAGX_BoxShapeComponent::CopyFrom(const FBoxShapeBarrier& Barrier)
+void UAGX_BoxShapeComponent::CopyFrom(const FBoxShapeBarrier& Barrier, bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Barrier);
-	AGX_COPY_PROPERTY_FROM(HalfExtent, Barrier.GetHalfExtents(), *this)
+	Super::CopyFrom(Barrier, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(HalfExtent, Barrier.GetHalfExtents(), *this, ForceOverwriteInstances)
 }
 
 void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
@@ -191,7 +191,8 @@ void UAGX_BoxShapeComponent::InitPropertyDispatcher()
 {
 	// Cannot use the UAGX_ShapeComponent Property Dispatcher because there are name collisions for
 	// Shape-specific UProperty names, for example Radius is in both Sphere and Cylinder.
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;

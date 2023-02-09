@@ -171,11 +171,12 @@ void UAGX_CapsuleShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetRadius(Radius * GetComponentScale().X);
 }
 
-void UAGX_CapsuleShapeComponent::CopyFrom(const FCapsuleShapeBarrier& Barrier)
+void UAGX_CapsuleShapeComponent::CopyFrom(
+	const FCapsuleShapeBarrier& Barrier, bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Barrier);
-	AGX_COPY_PROPERTY_FROM(Height, Barrier.GetHeight(), *this)
-	AGX_COPY_PROPERTY_FROM(Radius, Barrier.GetRadius(), *this)
+	Super::CopyFrom(Barrier, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(Height, Barrier.GetHeight(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(Radius, Barrier.GetRadius(), *this, ForceOverwriteInstances)
 }
 
 void UAGX_CapsuleShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)

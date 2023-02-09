@@ -192,13 +192,14 @@ void UAGX_CylinderShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetGypsyProperty(bGypsy);
 }
 
-void UAGX_CylinderShapeComponent::CopyFrom(const FCylinderShapeBarrier& Barrier)
+void UAGX_CylinderShapeComponent::CopyFrom(
+	const FCylinderShapeBarrier& Barrier, bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Barrier);
-	AGX_COPY_PROPERTY_FROM(Height, Barrier.GetHeight(), *this)
-	AGX_COPY_PROPERTY_FROM(Radius, Barrier.GetRadius(), *this)
-	AGX_COPY_PROPERTY_FROM(bPulley, Barrier.GetPulleyProperty(), *this)
-	AGX_COPY_PROPERTY_FROM(bGypsy, Barrier.GetGypsyProperty(), *this)
+	Super::CopyFrom(Barrier, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(Height, Barrier.GetHeight(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(Radius, Barrier.GetRadius(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(bPulley, Barrier.GetPulleyProperty(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(bGypsy, Barrier.GetGypsyProperty(), *this, ForceOverwriteInstances)
 }
 
 void UAGX_CylinderShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)

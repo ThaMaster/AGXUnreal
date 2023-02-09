@@ -19,7 +19,6 @@
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
-
 void FAGX_ConstraintUtilities::CopyControllersFrom(
 	UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier)
 {
@@ -403,7 +402,8 @@ namespace
 
 FTransform FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
-	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2)
+	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2,
+	bool ForceOverwriteInstances)
 {
 	// Constraints are setup to use FrameDefiningSource == Constraint by default, meaning the
 	// constraint itself is used to define the attachment frames. This means that we need to update
@@ -423,9 +423,11 @@ FTransform FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	// secondary constraints support this ordering.
 
 	AGX_COPY_PROPERTY_FROM(
-		BodyAttachment1.FrameDefiningSource, EAGX_FrameDefiningSource::Constraint, Component)
+		BodyAttachment1.FrameDefiningSource, EAGX_FrameDefiningSource::Constraint, Component,
+		ForceOverwriteInstances)
 	AGX_COPY_PROPERTY_FROM(
-		BodyAttachment2.FrameDefiningSource, EAGX_FrameDefiningSource::Constraint, Component)
+		BodyAttachment2.FrameDefiningSource, EAGX_FrameDefiningSource::Constraint, Component,
+		ForceOverwriteInstances)
 
 	// Having a nullptr RigidBody1 is technically valid from AGX Dynamics perspective, but in >99%
 	// of cases it is unexpected. Therefore, we opt to give the user a warning, and we still set the
@@ -450,14 +452,17 @@ FTransform FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	// The Constraint's new World transform is the attachment frame 2.
 	const FTransform NewWorldTransform(Attach2GlobalRot, Attach2GlobalPos);
 	if (!FAGX_ObjectUtilities::IsTemplateComponent(Component))
-	{		
+	{
 		Component.SetWorldTransform(NewWorldTransform);
-	}	
+	}
 
 	// The LocalFrameLocation and Rotation of BodyAttachment2 is always zero since the Constraint is
 	// placed at the attachment frame 2.
-	AGX_COPY_PROPERTY_FROM(BodyAttachment2.LocalFrameLocation, FVector::ZeroVector, Component)
-	AGX_COPY_PROPERTY_FROM(BodyAttachment2.LocalFrameRotation, FRotator(FQuat::Identity), Component)
+	AGX_COPY_PROPERTY_FROM(
+		BodyAttachment2.LocalFrameLocation, FVector::ZeroVector, Component, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		BodyAttachment2.LocalFrameRotation, FRotator(FQuat::Identity), Component,
+		ForceOverwriteInstances)
 
 	// The LocalFrameLocation and Rotation of BodyAttachment1 is the (global) attachment frame 1
 	// expressed in the constraints (new) global frame.
@@ -466,9 +471,11 @@ FTransform FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	const FRotator BodyAttachment1LocalRotation =
 		FRotator(NewWorldTransform.InverseTransformRotation(Attach1GlobalRot));
 	AGX_COPY_PROPERTY_FROM(
-		BodyAttachment1.LocalFrameLocation, BodyAttachment1LocalLocation, Component)
+		BodyAttachment1.LocalFrameLocation, BodyAttachment1LocalLocation, Component,
+		ForceOverwriteInstances)
 	AGX_COPY_PROPERTY_FROM(
-		BodyAttachment1.LocalFrameRotation, BodyAttachment1LocalRotation, Component)
+		BodyAttachment1.LocalFrameRotation, BodyAttachment1LocalRotation, Component,
+		ForceOverwriteInstances)
 
 	return NewWorldTransform;
 }

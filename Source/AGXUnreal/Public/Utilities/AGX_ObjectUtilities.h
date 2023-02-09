@@ -98,7 +98,8 @@ public:
 	 * Component resides in a Blueprint and is a Component template, any archetype instance
 	 * currently "in sync" with the Component will be updated as well.
 	 */
-	static void SetAnyComponentWorldTransform(USceneComponent& Component, const FTransform& Transform);
+	static void SetAnyComponentWorldTransform(
+		USceneComponent& Component, const FTransform& Transform, bool ForceOverwriteInstances = false);
 
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
@@ -220,13 +221,13 @@ T* FAGX_ObjectUtilities::GetMatchedInstance(T* TemplateComponent, UObject* Outer
 }
 
 // clang-format off
-#define AGX_COPY_PROPERTY_FROM(UpropertyName, GetterExpression, Component) \
+#define AGX_COPY_PROPERTY_FROM(UpropertyName, GetterExpression, Component, ForceOverwriteInstances) \
 { \
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component)) \
 	{ \
 		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component)) \
 		{ \
-			if (Instance->UpropertyName == (Component).UpropertyName) \
+			if (ForceOverwriteInstances || Instance->UpropertyName == (Component).UpropertyName) \
 			{ \
 				Instance->UpropertyName = GetterExpression; \
 			} \

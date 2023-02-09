@@ -93,10 +93,11 @@ void UAGX_SphereShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetRadius(Radius * GetComponentScale().X);
 }
 
-void UAGX_SphereShapeComponent::CopyFrom(const FSphereShapeBarrier& Barrier)
+void UAGX_SphereShapeComponent::CopyFrom(
+	const FSphereShapeBarrier& Barrier, bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Barrier);
-	AGX_COPY_PROPERTY_FROM(Radius, Barrier.GetRadius(), *this)
+	Super::CopyFrom(Barrier, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(Radius, Barrier.GetRadius(), *this, ForceOverwriteInstances)
 }
 
 void UAGX_SphereShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)

@@ -500,13 +500,14 @@ bool UAGX_ConstraintComponent::GetLastLocalForceBody(
 	return NativeBarrier->GetLastLocalForce(Body->GetNative(), OutForce, OutTorque, bForceAtCm);
 }
 
-void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
+void UAGX_ConstraintComponent::CopyFrom(
+	const FConstraintBarrier& Barrier, bool ForceOverwriteInstances)
 {
-	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetGuid(), *this)
-	AGX_COPY_PROPERTY_FROM(bEnable, Barrier.GetEnable(), *this)
+	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetGuid(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(bEnable, Barrier.GetEnable(), *this, ForceOverwriteInstances)
 
 	EAGX_SolveType SolveTypeBarrier = static_cast<EAGX_SolveType>(Barrier.GetSolveType());
-	AGX_COPY_PROPERTY_FROM(SolveType, SolveTypeBarrier, *this)
+	AGX_COPY_PROPERTY_FROM(SolveType, SolveTypeBarrier, *this, ForceOverwriteInstances)
 
 	const static TArray<EGenericDofIndex> Dofs {
 		EGenericDofIndex::Translational1, EGenericDofIndex::Translational2,
@@ -530,13 +531,13 @@ void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
 				if (const int32* NativeDofPtr = NativeDofIndexMap.Find(Dof))
 				{
 					const int32 NativeDof = *NativeDofPtr;
-					if (ComplianceInSync)
+					if (ForceOverwriteInstances || ComplianceInSync)
 						Instance->Compliance[Dof] = Barrier.GetCompliance(NativeDof);
 
-					if (SpookDampingInSync)
+					if (ForceOverwriteInstances || SpookDampingInSync)
 						Instance->SpookDamping[Dof] = Barrier.GetSpookDamping(NativeDof);
 
-					if (ForceRangeInSync)
+					if (ForceOverwriteInstances || ForceRangeInSync)
 						Instance->ForceRange[Dof] = Barrier.GetForceRange(NativeDof);
 				}
 			}
@@ -544,7 +545,8 @@ void UAGX_ConstraintComponent::CopyFrom(const FConstraintBarrier& Barrier)
 			// Merge Split Properties.
 			if (Msp.HasNative())
 			{
-				if (Instance->MergeSplitProperties == MergeSplitProperties)
+				if (ForceOverwriteInstances ||
+					Instance->MergeSplitProperties == MergeSplitProperties)
 				{
 					Instance->MergeSplitProperties.CopyFrom(Msp);
 				}

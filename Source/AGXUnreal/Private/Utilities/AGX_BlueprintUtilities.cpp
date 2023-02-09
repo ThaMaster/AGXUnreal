@@ -171,7 +171,8 @@ FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(const USc
 }
 
 bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
-	USceneComponent* Component, const FTransform& Transform, bool UpdateArchetypeInstances)
+	USceneComponent* Component, const FTransform& Transform, bool UpdateArchetypeInstances,
+	bool ForceOverwriteInstances)
 {
 	using namespace AGX_BlueprintUtilities_helpers;
 	if (Component == nullptr)
@@ -263,8 +264,8 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 	{
 		// Only write to the Archetype Instances if they are currently in sync with this
 		// template.
-		if (Instance->GetRelativeLocation() == OrigRelLocation &&
-			Instance->GetRelativeRotation() == OrigRelRotation)
+		if (ForceOverwriteInstances || (Instance->GetRelativeLocation() == OrigRelLocation &&
+			Instance->GetRelativeRotation() == OrigRelRotation))
 		{
 			Instance->Modify();
 			Instance->SetRelativeLocation(Component->GetRelativeLocation());
@@ -287,7 +288,8 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 }
 
 void FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(
-	USceneComponent& Component, const FTransform& Transform, bool UpdateArchetypeInstances)
+	USceneComponent& Component, const FTransform& Transform, bool UpdateArchetypeInstances,
+	bool ForceOverwriteInstances)
 {
 	const FVector OrigRelLocation = Component.GetRelativeLocation();
 	const FRotator OrigRelRotation = Component.GetRelativeRotation();
@@ -306,8 +308,8 @@ void FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(
 	{
 		// Only write to the Archetype Instances if they are currently in sync with this
 		// template.
-		if (Instance->GetRelativeLocation() == OrigRelLocation &&
-			Instance->GetRelativeRotation() == OrigRelRotation)
+		if (ForceOverwriteInstances || (Instance->GetRelativeLocation() == OrigRelLocation &&
+			Instance->GetRelativeRotation() == OrigRelRotation))
 		{
 			Instance->Modify();
 			Instance->SetRelativeLocation(Component.GetRelativeLocation());

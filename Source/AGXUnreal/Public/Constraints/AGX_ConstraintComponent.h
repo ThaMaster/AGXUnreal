@@ -332,7 +332,7 @@ public:
 		bool bForceAtCm = false) const;
 
 	// Does not setup body attachments. This must be done by the caller of this function.
-	void CopyFrom(const FConstraintBarrier& Barrier);
+	void CopyFrom(const FConstraintBarrier& Barrier, bool ForceOverwriteInstances = false);
 
 	/**
 	 * Returns true if for any of the locked DOFs both the global attachment frame transforms do no

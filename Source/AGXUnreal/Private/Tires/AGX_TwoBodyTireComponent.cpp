@@ -9,7 +9,6 @@
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
-
 UAGX_TwoBodyTireComponent::UAGX_TwoBodyTireComponent()
 {
 }
@@ -46,7 +45,8 @@ FTransform UAGX_TwoBodyTireComponent::GetGlobalTireTransform() const
 	return FTransform(Rot, Pos);
 }
 
-void UAGX_TwoBodyTireComponent::CopyFrom(const FTwoBodyTireBarrier& Barrier)
+void UAGX_TwoBodyTireComponent::CopyFrom(
+	const FTwoBodyTireBarrier& Barrier, bool ForceOverwriteInstances)
 {
 	if (!Barrier.HasNative())
 	{
@@ -58,31 +58,45 @@ void UAGX_TwoBodyTireComponent::CopyFrom(const FTwoBodyTireBarrier& Barrier)
 		return;
 	}
 
-	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetGuid(), *this)
-	AGX_COPY_PROPERTY_FROM(OuterRadius, Barrier.GetOuterRadius(), *this)
-	AGX_COPY_PROPERTY_FROM(InnerRadius, Barrier.GetInnerRadius(), *this)
+	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetGuid(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(OuterRadius, Barrier.GetOuterRadius(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(InnerRadius, Barrier.GetInnerRadius(), *this, ForceOverwriteInstances)
 
 	const FTransform LocalTransform = Barrier.GetLocalTransform();
-	AGX_COPY_PROPERTY_FROM(LocalLocation, LocalTransform.GetLocation(), *this)
-	AGX_COPY_PROPERTY_FROM(LocalRotation, FRotator(LocalTransform.GetRotation()), *this)
+	AGX_COPY_PROPERTY_FROM(
+		LocalLocation, LocalTransform.GetLocation(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		LocalRotation, FRotator(LocalTransform.GetRotation()), *this, ForceOverwriteInstances)
 
 	AGX_COPY_PROPERTY_FROM(
-		RadialStiffness, Barrier.GetStiffness(FTwoBodyTireBarrier::RADIAL), *this)
+		RadialStiffness, Barrier.GetStiffness(FTwoBodyTireBarrier::RADIAL), *this,
+		ForceOverwriteInstances)
 	AGX_COPY_PROPERTY_FROM(
-		LateralStiffness, Barrier.GetStiffness(FTwoBodyTireBarrier::LATERAL), *this)
+		LateralStiffness, Barrier.GetStiffness(FTwoBodyTireBarrier::LATERAL), *this,
+		ForceOverwriteInstances)
 	AGX_COPY_PROPERTY_FROM(
-		BendingStiffness, Barrier.GetStiffness(FTwoBodyTireBarrier::BENDING), *this)
+		BendingStiffness, Barrier.GetStiffness(FTwoBodyTireBarrier::BENDING), *this,
+		ForceOverwriteInstances)
 	AGX_COPY_PROPERTY_FROM(
-		TorsionalStiffness, Barrier.GetStiffness(FTwoBodyTireBarrier::TORSIONAL), *this)
-
-	AGX_COPY_PROPERTY_FROM(RadialDamping, Barrier.GetDamping(FTwoBodyTireBarrier::RADIAL), *this)
-	AGX_COPY_PROPERTY_FROM(LateralDamping, Barrier.GetDamping(FTwoBodyTireBarrier::LATERAL), *this)
-	AGX_COPY_PROPERTY_FROM(BendingDamping, Barrier.GetDamping(FTwoBodyTireBarrier::BENDING), *this)
-	AGX_COPY_PROPERTY_FROM(
-		TorsionalDamping, Barrier.GetDamping(FTwoBodyTireBarrier::TORSIONAL), *this)
+		TorsionalStiffness, Barrier.GetStiffness(FTwoBodyTireBarrier::TORSIONAL), *this,
+		ForceOverwriteInstances)
 
 	AGX_COPY_PROPERTY_FROM(
-		ImplicitFrictionMultiplier, Barrier.GetImplicitFrictionMultiplier(), *this)
+		RadialDamping, Barrier.GetDamping(FTwoBodyTireBarrier::RADIAL), *this,
+		ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		LateralDamping, Barrier.GetDamping(FTwoBodyTireBarrier::LATERAL), *this,
+		ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		BendingDamping, Barrier.GetDamping(FTwoBodyTireBarrier::BENDING), *this,
+		ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		TorsionalDamping, Barrier.GetDamping(FTwoBodyTireBarrier::TORSIONAL), *this,
+		ForceOverwriteInstances)
+
+	AGX_COPY_PROPERTY_FROM(
+		ImplicitFrictionMultiplier, Barrier.GetImplicitFrictionMultiplier(), *this,
+		ForceOverwriteInstances)
 }
 
 bool UAGX_TwoBodyTireComponent::IsDefaultSubObjectOfTwoBodyTireActor() const
