@@ -415,6 +415,9 @@ private:
 	int32 StepCatchUpOverTimeCapped(float DeltaTime);
 	int32 StepDropImmediately(float DeltaTime);
 
+	void PreStep();
+	void PostStep();
+
 	void EnsureStepperCreated();
 	void EnsureValidLicense();
 
