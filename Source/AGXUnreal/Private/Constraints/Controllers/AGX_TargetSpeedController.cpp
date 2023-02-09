@@ -102,16 +102,37 @@ void FAGX_ConstraintTargetSpeedController::UpdateNativePropertiesImpl()
 	}
 }
 
-void FAGX_ConstraintTargetSpeedController::CopyFrom(const FTargetSpeedControllerBarrier& Source)
+void FAGX_ConstraintTargetSpeedController::CopyFrom(
+	const FTargetSpeedControllerBarrier& Source,
+	TArray<FAGX_ConstraintTargetSpeedController*>& Instances, bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Source);
+	TArray<FAGX_ConstraintController*> BaseInstances;
+	BaseInstances.Reserve(Instances.Num());
+	for (auto Instance : Instances)
+	{
+		BaseInstances.Add(Instance);
+	}	
+
+	Super::CopyFrom(Source, BaseInstances, ForceOverwriteInstances);
+	const double SpeedBarrier =
+		bRotational ? Source.GetSpeedRotational() : Source.GetSpeedTranslational();
+
+	for (auto Instance : Instances)
+	{
+		if (Instance == nullptr)
+			continue;
+
+		if (ForceOverwriteInstances || Instance->bLockedAtZeroSpeed == bLockedAtZeroSpeed)
+		{
+			Instance->bLockedAtZeroSpeed = Source.GetLockedAtZeroSpeed();
+		}
+
+		if (ForceOverwriteInstances || Instance->Speed == Speed)
+		{
+			Instance->Speed = SpeedBarrier;
+		}
+	}
+
 	bLockedAtZeroSpeed = Source.GetLockedAtZeroSpeed();
-	if (bRotational)
-	{
-		Speed = Source.GetSpeedRotational();
-	}
-	else
-	{
-		Speed = Source.GetSpeedTranslational();
-	}
+	Speed = SpeedBarrier;
 }

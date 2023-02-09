@@ -117,9 +117,34 @@ void FAGX_ConstraintElectricMotorController::UpdateNativePropertiesImpl()
 	Barrier->SetTorqueConstant(TorqueConstant);
 }
 
-void FAGX_ConstraintElectricMotorController::CopyFrom(const FElectricMotorControllerBarrier& Source)
+void FAGX_ConstraintElectricMotorController::CopyFrom(
+	const FElectricMotorControllerBarrier& Source,
+	TArray<FAGX_ConstraintElectricMotorController*>& Instances, bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Source);
+	TArray<FAGX_ConstraintController*> BaseInstances;
+	BaseInstances.Reserve(Instances.Num());
+	for (auto Instance : Instances)
+	{
+		BaseInstances.Add(Instance);
+	}	
+
+	Super::CopyFrom(Source, BaseInstances, ForceOverwriteInstances);
+
+	for (auto Instance : Instances)
+	{
+		if (Instance == nullptr)
+			continue;
+
+		if (ForceOverwriteInstances || Instance->Voltage == Voltage)
+			Instance->Voltage = Source.GetVoltage();
+
+		if (ForceOverwriteInstances || Instance->ArmatureResistance == ArmatureResistance)
+			Instance->ArmatureResistance = Source.GetArmatureResistance();
+
+		if (ForceOverwriteInstances || Instance->TorqueConstant == TorqueConstant)
+			Instance->TorqueConstant = Source.GetTorqueConstant();
+	}
+
 	Voltage = Source.GetVoltage();
 	ArmatureResistance = Source.GetArmatureResistance();
 	TorqueConstant = Source.GetTorqueConstant();

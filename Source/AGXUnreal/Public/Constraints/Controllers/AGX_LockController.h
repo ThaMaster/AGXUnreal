@@ -38,7 +38,9 @@ public:
 	FAGX_ConstraintLockController(bool bRotational);
 
 	void InitializeBarrier(TUniquePtr<FLockControllerBarrier> Barrier);
-	void CopyFrom(const FLockControllerBarrier& Source);
+	void CopyFrom(
+		const FLockControllerBarrier& Source,
+		TArray<FAGX_ConstraintLockController*>& ArchetypeInstances, bool ForceOverwriteInstances);
 
 protected:
 	virtual void UpdateNativePropertiesImpl() override;

@@ -85,9 +85,33 @@ void FAGX_ConstraintFrictionController::UpdateNativePropertiesImpl()
 	Barrier->SetEnableNonLinearDirectSolveUpdate(bEnableNonLinearDirectSolveUpdate);
 }
 
-void FAGX_ConstraintFrictionController::CopyFrom(const FFrictionControllerBarrier& Source)
+void FAGX_ConstraintFrictionController::CopyFrom(
+	const FFrictionControllerBarrier& Source, TArray<FAGX_ConstraintFrictionController*>& Instances,
+	bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Source);
+	TArray<FAGX_ConstraintController*> BaseInstances;
+	BaseInstances.Reserve(Instances.Num());
+	for (auto Instance : Instances)
+	{
+		BaseInstances.Add(Instance);
+	}	
+
+	Super::CopyFrom(Source, BaseInstances, ForceOverwriteInstances);
+
+	for (auto Instance : Instances)
+	{
+		if (Instance == nullptr)
+			continue;
+
+		if (ForceOverwriteInstances || Instance->FrictionCoefficient == FrictionCoefficient)
+			Instance->FrictionCoefficient = Source.GetFrictionCoefficient();
+
+		if (ForceOverwriteInstances ||
+			Instance->bEnableNonLinearDirectSolveUpdate == bEnableNonLinearDirectSolveUpdate)
+			Instance->bEnableNonLinearDirectSolveUpdate =
+				Source.GetEnableNonLinearDirectSolveUpdate();
+	}
+
 	FrictionCoefficient = Source.GetFrictionCoefficient();
 	bEnableNonLinearDirectSolveUpdate = Source.GetEnableNonLinearDirectSolveUpdate();
 }

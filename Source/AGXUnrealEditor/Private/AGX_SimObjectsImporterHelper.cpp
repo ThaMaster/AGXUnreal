@@ -1249,7 +1249,8 @@ namespace
 		UpdateConstraintComponentNoControllers(
 			Constraint, Barrier, Helper, RestoredThresholds, MSTsOnDisk, ForceOverwriteInstances);
 		FAGX_ConstraintUtilities::CopyControllersFrom(
-			Constraint, *static_cast<const FConstraint1DOFBarrier*>(&Barrier));
+			Constraint, *static_cast<const FConstraint1DOFBarrier*>(&Barrier),
+			ForceOverwriteInstances);
 	}
 
 	void UpdateConstraint2DofComponent(
@@ -1261,7 +1262,8 @@ namespace
 		UpdateConstraintComponentNoControllers(
 			Constraint, Barrier, Helper, RestoredThresholds, MSTsOnDisk, ForceOverwriteInstances);
 		FAGX_ConstraintUtilities::CopyControllersFrom(
-			Constraint, *static_cast<const FConstraint2DOFBarrier*>(&Barrier));
+			Constraint, *static_cast<const FConstraint2DOFBarrier*>(&Barrier),
+			ForceOverwriteInstances);
 	}
 }
 

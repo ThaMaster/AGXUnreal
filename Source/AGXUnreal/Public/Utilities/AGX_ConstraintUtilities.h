@@ -36,53 +36,64 @@ public:
 	 * from the AGX Dynamics constraint to the AGXUnreal constraint.
 	 * @param Component The AGXUnreal constraint to copy properties to.
 	 * @param Barrier The AGX Dynamics constraint to copy properties from.
+	 * @param ForceOverwriteInstances Archetype instance properties are always overwritten, even if
+	 * not in sync.
 	 */
 	static void CopyControllersFrom(
-		UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier);
+		UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier,
+		bool ForceOverwriteInstances);
 
 	/**
 	 * Copy constraint controller properties, such as enabled, compliance, force range, voltage,
 	 * from the AGX Dynamics constraint to the AGXUnreal constraint.
 	 * @param Component The AGXUnreal constraint to copy properties to.
 	 * @param Barrier The AGX Dynamics constraint to copy properties from.
+	 * @param ForceOverwriteInstances Archetype instance properties are always overwritten, even
+	 * if not in sync.
 	 */
 	static void CopyControllersFrom(
-		UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier);
+		UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier,
+		bool ForceOverwriteInstances);
 
 	static void StoreElectricMotorController(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller);
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller,
+		TArray<FAGX_ConstraintElectricMotorController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreElectricMotorController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintElectricMotorController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreFrictionController(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller);
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
+		TArray<FAGX_ConstraintFrictionController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreFrictionController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintFrictionController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreLockController(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller);
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
+		TArray<FAGX_ConstraintLockController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreLockController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintLockController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreRangeController(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller);
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
+		TArray<FAGX_ConstraintRangeController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreRangeController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintRangeController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreTargetSpeedController(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller);
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
+		TArray<FAGX_ConstraintTargetSpeedController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreTargetSpeedController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintTargetSpeedController*>& Instances, bool ForceOverwriteInstances);
 
 #if WITH_EDITOR
 	template <typename UConstraintClass, typename FControllerClass>

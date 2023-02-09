@@ -60,8 +60,28 @@ void FAGX_ConstraintScrewController::UpdateNativePropertiesImpl()
 	Barrier->SetLead(Lead);
 }
 
-void FAGX_ConstraintScrewController::CopyFrom(const FScrewControllerBarrier& Source)
+void FAGX_ConstraintScrewController::CopyFrom(
+	const FScrewControllerBarrier& Source, TArray<FAGX_ConstraintScrewController*>& Instances,
+	bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Source);
+	TArray<FAGX_ConstraintController*> BaseInstances;
+	BaseInstances.Reserve(Instances.Num());
+	for (auto Instance : Instances)
+	{
+		BaseInstances.Add(Instance);
+	}	
+
+	Super::CopyFrom(Source, BaseInstances, ForceOverwriteInstances);
+	for (auto Instance : Instances)
+	{
+		if (Instance == nullptr)
+			continue;
+
+		if (ForceOverwriteInstances || Instance->Lead == Lead)
+		{
+			Instance->Lead = Source.GetLead();
+		}
+	}
+
 	Lead = Source.GetLead();
 }
