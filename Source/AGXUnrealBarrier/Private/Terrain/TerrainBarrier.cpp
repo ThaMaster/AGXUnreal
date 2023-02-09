@@ -213,10 +213,10 @@ TArray<std::tuple<int32, int32>> FTerrainBarrier::GetModifiedVertices() const
 	const auto& ModifiedVerticesAGX = NativeRef->Native->getModifiedVertices();
 	TArray<std::tuple<int32, int32>> ModifiedVertices;
 	ModifiedVertices.Reserve(ModifiedVerticesAGX.size());
-	for (auto It = ModifiedVerticesAGX.begin(); It != ModifiedVerticesAGX.end(); ++It)
+	for (const auto& Index2d : ModifiedVerticesAGX)
 	{
 		ModifiedVertices.Add(std::make_tuple<int32, int32>(
-			static_cast<int32>(It->x()), SizeY - 1 - static_cast<int32>(It->y())));
+			static_cast<int32>(Index2d.x()), SizeY - 1 - static_cast<int32>(Index2d.y())));
 	}
 
 	return ModifiedVertices;
@@ -275,12 +275,13 @@ void FTerrainBarrier::GetHeights(TArray<float>& Heights, bool bChangesOnly) cons
 	// point of view.
 	if (bChangesOnly)
 	{
-		const auto& ModifiedVertices = NativeRef->Native->getModifiedVertices();
-		for (auto It = ModifiedVertices.begin(); It != ModifiedVertices.end(); ++It)
+		const auto& ModifiedVerticesAGX = NativeRef->Native->getModifiedVertices();
+		for (const auto& Index2d : ModifiedVerticesAGX)
 		{
-			int32 I = It->x() + (SizeY - 1 - It->y()) * SizeX;
+			int32 I = Index2d.x() + (SizeY - 1 - Index2d.y()) * SizeX;
 			AGX_CHECK(Heights.Num() > I);
-			Heights[I] = ConvertDistanceToUnreal<float>(HeightField->getHeight(It->x(), It->y()));
+			Heights[I] =
+				ConvertDistanceToUnreal<float>(HeightField->getHeight(Index2d.x(), Index2d.y()));
 		}
 	}
 	else
