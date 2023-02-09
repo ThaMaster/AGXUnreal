@@ -68,6 +68,15 @@ public:
 	/**
 	 * Returns the modified vertices since the last AGX Dynamics Step Forward.
 	 * The x/y layout matches that of an Unreal Landscape coordinate system.
+	 *
+	 * Example of how to iterate over heights using GetModifiedVertices:
+	 * for (const auto& VertexTuple : GetModifiedVertices())
+	 * {
+	 *		const int32 VertX = std::get<0>(VertexTuple);
+	 *		const int32 VertY = std::get<1>(VertexTuple);
+	 *		const int32 Index = VertX + VertY * TerrainVerticesX;
+	 *		float Height = Heights[Index];
+	 *	}
 	 */
 	TArray<std::tuple<int32, int32>> GetModifiedVertices() const;
 
@@ -78,7 +87,9 @@ public:
 	 * If the ChangesOnly parameter is set to true, only height changes from the previous AGX
 	 * Dynamics Step Forward is read. This can be used as a performance optimization, but use with
 	 * caution; the caller may miss height changes if this is not called each AGX Dynamics Step
-	 * Forward.
+	 * Forward. If ChangesOnly is true, then the GetModifiedVertices can be used when iterating over
+	 * the heights array at the call site, instead of iterating over all heights, as a further
+	 * optimization.
 	 */
 	void GetHeights(TArray<float>& OutHeights, bool bChangesOnly) const;
 
