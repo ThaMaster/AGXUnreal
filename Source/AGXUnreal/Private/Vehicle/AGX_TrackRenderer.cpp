@@ -46,52 +46,55 @@ namespace AGX_TrackRenderer_helpers
 		if (TrackRenderer.OverrideMaterials.Num() == 0)
 			return;
 
-		if (TrackRenderer.OverrideMaterials[0] == nullptr)
-			return;
-
-		UMaterial* Material = TrackRenderer.OverrideMaterials[0]->GetMaterial();
-		if (Material == nullptr || Material->bUsedWithInstancedStaticMeshes)
-			return;
-
-		if (Material->GetPathName().StartsWith("/Game/"))
+		for (auto& MatInterface : TrackRenderer.OverrideMaterials)
 		{
-			// This is a material part of the UE project itself. We can therefore be a bit more
-			// helpful and offer to fix the material setting and save the asset so that the user
-			// does not have to manually do it.
-			const FText AskEnableUseWithInstancedSM = LOCTEXT(
-				"EnableUseWithInstancedStaticMeshes?",
-				"The selected Material does not have Use With Instanced Static Meshes enabled, "
-				"meaning that it cannot be used with the Track Renderer. Would you like this "
-				"setting to be automatically enabled? The Material asset will be re-saved.");
-			if (FAGX_NotificationUtilities::YesNoQuestion(AskEnableUseWithInstancedSM))
+			if (MatInterface == nullptr)
+				continue;
+			
+			UMaterial* Material = MatInterface->GetMaterial();
+			if (Material == nullptr || Material->bUsedWithInstancedStaticMeshes)
+				return;
+
+			if (Material->GetPathName().StartsWith("/Game/"))
 			{
-				Material->bUsedWithInstancedStaticMeshes = true;
-				Material->Modify();
-				Material->PostEditChange();
-				FAGX_ObjectUtilities::SaveAsset(*Material);
+				// This is a material part of the UE project itself. We can therefore be a bit more
+				// helpful and offer to fix the material setting and save the asset so that the user
+				// does not have to manually do it.
+				const FText AskEnableUseWithInstancedSM = LOCTEXT(
+					"EnableUseWithInstancedStaticMeshes?",
+					"The selected Material does not have Use With Instanced Static Meshes enabled, "
+					"meaning that it cannot be used with the Track Renderer. Would you like this "
+					"setting to be automatically enabled? The Material asset will be re-saved.");
+				if (FAGX_NotificationUtilities::YesNoQuestion(AskEnableUseWithInstancedSM))
+				{
+					Material->Modify();
+					Material->bUsedWithInstancedStaticMeshes = true;
+					Material->PostEditChange();
+					FAGX_ObjectUtilities::SaveAsset(*Material);
+				}
+				else
+				{
+					// Clear the material selection.
+					MatInterface = nullptr;
+				}
 			}
 			else
 			{
-				// Clear the material selection.
-				TrackRenderer.OverrideMaterials[0] = nullptr;
-			}
-		}
-		else
-		{
-			// This is a material not part of the UE project itself. It may reside in the installed
-			// Unreal Editor itself, or some plugin. We are not comfortable making permanent changes
-			// to such materials, so we will prompt the user to do it themselves.
-			const FString Message =
-				"The selected Material does not have Use With Instanced Static Meshes enabled, "
-				"meaning that it cannot be used with the Track Renderer. You can enable this "
-				"setting from the Material editor. The Material needs to be saved after these "
-				"changes. It is recommended to make a copy and place the "
-				"material within the project Contents, that way the behavior will be the same on "
-				"any computer opening this project.";
-			FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(Message);
+				// This is a material not part of the UE project itself. It may reside in the installed
+				// Unreal Editor itself, or some plugin. We are not comfortable making permanent changes
+				// to such materials, so we will prompt the user to do it themselves.
+				const FString Message =
+					"The selected Material does not have Use With Instanced Static Meshes enabled, "
+					"meaning that it cannot be used with the Track Renderer. You can enable this "
+					"setting from the Material editor. The Material needs to be saved after these "
+					"changes. It is recommended to make a copy and place the "
+					"material within the project Contents, that way the behavior will be the same on "
+					"any computer opening this project.";
+				FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(Message);
 
-			// Clear the material selection.
-			TrackRenderer.OverrideMaterials[0] = nullptr;
+				// Clear the material selection.
+				MatInterface = nullptr;
+			}
 		}
 	}
 #endif
