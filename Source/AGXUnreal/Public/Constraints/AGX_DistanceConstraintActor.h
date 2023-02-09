@@ -10,7 +10,7 @@
 
 #include "AGX_DistanceConstraintActor.generated.h"
 
-UCLASS(ClassGroup = "AGX", Blueprintable)
+UCLASS(ClassGroup = "AGX_Constraint", Blueprintable)
 class AGXUNREAL_API AAGX_DistanceConstraintActor : public AAGX_Constraint1DofActor
 {
 	GENERATED_BODY()

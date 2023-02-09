@@ -29,7 +29,7 @@ class FConstraintBarrier;
  * @see FAGX_ConstraintComponentVisualizer
  *
  */
-UCLASS(Category = "AGX", ClassGroup = "AGX", NotPlaceable)
+UCLASS(Category = "AGX", ClassGroup = "AGX_Constraint", NotPlaceable)
 class AGXUNREAL_API UAGX_ConstraintComponent : public USceneComponent, public IAGX_NativeOwner
 {
 	GENERATED_BODY()
