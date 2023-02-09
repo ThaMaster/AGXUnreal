@@ -552,6 +552,7 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		const FVector OldLocation = GetComponentLocation();
 		const FVector LocationDelta = NewLocation - OldLocation;
 		MoveComponent(LocationDelta, NewRotation, false);
+		ComponentVelocity = NativeBarrier.GetVelocity();
 	};
 
 	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor) {
@@ -573,6 +574,7 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		NewTransform.SetScale3D(Ancestor.GetComponentScale());
 
 		Ancestor.SetWorldTransform(NewTransform);
+		Ancestor.ComponentVelocity = NativeBarrier.GetVelocity();
 	};
 
 	auto TryTransformAncestor = [this, &NewLocation, &NewRotation,
