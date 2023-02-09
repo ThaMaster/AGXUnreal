@@ -4,14 +4,19 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
 
 // Standard library includes.
 #include <algorithm>
 
-//#define TRACK_RENDERER_DETAILED_LOGGING
+// #define TRACK_RENDERER_DETAILED_LOGGING
 
-namespace
+#define LOCTEXT_NAMESPACE "AGX_TrackRenderer"
+
+namespace AGX_TrackRenderer_helpers
 {
 	template <class T>
 	T* FindFirstParentComponentByClass(USceneComponent* CurrentComponent)
@@ -34,6 +39,65 @@ namespace
 			return FindFirstParentComponentByClass<T>(CurrentComponent->GetAttachParent());
 		}
 	}
+
+#if WITH_EDITOR
+	void EnsureValidRenderMaterial(UAGX_TrackRenderer& TrackRenderer)
+	{
+		if (TrackRenderer.OverrideMaterials.Num() == 0)
+			return;
+
+		for (auto& MatInterface : TrackRenderer.OverrideMaterials)
+		{
+			if (MatInterface == nullptr)
+				continue;
+			
+			UMaterial* Material = MatInterface->GetMaterial();
+			if (Material == nullptr || Material->bUsedWithInstancedStaticMeshes)
+				return;
+
+			if (Material->GetPathName().StartsWith("/Game/"))
+			{
+				// This is a material part of the UE project itself. We can therefore be a bit more
+				// helpful and offer to fix the material setting and save the asset so that the user
+				// does not have to manually do it.
+				const FText AskEnableUseWithInstancedSM = LOCTEXT(
+					"EnableUseWithInstancedStaticMeshes?",
+					"The selected Material does not have Use With Instanced Static Meshes enabled, "
+					"meaning that it cannot be used with the Track Renderer. Would you like this "
+					"setting to be automatically enabled? The Material asset will be re-saved.");
+				if (FAGX_NotificationUtilities::YesNoQuestion(AskEnableUseWithInstancedSM))
+				{
+					Material->Modify();
+					Material->bUsedWithInstancedStaticMeshes = true;
+					Material->PostEditChange();
+					FAGX_ObjectUtilities::SaveAsset(*Material);
+				}
+				else
+				{
+					// Clear the material selection.
+					MatInterface = nullptr;
+				}
+			}
+			else
+			{
+				// This is a material not part of the UE project itself. It may reside in the installed
+				// Unreal Editor itself, or some plugin. We are not comfortable making permanent changes
+				// to such materials, so we will prompt the user to do it themselves.
+				const FString Message =
+					"The selected Material does not have Use With Instanced Static Meshes enabled, "
+					"meaning that it cannot be used with the Track Renderer. You can enable this "
+					"setting from the Material editor. The Material needs to be saved after these "
+					"changes. It is recommended to make a copy and place the "
+					"material within the project Contents, that way the behavior will be the same on "
+					"any computer opening this project.";
+				FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(Message);
+
+				// Clear the material selection.
+				MatInterface = nullptr;
+			}
+		}
+	}
+#endif
 }
 
 UAGX_TrackRenderer::UAGX_TrackRenderer()
@@ -122,6 +186,12 @@ void UAGX_TrackRenderer::PostEditChangeProperty(FPropertyChangedEvent& PropertyC
 		TEXT("UAGX_TrackRenderer::PostEditChangeProperty() for '%s' (UID: %i) in '%s'."),
 		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
+
+	const FName Property = GetFNameSafe(PropertyChangedEvent.Property);
+	if (Property == GET_MEMBER_NAME_CHECKED(UAGX_TrackRenderer, OverrideMaterials))
+	{
+		AGX_TrackRenderer_helpers::EnsureValidRenderMaterial(*this);
+	}
 
 	// Update the render data both regardless of playing or not.
 	// If not playing, we do no only update render data when something changes, so do it here.
@@ -249,6 +319,7 @@ void UAGX_TrackRenderer::RebindToTrackPreviewNeedsUpdateEvent(bool bSynchronizeI
 
 UAGX_TrackComponent* UAGX_TrackRenderer::FindTargetTrack()
 {
+	using namespace AGX_TrackRenderer_helpers;
 	return FindFirstParentComponentByClass<UAGX_TrackComponent>(this); // \todo Cache component!
 }
 
@@ -411,3 +482,4 @@ bool UAGX_TrackRenderer::ComputeVisualScaleAndOffset(
 
 #undef DEFAULT_VISUAL_SCALE
 #undef DEFAULT_VISUAL_OFFSET
+#undef LOCTEXT_NAMESPACE
