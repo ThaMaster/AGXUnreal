@@ -1512,7 +1512,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 	void AddOrUpdateTwoBodyTires(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
-		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
+		const FAGX_SynchronizeModelSettings& Settings)
 	{
 		for (const auto& Barrier : SimulationObjects.GetTwoBodyTires())
 		{
@@ -1532,7 +1533,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			}
 
 			Helper.UpdateTwoBodyTire(
-				Barrier, *Cast<UAGX_TwoBodyTireComponent>(TireNode->ComponentTemplate));
+				Barrier, *Cast<UAGX_TwoBodyTireComponent>(TireNode->ComponentTemplate),
+				Settings.bForceOverwriteProperties);
 		}
 	}
 
@@ -1570,7 +1572,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 	void AddOrUpdateObserverFrames(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
-		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
+		const FAGX_SynchronizeModelSettings& Settings)
 	{
 		for (const auto& ObserverFrame : SimulationObjects.GetObserverFrames())
 		{
@@ -1608,7 +1611,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 			Helper.UpdateObserverFrameComponent(
 				ObserverFrame.Name, ObserverFrame.ObserverGuid, ObserverFrame.Transform,
-				*Cast<UAGX_ObserverFrameComponent>(ObserverNode->ComponentTemplate));
+				*Cast<UAGX_ObserverFrameComponent>(ObserverNode->ComponentTemplate),
+				Settings.bForceOverwriteProperties);
 		}
 	}
 
@@ -1687,12 +1691,12 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		AddOrUpdateConstraints(
 			BaseBP, SCSNodes, SimulationObjects, Helper, Settings, ExistingMSTAssets);
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Tire Models"));
-		AddOrUpdateTwoBodyTires(BaseBP, SCSNodes, SimulationObjects, Helper);
+		AddOrUpdateTwoBodyTires(BaseBP, SCSNodes, SimulationObjects, Helper, Settings);
 		ImportTask.EnterProgressFrame(
 			5.f, FText::FromString("Synchronizing Collision Groups Disabler"));
 		AddOrUpdateCollisionGroupDisabler(BaseBP, SCSNodes, SimulationObjects, Helper);
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Observer Frames"));
-		AddOrUpdateObserverFrames(BaseBP, SCSNodes, SimulationObjects, Helper);
+		AddOrUpdateObserverFrames(BaseBP, SCSNodes, SimulationObjects, Helper, Settings);
 		ImportTask.EnterProgressFrame(
 			5.f, FText::FromString("Synchronizing Model Source Component"));
 		AddOrUpdateModelSourceComponent(BaseBP, SCSNodes, Helper);

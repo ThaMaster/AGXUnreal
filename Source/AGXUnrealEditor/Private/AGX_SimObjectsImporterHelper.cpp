@@ -1226,7 +1226,7 @@ namespace
 		}
 
 		FAGX_ImportUtilities::Rename(Constraint, Barrier.GetName());
-		Constraint.CopyFrom(Barrier);
+		Constraint.CopyFrom(Barrier, ForceOverwriteInstances);
 		const FTransform NewWorldTransform =
 			FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 				Barrier, Constraint, Bodies.first, Bodies.second);
@@ -1376,7 +1376,7 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 {
 	UAGX_TwoBodyTireComponent* Component = NewObject<UAGX_TwoBodyTireComponent>(&Owner);
 
-	UpdateTwoBodyTire(Barrier, *Component);
+	UpdateTwoBodyTire(Barrier, *Component, false);
 
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
@@ -1385,7 +1385,8 @@ UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateTwoBodyTire(
-	const FTwoBodyTireBarrier& Barrier, UAGX_TwoBodyTireComponent& Component)
+	const FTwoBodyTireBarrier& Barrier, UAGX_TwoBodyTireComponent& Component,
+	bool ForceOverwriteInstances)
 {
 	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef)
 	{
@@ -1400,10 +1401,26 @@ void FAGX_SimObjectsImporterHelper::UpdateTwoBodyTire(
 		BodyRef.BodyName = Body->GetFName();
 	};
 
+	// Update any archetype isntance.
+	for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+	{
+		if (ForceOverwriteInstances ||
+			Instance->TireRigidBody.BodyName == Component.TireRigidBody.BodyName)
+		{
+			SetRigidBody(GetBody(Barrier.GetTireRigidBody()), Instance->TireRigidBody);
+		}
+
+		if (ForceOverwriteInstances ||
+			Instance->HubRigidBody.BodyName == Component.HubRigidBody.BodyName)
+		{
+			SetRigidBody(GetBody(Barrier.GetHubRigidBody()), Instance->HubRigidBody);
+		}
+	}
+
 	SetRigidBody(GetBody(Barrier.GetTireRigidBody()), Component.TireRigidBody);
 	SetRigidBody(GetBody(Barrier.GetHubRigidBody()), Component.HubRigidBody);
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
-	Component.CopyFrom(Barrier);
+	Component.CopyFrom(Barrier, ForceOverwriteInstances);
 }
 
 UAGX_CollisionGroupDisablerComponent*
@@ -1766,6 +1783,9 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 
 void FAGX_SimObjectsImporterHelper::UpdateModelSourceComponent(UAGX_ModelSourceComponent& Component)
 {
+	// Note: we always overwrite any archetype instances of the Model Source Component. This is
+	// because the user should or cannot edit its properties. It is a Component completely managed
+	// by AGX Dynamics for Unreal.
 	auto UpdateModelSourceComponent = [this](UAGX_ModelSourceComponent* C)
 	{
 		if (C == nullptr)
@@ -1840,7 +1860,7 @@ UAGX_ObserverFrameComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverF
 	UAGX_ObserverFrameComponent* Component =
 		FAGX_ImportUtilities::CreateComponent<UAGX_ObserverFrameComponent>(Owner, *Body);
 
-	UpdateObserverFrameComponent(Name, ObserverGuid, Transform, *Component);
+	UpdateObserverFrameComponent(Name, ObserverGuid, Transform, *Component, false);
 
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
@@ -1851,10 +1871,11 @@ UAGX_ObserverFrameComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverF
 
 void FAGX_SimObjectsImporterHelper::UpdateObserverFrameComponent(
 	const FString& Name, const FGuid& ObserverGuid, const FTransform& Transform,
-	UAGX_ObserverFrameComponent& Component)
+	UAGX_ObserverFrameComponent& Component, bool ForceOverwriteInstances)
 {
 	FAGX_ImportUtilities::Rename(Component, Name);
-	FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(Component, Transform);
+	FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(
+		Component, Transform, true, ForceOverwriteInstances);
 
 	// Update any archetype instances.
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))

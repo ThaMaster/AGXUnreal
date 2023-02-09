@@ -185,7 +185,8 @@ public:
 		const FTwoBodyTireBarrier& Barrier, AActor& Owner);
 
 	void UpdateTwoBodyTire(
-		const FTwoBodyTireBarrier& Barrier, UAGX_TwoBodyTireComponent& Component);
+		const FTwoBodyTireBarrier& Barrier, UAGX_TwoBodyTireComponent& Component,
+		bool ForceOverwriteInstances);
 
 	UAGX_CollisionGroupDisablerComponent* InstantiateCollisionGroupDisabler(
 		AActor& Owner, const TArray<std::pair<FString, FString>>& DisabledPairs);
@@ -208,7 +209,7 @@ public:
 
 	void UpdateObserverFrameComponent(
 		const FString& Name, const FGuid& ObserverGuid, const FTransform& Transform,
-		UAGX_ObserverFrameComponent& Component);
+		UAGX_ObserverFrameComponent& Component, bool ForceOverwriteInstances);
 
 	UAGX_RigidBodyComponent* GetBody(
 		const FRigidBodyBarrier& Barrier, bool LogErrorIfNotFound = true);
