@@ -61,7 +61,6 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 public: // Properties.
-
 	/**
 	 * The number of threads AGX Dynamics will use during Play.
 	 *
@@ -305,7 +304,8 @@ public: // Member functions.
 	/**
 	 * Delegate that is executed before each Simulation step forward.
 	 * Users may bind to this delegate in order to get a callback before each Simulation step
-	 * forward.
+	 * forward. This may be executed zero, one or several times per Unreal Engine Tick, depending on
+	 * the Step Mode and Time Step selected in the AGX Dynamics for Unreal settings.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Simulation")
 	FOnPreStepForward PreStepForward;
@@ -313,7 +313,8 @@ public: // Member functions.
 	/**
 	 * Delegate that is executed after each Simulation step forward.
 	 * Users may bind to this delegate in order to get a callback after each Simulation step
-	 * forward.
+	 * forward. This may be executed zero, one or several times per Unreal Engine Tick, depending on
+	 * the Step Mode and Time Step selected in the AGX Dynamics for Unreal settings.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Simulation")
 	FOnPostStepForward PostStepForward;
@@ -440,7 +441,7 @@ private:
 
 	// Internal post/pre step forward delegates.
 	FOnPreStepForwardInternal PreStepForwardInternal;
-	FOnPostStepForwardInternal PostStepForwardInternal;	
+	FOnPostStepForwardInternal PostStepForwardInternal;
 
 	friend class FAGX_InternalDelegateAccessor;
 };
