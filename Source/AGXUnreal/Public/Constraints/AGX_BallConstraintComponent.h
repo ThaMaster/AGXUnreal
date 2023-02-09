@@ -15,7 +15,7 @@ class FBallJointBarrier;
 /**
  * Locks all translational degrees of freedom, but rotation is free.
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "AGX_Constraint", Category = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_BallConstraintComponent : public UAGX_ConstraintComponent
 {
 	GENERATED_BODY()

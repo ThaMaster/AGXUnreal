@@ -272,7 +272,7 @@ FReply SAGX_OfflineActivationDialog::OnGenerateActivationRequestButtonClicked()
 	}
 
 	const FString Filename = FAGX_EditorUtilities::SelectNewFileDialog(
-		"Select an activation request output file", ".txt", "Text file|*.txt", "ActivationRequest.txt", "");
+		"Select an activation request output file", "Text file|*.txt", "ActivationRequest.txt", "");
 
 	if (Filename.IsEmpty())
 	{

@@ -309,7 +309,7 @@ public:
 	 */
 	template <typename T>
 	static T* GetSingleObjectBeingCustomized(
-		IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true);
+		const IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple = true);
 
 	/**
 	 * Convert a bool to a Slate visibility flag. True means visible, false means Collapsed (not
@@ -324,7 +324,7 @@ public:
 		const FString& DialogTitle, const FString& InStartDir = "", bool AllowNoneSelected = false);
 
 	static FString SelectNewFileDialog(
-		const FString& DialogTitle, const FString& FileExtension, const FString& FileTypes,
+		const FString& DialogTitle, const FString& FileTypes,
 		const FString& DefaultFile = "", const FString& InStartDir = "");
 
 	static const ISlateStyle& GetStyle()
@@ -378,7 +378,7 @@ T* FAGX_EditorUtilities::CreateConstraintActor(
 
 template <typename T>
 T* FAGX_EditorUtilities::GetSingleObjectBeingCustomized(
-	IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple)
+	const IDetailLayoutBuilder& DetailBuilder, bool FailIfMultiple)
 {
 	static_assert(std::is_base_of<UObject, T>::value, "T must inherit from UObject");
 

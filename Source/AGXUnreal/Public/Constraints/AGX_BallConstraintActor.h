@@ -12,7 +12,7 @@
 
 class UAGX_BallConstraintComponent;
 
-UCLASS(ClassGroup = "AGX", Blueprintable)
+UCLASS(ClassGroup = "AGX_Constraint", Blueprintable)
 class AGXUNREAL_API AAGX_BallConstraintActor : public AAGX_ConstraintActor
 {
 	GENERATED_BODY()

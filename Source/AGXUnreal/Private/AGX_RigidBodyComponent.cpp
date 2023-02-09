@@ -364,6 +364,34 @@ void UAGX_RigidBodyComponent::CreateMergeSplitProperties()
 	}
 }
 
+bool UAGX_RigidBodyComponent::IsAutomaticallyMerged()
+{
+	if (!HasNative())
+		return false;
+
+	return NativeBarrier.IsAutomaticallyMerged();
+}
+
+bool UAGX_RigidBodyComponent::Split()
+{
+	if (!HasNative())
+		return false;
+
+	if (!MergeSplitProperties.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_RigidBodyComponent::Split was called on Rigid Body "
+				 "'%s' that does not have Merge Split Properties. Either activate Merge/Split from "
+				 "the Details Panel or call the CreateMergeSplitProperties function prior to "
+				 "calling this function."),
+			*GetName());
+		return false;
+	}
+
+	return NativeBarrier.Split();
+}
+
 namespace
 {
 	// Searches recursively, but does not search further if a child component is another Rigid Body
@@ -555,6 +583,7 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		const FVector OldLocation = GetComponentLocation();
 		const FVector LocationDelta = NewLocation - OldLocation;
 		MoveComponent(LocationDelta, NewRotation, false);
+		ComponentVelocity = NativeBarrier.GetVelocity();
 	};
 
 	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor)
@@ -577,6 +606,7 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		NewTransform.SetScale3D(Ancestor.GetComponentScale());
 
 		Ancestor.SetWorldTransform(NewTransform);
+		Ancestor.ComponentVelocity = NativeBarrier.GetVelocity();
 	};
 
 	auto TryTransformAncestor =

@@ -29,6 +29,7 @@
 #include "AGX_ModelSourceComponent.h"
 #include "AGX_ModelSourceComponentCustomization.h"
 #include "AGX_Simulation.h"
+#include "AGX_SimulationCustomization.h"
 #include "AGX_StaticMeshComponent.h"
 #include "AGX_StaticMeshComponentCustomization.h"
 #include "AGX_TopMenu.h"
@@ -337,6 +338,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		UAGX_AssetDeleter::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_AssetDeleterCustomization::MakeInstance));
+			
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_Simulation::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_SimulationCustomization::MakeInstance));
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
@@ -406,6 +412,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_AssetDeleter::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomClassLayout(UAGX_Simulation::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }

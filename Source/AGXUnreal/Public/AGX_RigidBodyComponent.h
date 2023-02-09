@@ -239,8 +239,27 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR")
 	FAGX_ShapeContactMergeSplitProperties MergeSplitProperties;
 
+	/**
+	 * Creates Merge Split Properties for this Rigid Body. This only needs to be called once per
+	 * Play instance.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	void CreateMergeSplitProperties();
+
+	/**
+	 * Returns true if this Rigid Body has been automatically merged and is currently merged.
+	 * Returns false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	bool IsAutomaticallyMerged();
+
+	/**
+	 * Explicitly split this Rigid Body in case it has been automatically merged.
+	 * Returns true if this Rigid Body has Merge Split properties, has been automatically merged and
+	 * was successfully split. Returns false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	bool Split();
 
 	/**
 	 * Add an external force, given in the world coordinate frame, that will be affecting this body

@@ -1632,7 +1632,7 @@ FString FAGX_EditorUtilities::SelectExistingDirectoryDialog(
 }
 
 FString FAGX_EditorUtilities::SelectNewFileDialog(
-	const FString& DialogTitle, const FString& FileExtension, const FString& FileTypes,
+	const FString& DialogTitle, const FString& FileTypes,
 	const FString& DefaultFile, const FString& InStartDir)
 {
 	TArray<FString> Filenames;

@@ -28,7 +28,7 @@ class UAGX_ConstraintComponent;
  *
  */
 UCLASS(
-	ClassGroup = "AGX", Category = "AGX", Abstract, NotBlueprintable,
+	ClassGroup = "AGX_Constraint", Category = "AGX", Abstract, NotBlueprintable,
 	Meta = (BlueprintSpawnableComponent),
 	hidecategories = (Cooking, Collision, Input, LOD, Rendering, Replication))
 class AGXUNREAL_API AAGX_ConstraintActor : public AActor
