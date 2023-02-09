@@ -32,6 +32,11 @@ class UActorComponent;
 class UWorld;
 class FShapeBarrier;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPreStepForward);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPostStepForward);
+DECLARE_MULTICAST_DELEGATE(FOnPreStepForwardInternal);
+DECLARE_MULTICAST_DELEGATE(FOnPostStepForwardInternal);
+
 /**
  * Manages an AGX simulation instance.
  *
@@ -56,7 +61,6 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 public: // Properties.
-
 	/**
 	 * The number of threads AGX Dynamics will use during Play.
 	 *
@@ -69,7 +73,7 @@ public: // Properties.
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetNumThreads(int32 InNumThreads);
 
-	UFUNCTION(BlueprintCallable, Category =  "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	int32 GetNumThreads() const;
 
 	/**
@@ -297,6 +301,24 @@ public: // Member functions.
 	UFUNCTION(BlueprintCallable, Category = "Simulation")
 	void SetTimeStamp(float NewTimeStamp);
 
+	/**
+	 * Delegate that is executed before each Simulation step forward.
+	 * Users may bind to this delegate in order to get a callback before each Simulation step
+	 * forward. This may be executed zero, one or several times per Unreal Engine Tick, depending on
+	 * the Step Mode and Time Step selected in the AGX Dynamics for Unreal settings.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Simulation")
+	FOnPreStepForward PreStepForward;
+
+	/**
+	 * Delegate that is executed after each Simulation step forward.
+	 * Users may bind to this delegate in order to get a callback after each Simulation step
+	 * forward. This may be executed zero, one or several times per Unreal Engine Tick, depending on
+	 * the Step Mode and Time Step selected in the AGX Dynamics for Unreal settings.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Simulation")
+	FOnPostStepForward PostStepForward;
+
 	void Add(UAGX_ConstraintComponent& Constraint);
 
 	/**
@@ -393,6 +415,9 @@ private:
 	int32 StepCatchUpOverTimeCapped(float DeltaTime);
 	int32 StepDropImmediately(float DeltaTime);
 
+	void PreStep();
+	void PostStep();
+
 	void EnsureStepperCreated();
 	void EnsureValidLicense();
 
@@ -416,4 +441,10 @@ private:
 	// Record for keeping track of the number of times any Contact Material has been
 	// registered/unregistered. Value is incremented on Register() and decremented on Unregister().
 	TMap<UAGX_ContactMaterial*, int32> ContactMaterials;
+
+	// Internal post/pre step forward delegates.
+	FOnPreStepForwardInternal PreStepForwardInternal;
+	FOnPostStepForwardInternal PostStepForwardInternal;
+
+	friend class FAGX_InternalDelegateAccessor;
 };
