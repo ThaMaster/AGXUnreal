@@ -20,6 +20,7 @@
 #include <agxCollide/Cylinder.h>
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Trimesh.h>
+#include <agxSDK/MergeSplitHandler.h>
 #include "EndAGXIncludes.h"
 
 FRigidBodyBarrier::FRigidBodyBarrier()
@@ -279,6 +280,18 @@ FVector FRigidBodyBarrier::GetTorque() const
 	check(HasNative());
 	const agx::Vec3 TorqueAGX = NativeRef->Native->getTorque();
 	return ConvertTorque(TorqueAGX);
+}
+
+bool FRigidBodyBarrier::IsAutomaticallyMerged()
+{
+	check(HasNative());
+	return agxSDK::MergeSplitHandler::isMergedByHandler(NativeRef->Native);
+}
+
+bool FRigidBodyBarrier::Split()
+{
+	check(HasNative());
+	return agxSDK::MergeSplitHandler::split(NativeRef->Native);
 }
 
 bool FRigidBodyBarrier::HasNative() const

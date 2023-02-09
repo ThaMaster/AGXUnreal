@@ -94,6 +94,9 @@ public:
 	void AddTorqueLocal(const FVector& Torque);
 	FVector GetTorque() const;
 
+	bool IsAutomaticallyMerged();
+	bool Split();
+
 	bool HasNative() const;
 	void AllocateNative();
 	FRigidBodyRef* GetNative();
