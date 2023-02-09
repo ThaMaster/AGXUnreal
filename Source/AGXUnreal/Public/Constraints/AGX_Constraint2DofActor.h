@@ -12,7 +12,7 @@
 
 class UAGX_Constraint2DofComponent;
 
-UCLASS(ClassGroup = "AGX", Abstract, NotBlueprintable)
+UCLASS(ClassGroup = "AGX_Constraint", Abstract, NotBlueprintable)
 class AGXUNREAL_API AAGX_Constraint2DofActor : public AAGX_ConstraintActor
 {
 	GENERATED_BODY()

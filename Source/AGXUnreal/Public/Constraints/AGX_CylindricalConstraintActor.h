@@ -10,7 +10,7 @@
 
 #include "AGX_CylindricalConstraintActor.generated.h"
 
-UCLASS(ClassGroup = "AGX", Blueprintable)
+UCLASS(ClassGroup = "AGX_Constraint", Blueprintable)
 class AGXUNREAL_API AAGX_CylindricalConstraintActor : public AAGX_Constraint2DofActor
 {
 	GENERATED_BODY()

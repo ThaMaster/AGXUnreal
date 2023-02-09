@@ -10,7 +10,7 @@
 
 #include "AGX_PrismaticConstraintActor.generated.h"
 
-UCLASS(ClassGroup = "AGX", Blueprintable)
+UCLASS(ClassGroup = "AGX_Constraint", Blueprintable)
 class AGXUNREAL_API AAGX_PrismaticConstraintActor : public AAGX_Constraint1DofActor
 {
 	GENERATED_BODY()
