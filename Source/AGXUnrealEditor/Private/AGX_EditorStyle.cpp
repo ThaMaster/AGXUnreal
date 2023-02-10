@@ -128,18 +128,18 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 		new IMAGE_BRUSH("Icons/constraint_frame_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_CylindricalConstraintComponent",
-		new IMAGE_BRUSH("Icons/track_64x64", IconSize16));
+		new IMAGE_BRUSH("Icons/constraint_cylindrical_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_DistanceConstraintComponent",
-		new IMAGE_BRUSH("Icons/track_2_64x64", IconSize16));
+		new IMAGE_BRUSH("Icons/constraint_distance_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_HingeConstraintComponent", new IMAGE_BRUSH("Icons/hinge_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_LockConstraintComponent",
-		new IMAGE_BRUSH("Icons/track_renderer_64x64", IconSize16));
+		new IMAGE_BRUSH("Icons/constraint_lock_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_PrismaticConstraintComponent",
-		new IMAGE_BRUSH("Icons/model_source_64x64", IconSize16));
+		new IMAGE_BRUSH("Icons/constraint_prismatic_32x32", IconSize16));
 	// Observer Frame.
 	Style->Set(
 		"ClassIcon.AGX_ObserverFrameComponent",
