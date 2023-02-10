@@ -893,8 +893,9 @@ void UAGX_Simulation::StepOnce()
 		ReportStepStatistics(Statistics);
 	}
 
-	PostStepForwardInternal.Broadcast();
-	PostStepForward.Broadcast();
+	const float SimTime = NativeBarrier.GetTimeStamp();
+	PostStepForwardInternal.Broadcast(SimTime);
+	PostStepForward.Broadcast(SimTime);
 }
 
 float UAGX_Simulation::GetTimeStamp() const
@@ -1093,8 +1094,12 @@ void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 
 void UAGX_Simulation::PreStep()
 {
-	PreStepForward.Broadcast();
-	PreStepForwardInternal.Broadcast();
+	if (!PreStepForward.IsBound() && !PreStepForwardInternal.IsBound())
+		return;
+
+	const float SimTime = NativeBarrier.GetTimeStamp();
+	PreStepForward.Broadcast(SimTime);
+	PreStepForwardInternal.Broadcast(SimTime);
 }
 
 void UAGX_Simulation::PostStep()
@@ -1104,6 +1109,10 @@ void UAGX_Simulation::PostStep()
 		AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
 	}
 
-	PostStepForwardInternal.Broadcast();
-	PostStepForward.Broadcast();
+	if (!PostStepForwardInternal.IsBound() && !PostStepForward.IsBound())
+		return;
+
+	const float SimTime = NativeBarrier.GetTimeStamp();
+	PostStepForwardInternal.Broadcast(SimTime);
+	PostStepForward.Broadcast(SimTime);
 }

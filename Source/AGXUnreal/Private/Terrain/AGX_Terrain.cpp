@@ -415,7 +415,7 @@ void AAGX_Terrain::BeginPlay()
 		// Update the Displacement Map on each PostStepForward
 		FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
 			.AddLambda(
-				[this]()
+				[this](float)
 				{
 					if (bEnableDisplacementRendering)
 					{
