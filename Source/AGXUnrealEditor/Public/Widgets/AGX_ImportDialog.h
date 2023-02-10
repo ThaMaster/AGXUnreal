@@ -21,6 +21,7 @@ private:
 	FText GetUrdfPackagePathText() const;
 	FReply OnBrowseUrdfPackageButtonClicked();
 	FReply OnImportButtonClicked();
+	void OnUrdfPackagePathTextCommitted(const FText& InNewText, ETextCommit::Type InCommitType);
 
 	FString UrdfPackagePath;
 };

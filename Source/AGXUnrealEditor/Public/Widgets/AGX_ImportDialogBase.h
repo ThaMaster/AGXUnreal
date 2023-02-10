@@ -32,6 +32,7 @@ protected:
 	FReply OnBrowseFileButtonClicked();
 	FText GetFilePathText() const;
 	void OnIgnoreDisabledTrimeshCheckboxClicked(ECheckBoxState NewCheckedState);
+	void OnFilePathTextCommitted(const FText& InNewText, ETextCommit::Type InCommitType);
 
 	FString FileTypes;
 	EAGX_ImportType ImportType = EAGX_ImportType::Invalid;

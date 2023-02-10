@@ -214,6 +214,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateURDFFileGui()
 								SNew(SEditableTextBox)
 								.MinDesiredWidth(150.0f)
 								.Text(this, &SAGX_ImportDialog::GetUrdfPackagePathText)
+								.OnTextCommitted(this, &SAGX_ImportDialog::OnUrdfPackagePathTextCommitted)
 							]
 							+ SHorizontalBox::Slot()
 							.AutoWidth()
@@ -255,6 +256,12 @@ FReply SAGX_ImportDialog::OnBrowseUrdfPackageButtonClicked()
 	UrdfPackagePath = FAGX_EditorUtilities::SelectExistingDirectoryDialog(
 		"Select URDF package directory", StartDir, true);
 	return FReply::Handled();
+}
+
+void SAGX_ImportDialog::OnUrdfPackagePathTextCommitted(
+	const FText& InNewText, ETextCommit::Type InCommitType)
+{
+	UrdfPackagePath = InNewText.ToString();
 }
 
 #undef LOCTEXT_NAMESPACE

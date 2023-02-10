@@ -1584,15 +1584,16 @@ EVisibility FAGX_EditorUtilities::VisibleIf(bool bVisible)
 }
 
 FString FAGX_EditorUtilities::SelectExistingFileDialog(
-	const FString& FileDescription, const FString& FileExtension)
+	const FString& FileDescription, const FString& FileExtension, const FString& InStartDir)
 {
 	const FString DialogTitle = FString("Select a ") + FileDescription;
 	const FString FileTypes = FileDescription + FString("|*") + FileExtension;
+	const FString StartDir = InStartDir.IsEmpty() ? FString("DefaultPath") : InStartDir;
 	// For a discussion on window handles see
 	// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html
 	TArray<FString> Filenames;
 	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
-		nullptr, DialogTitle, TEXT("DefaultPath"), TEXT("DefaultFile"), FileTypes,
+		nullptr, DialogTitle, StartDir, TEXT("DefaultFile"), FileTypes,
 		EFileDialogFlags::None, Filenames);
 	if (!FileSelected || Filenames.Num() == 0)
 	{

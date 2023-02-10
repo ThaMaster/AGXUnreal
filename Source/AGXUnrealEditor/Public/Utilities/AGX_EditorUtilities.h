@@ -318,7 +318,8 @@ public:
 	static EVisibility VisibleIf(bool bVisible);
 
 	static FString SelectExistingFileDialog(
-		const FString& FileDescription, const FString& FileExtension);
+		const FString& FileDescription, const FString& FileExtension,
+		const FString& InStartDir = "");
 
 	static FString SelectExistingDirectoryDialog(
 		const FString& DialogTitle, const FString& InStartDir = "", bool AllowNoneSelected = false);
