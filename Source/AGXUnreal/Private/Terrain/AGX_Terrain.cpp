@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_CustomVersion.h"
+#include "AGX_InternalDelegateAccessor.h"
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
@@ -408,6 +409,20 @@ void AAGX_Terrain::BeginPlay()
 	{
 		InitializeNative();
 	}
+
+	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
+	{
+		// Update the Displacement Map on each PostStepForward
+		FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
+			.AddLambda(
+				[this]()
+				{
+					if (bEnableDisplacementRendering)
+					{
+						UpdateDisplacementMap();
+					}
+				});
+	}
 }
 
 void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
@@ -440,10 +455,6 @@ void AAGX_Terrain::Tick(float DeltaTime)
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::Tick"));
 	Super::Tick(DeltaTime);
-	if (bEnableDisplacementRendering)
-	{
-		UpdateDisplacementMap();
-	}
 	if (bEnableParticleRendering)
 	{
 		UpdateParticlesMap();
@@ -581,7 +592,14 @@ bool AAGX_Terrain::CreateNativeTerrain()
 
 	NativeBarrier.SetRotation(Transform.GetRotation());
 	NativeBarrier.SetPosition(Transform.GetLocation());
-	NativeBarrier.GetHeights(OriginalHeights);
+
+	OriginalHeights.Reserve(NativeBarrier.GetGridSizeX() * NativeBarrier.GetGridSizeY());
+	NativeBarrier.GetHeights(OriginalHeights, false);
+
+	// We must initialize CurrentHeights since we will only read height changes during runtime.
+	CurrentHeights.Reserve(OriginalHeights.Num());
+	CurrentHeights = OriginalHeights;
+
 	NativeBarrier.SetCreateParticles(bCreateParticles);
 	NativeBarrier.SetDeleteParticlesOutsideBounds(bDeleteParticlesOutsideBounds);
 	NativeBarrier.SetPenetrationForceVelocityScaling(PenetrationForceVelocityScaling);
@@ -794,10 +812,6 @@ void AAGX_Terrain::InitializeDisplacementMap()
 	const int32 TerrainVertsX = NativeBarrier.GetGridSizeX();
 	const int32 TerrainVertsY = NativeBarrier.GetGridSizeY();
 
-	OriginalHeights.Reserve(TerrainVertsX * TerrainVertsY);
-	CurrentHeights.Reserve(TerrainVertsX * TerrainVertsY);
-
-
 	if (LandscapeDisplacementMap->SizeX != TerrainVertsX ||
 		LandscapeDisplacementMap->SizeY != TerrainVertsY)
 	{
@@ -850,15 +864,14 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	const int32 TerrainVerticesX = NativeBarrier.GetGridSizeX();
 	const int32 TerrainVerticesY = NativeBarrier.GetGridSizeY();
 
-	NativeBarrier.GetHeights(CurrentHeights);
-	for (int32 VertY = 0; VertY < TerrainVerticesY; VertY++)
+	NativeBarrier.GetHeights(CurrentHeights, true);
+	for (const auto& VertexTuple : NativeBarrier.GetModifiedVertices())
 	{
-		for (int32 VertX = 0; VertX < TerrainVerticesX; VertX++)
-		{
-			const int32 Index = VertX + VertY * TerrainVerticesX;
-			const float HeightChange = CurrentHeights[Index] - OriginalHeights[Index];
-			DisplacementData[Index] = static_cast<FFloat16>(HeightChange);
-		}
+		const int32 VertX = std::get<0>(VertexTuple);
+		const int32 VertY = std::get<1>(VertexTuple);
+		const int32 Index = VertX + VertY * TerrainVerticesX;
+		const float HeightChange = CurrentHeights[Index] - OriginalHeights[Index];
+		DisplacementData[Index] = static_cast<FFloat16>(HeightChange);
 	}
 
 	const uint32 BytesPerPixel = sizeof(FFloat16);
