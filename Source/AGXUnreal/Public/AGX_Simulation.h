@@ -32,10 +32,10 @@ class UActorComponent;
 class UWorld;
 class FShapeBarrier;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPreStepForward);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPostStepForward);
-DECLARE_MULTICAST_DELEGATE(FOnPreStepForwardInternal);
-DECLARE_MULTICAST_DELEGATE(FOnPostStepForwardInternal);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPreStepForward, float, Time);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPostStepForward, float, Time);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPreStepForwardInternal, float /*Time*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostStepForwardInternal, float /*Time*/);
 
 /**
  * Manages an AGX simulation instance.
