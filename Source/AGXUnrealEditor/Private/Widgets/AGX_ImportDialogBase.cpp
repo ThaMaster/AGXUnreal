@@ -58,6 +58,7 @@ TSharedRef<SWidget> SAGX_ImportDialogBase::CreateBrowseFileGui()
 				SNew(SEditableTextBox)
 				.MinDesiredWidth(150.0f)
 				.Text(this, &SAGX_ImportDialogBase::GetFilePathText)
+				.OnTextCommitted(this, &SAGX_ImportDialogBase::OnFilePathTextCommitted)
 			]
 			+ SHorizontalBox::Slot()
 			.AutoWidth()
@@ -112,7 +113,9 @@ TSharedRef<SWidget> SAGX_ImportDialogBase::CreateIgnoreDisabledTrimeshGui()
 
 FReply SAGX_ImportDialogBase::OnBrowseFileButtonClicked()
 {
-	FilePath = FAGX_EditorUtilities::SelectExistingFileDialog("file", FileTypes);
+	const FString CurrentSelectedDir = FPaths::GetPath(FilePath);
+	const FString StartDir = FPaths::DirectoryExists(CurrentSelectedDir) ? CurrentSelectedDir : "";
+	FilePath = FAGX_EditorUtilities::SelectExistingFileDialog("file", FileTypes, StartDir);
 	ImportType = FAGX_ImportUtilities::GetFrom(FilePath);
 
 	RefreshGui();
@@ -141,6 +144,14 @@ void SAGX_ImportDialogBase::OnIgnoreDisabledTrimeshCheckboxClicked(ECheckBoxStat
 void SAGX_ImportDialogBase::RefreshGui()
 {
 	Construct(FArguments());
+}
+
+void SAGX_ImportDialogBase::OnFilePathTextCommitted(
+	const FText& InNewText, ETextCommit::Type InCommitType)
+{
+	FilePath = InNewText.ToString();
+	ImportType = FAGX_ImportUtilities::GetFrom(FilePath);
+	RefreshGui();
 }
 
 #undef LOCTEXT_NAMESPACE
