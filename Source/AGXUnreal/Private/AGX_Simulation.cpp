@@ -550,7 +550,7 @@ void UAGX_Simulation::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bEnableAMOR),
 		[](ThisClass* This) { This->SetEnableAMOR(This->bEnableAMOR); });
-		
+
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, NumThreads),
 		[](ThisClass* This) { This->SetNumThreads(This->NumThreads); });
@@ -773,16 +773,14 @@ int32 UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
 	int32 NumSteps = 0;
 	while (DeltaTime >= TimeStep)
 	{
+		PreStep();
 		{
 			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 			NativeBarrier.Step();
 		}
 		++NumSteps;
 		DeltaTime -= TimeStep;
-		if (bEnableStatistics)
-		{
-			AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
-		}
+		PostStep();
 	}
 	LeftoverTime = DeltaTime;
 	return NumSteps;
@@ -799,16 +797,14 @@ int32 UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
 	{
 		if (DeltaTime >= TimeStep)
 		{
+			PreStep();
 			{
 				TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 				NativeBarrier.Step();
 			}
 			++NumSteps;
 			DeltaTime -= TimeStep;
-			if (bEnableStatistics)
-			{
-				AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
-			}
+			PostStep();
 		}
 	}
 
@@ -827,16 +823,14 @@ int32 UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 	{
 		if (DeltaTime >= TimeStep)
 		{
+			PreStep();
 			{
 				TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 				NativeBarrier.Step();
 			}
 			++NumSteps;
 			DeltaTime -= TimeStep;
-			if (bEnableStatistics)
-			{
-				AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
-			}
+			PostStep();
 		}
 	}
 
@@ -853,16 +847,14 @@ int32 UAGX_Simulation::StepDropImmediately(float DeltaTime)
 	int32 NumSteps = 0;
 	if (DeltaTime >= TimeStep)
 	{
+		PreStep();
 		{
 			TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 			NativeBarrier.Step();
 		}
 		++NumSteps;
 		DeltaTime -= TimeStep;
-		if (bEnableStatistics)
-		{
-			AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
-		}
+		PostStep();
 	}
 
 	// Keep LeftoverTime updated in case the information is needed in the future.
@@ -883,6 +875,7 @@ void UAGX_Simulation::StepOnce()
 #endif
 
 	const uint64 StartCycle = FPlatformTime::Cycles64();
+	PreStep();
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:Native step"));
 		NativeBarrier.Step();
@@ -899,6 +892,10 @@ void UAGX_Simulation::StepOnce()
 		// step statistics every time just in case.
 		ReportStepStatistics(Statistics);
 	}
+
+	const float SimTime = NativeBarrier.GetTimeStamp();
+	PostStepForwardInternal.Broadcast(SimTime);
+	PostStepForward.Broadcast(SimTime);
 }
 
 float UAGX_Simulation::GetTimeStamp() const
@@ -1080,19 +1077,42 @@ void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 		SC->CopyTo(Thresholds);
 	}
 
-	if (auto SC = GetAssetFrom<UAGX_ConstraintMergeSplitThresholds>(
-			GlobalConstraintMergeSplitThresholds))
+	if (auto SC =
+			GetAssetFrom<UAGX_ConstraintMergeSplitThresholds>(GlobalConstraintMergeSplitThresholds))
 	{
 		FConstraintMergeSplitThresholdsBarrier Thresholds =
 			NativeBarrier.GetGlobalConstraintTresholds();
 		SC->CopyTo(Thresholds);
 	}
 
-	if (auto SC = GetAssetFrom<UAGX_WireMergeSplitThresholds>(
-			GlobalWireMergeSplitThresholds))
+	if (auto SC = GetAssetFrom<UAGX_WireMergeSplitThresholds>(GlobalWireMergeSplitThresholds))
 	{
-		FWireMergeSplitThresholdsBarrier Thresholds =
-			NativeBarrier.GetGlobalWireTresholds();
+		FWireMergeSplitThresholdsBarrier Thresholds = NativeBarrier.GetGlobalWireTresholds();
 		SC->CopyTo(Thresholds);
 	}
+}
+
+void UAGX_Simulation::PreStep()
+{
+	if (!PreStepForward.IsBound() && !PreStepForwardInternal.IsBound())
+		return;
+
+	const float SimTime = NativeBarrier.GetTimeStamp();
+	PreStepForward.Broadcast(SimTime);
+	PreStepForwardInternal.Broadcast(SimTime);
+}
+
+void UAGX_Simulation::PostStep()
+{
+	if (bEnableStatistics)
+	{
+		AGX_Simulation_helpers::AccumulateFrameStatistics(GetStatistics());
+	}
+
+	if (!PostStepForwardInternal.IsBound() && !PostStepForward.IsBound())
+		return;
+
+	const float SimTime = NativeBarrier.GetTimeStamp();
+	PostStepForwardInternal.Broadcast(SimTime);
+	PostStepForward.Broadcast(SimTime);
 }
