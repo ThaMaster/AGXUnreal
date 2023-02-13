@@ -1902,7 +1902,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	{
 		TArray<UObject*> AssetsToDelete;
 
-		// Delete removed contact materials.
+		// Delete removed Contact Materials.
 		UE_LOG(LogAGX, Warning, TEXT("Contact Materials:"));
 		if (SCSNodes.ContactMaterialRegistrarComponent != nullptr)
 		{
@@ -1931,6 +1931,95 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 							TEXT("Did not find a match, adding asset to delete list."));
 						AssetsToDelete.AddUnique(Asset);
 					}
+				}
+			}
+		}
+
+		// Delete removed Constraint Merge Split Thresholds.
+		{
+			UE_LOG(LogAGX, Warning, TEXT("\nConstraint Merge Split Thresholds:"));
+			// We want to find all Merge Split Thresholds in SCSNodes that does not exist in
+			// SimulationObjects. There is no pre-collected list of them in either of the two
+			// collections so we create it here. We can find Merge Split Thresholds on Constraints,
+			// Shapes, and Wires.
+
+			// Collect Merge Split Thresholds from Blueprint constraint nodes.
+			// These are the assets that may need to be deleted.
+			TArray<UAGX_ConstraintMergeSplitThresholds*> Assets;
+			UE_LOG(LogAGX, Warning, TEXT("Collecting Blueprint thresholds:"));
+			auto CollectFromBlueprint = [&Assets](TMap<FGuid, USCS_Node*>& Constraints)
+			{
+				for (const auto It : Constraints)
+				{
+					const UAGX_ConstraintComponent* const Constraint =
+						dynamic_cast<UAGX_ConstraintComponent*>(It.Value->ComponentTemplate);
+					if (Constraint == nullptr)
+					{
+						// Not all SCS nodes have a Component Template. Not sure if a Constraint
+						// node can have a Component Template that isn't a Constraint Component.
+						continue;
+					}
+
+					UAGX_ConstraintMergeSplitThresholds* Asset =
+						Constraint->MergeSplitProperties.Thresholds;
+					if (Asset == nullptr)
+					{
+						// Note all Constraints have a Merge Split Thresholds.
+						continue;
+					}
+
+					Assets.AddUnique(Asset);
+					UE_LOG(LogAGX, Warning, TEXT("  %s"), *Asset->ImportGuid.ToString());
+				}
+			};
+
+			/// @todo Consider storing a list of all Constraints in SCSNodes so we don't need to
+			/// operate on so many collections here.
+			CollectFromBlueprint(SCSNodes.BallConstraints);
+			CollectFromBlueprint(SCSNodes.CylindricalConstraints);
+			CollectFromBlueprint(SCSNodes.DistanceConstraints);
+			CollectFromBlueprint(SCSNodes.HingeConstraints);
+			CollectFromBlueprint(SCSNodes.LockConstraints);
+			CollectFromBlueprint(SCSNodes.PrismaticConstraints);
+
+			// Collect Merge Split Thresholds from the simulation objects.
+			// Any Threshold we find should not have its asset deleted.
+			UE_LOG(LogAGX, Warning, TEXT("Collecting simulation thresholds:"));
+			TSet<FGuid> NotRemoved;
+			auto CollectFromSimulation = [&NotRemoved](const auto& ConstraintBarriers)
+			{
+				for (auto& ConstraintBarrier : ConstraintBarriers)
+				{
+					const FConstraintMergeSplitThresholdsBarrier ThresholdsBarrier =
+						FConstraintMergeSplitThresholdsBarrier::CreateFrom(ConstraintBarrier);
+					if (!ThresholdsBarrier.HasNative())
+					{
+						// Not all Constraints have a Merge Split Thresholds.
+						return;
+					}
+					const FGuid Guid = ThresholdsBarrier.GetGuid();
+					NotRemoved.Add(Guid);
+					UE_LOG(LogAGX, Warning, TEXT("  %s"), *Guid.ToString());
+				}
+			};
+
+			CollectFromSimulation(SimulationObjects.GetBallConstraints());
+			CollectFromSimulation(SimulationObjects.GetCylindricalConstraints());
+			CollectFromSimulation(SimulationObjects.GetDistanceConstraints());
+			CollectFromSimulation(SimulationObjects.GetHingeConstraints());
+			CollectFromSimulation(SimulationObjects.GetLockConstraints());
+			CollectFromSimulation(SimulationObjects.GetPrismaticConstraints());
+
+			// Mark any asset not found among the simulation objects for deletion.
+			UE_LOG(LogAGX, Warning, TEXT("Checking for matches:"));
+			for (UAGX_ConstraintMergeSplitThresholds* Asset : Assets)
+			{
+				const FGuid AssetGui = Asset->ImportGuid;
+				UE_LOG(LogAGX, Warning, TEXT("  Checking asset %s."), *AssetGui.ToString())
+				if (!NotRemoved.Contains(AssetGui))
+				{
+					UE_LOG(LogAGX, Warning, TEXT("  Gone from simulation, deleting asset."))
+					AssetsToDelete.Add(Asset);
 				}
 			}
 		}
