@@ -150,13 +150,13 @@ void FMergeSplitPropertiesBarrier::ReleaseNative()
 
 FMergeSplitPropertiesPtr* FMergeSplitPropertiesBarrier::GetNative()
 {
-	check(HasNative());
+	check(NativePtr != nullptr);
 	return NativePtr.get();
 }
 
 const FMergeSplitPropertiesPtr* FMergeSplitPropertiesBarrier::GetNative() const
 {
-	check(HasNative());
+	check(NativePtr != nullptr);
 	return NativePtr.get();
 }
 

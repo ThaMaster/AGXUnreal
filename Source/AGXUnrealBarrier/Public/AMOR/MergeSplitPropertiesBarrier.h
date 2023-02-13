@@ -56,7 +56,7 @@ public:
 	FWireMergeSplitThresholdsBarrier GetWireMergeSplitThresholds() const;
 
 	/*
-	 * This Barrier may not have a Native at the time of calling BindToNewOwner.
+	 * This Barrier should not have a Native at the time of calling BindToNewOwner.
 	 * Ensure it is released prior.
 	 */
 	void BindToNewOwner(FRigidBodyBarrier& NewOwner);
