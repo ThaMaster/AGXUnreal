@@ -65,6 +65,9 @@ public:
 	void BindToNewOwner(FWireBarrier& NewOwner);
 
 private:
+	template <typename T>
+	void BindToNewOwnerImpl(T& NewOwner);
+
 	FMergeSplitPropertiesBarrier& operator=(const FMergeSplitPropertiesBarrier& Other) = delete;
 
 	std::unique_ptr<FMergeSplitPropertiesPtr> NativePtr;
