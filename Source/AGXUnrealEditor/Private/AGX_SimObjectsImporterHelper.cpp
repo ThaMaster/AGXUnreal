@@ -440,7 +440,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 
 	const FMergeSplitThresholdsBarrier ThresholdsBarrier =
 		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
-	const FGuid MSTGuid = Barrier.GetGuid();
+	const FGuid MSTGuid = ThresholdsBarrier.GetGuid();
 	UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
 	if (MSTsOnDisk.Contains(MSTGuid) && ThresholdsBarrier.HasNative())
 	{
@@ -834,7 +834,7 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 
 	const FMergeSplitThresholdsBarrier ThresholdsBarrier =
 		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
-	const FGuid MSTGuid = Barrier.GetShapeGuid();
+	const FGuid MSTGuid = ThresholdsBarrier.GetGuid();
 	UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
 	if (MSTsOnDisk.Contains(MSTGuid) && ThresholdsBarrier.HasNative())
 	{
@@ -1171,7 +1171,7 @@ namespace
 
 		const FMergeSplitThresholdsBarrier ThresholdsBarrier =
 			FConstraintMergeSplitThresholdsBarrier::CreateFrom(Barrier);
-		const FGuid MSTGuid = Barrier.GetGuid();
+		const FGuid MSTGuid = ThresholdsBarrier.GetGuid();
 		UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
 		if (MSTsOnDisk.Contains(MSTGuid) && ThresholdsBarrier.HasNative())
 		{
