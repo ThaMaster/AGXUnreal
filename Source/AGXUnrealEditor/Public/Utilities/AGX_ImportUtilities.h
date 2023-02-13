@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImportEnums.h"
+#include "AGX_LogCategory.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
