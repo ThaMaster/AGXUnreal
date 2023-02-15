@@ -1634,6 +1634,17 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			ModelSourceComponent = SCSNodes.ModelSourceComponent;
 		}
 
+		/// @todo Helper.UpdateModelSourceComponent will set
+		/// ModelSourceComponent.UnrealMaterialToImportGuid to the contents of
+		/// Helper.RestoredRenderMaterials. Has RestoredRenderMaterials been updated at this point,
+		/// i.e., has Helper.RestoredRenderMaterials been initialized with the contents of
+		/// ModelSourceComponent.UnrealMaterialToImportGuid?
+		///
+		/// If not synchronizing a model a second time would not delete Render Material assets
+		/// for AGX Dynamics render materials that no longer exists in the AGX Dynamics archive
+		/// because we wouldn't know that import GUID of those Render Material assets since they
+		/// are stored in ModelSourceComponent.UnrealMaterialToImportGuid and not the asset itself
+		/// since we have not yet found a way to extend engine assets with additional properties.
 		Helper.UpdateModelSourceComponent(
 			*Cast<UAGX_ModelSourceComponent>(ModelSourceComponent->ComponentTemplate));
 	}

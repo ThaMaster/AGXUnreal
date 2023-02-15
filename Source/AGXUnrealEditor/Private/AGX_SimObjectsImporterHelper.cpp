@@ -1823,6 +1823,14 @@ void FAGX_SimObjectsImporterHelper::UpdateModelSourceComponent(UAGX_ModelSourceC
 			AGX_CHECK(!C->StaticMeshComponentToOwningTrimesh.Contains(Name));
 			C->StaticMeshComponentToOwningRenderData.Add(Name, RestoredSMCTuple.Key);
 		}
+
+		C->UnrealMaterialToImportGuid.Empty(RestoredRenderMaterials.Num());
+		for (const auto& GuidToMaterial : RestoredRenderMaterials)
+		{
+			const FGuid ImportGuid = GuidToMaterial.Key;
+			const UMaterialInstanceConstant* const Material = GuidToMaterial.Value;
+			C->UnrealMaterialToImportGuid.Add(Material->GetPathName(), ImportGuid);
+		}
 	};
 
 	for (UAGX_ModelSourceComponent* Instance :

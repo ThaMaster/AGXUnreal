@@ -34,7 +34,14 @@ public:
 	TMap<FString, FGuid> StaticMeshComponentToOwningTrimesh;
 
 	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the guid
-	// of the owning RenderData. 
+	// of the owning RenderData.
 	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
 	TMap<FString, FGuid> StaticMeshComponentToOwningRenderData;
+
+	// Emulate an ImportGuid on Unreal's Materials.
+	//
+	// They key is the asset path, '', to a Material Instance created by the import pipeline.
+	// The value is the Guid, originally Uuid, of the source AGX Dynamics Render Material.
+	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
+	TMap<FString, FGuid> UnrealMaterialToImportGuid;
 };
