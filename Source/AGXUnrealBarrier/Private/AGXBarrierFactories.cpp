@@ -41,6 +41,11 @@ FEmptyShapeBarrier AGXBarrierFactories::CreateEmptyShapeBarrier(agxCollide::Geom
 	return {std::make_unique<FGeometryAndShapeRef>(Geometry, nullptr)};
 }
 
+FAnyShapeBarrier AGXBarrierFactories::CreateAnyShapeBarrier(agxCollide::Shape* Shape)
+{
+	return {std::make_unique<FGeometryAndShapeRef>(Shape->getGeometry(), Shape)};
+}
+
 FSphereShapeBarrier AGXBarrierFactories::CreateSphereShapeBarrier(agxCollide::Sphere* Sphere)
 {
 	return {std::make_unique<FGeometryAndShapeRef>(Sphere->getGeometry(), Sphere)};

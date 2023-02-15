@@ -5,6 +5,7 @@
 
 #include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
+#include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/CylinderShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
@@ -377,6 +378,38 @@ namespace RigidBodyBarrier_helpers
 		}
 	}
 
+	void CollectShapes(
+		const agxCollide::ShapeRefVector& InShapes, TArray<FAnyShapeBarrier>& OutShapes)
+	{
+		for (const agxCollide::ShapeRef& Shape : InShapes)
+		{
+			if (Shape->getType() == agxCollide::Shape::GROUP)
+			{
+				agxCollide::ShapeGroup* Group = Shape->as<agxCollide::ShapeGroup>();
+				CollectShapes(Group->getChildren(), OutShapes);
+			}
+			else
+			{
+				OutShapes.Add(AGXBarrierFactories::CreateAnyShapeBarrier(Shape));
+			}
+		}
+	}
+
+	TArray<FAnyShapeBarrier> GetAllShapes(agx::RigidBody& Body)
+	{
+		TArray<FAnyShapeBarrier> Shapes;
+		for (const agxCollide::GeometryRef& Geometry : Body.getGeometries())
+		{
+			if (Geometry == nullptr)
+			{
+				continue;
+			}
+
+			CollectShapes(Geometry->getShapes(), Shapes);
+		}
+		return Shapes;
+	}
+
 	TArray<FSphereShapeBarrier> GetAllSpheres(agx::RigidBody& Body)
 	{
 		TArray<FSphereShapeBarrier> Spheres;
@@ -497,6 +530,15 @@ namespace RigidBodyBarrier_helpers
 
 		return Trimeshes;
 	}
+}
+
+TArray<FAnyShapeBarrier> FRigidBodyBarrier::GetShapes() const
+{
+	if (!HasNative())
+	{
+		return TArray<FAnyShapeBarrier>();
+	}
+	return RigidBodyBarrier_helpers::GetAllShapes(*NativeRef->Native);
 }
 
 TArray<FSphereShapeBarrier> FRigidBodyBarrier::GetSphereShapes() const

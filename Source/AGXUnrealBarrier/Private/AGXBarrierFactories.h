@@ -3,10 +3,12 @@
 #pragma once
 
 #include "RigidBodyBarrier.h"
+#include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/CylinderShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
+#include "Shapes/EmptyShapeBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
@@ -40,10 +42,11 @@ namespace agx
 
 namespace agxCollide
 {
-	class Sphere;
 	class Box;
 	class Cylinder;
 	class Capsule;
+	class Shape;
+	class Sphere;
 	class Trimesh;
 
 	class GeometryContact;
@@ -85,6 +88,8 @@ namespace AGXBarrierFactories
 	FRigidBodyBarrier AGXUNREALBARRIER_API CreateRigidBodyBarrier(agx::RigidBody* Body);
 
 	FEmptyShapeBarrier CreateEmptyShapeBarrier(agxCollide::Geometry* Geometry);
+
+	FAnyShapeBarrier CreateAnyShapeBarrier(agxCollide::Shape* Shape);
 
 	FSphereShapeBarrier CreateSphereShapeBarrier(agxCollide::Sphere* Sphere);
 
