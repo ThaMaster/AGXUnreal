@@ -3,6 +3,7 @@
 #include "Utilities/AGX_ImportUtilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
@@ -184,7 +185,7 @@ namespace
 		{
 			// Do it the regular way.
 			Node->SetVariableName(FName(Name), true);
-		}		
+		}
 	}
 }
 
