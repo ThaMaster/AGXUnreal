@@ -46,6 +46,7 @@
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
 #include "SimulationObjectCollection.h"
 #include "Tires/TwoBodyTireBarrier.h"
@@ -69,6 +70,7 @@
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
 #include "Kismet2/KismetEditorUtilities.h"
+#include "Materials/MaterialInstanceConstant.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/ScopedSlowTask.h"
 #include "PackageTools.h"
@@ -1902,9 +1904,14 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 *
 	 * Comparison is done on GUID/UUIDs.
 	 *
+	 * Assets of build-in Unreal Engine types, such as Materials, don't have an Import GUID. Those
+	 * GUID's are instead stored in a look-up table in an UAGX_ModelSourceComponent. This function
+	 * should be called before the AGX Dynamics archive is applied to the Blueprint since here we
+	 * need to see the old list of assets, not the new ones.
+	 *
 	 * Mesh assets are currently not comparable, i.e. they can get new triangle data but keep the
-	 * same GUID, and we cannot compare triangle by triangle because Unreal Engine modifies them
-	 * when building the Static Mesh asset, so they are always deleted and recreated.
+	 * same GUID and we cannot compare triangle by triangle because Unreal Engine modifies them
+	 * when building the Static Mesh asset, so they are always deleted and recreated for now.
 	 */
 	void DeleteRemovedAssets(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
@@ -2064,6 +2071,119 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				UE_LOG(LogAGX, Warning, TEXT("  %s"), *Mesh->GetPathName());
 				AssetsToDelete.AddUnique(Mesh);
+			}
+		}
+
+		// Delete removed Render Materials.
+		UE_LOG(LogAGX, Warning, TEXT(""));
+		UE_LOG(LogAGX, Warning, TEXT("Render Materials:"));
+		if (auto* ModelSourceComponent =
+				Cast<UAGX_ModelSourceComponent>(SCSNodes.ModelSourceComponent->ComponentTemplate))
+		{
+			// Find all Render Material assets currently in the import folder.
+			const FString RenderMaterialDirPath = GetImportDirPath(
+				Helper, FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
+			TArray<UMaterialInstanceConstant*> Assets =
+				FAGX_EditorUtilities::FindAssets<UMaterialInstanceConstant>(RenderMaterialDirPath);
+			UE_LOG(LogAGX, Warning, TEXT("Found the following Render Material assets:"));
+			for (const UMaterialInstanceConstant* Asset : Assets)
+			{
+				const FString GuidStr = [&]()
+				{
+					const FGuid* const AssetGuidPtr =
+						ModelSourceComponent->UnrealMaterialToImportGuid.Find(Asset->GetPathName());
+					if (AssetGuidPtr != nullptr)
+					{
+						return AssetGuidPtr->ToString();
+					}
+					else
+					{
+						return FString(TEXT("(Unknown)"));
+					}
+				}();
+				UE_LOG(
+					LogAGX, Warning, TEXT("  %s associated with GUID %s."), *Asset->GetPathName(),
+					*GuidStr);
+			}
+
+			// Find all Render Materials that are about to be imported.
+			UE_LOG(LogAGX, Warning, TEXT("Collecting Render Material simulation objects:"))
+			TSet<FGuid> InSimulation;
+			auto CollectFromSimulation = [&InSimulation](const auto& ShapeBarriers)
+			{
+				UE_LOG(LogAGX, Warning, TEXT("  Collecting from a shape type."));
+				for (const auto& ShapeBarrier : ShapeBarriers)
+				{
+					UE_LOG(
+						LogAGX, Warning, TEXT("    Checking shape %s."), *ShapeBarrier.GetName());
+					if (!ShapeBarrier.HasRenderMaterial())
+					{
+						UE_LOG(
+							LogAGX, Warning,
+							TEXT("    Does not have a Render Material, nothing to add"));
+						continue;
+					}
+
+					FAGX_RenderMaterial Material = ShapeBarrier.GetRenderMaterial();
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("    Has Render Material %s, adding to In Simulation set."),
+						*Material.Guid.ToString());
+					InSimulation.Add(Material.Guid);
+				}
+			};
+			auto CollectFromSimulationBodies = [&InSimulation, &CollectFromSimulation](
+												   const TArray<FRigidBodyBarrier>& BodyBarriers)
+			{
+				UE_LOG(LogAGX, Warning, TEXT("  Collecting from Rigid Bodies."));
+				for (const FRigidBodyBarrier& BodyBarrier : BodyBarriers)
+				{
+#if 1
+					CollectFromSimulation(BodyBarrier.GetShapes());
+#else
+					CollectFromSimulation(BodyBarrier.GetBoxShapes());
+					CollectFromSimulation(BodyBarrier.GetCapsuleShapes());
+					CollectFromSimulation(BodyBarrier.GetCylinderShapes());
+					CollectFromSimulation(BodyBarrier.GetSphereShapes());
+					CollectFromSimulation(BodyBarrier.GetTrimeshShapes());
+#endif
+				}
+			};
+			CollectFromSimulation(SimulationObjects.GetBoxShapes());
+			CollectFromSimulation(SimulationObjects.GetCapsuleShapes());
+			CollectFromSimulation(SimulationObjects.GetCylinderShapes());
+			CollectFromSimulation(SimulationObjects.GetSphereShapes());
+			CollectFromSimulation(SimulationObjects.GetTrimeshShapes());
+			CollectFromSimulationBodies(SimulationObjects.GetRigidBodies());
+
+			// Mark for deletion any asset we currently have but don't want to keep.
+			UE_LOG(LogAGX, Warning, TEXT("Marking removed assets for deletion."));
+			for (auto* Asset : Assets)
+			{
+				UE_LOG(LogAGX, Warning, TEXT("Checking %s."), *Asset->GetPathName());
+				const FGuid* const AssetGuidPtr =
+					ModelSourceComponent->UnrealMaterialToImportGuid.Find(Asset->GetPathName());
+				if (AssetGuidPtr == nullptr)
+				{
+					// This is a new, unknown, material.
+					// I don't think this is supposed to happen.
+					// If the user create new
+					UE_LOG(LogAGX, Warning, TEXT("  Unknown asset, ignoring."));
+					continue;
+				}
+				const FGuid AssetGuid = *AssetGuidPtr;
+				UE_LOG(LogAGX, Warning, TEXT("  Has GUID %s."), *AssetGuid.ToString());
+				if (!InSimulation.Contains(AssetGuid))
+				{
+					// Found an asset that is no longer part of the model. Delete it.
+					AssetsToDelete.Add(Asset);
+					ModelSourceComponent->UnrealMaterialToImportGuid.Remove(Asset->GetPathName());
+					UE_LOG(LogAGX, Warning, TEXT("  Not among the simulation objects, removing."));
+				}
+				else
+				{
+					UE_LOG(LogAGX, Warning, TEXT("  Found among the simulation objects, leaving."));
+				}
 			}
 		}
 
