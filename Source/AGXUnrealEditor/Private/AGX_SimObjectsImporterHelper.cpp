@@ -480,6 +480,22 @@ void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 	RestoredBodies.Add(Barrier.GetGuid(), &Component);
 }
 
+void FAGX_SimObjectsImporterHelper::LoadPreviouslyImportedRenderMaterials(
+	const TMap<FString, FGuid>& UnrealMaterialToImportGuid)
+{
+	for (auto& MaterialToImportGuid : UnrealMaterialToImportGuid)
+	{
+		const FString Path = MaterialToImportGuid.Key;
+		const FGuid ImportGuid = MaterialToImportGuid.Value;
+		FAssetData AssetData = IAssetRegistry::Get()->GetAssetByObjectPath(FName(Path));
+		UMaterialInstanceConstant* Asset = Cast<UMaterialInstanceConstant>(AssetData.GetAsset());
+		if (Asset != nullptr)
+		{
+			RestoredRenderMaterials.Add(ImportGuid, Asset);
+		}
+	}
+}
+
 UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
 	const FRigidBodyBarrier& Barrier, AActor& Actor)
 {

@@ -2301,6 +2301,17 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 #if 0
 		DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, Settings);
 
+		/// @todo Populate Helper.RestoredRenderMaterials here, so that the AddOrUpdate functions
+		/// can find them.
+		///
+		/// Is there any other table that should be filled in with assets we already have?
+		if (auto* ModelSourceComponent =
+				Cast<UAGX_ModelSourceComponent>(SCSNodes.ModelSourceComponent->ComponentTemplate))
+		{
+			Helper.LoadPreviouslyImportedRenderMaterials(
+				ModelSourceComponent->UnrealMaterialToImportGuid);
+		}
+
 		/// @todo Early out for testing purposes, should not be merged to master.
 		return true;
 #endif
