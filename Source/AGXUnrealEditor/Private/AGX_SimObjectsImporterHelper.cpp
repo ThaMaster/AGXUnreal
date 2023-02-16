@@ -114,35 +114,11 @@ namespace
 		return Material->GetName();
 	}
 
-	/**
-	 * Convert an AGX Dynamics Render Material to an Unreal Engine Render Material and store it
-	 * as an asset in the given directory. Will cache and reuse Render Materials if the same one
-	 * is passed multiple times. Will fall back to the base import material if asset creation
-	 * fails. Will return nullptr if the base import material can't be loaded.
-	 *
-	 * If a new Render Material is created then it is created as a Material Instance Constant
-	 * from the base import material.
-	 *
-	 * @param RenderMaterial The AGX Dynamics Material to convert to an Unreal Engine Material.
-	 * @param DirectoryName The name of the directory where this imported model's assets are stored.
-	 * @param RestoredMaterials Cache of restored Render Materials.
-	 * @return The Unreal Engine material for the AGX Dynamics material, or the base material, or
-	 * nullptr.
-	 */
-	UMaterialInterface* GetOrCreateRenderMaterialInstance(
+	UMaterialInterface* CreateRenderMaterialInstance(
 		const FAGX_RenderMaterial& RenderMaterial, const FString& DirectoryName,
-		TMap<FGuid, UMaterialInstanceConstant*>& RestoredMaterials)
+		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials)
 	{
 		const FGuid Guid = RenderMaterial.Guid;
-
-		// Have we seen this render material before?
-		if (UMaterialInstanceConstant** It = RestoredMaterials.Find(Guid))
-		{
-			// Yes, used the cached Material Instance.
-			return *It;
-		}
-
-		// This is a new material. Save it as an asset and in the cache.
 		const FString MaterialName =
 			RenderMaterial.Name.IsNone()
 				? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
@@ -159,10 +135,45 @@ namespace
 		if (UMaterialInstanceConstant* Instance = Cast<UMaterialInstanceConstant>(Material))
 		{
 			// This is a new Material Instance, store it in the cache.
-			RestoredMaterials.Add(Guid, Instance);
+			RestoredRenderMaterials.Add(Guid, Instance);
 		}
 
 		return Material;
+	}
+
+	/**
+	 * Convert an AGX Dynamics Render Material to an Unreal Engine Render Material and store it
+	 * as an asset in the given directory. Will cache and reuse Render Materials if the same one
+	 * is passed multiple times. Will fall back to the base import material if asset creation
+	 * fails. Will return nullptr if the base import material can't be loaded.
+	 *
+	 * If a new Render Material is created then it is created as a Material Instance Constant
+	 * from the base import material.
+	 *
+	 * @param RenderMaterial The AGX Dynamics Material to convert to an Unreal Engine Material.
+	 * @param DirectoryName The name of the directory where this imported model's assets are stored.
+	 * @param RestoredRenderMaterials Cache of restored Render Materials.
+	 * @return The Unreal Engine material for the AGX Dynamics material, or the base material, or
+	 * nullptr.
+	 */
+	UMaterialInterface* GetOrCreateRenderMaterialInstance(
+		const FAGX_RenderMaterial& RenderMaterial, const FString& DirectoryName,
+		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials)
+	{
+		const FGuid Guid = RenderMaterial.Guid;
+
+		// Have we seen this render material before?
+		if (UMaterialInstanceConstant** It = RestoredRenderMaterials.Find(Guid))
+		{
+			// Yes, used the cached Material Instance.
+			return *It;
+		}
+		else
+		{
+			// This is a new material. Save it as an asset and in the cache.
+			return CreateRenderMaterialInstance(
+				RenderMaterial, DirectoryName, RestoredRenderMaterials);
+		}
 	}
 
 	UMaterial* GetDefaultRenderMaterial(bool bIsSensor)
@@ -1104,6 +1115,51 @@ UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 
 	UpdateAndSaveShapeMaterialAsset(Barrier, *Asset);
 	return Asset;
+}
+
+UMaterialInstanceConstant* FAGX_SimObjectsImporterHelper::GetRenderMaterial(const FGuid& Guid)
+{
+	return RestoredRenderMaterials.FindRef(Guid);
+}
+
+UMaterialInterface* FAGX_SimObjectsImporterHelper::InstantiateRenderMaterial(
+	FAGX_RenderMaterial& Material)
+{
+	return CreateRenderMaterialInstance(Material, DirectoryName, RestoredRenderMaterials);
+}
+
+void FAGX_SimObjectsImporterHelper::UpdateAndSaveRenderMaterialAsset(
+	const FAGX_RenderMaterial& Material, UMaterialInstanceConstant& Asset)
+{
+	auto SetVector = [&Asset](const TCHAR* Name, const FVector4& Value)
+	{
+		Asset.SetVectorParameterValueEditorOnly(
+			FName(Name), FAGX_RenderMaterial::ConvertToLinear(Value));
+	};
+
+	auto SetScalar = [&Asset](const TCHAR* Name, float Value)
+	{ Asset.SetScalarParameterValueEditorOnly(FName(Name), Value); };
+
+	Asset.ClearParameterValuesEditorOnly();
+	if (Material.bHasDiffuse)
+	{
+		SetVector(TEXT("Diffuse"), Material.Diffuse);
+	}
+	if (Material.bHasAmbient)
+	{
+		SetVector(TEXT("Ambient"), Material.Ambient);
+	}
+	if (Material.bHasEmissive)
+	{
+		SetVector(TEXT("Emissive"), Material.Emissive);
+	}
+	if (Material.bHasShininess)
+	{
+		SetScalar(TEXT("Shininess"), Material.Shininess);
+	}
+
+	Asset.PostEditChange();
+	FAGX_ObjectUtilities::SaveAsset(Asset);
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateAndSaveContactMaterialAsset(

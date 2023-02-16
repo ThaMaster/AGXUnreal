@@ -1086,6 +1086,78 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
+	TArray<FAGX_RenderMaterial> CollectRenderMaterials(
+		const FSimulationObjectCollection& SimulationObjects)
+	{
+		TArray<FAGX_RenderMaterial> Materials;
+		auto CollectFromShapes = [&Materials](const auto& ShapeBarriers)
+		{
+			for (const auto& ShapeBarrier : ShapeBarriers)
+			{
+				if (!ShapeBarrier.HasRenderMaterial())
+				{
+					continue;
+				}
+				Materials.Add(ShapeBarrier.GetRenderMaterial());
+			}
+		};
+
+		auto CollectFromBodies = [&CollectFromShapes](const TArray<FRigidBodyBarrier>& BodyBarriers)
+		{
+			for (const FRigidBodyBarrier& BodyBarrier : BodyBarriers)
+			{
+				CollectFromShapes(BodyBarrier.GetShapes());
+			}
+		};
+
+		CollectFromShapes(SimulationObjects.GetBoxShapes());
+		CollectFromShapes(SimulationObjects.GetCapsuleShapes());
+		CollectFromShapes(SimulationObjects.GetCylinderShapes());
+		CollectFromShapes(SimulationObjects.GetSphereShapes());
+		CollectFromShapes(SimulationObjects.GetTrimeshShapes());
+		CollectFromBodies(SimulationObjects.GetRigidBodies());
+
+		return Materials;
+	}
+
+	void AddOrUpdateRenderMaterials(
+		const FSimulationObjectCollection& SimulationObjects, SCSNodeCollection& SCSNodes,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		if (SCSNodes.ModelSourceComponent != nullptr)
+		{
+			if (auto* ModelSourceComponent = Cast<UAGX_ModelSourceComponent>(
+					SCSNodes.ModelSourceComponent->ComponentTemplate))
+			{
+				// DeleteRemovedAssets has already been run, which means that Render Materials
+				// removed from the SimulationObjects has also been removed from drive and from
+				// UnrealMaterialToImportGuid. There may still be some materials remaining from the
+				// previous import that we want new Shapes that we find in SimulationObjects to use
+				// so here we load those into the Helper here. Must go via
+				// UnrealMaterialToImportGuid, can't simply browse the Asset Registry, because the
+				// assets themselves don't know their import GUID.
+				Helper.LoadPreviouslyImportedRenderMaterials(
+					ModelSourceComponent->UnrealMaterialToImportGuid);
+			}
+		}
+
+		TArray<FAGX_RenderMaterial> Materials = CollectRenderMaterials(SimulationObjects);
+		for (FAGX_RenderMaterial& Material : Materials)
+		{
+			const FGuid Guid = Material.Guid;
+			UMaterialInstanceConstant* Asset = Helper.GetRenderMaterial(Guid);
+			if (Asset != nullptr)
+			{
+				Helper.UpdateAndSaveRenderMaterialAsset(Material, *Asset);
+			}
+			else
+			{
+				/// @todo Create a new Render Material here.
+				Helper.InstantiateRenderMaterial(Material);
+			}
+		}
+	}
+
 	USCS_Node* GetOrCreateContactMaterialRegistrarNode(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes)
 	{
@@ -1650,8 +1722,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		const FSimulationObjectCollection& SimulationObjects,
 		const FAGX_SynchronizeModelSettings& Settings, FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FScopedSlowTask ImportTask(100.f, LOCTEXT("AddOrUpdateAll", "Adding new data"), true);
+		FScopedSlowTask ImportTask(105.f, LOCTEXT("AddOrUpdateAll", "Adding new data"), true);
 		ImportTask.MakeDialog();
+
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Adding data"));
 
 		// We collect all existing merge split thresholds assets here once, and pass it down to the
@@ -1664,28 +1737,40 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Shape Materials"));
 		AddOrUpdateShapeMaterials(BaseBP, SimulationObjects, Helper);
+
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Contact Materials"));
 		AddOrUpdateContactMaterials(BaseBP, SCSNodes, SimulationObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Synchronizing Render Materials"));
+		AddOrUpdateRenderMaterials(SimulationObjects, SCSNodes, Helper);
+
 		ImportTask.EnterProgressFrame(
 			5.f, FText::FromString("Synchronizing Rigid Bodies and Shapes"));
 		AddOrUpdateRigidBodiesAndOwnedShapes(
 			BaseBP, SCSNodes, SimulationObjects, Helper, Settings, ExistingMSTAssets);
+
 		ImportTask.EnterProgressFrame(15.f, FText::FromString("Synchronizing Bodiless Shapes"));
 		AddOrUpdateBodilessShapes(
 			BaseBP, SCSNodes, SimulationObjects, Helper, Settings, ExistingMSTAssets);
+
 		ImportTask.EnterProgressFrame(15.f, FText::FromString("Synchronizing Constraints"));
 		AddOrUpdateConstraints(
 			BaseBP, SCSNodes, SimulationObjects, Helper, Settings, ExistingMSTAssets);
+
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Tire Models"));
 		AddOrUpdateTwoBodyTires(BaseBP, SCSNodes, SimulationObjects, Helper, Settings);
+
 		ImportTask.EnterProgressFrame(
 			5.f, FText::FromString("Synchronizing Collision Groups Disabler"));
 		AddOrUpdateCollisionGroupDisabler(BaseBP, SCSNodes, SimulationObjects, Helper);
+
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Observer Frames"));
 		AddOrUpdateObserverFrames(BaseBP, SCSNodes, SimulationObjects, Helper, Settings);
+
 		ImportTask.EnterProgressFrame(
 			5.f, FText::FromString("Synchronizing Model Source Component"));
 		AddOrUpdateModelSourceComponent(BaseBP, SCSNodes, Helper);
+
 		ImportTask.EnterProgressFrame(30.f, FText::FromString("Finalizing Synchronization"));
 		Helper.FinalizeImport();
 	}
@@ -2289,24 +2374,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			GetModelDirectoryFromAsset(&BaseBP));
 
 		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Deleting old assets"));
-// Asset deletion disabled until first pass complete. Still very experimental.
-#if 0
 		DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, Settings);
-
-		/// @todo Populate Helper.RestoredRenderMaterials here, so that the AddOrUpdate functions
-		/// can find them.
-		///
-		/// Is there any other table that should be filled in with assets we already have?
-		if (auto* ModelSourceComponent =
-				Cast<UAGX_ModelSourceComponent>(SCSNodes.ModelSourceComponent->ComponentTemplate))
-		{
-			Helper.LoadPreviouslyImportedRenderMaterials(
-				ModelSourceComponent->UnrealMaterialToImportGuid);
-		}
-
-		/// @todo Early out for testing purposes, should not be merged to master.
-		return true;
-#endif
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Deleting old Components"));
 		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects, Settings);
@@ -2317,6 +2385,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// Component name. This would make the result of a Model Synchronization non-deterministic
 		// in terms of Node naming.
 		SetUnnamedNameForPossibleCollisions(SCSNodes);
+
 		ImportTask.EnterProgressFrame(
 			80.f, FText::FromString("Adding and Updating Components and Assets"));
 		AddOrUpdateAll(BaseBP, SCSNodes, SimObjects, Settings, Helper);
