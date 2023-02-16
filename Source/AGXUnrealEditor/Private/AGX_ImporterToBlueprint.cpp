@@ -1118,40 +1118,11 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
 	{
-		if (SimulationObjects.GetContactMaterials().Num() == 0)
-		{
-			return;
-		}
-
-		auto DeleteRemovedCMs = [&SimulationObjects](UAGX_ContactMaterialRegistrarComponent& CMReg)
-		{
-			TArray<UAGX_ContactMaterial*> CMsToDelete;
-			for (const auto Cm : CMReg.ContactMaterials)
-			{
-				if (!SimulationObjects.GetContactMaterials().ContainsByPredicate(
-						[Cm](const auto& C) { return C.GetGuid() == Cm->ImportGuid; }))
-				{
-					CMsToDelete.Add(Cm);
-				}
-			}
-
-			CMReg.ContactMaterials.RemoveAll([&CMsToDelete](auto Cm)
-											 { return CMsToDelete.Contains(Cm); });
-
-			// Update any archetype instance as well.
-			for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(CMReg))
-			{
-				Instance->ContactMaterials.RemoveAll([&CMsToDelete](auto Cm)
-													 { return CMsToDelete.Contains(Cm); });
-			}
-		};
-
 		USCS_Node* CMRegistrarNode = GetOrCreateContactMaterialRegistrarNode(BaseBP, SCSNodes);
 		const FString CMRName = FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName();
 		CMRegistrarNode->SetVariableName(*CMRName);
 		auto CMRegistrar =
 			Cast<UAGX_ContactMaterialRegistrarComponent>(CMRegistrarNode->ComponentTemplate);
-		DeleteRemovedCMs(*CMRegistrar);
 
 		// Find all existing assets that might be of interest from the previous import.
 		const FString ContactMaterialDirPath =
@@ -1924,12 +1895,20 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		UE_LOG(LogAGX, Warning, TEXT("Contact Materials:"));
 		if (SCSNodes.ContactMaterialRegistrarComponent != nullptr)
 		{
-			const TArray<FContactMaterialBarrier>& Barriers =
-				SimulationObjects.GetContactMaterials();
-
 			if (auto Registrar = Cast<UAGX_ContactMaterialRegistrarComponent>(
 					SCSNodes.ContactMaterialRegistrarComponent->ComponentTemplate))
 			{
+				const TArray<FContactMaterialBarrier>& Barriers =
+					SimulationObjects.GetContactMaterials();
+
+				// Track which assets are added to the AssetsToDelete list. Deleting assets will
+				// set any references to that asset to None / nullptr which is correct in some cases
+				// but for the Contact Material Registrar we remove the elements completely to avoid
+				// leaving nullptr entries in the array.
+				TSet<UAGX_ContactMaterial*> Removed;
+
+				// Queue for deletion any Contact Material that we find in the Blueprint that no
+				// longer exists in among the Simulation Objects.
 				for (UAGX_ContactMaterial* Asset : Registrar->ContactMaterials)
 				{
 					const FGuid Guid = Asset->ImportGuid;
@@ -1948,7 +1927,18 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 							LogAGX, Warning,
 							TEXT("Did not find a match, adding asset to delete list."));
 						AssetsToDelete.AddUnique(Asset);
+						Removed.Add(Asset);
 					}
+				}
+
+				// Purge references to the soon-to-be-removed assets from the Contact Material
+				// Registrar and all its archetype instances.
+				auto Predicate = [Removed](const UAGX_ContactMaterial* Element)
+				{ return Removed.Contains(Element); };
+				Registrar->ContactMaterials.RemoveAll(Predicate);
+				for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*Registrar))
+				{
+					Instance->ContactMaterials.RemoveAll(Predicate);
 				}
 			}
 		}
