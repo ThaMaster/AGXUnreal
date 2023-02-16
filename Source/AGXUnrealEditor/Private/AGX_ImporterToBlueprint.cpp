@@ -2220,15 +2220,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				UE_LOG(LogAGX, Warning, TEXT("  Collecting from Rigid Bodies."));
 				for (const FRigidBodyBarrier& BodyBarrier : BodyBarriers)
 				{
-#if 1
 					CollectFromSimulation(BodyBarrier.GetShapes());
-#else
-					CollectFromSimulation(BodyBarrier.GetBoxShapes());
-					CollectFromSimulation(BodyBarrier.GetCapsuleShapes());
-					CollectFromSimulation(BodyBarrier.GetCylinderShapes());
-					CollectFromSimulation(BodyBarrier.GetSphereShapes());
-					CollectFromSimulation(BodyBarrier.GetTrimeshShapes());
-#endif
 				}
 			};
 			CollectFromSimulation(SimulationObjects.GetBoxShapes());
