@@ -2070,6 +2070,11 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 			/// @todo Consider storing a list of all Constraints in SCSNodes so we don't need to
 			/// operate on so many collections here.
+			///
+			/// @todo Why traverse the SCS nodes instead of asking FindAGXAssetComponents for a list
+			/// of all assets in the import directory? This approach will do bad things if the
+			/// Blueprint has been changed to point to assets outside of the model's import
+			/// directory. We should not delete such assets.
 			CollectFromBlueprint(SCSNodes.BallConstraints);
 			CollectFromBlueprint(SCSNodes.CylindricalConstraints);
 			CollectFromBlueprint(SCSNodes.DistanceConstraints);
