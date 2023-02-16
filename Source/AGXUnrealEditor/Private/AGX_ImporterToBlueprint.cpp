@@ -1124,19 +1124,21 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		auto CMRegistrar =
 			Cast<UAGX_ContactMaterialRegistrarComponent>(CMRegistrarNode->ComponentTemplate);
 
-		// Find all existing assets that might be of interest from the previous import.
+		// For Contact Materials in SimulationObjects that do have an asset, update that asset
+		// to match the new SimulationObjects Contact Material.
+		//
+		// For Contact Materials in SimulationObjects that do not have an asset, create new Contact
+		// Material assets.
 		const FString ContactMaterialDirPath =
 			GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
-		TMap<FGuid, UAGX_ContactMaterial*> ExistingContactMaterialsMap =
+		const TMap<FGuid, UAGX_ContactMaterial*> ExistingContactMaterialsMap =
 			FindAGXAssetComponents<UAGX_ContactMaterial>(ContactMaterialDirPath);
-
 		for (const auto& Barrier : SimulationObjects.GetContactMaterials())
 		{
-			const FGuid Guid = Barrier.GetGuid();
-			if (ExistingContactMaterialsMap.Contains(Guid))
+			UAGX_ContactMaterial* Asset = ExistingContactMaterialsMap.FindRef(Barrier.GetGuid());
+			if (Asset != nullptr)
 			{
-				Helper.UpdateAndSaveContactMaterialAsset(
-					Barrier, *ExistingContactMaterialsMap[Guid], *CMRegistrar);
+				Helper.UpdateAndSaveContactMaterialAsset(Barrier, *Asset, *CMRegistrar);
 			}
 			else
 			{
