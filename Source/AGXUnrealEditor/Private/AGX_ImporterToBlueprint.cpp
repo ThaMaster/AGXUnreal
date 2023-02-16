@@ -1952,7 +1952,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				for (const auto It : Constraints)
 				{
 					const UAGX_ConstraintComponent* const Constraint =
-						dynamic_cast<UAGX_ConstraintComponent*>(It.Value->ComponentTemplate);
+						Cast<UAGX_ConstraintComponent>(It.Value->ComponentTemplate);
 					if (Constraint == nullptr)
 					{
 						// Not all SCS nodes have a Component Template. Not sure if a Constraint
