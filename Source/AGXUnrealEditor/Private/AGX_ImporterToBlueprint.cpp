@@ -1972,9 +1972,11 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 * General steps:
 	 * - Find all objects in the simulation objects collection.
 	 *   These are the ones whose corresponding assets we want to keep.
+	 *   Store their GUIDs in a TSet for quick existence checks.
 	 * - Find all assets on drive.
 	 *   These are assets that were created during prior imports or synchronizations.
 	 * - Compare the simulation objects and the assets.
+	 *   By looping over the assets and checking for existence against the simulation objects.
 	 *   All assets that don't have a corresponding simulation object is added to the delete list.
 	 * - Do any extra cleanup required for the asset type.
 	 *   Deleting the asset will set references to it to None / nullptr.
