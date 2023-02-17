@@ -21,6 +21,7 @@
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_LockConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
+#include "Constraints/AnyConstraintBarrier.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
 #include "Constraints/Controllers/AGX_FrictionController.h"
 #include "Constraints/Controllers/AGX_LockController.h"
@@ -2066,36 +2067,23 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		// Delete removed Constraint Merge Split Thresholds.
 		{
-			// We want to find all Merge Split Thresholds on drive that does not exist in
-			// SimulationObjects. There is no pre-collected list of them in SimulationObjects so we
-			// create it here.
-
 			// Collect Merge Split Thresholds from the simulation objects.
 			// Any Threshold we find should not have its asset deleted.
 			TSet<FGuid> InSimulation;
+			TArray<FAnyConstraintBarrier> Constraints = SimulationObjects.CollectAllConstraints();
+			InSimulation.Reserve(Constraints.Num() + 1);
 			InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
-			auto CollectFromSimulation = [&InSimulation](const auto& ConstraintBarriers)
+			for (FAnyConstraintBarrier& Constraint : Constraints)
 			{
-				for (auto& ConstraintBarrier : ConstraintBarriers)
+				const FConstraintMergeSplitThresholdsBarrier Thresholds =
+					FConstraintMergeSplitThresholdsBarrier::CreateFrom(Constraint);
+				if (!Thresholds.HasNative())
 				{
-					const FConstraintMergeSplitThresholdsBarrier ThresholdsBarrier =
-						FConstraintMergeSplitThresholdsBarrier::CreateFrom(ConstraintBarrier);
-					if (!ThresholdsBarrier.HasNative())
-					{
-						// Not all Constraints have a Merge Split Thresholds.
-						continue;
-					}
-					InSimulation.Add(ThresholdsBarrier.GetGuid());
+					// Not all Constraints have a Merge Split Thresholds.
+					continue;
 				}
-			};
-
-			/// @todo Consider creating a GetConstraints getter that returns all constraints.
-			CollectFromSimulation(SimulationObjects.GetBallConstraints());
-			CollectFromSimulation(SimulationObjects.GetCylindricalConstraints());
-			CollectFromSimulation(SimulationObjects.GetDistanceConstraints());
-			CollectFromSimulation(SimulationObjects.GetHingeConstraints());
-			CollectFromSimulation(SimulationObjects.GetLockConstraints());
-			CollectFromSimulation(SimulationObjects.GetPrismaticConstraints());
+				InSimulation.Add(Thresholds.GetGuid());
+			}
 
 			// Collect Merge Split Thresholds from drive. These are the assets that may need to be
 			// deleted.
@@ -2277,7 +2265,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					}
 
 					FAGX_RenderMaterial Material = ShapeBarrier.GetRenderMaterial();
-						*Material.Guid.ToString());
 					InSimulation.Add(Material.Guid);
 				}
 			};
