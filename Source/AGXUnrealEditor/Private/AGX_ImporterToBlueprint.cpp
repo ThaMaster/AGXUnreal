@@ -1973,6 +1973,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 * - Find all objects in the simulation objects collection.
 	 *   These are the ones whose corresponding assets we want to keep.
 	 *   Store their GUIDs in a TSet for quick existence checks.
+	 *   Also store a default-constructed FGuid in there so that any user-created asset placed
+	 *   among the imported assets has something to match against and thus not be deleted. We do
+	 *   not want to delete user-created assets.
 	 * - Find all assets on drive.
 	 *   These are assets that were created during prior imports or synchronizations.
 	 * - Compare the simulation objects and the assets.
@@ -2014,6 +2017,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					SimulationObjects.GetContactMaterials();
 				TSet<FGuid> InSimulation;
 				InSimulation.Reserve(Barriers.Num());
+				InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
 				for (const FContactMaterialBarrier& Barrier : Barriers)
 				{
 					InSimulation.Add(Barrier.GetGuid());
@@ -2037,6 +2041,11 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				{
 					const FGuid Guid = Asset->ImportGuid;
 					UE_LOG(LogAGX, Warning, TEXT("  Checking asset GUID %s."), *Guid.ToString());
+					if (!Guid.IsValid())
+					{
+						// Not an imported asset, do not delete.
+						continue;
+					}
 					if (!InSimulation.Contains(Guid))
 					{
 						UE_LOG(
