@@ -2,7 +2,9 @@
 
 #include "SimulationObjectCollection.h"
 
-#include "RigidBodyBarrier.h"
+// AGX Dynamics for Unreal includes.
+#include "AGX_AgxDynamicsObjectsAccess.h"
+#include "AGXBarrierFactories.h"
 #include "Constraints/BallJointBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Constraints/DistanceJointBarrier.h"
@@ -10,6 +12,8 @@
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "RigidBodyBarrier.h"
+#include "Shapes/AnyShapeBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Vehicle/TrackBarrier.h"
@@ -26,6 +30,32 @@ TArray<FRigidBodyBarrier>& FSimulationObjectCollection::GetRigidBodies()
 const TArray<FRigidBodyBarrier>& FSimulationObjectCollection::GetRigidBodies() const
 {
 	return RigidBodies;
+}
+
+TArray<FAnyShapeBarrier> FSimulationObjectCollection::CollectAllShapes() const
+{
+	TArray<FAnyShapeBarrier> AllShapes;
+	auto AddShapes = [&AllShapes](const auto& Shapes)
+	{
+		for (auto& Shape : Shapes)
+		{
+			agxCollide::Shape* ShapeAGX = FAGX_AgxDynamicsObjectsAccess::GetShapeFrom(&Shape);
+			AllShapes.Add(AGXBarrierFactories::CreateAnyShapeBarrier(ShapeAGX));
+		}
+	};
+	AddShapes(SphereShapes);
+	AddShapes(BoxShapes);
+	AddShapes(CylinderShapes);
+	AddShapes(CapsuleShapes);
+	AddShapes(TrimeshShapes);
+	for (const FRigidBodyBarrier& Body : RigidBodies)
+	{
+		AddShapes(Body.GetSphereShapes());
+		AddShapes(Body.GetBoxShapes());
+		AddShapes(Body.GetCylinderShapes());
+		AddShapes(Body.GetCapsuleShapes());
+		AddShapes(Body.GetTrimeshShapes());
+	}
 }
 
 TArray<FSphereShapeBarrier>& FSimulationObjectCollection::GetSphereShapes()
