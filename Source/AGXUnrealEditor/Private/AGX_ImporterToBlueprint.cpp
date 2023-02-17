@@ -2070,61 +2070,15 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		// Delete removed Constraint Merge Split Thresholds.
 		{
-			UE_LOG(LogAGX, Warning, TEXT("\nConstraint Merge Split Thresholds:"));
-			// We want to find all Merge Split Thresholds in SCSNodes that does not exist in
-			// SimulationObjects. There is no pre-collected list of them in either of the two
-			// collections so we create it here. We can find Merge Split Thresholds on Constraints,
-			// Shapes, and Wires.
-
-			// Collect Merge Split Thresholds from Blueprint constraint nodes.
-			// These are the assets that may need to be deleted.
-			TArray<UAGX_ConstraintMergeSplitThresholds*> Assets;
-			UE_LOG(LogAGX, Warning, TEXT("Collecting Blueprint thresholds:"));
-			auto CollectFromBlueprint = [&Assets](TMap<FGuid, USCS_Node*>& Constraints)
-			{
-				for (const auto It : Constraints)
-				{
-					const UAGX_ConstraintComponent* const Constraint =
-						Cast<UAGX_ConstraintComponent>(It.Value->ComponentTemplate);
-					if (Constraint == nullptr)
-					{
-						// Not all SCS nodes have a Component Template. Not sure if a Constraint
-						// node can have a Component Template that isn't a Constraint Component.
-						continue;
-					}
-
-					UAGX_ConstraintMergeSplitThresholds* Asset =
-						Constraint->MergeSplitProperties.Thresholds;
-					if (Asset == nullptr)
-					{
-						// Note all Constraints have a Merge Split Thresholds.
-						continue;
-					}
-
-					Assets.AddUnique(Asset);
-					UE_LOG(LogAGX, Warning, TEXT("  %s"), *Asset->ImportGuid.ToString());
-				}
-			};
-
-			/// @todo Consider storing a list of all Constraints in SCSNodes so we don't need to
-			/// operate on so many collections here.
-			///
-			/// @todo Why traverse the SCS nodes instead of asking FindAGXAssetComponents for a list
-			/// of all assets in the import directory? This approach will do bad things if the
-			/// Blueprint has been changed to point to assets outside of the model's import
-			/// directory. We should not delete such assets.
-			CollectFromBlueprint(SCSNodes.BallConstraints);
-			CollectFromBlueprint(SCSNodes.CylindricalConstraints);
-			CollectFromBlueprint(SCSNodes.DistanceConstraints);
-			CollectFromBlueprint(SCSNodes.HingeConstraints);
-			CollectFromBlueprint(SCSNodes.LockConstraints);
-			CollectFromBlueprint(SCSNodes.PrismaticConstraints);
+			// We want to find all Merge Split Thresholds on drive that does not exist in
+			// SimulationObjects. There is no pre-collected list of them in SimulationObjects so we
+			// create it here.
 
 			// Collect Merge Split Thresholds from the simulation objects.
 			// Any Threshold we find should not have its asset deleted.
-			UE_LOG(LogAGX, Warning, TEXT("Collecting simulation thresholds:"));
-			TSet<FGuid> NotRemoved;
-			auto CollectFromSimulation = [&NotRemoved](const auto& ConstraintBarriers)
+			TSet<FGuid> InSimulation;
+			InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
+			auto CollectFromSimulation = [&InSimulation](const auto& ConstraintBarriers)
 			{
 				for (auto& ConstraintBarrier : ConstraintBarriers)
 				{
@@ -2133,14 +2087,13 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					if (!ThresholdsBarrier.HasNative())
 					{
 						// Not all Constraints have a Merge Split Thresholds.
-						return;
+						continue;
 					}
-					const FGuid Guid = ThresholdsBarrier.GetGuid();
-					NotRemoved.Add(Guid);
-					UE_LOG(LogAGX, Warning, TEXT("  %s"), *Guid.ToString());
+					InSimulation.Add(ThresholdsBarrier.GetGuid());
 				}
 			};
 
+			/// @todo Consider creating a GetConstraints getter that returns all constraints.
 			CollectFromSimulation(SimulationObjects.GetBallConstraints());
 			CollectFromSimulation(SimulationObjects.GetCylindricalConstraints());
 			CollectFromSimulation(SimulationObjects.GetDistanceConstraints());
@@ -2148,19 +2101,33 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			CollectFromSimulation(SimulationObjects.GetLockConstraints());
 			CollectFromSimulation(SimulationObjects.GetPrismaticConstraints());
 
+			// Collect Merge Split Thresholds from disk. These are the assets that may need to be
+			// deleted.
+			const FString AssetsPath = GetImportDirPath(
+				Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
+			TArray<UAGX_ConstraintMergeSplitThresholds*> Assets =
+				FAGX_EditorUtilities::FindAssets<UAGX_ConstraintMergeSplitThresholds>(AssetsPath);
+
 			// Mark any asset not found among the simulation objects for deletion.
-			UE_LOG(LogAGX, Warning, TEXT("Checking for matches:"));
 			for (UAGX_ConstraintMergeSplitThresholds* Asset : Assets)
 			{
-				const FGuid AssetGui = Asset->ImportGuid;
-				UE_LOG(LogAGX, Warning, TEXT("  Checking asset %s."), *AssetGui.ToString())
-				if (!NotRemoved.Contains(AssetGui))
+				const FGuid Guid = Asset->ImportGuid;
+				if (!Guid.IsValid())
 				{
-					UE_LOG(LogAGX, Warning, TEXT("  Gone from simulation, deleting asset."))
+					// Not an imported asset, do not delete.
+					continue;
+				}
+				if (!InSimulation.Contains(Guid))
+				{
+					// Not part of the import data, delete the asset.
 					AssetsToDelete.Add(Asset);
 				}
 			}
 		}
+
+		// We can find Merge Split Thresholds on Constraints, Shapes, and Wires. Constraints are
+		// handled above. Can Shape and Wire thresholds be handled in the same block, or is it
+		// better to handle each type separately?
 
 		// Delete all render and collision meshes.
 		//
