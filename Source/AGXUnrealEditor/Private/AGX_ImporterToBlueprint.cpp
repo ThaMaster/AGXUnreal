@@ -2006,7 +2006,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		TArray<UObject*> AssetsToDelete;
 
 		// Delete removed Contact Materials.
-		UE_LOG(LogAGX, Warning, TEXT("Contact Materials:"));
 		if (SCSNodes.ContactMaterialRegistrarComponent != nullptr)
 		{
 			if (auto Registrar = Cast<UAGX_ContactMaterialRegistrarComponent>(
@@ -2040,7 +2039,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				for (UAGX_ContactMaterial* Asset : Assets)
 				{
 					const FGuid Guid = Asset->ImportGuid;
-					UE_LOG(LogAGX, Warning, TEXT("  Checking asset GUID %s."), *Guid.ToString());
 					if (!Guid.IsValid())
 					{
 						// Not an imported asset, do not delete.
@@ -2048,9 +2046,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					}
 					if (!InSimulation.Contains(Guid))
 					{
-						UE_LOG(
-							LogAGX, Warning,
-							TEXT("Did not find a match, adding asset to delete list."));
 						// Not part of the current import data, delete the asset.
 						AssetsToDelete.AddUnique(Asset);
 						QueuedForDeletion.Add(Asset);
@@ -2234,23 +2229,17 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			TArray<UStaticMesh*> CollisionMeshes =
 				FAGX_EditorUtilities::FindAssets<UStaticMesh>(CollisionMeshDirPath);
 
-			UE_LOG(LogAGX, Warning, TEXT("Render meshes: "), *RenderMeshDirPath);
 			for (UStaticMesh* Mesh : RenderMeshes)
 			{
-				UE_LOG(LogAGX, Warning, TEXT("  %s"), *Mesh->GetPathName());
 				AssetsToDelete.AddUnique(Mesh);
 			}
-			UE_LOG(LogAGX, Warning, TEXT("Collision meshes: "), *CollisionMeshDirPath);
 			for (UStaticMesh* Mesh : CollisionMeshes)
 			{
-				UE_LOG(LogAGX, Warning, TEXT("  %s"), *Mesh->GetPathName());
 				AssetsToDelete.AddUnique(Mesh);
 			}
 		}
 
 		// Delete removed Render Materials.
-		UE_LOG(LogAGX, Warning, TEXT(""));
-		UE_LOG(LogAGX, Warning, TEXT("Render Materials:"));
 		if (auto* ModelSourceComponent =
 				Cast<UAGX_ModelSourceComponent>(SCSNodes.ModelSourceComponent->ComponentTemplate))
 		{
@@ -2259,7 +2248,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				Helper, FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
 			TArray<UMaterialInstanceConstant*> Assets =
 				FAGX_EditorUtilities::FindAssets<UMaterialInstanceConstant>(RenderMaterialDirPath);
-			UE_LOG(LogAGX, Warning, TEXT("Found the following Render Material assets:"));
 			for (const UMaterialInstanceConstant* Asset : Assets)
 			{
 				const FString GuidStr = [&]()
@@ -2275,33 +2263,20 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 						return FString(TEXT("(Unknown)"));
 					}
 				}();
-				UE_LOG(
-					LogAGX, Warning, TEXT("  %s associated with GUID %s."), *Asset->GetPathName(),
-					*GuidStr);
 			}
 
 			// Find all Render Materials that are about to be imported.
-			UE_LOG(LogAGX, Warning, TEXT("Collecting Render Material simulation objects:"))
 			TSet<FGuid> InSimulation;
 			auto CollectFromSimulation = [&InSimulation](const auto& ShapeBarriers)
 			{
-				UE_LOG(LogAGX, Warning, TEXT("  Collecting from a shape type."));
 				for (const auto& ShapeBarrier : ShapeBarriers)
 				{
-					UE_LOG(
-						LogAGX, Warning, TEXT("    Checking shape %s."), *ShapeBarrier.GetName());
 					if (!ShapeBarrier.HasRenderMaterial())
 					{
-						UE_LOG(
-							LogAGX, Warning,
-							TEXT("    Does not have a Render Material, nothing to add"));
 						continue;
 					}
 
 					FAGX_RenderMaterial Material = ShapeBarrier.GetRenderMaterial();
-					UE_LOG(
-						LogAGX, Warning,
-						TEXT("    Has Render Material %s, adding to In Simulation set."),
 						*Material.Guid.ToString());
 					InSimulation.Add(Material.Guid);
 				}
@@ -2309,7 +2284,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			auto CollectFromSimulationBodies = [&InSimulation, &CollectFromSimulation](
 												   const TArray<FRigidBodyBarrier>& BodyBarriers)
 			{
-				UE_LOG(LogAGX, Warning, TEXT("  Collecting from Rigid Bodies."));
 				for (const FRigidBodyBarrier& BodyBarrier : BodyBarriers)
 				{
 					CollectFromSimulation(BodyBarrier.GetShapes());
@@ -2323,10 +2297,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			CollectFromSimulationBodies(SimulationObjects.GetRigidBodies());
 
 			// Mark for deletion any asset we currently have but don't want to keep.
-			UE_LOG(LogAGX, Warning, TEXT("Marking removed assets for deletion."));
 			for (auto* Asset : Assets)
 			{
-				UE_LOG(LogAGX, Warning, TEXT("Checking %s."), *Asset->GetPathName());
 				const FGuid* const AssetGuidPtr =
 					ModelSourceComponent->UnrealMaterialToImportGuid.Find(Asset->GetPathName());
 				if (AssetGuidPtr == nullptr)
@@ -2334,21 +2306,14 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					// This is a new, unknown, material.
 					// I don't think this is supposed to happen.
 					// If the user create new
-					UE_LOG(LogAGX, Warning, TEXT("  Unknown asset, ignoring."));
 					continue;
 				}
 				const FGuid AssetGuid = *AssetGuidPtr;
-				UE_LOG(LogAGX, Warning, TEXT("  Has GUID %s."), *AssetGuid.ToString());
 				if (!InSimulation.Contains(AssetGuid))
 				{
 					// Not part of the current import data, delete the asset.
 					AssetsToDelete.Add(Asset);
 					ModelSourceComponent->UnrealMaterialToImportGuid.Remove(Asset->GetPathName());
-					UE_LOG(LogAGX, Warning, TEXT("  Not among the simulation objects, removing."));
-				}
-				else
-				{
-					UE_LOG(LogAGX, Warning, TEXT("  Found among the simulation objects, leaving."));
 				}
 			}
 		}
