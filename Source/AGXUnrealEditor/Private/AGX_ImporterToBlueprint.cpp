@@ -2009,8 +2009,15 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			if (auto Registrar = Cast<UAGX_ContactMaterialRegistrarComponent>(
 					SCSNodes.ContactMaterialRegistrarComponent->ComponentTemplate))
 			{
+				// Collect the Contact Materials that are being imported, both old and new.
 				const TArray<FContactMaterialBarrier>& Barriers =
 					SimulationObjects.GetContactMaterials();
+				TSet<FGuid> InSimulation;
+				InSimulation.Reserve(Barriers.Num());
+				for (const FContactMaterialBarrier& Barrier : Barriers)
+				{
+					InSimulation.Add(Barrier.GetGuid());
+				}
 
 				// Track which assets are added to the AssetsToDelete list. Deleting assets will
 				// set any references to that asset to None / nullptr which is correct in some cases
@@ -2018,21 +2025,19 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				// leaving nullptr entries in the array.
 				TSet<UAGX_ContactMaterial*> Removed;
 
-				// Queue for deletion any Contact Material that we find in the Blueprint that no
-				// longer exists in among the Simulation Objects.
-				for (UAGX_ContactMaterial* Asset : Registrar->ContactMaterials)
+				// Collect the Contact Material assets that exists on drive.
+				const FString ContactMaterialsDirPath = GetImportDirPath(
+					Helper, FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
+				TArray<UAGX_ContactMaterial*> Assets =
+					FAGX_EditorUtilities::FindAssets<UAGX_ContactMaterial>(ContactMaterialsDirPath);
+
+				// Queue for deletion any Contact Material that we found on disk that no longer
+				// exists among the imported Contact Materials.
+				for (UAGX_ContactMaterial* Asset : Assets)
 				{
 					const FGuid Guid = Asset->ImportGuid;
-					UE_LOG(LogAGX, Warning, TEXT("  Checking asset GUID %s..."), *Guid.ToString());
-					auto Predicate = [&Guid](const FContactMaterialBarrier& Barrier)
-					{
-						UE_LOG(
-							LogAGX, Warning, TEXT("    ...against imported GUID %s: %s"),
-							*Barrier.GetGuid().ToString(),
-							(Guid == Barrier.GetGuid() ? TEXT("Match") : TEXT("No")));
-						return Guid == Barrier.GetGuid();
-					};
-					if (!Barriers.ContainsByPredicate(Predicate))
+					UE_LOG(LogAGX, Warning, TEXT("  Checking asset GUID %s."), *Guid.ToString());
+					if (!InSimulation.Contains(Guid))
 					{
 						UE_LOG(
 							LogAGX, Warning,
