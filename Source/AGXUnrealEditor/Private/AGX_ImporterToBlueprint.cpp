@@ -1132,23 +1132,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		const FSimulationObjectCollection& SimulationObjects, SCSNodeCollection& SCSNodes,
 		FAGX_SimObjectsImporterHelper& Helper)
 	{
-		if (SCSNodes.ModelSourceComponent != nullptr)
-		{
-			if (auto* ModelSourceComponent = Cast<UAGX_ModelSourceComponent>(
-					SCSNodes.ModelSourceComponent->ComponentTemplate))
-			{
-				// DeleteRemovedAssets has already been run, which means that Render Materials
-				// removed from the SimulationObjects has also been removed from drive and from
-				// UnrealMaterialToImportGuid. There may still be some materials remaining from the
-				// previous import that we want new Shapes that we find in SimulationObjects to use
-				// so here we load those into the Helper here. Must go via
-				// UnrealMaterialToImportGuid, can't simply browse the Asset Registry, because the
-				// assets themselves don't know their import GUID.
-				Helper.LoadPreviouslyImportedRenderMaterials(
-					ModelSourceComponent->UnrealMaterialToImportGuid);
-			}
-		}
-
 		TArray<FAGX_RenderMaterial> Materials = CollectRenderMaterials(SimulationObjects);
 		for (FAGX_RenderMaterial& Material : Materials)
 		{

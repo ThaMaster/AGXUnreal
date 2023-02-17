@@ -71,14 +71,6 @@ class UStaticMesh;
 struct FAGX_SimObjectsImporterHelper
 {
 public:
-	/**
-	 * Populate RestoredRenderMaterials with the Materials listed in UnrealMaterialToImportGuid.
-	 * This will make those Materials available for reuse when importing Shapes and other rendered
-	 * objects.
-	 */
-	void LoadPreviouslyImportedRenderMaterials(
-		const TMap<FString, FGuid>& UnrealMaterialToImportGuid);
-
 	/** Create a new UAGX_RigidBodyComponent in the given actor. */
 	UAGX_RigidBodyComponent* InstantiateBody(const FRigidBodyBarrier& Barrier, AActor& Owner);
 
