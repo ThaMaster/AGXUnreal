@@ -2051,6 +2051,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 						UE_LOG(
 							LogAGX, Warning,
 							TEXT("Did not find a match, adding asset to delete list."));
+						// Not part of the current import data, delete the asset.
 						AssetsToDelete.AddUnique(Asset);
 						QueuedForDeletion.Add(Asset);
 					}
@@ -2101,7 +2102,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			CollectFromSimulation(SimulationObjects.GetLockConstraints());
 			CollectFromSimulation(SimulationObjects.GetPrismaticConstraints());
 
-			// Collect Merge Split Thresholds from disk. These are the assets that may need to be
+			// Collect Merge Split Thresholds from drive. These are the assets that may need to be
 			// deleted.
 			const FString AssetsPath = GetImportDirPath(
 				Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
@@ -2119,7 +2120,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				}
 				if (!InSimulation.Contains(Guid))
 				{
-					// Not part of the import data, delete the asset.
+					// Not part of the current import data, delete the asset.
 					AssetsToDelete.Add(Asset);
 				}
 			}
@@ -2128,6 +2129,50 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// We can find Merge Split Thresholds on Constraints, Shapes, and Wires. Constraints are
 		// handled above. Can Shape and Wire thresholds be handled in the same block, or is it
 		// better to handle each type separately?
+
+		// Delete removed Shape Merge Split Thresholds.
+		{
+			// Collect Merge Split Thresholds from the simulation objects.
+			// Any Thresholds we find should not have its asset deleted.
+			TSet<FGuid> InSimulation;
+			TArray<FAnyShapeBarrier> Shapes = SimulationObjects.CollectAllShapes();
+			InSimulation.Reserve(Shapes.Num() + 1);
+			InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
+			for (const FAnyShapeBarrier& Shape : Shapes)
+			{
+				const FShapeContactMergeSplitThresholdsBarrier Thresholds =
+					FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Shape);
+				if (!Thresholds.HasNative())
+				{
+					// Not all Shapes have a Merge Split Thresholds.
+					continue;
+				}
+				InSimulation.Add(Thresholds.GetGuid());
+			}
+
+			// Collect Merge Split Thresholds from drive. These are the assets tha may need to be
+			// deleted.
+			const FString AssetPath = GetImportDirPath(
+				Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
+			TArray<UAGX_ShapeContactMergeSplitThresholds*> Assets =
+				FAGX_EditorUtilities::FindAssets<UAGX_ShapeContactMergeSplitThresholds>(AssetPath);
+
+			// Mark any asset not found among the simulation objects for deletion.
+			for (UAGX_ShapeContactMergeSplitThresholds* Asset : Assets)
+			{
+				const FGuid Guid = Asset->ImportGuid;
+				if (!Guid.IsValid())
+				{
+					// Not an imported asset, do not delete.
+					continue;
+				}
+				if (!InSimulation.Contains(Guid))
+				{
+					// Not part of the current import data, delete the asset.
+					AssetsToDelete.Add(Asset);
+				}
+			}
+		}
 
 		// Delete all render and collision meshes.
 		//
@@ -2254,7 +2299,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				UE_LOG(LogAGX, Warning, TEXT("  Has GUID %s."), *AssetGuid.ToString());
 				if (!InSimulation.Contains(AssetGuid))
 				{
-					// Found an asset that is no longer part of the model. Delete it.
+					// Not part of the current import data, delete the asset.
 					AssetsToDelete.Add(Asset);
 					ModelSourceComponent->UnrealMaterialToImportGuid.Remove(Asset->GetPathName());
 					UE_LOG(LogAGX, Warning, TEXT("  Not among the simulation objects, removing."));
@@ -2296,6 +2341,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 				if (!InSimulation.Contains(Guid))
 				{
+					// Not part of the current import data, delete the asset.
 					AssetsToDelete.Add(Asset);
 				}
 			}
