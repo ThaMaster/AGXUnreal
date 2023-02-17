@@ -16,6 +16,7 @@
 #include "Containers/Array.h"
 
 // Constraints.
+class FAnyConstraintBarrier;
 class FHingeBarrier;
 class FPrismaticBarrier;
 class FBallJointBarrier;
@@ -64,6 +65,8 @@ public:
 
 	TArray<FTrimeshShapeBarrier>& GetTrimeshShapes();
 	const TArray<FTrimeshShapeBarrier>& GetTrimeshShapes() const;
+
+	TArray<FAnyConstraintBarrier> CollectAllConstraints() const;
 
 	TArray<FHingeBarrier>& GetHingeConstraints();
 	const TArray<FHingeBarrier>& GetHingeConstraints() const;

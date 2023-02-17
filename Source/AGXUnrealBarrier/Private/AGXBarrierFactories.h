@@ -10,6 +10,7 @@
 #include "Shapes/CapsuleShapeBarrier.h"
 #include "Shapes/EmptyShapeBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
+#include "Constraints/AnyConstraintBarrier.h"
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
 #include "Constraints/BallJointBarrier.h"
@@ -33,6 +34,7 @@
 namespace agx
 {
 	class RigidBody;
+	class Constraint;
 	class Hinge;
 	class Prismatic;
 	class BallJoint;
@@ -100,6 +102,8 @@ namespace AGXBarrierFactories
 	FCapsuleShapeBarrier CreateCapsuleShapeBarrier(agxCollide::Capsule* Capsule);
 
 	FTrimeshShapeBarrier CreateTrimeshShapeBarrier(agxCollide::Trimesh* Trimesh);
+
+	FAnyConstraintBarrier CreateAnyConstraintBarrier(agx::Constraint* Constraint);
 
 	FHingeBarrier CreateHingeBarrier(agx::Hinge* Hinge);
 

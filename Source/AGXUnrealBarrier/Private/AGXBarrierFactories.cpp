@@ -72,6 +72,11 @@ FTrimeshShapeBarrier AGXBarrierFactories::CreateTrimeshShapeBarrier(agxCollide::
 	return {std::make_unique<FGeometryAndShapeRef>(Trimesh->getGeometry(), Trimesh)};
 }
 
+FAnyConstraintBarrier AGXBarrierFactories::CreateAnyConstraintBarrier(agx::Constraint* Constraint)
+{
+	return {std::make_unique<FConstraintRef>(Constraint)};
+}
+
 FHingeBarrier AGXBarrierFactories::CreateHingeBarrier(agx::Hinge* Hinge)
 {
 	return {std::make_unique<FConstraintRef>(Hinge)};

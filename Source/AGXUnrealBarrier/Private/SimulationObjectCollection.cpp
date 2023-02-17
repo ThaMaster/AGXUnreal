@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_AgxDynamicsObjectsAccess.h"
 #include "AGXBarrierFactories.h"
+#include "Constraints/AnyConstraintBarrier.h"
 #include "Constraints/BallJointBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Constraints/DistanceJointBarrier.h"
@@ -17,6 +18,16 @@
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Vehicle/TrackBarrier.h"
+
+// AGX Dynamics includes.
+#include <BeginAGXIncludes.h>
+#include <agx/Constraint.h>
+#include <agx/Prismatic.h>
+#include <agx/BallJoint.h>
+#include <agx/CylindricalJoint.h>
+#include <agx/DistanceJoint.h>
+#include <agx/LockJoint.h>
+#include <EndAGXIncludes.h>
 
 FSimulationObjectCollection::~FSimulationObjectCollection()
 {
@@ -40,6 +51,8 @@ TArray<FAnyShapeBarrier> FSimulationObjectCollection::CollectAllShapes() const
 		AllShapes.Reserve(AllShapes.Num() + Shapes.Num());
 		for (auto& Shape : Shapes)
 		{
+			// This unpacking/repackaging seems overly complicated. Why can't we just copy the
+			// Barrier into the TArray?
 			agxCollide::Shape* ShapeAGX = FAGX_AgxDynamicsObjectsAccess::GetShapeFrom(&Shape);
 			AllShapes.Add(AGXBarrierFactories::CreateAnyShapeBarrier(ShapeAGX));
 		}
@@ -108,6 +121,29 @@ TArray<FTrimeshShapeBarrier>& FSimulationObjectCollection::GetTrimeshShapes()
 const TArray<FTrimeshShapeBarrier>& FSimulationObjectCollection::GetTrimeshShapes() const
 {
 	return TrimeshShapes;
+}
+
+TArray<FAnyConstraintBarrier> FSimulationObjectCollection::CollectAllConstraints() const
+{
+	TArray<FAnyConstraintBarrier> AllConstraints;
+	auto AddConstraints =  [&AllConstraints](const auto& Constraints)
+	{
+		AllConstraints.Reserve(AllConstraints.Num() + Constraints.Num());
+		for (const auto& Constraint : Constraints)
+		{
+			// This unpacking/repackaging seems overly complicated. Why can't we just copy the
+			// Barrier into the TArray?
+			agx::Constraint* ConstraintAGX = FAGX_AgxDynamicsObjectsAccess::GetFrom(&Constraint);
+			AllConstraints.Add(AGXBarrierFactories::CreateAnyConstraintBarrier(ConstraintAGX));
+		}
+	};
+	AddConstraints(HingeConstraints);
+	AddConstraints(PrismaticConstraints);
+	AddConstraints(BallConstraints);
+	AddConstraints(CylindricalConstraints);
+	AddConstraints(DistanceConstraints);
+	AddConstraints(LockConstraints);
+	return AllConstraints;
 }
 
 TArray<FHingeBarrier>& FSimulationObjectCollection::GetHingeConstraints()
