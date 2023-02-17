@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "Materials/TerrainMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
@@ -199,7 +200,29 @@ int32 FTerrainBarrier::GetGridSizeY() const
 	return static_cast<int32>(GridSize);
 }
 
-void FTerrainBarrier::GetHeights(TArray<float>& Heights) const
+TArray<std::tuple<int32, int32>> FTerrainBarrier::GetModifiedVertices() const
+{
+	check(HasNative());
+
+	const agxCollide::HeightField* HeightField = NativeRef->Native->getHeightField();
+	const size_t SizeXAGX = HeightField->getResolutionX();
+	const size_t SizeYAGX = HeightField->getResolutionY();
+	const int32 SizeX = static_cast<int32>(SizeXAGX);
+	const int32 SizeY = static_cast<int32>(SizeYAGX);
+
+	const auto& ModifiedVerticesAGX = NativeRef->Native->getModifiedVertices();
+	TArray<std::tuple<int32, int32>> ModifiedVertices;
+	ModifiedVertices.Reserve(ModifiedVerticesAGX.size());
+	for (const auto& Index2d : ModifiedVerticesAGX)
+	{
+		ModifiedVertices.Add(std::make_tuple<int32, int32>(
+			static_cast<int32>(Index2d.x()), SizeY - 1 - static_cast<int32>(Index2d.y())));
+	}
+
+	return ModifiedVertices;
+}
+
+void FTerrainBarrier::GetHeights(TArray<float>& Heights, bool bChangesOnly) const
 {
 	check(HasNative());
 	const agxCollide::HeightField* HeightField = NativeRef->Native->getHeightField();
@@ -219,10 +242,8 @@ void FTerrainBarrier::GetHeights(TArray<float>& Heights) const
 		return;
 	}
 
-	int32 SizeX = static_cast<int32>(SizeXAGX);
-	int32 SizeY = static_cast<int32>(SizeYAGX);
-
-	Heights.Reset(SizeX * SizeY);
+	const int32 SizeX = static_cast<int32>(SizeXAGX);
+	const int32 SizeY = static_cast<int32>(SizeYAGX);
 
 	// AGX Dynamics and Unreal have different coordinate systems, so we must
 	// flip the Y axis for the vertex locations.
@@ -252,11 +273,26 @@ void FTerrainBarrier::GetHeights(TArray<float>& Heights) const
 	// the Unreal figure above. Thus, we start by reading the last/top row of
 	// increasing X coordinates, i.e., the row with Y=n-1, from AGX Dynamics'
 	// point of view.
-	for (int32 Y = SizeY - 1; Y >= 0; Y--)
+	if (bChangesOnly)
 	{
-		for (int32 X = 0; X < SizeX; ++X)
+		const auto& ModifiedVerticesAGX = NativeRef->Native->getModifiedVertices();
+		for (const auto& Index2d : ModifiedVerticesAGX)
 		{
-			Heights.Add(ConvertDistanceToUnreal<float>(HeightField->getHeight(X, Y)));
+			int32 I = Index2d.x() + (SizeY - 1 - Index2d.y()) * SizeX;
+			AGX_CHECK(Heights.Num() > I);
+			Heights[I] =
+				ConvertDistanceToUnreal<float>(HeightField->getHeight(Index2d.x(), Index2d.y()));
+		}
+	}
+	else
+	{
+		Heights.Reset(SizeX * SizeY);
+		for (int32 Y = SizeY - 1; Y >= 0; Y--)
+		{
+			for (int32 X = 0; X < SizeX; ++X)
+			{
+				Heights.Add(ConvertDistanceToUnreal<float>(HeightField->getHeight(X, Y)));
+			}
 		}
 	}
 }
