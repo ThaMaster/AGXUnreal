@@ -2150,7 +2150,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				InSimulation.Add(Thresholds.GetGuid());
 			}
 
-			// Collect Merge Split Thresholds from drive. These are the assets tha may need to be
+			// Collect Merge Split Thresholds from drive. These are the assets that may need to be
 			// deleted.
 			const FString AssetPath = GetImportDirPath(
 				Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
@@ -2159,6 +2159,48 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 			// Mark any asset not found among the simulation objects for deletion.
 			for (UAGX_ShapeContactMergeSplitThresholds* Asset : Assets)
+			{
+				const FGuid Guid = Asset->ImportGuid;
+				if (!Guid.IsValid())
+				{
+					// Not an imported asset, do not delete.
+					continue;
+				}
+				if (!InSimulation.Contains(Guid))
+				{
+					// Not part of the current import data, delete the asset.
+					AssetsToDelete.Add(Asset);
+				}
+			}
+		}
+
+		// Delete removed Wire Merge Split Thresholds
+		{
+			TSet<FGuid> InSimulation;
+			const TArray<FWireBarrier>& Wires = SimulationObjects.GetWires();
+			InSimulation.Reserve(Wires.Num() + 1);
+			InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
+			for (const FWireBarrier& Wire : Wires)
+			{
+				const FWireMergeSplitThresholdsBarrier Thresholds =
+					FWireMergeSplitThresholdsBarrier::CreateFrom(Wire);
+				if (!Thresholds.HasNative())
+				{
+					// Not all Wires have a Merge Split Thresholds.
+					continue;
+				}
+				InSimulation.Add(Thresholds.GetGuid());
+			}
+
+			// Collect Merge Split Thresholds from drive. These are the assets that may need to be
+			// deleted.
+			const FString AssetPath = GetImportDirPath(
+				Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
+			TArray<UAGX_WireMergeSplitThresholds*> Assets =
+				FAGX_EditorUtilities::FindAssets<UAGX_WireMergeSplitThresholds>(AssetPath);
+
+			// Mark any asset not found among the simulation objects for deletion.
+			for (UAGX_WireMergeSplitThresholds* Asset : Assets)
 			{
 				const FGuid Guid = Asset->ImportGuid;
 				if (!Guid.IsValid())
