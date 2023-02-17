@@ -1951,6 +1951,14 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 * object collection. Any asset that is found in the SCS collection but not found in the
 	 * simulation object collection is deleted.
 	 *
+	 * The above is a bad idea. If the user has edited the Blueprint to point to some other asset
+	 * unrelated to the imported model then that asset won't be found among the simulation objects
+	 * during model synchronization, since it was never part of the model, and thus deleted. We
+	 * should not delete assets we didn't import. They may be used for other purposes. It is better
+	 * to enumerate the assets in the import folder on drive, those are precisely the assets that
+	 * were imported with the model. The user should not add assets there themselves.
+	 *
+	 *
 	 * Comparison is done on GUID/UUIDs.
 	 *
 	 * Assets of build-in Unreal Engine types, such as Materials, don't have an Import GUID. Those
