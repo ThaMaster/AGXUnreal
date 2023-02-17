@@ -1958,7 +1958,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 * to enumerate the assets in the import folder on drive, those are precisely the assets that
 	 * were imported with the model. The user should not add assets there themselves.
 	 *
-	 *
 	 * Comparison is done on GUID/UUIDs.
 	 *
 	 * Assets of build-in Unreal Engine types, such as Materials, don't have an Import GUID. Those
@@ -1969,6 +1968,30 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 * Mesh assets are currently not comparable, i.e. they can get new triangle data but keep the
 	 * same GUID and we cannot compare triangle by triangle because Unreal Engine modifies them
 	 * when building the Static Mesh asset, so they are always deleted and recreated for now.
+	 *
+	 * General steps:
+	 * - Find all objects in the simulation objects collection.
+	 *   These are the ones whose corresponding assets we want to keep.
+	 * - Find all assets on drive.
+	 *   These are assets that were created during prior imports or synchronizations.
+	 * - Compare the simulation objects and the assets.
+	 *   All assets that don't have a corresponding simulation object is added to the delete list.
+	 * - Do any extra cleanup required for the asset type.
+	 *   Deleting the asset will set references to it to None / nullptr.
+	 *   In some cases we want to avoid that, for example the Contact Materials list in Contact
+	 *   Material Registrar.
+	 *   We handle that by finding such nodes in the SCSNodes list and purging about-to-become-None
+	 *   elements in the node's template component's collection property.
+	 *
+	 * The rest of the steps happens elsewhere, not in DeleteRemovedAssets.
+	 * - Populate Restored... in AGX_SimObjectsImporterHelper.
+	 *   This is done implicitly by the AddOrUpdate... functions in this file.
+	 *   Those functions iterate through the simulation objects and either create a new asset or
+	 *   updates the existing one based on whether or not an assets exists on drive.
+	 *   Both operations are done though the helper, which will add the new or updated asset to
+	 *   Restored... as part of the Instantiate... or UpdateAndSave... functions.
+	 *   There can be no additional assets on drive since this function removed any asset that
+	 *   doesn't have a corresponding simulation object.
 	 */
 	void DeleteRemovedAssets(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
