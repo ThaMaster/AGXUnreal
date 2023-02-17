@@ -1072,6 +1072,14 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		TMap<FGuid, UAGX_ShapeMaterial*> ExistingShapeMaterialsMap =
 			FindAGXAssetComponents<UAGX_ShapeMaterial>(ShapeMaterialDirPath);
 
+		// Synchronize the Shape Material assets, either updating existing ones with new data from
+		// the simulation objects or creating brand new ones for materials we don't have assets
+		// for. Asset deletion for materials removed from the simulation objects has already been
+		// done by DeleteRemovedAssets.
+		//
+		// Regardless of whether we update and save or instantiate a Shape Material, the asset is
+		// registered in RestoredShapeMaterials so that the Shapes that will be added or updated
+		// shortly can find them.
 		for (const auto& Barrier : SimulationObjects.GetShapeMaterials())
 		{
 			const FGuid Guid = Barrier.GetGuid();
