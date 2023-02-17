@@ -37,6 +37,7 @@ TArray<FAnyShapeBarrier> FSimulationObjectCollection::CollectAllShapes() const
 	TArray<FAnyShapeBarrier> AllShapes;
 	auto AddShapes = [&AllShapes](const auto& Shapes)
 	{
+		AllShapes.Reserve(AllShapes.Num() + Shapes.Num());
 		for (auto& Shape : Shapes)
 		{
 			agxCollide::Shape* ShapeAGX = FAGX_AgxDynamicsObjectsAccess::GetShapeFrom(&Shape);
@@ -56,6 +57,7 @@ TArray<FAnyShapeBarrier> FSimulationObjectCollection::CollectAllShapes() const
 		AddShapes(Body.GetCapsuleShapes());
 		AddShapes(Body.GetTrimeshShapes());
 	}
+	return AllShapes;
 }
 
 TArray<FSphereShapeBarrier>& FSimulationObjectCollection::GetSphereShapes()
