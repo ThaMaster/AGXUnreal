@@ -2464,7 +2464,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			GetModelDirectoryFromAsset(&BaseBP));
 
 		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Deleting old assets"));
-		DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, Settings);
+		//DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, Settings);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Deleting old Components"));
 		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects, Settings);
