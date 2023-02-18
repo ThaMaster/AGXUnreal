@@ -205,8 +205,30 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 
 namespace
 {
+	bool IsUniqueTemplateComponentName(UActorComponent& Component, const FString& Name)
+	{
+		UObject* ExistingObject =
+			StaticFindObject(/*Class=*/nullptr, Component.GetOuter(), *Name, true);
+
+		if (ExistingObject != nullptr)
+		{
+			UE_LOG(LogAGX, Warning, TEXT("CRAP %s %s"), *Component.GetName(), *Name);
+			return false;
+		}
+
+		for (auto Instance: FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		{
+			if (Instance != nullptr &&
+				Instance->HasAllFlags(RF_ArchetypeObject | RF_InheritableComponentTemplate))
+			{
+				return IsUniqueSuperName(*Instance, Name);
+			}
+		}
+		return true;
+	}
+
 	FString GetUniqueNameForComponentTemplate(
-		const UActorComponent& Component, const FString& WantedName)
+		UActorComponent& Component, const FString& WantedName)
 	{
 		AGX_CHECK(FAGX_ObjectUtilities::IsTemplateComponent(Component));
 		FString Name = WantedName;
@@ -223,7 +245,7 @@ namespace
 		}
 
 		auto IsUniqueName =
-			[](const FString& InName, UBlueprint& Blueprint, const UActorComponent& InComponent)
+			[](const FString& InName, UBlueprint& Blueprint, UActorComponent& InComponent)
 		{
 			if (Blueprint.SimpleConstructionScript->FindSCSNode(FName(InName)) != nullptr)
 			{
@@ -232,27 +254,13 @@ namespace
 
 			// This is a similar check as in UObject::Rename(). Normally, we expect to never get a
 			// match below since no SCS Node has this name (according to above check), but in some
-			// corner case there was an unexpected crash caused by an object being found with the
+			// cases there was an unexpected crash caused by an object being found with the
 			// wanted name. The reason is not clear, perhaps some lingering, removed object not yet
 			// destroyed?
-			// We do this as a precaution, and log a warning since it is unexpected.
 			// See the comment in AGX_ImporterToBlueprint.cpp - RemoveDeletedComponents() which is
 			// related to this.
 			const FString TemplateName = InName + UActorComponent::ComponentTemplateNameSuffix;
-			UObject* Existing =
-				StaticFindObject(nullptr, InComponent.GetOuter(), *TemplateName, true);
-			if (Existing != nullptr)
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Unexpectedly found other object named '%s' while trying to assign this "
-						 "name to Component '%s'. The Component will get a "
-						 "name suffix to ensure it is unique."),
-					*Existing->GetName(), *InComponent.GetName());
-				return false;
-			}
-
-			return true;
+			return IsUniqueTemplateComponentName(InComponent, TemplateName);
 		};
 
 		while (!IsUniqueName(Name, *Bp, Component))
