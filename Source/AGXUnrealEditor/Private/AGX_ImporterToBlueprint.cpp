@@ -2361,6 +2361,19 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		RemoveDeletedConstraints(BaseBP, SCSNodes, SimulationObjects);
 		RemoveDeletedTireModels(BaseBP, SCSNodes, SimulationObjects);
 		RemoveDeletedObserverFrames(BaseBP, SCSNodes, SimulationObjects);
+
+		// The fact that we compile the Blueprint here is important, and the reason complicated.
+		// Apparently, when removing SCS Nodes, their Component Template (and archetype instances)
+		// may linger on for unknown reasons.
+		// This in turn may trigger a crash if a new Component is renamed the same name as one of
+		// the removed Components, because the removed Components will (unexpectedly) show up in a
+		// uniqueness-test in UObject::Rename. Engine code does a complicated dance around this in
+		// several places to ensure removed Nodes are not lingering, causing issues, see for example
+		// SSCSEditor::RemoveComponentNode (UE 5.1).
+		// This dance is done to get rid of the removed Component(s) without having to trigger a
+		// re-compile of the Blueprint. Instead of doing this dance ourselves, we simply do a
+		// Compile, which is not too costly and will clean up any lingering objects for us.
+		FKismetEditorUtilities::CompileBlueprint(&BaseBP);
 	}
 
 	// Set unset/unique names on (almost) all SCS Nodes to avoid future name collisions during

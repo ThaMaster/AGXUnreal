@@ -94,99 +94,6 @@ namespace
 	{
 		return FAGX_ObjectUtilities::SaveAsset(Asset);
 	}
-
-	/*
-	 * Renames given template Component and also updates any archetype instances. Only updates the
-	 * archetype instance if it's name matches the original template Component name.
-	 */
-	void RenameTemplateComponentSafe(UActorComponent* Component, const FString& Name)
-	{
-		if (Component == nullptr)
-			return;
-
-		const FString OrigComponentRegularName =
-			FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Component->GetName());
-
-		for (auto Inst : FAGX_ObjectUtilities::GetArchetypeInstances(*Component))
-		{
-			if (FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Inst->GetName()) !=
-				OrigComponentRegularName)
-			{
-				continue;
-			}
-
-			RenameTemplateComponentSafe(Inst, Name);
-			const FString FinalName =
-				Inst->GetName().EndsWith(UActorComponent::ComponentTemplateNameSuffix)
-					? Name + UActorComponent::ComponentTemplateNameSuffix
-					: Name;
-			if (Inst->Rename(*FinalName, nullptr, REN_Test))
-			{
-				Inst->Rename(*FinalName);
-			}
-			else
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Tried to rename Archetype Instance Component '%s' '%s' but was unable "
-						 "to."),
-					*Inst->GetName(), *Name);
-			}
-		}
-
-		const FString FinalName =
-			Component->GetName().EndsWith(UActorComponent::ComponentTemplateNameSuffix)
-				? Name + UActorComponent::ComponentTemplateNameSuffix
-				: Name;
-		if (Component->Rename(*FinalName, nullptr, REN_Test))
-		{
-			Component->Rename(*FinalName);
-		}
-		else
-		{
-			UE_LOG(
-				LogAGX, Warning, TEXT("Tried to rename Component '%s' '%s' but was unable to."),
-				*Component->GetName(), *Name);
-		}
-	}
-
-	/*
-	 * Solves issue where some Component's sometimes lists an archetype instance that does not
-	 * belong to it, causing the regular re-name to crash. It does this by calling
-	 * RenameTemplateComponentSafe that only renames archetype instances with matching original
-	 * name. The reason for the issue is not yet known unfortunately, so this was a last-resort type
-	 * of fix.
-	 */
-	void RenameSCSNodeSafe(USCS_Node* Node, const FString& Name)
-	{
-		if (Node == nullptr || Node->ComponentTemplate == nullptr)
-			return;
-
-		const FString OrigComponentRegularName =
-			FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Node->ComponentTemplate->GetName());
-
-		bool HasUnmatchedInstances = false;
-		for (auto Inst : FAGX_ObjectUtilities::GetArchetypeInstances(*Node->ComponentTemplate))
-		{
-			if (FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Inst->GetName()) !=
-				OrigComponentRegularName)
-			{
-				HasUnmatchedInstances = true;
-			}
-		}
-
-		if (HasUnmatchedInstances)
-		{
-			// Do it the "safe" but unconventional way.
-			Node->SetVariableName(FName(Name), false);
-			RenameTemplateComponentSafe(Node->ComponentTemplate, Name);
-		}
-		else
-		{
-			// Do it the regular way.
-			Node->SetVariableName(FName(Name), true);
-		}
-	}
 }
 
 FString FAGX_ImportUtilities::CreatePackagePath(FString FileName, FString AssetType)
@@ -315,7 +222,40 @@ namespace
 			return Component.GetName() + FGuid::NewGuid().ToString();
 		}
 
-		while (Bp->SimpleConstructionScript->FindSCSNode(FName(Name)) != nullptr)
+		auto IsUniqueName =
+			[](const FString& InName, UBlueprint& Blueprint, const UActorComponent& InComponent)
+		{
+			if (Blueprint.SimpleConstructionScript->FindSCSNode(FName(InName)) != nullptr)
+			{
+				return false;
+			}
+
+			// This is a similar check as in UObject::Rename(). Normally, we expect to never get a
+			// match below since no SCS Node has this name (according to above check), but in some
+			// corner case there was an unexpected crash caused by an object being found with the
+			// wanted name. The reason is not clear, perhaps some lingering, removed object not yet
+			// destroyed?
+			// We do this as a precaution, and log a warning since it is unexpected.
+			// See the comment in AGX_ImporterToBlueprint.cpp - RemoveDeletedComponents() which is
+			// related to this.
+			const FString TemplateName = InName + UActorComponent::ComponentTemplateNameSuffix;
+			UObject* Existing =
+				StaticFindObject(nullptr, InComponent.GetOuter(), *TemplateName, true);
+			if (Existing != nullptr)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Unexpectedly found other object named '%s' while trying to assign this "
+						 "name to Component '%s'. The Component will get a "
+						 "name suffix to ensure it is unique."),
+					*Existing->GetName(), *InComponent.GetName());
+				return false;
+			}
+
+			return true;
+		};
+
+		while (!IsUniqueName(Name, *Bp, Component))
 		{
 			Name = FString::Printf(TEXT("%s%d"), *WantedName, suffix++);
 		}
@@ -562,7 +502,17 @@ void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Nam
 
 		USCS_Node* Node =
 			FAGX_BlueprintUtilities::GetSCSNodeFromComponent(*Bp, &Component, false).FoundNode;
-		RenameSCSNodeSafe(Node, FinalName);
+		if (Node == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unable to set name '%s' for Component '%s' because the owning SCS Node could "
+					 "not be retrieved. The Component will not be renamed."),
+				*FinalName, *Component.GetName());
+			return;
+		}
+
+		Node->SetVariableName(FName(FinalName), true);
 	}
 	else
 	{
