@@ -24,7 +24,6 @@ private:
 	void OnForceOverwritePropertiesClicked(ECheckBoxState NewCheckedState);
 	void OnForceReassignRenderMaterialsClicked(ECheckBoxState NewCheckedState);
 
-	bool bIgnoreDisabledTrimesh = true;
 	bool bForceOverwriteProperties = false;
 	bool bForceReassignRenderMaterials = false;
 };
