@@ -221,7 +221,7 @@ namespace
 			if (Instance != nullptr &&
 				Instance->HasAllFlags(RF_ArchetypeObject | RF_InheritableComponentTemplate))
 			{
-				return IsUniqueSuperName(*Instance, Name);
+				return IsUniqueTemplateComponentName(*Instance, Name);
 			}
 		}
 		return true;
