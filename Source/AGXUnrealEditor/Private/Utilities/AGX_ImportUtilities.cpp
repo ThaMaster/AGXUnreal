@@ -216,7 +216,7 @@ namespace
 			return false;
 		}
 
-		for (auto Instance: FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
 			if (Instance != nullptr &&
 				Instance->HasAllFlags(RF_ArchetypeObject | RF_InheritableComponentTemplate))
@@ -227,8 +227,7 @@ namespace
 		return true;
 	}
 
-	FString GetUniqueNameForComponentTemplate(
-		UActorComponent& Component, const FString& WantedName)
+	FString GetUniqueNameForComponentTemplate(UActorComponent& Component, const FString& WantedName)
 	{
 		AGX_CHECK(FAGX_ObjectUtilities::IsTemplateComponent(Component));
 		FString Name = WantedName;
@@ -268,6 +267,100 @@ namespace
 			Name = FString::Printf(TEXT("%s%d"), *WantedName, suffix++);
 		}
 		return Name;
+	}
+
+	/*
+	 * Renames given template Component and also updates any archetype instances. Only updates the
+	 * archetype instance if it's name matches the original template Component name.
+	 */
+	void RenameTemplateComponentSafe(UActorComponent* Component, const FString& Name)
+	{
+		if (Component == nullptr)
+			return;
+
+		const FString OrigComponentRegularName =
+			FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Component->GetName());
+
+		for (auto Inst : FAGX_ObjectUtilities::GetArchetypeInstances(*Component))
+		{
+			if (FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Inst->GetName()) !=
+				OrigComponentRegularName)
+			{
+				continue;
+			}
+
+			RenameTemplateComponentSafe(Inst, Name);
+			const FString FinalName =
+				Inst->GetName().EndsWith(UActorComponent::ComponentTemplateNameSuffix)
+					? Name + UActorComponent::ComponentTemplateNameSuffix
+					: Name;
+			if (Inst->Rename(*FinalName, nullptr, REN_Test))
+			{
+				Inst->Rename(*FinalName);
+			}
+			else
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Tried to rename Archetype Instance Component '%s' '%s' but was unable "
+						 "to."),
+					*Inst->GetName(), *Name);
+			}
+		}
+
+		const FString FinalName =
+			Component->GetName().EndsWith(UActorComponent::ComponentTemplateNameSuffix)
+				? Name + UActorComponent::ComponentTemplateNameSuffix
+				: Name;
+		if (Component->Rename(*FinalName, nullptr, REN_Test))
+		{
+			Component->Rename(*FinalName);
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("Tried to rename Component '%s' '%s' but was unable to."),
+				*Component->GetName(), *Name);
+		}
+	}
+
+	/*
+	 * Solves issue where some Component's sometimes lists an archetype instance that does not
+	 * belong to it, causing the regular re-name to crash. It does this by calling
+	 * RenameTemplateComponentSafe that only renames archetype instances with matching original
+	 * name. The reason for the issue is not yet known unfortunately, so this was a last-resort type
+	 * of fix.
+	 */
+	void RenameSCSNodeSafe(USCS_Node* Node, const FString& Name)
+	{
+		if (Node == nullptr || Node->ComponentTemplate == nullptr)
+			return;
+
+		const FString OrigComponentRegularName =
+			FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(
+				Node->ComponentTemplate->GetName());
+
+		bool HasUnmatchedInstances = false;
+		for (auto Inst : FAGX_ObjectUtilities::GetArchetypeInstances(*Node->ComponentTemplate))
+		{
+			if (FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Inst->GetName()) !=
+				OrigComponentRegularName)
+			{
+				HasUnmatchedInstances = true;
+			}
+		}
+
+		if (HasUnmatchedInstances)
+		{
+			// Do it the "safe" but unconventional way.
+			Node->SetVariableName(FName(Name), false);
+			RenameTemplateComponentSafe(Node->ComponentTemplate, Name);
+		}
+		else
+		{
+			// Do it the regular way.
+			Node->SetVariableName(FName(Name), true);
+		}
 	}
 
 	// This is to some extent mimicking the behavior of
@@ -520,7 +613,7 @@ void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Nam
 			return;
 		}
 
-		Node->SetVariableName(FName(FinalName), true);
+		RenameSCSNodeSafe(Node, FinalName);
 	}
 	else
 	{
