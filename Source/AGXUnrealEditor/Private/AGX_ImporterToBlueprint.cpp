@@ -1263,10 +1263,38 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			SCSNodes.RenderStaticMeshComponents.Add(RenderDataGuid, RenderDataNode);
 		}
 
-		Helper.UpdateRenderDataComponent(
-			ShapeBarrier, RenderDataBarrier,
-			*Cast<UStaticMeshComponent>(RenderDataNode->ComponentTemplate),
-			Settings.bForceOverwriteProperties, Settings.bForceReassignRenderMaterials);
+		if (&AttachParent == BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode() ||
+			Cast<UAGX_RigidBodyComponent>(AttachParent.ComponentTemplate) != nullptr)
+		{
+			// The RenderData Static Mesh Component is attached directly to the root or a
+			// RigidBody. This is common when using the setting IgnoreDisableTrimesh.
+			// In this case, we have to override the (relative) Transform of the Static Mesh
+			// Component to take this fact into account.
+			FTransform RenderDataTransform = FTransform::Identity;
+			{
+				FVector ShapePosition;
+				FQuat ShapeRotation;
+				std::tie(ShapePosition, ShapeRotation) =
+					ShapeBarrier.GetLocalPositionAndRotation();
+				const FTransform ShapeTransform(ShapeRotation, ShapePosition);
+				const FTransform ShapeToGeometry =
+					ShapeBarrier.GetGeometryToShapeTransform().Inverse();
+				FTransform::Multiply(&RenderDataTransform, &ShapeToGeometry, &ShapeTransform);
+			}
+
+			Helper.UpdateRenderDataComponent(
+				ShapeBarrier, RenderDataBarrier,
+				*Cast<UStaticMeshComponent>(RenderDataNode->ComponentTemplate),
+				Settings.bForceOverwriteProperties, Settings.bForceReassignRenderMaterials,
+				&RenderDataTransform);
+		}
+		else
+		{
+			Helper.UpdateRenderDataComponent(
+				ShapeBarrier, RenderDataBarrier,
+				*Cast<UStaticMeshComponent>(RenderDataNode->ComponentTemplate),
+				Settings.bForceOverwriteProperties, Settings.bForceReassignRenderMaterials);
+		}
 	}
 
 	void AddOrUpdateRigidBodiesAndOwnedShapes(
