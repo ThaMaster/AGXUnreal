@@ -56,7 +56,7 @@ public:
 	FWireMergeSplitThresholdsBarrier GetWireMergeSplitThresholds() const;
 
 	/*
-	 * This Barrier may not have a Native at the time of calling BindToNewOwner.
+	 * This Barrier should not have a Native at the time of calling BindToNewOwner.
 	 * Ensure it is released prior.
 	 */
 	void BindToNewOwner(FRigidBodyBarrier& NewOwner);
@@ -65,6 +65,9 @@ public:
 	void BindToNewOwner(FWireBarrier& NewOwner);
 
 private:
+	template <typename T>
+	void BindToNewOwnerImpl(T& NewOwner);
+
 	FMergeSplitPropertiesBarrier& operator=(const FMergeSplitPropertiesBarrier& Other) = delete;
 
 	std::unique_ptr<FMergeSplitPropertiesPtr> NativePtr;
