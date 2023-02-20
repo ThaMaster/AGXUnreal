@@ -99,7 +99,8 @@ bool FAGX_BlueprintUtilities::NameExists(UBlueprint& Blueprint, const FString& N
 	return Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name)) != nullptr;
 }
 
-FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(const USceneComponent* Component)
+FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(
+	const USceneComponent* Component)
 {
 	using namespace AGX_BlueprintUtilities_helpers;
 	if (Component == nullptr)
@@ -247,7 +248,12 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 
 	const FTransform NewRelTransform = Transform.GetRelativeTransform(ParentWorldTransform);
 	Component->Modify();
-	Component->SetRelativeTransform(NewRelTransform);
+
+	// SetRelativeTransform does not always work for Component templates. Probably due to
+	// parent/child hierarchies not being setup and SetRelativeTransform does some world transform
+	// calculations internally. Therefore we use the SetRelativeLocation/Rotation explicitly here.
+	Component->SetRelativeLocation(NewRelTransform.GetLocation());
+	Component->SetRelativeRotation(NewRelTransform.GetRotation());
 
 	if (!UpdateArchetypeInstances)
 	{
@@ -265,7 +271,7 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 		// Only write to the Archetype Instances if they are currently in sync with this
 		// template.
 		if (ForceOverwriteInstances || (Instance->GetRelativeLocation() == OrigRelLocation &&
-			Instance->GetRelativeRotation() == OrigRelRotation))
+										Instance->GetRelativeRotation() == OrigRelRotation))
 		{
 			Instance->Modify();
 			Instance->SetRelativeLocation(Component->GetRelativeLocation());
@@ -295,7 +301,12 @@ void FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(
 	const FRotator OrigRelRotation = Component.GetRelativeRotation();
 
 	Component.Modify();
-	Component.SetRelativeTransform(Transform);
+
+	// SetRelativeTransform does not always work for Component templates. Probably due to
+	// parent/child hierarchies not being setup and SetRelativeTransform does some world transform
+	// calculations internally. Therefore we use the SetRelativeLocation/Rotation explicitly here.
+	Component->SetRelativeLocation(NewRelTransform.GetLocation());
+	Component->SetRelativeRotation(NewRelTransform.GetRotation());
 
 	if (!UpdateArchetypeInstances)
 	{
@@ -309,7 +320,7 @@ void FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(
 		// Only write to the Archetype Instances if they are currently in sync with this
 		// template.
 		if (ForceOverwriteInstances || (Instance->GetRelativeLocation() == OrigRelLocation &&
-			Instance->GetRelativeRotation() == OrigRelRotation))
+										Instance->GetRelativeRotation() == OrigRelRotation))
 		{
 			Instance->Modify();
 			Instance->SetRelativeLocation(Component.GetRelativeLocation());

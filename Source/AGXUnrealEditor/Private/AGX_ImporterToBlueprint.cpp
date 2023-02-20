@@ -1167,9 +1167,46 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		return NewNode;
 	}
 
+	// Makes Node a child of NewParent. Ensures that the Component world transform is unchanged,
+	// i.e. the relative transform might.
+	void ReParentNode(
+		UBlueprint& BaseBP, USCS_Node& Node, USceneComponent& Component, USCS_Node& NewParent)
+	{
+
+		if (Node.GetVariableName().ToString().Contains("484A3169F"))
+		{
+			UE_LOG(LogAGX, Warning, TEXT("ye"));
+		}
+		USCS_Node* OldParent = BaseBP.SimpleConstructionScript->FindParentNode(&Node);
+		if (OldParent == &NewParent)
+		{
+			return; // The parent is already correct. We are done.
+		}
+
+		const FTransform OrigTransform =
+			FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(&Component);
+
+		if (OldParent != nullptr)
+		{
+			OldParent->RemoveChildNode(&Node);
+		}
+
+		NewParent.AddChildNode(&Node);
+
+		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
+			&Component, OrigTransform, true);
+	}
+
+	// Makes Node a child of NewParent. The relative transform of any SceneComponent of Node will
+	// not change.
 	void ReParentNode(UBlueprint& BaseBP, USCS_Node& Node, USCS_Node& NewParent)
 	{
 		USCS_Node* OldParent = BaseBP.SimpleConstructionScript->FindParentNode(&Node);
+		if (OldParent == &NewParent)
+		{
+			return; // The parent is already correct. We are done.
+		}
+
 		if (OldParent != nullptr)
 		{
 			OldParent->RemoveChildNode(&Node);
@@ -1227,7 +1264,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		if (ExistingShapes.Contains(Guid))
 		{
 			Node = ExistingShapes[Guid];
-			ReParentNode(BaseBP, *Node, *AttachParent);
+			ReParentNode(BaseBP, *Node, *Cast<USceneComponent>(Node->ComponentTemplate), *AttachParent);
 		}
 		else
 		{
@@ -1263,7 +1300,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 			// Render Data may need to re-parent in the case that this model was imported with a
 			// different import setting for "Ignore Disabled Trimeshes" than the original import.
-			ReParentNode(BaseBP, *RenderDataNode, AttachParent);
+			ReParentNode(
+				BaseBP, *RenderDataNode, *Cast<USceneComponent>(RenderDataNode->ComponentTemplate),
+				AttachParent);
 		}
 		else
 		{
@@ -1637,7 +1676,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			if (SCSNodes.ObserverFrames.Contains(Guid))
 			{
 				ObserverNode = SCSNodes.ObserverFrames[Guid];
-				ReParentNode(BaseBP, *ObserverNode, *AttachParent);
+				ReParentNode(
+					BaseBP, *ObserverNode, *Cast<USceneComponent>(ObserverNode->ComponentTemplate),
+					*AttachParent);
 			}
 			else
 			{
@@ -2464,7 +2505,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			GetModelDirectoryFromAsset(&BaseBP));
 
 		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Deleting old assets"));
-		//DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, Settings);
+		// DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, Settings);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Deleting old Components"));
 		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects, Settings);
