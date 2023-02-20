@@ -1172,11 +1172,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void ReParentNode(
 		UBlueprint& BaseBP, USCS_Node& Node, USceneComponent& Component, USCS_Node& NewParent)
 	{
-
-		if (Node.GetVariableName().ToString().Contains("484A3169F"))
-		{
-			UE_LOG(LogAGX, Warning, TEXT("ye"));
-		}
 		USCS_Node* OldParent = BaseBP.SimpleConstructionScript->FindParentNode(&Node);
 		if (OldParent == &NewParent)
 		{
