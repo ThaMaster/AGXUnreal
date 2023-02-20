@@ -212,7 +212,6 @@ namespace
 
 		if (ExistingObject != nullptr)
 		{
-			UE_LOG(LogAGX, Warning, TEXT("CRAP %s %s"), *Component.GetName(), *Name);
 			return false;
 		}
 
