@@ -1167,49 +1167,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		return NewNode;
 	}
 
-	// Makes Node a child of NewParent. Ensures that the Component world transform is unchanged,
-	// i.e. the relative transform might.
-	void ReParentNode(
-		UBlueprint& BaseBP, USCS_Node& Node, USceneComponent& Component, USCS_Node& NewParent)
-	{
-		USCS_Node* OldParent = BaseBP.SimpleConstructionScript->FindParentNode(&Node);
-		if (OldParent == &NewParent)
-		{
-			return; // The parent is already correct. We are done.
-		}
-
-		const FTransform OrigTransform =
-			FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(&Component);
-
-		if (OldParent != nullptr)
-		{
-			OldParent->RemoveChildNode(&Node);
-		}
-
-		NewParent.AddChildNode(&Node);
-
-		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
-			&Component, OrigTransform, true);
-	}
-
-	// Makes Node a child of NewParent. The relative transform of any SceneComponent of Node will
-	// not change.
-	void ReParentNode(UBlueprint& BaseBP, USCS_Node& Node, USCS_Node& NewParent)
-	{
-		USCS_Node* OldParent = BaseBP.SimpleConstructionScript->FindParentNode(&Node);
-		if (OldParent == &NewParent)
-		{
-			return; // The parent is already correct. We are done.
-		}
-
-		if (OldParent != nullptr)
-		{
-			OldParent->RemoveChildNode(&Node);
-		}
-
-		NewParent.AddChildNode(&Node);
-	}
-
 	void AddOrUpdateContactMaterials(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
@@ -1259,7 +1216,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		if (ExistingShapes.Contains(Guid))
 		{
 			Node = ExistingShapes[Guid];
-			ReParentNode(BaseBP, *Node, *Cast<USceneComponent>(Node->ComponentTemplate), *AttachParent);
+			FAGX_BlueprintUtilities::ReParentNode(BaseBP, *Node, *AttachParent, true);
 		}
 		else
 		{
@@ -1295,9 +1252,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 			// Render Data may need to re-parent in the case that this model was imported with a
 			// different import setting for "Ignore Disabled Trimeshes" than the original import.
-			ReParentNode(
-				BaseBP, *RenderDataNode, *Cast<USceneComponent>(RenderDataNode->ComponentTemplate),
-				AttachParent);
+			FAGX_BlueprintUtilities::ReParentNode(BaseBP, *RenderDataNode, AttachParent, true);
 		}
 		else
 		{
@@ -1671,9 +1626,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			if (SCSNodes.ObserverFrames.Contains(Guid))
 			{
 				ObserverNode = SCSNodes.ObserverFrames[Guid];
-				ReParentNode(
-					BaseBP, *ObserverNode, *Cast<USceneComponent>(ObserverNode->ComponentTemplate),
-					*AttachParent);
+				FAGX_BlueprintUtilities::ReParentNode(BaseBP, *ObserverNode, *AttachParent, true);
 			}
 			else
 			{

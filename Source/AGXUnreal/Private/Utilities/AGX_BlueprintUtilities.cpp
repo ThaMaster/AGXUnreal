@@ -305,8 +305,8 @@ void FAGX_BlueprintUtilities::SetTemplateComponentRelativeTransform(
 	// SetRelativeTransform does not always work for Component templates. Probably due to
 	// parent/child hierarchies not being setup and SetRelativeTransform does some world transform
 	// calculations internally. Therefore we use the SetRelativeLocation/Rotation explicitly here.
-	Component->SetRelativeLocation(NewRelTransform.GetLocation());
-	Component->SetRelativeRotation(NewRelTransform.GetRotation());
+	Component.SetRelativeLocation(Transform.GetLocation());
+	Component.SetRelativeRotation(Transform.GetRotation());
 
 	if (!UpdateArchetypeInstances)
 	{
@@ -429,4 +429,49 @@ UBlueprint* FAGX_BlueprintUtilities::GetBlueprintFrom(const UActorComponent& Com
 
 	return Bpgc->SimpleConstructionScript->GetBlueprint();
 }
+
+void FAGX_BlueprintUtilities::ReParentNode(
+	UBlueprint& Blueprint, USCS_Node& Node, USCS_Node& NewParent, bool PreserveWorldTransform)
+{
+	if (Blueprint.SimpleConstructionScript == nullptr)
+		return;
+
+	USCS_Node* OldParent = Blueprint.SimpleConstructionScript->FindParentNode(&Node);
+	if (OldParent == &NewParent)
+	{
+		return; // The parent is already correct. We are done.
+	}
+
+	USceneComponent* Component =
+		PreserveWorldTransform ? Cast<USceneComponent>(Node.ComponentTemplate) : nullptr;
+
+	if (PreserveWorldTransform && Component == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("ReParentNode was called with PreserveWorldTransform for SCS Node '%s', but the "
+				 "ComponentTemplate owned by the SCS Node was not a USceneComponent. The world "
+				 "transform will not be preserved."), *Node.GetVariableName().ToString());
+	}
+
+	const FTransform OrigTransform = [PreserveWorldTransform, Component]()
+	{
+		if (PreserveWorldTransform && Component)
+			return FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(Component);
+		return FTransform::Identity;
+	}();
+
+	if (OldParent != nullptr)
+	{
+		OldParent->RemoveChildNode(&Node);
+	}
+
+	NewParent.AddChildNode(&Node);
+
+	if (PreserveWorldTransform && Component != nullptr)
+	{
+		SetTemplateComponentWorldTransform(Component, OrigTransform, true);
+	}
+}
+
 #endif // WITH_EDITOR
