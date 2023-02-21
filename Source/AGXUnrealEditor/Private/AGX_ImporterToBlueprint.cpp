@@ -1961,6 +1961,15 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
+	/*
+	 * Here follows a set of functions that deal with removing assets from the model import
+	 * directory. Assets are deleted either because the corresponding AGX Dynamics object no longer
+	 * exists in the new import, or because we currently can't reliably detect and synchronize
+	 * changes in the asset type so we always delete and reimport assets of that type.
+	 *
+	 * The main entry point to these functions is DeleteRemovedAssets.
+	 */
+
 	void DeleteRemovedMergeSplitThresholdsAssets(
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
 		TArray<UObject*>& AssetsToDelete)
@@ -2395,6 +2404,10 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
 	}
+
+	/*
+	 * End of asset deletion functions.
+	 */
 
 	// Removes Components that are not present in the new SimulationObjectCollection, meaning they
 	// were deleted from the source file since the previous import. The passed SCSNodes will also
