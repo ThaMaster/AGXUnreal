@@ -2130,7 +2130,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// handled above. Can Shape and Wire thresholds be handled in the same block, or is it
 		// better to handle each type separately?
 
-		// Delete removed Shape Merge Split Thresholds.
+		// Delete removed Shape Contact Merge Split Thresholds.
 		{
 			// Collect Merge Split Thresholds from the simulation objects.
 			// Any Thresholds we find should not have its asset deleted.
@@ -2356,6 +2356,16 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					AssetsToDelete.Add(Asset);
 				}
 			}
+		}
+
+		// Currently do not support model synchronization of Terrain, but when we do implement
+		// Terrain Material removed asset deletion here.
+		{
+		}
+
+		// Currently do not support model synchronization of Track, but when we do implement
+		// Track Properties and Track Internal Merge Properties removed asset deletion here.
+		{
 		}
 
 		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
