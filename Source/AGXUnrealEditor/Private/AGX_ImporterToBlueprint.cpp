@@ -2164,6 +2164,46 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
+	void DeleteRemovedShapeMaterialAssets(
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
+		TArray<UObject*>& AssetsToDelete)
+	{
+		// Delete removed Shape Materials.
+		{
+			// Create a quick-lookup collection of the Shape Materials we want to keep.
+			TSet<FGuid> InSimulation;
+			for (const FShapeMaterialBarrier& Barrier : SimulationObjects.GetShapeMaterials())
+			{
+				InSimulation.Add(Barrier.GetGuid());
+			}
+
+			// Find all Shape Material assets currently in the import folder, some of which we
+			// want to remove.
+			const FString ShapeMaterialDirPath = GetImportDirPath(
+				Helper, FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName());
+			TArray<UAGX_ShapeMaterial*> Assets =
+				FAGX_EditorUtilities::FindAssets<UAGX_ShapeMaterial>(ShapeMaterialDirPath);
+
+			// Mark for deletion any asset that we don't want to keep, i.e. that isn't among the
+			// simulation objects.
+			for (UAGX_ShapeMaterial* Asset : Assets)
+			{
+				const FGuid Guid = Asset->ImportGuid;
+				if (Guid == FGuid())
+				{
+					// This isn't an imported asset but something the user put there themselves.
+					// Don't touch.
+					continue;
+				}
+
+				if (!InSimulation.Contains(Guid))
+				{
+					// Not part of the current import data, delete the asset.
+					AssetsToDelete.Add(Asset);
+				}
+			}
+		}
+	}
 
 	void DeleteRemovedRenderMaterialAssets(
 		SCSNodeCollection& SCSNodes, const FSimulationObjectCollection& SimulationObjects,
@@ -2345,42 +2385,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		DeleteRemovedMergeSplitThresholdsAssets(SimulationObjects, Helper, AssetsToDelete);
 		DeleteAllImportedStaticMeshAssets(Helper, AssetsToDelete);
 		DeleteRemovedRenderMaterialAssets(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
-
-		// Delete removed Shape Materials.
-		{
-			// Create a quick-lookup collection of the Shape Materials we want to keep.
-			TSet<FGuid> InSimulation;
-			for (const FShapeMaterialBarrier& Barrier : SimulationObjects.GetShapeMaterials())
-			{
-				InSimulation.Add(Barrier.GetGuid());
-			}
-
-			// Find all Shape Material assets currently in the import folder, some of which we
-			// want to remove.
-			const FString ShapeMaterialDirPath = GetImportDirPath(
-				Helper, FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName());
-			TArray<UAGX_ShapeMaterial*> Assets =
-				FAGX_EditorUtilities::FindAssets<UAGX_ShapeMaterial>(ShapeMaterialDirPath);
-
-			// Mark for deletion any asset that we don't want to keep, i.e. that isn't among the
-			// simulation objects.
-			for (UAGX_ShapeMaterial* Asset : Assets)
-			{
-				const FGuid Guid = Asset->ImportGuid;
-				if (Guid == FGuid())
-				{
-					// This isn't an imported asset but something the user put there themselves.
-					// Don't touch.
-					continue;
-				}
-
-				if (!InSimulation.Contains(Guid))
-				{
-					// Not part of the current import data, delete the asset.
-					AssetsToDelete.Add(Asset);
-				}
-			}
-		}
+		DeleteRemovedShapeMaterialAssets(SimulationObjects, Helper, AssetsToDelete);
 
 		// Currently do not support model synchronization of Terrain, but when we do implement
 		// Terrain Material removed asset deletion here.
