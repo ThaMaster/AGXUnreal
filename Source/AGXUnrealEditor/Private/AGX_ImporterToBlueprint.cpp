@@ -1274,8 +1274,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				FVector ShapePosition;
 				FQuat ShapeRotation;
-				std::tie(ShapePosition, ShapeRotation) =
-					ShapeBarrier.GetLocalPositionAndRotation();
+				std::tie(ShapePosition, ShapeRotation) = ShapeBarrier.GetLocalPositionAndRotation();
 				const FTransform ShapeTransform(ShapeRotation, ShapePosition);
 				const FTransform ShapeToGeometry =
 					ShapeBarrier.GetGeometryToShapeTransform().Inverse();
