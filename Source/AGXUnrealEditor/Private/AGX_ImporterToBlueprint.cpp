@@ -1970,143 +1970,72 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 * The main entry point to these functions is DeleteRemovedAssets.
 	 */
 
+	template <typename UAGX_Thresholds, typename FObjectBarrier, typename FGetThresholds>
+	void DoDeleteRemovedMergeSplitThresholdsAssets(
+		const TArray<FObjectBarrier>& Objects, FGetThresholds GetThresholds,
+		const FString& AssetPath, TArray<UObject*>& AssetsToDelete)
+	{
+		// Collect Merge Split Thresholds from the simulation objects.
+		// Any Thresholds we find should not have its asset deleted.
+		TSet<FGuid> InSimulation;
+		InSimulation.Reserve(Objects.Num() + 1);
+		InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
+		for (const FObjectBarrier& Object : Objects)
+		{
+			const FMergeSplitThresholdsBarrier& Thresholds = GetThresholds(Object);
+			if (!Thresholds.HasNative())
+			{
+				// Not all objects have a Merge Split Thresholds.
+				continue;
+			}
+			InSimulation.Add(Thresholds.GetGuid());
+		}
+
+		// Collect Merge Split Thresholds assets from drive. These are the assets that may need to
+		// be deleted.
+		TArray<UAGX_Thresholds*> Assets =
+			FAGX_EditorUtilities::FindAssets<UAGX_Thresholds>(AssetPath);
+
+		// Mark any asset not found among the simulation objects for deletion.
+		for (UAGX_Thresholds* Asset : Assets)
+		{
+			const FGuid Guid = Asset->ImportGuid;
+			if (!Guid.IsValid())
+			{
+				// Not an imported asset, do not delete.
+				continue;
+			}
+			if (!InSimulation.Contains(Guid))
+			{
+				// Not part of the current import data, delete the asset.
+				AssetsToDelete.Add(Asset);
+			}
+		}
+	}
+
 	void DeleteRemovedMergeSplitThresholdsAssets(
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
 		TArray<UObject*>& AssetsToDelete)
 	{
-		// Delete removed Constraint Merge Split Thresholds.
-		{
-			// Collect Merge Split Thresholds from the simulation objects.
-			// Any Threshold we find should not have its asset deleted.
-			TSet<FGuid> InSimulation;
-			TArray<FAnyConstraintBarrier> Constraints = SimulationObjects.CollectAllConstraints();
-			InSimulation.Reserve(Constraints.Num() + 1);
-			InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
-			for (FAnyConstraintBarrier& Constraint : Constraints)
-			{
-				const FConstraintMergeSplitThresholdsBarrier Thresholds =
-					FConstraintMergeSplitThresholdsBarrier::CreateFrom(Constraint);
-				if (!Thresholds.HasNative())
-				{
-					// Not all Constraints have a Merge Split Thresholds.
-					continue;
-				}
-				InSimulation.Add(Thresholds.GetGuid());
-			}
+		const FString AssetPath = GetImportDirPath(
+			Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
 
-			// Collect Merge Split Thresholds from drive. These are the assets that may need to be
-			// deleted.
-			const FString AssetsPath = GetImportDirPath(
-				Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
-			TArray<UAGX_ConstraintMergeSplitThresholds*> Assets =
-				FAGX_EditorUtilities::FindAssets<UAGX_ConstraintMergeSplitThresholds>(AssetsPath);
+		DoDeleteRemovedMergeSplitThresholdsAssets<UAGX_ConstraintMergeSplitThresholds>(
+			SimulationObjects.CollectAllConstraints(),
+			[](const FAnyConstraintBarrier& Constraint)
+			{ return FConstraintMergeSplitThresholdsBarrier::CreateFrom(Constraint); },
+			AssetPath, AssetsToDelete);
 
-			// Mark any asset not found among the simulation objects for deletion.
-			for (UAGX_ConstraintMergeSplitThresholds* Asset : Assets)
-			{
-				const FGuid Guid = Asset->ImportGuid;
-				if (!Guid.IsValid())
-				{
-					// Not an imported asset, do not delete.
-					continue;
-				}
-				if (!InSimulation.Contains(Guid))
-				{
-					// Not part of the current import data, delete the asset.
-					AssetsToDelete.Add(Asset);
-				}
-			}
-		}
+		DoDeleteRemovedMergeSplitThresholdsAssets<UAGX_ShapeContactMergeSplitThresholds>(
+			SimulationObjects.CollectAllShapes(),
+			[](const FAnyShapeBarrier& Shape)
+			{ return FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Shape); },
+			AssetPath, AssetsToDelete);
 
-		// We can find Merge Split Thresholds on Constraints, Shapes, and Wires. Constraints are
-		// handled above. Can Shape and Wire thresholds be handled in the same block, or is it
-		// better to handle each type separately?
-
-		// Delete removed Shape Contact Merge Split Thresholds.
-		{
-			// Collect Merge Split Thresholds from the simulation objects.
-			// Any Thresholds we find should not have its asset deleted.
-			TSet<FGuid> InSimulation;
-			TArray<FAnyShapeBarrier> Shapes = SimulationObjects.CollectAllShapes();
-			InSimulation.Reserve(Shapes.Num() + 1);
-			InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
-			for (const FAnyShapeBarrier& Shape : Shapes)
-			{
-				const FShapeContactMergeSplitThresholdsBarrier Thresholds =
-					FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Shape);
-				if (!Thresholds.HasNative())
-				{
-					// Not all Shapes have a Merge Split Thresholds.
-					continue;
-				}
-				InSimulation.Add(Thresholds.GetGuid());
-			}
-
-			// Collect Merge Split Thresholds from drive. These are the assets that may need to be
-			// deleted.
-			const FString AssetPath = GetImportDirPath(
-				Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
-			TArray<UAGX_ShapeContactMergeSplitThresholds*> Assets =
-				FAGX_EditorUtilities::FindAssets<UAGX_ShapeContactMergeSplitThresholds>(AssetPath);
-
-			// Mark any asset not found among the simulation objects for deletion.
-			for (UAGX_ShapeContactMergeSplitThresholds* Asset : Assets)
-			{
-				const FGuid Guid = Asset->ImportGuid;
-				if (!Guid.IsValid())
-				{
-					// Not an imported asset, do not delete.
-					continue;
-				}
-				if (!InSimulation.Contains(Guid))
-				{
-					// Not part of the current import data, delete the asset.
-					AssetsToDelete.Add(Asset);
-				}
-			}
-		}
-
-		// Delete removed Wire Merge Split Thresholds
-		{
-			TSet<FGuid> InSimulation;
-			const TArray<FWireBarrier>& Wires = SimulationObjects.GetWires();
-			InSimulation.Reserve(Wires.Num() + 1);
-			InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
-			for (const FWireBarrier& Wire : Wires)
-			{
-				const FWireMergeSplitThresholdsBarrier Thresholds =
-					FWireMergeSplitThresholdsBarrier::CreateFrom(Wire);
-				if (!Thresholds.HasNative())
-				{
-					// Not all Wires have a Merge Split Thresholds.
-					continue;
-				}
-				InSimulation.Add(Thresholds.GetGuid());
-			}
-
-			// Collect Merge Split Thresholds from drive. These are the assets that may need to be
-			// deleted.
-			const FString AssetPath = GetImportDirPath(
-				Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
-			TArray<UAGX_WireMergeSplitThresholds*> Assets =
-				FAGX_EditorUtilities::FindAssets<UAGX_WireMergeSplitThresholds>(AssetPath);
-
-			// Mark any asset not found among the simulation objects for deletion.
-			for (UAGX_WireMergeSplitThresholds* Asset : Assets)
-			{
-				const FGuid Guid = Asset->ImportGuid;
-				if (!Guid.IsValid())
-				{
-					// Not an imported asset, do not delete.
-					continue;
-				}
-				if (!InSimulation.Contains(Guid))
-				{
-					// Not part of the current import data, delete the asset.
-					AssetsToDelete.Add(Asset);
-				}
-			}
-		}
+		DoDeleteRemovedMergeSplitThresholdsAssets<UAGX_WireMergeSplitThresholds>(
+			SimulationObjects.GetWires(),
+			[](const FWireBarrier& Wire) { return FWireMergeSplitThresholdsBarrier::CreateFrom(Wire); },
+			AssetPath, AssetsToDelete);
 	}
 
 	void DeleteRemovedContactMaterialAssets(
@@ -2529,7 +2458,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			GetModelDirectoryFromAsset(&BaseBP));
 
 		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Deleting old assets"));
-		// DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, Settings);
+		DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, Settings);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Deleting old Components"));
 		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects, Settings);
