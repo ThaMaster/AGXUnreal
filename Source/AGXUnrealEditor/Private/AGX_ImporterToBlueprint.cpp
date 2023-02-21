@@ -2389,13 +2389,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		// Currently do not support model synchronization of Terrain, but when we do implement
 		// Terrain Material removed asset deletion here.
-		{
-		}
 
 		// Currently do not support model synchronization of Track, but when we do implement
 		// Track Properties and Track Internal Merge Properties removed asset deletion here.
-		{
-		}
 
 		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
 	}
