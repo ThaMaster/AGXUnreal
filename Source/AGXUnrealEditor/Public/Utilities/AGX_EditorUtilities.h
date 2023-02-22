@@ -57,11 +57,11 @@ class UWorld;
 class AGXUNREALEDITOR_API FAGX_EditorUtilities
 {
 public:
+
 	/**
 	 * Utility function for starting a model synchronization, with GUI Window etc.
-	 * Returns true if the model synchronization was succesful, false otherwise.
 	 */
-	static bool SynchronizeModel(UBlueprint& Blueprint);
+	static void SynchronizeModel(UBlueprint& Blueprint);
 
 	/**
 	 * Renames an existing and previously saved asset. WantedName will be sanitized and if there

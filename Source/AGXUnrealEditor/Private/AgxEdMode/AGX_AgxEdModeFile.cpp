@@ -95,13 +95,13 @@ void UAGX_AgxEdModeFile::ExportAgxArchive()
 	}
 }
 
-bool UAGX_AgxEdModeFile::SynchronizeModel_BP(UObject* Bp)
+void UAGX_AgxEdModeFile::SynchronizeModel_BP(UObject* Bp)
 {
 	UBlueprint* Blueprint = Cast<UBlueprint>(Bp);
 	if (Blueprint == nullptr)
-		return false;
+		return;
 
-	return FAGX_EditorUtilities::SynchronizeModel(*Blueprint);
+	FAGX_EditorUtilities::SynchronizeModel(*Blueprint);
 }
 
 FText UAGX_AgxEdModeFile::GetDisplayName() const

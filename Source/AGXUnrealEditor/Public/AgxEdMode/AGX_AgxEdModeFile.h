@@ -29,5 +29,5 @@ public:
 	static void ExportAgxArchive();
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	static bool SynchronizeModel_BP(UObject* Blueprint);
+	static void SynchronizeModel_BP(UObject* Blueprint);
 };

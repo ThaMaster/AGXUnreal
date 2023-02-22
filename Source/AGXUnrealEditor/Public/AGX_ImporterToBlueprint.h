@@ -30,8 +30,11 @@ namespace AGX_ImporterToBlueprint
 	 * @param BaseBP - The Blueprint (base) containing the ModelSourceComponent.
 	 * @param Settings - Struct containing all information needed to perform the
 	 * synchronization.
+	 * @param OpenBlueprint (Optional) - If this function was called from the details panel of a
+	 * component inside a Blueprint, this Blueprint should be passed here. Can be a child of BaseBP.
 	 * @return True if the Model synchronization was successful, false otherwise.
 	 */
 	AGXUNREALEDITOR_API bool SynchronizeModel(
-		UBlueprint& BaseBP, const FAGX_SynchronizeModelSettings& Settings);
+		UBlueprint& BaseBP, const FAGX_SynchronizeModelSettings& Settings,
+		UBlueprint* OpenBlueprint = nullptr);
 }

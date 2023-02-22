@@ -32,6 +32,7 @@
 // Unreal Engine includes.
 #include "AssetDeleteModel.h"
 #include "AssetToolsModule.h"
+#include "Containers/Ticker.h"
 #include "DesktopPlatformModule.h"
 #include "Editor.h"
 #include "EditorStyleSet.h"
@@ -57,67 +58,84 @@
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
-bool FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint)
+void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint)
 {
-	UBlueprint* OuterMostParent = FAGX_BlueprintUtilities::GetOutermostParent(&Blueprint);
-
-	if (OuterMostParent == nullptr)
-	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Could not get the original parent Blueprint. Model synchronization will not be "
-			"performed.");
-		return false;
-	}
-
-	// Ensure there exists a Model Source Component.
-	UAGX_ModelSourceComponent* ModelSourceComponent =
-		FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ModelSourceComponent>(
-			OuterMostParent);
-	if (ModelSourceComponent == nullptr)
-	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Could not find an AGX Model Source Component in the selected Blueprint. The selected "
-			"Blueprint is not valid for Model Synchronization.");
-		return false;
-	}
-
-	// Open up the import settings Window to get user import settings.
-	TSharedRef<SWindow> Window =
-		SNew(SWindow)
-			.SupportsMinimize(false)
-			.SupportsMaximize(false)
-			.SizingRule(ESizingRule::Autosized)
-			.Title(NSLOCTEXT(
-				"AGX", "AGXUnrealSynchronizeModel", "Synchronize model with source file"));
-
-	const FString FilePath = ModelSourceComponent != nullptr ? ModelSourceComponent->FilePath : "";
-	const bool IgnoreDisabledTrimeshes =
-		ModelSourceComponent != nullptr ? ModelSourceComponent->bIgnoreDisabledTrimeshes : false;
-
-	TSharedRef<SAGX_SynchronizeModelDialog> SynchronizeDialog = SNew(SAGX_SynchronizeModelDialog);
-	SynchronizeDialog->SetFilePath(FilePath);
-	SynchronizeDialog->SetIgnoreDisabledTrimeshes(IgnoreDisabledTrimeshes);
-	SynchronizeDialog->RefreshGui();
-	Window->SetContent(SynchronizeDialog);
-	FSlateApplication::Get().AddModalWindow(Window, nullptr);
-
-	if (auto Settings = SynchronizeDialog->ToSynchronizeModelSettings())
-	{
-		const static FString Info =
-			"Model synchronization may permanently remove or overwrite existing data.\nContinue?";
-		if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) !=
-			EAppReturnType::Yes)
+	// The reason we use FTSTicker here is to ensure that this function returns before we do the
+	// actual Model Synchronization. This is important because we close all asset editors before
+	// doing the Model Synchronization, and if this function was called from the details panel of
+	// the ModelSourceComponent, it may cause issues since it lives in the context of the blueprint
+	// editor (which will be closed).
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+	FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
+#else
+	FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
+#endif
+		[&Blueprint](float)
 		{
-			return false;
-		}
+			UBlueprint* OuterMostParent = FAGX_BlueprintUtilities::GetOutermostParent(&Blueprint);
 
-		if (AGX_ImporterToBlueprint::SynchronizeModel(*OuterMostParent, *Settings))
-		{
-			SaveAndCompile(Blueprint);
-		}
-	}
+			if (OuterMostParent == nullptr)
+			{
+				FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+					"Could not get the original parent Blueprint. Model synchronization will not "
+					"be "
+					"performed.");
+				return false;
+			}
 
-	return true;
+			// Ensure there exists a Model Source Component.
+			UAGX_ModelSourceComponent* ModelSourceComponent =
+				FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ModelSourceComponent>(
+					OuterMostParent);
+			if (ModelSourceComponent == nullptr)
+			{
+				FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+					"Could not find an AGX Model Source Component in the selected Blueprint. The "
+					"selected "
+					"Blueprint is not valid for Model Synchronization.");
+				return false;
+			}
+
+			// Open up the import settings Window to get user import settings.
+			TSharedRef<SWindow> Window =
+				SNew(SWindow)
+					.SupportsMinimize(false)
+					.SupportsMaximize(false)
+					.SizingRule(ESizingRule::Autosized)
+					.Title(NSLOCTEXT(
+						"AGX", "AGXUnrealSynchronizeModel", "Synchronize model with source file"));
+
+			const FString FilePath =
+				ModelSourceComponent != nullptr ? ModelSourceComponent->FilePath : "";
+			const bool IgnoreDisabledTrimeshes =
+				ModelSourceComponent != nullptr ? ModelSourceComponent->bIgnoreDisabledTrimeshes
+												: false;
+
+			TSharedRef<SAGX_SynchronizeModelDialog> SynchronizeDialog =
+				SNew(SAGX_SynchronizeModelDialog);
+			SynchronizeDialog->SetFilePath(FilePath);
+			SynchronizeDialog->SetIgnoreDisabledTrimeshes(IgnoreDisabledTrimeshes);
+			SynchronizeDialog->RefreshGui();
+			Window->SetContent(SynchronizeDialog);
+			FSlateApplication::Get().AddModalWindow(Window, nullptr);
+
+			const static FString Info =
+				"Model synchronization may permanently remove or overwrite existing "
+				"data.\nAll asset editors will be closed.\nContinue?";
+			if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) !=
+				EAppReturnType::Yes)
+			{
+				return false;
+			}
+
+			if (auto Settings = SynchronizeDialog->ToSynchronizeModelSettings())
+			{
+				// Logging done in AGX_ImporterToBlueprint::SynchronizeModel.
+				AGX_ImporterToBlueprint::SynchronizeModel(*OuterMostParent, *Settings, &Blueprint);
+			}
+
+			return false; // This tells the FTSTicker to not call this lambda again.
+		}));
 }
 
 bool FAGX_EditorUtilities::RenameAsset(
@@ -642,13 +660,6 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 	// Let everyone know that these assets are about to disappear, so they can clear any references
 	// they may have to the assets.
 	FEditorDelegates::OnAssetsPreDelete.Broadcast(ObjectsToDelete);
-
-	/// @todo I don't see why I would need to do this, but it seems to fix the crash in
-	/// FEditorViewportClient.
-	for (UObject* Object : ObjectsToDelete)
-	{
-		NullReferencesToObject(Object);
-	}
 
 	// The delete model helps us find references to the deleted assets.
 	/// \todo Engine code creates a shared pointer here. Is that necessary?
@@ -1593,8 +1604,8 @@ FString FAGX_EditorUtilities::SelectExistingFileDialog(
 	// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html
 	TArray<FString> Filenames;
 	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
-		nullptr, DialogTitle, StartDir, TEXT("DefaultFile"), FileTypes,
-		EFileDialogFlags::None, Filenames);
+		nullptr, DialogTitle, StartDir, TEXT("DefaultFile"), FileTypes, EFileDialogFlags::None,
+		Filenames);
 	if (!FileSelected || Filenames.Num() == 0)
 	{
 		UE_LOG(LogAGX, Log, TEXT("No %s file selected. Doing nothing."), *FileExtension);
@@ -1633,8 +1644,8 @@ FString FAGX_EditorUtilities::SelectExistingDirectoryDialog(
 }
 
 FString FAGX_EditorUtilities::SelectNewFileDialog(
-	const FString& DialogTitle, const FString& FileTypes,
-	const FString& DefaultFile, const FString& InStartDir)
+	const FString& DialogTitle, const FString& FileTypes, const FString& DefaultFile,
+	const FString& InStartDir)
 {
 	TArray<FString> Filenames;
 	bool FileSelected = FDesktopPlatformModule::Get()->SaveFileDialog(
