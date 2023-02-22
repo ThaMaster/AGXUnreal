@@ -121,7 +121,8 @@ void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint)
 
 			const static FString Info =
 				"Model synchronization may permanently remove or overwrite existing "
-				"data.\nAll asset editors will be closed.\nContinue?";
+				"data.\nIt is recommended to always backup your imported models.\n\nAll asset "
+				"editors will be closed.\nContinue?";
 			if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) !=
 				EAppReturnType::Yes)
 			{
