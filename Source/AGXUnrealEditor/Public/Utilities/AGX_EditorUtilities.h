@@ -325,8 +325,8 @@ public:
 		const FString& DialogTitle, const FString& InStartDir = "", bool AllowNoneSelected = false);
 
 	static FString SelectNewFileDialog(
-		const FString& DialogTitle, const FString& FileTypes,
-		const FString& DefaultFile = "", const FString& InStartDir = "");
+		const FString& DialogTitle, const FString& FileTypes, const FString& DefaultFile = "",
+		const FString& InStartDir = "");
 
 	static const ISlateStyle& GetStyle()
 	{
@@ -400,30 +400,21 @@ TArray<T*> FAGX_EditorUtilities::FindAssets(const FString& AssetDirPath)
 		FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 	TArray<FAssetData> AssetData;
 	FARFilter Filter;
-#if UE_VERSION_OLDER_THAN(5, 1, 0)
-	Filter.ClassNames.Add(FName(T::StaticClass()->GetName()));
-#else
-	FTopLevelAssetPath ClassPathName =
-		UClass::TryConvertShortTypeNameToPathName<UStruct>(T::StaticClass()->GetName());
-	if (ClassPathName.IsNull())
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Unable to convert Class name '%s' to path name. FindAssets failed."),
-			*T::StaticClass()->GetName());
-		return Assets;
-	}
-
-	Filter.ClassPaths.Add(ClassPathName);
-#endif
 	Filter.PackagePaths.Add(FName(AssetDirPath));
 	AssetRegistryModule.Get().GetAssets(Filter, AssetData);
 
 	for (const FAssetData& Data : AssetData)
 	{
-		if (T* Asset = Cast<T>(Data.GetAsset()))
+		// It is possible to instead use the ClassPath/ClassName in the FARFilter to filter out the
+		// asset types of interest, however that approach does not support filtering using base
+		// classes of assets which is an annoying limitation. So instead, we get all assets (above)
+		// in the directory passed to this function and then filter them ourselves to support
+		// finding assets that derives from a certain base class as well.
+		UObject* FoundAsset = Data.GetAsset();
+		if (FoundAsset != nullptr && FoundAsset->IsA<T>())
 		{
-			Assets.Add(Asset);
+			if (T* Asset = Cast<T>(FoundAsset))
+				Assets.Add(Asset);
 		}
 	}
 
