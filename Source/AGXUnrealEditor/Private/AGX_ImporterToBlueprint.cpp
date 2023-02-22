@@ -2488,8 +2488,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 bool AGX_ImporterToBlueprint::SynchronizeModel(
 	UBlueprint& BaseBP, const FAGX_SynchronizeModelSettings& Settings, UBlueprint* OpenBlueprint)
 {
-	// During Model Synchronization, old assets are deleted and references to these assets
-	// are
+	// During Model Synchronization, old assets are deleted and references to these assets are
 	// automatically cleared. Having the Blueprint Editor opened while doing this causes
 	// crashing during this process and the exact reason why is not clear. So we solve this
 	// by closing all asset editors here first.
