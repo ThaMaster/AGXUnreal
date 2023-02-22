@@ -218,6 +218,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		Dictionary<string, LibSource> LinkLibFiles = new Dictionary<string, LibSource>();
 		LinkLibFiles.Add("agxPhysics", LibSource.AGX);
 		LinkLibFiles.Add("agxCore", LibSource.AGX);
+		LinkLibFiles.Add("agxHydraulics", LibSource.AGX);
 		LinkLibFiles.Add("agxSabre", LibSource.AGX);
 		LinkLibFiles.Add("agxTerrain", LibSource.AGX);
 		LinkLibFiles.Add("agxCable", LibSource.AGX);
