@@ -68,7 +68,7 @@ public: // Properties.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "AGX Dynamics", Meta = (DisplayName = "Number of Threads"))
-	int32 NumThreads = 1;
+	int32 NumThreads = 4;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetNumThreads(int32 InNumThreads);
