@@ -1036,6 +1036,12 @@ UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 UMaterialInterface* FAGX_SimObjectsImporterHelper::InstantiateRenderMaterial(
 	const FAGX_RenderMaterial& Barrier)
 {
+	if (UMaterialInstanceConstant* ProcessedMat = ProcessedRenderMaterials.FindRef(Barrier.Guid))
+	{
+		// This Render Material has already been processed before, simply return it.
+		return ProcessedMat;
+	}
+
 	UMaterial* Base = LoadObject<UMaterial>(
 		nullptr, TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'"));
 	if (Base == nullptr)
