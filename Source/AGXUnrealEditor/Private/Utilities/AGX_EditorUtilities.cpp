@@ -119,18 +119,18 @@ void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint)
 			Window->SetContent(SynchronizeDialog);
 			FSlateApplication::Get().AddModalWindow(Window, nullptr);
 
-			const static FString Info =
-				"Model synchronization may permanently remove or overwrite existing "
-				"data.\nIt is recommended to always backup your imported models.\n\nAll asset "
-				"editors will be closed.\nContinue?";
-			if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) !=
-				EAppReturnType::Yes)
-			{
-				return false;
-			}
-
 			if (auto Settings = SynchronizeDialog->ToSynchronizeModelSettings())
 			{
+				const static FString Info =
+					"Model synchronization may permanently remove or overwrite existing "
+					"data.\nIt is recommended to always backup your imported models.\n\nAll asset "
+					"editors will be closed.\nContinue?";
+				if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) !=
+					EAppReturnType::Yes)
+				{
+					return false;
+				}
+
 				// Logging done in AGX_ImporterToBlueprint::SynchronizeModel.
 				AGX_ImporterToBlueprint::SynchronizeModel(*OuterMostParent, *Settings, &Blueprint);
 			}
