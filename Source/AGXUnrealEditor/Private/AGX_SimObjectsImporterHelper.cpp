@@ -59,8 +59,10 @@
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
+#include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
+#include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "MeshDescription.h"
 #include "Misc/Paths.h"
@@ -114,68 +116,6 @@ namespace
 		return Material->GetName();
 	}
 
-	UMaterialInterface* CreateRenderMaterialInstance(
-		const FAGX_RenderMaterial& RenderMaterial, const FString& DirectoryName,
-		TMap<FGuid, UMaterialInstanceConstant*>& ProcessedRenderMaterials)
-	{
-		const FGuid Guid = RenderMaterial.Guid;
-		const FString MaterialName =
-			RenderMaterial.Name.IsNone()
-				? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
-				: RenderMaterial.Name.ToString();
-		UMaterialInterface* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
-			RenderMaterial, DirectoryName, MaterialName);
-		if (Material == nullptr)
-		{
-			// Both asset creation and default material load failed. That's bad.
-			return nullptr;
-		}
-
-		// Check if we got a new Material Instance, or if we fell back to the default material.
-		if (UMaterialInstanceConstant* Instance = Cast<UMaterialInstanceConstant>(Material))
-		{
-			// This is a new Material Instance, store it in the cache.
-			ProcessedRenderMaterials.Add(Guid, Instance);
-		}
-
-		return Material;
-	}
-
-	/**
-	 * Convert an AGX Dynamics Render Material to an Unreal Engine Render Material and store it
-	 * as an asset in the given directory. Will cache and reuse Render Materials if the same one
-	 * is passed multiple times. Will fall back to the base import material if asset creation
-	 * fails. Will return nullptr if the base import material can't be loaded.
-	 *
-	 * If a new Render Material is created then it is created as a Material Instance Constant
-	 * from the base import material.
-	 *
-	 * @param RenderMaterial The AGX Dynamics Material to convert to an Unreal Engine Material.
-	 * @param DirectoryName The name of the directory where this imported model's assets are stored.
-	 * @param ProcessedRenderMaterials Cache of Processed Render Materials.
-	 * @return The Unreal Engine material for the AGX Dynamics material, or the base material, or
-	 * nullptr.
-	 */
-	UMaterialInterface* GetOrCreateRenderMaterialInstance(
-		const FAGX_RenderMaterial& RenderMaterial, const FString& DirectoryName,
-		TMap<FGuid, UMaterialInstanceConstant*>& ProcessedRenderMaterials)
-	{
-		const FGuid Guid = RenderMaterial.Guid;
-
-		// Have we seen this render material before?
-		if (UMaterialInstanceConstant** It = ProcessedRenderMaterials.Find(Guid))
-		{
-			// Yes, used the cached Material Instance.
-			return *It;
-		}
-		else
-		{
-			// This is a new material. Save it as an asset and in the cache.
-			return CreateRenderMaterialInstance(
-				RenderMaterial, DirectoryName, ProcessedRenderMaterials);
-		}
-	}
-
 	UMaterial* GetDefaultRenderMaterial(bool bIsSensor)
 	{
 		const TCHAR* AssetPath =
@@ -190,21 +130,6 @@ namespace
 				(bIsSensor ? TEXT(" sensor") : TEXT("")), AssetPath);
 		}
 		return Material;
-	}
-
-	void SetDefaultRenderMaterial(UMeshComponent& Component, bool bIsSensor)
-	{
-		UMaterial* Material = GetDefaultRenderMaterial(bIsSensor);
-		if (Material == nullptr)
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Could not set render material on imported shape '%s'. Could not load the "
-					 "default render material"),
-				*Component.GetName());
-			return;
-		}
-		Component.SetMaterial(0, Material);
 	}
 
 	/**
@@ -287,31 +212,6 @@ namespace
 			ProcessedMeshes.Add(Guid, Asset);
 		}
 		return Asset;
-	}
-
-	/*
-	 * Creates a RenderMaterial from a RenderDataBarrier if it has a material. Otherwise returns
-	 * the default RenderMaterial.
-	 */
-	UMaterialInterface* CreateRenderMaterialFromRenderDataOrDefault(
-		const FRenderDataBarrier& RenderDataBarrier, bool IsSensor, const FString& DirectoryName,
-		TMap<FGuid, UMaterialInstanceConstant*>& ProcessedRenderMaterials)
-	{
-		// Create the RenderMaterial (if any).
-		// Convert Render Data Material, if there is one. May fall back to the base import Material,
-		// and may also fail completely, leaving RenderDataMaterial being nullptr.
-		UMaterialInterface* RenderDataMaterial = nullptr;
-		if (RenderDataBarrier.HasMaterial() && GIsEditor)
-		{
-			RenderDataMaterial = GetOrCreateRenderMaterialInstance(
-				RenderDataBarrier.GetMaterial(), DirectoryName, ProcessedRenderMaterials);
-		}
-		else
-		{
-			RenderDataMaterial = GetDefaultRenderMaterial(IsSensor);
-		}
-
-		return RenderDataMaterial;
 	}
 
 	FString CreateMergeSplitThresholdsAssetName(EAGX_AmorOwningType OwningType, const FGuid& Guid)
@@ -754,11 +654,19 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 		Component, FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString());
 
 	UMaterialInterface* RenderMaterial = nullptr;
-	if (ShapeBarrier.HasRenderData())
+	if (ShapeBarrier.HasRenderMaterial())
 	{
-		RenderMaterial = CreateRenderMaterialFromRenderDataOrDefault(
-			ShapeBarrier.GetRenderData(), ShapeBarrier.GetIsSensor(), DirectoryName,
-			ProcessedRenderMaterials);
+		FAGX_RenderMaterial RMBarrier = ShapeBarrier.GetRenderMaterial();
+		const FGuid RMGuid = RMBarrier.Guid;
+		RenderMaterial = ProcessedRenderMaterials.FindRef(RMGuid);
+		if (RenderMaterial == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Expected to find processed render material with GUID '%s' from Shape '%s' "
+					 "but it was not avaiable. The render material will not be set."),
+				*RMGuid.ToString(), *ShapeBarrier.GetName());
+		}
 	}
 	else
 	{
@@ -838,10 +746,19 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 	}
 
 	UMaterialInterface* RenderMaterial = nullptr;
-	if (Barrier.HasRenderData())
+	if (Barrier.HasRenderMaterial())
 	{
-		RenderMaterial = CreateRenderMaterialFromRenderDataOrDefault(
-			Barrier.GetRenderData(), Barrier.GetIsSensor(), DirectoryName, ProcessedRenderMaterials);
+		FAGX_RenderMaterial RMBarrier = Barrier.GetRenderMaterial();
+		const FGuid RMGuid = RMBarrier.Guid;
+		RenderMaterial = ProcessedRenderMaterials.FindRef(RMGuid);
+		if (RenderMaterial == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Expected to find processed render material with GUID '%s' from Shape '%s' "
+					 "but it was not avaiable. The render material will not be set."),
+				*RMGuid.ToString(), *Barrier.GetName());
+		}
 	}
 	else
 	{
@@ -1009,13 +926,28 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 
 	UMaterialInterface* OriginalRenderMaterial = Component.GetMaterial(0);
 
-	// We always create a new Render Material because it is not trivial to determine if the original
-	// render material corresponds to the data in the RenderDataBarrier.
-	UMaterialInterface* NewRenderMaterial = CreateRenderMaterialFromRenderDataOrDefault(
-		RenderDataBarrier, ShapeBarrier.GetIsSensor(), DirectoryName, ProcessedRenderMaterials);
-	UStaticMesh* NewMeshAsset = nullptr;
+	UMaterialInterface* NewRenderMaterial = nullptr;
+	if (RenderDataBarrier.HasMaterial())
+	{
+		FAGX_RenderMaterial RMBarrier = RenderDataBarrier.GetMaterial();
+		const FGuid RMGuid = RMBarrier.Guid;
+		NewRenderMaterial = ProcessedRenderMaterials.FindRef(RMGuid);
+		if (NewRenderMaterial == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Expected to find processed render material with GUID '%s' from Shape '%s' "
+					 "but it was not avaiable. The render material will not be set."),
+				*RMGuid.ToString(), *ShapeBarrier.GetName());
+		}
+	}
+	else
+	{
+		NewRenderMaterial = GetDefaultRenderMaterial(ShapeBarrier.GetIsSensor());
+	}
 
 	UStaticMesh* OriginalMeshAsset = Component.GetStaticMesh();
+	UStaticMesh* NewMeshAsset = nullptr;
 	if (IsMeshEquivalent(RenderDataBarrier, OriginalMeshAsset))
 	{
 		NewMeshAsset = OriginalMeshAsset;
@@ -1101,15 +1033,61 @@ UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	return Asset;
 }
 
-UMaterialInstanceConstant* FAGX_SimObjectsImporterHelper::GetRenderMaterial(const FGuid& Guid)
-{
-	return ProcessedRenderMaterials.FindRef(Guid);
-}
-
 UMaterialInterface* FAGX_SimObjectsImporterHelper::InstantiateRenderMaterial(
-	FAGX_RenderMaterial& Material)
+	const FAGX_RenderMaterial& Barrier)
 {
-	return CreateRenderMaterialInstance(Material, DirectoryName, ProcessedRenderMaterials);
+	UMaterial* Base = LoadObject<UMaterial>(
+		nullptr, TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'"));
+	if (Base == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not load parent material for imported AGX Dynamics render materials."));
+		return nullptr;
+	}
+	UMaterialInstanceConstantFactoryNew* Factory = NewObject<UMaterialInstanceConstantFactoryNew>();
+	Factory->InitialParent = Base;
+
+	const FGuid Guid = Barrier.Guid;
+	const FString MaterialName = Barrier.Name.IsNone()
+									 ? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
+									 : Barrier.Name.ToString();
+
+	FString AssetName = FAGX_ImportUtilities::CreateAssetName(
+		MaterialName, TEXT("ImportedAGXDynamicsMaterial"),
+		FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
+
+	FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(
+		DirectoryName, FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
+
+	IAssetTools& AssetTools =
+		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	AssetTools.CreateUniqueAssetName(PackagePath, AssetName, PackagePath, AssetName);
+	UObject* Asset = AssetTools.CreateAsset(
+		AssetName, FPackageName::GetLongPackagePath(PackagePath),
+		UMaterialInstanceConstant::StaticClass(), Factory);
+	if (Asset == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not create new Material asset for material '%s' imported from '%s'."),
+			*MaterialName, *DirectoryName);
+		return nullptr;
+	}
+
+	UMaterialInstanceConstant* Material = Cast<UMaterialInstanceConstant>(Asset);
+	if (Material == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not create new Material Instance Constant for material '%s' imported from "
+				 "'%s'."),
+			*MaterialName, *DirectoryName)
+		return nullptr;
+	}
+
+	UpdateAndSaveRenderMaterialAsset(Barrier, *Material);
+	return Material;
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateAndSaveRenderMaterialAsset(
@@ -1929,9 +1907,10 @@ UAGX_ObserverFrameComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverF
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("While importing from '%s': Observer Frame %s is attached to a Rigid Body that "
-				 "has not been Processed. Cannot create Unreal Engine representation. Tried to find "
-				 "Rigid Body with GUID %s."),
+			TEXT(
+				"While importing from '%s': Observer Frame %s is attached to a Rigid Body that "
+				"has not been Processed. Cannot create Unreal Engine representation. Tried to find "
+				"Rigid Body with GUID %s."),
 			*SourceFilePath, *Name, *BodyGuid.ToString());
 		return nullptr;
 	}

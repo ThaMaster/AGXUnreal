@@ -142,6 +142,40 @@ namespace
 		return Package;
 	}
 
+	TArray<FAGX_RenderMaterial> CollectRenderMaterialBarriers(
+		const FSimulationObjectCollection& SimulationObjects)
+	{
+		TArray<FAGX_RenderMaterial> Materials;
+		auto CollectFromShapes = [&Materials](const auto& ShapeBarriers)
+		{
+			for (const auto& ShapeBarrier : ShapeBarriers)
+			{
+				if (!ShapeBarrier.HasRenderMaterial())
+				{
+					continue;
+				}
+				Materials.Add(ShapeBarrier.GetRenderMaterial());
+			}
+		};
+
+		auto CollectFromBodies = [&CollectFromShapes](const TArray<FRigidBodyBarrier>& BodyBarriers)
+		{
+			for (const FRigidBodyBarrier& BodyBarrier : BodyBarriers)
+			{
+				CollectFromShapes(BodyBarrier.GetShapes());
+			}
+		};
+
+		CollectFromShapes(SimulationObjects.GetBoxShapes());
+		CollectFromShapes(SimulationObjects.GetCapsuleShapes());
+		CollectFromShapes(SimulationObjects.GetCylinderShapes());
+		CollectFromShapes(SimulationObjects.GetSphereShapes());
+		CollectFromShapes(SimulationObjects.GetTrimeshShapes());
+		CollectFromBodies(SimulationObjects.GetRigidBodies());
+
+		return Materials;
+	}
+
 	bool AddShapeMaterials(
 		const FSimulationObjectCollection& SimObjects, FAGX_SimObjectsImporterHelper& Helper)
 	{
@@ -172,6 +206,20 @@ namespace
 		for (const auto& ContactMaterial : SimObjects.GetContactMaterials())
 		{
 			Success &= Helper.InstantiateContactMaterial(ContactMaterial, *CMRegistrar) != nullptr;
+		}
+
+		return Success;
+	}
+
+	bool AddRenderMaterials(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		TArray<FAGX_RenderMaterial> RMBarriers = CollectRenderMaterialBarriers(SimObjects);
+		bool Success = true;
+		for (const FAGX_RenderMaterial& RMBarrier : RMBarriers)
+		{
+			Success &= Helper.InstantiateRenderMaterial(RMBarrier) != nullptr;
 		}
 
 		return Success;
@@ -389,7 +437,7 @@ namespace
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
 		FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FScopedSlowTask ImportTask(100.f, LOCTEXT("ImportModel", "Importing model"), true);
+		FScopedSlowTask ImportTask(105.f, LOCTEXT("ImportModel", "Importing model"), true);
 		ImportTask.MakeDialog();
 		bool Success = true;
 
@@ -398,6 +446,9 @@ namespace
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Contact Materials"));
 		Success &= AddContactMaterials(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Render Materials"));
+		Success &= AddRenderMaterials(ImportedActor, SimObjects, Helper);
 
 		ImportTask.EnterProgressFrame(
 			5.f, FText::FromString("Reading Rigid Bodies and their Shapes"));
@@ -1095,57 +1146,54 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
-	TArray<FAGX_RenderMaterial> CollectRenderMaterials(
-		const FSimulationObjectCollection& SimulationObjects)
+	TMap<FGuid, UMaterialInstanceConstant*> CollectRenderMaterialAssets(
+		const UAGX_ModelSourceComponent& ModelSource)
 	{
-		TArray<FAGX_RenderMaterial> Materials;
-		auto CollectFromShapes = [&Materials](const auto& ShapeBarriers)
+		TMap<FGuid, UMaterialInstanceConstant*> Assets;
+		Assets.Reserve(ModelSource.UnrealMaterialToImportGuid.Num());
+		for (const auto& MaterialTuple : ModelSource.UnrealMaterialToImportGuid)
 		{
-			for (const auto& ShapeBarrier : ShapeBarriers)
+			UMaterialInstanceConstant* Asset =
+				LoadObject<UMaterialInstanceConstant>(GetTransientPackage(), *MaterialTuple.Key);
+			if (Asset == nullptr)
 			{
-				if (!ShapeBarrier.HasRenderMaterial())
-				{
-					continue;
-				}
-				Materials.Add(ShapeBarrier.GetRenderMaterial());
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Expected to find Render Material in '%s' but it could not be found."),
+					*MaterialTuple.Key);
+				continue;
 			}
-		};
 
-		auto CollectFromBodies = [&CollectFromShapes](const TArray<FRigidBodyBarrier>& BodyBarriers)
-		{
-			for (const FRigidBodyBarrier& BodyBarrier : BodyBarriers)
-			{
-				CollectFromShapes(BodyBarrier.GetShapes());
-			}
-		};
+			AGX_CHECK(MaterialTuple.Value.IsValid());
+			Assets.Add(MaterialTuple.Value, Asset);
+		}
 
-		CollectFromShapes(SimulationObjects.GetBoxShapes());
-		CollectFromShapes(SimulationObjects.GetCapsuleShapes());
-		CollectFromShapes(SimulationObjects.GetCylinderShapes());
-		CollectFromShapes(SimulationObjects.GetSphereShapes());
-		CollectFromShapes(SimulationObjects.GetTrimeshShapes());
-		CollectFromBodies(SimulationObjects.GetRigidBodies());
-
-		return Materials;
+		return Assets;
 	}
 
 	void AddOrUpdateRenderMaterials(
 		const FSimulationObjectCollection& SimulationObjects, SCSNodeCollection& SCSNodes,
 		FAGX_SimObjectsImporterHelper& Helper)
 	{
-		TArray<FAGX_RenderMaterial> Materials = CollectRenderMaterials(SimulationObjects);
-		for (FAGX_RenderMaterial& Material : Materials)
+		const TArray<FAGX_RenderMaterial> RMBarriers =
+			CollectRenderMaterialBarriers(SimulationObjects);
+
+		check(SCSNodes.ModelSourceComponent != nullptr);
+
+		// Existing Render Material Assets.
+		const TMap<FGuid, UMaterialInstanceConstant*> RMAssets = CollectRenderMaterialAssets(
+			*Cast<UAGX_ModelSourceComponent>(SCSNodes.ModelSourceComponent->ComponentTemplate));
+
+		for (const FAGX_RenderMaterial& RMBarrier : RMBarriers)
 		{
-			const FGuid Guid = Material.Guid;
-			UMaterialInstanceConstant* Asset = Helper.GetRenderMaterial(Guid);
-			if (Asset != nullptr)
+			const FGuid RMGuid = RMBarrier.Guid;
+			if (UMaterialInstanceConstant* Asset = RMAssets.FindRef(RMGuid))
 			{
-				Helper.UpdateAndSaveRenderMaterialAsset(Material, *Asset);
+				Helper.UpdateAndSaveRenderMaterialAsset(RMBarrier, *Asset);
 			}
 			else
 			{
-				/// @todo Create a new Render Material here.
-				Helper.InstantiateRenderMaterial(Material);
+				Helper.InstantiateRenderMaterial(RMBarrier);
 			}
 		}
 	}
@@ -1689,17 +1737,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			ModelSourceComponent = SCSNodes.ModelSourceComponent;
 		}
 
-		/// @todo Helper.UpdateModelSourceComponent will set
-		/// ModelSourceComponent.UnrealMaterialToImportGuid to the contents of
-		/// Helper.RestoredRenderMaterials. Has RestoredRenderMaterials been updated at this point,
-		/// i.e., has Helper.RestoredRenderMaterials been initialized with the contents of
-		/// ModelSourceComponent.UnrealMaterialToImportGuid?
-		///
-		/// If not synchronizing a model a second time would not delete Render Material assets
-		/// for AGX Dynamics render materials that no longer exists in the AGX Dynamics archive
-		/// because we wouldn't know that import GUID of those Render Material assets since they
-		/// are stored in ModelSourceComponent.UnrealMaterialToImportGuid and not the asset itself
-		/// since we have not yet found a way to extend engine assets with additional properties.
 		Helper.UpdateModelSourceComponent(
 			*Cast<UAGX_ModelSourceComponent>(ModelSourceComponent->ComponentTemplate));
 	}

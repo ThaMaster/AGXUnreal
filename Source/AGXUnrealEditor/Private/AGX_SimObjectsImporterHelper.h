@@ -147,12 +147,10 @@ public:
 
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
-	UMaterialInstanceConstant* GetRenderMaterial(const FGuid& Guid);
-
-	UMaterialInterface* InstantiateRenderMaterial(FAGX_RenderMaterial& Material);
+	UMaterialInterface* InstantiateRenderMaterial(const FAGX_RenderMaterial& Material);
 
 	void UpdateAndSaveRenderMaterialAsset(
-		const FAGX_RenderMaterial& Material, UMaterialInstanceConstant& Asset);
+		const FAGX_RenderMaterial& Barrier, UMaterialInstanceConstant& Asset);
 
 	// This function also adds the Asset to the passed Contact Material Registrar, if not yet added.
 	void UpdateAndSaveContactMaterialAsset(
