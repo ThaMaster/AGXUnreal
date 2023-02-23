@@ -685,18 +685,18 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 		for (UStaticMeshComponent* Instance :
 			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
-			// Update Render Materials.
-			if (Visible && (ForceReassignRenderMaterialInInstances ||
-							Instance->GetMaterial(0) == Component.GetMaterial(0)))
-			{
-				Instance->SetMaterial(0, RenderMaterial);
-			}
-
 			// Update Mesh asset.
 			if (ForceOverwritePropertiesInInstances ||
 				Instance->GetStaticMesh() == Component.GetStaticMesh())
 			{
 				Instance->SetStaticMesh(NewMeshAsset);
+			}
+
+			// Update Render Materials.
+			if (Visible && (ForceReassignRenderMaterialInInstances ||
+							Instance->GetMaterial(0) == Component.GetMaterial(0)))
+			{
+				Instance->SetMaterial(0, RenderMaterial);
 			}
 
 			// Update visibility.
@@ -708,8 +708,8 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 		}
 	}
 
-	Component.SetMaterial(0, RenderMaterial);
 	Component.SetStaticMesh(NewMeshAsset);
+	Component.SetMaterial(0, RenderMaterial);	
 	Component.SetVisibility(Visible);
 
 	const FGuid ShapeGuid = ShapeBarrier.GetShapeGuid();
@@ -971,18 +971,18 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 		for (UStaticMeshComponent* Instance :
 			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
-			// Update Render Materials.
-			if (ForceReassignRenderMaterialInInstances ||
-				Instance->GetMaterial(0) == OriginalRenderMaterial)
-			{
-				Instance->SetMaterial(0, NewRenderMaterial);
-			}
-
 			// Update Mesh asset.
 			if (ForceOverwritePropertiesInInstances ||
 				Instance->GetStaticMesh() == Component.GetStaticMesh())
 			{
 				Instance->SetStaticMesh(NewMeshAsset);
+			}
+
+			// Update Render Materials.
+			if (ForceReassignRenderMaterialInInstances ||
+				Instance->GetMaterial(0) == OriginalRenderMaterial)
+			{
+				Instance->SetMaterial(0, NewRenderMaterial);
 			}
 
 			// Update visibility.
@@ -994,8 +994,8 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 		}
 	}
 
-	Component.SetMaterial(0, NewRenderMaterial);
 	Component.SetStaticMesh(NewMeshAsset);
+	Component.SetMaterial(0, NewRenderMaterial);	
 	Component.SetVisibility(Visible);
 
 	const FGuid RenderDataGuid = RenderDataBarrier.GetGuid();
