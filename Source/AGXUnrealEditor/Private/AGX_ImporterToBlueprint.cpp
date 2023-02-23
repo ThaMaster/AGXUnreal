@@ -2181,10 +2181,13 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
-	void DeleteRemovedRenderMaterialAssets(
+	// Returns the GUID of all Render Material that will be deleted.
+	TSet<FGuid> DeleteRemovedRenderMaterialAssets(
 		SCSNodeCollection& SCSNodes, const FSimulationObjectCollection& SimulationObjects,
 		FAGX_SimObjectsImporterHelper& Helper, TArray<UObject*>& AssetsToDelete)
 	{
+		TSet<FGuid> RenderMaterialsToDelete;
+
 		// Delete removed Render Materials.
 		if (auto* ModelSourceComponent =
 				Cast<UAGX_ModelSourceComponent>(SCSNodes.ModelSourceComponent->ComponentTemplate))
@@ -2257,11 +2260,14 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				if (!InSimulation.Contains(AssetGuid))
 				{
 					// Not part of the current import data, delete the asset.
+					RenderMaterialsToDelete.Add(AssetGuid);
 					AssetsToDelete.Add(Asset);
 					ModelSourceComponent->UnrealMaterialToImportGuid.Remove(Asset->GetPathName());
 				}
 			}
 		}
+
+		return RenderMaterialsToDelete;
 	}
 
 	void DeleteAllImportedStaticMeshAssets(
@@ -2294,6 +2300,71 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				AssetsToDelete.AddUnique(Mesh);
 			}
 		}
+	}
+
+	TMap<UStaticMeshComponent*, UMaterialInterface*> GetRenderMaterials(
+		const SCSNodeCollection& SCSNodes, const TSet<FGuid>& IgnoreFilter)
+	{
+		TMap<UStaticMeshComponent*, UMaterialInterface*> RenderMaterials;
+		RenderMaterials.Reserve(
+			SCSNodes.CollisionStaticMeshComponents.Num() +
+			SCSNodes.RenderStaticMeshComponents.Num());
+
+		auto FindAndStoreRenderMaterials = [&](const TMap<FGuid, USCS_Node*>& StaticMeshes)
+		{
+			for (auto StaticMeshNodeTuple : StaticMeshes)
+			{
+				if (IgnoreFilter.Contains(StaticMeshNodeTuple.Key))
+					continue;
+
+				UStaticMeshComponent* Smc =
+					Cast<UStaticMeshComponent>(StaticMeshNodeTuple.Value->ComponentTemplate);
+				if (Smc == nullptr)
+					continue;
+
+				RenderMaterials.Add(Smc, Smc->GetMaterial(0));
+				for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*Smc))
+				{
+					RenderMaterials.Add(Instance, Instance->GetMaterial(0));
+				}
+			}
+		};
+
+		FindAndStoreRenderMaterials(SCSNodes.CollisionStaticMeshComponents);
+		FindAndStoreRenderMaterials(SCSNodes.RenderStaticMeshComponents);
+		return RenderMaterials;
+	}
+
+	void SetRenderMaterials(
+		SCSNodeCollection& SCSNodes,
+		const TMap<UStaticMeshComponent*, UMaterialInterface*>& RenderMaterials)
+	{
+		auto MatchAndSetRenderMaterials = [&RenderMaterials](TMap<FGuid, USCS_Node*>& StaticMeshes)
+		{
+			for (auto StaticMeshNodeTuple : StaticMeshes)
+			{
+				UStaticMeshComponent* Smc =
+					Cast<UStaticMeshComponent>(StaticMeshNodeTuple.Value->ComponentTemplate);
+				if (Smc == nullptr)
+					continue;
+
+				if (UMaterialInterface* Mat = RenderMaterials.FindRef(Smc))
+				{
+					Smc->SetMaterial(0, Mat);
+				}
+
+				for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*Smc))
+				{
+					if (UMaterialInterface* Mat = RenderMaterials.FindRef(Instance))
+					{
+						Instance->SetMaterial(0, Mat);
+					}
+				}
+			}
+		};
+
+		MatchAndSetRenderMaterials(SCSNodes.CollisionStaticMeshComponents);
+		MatchAndSetRenderMaterials(SCSNodes.RenderStaticMeshComponents);
 	}
 
 	/**
@@ -2360,7 +2431,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		DeleteRemovedContactMaterialAssets(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
 		DeleteRemovedMergeSplitThresholdsAssets(SimulationObjects, Helper, AssetsToDelete);
 		DeleteAllImportedStaticMeshAssets(Helper, AssetsToDelete);
-		DeleteRemovedRenderMaterialAssets(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
+		TSet<FGuid> RenderMaterialsToDelete =
+			DeleteRemovedRenderMaterialAssets(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
 		DeleteRemovedShapeMaterialAssets(SimulationObjects, Helper, AssetsToDelete);
 
 		// Currently do not support model synchronization of Terrain, but when we do implement
@@ -2369,7 +2441,23 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// Currently do not support model synchronization of Track, but when we do implement
 		// Track Properties and Track Internal Merge Properties removed asset deletion here.
 
+		// This RenderMaterial getting and setting is kind of a work-around.
+		// It turns out that when static mesh assets are deleted inside DeleteImportedAssets below,
+		// and all static mesh Component's get their asset reference cleared, the render material is
+		// also cleared. This means that once the static mesh assets has been removed from disk, all
+		// render material information will be lost, meaning we cannot preserve user changes of
+		// assigned render materials for example. So what we do here is that we collect all render
+		// materials before deleting the static mesh assets, and then we restore the render
+		// materials again right after. We do not however want to restore a render material that has
+		// been deleted on disk in the DeleteImportedAssets call below, so therefore we only collect
+		// the render materials that will not be deleted and restore those. That's what the filter
+		// mechanism in GetRenderMaterials does.
+		TMap<UStaticMeshComponent*, UMaterialInterface*> OriginalRenderMaterials =
+			GetRenderMaterials(SCSNodes, RenderMaterialsToDelete);
+
 		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
+
+		SetRenderMaterials(SCSNodes, OriginalRenderMaterials);
 	}
 
 	/*
