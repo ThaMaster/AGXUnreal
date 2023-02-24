@@ -18,11 +18,14 @@ class FShapeMaterialBarrier;
 class FTrackBarrier;
 class FTrackPropertiesBarrier;
 class FContactMaterialBarrier;
+class UAGX_ShapeContactMergeSplitThresholds;
+class UAGX_ConstraintMergeSplitThresholds;
 class UAGX_ContactMaterial;
 class UAGX_MergeSplitThresholdsBase;
 class UAGX_ShapeMaterial;
 class UAGX_TrackInternalMergeProperties;
 class UAGX_TrackProperties;
+class UAGX_WireMergeSplitThresholds;
 struct FAGX_RenderMaterial;
 
 class AActor;
@@ -191,6 +194,16 @@ public:
 	static FString GetImportMergeSplitThresholdsDirectoryName();
 	static FString GetImportStaticMeshDirectoryName();
 	static FString GetImportRenderMeshDirectoryName();
+
+	/**
+	 * Template version of the asset directory name getter.
+	 * Only specialized for the asset types listed above, except for StaticMesh/RenderMesh because
+	 * these are both UStaticMesh and it is not possible to know if the mesh comes from Trimesh data
+	 * or render data.
+	 */
+	template <typename UAsset>
+	static FString GetImportAssetDirectoryName();
+
 	static FString GetContactMaterialRegistrarDefaultName();
 	static FString GetCollisionGroupDisablerDefaultName();
 

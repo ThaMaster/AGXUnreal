@@ -587,6 +587,48 @@ FString FAGX_ImportUtilities::GetImportRenderMeshDirectoryName()
 	return FString("RenderMesh");
 }
 
+template <>
+FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeMaterial>()
+{
+	return GetImportShapeMaterialDirectoryName();
+}
+
+template <>
+FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ContactMaterial>()
+{
+	return GetImportContactMaterialDirectoryName();
+}
+
+template <>
+FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UMaterialInterface>()
+{
+	return GetImportRenderMaterialDirectoryName();
+}
+
+template <>
+FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_MergeSplitThresholdsBase>()
+{
+	return GetImportMergeSplitThresholdsDirectoryName();
+}
+
+template <>
+FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ConstraintMergeSplitThresholds>()
+{
+	return GetImportMergeSplitThresholdsDirectoryName();
+}
+
+template <>
+FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeContactMergeSplitThresholds>()
+{
+	return GetImportMergeSplitThresholdsDirectoryName();
+}
+
+template <>
+FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_WireMergeSplitThresholds>()
+{
+	return GetImportMergeSplitThresholdsDirectoryName();
+}
+
 FString FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName()
 {
 	return FString("AGX_ContactMaterialRegistrar");
