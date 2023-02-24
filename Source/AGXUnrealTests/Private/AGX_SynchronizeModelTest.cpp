@@ -1213,6 +1213,100 @@ bool FRemoveConstraintMergeSplitThresholdsTest::RunTest(const FString& Parameter
 	return true;
 }
 
+/// Test that synchronizes with a Merge Split Thresholds with changed values.
+DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
+	FModifyConstraintMergeSplitThresholdsCommand, FString, InitialArchiveFileName, FString,
+	UpdatedArchiveFileName, FAutomationTestBase&, Test);
+
+bool FModifyConstraintMergeSplitThresholdsCommand::Update()
+{
+	using namespace AGX_SynchronizeModelTest_helpers;
+
+	// Import initial state.
+	UBlueprint* Blueprint = Import(InitialArchiveFileName, true);
+	if (!Test.TestNotNull(
+			FString::Printf(TEXT("Could not import '%s'."), *InitialArchiveFileName), Blueprint))
+	{
+		return true;
+	}
+
+	// All the data is owned by the parent Blueprint, so get that.
+	UBlueprint* BlueprintParent = FAGX_BlueprintUtilities::GetOutermostParent(Blueprint);
+	if (!Test.TestNotNull(
+			*FString::Printf(
+				TEXT("Could not get Blueprint parent for Blueprint imported from '%s'."),
+				*InitialArchiveFileName),
+			BlueprintParent))
+	{
+		return true;
+	}
+
+	// Make sure we got the Components we need.
+	// 1 DefaultSceneRoot, 1 Model Source, 1 Rigid Body, 1 Hinge.
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(BlueprintParent);
+	if (!Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4))
+	{
+		return true;
+	}
+	UAGX_HingeConstraintComponent* Hinge =
+		GetTemplateComponentByName<UAGX_HingeConstraintComponent>(Components, TEXT("Hinge"));
+	if (!Test.TestNotNull(
+			*FString::Printf(
+				TEXT("Could not find Hinge Component in Blueprint imported from '%s'."),
+				*InitialArchiveFileName),
+			Hinge))
+	{
+		return true;
+	}
+
+	// Check initial state.
+	UAGX_ConstraintMergeSplitThresholds* Thresholds = Hinge->MergeSplitProperties.Thresholds;
+	Test.TestEqual(TEXT("MaxDesiredForceRangeDiff"), Thresholds->MaxDesiredForceRangeDiff, 1.0);
+	Test.TestEqual(
+		TEXT("MaxDesiredLockAngleDiff"), Thresholds->MaxDesiredLockAngleDiff, FromRad(2.0));
+	Test.TestEqual(
+		TEXT("MaxDesiredRangeAngleDiff"), Thresholds->MaxDesiredRangeAngleDiff, FromRad(3.0));
+	Test.TestEqual(TEXT("MaxDesiredSpeedDiff"), Thresholds->MaxDesiredSpeedDiff, FromRad(4.0));
+	Test.TestEqual(TEXT("MaxRelativeSpeed"), Thresholds->MaxRelativeSpeed, FromRad(5.0));
+
+	// Synchronize with updated state.
+	SynchronizeModel(*BlueprintParent, UpdatedArchiveFileName, true);
+
+	// Check updated state.
+	UAGX_ConstraintMergeSplitThresholds* NewThresholds = Hinge->MergeSplitProperties.Thresholds;
+	if (!Test.TestNotNull(TEXT("Hinge thresholds after synchronize"), NewThresholds))
+	{
+		return true;
+	}
+	Test.TestEqual(
+		TEXT("Thresholds pointer before and after synchronize"), Thresholds, NewThresholds);
+	Test.TestEqual(TEXT("MaxDesiredForceRangeDiff"), Thresholds->MaxDesiredForceRangeDiff, 10.0);
+	Test.TestEqual(
+		TEXT("MaxDesiredLockAngleDiff"), Thresholds->MaxDesiredLockAngleDiff, FromRad(20.0));
+	Test.TestEqual(
+		TEXT("MaxDesiredRangeAngleDiff"), Thresholds->MaxDesiredRangeAngleDiff, FromRad(30.0));
+	Test.TestEqual(TEXT("MaxDesiredSpeedDiff"), Thresholds->MaxDesiredSpeedDiff, FromRad(40.0));
+	Test.TestEqual(TEXT("MaxRelativeSpeed"), Thresholds->MaxRelativeSpeed, FromRad(50.0));
+
+	return true;
+}
+
+/**
+ * Import model with a Rigid Body, a Hinge, and a Constraint Merge Split Thresholds. Then
+ * synchronize with an updated model where all values held by the thresholds has been modified.
+ */
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FModifyConstraintMergeSplitThresholdsTest,
+	"AGXUnreal.Editor.AGX_SynchronizeModelTest.ModifyConstraintMergeSplitThresholds",
+	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
+
+bool FModifyConstraintMergeSplitThresholdsTest::RunTest(const FString& Parameters)
+{
+	const FString InitialArchiveFileName = "thresholds_modify__initial.agx";
+	const FString UpdatedArchiveFileName = "thresholds_modify__updated.agx";
+	const FString InitialArchiveName = FPaths::GetBaseFilename(InitialArchiveFileName);
+	ADD_LATENT_AUTOMATION_COMMAND(FModifyConstraintMergeSplitThresholdsCommand(
 		InitialArchiveFileName, UpdatedArchiveFileName, *this));
 	ADD_LATENT_AUTOMATION_COMMAND(FDeleteImportedAssets(InitialArchiveName, *this));
 	return true;
