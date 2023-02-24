@@ -1113,11 +1113,12 @@ bool FIgnoreDisabledTrimeshTFTest::RunTest(const FString& Parameters)
 // Merge Split Thresholds synchronization test starts here.
 //
 
+/// Test that synchronizes with a removed Merge Split Thresholds.
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
-	FDeleteRemovedConstraintMergeSplitThresholdsCommand, FString, InitialArchiveName, FString,
+	FRemoveConstraintMergeSplitThresholdsCommand, FString, InitialArchiveName, FString,
 	UpdatedArchiveFileName, FAutomationTestBase&, Test);
 
-bool FDeleteRemovedConstraintMergeSplitThresholdsCommand::Update()
+bool FRemoveConstraintMergeSplitThresholdsCommand::Update()
 {
 	using namespace AGX_SynchronizeModelTest_helpers;
 
@@ -1189,26 +1190,29 @@ bool FDeleteRemovedConstraintMergeSplitThresholdsCommand::Update()
 	}
 
 	return true;
-
-
 }
 
 /**
  * Import model with a Rigid Body, a Hinge, and a Constraint Merge Split Thresholds. Then
- * synchronize with an updated model where the Hinge has been removed. The Constraint Merge Split
- * Thresholds should be removed with it.
+ * synchronize with an updated model where the thresholds has been removed from the hinge. The
+ * Constraint Merge Split Thresholds asset should be deleted and the reference to it cleared.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-	FDeleteRemovedConstraintMergeSplitThresholdsTest,
+	FRemoveConstraintMergeSplitThresholdsTest,
 	"AGXUnreal.Editor.AGX_SynchronizeModelTest.RemoveConstraintMergeSplitThresholds",
 	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
 
-bool FDeleteRemovedConstraintMergeSplitThresholdsTest::RunTest(const FString& Parameters)
+bool FRemoveConstraintMergeSplitThresholdsTest::RunTest(const FString& Parameters)
 {
 	const FString InitialArchiveFileName = "thresholds_remove__initial.agx";
 	const FString UpdatedArchiveFileName = "thresholds_remove__updated.agx";
 	const FString InitialArchiveName = FPaths::GetBaseFilename(InitialArchiveFileName);
-	ADD_LATENT_AUTOMATION_COMMAND(FDeleteRemovedConstraintMergeSplitThresholdsCommand(
+	ADD_LATENT_AUTOMATION_COMMAND(FRemoveConstraintMergeSplitThresholdsCommand(
+		InitialArchiveFileName, UpdatedArchiveFileName, *this));
+	ADD_LATENT_AUTOMATION_COMMAND(FDeleteImportedAssets(InitialArchiveName, *this));
+	return true;
+}
+
 		InitialArchiveFileName, UpdatedArchiveFileName, *this));
 	ADD_LATENT_AUTOMATION_COMMAND(FDeleteImportedAssets(InitialArchiveName, *this));
 	return true;
