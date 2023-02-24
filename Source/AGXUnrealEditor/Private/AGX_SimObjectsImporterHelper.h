@@ -147,12 +147,10 @@ public:
 
 	UAGX_ShapeMaterial* InstantiateShapeMaterial(const FShapeMaterialBarrier& Barrier);
 
-	UMaterialInstanceConstant* GetRenderMaterial(const FGuid& Guid);
-
-	UMaterialInterface* InstantiateRenderMaterial(FAGX_RenderMaterial& Material);
+	UMaterialInterface* InstantiateRenderMaterial(const FAGX_RenderMaterial& Material);
 
 	void UpdateAndSaveRenderMaterialAsset(
-		const FAGX_RenderMaterial& Material, UMaterialInstanceConstant& Asset);
+		const FAGX_RenderMaterial& Barrier, UMaterialInstanceConstant& Asset);
 
 	// This function also adds the Asset to the passed Contact Material Registrar, if not yet added.
 	void UpdateAndSaveContactMaterialAsset(
@@ -251,16 +249,16 @@ private:
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
 		bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances);
 
-	TMap<FGuid, UStaticMesh*> RestoredMeshes; // Static Mesh Assets.
-	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> RestoredThresholds;
-	TMap<FGuid, UAGX_RigidBodyComponent*> RestoredBodies;
-	TMap<FGuid, UAGX_ShapeMaterial*> RestoredShapeMaterials;
-	TMap<FGuid, UMaterialInstanceConstant*> RestoredRenderMaterials;
-	TMap<FGuid, UAGX_TrackProperties*> RestoredTrackProperties;
+	TMap<FGuid, UStaticMesh*> ProcessedMeshes; // Static Mesh Assets.
+	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> ProcessedThresholds;
+	TMap<FGuid, UAGX_RigidBodyComponent*> ProcessedBodies;
+	TMap<FGuid, UAGX_ShapeMaterial*> ProcessedShapeMaterials;
+	TMap<FGuid, UMaterialInstanceConstant*> ProcessedRenderMaterials;
+	TMap<FGuid, UAGX_TrackProperties*> ProcessedTrackProperties;
 
 	// The key is the Guid of the corresponding AGX Dynamics RenderData.
-	TMap<FGuid, UStaticMeshComponent*> RestoredRenderStaticMeshComponents;
+	TMap<FGuid, UStaticMeshComponent*> ProcessedRenderStaticMeshComponents;
 
 	// The key is the Guid of the corresponding AGX Dynamics Trimesh.
-	TMap<FGuid, UStaticMeshComponent*> RestoredCollisionStaticMeshComponents;
+	TMap<FGuid, UStaticMeshComponent*> ProcessedCollisionStaticMeshComponents;
 };

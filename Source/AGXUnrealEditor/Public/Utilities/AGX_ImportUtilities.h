@@ -116,26 +116,6 @@ public:
 		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
 
 	/**
-	 * Save an FAGX_RenderMaterial read from and AGX Dynamics RenderData material as an Unreal
-	 * Engine Material Instance. The Material Instance will be inheriting from the base import
-	 * material M_ImportedBase that is shipped as an asset with the AGX Dynamics for Unreal plugin.
-	 * The base material is returned if a Material Instance could not be created, and nullptr is
-	 * returned if the base material could not be loaded. The passed MaterialName is used if
-	 * possible, but a sequence number is added, using IAssetTools::CreateUniqueAssetName, in case
-	 * of a name conflict.
-	 * @param Imported AGX Dynamics Render Material parameters.
-	 * @param DirectoryName Name where assets for the imported assets should be
-	 * stored. Often the same as the source filename itself.
-	 * @param MaterialName The name to give to the new Material Instance. A sequence number will be
-	 * added in case of a conflict
-	 * @return A new Material Instance if one could be created, or the base material, or
-	 * nullptr if the base material could not be loaded.
-	 */
-	static UMaterialInterface* SaveImportedRenderMaterialAsset(
-		const FAGX_RenderMaterial& Imported, const FString& DirectoryName,
-		const FString& MaterialName);
-
-	/**
 	 * Store an imported AGX Dynamics Track Internal Merge Property as an
 	 * UAGX_TrackInternalMergeProperties asset on drive..
 	 * @param Barrier The imported Track owning the Internal Merge Property.

@@ -59,8 +59,10 @@
 // Unreal Engine includes.
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
+#include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
+#include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "MeshDescription.h"
 #include "Misc/Paths.h"
@@ -78,18 +80,18 @@ namespace
 
 	UAGX_TrackProperties* GetOrCreateTrackPropertiesAsset(
 		const FTrackPropertiesBarrier& Barrier, const FString& Name,
-		TMap<FGuid, UAGX_TrackProperties*>& RestoredTrackProperties, const FString& DirectoryName)
+		TMap<FGuid, UAGX_TrackProperties*>& ProcessedTrackProperties, const FString& DirectoryName)
 	{
 		const FGuid Guid = Barrier.GetGuid();
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the asset anyway but without adding it to
-			// the RestoredTrackProperties cache.
+			// the ProcessedTrackProperties cache.
 			return FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
 				Barrier, DirectoryName, Name);
 		}
 
-		if (UAGX_TrackProperties* Asset = RestoredTrackProperties.FindRef(Guid))
+		if (UAGX_TrackProperties* Asset = ProcessedTrackProperties.FindRef(Guid))
 		{
 			// We have seen this asset before, use the one in the cache.
 			return Asset;
@@ -100,7 +102,7 @@ namespace
 			FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(Barrier, DirectoryName, Name);
 		if (Asset != nullptr)
 		{
-			RestoredTrackProperties.Add(Guid, Asset);
+			ProcessedTrackProperties.Add(Guid, Asset);
 		}
 		return Asset;
 	}
@@ -112,68 +114,6 @@ namespace
 			return TEXT("Default");
 		}
 		return Material->GetName();
-	}
-
-	UMaterialInterface* CreateRenderMaterialInstance(
-		const FAGX_RenderMaterial& RenderMaterial, const FString& DirectoryName,
-		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials)
-	{
-		const FGuid Guid = RenderMaterial.Guid;
-		const FString MaterialName =
-			RenderMaterial.Name.IsNone()
-				? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
-				: RenderMaterial.Name.ToString();
-		UMaterialInterface* Material = FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
-			RenderMaterial, DirectoryName, MaterialName);
-		if (Material == nullptr)
-		{
-			// Both asset creation and default material load failed. That's bad.
-			return nullptr;
-		}
-
-		// Check if we got a new Material Instance, or if we fell back to the default material.
-		if (UMaterialInstanceConstant* Instance = Cast<UMaterialInstanceConstant>(Material))
-		{
-			// This is a new Material Instance, store it in the cache.
-			RestoredRenderMaterials.Add(Guid, Instance);
-		}
-
-		return Material;
-	}
-
-	/**
-	 * Convert an AGX Dynamics Render Material to an Unreal Engine Render Material and store it
-	 * as an asset in the given directory. Will cache and reuse Render Materials if the same one
-	 * is passed multiple times. Will fall back to the base import material if asset creation
-	 * fails. Will return nullptr if the base import material can't be loaded.
-	 *
-	 * If a new Render Material is created then it is created as a Material Instance Constant
-	 * from the base import material.
-	 *
-	 * @param RenderMaterial The AGX Dynamics Material to convert to an Unreal Engine Material.
-	 * @param DirectoryName The name of the directory where this imported model's assets are stored.
-	 * @param RestoredRenderMaterials Cache of restored Render Materials.
-	 * @return The Unreal Engine material for the AGX Dynamics material, or the base material, or
-	 * nullptr.
-	 */
-	UMaterialInterface* GetOrCreateRenderMaterialInstance(
-		const FAGX_RenderMaterial& RenderMaterial, const FString& DirectoryName,
-		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials)
-	{
-		const FGuid Guid = RenderMaterial.Guid;
-
-		// Have we seen this render material before?
-		if (UMaterialInstanceConstant** It = RestoredRenderMaterials.Find(Guid))
-		{
-			// Yes, used the cached Material Instance.
-			return *It;
-		}
-		else
-		{
-			// This is a new material. Save it as an asset and in the cache.
-			return CreateRenderMaterialInstance(
-				RenderMaterial, DirectoryName, RestoredRenderMaterials);
-		}
 	}
 
 	UMaterial* GetDefaultRenderMaterial(bool bIsSensor)
@@ -192,21 +132,6 @@ namespace
 		return Material;
 	}
 
-	void SetDefaultRenderMaterial(UMeshComponent& Component, bool bIsSensor)
-	{
-		UMaterial* Material = GetDefaultRenderMaterial(bIsSensor);
-		if (Material == nullptr)
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Could not set render material on imported shape '%s'. Could not load the "
-					 "default render material"),
-				*Component.GetName());
-			return;
-		}
-		Component.SetMaterial(0, Material);
-	}
-
 	/**
 	 * Convert the given Trimesh to an Unreal Engine Static Mesh asset.
 	 *
@@ -215,28 +140,28 @@ namespace
 	 *
 	 * @param Trimesh The Trimesh containing the mesh to store.
 	 * @param FallbackName A name to give the asset in case the Trimesh doesn't have a valid name.
-	 * @param RestoredMeshes Static Mesh cache.
+	 * @param ProcessedMeshes Static Mesh cache.
 	 * @param DirectoryName The name of the folder where all assets for this imported model is
 	 * stored.
 	 * @return
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
-		TMap<FGuid, UStaticMesh*>& RestoredMeshes, const FString& DirectoryName)
+		TMap<FGuid, UStaticMesh*>& ProcessedMeshes, const FString& DirectoryName)
 	{
 		const FGuid Guid = Trimesh.GetMeshDataGuid();
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
-			// the RestoredMeshes cache.
+			// the ProcessedMeshes cache.
 			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 				Trimesh, DirectoryName, FallbackName);
 		}
 
-		if (RestoredMeshes.Contains(Guid))
+		if (ProcessedMeshes.Contains(Guid))
 		{
 			// We have seen this mesh before, use the one in the cache.
-			return RestoredMeshes[Guid];
+			return ProcessedMeshes[Guid];
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
@@ -244,7 +169,7 @@ namespace
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryName, FallbackName);
 		if (Asset != nullptr)
 		{
-			RestoredMeshes.Add(Guid, Asset);
+			ProcessedMeshes.Add(Guid, Asset);
 		}
 		return Asset;
 	}
@@ -256,27 +181,27 @@ namespace
 	 * return the previously created Static Mesh asset.
 	 *
 	 * @param RenderData The Render Data Barrier containing the mesh to store.
-	 * @param RestoredMeshes Static Mesh cache.
+	 * @param ProcessedMeshes Static Mesh cache.
 	 * @param DirectoryName The name of the folder where all assets for the imported model is
 	 * stored.
 	 * @return The Static Mesh asset for the given Render Data.
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
-		const FRenderDataBarrier& RenderData, TMap<FGuid, UStaticMesh*>& RestoredMeshes,
+		const FRenderDataBarrier& RenderData, TMap<FGuid, UStaticMesh*>& ProcessedMeshes,
 		const FString& DirectoryName)
 	{
 		const FGuid Guid = RenderData.GetGuid();
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
-			// the RestoredMeshes cache.
+			// the ProcessedMeshes cache.
 			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
 		}
 
-		if (RestoredMeshes.Contains(Guid))
+		if (ProcessedMeshes.Contains(Guid))
 		{
 			// We have seen this mesh before, use the one in the cache.
-			return RestoredMeshes[Guid];
+			return ProcessedMeshes[Guid];
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
@@ -284,34 +209,9 @@ namespace
 			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
 		if (Asset != nullptr)
 		{
-			RestoredMeshes.Add(Guid, Asset);
+			ProcessedMeshes.Add(Guid, Asset);
 		}
 		return Asset;
-	}
-
-	/*
-	 * Creates a RenderMaterial from a RenderDataBarrier if it has a material. Otherwise returns
-	 * the default RenderMaterial.
-	 */
-	UMaterialInterface* CreateRenderMaterialFromRenderDataOrDefault(
-		const FRenderDataBarrier& RenderDataBarrier, bool IsSensor, const FString& DirectoryName,
-		TMap<FGuid, UMaterialInstanceConstant*>& RestoredRenderMaterials)
-	{
-		// Create the RenderMaterial (if any).
-		// Convert Render Data Material, if there is one. May fall back to the base import Material,
-		// and may also fail completely, leaving RenderDataMaterial being nullptr.
-		UMaterialInterface* RenderDataMaterial = nullptr;
-		if (RenderDataBarrier.HasMaterial() && GIsEditor)
-		{
-			RenderDataMaterial = GetOrCreateRenderMaterialInstance(
-				RenderDataBarrier.GetMaterial(), DirectoryName, RestoredRenderMaterials);
-		}
-		else
-		{
-			RenderDataMaterial = GetDefaultRenderMaterial(IsSensor);
-		}
-
-		return RenderDataMaterial;
 	}
 
 	FString CreateMergeSplitThresholdsAssetName(EAGX_AmorOwningType OwningType, const FGuid& Guid)
@@ -332,7 +232,7 @@ namespace
 
 	void UpdateAndSaveMergeSplitThresholdsAsset(
 		const FMergeSplitThresholdsBarrier& Barrier, UAGX_MergeSplitThresholdsBase& Asset,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& ProcessedThresholds,
 		EAGX_AmorOwningType OwningType)
 	{
 		const FGuid Guid = Barrier.GetGuid();
@@ -343,14 +243,14 @@ namespace
 		FAGX_ObjectUtilities::SaveAsset(Asset);
 		if (Guid.IsValid())
 		{
-			RestoredThresholds.Add(Guid, &Asset);
+			ProcessedThresholds.Add(Guid, &Asset);
 		}
 	}
 
 	template <typename TBarrier, typename TThresholdsBarrier>
 	UAGX_MergeSplitThresholdsBase* GetOrCreateMergeSplitThresholdsAsset(
 		const TBarrier& Barrier, EAGX_AmorOwningType OwningType,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& ProcessedThresholds,
 		const FString& DirectoryName)
 	{
 		const TThresholdsBarrier ThresholdsBarrier = TThresholdsBarrier::CreateFrom(Barrier);
@@ -382,7 +282,7 @@ namespace
 			}
 		};
 
-		if (UAGX_MergeSplitThresholdsBase* Asset = RestoredThresholds.FindRef(Guid))
+		if (UAGX_MergeSplitThresholdsBase* Asset = ProcessedThresholds.FindRef(Guid))
 		{
 			// We have seen this before, use the one in the cache.
 			return Asset;
@@ -392,7 +292,7 @@ namespace
 		UAGX_MergeSplitThresholdsBase* Asset = CreateAsset();
 		AGX_CHECK(Asset != nullptr);
 		UpdateAndSaveMergeSplitThresholdsAsset(
-			ThresholdsBarrier, *Asset, RestoredThresholds, OwningType);
+			ThresholdsBarrier, *Asset, ProcessedThresholds, OwningType);
 
 		return Asset;
 	}
@@ -460,14 +360,14 @@ void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 		{
 			MSThresholds = MSTsOnDisk[MSTGuid];
 			::UpdateAndSaveMergeSplitThresholdsAsset(
-				ThresholdsBarrier, *MSThresholds, RestoredThresholds,
+				ThresholdsBarrier, *MSThresholds, ProcessedThresholds,
 				EAGX_AmorOwningType::BodyOrShape);
 		}
 		else
 		{
 			MSThresholds = ::GetOrCreateMergeSplitThresholdsAsset<
 				FRigidBodyBarrier, FShapeContactMergeSplitThresholdsBarrier>(
-				Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+				Barrier, EAGX_AmorOwningType::BodyOrShape, ProcessedThresholds, DirectoryName);
 		}
 	}
 
@@ -487,8 +387,8 @@ void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 	Component.MergeSplitProperties.Thresholds =
 		Cast<UAGX_ShapeContactMergeSplitThresholds>(MSThresholds);
 
-	AGX_CHECK(!RestoredBodies.Contains(Barrier.GetGuid()));
-	RestoredBodies.Add(Barrier.GetGuid(), &Component);
+	AGX_CHECK(!ProcessedBodies.Contains(Barrier.GetGuid()));
+	ProcessedBodies.Add(Barrier.GetGuid(), &Component);
 }
 
 UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::InstantiateBody(
@@ -746,7 +646,7 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 				? "CollisionMesh"
 				: FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
 		UStaticMesh* Asset =
-			GetOrCreateStaticMeshAsset(ShapeBarrier, FallbackName, RestoredMeshes, DirectoryName);
+			GetOrCreateStaticMeshAsset(ShapeBarrier, FallbackName, ProcessedMeshes, DirectoryName);
 		NewMeshAsset = Asset;
 	}
 
@@ -754,11 +654,19 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 		Component, FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString());
 
 	UMaterialInterface* RenderMaterial = nullptr;
-	if (ShapeBarrier.HasRenderData())
+	if (ShapeBarrier.HasRenderMaterial())
 	{
-		RenderMaterial = CreateRenderMaterialFromRenderDataOrDefault(
-			ShapeBarrier.GetRenderData(), ShapeBarrier.GetIsSensor(), DirectoryName,
-			RestoredRenderMaterials);
+		FAGX_RenderMaterial RMBarrier = ShapeBarrier.GetRenderMaterial();
+		const FGuid RMGuid = RMBarrier.Guid;
+		RenderMaterial = ProcessedRenderMaterials.FindRef(RMGuid);
+		if (RenderMaterial == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Expected to find processed render material with GUID '%s' from Shape '%s' "
+					 "but it was not avaiable. The render material will not be set."),
+				*RMGuid.ToString(), *ShapeBarrier.GetName());
+		}
 	}
 	else
 	{
@@ -777,18 +685,18 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 		for (UStaticMeshComponent* Instance :
 			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
-			// Update Render Materials.
-			if (Visible && (ForceReassignRenderMaterialInInstances ||
-							Instance->GetMaterial(0) == Component.GetMaterial(0)))
-			{
-				Instance->SetMaterial(0, RenderMaterial);
-			}
-
 			// Update Mesh asset.
 			if (ForceOverwritePropertiesInInstances ||
 				Instance->GetStaticMesh() == Component.GetStaticMesh())
 			{
 				Instance->SetStaticMesh(NewMeshAsset);
+			}
+
+			// Update Render Materials.
+			if (Visible && (ForceReassignRenderMaterialInInstances ||
+							Instance->GetMaterial(0) == Component.GetMaterial(0)))
+			{
+				Instance->SetMaterial(0, RenderMaterial);
 			}
 
 			// Update visibility.
@@ -800,14 +708,14 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 		}
 	}
 
-	Component.SetMaterial(0, RenderMaterial);
 	Component.SetStaticMesh(NewMeshAsset);
+	Component.SetMaterial(0, RenderMaterial);	
 	Component.SetVisibility(Visible);
 
 	const FGuid ShapeGuid = ShapeBarrier.GetShapeGuid();
-	if (!RestoredCollisionStaticMeshComponents.Contains(ShapeGuid))
+	if (!ProcessedCollisionStaticMeshComponents.Contains(ShapeGuid))
 	{
-		RestoredCollisionStaticMeshComponents.Add(ShapeGuid, &Component);
+		ProcessedCollisionStaticMeshComponents.Add(ShapeGuid, &Component);
 	}
 }
 
@@ -834,14 +742,23 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 	if (NativeMaterial.HasNative())
 	{
 		const FGuid Guid = NativeMaterial.GetGuid();
-		NewShapeMaterial = RestoredShapeMaterials.FindRef(Guid);
+		NewShapeMaterial = ProcessedShapeMaterials.FindRef(Guid);
 	}
 
 	UMaterialInterface* RenderMaterial = nullptr;
-	if (Barrier.HasRenderData())
+	if (Barrier.HasRenderMaterial())
 	{
-		RenderMaterial = CreateRenderMaterialFromRenderDataOrDefault(
-			Barrier.GetRenderData(), Barrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
+		FAGX_RenderMaterial RMBarrier = Barrier.GetRenderMaterial();
+		const FGuid RMGuid = RMBarrier.Guid;
+		RenderMaterial = ProcessedRenderMaterials.FindRef(RMGuid);
+		if (RenderMaterial == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Expected to find processed render material with GUID '%s' from Shape '%s' "
+					 "but it was not avaiable. The render material will not be set."),
+				*RMGuid.ToString(), *Barrier.GetName());
+		}
 	}
 	else
 	{
@@ -858,14 +775,14 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 		{
 			MSThresholds = MSTsOnDisk[MSTGuid];
 			::UpdateAndSaveMergeSplitThresholdsAsset(
-				ThresholdsBarrier, *MSThresholds, RestoredThresholds,
+				ThresholdsBarrier, *MSThresholds, ProcessedThresholds,
 				EAGX_AmorOwningType::BodyOrShape);
 		}
 		else
 		{
 			MSThresholds = ::GetOrCreateMergeSplitThresholdsAsset<
 				FShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
-				Barrier, EAGX_AmorOwningType::BodyOrShape, RestoredThresholds, DirectoryName);
+				Barrier, EAGX_AmorOwningType::BodyOrShape, ProcessedThresholds, DirectoryName);
 		}
 	}
 
@@ -1009,13 +926,28 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 
 	UMaterialInterface* OriginalRenderMaterial = Component.GetMaterial(0);
 
-	// We always create a new Render Material because it is not trivial to determine if the original
-	// render material corresponds to the data in the RenderDataBarrier.
-	UMaterialInterface* NewRenderMaterial = CreateRenderMaterialFromRenderDataOrDefault(
-		RenderDataBarrier, ShapeBarrier.GetIsSensor(), DirectoryName, RestoredRenderMaterials);
-	UStaticMesh* NewMeshAsset = nullptr;
+	UMaterialInterface* NewRenderMaterial = nullptr;
+	if (RenderDataBarrier.HasMaterial())
+	{
+		FAGX_RenderMaterial RMBarrier = RenderDataBarrier.GetMaterial();
+		const FGuid RMGuid = RMBarrier.Guid;
+		NewRenderMaterial = ProcessedRenderMaterials.FindRef(RMGuid);
+		if (NewRenderMaterial == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Expected to find processed render material with GUID '%s' from Shape '%s' "
+					 "but it was not avaiable. The render material will not be set."),
+				*RMGuid.ToString(), *ShapeBarrier.GetName());
+		}
+	}
+	else
+	{
+		NewRenderMaterial = GetDefaultRenderMaterial(ShapeBarrier.GetIsSensor());
+	}
 
 	UStaticMesh* OriginalMeshAsset = Component.GetStaticMesh();
+	UStaticMesh* NewMeshAsset = nullptr;
 	if (IsMeshEquivalent(RenderDataBarrier, OriginalMeshAsset))
 	{
 		NewMeshAsset = OriginalMeshAsset;
@@ -1023,7 +955,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	else
 	{
 		UStaticMesh* Asset =
-			GetOrCreateStaticMeshAsset(RenderDataBarrier, RestoredMeshes, DirectoryName);
+			GetOrCreateStaticMeshAsset(RenderDataBarrier, ProcessedMeshes, DirectoryName);
 		NewMeshAsset = Asset;
 	}
 
@@ -1039,18 +971,18 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 		for (UStaticMeshComponent* Instance :
 			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
-			// Update Render Materials.
-			if (ForceReassignRenderMaterialInInstances ||
-				Instance->GetMaterial(0) == OriginalRenderMaterial)
-			{
-				Instance->SetMaterial(0, NewRenderMaterial);
-			}
-
 			// Update Mesh asset.
 			if (ForceOverwritePropertiesInInstances ||
 				Instance->GetStaticMesh() == Component.GetStaticMesh())
 			{
 				Instance->SetStaticMesh(NewMeshAsset);
+			}
+
+			// Update Render Materials.
+			if (ForceReassignRenderMaterialInInstances ||
+				Instance->GetMaterial(0) == OriginalRenderMaterial)
+			{
+				Instance->SetMaterial(0, NewRenderMaterial);
 			}
 
 			// Update visibility.
@@ -1062,14 +994,14 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 		}
 	}
 
-	Component.SetMaterial(0, NewRenderMaterial);
 	Component.SetStaticMesh(NewMeshAsset);
+	Component.SetMaterial(0, NewRenderMaterial);	
 	Component.SetVisibility(Visible);
 
 	const FGuid RenderDataGuid = RenderDataBarrier.GetGuid();
-	if (!RestoredRenderStaticMeshComponents.Contains(RenderDataGuid))
+	if (!ProcessedRenderStaticMeshComponents.Contains(RenderDataGuid))
 	{
-		RestoredRenderStaticMeshComponents.Add(RenderDataGuid, &Component);
+		ProcessedRenderStaticMeshComponents.Add(RenderDataGuid, &Component);
 	}
 }
 
@@ -1080,7 +1012,7 @@ void FAGX_SimObjectsImporterHelper::UpdateAndSaveShapeMaterialAsset(
 	FAGX_EditorUtilities::RenameAsset(Asset, Barrier.GetName(), "ShapeMaterial");
 	FAGX_ObjectUtilities::SaveAsset(Asset);
 
-	RestoredShapeMaterials.Add(Barrier.GetGuid(), &Asset);
+	ProcessedShapeMaterials.Add(Barrier.GetGuid(), &Asset);
 }
 
 UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
@@ -1101,15 +1033,67 @@ UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	return Asset;
 }
 
-UMaterialInstanceConstant* FAGX_SimObjectsImporterHelper::GetRenderMaterial(const FGuid& Guid)
-{
-	return RestoredRenderMaterials.FindRef(Guid);
-}
-
 UMaterialInterface* FAGX_SimObjectsImporterHelper::InstantiateRenderMaterial(
-	FAGX_RenderMaterial& Material)
+	const FAGX_RenderMaterial& Barrier)
 {
-	return CreateRenderMaterialInstance(Material, DirectoryName, RestoredRenderMaterials);
+	if (UMaterialInstanceConstant* ProcessedMat = ProcessedRenderMaterials.FindRef(Barrier.Guid))
+	{
+		// This Render Material has already been processed before, simply return it.
+		return ProcessedMat;
+	}
+
+	UMaterial* Base = LoadObject<UMaterial>(
+		nullptr, TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'"));
+	if (Base == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not load parent material for imported AGX Dynamics render materials."));
+		return nullptr;
+	}
+	UMaterialInstanceConstantFactoryNew* Factory = NewObject<UMaterialInstanceConstantFactoryNew>();
+	Factory->InitialParent = Base;
+
+	const FGuid Guid = Barrier.Guid;
+	const FString MaterialName = Barrier.Name.IsNone()
+									 ? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
+									 : Barrier.Name.ToString();
+
+	FString AssetName = FAGX_ImportUtilities::CreateAssetName(
+		MaterialName, TEXT("ImportedAGXDynamicsMaterial"),
+		FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
+
+	FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(
+		DirectoryName, FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
+
+	IAssetTools& AssetTools =
+		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	AssetTools.CreateUniqueAssetName(PackagePath, AssetName, PackagePath, AssetName);
+	UObject* Asset = AssetTools.CreateAsset(
+		AssetName, FPackageName::GetLongPackagePath(PackagePath),
+		UMaterialInstanceConstant::StaticClass(), Factory);
+	if (Asset == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not create new Material asset for material '%s' imported from '%s'."),
+			*MaterialName, *DirectoryName);
+		return nullptr;
+	}
+
+	UMaterialInstanceConstant* Material = Cast<UMaterialInstanceConstant>(Asset);
+	if (Material == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not create new Material Instance Constant for material '%s' imported from "
+				 "'%s'."),
+			*MaterialName, *DirectoryName)
+		return nullptr;
+	}
+
+	UpdateAndSaveRenderMaterialAsset(Barrier, *Material);
+	return Material;
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateAndSaveRenderMaterialAsset(
@@ -1145,7 +1129,7 @@ void FAGX_SimObjectsImporterHelper::UpdateAndSaveRenderMaterialAsset(
 	Asset.PostEditChange();
 	FAGX_ObjectUtilities::SaveAsset(Asset);
 
-	RestoredRenderMaterials.Add(Material.Guid, &Asset);
+	ProcessedRenderMaterials.Add(Material.Guid, &Asset);
 }
 
 void FAGX_SimObjectsImporterHelper::UpdateAndSaveContactMaterialAsset(
@@ -1212,7 +1196,7 @@ namespace
 	void UpdateConstraintComponentNoControllers(
 		UAGX_ConstraintComponent& Constraint, const FConstraintBarrier& Barrier,
 		FAGX_SimObjectsImporterHelper& Helper,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& ProcessedThresholds,
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool ForceOverwriteInstances)
 	{
 		FAGX_SimObjectsImporterHelper::FBodyPair Bodies = Helper.GetBodies(Barrier);
@@ -1246,14 +1230,14 @@ namespace
 			{
 				MSThresholds = MSTsOnDisk[MSTGuid];
 				::UpdateAndSaveMergeSplitThresholdsAsset(
-					ThresholdsBarrier, *MSThresholds, RestoredThresholds,
+					ThresholdsBarrier, *MSThresholds, ProcessedThresholds,
 					EAGX_AmorOwningType::Constraint);
 			}
 			else
 			{
 				MSThresholds = ::GetOrCreateMergeSplitThresholdsAsset<
 					FConstraintBarrier, FConstraintMergeSplitThresholdsBarrier>(
-					Barrier, EAGX_AmorOwningType::Constraint, RestoredThresholds,
+					Barrier, EAGX_AmorOwningType::Constraint, ProcessedThresholds,
 					Helper.DirectoryName);
 			}
 		}
@@ -1314,11 +1298,11 @@ namespace
 	void UpdateConstraint1DofComponent(
 		UAGX_Constraint1DofComponent& Constraint, const FConstraintBarrier& Barrier,
 		FAGX_SimObjectsImporterHelper& Helper,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& ProcessedThresholds,
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool ForceOverwriteInstances)
 	{
 		UpdateConstraintComponentNoControllers(
-			Constraint, Barrier, Helper, RestoredThresholds, MSTsOnDisk, ForceOverwriteInstances);
+			Constraint, Barrier, Helper, ProcessedThresholds, MSTsOnDisk, ForceOverwriteInstances);
 		FAGX_ConstraintUtilities::CopyControllersFrom(
 			Constraint, *static_cast<const FConstraint1DOFBarrier*>(&Barrier),
 			ForceOverwriteInstances);
@@ -1327,11 +1311,11 @@ namespace
 	void UpdateConstraint2DofComponent(
 		UAGX_Constraint2DofComponent& Constraint, const FConstraintBarrier& Barrier,
 		FAGX_SimObjectsImporterHelper& Helper,
-		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& RestoredThresholds,
+		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& ProcessedThresholds,
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool ForceOverwriteInstances)
 	{
 		UpdateConstraintComponentNoControllers(
-			Constraint, Barrier, Helper, RestoredThresholds, MSTsOnDisk, ForceOverwriteInstances);
+			Constraint, Barrier, Helper, ProcessedThresholds, MSTsOnDisk, ForceOverwriteInstances);
 		FAGX_ConstraintUtilities::CopyControllersFrom(
 			Constraint, *static_cast<const FConstraint2DOFBarrier*>(&Barrier),
 			ForceOverwriteInstances);
@@ -1343,7 +1327,7 @@ UAGX_HingeConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateHinge(
 {
 	UAGX_HingeConstraintComponent* Constraint = NewObject<UAGX_HingeConstraintComponent>(&Owner);
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
-	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds, Unused, false);
+	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, ProcessedThresholds, Unused, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1356,7 +1340,7 @@ UAGX_PrismaticConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiatePri
 	UAGX_PrismaticConstraintComponent* Constraint =
 		NewObject<UAGX_PrismaticConstraintComponent>(&Owner);
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
-	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds, Unused, false);
+	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, ProcessedThresholds, Unused, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1369,7 +1353,7 @@ UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallCons
 	UAGX_BallConstraintComponent* Constraint = NewObject<UAGX_BallConstraintComponent>(&Owner);
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
 	UpdateConstraintComponentNoControllers(
-		*Constraint, Barrier, *this, RestoredThresholds, Unused, false);
+		*Constraint, Barrier, *this, ProcessedThresholds, Unused, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1383,7 +1367,7 @@ FAGX_SimObjectsImporterHelper::InstantiateCylindricalConstraint(
 	UAGX_CylindricalConstraintComponent* Constraint =
 		NewObject<UAGX_CylindricalConstraintComponent>(&Owner);
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
-	UpdateConstraint2DofComponent(*Constraint, Barrier, *this, RestoredThresholds, Unused, false);
+	UpdateConstraint2DofComponent(*Constraint, Barrier, *this, ProcessedThresholds, Unused, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1396,7 +1380,7 @@ UAGX_DistanceConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateDist
 	UAGX_DistanceConstraintComponent* Constraint =
 		NewObject<UAGX_DistanceConstraintComponent>(&Owner);
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
-	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, RestoredThresholds, Unused, false);
+	UpdateConstraint1DofComponent(*Constraint, Barrier, *this, ProcessedThresholds, Unused, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1409,7 +1393,7 @@ UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockCons
 	UAGX_LockConstraintComponent* Constraint = NewObject<UAGX_LockConstraintComponent>(&Owner);
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
 	UpdateConstraintComponentNoControllers(
-		*Constraint, Barrier, *this, RestoredThresholds, Unused, false);
+		*Constraint, Barrier, *this, ProcessedThresholds, Unused, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1424,7 +1408,7 @@ void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
 			Cast<UAGX_Constraint1DofComponent>(&Component))
 	{
 		UpdateConstraint1DofComponent(
-			*Constraint1Dof, Barrier, *this, RestoredThresholds, MSTsOnDisk,
+			*Constraint1Dof, Barrier, *this, ProcessedThresholds, MSTsOnDisk,
 			ForceOverwriteInstances);
 	}
 	else if (
@@ -1432,13 +1416,13 @@ void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
 			Cast<UAGX_Constraint2DofComponent>(&Component))
 	{
 		UpdateConstraint2DofComponent(
-			*Constraint2Dof, Barrier, *this, RestoredThresholds, MSTsOnDisk,
+			*Constraint2Dof, Barrier, *this, ProcessedThresholds, MSTsOnDisk,
 			ForceOverwriteInstances);
 	}
 	else
 	{
 		UpdateConstraintComponentNoControllers(
-			Component, Barrier, *this, RestoredThresholds, MSTsOnDisk, ForceOverwriteInstances);
+			Component, Barrier, *this, ProcessedThresholds, MSTsOnDisk, ForceOverwriteInstances);
 	}
 }
 
@@ -1595,7 +1579,7 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	if (NativeMaterial.HasNative())
 	{
 		const FGuid Guid = NativeMaterial.GetGuid();
-		UAGX_ShapeMaterial* Material = RestoredShapeMaterials.FindRef(Guid);
+		UAGX_ShapeMaterial* Material = ProcessedShapeMaterials.FindRef(Guid);
 		Component->ShapeMaterial = Material;
 	}
 
@@ -1742,7 +1726,7 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 
 	if (auto ThresholdsAsset =
 			::GetOrCreateMergeSplitThresholdsAsset<FWireBarrier, FWireMergeSplitThresholdsBarrier>(
-				Barrier, EAGX_AmorOwningType::Wire, RestoredThresholds, DirectoryName))
+				Barrier, EAGX_AmorOwningType::Wire, ProcessedThresholds, DirectoryName))
 	{
 		Component->MergeSplitProperties.Thresholds =
 			Cast<UAGX_WireMergeSplitThresholds>(ThresholdsAsset);
@@ -1779,7 +1763,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 	if (ShapeMaterial.HasNative())
 	{
 		const FGuid Guid = ShapeMaterial.GetGuid();
-		UAGX_ShapeMaterial* Material = RestoredShapeMaterials.FindRef(Guid);
+		UAGX_ShapeMaterial* Material = ProcessedShapeMaterials.FindRef(Guid);
 		Component->ShapeMaterial = Material;
 	}
 
@@ -1791,7 +1775,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 			BarrierName.IsEmpty() ? FString("AGX_TP_Track") : FString("AGX_TP_") + BarrierName;
 
 		UAGX_TrackProperties* TrackProperties = GetOrCreateTrackPropertiesAsset(
-			Barrier.GetProperties(), AssetName, RestoredTrackProperties, DirectoryName);
+			Barrier.GetProperties(), AssetName, ProcessedTrackProperties, DirectoryName);
 		if (TrackProperties == nullptr)
 		{
 			UE_LOG(
@@ -1867,23 +1851,23 @@ void FAGX_SimObjectsImporterHelper::UpdateModelSourceComponent(UAGX_ModelSourceC
 		C->FilePath = SourceFilePath;
 		C->bIgnoreDisabledTrimeshes = bIgnoreDisabledTrimeshes;
 		C->StaticMeshComponentToOwningTrimesh.Empty();
-		for (const auto& RestoredSMCTuple : RestoredCollisionStaticMeshComponents)
+		for (const auto& ProcessedSMCTuple : ProcessedCollisionStaticMeshComponents)
 		{
-			const FString Name = RestoredSMCTuple.Value->GetName();
+			const FString Name = ProcessedSMCTuple.Value->GetName();
 			AGX_CHECK(!C->StaticMeshComponentToOwningTrimesh.Contains(Name));
-			C->StaticMeshComponentToOwningTrimesh.Add(Name, RestoredSMCTuple.Key);
+			C->StaticMeshComponentToOwningTrimesh.Add(Name, ProcessedSMCTuple.Key);
 		}
 
 		C->StaticMeshComponentToOwningRenderData.Empty();
-		for (const auto& RestoredSMCTuple : RestoredRenderStaticMeshComponents)
+		for (const auto& ProcessedSMCTuple : ProcessedRenderStaticMeshComponents)
 		{
-			const FString Name = RestoredSMCTuple.Value->GetName();
+			const FString Name = ProcessedSMCTuple.Value->GetName();
 			AGX_CHECK(!C->StaticMeshComponentToOwningTrimesh.Contains(Name));
-			C->StaticMeshComponentToOwningRenderData.Add(Name, RestoredSMCTuple.Key);
+			C->StaticMeshComponentToOwningRenderData.Add(Name, ProcessedSMCTuple.Key);
 		}
 
-		C->UnrealMaterialToImportGuid.Empty(RestoredRenderMaterials.Num());
-		for (const auto& GuidToMaterial : RestoredRenderMaterials)
+		C->UnrealMaterialToImportGuid.Empty(ProcessedRenderMaterials.Num());
+		for (const auto& GuidToMaterial : ProcessedRenderMaterials)
 		{
 			const FGuid ImportGuid = GuidToMaterial.Key;
 			const UMaterialInstanceConstant* const Material = GuidToMaterial.Value;
@@ -1924,14 +1908,15 @@ UAGX_ObserverFrameComponent* FAGX_SimObjectsImporterHelper::InstantiateObserverF
 	const FTransform& Transform, AActor& Owner)
 {
 	// Get the Rigid Body the imported Observer Frame should be attached to.
-	UAGX_RigidBodyComponent* Body = RestoredBodies.FindRef(BodyGuid);
+	UAGX_RigidBodyComponent* Body = ProcessedBodies.FindRef(BodyGuid);
 	if (Body == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("While importing from '%s': Observer Frame %s is attached to a Rigid Body that "
-				 "has not been restored. Cannot create Unreal Engine representation. Tried to find "
-				 "Rigid Body with GUID %s."),
+			TEXT(
+				"While importing from '%s': Observer Frame %s is attached to a Rigid Body that "
+				"has not been Processed. Cannot create Unreal Engine representation. Tried to find "
+				"Rigid Body with GUID %s."),
 			*SourceFilePath, *Name, *BodyGuid.ToString());
 		return nullptr;
 	}
@@ -1985,13 +1970,13 @@ UAGX_RigidBodyComponent* FAGX_SimObjectsImporterHelper::GetBody(
 		return nullptr;
 	}
 
-	UAGX_RigidBodyComponent* Component = RestoredBodies.FindRef(Barrier.GetGuid());
+	UAGX_RigidBodyComponent* Component = ProcessedBodies.FindRef(Barrier.GetGuid());
 	if (Component == nullptr && LogErrorIfNotFound)
 	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("While importing from '%s': A component references a body '%s', but that body "
-				 "hasn't been restored."),
+				 "hasn't been Processed."),
 			*SourceFilePath, *Barrier.GetName());
 	}
 
@@ -2007,7 +1992,7 @@ FAGX_SimObjectsImporterHelper::FBodyPair FAGX_SimObjectsImporterHelper::GetBodie
 UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::GetShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
-	return RestoredShapeMaterials.FindRef(Barrier.GetGuid());
+	return ProcessedShapeMaterials.FindRef(Barrier.GetGuid());
 }
 
 FAGX_SimObjectsImporterHelper::FShapeMaterialPair FAGX_SimObjectsImporterHelper::GetShapeMaterials(
@@ -2022,7 +2007,7 @@ void FAGX_SimObjectsImporterHelper::FinalizeImport()
 {
 	// Build mesh assets.
 	TArray<UStaticMesh*> StaticMeshes;
-	RestoredMeshes.GenerateValueArray(StaticMeshes);
+	ProcessedMeshes.GenerateValueArray(StaticMeshes);
 	FAGX_EditorUtilities::SaveStaticMeshAssetsInBulk(StaticMeshes);
 }
 
