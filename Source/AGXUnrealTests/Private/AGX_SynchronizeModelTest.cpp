@@ -64,6 +64,51 @@ namespace AGX_SynchronizeModelTest_helpers
 	}
 #endif
 
+	//
+	// High-level functions, working on entire models.
+	//
+
+	UBlueprint* Import(const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
+	{
+		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
+			FPaths::Combine(FString("SynchronizeModel"), ArchiveFileName));
+		if (ArchiveFilePath.IsEmpty())
+		{
+			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
+			return nullptr;
+		}
+
+		FAGX_ImportSettings ImportSettings;
+		ImportSettings.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
+		ImportSettings.bOpenBlueprintEditorAfterImport = false;
+		ImportSettings.FilePath = ArchiveFilePath;
+		ImportSettings.ImportType = EAGX_ImportType::Agx;
+
+		return AGX_ImporterToBlueprint::Import(ImportSettings);
+	}
+
+	bool SynchronizeModel(
+		UBlueprint& BaseBp, const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
+	{
+		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
+			FPaths::Combine(FString("SynchronizeModel"), ArchiveFileName));
+		if (ArchiveFilePath.IsEmpty())
+		{
+			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
+			return false;
+		}
+
+		FAGX_SynchronizeModelSettings Settigns;
+		Settigns.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
+		Settigns.FilePath = ArchiveFilePath;
+
+		return AGX_ImporterToBlueprint::SynchronizeModel(BaseBp, Settigns);
+	}
+
+	//
+	// Functions operating on the SCS node tree.
+	//
+
 	USCS_Node* GetNodeChecked(const UBlueprint& Blueprint, const FString& Name)
 	{
 		USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
@@ -181,41 +226,15 @@ namespace AGX_SynchronizeModelTest_helpers
 		return Children[0];
 	}
 
-	UBlueprint* Import(const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
+	//
+	// Functions operating on template components.
+	//
+
+	template <typename UObject>
+	UObject* GetTemplateComponentByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
 	{
-		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
-			FPaths::Combine(FString("SynchronizeModel"), ArchiveFileName));
-		if (ArchiveFilePath.IsEmpty())
-		{
-			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
-			return nullptr;
-		}
-
-		FAGX_ImportSettings ImportSettings;
-		ImportSettings.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
-		ImportSettings.bOpenBlueprintEditorAfterImport = false;
-		ImportSettings.FilePath = ArchiveFilePath;
-		ImportSettings.ImportType = EAGX_ImportType::Agx;
-
-		return AGX_ImporterToBlueprint::Import(ImportSettings);
-	}
-
-	bool SynchronizeModel(
-		UBlueprint& BaseBp, const FString& ArchiveFileName, bool IgnoreDisabledTrimeshes)
-	{
-		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
-			FPaths::Combine(FString("SynchronizeModel"), ArchiveFileName));
-		if (ArchiveFilePath.IsEmpty())
-		{
-			UE_LOG(LogAGX, Error, TEXT("Did not find an archive named '%s'."), *ArchiveFileName);
-			return false;
-		}
-
-		FAGX_SynchronizeModelSettings Settigns;
-		Settigns.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
-		Settigns.FilePath = ArchiveFilePath;
-
-		return AGX_ImporterToBlueprint::SynchronizeModel(BaseBp, Settigns);
+		return AgxAutomationCommon::GetByName<UObject>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(Name));
 	}
 
 	template <typename UAsset>
@@ -226,6 +245,16 @@ namespace AGX_SynchronizeModelTest_helpers
 			FPaths::GetBaseFilename(ArchiveName),
 			FAGX_ImportUtilities::GetImportAssetDirectoryName<UAsset>(), AssetName));
 		return Path;
+	}
+
+	//
+	// Misc. functions.
+	//
+
+	template <typename F>
+	F FromRad(F radians)
+	{
+		return FMath::RadiansToDegrees(radians);
 	}
 }
 
