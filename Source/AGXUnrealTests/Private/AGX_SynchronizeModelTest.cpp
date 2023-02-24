@@ -217,6 +217,16 @@ namespace AGX_SynchronizeModelTest_helpers
 
 		return AGX_ImporterToBlueprint::SynchronizeModel(BaseBp, Settigns);
 	}
+
+	template <typename UAsset>
+	FString GetAssetPath(const FString& ArchiveName, const FString& AssetName)
+	{
+		const FString Path = FPaths::ConvertRelativePathToFull(FPaths::Combine(
+			FPaths::ProjectContentDir(), FAGX_ImportUtilities::GetImportRootDirectoryName(),
+			FPaths::GetBaseFilename(ArchiveName),
+			FAGX_ImportUtilities::GetImportAssetDirectoryName<UAsset>(), AssetName));
+		return Path;
+	}
 }
 
 //
@@ -248,6 +258,9 @@ bool FDeleteImportedAssets::Update()
 	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
+	// Doing a file system delete of the assets is a bit harsh. Works in this case since we know
+	// nothing will use these assets the next time Unreal Editor is started since we don't use
+	// the imported unit test assets for anything.
 	if (!IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true))
 	{
 		Test.AddError(FString::Printf(
@@ -1064,5 +1077,110 @@ bool FIgnoreDisabledTrimeshTFTest::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FDeleteImportedAssets(FPaths::GetBaseFilename(ArchiveFileName), *this));
 
+	return true;
+}
+
+//
+// Merge Split Thresholds synchronization test starts here.
+//
+
+DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
+	FDeleteRemovedConstraintMergeSplitThresholdsCommand, FString, InitialArchiveName, FString,
+	UpdatedArchiveFileName, FAutomationTestBase&, Test);
+
+bool FDeleteRemovedConstraintMergeSplitThresholdsCommand::Update()
+{
+	using namespace AGX_SynchronizeModelTest_helpers;
+
+	// Import initial state.
+	UBlueprint* Blueprint = Import(InitialArchiveName, true);
+	if (Blueprint == nullptr)
+	{
+		Test.AddError(FString::Printf(TEXT("Could not import '%s'."), *InitialArchiveName));
+		return true;
+	}
+
+	// The Components live in the parent Blueprint, so get that.
+	UBlueprint* BlueprintParent = FAGX_BlueprintUtilities::GetOutermostParent(Blueprint);
+	if (BlueprintParent == nullptr)
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Could not get Blueprint parent for Blueprint imported from '%s'."),
+			*InitialArchiveName));
+		return true;
+	}
+
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(BlueprintParent);
+
+	// Make sure we got the Components we expect.
+	// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 1 Hinge.
+	if (!Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4))
+	{
+		return true;
+	}
+
+	UAGX_HingeConstraintComponent* Hinge =
+		AgxAutomationCommon::GetByName<UAGX_HingeConstraintComponent>(
+			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(TEXT("Hinge")));
+	if (!Test.TestNotNull(TEXT("Hinge Component with Merge Split Thresholds"), Hinge))
+	{
+		return true;
+	}
+
+	UAGX_ConstraintMergeSplitThresholds* Thresholds = Hinge->MergeSplitProperties.Thresholds;
+	if (!Test.TestNotNull(TEXT("Thresholds on Hinge Component"), Thresholds))
+	{
+		return true;
+	}
+
+	// Check that the Thresholds asset file is where it should be.
+	const FString AssetName =
+		FString::Printf(TEXT("AGX_CMST_%s.uasset"), *Thresholds->ImportGuid.ToString());
+	const FString AssetPath =
+		GetAssetPath<UAGX_ConstraintMergeSplitThresholds>(InitialArchiveName, AssetName);
+	if (!Test.TestTrue(TEXT("Thresholds asset exists"), FPaths::FileExists(AssetPath)))
+	{
+		return true;
+	}
+
+	// Synchronize with updated state.
+	SynchronizeModel(*BlueprintParent, UpdatedArchiveFileName, true);
+
+	// The thresholds should now be gone.
+	Thresholds = Hinge->MergeSplitProperties.Thresholds;
+	if (!Test.TestNull(TEXT("Thresholds"), Thresholds))
+	{
+		return true;
+	}
+
+	if (!Test.TestFalse(TEXT("Thresholds asset removed."), FPaths::FileExists(AssetPath)))
+	{
+		return true;
+	}
+
+	return true;
+
+
+}
+
+/**
+ * Import model with a Rigid Body, a Hinge, and a Constraint Merge Split Thresholds. Then
+ * synchronize with an updated model where the Hinge has been removed. The Constraint Merge Split
+ * Thresholds should be removed with it.
+ */
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FDeleteRemovedConstraintMergeSplitThresholdsTest,
+	"AGXUnreal.Editor.AGX_SynchronizeModelTest.RemoveConstraintMergeSplitThresholds",
+	EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
+
+bool FDeleteRemovedConstraintMergeSplitThresholdsTest::RunTest(const FString& Parameters)
+{
+	const FString InitialArchiveFileName = "thresholds_remove__initial.agx";
+	const FString UpdatedArchiveFileName = "thresholds_remove__updated.agx";
+	const FString InitialArchiveName = FPaths::GetBaseFilename(InitialArchiveFileName);
+	ADD_LATENT_AUTOMATION_COMMAND(FDeleteRemovedConstraintMergeSplitThresholdsCommand(
+		InitialArchiveFileName, UpdatedArchiveFileName, *this));
+	ADD_LATENT_AUTOMATION_COMMAND(FDeleteImportedAssets(InitialArchiveName, *this));
 	return true;
 }
