@@ -31,6 +31,12 @@
 #include "UObject/SavePackage.h"
 #endif
 
+#if PLATFORM_WINDOWS
+#define AGXUNREALEDITOR_API_TEMPLATE AGXUNREALEDITOR_API
+#else
+#define AGXUNREALEDITOR_API_TEMPLATE
+#endif
+
 namespace
 {
 	template <typename UAsset, typename FInitAssetCallback>
@@ -498,43 +504,50 @@ FString FAGX_ImportUtilities::GetImportRenderMeshDirectoryName()
 }
 
 template <>
-FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeMaterial>()
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeMaterial>()
 {
 	return GetImportShapeMaterialDirectoryName();
 }
 
 template <>
-FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ContactMaterial>()
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ContactMaterial>()
 {
 	return GetImportContactMaterialDirectoryName();
 }
 
 template <>
-FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UMaterialInterface>()
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UMaterialInterface>()
 {
 	return GetImportRenderMaterialDirectoryName();
 }
 
 template <>
-FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_MergeSplitThresholdsBase>()
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_MergeSplitThresholdsBase>()
 {
 	return GetImportMergeSplitThresholdsDirectoryName();
 }
 
 template <>
-FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ConstraintMergeSplitThresholds>()
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ConstraintMergeSplitThresholds>()
 {
 	return GetImportMergeSplitThresholdsDirectoryName();
 }
 
 template <>
-FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeContactMergeSplitThresholds>()
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeContactMergeSplitThresholds>()
 {
 	return GetImportMergeSplitThresholdsDirectoryName();
 }
 
 template <>
-FString FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_WireMergeSplitThresholds>()
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_WireMergeSplitThresholds>()
 {
 	return GetImportMergeSplitThresholdsDirectoryName();
 }
