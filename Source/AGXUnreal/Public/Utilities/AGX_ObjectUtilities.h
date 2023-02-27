@@ -50,6 +50,9 @@ public:
 		const AActor& Actor, bool bIncludeFromChildActors = false);
 
 	template <typename T>
+	static T* GetComponentByName(const AActor& Actor, const TCHAR* Name);
+
+	template <typename T>
 	static T* Get(const FComponentReference& Reference, const AActor* FallbackOwner);
 
 	static const AActor* GetActor(
@@ -142,6 +145,21 @@ uint32 FAGX_ObjectUtilities::GetNumComponentsInActor(
 	TArray<T*> Components;
 	Actor.GetComponents<T>(Components, bIncludeFromChildActors);
 	return Components.Num();
+}
+
+template <typename T>
+T* FAGX_ObjectUtilities::GetComponentByName(const AActor& Actor, const TCHAR* Name)
+{
+	// The Components are stored in a TSet but I don't know how to search a TSet with a predicate
+	// So copying all the pointers to a TArray. Is there a better way?
+	//
+	// That question can be asked in general, this seems like a complicated way to find a Component
+	// in an Actor.
+	TArray<T*> Components;
+	Actor.GetComponents(Components);
+	auto It = Components.FindByPredicate([Name](const T* Component)
+										 { return Component->GetName() == Name; });
+	return It ? *It : nullptr;
 }
 
 template <typename T>
