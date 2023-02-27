@@ -472,8 +472,6 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 	return ObjectTools::DeleteAssets(AssetsToDelete, true);
 
 #else
-	UE_LOG(LogAGX, Warning, TEXT("Deleting %d assets with FAssetDeleteModel."), InAssets.Num());
-
 	/*
 	 * This function is a subset/variant of Unreal Engine's ObjectTools::DeleteObjects. We can't use
 	 * that directly because it doesn't handle references to the deleted assets properly. In
@@ -553,17 +551,6 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 				TEXT("Cannot delete assets because at least one asset could not be fully loaded."));
 			return 0;
 		}
-	}
-
-	// Part of FAssetData experiment.
-	UE_LOG(LogAGX, Warning, TEXT("FAssetData found:"));
-	for (FAssetData& AssetDatum : AssetData)
-	{
-#if UE_VERSION_OLDER_THAN(5, 1, 0)
-		UE_LOG(LogAGX, Warning, TEXT(" %s"), *AssetDatum.ObjectPath.ToString());
-#else
-		UE_LOG(LogAGX, Warning, TEXT(" %s"), *AssetDatum.GetObjectPathString());
-#endif
 	}
 
 	// We cannot delete assets if the asset registry is currently busy loading assets.
