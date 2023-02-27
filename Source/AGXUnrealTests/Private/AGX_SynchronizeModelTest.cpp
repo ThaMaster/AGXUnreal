@@ -1195,14 +1195,14 @@ bool FRemoveConstraintMergeSplitThresholdsCommand::Update()
 
 	// Import initial state.
 	UBlueprint* ChildBlueprint = Import(InitialArchiveFileName, true);
-	if (!Test.TestNotNull(TEXT("Imported child Blueprint."), ChildBlueprint))
+	if (!Test.TestNotNull(TEXT("Imported child Blueprint before synchronize"), ChildBlueprint))
 	{
 		return true;
 	}
 
 	// The Components live in the parent Blueprint, so get that.
 	UBlueprint* ParentBlueprint = FAGX_BlueprintUtilities::GetOutermostParent(ChildBlueprint);
-	if (!Test.TestNotNull(TEXT("Imported parent Blueprint"), ParentBlueprint))
+	if (!Test.TestNotNull(TEXT("Imported parent Blueprint before synchronize"), ParentBlueprint))
 	{
 		return true;
 	}
@@ -1212,7 +1212,8 @@ bool FRemoveConstraintMergeSplitThresholdsCommand::Update()
 
 	// Make sure we got the template Components we expect.
 	// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 1 Hinge.
-	if (!Test.TestEqual(TEXT("Number of imported components"), TemplateComponents.Num(), 4))
+	if (!Test.TestEqual(
+			TEXT("Number of imported components before synchronize"), TemplateComponents.Num(), 4))
 	{
 		return true;
 	}
@@ -1220,14 +1221,14 @@ bool FRemoveConstraintMergeSplitThresholdsCommand::Update()
 	UAGX_HingeConstraintComponent* TemplateHinge =
 		AgxAutomationCommon::GetByName<UAGX_HingeConstraintComponent>(
 			TemplateComponents, *FAGX_BlueprintUtilities::ToTemplateComponentName(TEXT("Hinge")));
-	if (!Test.TestNotNull(TEXT("Hinge Template Component"), TemplateHinge))
+	if (!Test.TestNotNull(TEXT("Hinge Template Component before synchronize"), TemplateHinge))
 	{
 		return true;
 	}
 
 	UAGX_ConstraintMergeSplitThresholds* TemplateThresholds =
 		TemplateHinge->MergeSplitProperties.Thresholds;
-	if (!Test.TestNotNull(TEXT("Template Hinge Thresholds"), TemplateThresholds))
+	if (!Test.TestNotNull(TEXT("Template Hinge Thresholds before synchronize"), TemplateThresholds))
 	{
 		return true;
 	}
@@ -1237,231 +1238,103 @@ bool FRemoveConstraintMergeSplitThresholdsCommand::Update()
 		FString::Printf(TEXT("AGX_CMST_%s.uasset"), *TemplateThresholds->ImportGuid.ToString());
 	const FString AssetPath =
 		GetAssetPath<UAGX_ConstraintMergeSplitThresholds>(InitialArchiveFileName, AssetName);
-	if (!Test.TestTrue(TEXT("Thresholds asset exists"), FPaths::FileExists(AssetPath)))
+	if (!Test.TestTrue(
+			TEXT("Thresholds asset exists before synchronize"), FPaths::FileExists(AssetPath)))
 	{
 		return true;
 	}
 
-	// Create an instance of the Blueprint in the world.
-	// const FString InstanceName = InitialArchiveName + "_Instance";
-	const FString ActorName = TEXT("BP_") + FPaths::GetBaseFilename(InitialArchiveFileName);
+	// Create an instance of the Blueprint in the world. Must select a unique name, and the
+	// archive name is already taken by a UScript struct. Not sure what that is, the Blueprints
+	// we create get a 'BP_' prefix.
+	const FString ActorName = InitialArchiveName + TEXT("_Instance");
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Name = FName(ActorName);
 	AActor* BlueprintInstance =
 		Test.World->SpawnActor<AActor>(ChildBlueprint->GeneratedClass, SpawnParameters);
-	if (!Test.TestNotNull(TEXT("Blueprint instance."), BlueprintInstance))
+	if (!Test.TestNotNull(TEXT("Blueprint instance before synchronize"), BlueprintInstance))
 	{
 		return true;
 	}
-	UE_LOG(LogAGX, Warning, TEXT("Looking for Actor with name '%s'."), *ActorName);
-	UE_LOG(
-		LogAGX, Warning, TEXT("Spawned actor %s: %p."), *BlueprintInstance->GetName(),
-		BlueprintInstance);
-	AActor* FoundActor = FAGX_ObjectUtilities::GetActorByName(*Test.World, ActorName);
-	UE_LOG(
-		LogAGX, Warning, TEXT("Found actor %s: %p."),
-		(FoundActor != nullptr) ? *FoundActor->GetName() : TEXT("(nullptr)"), FoundActor);
-	UE_LOG(LogAGX, Warning, TEXT("After SpawnActor. Actors in the world:"));
-	for (ULevel* Level : Test.World->GetLevels())
-	{
-		for (AActor* Actor : Level->Actors)
-		{
-			if (Actor != nullptr)
-			{
-				UE_LOG(LogAGX, Warning, TEXT("  %s: %p"), *Actor->GetName(), Actor);
-			}
-			else
-			{
-				UE_LOG(LogAGX, Warning, TEXT("  (nullptr)"));
-			}
-		}
-	}
-	UE_LOG(LogAGX, Warning, TEXT("End of actors in world."));
 	if (!Test.TestEqual(
-			TEXT("Actor found by GetActorByName and Actor created by SpawnActor"),
+			TEXT(
+				"Actor found by GetActorByName and Actor created by SpawnActor before synchronize"),
 			FAGX_ObjectUtilities::GetActorByName(*Test.World, ActorName), BlueprintInstance))
 	{
 		return true;
 	}
 	Test.Instance = BlueprintInstance;
+
 	UAGX_HingeConstraintComponent* HingeInstance =
 		FAGX_ObjectUtilities::GetComponentByName<UAGX_HingeConstraintComponent>(
 			*BlueprintInstance, TEXT("Hinge"));
-	if (!Test.TestNotNull(TEXT("Hinge instance."), HingeInstance))
+	if (!Test.TestNotNull(TEXT("Hinge instance before synchronize"), HingeInstance))
 	{
 		return true;
 	}
+
 	UAGX_ConstraintMergeSplitThresholds* ThresholdsInstance =
 		HingeInstance->MergeSplitProperties.Thresholds;
-	if (!Test.TestNotNull(TEXT("Hinge instance thresholds"), ThresholdsInstance))
+	if (!Test.TestNotNull(TEXT("Hinge instance thresholds before synchronize"), ThresholdsInstance))
 	{
 		return true;
 	}
-
-	UE_LOG(LogAGX, Warning, TEXT("Before synchronize. Actors in the world:"));
-	for (ULevel* Level : Test.World->GetLevels())
-	{
-		for (AActor* Actor : Level->Actors)
-		{
-			if (Actor != nullptr)
-			{
-				UE_LOG(LogAGX, Warning, TEXT("  %s: %p"), *Actor->GetName(), Actor);
-			}
-			else
-			{
-				UE_LOG(LogAGX, Warning, TEXT("  (nullptr)"));
-			}
-		}
-	}
-	UE_LOG(LogAGX, Warning, TEXT("End of actors in world."));
-
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("Before synchronize. Blueprint instance has the following Components:"));
-	for (UActorComponent* ComponentInstance : BlueprintInstance->GetComponents())
-	{
-		UE_LOG(LogAGX, Warning, TEXT("  %s"), *ComponentInstance->GetName());
-	}
-	UE_LOG(LogAGX, Warning, TEXT("End of Blueprint instance Component list."));
 
 	// Synchronize with updated state.
 	SynchronizeModel(*ParentBlueprint, UpdatedArchiveFileName, true);
 
+	// Model synchronization should not invalidate the Blueprints.
+	if (!Test.TestTrue(TEXT("Child Blueprint is valid after synchronize"), IsValid(ChildBlueprint)))
+	{
+		return true;
+	}
+	if (!Test.TestTrue(
+			TEXT("Parent Blueprint is valid after synchronize"), IsValid(ParentBlueprint)))
+	{
+		return true;
+	}
+
+	// There are three places where the thresholds should have been removed:
+	// - Reference in the Hinge template should have been cleared to nullptr.
+	// - Reference in the Hinge instance should have been cleared to nullptr.
+	// - Asset on drive should have been deleted.
+
+	// Reference in the Hinge template should have been cleared to nullptr.
+	TemplateThresholds = TemplateHinge->MergeSplitProperties.Thresholds;
+	if (!Test.TestNull(TEXT("Template Hinge Thresholds after synchronize"), TemplateThresholds))
+	{
+		return true;
+	}
+
+	// Sometime during model synchronization, I assume during Blueprint compilation, the Blueprint
+	// instances in the level are destroyed and new ones created in their place. Find that new
+	// instance.
 	AActor* NewBlueprintInstance = FAGX_ObjectUtilities::GetActorByName(*Test.World, ActorName);
 	if (!Test.TestNotNull(
-			TEXT("Blueprint instance found by Actor name after synchronize"),
-			NewBlueprintInstance))
+			TEXT("Blueprint instance found by Actor name after synchronize"), NewBlueprintInstance))
 	{
 		return true;
 	}
-
-	UE_LOG(LogAGX, Warning, TEXT("After synchronize. Actors in the world:"));
-	for (ULevel* Level : Test.World->GetLevels())
-	{
-		for (AActor* Actor : Level->Actors)
-		{
-			if (Actor != nullptr)
-			{
-				UE_LOG(LogAGX, Warning, TEXT("  %s: %p"), *Actor->GetName(), Actor);
-			}
-			else
-			{
-				UE_LOG(LogAGX, Warning, TEXT("  (nullptr)"));
-			}
-		}
-	}
-	UE_LOG(LogAGX, Warning, TEXT("End of actors in world."));
-
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("After synchronize. Blueprint instance has the following Components:"));
-	for (UActorComponent* ComponentInstance : NewBlueprintInstance->GetComponents())
-	{
-		UE_LOG(LogAGX, Warning, TEXT("  %s"), *ComponentInstance->GetName());
-	}
-	UE_LOG(LogAGX, Warning, TEXT("End of Blueprint instance Component list."));
-
-	// Model synchronization should not invalidate neither any Blueprint nor the instance.
-	/// @todo Update comment above, Blueprint instance is replaced.
-	if (!Test.TestTrue(TEXT("Child Blueprint"), IsValid(ChildBlueprint)))
-	{
-		return true;
-	}
-	if (!Test.TestTrue(TEXT("Parent Blueprint"), IsValid(ParentBlueprint)))
-	{
-		return true;
-	}
-	if (!Test.TestTrue(TEXT("Blueprint instance."), IsValid(NewBlueprintInstance)))
-	{
-		return true;
-	}
-
-	/// @todo Comment about Blueprint reconstruction here.
-
-	// Components may have been reconstructed, so re-fetch them.
-	TArray<UActorComponent*> NewTemplateComponents =
-		FAGX_BlueprintUtilities::GetTemplateComponents(ParentBlueprint);
-
-	// Make sure we got the template Components we expect.
-	// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 1 Hinge.
-	if (!Test.TestEqual(
-			TEXT("Number of imported components after synchronize"), NewTemplateComponents.Num(),
-			4))
-	{
-		return true;
-	}
-
-	UAGX_HingeConstraintComponent* NewTemplateHinge =
-		AgxAutomationCommon::GetByName<UAGX_HingeConstraintComponent>(
-			NewTemplateComponents,
-			*FAGX_BlueprintUtilities::ToTemplateComponentName(TEXT("Hinge")));
-	if (!Test.TestNotNull(TEXT("Hinge Template Component"), NewTemplateHinge))
-	{
-		return true;
-	}
-
-	UAGX_ConstraintMergeSplitThresholds* NewTemplateThresholds =
-		NewTemplateHinge->MergeSplitProperties.Thresholds;
-	// The thresholds should now be gone.
-	if (!Test.TestNull(TEXT("Template Hinge Thresholds"), NewTemplateThresholds))
-	{
-		return true;
-	}
-
-	if (NewTemplateHinge == TemplateHinge)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("New template Hinge and old Template Hinge are the same object, Blueprint "
-				 "reconstruction did not happen."));
-	}
-	else
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("New template Hinge and old template Hinge are different objects, Blueprint "
-				 "reconstruction did happen."));
-	}
-
-	UE_LOG(LogAGX, Warning, TEXT("Blueprint instance has the following Components:"));
-	for (UActorComponent* ComponentInstance : NewBlueprintInstance->GetComponents())
-	{
-		UE_LOG(LogAGX, Warning, TEXT("  %s"), *ComponentInstance->GetName());
-	}
-	UE_LOG(LogAGX, Warning, TEXT("End of Blueprint instance Component list."));
-
 	UAGX_HingeConstraintComponent* NewHingeInstance =
 		FAGX_ObjectUtilities::GetComponentByName<UAGX_HingeConstraintComponent>(
 			*NewBlueprintInstance, TEXT("Hinge"));
-	if (!Test.TestNotNull(TEXT("New Hinge instance."), NewHingeInstance))
+	if (!Test.TestNotNull(TEXT("New Hinge instance after synchronize"), NewHingeInstance))
 	{
 		return true;
 	}
 	UAGX_ConstraintMergeSplitThresholds* NewThresholdsInstance =
 		NewHingeInstance->MergeSplitProperties.Thresholds;
-	// The thresholds should now be gone.
-	if (!Test.TestNull(TEXT("New Hinge instance Thresholds."), NewThresholdsInstance))
+
+	// Reference in the Hinge instance should have been cleared to nullptr.
+	if (!Test.TestNull(
+			TEXT("New Hinge instance Thresholds after synchronize"), NewThresholdsInstance))
 	{
 		return true;
 	}
 
-	if (NewHingeInstance == HingeInstance)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("New Hinge instance and old Hinge instance are the same object, Blueprint "
-				 "reconstruction did not happen."));
-	}
-	else
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("New Hinge instance and old Hinge instance are different objects, Blueprint "
-				 "reconstruction did happen."))
-	}
-
-	// The thresholds asset should now be gone.
-	if (!Test.TestFalse(TEXT("Thresholds asset removed."), FPaths::FileExists(AssetPath)))
+	// Asset on drive should have been deleted.
+	if (!Test.TestFalse(
+			TEXT("Thresholds asset removed after synchronize"), FPaths::FileExists(AssetPath)))
 	{
 		return true;
 	}
