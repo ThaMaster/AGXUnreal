@@ -1219,6 +1219,15 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper)
 	{
+		if (SimulationObjects.GetContactMaterials().Num() == 0)
+		{
+			// If there are no Contact Materials in the model then we don't need to create a
+			// Contact Material Registrar. If there already is one then we leave it there, since the
+			// user may want to use it and it was there before synchronize. Cleanup of any removed
+			// Contact Materials in the source model has already been done by DeleteRemovedAssets.
+			return;
+		}
+
 		USCS_Node* CMRegistrarNode = GetOrCreateContactMaterialRegistrarNode(BaseBP, SCSNodes);
 		const FString CMRName = FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName();
 		CMRegistrarNode->SetVariableName(*CMRName);
