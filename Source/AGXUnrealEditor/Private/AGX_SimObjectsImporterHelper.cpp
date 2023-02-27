@@ -57,11 +57,13 @@
 #include "Vehicle/TrackWheelBarrier.h"
 
 // Unreal Engine includes.
+#include "AssetToolsModule.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
+#include "IAssetTools.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "MeshDescription.h"
