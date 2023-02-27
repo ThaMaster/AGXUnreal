@@ -47,6 +47,38 @@ void FAGX_ObjectUtilities::GetActorsTree(
 }
 
 #if WITH_EDITOR
+AActor* FAGX_ObjectUtilities::GetActorByLabel(const UWorld& World, const FString Name)
+{
+	for (ULevel* Level : World.GetLevels())
+	{
+		for (AActor* Actor : Level->Actors)
+		{
+			if (Actor != nullptr && Actor->GetActorLabel() == Name)
+			{
+				return Actor;
+			}
+		}
+	}
+	return nullptr;
+}
+#endif
+
+AActor* FAGX_ObjectUtilities::GetActorByName(const UWorld& World, const FString Name)
+{
+	for (ULevel* Level : World.GetLevels())
+	{
+		for (AActor* Actor : Level->Actors)
+		{
+			if (Actor != nullptr && Actor->GetName() == Name)
+			{
+				return Actor;
+			}
+		}
+	}
+	return nullptr;
+}
+
+#if WITH_EDITOR
 bool FAGX_ObjectUtilities::SaveAsset(UObject& Asset)
 {
 	UPackage* Package = Asset.GetPackage();

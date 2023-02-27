@@ -67,6 +67,18 @@ public:
 		return Actor != nullptr ? Actor : FallbackActor;
 	}
 
+#if WITH_EDITOR
+	/**
+	 * Get the first Actor in the level that has the given name.
+	 *
+	 * For editor builds this matches on the Actor's label, i.e. what is shown in the World Outliner
+	 * panel. For non-editor builds this matches against
+	 */
+	static AActor* GetActorByLabel(const UWorld& World, const FString Label);
+#endif
+
+	static AActor* GetActorByName(const UWorld& World, const FString Name);
+
 	/*
 	 * Returns any Archetype instances of the passed object. If the passed object is not an
 	 * archetype, an empty TArray is returned.
