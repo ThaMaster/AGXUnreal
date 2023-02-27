@@ -102,7 +102,8 @@ public:
 	 * currently "in sync" with the Component will be updated as well.
 	 */
 	static void SetAnyComponentWorldTransform(
-		USceneComponent& Component, const FTransform& Transform, bool ForceOverwriteInstances = false);
+		USceneComponent& Component, const FTransform& Transform,
+		bool ForceOverwriteInstances = false);
 
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);

@@ -711,7 +711,7 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	}
 
 	Component.SetStaticMesh(NewMeshAsset);
-	Component.SetMaterial(0, RenderMaterial);	
+	Component.SetMaterial(0, RenderMaterial);
 	Component.SetVisibility(Visible);
 
 	const FGuid ShapeGuid = ShapeBarrier.GetShapeGuid();
@@ -997,7 +997,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	}
 
 	Component.SetStaticMesh(NewMeshAsset);
-	Component.SetMaterial(0, NewRenderMaterial);	
+	Component.SetMaterial(0, NewRenderMaterial);
 	Component.SetVisibility(Visible);
 
 	const FGuid RenderDataGuid = RenderDataBarrier.GetGuid();
