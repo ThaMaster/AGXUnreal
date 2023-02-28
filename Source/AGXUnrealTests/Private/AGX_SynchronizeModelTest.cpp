@@ -106,157 +106,193 @@ namespace AGX_SynchronizeModelTest_helpers
 		return AGX_ImporterToBlueprint::SynchronizeModel(BaseBp, Settigns);
 	}
 
-	//
-	// Functions operating on the SCS node tree.
-	//
-
-	USCS_Node* GetNodeChecked(const UBlueprint& Blueprint, const FString& Name)
+	/**
+	 * Delete all asset files created for the given mode.
+	 *
+	 * @param ArchiveName The name, not file name, of the model to delete assets for.
+	 * @return True if the directory does not exist, regardless of if it was deleted or did not
+	 * exist in the first place.
+	 */
+	bool DeleteImportedAssets(const FString& ArchiveName, FAutomationTestBase& Test)
 	{
-		USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
-		if (Node == nullptr)
+		const FString Root = FPaths::ProjectContentDir();
+		const FString ImportsLocal =
+			FPaths::Combine(FAGX_ImportUtilities::GetImportRootDirectoryName(), ArchiveName);
+		const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
+		const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
+		if (!FPaths::DirectoryExists(ImportsAbsolute))
 		{
-			UE_LOG(LogAGX, Error, TEXT("Did not find SCS Node '%s' in the Blueprint."), *Name);
-			return nullptr;
+			return true;
 		}
 
-		return Node;
-	}
+#if defined(__linux__)
+		/// @todo Workaround for internal issue #213.
+		Test.AddExpectedError(
+			TEXT("inotify_rm_watch cannot remove descriptor"),
+			EAutomationExpectedErrorFlags::Contains, 0);
+		Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
 
-	bool CheckNodeNonExisting(const UBlueprint& Blueprint, const FString& Name)
-	{
-		USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
-		if (Node != nullptr)
+		const bool Deleted = IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true);
+		if (!Deleted)
 		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Found SCS Node '%s' that was expected not to exist in the Blueprint."),
-				*Name);
-			return false;
+			Test.AddError(FString::Printf(
+				TEXT("%s: IFileManager::DeleteDirectory returned false trying to delete: '%s'"),
+				*Test.GetTestName(), *ImportsAbsolute));
+			return true;
 		}
-
-		return true;
+		return Deleted;
 	}
+}
 
-	bool CheckNodeNameAndEnsureNoParent(const UBlueprint& Blueprint, const FString& Name)
+//
+// Functions operating on the SCS node tree.
+//
+
+USCS_Node* GetNodeChecked(const UBlueprint& Blueprint, const FString& Name)
+{
+	USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
+	if (Node == nullptr)
 	{
-		USCS_Node* Node = GetNodeChecked(Blueprint, Name);
-		if (Node == nullptr)
-			return false;
-
-		if (USCS_Node* Parent = Blueprint.SimpleConstructionScript->FindParentNode(Node))
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("SCS Node '%s' has parent '%s' but was expected to not have a parent."), *Name,
-				*Parent->GetName());
-			return false;
-		}
-
-		return true;
+		UE_LOG(LogAGX, Error, TEXT("Did not find SCS Node '%s' in the Blueprint."), *Name);
+		return nullptr;
 	}
 
-	bool CheckNodeNoChild(const UBlueprint& Blueprint, const FString& Name)
+	return Node;
+}
+
+bool CheckNodeNonExisting(const UBlueprint& Blueprint, const FString& Name)
+{
+	USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
+	if (Node != nullptr)
 	{
-		USCS_Node* Node = GetNodeChecked(Blueprint, Name);
-		if (Node == nullptr)
-			return false; // Logging/error done in GetNodeChecked.
-
-		if (Node->GetChildNodes().Num() != 0)
-		{
-			UE_LOG(
-				LogAGX, Error, TEXT("Expected node '%s' not to have zero children, but it had %d"),
-				*Name, Node->GetChildNodes().Num());
-			return false;
-		}
-
-		return true;
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Found SCS Node '%s' that was expected not to exist in the Blueprint."), *Name);
+		return false;
 	}
 
-	bool CheckNodeNameAndParent(
-		const UBlueprint& Blueprint, const FString& Name, const FString& ParentNodeName,
-		bool EnsureNoChild)
+	return true;
+}
+
+bool CheckNodeNameAndEnsureNoParent(const UBlueprint& Blueprint, const FString& Name)
+{
+	USCS_Node* Node = GetNodeChecked(Blueprint, Name);
+	if (Node == nullptr)
+		return false;
+
+	if (USCS_Node* Parent = Blueprint.SimpleConstructionScript->FindParentNode(Node))
 	{
-		USCS_Node* Node = GetNodeChecked(Blueprint, Name);
-		if (Node == nullptr)
-			return false;
-
-		USCS_Node* Parent = Blueprint.SimpleConstructionScript->FindParentNode(Node);
-		if (Parent == nullptr)
-		{
-			UE_LOG(LogAGX, Error, TEXT("The SCS Node '%s' does not have a parent."), *Name);
-			return false;
-		}
-
-		if (Parent->GetVariableName().ToString() != ParentNodeName)
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("The SCS Node '%s' has a parent Node named '%s', expected it to be '%s'."),
-				*Name, *Parent->GetVariableName().ToString(), *ParentNodeName);
-			return false;
-		}
-
-		if (EnsureNoChild)
-		{
-			return CheckNodeNoChild(Blueprint, Name);
-		}
-
-		return true;
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("SCS Node '%s' has parent '%s' but was expected to not have a parent."), *Name,
+			*Parent->GetName());
+		return false;
 	}
 
-	USCS_Node* GetOnlyAttachChildChecked(USCS_Node* Node)
+	return true;
+}
+
+bool CheckNodeNoChild(const UBlueprint& Blueprint, const FString& Name)
+{
+	USCS_Node* Node = GetNodeChecked(Blueprint, Name);
+	if (Node == nullptr)
+		return false; // Logging/error done in GetNodeChecked.
+
+	if (Node->GetChildNodes().Num() != 0)
 	{
-		if (Node == nullptr)
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("GetOnlyAttachChildChecked failed because the passed Node was nullptr."));
-			return nullptr;
-		}
-
-		const auto& Children = Node->GetChildNodes();
-		if (Children.Num() != 1)
-		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Number of children of node '%s' was expected to be 1 but was %d."),
-				*Node->GetVariableName().ToString(), Children.Num());
-			return nullptr;
-		}
-
-		return Children[0];
+		UE_LOG(
+			LogAGX, Error, TEXT("Expected node '%s' not to have zero children, but it had %d"),
+			*Name, Node->GetChildNodes().Num());
+		return false;
 	}
 
-	//
-	// Functions operating on template components.
-	//
+	return true;
+}
 
-	template <typename UObject>
-	UObject* GetTemplateComponentByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
+bool CheckNodeNameAndParent(
+	const UBlueprint& Blueprint, const FString& Name, const FString& ParentNodeName,
+	bool EnsureNoChild)
+{
+	USCS_Node* Node = GetNodeChecked(Blueprint, Name);
+	if (Node == nullptr)
+		return false;
+
+	USCS_Node* Parent = Blueprint.SimpleConstructionScript->FindParentNode(Node);
+	if (Parent == nullptr)
 	{
-		return AgxAutomationCommon::GetByName<UObject>(
-			Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(Name));
+		UE_LOG(LogAGX, Error, TEXT("The SCS Node '%s' does not have a parent."), *Name);
+		return false;
 	}
 
-	template <typename UAsset>
-	FString GetAssetPath(const FString& ArchiveName, const FString& AssetName)
+	if (Parent->GetVariableName().ToString() != ParentNodeName)
 	{
-		const FString Path = FPaths::ConvertRelativePathToFull(FPaths::Combine(
-			FPaths::ProjectContentDir(), FAGX_ImportUtilities::GetImportRootDirectoryName(),
-			FPaths::GetBaseFilename(ArchiveName),
-			FAGX_ImportUtilities::GetImportAssetDirectoryName<UAsset>(), AssetName));
-		return Path;
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("The SCS Node '%s' has a parent Node named '%s', expected it to be '%s'."), *Name,
+			*Parent->GetVariableName().ToString(), *ParentNodeName);
+		return false;
 	}
 
-	//
-	// Misc. functions.
-	//
-
-	template <typename F>
-	F FromRad(F radians)
+	if (EnsureNoChild)
 	{
-		return FMath::RadiansToDegrees(radians);
+		return CheckNodeNoChild(Blueprint, Name);
 	}
+
+	return true;
+}
+
+USCS_Node* GetOnlyAttachChildChecked(USCS_Node* Node)
+{
+	if (Node == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("GetOnlyAttachChildChecked failed because the passed Node was nullptr."));
+		return nullptr;
+	}
+
+	const auto& Children = Node->GetChildNodes();
+	if (Children.Num() != 1)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Number of children of node '%s' was expected to be 1 but was %d."),
+			*Node->GetVariableName().ToString(), Children.Num());
+		return nullptr;
+	}
+
+	return Children[0];
+}
+
+//
+// Functions operating on template components.
+//
+
+template <typename UObject>
+UObject* GetTemplateComponentByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
+{
+	return AgxAutomationCommon::GetByName<UObject>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(Name));
+}
+
+template <typename UAsset>
+FString GetAssetPath(const FString& ArchiveName, const FString& AssetName)
+{
+	const FString Path = FPaths::ConvertRelativePathToFull(FPaths::Combine(
+		FPaths::ProjectContentDir(), FAGX_ImportUtilities::GetImportRootDirectoryName(),
+		FPaths::GetBaseFilename(ArchiveName),
+		FAGX_ImportUtilities::GetImportAssetDirectoryName<UAsset>(), AssetName));
+	return Path;
+}
+
+//
+// Misc. functions.
+//
+
+template <typename F>
+F FromRad(F radians)
+{
+	return FMath::RadiansToDegrees(radians);
 }
 
 //
@@ -267,16 +303,11 @@ DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
 
 bool FDeleteImportedAssets::Update()
 {
-	const FString Root = FPaths::ProjectContentDir();
-	const FString ImportsLocal =
-		FPaths::Combine(FAGX_ImportUtilities::GetImportRootDirectoryName(), ArchiveName);
-	const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
-	const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
-	if (!FPaths::DirectoryExists(ImportsAbsolute))
+	const FString Path = FAGX_ImportUtilities::GetDefaultModelImportDirectory(ArchiveName);
+	if (!FPaths::DirectoryExists(Path))
 	{
 		Test.AddError(FString::Printf(
-			TEXT("Unable to delete files directory '%s' because it does not exist."),
-			*ImportsAbsolute));
+			TEXT("Unable to delete files directory '%s' because it does not exist."), *Path));
 		return true;
 	}
 
@@ -291,14 +322,188 @@ bool FDeleteImportedAssets::Update()
 	// Doing a file system delete of the assets is a bit harsh. Works in this case since we know
 	// nothing will use these assets the next time Unreal Editor is started since we don't use
 	// the imported unit test assets for anything.
-	if (!IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true))
+	if (!IFileManager::Get().DeleteDirectory(*Path, true, true))
 	{
 		Test.AddError(FString::Printf(
-			TEXT("IFileManager::DeleteDirectory returned false trying to remove: '%s'"),
-			*ImportsAbsolute));
+			TEXT("IFileManager::DeleteDirectory returned false trying to remove: '%s'"), *Path));
 		return true;
 	}
 
+	return true;
+}
+
+class FSynchronizeModelTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCallSynchronizeModelTest, FSynchronizeModelTest&, Test);
+
+/**
+ * Base class for tests that load a model and then synchronizes with an updated version of the
+ * same model.
+ */
+class FSynchronizeModelTest : public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	/**
+	 * @param InTestName The name of the test, passed to FAutomationTestBase.
+	 * @param InTestPath The hierarchical name of the test, often starting with AGXUnreal.Editor.
+	 * @param InInitialModelFileName The name of the model file to import.
+	 * @param InUpdatedModelFileName Model file to synchronize with.
+	 */
+	FSynchronizeModelTest(
+		const TCHAR* InTestName, const TCHAR* InTestPath, const TCHAR* InInitialModelFileName,
+		const TCHAR* InUpdatedModelFileName)
+		: AgxAutomationCommon::FAgxAutomationTest(InTestName, InTestPath)
+		, InitialModelFileName(InInitialModelFileName)
+		, InitialModelName(FPaths::GetBaseFilename(InitialModelFileName))
+		, UpdatedModelFileName(InUpdatedModelFileName)
+		, UpdatedModelName(FPaths::GetBaseFilename(UpdatedModelFileName))
+		, ActorName(InitialModelName + "_Instance")
+	{
+	}
+
+	virtual bool RunTest(const FString& Parameters) override
+	{
+		World = FAGX_EditorUtilities::GetCurrentWorld();
+		if (!TestNotNull(TEXT("World"), World))
+		{
+			return false;
+		}
+
+		// Delete any old assets that may remain from previous test runs.
+		AGX_SynchronizeModelTest_helpers::DeleteImportedAssets(InitialModelName, *this);
+
+		ADD_LATENT_AUTOMATION_COMMAND(FCallSynchronizeModelTest(*this));
+		ADD_LATENT_AUTOMATION_COMMAND(FDeleteImportedAssets(InitialModelName, *this));
+		return true;
+	}
+
+	void RunTest()
+	{
+		using namespace AGX_SynchronizeModelTest_helpers;
+
+		// Import initial state.
+		ChildBlueprint = Import(InitialModelFileName, true);
+		if (!TestNotNull(TEXT("Imported child Blueprint before synchronize"), ChildBlueprint))
+		{
+			return;
+		}
+
+		// The Components live in the parent Blueprint, so get that.
+		ParentBlueprint = FAGX_BlueprintUtilities::GetOutermostParent(ChildBlueprint);
+		if (!TestNotNull(TEXT("Imported parent Blueprint before synchronize"), ParentBlueprint))
+		{
+			return;
+		}
+
+		InitialTemplateComponents = FAGX_BlueprintUtilities::GetTemplateComponents(ParentBlueprint);
+
+		// Spawn an instance of the imported Blueprint in the level.
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Name = FName(ActorName);
+		InitialBlueprintInstance =
+			World->SpawnActor<AActor>(ChildBlueprint->GeneratedClass, SpawnParameters);
+		if (!TestNotNull(
+				TEXT("Blueprint instance before synchronization"), InitialBlueprintInstance))
+		{
+			return;
+		}
+		if (!TestEqual(
+				TEXT("Actor found by GetActorByName and Actor created by SpawnActor before "
+					 "synchronize."),
+				GetActorInstanceFromWorld(), InitialBlueprintInstance))
+		{
+			return;
+		}
+
+		// Initial setup complete, call the first test callback.
+		if (!PostImport())
+		{
+			return;
+		}
+
+		SynchronizeModel(*ParentBlueprint, UpdatedModelFileName, true);
+
+		if (!TestTrue(TEXT("Child Blueprint is valid after synchronize"), IsValid(ChildBlueprint)))
+		{
+			return;
+		}
+		if (!TestTrue(
+				TEXT("Parent Blueprint is valid after synchronize"), IsValid(ParentBlueprint)))
+		{
+			return;
+		}
+
+		UpdatedTemplateComponents = FAGX_BlueprintUtilities::GetTemplateComponents(ParentBlueprint);
+
+		UpdatedBlueprintInstance = GetActorInstanceFromWorld();
+		if (!TestNotNull(TEXT("Blueprint instance after synchronize"), UpdatedBlueprintInstance))
+		{
+			return;
+		}
+		if (!TestNotEqual(
+				TEXT("Initial and updated Blueprint instances"), InitialBlueprintInstance,
+				UpdatedBlueprintInstance))
+		{
+			// We don't actually assume or depend on the instance being replaced during model
+			// synchronization, but it would be good to know if a future version of Unreal Editor
+			// changes this behavior. It may be a signal that more has changed behind the scenes.
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Expected the Blueprint instance in the level to be replaced during model "
+					 "synchronization."));
+			return;
+		}
+
+		// The initial instance is now gone, use UpdatedBlueprintInstance from now on.
+		InitialBlueprintInstance = nullptr;
+
+		// Model synchronization complete, call the second test callback.
+		PostSynchronize();
+
+		// All testing complete, call the cleanup callback.
+		Cleanup();
+
+		// Cleanup our own state.
+		UpdatedBlueprintInstance->Destroy();
+		UpdatedBlueprintInstance = nullptr;
+	}
+
+	virtual bool PostImport() = 0;
+	virtual bool PostSynchronize() = 0;
+	virtual bool Cleanup() = 0;
+
+	AActor* GetActorInstanceFromWorld()
+	{
+		return FAGX_ObjectUtilities::GetActorByName(*World, ActorName);
+	}
+
+	// Members valid throughout the life-time of the test.
+	const FString InitialModelFileName;
+	const FString InitialModelName;
+	const FString UpdatedModelFileName;
+	const FString UpdatedModelName;
+	const FString ActorName;
+	UWorld* World = nullptr;
+
+	// Members valid from after the initial import to the end of the test.
+	UBlueprint* ChildBlueprint = nullptr;
+	UBlueprint* ParentBlueprint = nullptr;
+
+	// Members valid from the initial import to model synchronization.
+	// While some of the Components may survive template reconstruction, a particular model may
+	// add or delete components freely.
+	AActor* InitialBlueprintInstance = nullptr;
+	TArray<UActorComponent*> InitialTemplateComponents;
+
+	// Members valid after model synchronization.
+	AActor* UpdatedBlueprintInstance = nullptr;
+	TArray<UActorComponent*> UpdatedTemplateComponents;
+};
+
+bool FCallSynchronizeModelTest::Update()
+{
+	Test.RunTest();
 	return true;
 }
 
@@ -1114,250 +1319,145 @@ bool FIgnoreDisabledTrimeshTFTest::RunTest(const FString& Parameters)
 // Merge Split Thresholds synchronization test starts here.
 //
 
-/**
- * Import model with a Rigid Body, a Hinge, and a Constraint Merge Split Thresholds. Then
- * synchronize with an updated model where the thresholds has been removed from the hinge. The
- * Constraint Merge Split Thresholds asset should be deleted and the reference to it cleared.
- */
-class FRemoveConstraintMergeSplitThresholdsTest;
-
-DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
-	FRemoveConstraintMergeSplitThresholdsCommand, FString, InitialArchiveFileName, FString,
-	UpdatedArchiveFileName, FRemoveConstraintMergeSplitThresholdsTest&, Test);
-
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FRemoveConstraintMergeSplitThresholdsCleanupCommand, FRemoveConstraintMergeSplitThresholdsTest&,
-	Test);
-
-class FRemoveConstraintMergeSplitThresholdsTest final
-	: public AgxAutomationCommon::FAgxAutomationTest
+class FRemoveConstraintMergeSplitThresholdsTest : public FSynchronizeModelTest
 {
 public:
 	FRemoveConstraintMergeSplitThresholdsTest()
-		: AgxAutomationCommon::FAgxAutomationTest(
+		: FSynchronizeModelTest(
 			  TEXT("FRemoveConstraintMergeSplitThresholdsTest"),
 			  TEXT(
-				  "AGXUnreal.Editor.AGX_SynchronizeModelTest.RemoveConstraintMergeSplitThresholds"))
+				  "AGXUnreal.Editor.AGX_SynchronizeModelTest.RemoveConstraintMergeSplitThresholds"),
+			  TEXT("thresholds_remove__initial.agx"), TEXT("thresholds_remove__updated.agx"))
 	{
 	}
 
-	UWorld* World = nullptr;
-	AActor* Instance = nullptr;
+	FString AssetPath;
 
-protected:
-	virtual bool RunTest(const FString& Parameters) override
+	virtual bool PostImport() override
 	{
-		const FString InitialArchiveFileName = "thresholds_remove__initial.agx";
-		const FString UpdatedArchiveFileName = "thresholds_remove__updated.agx";
-		const FString InitialArchiveName = FPaths::GetBaseFilename(InitialArchiveFileName);
+		using namespace AGX_SynchronizeModelTest_helpers;
 
-		const FString Root = FPaths::ProjectContentDir();
-		const FString ImportsLocal =
-			FPaths::Combine(FAGX_ImportUtilities::GetImportRootDirectoryName(), InitialArchiveName);
-		const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
-		const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
-		if (FPaths::DirectoryExists(ImportsAbsolute))
-		{
-			if (!IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true))
-			{
-				AddError(FString::Printf(
-					TEXT(
-						"At start of %s: Imported model assets already exists. Attempted to remove "
-						"but IFileManager::DeleteDirectory returned false trying to remove: '%s'"),
-					*TestName, *ImportsAbsolute));
-				return true;
-			}
-		}
-
-		World = FAGX_EditorUtilities::GetCurrentWorld();
-		if (!TestNotNull(TEXT("World"), World))
+		// Make sure we got the template Components we expect.
+		// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 1 Hinge.
+		if (!TestEqual(
+				TEXT("Number of imported components before synchronize"),
+				InitialTemplateComponents.Num(), 4))
 		{
 			return false;
 		}
-		ADD_LATENT_AUTOMATION_COMMAND(FRemoveConstraintMergeSplitThresholdsCommand(
-			InitialArchiveFileName, UpdatedArchiveFileName, *this));
-		ADD_LATENT_AUTOMATION_COMMAND(FRemoveConstraintMergeSplitThresholdsCleanupCommand(*this));
-		ADD_LATENT_AUTOMATION_COMMAND(FDeleteImportedAssets(InitialArchiveName, *this));
+
+		// Check the Blueprint.
+		UAGX_HingeConstraintComponent* TemplateHinge =
+			GetTemplateComponentByName<UAGX_HingeConstraintComponent>(
+				InitialTemplateComponents, TEXT("Hinge"));
+		if (!TestNotNull(TEXT("Template Hinge before synchronize"), TemplateHinge))
+		{
+			return false;
+		}
+		UAGX_ConstraintMergeSplitThresholds* TemplateThresholds =
+			TemplateHinge->MergeSplitProperties.Thresholds;
+		if (!TestNotNull(TEXT("Template Hinge Thresholds before synchronize"), TemplateThresholds))
+		{
+			return false;
+		}
+
+		// Check the Blueprint instance.
+		UAGX_HingeConstraintComponent* HingeInstance =
+			FAGX_ObjectUtilities::GetComponentByName<UAGX_HingeConstraintComponent>(
+				*InitialBlueprintInstance, TEXT("Hinge"));
+		if (!TestNotNull(TEXT("Hinge instance before synchronize"), HingeInstance))
+		{
+			return false;
+		}
+		UAGX_ConstraintMergeSplitThresholds* ThresholdsInstance =
+			HingeInstance->MergeSplitProperties.Thresholds;
+		if (!TestNotNull(TEXT("Hinge instance thresholds before synchronize"), ThresholdsInstance))
+		{
+			return false;
+		}
+
+		// The template and the instance should point to the same asset.
+		if (!TestEqual(TEXT("Template and instance asset"), TemplateThresholds, ThresholdsInstance))
+		{
+			return false;
+		}
+
+		// Check the asset file.
+		const FString AssetName =
+			FString::Printf(TEXT("AGX_CMST_%s.uasset"), *TemplateThresholds->ImportGuid.ToString());
+		AssetPath =
+			GetAssetPath<UAGX_ConstraintMergeSplitThresholds>(InitialModelFileName, AssetName);
+		if (!TestTrue(
+				TEXT("Thresholds asset exists before synchronize"), FPaths::FileExists(AssetPath)))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	virtual bool PostSynchronize() override
+	{
+		using namespace AGX_SynchronizeModelTest_helpers;
+
+		// There are three places where the thresholds should have been removed:
+		// - Reference in the Hinge template should have been cleared to nullptr.
+		// - Reference in the Hinge instance should have been cleared to nullptr.
+		// - Asset file on drive should have been deleted.
+
+		// Reference in the Hinge template should have been cleared to nullptr.
+		UAGX_HingeConstraintComponent* TemplateHinge =
+			GetTemplateComponentByName<UAGX_HingeConstraintComponent>(
+				UpdatedTemplateComponents, TEXT("Hinge"));
+		if (!TestNotNull(TEXT("Template Hinge after synchronize"), TemplateHinge))
+		{
+			return false;
+		}
+		const UAGX_ConstraintMergeSplitThresholds* TemplateThresholds =
+			TemplateHinge->MergeSplitProperties.Thresholds;
+		if (!TestNull(TEXT("Template Hinge Thresholds after synchronize"), TemplateThresholds))
+		{
+			return false;
+		}
+
+		// Reference in the Hinge instance should have been cleared to nullptr.
+		UAGX_HingeConstraintComponent* HingeInstance =
+			FAGX_ObjectUtilities::GetComponentByName<UAGX_HingeConstraintComponent>(
+				*UpdatedBlueprintInstance, TEXT("Hinge"));
+		if (!TestNotNull(TEXT("Hinge instance after synchronize"), HingeInstance))
+		{
+			return false;
+		}
+		const UAGX_ConstraintMergeSplitThresholds* ThresholdsInstance =
+			HingeInstance->MergeSplitProperties.Thresholds;
+		if (!TestNull(TEXT("Hinge instance thresholds after synchronize"), ThresholdsInstance))
+		{
+			return false;
+		}
+
+		// Asset file on drive should have been deleted.
+		if (!TestFalse(
+				TEXT("Thresholds asset removed after synchronize"), FPaths::FileExists(AssetPath)))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	virtual bool Cleanup() override
+	{
+		// Nothing to do.
 		return true;
 	}
 };
+
 
 namespace
 {
 	FRemoveConstraintMergeSplitThresholdsTest RemoveConstraintMergeSplitThresholdsTest;
 }
 
-bool FRemoveConstraintMergeSplitThresholdsCommand::Update()
-{
-	using namespace AGX_SynchronizeModelTest_helpers;
-
-	const FString InitialArchiveName = FPaths::GetBaseFilename(InitialArchiveFileName);
-
-	// Import initial state.
-	UBlueprint* ChildBlueprint = Import(InitialArchiveFileName, true);
-	if (!Test.TestNotNull(TEXT("Imported child Blueprint before synchronize"), ChildBlueprint))
-	{
-		return true;
-	}
-
-	// The Components live in the parent Blueprint, so get that.
-	UBlueprint* ParentBlueprint = FAGX_BlueprintUtilities::GetOutermostParent(ChildBlueprint);
-	if (!Test.TestNotNull(TEXT("Imported parent Blueprint before synchronize"), ParentBlueprint))
-	{
-		return true;
-	}
-
-	TArray<UActorComponent*> TemplateComponents =
-		FAGX_BlueprintUtilities::GetTemplateComponents(ParentBlueprint);
-
-	// Make sure we got the template Components we expect.
-	// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 1 Hinge.
-	if (!Test.TestEqual(
-			TEXT("Number of imported components before synchronize"), TemplateComponents.Num(), 4))
-	{
-		return true;
-	}
-
-	UAGX_HingeConstraintComponent* TemplateHinge =
-		AgxAutomationCommon::GetByName<UAGX_HingeConstraintComponent>(
-			TemplateComponents, *FAGX_BlueprintUtilities::ToTemplateComponentName(TEXT("Hinge")));
-	if (!Test.TestNotNull(TEXT("Hinge Template Component before synchronize"), TemplateHinge))
-	{
-		return true;
-	}
-
-	UAGX_ConstraintMergeSplitThresholds* TemplateThresholds =
-		TemplateHinge->MergeSplitProperties.Thresholds;
-	if (!Test.TestNotNull(TEXT("Template Hinge Thresholds before synchronize"), TemplateThresholds))
-	{
-		return true;
-	}
-
-	// Check that the Thresholds asset file is where it should be.
-	const FString AssetName =
-		FString::Printf(TEXT("AGX_CMST_%s.uasset"), *TemplateThresholds->ImportGuid.ToString());
-	const FString AssetPath =
-		GetAssetPath<UAGX_ConstraintMergeSplitThresholds>(InitialArchiveFileName, AssetName);
-	if (!Test.TestTrue(
-			TEXT("Thresholds asset exists before synchronize"), FPaths::FileExists(AssetPath)))
-	{
-		return true;
-	}
-
-	// Create an instance of the Blueprint in the world. Must select a unique name, and the
-	// archive name is already taken by a UScript struct. Not sure what that is, the Blueprints
-	// we create get a 'BP_' prefix.
-	const FString ActorName = InitialArchiveName + TEXT("_Instance");
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.Name = FName(ActorName);
-	AActor* BlueprintInstance =
-		Test.World->SpawnActor<AActor>(ChildBlueprint->GeneratedClass, SpawnParameters);
-	if (!Test.TestNotNull(TEXT("Blueprint instance before synchronize"), BlueprintInstance))
-	{
-		return true;
-	}
-	if (!Test.TestEqual(
-			TEXT(
-				"Actor found by GetActorByName and Actor created by SpawnActor before synchronize"),
-			FAGX_ObjectUtilities::GetActorByName(*Test.World, ActorName), BlueprintInstance))
-	{
-		return true;
-	}
-	Test.Instance = BlueprintInstance;
-
-	UAGX_HingeConstraintComponent* HingeInstance =
-		FAGX_ObjectUtilities::GetComponentByName<UAGX_HingeConstraintComponent>(
-			*BlueprintInstance, TEXT("Hinge"));
-	if (!Test.TestNotNull(TEXT("Hinge instance before synchronize"), HingeInstance))
-	{
-		return true;
-	}
-
-	UAGX_ConstraintMergeSplitThresholds* ThresholdsInstance =
-		HingeInstance->MergeSplitProperties.Thresholds;
-	if (!Test.TestNotNull(TEXT("Hinge instance thresholds before synchronize"), ThresholdsInstance))
-	{
-		return true;
-	}
-
-	// Synchronize with updated state.
-	SynchronizeModel(*ParentBlueprint, UpdatedArchiveFileName, true);
-
-	// Model synchronization should not invalidate the Blueprints.
-	if (!Test.TestTrue(TEXT("Child Blueprint is valid after synchronize"), IsValid(ChildBlueprint)))
-	{
-		return true;
-	}
-	if (!Test.TestTrue(
-			TEXT("Parent Blueprint is valid after synchronize"), IsValid(ParentBlueprint)))
-	{
-		return true;
-	}
-
-	// There are three places where the thresholds should have been removed:
-	// - Reference in the Hinge template should have been cleared to nullptr.
-	// - Reference in the Hinge instance should have been cleared to nullptr.
-	// - Asset on drive should have been deleted.
-
-	// Reference in the Hinge template should have been cleared to nullptr.
-	TemplateThresholds = TemplateHinge->MergeSplitProperties.Thresholds;
-	if (!Test.TestNull(TEXT("Template Hinge Thresholds after synchronize"), TemplateThresholds))
-	{
-		return true;
-	}
-
-	// Sometime during model synchronization, I assume during Blueprint compilation, the Blueprint
-	// instances in the level are destroyed and new ones created in their place. Find that new
-	// instance.
-	AActor* NewBlueprintInstance = FAGX_ObjectUtilities::GetActorByName(*Test.World, ActorName);
-	if (!Test.TestNotNull(
-			TEXT("Blueprint instance found by Actor name after synchronize"), NewBlueprintInstance))
-	{
-		return true;
-	}
-	UAGX_HingeConstraintComponent* NewHingeInstance =
-		FAGX_ObjectUtilities::GetComponentByName<UAGX_HingeConstraintComponent>(
-			*NewBlueprintInstance, TEXT("Hinge"));
-	if (!Test.TestNotNull(TEXT("New Hinge instance after synchronize"), NewHingeInstance))
-	{
-		return true;
-	}
-	UAGX_ConstraintMergeSplitThresholds* NewThresholdsInstance =
-		NewHingeInstance->MergeSplitProperties.Thresholds;
-
-	// Reference in the Hinge instance should have been cleared to nullptr.
-	if (!Test.TestNull(
-			TEXT("New Hinge instance Thresholds after synchronize"), NewThresholdsInstance))
-	{
-		return true;
-	}
-
-	// Asset on drive should have been deleted.
-	if (!Test.TestFalse(
-			TEXT("Thresholds asset removed after synchronize"), FPaths::FileExists(AssetPath)))
-	{
-		return true;
-	}
-
-	return true;
-}
-
-bool FRemoveConstraintMergeSplitThresholdsCleanupCommand::Update()
-{
-	if (Test.World == nullptr || Test.Instance == nullptr)
-	{
-		// The Actor was either never created or destroyed in the previous tick by the code below.
-		return true;
-	}
-
-	Test.Instance->Destroy();
-	Test.Instance = nullptr;
-
-	// Actor destruction is a latent command, i.e. doesn't happen immediately.
-	// Return false here so we continue running this Command for the next tick as well so that the
-	// next Command in the queue doesn't see the Actor.
-	return false;
-}
 
 /**
  * Import model with a Rigid Body, a Hinge, and a Constraint Merge Split Thresholds. Then
