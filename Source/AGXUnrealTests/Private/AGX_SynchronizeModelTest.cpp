@@ -1161,10 +1161,10 @@ protected:
 			if (!IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true))
 			{
 				AddError(FString::Printf(
-					TEXT("At start of RemoveConstraintMergeSplitThresholds test: Imported model "
-						 "assets already exists. Attempted to remove but "
-						 "IFileManager::DeleteDirectory returned false trying to remove: '%s'"),
-					*ImportsAbsolute));
+					TEXT(
+						"At start of %s: Imported model assets already exists. Attempted to remove "
+						"but IFileManager::DeleteDirectory returned false trying to remove: '%s'"),
+					*TestName, *ImportsAbsolute));
 				return true;
 			}
 		}
@@ -1346,7 +1346,7 @@ bool FRemoveConstraintMergeSplitThresholdsCleanupCommand::Update()
 {
 	if (Test.World == nullptr || Test.Instance == nullptr)
 	{
-		// The Actor was either never created, or destroyed in the previous tick by the code below.
+		// The Actor was either never created or destroyed in the previous tick by the code below.
 		return true;
 	}
 
@@ -1394,6 +1394,25 @@ protected:
 		const FString InitialArchiveFileName = "thresholds_modify__initial.agx";
 		const FString UpdatedArchiveFileName = "thresholds_modify__updated.agx";
 		const FString InitialArchiveName = FPaths::GetBaseFilename(InitialArchiveFileName);
+
+		const FString Root = FPaths::ProjectContentDir();
+		const FString ImportsLocal =
+			FPaths::Combine(FAGX_ImportUtilities::GetImportRootDirectoryName(), InitialArchiveName);
+		const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
+		const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
+		if (FPaths::DirectoryExists(ImportsAbsolute))
+		{
+			if (!IFileManager::Get().DeleteDirectory(*ImportsAbsolute, true, true))
+			{
+				AddError(FString::Printf(
+					TEXT("At start of %s: Imported model assets already exists. Attempted to "
+						 "remove but IFileManager::DeleteDirectory returned false trying to "
+						 "remove: '%s'"),
+					*TestName, *ImportsAbsolute));
+				return true;
+			}
+		}
+
 		World = FAGX_EditorUtilities::GetCurrentWorld();
 		if (!TestNotNull(TEXT("World"), World))
 		{
@@ -1416,71 +1435,106 @@ bool FModifyConstraintMergeSplitThresholdsCommand::Update()
 {
 	using namespace AGX_SynchronizeModelTest_helpers;
 
+	const FString InitialArchiveName = FPaths::GetBaseFilename(InitialArchiveFileName);
+
 	// Import initial state.
-	UBlueprint* Blueprint = Import(InitialArchiveFileName, true);
-	if (!Test.TestNotNull(
-			FString::Printf(TEXT("Could not import '%s'."), *InitialArchiveFileName), Blueprint))
+	UBlueprint* ChildBlueprint = Import(InitialArchiveFileName, true);
+	if (!Test.TestNotNull(TEXT("Imported child Blueprint before synchronize."), ChildBlueprint))
 	{
 		return true;
 	}
 
 	// All the data is owned by the parent Blueprint, so get that.
-	UBlueprint* BlueprintParent = FAGX_BlueprintUtilities::GetOutermostParent(Blueprint);
-	if (!Test.TestNotNull(
-			*FString::Printf(
-				TEXT("Could not get Blueprint parent for Blueprint imported from '%s'."),
-				*InitialArchiveFileName),
-			BlueprintParent))
+	UBlueprint* ParentBlueprint = FAGX_BlueprintUtilities::GetOutermostParent(ChildBlueprint);
+	if (!Test.TestNotNull(TEXT("Imported parent Blueprint before synchronize."), ParentBlueprint))
 	{
 		return true;
 	}
 
-	// Make sure we got the Components we need.
+	TArray<UActorComponent*> TemplateComponents =
+		FAGX_BlueprintUtilities::GetTemplateComponents(ParentBlueprint);
+
+	// Make sure we got the Components we expect.
 	// 1 DefaultSceneRoot, 1 Model Source, 1 Rigid Body, 1 Hinge.
-	TArray<UActorComponent*> Components =
-		FAGX_BlueprintUtilities::GetTemplateComponents(BlueprintParent);
-	if (!Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4))
+	if (!Test.TestEqual(
+			TEXT("Number of imported components before synchronize"), TemplateComponents.Num(), 4))
 	{
 		return true;
 	}
-	UAGX_HingeConstraintComponent* Hinge =
-		GetTemplateComponentByName<UAGX_HingeConstraintComponent>(Components, TEXT("Hinge"));
-	if (!Test.TestNotNull(
-			*FString::Printf(
-				TEXT("Could not find Hinge Component in Blueprint imported from '%s'."),
-				*InitialArchiveFileName),
-			Hinge))
+
+	UAGX_HingeConstraintComponent* TemplateHinge =
+		GetTemplateComponentByName<UAGX_HingeConstraintComponent>(
+			TemplateComponents, TEXT("Hinge"));
+	if (!Test.TestNotNull(TEXT("Hinge Template Component before synchronize"), TemplateHinge))
 	{
 		return true;
 	}
 
 	// Check initial state.
-	UAGX_ConstraintMergeSplitThresholds* Thresholds = Hinge->MergeSplitProperties.Thresholds;
-	Test.TestEqual(TEXT("MaxDesiredForceRangeDiff"), Thresholds->MaxDesiredForceRangeDiff, 1.0);
+	UAGX_ConstraintMergeSplitThresholds* TemplateThresholds =
+		TemplateHinge->MergeSplitProperties.Thresholds;
+	if (!Test.TestNotNull(TEXT("Template Hinge Thresholds before synchronize"), TemplateThresholds))
+	{
+		return true;
+	}
 	Test.TestEqual(
-		TEXT("MaxDesiredLockAngleDiff"), Thresholds->MaxDesiredLockAngleDiff, FromRad(2.0));
+		TEXT("MaxDesiredForceRangeDiff"), TemplateThresholds->MaxDesiredForceRangeDiff, 1.0);
 	Test.TestEqual(
-		TEXT("MaxDesiredRangeAngleDiff"), Thresholds->MaxDesiredRangeAngleDiff, FromRad(3.0));
-	Test.TestEqual(TEXT("MaxDesiredSpeedDiff"), Thresholds->MaxDesiredSpeedDiff, FromRad(4.0));
-	Test.TestEqual(TEXT("MaxRelativeSpeed"), Thresholds->MaxRelativeSpeed, FromRad(5.0));
+		TEXT("MaxDesiredLockAngleDiff"), TemplateThresholds->MaxDesiredLockAngleDiff, FromRad(2.0));
+	Test.TestEqual(
+		TEXT("MaxDesiredRangeAngleDiff"), TemplateThresholds->MaxDesiredRangeAngleDiff,
+		FromRad(3.0));
+	Test.TestEqual(
+		TEXT("MaxDesiredSpeedDiff"), TemplateThresholds->MaxDesiredSpeedDiff, FromRad(4.0));
+	Test.TestEqual(TEXT("MaxRelativeSpeed"), TemplateThresholds->MaxRelativeSpeed, FromRad(5.0));
 
-	// Create an instance of the Blueprint in the world.
-	AActor* Instance = Test.World->SpawnActor<AActor>(Blueprint->GeneratedClass);
-	if (!Test.TestNotNull(TEXT("Could not create instance of imported Blueprint."), Instance))
+	// Check that the Thresholds asset file is where it should be.
+	const FString AssetName =
+		FString::Printf(TEXT("AGX_CMST_%s.uasset"), *TemplateThresholds->ImportGuid.ToString());
+	const FString AssetPath =
+		GetAssetPath<UAGX_ConstraintMergeSplitThresholds>(InitialArchiveFileName, AssetName);
+	if (!Test.TestTrue(
+			TEXT("Thresholds asset exists before synchronize"), FPaths::FileExists(AssetPath)))
 	{
 		return true;
 	}
 
+	// Create an instance of the Blueprint in the world. Must select a unique name, and the
+	// archive name is already taken by a UScript struct. Not sure what that is, the Blueprints
+	// we create get a 'BP_' prefix.
+	const FString ActorName = InitialArchiveName + TEXT("_Instance");
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Name = FName(ActorName);
+	AActor* BlueprintInstance =
+		Test.World->SpawnActor<AActor>(ChildBlueprint->GeneratedClass, SpawnParameters);
+	if (!Test.TestNotNull(TEXT("Blueprint instance before synchronize"), BlueprintInstance))
+	{
+		return true;
+	}
+	if (!Test.TestEqual(
+			TEXT(
+				"Actor found by GetActorByName and Actor created by SpawnActor before synchronize"),
+			FAGX_ObjectUtilities::GetActorByName(*Test.World, ActorName), BlueprintInstance))
+	{
+		return true;
+	}
+	Test.Instance = BlueprintInstance;
+
 	UAGX_HingeConstraintComponent* HingeInstance =
 		FAGX_ObjectUtilities::GetComponentByName<UAGX_HingeConstraintComponent>(
-			*Instance, TEXT("Hinge"));
+			*BlueprintInstance, TEXT("Hinge"));
 	if (!Test.TestNotNull(
 			TEXT("Blueprint instance does not have a Hinge Component."), HingeInstance))
 	{
 		return true;
 	}
+
 	UAGX_ConstraintMergeSplitThresholds* ThresholdsInstance =
 		HingeInstance->MergeSplitProperties.Thresholds;
+	if (!Test.TestNotNull(TEXT("Hinge instance Thresholds before synchronize"), ThresholdsInstance))
+	{
+		return true;
+	}
 	Test.TestEqual(
 		TEXT("MaxDesiredForceRangeDiff"), ThresholdsInstance->MaxDesiredForceRangeDiff, 1.0);
 	Test.TestEqual(
@@ -1493,44 +1547,71 @@ bool FModifyConstraintMergeSplitThresholdsCommand::Update()
 	Test.TestEqual(TEXT("MaxRelativeSpeed"), ThresholdsInstance->MaxRelativeSpeed, FromRad(5.0));
 
 	// Synchronize with updated state.
-	SynchronizeModel(*BlueprintParent, UpdatedArchiveFileName, true);
+	SynchronizeModel(*ParentBlueprint, UpdatedArchiveFileName, true);
 
 	// Check updated state.
-	UAGX_ConstraintMergeSplitThresholds* NewThresholds = Hinge->MergeSplitProperties.Thresholds;
+	UAGX_ConstraintMergeSplitThresholds* NewThresholds =
+		TemplateHinge->MergeSplitProperties.Thresholds;
 	if (!Test.TestNotNull(TEXT("Hinge thresholds after synchronize"), NewThresholds))
 	{
 		return true;
 	}
 	Test.TestEqual(
-		TEXT("Thresholds pointer before and after synchronize"), Thresholds, NewThresholds);
-	Test.TestEqual(TEXT("MaxDesiredForceRangeDiff"), Thresholds->MaxDesiredForceRangeDiff, 10.0);
+		TEXT("Thresholds pointer before and after synchronize"), TemplateThresholds, NewThresholds);
 	Test.TestEqual(
-		TEXT("MaxDesiredLockAngleDiff"), Thresholds->MaxDesiredLockAngleDiff, FromRad(20.0));
+		TEXT("MaxDesiredForceRangeDiff"), TemplateThresholds->MaxDesiredForceRangeDiff, 10.0);
 	Test.TestEqual(
-		TEXT("MaxDesiredRangeAngleDiff"), Thresholds->MaxDesiredRangeAngleDiff, FromRad(30.0));
-	Test.TestEqual(TEXT("MaxDesiredSpeedDiff"), Thresholds->MaxDesiredSpeedDiff, FromRad(40.0));
-	Test.TestEqual(TEXT("MaxRelativeSpeed"), Thresholds->MaxRelativeSpeed, FromRad(50.0));
+		TEXT("MaxDesiredLockAngleDiff"), TemplateThresholds->MaxDesiredLockAngleDiff,
+		FromRad(20.0));
+	Test.TestEqual(
+		TEXT("MaxDesiredRangeAngleDiff"), TemplateThresholds->MaxDesiredRangeAngleDiff,
+		FromRad(30.0));
+	Test.TestEqual(
+		TEXT("MaxDesiredSpeedDiff"), TemplateThresholds->MaxDesiredSpeedDiff, FromRad(40.0));
+	Test.TestEqual(TEXT("MaxRelativeSpeed"), TemplateThresholds->MaxRelativeSpeed, FromRad(50.0));
 
+	// Sometime during model synchronization, I assume during Blueprint compilation, the Blueprint
+	// instances in the level are destroyed and new ones created in their place. Find that new
+	// instance.
+	AActor* NewBlueprintInstance = FAGX_ObjectUtilities::GetActorByName(*Test.World, ActorName);
+	if (!Test.TestNotNull(
+			TEXT("Blueprint instance found by Actor name after synchronize"), NewBlueprintInstance))
+	{
+		return true;
+	}
+	UAGX_HingeConstraintComponent* NewHingeInstance =
+		FAGX_ObjectUtilities::GetComponentByName<UAGX_HingeConstraintComponent>(
+			*NewBlueprintInstance, TEXT("Hinge"));
+	if (!Test.TestNotNull(TEXT("New Hinge instance after synchronize"), NewHingeInstance))
+	{
+		return true;
+	}
 	UAGX_ConstraintMergeSplitThresholds* NewThresholdsInstance =
-		HingeInstance->MergeSplitProperties.Thresholds;
+		NewHingeInstance->MergeSplitProperties.Thresholds;
 	if (!Test.TestNotNull(TEXT("Hinge thresholds after synchronize"), NewThresholdsInstance))
 	{
 		return true;
 	}
+	// Even thought the Blueprint instance, and all its Components, are recreated during model
+	// synchronization the Thresholds asset that is being references should still be the same asset.
+	if (!Test.TestEqual(
+			TEXT("Thresholds asset referenced from instance"), ThresholdsInstance,
+			NewThresholdsInstance))
+	{
+		return true;
+	}
 	Test.TestEqual(
-		TEXT("Thresholds pointer before and after synchronize"), ThresholdsInstance,
-		NewThresholdsInstance);
+		TEXT("MaxDesiredForceRangeDiff"), NewThresholdsInstance->MaxDesiredForceRangeDiff, 10.0);
 	Test.TestEqual(
-		TEXT("MaxDesiredForceRangeDiff"), ThresholdsInstance->MaxDesiredForceRangeDiff, 10.0);
-	Test.TestEqual(
-		TEXT("MaxDesiredLockAngleDiff"), ThresholdsInstance->MaxDesiredLockAngleDiff,
+		TEXT("MaxDesiredLockAngleDiff"), NewThresholdsInstance->MaxDesiredLockAngleDiff,
 		FromRad(20.0));
 	Test.TestEqual(
-		TEXT("MaxDesiredRangeAngleDiff"), ThresholdsInstance->MaxDesiredRangeAngleDiff,
+		TEXT("MaxDesiredRangeAngleDiff"), NewThresholdsInstance->MaxDesiredRangeAngleDiff,
 		FromRad(30.0));
 	Test.TestEqual(
-		TEXT("MaxDesiredSpeedDiff"), ThresholdsInstance->MaxDesiredSpeedDiff, FromRad(40.0));
-	Test.TestEqual(TEXT("MaxRelativeSpeed"), ThresholdsInstance->MaxRelativeSpeed, FromRad(50.0));
+		TEXT("MaxDesiredSpeedDiff"), NewThresholdsInstance->MaxDesiredSpeedDiff, FromRad(40.0));
+	Test.TestEqual(
+		TEXT("MaxRelativeSpeed"), NewThresholdsInstance->MaxRelativeSpeed, FromRad(50.0));
 
 	return true;
 }
