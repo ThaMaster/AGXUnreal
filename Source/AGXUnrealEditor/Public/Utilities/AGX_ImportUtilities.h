@@ -190,6 +190,16 @@ public:
 	static FString GetUnsetUniqueImportName();
 
 	/**
+	 * Get the file system path to the default import directory for a model with the given name.
+	 *
+	 * Similar to CreatePackagePath, but returns a file system path instead of an Unreal Engine path.
+	 *
+	 * Note that due to name collisions that actual path that a particular import resulted in may
+	 * differ from the returned path.
+	 */
+	static FString GetDefaultModelImportDirectory(const FString& ModelName);
+
+	/**
 	 * Create a new asset destined for the import directory. This functions will only create the
 	 * asset and setup it's Package, it will not actually save it to disk. That is the
 	 * responsibility of the caller.

@@ -567,6 +567,17 @@ FString FAGX_ImportUtilities::GetUnsetUniqueImportName()
 	return FString("AGX_Import_Unnamed_") + FGuid::NewGuid().ToString();
 }
 
+FString FAGX_ImportUtilities::GetDefaultModelImportDirectory(const FString& ModelName)
+{
+	const FString Name = FAGX_EditorUtilities::SanitizeName(ModelName);
+	const FString Root = FPaths::ProjectContentDir();
+	const FString ImportsLocal =
+		FPaths::Combine(GetImportRootDirectoryName(), ModelName);
+	const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
+	const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
+	return ImportsAbsolute;
+}
+
 EAGX_ImportType FAGX_ImportUtilities::GetFrom(const FString& FilePath)
 {
 	const FString FileExtension = FPaths::GetExtension(FilePath);
