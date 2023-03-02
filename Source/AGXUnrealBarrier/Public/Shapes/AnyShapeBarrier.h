@@ -19,7 +19,14 @@ public:
 	virtual ~FAnyShapeBarrier() override;
 
 private:
+	/**
+	 * Will always fail with an error message.
+	 */
 	virtual void AllocateNativeShape() override;
+
+	/**
+	 * Will always fail with an error message.
+	 */
 	virtual void ReleaseNativeShape() override;
 
 private:
