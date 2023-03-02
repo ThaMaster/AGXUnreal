@@ -6,12 +6,6 @@
 #include <AGX_LogCategory.h>
 #include "AGXRefs.h"
 #include "RigidBodyBarrier.h"
-#include "Utilities/AGX_BarrierConstraintUtilities.h"
-
-// AGX Dynamics includes.
-#include "BeginAGXIncludes.h"
-#include <agx/BallJoint.h>
-#include "EndAGXIncludes.h"
 
 FAnyConstraintBarrier::FAnyConstraintBarrier()
 	: FConstraintBarrier()
