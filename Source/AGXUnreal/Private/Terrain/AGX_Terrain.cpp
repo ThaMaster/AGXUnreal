@@ -30,6 +30,7 @@
 #include "Landscape.h"
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
+#include "LandscapeStreamingProxy.h"
 #include "Misc/AssertionMacros.h"
 #include "Misc/EngineVersionComparison.h"
 #include "NiagaraComponent.h"
@@ -47,6 +48,14 @@ AAGX_Terrain::AAGX_Terrain()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PostPhysics;
+
+#if UE_VERSION_OLDER_THAN(5, 0, 0) == false
+	// Actors that are spatially loaded (streamed in/out via world partitioning) may not reference
+	// actors that are not. Since the ALanscape is not spatially loaded, the AGX_Terrain cannot be
+	// either since we reference an ALandscape from it. Default value for all actors in OpenWorld is
+	// true.
+	bIsSpatiallyLoaded = false;
+#endif
 
 	// Create a root SceneComponent so that this Actor has a transform
 	// which can be modified in the Editor.
