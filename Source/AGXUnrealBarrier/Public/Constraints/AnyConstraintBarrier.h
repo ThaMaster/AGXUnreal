@@ -23,6 +23,9 @@ public:
 	virtual ~FAnyConstraintBarrier() override;
 
 private:
+	/**
+	 * Will always fail with an error message.
+	 */
 	virtual void AllocateNativeImpl(
 		const FRigidBodyBarrier& RigidBody1, const FVector& FramePosition1,
 		const FQuat& FrameRotation1, const FRigidBodyBarrier* RigidBody2,
