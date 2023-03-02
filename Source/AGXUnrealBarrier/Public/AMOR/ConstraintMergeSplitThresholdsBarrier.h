@@ -7,11 +7,13 @@
 
 class FConstraintBarrier;
 
-class AGXUNREALBARRIER_API FConstraintMergeSplitThresholdsBarrier : public FMergeSplitThresholdsBarrier
+class AGXUNREALBARRIER_API FConstraintMergeSplitThresholdsBarrier
+	: public FMergeSplitThresholdsBarrier
 {
 public:
 	FConstraintMergeSplitThresholdsBarrier();
-	FConstraintMergeSplitThresholdsBarrier(FConstraintMergeSplitThresholdsBarrier&& Other) = default;
+	FConstraintMergeSplitThresholdsBarrier(FConstraintMergeSplitThresholdsBarrier&& Other) =
+		default;
 	FConstraintMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef>&& Native);
 	~FConstraintMergeSplitThresholdsBarrier();
 
@@ -32,7 +34,16 @@ public:
 	void SetMaxRelativeSpeed(double InMaxRelativeSpeed);
 	double GetMaxRelativeSpeed() const;
 
+	/**
+	 * Control whether unit conversion is done between radians and degrees or  between meters and
+	 * centimeters.
+	 */
 	void SetIsRotational(bool InIsRotational);
+
+	/**
+	 * Returns true if unit conversions is done between radians and degrees, false if meters and
+	 * centimeters.
+	 */
 	bool GetIsRotational() const;
 
 	static FConstraintMergeSplitThresholdsBarrier CreateFrom(const FConstraintBarrier& Barrier);
@@ -41,5 +52,10 @@ private:
 	FConstraintMergeSplitThresholdsBarrier(const FConstraintMergeSplitThresholdsBarrier&) = delete;
 	void operator=(const FConstraintMergeSplitThresholdsBarrier&) = delete;
 
+	/**
+	 * Control whether this Merge Split Thresholds act on a rotational or translational degree of
+	 * freedom. Not part of the AGX Dynamics state, used to determine if unit conversions should be
+	 * done on an angle or a distance.
+	 */
 	bool bIsRotational = true;
 };
