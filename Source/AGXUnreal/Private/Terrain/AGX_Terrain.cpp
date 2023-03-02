@@ -290,8 +290,29 @@ namespace AGX_Terrain_helpers
 {
 	void EnsureUseDynamicMaterialInstance(AAGX_Terrain& Terrain)
 	{
+		TArray<ALandscapeProxy*> StreamingProxies;
+		if (AGX_HeightFieldUtilities::IsOpenWorldLandscape(*Terrain.SourceLandscape))
+		{
+			for (TObjectIterator<ALandscapeStreamingProxy> It; It; ++It)
+			{
+				if (It->LandscapeActor != Terrain.SourceLandscape)
+					continue;
+
+				StreamingProxies.Add(*It);
+			}
+		}
+
+		auto IsUsingDynamicMaterialInstance = [&StreamingProxies](ALandscape& Landscape)
+		{
+			bool Res = Landscape.bUseDynamicMaterialInstance;
+			for (auto Proxy : StreamingProxies)
+				Res &= Proxy->bUseDynamicMaterialInstance;
+
+			return Res;
+		};
+
 		if (Terrain.SourceLandscape == nullptr ||
-			Terrain.SourceLandscape->bUseDynamicMaterialInstance)
+			IsUsingDynamicMaterialInstance(*Terrain.SourceLandscape))
 		{
 			return;
 		}
@@ -304,9 +325,22 @@ namespace AGX_Terrain_helpers
 			"Landscape?");
 		if (FAGX_NotificationUtilities::YesNoQuestion(AskEnableDynamicMaterial))
 		{
-			Terrain.SourceLandscape->bUseDynamicMaterialInstance = true;
-			Terrain.SourceLandscape->Modify();
-			Terrain.SourceLandscape->PostEditChange();
+			auto SetUseDynamicMaterialInstance = [](ALandscapeProxy& Proxy)
+			{
+				Proxy.bUseDynamicMaterialInstance = true;
+				Proxy.Modify();
+				Proxy.PostEditChange();
+			};
+
+			SetUseDynamicMaterialInstance(*Terrain.SourceLandscape);
+
+			if (AGX_HeightFieldUtilities::IsOpenWorldLandscape(*Terrain.SourceLandscape))
+			{
+				for (auto Proxy : StreamingProxies)
+				{
+					SetUseDynamicMaterialInstance(*Proxy);
+				}
+			}
 		}
 	}
 }
@@ -1173,7 +1207,6 @@ void AAGX_Terrain::UpdateLandscapeMaterialParameters()
 
 	SetLandscapeMaterialParameters(*SourceLandscape);
 
-	// For Open World Landscapes, we must set the material parameters for each Streaming Proxy.
 	if (AGX_HeightFieldUtilities::IsOpenWorldLandscape(*SourceLandscape))
 	{
 		// There might be a better way to get all LandscapeStreamingProxies directly from the
