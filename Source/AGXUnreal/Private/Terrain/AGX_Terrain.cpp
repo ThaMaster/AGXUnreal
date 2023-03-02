@@ -1147,17 +1147,38 @@ void AAGX_Terrain::UpdateLandscapeMaterialParameters()
 	const double PositionX = TerrainCornerGlobal.X;
 	const double PositionY = TerrainCornerGlobal.Y;
 
-	// Parameter for materials supporting only square Landscape.
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue(
-		"LandscapeSize", static_cast<float>(TerrainSizeX));
-	// Parameters for materials supporting rectangular Landscape.
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue(
-		"LandscapeSizeX", static_cast<float>(TerrainSizeX));
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue(
-		"LandscapeSizeY", static_cast<float>(TerrainSizeY));
-	// Parameters for Landscape position.
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapePositionX", PositionX);
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapePositionY", PositionY);
+	auto SetLandscapeMaterialParameters = [=](ALandscapeProxy& Proxy)
+	{
+		// Parameter for materials supporting only square Landscape.
+		Proxy.SetLandscapeMaterialScalarParameterValue(
+			"LandscapeSize", static_cast<float>(TerrainSizeX));
+		// Parameters for materials supporting rectangular Landscape.
+		Proxy.SetLandscapeMaterialScalarParameterValue(
+			"LandscapeSizeX", static_cast<float>(TerrainSizeX));
+		Proxy.SetLandscapeMaterialScalarParameterValue(
+			"LandscapeSizeY", static_cast<float>(TerrainSizeY));
+		// Parameters for Landscape position.
+		Proxy.SetLandscapeMaterialScalarParameterValue("LandscapePositionX", PositionX);
+		Proxy.SetLandscapeMaterialScalarParameterValue("LandscapePositionY", PositionY);
+	};
+
+	SetLandscapeMaterialParameters(*SourceLandscape);
+
+	// For Open World Landscapes, we must set the material parameters for each Streaming Proxy.
+	if (AGX_HeightFieldUtilities::IsOpenWorldLandscape(*SourceLandscape))
+	{
+		// There might be a better way to get all LandscapeStreamingProxies directly from the
+		// SourceLandscape, but I have not found any. This is likely slower than any such methods,
+		// but this is not extremely time critical since this function is called only once on Play.
+		// If a better way if getting them is found in the future, this can be replaced.
+		for (TObjectIterator<ALandscapeStreamingProxy> It; It; ++It)
+		{
+			if (It->LandscapeActor != SourceLandscape)
+				continue;
+
+			SetLandscapeMaterialParameters(**It);
+		}
+	}
 }
 
 void AAGX_Terrain::Serialize(FArchive& Archive)
