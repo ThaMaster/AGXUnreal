@@ -8,6 +8,7 @@
 #include <agx/FrictionModel.h>
 #include <agx/Material.h>
 #include <agx/MassProperties.h>
+#include <agx/ref_ptr.h>
 #include <agx/RigidBody.h>
 #include <agxSDK/MergeSplitHandler.h>
 #include <agxSDK/MergeSplitThresholds.h>
@@ -16,6 +17,7 @@
 #include <agxCollide/Shape.h>
 #include <agxTerrain/Terrain.h>
 #include <agxTerrain/TerrainMaterial.h>
+#include <agxTerrain/TerrainPager.h>
 #include <agxModel/Tire.h>
 #include "EndAGXIncludes.h"
 
@@ -172,6 +174,18 @@ struct FTerrainRef
 
 	FTerrainRef() = default;
 	FTerrainRef(agxTerrain::Terrain* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FTerrainPagerRef
+{
+	// @todo: once AGX Dynamics exposes a TerrainPagerRef, use that.
+	agx::ref_ptr<agxTerrain::TerrainPager> Native;
+
+	FTerrainPagerRef() = default;
+	FTerrainPagerRef(agxTerrain::TerrainPager* InNative)
 		: Native(InNative)
 	{
 	}
