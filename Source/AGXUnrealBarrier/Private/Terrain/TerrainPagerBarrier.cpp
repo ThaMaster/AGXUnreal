@@ -1,6 +1,7 @@
 #include "Terrain/TerrainPagerBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Terrain/TerrainDataSource.h"
 #include "Terrain/TerrainHeightFetcherBase.h"
 
 
@@ -34,7 +35,8 @@ bool FTerrainPagerBarrier::HasNative() const
 
 void FTerrainPagerBarrier::AllocateNative(FTerrainHeightFetcherBase* HeightFetcher)
 {
-	DataSource.SetTerrainHeightFetcher(HeightFetcher);
+	DataSource = std::make_unique<FTerrainDataSource>();
+	DataSource->SetTerrainHeightFetcher(HeightFetcher);
 
 	// @todo : create native and give it our DataSource.
 }

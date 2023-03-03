@@ -109,7 +109,7 @@ void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetCreateParticles(CreateParticles);
+		NativeTerrainBarrier.SetCreateParticles(CreateParticles);
 	}
 
 	bCreateParticles = CreateParticles;
@@ -119,7 +119,7 @@ bool AAGX_Terrain::GetCreateParticles() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetCreateParticles();
+		return NativeTerrainBarrier.GetCreateParticles();
 	}
 
 	return bCreateParticles;
@@ -129,7 +129,7 @@ void AAGX_Terrain::SetDeleteParticlesOutsideBounds(bool DeleteParticlesOutsideBo
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetDeleteParticlesOutsideBounds(DeleteParticlesOutsideBounds);
+		NativeTerrainBarrier.SetDeleteParticlesOutsideBounds(DeleteParticlesOutsideBounds);
 	}
 
 	bDeleteParticlesOutsideBounds = DeleteParticlesOutsideBounds;
@@ -139,7 +139,7 @@ bool AAGX_Terrain::GetDeleteParticlesOutsideBounds() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetDeleteParticlesOutsideBounds();
+		return NativeTerrainBarrier.GetDeleteParticlesOutsideBounds();
 	}
 
 	return bDeleteParticlesOutsideBounds;
@@ -149,7 +149,7 @@ void AAGX_Terrain::SetPenetrationForceVelocityScaling(double InPenetrationForceV
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetPenetrationForceVelocityScaling(InPenetrationForceVelocityScaling);
+		NativeTerrainBarrier.SetPenetrationForceVelocityScaling(InPenetrationForceVelocityScaling);
 	}
 
 	PenetrationForceVelocityScaling = InPenetrationForceVelocityScaling;
@@ -159,7 +159,7 @@ double AAGX_Terrain::GetPenetrationForceVelocityScaling() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetPenetrationForceVelocityScaling();
+		return NativeTerrainBarrier.GetPenetrationForceVelocityScaling();
 	}
 
 	return PenetrationForceVelocityScaling;
@@ -179,7 +179,7 @@ void AAGX_Terrain::SetMaximumParticleActivationVolume(double InMaximumParticleAc
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetMaximumParticleActivationVolume(InMaximumParticleActivationVolume);
+		NativeTerrainBarrier.SetMaximumParticleActivationVolume(InMaximumParticleActivationVolume);
 	}
 
 	MaximumParticleActivationVolume = InMaximumParticleActivationVolume;
@@ -189,7 +189,7 @@ double AAGX_Terrain::GetMaximumParticleActivationVolume() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetMaximumParticleActivationVolume();
+		return NativeTerrainBarrier.GetMaximumParticleActivationVolume();
 	}
 
 	return MaximumParticleActivationVolume;
@@ -207,27 +207,27 @@ float AAGX_Terrain::GetMaximumParticleActivationVolume_BP() const
 
 bool AAGX_Terrain::HasNative() const
 {
-	return NativeBarrier.HasNative();
+	return NativeTerrainBarrier.HasNative();
 }
 
 FTerrainBarrier* AAGX_Terrain::GetNative()
 {
-	if (!NativeBarrier.HasNative())
+	if (!NativeTerrainBarrier.HasNative())
 	{
 		return nullptr;
 	}
 
-	return &NativeBarrier;
+	return &NativeTerrainBarrier;
 }
 
 const FTerrainBarrier* AAGX_Terrain::GetNative() const
 {
-	if (!NativeBarrier.HasNative())
+	if (!NativeTerrainBarrier.HasNative())
 	{
 		return nullptr;
 	}
 
-	return &NativeBarrier;
+	return &NativeTerrainBarrier;
 }
 
 namespace
@@ -489,7 +489,7 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
 
 	if (HasNative())
 	{
-		NativeBarrier.ReleaseNative();
+		NativeTerrainBarrier.ReleaseNative();
 	}
 }
 
@@ -616,7 +616,7 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	const FVector StartPos = Bounds->Transform.TransformPositionNoScale(-Bounds->HalfExtent);
 	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(
 		*SourceLandscape, StartPos, Bounds->HalfExtent.X * 2.0, Bounds->HalfExtent.Y * 2.0);
-	NativeBarrier.AllocateNative(HeightField, MaxDepth);
+	NativeTerrainBarrier.AllocateNative(HeightField, MaxDepth);
 
 	if (!HasNative())
 	{
@@ -633,20 +633,20 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	FTransform Transform = AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(
 		*SourceLandscape, Bounds->Transform.GetLocation(), Bounds->HalfExtent);
 
-	NativeBarrier.SetRotation(Transform.GetRotation());
-	NativeBarrier.SetPosition(Transform.GetLocation());
+	NativeTerrainBarrier.SetRotation(Transform.GetRotation());
+	NativeTerrainBarrier.SetPosition(Transform.GetLocation());
 
-	OriginalHeights.Reserve(NativeBarrier.GetGridSizeX() * NativeBarrier.GetGridSizeY());
-	NativeBarrier.GetHeights(OriginalHeights, false);
+	OriginalHeights.Reserve(NativeTerrainBarrier.GetGridSizeX() * NativeTerrainBarrier.GetGridSizeY());
+	NativeTerrainBarrier.GetHeights(OriginalHeights, false);
 
 	// We must initialize CurrentHeights since we will only read height changes during runtime.
 	CurrentHeights.Reserve(OriginalHeights.Num());
 	CurrentHeights = OriginalHeights;
 
-	NativeBarrier.SetCreateParticles(bCreateParticles);
-	NativeBarrier.SetDeleteParticlesOutsideBounds(bDeleteParticlesOutsideBounds);
-	NativeBarrier.SetPenetrationForceVelocityScaling(PenetrationForceVelocityScaling);
-	NativeBarrier.SetMaximumParticleActivationVolume(MaximumParticleActivationVolume);
+	NativeTerrainBarrier.SetCreateParticles(bCreateParticles);
+	NativeTerrainBarrier.SetDeleteParticlesOutsideBounds(bDeleteParticlesOutsideBounds);
+	NativeTerrainBarrier.SetPenetrationForceVelocityScaling(PenetrationForceVelocityScaling);
+	NativeTerrainBarrier.SetMaximumParticleActivationVolume(MaximumParticleActivationVolume);
 
 	// Create the AGX Dynamics instance for the terrain.
 	// Note that the AGX Dynamics Terrain messes with the solver parameters on add, parameters that
@@ -742,7 +742,7 @@ void AAGX_Terrain::CreateNativeShovels()
 
 		FAGX_Shovel::UpdateNativeShovelProperties(ShovelBarrier, Shovel);
 
-		bool Added = NativeBarrier.AddShovel(ShovelBarrier);
+		bool Added = NativeTerrainBarrier.AddShovel(ShovelBarrier);
 		if (!Added)
 		{
 			UE_LOG(
@@ -754,7 +754,7 @@ void AAGX_Terrain::CreateNativeShovels()
 			std::swap(CuttingEdgeLine.v1, CuttingEdgeLine.v2);
 			ShovelBarrier.SetTopEdge(TopEdgeLine);
 			ShovelBarrier.SetCuttingEdge(CuttingEdgeLine);
-			Added = NativeBarrier.AddShovel(ShovelBarrier);
+			Added = NativeTerrainBarrier.AddShovel(ShovelBarrier);
 			if (!Added)
 			{
 				UE_LOG(
@@ -852,8 +852,8 @@ void AAGX_Terrain::InitializeDisplacementMap()
 
 	// There is one displacement map texel per vertex.
 
-	const int32 TerrainVertsX = NativeBarrier.GetGridSizeX();
-	const int32 TerrainVertsY = NativeBarrier.GetGridSizeY();
+	const int32 TerrainVertsX = NativeTerrainBarrier.GetGridSizeX();
+	const int32 TerrainVertsY = NativeTerrainBarrier.GetGridSizeY();
 
 	if (LandscapeDisplacementMap->SizeX != TerrainVertsX ||
 		LandscapeDisplacementMap->SizeY != TerrainVertsY)
@@ -904,11 +904,11 @@ void AAGX_Terrain::UpdateDisplacementMap()
 
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::UpdateDisplacementMap"));
 
-	const int32 TerrainVerticesX = NativeBarrier.GetGridSizeX();
-	const int32 TerrainVerticesY = NativeBarrier.GetGridSizeY();
+	const int32 TerrainVerticesX = NativeTerrainBarrier.GetGridSizeX();
+	const int32 TerrainVerticesY = NativeTerrainBarrier.GetGridSizeY();
 
-	NativeBarrier.GetHeights(CurrentHeights, true);
-	for (const auto& VertexTuple : NativeBarrier.GetModifiedVertices())
+	NativeTerrainBarrier.GetHeights(CurrentHeights, true);
+	for (const auto& VertexTuple : NativeTerrainBarrier.GetModifiedVertices())
 	{
 		const int32 VertX = std::get<0>(VertexTuple);
 		const int32 VertY = std::get<1>(VertexTuple);
@@ -943,7 +943,7 @@ void AAGX_Terrain::ClearDisplacementMap()
 		return;
 	}
 
-	const int32 NumVerticesX = NativeBarrier.GetGridSizeX();
+	const int32 NumVerticesX = NativeTerrainBarrier.GetGridSizeX();
 	const uint32 BytesPerPixel = sizeof(FFloat16);
 	for (FFloat16& Displacement : DisplacementData)
 	{
@@ -1084,9 +1084,9 @@ void AAGX_Terrain::UpdateParticlesMap()
 		ParticlesDataMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, ResolutionX, ResolutionY));
 	}
 
-	TArray<FVector> Positions = NativeBarrier.GetParticlePositions();
-	TArray<float> Radii = NativeBarrier.GetParticleRadii();
-	TArray<FQuat> Rotations = NativeBarrier.GetParticleRotations();
+	TArray<FVector> Positions = NativeTerrainBarrier.GetParticlePositions();
+	TArray<float> Radii = NativeTerrainBarrier.GetParticleRadii();
+	TArray<FQuat> Rotations = NativeTerrainBarrier.GetParticleRotations();
 
 	AGX_CHECK(Positions.Num() == Radii.Num());
 	AGX_CHECK(Positions.Num() == Rotations.Num());
@@ -1169,8 +1169,8 @@ void AAGX_Terrain::UpdateLandscapeMaterialParameters()
 	// It is the Landscape material's responsibility to declare and implement displacement map
 	// sampling and passing on to World Position Offset.
 
-	const int32 TerrainVerticesX = NativeBarrier.GetGridSizeX();
-	const int32 TerrainVerticesY = NativeBarrier.GetGridSizeY();
+	const int32 TerrainVerticesX = NativeTerrainBarrier.GetGridSizeX();
+	const int32 TerrainVerticesY = NativeTerrainBarrier.GetGridSizeY();
 	const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
 	const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
 
@@ -1178,7 +1178,7 @@ void AAGX_Terrain::UpdateLandscapeMaterialParameters()
 	const double TerrainSizeX = static_cast<double>(TerrainVerticesX - 1) * QuadSideSizeX;
 	const double TerrainSizeY = static_cast<double>(TerrainVerticesY - 1) * QuadSideSizeY;
 
-	const FVector TerrainCenterGlobal = NativeBarrier.GetPosition();
+	const FVector TerrainCenterGlobal = NativeTerrainBarrier.GetPosition();
 
 	const FVector TerrainCenterLocal =
 		SourceLandscape->GetActorTransform().InverseTransformPositionNoScale(TerrainCenterGlobal);

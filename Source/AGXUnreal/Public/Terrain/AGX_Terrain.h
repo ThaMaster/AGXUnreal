@@ -5,6 +5,8 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
 #include "Terrain/TerrainBarrier.h"
+#include "Terrain/TerrainPagerBarrier.h"
+#include "Terrain/AGX_TerrainPagerSettings.h"
 #include "Terrain/AGX_Shovel.h"
 
 // Unreal Engine includes.
@@ -196,6 +198,16 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")
 	bool bEnableActiveZoneRendering = false;
 
+	/**
+	 * If set to true, Terrain Paging will be used.
+	 * The Terrain Pager Settings should be configured accordingly.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	bool bEnableTerrainPager;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "bEnableTerrainPager"))
+	FAGX_TerrainPagerSettings TerrainPagerSettings;
+
 	/// Return true if the AGX Dynamics object has been created. False otherwise.
 	bool HasNative() const;
 
@@ -238,7 +250,8 @@ private:
 	virtual void Serialize(FArchive& Archive) override;
 
 private:
-	FTerrainBarrier NativeBarrier;
+	FTerrainBarrier NativeTerrainBarrier;
+	FTerrainPagerBarrier NativeTerrainPagerBarrier;
 
 	// Height field related variables.
 	TArray<float> OriginalHeights;

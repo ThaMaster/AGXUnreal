@@ -2,12 +2,10 @@
 
 #pragma once
 
-// AGX Dynamics for Unreal includes.
-#include "Terrain/TerrainDataSource.h"
-
 // Standard library includes.
 #include <memory>
 
+class FTerrainDataSource;
 class FTerrainHeightFetcherBase;
 struct FTerrainPagerRef;
 
@@ -30,5 +28,5 @@ public:
 	void operator=(const FTerrainPagerBarrier&) = delete;
 
 	std::unique_ptr<FTerrainPagerRef> NativeRef;
-	FTerrainDataSource DataSource;
+	std::unique_ptr<FTerrainDataSource> DataSource;
 };
