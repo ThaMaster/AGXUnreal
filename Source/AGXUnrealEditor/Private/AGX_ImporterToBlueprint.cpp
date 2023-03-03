@@ -1126,7 +1126,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		// Synchronize the Shape Material assets, either updating existing ones with new data from
 		// the simulation objects or creating brand new ones for materials we don't have assets
-		// for. Asset deletion for materials removed from the simulation objects has already been
+		// for. Asset deletion for materials deleted from the simulation objects has already been
 		// done by DeleteRemovedAssets.
 		//
 		// Regardless of whether we update and save or instantiate a Shape Material, the asset is
@@ -1223,7 +1223,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		{
 			// If there are no Contact Materials in the model then we don't need to create a
 			// Contact Material Registrar. If there already is one then we leave it there, since the
-			// user may want to use it and it was there before synchronize. Cleanup of any removed
+			// user may want to use it and it was there before synchronize. Cleanup of any deleted
 			// Contact Materials in the source model has already been done by DeleteRemovedAssets.
 			return;
 		}
@@ -1770,7 +1770,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	}
 
 	// The passed SCSNodes will be kept up to date, i.e. elements added to BaseBP will have their
-	// corresponding SCS Node removed from SCSNodes as well.
+	// corresponding SCS Node deleted from SCSNodes as well.
 	void AddOrUpdateAll(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects,
@@ -1829,7 +1829,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		Helper.FinalizeImport();
 	}
 
-	void RemoveDeletedRigidBodies(
+	void DeleteRemovedRigidBodies(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects)
 	{
@@ -1844,7 +1844,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
-	void RemoveDeletedShapes(
+	void DeleteRemovedShapes(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FAGX_SynchronizeModelSettings& Settings, const FShapeGuidsCollection& NewShapeGuids)
 	{
@@ -1878,7 +1878,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			else
 			{
 				// If we synchronize with the "Ignore disabled Trimeshes" import setting and this
-				// Trimesh has collision disabled, it should be removed.
+				// Trimesh has collision disabled, it should be deleted.
 				const bool CollisionEnabled = NewShapeGuids.TrimeshShapeGuids[It->Key];
 				if (!CollisionEnabled && Settings.bIgnoreDisabledTrimeshes)
 				{
@@ -1889,11 +1889,11 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
-	void RemoveDeletedStaticMeshComponents(
+	void DeleteRemovedStaticMeshComponents(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, const FShapeGuidsCollection& NewShapeGuids,
 		const FAGX_SynchronizeModelSettings& Settings)
 	{
-		// Remove deleted Render Data.
+		// Delete removed Render Data.
 		for (auto It = SCSNodes.RenderStaticMeshComponents.CreateIterator(); It; ++It)
 		{
 			if (!NewShapeGuids.RenderDataGuids.Contains(It->Key))
@@ -1903,7 +1903,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			}
 		}
 
-		// Remove deleted collision meshes (only relevant for Trimesh Shapes).
+		// Delete removed collision meshes (only relevant for Trimesh Shapes).
 		for (auto It = SCSNodes.CollisionStaticMeshComponents.CreateIterator(); It; ++It)
 		{
 			if (!NewShapeGuids.TrimeshShapeGuids.Contains(It->Key))
@@ -1915,7 +1915,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				USCS_Node* CollisionStaticMeshComponentNode = It->Value;
 
-				// A collision Static Mesh Component should be removed even if it's owning Trimesh
+				// A collision Static Mesh Component should be deleted even if it's owning Trimesh
 				// exists in SimulationObjects if the following conditions are true:
 				// 1. The import setting 'bIgnoreDisabledTrimeshes' is used during this
 				// model synchronization.
@@ -1935,17 +1935,13 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				It.RemoveCurrent();
 			}
 		}
-
-		// @todo We should remove the Static Mesh Assets pointed to by the removed Static Mesh
-		// Components above. Do this when we figure out how to safely remove assets and resolve any
-		// references to it.
 	}
 
-	void RemoveDeletedConstraints(
+	void DeleteRemovedConstraints(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects)
 	{
-		auto RemoveDeletedConstraint =
+		auto DeleteRemovedConstraint =
 			[&](const auto& NewConstraints, TMap<FGuid, USCS_Node*>& OldConstraints)
 		{
 			const TArray<FGuid> NewConstraintGuids = GetGuidsFromBarriers(NewConstraints);
@@ -1959,18 +1955,18 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			}
 		};
 
-		RemoveDeletedConstraint(SimulationObjects.GetHingeConstraints(), SCSNodes.HingeConstraints);
-		RemoveDeletedConstraint(
+		DeleteRemovedConstraint(SimulationObjects.GetHingeConstraints(), SCSNodes.HingeConstraints);
+		DeleteRemovedConstraint(
 			SimulationObjects.GetPrismaticConstraints(), SCSNodes.PrismaticConstraints);
-		RemoveDeletedConstraint(SimulationObjects.GetBallConstraints(), SCSNodes.BallConstraints);
-		RemoveDeletedConstraint(
+		DeleteRemovedConstraint(SimulationObjects.GetBallConstraints(), SCSNodes.BallConstraints);
+		DeleteRemovedConstraint(
 			SimulationObjects.GetCylindricalConstraints(), SCSNodes.CylindricalConstraints);
-		RemoveDeletedConstraint(
+		DeleteRemovedConstraint(
 			SimulationObjects.GetDistanceConstraints(), SCSNodes.DistanceConstraints);
-		RemoveDeletedConstraint(SimulationObjects.GetLockConstraints(), SCSNodes.LockConstraints);
+		DeleteRemovedConstraint(SimulationObjects.GetLockConstraints(), SCSNodes.LockConstraints);
 	}
 
-	void RemoveDeletedTireModels(
+	void DeleteRemovedTireModels(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects)
 	{
@@ -1986,7 +1982,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
-	void RemoveDeletedObserverFrames(
+	void DeleteRemovedObserverFrames(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects)
 	{
@@ -2011,7 +2007,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 * Here follows a set of functions that deal with removing assets from the model import
 	 * directory. Assets are deleted either because the corresponding AGX Dynamics object no longer
 	 * exists in the new import, or because we currently can't reliably detect and synchronize
-	 * changes in the asset type so we always delete and reimport assets of that type.
+	 * changes in the asset type so we always delete and re-import assets of that type.
 	 *
 	 * The main entry point to these functions is DeleteRemovedAssets.
 	 */
@@ -2427,7 +2423,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 *   updates the existing one based on whether or not an assets exists on drive.
 	 *   Both operations are done though the helper, which will add the new or updated asset to
 	 *   Restored... as part of the Instantiate... or UpdateAndSave... functions.
-	 *   There can be no additional assets on drive since this function removed any asset that
+	 *   There can be no additional assets on drive since this function deleted any asset that
 	 *   doesn't have a corresponding simulation object.
 	 */
 	void DeleteRemovedAssets(
@@ -2473,33 +2469,33 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 * End of asset deletion functions.
 	 */
 
-	// Removes Components that are not present in the new SimulationObjectCollection, meaning they
+	// Deletes Components that are not present in the new SimulationObjectCollection, meaning they
 	// were deleted from the source file since the previous import. The passed SCSNodes will also
-	// be kept up to date, i.e. elements removed from BaseBP will have their corresponding SCS Node
-	// removed from SCSNodes as well.
-	void RemoveDeletedComponents(
+	// be kept up to date, i.e. elements deleted from BaseBP will have their corresponding SCS Node
+	// deleted from SCSNodes as well.
+	void DeleteRemovedComponents(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects,
 		const FAGX_SynchronizeModelSettings& Settings)
 	{
 		const FShapeGuidsCollection NewShapeGuids = GetShapeGuids(SimulationObjects);
 
-		RemoveDeletedStaticMeshComponents(BaseBP, SCSNodes, NewShapeGuids, Settings);
-		RemoveDeletedShapes(BaseBP, SCSNodes, Settings, NewShapeGuids);
-		RemoveDeletedRigidBodies(BaseBP, SCSNodes, SimulationObjects);
-		RemoveDeletedConstraints(BaseBP, SCSNodes, SimulationObjects);
-		RemoveDeletedTireModels(BaseBP, SCSNodes, SimulationObjects);
-		RemoveDeletedObserverFrames(BaseBP, SCSNodes, SimulationObjects);
+		DeleteRemovedStaticMeshComponents(BaseBP, SCSNodes, NewShapeGuids, Settings);
+		DeleteRemovedShapes(BaseBP, SCSNodes, Settings, NewShapeGuids);
+		DeleteRemovedRigidBodies(BaseBP, SCSNodes, SimulationObjects);
+		DeleteRemovedConstraints(BaseBP, SCSNodes, SimulationObjects);
+		DeleteRemovedTireModels(BaseBP, SCSNodes, SimulationObjects);
+		DeleteRemovedObserverFrames(BaseBP, SCSNodes, SimulationObjects);
 
 		// The fact that we compile the Blueprint here is important, and the reason complicated.
 		// Apparently, when removing SCS Nodes, their Component Template (and archetype instances)
 		// may linger on for unknown reasons.
 		// This in turn may trigger a crash if a new Component is renamed the same name as one of
-		// the removed Components, because the removed Components will (unexpectedly) show up in a
+		// the deleted Components, because the deleted Components will (unexpectedly) show up in a
 		// uniqueness-test in UObject::Rename. Engine code does a complicated dance around this in
-		// several places to ensure removed Nodes are not lingering, causing issues, see for example
+		// several places to ensure deleted Nodes are not lingering, causing issues, see for example
 		// SSCSEditor::RemoveComponentNode (UE 5.1).
-		// This dance is done to get rid of the removed Component(s) without having to trigger a
+		// This dance is done to get rid of the deleted Component(s) without having to trigger a
 		// re-compile of the Blueprint. Instead of doing this dance ourselves, we simply do a
 		// Compile, which is not too costly and will clean up any lingering objects for us.
 		FKismetEditorUtilities::CompileBlueprint(&BaseBP);
@@ -2596,10 +2592,10 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, Settings);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Deleting old Components"));
-		RemoveDeletedComponents(BaseBP, SCSNodes, SimObjects, Settings);
+		DeleteRemovedComponents(BaseBP, SCSNodes, SimObjects, Settings);
 
 		// This overwrites all (supported) Node names with temporary names.
-		// We do this since old to-be-removed or to-be-renamed Nodes may "block" the availability of
+		// We do this since old to-be-deleted or to-be-renamed Nodes may "block" the availability of
 		// a certain name (all Node names must be unique) that would otherwise be used for a new
 		// Component name. This would make the result of a Model Synchronization non-deterministic
 		// in terms of Node naming.
