@@ -948,9 +948,7 @@ void UAGX_ConstraintComponent::CreateMergeSplitProperties()
 			LogAGX, Warning,
 			TEXT("UAGX_ConstraintComponent::CreateMergeSplitProperties was called "
 				 "on Constraint '%s' that does not have a Native AGX Dynamics object. Only call "
-				 "this "
-				 "function "
-				 "during play."),
+				 "this function during play."),
 			*GetName());
 		return;
 	}
