@@ -25,7 +25,7 @@ FAnyShapeBarrier::~FAnyShapeBarrier()
 {
 	// Must provide a destructor implementation in the .cpp file because the
 	// std::unique_ptr NativeRef's destructor must be able to see the definition,
-	// not just the forward declaration, of FanyShapeRef.
+	// not just the forward declaration, of FAnyShapeRef.
 }
 
 void FAnyShapeBarrier::AllocateNativeShape()
@@ -38,6 +38,8 @@ void FAnyShapeBarrier::AllocateNativeShape()
 
 void FAnyShapeBarrier::ReleaseNativeShape()
 {
+	// While an AnyShapeBarrier cannot allocate a shape it can be given one, so this release
+	// function must be properly implemented.
 	check(HasNative());
 	NativeRef->NativeShape = nullptr;
 }
