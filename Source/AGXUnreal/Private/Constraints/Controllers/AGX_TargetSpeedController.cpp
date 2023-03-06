@@ -106,14 +106,9 @@ void FAGX_ConstraintTargetSpeedController::CopyFrom(
 	const FTargetSpeedControllerBarrier& Source,
 	TArray<FAGX_ConstraintTargetSpeedController*>& Instances, bool ForceOverwriteInstances)
 {
-	TArray<FAGX_ConstraintController*> BaseInstances;
-	BaseInstances.Reserve(Instances.Num());
-	for (auto Instance : Instances)
-	{
-		BaseInstances.Add(Instance);
-	}	
-
+	TArray<FAGX_ConstraintController*> BaseInstances(Instances);
 	Super::CopyFrom(Source, BaseInstances, ForceOverwriteInstances);
+
 	const double SpeedBarrier =
 		bRotational ? Source.GetSpeedRotational() : Source.GetSpeedTranslational();
 

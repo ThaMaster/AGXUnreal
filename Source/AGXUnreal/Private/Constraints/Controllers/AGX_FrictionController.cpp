@@ -89,13 +89,7 @@ void FAGX_ConstraintFrictionController::CopyFrom(
 	const FFrictionControllerBarrier& Source, TArray<FAGX_ConstraintFrictionController*>& Instances,
 	bool ForceOverwriteInstances)
 {
-	TArray<FAGX_ConstraintController*> BaseInstances;
-	BaseInstances.Reserve(Instances.Num());
-	for (auto Instance : Instances)
-	{
-		BaseInstances.Add(Instance);
-	}	
-
+	TArray<FAGX_ConstraintController*> BaseInstances(Instances);
 	Super::CopyFrom(Source, BaseInstances, ForceOverwriteInstances);
 
 	for (auto Instance : Instances)

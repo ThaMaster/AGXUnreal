@@ -64,14 +64,9 @@ void FAGX_ConstraintScrewController::CopyFrom(
 	const FScrewControllerBarrier& Source, TArray<FAGX_ConstraintScrewController*>& Instances,
 	bool ForceOverwriteInstances)
 {
-	TArray<FAGX_ConstraintController*> BaseInstances;
-	BaseInstances.Reserve(Instances.Num());
-	for (auto Instance : Instances)
-	{
-		BaseInstances.Add(Instance);
-	}	
-
+	TArray<FAGX_ConstraintController*> BaseInstances(Instances);
 	Super::CopyFrom(Source, BaseInstances, ForceOverwriteInstances);
+
 	for (auto Instance : Instances)
 	{
 		if (Instance == nullptr)

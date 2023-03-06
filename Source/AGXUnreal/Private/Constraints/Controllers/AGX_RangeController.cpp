@@ -88,13 +88,7 @@ void FAGX_ConstraintRangeController::CopyFrom(
 	const FRangeControllerBarrier& Source, TArray<FAGX_ConstraintRangeController*>& Instances,
 	bool ForceOverwriteInstances)
 {
-	TArray<FAGX_ConstraintController*> BaseInstances;
-	BaseInstances.Reserve(Instances.Num());
-	for (auto Instance : Instances)
-	{
-		BaseInstances.Add(Instance);
-	}	
-
+	TArray<FAGX_ConstraintController*> BaseInstances(Instances);
 	Super::CopyFrom(Source, BaseInstances, ForceOverwriteInstances);
 
 	const FAGX_RealInterval RangeBarrier =

@@ -121,13 +121,7 @@ void FAGX_ConstraintElectricMotorController::CopyFrom(
 	const FElectricMotorControllerBarrier& Source,
 	TArray<FAGX_ConstraintElectricMotorController*>& Instances, bool ForceOverwriteInstances)
 {
-	TArray<FAGX_ConstraintController*> BaseInstances;
-	BaseInstances.Reserve(Instances.Num());
-	for (auto Instance : Instances)
-	{
-		BaseInstances.Add(Instance);
-	}	
-
+	TArray<FAGX_ConstraintController*> BaseInstances(Instances);
 	Super::CopyFrom(Source, BaseInstances, ForceOverwriteInstances);
 
 	for (auto Instance : Instances)
