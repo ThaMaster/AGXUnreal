@@ -6,6 +6,7 @@
 #include "AGX_Real.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/TerrainPagerBarrier.h"
+#include "Terrain/AGX_TerrainHeightFetcher.h"
 #include "Terrain/AGX_TerrainPagerSettings.h"
 #include "Terrain/AGX_Shovel.h"
 
@@ -208,11 +209,20 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "bEnableTerrainPager"))
 	FAGX_TerrainPagerSettings TerrainPagerSettings;
 
-	/// Return true if the AGX Dynamics object has been created. False otherwise.
+	bool HasNativeTerrain() const;
+	bool HasNativeTerrainPager() const;
+
+	/**
+	 * Returns true if this Terrain has a Native Terrain and/or a Native Terrain Pager.
+	 * Returns false otherwise.
+	 */
 	bool HasNative() const;
 
-	FTerrainBarrier* GetNative();
-	const FTerrainBarrier* GetNative() const;
+	FTerrainBarrier* GetNativeTerrain();
+	const FTerrainBarrier* GetNativeTerrain() const;
+
+	FTerrainPagerBarrier* GetNativeTerrainPager();
+	const FTerrainPagerBarrier* GetNativeTerrainPager() const;
 
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;
@@ -230,6 +240,7 @@ public:
 private:
 	void InitializeNative();
 	bool CreateNativeTerrain();
+	bool CreateNativeTerrainPager();
 	void CreateNativeShovels();
 	bool UpdateNativeMaterial();
 
@@ -252,6 +263,7 @@ private:
 private:
 	FTerrainBarrier NativeTerrainBarrier;
 	FTerrainPagerBarrier NativeTerrainPagerBarrier;
+	FAGX_TerrainHeightFetcher HeightFetcher;
 
 	// Height field related variables.
 	TArray<float> OriginalHeights;

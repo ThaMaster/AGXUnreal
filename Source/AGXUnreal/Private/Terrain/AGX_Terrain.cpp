@@ -82,7 +82,7 @@ bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 	UAGX_TerrainMaterial* TerrainMaterialOrig = TerrainMaterial;
 	TerrainMaterial = InTerrainMaterial;
 
-	if (!HasNative())
+	if (!HasNativeTerrain())
 	{
 		// Not in play, we are done.
 		return true;
@@ -107,17 +107,18 @@ UNiagaraComponent* AAGX_Terrain::GetSpawnedParticleSystemComponent()
 
 void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
 {
-	if (HasNative())
+	if (HasNativeTerrain())
 	{
 		NativeTerrainBarrier.SetCreateParticles(CreateParticles);
 	}
 
+	// @todo: tell TerrainPager (if used) that the Terrain has changed.
 	bCreateParticles = CreateParticles;
 }
 
 bool AAGX_Terrain::GetCreateParticles() const
 {
-	if (HasNative())
+	if (HasNativeTerrain())
 	{
 		return NativeTerrainBarrier.GetCreateParticles();
 	}
@@ -127,17 +128,18 @@ bool AAGX_Terrain::GetCreateParticles() const
 
 void AAGX_Terrain::SetDeleteParticlesOutsideBounds(bool DeleteParticlesOutsideBounds)
 {
-	if (HasNative())
+	if (HasNativeTerrain())
 	{
 		NativeTerrainBarrier.SetDeleteParticlesOutsideBounds(DeleteParticlesOutsideBounds);
 	}
 
+	// @todo: tell TerrainPager (if used) that the Terrain has changed.
 	bDeleteParticlesOutsideBounds = DeleteParticlesOutsideBounds;
 }
 
 bool AAGX_Terrain::GetDeleteParticlesOutsideBounds() const
 {
-	if (HasNative())
+	if (HasNativeTerrain())
 	{
 		return NativeTerrainBarrier.GetDeleteParticlesOutsideBounds();
 	}
@@ -147,7 +149,7 @@ bool AAGX_Terrain::GetDeleteParticlesOutsideBounds() const
 
 void AAGX_Terrain::SetPenetrationForceVelocityScaling(double InPenetrationForceVelocityScaling)
 {
-	if (HasNative())
+	if (HasNativeTerrain())
 	{
 		NativeTerrainBarrier.SetPenetrationForceVelocityScaling(InPenetrationForceVelocityScaling);
 	}
@@ -157,11 +159,11 @@ void AAGX_Terrain::SetPenetrationForceVelocityScaling(double InPenetrationForceV
 
 double AAGX_Terrain::GetPenetrationForceVelocityScaling() const
 {
-	if (HasNative())
+	if (HasNativeTerrain())
 	{
 		return NativeTerrainBarrier.GetPenetrationForceVelocityScaling();
 	}
-
+	// @todo: tell TerrainPager (if used) that the Terrain has changed.
 	return PenetrationForceVelocityScaling;
 }
 
@@ -177,17 +179,17 @@ float AAGX_Terrain::GetPenetrationForceVelocityScaling_BP() const
 
 void AAGX_Terrain::SetMaximumParticleActivationVolume(double InMaximumParticleActivationVolume)
 {
-	if (HasNative())
+	if (HasNativeTerrain())
 	{
 		NativeTerrainBarrier.SetMaximumParticleActivationVolume(InMaximumParticleActivationVolume);
 	}
-
+	// @todo: tell TerrainPager (if used) that the Terrain has changed.
 	MaximumParticleActivationVolume = InMaximumParticleActivationVolume;
 }
 
 double AAGX_Terrain::GetMaximumParticleActivationVolume() const
 {
-	if (HasNative())
+	if (HasNativeTerrain())
 	{
 		return NativeTerrainBarrier.GetMaximumParticleActivationVolume();
 	}
@@ -205,12 +207,22 @@ float AAGX_Terrain::GetMaximumParticleActivationVolume_BP() const
 	return static_cast<float>(GetMaximumParticleActivationVolume());
 }
 
-bool AAGX_Terrain::HasNative() const
+bool AAGX_Terrain::HasNativeTerrain() const
 {
 	return NativeTerrainBarrier.HasNative();
 }
 
-FTerrainBarrier* AAGX_Terrain::GetNative()
+bool AAGX_Terrain::HasNativeTerrainPager() const
+{
+	return NativeTerrainPagerBarrier.HasNative();
+}
+
+bool AAGX_Terrain::HasNative() const
+{
+	return HasNativeTerrain() || HasNativeTerrainPager();
+}
+
+FTerrainBarrier* AAGX_Terrain::GetNativeTerrain()
 {
 	if (!NativeTerrainBarrier.HasNative())
 	{
@@ -220,7 +232,7 @@ FTerrainBarrier* AAGX_Terrain::GetNative()
 	return &NativeTerrainBarrier;
 }
 
-const FTerrainBarrier* AAGX_Terrain::GetNative() const
+const FTerrainBarrier* AAGX_Terrain::GetNativeTerrain() const
 {
 	if (!NativeTerrainBarrier.HasNative())
 	{
@@ -228,6 +240,26 @@ const FTerrainBarrier* AAGX_Terrain::GetNative() const
 	}
 
 	return &NativeTerrainBarrier;
+}
+
+FTerrainPagerBarrier* AAGX_Terrain::GetNativeTerrainPager()
+{
+	if (!NativeTerrainPagerBarrier.HasNative())
+	{
+		return nullptr;
+	}
+
+	return &NativeTerrainPagerBarrier;
+}
+
+const FTerrainPagerBarrier* AAGX_Terrain::GetNativeTerrainPager() const
+{
+	if (!NativeTerrainPagerBarrier.HasNative())
+	{
+		return nullptr;
+	}
+
+	return &NativeTerrainPagerBarrier;
 }
 
 namespace
@@ -474,7 +506,6 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
 
 	ClearDisplacementMap();
 	ClearParticlesMap();
-
 	if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
 	{
 		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
@@ -487,7 +518,11 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
 		}
 	}
 
-	if (HasNative())
+	if (HasNativeTerrainPager())
+	{
+		NativeTerrainPagerBarrier.ReleaseNative();
+	}
+	if (HasNativeTerrain())
 	{
 		NativeTerrainBarrier.ReleaseNative();
 	}
@@ -588,6 +623,14 @@ void AAGX_Terrain::InitializeNative()
 		return; // Logging done in CreateNativeTerrain.
 	}
 
+	if (bEnableTerrainPager)
+	{
+		if (!CreateNativeTerrainPager())
+		{
+			return; // Logging done in CreateNativeTerrainPager.
+		}
+	}
+
 	CreateNativeShovels();
 	InitializeRendering();
 
@@ -614,11 +657,13 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	}
 
 	const FVector StartPos = Bounds->Transform.TransformPositionNoScale(-Bounds->HalfExtent);
+
+	// @todo: don't read heights if using terrain pager.
 	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(
 		*SourceLandscape, StartPos, Bounds->HalfExtent.X * 2.0, Bounds->HalfExtent.Y * 2.0);
 	NativeTerrainBarrier.AllocateNative(HeightField, MaxDepth);
 
-	if (!HasNative())
+	if (!HasNativeTerrain())
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -628,7 +673,7 @@ bool AAGX_Terrain::CreateNativeTerrain()
 		return false;
 	}
 
-	check(HasNative());
+	check(HasNativeTerrain());
 
 	FTransform Transform = AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(
 		*SourceLandscape, Bounds->Transform.GetLocation(), Bounds->HalfExtent);
@@ -636,7 +681,8 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	NativeTerrainBarrier.SetRotation(Transform.GetRotation());
 	NativeTerrainBarrier.SetPosition(Transform.GetLocation());
 
-	OriginalHeights.Reserve(NativeTerrainBarrier.GetGridSizeX() * NativeTerrainBarrier.GetGridSizeY());
+	OriginalHeights.Reserve(
+		NativeTerrainBarrier.GetGridSizeX() * NativeTerrainBarrier.GetGridSizeY());
 	NativeTerrainBarrier.GetHeights(OriginalHeights, false);
 
 	// We must initialize CurrentHeights since we will only read height changes during runtime.
@@ -663,7 +709,13 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	}
 
 	int32 NumIterations = Simulation->GetNumPpgsIterations();
-	Simulation->Add(*this);
+
+	if (!bEnableTerrainPager)
+	{
+		// We add this Terrain to the Simulation here only if we are not using TerrainPaging.
+		Simulation->Add(*this);
+	}
+
 	if (Simulation->bOverridePPGSIterations)
 	{
 		// We must check the override flag and not blindly re-set the value we read a few lines up
@@ -682,6 +734,38 @@ bool AAGX_Terrain::CreateNativeTerrain()
 		Simulation->NumPpgsIterations = Simulation->GetNative()->GetNumPpgsIterations();
 	}
 
+	return true;
+}
+
+bool AAGX_Terrain::CreateNativeTerrainPager()
+{
+	check(HasNativeTerrain());
+	check(!HasNativeTerrainPager());
+
+	if (!bEnableTerrainPager)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("CreateNativeTerrainPager called on Terrain '%s' which doesn't use Terrain "
+				 "Paging."),
+			*GetName());
+		return false;
+	}
+
+	NativeTerrainPagerBarrier.AllocateNative(&HeightFetcher, NativeTerrainBarrier);
+
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Terrain '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned nullptr."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return false;
+	}
+
+	Simulation->Add(*this);
 	return true;
 }
 
@@ -742,7 +826,9 @@ void AAGX_Terrain::CreateNativeShovels()
 
 		FAGX_Shovel::UpdateNativeShovelProperties(ShovelBarrier, Shovel);
 
-		bool Added = NativeTerrainBarrier.AddShovel(ShovelBarrier);
+		bool Added =
+			bEnableTerrainPager ? NativeTerrainPagerBarrier.AddShovel(ShovelBarrier) :
+									  NativeTerrainBarrier.AddShovel(ShovelBarrier);
 		if (!Added)
 		{
 			UE_LOG(
@@ -754,7 +840,8 @@ void AAGX_Terrain::CreateNativeShovels()
 			std::swap(CuttingEdgeLine.v1, CuttingEdgeLine.v2);
 			ShovelBarrier.SetTopEdge(TopEdgeLine);
 			ShovelBarrier.SetCuttingEdge(CuttingEdgeLine);
-			Added = NativeTerrainBarrier.AddShovel(ShovelBarrier);
+			Added = bEnableTerrainPager ? NativeTerrainPagerBarrier.AddShovel(ShovelBarrier)
+										: NativeTerrainBarrier.AddShovel(ShovelBarrier);
 			if (!Added)
 			{
 				UE_LOG(
@@ -792,15 +879,12 @@ void AAGX_Terrain::InitializeRendering()
 
 bool AAGX_Terrain::UpdateNativeMaterial()
 {
-	if (!HasNative())
+	if (!HasNativeTerrain())
 		return false;
 
 	if (TerrainMaterial == nullptr)
 	{
-		if (HasNative())
-		{
-			GetNative()->ClearMaterial();
-		}
+		GetNativeTerrain()->ClearMaterial();
 		return true;
 	}
 
@@ -818,19 +902,21 @@ bool AAGX_Terrain::UpdateNativeMaterial()
 		TerrainMaterialInstance->GetOrCreateTerrainMaterialNative(GetWorld());
 	check(TerrainMaterialBarrier);
 
-	GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
+	GetNativeTerrain()->SetTerrainMaterial(*TerrainMaterialBarrier);
 
 	// Set ShapeMaterial
 	FShapeMaterialBarrier* MaterialBarrier =
 		TerrainMaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
 	check(MaterialBarrier);
 
-	GetNative()->SetShapeMaterial(*MaterialBarrier);
+	GetNativeTerrain()->SetShapeMaterial(*MaterialBarrier);
 	return true;
 }
 
 void AAGX_Terrain::InitializeDisplacementMap()
 {
+	// @todo: this needs to support Terrain Paging.
+
 	if (LandscapeDisplacementMap == nullptr)
 	{
 		UE_LOG(
@@ -889,6 +975,9 @@ void AAGX_Terrain::InitializeDisplacementMap()
 
 void AAGX_Terrain::UpdateDisplacementMap()
 {
+	if (bEnableTerrainPager)
+		return; // @todo: this needs to support Terrain Paging.
+
 	if (!DisplacementMapInitialized)
 	{
 		return;
@@ -993,6 +1082,8 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 
 bool AAGX_Terrain::InitializeParticlesMap()
 {
+	// @todo: this needs to support Terrain Paging.
+
 	if (TerrainParticlesDataMap == nullptr)
 	{
 		UE_LOG(
@@ -1052,7 +1143,10 @@ bool AAGX_Terrain::InitializeParticlesMap()
 }
 
 void AAGX_Terrain::UpdateParticlesMap()
-{
+{	
+	if (bEnableTerrainPager)
+		return; // @todo: this needs to support Terrain Paging.
+
 	if (!ParticleSystemInitialized)
 	{
 		return;
@@ -1160,6 +1254,8 @@ void AAGX_Terrain::ClearParticlesMap()
 
 void AAGX_Terrain::UpdateLandscapeMaterialParameters()
 {
+	// @todo: this needs to support Terrain Paging.
+
 	if (!IsValid(SourceLandscape) || GetWorld() == nullptr || !GetWorld()->IsGameWorld())
 	{
 		return;
