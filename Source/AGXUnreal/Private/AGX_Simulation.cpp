@@ -215,7 +215,43 @@ void UAGX_Simulation::Add(UAGX_StaticMeshComponent& Body)
 void UAGX_Simulation::Add(AAGX_Terrain& Terrain)
 {
 	EnsureStepperCreated();
-	AGX_Simulation_helpers::Add(*this, Terrain);
+
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to add Terrain '%s' to Simulation that does not have a native."),
+			*Terrain.GetName());
+		return;
+	}
+
+	if ((Terrain.bEnableTerrainPager && !Terrain.HasNativeTerrainPager()) ||
+		(!Terrain.bEnableTerrainPager && !Terrain.HasNativeTerrain()))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to add Terrain '%s' that does not have a native to Simulation."),
+			*Terrain.GetName());
+		return;
+	}
+
+	const bool Result = [this, &Terrain]()
+	{
+		if (Terrain.bEnableTerrainPager)
+			return GetNative()->Add(*Terrain.GetNativeTerrainPager());
+		else
+			return GetNative()->Add(*Terrain.GetNativeTerrain());
+	}();
+
+	if (!Result)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Failed to add '%s' to Simulation. FSimulationBarrier::Add returned "
+				 "false. The Log category AGXDynamicsLog may contain more information about "
+				 "the failure."),
+			*Terrain.GetName());
+	}
 }
 
 void UAGX_Simulation::Add(UAGX_TireComponent& Tire)
@@ -285,7 +321,44 @@ void UAGX_Simulation::Remove(UAGX_StaticMeshComponent& Body)
 
 void UAGX_Simulation::Remove(AAGX_Terrain& Terrain)
 {
-	AGX_Simulation_helpers::Remove(*this, Terrain);
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to remove Terrain '%s' from a Simulation that does not have a "
+				 "native."),
+			*Terrain.GetName());
+		return;
+	}
+
+	if ((Terrain.bEnableTerrainPager && !Terrain.HasNativeTerrainPager()) ||
+		(!Terrain.bEnableTerrainPager && !Terrain.HasNativeTerrain()))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to remove Terrain '%s' from Simulation but the Terrain does "
+				 "not have a native."),
+			*Terrain.GetName());
+		return;
+	}
+
+	const bool Result = [this, &Terrain]()
+	{
+		if (Terrain.bEnableTerrainPager)
+			return GetNative()->Remove(*Terrain.GetNativeTerrainPager());
+		else
+			return GetNative()->Remove(*Terrain.GetNativeTerrain());
+	}();
+
+	if (!Result)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to remove Terrain '%s' from Simulation but "
+				 "FSimulationBarrier::Remove returned false. The Log category AGXDynamicsLog may "
+				 "contain more information about the failure."),
+			*Terrain.GetName());
+	}
 }
 
 void UAGX_Simulation::Remove(UAGX_TireComponent& Tire)
