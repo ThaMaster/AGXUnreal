@@ -5,8 +5,10 @@
 // Standard library includes.
 #include <memory>
 
-class FTerrainDataSource;
+class FTerrainBarrier;
 class FTerrainHeightFetcherBase;
+
+struct FTerrainDataSourceRef;
 struct FTerrainPagerRef;
 
 class AGXUNREALBARRIER_API FTerrainPagerBarrier
@@ -18,7 +20,7 @@ public:
 	~FTerrainPagerBarrier();
 
 	bool HasNative() const;
-	void AllocateNative(FTerrainHeightFetcherBase* HeightFetcher);
+	void AllocateNative(FTerrainHeightFetcherBase* HeightFetcher, FTerrainBarrier& TerrainBarrier);
 	FTerrainPagerRef* GetNative();
 	const FTerrainPagerRef* GetNative() const;
 	void ReleaseNative();
@@ -28,5 +30,5 @@ public:
 	void operator=(const FTerrainPagerBarrier&) = delete;
 
 	std::unique_ptr<FTerrainPagerRef> NativeRef;
-	std::unique_ptr<FTerrainDataSource> DataSource;
+	std::unique_ptr<FTerrainDataSourceRef> DataSourceRef;
 };

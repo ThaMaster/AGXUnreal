@@ -2,6 +2,11 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGXNotify.h"
+#include "Terrain/TerrainDataSource.h"
+
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/Constraint.h>
 #include <agx/ElementaryConstraint.h>
@@ -20,8 +25,6 @@
 #include <agxTerrain/TerrainPager.h>
 #include <agxModel/Tire.h>
 #include "EndAGXIncludes.h"
-
-#include "AGXNotify.h"
 
 struct FSimulationRef
 {
@@ -186,6 +189,17 @@ struct FTerrainPagerRef
 
 	FTerrainPagerRef() = default;
 	FTerrainPagerRef(agxTerrain::TerrainPager* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FTerrainDataSourceRef
+{
+	agx::ref_ptr<FTerrainDataSource> Native;
+
+	FTerrainDataSourceRef() = default;
+	FTerrainDataSourceRef(FTerrainDataSource* InNative)
 		: Native(InNative)
 	{
 	}

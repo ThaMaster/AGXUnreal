@@ -1,10 +1,9 @@
 #include "Terrain/TerrainPagerBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Terrain/TerrainBarrier.h"
 #include "Terrain/TerrainDataSource.h"
 #include "Terrain/TerrainHeightFetcherBase.h"
-
-
 
 FTerrainPagerBarrier::FTerrainPagerBarrier()
 	: NativeRef {new FTerrainPagerRef}
@@ -33,12 +32,22 @@ bool FTerrainPagerBarrier::HasNative() const
 	return NativeRef->Native != nullptr;
 }
 
-void FTerrainPagerBarrier::AllocateNative(FTerrainHeightFetcherBase* HeightFetcher)
+void FTerrainPagerBarrier::AllocateNative(
+	FTerrainHeightFetcherBase* HeightFetcher, FTerrainBarrier& TerrainBarrier)
 {
-	DataSource = std::make_unique<FTerrainDataSource>();
-	DataSource->SetTerrainHeightFetcher(HeightFetcher);
+	check(TerrainBarrier.HasNative());
 
-	// @todo : create native and give it our DataSource.
+	// Create a TerrainDataSource and assign the HeightFetcher to it. This HeightFetcher is owned by
+	// the UAGX_Terrain and is a way for us to call UAGX_Terrain::FetchHeights from the Barrier
+	// module.
+	DataSourceRef = std::make_unique<FTerrainDataSourceRef>();
+	DataSourceRef->Native = new FTerrainDataSource();
+	DataSourceRef->Native->SetTerrainHeightFetcher(HeightFetcher);
+
+	NativeRef->Native = new agxTerrain::TerrainPager(
+		101, 10, 1.0, 3.0, agx::Vec3(), agx::Quat(), TerrainBarrier.GetNative()->Native);
+
+	NativeRef->Native->setTerrainDataSource(DataSourceRef->Native);
 }
 
 FTerrainPagerRef* FTerrainPagerBarrier::GetNative()

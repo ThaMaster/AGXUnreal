@@ -5,6 +5,7 @@ using namespace agxTerrain;
 TerrainDataSource::TerrainHeightType FTerrainDataSource::fetchTerrainTile(
 	const TileSpecification& ts, TileId id)
 {
+	UE_LOG(LogTemp, Warning, TEXT("FTerrainDataSource::fetchTerrainTile called!"));
 	return TerrainHeightType();
 }
 
