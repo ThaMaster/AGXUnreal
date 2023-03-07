@@ -5,6 +5,7 @@
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/TerrainDataSource.h"
 #include "Terrain/TerrainHeightFetcherBase.h"
+#include "TypeConversions.h"
 
 FTerrainPagerBarrier::FTerrainPagerBarrier()
 	: NativeRef {new FTerrainPagerRef}
@@ -45,8 +46,13 @@ void FTerrainPagerBarrier::AllocateNative(
 	DataSourceRef->Native = new FTerrainDataSource();
 	DataSourceRef->Native->SetTerrainHeightFetcher(HeightFetcher);
 
+	// Use the same position/rotation as the given Terrain.
+	const agx::Vec3 Position = ConvertDisplacement(TerrainBarrier.GetPosition());
+	const agx::Quat Rotation = Convert(TerrainBarrier.GetRotation());
+
+	// @todo: pass proper values.
 	NativeRef->Native = new agxTerrain::TerrainPager(
-		101, 10, 1.0, 3.0, agx::Vec3(), agx::Quat(), TerrainBarrier.GetNative()->Native);
+		51, 5, 0.2, 3.0, Position, Rotation, TerrainBarrier.GetNative()->Native);
 
 	NativeRef->Native->setTerrainDataSource(DataSourceRef->Native);
 }
@@ -75,5 +81,5 @@ bool FTerrainPagerBarrier::AddShovel(FShovelBarrier& Shovel)
 	check(Shovel.HasNative());
 
 	// @todo: make radiuses an input param.
-	return NativeRef->Native->add(Shovel.GetNative()->Native, 3.0, 7.0);
+	return NativeRef->Native->add(Shovel.GetNative()->Native, 0.5, 1.0);
 }

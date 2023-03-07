@@ -14,7 +14,8 @@ namespace AGX_HeightFieldUtilities
 {
 	// StartPos is in world coordinate system.
 	AGXUNREAL_API FHeightFieldShapeBarrier CreateHeightField(
-		ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY);
+		ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY,
+		bool ReadInitialHeights = true);
 
 	// The resulting Transform's position will always intersect the Landscape, i.e. even in the
 	// given Center point does not lie in the Landscape's plane, it will be projected to it during

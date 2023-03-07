@@ -371,11 +371,25 @@ TArray<float> GetHeights(
 }
 
 FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
-	ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY)
+	ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY,
+	bool ReadInitialHeights)
 {
-	TArray<float> Heights = GetHeights(Landscape, StartPos, LengthX, LengthY);	
-
 	const FVector LandscapeScale = Landscape.GetActorScale();
+
+	TArray<float> Heights;
+	if (ReadInitialHeights)
+	{
+		Heights = GetHeights(Landscape, StartPos, LengthX, LengthY);
+	}
+	else
+	{
+		const int32 ResolutionX = FMath::RoundToInt(LengthX / LandscapeScale.X);
+		const int32 ResolutionY = FMath::RoundToInt(LengthY / LandscapeScale.Y);
+		const int32 VerticesSideX = ResolutionX + 1;
+		const int32 VerticesSideY = ResolutionY + 1;
+		Heights.SetNumZeroed(VerticesSideX * VerticesSideY);
+	}
+	
 	const auto QuadSideSize = LandscapeScale.X;
 	if (!FMath::IsNearlyEqual(LandscapeScale.X, LandscapeScale.Y))
 	{

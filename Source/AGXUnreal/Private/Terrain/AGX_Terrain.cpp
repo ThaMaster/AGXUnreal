@@ -675,6 +675,8 @@ void AAGX_Terrain::InitializeNative()
 		return;
 	}
 
+	HeightFetcher.SetTerrain(this);
+
 	if (!CreateNativeTerrain())
 	{
 		return; // Logging done in CreateNativeTerrain.
@@ -715,9 +717,10 @@ bool AAGX_Terrain::CreateNativeTerrain()
 
 	const FVector StartPos = Bounds->Transform.TransformPositionNoScale(-Bounds->HalfExtent);
 
-	// @todo: don't read heights if using terrain pager.
 	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(
-		*SourceLandscape, StartPos, Bounds->HalfExtent.X * 2.0, Bounds->HalfExtent.Y * 2.0);
+		*SourceLandscape, StartPos, Bounds->HalfExtent.X * 2.0, Bounds->HalfExtent.Y * 2.0,
+		!bEnableTerrainPager);
+
 	NativeTerrainBarrier.AllocateNative(HeightField, MaxDepth);
 
 	if (!HasNativeTerrain())
@@ -883,9 +886,9 @@ void AAGX_Terrain::CreateNativeShovels()
 
 		FAGX_Shovel::UpdateNativeShovelProperties(ShovelBarrier, Shovel);
 
-		bool Added =
-			bEnableTerrainPager ? NativeTerrainPagerBarrier.AddShovel(ShovelBarrier) :
-									  NativeTerrainBarrier.AddShovel(ShovelBarrier);
+		// @todo pass shovel radius stuff to TerrainPager.
+		bool Added = bEnableTerrainPager ? NativeTerrainPagerBarrier.AddShovel(ShovelBarrier)
+										 : NativeTerrainBarrier.AddShovel(ShovelBarrier);
 		if (!Added)
 		{
 			UE_LOG(
@@ -1200,7 +1203,7 @@ bool AAGX_Terrain::InitializeParticlesMap()
 }
 
 void AAGX_Terrain::UpdateParticlesMap()
-{	
+{
 	if (bEnableTerrainPager)
 		return; // @todo: this needs to support Terrain Paging.
 
