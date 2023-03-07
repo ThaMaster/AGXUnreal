@@ -5,6 +5,7 @@
 // Standard library includes.
 #include <memory>
 
+class FShovelBarrier;
 class FTerrainBarrier;
 class FTerrainHeightFetcherBase;
 
@@ -24,6 +25,8 @@ public:
 	FTerrainPagerRef* GetNative();
 	const FTerrainPagerRef* GetNative() const;
 	void ReleaseNative();
+
+	bool AddShovel(FShovelBarrier& Shovel);
 
  private:
 	FTerrainPagerBarrier(const FTerrainPagerBarrier&) = delete;

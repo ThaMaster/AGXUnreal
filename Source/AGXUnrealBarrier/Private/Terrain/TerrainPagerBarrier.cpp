@@ -1,6 +1,7 @@
 #include "Terrain/TerrainPagerBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Terrain/ShovelBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/TerrainDataSource.h"
 #include "Terrain/TerrainHeightFetcherBase.h"
@@ -66,4 +67,13 @@ void FTerrainPagerBarrier::ReleaseNative()
 {
 	check(HasNative());
 	NativeRef->Native = nullptr;
+}
+
+bool FTerrainPagerBarrier::AddShovel(FShovelBarrier& Shovel)
+{
+	check(HasNative());
+	check(Shovel.HasNative());
+
+	// @todo: make radiuses an input param.
+	return NativeRef->Native->add(Shovel.GetNative()->Native, 3.0, 7.0);
 }
