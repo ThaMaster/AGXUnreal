@@ -2,8 +2,15 @@
 
 #pragma once
 
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
 class AGXUNREALBARRIER_API FTerrainHeightFetcherBase
 {
 public:
-	virtual void FetchHeights() const = 0;
+
+	// @todo: document behavior.
+	virtual bool FetchHeights(
+		const FVector& WorldPosStart, int32 VertsX, int32 VertsY,
+		TArray<float>& OutHeights) const = 0;
 };
