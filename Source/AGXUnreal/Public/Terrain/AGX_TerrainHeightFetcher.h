@@ -13,7 +13,9 @@ class AAGX_Terrain;
 class FAGX_TerrainHeightFetcher : public FTerrainHeightFetcherBase
 {
 public:
-	virtual void FetchHeights() const override;
+	virtual bool FetchHeights(
+		const FVector& WorldPosStart, int32 VertsX, int32 VertsY,
+		TArray<float>& OutHeights) const override;
 
 	void SetTerrain(AAGX_Terrain* Terrain);
 	AAGX_Terrain* GetTerrain() const;

@@ -9,7 +9,7 @@
 
 class FTerrainHeightFetcherBase;
 
-class FTerrainDataSource : public agxTerrain::TerrainDataSource
+class FTerrainDataSource : public agxTerrain::ExternalTerrainDataSource
 {
 public:
 	virtual agxTerrain::TerrainDataSource::TerrainHeightType fetchTerrainTile(

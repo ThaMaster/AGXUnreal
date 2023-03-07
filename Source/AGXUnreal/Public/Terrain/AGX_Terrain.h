@@ -229,13 +229,11 @@ public:
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
 
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;	
 
 private:
 	void InitializeNative();
@@ -260,6 +258,8 @@ private:
 #endif
 	virtual void Serialize(FArchive& Archive) override;
 
+	friend class FAGX_TerrainHeightFetcher;
+
 private:
 	FTerrainBarrier NativeTerrainBarrier;
 	FTerrainPagerBarrier NativeTerrainPagerBarrier;
@@ -283,4 +283,8 @@ private:
 	bool ParticleSystemInitialized = false;
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
 	const int32 NumPixelsPerParticle = 2;
+
+	// @todo: document behavior.
+	bool FetchHeights(
+		const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights) const;
 };

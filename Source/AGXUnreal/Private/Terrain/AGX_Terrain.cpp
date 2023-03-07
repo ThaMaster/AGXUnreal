@@ -539,6 +539,63 @@ void AAGX_Terrain::Tick(float DeltaTime)
 	}
 }
 
+bool AAGX_Terrain::FetchHeights(
+	const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights) const
+{
+	if (SourceLandscape == nullptr)
+		return false;
+
+	// To gain some performance, calculate an X and Y vector in global coordinates that can be used
+	// for fast iteration.
+	FVector DirectionGlobalX;
+	FVector DirectionGlobalY;
+	{
+		const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
+		const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
+		const FVector PosStartLocal =
+			SourceLandscape->GetTransform().InverseTransformPositionNoScale(WorldPosStart);
+		const FVector StepLocalX = PosStartLocal + FVector(QuadSideSizeX, 0.0, 0.0);
+		const FVector StepLocalY = PosStartLocal + FVector(0.0, QuadSideSizeY, 0.0);
+		const FVector StepGlobalX =
+			SourceLandscape->GetTransform().TransformPositionNoScale(StepLocalX);
+		const FVector StepGlobalY =
+			SourceLandscape->GetTransform().TransformPositionNoScale(StepLocalY);
+		DirectionGlobalX = StepGlobalX - WorldPosStart;
+		DirectionGlobalY = StepGlobalY - WorldPosStart;
+	}
+
+	OutHeights.Reserve(VertsX * VertsY);
+
+	// AGX Dynamics coordinate systems are mapped with Y-axis flipped.
+	for (int Y = VertsY - 1; Y >= 0; Y--)
+	{
+		for (int X = 0; X < VertsX; X++)
+		{
+			const FVector SamplePointGlobal =
+				FVector(WorldPosStart.X, WorldPosStart.Y, 0.0) +
+				DirectionGlobalX * static_cast<decltype(FVector::X)>(X) +
+				DirectionGlobalY * static_cast<decltype(FVector::X)>(Y);
+
+			if (auto Height = SourceLandscape->GetHeightAtLocation(SamplePointGlobal))
+			{
+				FVector HeightPointLocal = SourceLandscape->GetTransform().InverseTransformPositionNoScale(
+						FVector(SamplePointGlobal.X, SamplePointGlobal.Y, *Height));
+				OutHeights.Add(HeightPointLocal.Z);
+			}
+			else
+			{
+				// Probably outside the Landscape. Remove this logging before merge.
+				UE_LOG(
+					LogTemp, Warning, TEXT("Height read missed! World sample pos: %s"),
+					*SamplePointGlobal.ToString());
+				OutHeights.Add(SourceLandscape->GetActorLocation().Z);
+			}			
+		}
+	}
+
+	return true;
+}
+
 namespace
 {
 	UAGX_RigidBodyComponent* GetBodyComponent(

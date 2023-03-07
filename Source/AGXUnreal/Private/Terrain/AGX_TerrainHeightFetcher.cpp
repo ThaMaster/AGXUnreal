@@ -1,8 +1,18 @@
 #include "Terrain/AGX_TerrainHeightFetcher.h"
 
-void FAGX_TerrainHeightFetcher::FetchHeights() const
+bool FAGX_TerrainHeightFetcher::FetchHeights(
+	const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights) const
 {
-	UE_LOG(LogAGX, Warning, TEXT("FAGX_TerrainHeightFetcher::FetchHeights() called..."));
+	if (Terrain == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("FetchHeights called on a TerrainHeightFetcher with nullptr Terrain. Fetching "
+				 "heights will not be possible."));
+		return false;
+	}
+
+	return Terrain->FetchHeights(WorldPosStart, VertsX, VertsY, OutHeights);
 }
 
 void FAGX_TerrainHeightFetcher::SetTerrain(AAGX_Terrain* InTerrain)
