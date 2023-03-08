@@ -124,8 +124,7 @@ FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(
 		// Blueprint. Attempt to get the SCS Node via name and look through parent Blueprints.
 		const FString ComponentName = GetRegularNameFromTemplateComponentName(Component->GetName());
 
-		FAGX_BlueprintNodeSearchResult Result = GetSCSNodeFromName(
-			*Blueprint->SimpleConstructionScript->GetBlueprint(), ComponentName, true);
+		FAGX_BlueprintNodeSearchResult Result = GetSCSNodeFromName(*Blueprint, ComponentName, true);
 		ComponentNode = Result.FoundNode;
 		Blueprint = &Result.Blueprint;
 	}
@@ -193,10 +192,7 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 		return false;
 	}
 
-	USCS_Node* ComponentNode =
-		GetSCSNodeFromComponent(
-			*Blueprint->SimpleConstructionScript->GetBlueprint(), Component, false)
-			.FoundNode;
+	USCS_Node* ComponentNode = GetSCSNodeFromComponent(*Blueprint, Component, false).FoundNode;
 	if (ComponentNode == nullptr)
 	{
 		// We could not find a SCS Node matching the passed Component. This may be because we are in
@@ -204,8 +200,7 @@ bool FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
 		// Blueprint. Attempt to get the SCS Node via name and look through parent Blueprints.
 		const FString ComponentName = GetRegularNameFromTemplateComponentName(Component->GetName());
 
-		FAGX_BlueprintNodeSearchResult Result = GetSCSNodeFromName(
-			*Blueprint->SimpleConstructionScript->GetBlueprint(), ComponentName, true);
+		FAGX_BlueprintNodeSearchResult Result = GetSCSNodeFromName(*Blueprint, ComponentName, true);
 		ComponentNode = Result.FoundNode;
 		Blueprint = &Result.Blueprint;
 	}
@@ -451,7 +446,8 @@ void FAGX_BlueprintUtilities::ReParentNode(
 			LogAGX, Warning,
 			TEXT("ReParentNode was called with PreserveWorldTransform for SCS Node '%s', but the "
 				 "ComponentTemplate owned by the SCS Node was not a USceneComponent. The world "
-				 "transform will not be preserved."), *Node.GetVariableName().ToString());
+				 "transform will not be preserved."),
+			*Node.GetVariableName().ToString());
 	}
 
 	const FTransform OrigTransform = [PreserveWorldTransform, Component]()
