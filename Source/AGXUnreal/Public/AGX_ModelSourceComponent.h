@@ -9,7 +9,7 @@
 #include "AGX_ModelSourceComponent.generated.h"
 
 /*
- * @todo add description
+ * Component holding information about an imported archive.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_ModelSourceComponent : public UActorComponent
