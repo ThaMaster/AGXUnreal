@@ -192,286 +192,8 @@ bool FAGX_EditorUtilities::RenameAsset(
 	return true;
 }
 
-namespace AGX_EditorUtilities_helpers
-{
-
-/// @todo This has been moved to a public member function instead. Ensure they are the same and then
-/// delete this.
-#if 0
-	/**
-	 * Delete function based on BlueprintEditorPromotionTestHelper::Cleanup in
-	 * BlueprintEditorTests.cpp in the engine code. It consists of four steps:
-	 *  - AssetRegistry.AssetDeleted
-	 *  - NullReferencesToObject
-	 *  - ObjectTools::DeleteSingleObject
-	 *  - Filesystem delete.
-	 *
-	 * The first step is straight-forward, get the asset registry and call AssetDeleted on it.
-	 *
-	 * The second step is implemented behind FAutomationEditorCommonUtils. I don't think we should
-	 * call that directly, calling into test code from production editor code is backwards. Here I
-	 * have recreated the bits of the code I think are important for our use-case as a helper
-	 * function.
-	 *
-	 * The call to NullReferencesToObject may be expensive, so the BlueprintEditorTest first tries
-	 * to call DeleteSingleObject and only if that fails does to call NullReferencesToObject.
-	 *
-	 * The filesystem delete deletes an entire directory. In our case I think it is enough to
-	 * delete a single .uasset file.
-	 */
-
-	void NullReferencesToObject(UObject* ToDelete)
-	{
-		TArray<UObject*> ReplaceableObjects;
-		TMap<UObject*, UObject*> ReplacementMap;
-		ReplacementMap.Add(ToDelete, nullptr);
-		ReplacementMap.GenerateKeyArray(ReplaceableObjects);
-
-		// Find all the properties (and their corresponding objects) that refer to any of the
-		// objects to be replaced
-		TMap<UObject*, TArray<FProperty*>> ReferencingPropertiesMap;
-		for (FThreadSafeObjectIterator ObjIter; ObjIter; ++ObjIter)
-		{
-			UObject* CurObject = *ObjIter;
-
-			// Find the referencers of the objects to be replaced
-			FFindReferencersArchive FindRefsArchive(CurObject, ReplaceableObjects);
-
-			// Inform the object referencing any of the objects to be replaced about the properties
-			// that are being forcefully changed, and store both the object doing the referencing as
-			// well as the properties that were changed in a map (so that we can correctly call
-			// PostEditChange later)
-			TMap<UObject*, int32> CurNumReferencesMap;
-			TMultiMap<UObject*, FProperty*> CurReferencingPropertiesMMap;
-			if (FindRefsArchive.GetReferenceCounts(
-					CurNumReferencesMap, CurReferencingPropertiesMMap) > 0)
-			{
-				TArray<FProperty*> CurReferencedProperties;
-				CurReferencingPropertiesMMap.GenerateValueArray(CurReferencedProperties);
-				ReferencingPropertiesMap.Add(CurObject, CurReferencedProperties);
-				for (TArray<FProperty*>::TConstIterator RefPropIter(CurReferencedProperties);
-					 RefPropIter; ++RefPropIter)
-				{
-					CurObject->PreEditChange(*RefPropIter);
-				}
-			}
-		}
-
-		// Iterate over the map of referencing objects/changed properties, forcefully replacing the
-		// references and then alerting the referencing objects the change has completed via
-		// PostEditChange
-		int32 NumObjsReplaced = 0;
-		for (TMap<UObject*, TArray<FProperty*>>::TConstIterator MapIter(ReferencingPropertiesMap);
-			 MapIter; ++MapIter)
-		{
-			++NumObjsReplaced;
-
-			UObject* CurReplaceObj = MapIter.Key();
-			const TArray<FProperty*>& RefPropArray = MapIter.Value();
-			FArchiveReplaceObjectRef<UObject> ReplaceAr(
-				CurReplaceObj, ReplacementMap,
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-				false, true, false
-#else
-				EArchiveReplaceObjectFlags::IgnoreOuterRef
-#endif
-			);
-			for (TArray<FProperty*>::TConstIterator RefPropIter(RefPropArray); RefPropIter;
-				 ++RefPropIter)
-			{
-				FPropertyChangedEvent PropertyEvent(*RefPropIter);
-				CurReplaceObj->PostEditChangeProperty(PropertyEvent);
-			}
-
-			if (!CurReplaceObj->HasAnyFlags(RF_Transient) &&
-				CurReplaceObj->GetOutermost() != GetTransientPackage())
-			{
-				if (!CurReplaceObj->RootPackageHasAnyFlags(PKG_CompiledIn))
-				{
-					CurReplaceObj->MarkPackageDirty();
-				}
-			}
-		}
-	}
-#endif
-}
-
-/**
- * Delete function based on BlueprintEditorPromotionTestHelper::Cleanup in
- * BlueprintEditorTests.cpp in the engine code. It consists of four steps:
- *  - AssetRegistry.AssetDeleted
- *  - NullReferencesToObject
- *  - ObjectTools::DeleteSingleObject
- *  - Filesystem delete.
- *
- * The first step is straight-forward, get the asset registry and call AssetDeleted on it.
- *
- * The second step is implemented behind FAutomationEditorCommonUtils. I don't think we should
- * call that directly, calling into test code from production editor code is backwards. Here I
- * have recreated the bits of the code I think are important for our use-case as a helper
- * function.
- *
- * The call to NullReferencesToObject may be expensive, so the BlueprintEditorTest first tries
- * to call DeleteSingleObject and only if that fails does to call NullReferencesToObject.
- *
- * The filesystem delete deletes an entire directory. In our case I think it is enough to
- * delete a single .uasset file.
- */
-
-void FAGX_EditorUtilities::NullReferencesToObject(UObject* ToDelete)
-{
-	TArray<UObject*> ReplaceableObjects;
-	TMap<UObject*, UObject*> ReplacementMap;
-	ReplacementMap.Add(ToDelete, nullptr);
-	ReplacementMap.GenerateKeyArray(ReplaceableObjects);
-
-	// Find all the properties (and their corresponding objects) that refer to any of the
-	// objects to be replaced
-	TMap<UObject*, TArray<FProperty*>> ReferencingPropertiesMap;
-	for (FThreadSafeObjectIterator ObjIter; ObjIter; ++ObjIter)
-	{
-		UObject* CurObject = *ObjIter;
-
-		// Find the referencers of the objects to be replaced
-		FFindReferencersArchive FindRefsArchive(CurObject, ReplaceableObjects);
-
-		// Inform the object referencing any of the objects to be replaced about the properties
-		// that are being forcefully changed, and store both the object doing the referencing as
-		// well as the properties that were changed in a map (so that we can correctly call
-		// PostEditChange later)
-		TMap<UObject*, int32> CurNumReferencesMap;
-		TMultiMap<UObject*, FProperty*> CurReferencingPropertiesMMap;
-		if (FindRefsArchive.GetReferenceCounts(CurNumReferencesMap, CurReferencingPropertiesMMap) >
-			0)
-		{
-			TArray<FProperty*> CurReferencedProperties;
-			CurReferencingPropertiesMMap.GenerateValueArray(CurReferencedProperties);
-			ReferencingPropertiesMap.Add(CurObject, CurReferencedProperties);
-			for (TArray<FProperty*>::TConstIterator RefPropIter(CurReferencedProperties);
-				 RefPropIter; ++RefPropIter)
-			{
-				CurObject->PreEditChange(*RefPropIter);
-			}
-		}
-	}
-
-	// Iterate over the map of referencing objects/changed properties, forcefully replacing the
-	// references and then alerting the referencing objects the change has completed via
-	// PostEditChange
-	int32 NumObjsReplaced = 0;
-	for (TMap<UObject*, TArray<FProperty*>>::TConstIterator MapIter(ReferencingPropertiesMap);
-		 MapIter; ++MapIter)
-	{
-		++NumObjsReplaced;
-
-		UObject* CurReplaceObj = MapIter.Key();
-		const TArray<FProperty*>& RefPropArray = MapIter.Value();
-		FArchiveReplaceObjectRef<UObject> ReplaceAr(
-			CurReplaceObj, ReplacementMap,
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-			false, true, false
-#else
-			EArchiveReplaceObjectFlags::IgnoreOuterRef
-#endif
-		);
-		for (TArray<FProperty*>::TConstIterator RefPropIter(RefPropArray); RefPropIter;
-			 ++RefPropIter)
-		{
-			FPropertyChangedEvent PropertyEvent(*RefPropIter);
-			CurReplaceObj->PostEditChangeProperty(PropertyEvent);
-		}
-
-		if (!CurReplaceObj->HasAnyFlags(RF_Transient) &&
-			CurReplaceObj->GetOutermost() != GetTransientPackage())
-		{
-			if (!CurReplaceObj->RootPackageHasAnyFlags(PKG_CompiledIn))
-			{
-				CurReplaceObj->MarkPackageDirty();
-			}
-		}
-	}
-}
-
-bool FAGX_EditorUtilities::DeleteAsset(UObject& Asset)
-{
-	const FString AssetPath = Asset.GetPathName();
-	UE_LOG(LogAGX, Warning, TEXT("FullPath='%s'"), *AssetPath);
-	const FString BasePath = [&AssetPath]()
-	{
-		FString Result;
-		AssetPath.Split(TEXT("."), &Result, nullptr, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
-		return Result + TEXT(".uasset");
-	}();
-	const FString RelativeFileSystemPath = FPackageName::LongPackageNameToFilename(BasePath);
-	const FString FileSystemPath = FPaths::ConvertRelativePathToFull(RelativeFileSystemPath);
-
-	UE_LOG(LogAGX, Warning, TEXT("AssetPath='%s'"), *AssetPath);
-	UE_LOG(LogAGX, Warning, TEXT("BasePath='%s'"), *BasePath);
-	UE_LOG(LogAGX, Warning, TEXT("FilesystemPath='%s'"), *FileSystemPath);
-
-	IAssetRegistry& AssetRegistry = IAssetRegistry::GetChecked();
-
-	if (GEditor != nullptr)
-	{
-		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllEditorsForAsset(&Asset);
-	}
-
-	AssetRegistry.AssetDeleted(&Asset);
-	NullReferencesToObject(&Asset);
-	ObjectTools::DeleteSingleObject(&Asset);
-
-	// Try to delete the corresponding asset file. This file may not exist, in case a new asset was
-	// created and immediately deleted without ever being saved.
-	IFileManager::Get().Delete(*FileSystemPath, /*RequireExists*/ false);
-
-	return true;
-}
-
 int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAssets)
 {
-#if 0
-	UE_LOG(LogAGX, Warning, TEXT("Deleting %d assets with ObjectTools::DeleteAssets."), InAssets.Num());
-	// The other implementation tries to recreate ObjectTools::(Force)DeleteObjects but without the
-	// modal dialog. That causes crashes.
-	//
-	// This implementation tries to recreate hitting the Delete key, i.e., just call
-	// ObjectTools::DeleteAssets with bShowConfirmation=true.
-	TArray<FAssetData> AssetsToDelete;
-	for (UObject* Asset : InAssets)
-	{
-		UE_LOG(LogAGX, Warning, TEXT("Asked to delete asset for object %s"), *Asset->GetPathName());
-		/*
-		AGX_EditorUtilities.cpp(427): warning C4996:
-		'IAssetRegistry::GetAssetByObjectPath':
-		Asset path FNames have been deprecated,
-		use Soft Object Path instead.
-		Please update your code to the new API before upgrading to the next release,
-		otherwise your project will no longer compile.``
-		*/
-		FAssetData AssetToDelete =
-			IAssetRegistry::GetChecked().GetAssetByObjectPath(FName(*Asset->GetPathName()));
-		if (AssetToDelete.IsValid() && AssetToDelete.GetAsset() != nullptr)
-		{
-			AssetsToDelete.Add(AssetToDelete);
-		}
-	}
-	if (AssetsToDelete.Num() == 0)
-	{
-		UE_LOG(LogAGX, Warning, TEXT("Did not find any assets to delete."));
-		return 0;
-	}
-	for (FAssetData& Asset : AssetsToDelete)
-	{
-		UE_LOG(LogAGX, Warning, TEXT("About to delete asset %s"), *Asset.GetFullName());
-	}
-
-	for (FAssetData& AssetData : AssetsToDelete)
-	{
-		NullReferencesToObject(AssetData.GetAsset());
-	}
-	return ObjectTools::DeleteAssets(AssetsToDelete, true);
-
-#else
 	/*
 	 * This function is a subset/variant of Unreal Engine's ObjectTools::DeleteObjects. We can't use
 	 * that directly because it doesn't handle references to the deleted assets properly. In
@@ -489,13 +211,6 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 	 * variant of here since it is incomplete.
 	 */
 
-	/// @todo We get a crash in FEditorViewportClient and don't know why.
-	/// This is an attempt to work around that by cloasing all editors, which will close a bunch of
-	/// viewport. Not the Level Viewport though, we can't close that one.
-	///
-	/// Causes a different, but very similar, crash so commenting this out again.
-	// GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
-
 	TArray<UObject*> ObjectsToDelete = InAssets;
 
 	// Here the engine implementation creates an FScopedBusyCursor. Should we too?
@@ -503,31 +218,21 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 	// Here the engine implementation calls ObjectTools::AddExtraObjectsToDelete. As of Unreal
 	// Engine 4.27 that only involves UWorld objects, which we don't create during model import and
 	// thus don't currently need to handle here.
-	//
-	/// @todo Attempt to prevent crash, adding extra objects to delete.
-#if 0
-	ObjectTools::AddExtraObjectsToDelete(ObjectsToDelete);
-#endif
 
 	// There the engine implementation does stuff for sounds. We don't do anything with sound assets
 	// so skipping that for now.
 
-	// Here the engine implementation calls the OnAssetsCanDelete delegate. I don't know what that
-	// is or what it is for, so holding off on doing that for now.
-	//
-	/// @todo Attempt to prevent crash, checking can delete.
 	FCanDeleteAssetResult CanDeleteResult;
 	FEditorDelegates::OnAssetsCanDelete.Broadcast(ObjectsToDelete, CanDeleteResult);
 	if (!CanDeleteResult.Get())
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Cannot currently delete selected objects. See log for details."));
+			TEXT(
+				"Cannot currently delete imported assets, rejected by OnAssetsCanDelete. See prior "
+				"log messagesfor details."));
 		return 0;
 	}
-
-	// This is an experiment, the FAssetData experiment.
-	TArray<FAssetData> AssetData;
 
 	// Only packages that are fully loaded can be deleted, so ask for them to be loaded.
 	//
@@ -539,16 +244,14 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 		for (UObject* Object : ObjectsToDelete)
 		{
 			Packages.AddUnique(Object->GetOutermost());
-
-			// Part of FAssetData experiment.
-			IAssetRegistry::GetChecked().GetAssetsByPath(FName(*Object->GetPathName()), AssetData);
 		}
 		if (!UPackageTools::HandleFullyLoadingPackages(
 				Packages, LOCTEXT("DeleteImportedAssets", "Delete imported assets.")))
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Cannot delete assets because at least one asset could not be fully loaded."));
+				TEXT("Cannot delete imported assets because at least one asset could not be fully "
+					 "loaded."));
 			return 0;
 		}
 	}
@@ -566,91 +269,15 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 
 	// Here the engine implementation checks if the list of assets to delete include an active
 	// world, including all editor world contexts and streaming levels, by calling
-	// ObjectTools::ContainsWorldInUse. That function isn't available to use, so copy-pasted it
-	// here. I don't like it, and not sure we're even allowed to since this is a sizable chunk of
-	// code, larger than the 30 lines mentioned in section 4.a.i of the Unreal Engine EULA.
-	// Different context, but the 30 lines limit is still a decent guideline. We currently don't
+	// ObjectTools::ContainsWorldInUse. That function isn't available to us. We currently don't
 	// create any worlds during import so don't need to handle that case yet.
-#if 0
-	/// @todo Attempt to prevent crash, bail if attempt to delete world in use.
-	{
-		bool bContainsWorldInUse = [&ObjectsToDelete]()
-		{
-			TArray<const UWorld*> WorldsToDelete;
 
-			for (const UObject* ObjectToDelete : ObjectsToDelete)
-			{
-				if (const UWorld* World = Cast<UWorld>(ObjectToDelete))
-				{
-					WorldsToDelete.AddUnique(World);
-				}
-			}
-
-			if (WorldsToDelete.Num() == 0)
-			{
-				return false;
-			}
-
-			auto GetCombinedWorldNames = [](const TArray<const UWorld*>& Worlds) -> FString
-			{
-				return FString::JoinBy(Worlds, TEXT(", "),
-					[](const UWorld* World) -> FString
-					{
-						return World->GetPathName();
-					});
-			};
-
-			UE_LOG(LogAGX, Log, TEXT("Deleting %d worlds: %s"), WorldsToDelete.Num(), *GetCombinedWorldNames(WorldsToDelete));
-
-			TArray<const UWorld*> ActiveWorlds;
-
-			for (const FWorldContext& WorldContext : GEditor->GetWorldContexts())
-			{
-				if (const UWorld* World = WorldContext.World())
-				{
-					ActiveWorlds.AddUnique(World);
-
-					for (const ULevelStreaming* StreamingLevel : World->GetStreamingLevels())
-					{
-						if (StreamingLevel && StreamingLevel->GetLoadedLevel() && StreamingLevel->GetLoadedLevel()->GetOuter())
-						{
-							if (const UWorld* StreamingWorld = Cast<UWorld>(StreamingLevel->GetLoadedLevel()->GetOuter()))
-							{
-								ActiveWorlds.AddUnique(StreamingWorld);
-							}
-						}
-					}
-				}
-			}
-
-			UE_LOG(LogAGX, Log, TEXT("Currently %d active worlds: %s"), ActiveWorlds.Num(), *GetCombinedWorldNames(ActiveWorlds));
-
-			for (const UWorld* World : WorldsToDelete)
-			{
-				if (ActiveWorlds.Contains(World))
-				{
-					return true;
-				}
-			}
-
-			return false;
-		}();
-		if (bContainsWorldInUse)
-		{
-			UE_LOG(
-			LogAGX, Warning,
-			TEXT("Cannot delete assets because try to delete world in use."));
-			return 0;
-		}
-	}
-#endif
 
 	// Let everyone know that these assets are about to disappear, so they can clear any references
 	// they may have to the assets.
 	FEditorDelegates::OnAssetsPreDelete.Broadcast(ObjectsToDelete);
 
 	// The delete model helps us find references to the deleted assets.
-	/// \todo Engine code creates a shared pointer here. Is that necessary?
 	FAssetDeleteModel DeleteModel(ObjectsToDelete);
 
 	// Here the engine implementation uses GWarn to begin a slow task. The model
@@ -684,7 +311,6 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 				 "Browser and on drive."));
 		return 0;
 	}
-#endif
 }
 
 std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(
