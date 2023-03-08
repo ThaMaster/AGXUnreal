@@ -578,7 +578,8 @@ bool AAGX_Terrain::FetchHeights(
 
 			if (auto Height = SourceLandscape->GetHeightAtLocation(SamplePointGlobal))
 			{
-				FVector HeightPointLocal = SourceLandscape->GetTransform().InverseTransformPositionNoScale(
+				FVector HeightPointLocal =
+					SourceLandscape->GetTransform().InverseTransformPositionNoScale(
 						FVector(SamplePointGlobal.X, SamplePointGlobal.Y, *Height));
 				OutHeights.Add(HeightPointLocal.Z);
 			}
@@ -589,7 +590,7 @@ bool AAGX_Terrain::FetchHeights(
 					LogTemp, Warning, TEXT("Height read missed! World sample pos: %s"),
 					*SamplePointGlobal.ToString());
 				OutHeights.Add(SourceLandscape->GetActorLocation().Z);
-			}			
+			}
 		}
 	}
 
@@ -1142,8 +1143,6 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 
 bool AAGX_Terrain::InitializeParticlesMap()
 {
-	// @todo: this needs to support Terrain Paging.
-
 	if (TerrainParticlesDataMap == nullptr)
 	{
 		UE_LOG(
@@ -1204,15 +1203,17 @@ bool AAGX_Terrain::InitializeParticlesMap()
 
 void AAGX_Terrain::UpdateParticlesMap()
 {
-	if (bEnableTerrainPager)
-		return; // @todo: this needs to support Terrain Paging.
-
 	if (!ParticleSystemInitialized)
 	{
 		return;
 	}
 
-	if (!HasNative())
+	if (!bEnableTerrainPager && !HasNativeTerrain())
+	{
+		return;
+	}
+
+	if (bEnableTerrainPager && !HasNativeTerrainPager())
 	{
 		return;
 	}
@@ -1238,9 +1239,12 @@ void AAGX_Terrain::UpdateParticlesMap()
 		ParticlesDataMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, ResolutionX, ResolutionY));
 	}
 
-	TArray<FVector> Positions = NativeTerrainBarrier.GetParticlePositions();
-	TArray<float> Radii = NativeTerrainBarrier.GetParticleRadii();
-	TArray<FQuat> Rotations = NativeTerrainBarrier.GetParticleRotations();
+	const FParticleData ParticleData = bEnableTerrainPager
+										   ? NativeTerrainPagerBarrier.GetParticleData()
+										   : NativeTerrainBarrier.GetParticleData();
+	const TArray<FVector>& Positions = ParticleData.Positions;
+	const TArray<float>& Radii = ParticleData.Radii;
+	const TArray<FQuat>& Rotations = ParticleData.Rotations;
 
 	AGX_CHECK(Positions.Num() == Radii.Num());
 	AGX_CHECK(Positions.Num() == Rotations.Num());
