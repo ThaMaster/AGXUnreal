@@ -69,10 +69,10 @@ public:
 
 #if WITH_EDITOR
 	/**
-	 * Get the first Actor in the level that has the given name.
+	 * Get the first Actor in the level that has the given label.
 	 *
-	 * For editor builds this matches on the Actor's label, i.e. what is shown in the World Outliner
-	 * panel. For non-editor builds this matches against
+	 * The label is the name that is displayed in the World Outliner. Not that this may not be
+	 * unique.
 	 */
 	static AActor* GetActorByLabel(const UWorld& World, const FString Label);
 #endif
@@ -90,7 +90,7 @@ public:
 
 	/**
 	 * Finds archetype instance with the given outer object. If the TemplateComponent has Outer as
-	 * its outer, than TemplateComponent is returned. If non could be found, nullptr is returned.
+	 * its outer, then TemplateComponent is returned. If non could be found, nullptr is returned.
 	 */
 	template <typename T>
 	static T* GetMatchedInstance(T* TemplateComponent, UObject* Outer);
@@ -110,8 +110,9 @@ public:
 
 	/**
 	 * Set the transform of any Component, even template Components residing in a Blueprint. If the
-	 * Component resides in a Blueprint and is a Component template, any archetype instance
-	 * currently "in sync" with the Component will be updated as well.
+	 * Component resides in a Blueprint and is a Component template, any archetype instances
+	 * currently "in sync" with the Component will be updated as well. The archetype instances
+	 * update only happens in editor builds.
 	 */
 	static void SetAnyComponentWorldTransform(
 		USceneComponent& Component, const FTransform& Transform,

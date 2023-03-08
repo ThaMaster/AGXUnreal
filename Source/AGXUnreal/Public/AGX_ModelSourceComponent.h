@@ -23,7 +23,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
 	bool bIgnoreDisabledTrimeshes = false;
 
-
 	// The reason why these Guid maps are stored in this Component is
 	// that we cannot store an ImportGuid into Static Mesh Components as we do for any imported
 	// AGXUnreal Components.
@@ -40,8 +39,10 @@ public:
 
 	// Emulate an ImportGuid on Unreal's Materials.
 	//
-	// They key is the asset path, '', to a Material Instance created by the import pipeline.
-	// The value is the Guid, originally Uuid, of the source AGX Dynamics Render Material.
+	// They key is the asset path, such as
+	// '/Game/ImportedAGXModels/my_model/RenderMaterial/Steel.Steel', to a Material Instance created
+	// by the import pipeline. The value is the Guid, originally Uuid, of the source AGX Dynamics
+	// Render Material.
 	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
 	TMap<FString, FGuid> UnrealMaterialToImportGuid;
 };
