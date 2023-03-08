@@ -139,3 +139,14 @@ FParticleData FTerrainPagerBarrier::GetParticleData() const
 
 	return ParticleData;
 }
+
+TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedVertices() const
+{
+	// @todo: implement.
+	return TArray<std::tuple<int32, int32>>();
+}
+
+void FTerrainPagerBarrier::GetModifiedHeights(TArray<float>& OutHeights) const
+{
+	// @todo: implement.
+}

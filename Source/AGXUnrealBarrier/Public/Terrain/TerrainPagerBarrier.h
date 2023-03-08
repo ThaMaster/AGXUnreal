@@ -31,6 +31,10 @@ public:
 
 	FParticleData GetParticleData() const;
 
+	TArray<std::tuple<int32, int32>> GetModifiedVertices() const;
+
+	void GetModifiedHeights(TArray<float>& OutHeights) const;
+
  private:
 	FTerrainPagerBarrier(const FTerrainPagerBarrier&) = delete;
 	void operator=(const FTerrainPagerBarrier&) = delete;

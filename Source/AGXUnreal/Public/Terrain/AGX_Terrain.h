@@ -270,6 +270,8 @@ private:
 	TArray<float> CurrentHeights;
 	TArray<FFloat16> DisplacementData;
 	TArray<FUpdateTextureRegion2D> DisplacementMapRegions; // TODO: Remove!
+	int32 NumVerticesX = 0;
+	int32 NumVerticesY = 0;
 	bool DisplacementMapInitialized = false;
 
 /// \todo Cannot use AGX Dynamics types in the AGXUnreal module. Must live in the Barrier.

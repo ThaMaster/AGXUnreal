@@ -734,17 +734,28 @@ bool AAGX_Terrain::CreateNativeTerrain()
 		return false;
 	}
 
-	check(HasNativeTerrain());
-
 	FTransform Transform = AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(
 		*SourceLandscape, Bounds->Transform.GetLocation(), Bounds->HalfExtent);
 
 	NativeTerrainBarrier.SetRotation(Transform.GetRotation());
 	NativeTerrainBarrier.SetPosition(Transform.GetLocation());
 
-	OriginalHeights.Reserve(
-		NativeTerrainBarrier.GetGridSizeX() * NativeTerrainBarrier.GetGridSizeY());
-	NativeTerrainBarrier.GetHeights(OriginalHeights, false);
+	NumVerticesX =
+		FMath::RoundToInt32(Bounds->HalfExtent.X * 2.0 / SourceLandscape->GetActorScale().X) + 1;
+	NumVerticesY =
+		FMath::RoundToInt32(Bounds->HalfExtent.Y * 2.0 / SourceLandscape->GetActorScale().Y) + 1;
+
+	if (bEnableTerrainPager)
+	{
+		OriginalHeights.SetNumZeroed(NumVerticesX * NumVerticesY);
+	}
+	else
+	{
+		AGX_CHECK(NumVerticesX == NativeTerrainBarrier.GetGridSizeX());
+		AGX_CHECK(NumVerticesY == NativeTerrainBarrier.GetGridSizeY());
+		OriginalHeights.Reserve(NumVerticesX * NumVerticesY);
+		NativeTerrainBarrier.GetHeights(OriginalHeights, false);
+	}
 
 	// We must initialize CurrentHeights since we will only read height changes during runtime.
 	CurrentHeights.Reserve(OriginalHeights.Num());
@@ -976,8 +987,6 @@ bool AAGX_Terrain::UpdateNativeMaterial()
 
 void AAGX_Terrain::InitializeDisplacementMap()
 {
-	// @todo: this needs to support Terrain Paging.
-
 	if (LandscapeDisplacementMap == nullptr)
 	{
 		UE_LOG(
@@ -997,13 +1006,8 @@ void AAGX_Terrain::InitializeDisplacementMap()
 		return;
 	}
 
-	// There is one displacement map texel per vertex.
-
-	const int32 TerrainVertsX = NativeTerrainBarrier.GetGridSizeX();
-	const int32 TerrainVertsY = NativeTerrainBarrier.GetGridSizeY();
-
-	if (LandscapeDisplacementMap->SizeX != TerrainVertsX ||
-		LandscapeDisplacementMap->SizeY != TerrainVertsY)
+	if (LandscapeDisplacementMap->SizeX != NumVerticesX ||
+		LandscapeDisplacementMap->SizeY != NumVerticesY)
 	{
 		UE_LOG(
 			LogAGX, Log,
@@ -1011,12 +1015,12 @@ void AAGX_Terrain::InitializeDisplacementMap()
 				 "AGX Terrain '%s' does not match the vertices in the Terrain (%dx%d). "
 				 "Resizing the displacement map."),
 			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(),
-			TerrainVertsX, TerrainVertsY);
+			NumVerticesX, NumVerticesY);
 
-		LandscapeDisplacementMap->ResizeTarget(TerrainVertsX, TerrainVertsY);
+		LandscapeDisplacementMap->ResizeTarget(NumVerticesX, NumVerticesY);
 	}
-	if (LandscapeDisplacementMap->SizeX != TerrainVertsX ||
-		LandscapeDisplacementMap->SizeY != TerrainVertsY)
+	if (LandscapeDisplacementMap->SizeX != NumVerticesX ||
+		LandscapeDisplacementMap->SizeY != NumVerticesY)
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -1025,8 +1029,8 @@ void AAGX_Terrain::InitializeDisplacementMap()
 			*GetName(), LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY);
 	}
 
-	DisplacementData.SetNum(TerrainVertsX * TerrainVertsY);
-	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, TerrainVertsX, TerrainVertsY));
+	DisplacementData.SetNum(NumVerticesX * NumVerticesY);
+	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, NumVerticesX, NumVerticesY));
 
 	/// \todo I'm not sure why we need this. Does the texture sampler "fudge the
 	/// values" when using non-linear gamma?
@@ -1036,9 +1040,6 @@ void AAGX_Terrain::InitializeDisplacementMap()
 
 void AAGX_Terrain::UpdateDisplacementMap()
 {
-	if (bEnableTerrainPager)
-		return; // @todo: this needs to support Terrain Paging.
-
 	if (!DisplacementMapInitialized)
 	{
 		return;
@@ -1054,15 +1055,28 @@ void AAGX_Terrain::UpdateDisplacementMap()
 
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::UpdateDisplacementMap"));
 
-	const int32 TerrainVerticesX = NativeTerrainBarrier.GetGridSizeX();
-	const int32 TerrainVerticesY = NativeTerrainBarrier.GetGridSizeY();
+	if (bEnableTerrainPager)
+	{
+		NativeTerrainPagerBarrier.GetModifiedHeights(CurrentHeights);
+	}
+	else
+	{
+		NativeTerrainBarrier.GetHeights(CurrentHeights, true);
+	}
 
-	NativeTerrainBarrier.GetHeights(CurrentHeights, true);
-	for (const auto& VertexTuple : NativeTerrainBarrier.GetModifiedVertices())
+	const TArray<std::tuple<int32, int32>> ModifiedHeights = [this]()
+	{
+		if (bEnableTerrainPager)
+			return NativeTerrainPagerBarrier.GetModifiedVertices();
+		else
+			return NativeTerrainBarrier.GetModifiedVertices();
+	}();
+
+	for (const auto& VertexTuple : ModifiedHeights)
 	{
 		const int32 VertX = std::get<0>(VertexTuple);
 		const int32 VertY = std::get<1>(VertexTuple);
-		const int32 Index = VertX + VertY * TerrainVerticesX;
+		const int32 Index = VertX + VertY * NumVerticesX;
 		const float HeightChange = CurrentHeights[Index] - OriginalHeights[Index];
 		DisplacementData[Index] = static_cast<FFloat16>(HeightChange);
 	}
@@ -1071,7 +1085,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
 	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
-		TerrainVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
+		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
 
 void AAGX_Terrain::ClearDisplacementMap()
@@ -1093,7 +1107,6 @@ void AAGX_Terrain::ClearDisplacementMap()
 		return;
 	}
 
-	const int32 NumVerticesX = NativeTerrainBarrier.GetGridSizeX();
 	const uint32 BytesPerPixel = sizeof(FFloat16);
 	for (FFloat16& Displacement : DisplacementData)
 	{
@@ -1318,8 +1331,6 @@ void AAGX_Terrain::ClearParticlesMap()
 
 void AAGX_Terrain::UpdateLandscapeMaterialParameters()
 {
-	// @todo: this needs to support Terrain Paging.
-
 	if (!IsValid(SourceLandscape) || GetWorld() == nullptr || !GetWorld()->IsGameWorld())
 	{
 		return;
@@ -1329,14 +1340,12 @@ void AAGX_Terrain::UpdateLandscapeMaterialParameters()
 	// It is the Landscape material's responsibility to declare and implement displacement map
 	// sampling and passing on to World Position Offset.
 
-	const int32 TerrainVerticesX = NativeTerrainBarrier.GetGridSizeX();
-	const int32 TerrainVerticesY = NativeTerrainBarrier.GetGridSizeY();
 	const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
 	const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
 
 	// This assumes that the Terrain and Landscape resolution (quad size) is the same.
-	const double TerrainSizeX = static_cast<double>(TerrainVerticesX - 1) * QuadSideSizeX;
-	const double TerrainSizeY = static_cast<double>(TerrainVerticesY - 1) * QuadSideSizeY;
+	const double TerrainSizeX = static_cast<double>(NumVerticesX - 1) * QuadSideSizeX;
+	const double TerrainSizeY = static_cast<double>(NumVerticesY - 1) * QuadSideSizeY;
 
 	const FVector TerrainCenterGlobal = NativeTerrainBarrier.GetPosition();
 
