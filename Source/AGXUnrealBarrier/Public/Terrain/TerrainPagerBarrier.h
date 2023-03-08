@@ -9,6 +9,7 @@ class FShovelBarrier;
 class FTerrainBarrier;
 class FTerrainHeightFetcherBase;
 
+struct FParticleData;
 struct FTerrainDataSourceRef;
 struct FTerrainPagerRef;
 
@@ -27,6 +28,8 @@ public:
 	void ReleaseNative();
 
 	bool AddShovel(FShovelBarrier& Shovel);
+
+	FParticleData GetParticleData() const;
 
  private:
 	FTerrainPagerBarrier(const FTerrainPagerBarrier&) = delete;
