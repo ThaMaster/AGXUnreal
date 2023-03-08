@@ -18,7 +18,7 @@ FAGX_MergeSplitPropertiesBase& FAGX_MergeSplitPropertiesBase::operator=(
 
 bool FAGX_MergeSplitPropertiesBase::operator==(const FAGX_MergeSplitPropertiesBase& Other) const
 {
-	return GetNative() == Other.GetNative() && Other.bEnableMerge == bEnableMerge &&
+	return HasNative() == Other.HasNative() && Other.bEnableMerge == bEnableMerge &&
 		   Other.bEnableSplit == bEnableSplit;
 }
 
