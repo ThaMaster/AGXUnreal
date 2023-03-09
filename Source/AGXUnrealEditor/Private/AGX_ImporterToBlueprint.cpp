@@ -2020,8 +2020,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// Collect Merge Split Thresholds from the simulation objects.
 		// Any Thresholds we find should not have its asset deleted.
 		TSet<FGuid> InSimulation;
-		InSimulation.Reserve(Objects.Num() + 1);
-		InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
+		InSimulation.Reserve(Objects.Num());
 		for (const FObjectBarrier& Object : Objects)
 		{
 			const FMergeSplitThresholdsBarrier& Thresholds = GetThresholds(Object);
@@ -2102,7 +2101,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		const TArray<FContactMaterialBarrier>& Barriers = SimulationObjects.GetContactMaterials();
 		TSet<FGuid> InSimulation;
 		InSimulation.Reserve(Barriers.Num());
-		InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
 		for (const FContactMaterialBarrier& Barrier : Barriers)
 		{
 			InSimulation.Add(Barrier.GetGuid());
@@ -2157,6 +2155,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		{
 			// Create a quick-lookup collection of the Shape Materials we want to keep.
 			TSet<FGuid> InSimulation;
+			InSimulation.Reserve(SimulationObjects.GetShapeMaterials().Num());
 			for (const FShapeMaterialBarrier& Barrier : SimulationObjects.GetShapeMaterials())
 			{
 				InSimulation.Add(Barrier.GetGuid());
@@ -2174,10 +2173,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			for (UAGX_ShapeMaterial* Asset : Assets)
 			{
 				const FGuid Guid = Asset->ImportGuid;
-				if (Guid == FGuid())
+				if (!Guid.IsValid())
 				{
-					// This isn't an imported asset but something the user put there themselves.
-					// Don't touch.
+					// Not an imported asset, do not delete.
 					continue;
 				}
 
