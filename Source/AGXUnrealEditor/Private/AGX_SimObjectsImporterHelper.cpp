@@ -161,7 +161,7 @@ namespace
 		}
 
 		{
-			UStaticMesh* ProcessedMesh = ProcessedMeshes[Guid];
+			UStaticMesh* ProcessedMesh = ProcessedMeshes.FindRef(Guid);
 			if (ProcessedMesh != nullptr)
 			{
 				// We have seen this mesh before, use the one in the cache.
@@ -204,7 +204,7 @@ namespace
 		}
 
 		{
-			UStaticMesh* ProcessedMesh = ProcessedMeshes[Guid];
+			UStaticMesh* ProcessedMesh = ProcessedMeshes.FindRef(Guid);
 			if (ProcessedMesh != nullptr)
 			{
 				// We have seen this mesh before, use the one in the cache.
@@ -368,7 +368,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 	const FShapeContactMergeSplitThresholdsBarrier ThresholdsBarrier =
 		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
 	const FGuid MSTGuid = ThresholdsBarrier.GetGuid();
-	UAGX_MergeSplitThresholdsBase* MSThresholds = MSTsOnDisk[MSTGuid];
+	UAGX_MergeSplitThresholdsBase* MSThresholds = MSTsOnDisk.FindRef(MSTGuid);
 
 	if (ThresholdsBarrier.HasNative())
 	{
@@ -783,7 +783,7 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 	const FShapeContactMergeSplitThresholdsBarrier ThresholdsBarrier =
 		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
 	const FGuid MSTGuid = ThresholdsBarrier.GetGuid();
-	UAGX_MergeSplitThresholdsBase* MSThresholds = MSTsOnDisk[MSTGuid];
+	UAGX_MergeSplitThresholdsBase* MSThresholds = MSTsOnDisk.FindRef(MSTGuid);
 
 	if (ThresholdsBarrier.HasNative())
 	{
@@ -1238,7 +1238,7 @@ namespace
 		const FConstraintMergeSplitThresholdsBarrier ThresholdsBarrier =
 			FConstraintMergeSplitThresholdsBarrier::CreateFrom(Barrier);
 		const FGuid MSTGuid = ThresholdsBarrier.GetGuid();
-		UAGX_MergeSplitThresholdsBase* MSThresholds = MSTsOnDisk[MSTGuid];
+		UAGX_MergeSplitThresholdsBase* MSThresholds = MSTsOnDisk.FindRef(MSTGuid);
 
 		if (ThresholdsBarrier.HasNative())
 		{

@@ -1270,7 +1270,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 									  : BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode();
 
 		const FGuid Guid = Barrier.GetShapeGuid();
-		USCS_Node* Node = ExistingShapes[Guid];
+		USCS_Node* Node = ExistingShapes.FindRef(Guid);
 		if (Node == nullptr)
 		{
 			Node = BaseBP.SimpleConstructionScript->CreateNode(
@@ -1302,7 +1302,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			return;
 
 		const FGuid RenderDataGuid = RenderDataBarrier.GetGuid();
-		USCS_Node* RenderDataNode = SCSNodes.RenderStaticMeshComponents[RenderDataGuid];
+		USCS_Node* RenderDataNode = SCSNodes.RenderStaticMeshComponents.FindRef(RenderDataGuid);
 		if (RenderDataNode == nullptr)
 		{
 			RenderDataNode = BaseBP.SimpleConstructionScript->CreateNode(
@@ -1360,7 +1360,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		for (const auto& RbBarrier : SimulationObjects.GetRigidBodies())
 		{
 			const FGuid Guid = RbBarrier.GetGuid();
-			USCS_Node* RigidBodyNode = SCSNodes.RigidBodies[Guid];
+			USCS_Node* RigidBodyNode = SCSNodes.RigidBodies.FindRef(Guid);
 			if (RigidBodyNode == nullptr)
 			{
 				RigidBodyNode = BaseBP.SimpleConstructionScript->CreateNode(
@@ -1541,14 +1541,14 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		// Returns all Constraint that was created (not those only updated).
 		auto AddOrUpdateConstraints = [&](const auto& NewConstraints,
-										 const TMap<FGuid, USCS_Node*>& BPConstraints,
-										 UClass* ConstraintClass) -> TMap<FGuid, USCS_Node*>
+										  const TMap<FGuid, USCS_Node*>& BPConstraints,
+										  UClass* ConstraintClass) -> TMap<FGuid, USCS_Node*>
 		{
 			TMap<FGuid, USCS_Node*> CreatedConstraints;
 			for (const auto& Barrier : NewConstraints)
 			{
 				const FGuid ConstraintGuid = Barrier.GetGuid();
-				USCS_Node* Constraint = BPConstraints[ConstraintGuid];
+				USCS_Node* Constraint = BPConstraints.FindRef(ConstraintGuid);
 				if (Constraint == nullptr)
 				{
 					Constraint = BaseBP.SimpleConstructionScript->CreateNode(
@@ -1621,7 +1621,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		for (const auto& Barrier : SimulationObjects.GetTwoBodyTires())
 		{
 			const FGuid Guid = Barrier.GetGuid();
-			USCS_Node* TireNode = SCSNodes.TwoBodyTires[Guid];
+			USCS_Node* TireNode = SCSNodes.TwoBodyTires.FindRef(Guid);
 			if (TireNode == nullptr)
 			{
 				TireNode = BaseBP.SimpleConstructionScript->CreateNode(
@@ -1677,8 +1677,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		for (const auto& ObserverFrame : SimulationObjects.GetObserverFrames())
 		{
 			const FGuid Guid = ObserverFrame.ObserverGuid;
-			USCS_Node* ObserverNode = SCSNodes.ObserverFrames[Guid];
-			USCS_Node* AttachParent = SCSNodes.RigidBodies[ObserverFrame.BodyGuid];
+			USCS_Node* ObserverNode = SCSNodes.ObserverFrames.FindRef(Guid);
+			USCS_Node* AttachParent = SCSNodes.RigidBodies.FindRef(ObserverFrame.BodyGuid);
 			if (AttachParent == nullptr)
 			{
 				UE_LOG(
