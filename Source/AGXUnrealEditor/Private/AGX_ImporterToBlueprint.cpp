@@ -1056,9 +1056,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	{
 		auto Contains = [](const TMap<FGuid, USCS_Node*>& OldNodes, const TArray<FGuid>& NewGuids)
 		{
-			for (auto& NodeTuple : OldNodes)
+			for (const auto& NewGuid : NewGuids)
 			{
-				if (NewGuids.Contains(NodeTuple.Key))
+				if (OldNodes.Contains(NewGuid))
 				{
 					return true;
 				}
