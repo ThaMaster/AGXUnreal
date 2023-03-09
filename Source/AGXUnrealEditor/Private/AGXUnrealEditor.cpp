@@ -15,8 +15,6 @@
 #include "UnrealEdGlobals.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_AssetDeleter.h"
-#include "AGX_AssetDeleterCustomization.h"
 #include "AGX_EditorStyle.h"
 #include "AGX_Environment.h"
 #include "AGX_RigidBodyActor.h"
@@ -335,11 +333,6 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_HeightFieldBoundsComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
-		UAGX_AssetDeleter::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_AssetDeleterCustomization::MakeInstance));
-			
-	PropertyModule.RegisterCustomClassLayout(
 		UAGX_Simulation::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_SimulationCustomization::MakeInstance));
@@ -409,9 +402,6 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());
-
-	PropertyModule.UnregisterCustomClassLayout(
-		UAGX_AssetDeleter::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_Simulation::StaticClass()->GetFName());
 
