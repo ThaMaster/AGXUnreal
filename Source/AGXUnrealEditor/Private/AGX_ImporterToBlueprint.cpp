@@ -1074,39 +1074,40 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			return true;
 		}
 
+		TArray<FGuid> ShapeBarrierGuids;
+
 		// Check against all Shapes.
 		const FShapeGuidsCollection NewShapeGuids = GetShapeGuids(SimulationObjects);
-		TArray<FGuid> SphereShapeBarrierGuids;
-		NewShapeGuids.SphereShapeGuids.GenerateKeyArray(SphereShapeBarrierGuids);
-		if (Contains(SCSNodes.SphereShapes, SphereShapeBarrierGuids))
+		NewShapeGuids.SphereShapeGuids.GenerateKeyArray(ShapeBarrierGuids);
+		if (Contains(SCSNodes.SphereShapes, ShapeBarrierGuids))
 		{
 			return true;
 		}
 
-		TArray<FGuid> BoxShapeBarrierGuids;
-		NewShapeGuids.BoxShapeGuids.GenerateKeyArray(BoxShapeBarrierGuids);
-		if (Contains(SCSNodes.BoxShapes, BoxShapeBarrierGuids))
+		ShapeBarrierGuids.SetNum(0, false);
+		NewShapeGuids.BoxShapeGuids.GenerateKeyArray(ShapeBarrierGuids);
+		if (Contains(SCSNodes.BoxShapes, ShapeBarrierGuids))
 		{
 			return true;
 		}
 
-		TArray<FGuid> CylinderShapeBarrierGuids;
-		NewShapeGuids.CylinderShapeGuids.GenerateKeyArray(CylinderShapeBarrierGuids);
-		if (Contains(SCSNodes.CylinderShapes, CylinderShapeBarrierGuids))
+		ShapeBarrierGuids.SetNum(0, false);
+		NewShapeGuids.CylinderShapeGuids.GenerateKeyArray(ShapeBarrierGuids);
+		if (Contains(SCSNodes.CylinderShapes, ShapeBarrierGuids))
 		{
 			return true;
 		}
 
-		TArray<FGuid> CapsuleShapeBarrierGuids;
-		NewShapeGuids.CapsuleShapeGuids.GenerateKeyArray(CapsuleShapeBarrierGuids);
-		if (Contains(SCSNodes.CapsuleShapes, CapsuleShapeBarrierGuids))
+		ShapeBarrierGuids.SetNum(0, false);
+		NewShapeGuids.CapsuleShapeGuids.GenerateKeyArray(ShapeBarrierGuids);
+		if (Contains(SCSNodes.CapsuleShapes, ShapeBarrierGuids))
 		{
 			return true;
 		}
 
-		TArray<FGuid> TrimeshShapeBarrierGuids;
-		NewShapeGuids.TrimeshShapeGuids.GenerateKeyArray(TrimeshShapeBarrierGuids);
-		if (Contains(SCSNodes.TrimeshShapes, TrimeshShapeBarrierGuids))
+		ShapeBarrierGuids.SetNum(0, false);
+		NewShapeGuids.TrimeshShapeGuids.GenerateKeyArray(ShapeBarrierGuids);
+		if (Contains(SCSNodes.TrimeshShapes, ShapeBarrierGuids))
 		{
 			return true;
 		}
