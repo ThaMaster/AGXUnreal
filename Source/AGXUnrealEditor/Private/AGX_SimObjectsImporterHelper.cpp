@@ -292,7 +292,14 @@ namespace
 
 		// This is a new merge split thresholds. Create the asset and add to the cache.
 		UAGX_MergeSplitThresholdsBase* Asset = CreateAsset();
-		AGX_CHECK(Asset != nullptr);
+		if (Asset == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error, TEXT("Unable to create Merge Split Thresholds asset for '%s'."),
+				*Barrier-GetName());
+			return nullptr;
+		}
+
 		UpdateAndSaveMergeSplitThresholdsAsset(
 			ThresholdsBarrier, *Asset, ProcessedThresholds, OwningType);
 
