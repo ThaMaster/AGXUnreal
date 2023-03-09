@@ -1752,7 +1752,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	}
 
 	// The passed SCSNodes will be kept up to date, i.e. elements added to BaseBP will have their
-	// corresponding SCS Node deleted from SCSNodes as well.
+	// corresponding SCS Node added to the SCSNodes as well.
 	void AddOrUpdateAll(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects,
