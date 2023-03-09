@@ -296,7 +296,7 @@ namespace
 		{
 			UE_LOG(
 				LogAGX, Error, TEXT("Unable to create Merge Split Thresholds asset for '%s'."),
-				*Barrier-GetName());
+				*Barrier.GetName());
 			return nullptr;
 		}
 
