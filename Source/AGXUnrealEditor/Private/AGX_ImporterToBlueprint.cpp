@@ -1539,8 +1539,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	{
 		USCS_Node* RootNode = BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode();
 
-		// Returns true if a new Constraint was created, false otherwise.
-		auto AddOrUpdateConstraint = [&](const auto& NewConstraints,
+		// Returns all Constraint that was created (not those only updated).
+		auto AddOrUpdateConstraints = [&](const auto& NewConstraints,
 										 const TMap<FGuid, USCS_Node*>& BPConstraints,
 										 UClass* ConstraintClass) -> TMap<FGuid, USCS_Node*>
 		{
@@ -1564,7 +1564,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			return CreatedConstraints;
 		};
 
-		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraint(
+		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraints(
 				 SimulationObjects.GetHingeConstraints(), SCSNodes.HingeConstraints,
 				 UAGX_HingeConstraintComponent::StaticClass()))
 		{
@@ -1572,7 +1572,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				CreatedConstraintsTuple.Key, CreatedConstraintsTuple.Value);
 		}
 
-		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraint(
+		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraints(
 				 SimulationObjects.GetPrismaticConstraints(), SCSNodes.PrismaticConstraints,
 				 UAGX_PrismaticConstraintComponent::StaticClass()))
 		{
@@ -1580,7 +1580,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				CreatedConstraintsTuple.Key, CreatedConstraintsTuple.Value);
 		}
 
-		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraint(
+		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraints(
 				 SimulationObjects.GetBallConstraints(), SCSNodes.BallConstraints,
 				 UAGX_BallConstraintComponent::StaticClass()))
 		{
@@ -1588,7 +1588,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				CreatedConstraintsTuple.Key, CreatedConstraintsTuple.Value);
 		}
 
-		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraint(
+		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraints(
 				 SimulationObjects.GetCylindricalConstraints(), SCSNodes.CylindricalConstraints,
 				 UAGX_CylindricalConstraintComponent::StaticClass()))
 		{
@@ -1596,7 +1596,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				CreatedConstraintsTuple.Key, CreatedConstraintsTuple.Value);
 		}
 
-		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraint(
+		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraints(
 				 SimulationObjects.GetDistanceConstraints(), SCSNodes.DistanceConstraints,
 				 UAGX_DistanceConstraintComponent::StaticClass()))
 		{
@@ -1604,7 +1604,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				CreatedConstraintsTuple.Key, CreatedConstraintsTuple.Value);
 		}
 
-		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraint(
+		for (const auto& CreatedConstraintsTuple : AddOrUpdateConstraints(
 				 SimulationObjects.GetLockConstraints(), SCSNodes.LockConstraints,
 				 UAGX_LockConstraintComponent::StaticClass()))
 		{
