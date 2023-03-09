@@ -1907,7 +1907,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					continue;
 				}
 
-				if (NewShapeGuids.TrimeshShapeGuids[It->Key])
+				const bool IsCollisionEnabled = NewShapeGuids.TrimeshShapeGuids[It->Key];
+				if (IsCollisionEnabled)
 				{
 					continue;
 				}
