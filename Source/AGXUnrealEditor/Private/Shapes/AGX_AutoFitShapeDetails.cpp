@@ -51,9 +51,9 @@ namespace AGX_AutoFitShapeDetals_helpers
 		{
 			if (UStaticMeshComponent* S = Cast<UStaticMeshComponent>(Parent->ComponentTemplate))
 			{
-				// The ComponentTemaplte might reside in a parent Blueprint of the Blueprint holding
+				// The ComponentTemplate might reside in a parent Blueprint of the Blueprint holding
 				// the Component. Therefore, we need to go down the archetype instance chain and
-				// find the matching arhctetype instance such that it resides in the same Blueprint
+				// find the matching archetype instance such that it resides in the same Blueprint
 				// as Component.
 				auto MatchedMesh =
 					FAGX_ObjectUtilities::GetMatchedInstance(S, Component->GetOuter());

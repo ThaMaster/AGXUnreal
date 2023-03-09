@@ -3,6 +3,7 @@
 #include "Widgets/AGX_SynchronizeModelDialog.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
 
@@ -34,7 +35,7 @@ void SAGX_SynchronizeModelDialog::Construct(const FArguments& InArgs)
 				[
 					CreateBrowseFileGui()
 				]
-			]			
+			]
 			+ SVerticalBox::Slot()
 			.Padding(FMargin(5.0f, 0.0f))
 			.AutoHeight()
@@ -95,7 +96,7 @@ TSharedRef<SBorder> SAGX_SynchronizeModelDialog::CreateSettingsGui()
 		.Padding(FMargin(5.0f, 5.0f))
 		.Content()
 		[
-			SNew(SVerticalBox)	
+			SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
 			.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
 			.AutoHeight()
@@ -140,7 +141,7 @@ TSharedRef<SBorder> SAGX_SynchronizeModelDialog::CreateSynchronizeButtonGui()
 				.Padding(FMargin(5.0f, 5.0f))
 				.Content()
 				[
-					SNew(SHorizontalBox)		
+					SNew(SHorizontalBox)
 					+ SHorizontalBox::Slot()
 					.AutoWidth()
 					[

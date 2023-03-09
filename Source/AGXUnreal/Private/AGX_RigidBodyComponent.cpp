@@ -535,7 +535,8 @@ void UAGX_RigidBodyComponent::CopyFrom(
 			// Merge Split Properties.
 			if (Msp.HasNative())
 			{
-				if (ForceOverwriteInstances || Instance->MergeSplitProperties == MergeSplitProperties)
+				if (ForceOverwriteInstances ||
+					Instance->MergeSplitProperties == MergeSplitProperties)
 				{
 					Instance->MergeSplitProperties.CopyFrom(Msp);
 				}

@@ -10,7 +10,7 @@ struct FSlateFontInfo;
 class AGXUNREALEDITOR_API FAGX_SlateUtilities
 {
 public:
-  /**
+	/**
 	 * Removes the first found child of the specified type, if possible.
 	 * The search order is undefined.
 	 *
@@ -27,5 +27,5 @@ public:
 	static void LogChildWidgets(
 		const TSharedPtr<class SWidget>& Parent, bool Recursive = true, const FString& Prefix = "");
 
-  static FSlateFontInfo CreateFont(int Size);
+	static FSlateFontInfo CreateFont(int Size);
 };

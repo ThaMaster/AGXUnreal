@@ -78,8 +78,7 @@ void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint)
 			{
 				FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 					"Could not get the original parent Blueprint. Model synchronization will not "
-					"be "
-					"performed.");
+					"be performed.");
 				return false;
 			}
 
@@ -91,8 +90,7 @@ void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint)
 			{
 				FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 					"Could not find an AGX Model Source Component in the selected Blueprint. The "
-					"selected "
-					"Blueprint is not valid for Model Synchronization.");
+					"selected Blueprint is not valid for Model Synchronization.");
 				return false;
 			}
 

@@ -4,8 +4,13 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImportSettings.h"
+#include "AGX_LogCategory.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
+
+// Unreal Engine includes.
+#include "Misc/FileHelper.h"
 
 
 #define LOCTEXT_NAMESPACE "SAGX_ImportDialog"
@@ -50,7 +55,7 @@ void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 				[
 					CreateBrowseFileGui()
 				]
-			]			
+			]
 			+ SVerticalBox::Slot()
 			.Padding(FMargin(5.0f, 0.0f))
 			.AutoHeight()
@@ -118,7 +123,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateSettingsGui()
 		.Padding(FMargin(5.0f, 5.0f))
 		.Content()
 		[
-			SNew(SVerticalBox)	
+			SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
 			.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
 			.AutoHeight()
@@ -132,7 +137,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateSettingsGui()
 			.AutoHeight()
 			[
 				CreateIgnoreDisabledTrimeshGui()
-			]			
+			]
 		];
 	// clang-format on
 }
@@ -151,7 +156,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateImportButtonGui()
 				.Padding(FMargin(5.0f, 5.0f))
 				.Content()
 				[
-					SNew(SHorizontalBox)		
+					SNew(SHorizontalBox)
 					+ SHorizontalBox::Slot()
 					.AutoWidth()
 					[
@@ -226,7 +231,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateURDFFileGui()
 									"package:// part of any filename path used in the URDF (.urdf) file"))
 								.OnClicked(this, &SAGX_ImportDialog::OnBrowseUrdfPackageButtonClicked)
 							]
-						]	
+						]
 				];
 	// clang-format on
 }
