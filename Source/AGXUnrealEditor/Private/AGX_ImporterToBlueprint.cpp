@@ -1270,18 +1270,17 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 									  : BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode();
 
 		const FGuid Guid = Barrier.GetShapeGuid();
-		USCS_Node* Node = nullptr;
-		if (ExistingShapes.Contains(Guid))
-		{
-			Node = ExistingShapes[Guid];
-			FAGX_BlueprintUtilities::ReParentNode(BaseBP, *Node, *AttachParent, true);
-		}
-		else
+		USCS_Node* Node = ExistingShapes[Guid];
+		if (Node == nullptr)
 		{
 			Node = BaseBP.SimpleConstructionScript->CreateNode(
 				TComponent::StaticClass(), FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 			AttachParent->AddChildNode(Node);
 			ExistingShapes.Add(Guid, Node);
+		}
+		else
+		{
+			FAGX_BlueprintUtilities::ReParentNode(BaseBP, *Node, *AttachParent, true);
 		}
 
 		Helper.UpdateComponent(
@@ -1303,22 +1302,20 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			return;
 
 		const FGuid RenderDataGuid = RenderDataBarrier.GetGuid();
-		USCS_Node* RenderDataNode = nullptr;
-		if (SCSNodes.RenderStaticMeshComponents.Contains(RenderDataGuid))
-		{
-			RenderDataNode = SCSNodes.RenderStaticMeshComponents[RenderDataGuid];
-
-			// Render Data may need to re-parent in the case that this model was imported with a
-			// different import setting for "Ignore Disabled Trimeshes" than the original import.
-			FAGX_BlueprintUtilities::ReParentNode(BaseBP, *RenderDataNode, AttachParent, true);
-		}
-		else
+		USCS_Node* RenderDataNode = SCSNodes.RenderStaticMeshComponents[RenderDataGuid];
+		if (RenderDataNode == nullptr)
 		{
 			RenderDataNode = BaseBP.SimpleConstructionScript->CreateNode(
 				UStaticMeshComponent::StaticClass(),
 				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 			AttachParent.AddChildNode(RenderDataNode);
 			SCSNodes.RenderStaticMeshComponents.Add(RenderDataGuid, RenderDataNode);
+		}
+		else
+		{
+			// Render Data may need to re-parent in the case that this model was imported with a
+			// different import setting for "Ignore Disabled Trimeshes" than the original import.
+			FAGX_BlueprintUtilities::ReParentNode(BaseBP, *RenderDataNode, AttachParent, true);
 		}
 
 		if (&AttachParent == BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode() ||
@@ -1363,12 +1360,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		for (const auto& RbBarrier : SimulationObjects.GetRigidBodies())
 		{
 			const FGuid Guid = RbBarrier.GetGuid();
-			USCS_Node* RigidBodyNode = nullptr;
-			if (SCSNodes.RigidBodies.Contains(Guid))
-			{
-				RigidBodyNode = SCSNodes.RigidBodies[Guid];
-			}
-			else
+			USCS_Node* RigidBodyNode = SCSNodes.RigidBodies[Guid];
+			if (RigidBodyNode == nullptr)
 			{
 				RigidBodyNode = BaseBP.SimpleConstructionScript->CreateNode(
 					UAGX_RigidBodyComponent::StaticClass(),
@@ -1555,18 +1548,15 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			for (const auto& Barrier : NewConstraints)
 			{
 				const FGuid ConstraintGuid = Barrier.GetGuid();
-				USCS_Node* Constraint = nullptr;
-				if (BPConstraints.Contains(ConstraintGuid))
-				{
-					Constraint = BPConstraints[ConstraintGuid];
-				}
-				else
+				USCS_Node* Constraint = BPConstraints[ConstraintGuid];
+				if (Constraint == nullptr)
 				{
 					Constraint = BaseBP.SimpleConstructionScript->CreateNode(
 						ConstraintClass, FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 					RootNode->AddChildNode(Constraint);
 					CreatedConstraints.Add(ConstraintGuid, Constraint);
 				}
+
 				Helper.UpdateConstraintComponent(
 					Barrier, *Cast<UAGX_ConstraintComponent>(Constraint->ComponentTemplate),
 					ExistingMSTAssets, Settings.bForceOverwriteProperties);
@@ -1631,12 +1621,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		for (const auto& Barrier : SimulationObjects.GetTwoBodyTires())
 		{
 			const FGuid Guid = Barrier.GetGuid();
-			USCS_Node* TireNode = nullptr;
-			if (SCSNodes.TwoBodyTires.Contains(Guid))
-			{
-				TireNode = SCSNodes.TwoBodyTires[Guid];
-			}
-			else
+			USCS_Node* TireNode = SCSNodes.TwoBodyTires[Guid];
+			if (TireNode == nullptr)
 			{
 				TireNode = BaseBP.SimpleConstructionScript->CreateNode(
 					UAGX_TwoBodyTireComponent::StaticClass(),
@@ -1691,13 +1677,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		for (const auto& ObserverFrame : SimulationObjects.GetObserverFrames())
 		{
 			const FGuid Guid = ObserverFrame.ObserverGuid;
-			USCS_Node* ObserverNode = nullptr;
-			USCS_Node* AttachParent = nullptr;
-			if (SCSNodes.RigidBodies.Contains(ObserverFrame.BodyGuid))
-			{
-				AttachParent = SCSNodes.RigidBodies[ObserverFrame.BodyGuid];
-			}
-			else
+			USCS_Node* ObserverNode = SCSNodes.ObserverFrames[Guid];
+			USCS_Node* AttachParent = SCSNodes.RigidBodies[ObserverFrame.BodyGuid];
+			if (AttachParent == nullptr)
 			{
 				UE_LOG(
 					LogAGX, Error,
@@ -1708,18 +1690,17 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				AttachParent = BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode();
 			}
 
-			if (SCSNodes.ObserverFrames.Contains(Guid))
-			{
-				ObserverNode = SCSNodes.ObserverFrames[Guid];
-				FAGX_BlueprintUtilities::ReParentNode(BaseBP, *ObserverNode, *AttachParent, true);
-			}
-			else
+			if (ObserverNode == nullptr)
 			{
 				ObserverNode = BaseBP.SimpleConstructionScript->CreateNode(
 					UAGX_ObserverFrameComponent::StaticClass(),
 					FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 				AttachParent->AddChildNode(ObserverNode);
 				SCSNodes.ObserverFrames.Add(ObserverFrame.ObserverGuid, ObserverNode);
+			}
+			else
+			{
+				FAGX_BlueprintUtilities::ReParentNode(BaseBP, *ObserverNode, *AttachParent, true);
 			}
 
 			Helper.UpdateObserverFrameComponent(
