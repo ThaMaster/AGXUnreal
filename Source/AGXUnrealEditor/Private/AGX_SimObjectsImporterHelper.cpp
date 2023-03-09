@@ -367,11 +367,12 @@ void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 
 	const FShapeContactMergeSplitThresholdsBarrier ThresholdsBarrier =
 		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
-	const FGuid MSTGuid = ThresholdsBarrier.GetGuid();
-	UAGX_MergeSplitThresholdsBase* MSThresholds = MSTsOnDisk.FindRef(MSTGuid);
-
+	
+	UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
 	if (ThresholdsBarrier.HasNative())
 	{
+		const FGuid MSTGuid = ThresholdsBarrier.GetGuid();
+		MSThresholds = MSTsOnDisk.FindRef(MSTGuid);
 		if (MSThresholds == nullptr)
 		{
 			MSThresholds = ::GetOrCreateMergeSplitThresholdsAsset<
@@ -781,12 +782,13 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 	}
 
 	const FShapeContactMergeSplitThresholdsBarrier ThresholdsBarrier =
-		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
-	const FGuid MSTGuid = ThresholdsBarrier.GetGuid();
-	UAGX_MergeSplitThresholdsBase* MSThresholds = MSTsOnDisk.FindRef(MSTGuid);
+		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);	
+	UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
 
 	if (ThresholdsBarrier.HasNative())
 	{
+		const FGuid MSTGuid = ThresholdsBarrier.GetGuid();
+		MSThresholds = MSTsOnDisk.FindRef(MSTGuid);
 		if (MSThresholds != nullptr)
 		{
 			::UpdateAndSaveMergeSplitThresholdsAsset(
@@ -1237,11 +1239,12 @@ namespace
 
 		const FConstraintMergeSplitThresholdsBarrier ThresholdsBarrier =
 			FConstraintMergeSplitThresholdsBarrier::CreateFrom(Barrier);
-		const FGuid MSTGuid = ThresholdsBarrier.GetGuid();
-		UAGX_MergeSplitThresholdsBase* MSThresholds = MSTsOnDisk.FindRef(MSTGuid);
-
+		
+		UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
 		if (ThresholdsBarrier.HasNative())
 		{
+			const FGuid MSTGuid = ThresholdsBarrier.GetGuid();
+			MSThresholds = MSTsOnDisk.FindRef(MSTGuid);
 			if (MSThresholds != nullptr)
 			{
 				::UpdateAndSaveMergeSplitThresholdsAsset(
