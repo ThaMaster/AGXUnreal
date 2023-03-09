@@ -2088,59 +2088,61 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// Delete removed Contact Materials.
 		if (SCSNodes.ContactMaterialRegistrarComponent != nullptr)
 		{
-			if (auto Registrar = Cast<UAGX_ContactMaterialRegistrarComponent>(
-					SCSNodes.ContactMaterialRegistrarComponent->ComponentTemplate))
+			auto* Registrar = Cast<UAGX_ContactMaterialRegistrarComponent>(
+				SCSNodes.ContactMaterialRegistrarComponent->ComponentTemplate);
+			if (Registrar == nullptr)
 			{
-				// Collect the Contact Materials that are being imported, both old and new.
-				const TArray<FContactMaterialBarrier>& Barriers =
-					SimulationObjects.GetContactMaterials();
-				TSet<FGuid> InSimulation;
-				InSimulation.Reserve(Barriers.Num());
-				InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
-				for (const FContactMaterialBarrier& Barrier : Barriers)
+				return;
+			}
+			// Collect the Contact Materials that are being imported, both old and new.
+			const TArray<FContactMaterialBarrier>& Barriers =
+				SimulationObjects.GetContactMaterials();
+			TSet<FGuid> InSimulation;
+			InSimulation.Reserve(Barriers.Num());
+			InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
+			for (const FContactMaterialBarrier& Barrier : Barriers)
+			{
+				InSimulation.Add(Barrier.GetGuid());
+			}
+
+			// Track which assets are added to the AssetsToDelete list. Deleting assets will
+			// set any references to that asset to None / nullptr which is correct in most cases
+			// but for the Contact Material Registrar we need to purge the elements completely
+			// to avoid leaving nullptr entries in the Contact Materials array.
+			TSet<UAGX_ContactMaterial*> QueuedForDeletion;
+
+			// Collect the Contact Material assets that exists on drive.
+			const FString ContactMaterialsDirPath = GetImportDirPath(
+				Helper, FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
+			TArray<UAGX_ContactMaterial*> Assets =
+				FAGX_EditorUtilities::FindAssets<UAGX_ContactMaterial>(ContactMaterialsDirPath);
+
+			// Queue for deletion any Contact Material that we found on disk that no longer
+			// exists among the imported Contact Materials.
+			for (UAGX_ContactMaterial* Asset : Assets)
+			{
+				const FGuid Guid = Asset->ImportGuid;
+				if (!Guid.IsValid())
 				{
-					InSimulation.Add(Barrier.GetGuid());
+					// Not an imported asset, do not delete.
+					continue;
 				}
-
-				// Track which assets are added to the AssetsToDelete list. Deleting assets will
-				// set any references to that asset to None / nullptr which is correct in most cases
-				// but for the Contact Material Registrar we need to purge the elements completely
-				// to avoid leaving nullptr entries in the Contact Materials array.
-				TSet<UAGX_ContactMaterial*> QueuedForDeletion;
-
-				// Collect the Contact Material assets that exists on drive.
-				const FString ContactMaterialsDirPath = GetImportDirPath(
-					Helper, FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
-				TArray<UAGX_ContactMaterial*> Assets =
-					FAGX_EditorUtilities::FindAssets<UAGX_ContactMaterial>(ContactMaterialsDirPath);
-
-				// Queue for deletion any Contact Material that we found on disk that no longer
-				// exists among the imported Contact Materials.
-				for (UAGX_ContactMaterial* Asset : Assets)
+				if (!InSimulation.Contains(Guid))
 				{
-					const FGuid Guid = Asset->ImportGuid;
-					if (!Guid.IsValid())
-					{
-						// Not an imported asset, do not delete.
-						continue;
-					}
-					if (!InSimulation.Contains(Guid))
-					{
-						// Not part of the current import data, delete the asset.
-						AssetsToDelete.AddUnique(Asset);
-						QueuedForDeletion.Add(Asset);
-					}
+					// Not part of the current import data, delete the asset.
+					AssetsToDelete.AddUnique(Asset);
+					QueuedForDeletion.Add(Asset);
 				}
+			}
 
-				// Purge references to the soon-to-be-deleted assets from the Contact Material
-				// Registrar and all its archetype instances.
-				auto IsQueuedForDeletion = [QueuedForDeletion](const UAGX_ContactMaterial* Element)
-				{ return QueuedForDeletion.Contains(Element); };
-				Registrar->ContactMaterials.RemoveAll(IsQueuedForDeletion);
-				for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*Registrar))
-				{
-					Instance->ContactMaterials.RemoveAll(IsQueuedForDeletion);
-				}
+			// Purge references to the soon-to-be-deleted assets from the Contact Material
+			// Registrar and all its archetype instances.
+			auto IsQueuedForDeletion = [QueuedForDeletion](const UAGX_ContactMaterial* Element)
+			{ return QueuedForDeletion.Contains(Element); };
+			Registrar->ContactMaterials.RemoveAll(IsQueuedForDeletion);
+			for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*Registrar))
+			{
+				Instance->ContactMaterials.RemoveAll(IsQueuedForDeletion);
 			}
 		}
 	}
