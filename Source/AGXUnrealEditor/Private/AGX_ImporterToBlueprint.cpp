@@ -1995,7 +1995,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 */
 
 	template <typename UAGX_Thresholds, typename FObjectBarrier, typename FGetThresholds>
-	void DoDeleteRemovedMergeSplitThresholdsAssets(
+	void CollectRemovedMergeSplitThresholdsAssets(
 		const TArray<FObjectBarrier>& Objects, FGetThresholds GetThresholds,
 		const FString& AssetPath, TArray<UObject*>& AssetsToDelete)
 	{
@@ -2043,19 +2043,19 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		const FString AssetPath = GetImportDirPath(
 			Helper, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName());
 
-		DoDeleteRemovedMergeSplitThresholdsAssets<UAGX_ConstraintMergeSplitThresholds>(
+		CollectRemovedMergeSplitThresholdsAssets<UAGX_ConstraintMergeSplitThresholds>(
 			SimulationObjects.CollectAllConstraints(),
 			[](const FAnyConstraintBarrier& Constraint)
 			{ return FConstraintMergeSplitThresholdsBarrier::CreateFrom(Constraint); },
 			AssetPath, AssetsToDelete);
 
-		DoDeleteRemovedMergeSplitThresholdsAssets<UAGX_ShapeContactMergeSplitThresholds>(
+		CollectRemovedMergeSplitThresholdsAssets<UAGX_ShapeContactMergeSplitThresholds>(
 			SimulationObjects.CollectAllShapes(),
 			[](const FAnyShapeBarrier& Shape)
 			{ return FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Shape); },
 			AssetPath, AssetsToDelete);
 
-		DoDeleteRemovedMergeSplitThresholdsAssets<UAGX_WireMergeSplitThresholds>(
+		CollectRemovedMergeSplitThresholdsAssets<UAGX_WireMergeSplitThresholds>(
 			SimulationObjects.GetWires(),
 			[](const FWireBarrier& Wire)
 			{ return FWireMergeSplitThresholdsBarrier::CreateFrom(Wire); },
