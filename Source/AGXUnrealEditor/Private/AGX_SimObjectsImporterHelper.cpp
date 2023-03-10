@@ -82,7 +82,7 @@ namespace
 
 	UAGX_TrackProperties* GetOrCreateTrackPropertiesAsset(
 		const FTrackPropertiesBarrier& Barrier, const FString& Name,
-		TMap<FGuid, UAGX_TrackProperties*>& ProcessedTrackProperties, const FString& DirectoryName)
+		TMap<FGuid, UAGX_TrackProperties*>& ProcessedTrackProperties, const FString& DirectoryPath)
 	{
 		const FGuid Guid = Barrier.GetGuid();
 		if (!Guid.IsValid())
@@ -90,7 +90,7 @@ namespace
 			// The GUID is invalid, but try to create the asset anyway but without adding it to
 			// the ProcessedTrackProperties cache.
 			return FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
-				Barrier, DirectoryName, Name);
+				Barrier, DirectoryPath, Name);
 		}
 
 		if (UAGX_TrackProperties* Asset = ProcessedTrackProperties.FindRef(Guid))
@@ -101,7 +101,7 @@ namespace
 
 		// This is a new Track Properties. Create the asset and add to the cache.
 		UAGX_TrackProperties* Asset =
-			FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(Barrier, DirectoryName, Name);
+			FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(Barrier, DirectoryPath, Name);
 		if (Asset != nullptr)
 		{
 			ProcessedTrackProperties.Add(Guid, Asset);
@@ -143,13 +143,13 @@ namespace
 	 * @param Trimesh The Trimesh containing the mesh to store.
 	 * @param FallbackName A name to give the asset in case the Trimesh doesn't have a valid name.
 	 * @param ProcessedMeshes Static Mesh cache.
-	 * @param DirectoryName The name of the folder where all assets for this imported model is
+	 * @param DirectoryPath The path of the folder where all assets for this imported model is
 	 * stored.
 	 * @return
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
-		TMap<FGuid, UStaticMesh*>& ProcessedMeshes, const FString& DirectoryName)
+		TMap<FGuid, UStaticMesh*>& ProcessedMeshes, const FString& DirectoryPath)
 	{
 		const FGuid Guid = Trimesh.GetMeshDataGuid();
 		if (!Guid.IsValid())
@@ -157,7 +157,7 @@ namespace
 			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
 			// the ProcessedMeshes cache.
 			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-				Trimesh, DirectoryName, FallbackName);
+				Trimesh, DirectoryPath, FallbackName);
 		}
 
 		{
@@ -171,7 +171,7 @@ namespace
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
 		UStaticMesh* Asset =
-			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryName, FallbackName);
+			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryPath, FallbackName);
 		if (Asset != nullptr)
 		{
 			ProcessedMeshes.Add(Guid, Asset);
@@ -187,20 +187,20 @@ namespace
 	 *
 	 * @param RenderData The Render Data Barrier containing the mesh to store.
 	 * @param ProcessedMeshes Static Mesh cache.
-	 * @param DirectoryName The name of the folder where all assets for the imported model is
+	 * @param DirectoryPath The path of the folder where all assets for the imported model is
 	 * stored.
 	 * @return The Static Mesh asset for the given Render Data.
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FRenderDataBarrier& RenderData, TMap<FGuid, UStaticMesh*>& ProcessedMeshes,
-		const FString& DirectoryName)
+		const FString& DirectoryPath)
 	{
 		const FGuid Guid = RenderData.GetGuid();
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
 			// the ProcessedMeshes cache.
-			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
+			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryPath);
 		}
 
 		{
@@ -214,7 +214,7 @@ namespace
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
 		UStaticMesh* Asset =
-			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryName);
+			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryPath);
 		if (Asset != nullptr)
 		{
 			ProcessedMeshes.Add(Guid, Asset);
@@ -259,7 +259,7 @@ namespace
 	UAGX_MergeSplitThresholdsBase* GetOrCreateMergeSplitThresholdsAsset(
 		const TBarrier& Barrier, EAGX_AmorOwningType OwningType,
 		TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& ProcessedThresholds,
-		const FString& DirectoryName)
+		const FString& DirectoryPath)
 	{
 		const TThresholdsBarrier ThresholdsBarrier = TThresholdsBarrier::CreateFrom(Barrier);
 		if (!ThresholdsBarrier.HasNative())
@@ -278,13 +278,13 @@ namespace
 			{
 				case EAGX_AmorOwningType::BodyOrShape:
 					return FAGX_ImportUtilities::CreateAsset<UAGX_ShapeContactMergeSplitThresholds>(
-						DirectoryName, AssetName, MSTDir);
+						DirectoryPath, AssetName, MSTDir);
 				case EAGX_AmorOwningType::Constraint:
 					return FAGX_ImportUtilities::CreateAsset<UAGX_ConstraintMergeSplitThresholds>(
-						DirectoryName, AssetName, MSTDir);
+						DirectoryPath, AssetName, MSTDir);
 				case EAGX_AmorOwningType::Wire:
 					return FAGX_ImportUtilities::CreateAsset<UAGX_WireMergeSplitThresholds>(
-						DirectoryName, AssetName, MSTDir);
+						DirectoryPath, AssetName, MSTDir);
 				default:
 					return nullptr;
 			}
@@ -367,7 +367,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 
 	const FShapeContactMergeSplitThresholdsBarrier ThresholdsBarrier =
 		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
-	
+
 	UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
 	if (ThresholdsBarrier.HasNative())
 	{
@@ -377,7 +377,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 		{
 			MSThresholds = ::GetOrCreateMergeSplitThresholdsAsset<
 				FRigidBodyBarrier, FShapeContactMergeSplitThresholdsBarrier>(
-				Barrier, EAGX_AmorOwningType::BodyOrShape, ProcessedThresholds, DirectoryName);
+				Barrier, EAGX_AmorOwningType::BodyOrShape, ProcessedThresholds, RootDirectoryPath);
 		}
 		else
 		{
@@ -661,8 +661,8 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 			ShapeBarrier.GetName().IsEmpty()
 				? "CollisionMesh"
 				: FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
-		UStaticMesh* Asset =
-			GetOrCreateStaticMeshAsset(ShapeBarrier, FallbackName, ProcessedMeshes, DirectoryName);
+		UStaticMesh* Asset = GetOrCreateStaticMeshAsset(
+			ShapeBarrier, FallbackName, ProcessedMeshes, RootDirectoryPath);
 		NewMeshAsset = Asset;
 	}
 
@@ -782,7 +782,7 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 	}
 
 	const FShapeContactMergeSplitThresholdsBarrier ThresholdsBarrier =
-		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);	
+		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
 	UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
 
 	if (ThresholdsBarrier.HasNative())
@@ -799,7 +799,7 @@ void FAGX_SimObjectsImporterHelper::UpdateShapeComponent(
 		{
 			MSThresholds = ::GetOrCreateMergeSplitThresholdsAsset<
 				FShapeBarrier, FShapeContactMergeSplitThresholdsBarrier>(
-				Barrier, EAGX_AmorOwningType::BodyOrShape, ProcessedThresholds, DirectoryName);
+				Barrier, EAGX_AmorOwningType::BodyOrShape, ProcessedThresholds, RootDirectoryPath);
 		}
 	}
 
@@ -972,7 +972,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	else
 	{
 		UStaticMesh* Asset =
-			GetOrCreateStaticMeshAsset(RenderDataBarrier, ProcessedMeshes, DirectoryName);
+			GetOrCreateStaticMeshAsset(RenderDataBarrier, ProcessedMeshes, RootDirectoryPath);
 		NewMeshAsset = Asset;
 	}
 
@@ -1036,7 +1036,7 @@ UAGX_ShapeMaterial* FAGX_SimObjectsImporterHelper::InstantiateShapeMaterial(
 	const FShapeMaterialBarrier& Barrier)
 {
 	UAGX_ShapeMaterial* Asset = FAGX_ImportUtilities::CreateAsset<UAGX_ShapeMaterial>(
-		DirectoryName, Barrier.GetName(),
+		RootDirectoryPath, Barrier.GetName(),
 		FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName());
 	if (Asset == nullptr)
 	{
@@ -1081,7 +1081,7 @@ UMaterialInterface* FAGX_SimObjectsImporterHelper::InstantiateRenderMaterial(
 		FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
 
 	FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(
-		DirectoryName, FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
+		RootDirectoryPath, FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
 
 	IAssetTools& AssetTools =
 		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
@@ -1094,7 +1094,7 @@ UMaterialInterface* FAGX_SimObjectsImporterHelper::InstantiateRenderMaterial(
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Could not create new Material asset for material '%s' imported from '%s'."),
-			*MaterialName, *DirectoryName);
+			*MaterialName, *RootDirectoryPath);
 		return nullptr;
 	}
 
@@ -1105,7 +1105,7 @@ UMaterialInterface* FAGX_SimObjectsImporterHelper::InstantiateRenderMaterial(
 			LogAGX, Error,
 			TEXT("Could not create new Material Instance Constant for material '%s' imported from "
 				 "'%s'."),
-			*MaterialName, *DirectoryName)
+			*MaterialName, *RootDirectoryPath)
 		return nullptr;
 	}
 
@@ -1179,7 +1179,7 @@ UAGX_ContactMaterial* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
 	const FString Name = TEXT("CM_") + GetName(Materials.first) + GetName(Materials.second);
 	UAGX_ContactMaterial* Asset = FAGX_ImportUtilities::CreateAsset<UAGX_ContactMaterial>(
-		DirectoryName, Name, FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
+		RootDirectoryPath, Name, FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
 	if (Asset == nullptr)
 	{
 		WriteImportErrorMessage(
@@ -1239,7 +1239,7 @@ namespace
 
 		const FConstraintMergeSplitThresholdsBarrier ThresholdsBarrier =
 			FConstraintMergeSplitThresholdsBarrier::CreateFrom(Barrier);
-		
+
 		UAGX_MergeSplitThresholdsBase* MSThresholds = nullptr;
 		if (ThresholdsBarrier.HasNative())
 		{
@@ -1256,7 +1256,7 @@ namespace
 				MSThresholds = ::GetOrCreateMergeSplitThresholdsAsset<
 					FConstraintBarrier, FConstraintMergeSplitThresholdsBarrier>(
 					Barrier, EAGX_AmorOwningType::Constraint, ProcessedThresholds,
-					Helper.DirectoryName);
+					Helper.RootDirectoryPath);
 			}
 		}
 
@@ -1744,7 +1744,7 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 
 	if (auto ThresholdsAsset =
 			::GetOrCreateMergeSplitThresholdsAsset<FWireBarrier, FWireMergeSplitThresholdsBarrier>(
-				Barrier, EAGX_AmorOwningType::Wire, ProcessedThresholds, DirectoryName))
+				Barrier, EAGX_AmorOwningType::Wire, ProcessedThresholds, RootDirectoryPath))
 	{
 		Component->MergeSplitProperties.Thresholds =
 			Cast<UAGX_WireMergeSplitThresholds>(ThresholdsAsset);
@@ -1793,7 +1793,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 			BarrierName.IsEmpty() ? FString("AGX_TP_Track") : FString("AGX_TP_") + BarrierName;
 
 		UAGX_TrackProperties* TrackProperties = GetOrCreateTrackPropertiesAsset(
-			Barrier.GetProperties(), AssetName, ProcessedTrackProperties, DirectoryName);
+			Barrier.GetProperties(), AssetName, ProcessedTrackProperties, RootDirectoryPath);
 		if (TrackProperties == nullptr)
 		{
 			UE_LOG(
@@ -1815,7 +1815,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 
 		Component->InternalMergeProperties =
 			FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
-				Barrier, DirectoryName, AssetName);
+				Barrier, RootDirectoryPath, AssetName);
 	}
 
 	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef)
@@ -1889,7 +1889,10 @@ void FAGX_SimObjectsImporterHelper::UpdateModelSourceComponent(UAGX_ModelSourceC
 		{
 			const FGuid ImportGuid = GuidToMaterial.Key;
 			const UMaterialInstanceConstant* const Material = GuidToMaterial.Value;
-			C->UnrealMaterialToImportGuid.Add(Material->GetPathName(), ImportGuid);
+			const FString RelativePath = FAGX_EditorUtilities::GetRelativePath(
+				FPaths::GetPath(RootDirectoryPath), Material->GetPathName());
+
+			C->UnrealMaterialToImportGuid.Add(RelativePath, ImportGuid);
 		}
 	};
 
@@ -2039,7 +2042,9 @@ namespace
 
 	FString MakeDirectoryName(const FString ModelName)
 	{
-		FString BasePath = FAGX_ImportUtilities::CreatePackagePath(ModelName);
+		const FString ImportDirPath =
+			FString::Printf(TEXT("/Game/%s/"), *FAGX_ImportUtilities::GetImportRootDirectoryName());
+		FString BasePath = FAGX_ImportUtilities::CreatePackagePath(ImportDirPath, ModelName, false);
 
 		auto PackageExists = [&](const FString& DirPath)
 		{
@@ -2067,21 +2072,29 @@ namespace
 	}
 }
 
+FString GetDefaultImportDirectoryPath(const FString& ValidModelName)
+{
+	return FPaths::Combine(
+		FString("/Game"), FAGX_ImportUtilities::GetImportRootDirectoryName(), ValidModelName);
+}
+
 FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(
 	const FString& InSourceFilePath, bool bInIgnoreDisabledTrimeshes)
 	: SourceFilePath(InSourceFilePath)
 	, SourceFileName(FPaths::GetBaseFilename(SourceFilePath))
-	, DirectoryName(MakeDirectoryName(MakeModelName(SourceFileName)))
+	, RootDirectoryName(MakeDirectoryName(MakeModelName(SourceFileName)))
+	, RootDirectoryPath(GetDefaultImportDirectoryPath(RootDirectoryName))
 	, bIgnoreDisabledTrimeshes(bInIgnoreDisabledTrimeshes)
 {
 }
 
 FAGX_SimObjectsImporterHelper::FAGX_SimObjectsImporterHelper(
 	const FString& InSourceFilePath, bool bInIgnoreDisabledTrimeshes,
-	const FString& InDirectoryName)
+	const FString& InRootDirectoryPath)
 	: SourceFilePath(InSourceFilePath)
 	, SourceFileName(FPaths::GetBaseFilename(SourceFilePath))
-	, DirectoryName(InDirectoryName)
+	, RootDirectoryName(FPaths::GetBaseFilename(InRootDirectoryPath))
+	, RootDirectoryPath(InRootDirectoryPath)
 	, bIgnoreDisabledTrimeshes(bInIgnoreDisabledTrimeshes)
 {
 }

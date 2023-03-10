@@ -1297,4 +1297,11 @@ void FAGX_EditorUtilities::SaveAndCompile(UBlueprint& Blueprint)
 	FAGX_ObjectUtilities::SaveAsset(Blueprint);
 }
 
+FString FAGX_EditorUtilities::GetRelativePath(const FString& BasePath, FString FullPath)
+{
+	FullPath.RemoveFromStart(BasePath);
+	FullPath.RemoveFromStart("/");
+	return FullPath;
+}
+
 #undef LOCTEXT_NAMESPACE

@@ -41,7 +41,7 @@ namespace
 {
 	template <typename UAsset, typename FInitAssetCallback>
 	UAsset* PrepareWriteAssetToDisk(
-		const FString& DirectoryName, FString AssetName, const FString& FallbackName,
+		const FString& DirectoryPath, FString AssetName, const FString& FallbackName,
 		const FString& AssetType, FInitAssetCallback InitAsset)
 	{
 		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
@@ -67,7 +67,7 @@ namespace
 				*AssetName);
 		}
 
-		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
+		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryPath, AssetType);
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
@@ -85,7 +85,7 @@ namespace
 		{
 			UE_LOG(
 				LogAGX, Error, TEXT("Could not create asset '%s' from '%s'."), *AssetName,
-				*DirectoryName);
+				*DirectoryPath);
 			return nullptr;
 		}
 		InitAsset(*Asset);
@@ -99,26 +99,15 @@ namespace
 	}
 }
 
-FString FAGX_ImportUtilities::CreatePackagePath(FString FileName, FString AssetType)
+FString FAGX_ImportUtilities::CreatePackagePath(
+	const FString& DirectoryPath, FString AssetType, bool AppendSeparator)
 {
-	FileName = FAGX_EditorUtilities::SanitizeName(FileName);
 	AssetType = FAGX_EditorUtilities::SanitizeName(AssetType);
-	if (FileName.IsEmpty())
-	{
-		return FString();
-	}
-	return FString::Printf(
-		TEXT("/Game/%s/%s/%s/"), *GetImportRootDirectoryName(), *FileName, *AssetType);
-}
 
-FString FAGX_ImportUtilities::CreatePackagePath(FString FileName)
-{
-	FileName = FAGX_EditorUtilities::SanitizeName(FileName);
-	if (FileName.IsEmpty())
-	{
-		return FString();
-	}
-	return FString::Printf(TEXT("/Game/%s/%s"), *GetImportRootDirectoryName(), *FileName);
+	if (AppendSeparator)
+		return FPaths::Combine(DirectoryPath, AssetType, FString(""));
+	else
+		return FPaths::Combine(DirectoryPath, AssetType);
 }
 
 FString FAGX_ImportUtilities::CreateAssetName(
@@ -174,7 +163,7 @@ namespace AGX_ImportUtilities_helpers
 }
 
 UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName, const FString& FallbackName)
+	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryPath, const FString& FallbackName)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
 	{
@@ -189,11 +178,11 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	}
 
 	return PrepareWriteAssetToDisk<UStaticMesh>(
-		DirectoryName, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset);
+		DirectoryPath, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset);
 }
 
 UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-	const FRenderDataBarrier& RenderData, const FString& DirectoryName)
+	const FRenderDataBarrier& RenderData, const FString& DirectoryPath)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
 	{
@@ -202,7 +191,7 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	};
 
 	return PrepareWriteAssetToDisk<UStaticMesh>(
-		DirectoryName, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
+		DirectoryPath, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
 		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset);
 }
 
@@ -340,13 +329,13 @@ namespace
 
 UAGX_TrackInternalMergeProperties*
 FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
-	const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name)
+	const FTrackBarrier& Barrier, const FString& DirectoryPath, const FString& Name)
 {
 	auto InitAsset = [&](UAGX_TrackInternalMergeProperties& Asset) { Asset.CopyFrom(Barrier); };
 
 	UAGX_TrackInternalMergeProperties* Asset =
 		PrepareWriteAssetToDisk<UAGX_TrackInternalMergeProperties>(
-			DirectoryName, Name, TEXT(""), TEXT("TrackInternalMergeProperties"), InitAsset);
+			DirectoryPath, Name, TEXT(""), TEXT("TrackInternalMergeProperties"), InitAsset);
 	if (Asset == nullptr || !WriteAssetToDisk(*Asset))
 	{
 		return nullptr;
@@ -355,12 +344,12 @@ FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
 }
 
 UAGX_TrackProperties* FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
-	const FTrackPropertiesBarrier& Barrier, const FString& DirectoryName, const FString& Name)
+	const FTrackPropertiesBarrier& Barrier, const FString& DirectoryPath, const FString& Name)
 {
 	auto InitAsset = [&](UAGX_TrackProperties& Asset) { Asset.CopyFrom(Barrier); };
 
 	UAGX_TrackProperties* Asset = PrepareWriteAssetToDisk<UAGX_TrackProperties>(
-		DirectoryName, Name, TEXT(""), TEXT("TrackProperties"), InitAsset);
+		DirectoryPath, Name, TEXT(""), TEXT("TrackProperties"), InitAsset);
 	if (Asset == nullptr || !WriteAssetToDisk(*Asset))
 	{
 		return nullptr;
@@ -571,8 +560,7 @@ FString FAGX_ImportUtilities::GetDefaultModelImportDirectory(const FString& Mode
 {
 	const FString Name = FAGX_EditorUtilities::SanitizeName(ModelName);
 	const FString Root = FPaths::ProjectContentDir();
-	const FString ImportsLocal =
-		FPaths::Combine(GetImportRootDirectoryName(), ModelName);
+	const FString ImportsLocal = FPaths::Combine(GetImportRootDirectoryName(), ModelName);
 	const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
 	const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
 	return ImportsAbsolute;
