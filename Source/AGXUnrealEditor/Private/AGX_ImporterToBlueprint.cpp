@@ -2066,7 +2066,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		SCSNodeCollection& SCSNodes, const FSimulationObjectCollection& SimulationObjects,
 		FAGX_SimObjectsImporterHelper& Helper, TArray<UObject*>& AssetsToDelete)
 	{
-		// Delete removed Contact Materials.
 		if (SCSNodes.ContactMaterialRegistrarComponent == nullptr)
 		{
 			return;
@@ -2133,39 +2132,36 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
 		TArray<UObject*>& AssetsToDelete)
 	{
-		// Delete removed Shape Materials.
+		// Create a quick-lookup collection of the Shape Materials we want to keep.
+		TSet<FGuid> InSimulation;
+		InSimulation.Reserve(SimulationObjects.GetShapeMaterials().Num());
+		for (const FShapeMaterialBarrier& Barrier : SimulationObjects.GetShapeMaterials())
 		{
-			// Create a quick-lookup collection of the Shape Materials we want to keep.
-			TSet<FGuid> InSimulation;
-			InSimulation.Reserve(SimulationObjects.GetShapeMaterials().Num());
-			for (const FShapeMaterialBarrier& Barrier : SimulationObjects.GetShapeMaterials())
+			InSimulation.Add(Barrier.GetGuid());
+		}
+
+		// Find all Shape Material assets currently in the import folder, some of which we
+		// want to remove.
+		const FString ShapeMaterialDirPath =
+			GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName());
+		TArray<UAGX_ShapeMaterial*> Assets =
+			FAGX_EditorUtilities::FindAssets<UAGX_ShapeMaterial>(ShapeMaterialDirPath);
+
+		// Mark for deletion any asset that we don't want to keep, i.e. that isn't among the
+		// simulation objects.
+		for (UAGX_ShapeMaterial* Asset : Assets)
+		{
+			const FGuid Guid = Asset->ImportGuid;
+			if (!Guid.IsValid())
 			{
-				InSimulation.Add(Barrier.GetGuid());
+				// Not an imported asset, do not delete.
+				continue;
 			}
 
-			// Find all Shape Material assets currently in the import folder, some of which we
-			// want to remove.
-			const FString ShapeMaterialDirPath = GetImportDirPath(
-				Helper, FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName());
-			TArray<UAGX_ShapeMaterial*> Assets =
-				FAGX_EditorUtilities::FindAssets<UAGX_ShapeMaterial>(ShapeMaterialDirPath);
-
-			// Mark for deletion any asset that we don't want to keep, i.e. that isn't among the
-			// simulation objects.
-			for (UAGX_ShapeMaterial* Asset : Assets)
+			if (!InSimulation.Contains(Guid))
 			{
-				const FGuid Guid = Asset->ImportGuid;
-				if (!Guid.IsValid())
-				{
-					// Not an imported asset, do not delete.
-					continue;
-				}
-
-				if (!InSimulation.Contains(Guid))
-				{
-					// Not part of the current import data, delete the asset.
-					AssetsToDelete.Add(Asset);
-				}
+				// Not part of the current import data, delete the asset.
+				AssetsToDelete.Add(Asset);
 			}
 		}
 	}
