@@ -48,6 +48,9 @@ public:
 	 * change without splitting the constrained objects.
 	 * For rotational constraints, this is expressed in [deg].
 	 * For prismatic constraints, this is expressed in [cm].
+	 *
+	 * For Cylindrical constraints, this value is converted to [rad] and applied to both the
+	 * rotational and translational DOFs of the AGX Dynamics object without further scaling.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxDesiredLockAngleDiff {0.00001};
@@ -71,6 +74,9 @@ public:
 	 * change without splitting the constrained objects.
 	 * For rotational constraints, this is expressed in [deg].
 	 * For prismatic constraints, this is expressed in [cm].
+	 *
+	 * For Cylindrical constraints, this value is converted to [rad] and applied to both the
+	 * rotational and translational DOFs of the AGX Dynamics object without further scaling.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxDesiredRangeAngleDiff {0.00001};
@@ -94,6 +100,9 @@ public:
 	 * change without splitting the constrained objects.
 	 * For rotational constraints, this is expressed in [deg/s].
 	 * For prismatic constraints, this is expressed in [cm/s].
+	 *
+	 * For Cylindrical constraints, this value is converted to [rad/s] and applied to both the
+	 * rotational and translational DOFs of the AGX Dynamics object without further scaling.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxDesiredSpeedDiff {0.00001};
@@ -117,6 +126,9 @@ public:
 	 * rest.
 	 * For rotational constraints, this is expressed in [deg/s].
 	 * For prismatic constraints, this is expressed in [cm/s].
+	 *
+	 * For Cylindrical constraints, this value is converted to [rad/s] and applied to both the
+	 * rotational and translational DOFs of the AGX Dynamics object without further scaling.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxRelativeSpeed {0.005};
