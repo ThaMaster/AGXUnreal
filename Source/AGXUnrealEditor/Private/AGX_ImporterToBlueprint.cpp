@@ -1189,7 +1189,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		// Existing Render Material Assets.
 		const TMap<FGuid, UMaterialInstanceConstant*> RMAssets = CollectRenderMaterialAssets(
-			*Cast<UAGX_ModelSourceComponent>(SCSNodes.ModelSourceComponent->ComponentTemplate), Helper);
+			*Cast<UAGX_ModelSourceComponent>(SCSNodes.ModelSourceComponent->ComponentTemplate),
+			Helper);
 
 		for (const FAGX_RenderMaterial& RMBarrier : RMBarriers)
 		{
@@ -2001,8 +2002,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// Collect Merge Split Thresholds from the simulation objects.
 		// Any Thresholds we find should not have its asset deleted.
 		TSet<FGuid> InSimulation;
-		InSimulation.Reserve(Objects.Num() + 1);
-		InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
+		InSimulation.Reserve(Objects.Num());
 		for (const FObjectBarrier& Object : Objects)
 		{
 			const FMergeSplitThresholdsBarrier& Thresholds = GetThresholds(Object);
@@ -2083,7 +2083,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		const TArray<FContactMaterialBarrier>& Barriers = SimulationObjects.GetContactMaterials();
 		TSet<FGuid> InSimulation;
 		InSimulation.Reserve(Barriers.Num());
-		InSimulation.Add(FGuid()); // To protect against deleting non-imported assets.
 		for (const FContactMaterialBarrier& Barrier : Barriers)
 		{
 			InSimulation.Add(Barrier.GetGuid());
@@ -2138,6 +2137,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		{
 			// Create a quick-lookup collection of the Shape Materials we want to keep.
 			TSet<FGuid> InSimulation;
+			InSimulation.Reserve(SimulationObjects.GetShapeMaterials().Num());
 			for (const FShapeMaterialBarrier& Barrier : SimulationObjects.GetShapeMaterials())
 			{
 				InSimulation.Add(Barrier.GetGuid());
@@ -2155,10 +2155,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			for (UAGX_ShapeMaterial* Asset : Assets)
 			{
 				const FGuid Guid = Asset->ImportGuid;
-				if (Guid == FGuid())
+				if (!Guid.IsValid())
 				{
-					// This isn't an imported asset but something the user put there themselves.
-					// Don't touch.
+					// Not an imported asset, do not delete.
 					continue;
 				}
 
@@ -2178,86 +2177,81 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	{
 		TSet<FGuid> RenderMaterialsToDelete;
 
-		// Delete removed Render Materials.
-		if (auto* ModelSourceComponent =
-				Cast<UAGX_ModelSourceComponent>(SCSNodes.ModelSourceComponent->ComponentTemplate))
+		if (SCSNodes.ModelSourceComponent == nullptr)
 		{
-			// Find all Render Material assets currently in the import folder.
-			const FString RenderMaterialDirPath = GetImportDirPath(
-				Helper, FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
-			TArray<UMaterialInstanceConstant*> Assets =
-				FAGX_EditorUtilities::FindAssets<UMaterialInstanceConstant>(RenderMaterialDirPath);
-			for (const UMaterialInstanceConstant* Asset : Assets)
-			{
-				const FString GuidStr = [&]()
-				{
-					const FString AssetRelativePath = FAGX_EditorUtilities::GetRelativePath(
-						FPaths::GetPath(Helper.RootDirectoryPath), Asset->GetPathName());
-					const FGuid* const AssetGuidPtr =
-						ModelSourceComponent->UnrealMaterialToImportGuid.Find(AssetRelativePath);
-					if (AssetGuidPtr != nullptr)
-					{
-						return AssetGuidPtr->ToString();
-					}
-					else
-					{
-						return FString(TEXT("(Unknown)"));
-					}
-				}();
-			}
+			return RenderMaterialsToDelete;
+		}
 
-			// Find all Render Materials that are about to be imported.
-			TSet<FGuid> InSimulation;
-			auto CollectFromSimulation = [&InSimulation](const auto& ShapeBarriers)
-			{
-				for (const auto& ShapeBarrier : ShapeBarriers)
-				{
-					if (!ShapeBarrier.HasRenderMaterial())
-					{
-						continue;
-					}
+		auto* ModelSourceComponent =
+			Cast<UAGX_ModelSourceComponent>(SCSNodes.ModelSourceComponent->ComponentTemplate);
+		if (ModelSourceComponent == nullptr)
+		{
+			return RenderMaterialsToDelete;
+		}
 
-					FAGX_RenderMaterial Material = ShapeBarrier.GetRenderMaterial();
-					InSimulation.Add(Material.Guid);
-				}
-			};
-			auto CollectFromSimulationBodies = [&InSimulation, &CollectFromSimulation](
-												   const TArray<FRigidBodyBarrier>& BodyBarriers)
-			{
-				for (const FRigidBodyBarrier& BodyBarrier : BodyBarriers)
-				{
-					CollectFromSimulation(BodyBarrier.GetShapes());
-				}
-			};
-			CollectFromSimulation(SimulationObjects.GetBoxShapes());
-			CollectFromSimulation(SimulationObjects.GetCapsuleShapes());
-			CollectFromSimulation(SimulationObjects.GetCylinderShapes());
-			CollectFromSimulation(SimulationObjects.GetSphereShapes());
-			CollectFromSimulation(SimulationObjects.GetTrimeshShapes());
-			CollectFromSimulationBodies(SimulationObjects.GetRigidBodies());
+		// Find all Render Material assets currently in the import folder.
+		const FString RenderMaterialDirPath =
+			GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
+		TArray<UMaterialInstanceConstant*> Assets =
+			FAGX_EditorUtilities::FindAssets<UMaterialInstanceConstant>(RenderMaterialDirPath);
 
-			// Mark for deletion any asset we currently have but don't want to keep.
-			for (auto* Asset : Assets)
+		// Find all Render Materials that are about to be imported.
+		TSet<FGuid> InSimulation;
+		InSimulation.Reserve(100); // Just a guess. Can count if we want, but probably not worth it.
+		auto CollectFromSimulation = [&InSimulation](const auto& ShapeBarriers)
+		{
+			for (const auto& ShapeBarrier : ShapeBarriers)
 			{
-				const FString AssetRelativePath = FAGX_EditorUtilities::GetRelativePath(
-					FPaths::GetPath(Helper.RootDirectoryPath), Asset->GetPathName());
-				const FGuid* const AssetGuidPtr =
-					ModelSourceComponent->UnrealMaterialToImportGuid.Find(AssetRelativePath);
-				if (AssetGuidPtr == nullptr)
+				if (!ShapeBarrier.HasRenderMaterial())
 				{
-					// This is a new, unknown, material.
-					// I don't think this is supposed to happen.
-					// If the user create new
 					continue;
 				}
-				const FGuid AssetGuid = *AssetGuidPtr;
-				if (!InSimulation.Contains(AssetGuid))
-				{
-					// Not part of the current import data, delete the asset.
-					RenderMaterialsToDelete.Add(AssetGuid);
-					AssetsToDelete.Add(Asset);
-					ModelSourceComponent->UnrealMaterialToImportGuid.Remove(AssetRelativePath);
-				}
+
+				FAGX_RenderMaterial Material = ShapeBarrier.GetRenderMaterial();
+				InSimulation.Add(Material.Guid);
+			}
+		};
+		auto CollectFromSimulationBodies =
+			[&InSimulation, &CollectFromSimulation](const TArray<FRigidBodyBarrier>& BodyBarriers)
+		{
+			for (const FRigidBodyBarrier& BodyBarrier : BodyBarriers)
+			{
+				CollectFromSimulation(BodyBarrier.GetShapes());
+			}
+		};
+		CollectFromSimulation(SimulationObjects.GetBoxShapes());
+		CollectFromSimulation(SimulationObjects.GetCapsuleShapes());
+		CollectFromSimulation(SimulationObjects.GetCylinderShapes());
+		CollectFromSimulation(SimulationObjects.GetSphereShapes());
+		CollectFromSimulation(SimulationObjects.GetTrimeshShapes());
+		CollectFromSimulationBodies(SimulationObjects.GetRigidBodies());
+
+		// Mark for deletion any asset we currently have but don't want to keep.
+		for (auto* Asset : Assets)
+		{
+			const FString AssetRelativePath = FAGX_EditorUtilities::GetRelativePath(
+				FPaths::GetPath(Helper.RootDirectoryPath), Asset->GetPathName());
+
+			const FGuid* const GuidPtr =
+				ModelSourceComponent->UnrealMaterialToImportGuid.Find(AssetRelativePath);
+			if (GuidPtr == nullptr)
+			{
+				// This is a new, unknown, material, possibly one the user created themselves
+				// in the imported model folder. Do not delete.
+				continue;
+			}
+			const FGuid Guid = *GuidPtr;
+			if (!Guid.IsValid())
+			{
+				// Not an imported asset, do not delete.
+				continue;
+			}
+			if (!InSimulation.Contains(Guid))
+			{
+				// Not part of the current import data, delete the asset.
+				RenderMaterialsToDelete.Add(Guid);
+				AssetsToDelete.Add(Asset);
+				ModelSourceComponent->UnrealMaterialToImportGuid.Remove(AssetRelativePath);
 			}
 		}
 
