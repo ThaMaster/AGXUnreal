@@ -2256,8 +2256,18 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		return RenderMaterialsToDelete;
 	}
 
+	/**
+	 * Delete all render and collision meshes.
+     *
+	 * We currently can't reuse the old assets because we have no way of knowing if they have
+	 * been changed or not since we, unfortunately, store these meshes as Unreal Engine Static
+	 * Mesh assets which Unreal Engine changes during import. For the render mesh we may not
+	 * have a choice since they are for rendering, but the collision mesh should perhaps be
+	 * a custom asset whose storage is byte-compatible with AGX Dynamics trimesh.
+	 */
 	void DeleteAllImportedStaticMeshAssets(
-		FAGX_SimObjectsImporterHelper& Helper, TArray<UObject*>& AssetsToDelete)
+		const SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper,
+		TArray<UObject*>& AssetsToDelete)
 	{
 		// Delete all render and collision meshes.
 		//
@@ -2266,26 +2276,40 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// Mesh assets which Unreal Engine changes during import. For the render mesh we may not
 		// have a choice since they are for rendering, but the collision mesh should perhaps be
 		// a custom asset whose storage is byte-compatible with AGX Dynamics trimesh.
+		auto DeleteMeshAssets =
+			[&Helper, &AssetsToDelete](
+				const TMap<FGuid, USCS_Node*>& MeshComponents, const FString& DirectoryName)
 		{
-			const FString RenderMeshDirPath =
-				GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportRenderMeshDirectoryName());
-			const FString CollisionMeshDirPath =
-				GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportStaticMeshDirectoryName());
-
-			TArray<UStaticMesh*> RenderMeshes =
-				FAGX_EditorUtilities::FindAssets<UStaticMesh>(RenderMeshDirPath);
-			TArray<UStaticMesh*> CollisionMeshes =
-				FAGX_EditorUtilities::FindAssets<UStaticMesh>(CollisionMeshDirPath);
-
-			for (UStaticMesh* Mesh : RenderMeshes)
+			const FString ImportPath = GetImportDirPath(Helper, DirectoryName);
+			for (auto Entry : MeshComponents)
 			{
-				AssetsToDelete.AddUnique(Mesh);
+				UStaticMeshComponent* Component =
+					Cast<UStaticMeshComponent>(Entry.Value->ComponentTemplate);
+				if (Component == nullptr)
+				{
+					continue;
+				}
+
+				UStaticMesh* Asset = Component->GetStaticMesh();
+				if (Asset == nullptr)
+				{
+					continue;
+				}
+
+				const FString AssetPath = Asset->GetPathName();
+				if (AssetPath.StartsWith(ImportPath))
+				{
+					AssetsToDelete.AddUnique(Asset);
+				}
 			}
-			for (UStaticMesh* Mesh : CollisionMeshes)
-			{
-				AssetsToDelete.AddUnique(Mesh);
-			}
-		}
+		};
+
+		DeleteMeshAssets(
+			SCSNodes.CollisionStaticMeshComponents,
+			FAGX_ImportUtilities::GetImportStaticMeshDirectoryName());
+		DeleteMeshAssets(
+			SCSNodes.RenderStaticMeshComponents,
+			FAGX_ImportUtilities::GetImportRenderMeshDirectoryName());
 	}
 
 	TMap<UStaticMeshComponent*, UMaterialInterface*> GetRenderMaterials(
@@ -2416,7 +2440,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		DeleteRemovedContactMaterialAssets(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
 		DeleteRemovedMergeSplitThresholdsAssets(SimulationObjects, Helper, AssetsToDelete);
-		DeleteAllImportedStaticMeshAssets(Helper, AssetsToDelete);
+		DeleteAllImportedStaticMeshAssets(SCSNodes, Helper, AssetsToDelete);
 		TSet<FGuid> RenderMaterialsToDelete =
 			DeleteRemovedRenderMaterialAssets(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
 		DeleteRemovedShapeMaterialAssets(SimulationObjects, Helper, AssetsToDelete);
