@@ -2423,9 +2423,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 *   doesn't have a corresponding simulation object.
 	 */
 	void DeleteRemovedAssets(
-		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
-		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
-		const FAGX_SynchronizeModelSettings& Settings)
+		SCSNodeCollection& SCSNodes, const FSimulationObjectCollection& SimulationObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
 	{
 		TArray<UObject*> AssetsToDelete;
 
@@ -2594,7 +2593,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			Settings.FilePath, Settings.bIgnoreDisabledTrimeshes, ModelDirPath);
 
 		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Deleting old assets"));
-		DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, Settings);
+		DeleteRemovedAssets(SCSNodes, SimObjects, Helper);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Deleting old Components"));
 		DeleteRemovedComponents(BaseBP, SCSNodes, SimObjects, Settings);
