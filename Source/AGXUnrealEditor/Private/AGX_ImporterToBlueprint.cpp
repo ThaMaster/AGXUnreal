@@ -92,8 +92,14 @@ namespace
 		// Create directory for this import and a "Blueprints" directory inside of that.
 		/// \todo I think this is more complicated than it needs to be. What are all the pieces for?
 		const FString SubDirectory = IsBase ? "Blueprint" : "";
+
+		const FString ImportDirPath = FString::Printf(
+			TEXT("/Game/%s/%s/"), *FAGX_ImportUtilities::GetImportRootDirectoryName(),
+			*Helper.RootDirectoryName);
+
 		FString ParentPackagePath =
-			FAGX_ImportUtilities::CreatePackagePath(Helper.DirectoryName, SubDirectory);
+			FAGX_ImportUtilities::CreatePackagePath(ImportDirPath, SubDirectory);
+
 		FGuid BaseNameGuid = FGuid::NewGuid();
 		FString ParentAssetName = IsBase ? BaseNameGuid.ToString() : Helper.SourceFileName;
 
@@ -108,7 +114,7 @@ namespace
 		// Create a known unique name for the Blueprint package, but don't create the actual
 		// package yet.
 		const FString BlueprintName =
-			IsBase ? "BP_Base_" + BaseNameGuid.ToString() : TEXT("BP_") + Helper.DirectoryName;
+			IsBase ? "BP_Base_" + BaseNameGuid.ToString() : TEXT("BP_") + Helper.RootDirectoryName;
 		FString BasePackagePath = UPackageTools::SanitizePackageName(Path + "/" + BlueprintName);
 		FString PackagePath = BasePackagePath;
 
@@ -521,7 +527,7 @@ namespace
 			FActorFactoryAssetProxy::AddActorForAsset(EmptyActorAsset, false);
 		check(RootActorContainer != nullptr); /// \todo Test and return false instead of check?
 		RootActorContainer->SetFlags(RF_Transactional);
-		RootActorContainer->SetActorLabel(Helper.DirectoryName);
+		RootActorContainer->SetActorLabel(Helper.RootDirectoryName);
 
 // I would like to be able to create and configure the RootComponent here, but
 // the way Blueprint creation has been done in Unreal Engine makes this
@@ -729,9 +735,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	FString GetImportDirPath(
 		const FAGX_SimObjectsImporterHelper& Helper, const FString& Subdir = "")
 	{
-		return FPaths::Combine(
-			FString("/Game"), FAGX_ImportUtilities::GetImportRootDirectoryName(),
-			Helper.DirectoryName, Subdir);
+		return FPaths::Combine(Helper.RootDirectoryPath, Subdir);
 	}
 
 	struct FShapeGuidsCollection
@@ -1148,20 +1152,22 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	}
 
 	TMap<FGuid, UMaterialInstanceConstant*> CollectRenderMaterialAssets(
-		const UAGX_ModelSourceComponent& ModelSource)
+		const UAGX_ModelSourceComponent& ModelSource, const FAGX_SimObjectsImporterHelper& Helper)
 	{
 		TMap<FGuid, UMaterialInstanceConstant*> Assets;
 		Assets.Reserve(ModelSource.UnrealMaterialToImportGuid.Num());
 		for (const auto& MaterialTuple : ModelSource.UnrealMaterialToImportGuid)
 		{
+			const FString AssetFullPath =
+				FPaths::Combine(FPaths::GetPath(Helper.RootDirectoryPath), MaterialTuple.Key);
 			UMaterialInstanceConstant* Asset =
-				LoadObject<UMaterialInstanceConstant>(GetTransientPackage(), *MaterialTuple.Key);
+				LoadObject<UMaterialInstanceConstant>(GetTransientPackage(), *AssetFullPath);
 			if (Asset == nullptr)
 			{
 				UE_LOG(
 					LogAGX, Warning,
 					TEXT("Expected to find Render Material in '%s' but it could not be found."),
-					*MaterialTuple.Key);
+					*AssetFullPath);
 				continue;
 			}
 
@@ -1183,7 +1189,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		// Existing Render Material Assets.
 		const TMap<FGuid, UMaterialInstanceConstant*> RMAssets = CollectRenderMaterialAssets(
-			*Cast<UAGX_ModelSourceComponent>(SCSNodes.ModelSourceComponent->ComponentTemplate));
+			*Cast<UAGX_ModelSourceComponent>(SCSNodes.ModelSourceComponent->ComponentTemplate), Helper);
 
 		for (const FAGX_RenderMaterial& RMBarrier : RMBarriers)
 		{
@@ -1732,23 +1738,15 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			*Cast<UAGX_ModelSourceComponent>(ModelSourceComponent->ComponentTemplate));
 	}
 
-	FString GetModelDirectoryFromAsset(UObject* Asset)
+	FString GetModelDirectoryPathFromBaseBlueprint(UBlueprint& BaseBP)
 	{
-		if (Asset == nullptr)
+		const FString ParentDir = FPaths::GetPath(BaseBP.GetPathName());
+		if (!FPaths::GetBaseFilename(ParentDir).Equals("Blueprint"))
 		{
 			return "";
 		}
 
-		TArray<FString> Splits;
-		Asset->GetPathName().ParseIntoArray(Splits, TEXT("/"));
-		for (int i = 0; i < Splits.Num(); i++)
-		{
-			if (Splits[i].Equals(FAGX_ImportUtilities::GetImportRootDirectoryName()))
-			{
-				return i + 1 < Splits.Num() ? Splits[i + 1] : "";
-			}
-		}
-		return "";
+		return FPaths::GetPath(ParentDir);
 	}
 
 	// The passed SCSNodes will be kept up to date, i.e. elements added to BaseBP will have their
@@ -2193,8 +2191,10 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				const FString GuidStr = [&]()
 				{
+					const FString AssetRelativePath = FAGX_EditorUtilities::GetRelativePath(
+						FPaths::GetPath(Helper.RootDirectoryPath), Asset->GetPathName());
 					const FGuid* const AssetGuidPtr =
-						ModelSourceComponent->UnrealMaterialToImportGuid.Find(Asset->GetPathName());
+						ModelSourceComponent->UnrealMaterialToImportGuid.Find(AssetRelativePath);
 					if (AssetGuidPtr != nullptr)
 					{
 						return AssetGuidPtr->ToString();
@@ -2239,8 +2239,10 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			// Mark for deletion any asset we currently have but don't want to keep.
 			for (auto* Asset : Assets)
 			{
+				const FString AssetRelativePath = FAGX_EditorUtilities::GetRelativePath(
+					FPaths::GetPath(Helper.RootDirectoryPath), Asset->GetPathName());
 				const FGuid* const AssetGuidPtr =
-					ModelSourceComponent->UnrealMaterialToImportGuid.Find(Asset->GetPathName());
+					ModelSourceComponent->UnrealMaterialToImportGuid.Find(AssetRelativePath);
 				if (AssetGuidPtr == nullptr)
 				{
 					// This is a new, unknown, material.
@@ -2254,7 +2256,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					// Not part of the current import data, delete the asset.
 					RenderMaterialsToDelete.Add(AssetGuid);
 					AssetsToDelete.Add(Asset);
-					ModelSourceComponent->UnrealMaterialToImportGuid.Remove(Asset->GetPathName());
+					ModelSourceComponent->UnrealMaterialToImportGuid.Remove(AssetRelativePath);
 				}
 			}
 		}
@@ -2571,9 +2573,18 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			return false;
 		}
 
+		const FString ModelDirPath = GetModelDirectoryPathFromBaseBlueprint(BaseBP);
+		if (ModelDirPath.IsEmpty())
+		{
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+				"Could not get a valid model root directory from the given Blueprint. Model "
+				"synchronization is only supported for imported models with an unmodified "
+				"directory structure.");
+			return false;
+		}
+
 		FAGX_SimObjectsImporterHelper Helper(
-			Settings.FilePath, Settings.bIgnoreDisabledTrimeshes,
-			GetModelDirectoryFromAsset(&BaseBP));
+			Settings.FilePath, Settings.bIgnoreDisabledTrimeshes, ModelDirPath);
 
 		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Deleting old assets"));
 		DeleteRemovedAssets(BaseBP, SCSNodes, SimObjects, Helper, Settings);

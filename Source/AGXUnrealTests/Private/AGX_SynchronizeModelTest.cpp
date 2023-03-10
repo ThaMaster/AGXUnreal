@@ -1534,12 +1534,17 @@ public:
 		// Check asset on drive.
 		const FString AssetName =
 			FString::Printf(TEXT("AGX_CMST_%s"), *TemplateThresholds->ImportGuid.ToString());
+
+		const FString ImportDirPath = FString::Printf(
+			TEXT("/Game/%s/%s/"), *FAGX_ImportUtilities::GetImportRootDirectoryName(),
+			*InitialModelName);
+
 		AssetPath = FString::Printf(
 			TEXT("%s%s"),
 			*FAGX_ImportUtilities::CreatePackagePath(
-				InitialModelName,
-				FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName()),
+				ImportDirPath, FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName()),
 			*AssetName);
+
 		UAGX_ConstraintMergeSplitThresholds* Asset =
 			LoadObject<UAGX_ConstraintMergeSplitThresholds>(nullptr, *AssetPath);
 		if (!TestNotNull(TEXT("Thresholds asset before synchronize"), Asset))

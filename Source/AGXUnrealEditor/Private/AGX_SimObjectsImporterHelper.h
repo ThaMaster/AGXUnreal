@@ -231,15 +231,19 @@ public:
 	 */
 	void FinalizeImport();
 
+	// The root model directory will be set to the default import directory.
 	explicit FAGX_SimObjectsImporterHelper(
 		const FString& InSourceFilePath, bool bInIgnoreDisabledTrimeshes);
+
+	// The root model directory specified by caller.
 	explicit FAGX_SimObjectsImporterHelper(
 		const FString& InSourceFilePath, bool bInIgnoreDisabledTrimeshes,
-		const FString& InDirectoryName);
+		const FString& InRootDirectoryPath);
 
 	const FString SourceFilePath;
 	const FString SourceFileName;
-	const FString DirectoryName;
+	const FString RootDirectoryName;
+	const FString RootDirectoryPath;		
 	const bool bIgnoreDisabledTrimeshes;
 
 private:

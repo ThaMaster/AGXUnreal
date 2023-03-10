@@ -57,7 +57,6 @@ class UWorld;
 class AGXUNREALEDITOR_API FAGX_EditorUtilities
 {
 public:
-
 	/**
 	 * Utility function for starting a model synchronization, with GUI Window etc.
 	 */
@@ -360,6 +359,12 @@ public:
 	 * since its implementation depends on an Editor module function.
 	 */
 	static void SaveAndCompile(UBlueprint& Blueprint);
+
+	/**
+	 * Returns relative path given a full path and base path. The base path must be part of the full
+	 * path, with matching path delimiters.
+	 */
+	static FString GetRelativePath(const FString& BasePath, FString FullPath);
 };
 
 template <typename T>

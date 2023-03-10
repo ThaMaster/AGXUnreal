@@ -40,25 +40,14 @@ class AGXUNREALEDITOR_API FAGX_ImportUtilities
 public:
 	/**
 	 * Create a package path for an asset of the given type. The returned path is the sanitized
-	 * version of "/Game/ImportedAGXModels/{FileName}/{AssetType}s/".
-	 * @param FileName The name of the source file from which the asset was read.
+	 * version of "{DirectoryPath}/{AssetType}s/".
+	 * @param DirectoryPath The absolute path of the model root directory. Must be valid.
 	 * @param AssetType The type of the asset.
+	 * @param AppendSeparator Whether or not to ensure the returned path ends with a separator /.
 	 * @return A package path for the asset, or the empty string if the names are invalid.
 	 */
-	static FString CreatePackagePath(FString FileName, FString AssetType);
-
-	/**
-	 * Create a package path for imported simulation objects with the given name.
-	 *
-	 * The given name is sanitized and the returned package path will then be
-	 * "/Game/ImportedAGXModels/{FileName}".
-	 *
-	 * No check is made for already existing packages with the same name.
-	 *
-	 * @param FileName The name of the source file to create a package path for.
-	 * @return The package path for the imported asset.
-	 */
-	static FString CreatePackagePath(FString FileName);
+	static FString CreatePackagePath(
+		const FString& DirectoryPath, FString AssetType, bool AppendSeparator = true);
 
 	/**
 	 * Pick a name for an imported asset. NativeName and FileName will be sanitized and the first
@@ -96,47 +85,47 @@ public:
 	 * Sets up the imported Trimesh as an UStaticMesh asset, but does not write it to disk.
 	 *
 	 * @param Trimesh The imported trimesh to be saved.
-	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param DirectoryPath The path of the directory where the assets are collected.
 	 * @param FallbackName Name to give the asset in case the trimesh doesn't have a source
 	 * name.
 	 * @return The created asset.
 	 */
 	static UStaticMesh* SaveImportedStaticMeshAsset(
-		const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName,
+		const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryPath,
 		const FString& FallbackName);
 
 	/**
 	 * Sets up the imported Render Data Mesh as an UStaticMesh asset, but does not write it to disk.
 	 *
 	 * @param RenderData The Render Data holding the render mesh to store.
-	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param DirectoryPath The path of the directory where the assets are collected.
 	 * @return The created asset.
 	 */
 	static UStaticMesh* SaveImportedStaticMeshAsset(
-		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
+		const FRenderDataBarrier& RenderData, const FString& DirectoryPath);
 
 	/**
 	 * Store an imported AGX Dynamics Track Internal Merge Property as an
 	 * UAGX_TrackInternalMergeProperties asset on drive..
 	 * @param Barrier The imported Track owning the Internal Merge Property.
-	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param DirectoryPath The path of the directory where the assets are collected.
 	 * @param Name The name to give to the new asset. A sequence number will be added in case of a
 	 * conflict.
 	 * @return The created UAGX_TrackInternalMergeProperties asset.
 	 */
 	static UAGX_TrackInternalMergeProperties* SaveImportedTrackInternalMergePropertiesAsset(
-		const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name);
+		const FTrackBarrier& Barrier, const FString& DirectoryPath, const FString& Name);
 
 	/**
 	 * Store an imported AGX Dynamics Track Property as an UAGX_TrackProperties.
 	 * @param Barrier The imported Track referencing the Track Property.
-	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param DirectoryPath The path of the directory where the assets are collected.
 	 * @param Name The name to give to the new asset. A sequence number will be added in case of a
 	 * conflict.
 	 * @return The created UAGX_TrackProperties.
 	 */
 	static UAGX_TrackProperties* SaveImportedTrackPropertiesAsset(
-		const FTrackPropertiesBarrier& Barrier, const FString& DirectoryName, const FString& Name);
+		const FTrackPropertiesBarrier& Barrier, const FString& DirectoryPath, const FString& Name);
 
 	/**
 	 * Generate valid name for the object. Generates a fallback name if the given name can't be
@@ -192,21 +181,19 @@ public:
 	/**
 	 * Get the file system path to the default import directory for a model with the given name.
 	 *
-	 * Similar to CreatePackagePath, but returns a file system path instead of an Unreal Engine path.
-	 *
 	 * Note that due to name collisions that actual path that a particular import resulted in may
 	 * differ from the returned path.
 	 */
 	static FString GetDefaultModelImportDirectory(const FString& ModelName);
 
 	/**
-	 * Create a new asset destined for the import directory. This functions will only create the
+	 * Create a new asset destined for the given directory path. This functions will only create the
 	 * asset and setup it's Package, it will not actually save it to disk. That is the
 	 * responsibility of the caller.
 	 */
 	template <typename UAsset>
 	static UAsset* CreateAsset(
-		const FString& DirectoryName, FString AssetName, const FString& AssetType);
+		const FString& DirectoryPath, FString AssetName, const FString& AssetType);
 
 	/**
 	 * Create a new Component and add it to an Actor and attach it to the given attach parent.
@@ -220,10 +207,10 @@ public:
 
 template <typename UAsset>
 UAsset* FAGX_ImportUtilities::CreateAsset(
-	const FString& DirectoryName, FString AssetName, const FString& AssetType)
+	const FString& DirectoryPath, FString AssetName, const FString& AssetType)
 {
 	AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, "", AssetType);
-	FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
+	FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryPath, AssetType);
 	FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
 	UPackage* Package = CreatePackage(*PackagePath);
 
@@ -232,7 +219,7 @@ UAsset* FAGX_ImportUtilities::CreateAsset(
 	{
 		UE_LOG(
 			LogAGX, Error, TEXT("Could not create asset '%s' from '%s'."), *AssetName,
-			*DirectoryName);
+			*DirectoryPath);
 	}
 
 	return Asset;

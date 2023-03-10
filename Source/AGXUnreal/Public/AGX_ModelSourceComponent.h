@@ -39,8 +39,8 @@ public:
 
 	// Emulate an ImportGuid on Unreal's Materials.
 	//
-	// They key is the asset path, such as
-	// '/Game/ImportedAGXModels/my_model/RenderMaterial/Steel.Steel', to a Material Instance created
+	// They key is the asset path relative to the root model directory, such as
+	// 'my_model/RenderMaterial/Steel.Steel', to a Material Instance created
 	// by the import pipeline. The value is the Guid, originally Uuid, of the source AGX Dynamics
 	// Render Material.
 	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
