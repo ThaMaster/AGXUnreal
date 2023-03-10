@@ -2371,18 +2371,11 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	/**
 	 * Delete assets that are no longer used.
 	 *
-	 * We find such assets by enumerating the SCS collection and comparing each with the simulation
-	 * object collection. Any asset that is found in the SCS collection but not found in the
-	 * simulation object collection is deleted.
+	 * We find such assets by enumerating either the the SCS collection of the assets on drive and
+	 * comparing each with the simulation object collection. Any asset that is found in the SCS
+	 * collection or on drive but not found in the simulation object collection is deleted.
 	 *
-	 * The above is a bad idea. If the user has edited the Blueprint to point to some other asset
-	 * unrelated to the imported model then that asset won't be found among the simulation objects
-	 * during model synchronization, since it was never part of the model, and thus deleted. We
-	 * should not delete assets we didn't import. They may be used for other purposes. It is better
-	 * to enumerate the assets in the import folder on drive, those are precisely the assets that
-	 * were imported with the model. The user should not add assets there themselves.
-	 *
-	 * Comparison is done on GUID/UUIDs.
+	 * Comparison is done on GUID/UUIDs, which our asset types store in the ImportGuid member.
 	 *
 	 * Assets of build-in Unreal Engine types, such as Materials, don't have an Import GUID. Those
 	 * GUID's are instead stored in a look-up table in an UAGX_ModelSourceComponent. This function
@@ -2397,30 +2390,18 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 * - Find all objects in the simulation objects collection.
 	 *   These are the ones whose corresponding assets we want to keep.
 	 *   Store their GUIDs in a TSet for quick existence checks.
-	 *   Also store a default-constructed FGuid in there so that any user-created asset placed
-	 *   among the imported assets has something to match against and thus not be deleted. We do
-	 *   not want to delete user-created assets.
-	 * - Find all assets on drive.
+	 * - Find all assets on drive or that is referenced from an SCS Node.
 	 *   These are assets that were created during prior imports or synchronizations.
 	 * - Compare the simulation objects and the assets.
 	 *   By looping over the assets and checking for existence against the simulation objects.
 	 *   All assets that don't have a corresponding simulation object is added to the delete list.
+	 *   Assets without an import GUID is ignored because such assets have been added by the user
+	 *   and not from a previous import or synchronization.
 	 * - Do any extra cleanup required for the asset type.
-	 *   Deleting the asset will set references to it to None / nullptr.
-	 *   In some cases we want to avoid that, for example the Contact Materials list in Contact
-	 *   Material Registrar.
-	 *   We handle that by finding such nodes in the SCSNodes list and purging about-to-become-None
-	 *   elements in the node's template component's collection property.
-	 *
-	 * The rest of the steps happens elsewhere, not in DeleteRemovedAssets.
-	 * - Populate Restored... in AGX_SimObjectsImporterHelper.
-	 *   This is done implicitly by the AddOrUpdate... functions in this file.
-	 *   Those functions iterate through the simulation objects and either create a new asset or
-	 *   updates the existing one based on whether or not an assets exists on drive.
-	 *   Both operations are done though the helper, which will add the new or updated asset to
-	 *   Restored... as part of the Instantiate... or UpdateAndSave... functions.
-	 *   There can be no additional assets on drive since this function deleted any asset that
-	 *   doesn't have a corresponding simulation object.
+	 *   Deleting the asset will set references to it to None / nullptr. In some cases we want to
+	 *   avoid that, for example the Contact Materials list in Contact Material Registrar. We handle
+	 *   that by finding such nodes in the SCSNodes list and purging about-to-become-None elements
+	 *   in the node's template component's collection property.
 	 */
 	void DeleteRemovedAssets(
 		SCSNodeCollection& SCSNodes, const FSimulationObjectCollection& SimulationObjects,
