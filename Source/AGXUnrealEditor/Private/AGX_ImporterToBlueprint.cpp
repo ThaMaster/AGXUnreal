@@ -2036,7 +2036,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
-	void DeleteRemovedMergeSplitThresholdsAssets(
+	void CollectRemovedMergeSplitThresholdsAssets(
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
 		TArray<UObject*>& AssetsToDelete)
 	{
@@ -2062,7 +2062,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			AssetPath, AssetsToDelete);
 	}
 
-	void DeleteRemovedContactMaterialAssets(
+	void CollectRemovedContactMaterialAssets(
 		SCSNodeCollection& SCSNodes, const FSimulationObjectCollection& SimulationObjects,
 		FAGX_SimObjectsImporterHelper& Helper, TArray<UObject*>& AssetsToDelete)
 	{
@@ -2129,7 +2129,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
-	void DeleteRemovedShapeMaterialAssets(
+	void CollectRemovedShapeMaterialAssets(
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
 		TArray<UObject*>& AssetsToDelete)
 	{
@@ -2171,7 +2171,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	}
 
 	// Returns the GUID of all Render Material that will be deleted.
-	TSet<FGuid> DeleteRemovedRenderMaterialAssets(
+	TSet<FGuid> CollectRemovedRenderMaterialAssets(
 		SCSNodeCollection& SCSNodes, const FSimulationObjectCollection& SimulationObjects,
 		FAGX_SimObjectsImporterHelper& Helper, TArray<UObject*>& AssetsToDelete)
 	{
@@ -2267,7 +2267,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	 * have a choice since they are for rendering, but the collision mesh should perhaps be
 	 * a custom asset whose storage is byte-compatible with AGX Dynamics trimesh.
 	 */
-	void DeleteAllImportedStaticMeshAssets(
+	void CollectAllImportedStaticMeshAssets(
 		const SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper,
 		TArray<UObject*>& AssetsToDelete)
 	{
@@ -2440,12 +2440,12 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	{
 		TArray<UObject*> AssetsToDelete;
 
-		DeleteRemovedContactMaterialAssets(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
-		DeleteRemovedMergeSplitThresholdsAssets(SimulationObjects, Helper, AssetsToDelete);
-		DeleteAllImportedStaticMeshAssets(SCSNodes, Helper, AssetsToDelete);
+		CollectRemovedContactMaterialAssets(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
+		CollectRemovedMergeSplitThresholdsAssets(SimulationObjects, Helper, AssetsToDelete);
+		CollectAllImportedStaticMeshAssets(SCSNodes, Helper, AssetsToDelete);
 		TSet<FGuid> RenderMaterialsToDelete =
-			DeleteRemovedRenderMaterialAssets(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
-		DeleteRemovedShapeMaterialAssets(SimulationObjects, Helper, AssetsToDelete);
+			CollectRemovedRenderMaterialAssets(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
+		CollectRemovedShapeMaterialAssets(SimulationObjects, Helper, AssetsToDelete);
 
 		// Currently do not support model synchronization of Terrain, but when we do implement
 		// Terrain Material removed asset deletion here.
