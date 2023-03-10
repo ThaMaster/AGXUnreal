@@ -1120,24 +1120,19 @@ void AAGX_Terrain::UpdateDisplacementMap()
 
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::UpdateDisplacementMap"));
 
+
+	TArray<std::tuple<int32, int32>> ModifiedVertices;
 	if (bEnableTerrainPager)
 	{
-		NativeTerrainPagerBarrier.GetModifiedHeights(CurrentHeights);
+		ModifiedVertices = NativeTerrainPagerBarrier.GetModifiedHeights(CurrentHeights);
 	}
 	else
 	{
 		NativeTerrainBarrier.GetHeights(CurrentHeights, true);
+		ModifiedVertices = NativeTerrainBarrier.GetModifiedVertices();
 	}
 
-	const TArray<std::tuple<int32, int32>> ModifiedHeights = [this]()
-	{
-		if (bEnableTerrainPager)
-			return NativeTerrainPagerBarrier.GetModifiedVertices();
-		else
-			return NativeTerrainBarrier.GetModifiedVertices();
-	}();
-
-	for (const auto& VertexTuple : ModifiedHeights)
+	for (const auto& VertexTuple : ModifiedVertices)
 	{
 		const int32 VertX = std::get<0>(VertexTuple);
 		const int32 VertY = std::get<1>(VertexTuple);

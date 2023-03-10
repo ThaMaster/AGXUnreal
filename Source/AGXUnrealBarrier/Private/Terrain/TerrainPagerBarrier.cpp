@@ -139,15 +139,23 @@ FParticleData FTerrainPagerBarrier::GetParticleData() const
 	return ParticleData;
 }
 
-TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedVertices() const
+TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(
+	TArray<float>& OutHeights, int32 VertOffsX, int32 VertOffsY) const
 {
-	// @todo: implement.
-	return TArray<std::tuple<int32, int32>>();
-}
+	TArray<std::tuple<int32, int32>> ModifiedVertices;
 
-void FTerrainPagerBarrier::GetModifiedHeights(TArray<float>& OutHeights) const
-{
-	// @todo: implement.
+	const TerrainPager::TileAttachmentPtrVector ActiveTiles =
+		NativeRef->Native->getActiveTileAttachments();
+
+	for (TerrainPager::TileAttachments* Tile : ActiveTiles)
+	{
+		if (Tile == nullptr || Tile->m_terrainTile == nullptr)
+			continue;
+
+		// Do magic here.
+	}
+
+	return ModifiedVertices;
 }
 
 FVector FTerrainPagerBarrier::GetReferencePoint() const

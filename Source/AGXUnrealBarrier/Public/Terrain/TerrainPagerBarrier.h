@@ -31,14 +31,18 @@ public:
 
 	FParticleData GetParticleData() const;
 
-	TArray<std::tuple<int32, int32>> GetModifiedVertices() const;
-
-	void GetModifiedHeights(TArray<float>& OutHeights) const;
+	/**
+	 * Writes modified heights to OutHeights and returns an array of modified vertices, for easy
+	 * iteration. The BoundSize parameters is used to describe a grid that this native is assumed to
+	 * be placed at its center, and that the vertex indices of this native will be mapped to.
+	 */
+	TArray<std::tuple<int32, int32>> GetModifiedHeights(
+		TArray<float>& OutHeights, int32 VertexOffsetX, int32 VertexOffsetY) const;
 
 	FVector GetReferencePoint() const;
 	FQuat GetReferenceRotation() const;
 
- private:
+private:
 	FTerrainPagerBarrier(const FTerrainPagerBarrier&) = delete;
 	void operator=(const FTerrainPagerBarrier&) = delete;
 
