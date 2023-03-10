@@ -35,6 +35,9 @@ public:
 
 	void GetModifiedHeights(TArray<float>& OutHeights) const;
 
+	FVector GetReferencePoint() const;
+	FQuat GetReferenceRotation() const;
+
  private:
 	FTerrainPagerBarrier(const FTerrainPagerBarrier&) = delete;
 	void operator=(const FTerrainPagerBarrier&) = delete;

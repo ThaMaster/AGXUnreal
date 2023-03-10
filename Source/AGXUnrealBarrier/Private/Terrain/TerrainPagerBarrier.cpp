@@ -9,7 +9,6 @@
 #include "TypeConversions.h"
 #include "Utilities/TerrainUtilities.h"
 
-
 FTerrainPagerBarrier::FTerrainPagerBarrier()
 	: NativeRef {new FTerrainPagerRef}
 {
@@ -149,4 +148,16 @@ TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedVertices() con
 void FTerrainPagerBarrier::GetModifiedHeights(TArray<float>& OutHeights) const
 {
 	// @todo: implement.
+}
+
+FVector FTerrainPagerBarrier::GetReferencePoint() const
+{
+	check(HasNative());
+	return ConvertDisplacement(NativeRef->Native->getTileSpecification().getReferencePoint());
+}
+
+FQuat FTerrainPagerBarrier::GetReferenceRotation() const
+{
+	check(HasNative());
+	return Convert(NativeRef->Native->getTileSpecification().getReferenceRotation());
 }

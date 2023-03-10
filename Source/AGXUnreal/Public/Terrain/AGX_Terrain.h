@@ -33,6 +33,7 @@ public:
 	// Sets default values for this actor's properties
 	AAGX_Terrain();
 
+	// @Todo make bounds uneditable during Play.
 	UPROPERTY(Category = "AGX Terrain", VisibleAnywhere, BlueprintReadOnly)
 	UAGX_HeightFieldBoundsComponent* TerrainBounds;
 
@@ -289,4 +290,6 @@ private:
 	// @todo: document behavior.
 	bool FetchHeights(
 		const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights) const;
+
+	FTransform GetNativeTransform() const;
 };

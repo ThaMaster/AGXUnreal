@@ -542,18 +542,18 @@ void AAGX_Terrain::Tick(float DeltaTime)
 bool AAGX_Terrain::FetchHeights(
 	const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights) const
 {
-	if (SourceLandscape == nullptr)
+	if (SourceLandscape == nullptr || !HasNative())
 		return false;
 
 	// To gain some performance, calculate an X and Y vector in global coordinates that can be used
 	// for fast iteration.
 	FVector DirectionGlobalX;
 	FVector DirectionGlobalY;
+	const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
+	const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
+	const FVector PosStartLocal =
+		SourceLandscape->GetTransform().InverseTransformPositionNoScale(WorldPosStart);
 	{
-		const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
-		const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
-		const FVector PosStartLocal =
-			SourceLandscape->GetTransform().InverseTransformPositionNoScale(WorldPosStart);
 		const FVector StepLocalX = PosStartLocal + FVector(QuadSideSizeX, 0.0, 0.0);
 		const FVector StepLocalY = PosStartLocal + FVector(0.0, QuadSideSizeY, 0.0);
 		const FVector StepGlobalX =
@@ -562,6 +562,59 @@ bool AAGX_Terrain::FetchHeights(
 			SourceLandscape->GetTransform().TransformPositionNoScale(StepLocalY);
 		DirectionGlobalX = StepGlobalX - WorldPosStart;
 		DirectionGlobalY = StepGlobalY - WorldPosStart;
+	}
+
+	// Detect if the caller is trying to read outside the Terrain Bounds and return false if so. We
+	// never read heights outside the Terrain Bounds. This will ensure Terrain Tiles are not created
+	// outside the Bounds if using Terrain Pager for example.
+	{
+		const FTransform NativeWorldTransform = GetNativeTransform();
+
+		const FVector PosEndLocal = PosStartLocal + FVector(QuadSideSizeX, 0.0, 0.0) * VertsX +
+									FVector(0.0, QuadSideSizeY, 0.0) * VertsY;
+		const FVector NativePosLocal =
+			SourceLandscape->GetTransform().InverseTransformPositionNoScale(
+				NativeWorldTransform.GetLocation());
+
+		const FVector HalfExtentXY = FVector(
+			(NumVerticesX - 1) * QuadSideSizeX / 2.0, (NumVerticesY - 1) * QuadSideSizeY / 2.0,
+			0.0);
+
+		FVector BoundCornerLocalMin = NativePosLocal - HalfExtentXY;
+		FVector BoundCornerLocalMax = NativePosLocal + HalfExtentXY;
+
+		// Handle the AGX Terrain even-number-of-vertices offset by half-quad here. See for example
+		// GetAGXTransformUsingBoxFrom in AGX_HeightFieldUtilities for another example of this.
+		if (NumVerticesX % 2 == 0)
+		{
+			const auto HalfQuad = QuadSideSizeX / 2.0;
+			BoundCornerLocalMin.X += HalfQuad;
+			BoundCornerLocalMax.X -= HalfQuad;
+		}
+		if (NumVerticesY % 2 == 0)
+		{
+			const auto HalfQuad = QuadSideSizeY / 2.0;
+			BoundCornerLocalMin.Y -= HalfQuad;
+			BoundCornerLocalMax.Y += HalfQuad;
+		}
+
+		auto LargerThan = [QuadSideSizeX](auto A, auto B)
+		{
+			const auto Tolerance = QuadSideSizeX * 0.01;
+			return A > B + Tolerance;
+		};
+
+		if (LargerThan(PosEndLocal.X, BoundCornerLocalMax.X) ||
+			LargerThan(PosEndLocal.Y, BoundCornerLocalMax.Y))
+		{
+			return false;
+		}
+
+		if (LargerThan(BoundCornerLocalMin.X, PosStartLocal.X) ||
+			LargerThan(BoundCornerLocalMin.Y, PosStartLocal.Y))
+		{
+			return false;
+		}
 	}
 
 	OutHeights.Reserve(VertsX * VertsY);
@@ -595,6 +648,18 @@ bool AAGX_Terrain::FetchHeights(
 	}
 
 	return true;
+}
+
+FTransform AAGX_Terrain::GetNativeTransform() const
+{
+	check(HasNative());
+
+	if (bEnableTerrainPager)
+		return FTransform(
+			NativeTerrainPagerBarrier.GetReferenceRotation(),
+			NativeTerrainPagerBarrier.GetReferencePoint());
+	else
+		return FTransform(NativeTerrainBarrier.GetRotation(), NativeTerrainBarrier.GetPosition());
 }
 
 namespace
