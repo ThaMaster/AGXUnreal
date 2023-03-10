@@ -2185,12 +2185,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			return RenderMaterialsToDelete;
 		}
 
-		// Find all Render Material assets currently in the import folder.
-		const FString RenderMaterialDirPath =
-			GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
-		TArray<UMaterialInstanceConstant*> Assets =
-			FAGX_EditorUtilities::FindAssets<UMaterialInstanceConstant>(RenderMaterialDirPath);
-
 		// Find all Render Materials that are about to be imported.
 		TSet<FGuid> InSimulation;
 		InSimulation.Reserve(100); // Just a guess. Can count if we want, but probably not worth it.
@@ -2221,6 +2215,12 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		CollectFromSimulation(SimulationObjects.GetSphereShapes());
 		CollectFromSimulation(SimulationObjects.GetTrimeshShapes());
 		CollectFromSimulationBodies(SimulationObjects.GetRigidBodies());
+
+		// Find all Render Material assets currently in the import folder.
+		const FString RenderMaterialDirPath =
+			GetImportDirPath(Helper, FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName());
+		TArray<UMaterialInstanceConstant*> Assets =
+			FAGX_EditorUtilities::FindAssets<UMaterialInstanceConstant>(RenderMaterialDirPath);
 
 		// Mark for deletion any asset we currently have but don't want to keep.
 		for (auto* Asset : Assets)
@@ -2256,7 +2256,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 	/**
 	 * Delete all render and collision meshes.
-     *
+	 *
 	 * We currently can't reuse the old assets because we have no way of knowing if they have
 	 * been changed or not since we, unfortunately, store these meshes as Unreal Engine Static
 	 * Mesh assets which Unreal Engine changes during import. For the render mesh we may not
