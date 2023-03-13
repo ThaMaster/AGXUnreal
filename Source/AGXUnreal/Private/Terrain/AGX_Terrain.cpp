@@ -1194,15 +1194,15 @@ void AAGX_Terrain::UpdateLandscapeMaterialParameters()
 	{
 		// Parameter for materials supporting only square Landscape.
 		Proxy.SetLandscapeMaterialScalarParameterValue(
-			"LandscapeSize", static_cast<float>(TerrainSizeX));
+			"TerrainSize", static_cast<float>(TerrainSizeX));
 		// Parameters for materials supporting rectangular Landscape.
 		Proxy.SetLandscapeMaterialScalarParameterValue(
-			"LandscapeSizeX", static_cast<float>(TerrainSizeX));
+			"TerrainSizeX", static_cast<float>(TerrainSizeX));
 		Proxy.SetLandscapeMaterialScalarParameterValue(
-			"LandscapeSizeY", static_cast<float>(TerrainSizeY));
+			"TerrainSizeY", static_cast<float>(TerrainSizeY));
 		// Parameters for Landscape position.
-		Proxy.SetLandscapeMaterialScalarParameterValue("LandscapePositionX", PositionX);
-		Proxy.SetLandscapeMaterialScalarParameterValue("LandscapePositionY", PositionY);
+		Proxy.SetLandscapeMaterialScalarParameterValue("TerrainPositionX", PositionX);
+		Proxy.SetLandscapeMaterialScalarParameterValue("TerrainPositionY", PositionY);
 	};
 
 	SetLandscapeMaterialParameters(*SourceLandscape);
