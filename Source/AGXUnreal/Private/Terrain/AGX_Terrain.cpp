@@ -30,6 +30,7 @@
 #include "Landscape.h"
 #include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
+#include "LandscapeStreamingProxy.h"
 #include "Misc/AssertionMacros.h"
 #include "Misc/EngineVersionComparison.h"
 #include "NiagaraComponent.h"
@@ -47,6 +48,14 @@ AAGX_Terrain::AAGX_Terrain()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PostPhysics;
+
+#if WITH_EDITOR && UE_VERSION_OLDER_THAN(5, 0, 0) == false
+	// Actors that are spatially loaded (streamed in/out via world partitioning) may not reference
+	// actors that are not. Since the ALanscape is not spatially loaded, the AGX_Terrain cannot be
+	// either since we reference an ALandscape from it. Default value for all actors in OpenWorld is
+	// true.
+	bIsSpatiallyLoaded = false;
+#endif
 
 	// Create a root SceneComponent so that this Actor has a transform
 	// which can be modified in the Editor.
@@ -281,8 +290,29 @@ namespace AGX_Terrain_helpers
 {
 	void EnsureUseDynamicMaterialInstance(AAGX_Terrain& Terrain)
 	{
+		TArray<ALandscapeProxy*> StreamingProxies;
+		if (AGX_HeightFieldUtilities::IsOpenWorldLandscape(*Terrain.SourceLandscape))
+		{
+			for (TObjectIterator<ALandscapeStreamingProxy> It; It; ++It)
+			{
+				if (It->LandscapeActor != Terrain.SourceLandscape)
+					continue;
+
+				StreamingProxies.Add(*It);
+			}
+		}
+
+		auto IsUsingDynamicMaterialInstance = [&StreamingProxies](ALandscape& Landscape)
+		{
+			bool Res = Landscape.bUseDynamicMaterialInstance;
+			for (auto Proxy : StreamingProxies)
+				Res &= Proxy->bUseDynamicMaterialInstance;
+
+			return Res;
+		};
+
 		if (Terrain.SourceLandscape == nullptr ||
-			Terrain.SourceLandscape->bUseDynamicMaterialInstance)
+			IsUsingDynamicMaterialInstance(*Terrain.SourceLandscape))
 		{
 			return;
 		}
@@ -295,9 +325,22 @@ namespace AGX_Terrain_helpers
 			"Landscape?");
 		if (FAGX_NotificationUtilities::YesNoQuestion(AskEnableDynamicMaterial))
 		{
-			Terrain.SourceLandscape->bUseDynamicMaterialInstance = true;
-			Terrain.SourceLandscape->Modify();
-			Terrain.SourceLandscape->PostEditChange();
+			auto SetUseDynamicMaterialInstance = [](ALandscapeProxy& Proxy)
+			{
+				Proxy.bUseDynamicMaterialInstance = true;
+				Proxy.Modify();
+				Proxy.PostEditChange();
+			};
+
+			SetUseDynamicMaterialInstance(*Terrain.SourceLandscape);
+
+			if (AGX_HeightFieldUtilities::IsOpenWorldLandscape(*Terrain.SourceLandscape))
+			{
+				for (auto Proxy : StreamingProxies)
+				{
+					SetUseDynamicMaterialInstance(*Proxy);
+				}
+			}
 		}
 	}
 }
@@ -1147,17 +1190,37 @@ void AAGX_Terrain::UpdateLandscapeMaterialParameters()
 	const double PositionX = TerrainCornerGlobal.X;
 	const double PositionY = TerrainCornerGlobal.Y;
 
-	// Parameter for materials supporting only square Landscape.
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue(
-		"LandscapeSize", static_cast<float>(TerrainSizeX));
-	// Parameters for materials supporting rectangular Landscape.
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue(
-		"LandscapeSizeX", static_cast<float>(TerrainSizeX));
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue(
-		"LandscapeSizeY", static_cast<float>(TerrainSizeY));
-	// Parameters for Landscape position.
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapePositionX", PositionX);
-	SourceLandscape->SetLandscapeMaterialScalarParameterValue("LandscapePositionY", PositionY);
+	auto SetLandscapeMaterialParameters = [=](ALandscapeProxy& Proxy)
+	{
+		// Parameter for materials supporting only square Landscape.
+		Proxy.SetLandscapeMaterialScalarParameterValue(
+			"LandscapeSize", static_cast<float>(TerrainSizeX));
+		// Parameters for materials supporting rectangular Landscape.
+		Proxy.SetLandscapeMaterialScalarParameterValue(
+			"LandscapeSizeX", static_cast<float>(TerrainSizeX));
+		Proxy.SetLandscapeMaterialScalarParameterValue(
+			"LandscapeSizeY", static_cast<float>(TerrainSizeY));
+		// Parameters for Landscape position.
+		Proxy.SetLandscapeMaterialScalarParameterValue("LandscapePositionX", PositionX);
+		Proxy.SetLandscapeMaterialScalarParameterValue("LandscapePositionY", PositionY);
+	};
+
+	SetLandscapeMaterialParameters(*SourceLandscape);
+
+	if (AGX_HeightFieldUtilities::IsOpenWorldLandscape(*SourceLandscape))
+	{
+		// There might be a better way to get all LandscapeStreamingProxies directly from the
+		// SourceLandscape, but I have not found any. This is likely slower than any such methods,
+		// but this is not extremely time critical since this function is called only once on Play.
+		// If a better way if getting them is found in the future, this can be replaced.
+		for (TObjectIterator<ALandscapeStreamingProxy> It; It; ++It)
+		{
+			if (It->LandscapeActor != SourceLandscape)
+				continue;
+
+			SetLandscapeMaterialParameters(**It);
+		}
+	}
 }
 
 void AAGX_Terrain::Serialize(FArchive& Archive)
