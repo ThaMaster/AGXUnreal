@@ -28,7 +28,7 @@ TerrainDataSource::TerrainHeightType FTerrainDataSource::fetchTerrainTile(
 
 	if (!Result)
 	{
-		TerrainHeightType();
+		return TerrainHeightType();
 	}
 
 	TerrainHeightType HeightsAGX;

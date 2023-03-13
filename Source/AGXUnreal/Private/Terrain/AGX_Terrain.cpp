@@ -570,8 +570,8 @@ bool AAGX_Terrain::FetchHeights(
 	{
 		const FTransform NativeWorldTransform = GetNativeTransform();
 
-		const FVector PosEndLocal = PosStartLocal + FVector(QuadSideSizeX, 0.0, 0.0) * VertsX +
-									FVector(0.0, QuadSideSizeY, 0.0) * VertsY;
+		const FVector PosEndLocal = PosStartLocal + FVector(QuadSideSizeX, 0.0, 0.0) * (VertsX-1) +
+									FVector(0.0, QuadSideSizeY, 0.0) * (VertsY-1);
 		const FVector NativePosLocal =
 			SourceLandscape->GetTransform().InverseTransformPositionNoScale(
 				NativeWorldTransform.GetLocation());
