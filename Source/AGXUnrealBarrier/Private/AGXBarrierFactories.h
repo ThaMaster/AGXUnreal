@@ -3,11 +3,14 @@
 #pragma once
 
 #include "RigidBodyBarrier.h"
+#include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/CylinderShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
+#include "Shapes/EmptyShapeBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
+#include "Constraints/AnyConstraintBarrier.h"
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
 #include "Constraints/BallJointBarrier.h"
@@ -31,6 +34,7 @@
 namespace agx
 {
 	class RigidBody;
+	class Constraint;
 	class Hinge;
 	class Prismatic;
 	class BallJoint;
@@ -40,10 +44,11 @@ namespace agx
 
 namespace agxCollide
 {
-	class Sphere;
 	class Box;
 	class Cylinder;
 	class Capsule;
+	class Shape;
+	class Sphere;
 	class Trimesh;
 
 	class GeometryContact;
@@ -86,6 +91,8 @@ namespace AGXBarrierFactories
 
 	FEmptyShapeBarrier CreateEmptyShapeBarrier(agxCollide::Geometry* Geometry);
 
+	FAnyShapeBarrier CreateAnyShapeBarrier(agxCollide::Shape* Shape);
+
 	FSphereShapeBarrier CreateSphereShapeBarrier(agxCollide::Sphere* Sphere);
 
 	FBoxShapeBarrier CreateBoxShapeBarrier(agxCollide::Box* Box);
@@ -95,6 +102,8 @@ namespace AGXBarrierFactories
 	FCapsuleShapeBarrier CreateCapsuleShapeBarrier(agxCollide::Capsule* Capsule);
 
 	FTrimeshShapeBarrier CreateTrimeshShapeBarrier(agxCollide::Trimesh* Trimesh);
+
+	FAnyConstraintBarrier CreateAnyConstraintBarrier(agx::Constraint* Constraint);
 
 	FHingeBarrier CreateHingeBarrier(agx::Hinge* Hinge);
 

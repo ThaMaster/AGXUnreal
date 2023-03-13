@@ -3,43 +3,25 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ImportEnums.h"
+#include "Widgets/AGX_ImportDialogBase.h"
 
-// Unreal Engine includes.
-#include "Widgets/SCompoundWidget.h"
+struct FAGX_ImportSettings;
 
-class SAGX_ImportDialog : public SCompoundWidget
+class SAGX_ImportDialog : public SAGX_ImportDialogBase
 {
 public:
-	SLATE_BEGIN_ARGS(SAGX_ImportDialog)
-	{
-	}
-	SLATE_END_ARGS()
+	void Construct(const FArguments& InArgs) override;
 
-	void Construct(const FArguments& InArgs);
+	TOptional<FAGX_ImportSettings> ToImportSettings();
 
-private:
-	TSharedRef<SWidget> CreateBrowseFileGui();
+private:	
 	TSharedRef<SBorder> CreateSettingsGui();
-	TSharedRef<SBorder> CreateImportAGXFileGui();
-	TSharedRef<SBorder> CreateImportURDFFileGui();	
 	TSharedRef<SBorder> CreateImportButtonGui();
-	TSharedRef<SWidget> CreateCheckboxGui();	
-
-	FReply OnBrowseFileButtonClicked();
-	FText GetFilePathText() const;
-
-	FReply OnBrowseUrdfPackageButtonClicked();
+	TSharedRef<SBorder> CreateURDFFileGui();
 	FText GetUrdfPackagePathText() const;
-
+	FReply OnBrowseUrdfPackageButtonClicked();
 	FReply OnImportButtonClicked();
+	void OnUrdfPackagePathTextCommitted(const FText& InNewText, ETextCommit::Type InCommitType);
 
-	void OnIgnoreDisabledTrimeshCheckboxClicked(ECheckBoxState NewCheckedState);
-
-	void RefreshGui();
-
-	EAGX_ImportType ImportType = EAGX_ImportType::Invalid;
-	FString FilePath;
 	FString UrdfPackagePath;
-	bool IgnoreDisabledTrimesh = false;
 };

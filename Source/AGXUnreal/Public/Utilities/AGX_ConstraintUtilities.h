@@ -36,71 +36,70 @@ public:
 	 * from the AGX Dynamics constraint to the AGXUnreal constraint.
 	 * @param Component The AGXUnreal constraint to copy properties to.
 	 * @param Barrier The AGX Dynamics constraint to copy properties from.
+	 * @param ForceOverwriteInstances Archetype instance properties are always overwritten, even if
+	 * not in sync.
 	 */
 	static void CopyControllersFrom(
-		UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier);
+		UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier,
+		bool ForceOverwriteInstances);
 
 	/**
 	 * Copy constraint controller properties, such as enabled, compliance, force range, voltage,
 	 * from the AGX Dynamics constraint to the AGXUnreal constraint.
 	 * @param Component The AGXUnreal constraint to copy properties to.
 	 * @param Barrier The AGX Dynamics constraint to copy properties from.
+	 * @param ForceOverwriteInstances Archetype instance properties are always overwritten, even
+	 * if not in sync.
 	 */
 	static void CopyControllersFrom(
-		UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier);
-
-	/**
-	 * Base class overload that does nothing. Only 1Dof- and 2Dof constraints have controllers so
-	 * make sure one of those overloads are called when appropriate. This overload is required
-	 * because the call is made from a function template that is sometimes given a non-1/2Dof
-	 * constraint.
-	 * @param Component
-	 * @param Barrier
-	 */
-	static void CopyControllersFrom(
-		UAGX_ConstraintComponent& Component, const FConstraintBarrier& Barrier);
+		UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier,
+		bool ForceOverwriteInstances);
 
 	static void StoreElectricMotorController(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller);
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller,
+		TArray<FAGX_ConstraintElectricMotorController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreElectricMotorController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintElectricMotorController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreFrictionController(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller);
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
+		TArray<FAGX_ConstraintFrictionController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreFrictionController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintFrictionController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreLockController(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller);
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
+		TArray<FAGX_ConstraintLockController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreLockController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintLockController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreRangeController(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller);
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
+		TArray<FAGX_ConstraintRangeController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreRangeController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintRangeController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreTargetSpeedController(
-		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller);
+		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
+		TArray<FAGX_ConstraintTargetSpeedController*>& Instances, bool ForceOverwriteInstances);
 
 	static void StoreTargetSpeedController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintTargetSpeedController*>& Instances, bool ForceOverwriteInstances);
 
 #if WITH_EDITOR
 	template <typename UConstraintClass, typename FControllerClass>
 	static void AddControllerPropertyCallbacks(
 		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
-		TFunction<FControllerClass*(UConstraintClass*)> GetController,
-		const FName& Member);
+		TFunction<FControllerClass*(UConstraintClass*)> GetController, const FName& Member);
 
 	template <typename UConstraintClass>
 	static void AddElectricMotorControllerPropertyCallbacks(
@@ -142,11 +141,14 @@ public:
 	/**
 	 * Sets up the constraint 'Component' and its BodyAttachments in accordance with
 	 * FrameDefiningSource = Constraint, given an FConstraintBarrier and the constrained
-	 * RigidBodies.
+	 * RigidBodies. Returns the new World Transform of the Constraint. If Component is a Component
+	 * template, the caller of this function is responsible for setting the Component's world's
+	 * transform and updating its archetype instances. The returned Transform holds this data.
 	 */
-	static void SetupConstraintAsFrameDefiningSource(
+	static FTransform SetupConstraintAsFrameDefiningSource(
 		const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
-		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2);
+		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2,
+		bool ForceOverwriteInstances = false);
 
 	static void CreateNative(
 		FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& Attachment1,

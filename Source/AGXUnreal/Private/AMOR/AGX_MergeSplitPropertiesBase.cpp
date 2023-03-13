@@ -16,6 +16,12 @@ FAGX_MergeSplitPropertiesBase& FAGX_MergeSplitPropertiesBase::operator=(
 	return *this;
 }
 
+bool FAGX_MergeSplitPropertiesBase::operator==(const FAGX_MergeSplitPropertiesBase& Other) const
+{
+	return HasNative() == Other.HasNative() && Other.bEnableMerge == bEnableMerge &&
+		   Other.bEnableSplit == bEnableSplit;
+}
+
 void FAGX_MergeSplitPropertiesBase::SetEnableMerge(bool bEnable)
 {
 	bEnableMerge = bEnable;

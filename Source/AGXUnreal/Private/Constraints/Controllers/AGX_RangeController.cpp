@@ -84,15 +84,26 @@ void FAGX_ConstraintRangeController::UpdateNativePropertiesImpl()
 	}
 }
 
-void FAGX_ConstraintRangeController::CopyFrom(const FRangeControllerBarrier& Source)
+void FAGX_ConstraintRangeController::CopyFrom(
+	const FRangeControllerBarrier& Source, TArray<FAGX_ConstraintRangeController*>& Instances,
+	bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Source);
-	if (bRotational)
+	TArray<FAGX_ConstraintController*> BaseInstances(Instances);
+	Super::CopyFrom(Source, BaseInstances, ForceOverwriteInstances);
+
+	const FAGX_RealInterval RangeBarrier =
+		bRotational ? Source.GetRangeRotational() : Source.GetRangeTranslational();
+
+	for (auto Instance : Instances)
 	{
-		Range = Source.GetRangeRotational();
+		if (Instance == nullptr)
+			continue;
+
+		if (ForceOverwriteInstances || Instance->Range == Range)
+		{
+			Instance->Range = RangeBarrier;
+		}
 	}
-	else
-	{
-		Range = Source.GetRangeTranslational();
-	}
+
+	Range = RangeBarrier;
 }

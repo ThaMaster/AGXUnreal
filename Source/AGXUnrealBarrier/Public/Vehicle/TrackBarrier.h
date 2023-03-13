@@ -87,6 +87,8 @@ public:
 
 	void GetNodeSizes(TArray<FVector>& OutNodeSizes) const;
 
+	FGuid GetGuid() const;
+
 	/*
 	 * Returns the size of a single node, where X is Thickness, Y is Width, and Z is Length.
 	 * Returns a zero vector if the index is out of range (@see GetNumNodes).

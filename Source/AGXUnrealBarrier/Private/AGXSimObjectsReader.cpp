@@ -3,6 +3,7 @@
 #include "AGXSimObjectsReader.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGXBarrierFactories.h"
 #include "RigidBodyBarrier.h"
@@ -83,6 +84,27 @@ namespace
 				case agxCollide::Shape::TRIMESH:
 				{
 					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
+					if (Trimesh->getNumTriangles() == 0)
+					{
+						// Skip Trimeshes with no collision data.
+						break;
+					}
+
+					OutSimObjects.GetTrimeshShapes().Add(
+						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh));
+					break;
+				}
+				case agxCollide::Shape::CONVEX:
+				{
+					// We have no special handling for Convex types, so they are treated as a
+					// regular Trimesh since Convex inherits from Trimesh.
+					agxCollide::Trimesh* Trimesh {Shape->as<agxCollide::Trimesh>()};
+					if (Trimesh->getNumTriangles() == 0)
+					{
+						// Skip Trimeshes with no collision data.
+						break;
+					}
+
 					OutSimObjects.GetTrimeshShapes().Add(
 						AGXBarrierFactories::CreateTrimeshShapeBarrier(Trimesh));
 					break;
@@ -249,6 +271,11 @@ namespace
 				continue;
 			}
 
+			if (Constraint->getNumBodies() == 0)
+			{
+				continue;
+			}
+
 			if (agx::Hinge* Hinge = Constraint->asSafe<agx::Hinge>())
 			{
 				OutSimObjects.GetHingeConstraints().Add(
@@ -338,10 +365,16 @@ namespace
 		OutSimObjects.GetObserverFrames().Reserve(ObserverFrames.size());
 		for (const agx::ObserverFrameRef& ObserverFrame : ObserverFrames)
 		{
+			if (ObserverFrame->getRigidBody() == nullptr)
+			{
+				continue;
+			}
+
 			const FString Name = Convert(ObserverFrame->getName());
 			const FGuid BodyGuid = Convert(ObserverFrame->getRigidBody()->getUuid());
+			const FGuid ObserverGuid = Convert(ObserverFrame->getUuid());
 			const FTransform Transform = Convert(ObserverFrame->getLocalTransform());
-			OutSimObjects.GetObserverFrames().Add({Name, BodyGuid, Transform});
+			OutSimObjects.GetObserverFrames().Add({Name, BodyGuid, ObserverGuid, Transform});
 		}
 	}
 

@@ -3,7 +3,9 @@
 #include "Utilities/AGX_ConstraintUtilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
@@ -15,115 +17,175 @@
 #include "Constraints/Controllers/AGX_RangeController.h"
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
 #include "Constraints/ControllerConstraintBarriers.h"
-#include "AGX_RigidBodyComponent.h"
-#include "AGX_LogCategory.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 void FAGX_ConstraintUtilities::CopyControllersFrom(
-	UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier)
+	UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier,
+	bool ForceOverwriteInstances)
 {
-	StoreElectricMotorController(Barrier, Component.ElectricMotorController);
-	StoreFrictionController(Barrier, Component.FrictionController);
-	StoreLockController(Barrier, Component.LockController);
-	StoreRangeController(Barrier, Component.RangeController);
-	StoreTargetSpeedController(Barrier, Component.TargetSpeedController);
+	TArray<FAGX_ConstraintElectricMotorController*> EMCInstances;
+	TArray<FAGX_ConstraintFrictionController*> FCInstances;
+	TArray<FAGX_ConstraintLockController*> LCInstances;
+	TArray<FAGX_ConstraintRangeController*> RCInstances;
+	TArray<FAGX_ConstraintTargetSpeedController*> TSCInstances;
+
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		{
+			EMCInstances.Add(&Instance->ElectricMotorController);
+			FCInstances.Add(&Instance->FrictionController);
+			LCInstances.Add(&Instance->LockController);
+			RCInstances.Add(&Instance->RangeController);
+			TSCInstances.Add(&Instance->TargetSpeedController);
+		}
+	}
+
+	StoreElectricMotorController(
+		Barrier, Component.ElectricMotorController, EMCInstances, ForceOverwriteInstances);
+	StoreFrictionController(
+		Barrier, Component.FrictionController, FCInstances, ForceOverwriteInstances);
+	StoreLockController(Barrier, Component.LockController, LCInstances, ForceOverwriteInstances);
+	StoreRangeController(Barrier, Component.RangeController, RCInstances, ForceOverwriteInstances);
+	StoreTargetSpeedController(
+		Barrier, Component.TargetSpeedController, TSCInstances, ForceOverwriteInstances);
 }
 
 void FAGX_ConstraintUtilities::CopyControllersFrom(
-	UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier)
+	UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier,
+	bool ForceOverwriteInstances)
 {
 	const EAGX_Constraint2DOFFreeDOF First = EAGX_Constraint2DOFFreeDOF::FIRST;
 	const EAGX_Constraint2DOFFreeDOF Second = EAGX_Constraint2DOFFreeDOF::SECOND;
+	TArray<FAGX_ConstraintElectricMotorController*> EMCInstances1;
+	TArray<FAGX_ConstraintElectricMotorController*> EMCInstances2;
+	TArray<FAGX_ConstraintFrictionController*> FCInstances1;
+	TArray<FAGX_ConstraintFrictionController*> FCInstances2;
+	TArray<FAGX_ConstraintLockController*> LCInstances1;
+	TArray<FAGX_ConstraintLockController*> LCInstances2;
+	TArray<FAGX_ConstraintRangeController*> RCInstances1;
+	TArray<FAGX_ConstraintRangeController*> RCInstances2;
+	TArray<FAGX_ConstraintTargetSpeedController*> TSCInstances1;
+	TArray<FAGX_ConstraintTargetSpeedController*> TSCInstances2;
 
-	StoreElectricMotorController(Barrier, Component.ElectricMotorController1, First);
-	StoreElectricMotorController(Barrier, Component.ElectricMotorController2, Second);
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		{
+			EMCInstances1.Add(&Instance->ElectricMotorController1);
+			EMCInstances2.Add(&Instance->ElectricMotorController2);
+			FCInstances1.Add(&Instance->FrictionController1);
+			FCInstances2.Add(&Instance->FrictionController2);
+			LCInstances1.Add(&Instance->LockController1);
+			LCInstances2.Add(&Instance->LockController2);
+			RCInstances1.Add(&Instance->RangeController1);
+			RCInstances2.Add(&Instance->RangeController2);
+			TSCInstances1.Add(&Instance->TargetSpeedController1);
+			TSCInstances2.Add(&Instance->TargetSpeedController2);
+		}
+	}
 
-	StoreFrictionController(Barrier, Component.FrictionController1, First);
-	StoreFrictionController(Barrier, Component.FrictionController2, Second);
+	StoreElectricMotorController(
+		Barrier, Component.ElectricMotorController1, First, EMCInstances1, ForceOverwriteInstances);
+	StoreElectricMotorController(
+		Barrier, Component.ElectricMotorController2, Second, EMCInstances2,
+		ForceOverwriteInstances);
 
-	StoreLockController(Barrier, Component.LockController1, First);
-	StoreLockController(Barrier, Component.LockController2, Second);
+	StoreFrictionController(
+		Barrier, Component.FrictionController1, First, FCInstances1, ForceOverwriteInstances);
+	StoreFrictionController(
+		Barrier, Component.FrictionController2, Second, FCInstances2, ForceOverwriteInstances);
 
-	StoreRangeController(Barrier, Component.RangeController1, First);
-	StoreRangeController(Barrier, Component.RangeController2, Second);
+	StoreLockController(
+		Barrier, Component.LockController1, First, LCInstances1, ForceOverwriteInstances);
+	StoreLockController(
+		Barrier, Component.LockController2, Second, LCInstances2, ForceOverwriteInstances);
 
-	StoreTargetSpeedController(Barrier, Component.TargetSpeedController1, First);
-	StoreTargetSpeedController(Barrier, Component.TargetSpeedController2, Second);
-}
+	StoreRangeController(
+		Barrier, Component.RangeController1, First, RCInstances1, ForceOverwriteInstances);
+	StoreRangeController(
+		Barrier, Component.RangeController2, Second, RCInstances2, ForceOverwriteInstances);
 
-void FAGX_ConstraintUtilities::CopyControllersFrom(
-	UAGX_ConstraintComponent& Component, const FConstraintBarrier& Barrier)
-{
-	// This exists only to provide a complete overload resolution set for the constraint types. Only
-	// 1Dof and 2Dof constraints, the other overloads, have any controllers to store. Make sure you
-	// end up in the correct overload of CopyControllersFrom for the type of constraint you actually
-	// have.
-	/// \todo Consider making this a virtual member function instead, to avoid ending up in this
-	/// empty version unintentionally.
+	StoreTargetSpeedController(
+		Barrier, Component.TargetSpeedController1, First, TSCInstances1, ForceOverwriteInstances);
+	StoreTargetSpeedController(
+		Barrier, Component.TargetSpeedController2, Second, TSCInstances2, ForceOverwriteInstances);
 }
 
 void FAGX_ConstraintUtilities::StoreElectricMotorController(
-	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller)
+	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller,
+	TArray<FAGX_ConstraintElectricMotorController*>& Instances, bool ForceOverwriteInstances)
 {
-	Controller.CopyFrom(*Barrier.GetElectricMotorController());
+	Controller.CopyFrom(*Barrier.GetElectricMotorController(), Instances, ForceOverwriteInstances);
 }
 
 void FAGX_ConstraintUtilities::StoreElectricMotorController(
 	const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller,
-	EAGX_Constraint2DOFFreeDOF Dof)
+	EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintElectricMotorController*>& Instances,
+	bool ForceOverwriteInstances)
 {
-	Controller.CopyFrom(*Barrier.GetElectricMotorController(Dof));
+	Controller.CopyFrom(
+		*Barrier.GetElectricMotorController(Dof), Instances, ForceOverwriteInstances);
 }
 
 void FAGX_ConstraintUtilities::StoreFrictionController(
-	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller)
+	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
+	TArray<FAGX_ConstraintFrictionController*>& Instances, bool ForceOverwriteInstances)
 {
-	Controller.CopyFrom(*Barrier.GetFrictionController());
+	Controller.CopyFrom(*Barrier.GetFrictionController(), Instances, ForceOverwriteInstances);
 }
 
 void FAGX_ConstraintUtilities::StoreFrictionController(
 	const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
-	EAGX_Constraint2DOFFreeDOF Dof)
+	EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintFrictionController*>& Instances,
+	bool ForceOverwriteInstances)
 {
-	Controller.CopyFrom(*Barrier.GetFrictionController(Dof));
+	Controller.CopyFrom(*Barrier.GetFrictionController(Dof), Instances, ForceOverwriteInstances);
 }
 
 void FAGX_ConstraintUtilities::StoreLockController(
-	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller)
+	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
+	TArray<FAGX_ConstraintLockController*>& Instances, bool ForceOverwriteInstances)
 {
-	Controller.CopyFrom(*Barrier.GetLockController());
+	Controller.CopyFrom(*Barrier.GetLockController(), Instances, ForceOverwriteInstances);
 }
 
 void FAGX_ConstraintUtilities::StoreLockController(
 	const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
-	EAGX_Constraint2DOFFreeDOF Dof)
+	EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintLockController*>& Instances,
+	bool ForceOverwriteInstances)
 {
-	Controller.CopyFrom(*Barrier.GetLockController(Dof));
+	Controller.CopyFrom(*Barrier.GetLockController(Dof), Instances, ForceOverwriteInstances);
 }
 
 void FAGX_ConstraintUtilities::StoreRangeController(
-	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller)
+	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
+	TArray<FAGX_ConstraintRangeController*>& Instances, bool ForceOverwriteInstances)
 {
-	Controller.CopyFrom(*Barrier.GetRangeController());
+	Controller.CopyFrom(*Barrier.GetRangeController(), Instances, ForceOverwriteInstances);
 }
 
 void FAGX_ConstraintUtilities::StoreRangeController(
 	const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
-	EAGX_Constraint2DOFFreeDOF Dof)
+	EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintRangeController*>& Instances,
+	bool ForceOverwriteInstances)
 {
-	Controller.CopyFrom(*Barrier.GetRangeController(Dof));
+	Controller.CopyFrom(*Barrier.GetRangeController(Dof), Instances, ForceOverwriteInstances);
 }
 
 void FAGX_ConstraintUtilities::StoreTargetSpeedController(
-	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller)
+	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
+	TArray<FAGX_ConstraintTargetSpeedController*>& Instances, bool ForceOverwriteInstances)
 {
-	Controller.CopyFrom(*Barrier.GetTargetSpeedController());
+	Controller.CopyFrom(*Barrier.GetTargetSpeedController(), Instances, ForceOverwriteInstances);
 }
 
 void FAGX_ConstraintUtilities::StoreTargetSpeedController(
 	const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
-	EAGX_Constraint2DOFFreeDOF Dof)
+	EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintTargetSpeedController*>& Instances,
+	bool ForceOverwriteInstances)
 {
-	Controller.CopyFrom(*Barrier.GetTargetSpeedController(Dof));
+	Controller.CopyFrom(*Barrier.GetTargetSpeedController(Dof), Instances, ForceOverwriteInstances);
 }
 
 #if WITH_EDITOR
@@ -159,15 +221,13 @@ void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks(
 {
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, bEnable),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetEnable(GetController(EditedObject)->bEnable);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetEnable(GetController(EditedObject)->bEnable); });
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, Compliance),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetCompliance(GetController(EditedObject)->Compliance);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetCompliance(GetController(EditedObject)->Compliance); });
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, SpookDamping),
@@ -177,19 +237,18 @@ void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, ForceRange),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetForceRange(GetController(EditedObject)->ForceRange);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetForceRange(GetController(EditedObject)->ForceRange); });
 }
 
-template AGXUNREAL_API void
-FAGX_ConstraintUtilities::AddControllerPropertyCallbacks<UAGX_Constraint1DofComponent, FAGX_ConstraintController>(
+template AGXUNREAL_API void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks<
+	UAGX_Constraint1DofComponent, FAGX_ConstraintController>(
 	FAGX_PropertyChangedDispatcher<UAGX_Constraint1DofComponent>& PropertyDispatcher,
 	TFunction<FAGX_ConstraintController*(UAGX_Constraint1DofComponent*)> GetController,
 	const FName& Member);
 
-template AGXUNREAL_API void
-FAGX_ConstraintUtilities::AddControllerPropertyCallbacks<UAGX_Constraint2DofComponent, FAGX_ConstraintController>(
+template AGXUNREAL_API void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks<
+	UAGX_Constraint2DofComponent, FAGX_ConstraintController>(
 	FAGX_PropertyChangedDispatcher<UAGX_Constraint2DofComponent>& PropertyDispatcher,
 	TFunction<FAGX_ConstraintController*(UAGX_Constraint2DofComponent*)> GetController,
 	const FName& Member);
@@ -204,13 +263,13 @@ void FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintElectricMotorController, Voltage),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetVoltage(GetController(EditedObject)->Voltage);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetVoltage(GetController(EditedObject)->Voltage); });
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintElectricMotorController, ArmatureResistance),
-		[GetController](UConstraintClass* EditedObject) {
+		[GetController](UConstraintClass* EditedObject)
+		{
 			GetController(EditedObject)
 				->SetArmatureRestistance(GetController(EditedObject)->ArmatureResistance);
 		});
@@ -245,7 +304,8 @@ void FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintFrictionController, FrictionCoefficient),
-		[GetController](UConstraintClass* EditedObject) {
+		[GetController](UConstraintClass* EditedObject)
+		{
 			GetController(EditedObject)
 				->SetFrictionCoefficient(GetController(EditedObject)->FrictionCoefficient);
 		});
@@ -254,7 +314,8 @@ void FAGX_ConstraintUtilities::AddFrictionControllerPropertyCallbacks(
 		Member,
 		GET_MEMBER_NAME_CHECKED(
 			FAGX_ConstraintFrictionController, bEnableNonLinearDirectSolveUpdate),
-		[GetController](UConstraintClass* EditedObject) {
+		[GetController](UConstraintClass* EditedObject)
+		{
 			GetController(EditedObject)
 				->SetEnableNonLinearDirectSolveUpdate(
 					GetController(EditedObject)->bEnableNonLinearDirectSolveUpdate);
@@ -282,9 +343,8 @@ void FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintLockController, Position),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetPosition(GetController(EditedObject)->Position);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetPosition(GetController(EditedObject)->Position); });
 }
 
 template AGXUNREAL_API void
@@ -299,8 +359,8 @@ FAGX_ConstraintUtilities::AddLockControllerPropertyCallbacks<UAGX_Constraint2Dof
 	TFunction<FAGX_ConstraintLockController*(UAGX_Constraint2DofComponent*)> GetController,
 	const FName& Member);
 
-template <typename UConstraintClass> void
-FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
+template <typename UConstraintClass>
+void FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
 	FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
 	TFunction<FAGX_ConstraintRangeController*(UConstraintClass*)> GetController,
 	const FName& Member)
@@ -309,9 +369,8 @@ FAGX_ConstraintUtilities::AddRangeControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintRangeController, Range),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetRange(GetController(EditedObject)->Range);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetRange(GetController(EditedObject)->Range); });
 }
 
 template AGXUNREAL_API void
@@ -336,13 +395,13 @@ void FAGX_ConstraintUtilities::AddTargetSpeedControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintTargetSpeedController, Speed),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetSpeed(GetController(EditedObject)->Speed);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetSpeed(GetController(EditedObject)->Speed); });
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintTargetSpeedController, bLockedAtZeroSpeed),
-		[GetController](UConstraintClass* EditedObject) {
+		[GetController](UConstraintClass* EditedObject)
+		{
 			GetController(EditedObject)
 				->SetLockedAtZeroSpeed(GetController(EditedObject)->bLockedAtZeroSpeed);
 		});
@@ -370,9 +429,8 @@ void FAGX_ConstraintUtilities::AddScrewControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintScrewController, Lead),
-		[GetController](UConstraintClass* EditedObject) {
-			GetController(EditedObject)->SetLead(GetController(EditedObject)->Lead);
-		});
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetLead(GetController(EditedObject)->Lead); });
 }
 
 template AGXUNREAL_API void
@@ -387,30 +445,37 @@ namespace
 {
 	FVector GetGlobalAttachmentFramePos(UAGX_RigidBodyComponent* RigidBody, const FVector LocalPos)
 	{
-		if (RigidBody)
+		if (RigidBody == nullptr)
 		{
-			return RigidBody->GetComponentTransform().TransformPositionNoScale(LocalPos);
+			// When RigidBody is nullptr the LocalPos is relative to the world.
+			return LocalPos;
 		}
 
-		// When RigidBody is nullptr the LocalPos is relative to the world.
-		return LocalPos;
+		const FTransform BodyWorldTransform =
+			FAGX_ObjectUtilities::GetAnyComponentWorldTransform(*RigidBody);
+
+		return BodyWorldTransform.TransformPositionNoScale(LocalPos);
 	}
 
 	FQuat GetGlobalAttachmentFrameRot(UAGX_RigidBodyComponent* RigidBody, const FQuat LocalRot)
 	{
-		if (RigidBody)
+		if (RigidBody == nullptr)
 		{
-			return RigidBody->GetComponentTransform().TransformRotation(LocalRot);
+			// When RigidBody is nullptr the LocalRot is relative to the world.
+			return LocalRot;
 		}
 
-		// When RigidBody is nullptr the LocalRot is relative to the world.
-		return LocalRot;
+		const FTransform BodyWorldTransform =
+			FAGX_ObjectUtilities::GetAnyComponentWorldTransform(*RigidBody);
+
+		return BodyWorldTransform.TransformRotation(LocalRot);
 	}
 }
 
-void FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
+FTransform FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
-	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2)
+	UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2,
+	bool ForceOverwriteInstances)
 {
 	// Constraints are setup to use FrameDefiningSource == Constraint by default, meaning the
 	// constraint itself is used to define the attachment frames. This means that we need to update
@@ -429,15 +494,23 @@ void FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	// (nullptr) implicitly means the world. Also, the sign of the rotation/translation of the
 	// secondary constraints support this ordering.
 
-	if (!RigidBody1)
+	AGX_COPY_PROPERTY_FROM(
+		BodyAttachment1.FrameDefiningSource, EAGX_FrameDefiningSource::Constraint, Component,
+		ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		BodyAttachment2.FrameDefiningSource, EAGX_FrameDefiningSource::Constraint, Component,
+		ForceOverwriteInstances)
+
+	// Having a nullptr RigidBody1 is technically valid from AGX Dynamics perspective, but in >99%
+	// of cases it is unexpected. Therefore, we opt to give the user a warning, and we still set the
+	// FrameDefiningSource to be EAGX_FrameDefiningSource::Constraint before returning.
+	if (RigidBody1 == nullptr)
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Could not setup Constraint frames since RigidBody1 was nullptr."));
-		return;
+			LogAGX, Warning,
+			TEXT("Could not setup Constraint frames since RigidBody1 was nullptr."));
+		return FTransform::Identity;
 	}
-
-	Component.BodyAttachment1.FrameDefiningSource = EAGX_FrameDefiningSource::Constraint;
-	Component.BodyAttachment2.FrameDefiningSource = EAGX_FrameDefiningSource::Constraint;
 
 	const FVector Attach1GlobalPos =
 		GetGlobalAttachmentFramePos(RigidBody1, Barrier.GetLocalLocation(0));
@@ -448,20 +521,35 @@ void FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	const FQuat Attach2GlobalRot =
 		GetGlobalAttachmentFrameRot(RigidBody2, Barrier.GetLocalRotation(1));
 
-	// Set the Constraint's transform same as attachment frame 2.
-	Component.SetWorldLocationAndRotation(Attach2GlobalPos, Attach2GlobalRot);
+	// The Constraint's new World transform is the attachment frame 2.
+	const FTransform NewWorldTransform(Attach2GlobalRot, Attach2GlobalPos);
+	if (!FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		Component.SetWorldTransform(NewWorldTransform);
+	}
 
 	// The LocalFrameLocation and Rotation of BodyAttachment2 is always zero since the Constraint is
 	// placed at the attachment frame 2.
-	Component.BodyAttachment2.LocalFrameLocation = FVector::ZeroVector;
-	Component.BodyAttachment2.LocalFrameRotation = FRotator(FQuat::Identity);
+	AGX_COPY_PROPERTY_FROM(
+		BodyAttachment2.LocalFrameLocation, FVector::ZeroVector, Component, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		BodyAttachment2.LocalFrameRotation, FRotator(FQuat::Identity), Component,
+		ForceOverwriteInstances)
 
 	// The LocalFrameLocation and Rotation of BodyAttachment1 is the (global) attachment frame 1
 	// expressed in the constraints (new) global frame.
-	Component.BodyAttachment1.LocalFrameLocation =
-		Component.GetComponentTransform().InverseTransformPositionNoScale(Attach1GlobalPos);
-	Component.BodyAttachment1.LocalFrameRotation =
-		FRotator(Component.GetComponentTransform().InverseTransformRotation(Attach1GlobalRot));
+	const FVector BodyAttachment1LocalLocation =
+		NewWorldTransform.InverseTransformPositionNoScale(Attach1GlobalPos);
+	const FRotator BodyAttachment1LocalRotation =
+		FRotator(NewWorldTransform.InverseTransformRotation(Attach1GlobalRot));
+	AGX_COPY_PROPERTY_FROM(
+		BodyAttachment1.LocalFrameLocation, BodyAttachment1LocalLocation, Component,
+		ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		BodyAttachment1.LocalFrameRotation, BodyAttachment1LocalRotation, Component,
+		ForceOverwriteInstances)
+
+	return NewWorldTransform;
 }
 
 namespace FAGX_ConstraintUtilities_helpers

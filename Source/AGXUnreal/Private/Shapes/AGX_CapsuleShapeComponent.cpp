@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_ShapeUtilities.h"
 
 // Unreal Engine includes.
@@ -142,7 +143,7 @@ bool UAGX_CapsuleShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vert
 		return false;
 	}
 
-	SetWorldTransform(TransformBounding);
+	FAGX_ObjectUtilities::SetAnyComponentWorldTransform(*this, TransformBounding);
 	SetRadius(RadiusBounding);
 	SetHeight(HeightBounding);
 	return true;
@@ -170,11 +171,12 @@ void UAGX_CapsuleShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetRadius(Radius * GetComponentScale().X);
 }
 
-void UAGX_CapsuleShapeComponent::CopyFrom(const FCapsuleShapeBarrier& Barrier)
+void UAGX_CapsuleShapeComponent::CopyFrom(
+	const FCapsuleShapeBarrier& Barrier, bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Barrier);
-	Height = Barrier.GetHeight();
-	Radius = Barrier.GetRadius();
+	Super::CopyFrom(Barrier, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(Height, Barrier.GetHeight(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(Radius, Barrier.GetRadius(), *this, ForceOverwriteInstances)
 }
 
 void UAGX_CapsuleShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)

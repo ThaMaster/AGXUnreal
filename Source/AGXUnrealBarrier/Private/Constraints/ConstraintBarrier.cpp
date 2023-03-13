@@ -8,6 +8,12 @@
 #include "AGX_AgxDynamicsObjectsAccess.h"
 #include "TypeConversions.h"
 
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agx/LockJoint.h>
+#include <agx/Prismatic.h>
+#include "EndAGXIncludes.h"
+
 // Unreal Engine includes.
 #include <Misc/AssertionMacros.h>
 
@@ -358,4 +364,17 @@ void FConstraintBarrier::SetNativeAddress(uintptr_t NativeAddress)
 	}
 
 	NativeRef->Native = reinterpret_cast<agx::Constraint*>(NativeAddress);
+}
+
+bool FConstraintBarrier::IsRotational() const
+{
+	check(HasNative());
+	// Not bulletproof, but the best way I know.
+	if (dynamic_cast<agx::LockJoint*>(NativeRef->Native.get()) != nullptr)
+		return false;
+
+	if (dynamic_cast<agx::Prismatic*>(NativeRef->Native.get()) != nullptr)
+		return false;
+
+	return true;
 }

@@ -79,9 +79,10 @@ void UAGX_TrimeshShapeComponent::UpdateNativeProperties()
 	UpdateNativeLocalTransform(NativeBarrier);
 }
 
-void UAGX_TrimeshShapeComponent::CopyFrom(const FTrimeshShapeBarrier& Barrier)
+void UAGX_TrimeshShapeComponent::CopyFrom(
+	const FTrimeshShapeBarrier& Barrier, bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Barrier);
+	Super::CopyFrom(Barrier, ForceOverwriteInstances);
 }
 
 void UAGX_TrimeshShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& /*OutMeshData*/)

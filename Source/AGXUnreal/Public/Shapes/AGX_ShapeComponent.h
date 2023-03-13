@@ -182,6 +182,13 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	// ~End UActorComponent interface.
 
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
+
 protected:
 	/**
 	 * Get a pointer to the actual member Barrier object. This will never return nullptr. The
@@ -234,7 +241,7 @@ protected:
 	 * Called from each subclass' type-specific CopyFrom.
 	 * @param Barrier The AGX Dynamics shape to copy from.
 	 */
-	void CopyFrom(const FShapeBarrier& Barrier);
+	void CopyFrom(const FShapeBarrier& Barrier, bool ForceOverwriteInstances = false);
 
 	/**
 	 * Updates the local transform of the native geometry to match this component's

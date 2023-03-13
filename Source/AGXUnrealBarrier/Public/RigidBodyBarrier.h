@@ -16,6 +16,7 @@
 
 struct FRigidBodyRef;
 
+class FAnyShapeBarrier;
 class FBoxShapeBarrier;
 class FCapsuleShapeBarrier;
 class FCylinderShapeBarrier;
@@ -111,6 +112,7 @@ public:
 
 	void ReleaseNative();
 
+	TArray<FAnyShapeBarrier> GetShapes() const;
 	TArray<FSphereShapeBarrier> GetSphereShapes() const;
 	TArray<FBoxShapeBarrier> GetBoxShapes() const;
 	TArray<FCylinderShapeBarrier> GetCylinderShapes() const;

@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_ShapeUtilities.h"
 
 // Unreal Engine includes.
@@ -160,7 +161,7 @@ bool UAGX_CylinderShapeComponent::AutoFitFromVertices(const TArray<FVector>& Ver
 		return false;
 	}
 
-	SetWorldTransform(TransformBounding);
+	FAGX_ObjectUtilities::SetAnyComponentWorldTransform(*this, TransformBounding);
 	SetRadius(RadiusBounding);
 	SetHeight(HeightBounding);
 	return true;
@@ -191,14 +192,14 @@ void UAGX_CylinderShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetGypsyProperty(bGypsy);
 }
 
-void UAGX_CylinderShapeComponent::CopyFrom(const FCylinderShapeBarrier& Barrier)
+void UAGX_CylinderShapeComponent::CopyFrom(
+	const FCylinderShapeBarrier& Barrier, bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Barrier);
-	Height = Barrier.GetHeight();
-	Radius = Barrier.GetRadius();
-
-	bPulley = Barrier.GetPulleyProperty();
-	bGypsy = Barrier.GetGypsyProperty();
+	Super::CopyFrom(Barrier, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(Height, Barrier.GetHeight(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(Radius, Barrier.GetRadius(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(bPulley, Barrier.GetPulleyProperty(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(bGypsy, Barrier.GetGypsyProperty(), *this, ForceOverwriteInstances)
 }
 
 void UAGX_CylinderShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)

@@ -99,6 +99,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Material Properties")
 	FAGX_ShapeMaterialWireProperties Wire;
 
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
+
 	// Setter and getter for surface properties. These can be here since they are shared by both
 	// Shape Materials and Terrain Materials. The Bulk properties differ between Shape and Terrain
 	// Materials so each material type have their own set of getters and setters for those. The
