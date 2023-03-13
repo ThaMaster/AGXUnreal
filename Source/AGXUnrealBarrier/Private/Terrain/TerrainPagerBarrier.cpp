@@ -78,9 +78,18 @@ bool FTerrainPagerBarrier::HasNative() const
 }
 
 void FTerrainPagerBarrier::AllocateNative(
-	FTerrainHeightFetcherBase* HeightFetcher, FTerrainBarrier& TerrainBarrier)
+	FTerrainHeightFetcherBase* HeightFetcher, FTerrainBarrier& TerrainBarrier,
+	int32 TileSideVertices, int32 TileOverlapVerties, double ElementSize, double MaxDepth)
 {
 	check(TerrainBarrier.HasNative());
+
+	if (HeightFetcher == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("TerrainPager got nullptr HeightFetcher when allocating native. AGX Dynamics will "
+				 "not be able to fetch heights from the Landscape."));
+	}
 
 	// Create a TerrainDataSource and assign the HeightFetcher to it. This HeightFetcher is owned by
 	// the UAGX_Terrain and is a way for us to call UAGX_Terrain::FetchHeights from the Barrier
@@ -92,10 +101,12 @@ void FTerrainPagerBarrier::AllocateNative(
 	// Use the same position/rotation as the given Terrain.
 	const agx::Vec3 Position = ConvertDisplacement(TerrainBarrier.GetPosition());
 	const agx::Quat Rotation = Convert(TerrainBarrier.GetRotation());
+	const agx::Real ElementSizeAGX = ConvertDistanceToAGX(ElementSize);
+	const agx::Real MaxDepthAGX = ConvertDistanceToAGX(MaxDepth);
 
-	// @todo: pass proper values.
 	NativeRef->Native = new agxTerrain::TerrainPager(
-		51, 5, 0.2, 3.0, Position, Rotation, TerrainBarrier.GetNative()->Native);
+		TileSideVertices, TileOverlapVerties, ElementSizeAGX, MaxDepthAGX, Position, Rotation,
+		TerrainBarrier.GetNative()->Native);
 
 	NativeRef->Native->setTerrainDataSource(DataSourceRef->Native);
 }

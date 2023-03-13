@@ -889,7 +889,15 @@ bool AAGX_Terrain::CreateNativeTerrainPager()
 		return false;
 	}
 
-	NativeTerrainPagerBarrier.AllocateNative(&HeightFetcher, NativeTerrainBarrier);
+	const auto QuadSize = SourceLandscape->GetActorScale().X;
+	const int32 TileNumVerticesSide =
+		FMath::RoundToInt32(TerrainPagerSettings.TileSize / QuadSize) + 1;
+	const int32 TileOverlapVertices =
+		FMath::RoundToInt32(TerrainPagerSettings.TileOverlap / QuadSize);
+
+	NativeTerrainPagerBarrier.AllocateNative(
+		&HeightFetcher, NativeTerrainBarrier, TileNumVerticesSide, TileOverlapVertices, QuadSize,
+		MaxDepth);
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
@@ -1120,11 +1128,11 @@ void AAGX_Terrain::UpdateDisplacementMap()
 
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::UpdateDisplacementMap"));
 
-
 	TArray<std::tuple<int32, int32>> ModifiedVertices;
 	if (bEnableTerrainPager)
 	{
-		ModifiedVertices = NativeTerrainPagerBarrier.GetModifiedHeights(CurrentHeights);
+		ModifiedVertices = NativeTerrainPagerBarrier.GetModifiedHeights(
+			CurrentHeights, NumVerticesX, NumVerticesY);
 	}
 	else
 	{

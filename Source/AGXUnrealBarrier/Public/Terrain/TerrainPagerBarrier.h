@@ -24,7 +24,7 @@ public:
 	bool HasNative() const;
 	void AllocateNative(
 		FTerrainHeightFetcherBase* HeightFetcher, FTerrainBarrier& TerrainBarrier,
-		int32 TileSideVertices, int32 TileOverlapVerties, );
+		int32 TileSideVertices, int32 TileOverlapVerties, double ElementSize, double MaxDepth);
 	FTerrainPagerRef* GetNative();
 	const FTerrainPagerRef* GetNative() const;
 	void ReleaseNative();
