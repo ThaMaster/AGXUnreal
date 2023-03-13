@@ -54,6 +54,22 @@ namespace TerrainPagerBarrier_helpers
 
 		return NumParticles;
 	}
+
+	bool DoesExistModifiedHeights(const TerrainPager::TileAttachmentPtrVector& ActiveTiles)
+	{
+		for (TerrainPager::TileAttachments* Tile : ActiveTiles)
+		{
+			if (Tile == nullptr || Tile->m_terrainTile == nullptr)
+				continue;
+
+			// getModifiedVertices simply returns a reference to a member of AGX Terrain, i.e. is
+			// fast.
+			if (Tile->m_terrainTile->getModifiedVertices().size() > 0)
+				return true;
+		}
+
+		return false;
+	}
 }
 
 bool FTerrainPagerBarrier::HasNative() const
@@ -140,19 +156,48 @@ FParticleData FTerrainPagerBarrier::GetParticleData() const
 }
 
 TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(
-	TArray<float>& OutHeights, int32 VertOffsX, int32 VertOffsY) const
+	TArray<float>& OutHeights, int32 BoundVertsX, int32 BoundVertsY) const
 {
-	TArray<std::tuple<int32, int32>> ModifiedVertices;
+	using namespace TerrainPagerBarrier_helpers;
+	check(HasNative());
 
+	TArray<std::tuple<int32, int32>> ModifiedVertices;
 	const TerrainPager::TileAttachmentPtrVector ActiveTiles =
 		NativeRef->Native->getActiveTileAttachments();
+
+	if (!DoesExistModifiedHeights(ActiveTiles))
+		return ModifiedVertices;
+
+	const int32 BoundsCornerToCenterOffsX =
+		BoundVertsX % 2 == 0 ? BoundVertsX / 2 + 1 : BoundVertsX / 2;
+	const int32 BoundsCornerToCenterOffsY =
+		BoundVertsY % 2 == 0 ? BoundVertsY / 2 - 1 : BoundVertsY / 2;
+
+	const agxTerrain::TileSpecification& TileSpec = NativeRef->Native->getTileSpecification();
+	const int32 NumVertsPerTile = static_cast<int32>(TileSpec.getTileResolution());
+	const int32 TileOverlap = static_cast<int32>(TileSpec.getTileMarginSize());
 
 	for (TerrainPager::TileAttachments* Tile : ActiveTiles)
 	{
 		if (Tile == nullptr || Tile->m_terrainTile == nullptr)
 			continue;
 
-		// Do magic here.
+		agxTerrain::TileId Id =
+			TileSpec.convertWorldCoordinateToTileId(Tile->m_terrainTile->getPosition());
+
+		const int32 CenterToTileOffsetX = Id.x() * (NumVertsPerTile - TileOverlap);
+		const int32 CenterToTileOffsetY = -Id.y() * (NumVertsPerTile - TileOverlap); // Flip y axis.
+
+		const auto& ModifiedVerticesAGX = Tile->m_terrainTile->getModifiedVertices();
+		for (const auto& Index2d : ModifiedVerticesAGX)
+		{
+			const int32 X = BoundsCornerToCenterOffsX + CenterToTileOffsetX + Index2d.x();
+			const int32 Y = BoundsCornerToCenterOffsY + CenterToTileOffsetY - Index2d.y();
+
+			ModifiedVertices.Add(std::tuple(X, Y));
+			const auto Height = OutHeights[X + Y * BoundVertsX] = ConvertDistanceToUnreal<float>(
+				Tile->m_terrainTile->getHeightField()->getHeight(Index2d.x(), Index2d.y()));
+		}
 	}
 
 	return ModifiedVertices;

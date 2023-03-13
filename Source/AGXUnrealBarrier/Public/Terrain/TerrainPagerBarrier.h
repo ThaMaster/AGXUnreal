@@ -22,7 +22,9 @@ public:
 	~FTerrainPagerBarrier();
 
 	bool HasNative() const;
-	void AllocateNative(FTerrainHeightFetcherBase* HeightFetcher, FTerrainBarrier& TerrainBarrier);
+	void AllocateNative(
+		FTerrainHeightFetcherBase* HeightFetcher, FTerrainBarrier& TerrainBarrier,
+		int32 TileSideVertices, int32 TileOverlapVerties, );
 	FTerrainPagerRef* GetNative();
 	const FTerrainPagerRef* GetNative() const;
 	void ReleaseNative();
@@ -33,11 +35,12 @@ public:
 
 	/**
 	 * Writes modified heights to OutHeights and returns an array of modified vertices, for easy
-	 * iteration. The BoundSize parameters is used to describe a grid that this native is assumed to
-	 * be placed at its center, and that the vertex indices of this native will be mapped to.
+	 * iteration. The BoundVerts parameters is used to describe the vertex count of a grid that this
+	 * native is assumed to be placed at its center, and that the vertex indices of this native will
+	 * be mapped to.
 	 */
 	TArray<std::tuple<int32, int32>> GetModifiedHeights(
-		TArray<float>& OutHeights, int32 VertexOffsetX, int32 VertexOffsetY) const;
+		TArray<float>& OutHeights, int32 BoundVertsX, int32 BoundVertsY) const;
 
 	FVector GetReferencePoint() const;
 	FQuat GetReferenceRotation() const;
