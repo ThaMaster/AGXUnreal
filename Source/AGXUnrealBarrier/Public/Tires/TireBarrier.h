@@ -34,6 +34,8 @@ public:
 
 	void ReleaseNative();
 
+	FGuid GetGuid() const;
+
 private:
 	FTireBarrier(const FTireBarrier&) = delete;
 	void operator=(const FTireBarrier&) = delete;

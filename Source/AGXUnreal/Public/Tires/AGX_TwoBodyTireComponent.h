@@ -129,6 +129,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Tire Dynamics")
 	FVector2D ImplicitFrictionMultiplier {1.f, 1.f};
 
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
+
 	/**
 	 * Get the Hub Rigid Body. Returns nullptr if it has not been set.
 	 */
@@ -145,7 +152,9 @@ public:
 	 */
 	FTransform GetGlobalTireTransform() const;
 
-	void CopyFrom(const FTwoBodyTireBarrier& Barrier);
+	// Does not set references to hub/tire Rigid Bodies. This must be done by the caller of this
+	// function.
+	void CopyFrom(const FTwoBodyTireBarrier& Barrier, bool ForceOverwriteInstances = false);
 
 	bool IsDefaultSubObjectOfTwoBodyTireActor() const;
 

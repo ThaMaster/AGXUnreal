@@ -313,7 +313,6 @@ UAGX_ConstraintMergeSplitThresholds* UAGX_ConstraintMergeSplitThresholds::Create
 	NewInstance->Asset = &Source;
 	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(PlayingWorld, bIsRotational);
-
 	return NewInstance;
 }
 
@@ -339,6 +338,7 @@ void UAGX_ConstraintMergeSplitThresholds::CopyFrom(const FMergeSplitThresholdsBa
 	MaxDesiredRangeAngleDiff = CmstBarrier->GetMaxDesiredRangeAngleDiff();
 	MaxDesiredSpeedDiff = CmstBarrier->GetMaxDesiredSpeedDiff();
 	MaxRelativeSpeed = CmstBarrier->GetMaxRelativeSpeed();
+	ImportGuid = CmstBarrier->GetGuid();
 }
 
 void UAGX_ConstraintMergeSplitThresholds::CopyFrom(

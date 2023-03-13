@@ -12,7 +12,7 @@
 
 #include "AGX_ShapeContactMergeSplitThresholds.generated.h"
 
-/*
+/**
  * Defines the thresholds used by AMOR (merge split) for Rigid Bodies and Shapes, affecting under
  * which conditions they will merge and split.
  */
@@ -46,8 +46,7 @@ public:
 	/**
 	 * Maximum speed along a contact normal for a contact to be considered resting [cm/s].
 	 */
-	UPROPERTY(
-		EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
+	UPROPERTY(EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
 	FAGX_Real MaxRelativeNormalSpeed {0.01};
 
 	UFUNCTION(
@@ -154,12 +153,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
 	bool bMaySplitInGravityField {false};
 
-	UFUNCTION(
-		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
 	void SetMaySplitInGravityField(bool bInMaySplitInGravityField);
 
-	UFUNCTION(
-		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
 	bool GetMaySplitInGravityField() const;
 
 	/**
@@ -169,12 +166,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shape Contact Merge Split Thresholds")
 	bool bSplitOnLogicalImpact {false};
 
-	UFUNCTION(
-		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
 	void SetSplitOnLogicalImpact(bool bInSplitOnLogicalImpact);
 
-	UFUNCTION(
-		BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
+	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
 	bool GetSplitOnLogicalImpact() const;
 
 	void CreateNative(UWorld* PlayingWorld);
@@ -193,9 +188,9 @@ public:
 
 	void CopyFrom(const FMergeSplitThresholdsBarrier& Barrier);
 
-	/*
-	* Assigns the property values of this class to the passed barrier.
-	*/
+	/**
+	 * Assigns the property values of this class to the passed barrier.
+	 */
 	void CopyTo(FShapeContactMergeSplitThresholdsBarrier& Barrier);
 
 private:

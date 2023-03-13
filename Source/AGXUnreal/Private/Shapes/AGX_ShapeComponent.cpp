@@ -286,34 +286,87 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	}
 }
 
-void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier)
+void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, bool ForceOverwriteInstances)
 {
-	bCanCollide = Barrier.GetEnableCollisions();
-	bIsSensor = Barrier.GetIsSensor();
-	SensorType = Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactsSensor
-															: EAGX_ShapeSensorType::BooleanSensor;
+	AGX_COPY_PROPERTY_FROM(
+		bCanCollide, Barrier.GetEnableCollisions(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(bIsSensor, Barrier.GetIsSensor(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetShapeGuid(), *this, ForceOverwriteInstances)
 
-	FVector Position;
-	FQuat Rotation;
-	std::tie(Position, Rotation) = Barrier.GetLocalPositionAndRotation();
-	SetRelativeLocationAndRotation(Position, Rotation);
+	const TEnumAsByte<enum EAGX_ShapeSensorType> BarrierSensorType =
+		Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactsSensor
+												   : EAGX_ShapeSensorType::BooleanSensor;
+	AGX_COPY_PROPERTY_FROM(SensorType, BarrierSensorType, *this, ForceOverwriteInstances)
 
-	TArray<FName> NewCollisionGroups = Barrier.GetCollisionGroups();
-	CollisionGroups.Empty(NewCollisionGroups.Num());
-	for (const FName& Group : NewCollisionGroups)
+	FVector BarrierPosition;
+	FQuat BarrierRotation;
+	std::tie(BarrierPosition, BarrierRotation) = Barrier.GetLocalPositionAndRotation();
+
+	TArray<FName> BarrierCollisionGroups = Barrier.GetCollisionGroups();
+	TArray<FName> CollisionGroupsToRemove;
+	for (const FName& Group : CollisionGroups)
 	{
-		AddCollisionGroup(Group);
+		if (!BarrierCollisionGroups.Contains(Group))
+		{
+			CollisionGroupsToRemove.Add(Group);
+		}
 	}
 
 	const FMergeSplitPropertiesBarrier Msp =
 		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FShapeBarrier*>(&Barrier));
+	if (FAGX_ObjectUtilities::IsTemplateComponent(*this))
+	{
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))
+		{
+			if (ForceOverwriteInstances || Instance->GetRelativeLocation() == GetRelativeLocation())
+			{
+				Instance->SetRelativeLocation(BarrierPosition);
+			}
+
+			if (ForceOverwriteInstances || Instance->GetRelativeRotation() == GetRelativeRotation())
+			{
+				Instance->SetRelativeRotation(BarrierRotation);
+			}
+
+			for (const FName& GroupToRem : CollisionGroupsToRemove)
+			{
+				Instance->RemoveCollisionGroupIfExists(GroupToRem);
+			}
+
+			for (const FName& Group : BarrierCollisionGroups)
+			{
+				// AddCollisionGroup only adds unique groups.
+				Instance->AddCollisionGroup(Group);
+			}
+
+			// Merge Split Properties.
+			if (Msp.HasNative())
+			{
+				if (ForceOverwriteInstances ||
+					Instance->MergeSplitProperties == MergeSplitProperties)
+				{
+					Instance->MergeSplitProperties.CopyFrom(Msp);
+				}
+			}
+		}
+	}
+
+	SetRelativeLocationAndRotation(BarrierPosition, BarrierRotation);
+
+	for (const FName& GroupToRem : CollisionGroupsToRemove)
+	{
+		RemoveCollisionGroupIfExists(GroupToRem);
+	}
+
+	for (const FName& Group : BarrierCollisionGroups)
+	{
+		AddCollisionGroup(Group);
+	}
+
 	if (Msp.HasNative())
 	{
 		MergeSplitProperties.CopyFrom(Msp);
 	}
-
-	/// \todo Should shape material be handled here? If so, how? We don't have access to the
-	/// <Guid, Object> restore tables from here.
 }
 
 void UAGX_ShapeComponent::CreateMergeSplitProperties()
@@ -323,7 +376,8 @@ void UAGX_ShapeComponent::CreateMergeSplitProperties()
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("UAGX_ShapeComponent::CreateMergeSplitProperties was called "
-				 "on Shape Component '%s' that does not have a Native AGX Dynamics object. Only call "
+				 "on Shape Component '%s' that does not have a Native AGX Dynamics object. Only "
+				 "call "
 				 "this function "
 				 "during play."),
 			*GetName());
@@ -367,8 +421,7 @@ void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 	}
 }
 
-bool UAGX_ShapeComponent::SetShapeMaterial(
-	UAGX_ShapeMaterial* InShapeMaterial)
+bool UAGX_ShapeComponent::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
 {
 	UAGX_ShapeMaterial* ShapeMaterialOrig = ShapeMaterial;
 	ShapeMaterial = InShapeMaterial;
@@ -381,7 +434,7 @@ bool UAGX_ShapeComponent::SetShapeMaterial(
 
 	// UpdateNativeMaterial is responsible to create an instance if none exists and do the
 	// asset/instance swap.
-	if(!UpdateNativeMaterial())
+	if (!UpdateNativeMaterial())
 	{
 		// Something went wrong, restore original ShapeMaterial.
 		ShapeMaterial = ShapeMaterialOrig;

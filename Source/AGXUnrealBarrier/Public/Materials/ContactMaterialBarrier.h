@@ -109,6 +109,8 @@ public:
 	FShapeMaterialBarrier GetMaterial1() const;
 	FShapeMaterialBarrier GetMaterial2() const;
 
+	FGuid GetGuid() const;
+
 private:
 	FContactMaterialBarrier(const FContactMaterialBarrier&) = delete;
 	void operator=(const FContactMaterialBarrier&) = delete;

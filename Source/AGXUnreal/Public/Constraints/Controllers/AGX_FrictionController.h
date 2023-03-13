@@ -59,7 +59,10 @@ public:
 	FAGX_ConstraintFrictionController(bool bRotational);
 
 	void InitializeBarrier(TUniquePtr<FFrictionControllerBarrier> Barrier);
-	void CopyFrom(const FFrictionControllerBarrier& Source);
+	void CopyFrom(
+		const FFrictionControllerBarrier& Source,
+		TArray<FAGX_ConstraintFrictionController*>& ArchetypeInstances,
+		bool ForceOverwriteInstances);
 
 private:
 	virtual void UpdateNativePropertiesImpl() override;

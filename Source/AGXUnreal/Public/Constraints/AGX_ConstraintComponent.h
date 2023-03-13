@@ -331,7 +331,8 @@ public:
 		const UAGX_RigidBodyComponent* Body, FVector& OutForce, FVector& OutTorque,
 		bool bForceAtCm = false) const;
 
-	void CopyFrom(const FConstraintBarrier& Barrier);
+	// Does not setup body attachments. This must be done by the caller of this function.
+	void CopyFrom(const FConstraintBarrier& Barrier, bool ForceOverwriteInstances = false);
 
 	/**
 	 * Returns true if for any of the locked DOFs both the global attachment frame transforms do no
@@ -406,6 +407,13 @@ public:
 	//~ Begin UActorComponent Interface
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	//~ End UActorComponent Interface
+
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
 
 protected:
 	/**

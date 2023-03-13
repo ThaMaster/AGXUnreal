@@ -532,6 +532,13 @@ public:
 		Meta = (DisplayName = "Get Adhesive Overlap"))
 	float GetAdhesiveOverlap_BP() const;
 
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
+
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	void CommitToAsset();
 

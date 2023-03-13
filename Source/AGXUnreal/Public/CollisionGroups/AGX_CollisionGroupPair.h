@@ -6,7 +6,7 @@
 #include "AGX_CollisionGroupPair.generated.h"
 
 USTRUCT()
-struct FAGX_CollisionGroupPair
+struct AGXUNREAL_API FAGX_CollisionGroupPair
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -21,5 +21,10 @@ struct FAGX_CollisionGroupPair
 		return Group1.IsEqual(Other.Group1) && Group2.IsEqual(Other.Group2);
 	}
 
+	/**
+	 * If any of the two group permutations match, returns true. False otherwise.
+	 */
 	bool IsEqual(const FName& GroupA, const FName& GroupB) const;
+
+	bool IsIn(const TArray<FAGX_CollisionGroupPair>& Pairs) const;
 };

@@ -3,7 +3,9 @@
 #include "Utilities/AGX_EditorUtilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_ImporterToBlueprint.h"
 #include "AGX_LogCategory.h"
+#include "AGX_ModelSourceComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
@@ -21,11 +23,16 @@
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterial.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
+#include "Widgets/AGX_SynchronizeModelDialog.h"
 
 // Unreal Engine includes.
-#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetDeleteModel.h"
 #include "AssetToolsModule.h"
+#include "Containers/Ticker.h"
 #include "DesktopPlatformModule.h"
 #include "Editor.h"
 #include "EditorStyleSet.h"
@@ -36,15 +43,273 @@
 #include "Engine/StaticMesh.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/Char.h"
 #include "Misc/EngineVersionComparison.h"
+#include "ObjectTools.h"
+#include "PackageTools.h"
 #include "RawMesh.h"
+#include "Serialization/ArchiveReplaceObjectRef.h"
+#include "Serialization/FindReferencersArchive.h"
 #include "UObject/SavePackage.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectGlobals.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
+
+void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint)
+{
+	// The reason we use FTSTicker here is to ensure that this function returns before we do the
+	// actual Model Synchronization. This is important because we close all asset editors before
+	// doing the Model Synchronization, and if this function was called from the details panel of
+	// the ModelSourceComponent, it may cause issues since it lives in the context of the blueprint
+	// editor (which will be closed).
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+	FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
+#else
+	FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
+#endif
+		[&Blueprint](float)
+		{
+			UBlueprint* OuterMostParent = FAGX_BlueprintUtilities::GetOutermostParent(&Blueprint);
+
+			if (OuterMostParent == nullptr)
+			{
+				FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+					"Could not get the original parent Blueprint. Model synchronization will not "
+					"be performed.");
+				return false;
+			}
+
+			// Ensure there exists a Model Source Component.
+			UAGX_ModelSourceComponent* ModelSourceComponent =
+				FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ModelSourceComponent>(
+					OuterMostParent);
+			if (ModelSourceComponent == nullptr)
+			{
+				FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+					"Could not find an AGX Model Source Component in the selected Blueprint. The "
+					"selected Blueprint is not valid for Model Synchronization.");
+				return false;
+			}
+
+			// Open up the import settings Window to get user import settings.
+			TSharedRef<SWindow> Window =
+				SNew(SWindow)
+					.SupportsMinimize(false)
+					.SupportsMaximize(false)
+					.SizingRule(ESizingRule::Autosized)
+					.Title(NSLOCTEXT(
+						"AGX", "AGXUnrealSynchronizeModel", "Synchronize model with source file"));
+
+			const FString FilePath =
+				ModelSourceComponent != nullptr ? ModelSourceComponent->FilePath : "";
+			const bool IgnoreDisabledTrimeshes =
+				ModelSourceComponent != nullptr ? ModelSourceComponent->bIgnoreDisabledTrimeshes
+												: false;
+
+			TSharedRef<SAGX_SynchronizeModelDialog> SynchronizeDialog =
+				SNew(SAGX_SynchronizeModelDialog);
+			SynchronizeDialog->SetFilePath(FilePath);
+			SynchronizeDialog->SetIgnoreDisabledTrimeshes(IgnoreDisabledTrimeshes);
+			SynchronizeDialog->RefreshGui();
+			Window->SetContent(SynchronizeDialog);
+			FSlateApplication::Get().AddModalWindow(Window, nullptr);
+
+			if (auto Settings = SynchronizeDialog->ToSynchronizeModelSettings())
+			{
+				const static FString Info =
+					"Model synchronization may permanently remove or overwrite existing "
+					"data.\nIt is recommended to always backup your imported models.\n\nAll asset "
+					"editors will be closed.\nContinue?";
+				if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) !=
+					EAppReturnType::Yes)
+				{
+					return false;
+				}
+
+				// Logging done in AGX_ImporterToBlueprint::SynchronizeModel.
+				AGX_ImporterToBlueprint::SynchronizeModel(*OuterMostParent, *Settings, &Blueprint);
+			}
+
+			return false; // This tells the FTSTicker to not call this lambda again.
+		}));
+}
+
+bool FAGX_EditorUtilities::RenameAsset(
+	UObject& Asset, const FString& WantedName, const FString& AssetType)
+{
+	if (WantedName.IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("RenameAsset called with Asset '%s' and WantedName was empty. The asset will not "
+				 "be renamed."),
+			*Asset.GetName());
+		return false;
+	}
+
+	UPackage* Package = Asset.GetPackage();
+	if (Package == nullptr || Package->GetPathName().IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT(
+				"RenameAsset called with Asset '%s' without a valid Package. The asset will not be "
+				"renamed."),
+			*Asset.GetName());
+		return false;
+	}
+
+	FString AssetNameNew = FAGX_ImportUtilities::CreateAssetName(WantedName, "", AssetType);
+	if (Asset.GetName().Equals(AssetNameNew))
+	{
+		return true;
+	}
+
+	FString PackagePathNew = *Asset.GetPackage()->GetPathName();
+	PackagePathNew.RemoveFromEnd(Asset.GetName(), ESearchCase::CaseSensitive);
+	FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePathNew, AssetNameNew);
+
+	const FString OldPath = Asset.GetPathName();
+
+	FAssetToolsModule& AssetToolsModule =
+		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools");
+	TArray<FAssetRenameData> AssetRenameData;
+	FAssetRenameData Ard;
+	Ard.Asset = &Asset;
+	Ard.NewPackagePath = FPackageName::GetLongPackagePath(PackagePathNew);
+	Ard.NewName = AssetNameNew;
+	AssetRenameData.Add(Ard);
+	AssetToolsModule.Get().RenameAssets(AssetRenameData);
+	FAssetRegistryModule::AssetRenamed(&Asset, OldPath);
+	Asset.MarkPackageDirty();
+	Asset.GetOuter()->MarkPackageDirty();
+
+	return true;
+}
+
+int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAssets)
+{
+	/*
+	 * This function is a subset/variant of Unreal Engine's ObjectTools::DeleteObjects. We can't use
+	 * that directly because it doesn't handle references to the deleted assets properly. In
+	 * particular, it always calls FAssetDeleteModel::DoDelete even though in some cases it is
+	 * necessary to call DoForceDelete.
+	 *
+	 * Not sure how regularly ObjectTools::DeleteObjects is updated by Epic Games, and how closely
+	 * we need to track that implementation over time. The initial implementation of this function
+	 * is based on Unreal Engine 4.27.
+	 *
+	 * There is also ObjectTools::DeleteAssets which sounds like exactly what we want to do, but
+	 * that is basically just a call to ObjectTools::DeleteObjects followed by
+	 * CleanupAfterSuccessfulDelete. The latter is called by the former, which makes me believe that
+	 * the call from ObjectTools::DeleteAssets is redundant, and the former is what we are doing a
+	 * variant of here since it is incomplete.
+	 */
+
+	TArray<UObject*> ObjectsToDelete = InAssets;
+
+	// Here the engine implementation creates an FScopedBusyCursor. Should we too?
+
+	// Here the engine implementation calls ObjectTools::AddExtraObjectsToDelete. As of Unreal
+	// Engine 4.27 that only involves UWorld objects, which we don't create during model import and
+	// thus don't currently need to handle here.
+
+	// There the engine implementation does stuff for sounds. We don't do anything with sound assets
+	// so skipping that for now.
+
+	FCanDeleteAssetResult CanDeleteResult;
+	FEditorDelegates::OnAssetsCanDelete.Broadcast(ObjectsToDelete, CanDeleteResult);
+	if (!CanDeleteResult.Get())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT(
+				"Cannot currently delete imported assets, rejected by OnAssetsCanDelete. See prior "
+				"log messagesfor details."));
+		return 0;
+	}
+
+	// Only packages that are fully loaded can be deleted, so ask for them to be loaded.
+	//
+	// Here the engine implementation calls a non-exported helper function in ObjectTools,
+	// HandleFullyLoadedPackages. We can't call that from our module, so doing something similar
+	// in-line instead.
+	{
+		TArray<UPackage*> Packages;
+		for (UObject* Object : ObjectsToDelete)
+		{
+			Packages.AddUnique(Object->GetOutermost());
+		}
+		if (!UPackageTools::HandleFullyLoadingPackages(
+				Packages, LOCTEXT("DeleteImportedAssets", "Delete imported assets.")))
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Cannot delete imported assets because at least one asset could not be fully "
+					 "loaded."));
+			return 0;
+		}
+	}
+
+	// We cannot delete assets if the asset registry is currently busy loading assets.
+	if (IAssetRegistry::GetChecked().IsLoadingAssets())
+	{
+		// Is there a better way to handle this case? Can we wait a bit? Is asset loading
+		// asynchronous, i.e. can we spin here for a second or two?
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot delete assets because the asset registry is currently loading assets."));
+		return 0;
+	}
+
+	// Here the engine implementation checks if the list of assets to delete include an active
+	// world, including all editor world contexts and streaming levels, by calling
+	// ObjectTools::ContainsWorldInUse. That function isn't available to us. We currently don't
+	// create any worlds during import so don't need to handle that case yet.
+
+
+	// Let everyone know that these assets are about to disappear, so they can clear any references
+	// they may have to the assets.
+	FEditorDelegates::OnAssetsPreDelete.Broadcast(ObjectsToDelete);
+
+	// The delete model helps us find references to the deleted assets.
+	FAssetDeleteModel DeleteModel(ObjectsToDelete);
+
+	// Here the engine implementation uses GWarn to begin a slow task. The model
+	// synchronize code already have a progress bar created with FScopedSlowTask, not sure how
+	// those would interact.
+
+	while (DeleteModel.GetState() != FAssetDeleteModel::Finished)
+	{
+		DeleteModel.Tick(0);
+
+		// Here the engine implementation does stuff with GWarn status update and user canceling.
+		// The model synchronize code already have a progress bar created with FScopedSlowTask, not
+		// sure how those would interact.
+	}
+
+	if (DeleteModel.CanDelete())
+	{
+		DeleteModel.DoDelete();
+		return DeleteModel.GetDeletedObjectCount();
+	}
+	else if (DeleteModel.CanForceDelete())
+	{
+		DeleteModel.DoForceDelete();
+		return DeleteModel.GetDeletedObjectCount();
+	}
+	else
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Coult not verify safe asset deletion, old model assets remain in the Content "
+				 "Browser and on drive."));
+		return 0;
+	}
+}
 
 std::tuple<AActor*, USceneComponent*> FAGX_EditorUtilities::CreateEmptyActor(
 	const FTransform& Transform, UWorld* World)
@@ -95,7 +360,8 @@ namespace
 		/// \todo Is the Owner pointless here since we do `AttachToComponent`
 		/// immediately afterwards?
 		UClass* Class = TShapeComponent::StaticClass();
-		TShapeComponent* Shape = NewObject<TShapeComponent>(Owner, Class);
+		TShapeComponent* Shape = NewObject<TShapeComponent>(
+			Owner, FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 		Owner->AddInstanceComponent(Shape);
 		if (bRegister)
 		{
@@ -237,7 +503,7 @@ FString FAGX_EditorUtilities::CreateAssetName(
 		return DefaultName;
 	}
 
-	return TEXT("ImportedAgxObject");
+	return TEXT("ImportedAGXObject");
 }
 
 void FAGX_EditorUtilities::MakePackageAndAssetNameUnique(FString& PackageName, FString& AssetName)
@@ -247,91 +513,14 @@ void FAGX_EditorUtilities::MakePackageAndAssetNameUnique(FString& PackageName, F
 	AssetTools.CreateUniqueAssetName(PackageName, AssetName, PackageName, AssetName);
 }
 
-bool FAGX_EditorUtilities::FinalizeAndSavePackage(FAssetToDiskInfo& AtdInfo)
+bool FAGX_EditorUtilities::SaveStaticMeshAssetsInBulk(const TArray<UStaticMesh*>& Meshes)
 {
-	/// \todo Can the PackagePath and AssetName be read from the Package and Asset? To reduce
-	/// the number of parameters and avoid passing mismatching arguments. When would we want
-	/// to custom PackagePath and AssetName?
-
-	if (!AtdInfo.IsValid())
-	{
-		return false;
-	}
-
-	FAssetRegistryModule::AssetCreated(AtdInfo.Asset);
-	AtdInfo.Asset->MarkPackageDirty();
-	AtdInfo.Asset->PostEditChange();
-	AtdInfo.Asset->AddToRoot();
-	AtdInfo.Package->SetDirtyFlag(true);
-
-	// Store our new package to disk.
-	const FString PackageFilename = FPackageName::LongPackageNameToFilename(
-		AtdInfo.PackagePath, FPackageName::GetAssetPackageExtension());
-	if (PackageFilename.IsEmpty())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Unreal Engine unable to provide a package filename for package path '%s'."),
-			*AtdInfo.PackagePath);
-		return false;
-	}
-
-	// A package must have meta-data in order to be saved. It seems to be created automatically
-	// most of the time but sometimes, during unit tests for example, the engine tries to create it
-	// on-demand while saving the package which leads to a fatal error because this type of object
-	// look-up isn't allowed while saving packages. So try to force it here before calling
-	// SavePackage.
-	//
-	// The error message sometimes printed while within UPackage::SavePackage called below is:
-	// Illegal call to StaticFindObjectFast() while serializing object data or garbage collecting!
-	AtdInfo.Package->GetMetaData();
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-	bool bSaved =
-		UPackage::SavePackage(AtdInfo.Package, AtdInfo.Asset, RF_NoFlags, *PackageFilename);
-#else
-	FSavePackageArgs SaveArgs;
-	// SaveArgs.TargetPlatform = ???; // I think we can leave this at the default: not cooking.
-	SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-	// SaveArgs.SaveFlags = ???; // I think we can leave this at the default: None.
-	// SaveArgs.bForceByteSwapping = ???; // I think we can leave this at the default: false.
-	// SaveArgs.bWarnOfLongFilename = ???; // I think we can leave this at the default: true.
-	// SaveArgs.bSlowTask = ???; // I think we can leave this at the default: true.
-	// SaveArgs.Error = ???; // I think we can leave this at the default: GError.
-	// SaveArgs.SavePAckageContext = ???; // I think we can leave this at the default: nullptr.
-	bool bSaved = UPackage::SavePackage(AtdInfo.Package, AtdInfo.Asset, *PackageFilename, SaveArgs);
-#endif
-	if (!bSaved)
-	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Unreal Engine unable to save package '%s' to file '%s'."),
-			*AtdInfo.PackagePath, *PackageFilename);
-		return false;
-	}
-
-	return true;
-}
-
-bool FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(
-	TArray<FAssetToDiskInfo>& StaticMeshAssetInfos)
-{
-	TArray<UStaticMesh*> Meshes;
-	for (auto& AtdInfo : StaticMeshAssetInfos)
-	{
-		if (!AtdInfo.IsValid())
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Found invalid Mesh in FinalizeAndSaveStaticMeshPackages."
-					 "Mesh assets will not be written to disk."));
-			return false;
-		}
-
-		Meshes.Add(static_cast<UStaticMesh*>(AtdInfo.Asset));
-	}
-
 	bool EncounteredIssue = false;
-	for (auto& Mesh : Meshes)
+	for (auto Mesh : Meshes)
 	{
+		if (Mesh == nullptr)
+			continue;
+
 		FAssetRegistryModule::AssetCreated(Mesh);
 		Mesh->MarkPackageDirty();
 	}
@@ -339,45 +528,56 @@ bool FAGX_EditorUtilities::FinalizeAndSaveStaticMeshPackages(
 	// Do the costly Build as a batch Build.
 	UStaticMesh::BatchBuild(Meshes);
 
-	for (auto& AtdInfo : StaticMeshAssetInfos)
+	for (auto Mesh : Meshes)
 	{
+		if (Mesh == nullptr)
+			continue;
+
+		UPackage* Package = Mesh->GetPackage();
+		if (Package == nullptr || Package->GetPathName().IsEmpty())
+		{
+			EncounteredIssue = true;
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Got invalid package from asset '%s' in SaveStaticMeshAssetInBulk. The asset "
+					 "will not be saved."),
+				*Mesh->GetName());
+		}
 		// The below PostEditChange call is what normally takes a lot of time, since it internally
 		// calls Build() each time. But since we have already done the Build (in batch) above, it
 		// will not actually Build the asset again. So the PostEditChange call below will execute
 		// really fast and we get the benefit of still getting everything else done in
 		// PostEditChange.
-		AtdInfo.Asset->PostEditChange();
-		AtdInfo.Asset->AddToRoot();
-		AtdInfo.Package->SetDirtyFlag(true);
+		Mesh->PostEditChange();
+		Mesh->AddToRoot();
+		Package->SetDirtyFlag(true);
 
 		// Store our new package to disk.
 		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
-			AtdInfo.PackagePath, FPackageName::GetAssetPackageExtension());
+			Package->GetPathName(), FPackageName::GetAssetPackageExtension());
 		if (PackageFilename.IsEmpty())
 		{
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Unreal Engine unable to provide a package filename for package path '%s'."),
-				*AtdInfo.PackagePath);
+				*Package->GetPathName());
 			EncounteredIssue = true;
 			continue;
 		}
 
-		AtdInfo.Package->GetMetaData();
+		Package->GetMetaData();
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-		bool bSaved =
-			UPackage::SavePackage(AtdInfo.Package, AtdInfo.Asset, RF_NoFlags, *PackageFilename);
+		bool bSaved = UPackage::SavePackage(Package, Mesh, RF_NoFlags, *PackageFilename);
 #else
 		FSavePackageArgs SaveArgs;
 		SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-		bool bSaved =
-			UPackage::SavePackage(AtdInfo.Package, AtdInfo.Asset, *PackageFilename, SaveArgs);
+		bool bSaved = UPackage::SavePackage(Package, Mesh, *PackageFilename, SaveArgs);
 #endif
 		if (!bSaved)
 		{
 			UE_LOG(
 				LogAGX, Error, TEXT("Unreal Engine unable to save package '%s' to file '%s'."),
-				*AtdInfo.PackagePath, *PackageFilename);
+				*Package->GetPathName(), *PackageFilename);
 			EncounteredIssue = true;
 		}
 	}
@@ -682,72 +882,6 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 	BuildSettings.bUseHighPrecisionTangentBasis = false;
 }
 
-UStaticMeshComponent* FAGX_EditorUtilities::CreateStaticMeshComponent(
-	AActor& Owner, USceneComponent& Outer, UStaticMesh& MeshAsset, bool bRegisterComponent)
-{
-	/// \todo Which EObjectFlags should be passed to NewObject?
-	UStaticMeshComponent* StaticMeshComponent =
-		NewObject<UStaticMeshComponent>(&Outer, FName(*MeshAsset.GetName()));
-	StaticMeshComponent->SetStaticMesh(&MeshAsset);
-	Owner.AddInstanceComponent(StaticMeshComponent);
-	if (bRegisterComponent)
-	{
-		StaticMeshComponent->RegisterComponent();
-	}
-	if (!StaticMeshComponent->AttachToComponent(
-			&Outer, FAttachmentTransformRules::SnapToTargetNotIncludingScale))
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Failed to attach imported StaticMeshComponent '%s' to parent Component '%s' in "
-				 "Actor '%s'."),
-			*StaticMeshComponent->GetName(), *Outer.GetName(), *Owner.GetName());
-	}
-	return StaticMeshComponent;
-}
-
-FString FAGX_EditorUtilities::CreateShapeMaterialAsset(
-	const FString& DirName, const FShapeMaterialBarrier& Material)
-{
-	FString MaterialName =
-		CreateAssetName(Material.GetName(), DirName, TEXT("ImportedAGXMaterial"));
-
-	// Find actual package path and a unique asset name.
-	FString PackagePath = FString::Printf(TEXT("/Game/ImportedAGXShapeMaterials/%s/"), *DirName);
-	IAssetTools& AssetTools =
-		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-	AssetTools.CreateUniqueAssetName(PackagePath, MaterialName, PackagePath, MaterialName);
-
-	// Create the package that will hold our shape material asset.
-#if UE_VERSION_OLDER_THAN(4, 26, 0)
-	UPackage* Package = CreatePackage(nullptr, *PackagePath);
-#else
-	UPackage* Package = CreatePackage(*PackagePath);
-#endif
-
-#if 0
-		/// \todo Unclear if this is needed or not. Leaving it out for now but
-		/// test with it restored if there are problems.
-		Package->FullyLoad();
-#endif
-
-	UAGX_ShapeMaterial* MaterialAsset =
-		NewObject<UAGX_ShapeMaterial>(Package, FName(*MaterialName), RF_Public | RF_Standalone);
-
-	// Copy material properties to the new material asset.
-	MaterialAsset->CopyFrom(&Material);
-
-	FAssetToDiskInfo AtdInfo {Package, MaterialAsset, PackagePath, MaterialName};
-	bool Saved = FinalizeAndSavePackage(AtdInfo);
-	if (!Saved)
-	{
-		// Return empty string if asset was not created properly.
-		return FString();
-	}
-
-	return PackagePath;
-}
-
 AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	UClass* ConstraintType, UAGX_RigidBodyComponent* RigidBody1,
 	UAGX_RigidBodyComponent* RigidBody2, bool bInPlayingWorldIfAvailable, bool bSelect,
@@ -793,41 +927,6 @@ AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	}
 
 	return NewActor;
-}
-
-UAGX_ConstraintComponent* FAGX_EditorUtilities::CreateConstraintComponent(
-	AActor* Owner, UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2,
-	UClass* ConstraintType)
-{
-	UAGX_ConstraintComponent* Constraint =
-		NewObject<UAGX_ConstraintComponent>(Owner, ConstraintType);
-	Owner->AddInstanceComponent(Constraint);
-	Constraint->RegisterComponent();
-	Constraint->BodyAttachment1.RigidBody.OwningActor = RigidBody1->GetOwner();
-	Constraint->BodyAttachment1.RigidBody.BodyName = RigidBody1->GetFName();
-	if (RigidBody2 != nullptr)
-	{
-		Constraint->BodyAttachment2.RigidBody.OwningActor = RigidBody2->GetOwner();
-		Constraint->BodyAttachment2.RigidBody.BodyName = RigidBody2->GetFName();
-	}
-	else
-	{
-		Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
-		Constraint->BodyAttachment2.RigidBody.BodyName = NAME_None;
-	}
-	return Constraint;
-}
-
-UAGX_HingeConstraintComponent* FAGX_EditorUtilities::CreateHingeConstraintComponent(
-	AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2)
-{
-	return CreateConstraintComponent<UAGX_HingeConstraintComponent>(Owner, Body1, Body2);
-}
-
-UAGX_PrismaticConstraintComponent* FAGX_EditorUtilities::CreatePrismaticConstraintComponent(
-	AActor* Owner, UAGX_RigidBodyComponent* Body1, UAGX_RigidBodyComponent* Body2)
-{
-	return CreateConstraintComponent<UAGX_PrismaticConstraintComponent>(Owner, Body1, Body2);
 }
 
 AAGX_ConstraintFrameActor* FAGX_EditorUtilities::CreateConstraintFrameActor(
@@ -1102,43 +1201,23 @@ void FAGX_EditorUtilities::GetAllClassesOfType(
 	}
 }
 
-bool FAGX_EditorUtilities::ApplyShapeMaterial(
-	UAGX_ShapeComponent* Shape, const FString& ShapeMaterialAsset)
-{
-	if (!Shape)
-	{
-		return false;
-	}
-
-	// Get the ShapeMaterialAsset.
-	UAGX_ShapeMaterial* MaterialAsset = GetAssetByPath<UAGX_ShapeMaterial>(ShapeMaterialAsset);
-
-	if (!MaterialAsset)
-	{
-		// Logging handled by GetAssetByPath().
-		return false;
-	}
-
-	Shape->ShapeMaterial = MaterialAsset;
-	return true;
-}
-
 EVisibility FAGX_EditorUtilities::VisibleIf(bool bVisible)
 {
 	return bVisible ? EVisibility::Visible : EVisibility::Collapsed;
 }
 
 FString FAGX_EditorUtilities::SelectExistingFileDialog(
-	const FString& FileDescription, const FString& FileExtension)
+	const FString& FileDescription, const FString& FileExtension, const FString& InStartDir)
 {
-	const FString DialogTitle = FString("Select an ") + FileDescription;
+	const FString DialogTitle = FString("Select a ") + FileDescription;
 	const FString FileTypes = FileDescription + FString("|*") + FileExtension;
+	const FString StartDir = InStartDir.IsEmpty() ? FString("DefaultPath") : InStartDir;
 	// For a discussion on window handles see
 	// https://answers.unrealengine.com/questions/395516/opening-a-file-dialog-from-a-plugin.html
 	TArray<FString> Filenames;
 	bool FileSelected = FDesktopPlatformModule::Get()->OpenFileDialog(
-		nullptr, DialogTitle, TEXT("DefaultPath"), TEXT("DefaultFile"), FileTypes,
-		EFileDialogFlags::None, Filenames);
+		nullptr, DialogTitle, StartDir, TEXT("DefaultFile"), FileTypes, EFileDialogFlags::None,
+		Filenames);
 	if (!FileSelected || Filenames.Num() == 0)
 	{
 		UE_LOG(LogAGX, Log, TEXT("No %s file selected. Doing nothing."), *FileExtension);
@@ -1177,8 +1256,8 @@ FString FAGX_EditorUtilities::SelectExistingDirectoryDialog(
 }
 
 FString FAGX_EditorUtilities::SelectNewFileDialog(
-	const FString& DialogTitle, const FString& FileTypes,
-	const FString& DefaultFile, const FString& InStartDir)
+	const FString& DialogTitle, const FString& FileTypes, const FString& DefaultFile,
+	const FString& InStartDir)
 {
 	TArray<FString> Filenames;
 	bool FileSelected = FDesktopPlatformModule::Get()->SaveFileDialog(
@@ -1210,6 +1289,19 @@ FString FAGX_EditorUtilities::SelectNewFileDialog(
 	}
 
 	return FPaths::ConvertRelativePathToFull(Filename);
+}
+
+void FAGX_EditorUtilities::SaveAndCompile(UBlueprint& Blueprint)
+{
+	FKismetEditorUtilities::CompileBlueprint(&Blueprint);
+	FAGX_ObjectUtilities::SaveAsset(Blueprint);
+}
+
+FString FAGX_EditorUtilities::GetRelativePath(const FString& BasePath, FString FullPath)
+{
+	FullPath.RemoveFromStart(BasePath);
+	FullPath.RemoveFromStart("/");
+	return FullPath;
 }
 
 #undef LOCTEXT_NAMESPACE

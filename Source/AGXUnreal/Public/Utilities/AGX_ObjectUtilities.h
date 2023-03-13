@@ -50,6 +50,9 @@ public:
 		const AActor& Actor, bool bIncludeFromChildActors = false);
 
 	template <typename T>
+	static T* GetComponentByName(const AActor& Actor, const TCHAR* Name);
+
+	template <typename T>
 	static T* Get(const FComponentReference& Reference, const AActor* FallbackOwner);
 
 	static const AActor* GetActor(
@@ -64,6 +67,18 @@ public:
 		return Actor != nullptr ? Actor : FallbackActor;
 	}
 
+#if WITH_EDITOR
+	/**
+	 * Get the first Actor in the level that has the given label.
+	 *
+	 * The label is the name that is displayed in the World Outliner. Not that this may not be
+	 * unique.
+	 */
+	static AActor* GetActorByLabel(const UWorld& World, const FString Label);
+#endif
+
+	static AActor* GetActorByName(const UWorld& World, const FString Name);
+
 	/*
 	 * Returns any Archetype instances of the passed object. If the passed object is not an
 	 * archetype, an empty TArray is returned.
@@ -73,6 +88,13 @@ public:
 	template <typename T>
 	static TArray<T*> GetArchetypeInstances(T& Object);
 
+	/**
+	 * Finds archetype instance with the given outer object. If the TemplateComponent has Outer as
+	 * its outer, then TemplateComponent is returned. If non could be found, nullptr is returned.
+	 */
+	template <typename T>
+	static T* GetMatchedInstance(T* TemplateComponent, UObject* Outer);
+
 #if WITH_EDITOR
 	/**
 	 * Saves (or re-saves) an asset to disk. The asset must have a valid Package setup before
@@ -80,6 +102,21 @@ public:
 	 */
 	static bool SaveAsset(UObject& Asset);
 #endif
+
+	/**
+	 * Get the transform of any Component, even template Components residing in a Blueprint.
+	 */
+	static FTransform GetAnyComponentWorldTransform(const USceneComponent& Component);
+
+	/**
+	 * Set the transform of any Component, even template Components residing in a Blueprint. If the
+	 * Component resides in a Blueprint and is a Component template, any archetype instances
+	 * currently "in sync" with the Component will be updated as well. The archetype instances
+	 * update only happens in editor builds.
+	 */
+	static void SetAnyComponentWorldTransform(
+		USceneComponent& Component, const FTransform& Transform,
+		bool ForceOverwriteInstances = false);
 
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
@@ -122,6 +159,21 @@ uint32 FAGX_ObjectUtilities::GetNumComponentsInActor(
 	TArray<T*> Components;
 	Actor.GetComponents<T>(Components, bIncludeFromChildActors);
 	return Components.Num();
+}
+
+template <typename T>
+T* FAGX_ObjectUtilities::GetComponentByName(const AActor& Actor, const TCHAR* Name)
+{
+	// The Components are stored in a TSet but I don't know how to search a TSet with a predicate
+	// So copying all the pointers to a TArray. Is there a better way?
+	//
+	// That question can be asked in general, this seems like a complicated way to find a Component
+	// in an Actor.
+	TArray<T*> Components;
+	Actor.GetComponents(Components);
+	auto It = Components.FindByPredicate([Name](const T* Component)
+										 { return Component->GetName() == Name; });
+	return It ? *It : nullptr;
 }
 
 template <typename T>
@@ -179,3 +231,40 @@ TArray<T*> FAGX_ObjectUtilities::GetArchetypeInstances(T& Object)
 
 	return Arr;
 }
+
+template <typename T>
+T* FAGX_ObjectUtilities::GetMatchedInstance(T* TemplateComponent, UObject* Outer)
+{
+	if (TemplateComponent == nullptr || Outer == nullptr)
+		return nullptr;
+
+	if (TemplateComponent->GetOuter() == Outer)
+		return TemplateComponent;
+
+	for (auto Instance : GetArchetypeInstances(*TemplateComponent))
+	{
+		if (Instance->GetOuter() == Outer)
+		{
+			return Instance;
+		}
+	}
+
+	return nullptr;
+}
+
+// clang-format off
+#define AGX_COPY_PROPERTY_FROM(UpropertyName, GetterExpression, Component, ForceOverwriteInstances) \
+{ \
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component)) \
+	{ \
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component)) \
+		{ \
+			if (ForceOverwriteInstances || Instance->UpropertyName == (Component).UpropertyName) \
+			{ \
+				Instance->UpropertyName = GetterExpression; \
+			} \
+		} \
+	} \
+	(Component).UpropertyName = GetterExpression; \
+}
+// clang-format on

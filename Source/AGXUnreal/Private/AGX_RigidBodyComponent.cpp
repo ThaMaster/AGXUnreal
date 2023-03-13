@@ -129,21 +129,21 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 	// when moving the Component using the Widget in the Level Viewport. They are instead handled in
 	// PostEditComponentMove. The local transformations, however, the ones at the top of the Details
 	// Panel, are properties and do end up here.
-	PropertyDispatcher.Add(this->GetRelativeLocationPropertyName(), [](ThisClass* This) {
-		This->TryWriteTransformToNative();
-	});
+	PropertyDispatcher.Add(
+		this->GetRelativeLocationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
 
-	PropertyDispatcher.Add(this->GetRelativeRotationPropertyName(), [](ThisClass* This) {
-		This->TryWriteTransformToNative();
-	});
+	PropertyDispatcher.Add(
+		this->GetRelativeRotationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
 
-	PropertyDispatcher.Add(this->GetAbsoluteLocationPropertyName(), [](ThisClass* This) {
-		This->TryWriteTransformToNative();
-	});
+	PropertyDispatcher.Add(
+		this->GetAbsoluteLocationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
 
-	PropertyDispatcher.Add(this->GetAbsoluteRotationPropertyName(), [](ThisClass* This) {
-		This->TryWriteTransformToNative();
-	});
+	PropertyDispatcher.Add(
+		this->GetAbsoluteRotationPropertyName(),
+		[](ThisClass* This) { This->TryWriteTransformToNative(); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bEnabled),
@@ -163,9 +163,8 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGenerateCenterOfMassOffset),
-		[](ThisClass* This) {
-			This->SetAutoGenerateCenterOfMassOffset(This->bAutoGenerateCenterOfMassOffset);
-		});
+		[](ThisClass* This)
+		{ This->SetAutoGenerateCenterOfMassOffset(This->bAutoGenerateCenterOfMassOffset); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, PrincipalInertia),
@@ -173,9 +172,8 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, bAutoGeneratePrincipalInertia),
-		[](ThisClass* This) {
-			This->SetAutoGeneratePrincipalInertia(This->bAutoGeneratePrincipalInertia);
-		});
+		[](ThisClass* This)
+		{ This->SetAutoGeneratePrincipalInertia(This->bAutoGeneratePrincipalInertia); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Velocity),
@@ -198,8 +196,8 @@ void UAGX_RigidBodyComponent::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetMotionControl(This->MotionControl); });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MergeSplitProperties), [](ThisClass* This)
-		{ This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
+		GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, MergeSplitProperties),
+		[](ThisClass* This) { This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
 
 /// @todo Enable once we get UAGX_RigidBodyComponent::SetTransformTarget.
 #if 0
@@ -496,32 +494,65 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	InitializeMotionControl();
 }
 
-void UAGX_RigidBodyComponent::CopyFrom(const FRigidBodyBarrier& Barrier)
+void UAGX_RigidBodyComponent::CopyFrom(
+	const FRigidBodyBarrier& Barrier, bool ForceOverwriteInstances)
 {
 	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
-	Mass = MassProperties.GetMass();
 
-	bAutoGenerateMass = MassProperties.GetAutoGenerateMass();
-	bAutoGenerateCenterOfMassOffset = MassProperties.GetAutoGenerateCenterOfMassOffset();
-	bAutoGeneratePrincipalInertia = MassProperties.GetAutoGeneratePrincipalInertia();
-	CenterOfMassOffset = Barrier.GetCenterOfMassOffset();
-	PrincipalInertia = MassProperties.GetPrincipalInertia();
-	Velocity = Barrier.GetVelocity();
-	AngularVelocity = Barrier.GetAngularVelocity();
-	LinearVelocityDamping = Barrier.GetLinearVelocityDamping();
-	AngularVelocityDamping = Barrier.GetAngularVelocityDamping();
-	MotionControl = Barrier.GetMotionControl();
-	bEnabled = Barrier.GetEnabled();
+	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetGuid(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(Mass, MassProperties.GetMass(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		bAutoGenerateMass, MassProperties.GetAutoGenerateMass(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		bAutoGenerateCenterOfMassOffset, MassProperties.GetAutoGenerateCenterOfMassOffset(), *this,
+		ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		bAutoGeneratePrincipalInertia, MassProperties.GetAutoGeneratePrincipalInertia(), *this,
+		ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		CenterOfMassOffset, Barrier.GetCenterOfMassOffset(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		PrincipalInertia, MassProperties.GetPrincipalInertia(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(Velocity, Barrier.GetVelocity(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		AngularVelocity, Barrier.GetAngularVelocity(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		MotionControl, Barrier.GetMotionControl(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(bEnabled, Barrier.GetEnabled(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		LinearVelocityDamping, Barrier.GetLinearVelocityDamping(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		AngularVelocityDamping, Barrier.GetAngularVelocityDamping(), *this, ForceOverwriteInstances)
 
-	/// \todo Should it always be SetWorld... here, or should we do SetRelative in some cases?
-	SetWorldLocationAndRotation(Barrier.GetPosition(), Barrier.GetRotation());
-
+	// Manually update archetype instances for properties that the AGX_COPY_PROPERTY_FROM macro
+	// cannot handle.
 	const FMergeSplitPropertiesBarrier Msp =
 		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FRigidBodyBarrier*>(&Barrier));
+	if (FAGX_ObjectUtilities::IsTemplateComponent(*this))
+	{
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))
+		{
+			// Merge Split Properties.
+			if (Msp.HasNative())
+			{
+				if (ForceOverwriteInstances ||
+					Instance->MergeSplitProperties == MergeSplitProperties)
+				{
+					Instance->MergeSplitProperties.CopyFrom(Msp);
+				}
+			}
+		}
+	}
+
+	// Finally, update this component for properties that the AGX_COPY_PROPERTY_FROM macro
+	// cannot handle.
 	if (Msp.HasNative())
 	{
 		MergeSplitProperties.CopyFrom(Msp);
 	}
+
+	FAGX_ObjectUtilities::SetAnyComponentWorldTransform(
+		*this, FTransform(Barrier.GetRotation(), Barrier.GetPosition()), ForceOverwriteInstances);
 }
 
 void UAGX_RigidBodyComponent::InitializeMotionControl()
@@ -548,14 +579,16 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 	const FVector NewLocation = NativeBarrier.GetPosition();
 	const FQuat NewRotation = NativeBarrier.GetRotation();
 
-	auto TransformSelf = [this, &NewLocation, &NewRotation]() {
+	auto TransformSelf = [this, &NewLocation, &NewRotation]()
+	{
 		const FVector OldLocation = GetComponentLocation();
 		const FVector LocationDelta = NewLocation - OldLocation;
 		MoveComponent(LocationDelta, NewRotation, false);
 		ComponentVelocity = NativeBarrier.GetVelocity();
 	};
 
-	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor) {
+	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor)
+	{
 		// Where Ancestor is relative to RigidBodyComponent, i.e., how the AGX Dynamics
 		// transformation should be changed in order to be applicable to Ancestor.
 		const FTransform AncestorRelativeToBody =
@@ -577,8 +610,9 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		Ancestor.ComponentVelocity = NativeBarrier.GetVelocity();
 	};
 
-	auto TryTransformAncestor = [this, &NewLocation, &NewRotation,
-								 &TransformAncestor](USceneComponent* Ancestor) {
+	auto TryTransformAncestor =
+		[this, &NewLocation, &NewRotation, &TransformAncestor](USceneComponent* Ancestor)
+	{
 		if (Ancestor == nullptr)
 		{
 			UE_LOG(
@@ -628,7 +662,7 @@ bool UAGX_RigidBodyComponent::CanEditChange(
 #else
 	const FProperty* InProperty
 #endif
-	) const
+) const
 {
 // This code was used when we had a bool property for the transform target and it used to enable
 // or disable the checkbox in the Details Panel. Now that we have a drop-down list instead doing
@@ -690,7 +724,9 @@ TStructOnScope<FActorComponentInstanceData> UAGX_RigidBodyComponent::GetComponen
 	const
 {
 	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
-		this, this, [](UActorComponent* Component) {
+		this, this,
+		[](UActorComponent* Component)
+		{
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});

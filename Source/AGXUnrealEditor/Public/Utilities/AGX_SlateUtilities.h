@@ -5,10 +5,9 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-/**
- * Provides helper functions for working with Slate.
- */
-class AGXUNREAL_API FAGX_SlateUtilities
+struct FSlateFontInfo;
+
+class AGXUNREALEDITOR_API FAGX_SlateUtilities
 {
 public:
 	/**
@@ -27,4 +26,6 @@ public:
 
 	static void LogChildWidgets(
 		const TSharedPtr<class SWidget>& Parent, bool Recursive = true, const FString& Prefix = "");
+
+	static FSlateFontInfo CreateFont(int Size);
 };

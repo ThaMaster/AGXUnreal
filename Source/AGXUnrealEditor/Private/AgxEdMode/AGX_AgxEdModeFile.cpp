@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImporterToBlueprint.h"
+#include "AGX_ImportSettings.h"
 #include "AGX_EditorStyle.h"
 #include "AGX_ArchiveExporter.h"
 #include "AGX_LogCategory.h"
@@ -44,6 +45,11 @@ void UAGX_AgxEdModeFile::ImportToBlueprint()
 	TSharedRef<SAGX_ImportDialog> ImportDialog = SNew(SAGX_ImportDialog);
 	Window->SetContent(ImportDialog);
 	FSlateApplication::Get().AddModalWindow(Window, nullptr);
+
+	if (auto ImportSettings = ImportDialog->ToImportSettings())
+	{
+		AGX_ImporterToBlueprint::Import(*ImportSettings);
+	}
 }
 
 void UAGX_AgxEdModeFile::ExportAgxArchive()
@@ -87,6 +93,15 @@ void UAGX_AgxEdModeFile::ExportAgxArchive()
 	{
 		UE_LOG(LogAGX, Warning, TEXT("AGX Dynamics archive could not be saved to %s."), *Filename);
 	}
+}
+
+void UAGX_AgxEdModeFile::SynchronizeModel_BP(UObject* Bp)
+{
+	UBlueprint* Blueprint = Cast<UBlueprint>(Bp);
+	if (Blueprint == nullptr)
+		return;
+
+	FAGX_EditorUtilities::SynchronizeModel(*Blueprint);
 }
 
 FText UAGX_AgxEdModeFile::GetDisplayName() const

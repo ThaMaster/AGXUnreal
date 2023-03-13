@@ -7,6 +7,7 @@
 #include "AGX_MeshWithTransform.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_ShapeUtilities.h"
 
 // Unreal Engine includes.
@@ -139,15 +140,15 @@ bool UAGX_BoxShapeComponent::AutoFitFromVertices(const TArray<FVector>& Vertices
 		return false;
 	}
 
-	SetWorldTransform(TransformBounding);
+	FAGX_ObjectUtilities::SetAnyComponentWorldTransform(*this, TransformBounding);
 	SetHalfExtent(HalfExtentsBounding);
 	return true;
 }
 
-void UAGX_BoxShapeComponent::CopyFrom(const FBoxShapeBarrier& Barrier)
+void UAGX_BoxShapeComponent::CopyFrom(const FBoxShapeBarrier& Barrier, bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Barrier);
-	HalfExtent = Barrier.GetHalfExtents();
+	Super::CopyFrom(Barrier, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(HalfExtent, Barrier.GetHalfExtents(), *this, ForceOverwriteInstances)
 }
 
 void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
@@ -190,7 +191,8 @@ void UAGX_BoxShapeComponent::InitPropertyDispatcher()
 {
 	// Cannot use the UAGX_ShapeComponent Property Dispatcher because there are name collisions for
 	// Shape-specific UProperty names, for example Radius is in both Sphere and Cylinder.
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
