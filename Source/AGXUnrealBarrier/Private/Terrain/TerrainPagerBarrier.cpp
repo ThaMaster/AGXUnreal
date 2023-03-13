@@ -196,8 +196,8 @@ TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(
 		agxTerrain::TileId Id =
 			TileSpec.convertWorldCoordinateToTileId(Tile->m_terrainTile->getPosition());
 
-		const int32 CenterToTileOffsetX = Id.x() * (NumVertsPerTile - TileOverlap);
-		const int32 CenterToTileOffsetY = -Id.y() * (NumVertsPerTile - TileOverlap); // Flip y axis.
+		const int32 CenterToTileOffsetX = Id.x() * ((NumVertsPerTile - 1) - TileOverlap);
+		const int32 CenterToTileOffsetY = -Id.y() * ((NumVertsPerTile - 1) - TileOverlap); // Flip y axis.
 
 		const auto& ModifiedVerticesAGX = Tile->m_terrainTile->getModifiedVertices();
 		for (const auto& Index2d : ModifiedVerticesAGX)
