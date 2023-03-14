@@ -1,5 +1,9 @@
 #include "Terrain/AGX_TerrainHeightFetcher.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
+#include "Terrain/AGX_Terrain.h"
+
 bool FAGX_TerrainHeightFetcher::FetchHeights(
 	const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights) const
 {

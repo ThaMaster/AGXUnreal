@@ -583,20 +583,6 @@ bool AAGX_Terrain::FetchHeights(
 		FVector BoundCornerLocalMin = NativePosLocal - HalfExtentXY;
 		FVector BoundCornerLocalMax = NativePosLocal + HalfExtentXY;
 
-		// Handle the AGX Terrain even-number-of-vertices offset by half-quad here. See for example
-		// GetAGXTransformUsingBoxFrom in AGX_HeightFieldUtilities for another example of this.
-		if (NumVerticesX % 2 == 0)
-		{
-			const auto HalfQuad = QuadSideSizeX / 2.0;
-			BoundCornerLocalMin.X += HalfQuad;
-			BoundCornerLocalMax.X -= HalfQuad;
-		}
-		if (NumVerticesY % 2 == 0)
-		{
-			const auto HalfQuad = QuadSideSizeY / 2.0;
-			BoundCornerLocalMin.Y -= HalfQuad;
-			BoundCornerLocalMax.Y += HalfQuad;
-		}
 
 		auto LargerThan = [QuadSideSizeX](auto A, auto B)
 		{
@@ -638,9 +624,8 @@ bool AAGX_Terrain::FetchHeights(
 			}
 			else
 			{
-				// Probably outside the Landscape. Remove this logging before merge.
 				UE_LOG(
-					LogTemp, Warning, TEXT("Height read missed! World sample pos: %s"),
+					LogTemp, Warning, TEXT("Height read unsuccessful in Terrain. World sample pos: %s"),
 					*SamplePointGlobal.ToString());
 				OutHeights.Add(SourceLandscape->GetActorLocation().Z);
 			}

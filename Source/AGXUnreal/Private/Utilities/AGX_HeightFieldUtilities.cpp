@@ -40,19 +40,12 @@ namespace AGX_HeightFieldUtilities_helpers
 				Landscape.GetActorTransform().TransformPositionNoScale(CenterProjectedLocal));
 		}
 
-		// The terrain will be offset half a tile if the number of tiles are odd. This is an AGX
-		// Dynamics thing.
 		const auto QuadSideSizeX = Landscape.GetActorScale().X;
 		const auto QuadSideSizeY = Landscape.GetActorScale().Y;
 		const int32 NumQuadsX = FMath::RoundToInt(2.0 * HalfExtent.X / QuadSideSizeX);
 		const int32 NumQuadsY = FMath::RoundToInt(2.0 * HalfExtent.Y / QuadSideSizeY);
-		const double TerrainTileCenterOffsetX = (NumQuadsX % 2 == 0) ? 0 : QuadSideSizeX / 2;
-		const double TerrainTileCenterOffsetY = (NumQuadsY % 2 == 0) ? 0 : -QuadSideSizeY / 2;
-		FVector LocalTileOffset(TerrainTileCenterOffsetX, TerrainTileCenterOffsetY, 0);
-
 		const FVector CenterProjectedGlobalAdjusted =
-			Landscape.GetActorTransform().TransformPositionNoScale(
-				CenterProjectedLocal + LocalTileOffset);
+			Landscape.GetActorTransform().TransformPositionNoScale(CenterProjectedLocal);
 		return FTransform(Landscape.GetActorQuat(), CenterProjectedGlobalAdjusted);
 	}
 
