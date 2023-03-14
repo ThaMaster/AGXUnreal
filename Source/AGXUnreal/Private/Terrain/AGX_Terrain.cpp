@@ -542,6 +542,13 @@ void AAGX_Terrain::Tick(float DeltaTime)
 bool AAGX_Terrain::FetchHeights(
 	const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights)
 {
+	/**
+	 * This function will be called by the native Terrain Pager from a worker thread, meaning we
+	 * have to make sure that what we do here is thread safe. For example, we protect the
+	 * OriginalHeights array here since it may be read from the main thread in
+	 * UpdateDisplacementMap.
+	 */
+
 	if (SourceLandscape == nullptr || !HasNative())
 		return false;
 
@@ -554,10 +561,14 @@ bool AAGX_Terrain::FetchHeights(
 
 	const FVector NativePosLocal = SourceLandscape->GetTransform().InverseTransformPositionNoScale(
 		GetNativeTransform().GetLocation());
-	const int32 BoundsCornerMinX = FMath::RoundToInt32(NativePosLocal.X / QuadSizeX) - NumVerticesX / 2;
-	const int32 BoundsCornerMinY = FMath::RoundToInt32(NativePosLocal.Y / QuadSizeY) - NumVerticesY / 2;
-	const int32 BoundsCornerMaxX = FMath::RoundToInt32(NativePosLocal.X / QuadSizeX) + NumVerticesX / 2;
-	const int32 BoundsCornerMaxY = FMath::RoundToInt32(NativePosLocal.Y / QuadSizeY) + NumVerticesY / 2;
+	const int32 BoundsCornerMinX =
+		FMath::RoundToInt32(NativePosLocal.X / QuadSizeX) - NumVerticesX / 2;
+	const int32 BoundsCornerMinY =
+		FMath::RoundToInt32(NativePosLocal.Y / QuadSizeY) - NumVerticesY / 2;
+	const int32 BoundsCornerMaxX =
+		FMath::RoundToInt32(NativePosLocal.X / QuadSizeX) + NumVerticesX / 2;
+	const int32 BoundsCornerMaxY =
+		FMath::RoundToInt32(NativePosLocal.Y / QuadSizeY) + NumVerticesY / 2;
 
 	// Check that we are not asked to read outside the bounds.
 	if (StartVertX < BoundsCornerMinX || StartVertY < BoundsCornerMinY ||
@@ -876,6 +887,19 @@ void AAGX_Terrain::CreateNativeShovels()
 			*GetName());
 	}
 
+	auto AddShovel = [this](FShovelBarrier& ShovelBarrier, const FAGX_Shovel& Shovel) -> bool
+	{
+		if (bEnableTerrainPager)
+		{
+			return NativeTerrainPagerBarrier.AddShovel(
+				ShovelBarrier, Shovel.RequiredRadius, Shovel.PreloadRadius);
+		}
+		else
+		{
+			return NativeTerrainBarrier.AddShovel(ShovelBarrier);
+		}
+	};
+
 	for (FAGX_Shovel& Shovel : Shovels)
 	{
 		if (Shovel.RigidBodyActor == nullptr)
@@ -922,9 +946,7 @@ void AAGX_Terrain::CreateNativeShovels()
 
 		FAGX_Shovel::UpdateNativeShovelProperties(ShovelBarrier, Shovel);
 
-		// @todo pass shovel radius stuff to TerrainPager.
-		bool Added = bEnableTerrainPager ? NativeTerrainPagerBarrier.AddShovel(ShovelBarrier)
-										 : NativeTerrainBarrier.AddShovel(ShovelBarrier);
+		bool Added = AddShovel(ShovelBarrier, Shovel);
 		if (!Added)
 		{
 			UE_LOG(
@@ -936,8 +958,7 @@ void AAGX_Terrain::CreateNativeShovels()
 			std::swap(CuttingEdgeLine.v1, CuttingEdgeLine.v2);
 			ShovelBarrier.SetTopEdge(TopEdgeLine);
 			ShovelBarrier.SetCuttingEdge(CuttingEdgeLine);
-			Added = bEnableTerrainPager ? NativeTerrainPagerBarrier.AddShovel(ShovelBarrier)
-										: NativeTerrainBarrier.AddShovel(ShovelBarrier);
+			Added = AddShovel(ShovelBarrier, Shovel);
 			if (!Added)
 			{
 				UE_LOG(

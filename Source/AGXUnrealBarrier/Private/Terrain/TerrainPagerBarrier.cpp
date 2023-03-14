@@ -129,13 +129,16 @@ void FTerrainPagerBarrier::ReleaseNative()
 	NativeRef->Native = nullptr;
 }
 
-bool FTerrainPagerBarrier::AddShovel(FShovelBarrier& Shovel)
+bool FTerrainPagerBarrier::AddShovel(
+	FShovelBarrier& Shovel, double RequiredRadius, double PreloadRadius)
 {
 	check(HasNative());
 	check(Shovel.HasNative());
 
 	// @todo: make radiuses an input param.
-	return NativeRef->Native->add(Shovel.GetNative()->Native, 0.5, 1.0);
+	return NativeRef->Native->add(
+		Shovel.GetNative()->Native, ConvertDistanceToAGX(RequiredRadius),
+		ConvertDistanceToAGX(PreloadRadius));
 }
 
 FParticleData FTerrainPagerBarrier::GetParticleData() const

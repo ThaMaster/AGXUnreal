@@ -18,5 +18,5 @@ struct FAGX_TerrainPagerSettings
 	int TileOverlap = 500.f;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
-	int TileSize = 3000.f;
+	int TileSize = 2500.f;
 };

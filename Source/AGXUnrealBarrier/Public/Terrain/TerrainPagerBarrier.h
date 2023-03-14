@@ -29,7 +29,7 @@ public:
 	const FTerrainPagerRef* GetNative() const;
 	void ReleaseNative();
 
-	bool AddShovel(FShovelBarrier& Shovel);
+	bool AddShovel(FShovelBarrier& Shovel, double RequiredRadius, double PreloadRadius);
 
 	FParticleData GetParticleData() const;
 
