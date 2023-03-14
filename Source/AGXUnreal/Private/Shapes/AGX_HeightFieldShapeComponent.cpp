@@ -143,8 +143,7 @@ void UAGX_HeightFieldShapeComponent::CreateNative()
 		*SourceLandscape, StartPos, BoxBounds->HalfExtent.X * 2.0, BoxBounds->HalfExtent.Y * 2.0);
 	check(HasNative());
 
-	const FTransform Transform = AGX_HeightFieldUtilities::GetHeightFieldTransformUsingBoxFrom(
-		*SourceLandscape, BoxBounds->Transform.GetLocation(), BoxBounds->HalfExtent);
+	const FTransform Transform = BoxBounds->Transform;
 	SetWorldTransform(Transform);
 	check(HasNative());
 	UpdateNativeProperties();

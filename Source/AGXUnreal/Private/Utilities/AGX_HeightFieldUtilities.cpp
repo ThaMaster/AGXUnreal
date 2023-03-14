@@ -20,35 +20,6 @@
 
 namespace AGX_HeightFieldUtilities_helpers
 {
-
-	FTransform GetAGXTransformUsingBoxFrom(
-		const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent,
-		bool IsTerrain)
-	{
-		const FVector CenterProjectedLocal = [&]()
-		{
-			FVector CenterLocal =
-				Landscape.GetActorTransform().InverseTransformPositionNoScale(Center);
-			CenterLocal.Z = 0.0;
-			return CenterLocal;
-		}();
-
-		if (!IsTerrain)
-		{
-			return FTransform(
-				Landscape.GetActorQuat(),
-				Landscape.GetActorTransform().TransformPositionNoScale(CenterProjectedLocal));
-		}
-
-		const auto QuadSideSizeX = Landscape.GetActorScale().X;
-		const auto QuadSideSizeY = Landscape.GetActorScale().Y;
-		const int32 NumQuadsX = FMath::RoundToInt(2.0 * HalfExtent.X / QuadSideSizeX);
-		const int32 NumQuadsY = FMath::RoundToInt(2.0 * HalfExtent.Y / QuadSideSizeY);
-		const FVector CenterProjectedGlobalAdjusted =
-			Landscape.GetActorTransform().TransformPositionNoScale(CenterProjectedLocal);
-		return FTransform(Landscape.GetActorQuat(), CenterProjectedGlobalAdjusted);
-	}
-
 	std::tuple<int32, int32> GetLandscapeQuadCountXYNonOpenWorld(const ALandscape& Landscape)
 	{
 		if (Landscape.LandscapeComponents.Num() == 0)
@@ -411,20 +382,6 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
 		ResolutionX, ResolutionY, LengthXDoublePrecision, LengthYDoublePrecision, Heights);
 
 	return HeightField;
-}
-
-FTransform AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(
-	const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent)
-{
-	return AGX_HeightFieldUtilities_helpers::GetAGXTransformUsingBoxFrom(
-		Landscape, Center, HalfExtent, true);
-}
-
-FTransform AGX_HeightFieldUtilities::GetHeightFieldTransformUsingBoxFrom(
-	const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent)
-{
-	return AGX_HeightFieldUtilities_helpers::GetAGXTransformUsingBoxFrom(
-		Landscape, Center, HalfExtent, false);
 }
 
 std::tuple<int32, int32> AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(

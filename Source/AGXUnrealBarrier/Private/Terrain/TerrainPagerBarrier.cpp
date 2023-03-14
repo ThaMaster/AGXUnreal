@@ -186,6 +186,9 @@ TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(
 	const int32 NumVertsPerTile = static_cast<int32>(TileSpec.getTileResolution());
 	const int32 TileOverlap = static_cast<int32>(TileSpec.getTileMarginSize());
 
+	const agx::Real TPzCoordinate =
+		NativeRef->Native->getTileSpecification().getReferencePoint().z();
+
 	for (TerrainPager::TileAttachments* Tile : ActiveTiles)
 	{
 		if (Tile == nullptr || Tile->m_terrainTile == nullptr)
@@ -204,9 +207,12 @@ TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(
 			const int32 X = BoundsCornerToCenterOffsX + CenterToTileOffsetX + Index2d.x();
 			const int32 Y = BoundsCornerToCenterOffsY + CenterToTileOffsetY - Index2d.y();
 
+			const agx::Real TileHeightOffs = Tile->m_terrainTile->getPosition().z() - TPzCoordinate;
+			const agx::Real LocalHeight =
+				Tile->m_terrainTile->getHeightField()->getHeight(Index2d.x(), Index2d.y());
 			ModifiedVertices.Add(std::tuple(X, Y));
-			OutHeights[X + Y * BoundVertsX] = ConvertDistanceToUnreal<float>(
-				Tile->m_terrainTile->getHeightField()->getHeight(Index2d.x(), Index2d.y()));
+			OutHeights[X + Y * BoundVertsX] =
+				ConvertDistanceToUnreal<float>(LocalHeight + TileHeightOffs);
 		}
 	}
 

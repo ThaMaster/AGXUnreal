@@ -540,98 +540,67 @@ void AAGX_Terrain::Tick(float DeltaTime)
 }
 
 bool AAGX_Terrain::FetchHeights(
-	const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights) const
+	const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights)
 {
 	if (SourceLandscape == nullptr || !HasNative())
 		return false;
 
-	// To gain some performance, calculate an X and Y vector in global coordinates that can be used
-	// for fast iteration.
-	FVector DirectionGlobalX;
-	FVector DirectionGlobalY;
-	const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
-	const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
+	const double QuadSizeX = SourceLandscape->GetActorScale().X;
+	const double QuadSizeY = SourceLandscape->GetActorScale().Y;
 	const FVector PosStartLocal =
 		SourceLandscape->GetTransform().InverseTransformPositionNoScale(WorldPosStart);
+	const int32 StartVertX = FMath::RoundToInt32(PosStartLocal.X / QuadSizeX);
+	const int32 StartVertY = FMath::RoundToInt32(PosStartLocal.Y / QuadSizeY);
+
+	const FVector NativePosLocal = SourceLandscape->GetTransform().InverseTransformPositionNoScale(
+		GetNativeTransform().GetLocation());
+	const int32 BoundsCornerMinX = FMath::RoundToInt32(NativePosLocal.X / QuadSizeX) - NumVerticesX / 2;
+	const int32 BoundsCornerMinY = FMath::RoundToInt32(NativePosLocal.Y / QuadSizeY) - NumVerticesY / 2;
+	const int32 BoundsCornerMaxX = FMath::RoundToInt32(NativePosLocal.X / QuadSizeX) + NumVerticesX / 2;
+	const int32 BoundsCornerMaxY = FMath::RoundToInt32(NativePosLocal.Y / QuadSizeY) + NumVerticesY / 2;
+
+	// Check that we are not asked to read outside the bounds.
+	if (StartVertX < BoundsCornerMinX || StartVertY < BoundsCornerMinY ||
+		StartVertX + VertsX - 1 > BoundsCornerMaxX || StartVertY + VertsY - 1 > BoundsCornerMaxY)
 	{
-		const FVector StepLocalX = PosStartLocal + FVector(QuadSideSizeX, 0.0, 0.0);
-		const FVector StepLocalY = PosStartLocal + FVector(0.0, QuadSideSizeY, 0.0);
-		const FVector StepGlobalX =
-			SourceLandscape->GetTransform().TransformPositionNoScale(StepLocalX);
-		const FVector StepGlobalY =
-			SourceLandscape->GetTransform().TransformPositionNoScale(StepLocalY);
-		DirectionGlobalX = StepGlobalX - WorldPosStart;
-		DirectionGlobalY = StepGlobalY - WorldPosStart;
+		return false;
 	}
 
-	// Detect if the caller is trying to read outside the Terrain Bounds and return false if so. We
-	// never read heights outside the Terrain Bounds. This will ensure Terrain Tiles are not created
-	// outside the Bounds if using Terrain Pager for example.
-	{
-		const FTransform NativeWorldTransform = GetNativeTransform();
-
-		const FVector PosEndLocal = PosStartLocal + FVector(QuadSideSizeX, 0.0, 0.0) * (VertsX-1) +
-									FVector(0.0, QuadSideSizeY, 0.0) * (VertsY-1);
-		const FVector NativePosLocal =
-			SourceLandscape->GetTransform().InverseTransformPositionNoScale(
-				NativeWorldTransform.GetLocation());
-
-		const FVector HalfExtentXY = FVector(
-			(NumVerticesX - 1) * QuadSideSizeX / 2.0, (NumVerticesY - 1) * QuadSideSizeY / 2.0,
-			0.0);
-
-		FVector BoundCornerLocalMin = NativePosLocal - HalfExtentXY;
-		FVector BoundCornerLocalMax = NativePosLocal + HalfExtentXY;
-
-
-		auto LargerThan = [QuadSideSizeX](auto A, auto B)
-		{
-			const auto Tolerance = QuadSideSizeX * 0.01;
-			return A > B + Tolerance;
-		};
-
-		if (LargerThan(PosEndLocal.X, BoundCornerLocalMax.X) ||
-			LargerThan(PosEndLocal.Y, BoundCornerLocalMax.Y))
-		{
-			return false;
-		}
-
-		if (LargerThan(BoundCornerLocalMin.X, PosStartLocal.X) ||
-			LargerThan(BoundCornerLocalMin.Y, PosStartLocal.Y))
-		{
-			return false;
-		}
-	}
-
-	OutHeights.Reserve(VertsX * VertsY);
+	OriginalHeightsMutex.lock();
 
 	// AGX Dynamics coordinate systems are mapped with Y-axis flipped.
-	for (int Y = VertsY - 1; Y >= 0; Y--)
+	for (int Y = StartVertY + VertsY - 1; Y >= StartVertY; Y--)
 	{
-		for (int X = 0; X < VertsX; X++)
+		for (int X = StartVertX; X < StartVertX + VertsX; X++)
 		{
-			const FVector SamplePointGlobal =
-				FVector(WorldPosStart.X, WorldPosStart.Y, 0.0) +
-				DirectionGlobalX * static_cast<decltype(FVector::X)>(X) +
-				DirectionGlobalY * static_cast<decltype(FVector::X)>(Y);
+			const FVector SamplePosLocal = FVector(
+				static_cast<double>(X) * QuadSizeX, static_cast<double>(Y) * QuadSizeY, 0.0);
+			const FVector SamplePosGlobal =
+				SourceLandscape->GetTransform().TransformPositionNoScale(SamplePosLocal);
 
-			if (auto Height = SourceLandscape->GetHeightAtLocation(SamplePointGlobal))
+			if (auto Height = SourceLandscape->GetHeightAtLocation(SamplePosGlobal))
 			{
 				FVector HeightPointLocal =
 					SourceLandscape->GetTransform().InverseTransformPositionNoScale(
-						FVector(SamplePointGlobal.X, SamplePointGlobal.Y, *Height));
+						FVector(SamplePosGlobal.X, SamplePosGlobal.Y, *Height));
 				OutHeights.Add(HeightPointLocal.Z);
+				OriginalHeights[(X - BoundsCornerMinX) + (Y - BoundsCornerMinY) * NumVerticesX] =
+					HeightPointLocal.Z;
 			}
 			else
 			{
 				UE_LOG(
-					LogTemp, Warning, TEXT("Height read unsuccessful in Terrain. World sample pos: %s"),
-					*SamplePointGlobal.ToString());
+					LogTemp, Warning,
+					TEXT("Height read unsuccessful in Terrain. World	sample pos: %s"),
+					*SamplePosGlobal.ToString());
 				OutHeights.Add(SourceLandscape->GetActorLocation().Z);
+				OriginalHeights[(X - BoundsCornerMinX) + (Y - BoundsCornerMinY) * NumVerticesX] =
+					SourceLandscape->GetActorLocation().Z;
 			}
 		}
 	}
 
+	OriginalHeightsMutex.unlock();
 	return true;
 }
 
@@ -784,11 +753,8 @@ bool AAGX_Terrain::CreateNativeTerrain()
 		return false;
 	}
 
-	FTransform Transform = AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(
-		*SourceLandscape, Bounds->Transform.GetLocation(), Bounds->HalfExtent);
-
-	NativeTerrainBarrier.SetRotation(Transform.GetRotation());
-	NativeTerrainBarrier.SetPosition(Transform.GetLocation());
+	NativeTerrainBarrier.SetRotation(Bounds->Transform.GetRotation());
+	NativeTerrainBarrier.SetPosition(Bounds->Transform.GetLocation());
 
 	NumVerticesX =
 		FMath::RoundToInt32(Bounds->HalfExtent.X * 2.0 / SourceLandscape->GetActorScale().X) + 1;
@@ -1125,6 +1091,8 @@ void AAGX_Terrain::UpdateDisplacementMap()
 		ModifiedVertices = NativeTerrainBarrier.GetModifiedVertices();
 	}
 
+	OriginalHeightsMutex.lock();
+
 	for (const auto& VertexTuple : ModifiedVertices)
 	{
 		const int32 VertX = std::get<0>(VertexTuple);
@@ -1133,6 +1101,8 @@ void AAGX_Terrain::UpdateDisplacementMap()
 		const float HeightChange = CurrentHeights[Index] - OriginalHeights[Index];
 		DisplacementData[Index] = static_cast<FFloat16>(HeightChange);
 	}
+
+	OriginalHeightsMutex.unlock();
 
 	const uint32 BytesPerPixel = sizeof(FFloat16);
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());

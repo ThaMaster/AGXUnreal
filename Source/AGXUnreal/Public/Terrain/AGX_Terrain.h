@@ -16,6 +16,9 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/Actor.h"
 
+// Standard library includes.
+#include <mutex>
+
 #include "AGX_Terrain.generated.h"
 
 class UAGX_HeightFieldBoundsComponent;
@@ -267,6 +270,7 @@ private:
 	FAGX_TerrainHeightFetcher HeightFetcher;
 
 	// Height field related variables.
+	std::mutex OriginalHeightsMutex;
 	TArray<float> OriginalHeights;
 	TArray<float> CurrentHeights;
 	TArray<FFloat16> DisplacementData;
@@ -289,7 +293,7 @@ private:
 
 	// @todo: document behavior.
 	bool FetchHeights(
-		const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights) const;
+		const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights);
 
 	FTransform GetNativeTransform() const;
 };
