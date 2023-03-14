@@ -2342,6 +2342,17 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	{
 		auto MatchAndSetRenderMaterials = [&RenderMaterials](TMap<FGuid, USCS_Node*>& StaticMeshes)
 		{
+			auto IsMaterialValid = [](UMaterialInterface* M)
+			{
+				if (M == nullptr)
+					return false;
+
+				if (M->HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed | RF_PendingKill))
+					return false;
+
+				return true;
+			};
+
 			for (auto StaticMeshNodeTuple : StaticMeshes)
 			{
 				UStaticMeshComponent* Smc =
@@ -2351,14 +2362,16 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 				if (UMaterialInterface* Mat = RenderMaterials.FindRef(Smc))
 				{
-					Smc->SetMaterial(0, Mat);
+					if (IsMaterialValid(Mat))
+						Smc->SetMaterial(0, Mat);
 				}
 
 				for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*Smc))
 				{
 					if (UMaterialInterface* Mat = RenderMaterials.FindRef(Instance))
 					{
-						Instance->SetMaterial(0, Mat);
+						if (IsMaterialValid(Mat))
+							Instance->SetMaterial(0, Mat);
 					}
 				}
 			}
