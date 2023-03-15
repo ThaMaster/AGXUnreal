@@ -2347,7 +2347,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		{
 			auto IsMaterialValid = [](UMaterialInterface* M)
 			{
-				if (M == nullptr || M->IsPendingKill())
+				if (M == nullptr || !IsValid(M))
 					return false;
 
 				if (M->HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed))
