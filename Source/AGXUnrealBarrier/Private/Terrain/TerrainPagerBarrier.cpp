@@ -189,8 +189,9 @@ TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(
 	const int32 NumVertsPerTile = static_cast<int32>(TileSpec.getTileResolution());
 	const int32 TileOverlap = static_cast<int32>(TileSpec.getTileMarginSize());
 
-	const agx::Real TPzCoordinate =
-		NativeRef->Native->getTileSpecification().getReferencePoint().z();
+	agx::FrameRef TPFrame = new agx::Frame();
+	TPFrame->setRotate(NativeRef->Native->getTileSpecification().getReferenceRotation());
+	TPFrame->setTranslate(NativeRef->Native->getTileSpecification().getReferencePoint());
 
 	for (TerrainPager::TileAttachments* Tile : ActiveTiles)
 	{
@@ -199,6 +200,9 @@ TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(
 
 		agxTerrain::TileId Id =
 			TileSpec.convertWorldCoordinateToTileId(Tile->m_terrainTile->getPosition());
+
+		const agx::Vec3 TileLocalPos =
+			TPFrame->transformPointToLocal(Tile->m_terrainTile->getPosition());
 
 		const int32 CenterToTileOffsetX = Id.x() * ((NumVertsPerTile - 1) - TileOverlap);
 		const int32 CenterToTileOffsetY =
@@ -210,7 +214,7 @@ TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(
 			const int32 X = BoundsCornerToCenterOffsX + CenterToTileOffsetX + Index2d.x();
 			const int32 Y = BoundsCornerToCenterOffsY + CenterToTileOffsetY - Index2d.y();
 
-			const agx::Real TileHeightOffs = Tile->m_terrainTile->getPosition().z() - TPzCoordinate;
+			const agx::Real TileHeightOffs = TileLocalPos.z();
 			const agx::Real LocalHeight =
 				Tile->m_terrainTile->getHeightField()->getHeight(Index2d.x(), Index2d.y());
 			ModifiedVertices.Add(std::tuple(X, Y));
@@ -232,4 +236,10 @@ FQuat FTerrainPagerBarrier::GetReferenceRotation() const
 {
 	check(HasNative());
 	return Convert(NativeRef->Native->getTileSpecification().getReferenceRotation());
+}
+
+void FTerrainPagerBarrier::OnTemplateTerrainChanged() const
+{
+	check(HasNative());
+	NativeRef->Native->applyChangesToTemplateTerrain();
 }

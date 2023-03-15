@@ -45,6 +45,8 @@ public:
 	FVector GetReferencePoint() const;
 	FQuat GetReferenceRotation() const;
 
+	void OnTemplateTerrainChanged() const;
+
 private:
 	FTerrainPagerBarrier(const FTerrainPagerBarrier&) = delete;
 	void operator=(const FTerrainPagerBarrier&) = delete;
