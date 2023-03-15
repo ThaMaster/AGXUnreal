@@ -15,8 +15,14 @@ struct FAGX_TerrainPagerSettings
 	// @todo add API comments
 
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
-	int TileOverlap = 500.f;
+	double TileOverlap {500.0};
 
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
-	int TileSize = 2500.f;
+	double TileSize {2500.0};
+
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
+	bool bDrawDebugGrid {true};
+
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
+	bool bDrawDebugLoadRadii {true};
 };
