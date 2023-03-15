@@ -116,6 +116,16 @@ void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
 	bCreateParticles = CreateParticles;
 }
 
+void AAGX_Terrain::SetEnableTerrainPager(bool bEnabled)
+{
+	bEnableTerrainPager = bEnabled;
+}
+
+bool AAGX_Terrain::GetEnableTerrainPager() const
+{
+	return bEnableTerrainPager;
+}
+
 bool AAGX_Terrain::GetCreateParticles() const
 {
 	if (HasNativeTerrain())
@@ -429,6 +439,10 @@ void AAGX_Terrain::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		AGX_MEMBER_NAME(TerrainParticlesDataMap),
 		[](ThisClass* This) { This->EnsureParticleDataRenderTargetSize(); });
+
+	PropertyDispatcher.Add(
+		AGX_MEMBER_NAME(bEnableTerrainPager),
+		[](ThisClass* This) { This->SetEnableTerrainPager(This->bEnableTerrainPager); });
 }
 
 void AAGX_Terrain::EnsureParticleDataRenderTargetSize()
@@ -849,6 +863,19 @@ bool AAGX_Terrain::CreateNativeTerrainPager()
 				 "Paging."),
 			*GetName());
 		return false;
+	}
+
+	// Always set DeleteParticlesOutsideBounds to false if we are using Terrain Paging, otherwise
+	// particles may be deleted when tiles are loaded and unloaded in an unexpected way. This will
+	// be handled automatically by AGX Dynamics in the future.
+	if (bDeleteParticlesOutsideBounds)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("DeleteParticlesOutsideBounds was set to true while using Terrain Paging. This "
+				 "combination is not supported. DeleteParticlesOutsideBounds will be set to "
+				 "false."));
+		SetDeleteParticlesOutsideBounds(false);
 	}
 
 	const auto QuadSize = SourceLandscape->GetActorScale().X;

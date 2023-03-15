@@ -68,7 +68,8 @@ public:
 
 	/** Whether the native terrain simulation should auto-delete particles that are out of bounds.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "!bEnableTerrainPager"))
 	bool bDeleteParticlesOutsideBounds = true;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
@@ -209,6 +210,12 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	bool bEnableTerrainPager;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	void SetEnableTerrainPager(bool bEnabled);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	bool GetEnableTerrainPager() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "bEnableTerrainPager"))
 	FAGX_TerrainPagerSettings TerrainPagerSettings;
