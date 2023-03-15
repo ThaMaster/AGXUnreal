@@ -861,6 +861,16 @@ bool AAGX_Terrain::CreateNativeTerrainPager()
 		&HeightFetcher, NativeTerrainBarrier, TileNumVerticesSide, TileOverlapVertices, QuadSize,
 		MaxDepth);
 
+	if (!HasNativeTerrainPager())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to create Terrain Pager native for '%s'. The Output log may include more "
+				 "details."),
+			*GetName());
+		return false;
+	}
+
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
 	{
