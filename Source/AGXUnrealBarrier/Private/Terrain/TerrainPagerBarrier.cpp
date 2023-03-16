@@ -238,6 +238,29 @@ FQuat FTerrainPagerBarrier::GetReferenceRotation() const
 	return Convert(NativeRef->Native->getTileSpecification().getReferenceRotation());
 }
 
+TArray<FTransform> FTerrainPagerBarrier::GetActiveTileTransforms() const
+{
+	TArray<FTransform> TileTransforms;
+
+	if (!HasNative())
+		return TileTransforms;
+
+	const TerrainPager::TileAttachmentPtrVector ActiveTiles =
+		NativeRef->Native->getActiveTileAttachments();
+
+	TileTransforms.Reserve(ActiveTiles.size());
+
+	for (TerrainPager::TileAttachments* Tile : ActiveTiles)
+	{
+		if (Tile == nullptr || Tile->m_terrainTile == nullptr)
+			continue;
+
+		TileTransforms.Add(Convert(Tile->m_terrainTile->getTransform()));
+	}
+
+	return TileTransforms;
+}
+
 void FTerrainPagerBarrier::OnTemplateTerrainChanged() const
 {
 	check(HasNative());

@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "Terrain/AGX_HeightFieldBoundsComponent.h"
 #include "Terrain/AGX_Terrain.h"
+#include "Terrain/TerrainPagerBarrier.h"
 
 // Unreal Engine includes.
 #include "Landscape.h"
@@ -16,29 +17,61 @@
 namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 {
 	void DrawRectangle(
-		const FTransform& CornerTransform, double X, double Y, const FLinearColor& Color,
+		const FTransform& CenterTransform, double X, double Y, const FLinearColor& Color,
 		float LineThickness, FPrimitiveDrawInterface* PDI)
 	{
-		const FVector Corner0 = CornerTransform.GetLocation();
-		const FVector Corner1 = CornerTransform.TransformPositionNoScale(FVector(0, Y, 0));
-		const FVector Corner2 = CornerTransform.TransformPositionNoScale(FVector(X, Y, 0));
-		const FVector Corner3 = CornerTransform.TransformPositionNoScale(FVector(X, 0, 0));
+		const double Xh = X / 2.0;
+		const double Yh = Y / 2.0;
+		const FVector Corner0 = CenterTransform.TransformPositionNoScale(FVector(-Xh, -Yh, 0));
+		const FVector Corner1 = CenterTransform.TransformPositionNoScale(FVector(-Xh, Yh, 0));
+		const FVector Corner2 = CenterTransform.TransformPositionNoScale(FVector(Xh, Yh, 0));
+		const FVector Corner3 = CenterTransform.TransformPositionNoScale(FVector(Xh, -Yh, 0));
 
-		PDI->DrawLine(Corner0, Corner1, Color, SDPG_Foreground);
-		PDI->DrawLine(Corner1, Corner2, Color, SDPG_Foreground);
-		PDI->DrawLine(Corner2, Corner3, Color, SDPG_Foreground);
-		PDI->DrawLine(Corner3, Corner0, Color, SDPG_Foreground);
+		// We use a large DepthBias here so that the lines are drawn clearly and not dark
+		// (underneeth the landscape).
+		PDI->DrawLine(Corner0, Corner1, Color, SDPG_World, LineThickness, BIG_NUMBER, false);
+		PDI->DrawLine(Corner1, Corner2, Color, SDPG_World, LineThickness, BIG_NUMBER, false);
+		PDI->DrawLine(Corner2, Corner3, Color, SDPG_World, LineThickness, BIG_NUMBER, false);
+		PDI->DrawLine(Corner3, Corner0, Color, SDPG_World, LineThickness, BIG_NUMBER, false);
 	}
 
-	void DrawTerrainPagerDebugRendering(
+	void DrawTerrainPagerLoadedTiles(
 		const AAGX_Terrain& Terrain, const FTransform& BoundsTransform, const FVector& HalfExtents,
 		FPrimitiveDrawInterface* PDI)
 	{
-		if (!Terrain.bEnableTerrainPager)
+		check(Terrain.bEnableTerrainPager);
+		check(Terrain.SourceLandscape != nullptr);
+		check(Terrain.HasNativeTerrainPager());
+
+		const FTerrainPagerBarrier* TPBarrier = Terrain.GetNativeTerrainPager();
+		if (TPBarrier == nullptr)
 			return;
 
-		if (Terrain.SourceLandscape == nullptr)
-			return;
+		const auto QuadSize = Terrain.SourceLandscape->GetActorScale().X;
+		const int32 TileNumQuadsSide =
+			FMath::RoundToInt32(Terrain.TerrainPagerSettings.TileSize / QuadSize);
+		const double TileSize = QuadSize * TileNumQuadsSide;
+
+		const FVector BoundsPosGlobal = BoundsTransform.GetLocation();
+
+		for (auto TileTransform : TPBarrier->GetActiveTileTransforms())
+		{
+			const FVector TilePosGlobal = TileTransform.GetLocation();
+
+			// We want to draw the tiles at the same height as the bounds to align everything. The
+			// tiles may have a z-offset that depends on the first loaded tile average height (set
+			// by AGX Dynamics automatically).
+			TileTransform.SetLocation(FVector(TilePosGlobal.X, TilePosGlobal.Y, BoundsPosGlobal.Z));
+			DrawRectangle(TileTransform, TileSize, -TileSize, FLinearColor::Yellow, 6.f, PDI);
+		}
+	}
+
+	void DrawTerrainPagerGrid(
+		const AAGX_Terrain& Terrain, const FTransform& BoundsTransform, const FVector& HalfExtents,
+		FPrimitiveDrawInterface* PDI)
+	{
+		check(Terrain.bEnableTerrainPager);
+		check(Terrain.SourceLandscape != nullptr);
 
 		const auto QuadSize = Terrain.SourceLandscape->GetActorScale().X;
 		const int32 TileNumQuadsSide =
@@ -77,15 +110,39 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 		{
 			for (int32 X = -NumTilesXn; X < NumTilesXp; X++)
 			{
-				const double StartPosLocalX = static_cast<double>(X) * (TileSize - TileOverlap);
-				const double StartPosLocalY = static_cast<double>(Y) * (TileSize - TileOverlap);
+				// The 0,0 Tile is actually extending in the x+ and y- direction in Unreal because
+				// of AGX Dynamics coordinate system having flipped y-axis. That's why we negate the
+				// y-directions.
+				const double StartPosLocalX =
+					static_cast<double>(X) * (TileSize - TileOverlap) + TileSize / 2.0;
+				const double StartPosLocalY =
+					static_cast<double>(Y) * (TileSize - TileOverlap) - TileSize / 2.0;
 				const FVector StartPosGlobal = BoundsTransform.TransformPositionNoScale(
 					FVector(StartPosLocalX, StartPosLocalY, 0.0));
 
 				const FTransform RectangleTransform(BoundsTransform.GetRotation(), StartPosGlobal);
 				DrawRectangle(
-					RectangleTransform, TileSize, -TileSize, FLinearColor::Gray, 2.f, PDI);
+					RectangleTransform, TileSize, -TileSize, FLinearColor::White, 2.f, PDI);
 			}
+		}
+	}
+
+	void DrawTerrainPagerDebugRendering(
+		const AAGX_Terrain& Terrain, const FTransform& BoundsTransform, const FVector& HalfExtents,
+		FPrimitiveDrawInterface* PDI)
+	{
+		if (!Terrain.bEnableTerrainPager)
+			return;
+
+		if (Terrain.SourceLandscape == nullptr)
+			return;
+
+		if (Terrain.TerrainPagerSettings.bDrawDebugGrid)
+		{
+			DrawTerrainPagerGrid(Terrain, BoundsTransform, HalfExtents, PDI);
+
+			if (Terrain.HasNativeTerrainPager())
+				DrawTerrainPagerLoadedTiles(Terrain, BoundsTransform, HalfExtents, PDI);
 		}
 	}
 

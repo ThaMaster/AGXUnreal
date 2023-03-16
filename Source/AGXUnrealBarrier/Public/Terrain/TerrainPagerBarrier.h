@@ -45,6 +45,8 @@ public:
 	FVector GetReferencePoint() const;
 	FQuat GetReferenceRotation() const;
 
+	TArray<FTransform> GetActiveTileTransforms() const;
+
 	void OnTemplateTerrainChanged() const;
 
 private:
