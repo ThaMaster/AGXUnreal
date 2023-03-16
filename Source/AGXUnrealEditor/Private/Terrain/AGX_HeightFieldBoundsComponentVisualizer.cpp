@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Terrain/AGX_HeightFieldBoundsComponent.h"
+#include "Terrain/AGX_Shovel.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Terrain/TerrainPagerBarrier.h"
 
@@ -35,8 +36,54 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 		PDI->DrawLine(Corner3, Corner0, Color, SDPG_World, LineThickness, BIG_NUMBER, false);
 	}
 
+	void DrawCircle(
+		const FVector& CenterPosGlobal, float Radius, const FLinearColor& Color,
+		float LineThickness, FPrimitiveDrawInterface* PDI)
+	{
+		DrawCircle(
+			PDI, CenterPosGlobal, FVector(1, 0, 0), FVector(0, 1, 0), Color, Radius, 24, SDPG_World,
+			LineThickness, BIG_NUMBER);
+	}
+
+	void DrawTerrainPagerLoadRadii(
+		const AAGX_Terrain& Terrain, const FTransform& BoundsTransform,
+		FPrimitiveDrawInterface* PDI)
+	{
+		for (const FAGX_Shovel& Shovel : Terrain.Shovels)
+		{
+			AActor* Actor = Shovel.RigidBodyActor;
+			if (Actor == nullptr)
+				continue;
+
+			TArray<UAGX_RigidBodyComponent*> Bodies;
+			Actor->GetComponents(Bodies, false);
+
+			UAGX_RigidBodyComponent** It =
+				Bodies.FindByPredicate([&Shovel](UAGX_RigidBodyComponent* Body)
+									   { return Shovel.BodyName == Body->GetName(); });
+			if (It == nullptr || *It == nullptr)
+			{
+				continue;
+			}
+
+			const UAGX_RigidBodyComponent& ShovelBody = **It;
+
+			if (Shovel.RequiredRadius > 0)
+			{
+				DrawCircle(
+					ShovelBody.GetPosition(), Shovel.RequiredRadius, FLinearColor::White, 8.f, PDI);
+			}
+			
+			if (Shovel.PreloadRadius)
+			{
+				DrawCircle(
+					ShovelBody.GetPosition(), Shovel.PreloadRadius, FLinearColor::Gray, 3.f, PDI);
+			}			
+		}
+	}
+
 	void DrawTerrainPagerLoadedTiles(
-		const AAGX_Terrain& Terrain, const FTransform& BoundsTransform, const FVector& HalfExtents,
+		const AAGX_Terrain& Terrain, const FTransform& BoundsTransform,
 		FPrimitiveDrawInterface* PDI)
 	{
 		check(Terrain.bEnableTerrainPager);
@@ -142,7 +189,12 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 			DrawTerrainPagerGrid(Terrain, BoundsTransform, HalfExtents, PDI);
 
 			if (Terrain.HasNativeTerrainPager())
-				DrawTerrainPagerLoadedTiles(Terrain, BoundsTransform, HalfExtents, PDI);
+				DrawTerrainPagerLoadedTiles(Terrain, BoundsTransform, PDI);
+		}
+
+		if (Terrain.TerrainPagerSettings.bDrawDebugLoadRadii)
+		{
+			DrawTerrainPagerLoadRadii(Terrain, BoundsTransform, PDI);
 		}
 	}
 
