@@ -61,24 +61,22 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 			UAGX_RigidBodyComponent** It =
 				Bodies.FindByPredicate([&Shovel](UAGX_RigidBodyComponent* Body)
 									   { return Shovel.BodyName == Body->GetName(); });
+
 			if (It == nullptr || *It == nullptr)
-			{
 				continue;
-			}
 
 			const UAGX_RigidBodyComponent& ShovelBody = **It;
-
 			if (Shovel.RequiredRadius > 0)
 			{
 				DrawCircle(
 					ShovelBody.GetPosition(), Shovel.RequiredRadius, FLinearColor::White, 8.f, PDI);
 			}
-			
+
 			if (Shovel.PreloadRadius)
 			{
 				DrawCircle(
 					ShovelBody.GetPosition(), Shovel.PreloadRadius, FLinearColor::Gray, 3.f, PDI);
-			}			
+			}
 		}
 	}
 
