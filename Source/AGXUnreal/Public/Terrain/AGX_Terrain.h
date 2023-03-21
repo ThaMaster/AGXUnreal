@@ -70,7 +70,7 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "!bEnableTerrainPager"))
-	bool bDeleteParticlesOutsideBounds = true;
+	bool bDeleteParticlesOutsideBounds = false;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
 	void SetDeleteParticlesOutsideBounds(bool DeleteParticlesOutsideBounds);
