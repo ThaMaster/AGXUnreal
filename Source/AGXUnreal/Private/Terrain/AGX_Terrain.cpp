@@ -110,9 +110,12 @@ void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
 	if (HasNativeTerrain())
 	{
 		NativeTerrainBarrier.SetCreateParticles(CreateParticles);
+		if (HasNativeTerrainPager())
+		{
+			NativeTerrainPagerBarrier.OnTemplateTerrainChanged();
+		}
 	}
 
-	// @todo: tell TerrainPager (if used) that the Terrain has changed.
 	bCreateParticles = CreateParticles;
 }
 
@@ -141,9 +144,12 @@ void AAGX_Terrain::SetDeleteParticlesOutsideBounds(bool DeleteParticlesOutsideBo
 	if (HasNativeTerrain())
 	{
 		NativeTerrainBarrier.SetDeleteParticlesOutsideBounds(DeleteParticlesOutsideBounds);
+		if (HasNativeTerrainPager())
+		{
+			NativeTerrainPagerBarrier.OnTemplateTerrainChanged();
+		}
 	}
 
-	// @todo: tell TerrainPager (if used) that the Terrain has changed.
 	bDeleteParticlesOutsideBounds = DeleteParticlesOutsideBounds;
 }
 
@@ -162,6 +168,10 @@ void AAGX_Terrain::SetPenetrationForceVelocityScaling(double InPenetrationForceV
 	if (HasNativeTerrain())
 	{
 		NativeTerrainBarrier.SetPenetrationForceVelocityScaling(InPenetrationForceVelocityScaling);
+		if (HasNativeTerrainPager())
+		{
+			NativeTerrainPagerBarrier.OnTemplateTerrainChanged();
+		}
 	}
 
 	PenetrationForceVelocityScaling = InPenetrationForceVelocityScaling;
@@ -173,7 +183,7 @@ double AAGX_Terrain::GetPenetrationForceVelocityScaling() const
 	{
 		return NativeTerrainBarrier.GetPenetrationForceVelocityScaling();
 	}
-	// @todo: tell TerrainPager (if used) that the Terrain has changed.
+
 	return PenetrationForceVelocityScaling;
 }
 
@@ -192,8 +202,12 @@ void AAGX_Terrain::SetMaximumParticleActivationVolume(double InMaximumParticleAc
 	if (HasNativeTerrain())
 	{
 		NativeTerrainBarrier.SetMaximumParticleActivationVolume(InMaximumParticleActivationVolume);
+		if (HasNativeTerrainPager())
+		{
+			NativeTerrainPagerBarrier.OnTemplateTerrainChanged();
+		}
 	}
-	// @todo: tell TerrainPager (if used) that the Terrain has changed.
+
 	MaximumParticleActivationVolume = InMaximumParticleActivationVolume;
 }
 
