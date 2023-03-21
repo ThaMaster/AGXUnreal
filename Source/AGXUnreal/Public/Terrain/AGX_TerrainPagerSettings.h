@@ -15,20 +15,37 @@ struct AGXUNREAL_API FAGX_TerrainPagerSettings
 {
 	GENERATED_USTRUCT_BODY()
 
-	// @todo add API comments
-
+	/**
+	 * Specifies the overlap between Terrain Pager tiles [cm].
+	 * The overlap should be larger than both the length of the cutting edge interacting with the
+	 * Terrain as well as twice the expected maximum length of a soil-wedge (which depends on how
+	 * deep excavation in the terrain will be performed).
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
 	double TileOverlap {500.0};
 
+	/**
+	 * The overall size (side length), including overlap, of each Terrain Pager tile [cm].
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
 	double TileSize {2500.0};
 
+	/**
+	 * Specifies whether or not to draw Terrain Pager grid debug rendering.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
 	bool bDrawDebugGrid {true};
 
+	/**
+	 * Specifies whether or not to draw Terrain Pager load radii debug rendering.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
 	bool bDrawDebugLoadRadii {true};
 
+	/**
+	 * Rigid Bodies tracked by the Terrain Pager. These will be used when deciding which Terrain
+	 * tiles to load or unload.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
 	TArray<FAGX_TerrainPagerBodyReference> TrackedRigidBodies;
 };

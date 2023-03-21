@@ -217,7 +217,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
 	bool GetEnableTerrainPager() const;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "bEnableTerrainPager"))
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "bEnableTerrainPager"))
 	FAGX_TerrainPagerSettings TerrainPagerSettings;
 
 	bool HasNativeTerrain() const;
@@ -244,7 +245,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;	
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
 	void InitializeNative();
@@ -299,7 +300,11 @@ private:
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
 	const int32 NumPixelsPerParticle = 2;
 
-	// @todo: document behavior.
+	/**
+	 * Thread safe convenience function for reading heights from the source Landscape.
+	 * The steps between height values are determined by the source Landscape quad sice.
+	 * Returns true if the heights could be read, false otherwise.
+	 */
 	bool FetchHeights(
 		const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights);
 

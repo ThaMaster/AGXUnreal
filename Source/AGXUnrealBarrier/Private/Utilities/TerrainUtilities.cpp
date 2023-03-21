@@ -14,6 +14,11 @@ namespace TerrainUtilities_helpers
 	void AppendParticlePositions(
 		const agx::Physics::GranularBodyPtrArray& GranularParticles, TArray<FVector>& OutPositions)
 	{
+		if (GranularParticles.size() > OutPositions.GetSlack())
+		{
+			OutPositions.Reserve(OutPositions.Num() + GranularParticles.size());
+		}
+
 		for (size_t i = 0; i < GranularParticles.size(); ++i)
 		{
 			const agx::Vec3 PositionAGX = GranularParticles[i].position();
@@ -25,6 +30,11 @@ namespace TerrainUtilities_helpers
 	void AppendParticleRadii(
 		const agx::Physics::GranularBodyPtrArray& GranularParticles, TArray<float>& OutRadii)
 	{
+		if (GranularParticles.size() > OutRadii.GetSlack())
+		{
+			OutRadii.Reserve(OutRadii.Num() + GranularParticles.size());
+		}
+
 		for (size_t i = 0; i < GranularParticles.size(); ++i)
 		{
 			const agx::Real RadiusAGX = GranularParticles[i].radius();
@@ -36,6 +46,11 @@ namespace TerrainUtilities_helpers
 	void AppendParticleRotations(
 		const agx::Physics::GranularBodyPtrArray& GranularParticles, TArray<FQuat>& OutRotations)
 	{
+		if (GranularParticles.size() > OutRotations.GetSlack())
+		{
+			OutRotations.Reserve(OutRotations.Num() + GranularParticles.size());
+		}
+
 		for (size_t i = 0; i < GranularParticles.size(); ++i)
 		{
 			const agx::Quat RotationAGX = GranularParticles[i].rotation();
