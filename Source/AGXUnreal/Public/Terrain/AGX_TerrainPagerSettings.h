@@ -2,13 +2,16 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes
+#include "AGX_TerrainPagerBodyReference.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
 #include "AGX_TerrainPagerSettings.generated.h"
 
 USTRUCT()
-struct FAGX_TerrainPagerSettings
+struct AGXUNREAL_API FAGX_TerrainPagerSettings
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -25,4 +28,7 @@ struct FAGX_TerrainPagerSettings
 
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
 	bool bDrawDebugLoadRadii {true};
+
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
+	TArray<FAGX_TerrainPagerBodyReference> TrackedRigidBodies;
 };

@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
+#include "RigidBodyBarrier.h"
 #include "Terrain/ShovelBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/TerrainDataSource.h"
@@ -135,9 +136,19 @@ bool FTerrainPagerBarrier::AddShovel(
 	check(HasNative());
 	check(Shovel.HasNative());
 
-	// @todo: make radiuses an input param.
 	return NativeRef->Native->add(
 		Shovel.GetNative()->Native, ConvertDistanceToAGX(RequiredRadius),
+		ConvertDistanceToAGX(PreloadRadius));
+}
+
+bool FTerrainPagerBarrier::AddRigidBody(
+	FRigidBodyBarrier& Body, double RequiredRadius, double PreloadRadius)
+{
+	check(HasNative());
+	check(Body.HasNative());
+
+	return NativeRef->Native->add(
+		Body.GetNative()->Native, ConvertDistanceToAGX(RequiredRadius),
 		ConvertDistanceToAGX(PreloadRadius));
 }
 

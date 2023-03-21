@@ -251,6 +251,7 @@ private:
 	bool CreateNativeTerrain();
 	bool CreateNativeTerrainPager();
 	void CreateNativeShovels();
+	void AddTerrainPagerBodies();
 	bool UpdateNativeMaterial();
 
 	void InitializeRendering();

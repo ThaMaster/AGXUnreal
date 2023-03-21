@@ -5,6 +5,7 @@
 // Standard library includes.
 #include <memory>
 
+class FRigidBodyBarrier;
 class FShovelBarrier;
 class FTerrainBarrier;
 class FTerrainHeightFetcherBase;
@@ -30,6 +31,7 @@ public:
 	void ReleaseNative();
 
 	bool AddShovel(FShovelBarrier& Shovel, double RequiredRadius, double PreloadRadius);
+	bool AddRigidBody(FRigidBodyBarrier& Body, double RequiredRadius, double PreloadRadius);
 
 	FParticleData GetParticleData() const;
 

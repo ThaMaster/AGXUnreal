@@ -49,6 +49,9 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 		const AAGX_Terrain& Terrain, const FTransform& BoundsTransform,
 		FPrimitiveDrawInterface* PDI)
 	{
+		check(Terrain.bEnableTerrainPager);
+		check(Terrain.SourceLandscape != nullptr);
+
 		for (const FAGX_Shovel& Shovel : Terrain.Shovels)
 		{
 			AActor* Actor = Shovel.RigidBodyActor;
@@ -66,16 +69,37 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 				continue;
 
 			const UAGX_RigidBodyComponent& ShovelBody = **It;
-			if (Shovel.RequiredRadius > 0)
+			if (Shovel.RequiredRadius > 0.0)
 			{
 				DrawCircle(
 					ShovelBody.GetPosition(), Shovel.RequiredRadius, FLinearColor::White, 8.f, PDI);
 			}
 
-			if (Shovel.PreloadRadius)
+			if (Shovel.PreloadRadius > 0.0)
 			{
 				DrawCircle(
 					ShovelBody.GetPosition(), Shovel.PreloadRadius, FLinearColor::Gray, 3.f, PDI);
+			}
+		}
+
+		// Tracked (non-shovel) Rigid Bodies.
+		for (const FAGX_TerrainPagerBodyReference& TrackedBody :
+			 Terrain.TerrainPagerSettings.TrackedRigidBodies)
+		{
+			UAGX_RigidBodyComponent* Body = TrackedBody.RigidBody.GetRigidBody();
+			if (Body == nullptr)
+				continue;
+
+			if (TrackedBody.RequiredRadius > 0.0)
+			{
+				DrawCircle(
+					Body->GetPosition(), TrackedBody.RequiredRadius, FLinearColor::White, 8.f, PDI);
+			}
+
+			if (TrackedBody.PreloadRadius > 0.0)
+			{
+				DrawCircle(
+					Body->GetPosition(), TrackedBody.PreloadRadius, FLinearColor::Gray, 3.f, PDI);
 			}
 		}
 	}
@@ -167,7 +191,7 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 
 				const FTransform RectangleTransform(BoundsTransform.GetRotation(), StartPosGlobal);
 				DrawRectangle(
-					RectangleTransform, TileSize, -TileSize, FLinearColor::Gray, 3.f, PDI);
+					RectangleTransform, TileSize, -TileSize, FLinearColor::Gray, 4.f, PDI);
 			}
 		}
 	}

@@ -736,6 +736,7 @@ void AAGX_Terrain::InitializeNative()
 	}
 
 	CreateNativeShovels();
+	AddTerrainPagerBodies();
 	InitializeRendering();
 
 	if (!UpdateNativeMaterial())
@@ -1014,6 +1015,27 @@ void AAGX_Terrain::CreateNativeShovels()
 		UE_LOG(
 			LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(),
 			*GetName());
+	}
+}
+
+void AAGX_Terrain::AddTerrainPagerBodies()
+{
+	if (!HasNativeTerrainPager())
+		return;
+
+	for (FAGX_TerrainPagerBodyReference& TrackedBody :
+		 TerrainPagerSettings.TrackedRigidBodies)
+	{
+		UAGX_RigidBodyComponent* Body = TrackedBody.RigidBody.GetRigidBody();
+		if (Body == nullptr)
+			continue;
+
+		FRigidBodyBarrier* BodyBarrier = Body->GetOrCreateNative();
+		if (BodyBarrier == nullptr)
+			continue;
+
+		NativeTerrainPagerBarrier.AddRigidBody(
+			*Body->GetNative(), TrackedBody.RequiredRadius, TrackedBody.PreloadRadius);
 	}
 }
 
