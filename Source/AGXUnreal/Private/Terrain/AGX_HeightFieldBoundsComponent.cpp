@@ -28,21 +28,20 @@ namespace AGX_HeightFieldBoundsComponent_helpers
 			return UserSelected;
 		}
 
-		// Use the Landscape size.
-		// At scale = 1, the height span is +- 256 cm
-		// https://docs.unrealengine.com/en-US/Engine/Landscape/TechnicalGuide/#calculatingheightmapzscale
-		const double HeightSpanHalf = 256.0 * Landscape.GetActorScale3D().Z;
-
 		// Here, we take a "shortcut" of using an arbitrary large value. Calculating a bounding box
 		// given the Landscape transform and this Component's owning transform along with Landscape
 		// size information, taking into account the rotation of the landscape etc could be done,
 		// but is is unnecessarily complicated. Really, we just want a really large bound that will
 		// include everything.
 		static constexpr double LargeNumber = 1.e+10f;
-		return FVector(LargeNumber, LargeNumber, HeightSpanHalf);
+
+		// The z-value has no effect on the simulation at all, and is purely visual. We set a rather
+		// low value for it because it is easier to see where the bounds actually are in that case.
+		static constexpr double HalfExtentZ = 100.f;
+		return FVector(LargeNumber, LargeNumber, HalfExtentZ);
 	}
 
-	int32 DistanceToClosestVertex(double Distance, double QuadSize)
+	int32 GetClosestVertexIndex(double Distance, double QuadSize)
 	{
 		return FMath::RoundToInt32(FMath::RoundToDouble(Distance / QuadSize));
 	}
@@ -59,41 +58,56 @@ UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 	}
 
 	const ALandscape& Landscape = TransformAndLandscape->Landscape;
-	const int32 QuadSizeX = Landscape.GetActorScale().X;
-	const int32 QuadSizeY = Landscape.GetActorScale().Y;
+	const double QuadSizeX = Landscape.GetActorScale().X;
+	const double QuadSizeY = Landscape.GetActorScale().Y;
 
 	const FVector SelectedHalfExtent =
 		GetInfinateOrUserSelectedBounds(bInfiniteBounds, Landscape, HalfExtent);
 
-	if (SelectedHalfExtent.X < 0 || SelectedHalfExtent.Y < 0 || SelectedHalfExtent.Z < 0)
+	if (SelectedHalfExtent.X <= 0.0 || SelectedHalfExtent.Y <= 0.0 || SelectedHalfExtent.Z <= 0.0)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("'%s' have bounds with negative half extent. This is not supported."),
+			TEXT("'%s' have bounds with non-positive half extent. This is not supported."),
 			*GetOuter()->GetName());
 		return {};
 	}
 
-	const FTransform& OwnerTransform = TransformAndLandscape->Transform;
-	const FVector OwnerPosLocal =
-		Landscape.GetActorTransform().InverseTransformPositionNoScale(OwnerTransform.GetLocation());
 	int32 VertexCountX;
 	int32 VertexCountY;
 	std::tie(VertexCountX, VertexCountY) =
 		AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(Landscape);
-	const int32 ClosestVertexX = DistanceToClosestVertex(OwnerPosLocal.X, QuadSizeX);
-	const int32 ClosestVertexY = DistanceToClosestVertex(OwnerPosLocal.Y, QuadSizeY);
 
-	int32 HalfExtentVertsX = DistanceToClosestVertex(SelectedHalfExtent.X, QuadSizeX);
-	int32 HalfExtentVertsY = DistanceToClosestVertex(SelectedHalfExtent.Y, QuadSizeY);
+	const FVector CenterPosLocal = [&]()
+	{
+		if (bInfiniteBounds)
+		{
+			return FVector(
+				QuadSizeX * static_cast<double>(VertexCountX) / 2.0,
+				QuadSizeY * static_cast<double>(VertexCountY) / 2.0, 0.0);
+		}
+		else
+		{
+			return Landscape.GetActorTransform().InverseTransformPositionNoScale(
+				TransformAndLandscape->Transform.GetLocation());
+		}
+	}();
 
-	const FVector BoundPosGlobal = Landscape.GetActorTransform().TransformPositionNoScale(
-		FVector(ClosestVertexX * QuadSizeX, ClosestVertexY * QuadSizeY, 0));
+	const int32 ClosestVertexX = GetClosestVertexIndex(CenterPosLocal.X, QuadSizeX);
+	const int32 ClosestVertexY = GetClosestVertexIndex(CenterPosLocal.Y, QuadSizeY);
+
+	int32 HalfExtentVertsX = GetClosestVertexIndex(SelectedHalfExtent.X, QuadSizeX);
+	int32 HalfExtentVertsY = GetClosestVertexIndex(SelectedHalfExtent.Y, QuadSizeY);
+
+	const FVector BoundPosGlobal = Landscape.GetActorTransform().TransformPositionNoScale(FVector(
+		static_cast<double>(ClosestVertexX) * QuadSizeX,
+		static_cast<double>(ClosestVertexY) * QuadSizeY, 0.0));
 
 	FHeightFieldBoundsInfo BoundsInfo;
 	BoundsInfo.Transform = FTransform(Landscape.GetActorRotation(), BoundPosGlobal);
-	BoundsInfo.HalfExtent =
-		FVector(HalfExtentVertsX * QuadSizeX, HalfExtentVertsY * QuadSizeY, SelectedHalfExtent.Z);
+	BoundsInfo.HalfExtent = FVector(
+		static_cast<double>(HalfExtentVertsX) * QuadSizeX,
+		static_cast<double>(HalfExtentVertsY) * QuadSizeY, SelectedHalfExtent.Z);
 
 	return BoundsInfo;
 }
@@ -115,31 +129,44 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	const FVector SelectedHalfExtent =
 		GetInfinateOrUserSelectedBounds(bInfiniteBounds, Landscape, HalfExtent);
 
-	if (SelectedHalfExtent.X < 0 || SelectedHalfExtent.Y < 0 || SelectedHalfExtent.Z < 0)
+	if (SelectedHalfExtent.X <= 0.0 || SelectedHalfExtent.Y <= 0.0 || SelectedHalfExtent.Z <= 0.0)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("'%s' have bounds with negative half extent. This is not supported."),
+			TEXT("'%s' have bounds with non-positive half extent. This is not supported."),
 			*GetOuter()->GetName());
 		return {};
 	}
 
-	const FTransform& OwnerTransform = TransformAndLandscape->Transform;
-	const FVector OwnerPosLocal = Landscape.GetActorTransform().InverseTransformPositionNoScale(
-		OwnerTransform.GetLocation());
 	int32 VertexCountX;
 	int32 VertexCountY;
 	std::tie(VertexCountX, VertexCountY) =
 		AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(Landscape);
-	const int32 ClosestVertexX = DistanceToClosestVertex(OwnerPosLocal.X, QuadSizeX);
-	const int32 ClosestVertexY = DistanceToClosestVertex(OwnerPosLocal.Y, QuadSizeY);
+
+	const FVector CenterPosLocal = [&]()
+	{
+		if (bInfiniteBounds)
+		{
+			return FVector(
+				QuadSizeX * static_cast<double>(VertexCountX) / 2.0,
+				QuadSizeY * static_cast<double>(VertexCountY) / 2.0, 0.0);
+		}
+		else
+		{
+			return Landscape.GetActorTransform().InverseTransformPositionNoScale(
+				TransformAndLandscape->Transform.GetLocation());
+		}
+	}();
+
+	const int32 ClosestVertexX = GetClosestVertexIndex(CenterPosLocal.X, QuadSizeX);
+	const int32 ClosestVertexY = GetClosestVertexIndex(CenterPosLocal.Y, QuadSizeY);
 
 	if (ClosestVertexX <= 0 || ClosestVertexX > VertexCountX || ClosestVertexY <= 0 ||
 		ClosestVertexY > VertexCountY)
 		return {};
 
-	int32 HalfExtentVertsX = DistanceToClosestVertex(SelectedHalfExtent.X, QuadSizeX);
-	int32 HalfExtentVertsY = DistanceToClosestVertex(SelectedHalfExtent.Y, QuadSizeY);
+	int32 HalfExtentVertsX = GetClosestVertexIndex(SelectedHalfExtent.X, QuadSizeX);
+	int32 HalfExtentVertsY = GetClosestVertexIndex(SelectedHalfExtent.Y, QuadSizeY);
 
 	// Ensure we are not outside the Landscape edge.
 	HalfExtentVertsX = std::min(HalfExtentVertsX, VertexCountX - ClosestVertexX);
@@ -150,13 +177,15 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	if (HalfExtentVertsX == 0 || HalfExtentVertsY == 0)
 		return {};
 
-	const FVector BoundPosGlobal = Landscape.GetActorTransform().TransformPositionNoScale(
-		FVector(ClosestVertexX * QuadSizeX, ClosestVertexY * QuadSizeY, 0));
+	const FVector BoundPosGlobal = Landscape.GetActorTransform().TransformPositionNoScale(FVector(
+		static_cast<double>(ClosestVertexX) * QuadSizeX,
+		static_cast<double>(ClosestVertexY) * QuadSizeY, 0));
 
 	FHeightFieldBoundsInfo BoundsInfo;
 	BoundsInfo.Transform = FTransform(Landscape.GetActorRotation(), BoundPosGlobal);
-	BoundsInfo.HalfExtent =
-		FVector(HalfExtentVertsX * QuadSizeX, HalfExtentVertsY * QuadSizeY, SelectedHalfExtent.Z);
+	BoundsInfo.HalfExtent = FVector(
+		static_cast<double>(HalfExtentVertsX) * QuadSizeX,
+		static_cast<double>(HalfExtentVertsY) * QuadSizeY, SelectedHalfExtent.Z);
 
 	return BoundsInfo;
 }
