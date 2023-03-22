@@ -169,9 +169,9 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	int32 HalfExtentVertsY = GetClosestVertexIndex(SelectedHalfExtent.Y, QuadSizeY);
 
 	// Ensure we are not outside the Landscape edge.
-	HalfExtentVertsX = std::min(HalfExtentVertsX, VertexCountX - ClosestVertexX);
+	HalfExtentVertsX = std::min(HalfExtentVertsX, VertexCountX - ClosestVertexX - 1);
 	HalfExtentVertsX = std::min(HalfExtentVertsX, ClosestVertexX - 0);
-	HalfExtentVertsY = std::min(HalfExtentVertsY, VertexCountY - ClosestVertexY);
+	HalfExtentVertsY = std::min(HalfExtentVertsY, VertexCountY - ClosestVertexY - 1);
 	HalfExtentVertsY = std::min(HalfExtentVertsY, ClosestVertexY - 0);
 
 	if (HalfExtentVertsX == 0 || HalfExtentVertsY == 0)
