@@ -218,21 +218,17 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAndTransformFromOwner() const
 bool UAGX_HeightFieldBoundsComponent::CanEditChange(const FProperty* InProperty) const
 {
 	UWorld* World = GetWorld();
-	if (World != nullptr && World->IsPlayInEditor())
+	if (World == nullptr || !World->IsPlayInEditor())
 	{
-		if (InProperty->GetFName() ==
-			GET_MEMBER_NAME_CHECKED(UAGX_HeightFieldBoundsComponent, HalfExtent))
-		{
-			return false;
-		}
-		else if (
-			InProperty->GetFName() ==
-			GET_MEMBER_NAME_CHECKED(UAGX_HeightFieldBoundsComponent, bInfiniteBounds))
-		{
-			return false;
-		}
+		return Super::CanEditChange(InProperty);
 	}
 
-	return Super::CanEditChange(InProperty);
+	const FName Prop = InProperty->GetFName();
+	if (Prop == GET_MEMBER_NAME_CHECKED(UAGX_HeightFieldBoundsComponent, HalfExtent))
+		return false;
+	else if (Prop == GET_MEMBER_NAME_CHECKED(UAGX_HeightFieldBoundsComponent, bInfiniteBounds))
+		return false;
+	else
+		return Super::CanEditChange(InProperty);
 }
 #endif
