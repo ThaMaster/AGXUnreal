@@ -23,6 +23,7 @@ void FAGX_HeightFieldBoundsComponentCustomization::CustomizeDetails(
 	InDetailBuilder.HideCategory(FName("Tags"));
 	InDetailBuilder.HideCategory(FName("Collision"));
 	InDetailBuilder.HideCategory(FName("Cooking"));
+	InDetailBuilder.HideCategory(FName("AssetUserData"));
 }
 
 #undef LOCTEXT_NAMESPACE
