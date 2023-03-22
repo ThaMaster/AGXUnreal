@@ -301,7 +301,7 @@ void UAGX_ContactMaterial::SetFrictionCoefficient(double InFrictionCoefficient)
 	{
 		if (Instance != nullptr)
 		{
-			Instance->SetSecondaryFrictionCoefficient(InFrictionCoefficient);
+			Instance->SetFrictionCoefficient(InFrictionCoefficient);
 			return;
 		}
 		FrictionCoefficient = InFrictionCoefficient;
@@ -404,7 +404,7 @@ void UAGX_ContactMaterial::SetSurfaceViscosity(double InSurfaceViscosity)
 	{
 		if (Instance != nullptr)
 		{
-			Instance->SetSecondarySurfaceViscosity(InSurfaceViscosity);
+			Instance->SetSurfaceViscosity(InSurfaceViscosity);
 			return;
 		}
 		SurfaceViscosity = InSurfaceViscosity;
