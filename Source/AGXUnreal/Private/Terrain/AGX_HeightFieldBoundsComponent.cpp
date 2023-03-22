@@ -184,3 +184,26 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAndTransformFromOwner() const
 
 	return {};
 }
+
+#if WITH_EDITOR
+bool UAGX_HeightFieldBoundsComponent::CanEditChange(const FProperty* InProperty) const
+{
+	UWorld* World = GetWorld();
+	if (World != nullptr && World->IsPlayInEditor())
+	{
+		if (InProperty->GetFName() ==
+			GET_MEMBER_NAME_CHECKED(UAGX_HeightFieldBoundsComponent, HalfExtent))
+		{
+			return false;
+		}
+		else if (
+			InProperty->GetFName() ==
+			GET_MEMBER_NAME_CHECKED(UAGX_HeightFieldBoundsComponent, bInfiniteBounds))
+		{
+			return false;
+		}
+	}
+
+	return Super::CanEditChange(InProperty);
+}
+#endif

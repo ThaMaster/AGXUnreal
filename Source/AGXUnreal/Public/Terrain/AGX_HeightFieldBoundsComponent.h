@@ -72,4 +72,8 @@ private:
 	 * possible. Only Terrain and HeightField owners are currently supported.
 	 */
 	TOptional<FTransformAndLandscape> GetLandscapeAndTransformFromOwner() const;
+
+#if WITH_EDITOR
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
+#endif
 };

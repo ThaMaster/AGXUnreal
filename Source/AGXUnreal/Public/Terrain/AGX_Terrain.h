@@ -239,6 +239,7 @@ public:
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
 #endif
 
 	virtual void Tick(float DeltaTime) override;

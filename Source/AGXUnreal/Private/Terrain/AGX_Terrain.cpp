@@ -342,6 +342,30 @@ void AAGX_Terrain::PostInitProperties()
 	InitPropertyDispatcher();
 }
 
+bool AAGX_Terrain::CanEditChange(const FProperty* InProperty) const
+{
+	if (!HasNative())
+		return Super::CanEditChange(InProperty);
+
+	const FName Prop = InProperty->GetFName();
+
+	// Properties that should never be edited during Play.
+	if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, SourceLandscape))
+		return false;
+	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, Shovels))
+		return false;
+	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, ParticleSystemAsset))
+		return false;
+	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, LandscapeDisplacementMap))
+		return false;
+	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, TerrainParticlesDataMap))
+		return false;
+	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, bEnableTerrainPager))
+		return false;
+	else
+		return Super::CanEditChange(InProperty);
+}
+
 namespace AGX_Terrain_helpers
 {
 	void EnsureUseDynamicMaterialInstance(AAGX_Terrain& Terrain)
@@ -1037,8 +1061,7 @@ void AAGX_Terrain::AddTerrainPagerBodies()
 	if (!HasNativeTerrainPager())
 		return;
 
-	for (FAGX_TerrainPagerBodyReference& TrackedBody :
-		 TerrainPagerSettings.TrackedRigidBodies)
+	for (FAGX_TerrainPagerBodyReference& TrackedBody : TerrainPagerSettings.TrackedRigidBodies)
 	{
 		UAGX_RigidBodyComponent* Body = TrackedBody.RigidBody.GetRigidBody();
 		if (Body == nullptr)
