@@ -118,7 +118,7 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 
 		const auto QuadSize = Terrain.SourceLandscape->GetActorScale().X;
 		const int32 TileNumQuadsSide =
-			FMath::RoundToInt32(Terrain.TerrainPagerSettings.TileSize / QuadSize);
+			FMath::RoundToInt(Terrain.TerrainPagerSettings.TileSize / QuadSize);
 		const double TileSize = QuadSize * TileNumQuadsSide;
 
 		const FVector BoundsPosGlobal = BoundsTransform.GetLocation();
@@ -144,9 +144,9 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 
 		const auto QuadSize = Terrain.SourceLandscape->GetActorScale().X;
 		const int32 TileNumQuadsSide =
-			FMath::RoundToInt32(Terrain.TerrainPagerSettings.TileSize / QuadSize);
+			FMath::RoundToInt(Terrain.TerrainPagerSettings.TileSize / QuadSize);
 		const int32 TileOverlapNumQuads =
-			FMath::RoundToInt32(Terrain.TerrainPagerSettings.TileOverlap / QuadSize);
+			FMath::RoundToInt(Terrain.TerrainPagerSettings.TileOverlap / QuadSize);
 
 		const double TileSize = QuadSize * TileNumQuadsSide;
 		const double TileOverlap = QuadSize * TileOverlapNumQuads;

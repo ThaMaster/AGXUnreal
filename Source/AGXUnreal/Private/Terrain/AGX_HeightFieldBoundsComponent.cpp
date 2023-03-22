@@ -43,7 +43,7 @@ namespace AGX_HeightFieldBoundsComponent_helpers
 
 	int32 GetClosestVertexIndex(double Distance, double QuadSize)
 	{
-		return FMath::RoundToInt32(FMath::RoundToDouble(Distance / QuadSize));
+		return FMath::RoundToInt(FMath::RoundToDouble(Distance / QuadSize));
 	}
 }
 

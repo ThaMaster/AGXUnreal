@@ -608,19 +608,19 @@ bool AAGX_Terrain::FetchHeights(
 	const double QuadSizeY = SourceLandscape->GetActorScale().Y;
 	const FVector PosStartLocal =
 		SourceLandscape->GetTransform().InverseTransformPositionNoScale(WorldPosStart);
-	const int32 StartVertX = FMath::RoundToInt32(PosStartLocal.X / QuadSizeX);
-	const int32 StartVertY = FMath::RoundToInt32(PosStartLocal.Y / QuadSizeY);
+	const int32 StartVertX = FMath::RoundToInt(PosStartLocal.X / QuadSizeX);
+	const int32 StartVertY = FMath::RoundToInt(PosStartLocal.Y / QuadSizeY);
 
 	const FVector NativePosLocal = SourceLandscape->GetTransform().InverseTransformPositionNoScale(
 		GetNativeTransform().GetLocation());
 	const int32 BoundsCornerMinX =
-		FMath::RoundToInt32(NativePosLocal.X / QuadSizeX) - NumVerticesX / 2;
+		FMath::RoundToInt(NativePosLocal.X / QuadSizeX) - NumVerticesX / 2;
 	const int32 BoundsCornerMinY =
-		FMath::RoundToInt32(NativePosLocal.Y / QuadSizeY) - NumVerticesY / 2;
+		FMath::RoundToInt(NativePosLocal.Y / QuadSizeY) - NumVerticesY / 2;
 	const int32 BoundsCornerMaxX =
-		FMath::RoundToInt32(NativePosLocal.X / QuadSizeX) + NumVerticesX / 2;
+		FMath::RoundToInt(NativePosLocal.X / QuadSizeX) + NumVerticesX / 2;
 	const int32 BoundsCornerMaxY =
-		FMath::RoundToInt32(NativePosLocal.Y / QuadSizeY) + NumVerticesY / 2;
+		FMath::RoundToInt(NativePosLocal.Y / QuadSizeY) + NumVerticesY / 2;
 
 	// Check that we are not asked to read outside the bounds.
 	if (StartVertX < BoundsCornerMinX || StartVertY < BoundsCornerMinY ||
@@ -821,9 +821,9 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	NativeTerrainBarrier.SetPosition(Bounds->Transform.GetLocation());
 
 	NumVerticesX =
-		FMath::RoundToInt32(Bounds->HalfExtent.X * 2.0 / SourceLandscape->GetActorScale().X) + 1;
+		FMath::RoundToInt(Bounds->HalfExtent.X * 2.0 / SourceLandscape->GetActorScale().X) + 1;
 	NumVerticesY =
-		FMath::RoundToInt32(Bounds->HalfExtent.Y * 2.0 / SourceLandscape->GetActorScale().Y) + 1;
+		FMath::RoundToInt(Bounds->HalfExtent.Y * 2.0 / SourceLandscape->GetActorScale().Y) + 1;
 
 	if (bEnableTerrainPager)
 	{
@@ -919,9 +919,9 @@ bool AAGX_Terrain::CreateNativeTerrainPager()
 
 	const auto QuadSize = SourceLandscape->GetActorScale().X;
 	const int32 TileNumVerticesSide =
-		FMath::RoundToInt32(TerrainPagerSettings.TileSize / QuadSize) + 1;
+		FMath::RoundToInt(TerrainPagerSettings.TileSize / QuadSize) + 1;
 	const int32 TileOverlapVertices =
-		FMath::RoundToInt32(TerrainPagerSettings.TileOverlap / QuadSize);
+		FMath::RoundToInt(TerrainPagerSettings.TileOverlap / QuadSize);
 
 	NativeTerrainPagerBarrier.AllocateNative(
 		&HeightFetcher, NativeTerrainBarrier, TileNumVerticesSide, TileOverlapVertices, QuadSize,
