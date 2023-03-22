@@ -228,7 +228,7 @@ TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(
 			const agx::Real TileHeightOffs = TileLocalPos.z();
 			const agx::Real LocalHeight =
 				Tile->m_terrainTile->getHeightField()->getHeight(Index2d.x(), Index2d.y());
-			ModifiedVertices.Add(std::tuple(X, Y));
+			ModifiedVertices.Add(std::tuple<int32, int32>(X, Y));
 			OutHeights[X + Y * BoundVertsX] =
 				ConvertDistanceToUnreal<float>(LocalHeight + TileHeightOffs);
 		}
