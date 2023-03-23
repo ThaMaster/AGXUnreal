@@ -12,10 +12,14 @@
 #include "Shapes/RenderDataRef.h"
 
 // AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
 #include "agxCollide/CollisionGroupManager.h"
+#include <agxUtil/agxUtil.h>
+#include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
 #include "Misc/AssertionMacros.h"
+
 
 FShapeBarrier::FShapeBarrier()
 	: NativeRef {new FGeometryAndShapeRef}
@@ -202,6 +206,18 @@ bool FShapeBarrier::GetEnableCollisions() const
 	return NativeRef->NativeGeometry->getEnableCollisions();
 }
 
+void FShapeBarrier::SetEnabled(bool Enabled)
+{
+	check(HasNative());
+	NativeRef->NativeGeometry->setEnable(Enabled);
+}
+
+bool FShapeBarrier::GetEnabled() const
+{
+	check(HasNative());
+	return NativeRef->NativeGeometry->getEnable();
+}
+
 void FShapeBarrier::AddCollisionGroup(const FName& GroupName)
 {
 	check(HasNative());
@@ -253,6 +269,17 @@ bool FShapeBarrier::HasRenderData() const
 	return NativeRef->NativeShape->getRenderData() != nullptr;
 }
 
+bool FShapeBarrier::HasValidRenderData() const
+{
+	check(HasNative());
+	if (agxCollide::RenderData* RenderDataAGX = NativeRef->NativeShape->getRenderData())
+	{
+		return RenderDataAGX->getIndexArray().size() > 0;
+	}
+
+	return false;
+}
+
 FRenderDataBarrier FShapeBarrier::GetRenderData() const
 {
 	check(HasNative());
@@ -287,8 +314,15 @@ FAGX_RenderMaterial FShapeBarrier::GetRenderMaterial() const
 	const agxCollide::RenderMaterial* RenderMaterialAgx = RenderDataAgx->getRenderMaterial();
 
 	RenderMaterialUnreal.Guid = Convert(RenderMaterialAgx->getUuid());
-	const agx::String& NameAgx = RenderMaterialAgx->getName();
-	RenderMaterialUnreal.Name = NameAgx.empty() ? NAME_None : FName(*Convert(NameAgx));
+
+	{
+		agx::String NameAGX = RenderMaterialAgx->getName();
+		RenderMaterialUnreal.Name = NameAGX.empty() ? NAME_None : FName(*Convert(NameAGX));
+
+		// Must be called to avoid crash due to different allocators used by AGX Dynamics and
+		// Unreal Engine.
+		agxUtil::freeContainerMemory(NameAGX);
+	}
 
 	if ((RenderMaterialUnreal.bHasDiffuse = RenderMaterialAgx->hasDiffuseColor()) == true)
 	{

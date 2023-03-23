@@ -91,6 +91,9 @@ public:
 	void SetEnableCollisions(bool CanCollide);
 	bool GetEnableCollisions() const;
 
+	void SetEnabled(bool Enabled);
+	bool GetEnabled() const;
+
 	void AddCollisionGroup(const FName& GroupName);
 	void AddCollisionGroups(const TArray<FName>& GroupNames);
 
@@ -112,6 +115,11 @@ public:
 	 * @return True if the native shape contains render data. The render data may be incomplete.
 	 */
 	bool HasRenderData() const;
+
+	/**
+	 * @return True if the native shape contains render data that also has triangle data.
+	 */
+	bool HasValidRenderData() const;
 
 	/**
 	 * Provide access to any render data that may be associated with the Shape. This data is

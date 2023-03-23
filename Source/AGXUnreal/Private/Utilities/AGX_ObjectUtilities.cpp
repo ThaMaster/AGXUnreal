@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 
 // Unreal Engine includes.
 #include "Misc/EngineVersionComparison.h"
@@ -46,6 +47,38 @@ void FAGX_ObjectUtilities::GetActorsTree(
 }
 
 #if WITH_EDITOR
+AActor* FAGX_ObjectUtilities::GetActorByLabel(const UWorld& World, const FString Name)
+{
+	for (ULevel* Level : World.GetLevels())
+	{
+		for (AActor* Actor : Level->Actors)
+		{
+			if (Actor != nullptr && Actor->GetActorLabel() == Name)
+			{
+				return Actor;
+			}
+		}
+	}
+	return nullptr;
+}
+#endif
+
+AActor* FAGX_ObjectUtilities::GetActorByName(const UWorld& World, const FString Name)
+{
+	for (ULevel* Level : World.GetLevels())
+	{
+		for (AActor* Actor : Level->Actors)
+		{
+			if (Actor != nullptr && Actor->GetName() == Name)
+			{
+				return Actor;
+			}
+		}
+	}
+	return nullptr;
+}
+
+#if WITH_EDITOR
 bool FAGX_ObjectUtilities::SaveAsset(UObject& Asset)
 {
 	UPackage* Package = Asset.GetPackage();
@@ -84,3 +117,37 @@ bool FAGX_ObjectUtilities::SaveAsset(UObject& Asset)
 #endif
 }
 #endif
+
+FTransform FAGX_ObjectUtilities::GetAnyComponentWorldTransform(const USceneComponent& Component)
+{
+#if WITH_EDITOR
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		return FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(&Component);
+	}
+	else
+	{
+		return Component.GetComponentTransform();
+	}
+#else
+	return Component.GetComponentTransform();
+#endif
+}
+
+void FAGX_ObjectUtilities::SetAnyComponentWorldTransform(
+	USceneComponent& Component, const FTransform& Transform, bool ForceOverwriteInstances)
+{
+#if WITH_EDITOR
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		FAGX_BlueprintUtilities::SetTemplateComponentWorldTransform(
+			&Component, Transform, true, ForceOverwriteInstances);
+	}
+	else
+	{
+		Component.SetWorldTransform(Transform);
+	}
+#else
+	Component.SetWorldTransform(Transform);
+#endif
+}

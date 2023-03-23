@@ -3,18 +3,17 @@
 #include "Utilities/AGX_ImportUtilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
-#include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
-#include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
-#include "AMOR/AGX_WireMergeSplitThresholds.h"
-#include "AMOR/MergeSplitThresholdsBarrier.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/TrackBarrier.h"
@@ -23,22 +22,26 @@
 #include "AssetToolsModule.h"
 #include "Components/ActorComponent.h"
 #include "Engine/StaticMesh.h"
-#include "Factories/MaterialInstanceConstantFactoryNew.h"
-#include "Materials/MaterialInterface.h"
-#include "Materials/MaterialInstanceConstant.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/Paths.h"
 #include "RawMesh.h"
+#include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/ComponentEditorUtils.h"
-#if ! UE_VERSION_OLDER_THAN(5, 0, 0)
+#if !UE_VERSION_OLDER_THAN(5, 0, 0)
 #include "UObject/SavePackage.h"
+#endif
+
+#if PLATFORM_WINDOWS
+#define AGXUNREALEDITOR_API_TEMPLATE AGXUNREALEDITOR_API
+#else
+#define AGXUNREALEDITOR_API_TEMPLATE
 #endif
 
 namespace
 {
 	template <typename UAsset, typename FInitAssetCallback>
-	FAssetToDiskInfo PrepareWriteAssetToDisk(
-		const FString& DirectoryName, FString AssetName, const FString& FallbackName,
+	UAsset* PrepareWriteAssetToDisk(
+		const FString& DirectoryPath, FString AssetName, const FString& FallbackName,
 		const FString& AssetType, FInitAssetCallback InitAsset)
 	{
 		AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, FallbackName, AssetType);
@@ -64,7 +67,7 @@ namespace
 				*AssetName);
 		}
 
-		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryName, AssetType);
+		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryPath, AssetType);
 		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
@@ -78,43 +81,33 @@ namespace
 		Package->FullyLoad();
 #endif
 		UAsset* Asset = NewObject<UAsset>(Package, FName(*AssetName), RF_Public | RF_Standalone);
-		if (!Asset)
+		if (Asset == nullptr)
 		{
 			UE_LOG(
 				LogAGX, Error, TEXT("Could not create asset '%s' from '%s'."), *AssetName,
-				*DirectoryName);
-			return FAssetToDiskInfo();
+				*DirectoryPath);
+			return nullptr;
 		}
 		InitAsset(*Asset);
 
-		return FAssetToDiskInfo {Package, Asset, PackagePath, AssetName};
+		return Asset;
 	}
 
-	bool WriteAssetToDisk(FAssetToDiskInfo& AtdInfo)
+	bool WriteAssetToDisk(UObject& Asset)
 	{
-		return FAGX_EditorUtilities::FinalizeAndSavePackage(AtdInfo);
+		return FAGX_ObjectUtilities::SaveAsset(Asset);
 	}
 }
 
-FString FAGX_ImportUtilities::CreatePackagePath(FString FileName, FString AssetType)
+FString FAGX_ImportUtilities::CreatePackagePath(
+	const FString& DirectoryPath, FString AssetType, bool AppendSeparator)
 {
-	FileName = FAGX_EditorUtilities::SanitizeName(FileName);
 	AssetType = FAGX_EditorUtilities::SanitizeName(AssetType);
-	if (FileName.IsEmpty() || AssetType.IsEmpty())
-	{
-		return FString();
-	}
-	return FString::Printf(TEXT("/Game/ImportedAGXModels/%s/%s/"), *FileName, *AssetType);
-}
 
-FString FAGX_ImportUtilities::CreatePackagePath(FString FileName)
-{
-	FileName = FAGX_EditorUtilities::SanitizeName(FileName);
-	if (FileName.IsEmpty())
-	{
-		return FString();
-	}
-	return FString::Printf(TEXT("/Game/ImportedAGXModels/%s"), *FileName);
+	if (AppendSeparator)
+		return FPaths::Combine(DirectoryPath, AssetType, FString(""));
+	else
+		return FPaths::Combine(DirectoryPath, AssetType);
 }
 
 FString FAGX_ImportUtilities::CreateAssetName(
@@ -169,8 +162,8 @@ namespace AGX_ImportUtilities_helpers
 	}
 }
 
-FAssetToDiskInfo FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName, const FString& FallbackName)
+UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryPath, const FString& FallbackName)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
 	{
@@ -185,11 +178,11 @@ FAssetToDiskInfo FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	}
 
 	return PrepareWriteAssetToDisk<UStaticMesh>(
-		DirectoryName, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset);
+		DirectoryPath, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset);
 }
 
-FAssetToDiskInfo FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-	const FRenderDataBarrier& RenderData, const FString& DirectoryName)
+UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+	const FRenderDataBarrier& RenderData, const FString& DirectoryPath)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
 	{
@@ -198,262 +191,183 @@ FAssetToDiskInfo FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	};
 
 	return PrepareWriteAssetToDisk<UStaticMesh>(
-		DirectoryName, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
+		DirectoryPath, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
 		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset);
-}
-
-UAGX_ShapeMaterial* FAGX_ImportUtilities::SaveImportedShapeMaterialAsset(
-	const FShapeMaterialBarrier& Material, const FString& DirectoryName)
-{
-	auto InitAsset = [&](UAGX_ShapeMaterial& Asset) { Asset.CopyFrom(&Material); };
-	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ShapeMaterial>(
-		DirectoryName, Material.GetName(), TEXT(""), TEXT("ShapeMaterial"), InitAsset);
-	if (!WriteAssetToDisk(AtdInfo))
-	{
-		return nullptr;
-	}
-	return Cast<UAGX_ShapeMaterial>(AtdInfo.Asset);
 }
 
 namespace
 {
-	FString GetName(UAGX_ShapeMaterial* Material)
+	bool IsUniqueTemplateComponentName(UActorComponent& Component, const FString& Name)
 	{
-		if (Material == nullptr)
+		UObject* ExistingObject =
+			StaticFindObject(/*Class=*/nullptr, Component.GetOuter(), *Name, true);
+
+		if (ExistingObject != nullptr)
 		{
-			return TEXT("Default");
+			return false;
 		}
-		return Material->GetName();
+
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		{
+			if (Instance != nullptr &&
+				Instance->HasAllFlags(RF_ArchetypeObject | RF_InheritableComponentTemplate))
+			{
+				return IsUniqueTemplateComponentName(*Instance, Name);
+			}
+		}
+		return true;
+	}
+
+	FString GetUniqueNameForComponentTemplate(UActorComponent& Component, const FString& WantedName)
+	{
+		AGX_CHECK(FAGX_ObjectUtilities::IsTemplateComponent(Component));
+		FString Name = WantedName;
+		int suffix = 1;
+		UBlueprint* Bp = FAGX_BlueprintUtilities::GetBlueprintFrom(Component);
+		if (Bp == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unable to get Bluprint from Component '%s'. The final name may not be "
+					 "correct."),
+				*Component.GetName());
+			return Component.GetName() + FGuid::NewGuid().ToString();
+		}
+
+		auto IsUniqueName =
+			[](const FString& InName, UBlueprint& Blueprint, UActorComponent& InComponent)
+		{
+			if (Blueprint.SimpleConstructionScript->FindSCSNode(FName(InName)) != nullptr)
+			{
+				return false;
+			}
+
+			// This is a similar check as in UObject::Rename(). Normally, we expect to never get a
+			// match below since no SCS Node has this name (according to above check), but in some
+			// cases there was an unexpected crash caused by an object being found with the
+			// wanted name. The reason is not clear, perhaps some lingering, removed object not yet
+			// destroyed?
+			// See the comment in AGX_ImporterToBlueprint.cpp - RemoveDeletedComponents() which is
+			// related to this.
+			const FString TemplateName = InName + UActorComponent::ComponentTemplateNameSuffix;
+			return IsUniqueTemplateComponentName(InComponent, TemplateName);
+		};
+
+		while (!IsUniqueName(Name, *Bp, Component))
+		{
+			Name = FString::Printf(TEXT("%s%d"), *WantedName, suffix++);
+		}
+		return Name;
+	}
+
+	// This is to some extent mimicking the behavior of
+	// FComponentEditorUtils::GenerateValidVariableName but works for TemplateComponents which have
+	// no owner Actor.
+	FString GenerateValidVariableNameTemplateComponent(const UActorComponent& Component)
+	{
+		AGX_CHECK(FAGX_ObjectUtilities::IsTemplateComponent(Component));
+		FString ComponentName =
+			FBlueprintEditorUtils::GetClassNameWithoutSuffix(Component.GetClass());
+
+		const FString SuffixToStrip(TEXT("Component"));
+		if (ComponentName.EndsWith(SuffixToStrip))
+		{
+			ComponentName.LeftInline(ComponentName.Len() - SuffixToStrip.Len(), false);
+		}
+
+		UBlueprint* Blueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(Component);
+		if (Blueprint == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unable to get Bluprint from Component '%s'. The final name may not be "
+					 "correct."),
+				*Component.GetName());
+			return Component.GetName() + FGuid::NewGuid().ToString();
+		}
+
+		for (int i = 0; FAGX_BlueprintUtilities::NameExists(*Blueprint, ComponentName); i++)
+		{
+			ComponentName = FString::Printf(TEXT("%s%d"), *ComponentName, i);
+		}
+		return ComponentName;
 	}
 
 	/**
 	 * Checks whether the component name is valid, and if not, generates a valid name and sets it to
 	 * the component.
 	 */
-	void FinalizeComponentName(UActorComponent& Component)
+	FString GetFinalizedComponentName(UActorComponent& Component, const FString& WantedName)
 	{
-		if (Component.GetOwner() == nullptr)
+		if (Component.GetOwner() == nullptr &&
+			!FAGX_ObjectUtilities::IsTemplateComponent(Component))
 		{
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("Could not find the owning actor of Actor Component: %s during name "
-					 "finalization."),
+					 "finalization. The Component might not get the wanted name."),
 				*Component.GetName());
-			return;
+			return FGuid::NewGuid().ToString();
 		}
 
-		if (!FComponentEditorUtils::IsValidVariableNameString(&Component, Component.GetName()))
+		if (!FComponentEditorUtils::IsValidVariableNameString(&Component, WantedName))
 		{
-			Component.Rename(*FComponentEditorUtils::GenerateValidVariableName(
-				Component.GetClass(), Component.GetOwner()));
-		}
-	}
-}
-
-UAGX_ContactMaterial* FAGX_ImportUtilities::SaveImportedContactMaterialAsset(
-	const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterial* Material1,
-	UAGX_ShapeMaterial* Material2, const FString& DirectoryName)
-{
-	const FString Name = TEXT("CM") + GetName(Material1) + GetName(Material2);
-
-	auto InitAsset = [&](UAGX_ContactMaterial& Asset)
-	{
-		Asset.CopyFrom(ContactMaterial);
-		Asset.Material1 = Material1;
-		Asset.Material2 = Material2;
-	};
-
-	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ContactMaterial>(
-		DirectoryName, Name, TEXT(""), TEXT("ContactMaterial"), InitAsset);
-	if (!WriteAssetToDisk(AtdInfo))
-	{
-		return nullptr;
-	}
-	return Cast<UAGX_ContactMaterial>(AtdInfo.Asset);
-}
-
-UMaterialInterface* FAGX_ImportUtilities::SaveImportedRenderMaterialAsset(
-	const FAGX_RenderMaterial& Imported, const FString& DirectoryName, const FString& MaterialName)
-{
-	UMaterial* Base = LoadObject<UMaterial>(
-		nullptr, TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'"));
-	if (Base == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Could not load parent material for imported AGX Dynamics render materials."));
-		return nullptr;
-	}
-	UMaterialInstanceConstantFactoryNew* Factory = NewObject<UMaterialInstanceConstantFactoryNew>();
-	Factory->InitialParent = Base;
-
-	FString AssetName = FAGX_ImportUtilities::CreateAssetName(
-		MaterialName, TEXT("ImportedAGXDynamicsMaterial"), TEXT("RenderMaterial"));
-	FString PackagePath =
-		FAGX_ImportUtilities::CreatePackagePath(DirectoryName, TEXT("RenderMaterial"));
-
-	IAssetTools& AssetTools =
-		FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-	AssetTools.CreateUniqueAssetName(PackagePath, AssetName, PackagePath, AssetName);
-	UObject* Asset = AssetTools.CreateAsset(
-		AssetName, FPackageName::GetLongPackagePath(PackagePath),
-		UMaterialInstanceConstant::StaticClass(), Factory);
-	if (Asset == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Could not create new Material asset for material '%s' imported from '%s' "
-				 "Falling back to the default imported material."),
-			*MaterialName, *DirectoryName);
-		return Base;
-	}
-
-	UMaterialInstanceConstant* Material = Cast<UMaterialInstanceConstant>(Asset);
-	if (Material == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Could not create new Material Instance Constant for material '%s' imported from "
-				 "'%s'. Falling back to the default imported material."),
-			*MaterialName, *DirectoryName)
-		return Base;
-	}
-
-	if (Imported.bHasDiffuse)
-	{
-		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Diffuse")), FAGX_RenderMaterial::ConvertToLinear(Imported.Diffuse));
-	}
-	if (Imported.bHasAmbient)
-	{
-		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Ambient")), FAGX_RenderMaterial::ConvertToLinear(Imported.Ambient));
-	}
-	if (Imported.bHasEmissive)
-	{
-		Material->SetVectorParameterValueEditorOnly(
-			FName(TEXT("Emissive")), FAGX_RenderMaterial::ConvertToLinear(Imported.Emissive));
-	}
-	if (Imported.bHasShininess)
-	{
-		FMaterialParameterInfo Info;
-		Info.Name = TEXT("Shininess");
-		Material->SetScalarParameterValueEditorOnly(Info, Imported.Shininess);
-	}
-
-	Material->SetFlags(RF_Standalone);
-	Material->MarkPackageDirty();
-	Material->PostEditChange();
-	UPackage* Package = Material->GetPackage();
-	if (Package != nullptr)
-	{
-		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
-			PackagePath, FPackageName::GetAssetPackageExtension());
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-		UPackage::SavePackage(Package, Material, RF_NoFlags, *PackageFilename);
-#else
-		UPackage::SavePackage(Package, Material, *PackageFilename, FSavePackageArgs());
-#endif
-	}
-
-	return Material;
-}
-
-UAGX_MergeSplitThresholdsBase* FAGX_ImportUtilities::SaveImportedMergeSplitAsset(
-	const FMergeSplitThresholdsBarrier& Barrier, EAGX_AmorOwningType OwningType,
-	const FString& DirectoryName, const FString& Name)
-{
-	switch (OwningType)
-	{
-		case EAGX_AmorOwningType::BodyOrShape:
-		{
-			auto InitAsset = [&](UAGX_ShapeContactMergeSplitThresholds& Asset)
-			{ Asset.CopyFrom(Barrier); };
-
-			FAssetToDiskInfo AtdInfo =
-				PrepareWriteAssetToDisk<UAGX_ShapeContactMergeSplitThresholds>(
-					DirectoryName, Name, "AGX_SMST_", TEXT("MergeSplitThresholds"), InitAsset);
-			if (!WriteAssetToDisk(AtdInfo))
+			if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 			{
-				return nullptr;
+				return GenerateValidVariableNameTemplateComponent(Component);
 			}
-			return Cast<UAGX_ShapeContactMergeSplitThresholds>(AtdInfo.Asset);
-		}
-		case EAGX_AmorOwningType::Constraint:
-		{
-			auto InitAsset = [&](UAGX_ConstraintMergeSplitThresholds& Asset)
-			{ Asset.CopyFrom(Barrier); };
-
-			FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_ConstraintMergeSplitThresholds>(
-				DirectoryName, Name, "AGX_CMST_", TEXT("MergeSplitThresholds"), InitAsset);
-			if (!WriteAssetToDisk(AtdInfo))
+			else
 			{
-				return nullptr;
+				return FComponentEditorUtils::GenerateValidVariableName(
+					Component.GetClass(), Component.GetOwner());
 			}
-			return Cast<UAGX_ConstraintMergeSplitThresholds>(AtdInfo.Asset);
-
 		}
-		case EAGX_AmorOwningType::Wire:
-		{
-			auto InitAsset = [&](UAGX_WireMergeSplitThresholds& Asset) { Asset.CopyFrom(Barrier); };
 
-			FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_WireMergeSplitThresholds>(
-				DirectoryName, Name, "AGX_WMST_", TEXT("MergeSplitThresholds"), InitAsset);
-			if (!WriteAssetToDisk(AtdInfo))
-			{
-				return nullptr;
-			}
-			return Cast<UAGX_WireMergeSplitThresholds>(AtdInfo.Asset);
-		}
+		return WantedName;
 	}
-
-	UE_LOG(
-		LogAGX, Error,
-		TEXT("Could not create Merge Split Thresholds asset '%s' because the given owning type is "
-			 "unknown."),
-		*Name);
-	return nullptr;
 }
 
 UAGX_TrackInternalMergeProperties*
 FAGX_ImportUtilities::SaveImportedTrackInternalMergePropertiesAsset(
-	const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name)
+	const FTrackBarrier& Barrier, const FString& DirectoryPath, const FString& Name)
 {
 	auto InitAsset = [&](UAGX_TrackInternalMergeProperties& Asset) { Asset.CopyFrom(Barrier); };
 
-	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_TrackInternalMergeProperties>(
-		DirectoryName, Name, TEXT(""), TEXT("TrackInternalMergeProperties"), InitAsset);
-	if (!WriteAssetToDisk(AtdInfo))
+	UAGX_TrackInternalMergeProperties* Asset =
+		PrepareWriteAssetToDisk<UAGX_TrackInternalMergeProperties>(
+			DirectoryPath, Name, TEXT(""), TEXT("TrackInternalMergeProperties"), InitAsset);
+	if (Asset == nullptr || !WriteAssetToDisk(*Asset))
 	{
 		return nullptr;
 	}
-	return Cast<UAGX_TrackInternalMergeProperties>(AtdInfo.Asset);
+	return Asset;
 }
 
 UAGX_TrackProperties* FAGX_ImportUtilities::SaveImportedTrackPropertiesAsset(
-	const FTrackPropertiesBarrier& Barrier, const FString& DirectoryName, const FString& Name)
+	const FTrackPropertiesBarrier& Barrier, const FString& DirectoryPath, const FString& Name)
 {
 	auto InitAsset = [&](UAGX_TrackProperties& Asset) { Asset.CopyFrom(Barrier); };
 
-	FAssetToDiskInfo AtdInfo = PrepareWriteAssetToDisk<UAGX_TrackProperties>(
-		DirectoryName, Name, TEXT(""), TEXT("TrackProperties"), InitAsset);
-	if (!WriteAssetToDisk(AtdInfo))
+	UAGX_TrackProperties* Asset = PrepareWriteAssetToDisk<UAGX_TrackProperties>(
+		DirectoryPath, Name, TEXT(""), TEXT("TrackProperties"), InitAsset);
+	if (Asset == nullptr || !WriteAssetToDisk(*Asset))
 	{
 		return nullptr;
 	}
-	return Cast<UAGX_TrackProperties>(AtdInfo.Asset);
+
+	return Asset;
 }
 
-void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)
+FString FAGX_ImportUtilities::CreateName(UObject& Object, const FString& Name)
 {
 	if (Name.IsEmpty())
 	{
 		// Not having an imported name means use whatever default name Unreal decided.
-		return;
+		return Name;
 	}
 	if (Object.Rename(*Name, nullptr, REN_Test))
 	{
-		Object.Rename(*Name, nullptr, REN_DontCreateRedirectors);
+		return Name;
 	}
 	else
 	{
@@ -461,14 +375,70 @@ void FAGX_ImportUtilities::Rename(UObject& Object, const FString& Name)
 		UE_LOG(
 			LogAGX, Log, TEXT("%s '%s' imported with name '%s' because of name conflict."),
 			*Object.GetClass()->GetName(), *Name, *NewName.ToString());
-		Object.Rename(*NewName.ToString(), nullptr, REN_DontCreateRedirectors);
+		return NewName.ToString();
 	}
 }
 
 void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Name)
 {
-	Rename(static_cast<UObject&>(Component), Name);
-	FinalizeComponentName(Component);
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		if (FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Component.GetName()) ==
+			Name)
+			return; // Wanted name is already set, we are done.
+	}
+	else
+	{
+		if (Component.GetName() == Name)
+			return; // Wanted name is already set, we are done.
+	}
+
+	const FString ValidName = [&]()
+	{
+		if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+		{
+			return GetUniqueNameForComponentTemplate(Component, Name);
+		}
+		else
+		{
+			return CreateName(static_cast<UObject&>(Component), Name);
+		}
+	}();
+
+	const FString FinalName = GetFinalizedComponentName(Component, ValidName);
+
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		UBlueprint* Bp = FAGX_BlueprintUtilities::GetBlueprintFrom(Component);
+
+		USCS_Node* Node =
+			FAGX_BlueprintUtilities::GetSCSNodeFromComponent(*Bp, &Component, false).FoundNode;
+		if (Node == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unable to set name '%s' for Component '%s' because the owning SCS Node could "
+					 "not be retrieved. The Component will not be renamed."),
+				*FinalName, *Component.GetName());
+			return;
+		}
+
+		// For future reference: earlier we sometimes got crashes inside this function. This was
+		// when model synchronization was made with the Blueprint Editor opened. Now we always close
+		// all asset editors prior to doing model synchronization, and the issue seems resolved.
+		// However, if this function for some reason starts crashing on Existing object found, then
+		// look in the internal gitlab history for feature/model-synchronization, commit 50ea329b.
+		// It has a work-around for this. Basically, the issue was that on rare occasions, an
+		// archetype instance was found for a Component Template that did not belong to that
+		// Component. So the solution was to check if any archetype instances had non matching
+		// names, and if so, calling SetVariableName with bRenameTemplate == false, and then
+		// updating matched archetype instances manually in that case.
+		Node->SetVariableName(FName(FinalName));
+	}
+	else
+	{
+		Component.Rename(*FinalName);
+	}
 }
 
 FLinearColor FAGX_ImportUtilities::SRGBToLinear(const FVector4& SRGB)
@@ -485,4 +455,128 @@ FVector4 FAGX_ImportUtilities::LinearToSRGB(const FLinearColor& Linear)
 	return FVector4(
 		static_cast<float>(SRGBBytes.R) / 255.0f, static_cast<float>(SRGBBytes.G) / 255.0f,
 		static_cast<float>(SRGBBytes.B) / 255.0f, static_cast<float>(SRGBBytes.A) / 255.0f);
+}
+
+FString FAGX_ImportUtilities::GetImportRootDirectoryName()
+{
+	return FString("ImportedAGXModels");
+}
+
+FString FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName()
+{
+	return FString("ShapeMaterial");
+}
+
+FString FAGX_ImportUtilities::GetImportContactMaterialDirectoryName()
+{
+	return FString("ContactMaterial");
+}
+
+FString FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName()
+{
+	return FString("RenderMaterial");
+}
+
+FString FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName()
+{
+	return FString("MergeSplitThresholds");
+}
+
+FString FAGX_ImportUtilities::GetImportStaticMeshDirectoryName()
+{
+	return FString("StaticMesh");
+}
+
+FString FAGX_ImportUtilities::GetImportRenderMeshDirectoryName()
+{
+	return FString("RenderMesh");
+}
+
+template <>
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeMaterial>()
+{
+	return GetImportShapeMaterialDirectoryName();
+}
+
+template <>
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ContactMaterial>()
+{
+	return GetImportContactMaterialDirectoryName();
+}
+
+template <>
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UMaterialInterface>()
+{
+	return GetImportRenderMaterialDirectoryName();
+}
+
+template <>
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_MergeSplitThresholdsBase>()
+{
+	return GetImportMergeSplitThresholdsDirectoryName();
+}
+
+template <>
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ConstraintMergeSplitThresholds>()
+{
+	return GetImportMergeSplitThresholdsDirectoryName();
+}
+
+template <>
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeContactMergeSplitThresholds>()
+{
+	return GetImportMergeSplitThresholdsDirectoryName();
+}
+
+template <>
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_WireMergeSplitThresholds>()
+{
+	return GetImportMergeSplitThresholdsDirectoryName();
+}
+
+FString FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName()
+{
+	return FString("AGX_ContactMaterialRegistrar");
+}
+
+FString FAGX_ImportUtilities::GetCollisionGroupDisablerDefaultName()
+{
+	return FString("AGX_CollisionGroupDisabler");
+}
+
+FString FAGX_ImportUtilities::GetUnsetUniqueImportName()
+{
+	return FString("AGX_Import_Unnamed_") + FGuid::NewGuid().ToString();
+}
+
+FString FAGX_ImportUtilities::GetDefaultModelImportDirectory(const FString& ModelName)
+{
+	const FString Name = FAGX_EditorUtilities::SanitizeName(ModelName);
+	const FString Root = FPaths::ProjectContentDir();
+	const FString ImportsLocal = FPaths::Combine(GetImportRootDirectoryName(), ModelName);
+	const FString ImportsFull = FPaths::Combine(Root, ImportsLocal);
+	const FString ImportsAbsolute = FPaths::ConvertRelativePathToFull(ImportsFull);
+	return ImportsAbsolute;
+}
+
+EAGX_ImportType FAGX_ImportUtilities::GetFrom(const FString& FilePath)
+{
+	const FString FileExtension = FPaths::GetExtension(FilePath);
+	if (FileExtension.Equals("agx"))
+	{
+		return EAGX_ImportType::Agx;
+	}
+	else if (FileExtension.Equals("urdf"))
+	{
+		return EAGX_ImportType::Urdf;
+	}
+
+	return EAGX_ImportType::Invalid;
 }

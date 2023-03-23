@@ -48,7 +48,7 @@ public:
 	 *
 	 * @param Barrier The AGX Dynamics Height Field to copy from.
 	 */
-	void CopyFrom(const FHeightFieldShapeBarrier& Barrier);
+	void CopyFrom(const FHeightFieldShapeBarrier& Barrier, bool ForceOverwriteInstances = false);
 
 	virtual void DestroyComponent(bool bPromoteChildren) override;
 

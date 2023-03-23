@@ -3,7 +3,8 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AMOR/AGX_AmorEnums.h"
+#include "AGX_ImportEnums.h"
+#include "AGX_LogCategory.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -17,11 +18,14 @@ class FShapeMaterialBarrier;
 class FTrackBarrier;
 class FTrackPropertiesBarrier;
 class FContactMaterialBarrier;
+class UAGX_ShapeContactMergeSplitThresholds;
+class UAGX_ConstraintMergeSplitThresholds;
 class UAGX_ContactMaterial;
 class UAGX_MergeSplitThresholdsBase;
 class UAGX_ShapeMaterial;
 class UAGX_TrackInternalMergeProperties;
 class UAGX_TrackProperties;
+class UAGX_WireMergeSplitThresholds;
 struct FAGX_RenderMaterial;
 
 class AActor;
@@ -31,44 +35,19 @@ class UMaterialInterface;
 class UMaterialInstanceConstant;
 class UStaticMesh;
 
-struct FAssetToDiskInfo
-{
-	UPackage* Package = nullptr;
-	UObject* Asset = nullptr;
-	FString PackagePath;
-	FString AssetName;
-
-	bool IsValid() const
-	{
-		return Package != nullptr && Asset != nullptr && !PackagePath.IsEmpty() &&
-			   !AssetName.IsEmpty();
-	}
-};
-
-class FAGX_ImportUtilities
+class AGXUNREALEDITOR_API FAGX_ImportUtilities
 {
 public:
 	/**
 	 * Create a package path for an asset of the given type. The returned path is the sanitized
-	 * version of "/Game/ImportedAGXModels/{FileName}/{AssetType}s/".
-	 * @param FileName The name of the source file from which the asset was read.
+	 * version of "{DirectoryPath}/{AssetType}s/".
+	 * @param DirectoryPath The absolute path of the model root directory. Must be valid.
 	 * @param AssetType The type of the asset.
+	 * @param AppendSeparator Whether or not to ensure the returned path ends with a separator /.
 	 * @return A package path for the asset, or the empty string if the names are invalid.
 	 */
-	static FString CreatePackagePath(FString FileName, FString AssetType);
-
-	/**
-	 * Create a package path for imported simulation objects with the given name.
-	 *
-	 * The given name is sanitized and the returned package path will then be
-	 * "/Game/ImportedAGXModels/{FileName}".
-	 *
-	 * No check is made for already existing packages with the same name.
-	 *
-	 * @param FileName The name of the source file to create a package path for.
-	 * @return The package path for the imported asset.
-	 */
-	static FString CreatePackagePath(FString FileName);
+	static FString CreatePackagePath(
+		const FString& DirectoryPath, FString AssetType, bool AppendSeparator = true);
 
 	/**
 	 * Pick a name for an imported asset. NativeName and FileName will be sanitized and the first
@@ -104,110 +83,55 @@ public:
 
 	/**
 	 * Sets up the imported Trimesh as an UStaticMesh asset, but does not write it to disk.
-	 * Instead returns a AssetToDiskData which in turn can be used to write the asset to disk.
 	 *
 	 * @param Trimesh The imported trimesh to be saved.
-	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param DirectoryPath The path of the directory where the assets are collected.
 	 * @param FallbackName Name to give the asset in case the trimesh doesn't have a source
 	 * name.
-	 * @return The AssetToDiskData containing all information needed to write the asset to disk.
+	 * @return The created asset.
 	 */
-	static FAssetToDiskInfo SaveImportedStaticMeshAsset(
-		const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryName,
+	static UStaticMesh* SaveImportedStaticMeshAsset(
+		const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryPath,
 		const FString& FallbackName);
 
 	/**
 	 * Sets up the imported Render Data Mesh as an UStaticMesh asset, but does not write it to disk.
-	 * Instead returns a AssetToDiskData which in turn can be used to write the asset to disk.
 	 *
 	 * @param RenderData The Render Data holding the render mesh to store.
-	 * @param DirectoryName The name of the directory where the assets are collected.
-	 * @return The AssetToDiskData containing all information needed to write the asset to disk.
+	 * @param DirectoryPath The path of the directory where the assets are collected.
+	 * @return The created asset.
 	 */
-	static FAssetToDiskInfo SaveImportedStaticMeshAsset(
-		const FRenderDataBarrier& RenderData, const FString& DirectoryName);
-
-	/**
-	 * Store an imported AGX Dynamics Material as an UAGX_ShapeMaterial.
-	 * @param Material The imported material to be saved.
-	 * @param DirectoryName The name of the directory where the assets are collected.
-	 * @return The created ShapeMaterialAsset.
-	 */
-	static UAGX_ShapeMaterial* SaveImportedShapeMaterialAsset(
-		const FShapeMaterialBarrier& Material, const FString& DirectoryName);
-
-	/**
-	 * Store an imported AGX Dynamics ContactMaterial as an UAGX_ContactMaterial.
-	 * @param ContactMaterial The imported contact material to be saved.
-	 * @param Material1 The AGXUnreal ShapeMaterial for the first AGX Dynamics material.
-	 * @param Material2 The AGXUnreal ShapeMaterial for the second AGX Dynamics material.
-	 * @param DirectoryName The name of the directory where the assets are collected.
-	 * @return The created ContactMaterialAsset.
-	 */
-	static UAGX_ContactMaterial* SaveImportedContactMaterialAsset(
-		const FContactMaterialBarrier& ContactMaterial, UAGX_ShapeMaterial* Material1,
-		UAGX_ShapeMaterial* Material2, const FString& DirectoryName);
-
-	/**
-	 * Save an FAGX_RenderMaterial read from and AGX Dynamics RenderData material as an Unreal
-	 * Engine Material Instance. The Material Instance will be inheriting from the base import
-	 * material M_ImportedBase that is shipped as an asset with the AGX Dynamics for Unreal plugin.
-	 * The base material is returned if a Material Instance could not be created, and nullptr is
-	 * returned if the base material could not be loaded. The passed MaterialName is used if
-	 * possible, but a sequence number is added, using IAssetTools::CreateUniqueAssetName, in case
-	 * of a name conflict.
-	 * @param Imported AGX Dynamics Render Material parameters.
-	 * @param DirectoryName Name where assets for the imported assets should be
-	 * stored. Often the same as the source filename itself.
-	 * @param MaterialName The name to give to the new Material Instance. A sequence number will be
-	 * added in case of a conflict
-	 * @return A new Material Instance if one could be created, or the base material, or
-	 * nullptr if the base material could not be loaded.
-	 */
-	static UMaterialInterface* SaveImportedRenderMaterialAsset(
-		const FAGX_RenderMaterial& Imported, const FString& DirectoryName,
-		const FString& MaterialName);
-
-	/**
-	 * Store an imported AGX Dynamics Merge Split Thresholds as an UAGX_MergeSplitThresholdsBase.
-	 * @param Barrier The imported merge split thresholds to be saved.
-	 * @param OwningType Indicates the type of the underlying AGX Dynamics object owning this
-	 * MergeSplitThresholds.
-	 * @param DirectoryName The name of the directory where the assets are collected.
-	 * @param Name The name of the asset to be written.
-	 * @return The created MergeSplitThresholds asset.
-	 */
-	static UAGX_MergeSplitThresholdsBase* SaveImportedMergeSplitAsset(
-		const FMergeSplitThresholdsBarrier& Barrier, EAGX_AmorOwningType OwningType,
-		const FString& DirectoryName, const FString& Name);
+	static UStaticMesh* SaveImportedStaticMeshAsset(
+		const FRenderDataBarrier& RenderData, const FString& DirectoryPath);
 
 	/**
 	 * Store an imported AGX Dynamics Track Internal Merge Property as an
 	 * UAGX_TrackInternalMergeProperties asset on drive..
 	 * @param Barrier The imported Track owning the Internal Merge Property.
-	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param DirectoryPath The path of the directory where the assets are collected.
 	 * @param Name The name to give to the new asset. A sequence number will be added in case of a
 	 * conflict.
 	 * @return The created UAGX_TrackInternalMergeProperties asset.
 	 */
 	static UAGX_TrackInternalMergeProperties* SaveImportedTrackInternalMergePropertiesAsset(
-		const FTrackBarrier& Barrier, const FString& DirectoryName, const FString& Name);
+		const FTrackBarrier& Barrier, const FString& DirectoryPath, const FString& Name);
 
 	/**
 	 * Store an imported AGX Dynamics Track Property as an UAGX_TrackProperties.
 	 * @param Barrier The imported Track referencing the Track Property.
-	 * @param DirectoryName The name of the directory where the assets are collected.
+	 * @param DirectoryPath The path of the directory where the assets are collected.
 	 * @param Name The name to give to the new asset. A sequence number will be added in case of a
 	 * conflict.
 	 * @return The created UAGX_TrackProperties.
 	 */
 	static UAGX_TrackProperties* SaveImportedTrackPropertiesAsset(
-		const FTrackPropertiesBarrier& Barrier, const FString& DirectoryName, const FString& Name);
+		const FTrackPropertiesBarrier& Barrier, const FString& DirectoryPath, const FString& Name);
 
 	/**
-	 * Rename the object. Generates a fallback name if the given name can't be used.
+	 * Generate valid name for the object. Generates a fallback name if the given name can't be
+	 * used.
 	 */
-	static void Rename(UObject& Object, const FString& Name);
+	static FString CreateName(UObject& Object, const FString& Name);
 
 	/**
 	 * Handles the case of renaming Actor Components, where an extra name validation occurs compared
@@ -231,4 +155,85 @@ public:
 	 * @return
 	 */
 	static FVector4 LinearToSRGB(const FLinearColor& Linear);
+
+	static FString GetImportRootDirectoryName();
+	static FString GetImportShapeMaterialDirectoryName();
+	static FString GetImportContactMaterialDirectoryName();
+	static FString GetImportRenderMaterialDirectoryName();
+	static FString GetImportMergeSplitThresholdsDirectoryName();
+	static FString GetImportStaticMeshDirectoryName();
+	static FString GetImportRenderMeshDirectoryName();
+
+	/**
+	 * Template version of the asset directory name getter.
+	 * Only specialized for the asset types listed above, except for StaticMesh/RenderMesh because
+	 * these are both UStaticMesh and it is not possible to know if the mesh comes from Trimesh data
+	 * or render data.
+	 */
+	template <typename UAsset>
+	static FString GetImportAssetDirectoryName();
+
+	static FString GetContactMaterialRegistrarDefaultName();
+	static FString GetCollisionGroupDisablerDefaultName();
+
+	static FString GetUnsetUniqueImportName();
+
+	/**
+	 * Get the file system path to the default import directory for a model with the given name.
+	 *
+	 * Note that due to name collisions that actual path that a particular import resulted in may
+	 * differ from the returned path.
+	 */
+	static FString GetDefaultModelImportDirectory(const FString& ModelName);
+
+	/**
+	 * Create a new asset destined for the given directory path. This functions will only create the
+	 * asset and setup it's Package, it will not actually save it to disk. That is the
+	 * responsibility of the caller.
+	 */
+	template <typename UAsset>
+	static UAsset* CreateAsset(
+		const FString& DirectoryPath, FString AssetName, const FString& AssetType);
+
+	/**
+	 * Create a new Component and add it to an Actor and attach it to the given attach parent.
+	 * The Component will be given a temporary unique name.
+	 */
+	template <typename TComponent>
+	static TComponent* CreateComponent(AActor& Owner, USceneComponent& AttachParent);
+
+	static EAGX_ImportType GetFrom(const FString& FilePath);
 };
+
+template <typename UAsset>
+UAsset* FAGX_ImportUtilities::CreateAsset(
+	const FString& DirectoryPath, FString AssetName, const FString& AssetType)
+{
+	AssetName = FAGX_ImportUtilities::CreateAssetName(AssetName, "", AssetType);
+	FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(DirectoryPath, AssetType);
+	FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
+	UPackage* Package = CreatePackage(*PackagePath);
+
+	UAsset* Asset = NewObject<UAsset>(Package, FName(*AssetName), RF_Public | RF_Standalone);
+	if (Asset == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Could not create asset '%s' from '%s'."), *AssetName,
+			*DirectoryPath);
+	}
+
+	return Asset;
+}
+
+template <typename TComponent>
+TComponent* FAGX_ImportUtilities::CreateComponent(AActor& Owner, USceneComponent& AttachParent)
+{
+	TComponent* Component = NewObject<TComponent>(
+		&AttachParent, FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+
+	Owner.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+	Component->AttachToComponent(
+		&AttachParent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	return Component;
+}

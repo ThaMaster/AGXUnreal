@@ -38,7 +38,9 @@ public:
 	FAGX_ConstraintScrewController(bool bRotational);
 
 	void InitializeBarrier(TUniquePtr<FScrewControllerBarrier> Barrier);
-	void CopyFrom(const FScrewControllerBarrier& Source);
+	void CopyFrom(
+		const FScrewControllerBarrier& Source,
+		TArray<FAGX_ConstraintScrewController*>& ArchetypeInstances, bool ForceOverwriteInstances);
 
 private:
 	virtual void UpdateNativePropertiesImpl() override;

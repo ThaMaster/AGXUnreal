@@ -191,6 +191,16 @@ double FConstraintMergeSplitThresholdsBarrier::GetMaxRelativeSpeed() const
 	return 0.0;
 }
 
+void FConstraintMergeSplitThresholdsBarrier::SetIsRotational(bool InIsRotational)
+{
+	bIsRotational = InIsRotational;
+}
+
+bool FConstraintMergeSplitThresholdsBarrier::GetIsRotational() const
+{
+	return bIsRotational;
+}
+
 FConstraintMergeSplitThresholdsBarrier FConstraintMergeSplitThresholdsBarrier::CreateFrom(
 	const FConstraintBarrier& Barrier)
 {
@@ -211,6 +221,7 @@ FConstraintMergeSplitThresholdsBarrier FConstraintMergeSplitThresholdsBarrier::C
 		return FConstraintMergeSplitThresholdsBarrier();
 	}
 
-	return FConstraintMergeSplitThresholdsBarrier(
-		std::make_unique<FMergeSplitThresholdsRef>(Mst));
+	FConstraintMergeSplitThresholdsBarrier ThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(Mst));
+	ThresholdsBarrier.SetIsRotational(Barrier.IsRotational());
+	return ThresholdsBarrier;
 }

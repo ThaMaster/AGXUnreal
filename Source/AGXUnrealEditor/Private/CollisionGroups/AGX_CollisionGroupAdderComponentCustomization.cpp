@@ -2,9 +2,11 @@
 
 #include "CollisionGroups/AGX_CollisionGroupAdderComponentCustomization.h"
 
+// AGX Dynamics for Unreal includes.
 #include "CollisionGroups/AGX_CollisionGroupAdderComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
+// Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"

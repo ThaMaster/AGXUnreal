@@ -119,6 +119,7 @@ void UAGX_TrackComponent::CopyFrom(const FTrackBarrier& Barrier)
 	Thickness = static_cast<float>(Barrier.GetThickness());
 	InitialDistanceTension = static_cast<float>(Barrier.GetInitialDistanceTension());
 	CollisionGroups = Barrier.GetCollisionGroups();
+	ImportGuid = Barrier.GetGuid();
 
 	if (Barrier.GetNumNodes() > 0)
 	{

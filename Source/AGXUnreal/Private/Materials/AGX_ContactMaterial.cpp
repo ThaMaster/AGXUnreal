@@ -762,6 +762,8 @@ void UAGX_ContactMaterial::CopyFrom(const FContactMaterialBarrier& Source)
 	COPY_PROPERTY(AdhesiveForce);
 	COPY_PROPERTY(AdhesiveOverlap);
 
+	ImportGuid = Source.GetGuid();
+
 #undef COPY_PROPERTY
 }
 

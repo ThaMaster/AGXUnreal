@@ -5,6 +5,7 @@
 
 #include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
+#include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/CylinderShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
@@ -377,6 +378,38 @@ namespace RigidBodyBarrier_helpers
 		}
 	}
 
+	void CollectShapes(
+		const agxCollide::ShapeRefVector& InShapes, TArray<FAnyShapeBarrier>& OutShapes)
+	{
+		for (const agxCollide::ShapeRef& Shape : InShapes)
+		{
+			if (Shape->getType() == agxCollide::Shape::GROUP)
+			{
+				agxCollide::ShapeGroup* Group = Shape->as<agxCollide::ShapeGroup>();
+				CollectShapes(Group->getChildren(), OutShapes);
+			}
+			else
+			{
+				OutShapes.Add(AGXBarrierFactories::CreateAnyShapeBarrier(Shape));
+			}
+		}
+	}
+
+	TArray<FAnyShapeBarrier> GetAllShapes(agx::RigidBody& Body)
+	{
+		TArray<FAnyShapeBarrier> Shapes;
+		for (const agxCollide::GeometryRef& Geometry : Body.getGeometries())
+		{
+			if (Geometry == nullptr)
+			{
+				continue;
+			}
+
+			CollectShapes(Geometry->getShapes(), Shapes);
+		}
+		return Shapes;
+	}
+
 	TArray<FSphereShapeBarrier> GetAllSpheres(agx::RigidBody& Body)
 	{
 		TArray<FSphereShapeBarrier> Spheres;
@@ -469,7 +502,7 @@ namespace RigidBodyBarrier_helpers
 		return Cylinders;
 	}
 
-	TArray<FTrimeshShapeBarrier> GetAllTrimeshs(agx::RigidBody& Body)
+	TArray<FTrimeshShapeBarrier> GetAllTrimeshes(agx::RigidBody& Body)
 	{
 		TArray<FTrimeshShapeBarrier> Trimeshes;
 		for (const agxCollide::GeometryRef& Geometry : Body.getGeometries())
@@ -487,10 +520,25 @@ namespace RigidBodyBarrier_helpers
 
 			CollectShapeOfType<FTrimeshShapeBarrier>(
 				Geometry->getShapes(), Trimeshes, agxCollide::Shape::TRIMESH, CreateTrimesh);
+
+			// We have to collect all Convex shapes as well, which inherits from Trimesh.
+			// We have no special handling/support for Convex shapes so they are treaded as regular
+			// Trimeshes.
+			CollectShapeOfType<FTrimeshShapeBarrier>(
+				Geometry->getShapes(), Trimeshes, agxCollide::Shape::CONVEX, CreateTrimesh);
 		}
 
 		return Trimeshes;
 	}
+}
+
+TArray<FAnyShapeBarrier> FRigidBodyBarrier::GetShapes() const
+{
+	if (!HasNative())
+	{
+		return TArray<FAnyShapeBarrier>();
+	}
+	return RigidBodyBarrier_helpers::GetAllShapes(*NativeRef->Native);
 }
 
 TArray<FSphereShapeBarrier> FRigidBodyBarrier::GetSphereShapes() const
@@ -535,5 +583,5 @@ TArray<FTrimeshShapeBarrier> FRigidBodyBarrier::GetTrimeshShapes() const
 	{
 		return TArray<FTrimeshShapeBarrier>();
 	}
-	return RigidBodyBarrier_helpers::GetAllTrimeshs(*NativeRef->Native);
+	return RigidBodyBarrier_helpers::GetAllTrimeshes(*NativeRef->Native);
 }

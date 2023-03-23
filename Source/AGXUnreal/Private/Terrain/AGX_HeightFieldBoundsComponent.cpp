@@ -4,8 +4,10 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_CustomVersion.h"
+#include "AGX_LogCategory.h"
 #include "Shapes/AGX_HeightFieldShapeComponent.h"
 #include "Terrain/AGX_Terrain.h"
+#include "Utilities/AGX_HeightFieldUtilities.h"
 
 // Unreal Engine includes.
 #include "Landscape.h"

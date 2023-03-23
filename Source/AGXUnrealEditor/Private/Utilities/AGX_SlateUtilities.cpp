@@ -2,10 +2,22 @@
 
 #include "Utilities/AGX_SlateUtilities.h"
 
+// AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 
+// Unreal Engine includes.
+#include "Fonts/SlateFontInfo.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SWidget.h"
+
+FSlateFontInfo FAGX_SlateUtilities::CreateFont(int Size)
+{
+	FSlateFontInfo F = IPropertyTypeCustomizationUtils::GetRegularFont();
+	F.Size = Size;
+	return F;
+}
+
+
 
 bool FAGX_SlateUtilities::RemoveChildWidgetByType(
 	const TSharedPtr<SWidget>& Parent, const FString& TypeNameToRemove, bool Recursive)

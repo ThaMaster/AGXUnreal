@@ -71,15 +71,26 @@ void FAGX_ConstraintLockController::UpdateNativePropertiesImpl()
 	}
 }
 
-void FAGX_ConstraintLockController::CopyFrom(const FLockControllerBarrier& Source)
+void FAGX_ConstraintLockController::CopyFrom(
+	const FLockControllerBarrier& Source, TArray<FAGX_ConstraintLockController*>& Instances,
+	bool ForceOverwriteInstances)
 {
-	Super::CopyFrom(Source);
-	if (bRotational)
+	TArray<FAGX_ConstraintController*> BaseInstances(Instances);
+	Super::CopyFrom(Source, BaseInstances, ForceOverwriteInstances);
+
+	const double PositionBarrier =
+		bRotational ? Source.GetPositionRotational() : Source.GetPositionTranslational();
+
+	for (auto Instance : Instances)
 	{
-		Position = Source.GetPositionRotational();
+		if (Instance == nullptr)
+			continue;
+
+		if (ForceOverwriteInstances || Instance->Position == Position)
+		{
+			Instance->Position = PositionBarrier;
+		}
 	}
-	else
-	{
-		Position = Source.GetPositionTranslational();
-	}
+
+	Position = PositionBarrier;
 }
