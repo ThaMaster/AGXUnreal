@@ -206,7 +206,7 @@ public:
 
 	/**
 	 * If set to true, Terrain Paging will be used.
-	 * The Terrain Pager Settings should be configured accordingly.
+	 * The Terrain Paging Settings should be configured accordingly.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	bool bEnableTerrainPaging;
