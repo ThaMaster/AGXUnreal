@@ -225,8 +225,8 @@ void UAGX_Simulation::Add(AAGX_Terrain& Terrain)
 		return;
 	}
 
-	if ((Terrain.bEnableTerrainPager && !Terrain.HasNativeTerrainPager()) ||
-		(!Terrain.bEnableTerrainPager && !Terrain.HasNativeTerrain()))
+	if ((Terrain.bEnableTerrainPaging && !Terrain.HasNativeTerrainPager()) ||
+		(!Terrain.bEnableTerrainPaging && !Terrain.HasNativeTerrain()))
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -237,7 +237,7 @@ void UAGX_Simulation::Add(AAGX_Terrain& Terrain)
 
 	const bool Result = [this, &Terrain]()
 	{
-		if (Terrain.bEnableTerrainPager)
+		if (Terrain.bEnableTerrainPaging)
 			return GetNative()->Add(*Terrain.GetNativeTerrainPager());
 		else
 			return GetNative()->Add(*Terrain.GetNativeTerrain());
@@ -331,8 +331,8 @@ void UAGX_Simulation::Remove(AAGX_Terrain& Terrain)
 		return;
 	}
 
-	if ((Terrain.bEnableTerrainPager && !Terrain.HasNativeTerrainPager()) ||
-		(!Terrain.bEnableTerrainPager && !Terrain.HasNativeTerrain()))
+	if ((Terrain.bEnableTerrainPaging && !Terrain.HasNativeTerrainPager()) ||
+		(!Terrain.bEnableTerrainPaging && !Terrain.HasNativeTerrain()))
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -344,7 +344,7 @@ void UAGX_Simulation::Remove(AAGX_Terrain& Terrain)
 
 	const bool Result = [this, &Terrain]()
 	{
-		if (Terrain.bEnableTerrainPager)
+		if (Terrain.bEnableTerrainPaging)
 			return GetNative()->Remove(*Terrain.GetNativeTerrainPager());
 		else
 			return GetNative()->Remove(*Terrain.GetNativeTerrain());

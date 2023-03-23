@@ -8,10 +8,10 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-#include "AGX_TerrainPagerBodyReference.generated.h"
+#include "AGX_TerrainPagingBodyReference.generated.h"
 
 USTRUCT()
-struct AGXUNREAL_API FAGX_TerrainPagerBodyReference
+struct AGXUNREAL_API FAGX_TerrainPagingBodyReference
 {
 	GENERATED_USTRUCT_BODY()
 

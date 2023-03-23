@@ -119,14 +119,14 @@ void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
 	bCreateParticles = CreateParticles;
 }
 
-void AAGX_Terrain::SetEnableTerrainPager(bool bEnabled)
+void AAGX_Terrain::SetEnableTerrainPaging(bool bEnabled)
 {
-	bEnableTerrainPager = bEnabled;
+	bEnableTerrainPaging = bEnabled;
 }
 
-bool AAGX_Terrain::GetEnableTerrainPager() const
+bool AAGX_Terrain::GetEnableTerrainPaging() const
 {
-	return bEnableTerrainPager;
+	return bEnableTerrainPaging;
 }
 
 bool AAGX_Terrain::GetCreateParticles() const
@@ -360,7 +360,7 @@ bool AAGX_Terrain::CanEditChange(const FProperty* InProperty) const
 		return false;
 	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, TerrainParticlesDataMap))
 		return false;
-	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, bEnableTerrainPager))
+	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, bEnableTerrainPaging))
 		return false;
 	else
 		return Super::CanEditChange(InProperty);
@@ -479,8 +479,8 @@ void AAGX_Terrain::InitPropertyDispatcher()
 		[](ThisClass* This) { This->EnsureParticleDataRenderTargetSize(); });
 
 	PropertyDispatcher.Add(
-		AGX_MEMBER_NAME(bEnableTerrainPager),
-		[](ThisClass* This) { This->SetEnableTerrainPager(This->bEnableTerrainPager); });
+		AGX_MEMBER_NAME(bEnableTerrainPaging),
+		[](ThisClass* This) { This->SetEnableTerrainPaging(This->bEnableTerrainPaging); });
 }
 
 void AAGX_Terrain::EnsureParticleDataRenderTargetSize()
@@ -671,7 +671,7 @@ FTransform AAGX_Terrain::GetNativeTransform() const
 {
 	check(HasNative());
 
-	if (bEnableTerrainPager)
+	if (bEnableTerrainPaging)
 		return FTransform(
 			NativeTerrainPagerBarrier.GetReferenceRotation(),
 			NativeTerrainPagerBarrier.GetReferencePoint());
@@ -765,7 +765,7 @@ void AAGX_Terrain::InitializeNative()
 		return; // Logging done in CreateNativeTerrain.
 	}
 
-	if (bEnableTerrainPager)
+	if (bEnableTerrainPaging)
 	{
 		if (!CreateNativeTerrainPager())
 		{
@@ -803,7 +803,7 @@ bool AAGX_Terrain::CreateNativeTerrain()
 
 	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(
 		*SourceLandscape, StartPos, Bounds->HalfExtent.X * 2.0, Bounds->HalfExtent.Y * 2.0,
-		!bEnableTerrainPager);
+		!bEnableTerrainPaging);
 
 	NativeTerrainBarrier.AllocateNative(HeightField, MaxDepth);
 
@@ -825,7 +825,7 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	NumVerticesY =
 		FMath::RoundToInt(Bounds->HalfExtent.Y * 2.0 / SourceLandscape->GetActorScale().Y) + 1;
 
-	if (bEnableTerrainPager)
+	if (bEnableTerrainPaging)
 	{
 		OriginalHeights.SetNumZeroed(NumVerticesX * NumVerticesY);
 	}
@@ -862,7 +862,7 @@ bool AAGX_Terrain::CreateNativeTerrain()
 
 	int32 NumIterations = Simulation->GetNumPpgsIterations();
 
-	if (!bEnableTerrainPager)
+	if (!bEnableTerrainPaging)
 	{
 		// We add this Terrain to the Simulation here only if we are not using TerrainPaging.
 		Simulation->Add(*this);
@@ -894,7 +894,7 @@ bool AAGX_Terrain::CreateNativeTerrainPager()
 	check(HasNativeTerrain());
 	check(!HasNativeTerrainPager());
 
-	if (!bEnableTerrainPager)
+	if (!bEnableTerrainPaging)
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -919,9 +919,9 @@ bool AAGX_Terrain::CreateNativeTerrainPager()
 
 	const auto QuadSize = SourceLandscape->GetActorScale().X;
 	const int32 TileNumVerticesSide =
-		FMath::RoundToInt(TerrainPagerSettings.TileSize / QuadSize) + 1;
+		FMath::RoundToInt(TerrainPagingSettings.TileSize / QuadSize) + 1;
 	const int32 TileOverlapVertices =
-		FMath::RoundToInt(TerrainPagerSettings.TileOverlap / QuadSize);
+		FMath::RoundToInt(TerrainPagingSettings.TileOverlap / QuadSize);
 
 	NativeTerrainPagerBarrier.AllocateNative(
 		&HeightFetcher, NativeTerrainBarrier, TileNumVerticesSide, TileOverlapVertices, QuadSize,
@@ -965,7 +965,7 @@ void AAGX_Terrain::CreateNativeShovels()
 
 	auto AddShovel = [this](FShovelBarrier& ShovelBarrier, const FAGX_Shovel& Shovel) -> bool
 	{
-		if (bEnableTerrainPager)
+		if (bEnableTerrainPaging)
 		{
 			return NativeTerrainPagerBarrier.AddShovel(
 				ShovelBarrier, Shovel.RequiredRadius, Shovel.PreloadRadius);
@@ -1061,7 +1061,7 @@ void AAGX_Terrain::AddTerrainPagerBodies()
 	if (!HasNativeTerrainPager())
 		return;
 
-	for (FAGX_TerrainPagerBodyReference& TrackedBody : TerrainPagerSettings.TrackedRigidBodies)
+	for (FAGX_TerrainPagingBodyReference& TrackedBody : TerrainPagingSettings.TrackedRigidBodies)
 	{
 		UAGX_RigidBodyComponent* Body = TrackedBody.RigidBody.GetRigidBody();
 		if (Body == nullptr)
@@ -1197,7 +1197,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::UpdateDisplacementMap"));
 
 	TArray<std::tuple<int32, int32>> ModifiedVertices;
-	if (bEnableTerrainPager)
+	if (bEnableTerrainPaging)
 	{
 		ModifiedVertices = NativeTerrainPagerBarrier.GetModifiedHeights(
 			CurrentHeights, NumVerticesX, NumVerticesY);
@@ -1361,12 +1361,12 @@ void AAGX_Terrain::UpdateParticlesMap()
 		return;
 	}
 
-	if (!bEnableTerrainPager && !HasNativeTerrain())
+	if (!bEnableTerrainPaging && !HasNativeTerrain())
 	{
 		return;
 	}
 
-	if (bEnableTerrainPager && !HasNativeTerrainPager())
+	if (bEnableTerrainPaging && !HasNativeTerrainPager())
 	{
 		return;
 	}
@@ -1392,7 +1392,7 @@ void AAGX_Terrain::UpdateParticlesMap()
 		ParticlesDataMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, ResolutionX, ResolutionY));
 	}
 
-	const FParticleData ParticleData = bEnableTerrainPager
+	const FParticleData ParticleData = bEnableTerrainPaging
 										   ? NativeTerrainPagerBarrier.GetParticleData()
 										   : NativeTerrainBarrier.GetParticleData();
 	const TArray<FVector>& Positions = ParticleData.Positions;

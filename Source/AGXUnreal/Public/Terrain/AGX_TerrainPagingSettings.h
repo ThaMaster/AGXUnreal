@@ -3,15 +3,15 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes
-#include "AGX_TerrainPagerBodyReference.h"
+#include "AGX_TerrainPagingBodyReference.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-#include "AGX_TerrainPagerSettings.generated.h"
+#include "AGX_TerrainPagingSettings.generated.h"
 
 USTRUCT()
-struct AGXUNREAL_API FAGX_TerrainPagerSettings
+struct AGXUNREAL_API FAGX_TerrainPagingSettings
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -47,5 +47,5 @@ struct AGXUNREAL_API FAGX_TerrainPagerSettings
 	 * tiles to load or unload.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Pager Settings")
-	TArray<FAGX_TerrainPagerBodyReference> TrackedRigidBodies;
+	TArray<FAGX_TerrainPagingBodyReference> TrackedRigidBodies;
 };

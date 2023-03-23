@@ -49,7 +49,7 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 		const AAGX_Terrain& Terrain, const FTransform& BoundsTransform,
 		FPrimitiveDrawInterface* PDI)
 	{
-		check(Terrain.bEnableTerrainPager);
+		check(Terrain.bEnableTerrainPaging);
 		check(Terrain.SourceLandscape != nullptr);
 
 		for (const FAGX_Shovel& Shovel : Terrain.Shovels)
@@ -83,8 +83,8 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 		}
 
 		// Tracked (non-shovel) Rigid Bodies.
-		for (const FAGX_TerrainPagerBodyReference& TrackedBody :
-			 Terrain.TerrainPagerSettings.TrackedRigidBodies)
+		for (const FAGX_TerrainPagingBodyReference& TrackedBody :
+			 Terrain.TerrainPagingSettings.TrackedRigidBodies)
 		{
 			UAGX_RigidBodyComponent* Body = TrackedBody.RigidBody.GetRigidBody();
 			if (Body == nullptr)
@@ -108,7 +108,7 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 		const AAGX_Terrain& Terrain, const FTransform& BoundsTransform,
 		FPrimitiveDrawInterface* PDI)
 	{
-		check(Terrain.bEnableTerrainPager);
+		check(Terrain.bEnableTerrainPaging);
 		check(Terrain.SourceLandscape != nullptr);
 		check(Terrain.HasNativeTerrainPager());
 
@@ -118,7 +118,7 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 
 		const auto QuadSize = Terrain.SourceLandscape->GetActorScale().X;
 		const int32 TileNumQuadsSide =
-			FMath::RoundToInt(Terrain.TerrainPagerSettings.TileSize / QuadSize);
+			FMath::RoundToInt(Terrain.TerrainPagingSettings.TileSize / QuadSize);
 		const double TileSize = QuadSize * TileNumQuadsSide;
 
 		const FVector BoundsPosGlobal = BoundsTransform.GetLocation();
@@ -139,14 +139,14 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 		const AAGX_Terrain& Terrain, const FTransform& BoundsTransform, const FVector& HalfExtents,
 		FPrimitiveDrawInterface* PDI)
 	{
-		check(Terrain.bEnableTerrainPager);
+		check(Terrain.bEnableTerrainPaging);
 		check(Terrain.SourceLandscape != nullptr);
 
 		const auto QuadSize = Terrain.SourceLandscape->GetActorScale().X;
 		const int32 TileNumQuadsSide =
-			FMath::RoundToInt(Terrain.TerrainPagerSettings.TileSize / QuadSize);
+			FMath::RoundToInt(Terrain.TerrainPagingSettings.TileSize / QuadSize);
 		const int32 TileOverlapNumQuads =
-			FMath::RoundToInt(Terrain.TerrainPagerSettings.TileOverlap / QuadSize);
+			FMath::RoundToInt(Terrain.TerrainPagingSettings.TileOverlap / QuadSize);
 
 		const double TileSize = QuadSize * TileNumQuadsSide;
 		const double TileOverlap = QuadSize * TileOverlapNumQuads;
@@ -200,13 +200,13 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 		const AAGX_Terrain& Terrain, const FTransform& BoundsTransform, const FVector& HalfExtents,
 		FPrimitiveDrawInterface* PDI)
 	{
-		if (!Terrain.bEnableTerrainPager)
+		if (!Terrain.bEnableTerrainPaging)
 			return;
 
 		if (Terrain.SourceLandscape == nullptr)
 			return;
 
-		if (Terrain.TerrainPagerSettings.bDrawDebugGrid)
+		if (Terrain.TerrainPagingSettings.bDrawDebugGrid)
 		{
 			DrawTerrainPagerGrid(Terrain, BoundsTransform, HalfExtents, PDI);
 
@@ -214,7 +214,7 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 				DrawTerrainPagerLoadedTiles(Terrain, BoundsTransform, PDI);
 		}
 
-		if (Terrain.TerrainPagerSettings.bDrawDebugLoadRadii)
+		if (Terrain.TerrainPagingSettings.bDrawDebugLoadRadii)
 		{
 			DrawTerrainPagerLoadRadii(Terrain, BoundsTransform, PDI);
 		}
@@ -253,7 +253,7 @@ void FAGX_HeightFieldBoundsComponentVisualizer::DrawVisualization(
 
 	// If part of a Terrain using Terrain Paging, draw debug rendering for it.
 	AAGX_Terrain* Terrain = Cast<AAGX_Terrain>(Bounds->GetOwner());
-	if (BoundsInfo.IsSet() && Terrain != nullptr && Terrain->bEnableTerrainPager)
+	if (BoundsInfo.IsSet() && Terrain != nullptr && Terrain->bEnableTerrainPaging)
 	{
 		DrawTerrainPagerDebugRendering(
 			*Terrain, BoundsInfo->Transform, BoundsInfo->HalfExtent, PDI);

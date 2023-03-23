@@ -7,7 +7,7 @@
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/TerrainPagerBarrier.h"
 #include "Terrain/AGX_TerrainHeightFetcher.h"
-#include "Terrain/AGX_TerrainPagerSettings.h"
+#include "Terrain/AGX_TerrainPagingSettings.h"
 #include "Terrain/AGX_Shovel.h"
 
 // Unreal Engine includes.
@@ -69,7 +69,7 @@ public:
 	/** Whether the native terrain simulation should auto-delete particles that are out of bounds.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "!bEnableTerrainPager"))
+		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "!bEnableTerrainPaging"))
 	bool bDeleteParticlesOutsideBounds = false;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
@@ -209,17 +209,17 @@ public:
 	 * The Terrain Pager Settings should be configured accordingly.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
-	bool bEnableTerrainPager;
+	bool bEnableTerrainPaging;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
-	void SetEnableTerrainPager(bool bEnabled);
+	void SetEnableTerrainPaging(bool bEnabled);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
-	bool GetEnableTerrainPager() const;
+	bool GetEnableTerrainPaging() const;
 
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "bEnableTerrainPager"))
-	FAGX_TerrainPagerSettings TerrainPagerSettings;
+		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "bEnableTerrainPaging"))
+	FAGX_TerrainPagingSettings TerrainPagingSettings;
 
 	bool HasNativeTerrain() const;
 	bool HasNativeTerrainPager() const;
