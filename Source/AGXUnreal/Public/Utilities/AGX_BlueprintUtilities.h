@@ -106,11 +106,6 @@ public:
 	static FString GetRegularNameFromTemplateComponentName(FString Name);
 
 	/**
-	 * Returns the attach parent of a template component.
-	 */
-	static UActorComponent* GetTemplateComponentAttachParent(UActorComponent* Component);
-
-	/**
 	 * Walks up the Blueprint inheritance chain one step and returns the immediate parent if it
 	 * exists.
 	 */
@@ -128,13 +123,27 @@ public:
 	static UBlueprint* GetBlueprintFrom(const UActorComponent& Component);
 
 	/**
-	 * Makes Node a child of NewParent. If PreserveWorldTransform is set to true and the Node's
-	 * TemplateComponent is a USceneComponent, it's world transform will be preserved, i.e. it's
-	 * relative transform may change.
+	 * Returns the parent SCS Node if it was found. Will search in parent Blueprints if
+	 * bSearchParentBlueprint is set to true.
 	 */
-	static void ReParentNode(
-		UBlueprint& Blueprint, USCS_Node& Node, USCS_Node& NewParent,
-		bool PreserveWorldTransform = true);
+	static USCS_Node* GetParentSCSNode(USCS_Node* Node, bool bSearchParentBlueprints = true);
+
+	/**
+	 * Finds the first parent Component that resided in the same Blueprint as the given
+	 * ComponentTemplate. This function may search in parent Blueprints for SCS Nodes, but will walk
+	 * down the archetype instance hierarchy to return the instance with the same outer as the given
+	 * ComponentTemplate.
+	 */
+	static UActorComponent* GetTemplateComponentAttachParent(UActorComponent* ComponentTemplate);
+
+		/**
+		 * Makes Node a child of NewParent. If PreserveWorldTransform is set to true and the Node's
+		 * TemplateComponent is a USceneComponent, it's world transform will be preserved, i.e. it's
+		 * relative transform may change.
+		 */
+		static void ReParentNode(
+			UBlueprint& Blueprint, USCS_Node& Node, USCS_Node& NewParent,
+			bool PreserveWorldTransform = true);
 
 	/**
 	 * Searches through the node tree and returns the first Template Component matching the given
