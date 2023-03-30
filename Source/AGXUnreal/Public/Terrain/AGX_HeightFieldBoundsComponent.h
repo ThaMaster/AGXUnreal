@@ -31,7 +31,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Height Field Bounds",
 		Meta = (EditCondition = "!bInfiniteBounds"))
-	FVector HalfExtent {1000.0, 1000.0, 100.0};
+	FVector HalfExtent {2000.0, 2000.0, 100.0};
 
 	/**
 	 * If set to true, the Height Field Bounds will be as large as any selected Landscape.
