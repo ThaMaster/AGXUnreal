@@ -34,7 +34,7 @@ public class AGXUnreal : ModuleRules
 		// TODO: Determine which of these are really needed and why.
 		// TODO: Why are some modules listed both here and in Public... above?
 		// TODO: These were included before. Don't know why or where they came from. Remove?
-		//	   "CoreUObject", "Engine", "Slate", "SlateCore"
+		//       "CoreUObject", "Engine", "Slate", "SlateCore"
 		PrivateDependencyModuleNames.AddRange(new string[] {
 			"RHI", "RenderCore", "Projects", "Json", "AGXUnrealBarrier", "Landscape", "Slate",
 			"SlateCore"});
