@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Real.h"
 #include "AGX_RigidBodyReference.h"
 
 // Unreal Engine includes.
