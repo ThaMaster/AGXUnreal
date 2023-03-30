@@ -11,10 +11,6 @@ public class AGXUnreal : ModuleRules
 {
 	public AGXUnreal(ReadOnlyTargetRules Target) : base(Target)
 	{
-
-		Console.WriteLine("Environment.Version: {0}", Environment.Version.ToString());
-
-
 		// At 4.25 we started getting warnings encouraging us to enable these
 		// settings. At or around 4.26 Unreal Engine makes these settings the
 		// default.
@@ -121,7 +117,29 @@ public class AGXUnreal : ModuleRules
 		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", ".."));
 	}
 
-	private (bool success, string Output, string Error) RunProcess(string Executable, string Arguments)
+	// I would like to return a (boo, string, string) tuple from RunProcess,
+	// see below, but we get build error on build-and-test-win64-ue4_27:
+	//    AGXUnreal.Build.cs(124,10) : error CS1031: Type expected
+	//    AGXUnreal.Build.cs(124,10) : error CS1519: Invalid token '(' in class, struct, or interface member declaration
+	// Line 124 was
+	//    private (bool success, string Output, string Error) RunProcess(string Executable, string Arguments)
+	// at the time of the error.
+	private struct ProcessResult
+	{
+		public bool Success;
+		public string Output;
+		public string Error;
+
+		public ProcessResult(bool success, string output, string error)
+		{
+			Success = success;
+			Output = output;
+			Error = error;
+		}
+	};
+
+	private ProcessResult RunProcess(string Executable, string Arguments)
+	//private (bool success, string Output, string Error) RunProcess(string Executable, string Arguments)
 	{
 		var Config = new ProcessStartInfo(Executable, Arguments);
 		Config.CreateNoWindow = true;
@@ -132,7 +150,7 @@ public class AGXUnreal : ModuleRules
 		string Output = RunningProcess.StandardOutput.ReadToEnd();
 		string Error = RunningProcess.StandardError.ReadToEnd();
 		RunningProcess.WaitForExit();
-		return (RunningProcess.ExitCode == 0, Output, Error);
+		return new ProcessResult(RunningProcess.ExitCode == 0, Output, Error);
 	}
 
 	private void CreateGitInfo()
@@ -140,28 +158,32 @@ public class AGXUnreal : ModuleRules
 		string RepositoryPath = GetPluginRootPath();
 
 		// Get Git hash for the current commit.
+		string Hash;
 		string GetHashArgs = String.Format("-C {0} rev-parse HEAD", RepositoryPath);
-		(bool HashSuccess, string Hash, string HashError) = RunProcess("git", GetHashArgs);
-		if (HashSuccess)
+		// (bool HashSuccess, string Hash, string HashError) = RunProcess("git", GetHashArgs);
+		ProcessResult HashResult = RunProcess("git", GetHashArgs);
+		if (HashResult.Success)
 		{
-			Hash = Hash.Trim();
+			Hash = HashResult.Output.Trim();
 		}
 		else
 		{
-			Console.Error.WriteLine("Failed to get Git commit hash: {0}", HashError);
+			Console.Error.WriteLine("Failed to get Git commit hash: {0}", HashResult.Error);
 			Hash = "";
 		}
 
 		// Get current Git branch.
+		string Branch;
 		string GetBranchArgs = String.Format("-C {0} rev-parse --abbrev-ref HEAD", RepositoryPath);
-		(bool BranchSuccess, string Branch, string BranchError) = RunProcess("git", GetBranchArgs);
-		if (BranchSuccess)
+		// (bool BranchSuccess, string Branch, string BranchError) = RunProcess("git", GetBranchArgs);
+		ProcessResult BranchResult = RunProcess("git", GetBranchArgs);
+		if (BranchResult.Success)
 		{
-			Branch = Branch.Trim();
+			Branch = BranchResult.Output.Trim();
 		}
 		else
 		{
-			Console.Error.WriteLine("Failed to get Git branch: {0}", BranchError);
+			Console.Error.WriteLine("Failed to get Git branch: {0}", BranchResult.Error);
 			Branch = "";
 		}
 		if (Branch == "HEAD")
@@ -171,15 +193,17 @@ public class AGXUnreal : ModuleRules
 		}
 
 		// Get the current Git tag, because git rev-parse doesn't identify branches.
+		string Tag;
 		string GetTagArgs = String.Format("-C {0} tag --points-at HEAD", RepositoryPath);
-		(bool TagSuccess, string Tag, string TagError) = RunProcess("git", GetTagArgs);
-		if (TagSuccess)
+		// (bool TagSuccess, string Tag, string TagError) = RunProcess("git", GetTagArgs);
+		ProcessResult TagResult = RunProcess("git", GetTagArgs);
+		if (TagResult.Success)
 		{
-			Tag = Tag.Trim();
+			Tag = TagResult.Output.Trim();
 		}
 		else
 		{
-			Console.Error.WriteLine("Failed to get Git tag: {0}", TagError);
+			Console.Error.WriteLine("Failed to get Git tag: {0}", TagResult.Error);
 			Tag = "";
 		}
 
