@@ -250,11 +250,6 @@ public:
 	static void SelectActor(AActor* Actor, bool DeselectPrevious = true);
 
 	/**
-	 * Display a temporary notification popup in the lower right corner of the Editor.
-	 */
-	static void ShowNotification(const FText& Text);
-
-	/**
 	 * Return the Editor world, i.e. not the one that is potentially currently playing.
 	 */
 	static UWorld* GetEditorWorld();
