@@ -17,12 +17,11 @@ bool AGX_AutoFitShape::AutoFit(
 	if (!FAGX_Environment::IsAGXDynamicsVersionNewerOrEqualTo(2, 31, 0, 0))
 	{
 		const FString AGXVersion = FAGX_Environment::GetAGXDynamicsVersion();
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
+		FAGX_NotificationUtilities::ShowNotification(
 			FString::Printf(
 				TEXT("Could not auto-fit '%s' to meshes. Auto-fit requires AGX Dynamics version "
 					 "2.31.0.0. Current version is %s"),
-				*ShapeName, *AGXVersion),
-			World);
+				*ShapeName, *AGXVersion), SNotificationItem::CS_Fail);
 		return false;
 	}
 
@@ -45,32 +44,32 @@ bool AGX_AutoFitShape::AutoFit(
 	}
 	if (Vertices.Num() == 0)
 	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
+		FAGX_NotificationUtilities::ShowNotification(
 			FString::Printf(
 				TEXT("Could not auto-fit '%s' to meshes because no collision data could be "
 					 "extracted."),
 				*ShapeName),
-			World);
+			SNotificationItem::CS_Fail);
 		return false;
 	}
 
 	const bool Result = AutoFitFromVertices(Vertices);
 	if (!Result)
 	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
+		FAGX_NotificationUtilities::ShowNotification(
 			FString::Printf(
 				TEXT("Could not auto-fit '%s' to meshes. The Log may contain more details."),
 				*ShapeName),
-			World);
+			SNotificationItem::CS_Fail);
 		return false;
 	}
 
 	if (numWarnings > 0)
 	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithWarningLogInEditor(
+		FAGX_NotificationUtilities::ShowNotification(
 			"At least one warning was detected during the auto-fit process. The Log may contain "
 			"more details.",
-			World);
+			SNotificationItem::CS_Fail);
 	}
 
 	return true;

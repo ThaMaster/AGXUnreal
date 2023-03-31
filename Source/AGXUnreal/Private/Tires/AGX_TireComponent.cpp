@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 UAGX_TireComponent::UAGX_TireComponent()
@@ -78,9 +79,11 @@ void UAGX_TireComponent::CreateNative()
 
 	if (!HasNative())
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Tire %s in %s: Unable to create Tire."), *GetFName().ToString(),
-			*GetOwner()->GetName());
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("Tire %s in %s: Unable to create Tire."), *GetFName().ToString(),
+				*GetOwner()->GetName()),
+			SNotificationItem::CS_Fail);
 		return;
 	}
 

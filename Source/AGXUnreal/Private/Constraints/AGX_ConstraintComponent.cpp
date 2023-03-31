@@ -1200,9 +1200,11 @@ void UAGX_ConstraintComponent::CreateNative()
 	CreateNativeImpl();
 	if (!HasNative())
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Constraint %s in %s: Unable to create constraint."),
-			*GetFName().ToString(), *GetOwner()->GetName());
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("Constraint %s in %s: Unable to create constraint."), *GetFName().ToString(),
+				*GetOwner()->GetName()),
+			SNotificationItem::CS_Fail);
 		return;
 	}
 
