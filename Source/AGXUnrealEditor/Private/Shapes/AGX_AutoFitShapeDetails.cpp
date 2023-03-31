@@ -28,39 +28,44 @@
 namespace AGX_AutoFitShapeDetals_helpers
 {
 	UStaticMeshComponent* GetParentMeshComponent(
-		UAGX_ShapeComponent* Component, UBlueprintGeneratedClass* Blueprint)
+		UAGX_ShapeComponent* Component, UBlueprintGeneratedClass* BPGC)
 	{
-		if (Blueprint == nullptr || Component == nullptr)
-		{
+		if (BPGC == nullptr || Component == nullptr)
 			return nullptr;
-		}
+
+		UBlueprint* Blueprint = BPGC->SimpleConstructionScript->GetBlueprint();
+		if (Blueprint == nullptr)
+			return nullptr;
 
 		const FString ComponentName =
 			FAGX_BlueprintUtilities::GetRegularNameFromTemplateComponentName(Component->GetName());
-		FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult Result =
-			FAGX_BlueprintUtilities::GetSCSNodeFromName(
-				*Blueprint->SimpleConstructionScript->GetBlueprint(), ComponentName, true);
-		USCS_Node* Current = Result.FoundNode;
-		if (Current == nullptr)
-		{
-			return nullptr;
-		}
+		FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult NodeResult =
+			FAGX_BlueprintUtilities::GetSCSNodeFromName(*Blueprint, ComponentName, true);
 
-		while (USCS_Node* Parent =
-				   Result.Blueprint.SimpleConstructionScript->FindParentNode(Current))
+		USCS_Node* Node = NodeResult.FoundNode;
+		if (Node == nullptr)
+			return nullptr;
+
+		USCS_Node* NextParent = FAGX_BlueprintUtilities::GetParentSCSNode(Node, true);
+		if (NextParent == nullptr)
+			return nullptr;
+
+		// Find the first Static Mesh Component parent.
+		while (NextParent != nullptr)
 		{
-			if (UStaticMeshComponent* S = Cast<UStaticMeshComponent>(Parent->ComponentTemplate))
+			if (UStaticMeshComponent* S = Cast<UStaticMeshComponent>(NextParent->ComponentTemplate))
 			{
-				// The ComponentTemplate might reside in a parent Blueprint of the Blueprint holding
-				// the Component. Therefore, we need to go down the archetype instance chain and
-				// find the matching archetype instance such that it resides in the same Blueprint
-				// as Component.
-				auto MatchedMesh =
+				// The ComponentTemplate might reside in a parent Blueprint of the Blueprint
+				// holding the Component. Therefore, we need to go down the archetype instance chain
+				// and find the matching archetype instance such that it resides in the same
+				// Blueprint as Component.
+				UStaticMeshComponent* MatchedMesh =
 					FAGX_ObjectUtilities::GetMatchedInstance(S, Component->GetOuter());
 				if (MatchedMesh != nullptr)
 					return MatchedMesh;
 			}
-			Current = Parent;
+
+			NextParent = FAGX_BlueprintUtilities::GetParentSCSNode(NextParent, true);
 		}
 
 		return nullptr;
