@@ -117,7 +117,7 @@ public class AGXUnreal : ModuleRules
 		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", ".."));
 	}
 
-	// I would like to return a (boo, string, string) tuple from RunProcess,
+	// I would like to return a (bool, string, string) tuple from RunProcess,
 	// see below, but we get build error on build-and-test-win64-ue4_27:
 	//    AGXUnreal.Build.cs(124,10) : error CS1031: Type expected
 	//    AGXUnreal.Build.cs(124,10) : error CS1519: Invalid token '(' in class, struct, or interface member declaration
