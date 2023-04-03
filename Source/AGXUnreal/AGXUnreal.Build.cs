@@ -27,7 +27,7 @@ public class AGXUnreal : ModuleRules
 
 		// TODO: Determine which of these are really need and why.
 		PublicDependencyModuleNames.AddRange(new string[] {
-			"RHI", "RenderCore", "Core", "CoreUObject", "Engine", "InputCore", "Niagara"});
+			"AGXUnrealBarrier", "RHI", "RenderCore", "Core", "CoreUObject", "Engine", "InputCore", "Niagara"});
 
 
 		// TODO: Determine which of these are really needed and why.
@@ -35,7 +35,7 @@ public class AGXUnreal : ModuleRules
 		// TODO: These were included before. Don't know why or where they came from. Remove?
 		//       "CoreUObject", "Engine", "Slate", "SlateCore"
 		PrivateDependencyModuleNames.AddRange(new string[] {
-			"RHI", "RenderCore", "Projects", "Json", "AGXUnrealBarrier", "Landscape", "Slate",
+			"RHI", "RenderCore", "Projects", "Json", "Landscape", "Slate",
 			"SlateCore"});
 
 
