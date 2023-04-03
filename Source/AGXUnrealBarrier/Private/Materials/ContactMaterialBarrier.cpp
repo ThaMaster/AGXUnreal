@@ -97,34 +97,6 @@ namespace
 		}
 	}
 
-#if 0
-	agx::FrictionModel::SolveType ConvertSolveTypeToAgx(int32 SolveType)
-	{
-		// Input refers to EAGX_ContactSolver in AGX_ContactMaterialEnums.h
-		return static_cast<agx::FrictionModel::SolveType>(SolveType);
-	}
-
-	int32 ConvertSolveTypeToUnreal(agx::FrictionModel::SolveType SolveType)
-	{
-		// Output refers to EAGX_ContactSolver in AGX_ContactMaterialEnums.h
-		return static_cast<int32>(SolveType);
-	}
-#endif
-
-#if 0
-	agx::ContactMaterial::ContactReductionMode ConvertReductionModeToAgx(int32 ReductionMode)
-	{
-		// Input refers to EAGX_ContactReductionMode in AGX_ContactMaterialEnums.h
-		return static_cast<agx::ContactMaterial::ContactReductionMode>(ReductionMode);
-	}
-
-	int32 ConvertReductionModeToUnreal(agx::ContactMaterial::ContactReductionMode ReductionMode)
-	{
-		// Output refers to EAGX_ContactReductionMode in AGX_ContactMaterialEnums.h
-		return static_cast<int32>(ReductionMode);
-	}
-#endif
-
 	agx::ContactMaterial::FrictionDirection ConvertDirectionToAgx(
 		bool bPrimaryDirection, bool bSecondaryDirection)
 	{
@@ -738,16 +710,17 @@ EAGX_ContactReductionMode FContactMaterialBarrier::GetContactReductionMode() con
 	return Convert(ModeAGX);
 }
 
-void FContactMaterialBarrier::SetContactReductionBinResolution(uint8 BinResolution)
+void FContactMaterialBarrier::SetContactReductionLevel(
+	EAGX_ContactReductionLevel ContactReductionLevel)
 {
 	check(HasNative());
-	NativeRef->Native->setContactReductionBinResolution(BinResolution);
+	NativeRef->Native->setContactReductionBinResolution(Convert(ContactReductionLevel));
 }
 
-uint8 FContactMaterialBarrier::GetContactReductionBinResolution() const
+EAGX_ContactReductionLevel FContactMaterialBarrier::GetContactReductionLevel() const
 {
 	check(HasNative());
-	return NativeRef->Native->getContactReductionBinResolution();
+	return Convert(NativeRef->Native->getContactReductionBinResolution());
 }
 
 void FContactMaterialBarrier::SetUseContactAreaApproach(bool bUse)
