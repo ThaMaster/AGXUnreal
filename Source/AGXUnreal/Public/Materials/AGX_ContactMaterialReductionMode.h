@@ -11,7 +11,6 @@
 
 #include "AGX_ContactMaterialReductionMode.generated.h"
 
-
 /**
  * Contact reduction mode properties of the AGX Contact Material.
  */
@@ -28,21 +27,17 @@ public:
 	 * contact constraint can be heavily reduced, hence improving performance.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Contact Material Reduction Mode")
-	EAGX_ContactReductionMode Mode;
+	EAGX_ContactReductionMode Mode {EAGX_ContactReductionMode::Geometry};
 
 	/**
-	 * The resolution used when evaluating contacts for reduction between geometry contacts. A high
-	 * value will keep more contacts, lower will result in more aggressive reduction the default.
-	 * Commonly a value of 2 or 3 will give good result.
-	 *
-	 * Zero means that the value will be overridden by the general AGX Space setting.
-	 *
-	 * Not used if the 'Contact Reduction Mode' property is set to 'None'.
+	 * The Contact Reduction Level determines how aggressively the contact reduction is.
+	 * Default means the default AGX Dynamics Contact Reduction Level is used.
+	 * Aggressive means that many contacts will be removed, while Minimal means that few contacts
+	 * will be removed. Moderate sits in between Aggressive and Minimal.
 	 */
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Contact Material Reduction Mode",
-		Meta = (ClampMin = "0", UIMin = "0", ClampMax = "10", UIMax = "10"))
-	uint8 BinResolution; /// \todo Disable if Mode is set to 'None'.
+	UPROPERTY(EditAnywhere, Category = "AGX Contact Material Reduction Mode")
+	EAGX_ContactReductionLevel ContactReductionLevel {
+		EAGX_ContactReductionLevel::Default}; /// \todo Disable if Mode is set to 'None'.
 
 public:
 	FAGX_ContactMaterialReductionMode();
