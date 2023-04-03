@@ -867,7 +867,7 @@ inline EAGX_ContactReductionLevel Convert(agx::UInt8 Level)
 			return EAGX_ContactReductionLevel::Minimal;
 		default:
 			UE_LOG(
-				LogAGX, Log,
+				LogAGX, Warning,
 				TEXT("Tried to convert an agx::UInt8: %d to an EAGX_ContactReductionLevel, but the "
 					 "value is larger than the corresponding largest enum literal. Returning "
 					 "EAGX_ContactReductionLevel::Minimal."),

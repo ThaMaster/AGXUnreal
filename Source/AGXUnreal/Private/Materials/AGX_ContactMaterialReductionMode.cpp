@@ -21,7 +21,7 @@ namespace AGX_ContactMaterialReductionMode_helpers
 				return EAGX_ContactReductionLevel::Minimal;
 			default:
 				UE_LOG(
-					LogAGX, Log,
+					LogAGX, Warning,
 					TEXT("Tried to convert an uint8: %d to an EAGX_ContactReductionLevel, but "
 						 "the  value is larger than the corresponding largest enum literal. "
 						 "Returning "
