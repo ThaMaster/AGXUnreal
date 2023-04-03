@@ -343,7 +343,8 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 }
 
 // clang-format on
-#if 0
+
+
 /**
  * Unit test that ensures that we can load Contact Materials from when Contact Reduction Level was
  * an uint8, and ensure we correctly convert the value to the new enum equivalent.
@@ -359,10 +360,10 @@ void FAGX_ContactReductionLevelBackwardsCompatibilitySpec::Define()
 	using namespace AGX_AssetBackwardsCompatibilitySpec_helpers;
 
 	Describe(
-		"Loading Contact Materials with old contact reduction level type",
+		"Loading CM with contact reduction level as int",
 		[this]()
 		{
-			It("should convert to new enum equivalent",
+			It("should convert to enum equivalent",
 			   [this]()
 			   {
 				   auto TestContactMaterial = [this](
@@ -408,4 +409,3 @@ void FAGX_ContactReductionLevelBackwardsCompatibilitySpec::Define()
 			   });
 		});
 }
-#endif
