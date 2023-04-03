@@ -1070,6 +1070,12 @@ void UAGX_ContactMaterial::UpdateNativeProperties(
 	}
 }
 
+void UAGX_ContactMaterial::Serialize(FArchive& Archive)
+{
+	Super::Serialize(Archive);
+	ContactReduction.Serialize(Archive);
+}
+
 void UAGX_ContactMaterial::PostInitProperties()
 {
 	UObject::PostInitProperties();

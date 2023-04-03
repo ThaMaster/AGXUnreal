@@ -40,6 +40,9 @@ struct AGXUNREAL_API FAGX_CustomVersion
 		// HeightFieldShapeComponent.
 		HeightFieldUsesBounds,
 
+		// Contact Material Contact Reduction Level type change from UInt8 to enum.
+		ContactReductionLevelAsEnum,
+
 		// <----- New versions can be added above this line. ----->
 		VersionPlusOne,
 

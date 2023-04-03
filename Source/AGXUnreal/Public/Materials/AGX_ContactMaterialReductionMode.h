@@ -39,6 +39,10 @@ public:
 	EAGX_ContactReductionLevel ContactReductionLevel {
 		EAGX_ContactReductionLevel::Default}; /// \todo Disable if Mode is set to 'None'.
 
-public:
-	FAGX_ContactMaterialReductionMode();
+	void Serialize(FArchive& Archive);
+
+private:
+	// Deprecated and replaced by the enum equivalent "ContactReductionLevel".
+	UPROPERTY()
+	uint8 BinResolution_DEPRECATED {0};
 };
