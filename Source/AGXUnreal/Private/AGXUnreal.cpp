@@ -2,14 +2,36 @@
 
 #include "AGXUnreal.h"
 
-#include "UObject/CoreRedirects.h"
+// AGX Dynamics for Unreal includes.
+#include "AGX_Environment.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RuntimeStyle.h"
 
+// Unreal Engine includes.
+#include "UObject/CoreRedirects.h"
+
 #define LOCTEXT_NAMESPACE "FAGXUnrealModule"
+
+namespace AGXUnrealModule_helpers
+{
+	void PrintVersion()
+	{
+		const FString Version = FAGX_Environment::GetPluginVersion();
+		FString Revision = FAGX_Environment::GetPluginRevision();
+		if (!Revision.IsEmpty())
+		{
+			Revision = FString::Printf(TEXT(", revision %s"), *Revision);
+		}
+		UE_LOG(
+			LogAGX, Log, TEXT("AGX Dynamics for Unreal (AGXUnreal) version %s%s."), *Version,
+			*Revision);
+	}
+}
 
 void FAGXUnrealModule::StartupModule()
 {
+	using namespace AGXUnrealModule_helpers;
+	PrintVersion();
 	RegisterCoreRedirects();
 	FAGX_RuntimeStyle::Initialize();
 	FAGX_RuntimeStyle::ReloadTextures();
