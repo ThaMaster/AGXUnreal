@@ -809,7 +809,8 @@ inline agx::ContactMaterial::ContactReductionMode Convert(EAGX_ContactReductionM
 	}
 }
 
-inline agx::UInt8 Convert(EAGX_ContactReductionLevel ContactReductionLevel)
+inline agx::UInt8 ConvertContactReductionLevelToAGX(
+	EAGX_ContactReductionLevel ContactReductionLevel)
 {
 	switch (ContactReductionLevel)
 	{
@@ -853,7 +854,7 @@ inline EAGX_ContactReductionMode Convert(agx::ContactMaterial::ContactReductionM
 	}
 }
 
-inline EAGX_ContactReductionLevel Convert(agx::UInt8 Level)
+inline EAGX_ContactReductionLevel ConvertContactReductionLevelToUnreal(agx::UInt8 Level)
 {
 	switch (Level)
 	{

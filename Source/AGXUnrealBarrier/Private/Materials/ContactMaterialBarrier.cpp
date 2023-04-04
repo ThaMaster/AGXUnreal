@@ -714,13 +714,15 @@ void FContactMaterialBarrier::SetContactReductionLevel(
 	EAGX_ContactReductionLevel ContactReductionLevel)
 {
 	check(HasNative());
-	NativeRef->Native->setContactReductionBinResolution(Convert(ContactReductionLevel));
+	const agx::UInt8 LevelAGX = ConvertContactReductionLevelToAGX(ContactReductionLevel);
+	NativeRef->Native->setContactReductionBinResolution(LevelAGX);
 }
 
 EAGX_ContactReductionLevel FContactMaterialBarrier::GetContactReductionLevel() const
 {
 	check(HasNative());
-	return Convert(NativeRef->Native->getContactReductionBinResolution());
+	const agx::UInt8 LevelAGX = NativeRef->Native->getContactReductionBinResolution();
+	return ConvertContactReductionLevelToUnreal(LevelAGX);
 }
 
 void FContactMaterialBarrier::SetUseContactAreaApproach(bool bUse)
