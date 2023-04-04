@@ -4,7 +4,6 @@ using System; // For Console.
 using System.IO; // For Path.
 using System.Diagnostics; // For running processes.
 using System.Collections.Generic; // For List.
-using System.ComponentModel; // For Win32Exception.
 
 using UnrealBuildTool;
 
@@ -152,9 +151,9 @@ public class AGXUnreal : ModuleRules
 			RunningProcess.WaitForExit();
 			return new ProcessResult(RunningProcess.ExitCode == 0, Output, Error);
 		}
-		catch (Win32Exception Exception)
+		catch (Exception exception)
 		{
-			Console.WriteLine("Cannot run process '{0}': {1}", Executable, Exception.Message);
+			Console.WriteLine("Cannot run process '{0}': {1}", Executable, exception.Message);
 			return new ProcessResult(false, "", "");
 		}
 	}
