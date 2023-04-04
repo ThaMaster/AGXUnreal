@@ -121,12 +121,6 @@ void FAGX_NotificationUtilities::ShowNotification(
 #else
 	FNotificationInfo Info(FText::FromString(Text));
 
-#if UE_VERSION_OLDER_THAN(5, 1, 0)
-	Info.Image = FEditorStyle::GetBrush(TEXT("LevelEditor.RecompileGameCode"));
-#else
-	Info.Image = FAppStyle::GetBrush(TEXT("LevelEditor.RecompileGameCode"));
-#endif
-
 	Info.FadeInDuration = 0.1f;
 	Info.FadeOutDuration = 0.5f;
 	Info.ExpireDuration = Duration;
@@ -135,6 +129,7 @@ void FAGX_NotificationUtilities::ShowNotification(
 	Info.bUseLargeFont = true;
 	Info.bFireAndForget = false;
 	Info.bAllowThrottleWhenFrameRateIsLow = false;
+
 	auto NotificationItem = FSlateNotificationManager::Get().AddNotification(Info);
 	NotificationItem->SetCompletionState(State);
 	NotificationItem->ExpireAndFadeout();
