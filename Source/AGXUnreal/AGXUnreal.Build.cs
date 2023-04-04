@@ -4,6 +4,7 @@ using System; // For Console.
 using System.IO; // For Path.
 using System.Diagnostics; // For running processes.
 using System.Collections.Generic; // For List.
+using System.ComponentModel; // For Win32Exception.
 
 using UnrealBuildTool;
 
@@ -133,22 +134,53 @@ public class AGXUnreal : ModuleRules
 
 	private ProcessResult RunProcess(string Executable, string Arguments)
 	{
-		var Config = new ProcessStartInfo(Executable, Arguments)
+		try
 		{
-			CreateNoWindow = true,
-			UseShellExecute = false,
-			RedirectStandardOutput = true,
-			RedirectStandardError = true
-		};
-		Process RunningProcess = Process.Start(Config);
-		string Output = RunningProcess.StandardOutput.ReadToEnd();
-		string Error = RunningProcess.StandardError.ReadToEnd();
-		RunningProcess.WaitForExit();
-		return new ProcessResult(RunningProcess.ExitCode == 0, Output, Error);
+			var Config = new ProcessStartInfo(Executable, Arguments)
+			{
+				CreateNoWindow = true,
+				UseShellExecute = false,
+				RedirectStandardOutput = true,
+				RedirectStandardError = true
+			};
+			Process RunningProcess = Process.Start(Config);
+			string Output = RunningProcess.StandardOutput.ReadToEnd();
+			string Error = RunningProcess.StandardError.ReadToEnd();
+			RunningProcess.WaitForExit();
+			return new ProcessResult(RunningProcess.ExitCode == 0, Output, Error);
+		}
+		catch (Win32Exception Exception)
+		{
+			Console.WriteLine("Cannot run process '{0}': {1}", Executable, Exception.Message);
+			return new ProcessResult(false, "", "");
+		}
+	}
+
+	private void WriteGitInfo(string Hash, string Branch, string Tag)
+	{
+		List<string> GitInfo = new List<string>();
+		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_HASH {0}", (Hash != "" ? "1" : "0")));
+		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_HASH = TEXT(\"{0}\");\n", Hash));
+		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_BRANCH {0}", (Branch != "" ? "1" : "0")));
+		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_BRANCH = TEXT(\"{0}\");\n", Branch));
+		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_TAG {0}", (Tag != "" ? "1" : "0")));
+		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_TAG = TEXT(\"{0}\");\n", Tag));
+
+		string FilePath = Path.Combine(GetPluginRootPath(), "Source", "AGXUnreal", "Public", "AGX_BuildInfo.h");
+		File.WriteAllLines(FilePath, GitInfo);
 	}
 
 	private void CreateGitInfo()
 	{
+		// Write empty Git info if we can't run 'git'.
+		ProcessResult TestGit = RunProcess("git", "--version");
+		if (!TestGit.Success)
+		{
+			Console.WriteLine("Git is not available so cannot read revision information.");
+			WriteGitInfo("", "", "");
+			return;
+		}
+
 		string RepositoryPath = GetPluginRootPath();
 
 		// Get Git hash for the current commit.
@@ -198,15 +230,6 @@ public class AGXUnreal : ModuleRules
 			Tag = "";
 		}
 
-		List<string> GitInfo = new List<string>();
-		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_HASH {0}", (Hash != "" ? "1" : "0")));
-		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_HASH = TEXT(\"{0}\");\n", Hash));
-		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_BRANCH {0}", (Branch != "" ? "1" : "0")));
-		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_BRANCH = TEXT(\"{0}\");\n", Branch));
-		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_TAG {0}", (Tag != "" ? "1" : "0")));
-		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_TAG = TEXT(\"{0}\");\n", Tag));
-
-		string FilePath = Path.Combine(GetPluginRootPath(), "Source", "AGXUnreal", "Public", "AGX_BuildInfo.h");
-		File.WriteAllLines(FilePath, GitInfo);
+		WriteGitInfo(Hash, Branch, Tag);
 	}
 }
