@@ -4,7 +4,8 @@ using System; // For Console.
 using System.IO; // For Path.
 using System.Diagnostics; // For running processes.
 using System.Collections.Generic; // For List.
-using System.ComponentModel; // For Win32Exception.
+//using System.ComponentModel; // For Win32Exception on Unreal Engine 4.27.
+using Microsoft.Win32.Primitives; // For Win32Exception on Unreal Engine 5.
 
 using UnrealBuildTool;
 
@@ -12,6 +13,9 @@ public class AGXUnreal : ModuleRules
 {
 	public AGXUnreal(ReadOnlyTargetRules Target) : base(Target)
 	{
+		//
+		Console.Write(typeof(string).Assembly.ImageRuntimeVersion);
+
 		// At 4.25 we started getting warnings encouraging us to enable these
 		// settings. At or around 4.26 Unreal Engine makes these settings the
 		// default.
