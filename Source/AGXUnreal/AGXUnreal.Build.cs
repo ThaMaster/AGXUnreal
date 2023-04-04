@@ -117,13 +117,6 @@ public class AGXUnreal : ModuleRules
 		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", ".."));
 	}
 
-	// I would like to return a (bool, string, string) tuple from RunProcess,
-	// see below, but we get build error on build-and-test-win64-ue4_27:
-	//    AGXUnreal.Build.cs(124,10) : error CS1031: Type expected
-	//    AGXUnreal.Build.cs(124,10) : error CS1519: Invalid token '(' in class, struct, or interface member declaration
-	// Line 124 was
-	//    private (bool success, string Output, string Error) RunProcess(string Executable, string Arguments)
-	// at the time of the error.
 	private struct ProcessResult
 	{
 		public bool Success;
@@ -136,16 +129,17 @@ public class AGXUnreal : ModuleRules
 			Output = output;
 			Error = error;
 		}
-	};
+	}
 
 	private ProcessResult RunProcess(string Executable, string Arguments)
-	//private (bool success, string Output, string Error) RunProcess(string Executable, string Arguments)
 	{
-		var Config = new ProcessStartInfo(Executable, Arguments);
-		Config.CreateNoWindow = true;
-		Config.UseShellExecute = false;
-		Config.RedirectStandardOutput = true;
-		Config.RedirectStandardError = true;
+		var Config = new ProcessStartInfo(Executable, Arguments)
+		{
+			CreateNoWindow = true,
+			UseShellExecute = false,
+			RedirectStandardOutput = true,
+			RedirectStandardError = true
+		};
 		Process RunningProcess = Process.Start(Config);
 		string Output = RunningProcess.StandardOutput.ReadToEnd();
 		string Error = RunningProcess.StandardError.ReadToEnd();
@@ -160,7 +154,6 @@ public class AGXUnreal : ModuleRules
 		// Get Git hash for the current commit.
 		string Hash;
 		string GetHashArgs = String.Format("-C {0} rev-parse HEAD", RepositoryPath);
-		// (bool HashSuccess, string Hash, string HashError) = RunProcess("git", GetHashArgs);
 		ProcessResult HashResult = RunProcess("git", GetHashArgs);
 		if (HashResult.Success)
 		{
@@ -175,7 +168,6 @@ public class AGXUnreal : ModuleRules
 		// Get current Git branch.
 		string Branch;
 		string GetBranchArgs = String.Format("-C {0} rev-parse --abbrev-ref HEAD", RepositoryPath);
-		// (bool BranchSuccess, string Branch, string BranchError) = RunProcess("git", GetBranchArgs);
 		ProcessResult BranchResult = RunProcess("git", GetBranchArgs);
 		if (BranchResult.Success)
 		{
@@ -195,7 +187,6 @@ public class AGXUnreal : ModuleRules
 		// Get the current Git tag, because git rev-parse doesn't identify branches.
 		string Tag;
 		string GetTagArgs = String.Format("-C {0} tag --points-at HEAD", RepositoryPath);
-		// (bool TagSuccess, string Tag, string TagError) = RunProcess("git", GetTagArgs);
 		ProcessResult TagResult = RunProcess("git", GetTagArgs);
 		if (TagResult.Success)
 		{
