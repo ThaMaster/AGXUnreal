@@ -60,9 +60,10 @@ EAGX_ContactSolver UAGX_ContactMaterial::GetContactSolver() const
 	return ContactSolver;
 }
 
-void UAGX_ContactMaterial::SetContactReductionMode(EAGX_ContactReductionMode InContactReduction)
+void UAGX_ContactMaterial::SetContactReductionMode(EAGX_ContactReductionMode InContactReductionMode)
 {
-	AGX_ASSET_SETTER_IMPL_VALUE(ContactReduction.Mode, InContactReduction, SetContactReductionMode);
+	AGX_ASSET_SETTER_IMPL_VALUE(
+		ContactReduction.Mode, InContactReductionMode, SetContactReductionMode);
 }
 
 EAGX_ContactReductionMode UAGX_ContactMaterial::GetContactReductionMode() const
@@ -70,15 +71,16 @@ EAGX_ContactReductionMode UAGX_ContactMaterial::GetContactReductionMode() const
 	AGX_ASSET_GETTER_IMPL_VALUE(ContactReduction.Mode, GetContactReductionMode);
 }
 
-void UAGX_ContactMaterial::SetContactReductionBinResolution(uint8 InBinResolution)
+void UAGX_ContactMaterial::SetContactReductionLevel(
+	EAGX_ContactReductionLevel InContactReductionLevel)
 {
 	AGX_ASSET_SETTER_IMPL_VALUE(
-		ContactReduction.BinResolution, InBinResolution, SetContactReductionBinResolution);
+		ContactReduction.ContactReductionLevel, InContactReductionLevel, SetContactReductionLevel);
 }
 
-uint8 UAGX_ContactMaterial::GetContactReductionBinResolution() const
+EAGX_ContactReductionLevel UAGX_ContactMaterial::GetContactReductionLevel() const
 {
-	AGX_ASSET_GETTER_IMPL_VALUE(ContactReduction.BinResolution, GetContactReductionBinResolution);
+	AGX_ASSET_GETTER_IMPL_VALUE(ContactReduction.ContactReductionLevel, GetContactReductionLevel);
 }
 
 void UAGX_ContactMaterial::SetUseContactAreaApproach(bool bInUseContactAreaApproach)
@@ -733,7 +735,7 @@ void UAGX_ContactMaterial::CopyFrom(const FContactMaterialBarrier& Source)
 
 	ContactReduction = FAGX_ContactMaterialReductionMode();
 	ContactReduction.Mode = Source.GetContactReductionMode();
-	ContactReduction.BinResolution = Source.GetContactReductionBinResolution();
+	ContactReduction.ContactReductionLevel = Source.GetContactReductionLevel();
 
 	MechanicsApproach = FAGX_ContactMaterialMechanicsApproach();
 	MechanicsApproach.bUseContactAreaApproach = Source.GetUseContactAreaApproach();
@@ -1053,7 +1055,7 @@ void UAGX_ContactMaterial::UpdateNativeProperties(
 	{
 		NativeBarrier.SetFrictionSolveType(ContactSolver);
 		NativeBarrier.SetContactReductionMode(ContactReduction.Mode);
-		NativeBarrier.SetContactReductionBinResolution(ContactReduction.BinResolution);
+		NativeBarrier.SetContactReductionLevel(ContactReduction.ContactReductionLevel);
 		NativeBarrier.SetUseContactAreaApproach(MechanicsApproach.bUseContactAreaApproach);
 		NativeBarrier.SetMinMaxElasticRestLength(
 			MechanicsApproach.MinElasticRestLength, MechanicsApproach.MaxElasticRestLength);
@@ -1066,6 +1068,12 @@ void UAGX_ContactMaterial::UpdateNativeProperties(
 		NativeBarrier.SetSpookDamping(SpookDamping);
 		NativeBarrier.SetAdhesion(AdhesiveForce, AdhesiveOverlap);
 	}
+}
+
+void UAGX_ContactMaterial::Serialize(FArchive& Archive)
+{
+	Super::Serialize(Archive);
+	ContactReduction.Serialize(Archive);
 }
 
 void UAGX_ContactMaterial::PostInitProperties()
@@ -1130,8 +1138,8 @@ void UAGX_ContactMaterial::InitPropertyDispatcher()
 		ContactReduction, FAGX_ContactMaterialReductionMode, Mode, SetContactReductionMode);
 
 	NESTED_DISPATCHER(
-		ContactReduction, FAGX_ContactMaterialReductionMode, BinResolution,
-		SetContactReductionBinResolution);
+		ContactReduction, FAGX_ContactMaterialReductionMode, ContactReductionLevel,
+		SetContactReductionLevel);
 
 	NESTED_DISPATCHER(
 		MechanicsApproach, FAGX_ContactMaterialMechanicsApproach, bUseContactAreaApproach,

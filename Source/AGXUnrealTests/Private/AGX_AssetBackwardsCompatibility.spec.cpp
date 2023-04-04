@@ -24,7 +24,7 @@
 #include "UObject/PackageFileSummary.h"
 #include "UObject/UObjectGlobals.h"
 
-namespace RealInMaterialsBackwardsCompatibilitySpec_helpers
+namespace AGX_AssetBackwardsCompatibilitySpec_helpers
 {
 // We would like to have a way to check the AGX Custom Version of an asset on disk. These are a few
 // attempts, but I have not been able to get any of them to work. Hopefully only a minor tweak is
@@ -109,14 +109,15 @@ namespace RealInMaterialsBackwardsCompatibilitySpec_helpers
 #endif
 	}
 
-	template <typename MaterialT>
-	MaterialT* LoadMaterialAsset(const FString& PackagePath, const FString& ObjectName)
+	template <typename AssetT>
+	AssetT* LoadAsset(const FString& PackagePath, const FString& ObjectName)
 	{
 		FAssetRegistryModule& AssetRegistryModule =
 			FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 		IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
 		// ObjectPath is either FString or FSoftObjectPath depending on Engine version.
-		const auto ObjectPath = [&PackagePath, &ObjectName]() {
+		const auto ObjectPath = [&PackagePath, &ObjectName]()
+		{
 			const FString ObjectPath = FString::Printf(TEXT("%s.%s"), *PackagePath, *ObjectName);
 #if UE_VERSION_OLDER_THAN(5, 1, 0)
 			return FName(ObjectPath);
@@ -126,7 +127,7 @@ namespace RealInMaterialsBackwardsCompatibilitySpec_helpers
 		}();
 		FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(ObjectPath);
 		check(AssetData.IsValid());
-		MaterialT* Material = Cast<MaterialT>(AssetData.GetAsset());
+		AssetT* Material = Cast<AssetT>(AssetData.GetAsset());
 		check(Material != nullptr);
 		return Material;
 	}
@@ -145,7 +146,7 @@ END_DEFINE_SPEC(FFAGX_RealInMaterialsBackwardsCompatibilitySpec)
 
 void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 {
-	using namespace RealInMaterialsBackwardsCompatibilitySpec_helpers;
+	using namespace AGX_AssetBackwardsCompatibilitySpec_helpers;
 
 	Describe("Loading Shape Materials with doubles", [this]()
 	{
@@ -159,7 +160,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #else
 			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("2113ad88f842ea8c583bd8b037b6007b"), *this);
 #endif
-			UAGX_ShapeMaterial* ShapeMaterial = LoadMaterialAsset<UAGX_ShapeMaterial>(PackagePath, ObjectName);
+			UAGX_ShapeMaterial* ShapeMaterial = LoadAsset<UAGX_ShapeMaterial>(PackagePath, ObjectName);
 			TestEqual(
 				TEXT("The shape material should have restored density"),
 				ShapeMaterial->Bulk.Density, 1100000.0);
@@ -218,7 +219,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #else
 			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("0e6c1159d5b5b0bd0dabdc311a2e361e"), *this);
 #endif
-			UAGX_ContactMaterial* ContactMaterial = LoadMaterialAsset<UAGX_ContactMaterial>(PackagePath, ObjectName);
+			UAGX_ContactMaterial* ContactMaterial = LoadAsset<UAGX_ContactMaterial>(PackagePath, ObjectName);
 			TestEqual(
 				TEXT("The contact material should have restored friction coefficient"),
 				ContactMaterial->FrictionCoefficient, 1000000.0);
@@ -261,7 +262,7 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 #else
 			AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, TEXT("13761b5e4237e63665da78201924246a"), *this);
 #endif
-			UAGX_TerrainMaterial* TerrainMaterial = LoadMaterialAsset<UAGX_TerrainMaterial>(PackagePath, ObjectName);
+			UAGX_TerrainMaterial* TerrainMaterial = LoadAsset<UAGX_TerrainMaterial>(PackagePath, ObjectName);
 			TestTrue(
 				TEXT("The terrain material should have restored adhesion overlap factor"),
 				TerrainMaterial->TerrainBulk.AdhesionOverlapFactor == 0.000001);
@@ -342,3 +343,69 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 }
 
 // clang-format on
+
+
+/**
+ * Unit test that ensures that we can load Contact Materials from when Contact Reduction Level was
+ * an uint8, and ensure we correctly convert the value to the new enum equivalent.
+ */
+BEGIN_DEFINE_SPEC(
+	FAGX_ContactReductionLevelBackwardsCompatibilitySpec,
+	"AGXUnreal.Editor.BackwardsCompatibility.ContactReductionLevel",
+	AgxAutomationCommon::DefaultTestFlags)
+END_DEFINE_SPEC(FAGX_ContactReductionLevelBackwardsCompatibilitySpec)
+
+void FAGX_ContactReductionLevelBackwardsCompatibilitySpec::Define()
+{
+	using namespace AGX_AssetBackwardsCompatibilitySpec_helpers;
+
+	Describe(
+		"Loading CM with contact reduction level as int",
+		[this]()
+		{
+			It("should convert to enum equivalent",
+			   [this]()
+			   {
+				   auto TestContactMaterial = [this](
+												  const FString& Name,
+												  EAGX_ContactReductionLevel ReductionLevel,
+												  const FString& MD5Checksum)
+				   {
+					   const FString PackagePath = FString::Printf(
+						   TEXT("/Game/Tests/BackwardsCompatibility/ContactReductionLevel/%s"),
+						   *Name);
+
+					   AgxAutomationCommon::CheckAssetMD5Checksum(PackagePath, *MD5Checksum, *this);
+
+					   UAGX_ContactMaterial* CM =
+						   LoadAsset<UAGX_ContactMaterial>(PackagePath, Name);
+
+					   const FString TestText =
+						   FString::Printf(TEXT("Contact Material %s reduction level"), *Name);
+
+					   TestEqual(
+						   *TestText, CM->ContactReduction.ContactReductionLevel, ReductionLevel);
+				   };
+
+				   TestContactMaterial(
+					   "AGX_CM_ContactReductionLevelAsInt_0", EAGX_ContactReductionLevel::Default,
+					   "6f50ce5d2bc9917f2406a3285b713e1b");
+
+				   TestContactMaterial(
+					   "AGX_CM_ContactReductionLevelAsInt_1",
+					   EAGX_ContactReductionLevel::Aggressive, "3dd8209b2c91baa38ff94301bfb1b2b2");
+
+				   TestContactMaterial(
+					   "AGX_CM_ContactReductionLevelAsInt_2", EAGX_ContactReductionLevel::Moderate,
+					   "9afc3978d473c452698a997900b89801");
+
+				   TestContactMaterial(
+					   "AGX_CM_ContactReductionLevelAsInt_3", EAGX_ContactReductionLevel::Minimal,
+					   "bac7bf099b478a4ac2ee87ab13fbc56d");
+
+				   TestContactMaterial(
+					   "AGX_CM_ContactReductionLevelAsInt_9", EAGX_ContactReductionLevel::Minimal,
+					   "f804fe73ba9b73f280b5ecf201f7b6f5");
+			   });
+		});
+}
