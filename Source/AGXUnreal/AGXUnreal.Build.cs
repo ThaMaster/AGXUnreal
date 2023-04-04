@@ -168,7 +168,7 @@ public class AGXUnreal : ModuleRules
 		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_TAG {0}", (Tag != "" ? "1" : "0")));
 		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_TAG = TEXT(\"{0}\");\n", Tag));
 
-		string FilePath = Path.Combine(GetPluginRootPath(), "Source", "AGXUnreal", "Public", "AGX_BuildInfo.h");
+		string FilePath = Path.Combine(GetPluginRootPath(), "Source", "AGXUnrealBarrier", "Public", "AGX_BuildInfo.generated.h");
 		File.WriteAllLines(FilePath, GitInfo);
 	}
 
