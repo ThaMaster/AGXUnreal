@@ -4,8 +4,7 @@ using System; // For Console.
 using System.IO; // For Path.
 using System.Diagnostics; // For running processes.
 using System.Collections.Generic; // For List.
-//using System.ComponentModel; // For Win32Exception on Unreal Engine 4.27.
-using Microsoft.Win32.Primitives; // For Win32Exception on Unreal Engine 5.
+using System.ComponentModel; // For Win32Exception.
 
 using UnrealBuildTool;
 
