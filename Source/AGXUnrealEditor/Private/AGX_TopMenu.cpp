@@ -433,19 +433,10 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 		"\n"
 		"AGX Dynamics for Unreal\n"
 		"Version: " + Version + "\n"
-#if AGXUNREAL_HAS_GIT_BRANCH
-		"Git Branch: " + AGXUNREAL_GIT_BRANCH + "\n"
-#endif
-#if AGXUNREAL_HAS_GIT_TAG
-		"Git Tag: " + AGXUNREAL_GIT_TAG + "\n"
-#endif
-#if AGXUNREAL_HAS_GIT_HASH
-		"Git Hash: " + AGXUNREAL_GIT_HASH + "\n"
-#endif
+		"Revision: " + FAGX_Environment::GetPluginRevision() + "\n"
 		"\n"
 		"AGX Dynamics version: " + FAGX_Environment::GetAGXDynamicsVersion() + "\n"
-		+ LicenseText +
-		"\n"
+		+ LicenseText + "\n"
 		"Copyright Algoryx Simulation AB\n"
 		"www.algoryx.se");
 	// clang-format on
