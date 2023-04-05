@@ -234,8 +234,8 @@ bool FCheckTerrainPagingStateCommand::Update()
 	Test.TestTrue("Untracked body final z pos", UntrackedBody->GetComponentLocation().Z < 0.0);
 
 	// Ensure we have spawned some particles (there is a shovel in the Level).
-	ActorMap TerrainActors = GetActorsByName(TestWorld, {"AGX_Terrain"});
-	AAGX_Terrain* TerrainActor = Cast<AAGX_Terrain>(TerrainActors.FindRef("AGX_Terrain"));
+	ActorMap TerrainActors = GetActorsByName(TestWorld, {"AGX_Terrain_1"});
+	AAGX_Terrain* TerrainActor = Cast<AAGX_Terrain>(TerrainActors.FindRef("AGX_Terrain_1"));
 	Test.TestNotNull("Terrain actor", TerrainActor);
 	if (TerrainActor == nullptr)
 		return true;
