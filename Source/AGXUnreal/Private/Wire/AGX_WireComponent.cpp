@@ -1728,7 +1728,7 @@ void UAGX_WireComponent::CreateNative()
 		{
 			Message += Line + '\n';
 		}
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
+		FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
 	}
 
 	{
@@ -1754,9 +1754,8 @@ void UAGX_WireComponent::CreateNative()
 			const FString Message = FString::Printf(
 				TEXT("Invalid wire configuration for '%s' in '%s':\n%s"), *WireName, *OwnerName,
 				*Messages.Message);
-			/// @todo Consider other error reporting ways in shipping builds.
-			/// Unless we actually do want to show a dialog box to an end-end-user.
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
+
+			FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
 		}
 	}
 }

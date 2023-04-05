@@ -42,6 +42,10 @@ public class AGXUnreal : ModuleRules
 			"RHI", "RenderCore", "Projects", "Json", "Landscape", "Slate",
 			"SlateCore"});
 
+		if (Target.bBuildEditor)
+		{
+			PrivateDependencyModuleNames.Add("EditorStyle");
+		}
 
 		UpdateEngineVersionInUPlugin();
 		CreateGitInfo();

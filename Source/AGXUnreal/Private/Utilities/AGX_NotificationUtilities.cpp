@@ -7,6 +7,7 @@
 #include "AGX_Simulation.h"
 
 // Unreal Engine includes.
+#include "Framework/Notifications/NotificationManager.h"
 #include "Misc/MessageDialog.h"
 
 namespace
@@ -103,4 +104,43 @@ bool FAGX_NotificationUtilities::YesNoQuestion(const FText& Question)
 {
 	const FText Title = FText::FromString("AGX Dynamics for Unreal");
 	return FMessageDialog::Open(EAppMsgType::YesNo, Question, &Title) == EAppReturnType::Yes;
+}
+
+void FAGX_NotificationUtilities::ShowNotification(
+	const FString& Text, SNotificationItem::ECompletionState State, float Duration)
+{
+#if UE_VERSION_OLDER_THAN(5, 1, 0) && !WITH_EDITOR
+	// We cannot show the sliding notification widget in cooked builds for UE versions older
+	// than 5.1 because it requires stuff from the EditorStyle module in those versions which we
+	// cannot use cooked builds. So for that case we just show a regular message box.
+	if (State == SNotificationItem::ECompletionState::CS_Fail)
+		ShowDialogBoxWithErrorLog(Text);
+	else
+		ShowDialogBoxWithLogLog(Text);
+	
+#else
+	FNotificationInfo Info(FText::FromString(Text));
+
+	Info.FadeInDuration = 0.1f;
+	Info.FadeOutDuration = 0.5f;
+	Info.ExpireDuration = Duration;
+	Info.bUseThrobber = false;
+	Info.bUseSuccessFailIcons = true;
+	Info.bUseLargeFont = true;
+	Info.bFireAndForget = false;
+	Info.bAllowThrottleWhenFrameRateIsLow = false;
+
+	auto NotificationItem = FSlateNotificationManager::Get().AddNotification(Info);
+	NotificationItem->SetCompletionState(State);
+	NotificationItem->ExpireAndFadeout();
+
+	if (State == SNotificationItem::ECompletionState::CS_Fail)
+	{
+		UE_LOG(LogAGX, Error, TEXT("%s"), *Text);
+	}
+	else
+	{
+		UE_LOG(LogAGX, Log, TEXT("%s"), *Text);
+	}
+#endif
 }

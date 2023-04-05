@@ -10,6 +10,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Widgets/AGX_ImportDialog.h"
 
 // Unreal Engine includes.
@@ -39,8 +40,7 @@ void UAGX_AgxEdModeFile::ImportToBlueprint()
 			.SupportsMinimize(false)
 			.SupportsMaximize(false)
 			.SizingRule(ESizingRule::Autosized)
-			.Title(
-				NSLOCTEXT("AGX", "AGXUnrealImport", "Import AGX Dynamics archive or URDF"));
+			.Title(NSLOCTEXT("AGX", "AGXUnrealImport", "Import AGX Dynamics archive or URDF"));
 
 	TSharedRef<SAGX_ImportDialog> ImportDialog = SNew(SAGX_ImportDialog);
 	Window->SetContent(ImportDialog);
@@ -58,16 +58,10 @@ void UAGX_AgxEdModeFile::ExportAgxArchive()
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(World);
 	if (Simulation == nullptr || !Simulation->HasNative())
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Cannot export simulation contets to an AGX Dynamics archive because no "
-				 "Simulation is "
-				 "active. Launch a Play-In-Editor session."));
-
-		FAGX_EditorUtilities::ShowNotification(LOCTEXT(
-			"No sim available",
-			"Cannot export simulation contets to an AGX Dynamics archive because no Simulation is "
-			"active. Launch a Play-In-Editor session."));
+		FAGX_NotificationUtilities::ShowNotification(
+			"Cannot export Simulation contents to an AGX Dynamics archive because no Simulation is "
+			"active. Launch a Play-In-Editor session.",
+			SNotificationItem::CS_Fail);
 		return;
 	}
 
