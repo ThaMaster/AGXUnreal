@@ -9,6 +9,7 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AMOR/MergeSplitPropertiesBarrier.h"
 #include "Shapes/AGX_ShapeComponent.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -1219,4 +1220,38 @@ FVector UAGX_RigidBodyComponent::GetTorque() const
 	}
 
 	return NativeBarrier.GetTorque();
+}
+
+void UAGX_RigidBodyComponent::MoveTo(
+	const FVector& Position, const FRotator& Rotation, float Duration)
+{
+	if (!HasNative() || Duration < 0.f)
+		return;
+
+	if (MotionControl != EAGX_MotionControl::MC_KINEMATICS)
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("MoveTo was called on RigidBody '%s' which does not have MotionControl set to "
+					 "Kinematics. Please change the MotionControl to be able use MoveTo."),
+				*GetName()),
+			SNotificationItem::CS_Fail);
+		return;
+	}
+
+	NativeBarrier.MoveTo(Position, Rotation.Quaternion(), Duration);
+}
+
+void UAGX_RigidBodyComponent::MoveToLocal(
+	const FVector& PositionLocal, const FRotator& RotationLocal, float Duration)
+{
+	if (!HasNative())
+		return;
+
+	const FTransform BodyTransformGlobal(NativeBarrier.GetRotation(), NativeBarrier.GetPosition());
+
+	const FVector PositionGlobal = BodyTransformGlobal.TransformPositionNoScale(PositionLocal);
+	const FQuat RotationGlobal = BodyTransformGlobal.TransformRotation(RotationLocal.Quaternion());
+
+	MoveTo(PositionGlobal, FRotator(RotationGlobal), Duration);
 }
