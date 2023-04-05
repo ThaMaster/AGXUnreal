@@ -3,6 +3,7 @@
 #include "AGX_Environment.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_BuildInfo.h"
 #include "AGX_LogCategory.h"
 #include "TypeConversions.h"
 
@@ -363,6 +364,30 @@ FString FAGX_Environment::GetPluginVersion()
 			TEXT("FAGX_Environment::GetPluginVersion unable to get plugin version."));
 		return FString();
 	}
+}
+
+FString FAGX_Environment::GetPluginRevision()
+{
+	const FString Hash = []()
+	{
+		if (AGXUNREAL_HAS_GIT_HASH)
+			return FString(AGXUNREAL_GIT_HASH).Left(8);
+		else
+			return FString(TEXT(""));
+	}();
+	const FString Name = []()
+	{
+		const TCHAR* N;
+		if (AGXUNREAL_HAS_GIT_TAG)
+			N = AGXUNREAL_GIT_TAG;
+		else if (AGXUNREAL_HAS_GIT_BRANCH)
+			N = AGXUNREAL_GIT_BRANCH;
+		else
+			return FString(TEXT(""));
+		return FString::Printf(TEXT(" (%s)"), N);
+	}();
+
+	return FString::Printf(TEXT("%s%s"), *Hash, *Name);
 }
 
 void FAGX_Environment::AddEnvironmentVariableEntry(const FString& EnvVarName, const FString& Entry)
