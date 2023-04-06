@@ -309,8 +309,8 @@ private:
 	 * The WorldPosStart is projected onto the Landscape and acts as the starting point (corner) of
 	 * the area that will be sampled (it does not snap to the nearest vertex). The steps between
 	 * height values are determined by the source Landscape quad size, and the number of steps by
-	 * VertsX and VertsY in the positive X and Y direction respectively. The heights are written to
-	 * OutHeights in the ordering of AGX Dynamics.
+	 * VertsX and VertsY in the Landscape local positive X and Y direction respectively. The heights
+	 * are written to OutHeights in the ordering of AGX Dynamics.
 	 *
 	 * Returns true if the heights could be read, false otherwise.
 	 */
