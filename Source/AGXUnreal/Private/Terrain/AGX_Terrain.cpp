@@ -339,8 +339,12 @@ void AAGX_Terrain::PostInitProperties()
 
 bool AAGX_Terrain::CanEditChange(const FProperty* InProperty) const
 {
+	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
+	if (!SuperCanEditChange)
+		return false;
+
 	if (!HasNative())
-		return Super::CanEditChange(InProperty);
+		return SuperCanEditChange;
 
 	const FName Prop = InProperty->GetFName();
 
@@ -358,7 +362,7 @@ bool AAGX_Terrain::CanEditChange(const FProperty* InProperty) const
 	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, bEnableTerrainPaging))
 		return false;
 	else
-		return Super::CanEditChange(InProperty);
+		return SuperCanEditChange;
 }
 
 namespace AGX_Terrain_helpers

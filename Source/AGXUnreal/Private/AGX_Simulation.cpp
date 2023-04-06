@@ -1047,13 +1047,17 @@ bool UAGX_Simulation::CanEditChange(
 #endif
 ) const
 {
+	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
+	if (!SuperCanEditChange)
+		return false;
+
 	// Time Lag Cap should only be editable when step mode SmCatchUpOverTimeCapped is used.
 	if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UAGX_Simulation, TimeLagCap))
 	{
 		return StepMode == SmCatchUpOverTimeCapped;
 	}
 
-	return Super::CanEditChange(InProperty);
+	return SuperCanEditChange;
 }
 #endif
 
