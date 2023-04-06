@@ -306,7 +306,7 @@ private:
 
 	/**
 	 * Thread safe convenience function for reading heights from the source Landscape.
-	 * The steps between height values are determined by the source Landscape quad sice.
+	 * The steps between height values are determined by the source Landscape quad size.
 	 * Returns true if the heights could be read, false otherwise.
 	 */
 	bool FetchHeights(
