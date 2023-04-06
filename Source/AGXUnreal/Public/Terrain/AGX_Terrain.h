@@ -225,17 +225,16 @@ public:
 		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "bEnableTerrainPaging"))
 	FAGX_TerrainPagingSettings TerrainPagingSettings;
 
-	bool HasNativeTerrain() const;
 	bool HasNativeTerrainPager() const;
 
 	/**
-	 * Returns true if this Terrain has a Native Terrain and/or a Native Terrain Pager.
-	 * Returns false otherwise.
+	 * Returns true if this Terrain has a Native Terrain and a Native Terrain Pager if Terrain
+	 * Paging is enabled. Returns false otherwise.
 	 */
 	bool HasNative() const;
 
-	FTerrainBarrier* GetNativeTerrain();
-	const FTerrainBarrier* GetNativeTerrain() const;
+	FTerrainBarrier* GetNative();
+	const FTerrainBarrier* GetNative() const;
 
 	FTerrainPagerBarrier* GetNativeTerrainPager();
 	const FTerrainPagerBarrier* GetNativeTerrainPager() const;
@@ -254,7 +253,7 @@ protected:
 
 private:
 	void InitializeNative();
-	bool CreateNativeTerrain();
+	bool CreateNative();
 	bool CreateNativeTerrainPager();
 	void CreateNativeShovels();
 	void AddTerrainPagerBodies();
@@ -279,7 +278,7 @@ private:
 	friend class FAGX_TerrainHeightFetcher;
 
 private:
-	FTerrainBarrier NativeTerrainBarrier;
+	FTerrainBarrier NativeBarrier;
 	FTerrainPagerBarrier NativeTerrainPagerBarrier;
 	FAGX_TerrainHeightFetcher HeightFetcher;
 
