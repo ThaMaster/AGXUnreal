@@ -17,6 +17,7 @@
 #include "Terrain/AGX_CuttingDirectionComponent.h"
 #include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "Terrain/AGX_HeightFieldBoundsComponent.h"
+#include "Terrain/AGX_TerrainSpriteComponent.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
 #include "Terrain/ShovelBarrier.h"
 #include "Terrain/TerrainBarrier.h"
@@ -60,8 +61,7 @@ AAGX_Terrain::AAGX_Terrain()
 	// Create a root SceneComponent so that this Actor has a transform
 	// which can be modified in the Editor.
 	{
-		USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(
-			USceneComponent::GetDefaultSceneRootVariableName());
+		USceneComponent* Root = CreateDefaultSubobject<UAGX_TerrainSpriteComponent>("SpriteIcon");
 
 		TerrainBounds =
 			CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("TerrainBounds"));
