@@ -593,7 +593,7 @@ void AAGX_Terrain::Tick(float DeltaTime)
 bool AAGX_Terrain::FetchHeights(
 	const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights)
 {
-	/**
+	/*
 	 * This function will be called by the native Terrain Pager from a worker thread, meaning we
 	 * have to make sure that what we do here is thread safe. For example, we protect the
 	 * OriginalHeights array here since it may be read from the main thread in
@@ -628,41 +628,46 @@ bool AAGX_Terrain::FetchHeights(
 		return false;
 	}
 
-	OriginalHeightsMutex.lock();
+	OutHeights.Reserve(VertsX * VertsY);
 
-	// AGX Dynamics coordinate systems are mapped with Y-axis flipped.
-	for (int Y = StartVertY + VertsY - 1; Y >= StartVertY; Y--)
 	{
-		for (int X = StartVertX; X < StartVertX + VertsX; X++)
-		{
-			const FVector SamplePosLocal = FVector(
-				static_cast<double>(X) * QuadSizeX, static_cast<double>(Y) * QuadSizeY, 0.0);
-			const FVector SamplePosGlobal =
-				SourceLandscape->GetTransform().TransformPositionNoScale(SamplePosLocal);
+		std::lock_guard<std::mutex> ScopedOrigHeightsLock(OriginalHeightsMutex);
 
-			if (auto Height = SourceLandscape->GetHeightAtLocation(SamplePosGlobal))
+		// AGX Dynamics coordinate systems are mapped with Y-axis flipped.
+		for (int Y = StartVertY + VertsY - 1; Y >= StartVertY; Y--)
+		{
+			for (int X = StartVertX; X < StartVertX + VertsX; X++)
 			{
-				FVector HeightPointLocal =
-					SourceLandscape->GetTransform().InverseTransformPositionNoScale(
-						FVector(SamplePosGlobal.X, SamplePosGlobal.Y, *Height));
-				OutHeights.Add(HeightPointLocal.Z);
-				OriginalHeights[(X - BoundsCornerMinX) + (Y - BoundsCornerMinY) * NumVerticesX] =
-					HeightPointLocal.Z;
-			}
-			else
-			{
-				UE_LOG(
-					LogTemp, Warning,
-					TEXT("Height read unsuccessful in Terrain. World	sample pos: %s"),
-					*SamplePosGlobal.ToString());
-				OutHeights.Add(SourceLandscape->GetActorLocation().Z);
-				OriginalHeights[(X - BoundsCornerMinX) + (Y - BoundsCornerMinY) * NumVerticesX] =
-					SourceLandscape->GetActorLocation().Z;
+				const FVector SamplePosLocal = FVector(
+					static_cast<double>(X) * QuadSizeX, static_cast<double>(Y) * QuadSizeY, 0.0);
+				const FVector SamplePosGlobal =
+					SourceLandscape->GetTransform().TransformPositionNoScale(SamplePosLocal);
+
+				if (auto Height = SourceLandscape->GetHeightAtLocation(SamplePosGlobal))
+				{
+					FVector HeightPointLocal =
+						SourceLandscape->GetTransform().InverseTransformPositionNoScale(
+							FVector(SamplePosGlobal.X, SamplePosGlobal.Y, *Height));
+					OutHeights.Add(HeightPointLocal.Z);
+					OriginalHeights
+						[(X - BoundsCornerMinX) + (Y - BoundsCornerMinY) * NumVerticesX] =
+							HeightPointLocal.Z;
+				}
+				else
+				{
+					UE_LOG(
+						LogTemp, Warning,
+						TEXT("Height read unsuccessful in Terrain. World sample pos: %s"),
+						*SamplePosGlobal.ToString());
+					OutHeights.Add(SourceLandscape->GetActorLocation().Z);
+					OriginalHeights
+						[(X - BoundsCornerMinX) + (Y - BoundsCornerMinY) * NumVerticesX] =
+							SourceLandscape->GetActorLocation().Z;
+				}
 			}
 		}
 	}
 
-	OriginalHeightsMutex.unlock();
 	return true;
 }
 
@@ -1207,18 +1212,17 @@ void AAGX_Terrain::UpdateDisplacementMap()
 		ModifiedVertices = NativeBarrier.GetModifiedVertices();
 	}
 
-	OriginalHeightsMutex.lock();
-
-	for (const auto& VertexTuple : ModifiedVertices)
 	{
-		const int32 VertX = std::get<0>(VertexTuple);
-		const int32 VertY = std::get<1>(VertexTuple);
-		const int32 Index = VertX + VertY * NumVerticesX;
-		const float HeightChange = CurrentHeights[Index] - OriginalHeights[Index];
-		DisplacementData[Index] = static_cast<FFloat16>(HeightChange);
+		std::lock_guard<std::mutex> ScopedOrigHeightsLock(OriginalHeightsMutex);
+		for (const auto& VertexTuple : ModifiedVertices)
+		{
+			const int32 VertX = std::get<0>(VertexTuple);
+			const int32 VertY = std::get<1>(VertexTuple);
+			const int32 Index = VertX + VertY * NumVerticesX;
+			const float HeightChange = CurrentHeights[Index] - OriginalHeights[Index];
+			DisplacementData[Index] = static_cast<FFloat16>(HeightChange);
+		}
 	}
-
-	OriginalHeightsMutex.unlock();
 
 	const uint32 BytesPerPixel = sizeof(FFloat16);
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
