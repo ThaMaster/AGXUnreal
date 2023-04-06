@@ -30,6 +30,13 @@ namespace AGX_TerrainMaterialLibrary_helpers
 		const FString AssetName = FString::Printf(TEXT("AGX_TM_%s"), *Name);
 		const FString PackagePath =
 			FString::Printf(TEXT("/AGXUnreal/Terrain/TerrainMaterialLibrary/%s"), *AssetName);
+
+		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
+			PackagePath, FPackageName::GetAssetPackageExtension());
+
+		// Explicitly delete any existing file. Otherwise save below may fail.
+		IFileManager::Get().Delete(*PackageFilename);
+
 #if UE_VERSION_OLDER_THAN(4, 26, 0)
 		UPackage* Package = CreatePackage(nullptr, *PackagePath);
 #else
@@ -51,8 +58,6 @@ namespace AGX_TerrainMaterialLibrary_helpers
 		Asset->AddToRoot();
 		Package->SetDirtyFlag(true);
 		Package->FullyLoad();
-		const FString PackageFilename = FPackageName::LongPackageNameToFilename(
-			PackagePath, FPackageName::GetAssetPackageExtension());
 		Package->GetMetaData();
 
 		// Save the package to disk.

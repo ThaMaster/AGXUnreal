@@ -2191,7 +2191,6 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 		Test.TestEqual(TEXT("Sphere angular velocity damping"), Actual, Expected);
 	}
 
-
 	// Mass.
 	{
 		Test.TestEqual(TEXT("Sphere mass"), SphereBody->Mass, 500.f);
@@ -2538,7 +2537,8 @@ bool FCheckContactMaterialsImportedCommand::Update()
 		"Cm1 friction model", (*Cm1)->FrictionModel,
 		EAGX_FrictionModel::IterativeProjectedConeFriction);
 	Test.TestEqual(
-		"Cm1 contact reduction bin resolution", (*Cm1)->ContactReduction.BinResolution, 2);
+		"Cm1 contact reduction bin resolution", (*Cm1)->ContactReduction.ContactReductionLevel,
+		EAGX_ContactReductionLevel::Moderate);
 	Test.TestEqual("Cm1 friction coefficient", (*Cm1)->FrictionCoefficient, 0.11);
 	Test.TestEqual("Cm1 surface viscosity", (*Cm1)->SurfaceViscosity, 0.12);
 	Test.TestEqual("Cm1 restitution", (*Cm1)->Restitution, 0.13);
@@ -2573,7 +2573,8 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Cm2 contact solver", (*Cm2)->ContactSolver, EAGX_ContactSolver::Direct);
 	Test.TestEqual("Cm2 friction model", (*Cm2)->FrictionModel, EAGX_FrictionModel::BoxFriction);
 	Test.TestEqual(
-		"Cm2 contact reduction bin resolution", (*Cm2)->ContactReduction.BinResolution, 3);
+		"Cm2 contact reduction bin resolution", (*Cm2)->ContactReduction.ContactReductionLevel,
+		EAGX_ContactReductionLevel::Minimal);
 	Test.TestEqual("Cm2 friction coefficient", (*Cm2)->FrictionCoefficient, 0.21);
 	Test.TestEqual("Cm2 surface viscosity", (*Cm2)->SurfaceViscosity, 0.22);
 	Test.TestEqual("Cm2 restitution", (*Cm2)->Restitution, 0.23);
@@ -2706,7 +2707,6 @@ bool FCheckObserverFramesImportedCommand::Update()
 		{
 			return;
 		}
-
 
 		USceneComponent* BodyAsComponent = static_cast<USceneComponent*>(Body);
 		Test.TestEqual(
@@ -2853,7 +2853,6 @@ bool FCheckURDFLinkWithMeshesImportedCommand::Update()
 		return true;
 	}
 
-
 	Test.TestFalse("Urdfmeshvisual collide", Urdfmeshvisual->bCanCollide);
 	Test.TestTrue("Urdfmeshcollision collide", Urdfmeshcollision->bCanCollide);
 
@@ -2999,7 +2998,6 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 		Test.AddError("At least one Rigid Body was nullptr, cannot continue.");
 		return true;
 	}
-
 
 	if (Boxlink == nullptr || Shperelink == nullptr || Cylinderlink == nullptr ||
 		Freefallinglink == nullptr)

@@ -90,15 +90,15 @@ void FetchBodyNamesFromBlueprint(
 	TArray<TSharedPtr<FName>>& BodyNames, IPropertyHandle& BodyReferenceHandle)
 {
 	BodyNames.Empty();
-
-	UAGX_ConstraintComponent* Constraint = Cast<UAGX_ConstraintComponent>(
-		FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyReferenceHandle));
-	if (Constraint == nullptr)
+	UActorComponent* OwningComponent =
+		Cast<UActorComponent>(FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyReferenceHandle));
+	if (OwningComponent == nullptr)
 	{
 		return;
 	}
 
-	UBlueprintGeneratedClass* Blueprint = Cast<UBlueprintGeneratedClass>(Constraint->GetOuter());
+	UBlueprintGeneratedClass* Blueprint =
+		Cast<UBlueprintGeneratedClass>(OwningComponent->GetOuter());
 	if (Blueprint == nullptr)
 	{
 		return;

@@ -17,6 +17,7 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Editor/UnrealEdEngine.h"
+#include "Engine/BlueprintGeneratedClass.h"
 #include "IDetailChildrenBuilder.h"
 #include "IDetailGroup.h"
 #include "Misc/Attribute.h"
@@ -251,33 +252,6 @@ namespace AGX_WireNodeDetails_helpers
 	}
 
 	/**
-	 * Replace the contents of RigidBodyNames with the names of the Rigid Body Components in Actor.
-	 * An empty string is added before the names to make it possible to select "nothing".
-	 * A nullptr Actor produces a list containing only the empty string.
-	 *
-	 * @param RigidBodyNames The array to fill with names. Original contents is discarded.
-	 * @param Actor The Actor to search for Rigid Body Components in.
-	 */
-	void RebuildRigidBodyNames(TArray<TSharedPtr<FString>>& RigidBodyNames, AActor* Actor)
-	{
-		if (Actor == nullptr)
-		{
-			RigidBodyNames.Reset(1);
-			RigidBodyNames.Add(MakeShareable(new FString("")));
-			return;
-		}
-
-		TArray<UAGX_RigidBodyComponent*> RigidBodyComponents;
-		Actor->GetComponents(RigidBodyComponents);
-		RigidBodyNames.Reset(RigidBodyComponents.Num() + 1);
-		RigidBodyNames.Add(MakeShareable(new FString("")));
-		for (const auto& Body : RigidBodyComponents)
-		{
-			RigidBodyNames.Add(MakeShareable(new FString(Body->GetName())));
-		}
-	}
-
-	/**
 	 * @return The index where the given body name is in the given array. INDEX_NONE if not there.
 	 */
 	int32 FindRigidBodyName(
@@ -292,76 +266,6 @@ namespace AGX_WireNodeDetails_helpers
 		}
 
 		return Element - &RigidBodyNames[0];
-	}
-
-	/**
-	 * Rebuild the Rigid Body combo box.
-	 *
-	 * Selects the ToSelect entry if it exists. Selects the empty string entry if ToSelect doesn't
-	 * exist in the updated list.
-	 *
-	 * Call this when the Details Panel is being updated without changing the Node.
-	 * @see RebuildRigidBodyComboBox_Edit
-	 *
-	 *
-	 * @param BodyNameComboBox The Combo Box that displays the names.
-	 * @param RigidBodyNames List of names that is to be rebuilt.
-	 * @param ToSelect The contents of the entry which we wish to select in the Combo Box.
-	 * @param Actor The Actor in which we search for Rigid Body Components.
-	 */
-	void RebuildRigidBodyComboBox_View(
-		SComboBox<TSharedPtr<FString>>& BodyNameComboBox,
-		TArray<TSharedPtr<FString>>& RigidBodyNames, const FString& ToSelect, AActor* Actor)
-	{
-		BodyNameComboBox.ClearSelection();
-		RebuildRigidBodyNames(RigidBodyNames, Actor);
-		BodyNameComboBox.RefreshOptions();
-
-		int32 Index = FindRigidBodyName(ToSelect, RigidBodyNames);
-		if (Index == INDEX_NONE)
-		{
-			// The rigid body name we had selected doesn't exist anymore. We're in a context where
-			// we can't edit the underlying node so select the empty string entry to ensure that
-			// the actual body name entries are selectable.
-			Index = 0;
-		}
-		BodyNameComboBox.SetSelectedItem(RigidBodyNames[Index]);
-	}
-
-	/**
-	 * Rebuilt the Rigid Body combo box.
-	 *
-	 * Selects the ToSelect entry if it exists. Selects the first non-empty entry if ToSelect
-	 * doesn't exist. Selects the empty string entry if there is no non-empty entry.
-	 *
-	 * Call this when the Details Panel is being updated in response to an edit.
-	 * @see RebuildRigidBodyComboBox_View
-	 *
-	 * The returned string should be assigned to the node's Rigid Body name.
-	 *
-	 * @param BodyNameComboBox The Combo Box that displays the names.
-	 * @param RigidBodyNames List of names that is to be rebuilt.
-	 * @param ToSelect The contents of the entry which we wish to select in the Combo Box.
-	 * @param Actor The Actor in which we search for Rigid Body Components.
-	 */
-	FString RebuildRigidBodyComboBox_Edit(
-		SComboBox<TSharedPtr<FString>>& BodyNameComboBox,
-		TArray<TSharedPtr<FString>>& RigidBodyNames, const FString& ToSelect, AActor* Actor)
-	{
-		BodyNameComboBox.ClearSelection();
-		RebuildRigidBodyNames(RigidBodyNames, Actor);
-		BodyNameComboBox.RefreshOptions();
-
-		int32 Index = FindRigidBodyName(ToSelect, RigidBodyNames);
-		if (Index == INDEX_NONE)
-		{
-			// The rigid body name we had selected doesn't exist anymore. Select either the empty
-			// string, at index 0, or the first rigid body name, at index 1.
-			// RebuildRigidBodyNames guarantees that Num() - 1 will never be negative.
-			Index = FMath::Min(RigidBodyNames.Num() - 1, 1);
-		}
-		BodyNameComboBox.SetSelectedItem(RigidBodyNames[Index]);
-		return *RigidBodyNames[Index];
 	}
 
 	bool ContainsRigidBody(const AActor* Actor)
@@ -605,8 +509,7 @@ void FAGX_WireNodeDetails::OnSetNodeType(TSharedPtr<FString> NewValue, ESelectIn
 	{
 		// The RigidBody selector is about to be shown. Prepare it's backing storage.
 		NewBodyName = RebuildRigidBodyComboBox_Edit(
-			*BodyNameComboBox, RigidBodyNames, Node.RigidBody.BodyName.ToString(),
-			Node.RigidBody.OwningActor);
+			Node.RigidBody.BodyName.ToString(), Node.RigidBody.OwningActor);
 	}
 
 	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeType", "Set wire node type"));
@@ -744,8 +647,8 @@ void FAGX_WireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
 
 	FWireRoutingNode& Node = Wire->RouteNodes[NodeIndex];
 
-	FName NewBodyName = FName(*RebuildRigidBodyComboBox_Edit(
-		*BodyNameComboBox, RigidBodyNames, Node.RigidBody.BodyName.ToString(), Actor));
+	FName NewBodyName =
+		FName(*RebuildRigidBodyComboBox_Edit(Node.RigidBody.BodyName.ToString(), Actor));
 
 	if (Actor == Node.RigidBody.OwningActor && NewBodyName == Node.RigidBody.BodyName)
 	{
@@ -771,7 +674,7 @@ void FAGX_WireNodeDetails::ClearStorage()
 	LocationZ.Reset();
 	NodeType.Reset();
 	NodeTypeText = NoSelection;
-	RebuildRigidBodyComboBox_View(*BodyNameComboBox, RigidBodyNames, TEXT(""), nullptr);
+	RebuildRigidBodyComboBox_View(TEXT(""), nullptr);
 	RigidBodyNameText = NoSelection;
 	RigidBodyOwnerLabelText = NoSelection;
 }
@@ -925,8 +828,7 @@ void FAGX_WireNodeDetails::UpdateValues()
 	if (bSelectionChanged)
 	{
 		RebuildRigidBodyComboBox_View(
-			*BodyNameComboBox, RigidBodyNames, Node.RigidBody.BodyName.ToString(),
-			Node.RigidBody.OwningActor);
+			Node.RigidBody.BodyName.ToString(), Node.RigidBody.OwningActor);
 	}
 
 	RigidBodyNameText = FText::FromName(Node.RigidBody.BodyName);
@@ -948,6 +850,118 @@ EVisibility FAGX_WireNodeDetails::NodeHasRigidBody() const
 	using namespace AGX_WireNodeDetails_helpers;
 	return FAGX_EditorUtilities::VisibleIf(
 		NodeType.IsSet() && NodeTypeHasBody(NodeType.GetValue()));
+}
+
+FString FAGX_WireNodeDetails::RebuildRigidBodyComboBox_Edit(const FString& ToSelect, AActor* Actor)
+{
+	BodyNameComboBox->ClearSelection();
+	RebuildRigidBodyNames(Actor);
+	BodyNameComboBox->RefreshOptions();
+
+	int32 Index = AGX_WireNodeDetails_helpers::FindRigidBodyName(ToSelect, RigidBodyNames);
+	if (Index == INDEX_NONE)
+	{
+		// The rigid body name we had selected doesn't exist anymore. Select either the empty
+		// string, at index 0, or the first rigid body name, at index 1.
+		// RebuildRigidBodyNames guarantees that Num() - 1 will never be negative.
+		Index = FMath::Min(RigidBodyNames.Num() - 1, 1);
+	}
+	BodyNameComboBox->SetSelectedItem(RigidBodyNames[Index]);
+	return *RigidBodyNames[Index];
+}
+
+void FAGX_WireNodeDetails::RebuildRigidBodyComboBox_View(const FString& ToSelect, AActor* Actor)
+{
+	BodyNameComboBox->ClearSelection();
+	RebuildRigidBodyNames(Actor);
+	BodyNameComboBox->RefreshOptions();
+
+	int32 Index = AGX_WireNodeDetails_helpers::FindRigidBodyName(ToSelect, RigidBodyNames);
+	if (Index == INDEX_NONE)
+	{
+		// The rigid body name we had selected doesn't exist anymore. We're in a context where
+		// we can't edit the underlying node so select the empty string entry to ensure that
+		// the actual body name entries are selectable.
+		Index = 0;
+	}
+	BodyNameComboBox->SetSelectedItem(RigidBodyNames[Index]);
+}
+
+void FAGX_WireNodeDetails::RebuildRigidBodyNames(AActor* Actor)
+{
+	if (Actor == nullptr)
+	{
+		RebuildRigidBodyNamesFromBlueprint();
+		return;
+	}
+
+	TArray<UAGX_RigidBodyComponent*> RigidBodyComponents;
+	Actor->GetComponents(RigidBodyComponents);
+	RigidBodyNames.Reset(RigidBodyComponents.Num() + 1);
+	RigidBodyNames.Add(MakeShareable(new FString("")));
+	for (const auto& Body : RigidBodyComponents)
+	{
+		RigidBodyNames.Add(MakeShareable(new FString(Body->GetName())));
+	}
+}
+
+void FAGX_WireNodeDetails::RebuildRigidBodyNamesFromBlueprint()
+{
+	RigidBodyNames.Reset(1);
+	RigidBodyNames.Add(MakeShareable(new FString("")));
+
+	UAGX_WireComponent* Wire = [this]() -> UAGX_WireComponent*
+	{
+		TArray<TWeakObjectPtr<UObject>> Objects;
+		DetailBuilder.GetObjectsBeingCustomized(Objects);
+		if (Objects.Num() != 1)
+		{
+			return nullptr;
+		}
+
+		TWeakObjectPtr<UObject> Object = Objects[0];
+		if (!Object.IsValid())
+		{
+			return nullptr;
+		}
+
+		return Cast<UAGX_WireComponent>(Object.Get());
+	}();
+
+	if (Wire == nullptr)
+	{
+		return;
+	}
+
+	UBlueprintGeneratedClass* Blueprint = Cast<UBlueprintGeneratedClass>(Wire->GetOuter());
+	if (Blueprint == nullptr)
+	{
+		return;
+	}
+
+	// We need to iterate over all parent Blueprints as well since the SCS Nodes of interest may
+	// reside in a parent Blueprint, and will in that case not show up in a child Blueprint.
+	TArray<UBlueprint*> BlueprintChain;
+	UBlueprint::GetBlueprintHierarchyFromClass(Blueprint, BlueprintChain);
+
+	for (UBlueprint* BP : BlueprintChain)
+	{
+		for (USCS_Node* Node : BP->SimpleConstructionScript->GetAllNodes())
+		{
+			if (UAGX_RigidBodyComponent* RigidBody =
+					Cast<UAGX_RigidBodyComponent>(Node->ComponentTemplate))
+			{
+				const FString Name = [RigidBody, BP]()
+				{
+					FString N = RigidBody->GetName();
+					N.RemoveFromEnd(BP->SimpleConstructionScript->ComponentTemplateNameSuffix);
+					return N;
+				}();
+
+				RigidBodyNames.Add(MakeShareable(new FString(Name)));
+			}
+		}
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

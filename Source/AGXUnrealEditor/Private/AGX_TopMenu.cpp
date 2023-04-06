@@ -22,6 +22,14 @@
 #include "Widgets/AGX_LicenseDialog.h"
 #include "Widgets/AGX_OfflineActivationDialog.h"
 
+#if __has_include("AGX_BuildInfo.h")
+#include "AGX_BuildInfo.h"
+#else
+#define AGXUNREAL_HAS_GIT_BRANCH 0
+#define AGXUNREAL_HAS_GIT_TAG 0
+#define AGXUNREAL_HAS_GIT_HASH 0
+#endif
+
 // Unreal Engine includes.
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "GenericPlatform/GenericPlatformProcess.h"
@@ -425,10 +433,10 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 		"\n"
 		"AGX Dynamics for Unreal\n"
 		"Version: " + Version + "\n"
-		"AGX Dynamics version: " + FAGX_Environment::GetAGXDynamicsVersion() + "\n"
-		"\n" +
-		LicenseText +
+		"Revision: " + FAGX_Environment::GetPluginRevision() + "\n"
 		"\n"
+		"AGX Dynamics version: " + FAGX_Environment::GetAGXDynamicsVersion() + "\n"
+		+ LicenseText + "\n"
 		"Copyright Algoryx Simulation AB\n"
 		"www.algoryx.se");
 	// clang-format on

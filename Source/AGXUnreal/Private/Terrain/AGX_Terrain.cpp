@@ -375,7 +375,7 @@ namespace AGX_Terrain_helpers
 		{
 			for (TObjectIterator<ALandscapeStreamingProxy> It; It; ++It)
 			{
-				if (It->LandscapeActor != Terrain.SourceLandscape)
+				if (It->GetLandscapeActor() != Terrain.SourceLandscape)
 					continue;
 
 				StreamingProxies.Add(*It);
@@ -1524,7 +1524,7 @@ void AAGX_Terrain::UpdateLandscapeMaterialParameters()
 		// If a better way if getting them is found in the future, this can be replaced.
 		for (TObjectIterator<ALandscapeStreamingProxy> It; It; ++It)
 		{
-			if (It->LandscapeActor != SourceLandscape)
+			if (It->GetLandscapeActor() != SourceLandscape)
 				continue;
 
 			SetLandscapeMaterialParameters(**It);
