@@ -206,10 +206,15 @@ public:
 	/**
 	 * If set to true, Terrain Paging will be used.
 	 * The Terrain Paging Settings should be configured accordingly.
+	 * Enabling or disabling Terrain Paging during Play is not supported.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	bool bEnableTerrainPaging;
 
+	/**
+	 * If true is passed, Terrain Paging will be used.
+	 * Enabling or disabling Terrain Paging during Play is not supported.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
 	void SetEnableTerrainPaging(bool bEnabled);
 
