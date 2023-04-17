@@ -196,10 +196,10 @@ struct FTerrainPagerRef
 
 struct FTerrainDataSourceRef
 {
-	agx::ref_ptr<FTerrainDataSource> Native;
+	agx::ref_ptr<agxTerrain::TerrainDataSource> Native;
 
 	FTerrainDataSourceRef() = default;
-	FTerrainDataSourceRef(FTerrainDataSource* InNative)
+	FTerrainDataSourceRef(agxTerrain::TerrainDataSource* InNative)
 		: Native(InNative)
 	{
 	}

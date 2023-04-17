@@ -96,8 +96,11 @@ void FTerrainPagerBarrier::AllocateNative(
 	// the UAGX_Terrain and is a way for us to call UAGX_Terrain::FetchHeights from the Barrier
 	// module.
 	DataSourceRef = std::make_unique<FTerrainDataSourceRef>();
-	DataSourceRef->Native = new FTerrainDataSource();
-	DataSourceRef->Native->SetTerrainHeightFetcher(HeightFetcher);
+	{
+		FTerrainDataSource* DataSource = new FTerrainDataSource();
+		DataSource->SetTerrainHeightFetcher(HeightFetcher);
+		DataSourceRef->Native = DataSource;
+	}
 
 	// Use the same position/rotation as the given Terrain.
 	const agx::Vec3 Position = ConvertDisplacement(TerrainBarrier.GetPosition());
