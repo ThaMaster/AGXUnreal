@@ -182,17 +182,19 @@ public class AGXUnreal : ModuleRules
 		}
 
 		string RepositoryPath = GetPluginRootPath();
-		
-		string AGXUnrealTagArgs = String.Format("-C \"{0}\" tag --list agxunreal-1.3.1", RepositoryPath);
+    Console.WriteLine("****************** 1 ");
+    string AGXUnrealTagArgs = String.Format("-C \"{0}\" tag --list agxunreal-1.3.1", RepositoryPath);
 		ProcessResult HasTagsResult = RunProcess("git", AGXUnrealTagArgs);
 		if (!HasTagsResult.Success || String.IsNullOrEmpty(HasTagsResult.Output))
 		{
+      Console.WriteLine("****************** AGXUnrealTagArgs: " + AGXUnrealTagArgs);
+      Console.WriteLine("****************** git output: " + HasTagsResult.Output);
 			// We are not in the AGXUnreal repo, do not read or overwrite git info.
 			return;
 		}
-
-		// Get Git hash for the current commit.
-		string Hash;
+    Console.WriteLine("****************** 2 ");
+    // Get Git hash for the current commit.
+    string Hash;
 		string GetHashArgs = String.Format("-C \"{0}\" rev-parse HEAD", RepositoryPath);
 		ProcessResult HashResult = RunProcess("git", GetHashArgs);
 		if (HashResult.Success)
@@ -204,9 +206,9 @@ public class AGXUnreal : ModuleRules
 			Console.Error.WriteLine("Failed to get Git commit hash: \"{0}\"", HashResult.Error);
 			Hash = "";
 		}
-
-		// Get current Git branch.
-		string Branch;
+    Console.WriteLine("****************** 3 ");
+    // Get current Git branch.
+    string Branch;
 		string GetBranchArgs = String.Format("-C \"{0}\" rev-parse --abbrev-ref HEAD", RepositoryPath);
 		ProcessResult BranchResult = RunProcess("git", GetBranchArgs);
 		if (BranchResult.Success)
