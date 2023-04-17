@@ -1025,7 +1025,7 @@ namespace
 		}
 		UE_LOG(LogAGX, Error, TEXT("%s"), *Message);
 #else
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
+		FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail, 8.f);
 #endif
 	}
 }

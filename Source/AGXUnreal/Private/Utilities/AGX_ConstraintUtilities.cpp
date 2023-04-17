@@ -17,6 +17,7 @@
 #include "Constraints/Controllers/AGX_RangeController.h"
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
 #include "Constraints/ControllerConstraintBarriers.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
 void FAGX_ConstraintUtilities::CopyControllersFrom(
@@ -573,22 +574,24 @@ namespace FAGX_ConstraintUtilities_helpers
 		FRigidBodyBarrier* Body1 = Attachment1.GetOrCreateRigidBodyBarrier();
 		if (Body1 == nullptr)
 		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Constraint %s: Could not get Rigid Body from Body Attachment 1. "
-					 "Constraint cannot be created."),
-				*ConstraintName.ToString());
+			FAGX_NotificationUtilities::ShowNotification(
+				FString::Printf(
+					TEXT("Constraint %s: Could not get Rigid Body from Body Attachment 1. "
+						 "Constraint cannot be created."),
+					*ConstraintName.ToString()),
+				SNotificationItem::CS_Fail);
 			return false;
 		}
 
 		FRigidBodyBarrier* Body2 = Attachment2.GetOrCreateRigidBodyBarrier();
 		if (Body2 == nullptr && Attachment2.GetRigidBody() != nullptr)
 		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Constraint %s: A second body has been configured but it could not be "
-					 "fetched. Constraint cannot be created."),
-				*ConstraintName.ToString());
+			FAGX_NotificationUtilities::ShowNotification(
+				FString::Printf(
+					TEXT("Constraint %s: A second body has been configured but it could not be "
+						 "fetched. Constraint cannot be created."),
+					*ConstraintName.ToString()),
+				SNotificationItem::CS_Fail);
 			return false;
 		}
 
@@ -602,12 +605,13 @@ namespace FAGX_ConstraintUtilities_helpers
 		if (Attachment.FrameDefiningSource == EAGX_FrameDefiningSource::Other &&
 			Attachment.FrameDefiningComponent.GetSceneComponent() == nullptr)
 		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Constraint '%s' in Actor '%s' has Frame Defining Source set to Other but "
-					 "Frame Defining Component is not set to a valid Component. Constraint frames "
-					 "may be created incorrectly."),
-				*ConstraintName.ToString(), *ActorName.ToString());
+			FAGX_NotificationUtilities::ShowNotification(
+				FString::Printf(
+					TEXT("Constraint '%s' in Actor '%s' has Frame Defining Source set to Other but "
+						 "Frame Defining Component is not set to a valid Component. Constraint "
+						 "frames may be created incorrectly."),
+					*ConstraintName.ToString(), *ActorName.ToString()),
+				SNotificationItem::CS_Fail);
 		}
 
 		if (Attachment.GetRigidBody() != nullptr)
@@ -633,9 +637,11 @@ void FAGX_ConstraintUtilities::CreateNative(
 
 	if (Barrier == nullptr)
 	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Create Native failed for Constraint '%s', Barrier was nullptr"),
-			*ConstraintName.ToString());
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("Create Native failed for Constraint '%s', Barrier was nullptr"),
+				*ConstraintName.ToString()),
+			SNotificationItem::CS_Fail);
 		return;
 	}
 
