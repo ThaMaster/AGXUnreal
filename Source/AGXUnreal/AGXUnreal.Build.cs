@@ -178,16 +178,22 @@ public class AGXUnreal : ModuleRules
 		ProcessResult TestGit = RunProcess("git", "--version");
 		if (!TestGit.Success)
 		{
-			Console.WriteLine("Git is not available so cannot read revision information.");
-			WriteGitInfo("", "", "");
 			return;
 		}
 
 		string RepositoryPath = GetPluginRootPath();
+		
+		string AGXUnrealTagArgs = String.Format("-C \"{0}\" tag --list agxunreal-1.3.1", RepositoryPath);
+		ProcessResult HasTagsResult = RunProcess("git", AGXUnrealTagArgs);
+		if (!HasTagsResult.Success || String.IsNullOrEmpty(HasTagsResult.Output))
+		{
+			// We are not in the AGXUnreal repo, do not read or overwrite git info.
+			return;
+		}
 
 		// Get Git hash for the current commit.
 		string Hash;
-		string GetHashArgs = String.Format("-C {0} rev-parse HEAD", RepositoryPath);
+		string GetHashArgs = String.Format("-C \"{0}\" rev-parse HEAD", RepositoryPath);
 		ProcessResult HashResult = RunProcess("git", GetHashArgs);
 		if (HashResult.Success)
 		{
@@ -195,13 +201,13 @@ public class AGXUnreal : ModuleRules
 		}
 		else
 		{
-			Console.Error.WriteLine("Failed to get Git commit hash: {0}", HashResult.Error);
+			Console.Error.WriteLine("Failed to get Git commit hash: \"{0}\"", HashResult.Error);
 			Hash = "";
 		}
 
 		// Get current Git branch.
 		string Branch;
-		string GetBranchArgs = String.Format("-C {0} rev-parse --abbrev-ref HEAD", RepositoryPath);
+		string GetBranchArgs = String.Format("-C \"{0}\" rev-parse --abbrev-ref HEAD", RepositoryPath);
 		ProcessResult BranchResult = RunProcess("git", GetBranchArgs);
 		if (BranchResult.Success)
 		{
@@ -209,7 +215,7 @@ public class AGXUnreal : ModuleRules
 		}
 		else
 		{
-			Console.Error.WriteLine("Failed to get Git branch: {0}", BranchResult.Error);
+			Console.Error.WriteLine("Failed to get Git branch: \"{0}\"", BranchResult.Error);
 			Branch = "";
 		}
 		if (Branch == "HEAD")
@@ -220,7 +226,7 @@ public class AGXUnreal : ModuleRules
 
 		// Get the current Git tag, because git rev-parse doesn't identify branches.
 		string Tag;
-		string GetTagArgs = String.Format("-C {0} tag --points-at HEAD", RepositoryPath);
+		string GetTagArgs = String.Format("-C \"{0}\" tag --points-at HEAD", RepositoryPath);
 		ProcessResult TagResult = RunProcess("git", GetTagArgs);
 		if (TagResult.Success)
 		{
@@ -228,7 +234,7 @@ public class AGXUnreal : ModuleRules
 		}
 		else
 		{
-			Console.Error.WriteLine("Failed to get Git tag: {0}", TagResult.Error);
+			Console.Error.WriteLine("Failed to get Git tag: \"{0}\"", TagResult.Error);
 			Tag = "";
 		}
 
