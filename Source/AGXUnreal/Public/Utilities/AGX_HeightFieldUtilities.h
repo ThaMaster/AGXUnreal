@@ -14,18 +14,8 @@ namespace AGX_HeightFieldUtilities
 {
 	// StartPos is in world coordinate system.
 	AGXUNREAL_API FHeightFieldShapeBarrier CreateHeightField(
-		ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY);
-
-	// The resulting Transform's position will always intersect the Landscape, i.e. even in the
-	// given Center point does not lie in the Landscape's plane, it will be projected to it during
-	// the calculations.
-	// The Center point must be given in global coordinate system.
-	AGXUNREAL_API FTransform GetTerrainTransformUsingBoxFrom(
-		const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent);
-
-	// Same as GetTerrainTransformUsingBoxFrom but for Height Field.
-	AGXUNREAL_API FTransform GetHeightFieldTransformUsingBoxFrom(
-		const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent);
+		ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY,
+		bool ReadInitialHeights = true);
 
 	// Overall resolution using outer bounds (i.e. holes does not affect this value unless a
 	// complete part if a side has been removed using the Landscape tool.

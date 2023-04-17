@@ -20,42 +20,6 @@
 
 namespace AGX_HeightFieldUtilities_helpers
 {
-
-	FTransform GetAGXTransformUsingBoxFrom(
-		const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent,
-		bool IsTerrain)
-	{
-		const FVector CenterProjectedLocal = [&]()
-		{
-			FVector CenterLocal =
-				Landscape.GetActorTransform().InverseTransformPositionNoScale(Center);
-			CenterLocal.Z = 0.0;
-			return CenterLocal;
-		}();
-
-		if (!IsTerrain)
-		{
-			return FTransform(
-				Landscape.GetActorQuat(),
-				Landscape.GetActorTransform().TransformPositionNoScale(CenterProjectedLocal));
-		}
-
-		// The terrain will be offset half a tile if the number of tiles are odd. This is an AGX
-		// Dynamics thing.
-		const auto QuadSideSizeX = Landscape.GetActorScale().X;
-		const auto QuadSideSizeY = Landscape.GetActorScale().Y;
-		const int32 NumQuadsX = FMath::RoundToInt(2.0 * HalfExtent.X / QuadSideSizeX);
-		const int32 NumQuadsY = FMath::RoundToInt(2.0 * HalfExtent.Y / QuadSideSizeY);
-		const double TerrainTileCenterOffsetX = (NumQuadsX % 2 == 0) ? 0 : QuadSideSizeX / 2;
-		const double TerrainTileCenterOffsetY = (NumQuadsY % 2 == 0) ? 0 : -QuadSideSizeY / 2;
-		FVector LocalTileOffset(TerrainTileCenterOffsetX, TerrainTileCenterOffsetY, 0);
-
-		const FVector CenterProjectedGlobalAdjusted =
-			Landscape.GetActorTransform().TransformPositionNoScale(
-				CenterProjectedLocal + LocalTileOffset);
-		return FTransform(Landscape.GetActorQuat(), CenterProjectedGlobalAdjusted);
-	}
-
 	std::tuple<int32, int32> GetLandscapeQuadCountXYNonOpenWorld(const ALandscape& Landscape)
 	{
 		if (Landscape.LandscapeComponents.Num() == 0)
@@ -371,11 +335,25 @@ TArray<float> GetHeights(
 }
 
 FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
-	ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY)
+	ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY,
+	bool ReadInitialHeights)
 {
-	TArray<float> Heights = GetHeights(Landscape, StartPos, LengthX, LengthY);	
-
 	const FVector LandscapeScale = Landscape.GetActorScale();
+
+	TArray<float> Heights;
+	if (ReadInitialHeights)
+	{
+		Heights = GetHeights(Landscape, StartPos, LengthX, LengthY);
+	}
+	else
+	{
+		const int32 ResolutionX = FMath::RoundToInt(LengthX / LandscapeScale.X);
+		const int32 ResolutionY = FMath::RoundToInt(LengthY / LandscapeScale.Y);
+		const int32 VerticesSideX = ResolutionX + 1;
+		const int32 VerticesSideY = ResolutionY + 1;
+		Heights.SetNumZeroed(VerticesSideX * VerticesSideY);
+	}
+	
 	const auto QuadSideSize = LandscapeScale.X;
 	if (!FMath::IsNearlyEqual(LandscapeScale.X, LandscapeScale.Y))
 	{
@@ -404,20 +382,6 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
 		ResolutionX, ResolutionY, LengthXDoublePrecision, LengthYDoublePrecision, Heights);
 
 	return HeightField;
-}
-
-FTransform AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(
-	const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent)
-{
-	return AGX_HeightFieldUtilities_helpers::GetAGXTransformUsingBoxFrom(
-		Landscape, Center, HalfExtent, true);
-}
-
-FTransform AGX_HeightFieldUtilities::GetHeightFieldTransformUsingBoxFrom(
-	const ALandscape& Landscape, const FVector& Center, const FVector& HalfExtent)
-{
-	return AGX_HeightFieldUtilities_helpers::GetAGXTransformUsingBoxFrom(
-		Landscape, Center, HalfExtent, false);
 }
 
 std::tuple<int32, int32> AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(

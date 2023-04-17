@@ -5,6 +5,9 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
 #include "Terrain/TerrainBarrier.h"
+#include "Terrain/TerrainPagerBarrier.h"
+#include "Terrain/AGX_TerrainHeightFetcher.h"
+#include "Terrain/AGX_TerrainPagingSettings.h"
 #include "Terrain/AGX_Shovel.h"
 
 // Unreal Engine includes.
@@ -12,6 +15,9 @@
 #include "CoreMinimal.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/Actor.h"
+
+// Standard library includes.
+#include <mutex>
 
 #include "AGX_Terrain.generated.h"
 
@@ -61,8 +67,9 @@ public:
 
 	/** Whether the native terrain simulation should auto-delete particles that are out of bounds.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
-	bool bDeleteParticlesOutsideBounds = true;
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "!bEnableTerrainPaging"))
+	bool bDeleteParticlesOutsideBounds = false;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
 	void SetDeleteParticlesOutsideBounds(bool DeleteParticlesOutsideBounds);
@@ -196,29 +203,60 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")
 	bool bEnableActiveZoneRendering = false;
 
-	/// Return true if the AGX Dynamics object has been created. False otherwise.
+	/**
+	 * If set to true, Terrain Paging will be used.
+	 * The Terrain Paging Settings should be configured accordingly.
+	 * Enabling or disabling Terrain Paging during Play is not supported.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	bool bEnableTerrainPaging;
+
+	/**
+	 * If true is passed, Terrain Paging will be used.
+	 * Enabling or disabling Terrain Paging during Play is not supported.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	void SetEnableTerrainPaging(bool bEnabled);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	bool GetEnableTerrainPaging() const;
+
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "bEnableTerrainPaging"))
+	FAGX_TerrainPagingSettings TerrainPagingSettings;
+
+	bool HasNativeTerrainPager() const;
+
+	/**
+	 * Returns true if this Terrain has a Native Terrain and a Native Terrain Pager if Terrain
+	 * Paging is enabled. Returns false otherwise.
+	 */
 	bool HasNative() const;
 
 	FTerrainBarrier* GetNative();
 	const FTerrainBarrier* GetNative() const;
 
+	FTerrainPagerBarrier* GetNativeTerrainPager();
+	const FTerrainPagerBarrier* GetNativeTerrainPager() const;
+
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
 #endif
+
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 private:
 	void InitializeNative();
-	bool CreateNativeTerrain();
+	bool CreateNative();
+	bool CreateNativeTerrainPager();
 	void CreateNativeShovels();
+	void AddTerrainPagerBodies();
 	bool UpdateNativeMaterial();
 
 	void InitializeRendering();
@@ -237,14 +275,21 @@ private:
 #endif
 	virtual void Serialize(FArchive& Archive) override;
 
+	friend class FAGX_TerrainHeightFetcher;
+
 private:
 	FTerrainBarrier NativeBarrier;
+	FTerrainPagerBarrier NativeTerrainPagerBarrier;
+	FAGX_TerrainHeightFetcher HeightFetcher;
 
 	// Height field related variables.
+	std::mutex OriginalHeightsMutex;
 	TArray<float> OriginalHeights;
 	TArray<float> CurrentHeights;
 	TArray<FFloat16> DisplacementData;
 	TArray<FUpdateTextureRegion2D> DisplacementMapRegions; // TODO: Remove!
+	int32 NumVerticesX = 0;
+	int32 NumVerticesY = 0;
 	bool DisplacementMapInitialized = false;
 
 /// \todo Cannot use AGX Dynamics types in the AGXUnreal module. Must live in the Barrier.
@@ -258,4 +303,19 @@ private:
 	bool ParticleSystemInitialized = false;
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
 	const int32 NumPixelsPerParticle = 2;
+
+	/**
+	 * Thread safe convenience function for reading heights from the source Landscape.
+	 * The WorldPosStart is projected onto the Landscape and acts as the starting point (corner) of
+	 * the area that will be sampled (it does not snap to the nearest vertex). The steps between
+	 * height values are determined by the source Landscape quad size, and the number of steps by
+	 * VertsX and VertsY in the Landscape local positive X and Y direction respectively. The heights
+	 * are written to OutHeights in the ordering of AGX Dynamics.
+	 *
+	 * Returns true if the heights could be read, false otherwise.
+	 */
+	bool FetchHeights(
+		const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights);
+
+	FTransform GetNativeTransform() const;
 };

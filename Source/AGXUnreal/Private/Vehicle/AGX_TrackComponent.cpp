@@ -299,9 +299,13 @@ void UAGX_TrackComponent::PostInitProperties()
 
 bool UAGX_TrackComponent::CanEditChange(const FProperty* InProperty) const
 {
-	if (!Super::CanEditChange(InProperty) || InProperty == nullptr)
-	{
+	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
+	if (!SuperCanEditChange)
 		return false;
+
+	if (InProperty == nullptr)
+	{
+		return SuperCanEditChange;
 	}
 
 	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
@@ -320,7 +324,7 @@ bool UAGX_TrackComponent::CanEditChange(const FProperty* InProperty) const
 			return false;
 		}
 	}
-	return true;
+	return SuperCanEditChange;
 }
 
 void UAGX_TrackComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)

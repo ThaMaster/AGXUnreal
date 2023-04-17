@@ -195,6 +195,10 @@ bool UAGX_ContactMaterialRegistrarComponent::CanEditChange(
 #endif
 ) const
 {
+	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
+	if (!SuperCanEditChange)
+		return false;
+
 	// Editing the Contact Materials array from the Details Panel during play is not supported.
 	// This is because it has proven difficult to keep track of removed array elements since it
 	// is too late when PostEditChangeProperty is called (the element is already removed).
@@ -206,7 +210,7 @@ bool UAGX_ContactMaterialRegistrarComponent::CanEditChange(
 		return World == nullptr || !World->IsGameWorld();
 	}
 
-	return Super::CanEditChange(InProperty);
+	return SuperCanEditChange;
 }
 #endif
 

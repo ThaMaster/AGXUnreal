@@ -2,12 +2,18 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGXNotify.h"
+#include "Terrain/TerrainDataSource.h"
+
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/Constraint.h>
 #include <agx/ElementaryConstraint.h>
 #include <agx/FrictionModel.h>
 #include <agx/Material.h>
 #include <agx/MassProperties.h>
+#include <agx/ref_ptr.h>
 #include <agx/RigidBody.h>
 #include <agxSDK/MergeSplitHandler.h>
 #include <agxSDK/MergeSplitThresholds.h>
@@ -16,10 +22,9 @@
 #include <agxCollide/Shape.h>
 #include <agxTerrain/Terrain.h>
 #include <agxTerrain/TerrainMaterial.h>
+#include <agxTerrain/TerrainPager.h>
 #include <agxModel/Tire.h>
 #include "EndAGXIncludes.h"
-
-#include "AGXNotify.h"
 
 struct FSimulationRef
 {
@@ -172,6 +177,29 @@ struct FTerrainRef
 
 	FTerrainRef() = default;
 	FTerrainRef(agxTerrain::Terrain* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FTerrainPagerRef
+{
+	// @todo: once AGX Dynamics exposes a TerrainPagerRef, use that.
+	agx::ref_ptr<agxTerrain::TerrainPager> Native;
+
+	FTerrainPagerRef() = default;
+	FTerrainPagerRef(agxTerrain::TerrainPager* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FTerrainDataSourceRef
+{
+	agx::ref_ptr<agxTerrain::TerrainDataSource> Native;
+
+	FTerrainDataSourceRef() = default;
+	FTerrainDataSourceRef(agxTerrain::TerrainDataSource* InNative)
 		: Native(InNative)
 	{
 	}

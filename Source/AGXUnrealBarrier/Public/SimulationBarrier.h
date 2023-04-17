@@ -23,6 +23,7 @@ class FContactMaterialBarrier;
 class FShapeBarrier;
 class FShapeMaterialBarrier;
 class FTerrainBarrier;
+class FTerrainPagerBarrier;
 class FTireBarrier;
 class FWireBarrier;
 
@@ -45,6 +46,7 @@ public:
 	bool Add(FShapeBarrier& Shape);
 	bool Add(FShapeMaterialBarrier& Material);
 	bool Add(FTerrainBarrier& Terrain);
+	bool Add(FTerrainPagerBarrier& Terrain);
 	bool Add(FTireBarrier& Tire);
 	bool Add(FWireBarrier& Wire);
 
@@ -59,6 +61,7 @@ public:
 	bool Remove(FShapeBarrier& Shape);
 	bool Remove(FShapeMaterialBarrier& Material);
 	bool Remove(FTerrainBarrier& Terrain);
+	bool Remove(FTerrainPagerBarrier& Terrain);
 	bool Remove(FTireBarrier& Tire);
 	bool Remove(FWireBarrier& Wire);
 

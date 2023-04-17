@@ -110,9 +110,23 @@ void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
 	if (HasNative())
 	{
 		NativeBarrier.SetCreateParticles(CreateParticles);
+		if (HasNativeTerrainPager())
+		{
+			NativeTerrainPagerBarrier.OnTemplateTerrainChanged();
+		}
 	}
 
 	bCreateParticles = CreateParticles;
+}
+
+void AAGX_Terrain::SetEnableTerrainPaging(bool bEnabled)
+{
+	bEnableTerrainPaging = bEnabled;
+}
+
+bool AAGX_Terrain::GetEnableTerrainPaging() const
+{
+	return bEnableTerrainPaging;
 }
 
 bool AAGX_Terrain::GetCreateParticles() const
@@ -130,6 +144,10 @@ void AAGX_Terrain::SetDeleteParticlesOutsideBounds(bool DeleteParticlesOutsideBo
 	if (HasNative())
 	{
 		NativeBarrier.SetDeleteParticlesOutsideBounds(DeleteParticlesOutsideBounds);
+		if (HasNativeTerrainPager())
+		{
+			NativeTerrainPagerBarrier.OnTemplateTerrainChanged();
+		}
 	}
 
 	bDeleteParticlesOutsideBounds = DeleteParticlesOutsideBounds;
@@ -150,6 +168,10 @@ void AAGX_Terrain::SetPenetrationForceVelocityScaling(double InPenetrationForceV
 	if (HasNative())
 	{
 		NativeBarrier.SetPenetrationForceVelocityScaling(InPenetrationForceVelocityScaling);
+		if (HasNativeTerrainPager())
+		{
+			NativeTerrainPagerBarrier.OnTemplateTerrainChanged();
+		}
 	}
 
 	PenetrationForceVelocityScaling = InPenetrationForceVelocityScaling;
@@ -180,6 +202,10 @@ void AAGX_Terrain::SetMaximumParticleActivationVolume(double InMaximumParticleAc
 	if (HasNative())
 	{
 		NativeBarrier.SetMaximumParticleActivationVolume(InMaximumParticleActivationVolume);
+		if (HasNativeTerrainPager())
+		{
+			NativeTerrainPagerBarrier.OnTemplateTerrainChanged();
+		}
 	}
 
 	MaximumParticleActivationVolume = InMaximumParticleActivationVolume;
@@ -207,7 +233,12 @@ float AAGX_Terrain::GetMaximumParticleActivationVolume_BP() const
 
 bool AAGX_Terrain::HasNative() const
 {
-	return NativeBarrier.HasNative();
+	return NativeBarrier.HasNative() && (!bEnableTerrainPaging || HasNativeTerrainPager());
+}
+
+bool AAGX_Terrain::HasNativeTerrainPager() const
+{
+	return NativeTerrainPagerBarrier.HasNative();
 }
 
 FTerrainBarrier* AAGX_Terrain::GetNative()
@@ -228,6 +259,26 @@ const FTerrainBarrier* AAGX_Terrain::GetNative() const
 	}
 
 	return &NativeBarrier;
+}
+
+FTerrainPagerBarrier* AAGX_Terrain::GetNativeTerrainPager()
+{
+	if (!NativeTerrainPagerBarrier.HasNative())
+	{
+		return nullptr;
+	}
+
+	return &NativeTerrainPagerBarrier;
+}
+
+const FTerrainPagerBarrier* AAGX_Terrain::GetNativeTerrainPager() const
+{
+	if (!NativeTerrainPagerBarrier.HasNative())
+	{
+		return nullptr;
+	}
+
+	return &NativeTerrainPagerBarrier;
 }
 
 namespace
@@ -284,6 +335,34 @@ void AAGX_Terrain::PostInitProperties()
 {
 	Super::PostInitProperties();
 	InitPropertyDispatcher();
+}
+
+bool AAGX_Terrain::CanEditChange(const FProperty* InProperty) const
+{
+	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
+	if (!SuperCanEditChange)
+		return false;
+
+	if (!HasNative())
+		return SuperCanEditChange;
+
+	const FName Prop = InProperty->GetFName();
+
+	// Properties that should never be edited during Play.
+	if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, SourceLandscape))
+		return false;
+	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, Shovels))
+		return false;
+	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, ParticleSystemAsset))
+		return false;
+	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, LandscapeDisplacementMap))
+		return false;
+	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, TerrainParticlesDataMap))
+		return false;
+	else if (Prop == GET_MEMBER_NAME_CHECKED(AAGX_Terrain, bEnableTerrainPaging))
+		return false;
+	else
+		return SuperCanEditChange;
 }
 
 namespace AGX_Terrain_helpers
@@ -397,6 +476,10 @@ void AAGX_Terrain::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		AGX_MEMBER_NAME(TerrainParticlesDataMap),
 		[](ThisClass* This) { This->EnsureParticleDataRenderTargetSize(); });
+
+	PropertyDispatcher.Add(
+		AGX_MEMBER_NAME(bEnableTerrainPaging),
+		[](ThisClass* This) { This->SetEnableTerrainPaging(This->bEnableTerrainPaging); });
 }
 
 void AAGX_Terrain::EnsureParticleDataRenderTargetSize()
@@ -474,7 +557,6 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
 
 	ClearDisplacementMap();
 	ClearParticlesMap();
-
 	if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
 	{
 		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
@@ -487,6 +569,10 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
 		}
 	}
 
+	if (HasNativeTerrainPager())
+	{
+		NativeTerrainPagerBarrier.ReleaseNative();
+	}
 	if (HasNative())
 	{
 		NativeBarrier.ReleaseNative();
@@ -502,6 +588,99 @@ void AAGX_Terrain::Tick(float DeltaTime)
 	{
 		UpdateParticlesMap();
 	}
+}
+
+bool AAGX_Terrain::FetchHeights(
+	const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights)
+{
+	/*
+	 * This function will be called by the native Terrain Pager from a worker thread, meaning we
+	 * have to make sure that what we do here is thread safe. For example, we protect the
+	 * OriginalHeights array here since it may be read from the main thread in
+	 * UpdateDisplacementMap.
+	 */
+
+	if (SourceLandscape == nullptr || !HasNative())
+		return false;
+
+	const double QuadSizeX = SourceLandscape->GetActorScale().X;
+	const double QuadSizeY = SourceLandscape->GetActorScale().Y;
+	const FVector PosStartLocal =
+		SourceLandscape->GetTransform().InverseTransformPositionNoScale(WorldPosStart);
+	const int32 StartVertX = FMath::RoundToInt(PosStartLocal.X / QuadSizeX);
+	const int32 StartVertY = FMath::RoundToInt(PosStartLocal.Y / QuadSizeY);
+
+	const FVector NativePosLocal = SourceLandscape->GetTransform().InverseTransformPositionNoScale(
+		GetNativeTransform().GetLocation());
+	const int32 BoundsCornerMinX =
+		FMath::RoundToInt(NativePosLocal.X / QuadSizeX) - NumVerticesX / 2;
+	const int32 BoundsCornerMinY =
+		FMath::RoundToInt(NativePosLocal.Y / QuadSizeY) - NumVerticesY / 2;
+	const int32 BoundsCornerMaxX =
+		FMath::RoundToInt(NativePosLocal.X / QuadSizeX) + NumVerticesX / 2;
+	const int32 BoundsCornerMaxY =
+		FMath::RoundToInt(NativePosLocal.Y / QuadSizeY) + NumVerticesY / 2;
+
+	// Check that we are not asked to read outside the bounds.
+	if (StartVertX < BoundsCornerMinX || StartVertY < BoundsCornerMinY ||
+		StartVertX + VertsX - 1 > BoundsCornerMaxX || StartVertY + VertsY - 1 > BoundsCornerMaxY)
+	{
+		return false;
+	}
+
+	OutHeights.Reserve(VertsX * VertsY);
+
+	{
+		std::lock_guard<std::mutex> ScopedOrigHeightsLock(OriginalHeightsMutex);
+
+		// AGX Dynamics coordinate systems are mapped with Y-axis flipped.
+		for (int Y = StartVertY + VertsY - 1; Y >= StartVertY; Y--)
+		{
+			for (int X = StartVertX; X < StartVertX + VertsX; X++)
+			{
+				const FVector SamplePosLocal = FVector(
+					static_cast<double>(X) * QuadSizeX, static_cast<double>(Y) * QuadSizeY, 0.0);
+				const FVector SamplePosGlobal =
+					SourceLandscape->GetTransform().TransformPositionNoScale(SamplePosLocal);
+
+				if (auto Height = SourceLandscape->GetHeightAtLocation(SamplePosGlobal))
+				{
+					FVector HeightPointLocal =
+						SourceLandscape->GetTransform().InverseTransformPositionNoScale(
+							FVector(SamplePosGlobal.X, SamplePosGlobal.Y, *Height));
+					OutHeights.Add(HeightPointLocal.Z);
+					OriginalHeights
+						[(X - BoundsCornerMinX) + (Y - BoundsCornerMinY) * NumVerticesX] =
+							HeightPointLocal.Z;
+				}
+				else
+				{
+					UE_LOG(
+						LogTemp, Warning,
+						TEXT("Height read unsuccessful in Terrain. World sample pos: %s"),
+						*SamplePosGlobal.ToString());
+					OutHeights.Add(SourceLandscape->GetActorLocation().Z);
+					OriginalHeights
+						[(X - BoundsCornerMinX) + (Y - BoundsCornerMinY) * NumVerticesX] =
+							SourceLandscape->GetActorLocation().Z;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+FTransform AAGX_Terrain::GetNativeTransform() const
+{
+	check(HasNative());
+
+	if (bEnableTerrainPaging)
+		return FTransform(
+			NativeTerrainPagerBarrier.GetReferenceRotation(),
+			NativeTerrainPagerBarrier.GetReferencePoint());
+	else
+		return FTransform(NativeBarrier.GetRotation(), NativeBarrier.GetPosition());
 }
 
 namespace
@@ -583,12 +762,23 @@ void AAGX_Terrain::InitializeNative()
 		return;
 	}
 
-	if (!CreateNativeTerrain())
+	HeightFetcher.SetTerrain(this);
+
+	if (!CreateNative())
 	{
-		return; // Logging done in CreateNativeTerrain.
+		return; // Logging done in CreateNative.
+	}
+
+	if (bEnableTerrainPaging)
+	{
+		if (!CreateNativeTerrainPager())
+		{
+			return; // Logging done in CreateNativeTerrainPager.
+		}
 	}
 
 	CreateNativeShovels();
+	AddTerrainPagerBodies();
 	InitializeRendering();
 
 	if (!UpdateNativeMaterial())
@@ -600,7 +790,7 @@ void AAGX_Terrain::InitializeNative()
 	}
 }
 
-bool AAGX_Terrain::CreateNativeTerrain()
+bool AAGX_Terrain::CreateNative()
 {
 	TOptional<UAGX_HeightFieldBoundsComponent::FHeightFieldBoundsInfo> Bounds =
 		TerrainBounds->GetLandscapeAdjustedBounds();
@@ -614,11 +804,14 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	}
 
 	const FVector StartPos = Bounds->Transform.TransformPositionNoScale(-Bounds->HalfExtent);
+
 	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(
-		*SourceLandscape, StartPos, Bounds->HalfExtent.X * 2.0, Bounds->HalfExtent.Y * 2.0);
+		*SourceLandscape, StartPos, Bounds->HalfExtent.X * 2.0, Bounds->HalfExtent.Y * 2.0,
+		!bEnableTerrainPaging);
+
 	NativeBarrier.AllocateNative(HeightField, MaxDepth);
 
-	if (!HasNative())
+	if (!NativeBarrier.HasNative())
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -628,16 +821,25 @@ bool AAGX_Terrain::CreateNativeTerrain()
 		return false;
 	}
 
-	check(HasNative());
+	NativeBarrier.SetRotation(Bounds->Transform.GetRotation());
+	NativeBarrier.SetPosition(Bounds->Transform.GetLocation());
 
-	FTransform Transform = AGX_HeightFieldUtilities::GetTerrainTransformUsingBoxFrom(
-		*SourceLandscape, Bounds->Transform.GetLocation(), Bounds->HalfExtent);
+	NumVerticesX =
+		FMath::RoundToInt(Bounds->HalfExtent.X * 2.0 / SourceLandscape->GetActorScale().X) + 1;
+	NumVerticesY =
+		FMath::RoundToInt(Bounds->HalfExtent.Y * 2.0 / SourceLandscape->GetActorScale().Y) + 1;
 
-	NativeBarrier.SetRotation(Transform.GetRotation());
-	NativeBarrier.SetPosition(Transform.GetLocation());
-
-	OriginalHeights.Reserve(NativeBarrier.GetGridSizeX() * NativeBarrier.GetGridSizeY());
-	NativeBarrier.GetHeights(OriginalHeights, false);
+	if (bEnableTerrainPaging)
+	{
+		OriginalHeights.SetNumZeroed(NumVerticesX * NumVerticesY);
+	}
+	else
+	{
+		AGX_CHECK(NumVerticesX == NativeBarrier.GetGridSizeX());
+		AGX_CHECK(NumVerticesY == NativeBarrier.GetGridSizeY());
+		OriginalHeights.Reserve(NumVerticesX * NumVerticesY);
+		NativeBarrier.GetHeights(OriginalHeights, false);
+	}
 
 	// We must initialize CurrentHeights since we will only read height changes during runtime.
 	CurrentHeights.Reserve(OriginalHeights.Num());
@@ -663,7 +865,13 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	}
 
 	int32 NumIterations = Simulation->GetNumPpgsIterations();
-	Simulation->Add(*this);
+
+	if (!bEnableTerrainPaging)
+	{
+		// We add this Terrain to the Simulation here only if we are not using TerrainPaging.
+		Simulation->Add(*this);
+	}
+
 	if (Simulation->bOverridePPGSIterations)
 	{
 		// We must check the override flag and not blindly re-set the value we read a few lines up
@@ -685,6 +893,69 @@ bool AAGX_Terrain::CreateNativeTerrain()
 	return true;
 }
 
+bool AAGX_Terrain::CreateNativeTerrainPager()
+{
+	check(NativeBarrier.HasNative());
+	check(!HasNativeTerrainPager());
+
+	if (!bEnableTerrainPaging)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("CreateNativeTerrainPager called on Terrain '%s' which doesn't use Terrain "
+				 "Paging."),
+			*GetName());
+		return false;
+	}
+
+	// Always set DeleteParticlesOutsideBounds to false if we are using Terrain Paging, otherwise
+	// particles may be deleted when tiles are loaded and unloaded in an unexpected way. This will
+	// be handled automatically by AGX Dynamics in the future.
+	if (bDeleteParticlesOutsideBounds)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("DeleteParticlesOutsideBounds was set to true while using Terrain Paging. This "
+				 "combination is not supported. DeleteParticlesOutsideBounds will be set to "
+				 "false."));
+		SetDeleteParticlesOutsideBounds(false);
+	}
+
+	const auto QuadSize = SourceLandscape->GetActorScale().X;
+	const int32 TileNumVerticesSide =
+		FMath::RoundToInt(TerrainPagingSettings.TileSize / QuadSize) + 1;
+	const int32 TileOverlapVertices =
+		FMath::RoundToInt(TerrainPagingSettings.TileOverlap / QuadSize);
+
+	NativeTerrainPagerBarrier.AllocateNative(
+		&HeightFetcher, NativeBarrier, TileNumVerticesSide, TileOverlapVertices, QuadSize,
+		MaxDepth);
+
+	if (!HasNativeTerrainPager())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unable to create Terrain Pager native for '%s'. The Output log may include more "
+				 "details."),
+			*GetName());
+		return false;
+	}
+
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Terrain '%s' in '%s' tried to get Simulation, but UAGX_Simulation::GetFrom "
+				 "returned nullptr."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return false;
+	}
+
+	Simulation->Add(*this);
+	return true;
+}
+
 void AAGX_Terrain::CreateNativeShovels()
 {
 	if (!HasNative())
@@ -695,6 +966,19 @@ void AAGX_Terrain::CreateNativeShovels()
 				 "representation."),
 			*GetName());
 	}
+
+	auto AddShovel = [this](FShovelBarrier& ShovelBarrier, const FAGX_Shovel& Shovel) -> bool
+	{
+		if (bEnableTerrainPaging)
+		{
+			return NativeTerrainPagerBarrier.AddShovel(
+				ShovelBarrier, Shovel.RequiredRadius, Shovel.PreloadRadius);
+		}
+		else
+		{
+			return NativeBarrier.AddShovel(ShovelBarrier);
+		}
+	};
 
 	for (FAGX_Shovel& Shovel : Shovels)
 	{
@@ -742,7 +1026,7 @@ void AAGX_Terrain::CreateNativeShovels()
 
 		FAGX_Shovel::UpdateNativeShovelProperties(ShovelBarrier, Shovel);
 
-		bool Added = NativeBarrier.AddShovel(ShovelBarrier);
+		bool Added = AddShovel(ShovelBarrier, Shovel);
 		if (!Added)
 		{
 			UE_LOG(
@@ -754,7 +1038,7 @@ void AAGX_Terrain::CreateNativeShovels()
 			std::swap(CuttingEdgeLine.v1, CuttingEdgeLine.v2);
 			ShovelBarrier.SetTopEdge(TopEdgeLine);
 			ShovelBarrier.SetCuttingEdge(CuttingEdgeLine);
-			Added = NativeBarrier.AddShovel(ShovelBarrier);
+			Added = AddShovel(ShovelBarrier, Shovel);
 			if (!Added)
 			{
 				UE_LOG(
@@ -773,6 +1057,26 @@ void AAGX_Terrain::CreateNativeShovels()
 		UE_LOG(
 			LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(),
 			*GetName());
+	}
+}
+
+void AAGX_Terrain::AddTerrainPagerBodies()
+{
+	if (!HasNativeTerrainPager())
+		return;
+
+	for (FAGX_TerrainPagingBodyReference& TrackedBody : TerrainPagingSettings.TrackedRigidBodies)
+	{
+		UAGX_RigidBodyComponent* Body = TrackedBody.RigidBody.GetRigidBody();
+		if (Body == nullptr)
+			continue;
+
+		FRigidBodyBarrier* BodyBarrier = Body->GetOrCreateNative();
+		if (BodyBarrier == nullptr)
+			continue;
+
+		NativeTerrainPagerBarrier.AddRigidBody(
+			*Body->GetNative(), TrackedBody.RequiredRadius, TrackedBody.PreloadRadius);
 	}
 }
 
@@ -797,10 +1101,7 @@ bool AAGX_Terrain::UpdateNativeMaterial()
 
 	if (TerrainMaterial == nullptr)
 	{
-		if (HasNative())
-		{
-			GetNative()->ClearMaterial();
-		}
+		GetNative()->ClearMaterial();
 		return true;
 	}
 
@@ -850,13 +1151,8 @@ void AAGX_Terrain::InitializeDisplacementMap()
 		return;
 	}
 
-	// There is one displacement map texel per vertex.
-
-	const int32 TerrainVertsX = NativeBarrier.GetGridSizeX();
-	const int32 TerrainVertsY = NativeBarrier.GetGridSizeY();
-
-	if (LandscapeDisplacementMap->SizeX != TerrainVertsX ||
-		LandscapeDisplacementMap->SizeY != TerrainVertsY)
+	if (LandscapeDisplacementMap->SizeX != NumVerticesX ||
+		LandscapeDisplacementMap->SizeY != NumVerticesY)
 	{
 		UE_LOG(
 			LogAGX, Log,
@@ -864,12 +1160,12 @@ void AAGX_Terrain::InitializeDisplacementMap()
 				 "AGX Terrain '%s' does not match the vertices in the Terrain (%dx%d). "
 				 "Resizing the displacement map."),
 			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(),
-			TerrainVertsX, TerrainVertsY);
+			NumVerticesX, NumVerticesY);
 
-		LandscapeDisplacementMap->ResizeTarget(TerrainVertsX, TerrainVertsY);
+		LandscapeDisplacementMap->ResizeTarget(NumVerticesX, NumVerticesY);
 	}
-	if (LandscapeDisplacementMap->SizeX != TerrainVertsX ||
-		LandscapeDisplacementMap->SizeY != TerrainVertsY)
+	if (LandscapeDisplacementMap->SizeX != NumVerticesX ||
+		LandscapeDisplacementMap->SizeY != NumVerticesY)
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -878,8 +1174,8 @@ void AAGX_Terrain::InitializeDisplacementMap()
 			*GetName(), LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY);
 	}
 
-	DisplacementData.SetNum(TerrainVertsX * TerrainVertsY);
-	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, TerrainVertsX, TerrainVertsY));
+	DisplacementData.SetNum(NumVerticesX * NumVerticesY);
+	DisplacementMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, NumVerticesX, NumVerticesY));
 
 	/// \todo I'm not sure why we need this. Does the texture sampler "fudge the
 	/// values" when using non-linear gamma?
@@ -904,24 +1200,35 @@ void AAGX_Terrain::UpdateDisplacementMap()
 
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("AGXUnreal:AAGX_Terrain::UpdateDisplacementMap"));
 
-	const int32 TerrainVerticesX = NativeBarrier.GetGridSizeX();
-	const int32 TerrainVerticesY = NativeBarrier.GetGridSizeY();
-
-	NativeBarrier.GetHeights(CurrentHeights, true);
-	for (const auto& VertexTuple : NativeBarrier.GetModifiedVertices())
+	TArray<std::tuple<int32, int32>> ModifiedVertices;
+	if (bEnableTerrainPaging)
 	{
-		const int32 VertX = std::get<0>(VertexTuple);
-		const int32 VertY = std::get<1>(VertexTuple);
-		const int32 Index = VertX + VertY * TerrainVerticesX;
-		const float HeightChange = CurrentHeights[Index] - OriginalHeights[Index];
-		DisplacementData[Index] = static_cast<FFloat16>(HeightChange);
+		ModifiedVertices = NativeTerrainPagerBarrier.GetModifiedHeights(
+			CurrentHeights, NumVerticesX, NumVerticesY);
+	}
+	else
+	{
+		NativeBarrier.GetHeights(CurrentHeights, true);
+		ModifiedVertices = NativeBarrier.GetModifiedVertices();
+	}
+
+	{
+		std::lock_guard<std::mutex> ScopedOrigHeightsLock(OriginalHeightsMutex);
+		for (const auto& VertexTuple : ModifiedVertices)
+		{
+			const int32 VertX = std::get<0>(VertexTuple);
+			const int32 VertY = std::get<1>(VertexTuple);
+			const int32 Index = VertX + VertY * NumVerticesX;
+			const float HeightChange = CurrentHeights[Index] - OriginalHeights[Index];
+			DisplacementData[Index] = static_cast<FFloat16>(HeightChange);
+		}
 	}
 
 	const uint32 BytesPerPixel = sizeof(FFloat16);
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
 	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
-		TerrainVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
+		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
 
 void AAGX_Terrain::ClearDisplacementMap()
@@ -943,7 +1250,6 @@ void AAGX_Terrain::ClearDisplacementMap()
 		return;
 	}
 
-	const int32 NumVerticesX = NativeBarrier.GetGridSizeX();
 	const uint32 BytesPerPixel = sizeof(FFloat16);
 	for (FFloat16& Displacement : DisplacementData)
 	{
@@ -1058,7 +1364,12 @@ void AAGX_Terrain::UpdateParticlesMap()
 		return;
 	}
 
-	if (!HasNative())
+	if (!bEnableTerrainPaging && !HasNative())
+	{
+		return;
+	}
+
+	if (bEnableTerrainPaging && !HasNativeTerrainPager())
 	{
 		return;
 	}
@@ -1084,9 +1395,12 @@ void AAGX_Terrain::UpdateParticlesMap()
 		ParticlesDataMapRegions.Add(FUpdateTextureRegion2D(0, 0, 0, 0, ResolutionX, ResolutionY));
 	}
 
-	TArray<FVector> Positions = NativeBarrier.GetParticlePositions();
-	TArray<float> Radii = NativeBarrier.GetParticleRadii();
-	TArray<FQuat> Rotations = NativeBarrier.GetParticleRotations();
+	const FParticleData ParticleData = bEnableTerrainPaging
+										   ? NativeTerrainPagerBarrier.GetParticleData()
+										   : NativeBarrier.GetParticleData();
+	const TArray<FVector>& Positions = ParticleData.Positions;
+	const TArray<float>& Radii = ParticleData.Radii;
+	const TArray<FQuat>& Rotations = ParticleData.Rotations;
 
 	AGX_CHECK(Positions.Num() == Radii.Num());
 	AGX_CHECK(Positions.Num() == Rotations.Num());
@@ -1169,14 +1483,12 @@ void AAGX_Terrain::UpdateLandscapeMaterialParameters()
 	// It is the Landscape material's responsibility to declare and implement displacement map
 	// sampling and passing on to World Position Offset.
 
-	const int32 TerrainVerticesX = NativeBarrier.GetGridSizeX();
-	const int32 TerrainVerticesY = NativeBarrier.GetGridSizeY();
 	const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
 	const auto QuadSideSizeY = SourceLandscape->GetActorScale().Y;
 
 	// This assumes that the Terrain and Landscape resolution (quad size) is the same.
-	const double TerrainSizeX = static_cast<double>(TerrainVerticesX - 1) * QuadSideSizeX;
-	const double TerrainSizeY = static_cast<double>(TerrainVerticesY - 1) * QuadSideSizeY;
+	const double TerrainSizeX = static_cast<double>(NumVerticesX - 1) * QuadSideSizeX;
+	const double TerrainSizeY = static_cast<double>(NumVerticesY - 1) * QuadSideSizeY;
 
 	const FVector TerrainCenterGlobal = NativeBarrier.GetPosition();
 

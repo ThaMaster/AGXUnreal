@@ -215,7 +215,42 @@ void UAGX_Simulation::Add(UAGX_StaticMeshComponent& Body)
 void UAGX_Simulation::Add(AAGX_Terrain& Terrain)
 {
 	EnsureStepperCreated();
-	AGX_Simulation_helpers::Add(*this, Terrain);
+
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to add Terrain '%s' to Simulation that does not have a native."),
+			*Terrain.GetName());
+		return;
+	}
+
+	if (!Terrain.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to add Terrain '%s' that does not have a native to Simulation."),
+			*Terrain.GetName());
+		return;
+	}
+
+	const bool Result = [this, &Terrain]()
+	{
+		if (Terrain.bEnableTerrainPaging)
+			return GetNative()->Add(*Terrain.GetNativeTerrainPager());
+		else
+			return GetNative()->Add(*Terrain.GetNative());
+	}();
+
+	if (!Result)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Failed to add '%s' to Simulation. FSimulationBarrier::Add returned "
+				 "false. The Log category AGXDynamicsLog may contain more information about "
+				 "the failure."),
+			*Terrain.GetName());
+	}
 }
 
 void UAGX_Simulation::Add(UAGX_TireComponent& Tire)
@@ -285,7 +320,43 @@ void UAGX_Simulation::Remove(UAGX_StaticMeshComponent& Body)
 
 void UAGX_Simulation::Remove(AAGX_Terrain& Terrain)
 {
-	AGX_Simulation_helpers::Remove(*this, Terrain);
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to remove Terrain '%s' from a Simulation that does not have a "
+				 "native."),
+			*Terrain.GetName());
+		return;
+	}
+
+	if (!Terrain.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to remove Terrain '%s' from Simulation but the Terrain does "
+				 "not have a native."),
+			*Terrain.GetName());
+		return;
+	}
+
+	const bool Result = [this, &Terrain]()
+	{
+		if (Terrain.bEnableTerrainPaging)
+			return GetNative()->Remove(*Terrain.GetNativeTerrainPager());
+		else
+			return GetNative()->Remove(*Terrain.GetNative());
+	}();
+
+	if (!Result)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to remove Terrain '%s' from Simulation but "
+				 "FSimulationBarrier::Remove returned false. The Log category AGXDynamicsLog may "
+				 "contain more information about the failure."),
+			*Terrain.GetName());
+	}
 }
 
 void UAGX_Simulation::Remove(UAGX_TireComponent& Tire)
@@ -976,13 +1047,17 @@ bool UAGX_Simulation::CanEditChange(
 #endif
 ) const
 {
+	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
+	if (!SuperCanEditChange)
+		return false;
+
 	// Time Lag Cap should only be editable when step mode SmCatchUpOverTimeCapped is used.
 	if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UAGX_Simulation, TimeLagCap))
 	{
 		return StepMode == SmCatchUpOverTimeCapped;
 	}
 
-	return Super::CanEditChange(InProperty);
+	return SuperCanEditChange;
 }
 #endif
 

@@ -18,6 +18,13 @@ class FShovelBarrier;
 class FTerrainMaterialBarrier;
 class FShapeMaterialBarrier;
 
+struct FParticleData
+{
+	TArray<FVector> Positions;
+	TArray<float> Radii;
+	TArray<FQuat> Rotations;
+};
+
 /**
  *
  */
@@ -107,6 +114,11 @@ public:
 	 * Get an array with the rotations of the currently existing particles.
 	 */
 	TArray<FQuat> GetParticleRotations() const;
+
+	/**
+	 * Get Positions, Radii and Rotations of all particles.
+	 */
+	FParticleData GetParticleData() const;
 
 private:
 	FTerrainBarrier(const FTerrainBarrier&) = delete;

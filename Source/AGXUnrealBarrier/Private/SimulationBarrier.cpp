@@ -12,6 +12,7 @@
 #include "RigidBodyBarrier.h"
 #include "Shapes/ShapeBarrier.h"
 #include "Terrain/TerrainBarrier.h"
+#include "Terrain/TerrainPagerBarrier.h"
 #include "Tires/TireBarrier.h"
 #include "TypeConversions.h"
 #include "Wire/WireBarrier.h"
@@ -83,6 +84,13 @@ bool FSimulationBarrier::Add(FTerrainBarrier& Terrain)
 	return NativeRef->Native->add(Terrain.GetNative()->Native);
 }
 
+bool FSimulationBarrier::Add(FTerrainPagerBarrier& TerrainPager)
+{
+	check(HasNative());
+	check(TerrainPager.HasNative());
+	return NativeRef->Native->add(TerrainPager.GetNative()->Native);
+}
+
 bool FSimulationBarrier::Add(FTireBarrier& Tire)
 {
 	check(HasNative());
@@ -137,6 +145,13 @@ bool FSimulationBarrier::Remove(FTerrainBarrier& Terrain)
 	check(HasNative());
 	check(Terrain.HasNative());
 	return NativeRef->Native->remove(Terrain.GetNative()->Native);
+}
+
+bool FSimulationBarrier::Remove(FTerrainPagerBarrier& TerrainPager)
+{
+	check(HasNative());
+	check(TerrainPager.HasNative());
+	return NativeRef->Native->remove(TerrainPager.GetNative()->Native);
 }
 
 bool FSimulationBarrier::Remove(FTireBarrier& Tire)

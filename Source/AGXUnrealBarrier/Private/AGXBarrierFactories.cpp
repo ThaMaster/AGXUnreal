@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Contacts/ShapeContactEntity.h"
 #include "Contacts/ContactPointEntity.h"
+#include "Terrain/TerrainBarrier.h"
 
 #include "AGXRefs.h"
 #include "Vehicle/TrackRef.h"
@@ -135,6 +136,11 @@ FContactPointBarrier AGXBarrierFactories::CreateContactPointBarrier(
 FTwoBodyTireBarrier AGXBarrierFactories::CreateTwoBodyTireBarrier(agxModel::TwoBodyTire* Tire)
 {
 	return {std::make_unique<FTireRef>(Tire)};
+}
+
+FTerrainBarrier AGXBarrierFactories::CreateTerrainBarrier(agxTerrain::Terrain* Terrain)
+{
+	return {std::make_unique<FTerrainRef>(Terrain)};
 }
 
 FTerrainMaterialBarrier AGXBarrierFactories::CreateTerrainMaterialBarrier(

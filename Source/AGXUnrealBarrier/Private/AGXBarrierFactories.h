@@ -31,6 +31,8 @@
 #include "Wire/WireWinchRef.h"
 #include "Vehicle/TrackBarrier.h"
 
+class FTerrainBarrier;
+
 namespace agx
 {
 	class RigidBody;
@@ -62,7 +64,8 @@ namespace agxModel
 
 namespace agxTerrain
 {
-	class TerrainMaterial;
+	class Terrain;
+	class TerrainMaterial;	
 }
 
 namespace agxWire
@@ -126,6 +129,8 @@ namespace AGXBarrierFactories
 	FContactPointBarrier CreateContactPointBarrier(agxCollide::ContactPoint ContactPoint);
 
 	FTwoBodyTireBarrier CreateTwoBodyTireBarrier(agxModel::TwoBodyTire* Tire);
+
+	FTerrainBarrier CreateTerrainBarrier(agxTerrain::Terrain* Terrain);
 
 	FTerrainMaterialBarrier CreateTerrainMaterialBarrier(agxTerrain::TerrainMaterial* Material);
 

@@ -120,6 +120,20 @@ struct AGXUNREAL_API FAGX_Shovel
 	FAGX_Real MaximumPenetrationForce {std::numeric_limits<double>::infinity()};
 
 	/**
+	 * The max distance from the Shovel at which new Terrain Tiles is guaranteed to be loaded [cm].
+	 * Only relevant when using Terrain Paging.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_Real RequiredRadius {600.f};
+
+	/**
+	 * The max distance from the Shovel at which new Terrain Tiles will be preloaded [cm].
+	 * Only relevant when using Terrain Paging.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	FAGX_Real PreloadRadius {1000.f};
+
+	/**
 	 * Determines if shovel <-> terrain contact should always be removed.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
