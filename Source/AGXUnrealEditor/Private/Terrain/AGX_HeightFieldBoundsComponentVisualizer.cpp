@@ -131,7 +131,7 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 			// tiles may have a z-offset that depends on the first loaded tile average height (set
 			// by AGX Dynamics automatically).
 			TileTransform.SetLocation(FVector(TilePosGlobal.X, TilePosGlobal.Y, BoundsPosGlobal.Z));
-			DrawRectangle(TileTransform, TileSize, -TileSize, FLinearColor::White, 8.f, PDI);
+			DrawRectangle(TileTransform, TileSize, TileSize, FLinearColor::White, 8.f, PDI);
 		}
 	}
 
