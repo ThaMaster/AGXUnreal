@@ -255,6 +255,8 @@ public class AGXUnreal : ModuleRules
 		ProcessResult HashResult = RunProcess("git", GetHashArgs);
 		if (HashResult.Success)
 		{
+			Console.WriteLine("AGXUnreal: GetHash output:");
+			Console.WriteLine(HashResult.Output);
 			Hash = HashResult.Output.Trim();
 		}
 		else
@@ -269,6 +271,8 @@ public class AGXUnreal : ModuleRules
 		ProcessResult BranchResult = RunProcess("git", GetBranchArgs);
 		if (BranchResult.Success)
 		{
+			Console.WriteLine("AGXUnreal: GetBranch output:");
+			Console.WriteLine(BranchResult.Output);
 			Branch = BranchResult.Output.Trim();
 		}
 		else
@@ -285,6 +289,8 @@ public class AGXUnreal : ModuleRules
 			ProcessResult DescribeResult = RunProcess("git", DescribeArgs);
 			if (DescribeResult.Success)
 			{
+				Console.WriteLine("AGXUnreal: Describe output:");
+				Console.WriteLine(DescribeResult.Output);
 				// This contains not only the branch name, but also a prefix
 				// describing where the name was found. We many chose to do some
 				// parsing of this, possibly to replace the tag read and possibly
@@ -302,6 +308,7 @@ public class AGXUnreal : ModuleRules
 		if (Branch == "HEAD")
 		{
 			// Branch name is reported as HEAD when we are on a tag. Set it to empty string to signal no branch.
+			Console.WriteLine("AGXUnreal: Branch is HEAD, which is not a valid branch name. Clearing.");
 			Branch = "";
 		}
 
@@ -311,6 +318,8 @@ public class AGXUnreal : ModuleRules
 		ProcessResult TagResult = RunProcess("git", GetTagArgs);
 		if (TagResult.Success)
 		{
+			Console.WriteLine("AGXUnreal: GetTag output:");
+			Console.WriteLine(TagResult.Output);
 			Tag = TagResult.Output.Trim();
 		}
 		else
