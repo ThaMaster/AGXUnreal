@@ -295,6 +295,14 @@ bool FRigidBodyBarrier::Split()
 	return agxSDK::MergeSplitHandler::split(NativeRef->Native);
 }
 
+void FRigidBodyBarrier::MoveTo(const FVector& Position, const FQuat& Rotation, double Duration)
+{
+	check(HasNative());
+	const agx::Vec3 PosAGX = ConvertDisplacement(Position);
+	const agx::Quat RotAGX = Convert(Rotation);
+	NativeRef->Native->moveTo(PosAGX, RotAGX, Duration);
+}
+
 bool FRigidBodyBarrier::HasNative() const
 {
 	return NativeRef->Native != nullptr;

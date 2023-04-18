@@ -98,6 +98,8 @@ public:
 	bool IsAutomaticallyMerged();
 	bool Split();
 
+	void MoveTo(const FVector& Position, const FQuat& Rotation, double Duration);
+
 	bool HasNative() const;
 	void AllocateNative();
 	FRigidBodyRef* GetNative();
