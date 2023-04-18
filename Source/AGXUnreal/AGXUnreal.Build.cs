@@ -132,6 +132,11 @@ public class AGXUnreal : ModuleRules
 			Output = output;
 			Error = error;
 		}
+
+		public bool IsValid()
+		{
+			return Success && Output.Trim() != "";
+		}
 	}
 
 	private ProcessResult RunProcess(string Executable, string Arguments)
@@ -158,33 +163,50 @@ public class AGXUnreal : ModuleRules
 		}
 	}
 
-	private void WriteGitInfo(string Hash, string Branch, string Tag)
+	private void WriteGitInfo(string Hash, string Name)
 	{
 		List<string> GitInfo = new List<string>();
 		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_HASH {0}", (Hash != "" ? "1" : "0")));
 		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_HASH = TEXT(\"{0}\");\n", Hash));
-		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_BRANCH {0}", (Branch != "" ? "1" : "0")));
-		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_BRANCH = TEXT(\"{0}\");\n", Branch));
-		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_TAG {0}", (Tag != "" ? "1" : "0")));
-		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_TAG = TEXT(\"{0}\");\n", Tag));
+
+		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_NAME {0}", (Name != "" ? "1" : "0")));
+		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_NAME = TEXT(\"{0}\");\n", Name));
 
 		string FilePath = Path.Combine(GetPluginRootPath(), "Source", "AGXUnrealBarrier", "Public", "AGX_BuildInfo.generated.h");
 		File.WriteAllLines(FilePath, GitInfo);
 	}
 
+	private string GitArgs(string Args)
+	{
+		string RepositoryPath = GetPluginRootPath();
+		return String.Format("-C \"{0}\" {1}", RepositoryPath, Args);
+	}
+
+	private string RemovePrefix(string Name, string Prefix)
+	{
+		return Name.StartsWith(Prefix) ? Name.Substring(Prefix.Length) : Name;
+	}
+
 	private void CreateGitInfo()
 	{
-		// Write empty Git info if we can't run 'git'.
-		ProcessResult TestGit = RunProcess("git", "--version");
-		if (!TestGit.Success)
+		// Don't write Git info if we can't run 'git'.
+		// Not writing empty because if the file already exists then we assume
+		// that it came from a plugin package built elsewhere and already
+		// contains Git info.
+		ProcessResult TestGitResult = RunProcess("git", "--version");
+		if (!TestGitResult.Success)
 		{
+			/// TODO: Remove trace output.
 			Console.WriteLine("AGXUnreal: Git not installed, cannot get plugin revision, branch, or tag.");
+
 			return;
 		}
 
 		string RepositoryPath = GetPluginRootPath();
 
+
 		// TODO: Remove the below once we have new Docker images.
+
 
 		// When running on GitLab CI the working copy is created by GitLab but
 		// this script is run by the runner's user. This means that the file
@@ -206,152 +228,165 @@ public class AGXUnreal : ModuleRules
 
 
 
-		// Here we want to determine if we are running inside the AGX Dynamics
-		// for Unreal Git repository or not. A somewhat complicating matter is
-		// that when running on GitLab CI we don't have a full working copy of
-		// the repository and we don't have a proper branch checked out. So many
-		// of the Git commands we are used to doesn't work. For example,
-		//     git tag --list
-		// doesn't list all tags.
-		//
-		// We determine if we are in the AGX Dynamics for Unreal repository
-		// by checking the name of the remote.
-		string RemoteArgs = String.Format("-C \"{0}\" remote -v", RepositoryPath);
-		ProcessResult RemoteResult = RunProcess("git", RemoteArgs);
-		if (RemoteResult.Success)
+		// Determine if we are in an AGX Dynamics for Unreal working copy by
+		// checking the name of the remote. If we aren't then we assume we
+		// are in a client repository, or none at all, and assume that Git info
+		// has either already been provided by the plugin package or isn't
+		// necessary.
+		ProcessResult GetRemoteResult = RunProcess("git", GitArgs("remote -v"));
+
+		/// TODO: Remove trace output.
+		if (GetRemoteResult.Success)
 		{
-			Console.WriteLine("AGXUnreal: Remote: {0}", RemoteResult.Output);
+			Console.WriteLine("AGXUnreal: Remote: {0}", GetRemoteResult.Output);
 		}
-		if (!RemoteResult.Success)
+
+		if (!GetRemoteResult.IsValid())
 		{
-			Console.WriteLine("AGXUnreal: Could not get Git remote: {0}", RemoteResult.Error);
+			/// TODO: Remove trace output.
+			Console.WriteLine("AGXUnreal: Could not get Git remote:");
+			Console.WriteLine(GetRemoteResult.Error);
+
 			return;
 		}
-		if (!RemoteResult.Output.Contains("algoryx/unreal/agxunreal.git"))
+		if (!GetRemoteResult.Output.Contains("algoryx/unreal/agxunreal.git"))
 		{
-			// Not in an AGX Dynamics for Unreal working copy.
+			/// TODO: Remove trace output.
 			Console.WriteLine("AGXUnreal: Not in an AGX Dynamics for Unreal working copy:");
-			Console.WriteLine("AGXUnreal:    {0}", RemoteResult.Output);
+			Console.WriteLine("AGXUnreal:    {0}", GetRemoteResult.Output);
+
+			// Not in an AGX Dynamics for Unreal working copy.
 			return;
 		}
 
-
-		// string AGXUnrealTagArgs = String.Format("-C \"{0}\" tag --list agxunreal-*", RepositoryPath);
-		// ProcessResult HasTagsResult = RunProcess("git", AGXUnrealTagArgs);
-		// if (HasTagsResult.Success)
-		// {
-		// 	Console.WriteLine("AGXUnreal: AGXUnreal tags:");
-		// 	Console.WriteLine(HasTagsResult.Output);
-		// }
-		// if (!HasTagsResult.Success || String.IsNullOrEmpty(HasTagsResult.Output))
-		// {
-		// 	// We are not in the AGXUnreal repo, do not read or overwrite git info.
-		// 	Console.WriteLine("AGXUnreal: Did not find any AGX Dynamics for Unreal tags in {0}, assuming not in the AGXUnreal repository.", RepositoryPath);
-		// 	Console.WriteLine("AGXUnreal:    {0}", HasTagsResult.Error);
-		// 	return;
-		// }
 
 		// Get Git hash for the current commit.
 		string Hash;
-		string GetHashArgs = String.Format("-C \"{0}\" rev-parse HEAD", RepositoryPath);
-		ProcessResult HashResult = RunProcess("git", GetHashArgs);
-		if (HashResult.Success)
+		ProcessResult GetHashResult = RunProcess("git", GitArgs("rev-parse HEAD"));
+		if (GetHashResult.IsValid())
 		{
+			/// TODO: Remove trace output.
 			Console.WriteLine("AGXUnreal: GetHash output:");
-			Console.WriteLine(HashResult.Output);
-			Hash = HashResult.Output.Trim();
+			Console.WriteLine(GetHashResult.Output);
+
+			Hash = GetHashResult.Output.Trim();
 		}
 		else
 		{
-			Console.Error.WriteLine("Failed to get Git commit hash: \"{0}\"", HashResult.Error);
+			Console.WriteLine("Failed to get Git commit hash:");
+			Console.WriteLine(GetHashResult.Error);
 			Hash = "";
 		}
 
-		// Get current Git branch.
-		string Branch;
-		string GetBranchArgs = String.Format("-C \"{0}\" rev-parse --abbrev-ref HEAD", RepositoryPath);
-		ProcessResult BranchResult = RunProcess("git", GetBranchArgs);
-		if (BranchResult.Success)
+
+		// Get the name for this revision. This is either a tag or branch name.
+		// Tag names get precedence over branch names, if both are available. A
+		// GitLab CI provided name, through CI_COMMIT_REF_NAME, get precendence
+		// over everything else since when running in GitLab CI we get bogus
+		// branch names from Git itself.
+		string Name = "";
+
+		// First check CI_COMMIT_REF_NAME.
+		if (String.IsNullOrEmpty(Name))
 		{
-			Console.WriteLine("AGXUnreal: GetBranch output:");
-			Console.WriteLine(BranchResult.Output);
-			Branch = BranchResult.Output.Trim();
-		}
-		else
-		{
-			Console.Error.WriteLine("Failed to get Git branch: \"{0}\"", BranchResult.Error);
-			Branch = "";
+			Name = Environment.GetEnvironmentVariable("CI_COMMIT_REF_NAME");
 		}
 
-		if (Branch == "HEAD")
+		// Then try to read tag name from Git.
+		if (String.IsNullOrEmpty(Name))
 		{
-			// Branch name is reported as HEAD when we are on a tag. Set it to empty string to signal no branch.
-			Console.WriteLine("AGXUnreal: Branch is HEAD, which is not a valid branch name. Clearing.");
-			Branch = "";
-		}
-
-		// When run in GitLab CI the above way of getting the branch name may
-		// fail. This is a fallback way of getting the same information.
-		if (Branch == "")
-		{
-			string DescribeArgs = String.Format("-C \"{0}\" describe --all", RepositoryPath);
-			ProcessResult DescribeResult = RunProcess("git", DescribeArgs);
-			if (DescribeResult.Success)
+			// An alternative is to use 'git describe --tags', not sure what the
+			// pros and cons are.
+			ProcessResult GetTagResult = RunProcess("git", GitArgs("tag --points-at HEAD"));
+			if (GetTagResult.IsValid())
 			{
+				/// TODO: Remove trace output.
+				Console.WriteLine("AGXUnreal: GetTag output:");
+				Console.WriteLine(GetTagResult.Output);
+
+				Name = GetTagResult.Output.Trim();
+			}
+			else
+			{
+				Console.WriteLine("Failed to get Git tag:");
+				Console.WriteLine(GetTagResult.Error);
+			}
+		}
+
+		// Then try to read branch name from Git with 'rev-parse'.
+		if (String.IsNullOrEmpty(Name))
+		{
+			// Get current Git branch.
+			ProcessResult GetBranchResult = RunProcess("git", GitArgs("rev-parse --abbrev-ref HEAD"));
+			if (GetBranchResult.IsValid())
+			{
+				/// TODO: Remove trace output.
+				Console.WriteLine("AGXUnreal: GetBranch output:");
+				Console.WriteLine(GetBranchResult.Output);
+
+				Name = GetBranchResult.Output.Trim();
+			}
+			else
+			{
+				Console.Error.WriteLine("Failed to get Git branch:");
+				Console.WriteLine(GetBranchResult.Error);
+			}
+
+			// HEAD is not a valid branch name, we get this if there is no
+			// current branch.
+			if (Name == "HEAD")
+			{
+				Name = "";
+			}
+		}
+
+		// Then try to read the branch or tag name from Git with 'describe`.
+		if (String.IsNullOrEmpty(Name))
+		{
+			ProcessResult DescribeResult = RunProcess("git", GitArgs("describe --all"));
+			if (DescribeResult.IsValid())
+			{
+				/// TODO: Remove trace output.
 				Console.WriteLine("AGXUnreal: Describe output:");
 				Console.WriteLine(DescribeResult.Output);
-				// This contains not only the branch name, but also a prefix
-				// describing where the name was found. We many chose to do some
-				// parsing of this, possibly to replace the tag read and possibly
-				// to make sure we really got a branch. Or we could just remove
-				// it
-				Branch = DescribeResult.Output.Trim();
+
+				// This contains not only the branch or tag name, but also a
+				// prefix describing where the name was found, e.g. 'heads/' or
+				// 'tags/'. Remove that part. This list may be incomplete.
+				Name = DescribeResult.Output.Trim();
+				Name = RemovePrefix(Name, "heads/");
+				Name = RemovePrefix(Name, "tags/");
 			}
 			else
 			{
 				Console.WriteLine("AGXUnreal: Could not branch name using 'git describe':");
-				Console.WriteLine("AGXUnreal:    {0}", DescribeResult.Error);
+				Console.WriteLine(DescribeResult.Error);
 			}
 		}
 
-		if (Branch == "HEAD")
+		// HEAD is not a valid tag or branch name but can still show up if
+		// name detection fails.
+		if (Name == "HEAD")
 		{
-			// Branch name is reported as HEAD when we are on a tag. Set it to empty string to signal no branch.
+			/// TODO: Remove trace output.
 			Console.WriteLine("AGXUnreal: Branch is HEAD, which is not a valid branch name. Clearing.");
-			Branch = "";
+
+			Name = "";
 		}
 
-		if (Branch.StartsWith("pipelines/"))
+		if (Name.StartsWith("pipelines/"))
 		{
+			/// TODO: Remove trace output.
+			Console.WriteLine("AGXUnreal: Name starts with 'pipelines/' , which is not a valid branch name. Clearing.");
+
 			// When running a GitLab pipeline we get a non-descript branch name
-			// which should not be presented to any user.
-			Branch = "";
+			// which should not be presented to the user. We should not get here,
+			// in this case we should use CI_COMMIT_REF_NAME directly.
+			Name = "";
 		}
 
-		// Check if GitLab CI provided a branch name for us.
-		if (Branch == "")
-		{
-			Branch = Environment.GetEnvironmentVariable("CI_COMMIT_REF_NAME");
-		}
+		Console.WriteLine("AGXUnreal: Hash={0}, Name={1}", Hash, Name);
 
-		// Get the current Git tag, because git rev-parse doesn't identify branches.
-		string Tag;
-		string GetTagArgs = String.Format("-C \"{0}\" tag --points-at HEAD", RepositoryPath);
-		ProcessResult TagResult = RunProcess("git", GetTagArgs);
-		if (TagResult.Success)
-		{
-			Console.WriteLine("AGXUnreal: GetTag output:");
-			Console.WriteLine(TagResult.Output);
-			Tag = TagResult.Output.Trim();
-		}
-		else
-		{
-			Console.Error.WriteLine("Failed to get Git tag: \"{0}\"", TagResult.Error);
-			Tag = "";
-		}
-
-		Console.WriteLine("AGXUnreal: Tag={0}, Branch={1}, Revision={2}", Tag, Branch, Hash);
-
-		WriteGitInfo(Hash, Branch, Tag);
+		WriteGitInfo(Hash, Name);
 	}
 }
