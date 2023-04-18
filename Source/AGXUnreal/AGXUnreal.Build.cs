@@ -204,30 +204,6 @@ public class AGXUnreal : ModuleRules
 
 		string RepositoryPath = GetPluginRootPath();
 
-
-		// TODO: Remove the below once we have new Docker images.
-
-
-		// When running on GitLab CI the working copy is created by GitLab but
-		// this script is run by the runner's user. This means that the file
-		// ownership isn't what Git expects, resulting in the following error:
-		//     detected dubious ownership in repository at PATH.
-		// The following tells Git that we are OK with executing binaries in
-		// this directory.
-		//
-		// No error checking on this one, if it works then it works and if it
-		// fails than later commands will fail with a descriptive error message.
-		//
-		// Hard-coded path for now, may need to do something better eventually.
-		string SafeDirArgs = "config --global --add safe.directory /builds/algoryx/unreal/agxunreal";
-		RunProcess("git", SafeDirArgs);
-
-
-
-		/// TODO: Move the above to Dockerfile, don't want to do that on user's machines.
-
-
-
 		// Determine if we are in an AGX Dynamics for Unreal working copy by
 		// checking the name of the remote. If we aren't then we assume we
 		// are in a client repository, or none at all, and assume that Git info
