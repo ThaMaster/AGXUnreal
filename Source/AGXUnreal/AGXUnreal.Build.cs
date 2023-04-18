@@ -195,7 +195,7 @@ public class AGXUnreal : ModuleRules
 		// fails than later commands will fail with a descriptive error message.
 		//
 		// Hard-coded path for now, may need to do something better eventually.
-		string SafeDirArgs = "config --local --add safe.directory /builds/algoryx/unreal/agxunreal";
+		string SafeDirArgs = "config --global --add safe.directory /builds/algoryx/unreal/agxunreal";
 		RunProcess("git", SafeDirArgs);
 
 
