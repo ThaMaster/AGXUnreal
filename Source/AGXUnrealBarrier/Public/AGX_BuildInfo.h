@@ -6,13 +6,10 @@
 
 #else
 
-#define AGXUNREAL_HAS_GIT_BRANCH 0
+#define AGXUNREAL_HAS_GIT_HASH 0
 const TCHAR* const AGXUNREAL_GIT_HASH = TEXT("");
 
-#define AGXUNREAL_HAS_GIT_TAG 0
-const TCHAR* const AGXUNREAL_GIT_BRANCH = TEXT("");
-
-#define AGXUNREAL_HAS_GIT_HASH 0
-const TCHAR* const AGXUNREAL_GIT_TAG = TEXT("");
+#define AGXUNREAL_HAS_GIT_NAME 0
+const TCHAR* const AGXUNREAL_GIT_NAME = TEXT("");
 
 #endif
