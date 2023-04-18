@@ -138,7 +138,7 @@ public:
 
 	/**
 	 * Returns the number of currently spawned particles known to the Terrain. If this Terrain uses
-	 * Terrain Paging, the sum of known particles known by any active Terrain Tile is returned.
+	 * Terrain Paging, the number of particles known by any active Terrain Tile is returned.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
 	int32 GetNumParticles() const;

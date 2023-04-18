@@ -112,14 +112,12 @@ int32 AAGX_Terrain::GetNumParticles() const
 
 	if (HasNativeTerrainPager())
 	{
-		FParticleData ParticleData = NativeTerrainPagerBarrier.GetParticleData();
-		return ParticleData.Positions.Num();
+		return static_cast<int32>(NativeTerrainPagerBarrier.GetNumParticles());
 	}
 	else
 	{
 		check(HasNativeTerrain());
-		FParticleData ParticleData = NativeTerrainBarrier.GetParticleData();
-		return ParticleData.Positions.Num();
+		return static_cast<int32>(NativeTerrainBarrier.GetNumParticles());
 	}
 }
 

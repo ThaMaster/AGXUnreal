@@ -34,28 +34,6 @@ FTerrainPagerBarrier::~FTerrainPagerBarrier()
 
 namespace TerrainPagerBarrier_helpers
 {
-	size_t GetNumParticles(const agxTerrain::Terrain* Terrain)
-	{
-		if (Terrain == nullptr)
-			return 0;
-
-		return Terrain->getSoilSimulationInterface()->getGranularBodySystem()->getNumParticles();
-	}
-
-	size_t GetNumParticles(const agxTerrain::TerrainPager::TileAttachmentPtrVector& ActiveTiles)
-	{
-		size_t NumParticles = 0;
-		for (TerrainPager::TileAttachments* Tile : ActiveTiles)
-		{
-			if (Tile == nullptr || Tile->m_terrainTile == nullptr)
-				continue;
-
-			NumParticles += GetNumParticles(Tile->m_terrainTile.get());
-		}
-
-		return NumParticles;
-	}
-
 	bool DoesExistModifiedHeights(const TerrainPager::TileAttachmentPtrVector& ActiveTiles)
 	{
 		for (TerrainPager::TileAttachments* Tile : ActiveTiles)
@@ -161,7 +139,7 @@ FParticleData FTerrainPagerBarrier::GetParticleData() const
 	const TerrainPager::TileAttachmentPtrVector ActiveTiles =
 		NativeRef->Native->getActiveTileAttachments();
 
-	const size_t NumParticles = TerrainPagerBarrier_helpers::GetNumParticles(ActiveTiles);
+	const size_t NumParticles = GetNumParticles();
 	ParticleData.Positions.Reserve(NumParticles);
 	ParticleData.Radii.Reserve(NumParticles);
 	ParticleData.Rotations.Reserve(NumParticles);
@@ -178,6 +156,23 @@ FParticleData FTerrainPagerBarrier::GetParticleData() const
 	}
 
 	return ParticleData;
+}
+
+size_t FTerrainPagerBarrier::GetNumParticles() const
+{
+	check(HasNative());
+	const TerrainPager::TileAttachmentPtrVector ActiveTiles =
+		NativeRef->Native->getActiveTileAttachments();
+
+	if (ActiveTiles.size() == 0)
+		return 0;
+
+	agxTerrain::Terrain* Tile = ActiveTiles[0]->m_terrainTile.get();
+	if (Tile == nullptr)
+		return 0;
+
+	// All particles are known by all active Tiles.
+	return Tile->getSoilSimulationInterface()->getNumSoilParticles();
 }
 
 TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(

@@ -36,6 +36,11 @@ public:
 	FParticleData GetParticleData() const;
 
 	/**
+	 * Returns the total number of spawned Terrain particles.
+	 */
+	size_t GetNumParticles() const;
+
+	/**
 	 * Writes modified heights to OutHeights and returns an array of modified vertices, for easy
 	 * iteration. The BoundVerts parameters is used to describe the vertex count of a grid that this
 	 * native is assumed to be placed at its center, and that the vertex indices of this native will
