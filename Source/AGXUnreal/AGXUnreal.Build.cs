@@ -319,6 +319,13 @@ public class AGXUnreal : ModuleRules
 			Branch = "";
 		}
 
+		if (Branch.StartsWith("pipelines/"))
+		{
+			// When running a GitLab pipeline we get a non-descript branch name
+			// which should not be presented to any user.
+			Branch = "";
+		}
+
 		// Get the current Git tag, because git rev-parse doesn't identify branches.
 		string Tag;
 		string GetTagArgs = String.Format("-C \"{0}\" tag --points-at HEAD", RepositoryPath);
