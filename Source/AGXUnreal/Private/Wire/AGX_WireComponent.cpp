@@ -1407,10 +1407,6 @@ void UAGX_WireComponent::OnRegister()
 		FName NewName = MakeUniqueObjectName(
 			SpriteComponent->GetOuter(), SpriteComponent->GetClass(), TEXT("WireIcon"));
 		SpriteComponent->Rename(*NewName.ToString(), nullptr, REN_DontCreateRedirectors);
-		UTexture2D* T = LoadObject<UTexture2D>(
-			nullptr, TEXT("/AGXUnreal/Editor/Icons/collision_group_disable_64x64"));
-		UTexture2D* TT = LoadObject<UTexture2D>(
-			nullptr, TEXT("/AGXUnreal/Editor/Icons/wire_64x64"));
 		SpriteComponent->SetSprite(
 			LoadObject<UTexture2D>(nullptr, TEXT("/AGXUnreal/Editor/Icons/wire_64x64")));
 		SpriteComponent->SetRelativeScale3D(FVector(2.0, 2.0, 2.0));
