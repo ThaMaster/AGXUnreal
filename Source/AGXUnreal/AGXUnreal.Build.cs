@@ -183,20 +183,65 @@ public class AGXUnreal : ModuleRules
 		}
 
 		string RepositoryPath = GetPluginRootPath();
-		string AGXUnrealTagArgs = String.Format("-C \"{0}\" tag --list agxunreal-*", RepositoryPath);
-		ProcessResult HasTagsResult = RunProcess("git", AGXUnrealTagArgs);
-		if (HasTagsResult.Success)
+
+		// When running on GitLab CI the working copy is created by GitLab but
+		// this script is run by the runner's user. This means that the file
+		// ownership isn't what Git expects, resulting in the following error:
+		//     detected dubious ownership in repository at PATH.
+		// The following tells Git that we are OK with executing binaries in
+		// this directory.
+		//
+		// No error checking on this one, if it works then it works and if it
+		// fails than later commands will fail with a descriptive error message.
+		//
+		// Hard-coded path for now, may need to do something better eventually.
+		string SafeDirArgs = "config --global --add safe.directory /builds/algoryx/unreal/agxunreal";
+		RunProcess("git", SafeDirArgs);
+
+		// Here we want to determine if we are running inside the AGX Dynamics
+		// for Unreal Git repository or not. A somewhat complicating matter is
+		// that when running on GitLab CI we don't have a full working copy of
+		// the repository and we don't have a proper branch checked out. So many
+		// of the Git commands we are used to doesn't work. For example,
+		//     git tag --list
+		// doesn't list all tags.
+		//
+		// We determine if we are in the AGX Dynamics for Unreal repository
+		// by checking the name of the remote.
+		string RemoteArgs = String.Format("-C \"{0}\" remote -v", RepositoryPath);
+		ProcessResult RemoteResult = RunProcess("git", RemoteArgs);
+		if (RemoteResult.Success)
 		{
-			Console.WriteLine("AGXUnreal: AGXUnreal tags:");
-			Console.WriteLine(HasTagsResult.Output);
+			Console.WriteLine("AGXUnreal: Remote: {0}", RemoteResult.Output);
 		}
-		if (!HasTagsResult.Success || String.IsNullOrEmpty(HasTagsResult.Output))
+		if (!RemoteResult.Success)
 		{
-			// We are not in the AGXUnreal repo, do not read or overwrite git info.
-			Console.WriteLine("AGXUnreal: Did not find any AGX Dynamics for Unreal tags in {0}, assuming not in the AGXUnreal repository.", RepositoryPath);
-			Console.WriteLine("AGXUnreal:    {0}", HasTagsResult.Error);
+			Console.WriteLine("AGXUnreal: Could not get Git remote: {0}", RemoteResult.Error);
 			return;
 		}
+		if (!RemoteResult.Output.Contains("algoryx/unreal/agxunreal.git"))
+		{
+			// Not in an AGX Dynamics for Unreal working copy.
+			Console.WriteLine("AGXUnreal: Not in an AGX Dynamics for Unreal working copy:");
+			Console.WriteLine("AGXUnreal:    {0}", RemoteResult.Output);
+			return;
+		}
+
+
+		// string AGXUnrealTagArgs = String.Format("-C \"{0}\" tag --list agxunreal-*", RepositoryPath);
+		// ProcessResult HasTagsResult = RunProcess("git", AGXUnrealTagArgs);
+		// if (HasTagsResult.Success)
+		// {
+		// 	Console.WriteLine("AGXUnreal: AGXUnreal tags:");
+		// 	Console.WriteLine(HasTagsResult.Output);
+		// }
+		// if (!HasTagsResult.Success || String.IsNullOrEmpty(HasTagsResult.Output))
+		// {
+		// 	// We are not in the AGXUnreal repo, do not read or overwrite git info.
+		// 	Console.WriteLine("AGXUnreal: Did not find any AGX Dynamics for Unreal tags in {0}, assuming not in the AGXUnreal repository.", RepositoryPath);
+		// 	Console.WriteLine("AGXUnreal:    {0}", HasTagsResult.Error);
+		// 	return;
+		// }
 
 		// Get Git hash for the current commit.
 		string Hash;
