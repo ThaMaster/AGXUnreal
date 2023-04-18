@@ -1228,17 +1228,6 @@ void UAGX_RigidBodyComponent::MoveTo(
 	if (!HasNative() || Duration < 0.f)
 		return;
 
-	if (MotionControl != EAGX_MotionControl::MC_KINEMATICS)
-	{
-		FAGX_NotificationUtilities::ShowNotification(
-			FString::Printf(
-				TEXT("MoveTo was called on RigidBody '%s' which does not have MotionControl set to "
-					 "Kinematics. Please change the MotionControl to be able use MoveTo."),
-				*GetName()),
-			SNotificationItem::CS_Fail);
-		return;
-	}
-
 	NativeBarrier.MoveTo(Position, Rotation.Quaternion(), Duration);
 }
 

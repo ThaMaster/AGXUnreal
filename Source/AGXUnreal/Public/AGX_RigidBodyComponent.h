@@ -344,8 +344,10 @@ public:
 	 * The velocity and angular velocity is left unchanged even after reaching the given position
 	 * and rotation, i.e. the Rigid Body will continue to move in the same direction until the
 	 * velocity is explicitly updated.
-	 * 
-	 * This function is only supported for Rigid Bodies with MotionControl set to Kinematics.
+	 *
+	 * If using this function with MotionControl set to anything other than Kinematics, the Rigid
+	 * Body may not reach the desired Position and Rotation since external forces may act on it
+	 * during the movement.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void MoveTo(const FVector& Position, const FRotator& Rotation, float Duration);
