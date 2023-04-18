@@ -281,6 +281,13 @@ public class AGXUnreal : ModuleRules
 			Branch = "";
 		}
 
+		if (Branch == "HEAD")
+		{
+			// Branch name is reported as HEAD when we are on a tag. Set it to empty string to signal no branch.
+			Console.WriteLine("AGXUnreal: Branch is HEAD, which is not a valid branch name. Clearing.");
+			Branch = "";
+		}
+
 		// When run in GitLab CI the above way of getting the branch name may
 		// fail. This is a fallback way of getting the same information.
 		if (Branch == "")
