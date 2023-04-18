@@ -249,6 +249,26 @@ bool UAGX_ConstraintComponent::GetEnable() const
 	}
 }
 
+void UAGX_ConstraintComponent::SetEnableSelfCollision(bool InEnabled)
+{
+	bSelfCollision = InEnabled;
+
+	if (!HasNative())
+		return;
+
+	UAGX_RigidBodyComponent* Body1 = BodyAttachment1.GetRigidBody();
+	UAGX_RigidBodyComponent* Body2 = BodyAttachment2.GetRigidBody();
+	if (Body1 == nullptr || Body2 == nullptr || !Body1->HasNative() || !Body2->HasNative())
+		return;
+
+	UAGX_Simulation::SetEnableCollision(*Body1, *Body2, InEnabled);
+}
+
+bool UAGX_ConstraintComponent::GetEnableSelfCollision() const
+{
+	return bSelfCollision;
+}
+
 namespace
 {
 	template <typename T>
@@ -800,6 +820,10 @@ void UAGX_ConstraintComponent::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, bEnable),
 		[](ThisClass* This) { This->SetEnable(This->bEnable); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, bSelfCollision),
+		[](ThisClass* This) { This->SetEnableSelfCollision(This->bSelfCollision); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_ConstraintComponent, SolveType),

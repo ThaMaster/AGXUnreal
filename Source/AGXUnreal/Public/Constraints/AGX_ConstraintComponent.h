@@ -89,6 +89,19 @@ public:
 	bool GetEnable() const;
 
 	/**
+	 * Specifies whether any contacts can be generated between the attached Rigid Bodies.
+	 * If less than two Rigid Bodies are attached to this Constraint, this has no effect.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Constraint Dynamics")
+	bool bSelfCollision = true;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	void SetEnableSelfCollision(bool InEnable);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Dynamics")
+	bool GetEnableSelfCollision() const;
+
+	/**
 	 * Solve type for this constraint. Valid is DIRECT (default for non-iterative solvers),
 	 * ITERATIVE or DIRECT_AND_ITERATIVE where DIRECT_AND_ITERATIVE means that this constraint
 	 * will be solved both direct and iterative.
