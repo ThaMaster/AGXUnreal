@@ -178,15 +178,22 @@ public class AGXUnreal : ModuleRules
 		ProcessResult TestGit = RunProcess("git", "--version");
 		if (!TestGit.Success)
 		{
+			Console.WriteLine("AGXUnreal: Git not installed, cannot get plugin revision, branch, or tag.");
 			return;
 		}
 
 		string RepositoryPath = GetPluginRootPath();
 		string AGXUnrealTagArgs = String.Format("-C \"{0}\" tag --list agxunreal-*", RepositoryPath);
 		ProcessResult HasTagsResult = RunProcess("git", AGXUnrealTagArgs);
+		if (HasTagsResult.Success)
+		{
+			Console.WriteLine("AGXUnreal: AGXUnreal tags:");
+			Console.WriteLine(HasTagsResult.Output);
+		}
 		if (!HasTagsResult.Success || String.IsNullOrEmpty(HasTagsResult.Output))
 		{
 			// We are not in the AGXUnreal repo, do not read or overwrite git info.
+			Console.WriteLine("AGXUnreal: Did not find any AGX Dynamics for Unreal tags, assuming not in the AGXUnreal repository.");
 			return;
 		}
 
@@ -236,6 +243,8 @@ public class AGXUnreal : ModuleRules
 			Console.Error.WriteLine("Failed to get Git tag: \"{0}\"", TagResult.Error);
 			Tag = "";
 		}
+
+		Console.WriteLine("AGXUnreal: Tag={1}, Branch={1}, Revision={2}", Tag, Branch, Hash);
 
 		WriteGitInfo(Hash, Branch, Tag);
 	}
