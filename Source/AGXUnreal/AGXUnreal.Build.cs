@@ -196,9 +196,6 @@ public class AGXUnreal : ModuleRules
 		ProcessResult TestGitResult = RunProcess("git", "--version");
 		if (!TestGitResult.Success)
 		{
-			/// TODO: Remove trace output.
-			Console.WriteLine("AGXUnreal: Git not installed, cannot get plugin revision, branch, or tag.");
-
 			return;
 		}
 
@@ -210,27 +207,12 @@ public class AGXUnreal : ModuleRules
 		// has either already been provided by the plugin package or isn't
 		// necessary.
 		ProcessResult GetRemoteResult = RunProcess("git", GitArgs("remote -v"));
-
-		/// TODO: Remove trace output.
-		if (GetRemoteResult.Success)
-		{
-			Console.WriteLine("AGXUnreal: Remote: {0}", GetRemoteResult.Output);
-		}
-
 		if (!GetRemoteResult.IsValid())
 		{
-			/// TODO: Remove trace output.
-			Console.WriteLine("AGXUnreal: Could not get Git remote:");
-			Console.WriteLine(GetRemoteResult.Error);
-
 			return;
 		}
 		if (!GetRemoteResult.Output.Contains("algoryx/unreal/agxunreal.git"))
 		{
-			/// TODO: Remove trace output.
-			Console.WriteLine("AGXUnreal: Not in an AGX Dynamics for Unreal working copy:");
-			Console.WriteLine("AGXUnreal:    {0}", GetRemoteResult.Output);
-
 			// Not in an AGX Dynamics for Unreal working copy.
 			return;
 		}
@@ -241,10 +223,6 @@ public class AGXUnreal : ModuleRules
 		ProcessResult GetHashResult = RunProcess("git", GitArgs("rev-parse HEAD"));
 		if (GetHashResult.IsValid())
 		{
-			/// TODO: Remove trace output.
-			Console.WriteLine("AGXUnreal: GetHash output:");
-			Console.WriteLine(GetHashResult.Output);
-
 			Hash = GetHashResult.Output.Trim();
 		}
 		else
@@ -276,10 +254,6 @@ public class AGXUnreal : ModuleRules
 			ProcessResult GetTagResult = RunProcess("git", GitArgs("tag --points-at HEAD"));
 			if (GetTagResult.IsValid())
 			{
-				/// TODO: Remove trace output.
-				Console.WriteLine("AGXUnreal: GetTag output:");
-				Console.WriteLine(GetTagResult.Output);
-
 				Name = GetTagResult.Output.Trim();
 			}
 			else
@@ -296,10 +270,6 @@ public class AGXUnreal : ModuleRules
 			ProcessResult GetBranchResult = RunProcess("git", GitArgs("rev-parse --abbrev-ref HEAD"));
 			if (GetBranchResult.IsValid())
 			{
-				/// TODO: Remove trace output.
-				Console.WriteLine("AGXUnreal: GetBranch output:");
-				Console.WriteLine(GetBranchResult.Output);
-
 				Name = GetBranchResult.Output.Trim();
 			}
 			else
@@ -322,10 +292,6 @@ public class AGXUnreal : ModuleRules
 			ProcessResult DescribeResult = RunProcess("git", GitArgs("describe --all"));
 			if (DescribeResult.IsValid())
 			{
-				/// TODO: Remove trace output.
-				Console.WriteLine("AGXUnreal: Describe output:");
-				Console.WriteLine(DescribeResult.Output);
-
 				// This contains not only the branch or tag name, but also a
 				// prefix describing where the name was found, e.g. 'heads/' or
 				// 'tags/'. Remove that part. This list may be incomplete.
@@ -344,17 +310,11 @@ public class AGXUnreal : ModuleRules
 		// name detection fails.
 		if (Name == "HEAD")
 		{
-			/// TODO: Remove trace output.
-			Console.WriteLine("AGXUnreal: Branch is HEAD, which is not a valid branch name. Clearing.");
-
 			Name = "";
 		}
 
 		if (Name.StartsWith("pipelines/"))
 		{
-			/// TODO: Remove trace output.
-			Console.WriteLine("AGXUnreal: Name starts with 'pipelines/' , which is not a valid branch name. Clearing.");
-
 			// When running a GitLab pipeline we get a non-descript branch name
 			// which should not be presented to the user. We should not get here,
 			// in this case we should use CI_COMMIT_REF_NAME directly.
