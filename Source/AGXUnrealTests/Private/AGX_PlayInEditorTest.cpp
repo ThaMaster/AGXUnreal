@@ -99,8 +99,8 @@ using ComponentMap = TMap<FString, UActorComponent*>;
 // FallingBox test starts here.
 //
 
-DEFINE_LATENT_AUTOMATION_COMMAND_FOUR_PARAMETER(
-	FCheckFallinBoxMovedCommand, int, TickCurrent, int, TickMax, ComponentMap, ComponentsOfInterest,
+DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
+	FCheckFallinBoxMovedCommand, float, SimTimeMax, ComponentMap, ComponentsOfInterest,
 	FAutomationTestBase&, Test);
 
 bool FCheckFallinBoxMovedCommand::Update()
@@ -131,9 +131,15 @@ bool FCheckFallinBoxMovedCommand::Update()
 		Test.TestTrue("Body initial z pos", Body->GetComponentLocation().Z > 299.0);
 	}
 
-	TickCurrent++;
-	if (TickCurrent < TickMax)
+	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(TestWorld);
+	Test.TestNotNull("Simulation", Sim);
+	if (Sim == nullptr)
+		return true;
+
+	if (Sim->GetTimeStamp() < SimTimeMax)
+	{
 		return false; // Continue ticking..
+	}
 
 	// At this point we have ticked to TickMax.
 	auto Body = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["BoxBody"]);
@@ -154,10 +160,9 @@ bool FFallingBoxTest::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
 
 	ComponentMap ComponentsOfInterest;
-	int TickCurrent = 0;
-	int TickMax = 30;
+	float SimTimeMax = 0.5f;
 	ADD_LATENT_AUTOMATION_COMMAND(
-		FCheckFallinBoxMovedCommand(TickCurrent, TickMax, ComponentsOfInterest, *this));
+		FCheckFallinBoxMovedCommand(SimTimeMax, ComponentsOfInterest, *this));
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 	return true;
@@ -167,9 +172,8 @@ bool FFallingBoxTest::RunTest(const FString& Parameters)
 // Terrain Paging test starts here.
 //
 
-DEFINE_LATENT_AUTOMATION_COMMAND_FOUR_PARAMETER(
-	FCheckTerrainPagingStateCommand, int, TickCurrent, int, TickMax, ComponentMap,
-	ComponentsOfInterest,
+DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
+	FCheckTerrainPagingStateCommand, float, SimTimeMax, ComponentMap, ComponentsOfInterest,
 	FAutomationTestBase&, Test);
 
 bool FCheckTerrainPagingStateCommand::Update()
@@ -208,9 +212,15 @@ bool FCheckTerrainPagingStateCommand::Update()
 		Test.TestNotNull("ShapeMaterial of ChassiBox", ChassiBox->ShapeMaterial);
 	}
 
-	TickCurrent++;
-	if (TickCurrent < TickMax)
+	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(TestWorld);
+	Test.TestNotNull("Simulation", Sim);
+	if (Sim == nullptr)
+		return true;
+
+	if (Sim->GetTimeStamp() < SimTimeMax)
+	{
 		return false; // Continue ticking..
+	}
 
 	// At this point we have ticked to TickMax.
 	auto ChassiBody = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["Chassi"]);
@@ -261,10 +271,9 @@ bool FTerrainPagingTest::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
 
 	ComponentMap ComponentsOfInterest;
-	int TickCurrent = 0;
-	int TickMax = 240;
+	float SimTimeMax = 4.f;
 	ADD_LATENT_AUTOMATION_COMMAND(
-		FCheckTerrainPagingStateCommand(TickCurrent, TickMax, ComponentsOfInterest, *this));
+		FCheckTerrainPagingStateCommand(SimTimeMax, ComponentsOfInterest, *this));
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 	return true;
