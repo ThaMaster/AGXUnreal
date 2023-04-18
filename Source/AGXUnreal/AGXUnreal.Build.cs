@@ -194,7 +194,7 @@ public class AGXUnreal : ModuleRules
 		{
 			// We are not in the AGXUnreal repo, do not read or overwrite git info.
 			Console.WriteLine("AGXUnreal: Did not find any AGX Dynamics for Unreal tags in {0}, assuming not in the AGXUnreal repository.", RepositoryPath);
-			Console.WriteLine("AGXUnreal:    {0}", HasTagsResult.Error)
+			Console.WriteLine("AGXUnreal:    {0}", HasTagsResult.Error);
 			return;
 		}
 
