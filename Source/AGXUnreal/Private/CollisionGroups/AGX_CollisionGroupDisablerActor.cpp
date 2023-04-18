@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerSpriteComponent.h"
 
 #define LOCTEXT_NAMESPACE "AAGX_CollisionGroupDisablerActor"
 
@@ -12,7 +13,7 @@ AAGX_CollisionGroupDisablerActor::AAGX_CollisionGroupDisablerActor()
 	PrimaryActorTick.bCanEverTick = false;
 
 	RootComponent =
-		CreateDefaultSubobject<USceneComponent>(USceneComponent::GetDefaultSceneRootVariableName());
+		CreateDefaultSubobject<UAGX_CollisionGroupDisablerSpriteComponent>("SpriteIcon");
 
 	CollisionGroupDisablerComponent = CreateDefaultSubobject<UAGX_CollisionGroupDisablerComponent>(
 		TEXT("AGX_CollisionGroupDisabler"));

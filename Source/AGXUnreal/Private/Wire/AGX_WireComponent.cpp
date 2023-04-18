@@ -1409,6 +1409,7 @@ void UAGX_WireComponent::OnRegister()
 		SpriteComponent->Rename(*NewName.ToString(), nullptr, REN_DontCreateRedirectors);
 		SpriteComponent->SetSprite(
 			LoadObject<UTexture2D>(nullptr, TEXT("/AGXUnreal/Editor/Icons/wire_64x64")));
+		SpriteComponent->SetRelativeScale3D(FVector(2.0, 2.0, 2.0));
 	}
 #endif
 }
