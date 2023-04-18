@@ -1,6 +1,6 @@
 // Copyright 2023, Algoryx Simulation AB.
 
-using System; // For Console.
+using System; // For Console, Environment.
 using System.IO; // For Path.
 using System.Diagnostics; // For running processes.
 using System.Collections.Generic; // For List.
@@ -184,6 +184,8 @@ public class AGXUnreal : ModuleRules
 
 		string RepositoryPath = GetPluginRootPath();
 
+		// TODO: Remove the below once we have new Docker images.
+
 		// When running on GitLab CI the working copy is created by GitLab but
 		// this script is run by the runner's user. This means that the file
 		// ownership isn't what Git expects, resulting in the following error:
@@ -324,6 +326,12 @@ public class AGXUnreal : ModuleRules
 			// When running a GitLab pipeline we get a non-descript branch name
 			// which should not be presented to any user.
 			Branch = "";
+		}
+
+		// Check if GitLab CI provided a branch name for us.
+		if (Branch == "")
+		{
+			Branch = Environment.GetEnvironmentVariable("CI_COMMIT_REF_NAME");
 		}
 
 		// Get the current Git tag, because git rev-parse doesn't identify branches.
