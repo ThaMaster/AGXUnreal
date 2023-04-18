@@ -270,6 +270,29 @@ public class AGXUnreal : ModuleRules
 			Console.Error.WriteLine("Failed to get Git branch: \"{0}\"", BranchResult.Error);
 			Branch = "";
 		}
+
+		// When run in GitLab CI the above way of getting the branch name may
+		// fail. This is a fallback way of getting the same information.
+		if (Branch == "")
+		{
+			string DescribeArgs = String.Format("-C \"{0}\" describe --all", RepositoryPath);
+			ProcessResult DescribeResult = RunProcess("git", DescribeArgs);
+			if (DescribeResult.Success)
+			{
+				// This contains not only the branch name, but also a prefix
+				// describing where the name was found. We many chose to do some
+				// parsing of this, possibly to replace the tag read and possibly
+				// to make sure we really got a branch. Or we could just remove
+				// it
+				Branch = DescribeResult.Output.Trim();
+			}
+			else
+			{
+				Console.WriteLine("AGXUnreal: Could not branch name using 'git describe':");
+				Console.WriteLine("AGXUnreal:    {0}", DescribeResult.Error);
+			}
+		}
+
 		if (Branch == "HEAD")
 		{
 			// Branch name is reported as HEAD when we are on a tag. Set it to empty string to signal no branch.
