@@ -195,8 +195,14 @@ public class AGXUnreal : ModuleRules
 		// fails than later commands will fail with a descriptive error message.
 		//
 		// Hard-coded path for now, may need to do something better eventually.
-		string SafeDirArgs = "config --global --add safe.directory /builds/algoryx/unreal/agxunreal";
+		string SafeDirArgs = "config --local --add safe.directory /builds/algoryx/unreal/agxunreal";
 		RunProcess("git", SafeDirArgs);
+
+
+
+		/// TODO: Move the above to Dockerfile, don't want to do that on user's machines.
+
+
 
 		// Here we want to determine if we are running inside the AGX Dynamics
 		// for Unreal Git repository or not. A somewhat complicating matter is
