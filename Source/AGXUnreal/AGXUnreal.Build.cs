@@ -328,7 +328,7 @@ public class AGXUnreal : ModuleRules
 			Tag = "";
 		}
 
-		Console.WriteLine("AGXUnreal: Tag={1}, Branch={1}, Revision={2}", Tag, Branch, Hash);
+		Console.WriteLine("AGXUnreal: Tag={0}, Branch={1}, Revision={2}", Tag, Branch, Hash);
 
 		WriteGitInfo(Hash, Branch, Tag);
 	}
