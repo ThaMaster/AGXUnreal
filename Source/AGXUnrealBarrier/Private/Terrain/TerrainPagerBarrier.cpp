@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
+#include "AGX_Check.h"
 #include "RigidBodyBarrier.h"
 #include "Terrain/ShovelBarrier.h"
 #include "Terrain/TerrainBarrier.h"
@@ -168,6 +169,7 @@ size_t FTerrainPagerBarrier::GetNumParticles() const
 		return 0;
 
 	agxTerrain::Terrain* Tile = ActiveTiles[0]->m_terrainTile.get();
+	AGX_CHECK(Tile != nullptr);
 	if (Tile == nullptr)
 		return 0;
 
