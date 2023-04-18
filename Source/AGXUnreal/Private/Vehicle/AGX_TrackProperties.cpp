@@ -9,6 +9,10 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
 
+// Unreal Engine includes.
+#include "Engine/World.h"
+
+
 //
 // Compliance translational.
 //
