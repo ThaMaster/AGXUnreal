@@ -111,9 +111,11 @@ bool FCheckFallinBoxMovedCommand::Update()
 		return false;
 	}
 
+	static int32 NumTicks = 0;
 	UWorld* TestWorld = GEditor->GetPIEWorldContext()->World();
 	if (ComponentsOfInterest.Num() == 0)
 	{
+		NumTicks = 0;
 		ActorMap BoxActors = GetActorsByName(TestWorld, {"BoxActor"});
 
 		Test.TestTrue("Found actor of interest", BoxActors.Contains("BoxActor"));
@@ -136,7 +138,20 @@ bool FCheckFallinBoxMovedCommand::Update()
 	if (Sim == nullptr)
 		return true;
 
-	if (Sim->GetTimeStamp() < SimTimeMax)
+	const float SimTime = Sim->GetTimeStamp();
+	{
+		// Sanity check to avoid hanging forever if the Simulation is not ticking.		
+		NumTicks++;
+		if (NumTicks > 1000 && FMath::IsNearlyZero(SimTime))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("SimTime too small: %f. The Simulation has not stepped as expected."),
+				SimTime));
+			return true;
+		}
+	}
+
+	if (SimTime < SimTimeMax)
 	{
 		return false; // Continue ticking..
 	}
@@ -184,9 +199,11 @@ bool FCheckTerrainPagingStateCommand::Update()
 		return false;
 	}
 
+	static int32 NumTicks = 0;
 	UWorld* TestWorld = GEditor->GetPIEWorldContext()->World();
 	if (ComponentsOfInterest.Num() == 0)
 	{
+		NumTicks = 0;
 		auto Chassi = GetComponentByName<UAGX_RigidBodyComponent>(TestWorld, "Car", "Chassi");
 		Test.TestNotNull("Chassi", Chassi);
 
@@ -217,7 +234,19 @@ bool FCheckTerrainPagingStateCommand::Update()
 	if (Sim == nullptr)
 		return true;
 
-	if (Sim->GetTimeStamp() < SimTimeMax)
+	const float SimTime = Sim->GetTimeStamp();
+	{
+		// Sanity check to avoid hanging forever if the Simulation is not ticking.		
+		NumTicks++;
+		if (NumTicks > 1000 && FMath::IsNearlyZero(SimTime))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("SimTime too small: %f. The Simulation has not stepped as expected."), SimTime));
+			return true;
+		}
+	}
+
+	if (SimTime < SimTimeMax)
 	{
 		return false; // Continue ticking..
 	}
