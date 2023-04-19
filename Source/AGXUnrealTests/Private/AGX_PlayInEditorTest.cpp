@@ -383,7 +383,7 @@ bool FCheckPlaygroundStateCommand::Update()
 		return false; // Continue ticking..
 	}
 
-	// At this point we have ticked to TickMax. Check the final state.
+	// At this point we have simulated to SimTimeMax. Check the final state.
 	auto FallDynamicBody = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["FallDynamicBody"]);
 	auto ConstrainedBody = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["ConstrainedBody"]);
 	auto SlideBody = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["SlideBody"]);
