@@ -4,6 +4,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
 #include "Misc/EngineVersionComparison.h"
 
 // Standard library includes.
