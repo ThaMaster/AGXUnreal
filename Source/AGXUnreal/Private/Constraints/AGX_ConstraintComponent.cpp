@@ -1018,6 +1018,7 @@ void UAGX_ConstraintComponent::UpdateNativeProperties()
 
 	NativeBarrier->SetEnable(bEnable);
 	NativeBarrier->SetSolveType(SolveType);
+	SetEnableSelfCollision(bSelfCollision);
 
 	/// @todo Could just loop NativeDofIndexMap instead!!
 
