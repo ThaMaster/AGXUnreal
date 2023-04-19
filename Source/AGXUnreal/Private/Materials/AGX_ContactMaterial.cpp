@@ -292,10 +292,14 @@ void UAGX_ContactMaterial::SetFrictionCoefficient(double InFrictionCoefficient)
 		FrictionCoefficient = InFrictionCoefficient;
 		if (HasNative())
 		{
-			NativeBarrier.SetPrimaryFrictionCoefficient(InFrictionCoefficient);
 			if (bUseSecondaryFrictionCoefficient)
 			{
+				NativeBarrier.SetPrimaryFrictionCoefficient(InFrictionCoefficient);
 				NativeBarrier.SetSecondaryFrictionCoefficient(InFrictionCoefficient);
+			}
+			else
+			{
+				NativeBarrier.SetFrictionCoefficient(InFrictionCoefficient);
 			}
 		}
 	}
@@ -395,10 +399,14 @@ void UAGX_ContactMaterial::SetSurfaceViscosity(double InSurfaceViscosity)
 		SurfaceViscosity = InSurfaceViscosity;
 		if (HasNative())
 		{
-			NativeBarrier.SetPrimarySurfaceViscosity(InSurfaceViscosity);
 			if (bUseSecondarySurfaceViscosity)
 			{
+				NativeBarrier.SetPrimarySurfaceViscosity(InSurfaceViscosity);
 				NativeBarrier.SetSecondarySurfaceViscosity(InSurfaceViscosity);
+			}
+			else
+			{
+				NativeBarrier.SetSurfaceViscosity(InSurfaceViscosity);
 			}
 		}
 	}
