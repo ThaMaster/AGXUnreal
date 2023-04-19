@@ -29,7 +29,7 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 		const FVector Corner3 = CenterTransform.TransformPositionNoScale(FVector(Xh, -Yh, 0));
 
 		// We use a large DepthBias here so that the lines are drawn clearly and not dark
-		// (underneeth the landscape).
+		// (underneath the landscape).
 		PDI->DrawLine(Corner0, Corner1, Color, SDPG_World, LineThickness, BIG_NUMBER, false);
 		PDI->DrawLine(Corner1, Corner2, Color, SDPG_World, LineThickness, BIG_NUMBER, false);
 		PDI->DrawLine(Corner2, Corner3, Color, SDPG_World, LineThickness, BIG_NUMBER, false);
@@ -131,7 +131,7 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 			// tiles may have a z-offset that depends on the first loaded tile average height (set
 			// by AGX Dynamics automatically).
 			TileTransform.SetLocation(FVector(TilePosGlobal.X, TilePosGlobal.Y, BoundsPosGlobal.Z));
-			DrawRectangle(TileTransform, TileSize, -TileSize, FLinearColor::White, 8.f, PDI);
+			DrawRectangle(TileTransform, TileSize, TileSize, FLinearColor::White, 8.f, PDI);
 		}
 	}
 

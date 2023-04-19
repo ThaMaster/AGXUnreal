@@ -126,3 +126,23 @@ enum class EAGX_ContactReductionMode : uint8
 	/** Two step reduction: first between geometries, and then between rigid bodies. */
 	All
 };
+
+
+/**
+ * Specifies the level of contact reduction used.
+ */
+UENUM(BlueprintType)
+enum class EAGX_ContactReductionLevel : uint8
+{
+	/** AGX Dynamics default contact reduction level. */
+	Default = 0,
+
+	/** Remove contacts aggressively. */
+	Aggressive = 1,
+
+	/** Moderate contact reduction. */
+	Moderate = 2,
+
+	/** Remove few contacts. */
+	Minimal = 3
+};

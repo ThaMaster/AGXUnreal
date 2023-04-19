@@ -82,16 +82,16 @@ public:
 	FAGX_ContactMaterialReductionMode ContactReduction;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
-	void SetContactReductionMode(EAGX_ContactReductionMode InContactReduction);
+	void SetContactReductionMode(EAGX_ContactReductionMode InContactReductionMode);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	EAGX_ContactReductionMode GetContactReductionMode() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
-	void SetContactReductionBinResolution(uint8 InBinResolution);
+	void SetContactReductionLevel(EAGX_ContactReductionLevel InContactReductionLevel);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
-	uint8 GetContactReductionBinResolution() const;
+	EAGX_ContactReductionLevel GetContactReductionLevel() const;
 
 	/**
 	 * AGX use by default a contact point based method for calculating the corresponding response
@@ -599,6 +599,7 @@ public:
 	void UpdateNativeProperties(const UAGX_ContactMaterialRegistrarComponent& Registrar);
 
 	// ~Begin UObject interface.
+	virtual void Serialize(FArchive& Archive) override;
 	virtual void PostInitProperties() override;
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;

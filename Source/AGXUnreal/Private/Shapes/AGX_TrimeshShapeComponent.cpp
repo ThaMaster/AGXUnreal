@@ -153,15 +153,17 @@ bool UAGX_TrimeshShapeComponent::CanEditChange(
 #endif
 	) const
 {
+	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
+	if (!SuperCanEditChange)
+		return false;
+
 	if (InProperty->GetFName() ==
 		GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceAsset))
 	{
 		return MeshSourceLocation == TSL_STATIC_MESH_ASSET;
 	}
-	else
-	{
-		return Super::CanEditChange(InProperty);
-	}
+
+	return SuperCanEditChange;
 }
 
 #endif

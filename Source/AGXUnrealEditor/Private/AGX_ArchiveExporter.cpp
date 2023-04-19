@@ -2,10 +2,13 @@
 
 #include "AGX_ArchiveExporter.h"
 
-#include "Utilities/AGX_EditorUtilities.h"
+// AGX Dynamics for Unreal includes.
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 
+// Unreal Engine includes.
 #include "Engine/World.h"
 
 bool AGX_ArchiveExporter::ExportAGXArchive(const FString& ArchivePath)
@@ -20,5 +23,24 @@ bool AGX_ArchiveExporter::ExportAGXArchive(const FString& ArchivePath)
 				 "archive."));
 		return false;
 	}
-	return Simulation->WriteAGXArchive(ArchivePath);
+
+	const bool Result = Simulation->WriteAGXArchive(ArchivePath);
+
+	if (Result)
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(TEXT("Succesfully exported .agx to: '%s'"), *ArchivePath),
+			SNotificationItem::CS_Success);
+	}
+	else
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("Unable to export .agx to: '%s'. The Console Log may contain more "
+					 "information."),
+				*ArchivePath),
+			SNotificationItem::CS_Fail);
+	}
+
+	return Result;
 }

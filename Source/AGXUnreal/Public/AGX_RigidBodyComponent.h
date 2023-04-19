@@ -337,6 +337,27 @@ public:
 	 */
 	FVector GetTorque() const;
 
+	/**
+	 * Sets a constant velocity and angular velocity such that the Rigid Body reaches the desired
+	 * world Position and Rotation in the given Duration. Duration determines the time that the
+	 * Rigid Body has to get to the final position [s].
+	 * The velocity and angular velocity is left unchanged even after reaching the given position
+	 * and rotation, i.e. the Rigid Body will continue to move in the same direction until the
+	 * velocity is explicitly updated.
+	 *
+	 * If using this function with MotionControl set to anything other than Kinematics, the Rigid
+	 * Body may not reach the desired Position and Rotation since external forces may act on it
+	 * during the movement.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void MoveTo(const FVector& Position, const FRotator& Rotation, float Duration);
+
+	/**
+	 * Same as MoveTo, but using local coordinates.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void MoveToLocal(const FVector& PositionLocal, const FRotator& RotationLocal, float Duration);
+
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FRigidBodyBarrier* GetOrCreateNative();
 
@@ -393,7 +414,6 @@ public:
 	FGuid ImportGuid;
 
 private:
-
 #if WITH_EDITOR
 	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each
 	// and every UPROPERTY in PostEditChangeProperty and PostEditChangeChainProperty.

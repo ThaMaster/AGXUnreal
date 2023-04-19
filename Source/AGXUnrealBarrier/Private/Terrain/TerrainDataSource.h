@@ -15,7 +15,7 @@ public:
 	virtual agxTerrain::TerrainDataSource::TerrainHeightType fetchTerrainTile(
 		const agxTerrain::TileSpecification& ts, agxTerrain::TileId id) override;
 
-	void SetTerrainHeightFetcher(FTerrainHeightFetcherBase* HeightFetcher);
+	void SetTerrainHeightFetcher(FTerrainHeightFetcherBase* HeightFetcher) noexcept;
 	FTerrainHeightFetcherBase* GetTerrainHeightFetcher() const;
 
 private:

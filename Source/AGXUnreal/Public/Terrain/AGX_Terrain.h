@@ -36,7 +36,6 @@ public:
 	// Sets default values for this actor's properties
 	AAGX_Terrain();
 
-	// @Todo make bounds uneditable during Play.
 	UPROPERTY(Category = "AGX Terrain", VisibleAnywhere, BlueprintReadOnly)
 	UAGX_HeightFieldBoundsComponent* TerrainBounds;
 
@@ -214,10 +213,15 @@ public:
 	/**
 	 * If set to true, Terrain Paging will be used.
 	 * The Terrain Paging Settings should be configured accordingly.
+	 * Enabling or disabling Terrain Paging during Play is not supported.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	bool bEnableTerrainPaging;
 
+	/**
+	 * If true is passed, Terrain Paging will be used.
+	 * Enabling or disabling Terrain Paging during Play is not supported.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
 	void SetEnableTerrainPaging(bool bEnabled);
 
@@ -228,17 +232,16 @@ public:
 		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "bEnableTerrainPaging"))
 	FAGX_TerrainPagingSettings TerrainPagingSettings;
 
-	bool HasNativeTerrain() const;
 	bool HasNativeTerrainPager() const;
 
 	/**
-	 * Returns true if this Terrain has a Native Terrain and/or a Native Terrain Pager.
-	 * Returns false otherwise.
+	 * Returns true if this Terrain has a Native Terrain and a Native Terrain Pager if Terrain
+	 * Paging is enabled. Returns false otherwise.
 	 */
 	bool HasNative() const;
 
-	FTerrainBarrier* GetNativeTerrain();
-	const FTerrainBarrier* GetNativeTerrain() const;
+	FTerrainBarrier* GetNative();
+	const FTerrainBarrier* GetNative() const;
 
 	FTerrainPagerBarrier* GetNativeTerrainPager();
 	const FTerrainPagerBarrier* GetNativeTerrainPager() const;
@@ -257,7 +260,7 @@ protected:
 
 private:
 	void InitializeNative();
-	bool CreateNativeTerrain();
+	bool CreateNative();
 	bool CreateNativeTerrainPager();
 	void CreateNativeShovels();
 	void AddTerrainPagerBodies();
@@ -282,7 +285,7 @@ private:
 	friend class FAGX_TerrainHeightFetcher;
 
 private:
-	FTerrainBarrier NativeTerrainBarrier;
+	FTerrainBarrier NativeBarrier;
 	FTerrainPagerBarrier NativeTerrainPagerBarrier;
 	FAGX_TerrainHeightFetcher HeightFetcher;
 
@@ -310,7 +313,12 @@ private:
 
 	/**
 	 * Thread safe convenience function for reading heights from the source Landscape.
-	 * The steps between height values are determined by the source Landscape quad sice.
+	 * The WorldPosStart is projected onto the Landscape and acts as the starting point (corner) of
+	 * the area that will be sampled (it does not snap to the nearest vertex). The steps between
+	 * height values are determined by the source Landscape quad size, and the number of steps by
+	 * VertsX and VertsY in the Landscape local positive X and Y direction respectively. The heights
+	 * are written to OutHeights in the ordering of AGX Dynamics.
+	 *
 	 * Returns true if the heights could be read, false otherwise.
 	 */
 	bool FetchHeights(

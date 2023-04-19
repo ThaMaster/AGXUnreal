@@ -100,8 +100,8 @@ public:
 	void SetContactReductionMode(EAGX_ContactReductionMode ReductionMode);
 	EAGX_ContactReductionMode GetContactReductionMode() const;
 
-	void SetContactReductionBinResolution(uint8 BinResolution);
-	uint8 GetContactReductionBinResolution() const;
+	void SetContactReductionLevel(EAGX_ContactReductionLevel ContactReductionLevel);
+	EAGX_ContactReductionLevel GetContactReductionLevel() const;
 
 	void SetUseContactAreaApproach(bool bUse);
 	bool GetUseContactAreaApproach() const;

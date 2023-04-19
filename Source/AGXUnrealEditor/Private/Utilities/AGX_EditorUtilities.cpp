@@ -41,7 +41,6 @@
 #include "Engine/GameEngine.h"
 #include "Engine/Selection.h"
 #include "Engine/StaticMesh.h"
-#include "Framework/Notifications/NotificationManager.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/Char.h"
@@ -54,7 +53,6 @@
 #include "UObject/SavePackage.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectGlobals.h"
-#include "Widgets/Notifications/SNotificationList.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
@@ -269,7 +267,6 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 	// world, including all editor world contexts and streaming levels, by calling
 	// ObjectTools::ContainsWorldInUse. That function isn't available to us. We currently don't
 	// create any worlds during import so don't need to handle that case yet.
-
 
 	// Let everyone know that these assets are about to disappear, so they can clear any references
 	// they may have to the assets.
@@ -855,7 +852,7 @@ void FAGX_EditorUtilities::AddRawMeshToStaticMesh(FRawMesh& RawMesh, UStaticMesh
 	StaticMesh->GetSourceModels().Emplace();
 	FStaticMeshSourceModel& SourceModel = StaticMesh->GetSourceModels().Last();
 #else
-	FStaticMeshSourceModel& SourceModel = StaticMesh->AddSourceModel();
+		FStaticMeshSourceModel& SourceModel = StaticMesh->AddSourceModel();
 #endif
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
@@ -923,7 +920,8 @@ AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 
 	if (bShowNotification)
 	{
-		ShowNotification(LOCTEXT("CreateConstraintSucceeded", "AGX Constraint Created"));
+		FAGX_NotificationUtilities::ShowNotification(
+			"AGX Constraint Created", SNotificationItem::CS_Success);
 	}
 
 	return NewActor;
@@ -962,8 +960,8 @@ AAGX_ConstraintFrameActor* FAGX_EditorUtilities::CreateConstraintFrameActor(
 
 	if (bShowNotification)
 	{
-		ShowNotification(
-			LOCTEXT("CreateConstraintFrameActorSucceded", "AGX Constraint Frame Actor Created"));
+		FAGX_NotificationUtilities::ShowNotification(
+			"AGX Constraint Frame Actor Created", SNotificationItem::CS_Success);
 	}
 
 	return NewActor;
@@ -988,24 +986,6 @@ void FAGX_EditorUtilities::SelectActor(AActor* Actor, bool bDeselectPrevious)
 	}
 
 	GEditor->NoteSelectionChange();
-}
-
-void FAGX_EditorUtilities::ShowNotification(const FText& Text)
-{
-	FNotificationInfo Info(Text);
-	Info.Image = FAGX_EditorUtilities::GetBrush(TEXT("LevelEditor.RecompileGameCode"));
-	Info.FadeInDuration = 0.1f;
-	Info.FadeOutDuration = 0.5f;
-	Info.ExpireDuration = 5.0f;
-	Info.bUseThrobber = false;
-	Info.bUseSuccessFailIcons = true;
-	Info.bUseLargeFont = true;
-	Info.bFireAndForget = false;
-	Info.bAllowThrottleWhenFrameRateIsLow = false;
-	auto NotificationItem = FSlateNotificationManager::Get().AddNotification(Info);
-	NotificationItem->SetCompletionState(SNotificationItem::CS_Success);
-	NotificationItem->ExpireAndFadeout();
-	// GEditor->PlayEditorSound(CompileSuccessSound);
 }
 
 UWorld* FAGX_EditorUtilities::GetEditorWorld()
@@ -1225,14 +1205,10 @@ FString FAGX_EditorUtilities::SelectExistingFileDialog(
 	}
 	if (Filenames.Num() > 1)
 	{
-		UE_LOG(
-			LogAGX, Log,
-			TEXT("Multiple files selected but only single file selection supported. Doing "
-				 "nothing."));
-		FAGX_EditorUtilities::ShowNotification(LOCTEXT(
-			"Multiple files",
+		FAGX_NotificationUtilities::ShowNotification(
 			"Multiple files selected but but only single file selection supported. Doing "
-			"nothing."));
+			"nothing.",
+			SNotificationItem::CS_None);
 		return "";
 	}
 	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*Filenames[0]);
@@ -1274,10 +1250,10 @@ FString FAGX_EditorUtilities::SelectNewFileDialog(
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Multiple files selected but we only support selecting one. Doing nothing."));
-		ShowNotification(LOCTEXT(
-			"Multiple files",
+		FAGX_NotificationUtilities::ShowNotification(
 			"Multiple files selected but we only support single files for now. Doing "
-			"nothing."));
+			"nothing.",
+			SNotificationItem::CS_None);
 		return "";
 	}
 

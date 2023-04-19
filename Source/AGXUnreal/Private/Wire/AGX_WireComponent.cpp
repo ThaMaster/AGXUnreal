@@ -1409,6 +1409,7 @@ void UAGX_WireComponent::OnRegister()
 		SpriteComponent->Rename(*NewName.ToString(), nullptr, REN_DontCreateRedirectors);
 		SpriteComponent->SetSprite(
 			LoadObject<UTexture2D>(nullptr, TEXT("/AGXUnreal/Editor/Icons/wire_64x64")));
+		SpriteComponent->SetRelativeScale3D(FVector(2.0, 2.0, 2.0));
 	}
 #endif
 }
@@ -1728,7 +1729,7 @@ void UAGX_WireComponent::CreateNative()
 		{
 			Message += Line + '\n';
 		}
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
+		FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
 	}
 
 	{
@@ -1754,9 +1755,8 @@ void UAGX_WireComponent::CreateNative()
 			const FString Message = FString::Printf(
 				TEXT("Invalid wire configuration for '%s' in '%s':\n%s"), *WireName, *OwnerName,
 				*Messages.Message);
-			/// @todo Consider other error reporting ways in shipping builds.
-			/// Unless we actually do want to show a dialog box to an end-end-user.
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
+
+			FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
 		}
 	}
 }

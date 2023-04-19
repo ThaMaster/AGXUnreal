@@ -283,4 +283,45 @@ private:
 	/// have a callback on the stack by setting this flag, which is tested at the top of each
 	/// callback.
 	bool bIsRunningCallback = false;
+
+	/**
+	 * Rebuilt the Rigid Body combo box.
+	 *
+	 * Selects the ToSelect entry if it exists. Selects the first non-empty entry if ToSelect
+	 * doesn't exist. Selects the empty string entry if there is no non-empty entry.
+	 *
+	 * Call this when the Details Panel is being updated in response to an edit.
+	 * @see RebuildRigidBodyComboBox_View
+	 *
+	 * The returned string should be assigned to the node's Rigid Body name.
+	 *
+	 * @param ToSelect The contents of the entry which we wish to select in the Combo Box.
+	 * @param Actor The Actor in which we search for Rigid Body Components.
+	 */
+	FString RebuildRigidBodyComboBox_Edit(const FString& ToSelect, AActor* Actor);
+
+	/**
+	 * Rebuild the Rigid Body combo box.
+	 *
+	 * Selects the ToSelect entry if it exists. Selects the empty string entry if ToSelect doesn't
+	 * exist in the updated list.
+	 *
+	 * Call this when the Details Panel is being updated without changing the Node.
+	 * @see RebuildRigidBodyComboBox_Edit
+	 *
+	 * @param ToSelect The contents of the entry which we wish to select in the Combo Box.
+	 * @param Actor The Actor in which we search for Rigid Body Components.
+	 */
+	void RebuildRigidBodyComboBox_View(const FString& ToSelect, AActor* Actor);
+
+	/**
+	 * Replace the contents of RigidBodyNames with the names of the Rigid Body Components in Actor.
+	 * An empty string is added before the names to make it possible to select "nothing".
+	 * A nullptr Actor produces a list containing only the empty string.
+	 *
+	 * @param Actor The Actor to search for Rigid Body Components in.
+	 */
+	void RebuildRigidBodyNames(AActor* Actor);
+
+	void RebuildRigidBodyNamesFromBlueprint();
 };

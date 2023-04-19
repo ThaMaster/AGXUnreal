@@ -6,6 +6,7 @@
 ///       it a compile time hog. Consider splitting it  up.
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_MotionControl.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RealInterval.h"
@@ -808,6 +809,31 @@ inline agx::ContactMaterial::ContactReductionMode Convert(EAGX_ContactReductionM
 	}
 }
 
+inline agx::UInt8 ConvertContactReductionLevelToAGX(
+	EAGX_ContactReductionLevel ContactReductionLevel)
+{
+	switch (ContactReductionLevel)
+	{
+		case EAGX_ContactReductionLevel::Default:
+			return 0;
+		case EAGX_ContactReductionLevel::Aggressive:
+			return 1;
+		case EAGX_ContactReductionLevel::Moderate:
+			return 2;
+		case EAGX_ContactReductionLevel::Minimal:
+			return 3;
+		default:
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Conversion failed: Tried to convert an EAGX_ContactReductionLevel literal "
+					 "with unknown value to an agx::UInt8. Default contact reduction level is "
+					 "returned."))
+			return 0;
+		}
+	}
+}
+
 inline EAGX_ContactReductionMode Convert(agx::ContactMaterial::ContactReductionMode Mode)
 {
 	switch (Mode)
@@ -820,11 +846,35 @@ inline EAGX_ContactReductionMode Convert(agx::ContactMaterial::ContactReductionM
 			return EAGX_ContactReductionMode::All;
 		default:
 			UE_LOG(
-				LogAGX, Error,
+				LogAGX, Warning,
 				TEXT("Conversion failed: Tried to convert an "
 					 "agx::ContactMaterial::ContactReductionMode "
 					 "with unknown value to an EAGX_ContactReductionMode."));
 			return EAGX_ContactReductionMode::None;
+	}
+}
+
+inline EAGX_ContactReductionLevel ConvertContactReductionLevelToUnreal(agx::UInt8 Level)
+{
+	switch (Level)
+	{
+		case 0:
+			return EAGX_ContactReductionLevel::Default;
+		case 1:
+			return EAGX_ContactReductionLevel::Aggressive;
+		case 2:
+			return EAGX_ContactReductionLevel::Moderate;
+		case 3:
+			return EAGX_ContactReductionLevel::Minimal;
+		default:
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Tried to convert an agx::UInt8: %d to an EAGX_ContactReductionLevel, but the "
+					 "value is larger than the corresponding largest enum literal. Returning "
+					 "EAGX_ContactReductionLevel::Minimal."),
+				Level);
+			AGX_CHECK(Level > static_cast<agx::UInt8>(EAGX_ContactReductionLevel::Minimal));
+			return EAGX_ContactReductionLevel::Minimal;
 	}
 }
 
@@ -896,7 +946,8 @@ inline EAGX_ExcavationMode Convert(agxTerrain::Shovel::ExcavationMode Mode)
 		default:
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("Conversion failed: Tried to convert an unknown agxTerrain::Shovel::ExcavationMode "
+				TEXT("Conversion failed: Tried to convert an unknown "
+					 "agxTerrain::Shovel::ExcavationMode "
 					 "literal to an EAGX_ExcavationMode."));
 			return EAGX_ExcavationMode::Primary;
 	}

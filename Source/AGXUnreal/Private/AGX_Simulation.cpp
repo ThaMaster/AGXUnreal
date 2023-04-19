@@ -225,8 +225,7 @@ void UAGX_Simulation::Add(AAGX_Terrain& Terrain)
 		return;
 	}
 
-	if ((Terrain.bEnableTerrainPaging && !Terrain.HasNativeTerrainPager()) ||
-		(!Terrain.bEnableTerrainPaging && !Terrain.HasNativeTerrain()))
+	if (!Terrain.HasNative())
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -240,7 +239,7 @@ void UAGX_Simulation::Add(AAGX_Terrain& Terrain)
 		if (Terrain.bEnableTerrainPaging)
 			return GetNative()->Add(*Terrain.GetNativeTerrainPager());
 		else
-			return GetNative()->Add(*Terrain.GetNativeTerrain());
+			return GetNative()->Add(*Terrain.GetNative());
 	}();
 
 	if (!Result)
@@ -331,8 +330,7 @@ void UAGX_Simulation::Remove(AAGX_Terrain& Terrain)
 		return;
 	}
 
-	if ((Terrain.bEnableTerrainPaging && !Terrain.HasNativeTerrainPager()) ||
-		(!Terrain.bEnableTerrainPaging && !Terrain.HasNativeTerrain()))
+	if (!Terrain.HasNative())
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -347,7 +345,7 @@ void UAGX_Simulation::Remove(AAGX_Terrain& Terrain)
 		if (Terrain.bEnableTerrainPaging)
 			return GetNative()->Remove(*Terrain.GetNativeTerrainPager());
 		else
-			return GetNative()->Remove(*Terrain.GetNativeTerrain());
+			return GetNative()->Remove(*Terrain.GetNative());
 	}();
 
 	if (!Result)
@@ -1049,13 +1047,17 @@ bool UAGX_Simulation::CanEditChange(
 #endif
 ) const
 {
+	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
+	if (!SuperCanEditChange)
+		return false;
+
 	// Time Lag Cap should only be editable when step mode SmCatchUpOverTimeCapped is used.
 	if (InProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UAGX_Simulation, TimeLagCap))
 	{
 		return StepMode == SmCatchUpOverTimeCapped;
 	}
 
-	return Super::CanEditChange(InProperty);
+	return SuperCanEditChange;
 }
 #endif
 
@@ -1098,7 +1100,7 @@ namespace
 		}
 		UE_LOG(LogAGX, Error, TEXT("%s"), *Message);
 #else
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Message);
+		FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail, 8.f);
 #endif
 	}
 }
