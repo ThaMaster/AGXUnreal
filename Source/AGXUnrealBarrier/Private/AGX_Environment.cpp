@@ -375,16 +375,13 @@ FString FAGX_Environment::GetPluginRevision()
 		else
 			return FString(TEXT(""));
 	}();
+
 	const FString Name = []()
 	{
-		const TCHAR* N;
-		if (AGXUNREAL_HAS_GIT_TAG)
-			N = AGXUNREAL_GIT_TAG;
-		else if (AGXUNREAL_HAS_GIT_BRANCH)
-			N = AGXUNREAL_GIT_BRANCH;
+		if (AGXUNREAL_HAS_GIT_NAME)
+			return FString::Printf(TEXT(" (%s)"), AGXUNREAL_GIT_NAME);
 		else
 			return FString(TEXT(""));
-		return FString::Printf(TEXT(" (%s)"), N);
 	}();
 
 	return FString::Printf(TEXT("%s%s"), *Hash, *Name);
