@@ -7,6 +7,9 @@
 #include "AGX_Simulation.h"
 #include "Materials/AGX_ContactMaterial.h"
 
+// Unreal Engine includes.
+#include "Engine/World.h"
+
 #define LOCTEXT_NAMESPACE "UAGX_ContactMaterialRegistrarComponent"
 
 UAGX_ContactMaterialRegistrarComponent::UAGX_ContactMaterialRegistrarComponent()
