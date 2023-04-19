@@ -25,6 +25,7 @@
 #include <agx/UniformGravityField.h>
 #include <agxSDK/MergeSplitHandler.h>
 #include <agxSDK/Simulation.h>
+#include <agxUtil/agxUtil.h>
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
@@ -180,6 +181,15 @@ void FSimulationBarrier::SetEnableCollisionGroupPair(
 	NativeRef->Native->getSpace()->setEnablePair(
 		StringTo32BitFnvHash(Group1.ToString()), StringTo32BitFnvHash(Group2.ToString()),
 		CanCollide);
+}
+
+void FSimulationBarrier::SetEnableCollision(
+	FRigidBodyBarrier& Body1, FRigidBodyBarrier& Body2, bool Enable)
+{
+	check(Body1.HasNative());
+	check(Body2.HasNative());
+
+	agxUtil::setEnableCollisions(Body1.GetNative()->Native, Body2.GetNative()->Native, Enable);
 }
 
 bool FSimulationBarrier::WriteAGXArchive(const FString& Filename) const

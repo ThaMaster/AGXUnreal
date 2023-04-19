@@ -140,7 +140,7 @@ bool FCheckFallinBoxMovedCommand::Update()
 
 	const float SimTime = Sim->GetTimeStamp();
 	{
-		// Sanity check to avoid hanging forever if the Simulation is not ticking.		
+		// Sanity check to avoid hanging forever if the Simulation is not ticking.
 		NumTicks++;
 		if (NumTicks > 1000 && FMath::IsNearlyZero(SimTime))
 		{
@@ -236,12 +236,13 @@ bool FCheckTerrainPagingStateCommand::Update()
 
 	const float SimTime = Sim->GetTimeStamp();
 	{
-		// Sanity check to avoid hanging forever if the Simulation is not ticking.		
+		// Sanity check to avoid hanging forever if the Simulation is not ticking.
 		NumTicks++;
 		if (NumTicks > 1000 && FMath::IsNearlyZero(SimTime))
 		{
 			Test.AddError(FString::Printf(
-				TEXT("SimTime too small: %f. The Simulation has not stepped as expected."), SimTime));
+				TEXT("SimTime too small: %f. The Simulation has not stepped as expected."),
+				SimTime));
 			return true;
 		}
 	}
@@ -303,6 +304,113 @@ bool FTerrainPagingTest::RunTest(const FString& Parameters)
 	float SimTimeMax = 4.f;
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FCheckTerrainPagingStateCommand(SimTimeMax, ComponentsOfInterest, *this));
+
+	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
+	return true;
+}
+
+//
+// Playground test starts here.
+//
+// The Playground level contains a mixture of several different things/mechanisms/scenarios and
+// exists to make it easy to add play-in-editor test scenarios in the future. Simply add the
+// scenario in the level and add the test logic for it here.
+//
+
+DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
+	FCheckPlaygroundStateCommand, float, SimTimeMax, ComponentMap, ComponentsOfInterest,
+	FAutomationTestBase&, Test);
+
+bool FCheckPlaygroundStateCommand::Update()
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	if (!GEditor->IsPlayingSessionInEditor())
+	{
+		return false;
+	}
+
+	UWorld* TestWorld = GEditor->GetPIEWorldContext()->World();
+	static int32 NumTicks = 0;
+	if (ComponentsOfInterest.Num() == 0)
+	{
+		NumTicks = 0;
+		auto FallDynamicBody =
+			GetComponentByName<UAGX_RigidBodyComponent>(TestWorld, "Collisions", "FallDynamicBody");
+		Test.TestNotNull("FallDynamicBody", FallDynamicBody);
+
+		auto ConstrainedBody = GetComponentByName<UAGX_RigidBodyComponent>(
+			TestWorld, "Collisions", "ConstrainedBody2");
+		Test.TestNotNull("ConstrainedBody", ConstrainedBody);
+
+		auto SlideBody =
+			GetComponentByName<UAGX_RigidBodyComponent>(TestWorld, "Slide", "SlideBody");
+		Test.TestNotNull("SlideBody", SlideBody);
+
+		if (FallDynamicBody == nullptr || ConstrainedBody == nullptr || SlideBody == nullptr)
+			return true;
+
+		ComponentsOfInterest.Add("FallDynamicBody", FallDynamicBody);
+		ComponentsOfInterest.Add("ConstrainedBody", ConstrainedBody);
+		ComponentsOfInterest.Add("SlideBody", SlideBody);
+
+		Test.TestTrue(
+			"FallDynamicBody initial z pos", FallDynamicBody->GetComponentLocation().Z > 0.0);
+		Test.TestTrue(
+			"ConstrainedBody initial z pos", ConstrainedBody->GetComponentLocation().Z > 0.0);
+		Test.TestTrue("SlideBody initial z pos", SlideBody->GetComponentLocation().Z > 0.0);
+	}
+
+	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(TestWorld);
+	Test.TestNotNull("Simulation", Sim);
+	if (Sim == nullptr)
+		return true;
+
+	const float SimTime = Sim->GetTimeStamp();
+	{
+		// Sanity check to avoid hanging forever if the Simulation is not ticking.
+		NumTicks++;
+		if (NumTicks > 1000 && FMath::IsNearlyZero(SimTime))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("SimTime too small: %f. The Simulation has not stepped as expected."),
+				SimTime));
+			return true;
+		}
+	}
+
+	if (SimTime < SimTimeMax)
+	{
+		return false; // Continue ticking..
+	}
+
+	// At this point we have simulated to SimTimeMax. Check the final state.
+	auto FallDynamicBody = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["FallDynamicBody"]);
+	auto ConstrainedBody = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["ConstrainedBody"]);
+	auto SlideBody = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["SlideBody"]);
+	Test.TestTrue(
+		"FallDynamicBody final z pos", FallDynamicBody->GetComponentLocation().Z < -100.0);
+	Test.TestTrue(
+		"ConstrainedBody final z pos", ConstrainedBody->GetComponentLocation().Z < -100.0);
+	Test.TestTrue("SlideBody final z pos", SlideBody->GetComponentLocation().Z < -100.0);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FPlaygroundTest, "AGXUnreal.Game.AGX_PlayInEditorTest.Playground",
+	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+
+bool FPlaygroundTest::RunTest(const FString& Parameters)
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	FString MapPath = FString("/Game/Tests/Playground/Playground");
+
+	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath))
+	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
+
+	ComponentMap ComponentsOfInterest;
+	float SimTimeMax = 5.0f;
+	ADD_LATENT_AUTOMATION_COMMAND(
+		FCheckPlaygroundStateCommand(SimTimeMax, ComponentsOfInterest, *this));
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 	return true;

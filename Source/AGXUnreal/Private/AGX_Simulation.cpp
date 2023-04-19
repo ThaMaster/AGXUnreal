@@ -469,6 +469,24 @@ void UAGX_Simulation::SetEnableCollisionGroupPair(
 	NativeBarrier.SetEnableCollisionGroupPair(Group1, Group2, CanCollide);
 }
 
+void UAGX_Simulation::SetEnableCollision(
+	UAGX_RigidBodyComponent& Body1, UAGX_RigidBodyComponent& Body2, bool Enable)
+{
+	if (!Body1.HasNative() || !Body2.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_Simulation::SetEnableCollision was given at least one Rigid Body without a "
+				 "Native. The "
+				 "operation will not be executed. Note that this function should only be called "
+				 "during Play. Passed Rigid Bodies was: '%s' and '%s'."),
+			*Body1.GetName(), *Body2.GetName());
+		return;
+	}
+
+	FSimulationBarrier::SetEnableCollision(*Body1.GetNative(), *Body2.GetNative(), Enable);
+}
+
 void UAGX_Simulation::SetEnableContactWarmstarting(bool bEnable)
 {
 	bContactWarmstarting = bEnable;

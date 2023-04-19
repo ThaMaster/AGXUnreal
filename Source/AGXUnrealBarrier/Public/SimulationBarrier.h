@@ -67,6 +67,8 @@ public:
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);
 
+	static void SetEnableCollision(FRigidBodyBarrier& Body1, FRigidBodyBarrier& Body2, bool Enable);
+
 	bool WriteAGXArchive(const FString& Filename) const;
 
 	void EnableRemoteDebugging(int16 Port);

@@ -3,7 +3,10 @@
 #include "Materials/AGX_ContactMaterialReductionMode.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_CustomVersion.h"
+#include "AGX_LogCategory.h"
+
 
 namespace AGX_ContactMaterialReductionMode_helpers
 {

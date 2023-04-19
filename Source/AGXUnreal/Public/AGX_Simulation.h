@@ -347,6 +347,9 @@ public: // Member functions.
 
 	void SetEnableCollisionGroupPair(const FName& Group1, const FName& Group2, bool CanCollide);
 
+	static void SetEnableCollision(
+		UAGX_RigidBodyComponent& Body1, UAGX_RigidBodyComponent& Body2, bool Enable);
+
 	bool WriteAGXArchive(const FString& Filename) const;
 
 	bool HasNative() const;
