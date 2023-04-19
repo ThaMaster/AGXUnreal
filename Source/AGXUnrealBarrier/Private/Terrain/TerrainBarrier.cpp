@@ -343,3 +343,9 @@ FParticleData FTerrainBarrier::GetParticleData() const
 
 	return ParticleData;
 }
+
+size_t FTerrainBarrier::GetNumParticles() const
+{
+	check(HasNative());
+	return FTerrainUtilities::GetNumParticles(*this);
+}

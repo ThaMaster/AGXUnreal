@@ -125,8 +125,5 @@ size_t FTerrainUtilities::GetNumParticles(const FTerrainBarrier& Terrain)
 	if (!Terrain.HasNative())
 		return 0;
 
-	return Terrain.GetNative()
-		->Native->getSoilSimulationInterface()
-		->getGranularBodySystem()
-		->getNumParticles();
+	return Terrain.GetNative()->Native->getSoilSimulationInterface()->getNumSoilParticles();
 }

@@ -120,6 +120,11 @@ public:
 	 */
 	FParticleData GetParticleData() const;
 
+	/**
+	 * Returns the number of spawned Terrain particles known by the Terrain Native.
+	 */
+	size_t GetNumParticles() const;
+
 private:
 	FTerrainBarrier(const FTerrainBarrier&) = delete;
 	void operator=(const FTerrainBarrier&) = delete;

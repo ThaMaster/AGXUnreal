@@ -136,6 +136,13 @@ public:
 	UNiagaraComponent* GetSpawnedParticleSystemComponent();
 
 	/**
+	 * Returns the number of currently spawned particles known to the Terrain. If this Terrain uses
+	 * Terrain Paging, the number of particles known by any active Terrain Tile is returned.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	int32 GetNumParticles() const;
+
+	/**
 	 * A list of the rigid body actors that should be used as terrain shovels.
 	 *
 	 * Every actor used as shovel MUST have the following components:
