@@ -199,8 +199,6 @@ public class AGXUnreal : ModuleRules
 			return;
 		}
 
-		string RepositoryPath = GetPluginRootPath();
-
 		// Determine if we are in an AGX Dynamics for Unreal working copy by
 		// checking the name of the remote. If we aren't then we assume we
 		// are in a client repository, or none at all, and assume that Git info
