@@ -8,6 +8,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "Utilities/AGX_StringUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/TrackBarrier.h"
 
