@@ -105,6 +105,22 @@ UNiagaraComponent* AAGX_Terrain::GetSpawnedParticleSystemComponent()
 	return ParticleSystemComponent;
 }
 
+int32 AAGX_Terrain::GetNumParticles() const
+{
+	if (!HasNative())
+		return 0;
+
+	if (HasNativeTerrainPager())
+	{
+		return static_cast<int32>(NativeTerrainPagerBarrier.GetNumParticles());
+	}
+	else
+	{
+		check(HasNative());
+		return static_cast<int32>(NativeBarrier.GetNumParticles());
+	}
+}
+
 void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
 {
 	if (HasNative())

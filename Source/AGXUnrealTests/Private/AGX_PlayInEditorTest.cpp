@@ -4,6 +4,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "Terrain/AGX_Terrain.h"
 
 // Unreal Engine includes.
 #include "Containers/Map.h"
@@ -43,6 +44,25 @@ namespace AGX_PlayInEditorTest_helpers
 		for (const auto& Component : Owner.GetComponents())
 		{
 			if (Component->GetName().Equals(Name))
+			{
+				return Cast<T>(Component);
+			}
+		}
+
+		return nullptr;
+	}
+
+	template <typename T>
+	T* GetComponentByName(UWorld* TestWorld, const FString& ActorName, const FString& ComponentName)
+	{
+		TMap<FString, AActor*> Actors = GetActorsByName(TestWorld, {ActorName});
+		AActor* Actor = Actors.FindRef(ActorName);
+		if (Actor == nullptr)
+			return nullptr;
+
+		for (const auto& Component : Actor->GetComponents())
+		{
+			if (Component->GetName().Equals(ComponentName))
 			{
 				return Cast<T>(Component);
 			}
@@ -91,9 +111,11 @@ bool FCheckFallinBoxMovedCommand::Update()
 		return false;
 	}
 
+	static int32 NumTicks = 0;
 	UWorld* TestWorld = GEditor->GetPIEWorldContext()->World();
 	if (ComponentsOfInterest.Num() == 0)
 	{
+		NumTicks = 0;
 		ActorMap BoxActors = GetActorsByName(TestWorld, {"BoxActor"});
 
 		Test.TestTrue("Found actor of interest", BoxActors.Contains("BoxActor"));
@@ -116,7 +138,20 @@ bool FCheckFallinBoxMovedCommand::Update()
 	if (Sim == nullptr)
 		return true;
 
-	if (Sim->GetTimeStamp() < SimTimeMax)
+	const float SimTime = Sim->GetTimeStamp();
+	{
+		// Sanity check to avoid hanging forever if the Simulation is not ticking.		
+		NumTicks++;
+		if (NumTicks > 1000 && FMath::IsNearlyZero(SimTime))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("SimTime too small: %f. The Simulation has not stepped as expected."),
+				SimTime));
+			return true;
+		}
+	}
+
+	if (SimTime < SimTimeMax)
 	{
 		return false; // Continue ticking..
 	}
@@ -143,6 +178,131 @@ bool FFallingBoxTest::RunTest(const FString& Parameters)
 	float SimTimeMax = 0.5f;
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FCheckFallinBoxMovedCommand(SimTimeMax, ComponentsOfInterest, *this));
+
+	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
+	return true;
+}
+
+//
+// Terrain Paging test starts here.
+//
+
+DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
+	FCheckTerrainPagingStateCommand, float, SimTimeMax, ComponentMap, ComponentsOfInterest,
+	FAutomationTestBase&, Test);
+
+bool FCheckTerrainPagingStateCommand::Update()
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	if (!GEditor->IsPlayingSessionInEditor())
+	{
+		return false;
+	}
+
+	static int32 NumTicks = 0;
+	UWorld* TestWorld = GEditor->GetPIEWorldContext()->World();
+	if (ComponentsOfInterest.Num() == 0)
+	{
+		NumTicks = 0;
+		auto Chassi = GetComponentByName<UAGX_RigidBodyComponent>(TestWorld, "Car", "Chassi");
+		Test.TestNotNull("Chassi", Chassi);
+
+		auto Untracked =
+			GetComponentByName<UAGX_RigidBodyComponent>(TestWorld, "Untracked", "Untracked");
+		Test.TestNotNull("Untracked", Untracked);
+
+		if (Chassi == nullptr || Untracked == nullptr)
+			return true;
+
+		ComponentsOfInterest.Add("Chassi", Chassi);
+		ComponentsOfInterest.Add("Untracked", Untracked);
+		Test.TestTrue("Chassi body initial y pos", Chassi->GetComponentLocation().Y < 10.0);
+		Test.TestTrue("Untracked body initial z pos", Chassi->GetComponentLocation().Z > 0.0);
+
+		// Ensure ShapeMaterial is still assigned (sanity check that may fail due to backwards
+		// compatibility breaks).
+		auto ChassiBox = GetComponentByName<UAGX_BoxShapeComponent>(TestWorld, "Car", "ChassiBox");
+		Test.TestNotNull("ChassiBox", ChassiBox);
+		if (ChassiBox == nullptr)
+			return true;
+
+		Test.TestNotNull("ShapeMaterial of ChassiBox", ChassiBox->ShapeMaterial);
+	}
+
+	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(TestWorld);
+	Test.TestNotNull("Simulation", Sim);
+	if (Sim == nullptr)
+		return true;
+
+	const float SimTime = Sim->GetTimeStamp();
+	{
+		// Sanity check to avoid hanging forever if the Simulation is not ticking.		
+		NumTicks++;
+		if (NumTicks > 1000 && FMath::IsNearlyZero(SimTime))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("SimTime too small: %f. The Simulation has not stepped as expected."), SimTime));
+			return true;
+		}
+	}
+
+	if (SimTime < SimTimeMax)
+	{
+		return false; // Continue ticking..
+	}
+
+	// At this point we have ticked to TickMax.
+	auto ChassiBody = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["Chassi"]);
+	auto UntrackedBody = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["Untracked"]);
+
+	// The "Car" is tracked by the Terrain Pager and should have moved forwards.
+	Test.TestTrue("Chassi body final y pos", ChassiBody->GetComponentLocation().Y > 50.0);
+
+	// We expect the untracked body to fall through the landscape towards negative infinity since no
+	// Terrain Tile has been created for it.
+	Test.TestTrue("Untracked body final z pos", UntrackedBody->GetComponentLocation().Z < 0.0);
+
+	// Ensure we have spawned some particles (there is a shovel in the Level).
+	ActorMap TerrainActors = GetActorsByName(TestWorld, {"AGX_Terrain_1"});
+	AAGX_Terrain* TerrainActor = Cast<AAGX_Terrain>(TerrainActors.FindRef("AGX_Terrain_1"));
+	Test.TestNotNull("Terrain actor", TerrainActor);
+	if (TerrainActor == nullptr)
+		return true;
+
+	Test.TestTrue("Has spawned particles", TerrainActor->GetNumParticles() > 5);
+
+	// Ensure TerrainMaterial is assigned (sanity check that may fail due to backwards
+	// compatibility breaks).
+	Test.TestNotNull("Terrain Material", TerrainActor->TerrainMaterial);
+
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FTerrainPagingTest, "AGXUnreal.Game.AGX_PlayInEditorTest.TerrainPaging",
+	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+
+bool FTerrainPagingTest::RunTest(const FString& Parameters)
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	FString MapPath = FString("/Game/Tests/Test_TerrainPaging");
+
+	// AGX Dynamics gives us this error due to float to double conversion that we do when creating
+	// the Native Shovel. The tolerance in AGX Dynamics is too small for our conversion to pass that
+	// check. Therefore we add it as an expected error here as a work-around to be able to do this
+	// test.
+	AddExpectedError(
+		TEXT("Shovel cutting direction is not normalized!"),
+		EAutomationExpectedErrorFlags::Contains, 0);
+	AddError(TEXT("Shovel cutting direction is not normalized!"));
+
+	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath))
+	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
+
+	ComponentMap ComponentsOfInterest;
+	float SimTimeMax = 4.f;
+	ADD_LATENT_AUTOMATION_COMMAND(
+		FCheckTerrainPagingStateCommand(SimTimeMax, ComponentsOfInterest, *this));
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 	return true;
