@@ -116,8 +116,8 @@ int32 AAGX_Terrain::GetNumParticles() const
 	}
 	else
 	{
-		check(HasNativeTerrain());
-		return static_cast<int32>(NativeTerrainBarrier.GetNumParticles());
+		check(HasNative());
+		return static_cast<int32>(NativeBarrier.GetNumParticles());
 	}
 }
 
