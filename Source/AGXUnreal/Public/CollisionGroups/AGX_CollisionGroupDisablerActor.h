@@ -26,4 +26,7 @@ public:
 
 	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)
 	UAGX_CollisionGroupDisablerComponent* CollisionGroupDisablerComponent;
+
+private:
+	void Serialize(FArchive& Archive) override;
 };
