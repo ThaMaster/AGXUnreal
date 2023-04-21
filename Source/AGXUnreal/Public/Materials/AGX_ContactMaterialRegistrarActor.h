@@ -22,4 +22,7 @@ public:
 
 	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)
 	UAGX_ContactMaterialRegistrarComponent* ContactMaterialRegistrarComponent;
+
+private:
+	void Serialize(FArchive& Archive) override;
 };

@@ -58,23 +58,9 @@ AAGX_Terrain::AAGX_Terrain()
 	bIsSpatiallyLoaded = false;
 #endif
 
-	// Create a root SceneComponent so that this Actor has a transform
-	// which can be modified in the Editor.
-	{
-		USceneComponent* Root = CreateDefaultSubobject<UAGX_TerrainSpriteComponent>("SpriteIcon");
-
-		TerrainBounds =
-			CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("TerrainBounds"));
-
-		Root->Mobility = EComponentMobility::Static;
-		Root->SetFlags(Root->GetFlags() | RF_Transactional); /// \todo What does this mean?
-
-#if WITH_EDITORONLY_DATA
-		Root->bVisualizeComponent = true;
-#endif
-
-		SetRootComponent(Root);
-	}
+	RootComponent = CreateDefaultSubobject<UAGX_TerrainSpriteComponent>(
+		USceneComponent::GetDefaultSceneRootVariableName());
+	TerrainBounds = CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("TerrainBounds"));
 }
 
 bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
@@ -1558,6 +1544,17 @@ void AAGX_Terrain::Serialize(FArchive& Archive)
 	if (ShouldUpgradeTo(Archive, FAGX_CustomVersion::HeightFieldUsesBounds))
 	{
 		TerrainBounds->bInfiniteBounds = true;
+	}
+
+	if (RootComponent == nullptr &&
+		ShouldUpgradeTo(Archive, FAGX_CustomVersion::TerrainCGDisablerCMRegistrarViewporIcons))
+	{
+		SetRootComponent(NewObject<UAGX_TerrainSpriteComponent>(
+			this, USceneComponent::GetDefaultSceneRootVariableName()));
+		RootComponent->SetFlags(RF_Transactional);
+		AddInstanceComponent(RootComponent);
+		// We should not register the Component here because it is too early. The Component will be
+		// registered automatically by this Actor.
 	}
 }
 
