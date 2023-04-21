@@ -533,5 +533,5 @@ double FTerrainMaterialBarrier::GetMaximumContactDepth() const
 {
 	check(HasNative());
 	return ConvertDistanceToUnreal<double>(
-		NativeRef->Native->getExcavationContactProperties()->getMaximumDepth());
+		NativeRef->Native->getExcavationContactProperties()->getMaximumContactDepth());
 }
