@@ -13,8 +13,9 @@ AAGX_CollisionGroupDisablerActor::AAGX_CollisionGroupDisablerActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	RootComponent = CreateDefaultSubobject<UAGX_CollisionGroupDisablerSpriteComponent>(
+	SpriteComponent = CreateDefaultSubobject<UAGX_CollisionGroupDisablerSpriteComponent>(
 		USceneComponent::GetDefaultSceneRootVariableName());
+	RootComponent = SpriteComponent;
 
 	CollisionGroupDisablerComponent = CreateDefaultSubobject<UAGX_CollisionGroupDisablerComponent>(
 		TEXT("AGX_CollisionGroupDisabler"));
@@ -25,15 +26,12 @@ void AAGX_CollisionGroupDisablerActor::Serialize(FArchive& Archive)
 	Super::Serialize(Archive);
 	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
 
-	if (RootComponent == nullptr &&
+	if (SpriteComponent == nullptr && RootComponent == nullptr &&
 		ShouldUpgradeTo(Archive, FAGX_CustomVersion::TerrainCGDisablerCMRegistrarViewporIcons))
 	{
-		SetRootComponent(NewObject<UAGX_CollisionGroupDisablerSpriteComponent>(
-			this, USceneComponent::GetDefaultSceneRootVariableName()));
-		RootComponent->SetFlags(RF_Transactional);
-		AddInstanceComponent(RootComponent);
-		// We should not register the Component here because it is too early. The Component will be
-		// registered automatically by this Actor.
+		SpriteComponent = CreateDefaultSubobject<UAGX_CollisionGroupDisablerSpriteComponent>(
+			USceneComponent::GetDefaultSceneRootVariableName());
+		RootComponent = SpriteComponent;
 	}
 }
 

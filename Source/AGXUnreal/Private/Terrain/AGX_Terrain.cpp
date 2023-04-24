@@ -58,8 +58,10 @@ AAGX_Terrain::AAGX_Terrain()
 	bIsSpatiallyLoaded = false;
 #endif
 
-	RootComponent = CreateDefaultSubobject<UAGX_TerrainSpriteComponent>(
+	SpriteComponent = CreateDefaultSubobject<UAGX_TerrainSpriteComponent>(
 		USceneComponent::GetDefaultSceneRootVariableName());
+	RootComponent = SpriteComponent;
+
 	TerrainBounds = CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("TerrainBounds"));
 }
 
@@ -1546,15 +1548,12 @@ void AAGX_Terrain::Serialize(FArchive& Archive)
 		TerrainBounds->bInfiniteBounds = true;
 	}
 
-	if (RootComponent == nullptr &&
+	if (SpriteComponent == nullptr && RootComponent == nullptr &&
 		ShouldUpgradeTo(Archive, FAGX_CustomVersion::TerrainCGDisablerCMRegistrarViewporIcons))
 	{
-		SetRootComponent(NewObject<UAGX_TerrainSpriteComponent>(
-			this, USceneComponent::GetDefaultSceneRootVariableName()));
-		RootComponent->SetFlags(RF_Transactional);
-		AddInstanceComponent(RootComponent);
-		// We should not register the Component here because it is too early. The Component will be
-		// registered automatically by this Actor.
+		SpriteComponent = CreateDefaultSubobject<UAGX_TerrainSpriteComponent>(
+			USceneComponent::GetDefaultSceneRootVariableName());
+		RootComponent = SpriteComponent;
 	}
 }
 

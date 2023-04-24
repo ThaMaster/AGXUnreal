@@ -13,8 +13,9 @@ AAGX_ContactMaterialRegistrarActor::AAGX_ContactMaterialRegistrarActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	RootComponent = CreateDefaultSubobject<UAGX_ContactMaterialRegistrarSpriteComponent>(
+	SpriteComponent = CreateDefaultSubobject<UAGX_ContactMaterialRegistrarSpriteComponent>(
 		USceneComponent::GetDefaultSceneRootVariableName());
+	RootComponent = SpriteComponent;
 
 	ContactMaterialRegistrarComponent =
 		CreateDefaultSubobject<UAGX_ContactMaterialRegistrarComponent>(
@@ -26,15 +27,13 @@ void AAGX_ContactMaterialRegistrarActor::Serialize(FArchive& Archive)
 	Super::Serialize(Archive);
 	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
 
-	if (RootComponent == nullptr &&
-		ShouldUpgradeTo(Archive, FAGX_CustomVersion::TerrainCGDisablerCMRegistrarViewporIcons))
+	if (SpriteComponent == nullptr && RootComponent == nullptr &&
+		ShouldUpgradeTo(
+			Archive, FAGX_CustomVersion::TerrainCGDisablerCMRegistrarViewporIcons))
 	{
-		SetRootComponent(NewObject<UAGX_ContactMaterialRegistrarSpriteComponent>(
-			this, USceneComponent::GetDefaultSceneRootVariableName()));
-		RootComponent->SetFlags(RF_Transactional);
-		AddInstanceComponent(RootComponent);
-		// We should not register the Component here because it is too early. The Component will be
-		// registered automatically by this Actor.
+		SpriteComponent = CreateDefaultSubobject<UAGX_ContactMaterialRegistrarSpriteComponent>(
+			USceneComponent::GetDefaultSceneRootVariableName());
+		RootComponent = SpriteComponent;
 	}
 }
 
