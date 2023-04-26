@@ -88,6 +88,67 @@ float FWireBarrier::GetResolutionPerUnitLength() const
 	return Resolution;
 }
 
+void FWireBarrier::SetEnableCollisions(bool CanCollide)
+{
+	check(HasNative());
+	NativeRef->Native->setEnableCollisions(CanCollide);
+}
+
+bool FWireBarrier::GetEnableCollisions() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnableCollisions();
+}
+
+void FWireBarrier::AddCollisionGroup(const FName& GroupName)
+{
+	check(HasNative());
+	AGX_CHECK(NativeRef->Native->getGeometryController() != nullptr);
+
+	// Add collision group as (hashed) unsigned int.
+	NativeRef->Native->getGeometryController()->addGroup(
+		StringTo32BitFnvHash(GroupName.ToString()));
+}
+
+void FWireBarrier::AddCollisionGroups(const TArray<FName>& GroupNames)
+{
+	for (auto& GroupName : GroupNames)
+	{
+		AddCollisionGroup(GroupName);
+	}
+}
+
+void FWireBarrier::RemoveCollisionGroup(const FName& GroupName)
+{
+	check(HasNative());
+	AGX_CHECK(NativeRef->Native->getGeometryController() != nullptr);
+
+	// Remove collision group as (hashed) unsigned int.
+	NativeRef->Native->getGeometryController()->removeGroup(
+		StringTo32BitFnvHash(GroupName.ToString()));
+}
+
+TArray<FName> FWireBarrier::GetCollisionGroups() const
+{
+	check(HasNative());
+
+	agxWire::WireGeometryController* Gc = NativeRef->Native->getGeometryController();
+	AGX_CHECK(Gc != nullptr);
+
+	TArray<FName> Result;
+	for (const agx::Name& Name : Gc->getGroupNames())
+	{
+		Result.Add(FName(*Convert(Name)));
+	}
+
+	for (const agx::UInt32 Id : Gc->getGroupIds())
+	{
+		Result.Add(FName(*FString::FromInt(Id)));
+	}
+
+	return Result;
+}
+
 void FWireBarrier::SetScaleConstant(double ScaleConstant)
 {
 	check(HasNative());
