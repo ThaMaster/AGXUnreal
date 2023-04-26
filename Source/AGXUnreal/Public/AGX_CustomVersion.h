@@ -43,6 +43,10 @@ struct AGXUNREAL_API FAGX_CustomVersion
 		// Contact Material Contact Reduction Level type change from UInt8 to enum.
 		ContactReductionLevelAsEnum,
 
+		// Terrain, CollisionGroupDisabler and ContactMaterialRegistrar Actors have new root
+		// components (viewport icons).
+		TerrainCGDisablerCMRegistrarViewporIcons,
+
 		// <----- New versions can be added above this line. ----->
 		VersionPlusOne,
 

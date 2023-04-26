@@ -23,6 +23,7 @@
 
 class UAGX_HeightFieldBoundsComponent;
 class UAGX_TerrainMaterial;
+class UAGX_TerrainSpriteComponent;
 class ALandscape;
 class UNiagaraComponent;
 class UNiagaraSystem;
@@ -35,6 +36,9 @@ class AGXUNREAL_API AAGX_Terrain : public AActor
 public:
 	// Sets default values for this actor's properties
 	AAGX_Terrain();
+
+	UPROPERTY(Category = "AGX Terrain", VisibleAnywhere, BlueprintReadOnly)
+	UAGX_TerrainSpriteComponent* SpriteComponent;
 
 	UPROPERTY(Category = "AGX Terrain", VisibleAnywhere, BlueprintReadOnly)
 	UAGX_HeightFieldBoundsComponent* TerrainBounds;

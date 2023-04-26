@@ -58,23 +58,11 @@ AAGX_Terrain::AAGX_Terrain()
 	bIsSpatiallyLoaded = false;
 #endif
 
-	// Create a root SceneComponent so that this Actor has a transform
-	// which can be modified in the Editor.
-	{
-		USceneComponent* Root = CreateDefaultSubobject<UAGX_TerrainSpriteComponent>("SpriteIcon");
+	SpriteComponent = CreateDefaultSubobject<UAGX_TerrainSpriteComponent>(
+		USceneComponent::GetDefaultSceneRootVariableName());
+	RootComponent = SpriteComponent;
 
-		TerrainBounds =
-			CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("TerrainBounds"));
-
-		Root->Mobility = EComponentMobility::Static;
-		Root->SetFlags(Root->GetFlags() | RF_Transactional); /// \todo What does this mean?
-
-#if WITH_EDITORONLY_DATA
-		Root->bVisualizeComponent = true;
-#endif
-
-		SetRootComponent(Root);
-	}
+	TerrainBounds = CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("TerrainBounds"));
 }
 
 bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
@@ -1558,6 +1546,14 @@ void AAGX_Terrain::Serialize(FArchive& Archive)
 	if (ShouldUpgradeTo(Archive, FAGX_CustomVersion::HeightFieldUsesBounds))
 	{
 		TerrainBounds->bInfiniteBounds = true;
+	}
+
+	if (SpriteComponent == nullptr && RootComponent == nullptr &&
+		ShouldUpgradeTo(Archive, FAGX_CustomVersion::TerrainCGDisablerCMRegistrarViewporIcons))
+	{
+		SpriteComponent = CreateDefaultSubobject<UAGX_TerrainSpriteComponent>(
+			USceneComponent::GetDefaultSceneRootVariableName());
+		RootComponent = SpriteComponent;
 	}
 }
 

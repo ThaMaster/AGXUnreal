@@ -9,6 +9,7 @@
 #include "AGX_CollisionGroupDisablerActor.generated.h"
 
 class UAGX_CollisionGroupDisablerComponent;
+class UAGX_CollisionGroupDisablerSpriteComponent;
 
 /**
  * Collision Group Disabler Actor is an Actor with a Collision Group Disabler Component.
@@ -25,5 +26,11 @@ public:
 	AAGX_CollisionGroupDisablerActor();
 
 	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)
+	UAGX_CollisionGroupDisablerSpriteComponent* SpriteComponent;
+
+	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)
 	UAGX_CollisionGroupDisablerComponent* CollisionGroupDisablerComponent;
+
+private:
+	void Serialize(FArchive& Archive) override;
 };
