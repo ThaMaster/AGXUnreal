@@ -157,6 +157,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	bool SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial);
 
+	/**
+	 * Toggle to enable or disable collision generation against this Wire.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Wire")
+	bool bCanCollide {true};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	void SetCanCollide(bool CanCollide);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	bool GetCanCollide() const;
+
+	/**
+	 * List of collision groups that this Wire Component is part of.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Wire")
+	TArray<FName> CollisionGroups;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	void AddCollisionGroup(const FName& GroupName);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	void RemoveCollisionGroupIfExists(const FName& GroupName);
+
 	/*
 	 * Begin winch.
 	 */

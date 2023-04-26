@@ -1366,7 +1366,7 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 	// Get all the imported components.
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
-	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 19);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 20);
 
 	auto GetBox = [&Components](
 					  const TCHAR* Name,
@@ -1422,6 +1422,8 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 		GetBody(*FAGX_BlueprintUtilities::ToTemplateComponentName("rb_left_5_blue"), RbArr);
 	UAGX_BoxShapeComponent* geom_left_5_blue =
 		GetBox(*FAGX_BlueprintUtilities::ToTemplateComponentName("geom_left_5_blue"), BoxArr);
+	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Wire"));
 	UAGX_CollisionGroupDisablerComponent* AGX_CollisionGroupDisabler =
 		GetByName<UAGX_CollisionGroupDisablerComponent>(
 			Components,
@@ -1430,6 +1432,7 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 	Test.TestEqual(TEXT("Number of Rigid Bodies"), RbArr.Num(), 8);
 	Test.TestEqual(TEXT("Number of Box Shapes"), BoxArr.Num(), 8);
 
+	Test.TestNotNull(TEXT("Wire"), Wire);
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
 	Test.TestNotNull(TEXT("AGX_CollisionGroupDisabler"), AGX_CollisionGroupDisabler);
 
@@ -1460,6 +1463,11 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 		}
 	}
 
+	if (IsAnyNullptr(Wire, AGX_CollisionGroupDisabler))
+	{
+		return true; // Not null tested above and will get reported in the test log.
+	}
+
 	Test.TestEqual(
 		TEXT("Collision group name"), geom_0_brown->CollisionGroups[0].IsEqual("A"), true);
 	Test.TestEqual(
@@ -1476,9 +1484,15 @@ bool FCheckCollisionGroupsImportedCommand::Update()
 	Test.TestEqual(
 		TEXT("Collision grp name"), geom_left_5_blue->CollisionGroups[0].IsEqual("b"), true);
 
+	Test.TestEqual("Wire num collision groups", Wire->CollisionGroups.Num(), 1);
+	if (Wire->CollisionGroups.Num() == 1)
+		Test.TestEqual("Wire collision group", Wire->CollisionGroups[0], FName("w"));
+
+	// Adding the Wire will automatically add 9 additional collision group pairs. Not clear why,
+	// it's an AGX thing.
 	Test.TestEqual(
 		TEXT("Number of Collision group pairs"),
-		AGX_CollisionGroupDisabler->DisabledCollisionGroupPairs.Num(), 3);
+		AGX_CollisionGroupDisabler->DisabledCollisionGroupPairs.Num(), 12);
 
 	Test.TestEqual(
 		TEXT("Pair collision disabled"),
@@ -1519,7 +1533,8 @@ bool FClearCollisionGroupsImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles {
-		TEXT("Blueprint"), TEXT("BP_collision_groups_build.uasset")};
+		TEXT("Blueprint"), TEXT("BP_collision_groups_build.uasset"),
+		TEXT("ShapeMaterial"), TEXT("defaultWireMaterial_93.uasset")};
 
 	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
 	ExpectedFiles.Add(*BaseBlueprintName);

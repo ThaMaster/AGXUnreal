@@ -235,6 +235,14 @@ void FShapeBarrier::AddCollisionGroups(const TArray<FName>& GroupNames)
 	}
 }
 
+void FShapeBarrier::RemoveCollisionGroup(const FName& GroupName)
+{
+	check(HasNative());
+
+	// Remove collision group as (hashed) unsigned int.
+	NativeRef->NativeGeometry->removeGroup(StringTo32BitFnvHash(GroupName.ToString()));
+}
+
 FGuid FShapeBarrier::GetShapeGuid() const
 {
 	check(HasNative());

@@ -163,8 +163,10 @@ public:
 	 */
 	bool ShouldCreateVisualMesh() const;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
 	void AddCollisionGroup(const FName& GroupName);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
 	void RemoveCollisionGroupIfExists(const FName& GroupName);
 
 	// ~Begin UObject interface.

@@ -96,6 +96,7 @@ public:
 
 	void AddCollisionGroup(const FName& GroupName);
 	void AddCollisionGroups(const TArray<FName>& GroupNames);
+	void RemoveCollisionGroup(const FName& GroupName);
 
 	FGuid GetShapeGuid() const;
 	FGuid GetGeometryGuid() const;
