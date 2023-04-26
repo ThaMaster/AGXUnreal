@@ -133,6 +133,18 @@ public:
 	bool SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial);
 
 	/**
+	 * List of collision groups that this Terrain is part of.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	TArray<FName> CollisionGroups;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	void AddCollisionGroup(const FName& GroupName);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	void RemoveCollisionGroupIfExists(const FName& GroupName);
+
+	/**
 	 * If a Particle System Component has been spawned by the Terrain, this function will return it.
 	 * Returns nullptr otherwise.
 	 */
