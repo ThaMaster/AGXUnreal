@@ -308,6 +308,7 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, bool ForceOverw
 	{
 		if (!BarrierCollisionGroups.Contains(Group))
 		{
+			// Needed for re-import.
 			CollisionGroupsToRemove.Add(Group);
 		}
 	}
@@ -404,21 +405,29 @@ void UAGX_ShapeComponent::UpdateNativeGlobalTransform()
 
 void UAGX_ShapeComponent::AddCollisionGroup(const FName& GroupName)
 {
-	if (!GroupName.IsNone())
-		CollisionGroups.AddUnique(GroupName);
+	if (GroupName.IsNone())
+		return;
+
+	if (CollisionGroups.Contains(GroupName))
+		return;
+
+	CollisionGroups.Add(GroupName);
+	if (HasNative())
+		GetNative()->AddCollisionGroup(GroupName);
 }
 
 void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 {
-	if (!GroupName.IsNone())
-	{
-		auto Index = CollisionGroups.IndexOfByKey(GroupName);
+	if (GroupName.IsNone())
+		return;
 
-		if (Index != INDEX_NONE)
-		{
-			CollisionGroups.RemoveAt(Index);
-		}
-	}
+	auto Index = CollisionGroups.IndexOfByKey(GroupName);
+	if (Index == INDEX_NONE)
+		return;
+
+	CollisionGroups.RemoveAt(Index);
+	if (HasNative())
+		GetNative()->RemoveCollisionGroup(GroupName);
 }
 
 bool UAGX_ShapeComponent::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
