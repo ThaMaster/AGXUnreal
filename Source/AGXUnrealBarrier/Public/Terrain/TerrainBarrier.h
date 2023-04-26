@@ -64,6 +64,11 @@ public:
 	void SetShapeMaterial(const FShapeMaterialBarrier& Material);
 	void SetTerrainMaterial(const FTerrainMaterialBarrier& TerrainMaterial);
 
+	void AddCollisionGroup(const FName& GroupName);
+	void AddCollisionGroups(const TArray<FName>& GroupNames);
+	TArray<FName> GetCollisionGroups() const;
+	void RemoveCollisionGroup(const FName& GroupName);
+
 	/**
 	 * Clears both the internal shape and terrain materials.
 	 */
