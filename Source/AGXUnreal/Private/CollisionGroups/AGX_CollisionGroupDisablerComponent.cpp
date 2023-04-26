@@ -8,6 +8,7 @@
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
 #include "Engine/World.h"
@@ -128,12 +129,19 @@ void UAGX_CollisionGroupDisablerComponent::UpdateAvailableCollisionGroupsFromWor
 
 	// @todo Find a way to only get the shapes in the current UWorld.
 
-	// Find all ShapeComponent objects and get all collision groups from those.
 	for (TObjectIterator<UAGX_ShapeComponent> ObjectIt; ObjectIt; ++ObjectIt)
 	{
 		UAGX_ShapeComponent* Shape = *ObjectIt;
-
 		for (const auto& CollisionGroup : Shape->CollisionGroups)
+		{
+			AvailableCollisionGroups.AddUnique(CollisionGroup);
+		}
+	}
+
+	for (TObjectIterator<UAGX_WireComponent> ObjectIt; ObjectIt; ++ObjectIt)
+	{
+		UAGX_WireComponent* Wire = *ObjectIt;
+		for (const auto& CollisionGroup : Wire->CollisionGroups)
 		{
 			AvailableCollisionGroups.AddUnique(CollisionGroup);
 		}
