@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Shapes/AGX_ShapeComponent.h"
+#include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Wire/AGX_WireComponent.h"
@@ -142,6 +143,15 @@ void UAGX_CollisionGroupDisablerComponent::UpdateAvailableCollisionGroupsFromWor
 	{
 		UAGX_WireComponent* Wire = *ObjectIt;
 		for (const auto& CollisionGroup : Wire->CollisionGroups)
+		{
+			AvailableCollisionGroups.AddUnique(CollisionGroup);
+		}
+	}
+
+	for (TObjectIterator<AAGX_Terrain> ObjectIt; ObjectIt; ++ObjectIt)
+	{
+		AAGX_Terrain* Terrain = *ObjectIt;
+		for (const auto& CollisionGroup : Terrain->CollisionGroups)
 		{
 			AvailableCollisionGroups.AddUnique(CollisionGroup);
 		}
