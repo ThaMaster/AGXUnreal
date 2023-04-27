@@ -1106,6 +1106,12 @@ void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
 	Radius = Barrier.GetRadius();
 	MinSegmentLength = 1.0f / Barrier.GetResolutionPerUnitLength();
 	LinearVelocityDamping = static_cast<float>(Barrier.GetLinearVelocityDamping());
+	bCanCollide = Barrier.GetEnableCollisions();
+
+	for (const FName& Group : Barrier.GetCollisionGroups())
+	{
+		AddCollisionGroup(Group);
+	}
 
 	const FMergeSplitPropertiesBarrier Msp =
 		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FWireBarrier*>(&Barrier));
@@ -1225,6 +1231,10 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, MergeSplitProperties),
 		[](ThisClass* This) { This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, bCanCollide),
+		[](ThisClass* Wire) { Wire->SetCanCollide(Wire->bCanCollide); });
 
 	// Begin Winch.
 
@@ -1611,6 +1621,55 @@ bool UAGX_WireComponent::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
 	return true;
 }
 
+void UAGX_WireComponent::SetCanCollide(bool CanCollide)
+{
+	if (HasNative())
+	{
+		GetNative()->SetEnableCollisions(CanCollide);
+	}
+
+	bCanCollide = CanCollide;
+}
+
+bool UAGX_WireComponent::GetCanCollide() const
+{
+	if (HasNative())
+	{
+		return GetNative()->GetEnableCollisions();
+	}
+
+	return bCanCollide;
+}
+
+void UAGX_WireComponent::AddCollisionGroup(const FName& GroupName)
+{
+	if (GroupName.IsNone())
+	{
+		return;
+	}
+
+	if (CollisionGroups.Contains(GroupName))
+		return;
+
+	CollisionGroups.Add(GroupName);
+	if (HasNative())
+		NativeBarrier.AddCollisionGroup(GroupName);
+}
+
+void UAGX_WireComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
+{
+	if (GroupName.IsNone())
+		return;
+
+	auto Index = CollisionGroups.IndexOfByKey(GroupName);
+	if (Index == INDEX_NONE)
+		return;
+
+	CollisionGroups.RemoveAt(Index);
+	if (HasNative())
+		NativeBarrier.RemoveCollisionGroup(GroupName);
+}
+
 void UAGX_WireComponent::CreateNative()
 {
 	using namespace AGX_WireComponent_helpers;
@@ -1631,6 +1690,8 @@ void UAGX_WireComponent::CreateNative()
 	}
 
 	NativeBarrier.SetLinearVelocityDamping(LinearVelocityDamping);
+	NativeBarrier.SetEnableCollisions(bCanCollide);
+	NativeBarrier.AddCollisionGroups(CollisionGroups);
 
 	/// @todo Not sure if we should expose Scale Constant or not.
 	// NativeBarrier.SetScaleConstant(ScaleConstant);

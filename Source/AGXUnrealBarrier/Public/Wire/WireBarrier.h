@@ -61,6 +61,14 @@ public:
 	/** Set the maximum resolution of the wire [nodes/cm]. */
 	float GetResolutionPerUnitLength() const;
 
+	void SetEnableCollisions(bool CanCollide);
+	bool GetEnableCollisions() const;
+
+	void AddCollisionGroup(const FName& GroupName);
+	void AddCollisionGroups(const TArray<FName>& GroupNames);
+	TArray<FName> GetCollisionGroups() const;
+	void RemoveCollisionGroup(const FName& GroupName);
+
 	void SetScaleConstant(double ScaleConstant);
 	double GetScaleConstant() const;
 
