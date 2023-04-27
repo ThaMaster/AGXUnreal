@@ -188,10 +188,10 @@ void FTerrainBarrier::ClearMaterial()
 void FTerrainBarrier::AddCollisionGroup(const FName& GroupName)
 {
 	check(HasNative());
-	agxCollide::HeightField* HeightField = NativeRef->Native->getHeightField();
 
-	// Add collision group as (hashed) unsigned int.
-	HeightField->getGeometry()->addGroup(StringTo32BitFnvHash(GroupName.ToString()));
+	// Add collision group as (hashed) unsigned int.  Making changes to the Terrain's Geometry is
+	// not generally a good idea, but this case (adding collision groups) is ok.
+	NativeRef->Native->getGeometry()->addGroup(StringTo32BitFnvHash(GroupName.ToString()));
 }
 
 void FTerrainBarrier::AddCollisionGroups(const TArray<FName>& GroupNames)
@@ -205,26 +205,25 @@ void FTerrainBarrier::AddCollisionGroups(const TArray<FName>& GroupNames)
 void FTerrainBarrier::RemoveCollisionGroup(const FName& GroupName)
 {
 	check(HasNative());
-	agxCollide::HeightField* HeightField = NativeRef->Native->getHeightField();
 
-	// Remove collision group as (hashed) unsigned int.
-	HeightField->getGeometry()->removeGroup(StringTo32BitFnvHash(GroupName.ToString()));
+	// Remove collision group as (hashed) unsigned int. Making changes to the Terrain's Geometry is
+	// not generally a good idea, but this case (removing collision groups) is ok.
+	NativeRef->Native->getGeometry()->removeGroup(StringTo32BitFnvHash(GroupName.ToString()));
 }
 
 TArray<FName> FTerrainBarrier::GetCollisionGroups() const
 {
 	check(HasNative());
-	const agxCollide::HeightField* HeightField = NativeRef->Native->getHeightField();
 	const agxCollide::GroupIdCollection Groups =
-		HeightField->getGeometry()->findGroupIdCollection();
+		NativeRef->Native->getGeometry()->findGroupIdCollection();
 
 	TArray<FName> Result;
-	for (const agx::Name& Name : Groups->getGroupNames())
+	for (const agx::Name& Name : Groups.getNames())
 	{
 		Result.Add(FName(*Convert(Name)));
 	}
 
-	for (const agx::UInt32 Id : Groups->getGroupIds())
+	for (const agx::UInt32 Id : Groups.getIds())
 	{
 		Result.Add(FName(*FString::FromInt(Id)));
 	}
