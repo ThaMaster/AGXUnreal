@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Shapes/AGX_ShapeComponent.h"
+#include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Wire/AGX_WireComponent.h"
@@ -13,6 +14,22 @@
 // Unreal Engine includes.
 #include "Engine/World.h"
 #include "UObject/UObjectIterator.h"
+
+
+namespace AGX_CollisionGroupDisabler_helpers
+{
+	template <typename T>
+	void CollectCollisionGroupsFrom(TArray<FName>& OutCollisionGroups)
+	{
+		for (TObjectIterator<T> ObjectIt; ObjectIt; ++ObjectIt)
+		{
+			for (const auto& CollisionGroup : (*ObjectIt)->CollisionGroups)
+			{
+				OutCollisionGroups.AddUnique(CollisionGroup);
+			}
+		}
+	}
+}
 
 UAGX_CollisionGroupDisablerComponent::UAGX_CollisionGroupDisablerComponent()
 {
@@ -125,27 +142,13 @@ void UAGX_CollisionGroupDisablerComponent::AddCollisionGroupPairsToSimulation()
 
 void UAGX_CollisionGroupDisablerComponent::UpdateAvailableCollisionGroupsFromWorld()
 {
+	using namespace AGX_CollisionGroupDisabler_helpers;
 	AvailableCollisionGroups.Empty();
 
 	// @todo Find a way to only get the shapes in the current UWorld.
-
-	for (TObjectIterator<UAGX_ShapeComponent> ObjectIt; ObjectIt; ++ObjectIt)
-	{
-		UAGX_ShapeComponent* Shape = *ObjectIt;
-		for (const auto& CollisionGroup : Shape->CollisionGroups)
-		{
-			AvailableCollisionGroups.AddUnique(CollisionGroup);
-		}
-	}
-
-	for (TObjectIterator<UAGX_WireComponent> ObjectIt; ObjectIt; ++ObjectIt)
-	{
-		UAGX_WireComponent* Wire = *ObjectIt;
-		for (const auto& CollisionGroup : Wire->CollisionGroups)
-		{
-			AvailableCollisionGroups.AddUnique(CollisionGroup);
-		}
-	}
+	CollectCollisionGroupsFrom<UAGX_ShapeComponent>(AvailableCollisionGroups);
+	CollectCollisionGroupsFrom<UAGX_WireComponent>(AvailableCollisionGroups);
+	CollectCollisionGroupsFrom<AAGX_Terrain>(AvailableCollisionGroups);
 }
 
 void UAGX_CollisionGroupDisablerComponent::RemoveDeprecatedCollisionGroups()

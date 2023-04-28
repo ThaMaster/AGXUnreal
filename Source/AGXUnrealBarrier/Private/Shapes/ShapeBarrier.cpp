@@ -259,7 +259,7 @@ TArray<FName> FShapeBarrier::GetCollisionGroups() const
 {
 	check(HasNative());
 	TArray<FName> Result;
-	agxCollide::GroupIdCollection Groups = NativeRef->NativeGeometry->findGroupIdCollection();
+	const agxCollide::GroupIdCollection Groups = NativeRef->NativeGeometry->findGroupIdCollection();
 	for (const agx::Name& Name : Groups.getNames())
 	{
 		Result.Add(FName(*Convert(Name)));

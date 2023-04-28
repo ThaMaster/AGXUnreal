@@ -185,6 +185,52 @@ void FTerrainBarrier::ClearMaterial()
 	NativeRef->Native->setMaterial(nullptr);
 }
 
+void FTerrainBarrier::AddCollisionGroup(const FName& GroupName)
+{
+	check(HasNative());
+
+	// Add collision group as (hashed) unsigned int.  Making changes to the Terrain's Geometry is
+	// not generally a good idea, but this case (adding collision groups) is ok.
+	NativeRef->Native->getGeometry()->addGroup(StringTo32BitFnvHash(GroupName.ToString()));
+}
+
+void FTerrainBarrier::AddCollisionGroups(const TArray<FName>& GroupNames)
+{
+	for (auto& GroupName : GroupNames)
+	{
+		AddCollisionGroup(GroupName);
+	}
+}
+
+void FTerrainBarrier::RemoveCollisionGroup(const FName& GroupName)
+{
+	check(HasNative());
+
+	// Remove collision group as (hashed) unsigned int. Making changes to the Terrain's Geometry is
+	// not generally a good idea, but this case (removing collision groups) is ok.
+	NativeRef->Native->getGeometry()->removeGroup(StringTo32BitFnvHash(GroupName.ToString()));
+}
+
+TArray<FName> FTerrainBarrier::GetCollisionGroups() const
+{
+	check(HasNative());
+	const agxCollide::GroupIdCollection Groups =
+		NativeRef->Native->getGeometry()->findGroupIdCollection();
+
+	TArray<FName> Result;
+	for (const agx::Name& Name : Groups.getNames())
+	{
+		Result.Add(FName(*Convert(Name)));
+	}
+
+	for (const agx::UInt32 Id : Groups.getIds())
+	{
+		Result.Add(FName(*FString::FromInt(Id)));
+	}
+
+	return Result;
+}
+
 int32 FTerrainBarrier::GetGridSizeX() const
 {
 	check(HasNative());
@@ -315,7 +361,7 @@ TArray<float> FTerrainBarrier::GetParticleRadii() const
 	const size_t NumParticles = FTerrainUtilities::GetNumParticles(*this);
 	TArray<float> Radii;
 	Radii.Reserve(NumParticles);
-	
+
 	FTerrainUtilities::AppendParticleRadii(*this, Radii);
 	return Radii;
 }

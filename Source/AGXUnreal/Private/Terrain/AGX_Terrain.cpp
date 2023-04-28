@@ -88,6 +88,35 @@ bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 	return true;
 }
 
+void AAGX_Terrain::AddCollisionGroup(const FName& GroupName)
+{
+	if (GroupName.IsNone())
+	{
+		return;
+	}
+
+	if (CollisionGroups.Contains(GroupName))
+		return;
+
+	CollisionGroups.Add(GroupName);
+	if (HasNative())
+		NativeBarrier.AddCollisionGroup(GroupName);
+}
+
+void AAGX_Terrain::RemoveCollisionGroupIfExists(const FName& GroupName)
+{
+	if (GroupName.IsNone())
+		return;
+
+	auto Index = CollisionGroups.IndexOfByKey(GroupName);
+	if (Index == INDEX_NONE)
+		return;
+
+	CollisionGroups.RemoveAt(Index);
+	if (HasNative())
+		NativeBarrier.RemoveCollisionGroup(GroupName);
+}
+
 UNiagaraComponent* AAGX_Terrain::GetSpawnedParticleSystemComponent()
 {
 	return ParticleSystemComponent;
@@ -832,6 +861,8 @@ bool AAGX_Terrain::CreateNative()
 		FMath::RoundToInt(Bounds->HalfExtent.X * 2.0 / SourceLandscape->GetActorScale().X) + 1;
 	NumVerticesY =
 		FMath::RoundToInt(Bounds->HalfExtent.Y * 2.0 / SourceLandscape->GetActorScale().Y) + 1;
+
+	NativeBarrier.AddCollisionGroups(CollisionGroups);
 
 	if (bEnableTerrainPaging)
 	{
