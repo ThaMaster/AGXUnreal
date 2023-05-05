@@ -532,6 +532,11 @@ void FTerrainMaterialBarrier::SetMaximumContactDepth(double MaximumContactDepth)
 double FTerrainMaterialBarrier::GetMaximumContactDepth() const
 {
 	check(HasNative());
+#if AGX_VERSION_GREATER_OR_EQUAL(2, 36, 0, 0)
+	return ConvertDistanceToUnreal<double>(
+		NativeRef->Native->getExcavationContactProperties()->getMaximumContactDepth());
+#else
 	return ConvertDistanceToUnreal<double>(
 		NativeRef->Native->getExcavationContactProperties()->getMaximumDepth());
+#endif
 }
