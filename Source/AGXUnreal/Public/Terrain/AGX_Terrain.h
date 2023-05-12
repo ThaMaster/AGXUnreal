@@ -11,10 +11,14 @@
 #include "Terrain/AGX_Shovel.h"
 
 // Unreal Engine includes.
+#include "Misc/EngineVersionComparison.h"
 #include "Containers/Array.h"
 #include "CoreMinimal.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/Actor.h"
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+#include "RHI.h"
+#endif
 
 // Standard library includes.
 #include <mutex>

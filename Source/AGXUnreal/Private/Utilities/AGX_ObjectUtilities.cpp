@@ -7,6 +7,7 @@
 #include "Utilities/AGX_BlueprintUtilities.h"
 
 // Unreal Engine includes.
+#include "Engine/Level.h"
 #include "Misc/EngineVersionComparison.h"
 #include "UObject/SavePackage.h"
 

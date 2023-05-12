@@ -12,6 +12,7 @@
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
 #include "PrimitiveSceneProxy.h"
+#include "SceneInterface.h"
 #include "StaticMeshResources.h"
 #include "Misc/EngineVersionComparison.h"
 

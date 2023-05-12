@@ -11,6 +11,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "RHI.h"
 #include "RHICommandList.h"
+#include "TextureResource.h"
 
 bool FAGX_TextureUtilities::UpdateRenderTextureRegions(
 	UTextureRenderTarget2D& RenderTarget, uint32 NumRegions, FUpdateTextureRegion2D* Regions,
