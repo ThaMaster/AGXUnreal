@@ -21,18 +21,26 @@
 #include "Utilities/AGX_MeshUtilities.h"
 
 // Unreal Engine includes.
+#include "Misc/EngineVersionComparison.h"
 #include "DynamicMeshBuilder.h"
 #include "Engine/CollisionProfile.h"
 #include "Engine/Engine.h"
 #include "EngineGlobals.h"
 #include "LocalVertexFactory.h"
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+#include "MaterialDomain.h"
+#endif
 #include "Materials/Material.h"
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+#include "Materials/MaterialRenderProxy.h"
+#endif
 #include "MaterialShared.h"
 #include "Misc/EngineVersionComparison.h"
 #include "PrimitiveViewRelevance.h"
 #include "PrimitiveSceneProxy.h"
 #include "RenderingThread.h"
 #include "RenderResource.h"
+#include "SceneInterface.h"
 #include "SceneManagement.h"
 #include "StaticMeshResources.h"
 #include "UObject/ConstructorHelpers.h"

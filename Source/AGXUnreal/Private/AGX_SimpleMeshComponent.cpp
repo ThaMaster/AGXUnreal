@@ -5,6 +5,7 @@
 #include "AGX_UE4Compatibility.h"
 
 // Unreal Engine includes.
+#include "Misc/EngineVersionComparison.h"
 #include "RenderingThread.h"
 #include "RenderResource.h"
 #include "PrimitiveViewRelevance.h"
@@ -12,8 +13,16 @@
 #include "VertexFactory.h"
 #include "MaterialShared.h"
 #include "Engine/CollisionProfile.h"
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+#include "MaterialDomain.h"
+#endif
 #include "Materials/Material.h"
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+#include "Materials/MaterialRenderProxy.h"
+#endif
+#include "MaterialShared.h"
 #include "LocalVertexFactory.h"
+#include "SceneInterface.h"
 #include "SceneManagement.h"
 #include "DynamicMeshBuilder.h"
 #include "EngineGlobals.h"

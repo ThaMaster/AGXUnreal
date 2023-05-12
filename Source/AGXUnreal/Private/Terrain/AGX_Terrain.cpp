@@ -36,6 +36,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "UObject/UObjectIterator.h"
 
 // Standard library includes.
 #include <algorithm>
