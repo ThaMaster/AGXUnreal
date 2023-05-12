@@ -1511,6 +1511,12 @@ namespace AGX_WireComponent_helpers
 			return;
 		}
 
+// Unreal Engine 5.2 require that the message passed to UE_LOG is constexpr.
+// Not sure how to make the constexpr-ness of a string literal survive through a call to a lambda
+// function, so falling back to a macro.
+//
+// Is there a better solution?
+#if UE_VERSION_OLDER_THAN(5, 2, 0)
 		// Message must contain four %s ordered as Wire name, Wire owner name, Winch name, Winch
 		// owner name.
 		auto LogError = [&Wire, Side](auto& Message)
@@ -1522,6 +1528,17 @@ namespace AGX_WireComponent_helpers
 				LogAGX, Error, Message, *Wire.GetName(), *GetLabelSafe(Wire.GetOwner()), *WinchName,
 				*ActorName);
 		};
+#else
+
+#define LogError(Message)                                                                    \
+	const FComponentReference* Reference = Wire.GetWinchComponentReference(Side);            \
+	const FString WinchName = Reference->ComponentProperty.ToString();                       \
+	const FString ActorName = GetLabelSafe(FAGX_ObjectUtilities::GetActor(*Reference));      \
+	UE_LOG(                                                                                  \
+		LogAGX, Error, Message, *Wire.GetName(), *GetLabelSafe(Wire.GetOwner()), *WinchName, \
+		*ActorName);
+
+#endif
 
 		UAGX_WireWinchComponent* WinchComponent = Wire.GetWinchComponent(Side);
 		if (WinchComponent == nullptr)
