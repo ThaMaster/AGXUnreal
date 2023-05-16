@@ -740,7 +740,8 @@ namespace
 	}
 
 	template <typename TPtr>
-	TPtr GetShovelComponent(UAGX_RigidBodyComponent& Body, const TCHAR* TerrainName)
+	TPtr GetShovelComponent(
+		UAGX_RigidBodyComponent& Body, const TCHAR* TerrainName)
 	{
 		auto RecursiveFind = [](const TArray<USceneComponent*>& Components, auto& recurse)
 		{
@@ -754,7 +755,7 @@ namespace
 				{
 					return Match;
 				}
-			}			
+			}
 			return TPtr(nullptr);
 		};
 
@@ -764,8 +765,8 @@ namespace
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("Unable to find Shovel Component '%s' in Rigid Body '%s'. Make sure it has "
-					 "been added to the Rigid Body."),
-				TerrainName, *Body.GetName());
+					 "been added as a child to the Rigid Body."),
+				*std::remove_pointer<TPtr>::type::StaticClass()->GetName(), *Body.GetName());
 		}
 
 		return Result;
