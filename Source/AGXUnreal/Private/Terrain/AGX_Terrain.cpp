@@ -754,10 +754,21 @@ namespace
 				{
 					return Match;
 				}
-			}
+			}			
 			return TPtr(nullptr);
 		};
-		return RecursiveFind(Body.GetAttachChildren(), RecursiveFind);
+
+		TPtr Result = RecursiveFind(Body.GetAttachChildren(), RecursiveFind);
+		if (Result == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unable to find Shovel Component '%s' in Rigid Body '%s'. Make sure it has "
+					 "been added to the Rigid Body."),
+				TerrainName, *Body.GetName());
+		}
+
+		return Result;
 	}
 
 	template <typename TPtr>
