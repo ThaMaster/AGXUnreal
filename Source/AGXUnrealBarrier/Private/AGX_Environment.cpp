@@ -624,7 +624,8 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus) const
 	const bool LicenseValid = AgxRuntime->isValid();
 	if (OutStatus)
 	{
-		*OutStatus = Convert(AgxRuntime->getStatus());
+		*OutStatus = TEXT("\n  Service License: ") + Convert(AgxRuntime->getExtendedStatus());
+		*OutStatus += TEXT("\n  Legacy license: ") + Convert(AgxRuntime->getStatus());
 	}
 
 	return LicenseValid;
