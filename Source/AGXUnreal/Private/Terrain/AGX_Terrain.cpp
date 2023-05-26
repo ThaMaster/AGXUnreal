@@ -64,6 +64,38 @@ AAGX_Terrain::AAGX_Terrain()
 	RootComponent = SpriteComponent;
 
 	TerrainBounds = CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("TerrainBounds"));
+
+	// Set render targets and niagara system from plugin by default to reduce manual steps when
+	// using Terrain.
+	auto AssignDefault = [](auto*& AssetRefProperty, const TCHAR* Path)
+	{
+		if (AssetRefProperty != nullptr)
+			return;
+
+		using Type = typename std::remove_reference<decltype(*AssetRefProperty)>::type;
+		auto AssetFinder = ConstructorHelpers::FObjectFinder<Type>(Path);
+		if (!AssetFinder.Succeeded())
+		{
+			UE_LOG(LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), *Path);
+			return;
+		}			
+
+		AssetRefProperty = AssetFinder.Object;
+	};
+
+	AssignDefault(
+		LandscapeDisplacementMap,
+		TEXT("TextureRenderTarget2D'/AGXUnreal/Terrain/Rendering/HeightField/"
+			 "RT_LandscapeDisplacementMap.RT_LandscapeDisplacementMap'"));
+
+	AssignDefault(
+		ParticleSystemAsset, TEXT("NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/"
+								  "PS_SoilParticleSystem.PS_SoilParticleSystem'"));
+
+	AssignDefault(
+		TerrainParticlesDataMap,
+		TEXT("TextureRenderTarget2D'/AGXUnreal/Terrain/Rendering/Particles/"
+			 "RT_TerrainParticleData.RT_TerrainParticleData'"));
 }
 
 bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
