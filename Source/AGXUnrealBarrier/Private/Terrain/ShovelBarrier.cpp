@@ -247,6 +247,12 @@ void FShovelBarrier::AllocateNative(
 	const agx::Line TopEdgeAGX = ConvertDisplacement(TopEdge);
 	const agx::Line CuttingEdgeAGX = ConvertDisplacement(CuttingEdge);
 	const agx::Vec3 CuttingDirectionAGX = ConvertVector(CuttingDirection);
+
+	// This is a fix for the error printed from AGX Dynamics where the tolerance of the length of
+	// the Cutting Direction is so small that floating point precision is not enough, thus
+	// triggering the error message even if set to length 100cm in Unreal.
+	CuttingDirectionAGX.normalize();
+
 	NativeRef->Native =
 		new agxTerrain::Shovel(BodyAGX, TopEdgeAGX, CuttingEdgeAGX, CuttingDirectionAGX);
 }
