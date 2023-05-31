@@ -15,17 +15,18 @@
 #include <agx/MassProperties.h>
 #include <agx/ref_ptr.h>
 #include <agx/RigidBody.h>
+#include <agxCollide/Geometry.h>
+#include <agxCollide/Shape.h>
+#include <agxModel/Tire.h>
+#include <agxPlot/System.h>
+#include <agxPlot/WebPlot.h>
 #include <agxSDK/MergeSplitHandler.h>
 #include <agxSDK/MergeSplitThresholds.h>
 #include <agxSDK/Simulation.h>
-#include <agxCollide/Geometry.h>
-#include <agxCollide/Shape.h>
 #include <agxTerrain/Terrain.h>
 #include <agxTerrain/TerrainMaterial.h>
 #include <agxTerrain/TerrainPager.h>
-#include <agxModel/Tire.h>
 #include "EndAGXIncludes.h"
-
 
 struct FConstraintControllerRef
 {
@@ -133,6 +134,17 @@ struct FNotifyRef
 
 	FNotifyRef() = default;
 	FNotifyRef(FAGXNotify* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FPlotRef
+{
+	agxPlot::SystemRef Native;
+
+	FPlotRef() = default;
+	FPlotRef(agxPlot::System* InNative)
 		: Native(InNative)
 	{
 	}
