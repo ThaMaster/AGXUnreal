@@ -18,6 +18,7 @@
 #include <agxCollide/Geometry.h>
 #include <agxCollide/Shape.h>
 #include <agxModel/Tire.h>
+#include <agxPlot/DataSeries.h>
 #include <agxPlot/System.h>
 #include <agxPlot/WebPlot.h>
 #include <agxSDK/MergeSplitHandler.h>
@@ -55,6 +56,17 @@ struct FContactMaterialRef
 
 	FContactMaterialRef() = default;
 	FContactMaterialRef(agx::ContactMaterial* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FDataSeriesRef
+{
+	agxPlot::DataSeriesRef Native;
+
+	FDataSeriesRef() = default;
+	FDataSeriesRef(agxPlot::DataSeries* InNative)
 		: Native(InNative)
 	{
 	}
