@@ -25,7 +25,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Plot")
 	void CreatePlot(
 		const FString& Name, UPARAM(ref) FAGX_PlotDataSeries& Xlabel,
-		UPARAM(ref) FAGX_PlotDataSeries& Yabel);
+		UPARAM(ref) FAGX_PlotDataSeries& Ylabel);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Plot")
+	void OpenPlotWindow();
+
+	UPROPERTY(EditAnywhere, Category = "AGX Plot")
+	bool bAutoOpenPlotWindow {true};
+
+	UPROPERTY(EditAnywhere, Category = "AGX Plot")
+	bool bWriteToFile {true};
+
+	UPROPERTY(EditAnywhere, Category = "AGX Plot", Meta = (EditCondition = "!bWriteToFile"))
+	FString FileOutputName {"AGXUnreal"};
 
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FPlotBarrier* GetOrCreateNative();

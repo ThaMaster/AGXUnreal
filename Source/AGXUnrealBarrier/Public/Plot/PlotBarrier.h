@@ -22,11 +22,12 @@ public:
 	FPlotRef* GetNative();
 	const FPlotRef* GetNative() const;
 
-	void AllocateNative(const FSimulationBarrier& Simulation);
+	void AllocateNative(const FSimulationBarrier& Simulation, const FString* OutputFileName, bool bOpenWebPlot);
 	void ReleaseNative();
 
 	void CreatePlot(
-		const FString& Name, FPlotDataSeriesBarrier& Xlabel, FPlotDataSeriesBarrier& Ylabel);
+		const FString& Name, FPlotDataSeriesBarrier& Xlabel, FPlotDataSeriesBarrier& Ylabel,
+		TArray<FPlotDataSeriesBarrier*>& YlabelsBarriers);
 
 	void OpenWebPlot();
 

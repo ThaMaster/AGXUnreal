@@ -2,7 +2,6 @@
 
 #include "Plot/AGX_PlotDataSeries.h"
 
-
 void FAGX_PlotDataSeries::Write(float Data)
 {
 	if (!HasNative())

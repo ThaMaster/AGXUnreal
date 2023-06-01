@@ -12,7 +12,7 @@ class AGXUNREALBARRIER_API FPlotDataSeriesBarrier
 public:
 	FPlotDataSeriesBarrier();
 	FPlotDataSeriesBarrier(std::unique_ptr<FDataSeriesRef> Native);
-	FPlotDataSeriesBarrier(FPlotDataSeriesBarrier&& Other);
+	FPlotDataSeriesBarrier(FPlotDataSeriesBarrier&& Other) noexcept;
 	~FPlotDataSeriesBarrier();
 
 	bool HasNative() const;
@@ -30,6 +30,5 @@ private:
 	FPlotDataSeriesBarrier(const FPlotDataSeriesBarrier&) = delete;
 	void operator=(const FPlotDataSeriesBarrier&) = delete;
 
-private:
 	std::unique_ptr<FDataSeriesRef> NativeRef;
 };

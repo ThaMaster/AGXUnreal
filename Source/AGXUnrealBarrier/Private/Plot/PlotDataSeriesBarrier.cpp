@@ -16,7 +16,7 @@ FPlotDataSeriesBarrier::FPlotDataSeriesBarrier(std::unique_ptr<FDataSeriesRef> N
 	check(NativeRef);
 }
 
-FPlotDataSeriesBarrier::FPlotDataSeriesBarrier(FPlotDataSeriesBarrier&& Other)
+FPlotDataSeriesBarrier::FPlotDataSeriesBarrier(FPlotDataSeriesBarrier&& Other) noexcept
 	: NativeRef {std::move(Other.NativeRef)}
 {
 	Other.NativeRef.reset(new FDataSeriesRef);

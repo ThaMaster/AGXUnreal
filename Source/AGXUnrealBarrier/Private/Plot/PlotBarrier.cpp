@@ -44,11 +44,22 @@ bool FPlotBarrier::HasNative() const
 	return NativeRef->Native != nullptr;
 }
 
-void FPlotBarrier::AllocateNative(const FSimulationBarrier& Simulation)
+void FPlotBarrier::AllocateNative(
+	const FSimulationBarrier& Simulation, const FString* OutputFileName, bool bOpenWebPlot)
 {
 	check(!HasNative());
 	check(Simulation.HasNative());
 	NativeRef->Native = Simulation.GetNative()->Native->getPlotSystem();
+
+	if (bOpenWebPlot)
+	{
+		OpenWebPlot();
+	}
+
+	if (OutputFileName == nullptr)
+	{
+		return; // We are done.
+	}
 
 	const FString RelOutputDir = FPaths::GetPath(FPaths::GetProjectFilePath());
 	const FString OutputDir =
@@ -59,7 +70,7 @@ void FPlotBarrier::AllocateNative(const FSimulationBarrier& Simulation)
 	}
 	else
 	{
-		const FString OutputPath = FPaths::Combine(OutputDir, FString("AGXUnreal.dat"));
+		const FString OutputPath = FPaths::Combine(OutputDir, *OutputFileName + FString(".dat"));
 		NativeRef->Native->add(new agxPlot::FilePlot(Convert(OutputPath)));
 	}
 }
@@ -81,17 +92,25 @@ void FPlotBarrier::ReleaseNative()
 	NativeRef->Native = nullptr;
 }
 
-void FPlotBarrier::CreatePlot(const FString& Name, FPlotDataSeriesBarrier& Xlabel, FPlotDataSeriesBarrier& Ylabel)
+void FPlotBarrier::CreatePlot(
+	const FString& Name, FPlotDataSeriesBarrier& Xlabel, FPlotDataSeriesBarrier& Ylabel,
+	TArray<FPlotDataSeriesBarrier*>& YlabelsBarriers)
 {
 	check(HasNative());
 	check(Xlabel.HasNative());
 	check(Ylabel.HasNative());
 
+	agxPlot::Window* plotWindow = NativeRef->Native->getOrCreateWindow(Convert(Name));
+
 	agxPlot::DataSeries* X = Xlabel.GetNative()->Native; 
 	agxPlot::DataSeries* Y = Ylabel.GetNative()->Native; 
+	plotWindow->add(new agxPlot::Curve(X, Y, Y->getName()));
 
-	agxPlot::Window* plotWindow = NativeRef->Native->getOrCreateWindow(Convert(Name));
-	plotWindow->add(new agxPlot::Curve(X, Y, X->getName()));
+	/*for (auto& PDSB : YlabelsBarriers)
+	{
+		agxPlot::DataSeries* DS = PDSB.GetNative()->Native;
+		plotWindow->add(new agxPlot::Curve(X, DS, DS->getName()));
+	}*/
 }
 
 void FPlotBarrier::OpenWebPlot()

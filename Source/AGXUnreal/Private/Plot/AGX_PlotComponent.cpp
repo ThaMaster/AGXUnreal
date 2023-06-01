@@ -31,7 +31,31 @@ void UAGX_PlotComponent::CreatePlot(
 	if (!Ylabel.HasNative())
 		Ylabel.NativeBarrier.AllocateNative(Ylabel.Label);
 
-	NativeBarrier.CreatePlot(Name, Xlabel.NativeBarrier, Ylabel.NativeBarrier);
+	TArray<FPlotDataSeriesBarrier*> YlabelsBarriers;
+	/*YlabelsBarriers.Reserve(Ylabels.Num());
+	for (auto& PDS : Ylabels)
+	{
+		if (!PDS.HasNative())
+			PDS.NativeBarrier.AllocateNative(PDS.Label);
+		YlabelsBarriers.Add(PDS.NativeBarrier);
+	}*/
+
+	NativeBarrier.CreatePlot(Name, Xlabel.NativeBarrier, Ylabel.NativeBarrier, YlabelsBarriers);
+}
+
+void UAGX_PlotComponent::OpenPlotWindow()
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("OpenPlotWindow was called on Plot '%s' in '%s' but the Plot does not have a AGX "
+				 "Native. This function should only be called during Play."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
+	NativeBarrier.OpenWebPlot();
 }
 
 FPlotBarrier* UAGX_PlotComponent::GetOrCreateNative()
@@ -110,6 +134,6 @@ void UAGX_PlotComponent::CreateNative()
 		return;
 	}
 
-	NativeBarrier.AllocateNative(*Simulation->GetNative());
-	NativeBarrier.OpenWebPlot();
+	FString* OutFile = bWriteToFile && !FileOutputName.IsEmpty() ? &FileOutputName : nullptr;
+	NativeBarrier.AllocateNative(*Simulation->GetNative(), OutFile, bAutoOpenPlotWindow);
 }
