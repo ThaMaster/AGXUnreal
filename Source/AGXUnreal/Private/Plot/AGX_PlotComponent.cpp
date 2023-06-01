@@ -96,6 +96,7 @@ void UAGX_PlotComponent::BeginPlay()
 
 void UAGX_PlotComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
+	Super::EndPlay(Reason);
 	if (HasNative())
 	{
 		NativeBarrier.ReleaseNative();
