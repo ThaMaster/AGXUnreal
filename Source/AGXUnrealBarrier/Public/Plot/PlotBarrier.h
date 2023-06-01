@@ -5,6 +5,9 @@
 // System includes.
 #include <memory>
 
+class FPlotDataSeriesBarrier;
+class FSimulationBarrier;
+
 struct FPlotRef;
 
 class AGXUNREALBARRIER_API FPlotBarrier
@@ -19,8 +22,13 @@ public:
 	FPlotRef* GetNative();
 	const FPlotRef* GetNative() const;
 
-	void AllocateNative();
+	void AllocateNative(const FSimulationBarrier& Simulation);
 	void ReleaseNative();
+
+	void CreatePlot(
+		const FString& Name, FPlotDataSeriesBarrier& Xlabel, FPlotDataSeriesBarrier& Ylabel);
+
+	void OpenWebPlot();
 
 private:
 	FPlotBarrier(const FPlotBarrier&) = delete;
