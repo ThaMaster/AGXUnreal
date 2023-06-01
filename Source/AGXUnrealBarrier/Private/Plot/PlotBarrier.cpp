@@ -14,7 +14,6 @@
 // Unreal Engine includes.
 #include "Misc/Paths.h"
 
-
 FPlotBarrier::FPlotBarrier()
 	: NativeRef {new FPlotRef}
 {
@@ -66,11 +65,13 @@ void FPlotBarrier::AllocateNative(
 		IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*RelOutputDir);
 	if (!FPaths::DirectoryExists(OutputDir))
 	{
-		// Todo: log via notification here.
+		UE_LOG(
+			LogAGX, Error, TEXT("Unable to write file '%s' because directory '%s' does not exist."),
+			**OutputFileName, *OutputDir);
 	}
 	else
 	{
-		const FString OutputPath = FPaths::Combine(OutputDir, *OutputFileName + FString(".dat"));
+		const FString OutputPath = FPaths::Combine(OutputDir, *OutputFileName + FString(".csv"));
 		NativeRef->Native->add(new agxPlot::FilePlot(Convert(OutputPath)));
 	}
 }
@@ -93,24 +94,16 @@ void FPlotBarrier::ReleaseNative()
 }
 
 void FPlotBarrier::CreatePlot(
-	const FString& Name, FPlotDataSeriesBarrier& Xlabel, FPlotDataSeriesBarrier& Ylabel,
-	TArray<FPlotDataSeriesBarrier*>& YlabelsBarriers)
+	const FString& Name, FPlotDataSeriesBarrier& Xlabel, FPlotDataSeriesBarrier& Ylabel)
 {
 	check(HasNative());
 	check(Xlabel.HasNative());
 	check(Ylabel.HasNative());
 
 	agxPlot::Window* plotWindow = NativeRef->Native->getOrCreateWindow(Convert(Name));
-
-	agxPlot::DataSeries* X = Xlabel.GetNative()->Native; 
-	agxPlot::DataSeries* Y = Ylabel.GetNative()->Native; 
+	agxPlot::DataSeries* X = Xlabel.GetNative()->Native;
+	agxPlot::DataSeries* Y = Ylabel.GetNative()->Native;
 	plotWindow->add(new agxPlot::Curve(X, Y, Y->getName()));
-
-	/*for (auto& PDSB : YlabelsBarriers)
-	{
-		agxPlot::DataSeries* DS = PDSB.GetNative()->Native;
-		plotWindow->add(new agxPlot::Curve(X, DS, DS->getName()));
-	}*/
 }
 
 void FPlotBarrier::OpenWebPlot()

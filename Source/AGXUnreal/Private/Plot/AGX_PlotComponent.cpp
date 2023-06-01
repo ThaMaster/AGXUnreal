@@ -31,16 +31,7 @@ void UAGX_PlotComponent::CreatePlot(
 	if (!Ylabel.HasNative())
 		Ylabel.NativeBarrier.AllocateNative(Ylabel.Label);
 
-	TArray<FPlotDataSeriesBarrier*> YlabelsBarriers;
-	/*YlabelsBarriers.Reserve(Ylabels.Num());
-	for (auto& PDS : Ylabels)
-	{
-		if (!PDS.HasNative())
-			PDS.NativeBarrier.AllocateNative(PDS.Label);
-		YlabelsBarriers.Add(PDS.NativeBarrier);
-	}*/
-
-	NativeBarrier.CreatePlot(Name, Xlabel.NativeBarrier, Ylabel.NativeBarrier, YlabelsBarriers);
+	NativeBarrier.CreatePlot(Name, Xlabel.NativeBarrier, Ylabel.NativeBarrier);
 }
 
 void UAGX_PlotComponent::OpenPlotWindow()
