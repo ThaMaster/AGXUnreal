@@ -12,7 +12,8 @@
 #include "AGX_PlotDataSeries.generated.h"
 
 
-USTRUCT(BlueprintType) struct AGXUNREAL_API FAGX_PlotDataSeries
+USTRUCT(BlueprintType)
+struct AGXUNREAL_API FAGX_PlotDataSeries
 {
 	GENERATED_BODY()
 
