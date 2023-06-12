@@ -144,6 +144,9 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set(
 		"ClassIcon.AGX_ObserverFrameComponent",
 		new IMAGE_BRUSH("Icons/observer_frame_32x32", IconSize16));
+	// Plots.
+	Style->Set(
+		"ClassIcon.AGX_PlotComponent", new IMAGE_BRUSH("Icons/plot_32x32", IconSize16));
 	// Shapes.
 	Style->Set(
 		"ClassIcon.AGX_BoxShapeComponent", new IMAGE_BRUSH("Icons/box_shape_32x32", IconSize16));
