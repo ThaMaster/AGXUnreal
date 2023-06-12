@@ -11,7 +11,7 @@ UAGX_PlotComponent::UAGX_PlotComponent()
 }
 
 void UAGX_PlotComponent::CreatePlot(
-	const FString& Name, FAGX_PlotDataSeries& Xlabel, FAGX_PlotDataSeries& Ylabel)
+	const FString& Name, FAGX_PlotDataSeries& SeriesX, FAGX_PlotDataSeries& SeriesY)
 {
 	if (!HasNative())
 	{
@@ -25,13 +25,13 @@ void UAGX_PlotComponent::CreatePlot(
 
 	// The reason we allocate the PlotDataSeries Natives here is that they are of UStruct type,
 	// meaning they do not get the BeginPlay callback where AllocateNative is usually called.
-	if (!Xlabel.HasNative())
-		Xlabel.NativeBarrier.AllocateNative(Xlabel.Label);
+	if (!SeriesX.HasNative())
+		SeriesX.NativeBarrier.AllocateNative(SeriesX.Label);
 
-	if (!Ylabel.HasNative())
-		Ylabel.NativeBarrier.AllocateNative(Ylabel.Label);
+	if (!SeriesY.HasNative())
+		SeriesY.NativeBarrier.AllocateNative(SeriesY.Label);
 
-	NativeBarrier.CreatePlot(Name, Xlabel.NativeBarrier, Ylabel.NativeBarrier);
+	NativeBarrier.CreatePlot(Name, SeriesX.NativeBarrier, SeriesY.NativeBarrier);
 }
 
 void UAGX_PlotComponent::OpenPlotWindow()

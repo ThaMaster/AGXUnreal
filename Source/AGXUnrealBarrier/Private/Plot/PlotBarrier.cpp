@@ -94,15 +94,15 @@ void FPlotBarrier::ReleaseNative()
 }
 
 void FPlotBarrier::CreatePlot(
-	const FString& Name, FPlotDataSeriesBarrier& Xlabel, FPlotDataSeriesBarrier& Ylabel)
+	const FString& Name, FPlotDataSeriesBarrier& SeriesX, FPlotDataSeriesBarrier& SeriesY)
 {
 	check(HasNative());
-	check(Xlabel.HasNative());
-	check(Ylabel.HasNative());
+	check(SeriesX.HasNative());
+	check(SeriesY.HasNative());
 
 	agxPlot::Window* plotWindow = NativeRef->Native->getOrCreateWindow(Convert(Name));
-	agxPlot::DataSeries* X = Xlabel.GetNative()->Native;
-	agxPlot::DataSeries* Y = Ylabel.GetNative()->Native;
+	agxPlot::DataSeries* X = SeriesX.GetNative()->Native;
+	agxPlot::DataSeries* Y = SeriesY.GetNative()->Native;
 	plotWindow->add(new agxPlot::Curve(X, Y, Y->getName()));
 }
 

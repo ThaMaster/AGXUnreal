@@ -32,8 +32,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Plot")
 	void CreatePlot(
-		const FString& Name, UPARAM(ref) FAGX_PlotDataSeries& Xlabel,
-		UPARAM(ref) FAGX_PlotDataSeries& Ylabel);
+		const FString& Name, UPARAM(ref) FAGX_PlotDataSeries& SeriesX,
+		UPARAM(ref) FAGX_PlotDataSeries& SeriesY);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Plot")
 	void OpenPlotWindow();

@@ -27,7 +27,7 @@ public:
 	void ReleaseNative();
 
 	void CreatePlot(
-		const FString& Name, FPlotDataSeriesBarrier& Xlabel, FPlotDataSeriesBarrier& Ylabel);
+		const FString& Name, FPlotDataSeriesBarrier& SeriesX, FPlotDataSeriesBarrier& SeriesY);
 
 	void OpenWebPlot();
 
