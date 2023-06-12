@@ -138,7 +138,7 @@ void UAGX_PlotComponent::CreateNative()
 	 * PlotDataSeries is part of a Blueprint that is a Component type, and we try to use it in
 	 * another Blueprint to create a plot by calling CreatePlot on a Plot Component in that second
 	 * Blueprint. If we get a Blueprint reconstruction in that situation, the PlotDataSeries will
-	 * loose it's native.
+	 * lose it's native.
 	 * One solution to this would be to make the PlotComponent keep track of each PlotDataSeries it
 	 * creates Natives for (in CreatePlot) and then on Blueprint reconstruction, it stores away the
 	 * pointer addresses of all of those PlotDataSeries AGX Native objects and restores them right
