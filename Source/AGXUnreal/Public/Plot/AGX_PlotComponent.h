@@ -48,6 +48,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Plot")
 	bool bAutoOpenPlotWindow {true};
 
+	/**
+	 * If set to true, the plot data will be written to a csv file on disk.
+	 * The file name is determined by 'FileOutputName' and the location is the same as the project
+	 * root.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Plot")
 	bool bWriteToFile {true};
 
