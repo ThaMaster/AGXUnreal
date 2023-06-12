@@ -13,7 +13,7 @@
 #include "AGX_PlotComponent.generated.h"
 
 /**
- * Component used for Plotting data.
+ * Component used for plotting data.
  * Also features data exporting in csv format to file.
  */
 UCLASS(
@@ -27,19 +27,23 @@ public:
 	UAGX_PlotComponent();
 
 	/**
-	 * Crate a new Plot. If the Name is common with any previously created Plot, the curves from
-	 * both Plots are placed within the same Plot graph.
+	 * Crate a new plot. If the Name is common with any previously created plot, the curves from
+	 * both plots are placed within the same plot graph.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Plot")
 	void CreatePlot(
 		UPARAM(ref) FAGX_PlotDataSeries& SeriesX, UPARAM(ref) FAGX_PlotDataSeries& SeriesY,
 		const FString& Name = TEXT("MyPlot"));
 
+	/**
+	 * Opens a plot window in the default web browser for this Plot Component.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Plot")
 	void OpenPlotWindow();
 
 	/**
-	 * If set to true, the Plot Window is opened automatically on BeginPlay.
+	 * If set to true, the plot window is opened automatically on BeginPlay.
+	 * The plot window is opened in the default web browser.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Plot")
 	bool bAutoOpenPlotWindow {true};
