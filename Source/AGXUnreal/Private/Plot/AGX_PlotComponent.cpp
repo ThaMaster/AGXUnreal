@@ -127,5 +127,6 @@ void UAGX_PlotComponent::CreateNative()
 	}
 
 	FString* OutFile = bWriteToFile && !FileOutputName.IsEmpty() ? &FileOutputName : nullptr;
-	NativeBarrier.AllocateNative(*Simulation->GetNative(), OutFile, bAutoOpenPlotWindow);
+	const bool AutoOpenWindow = bAutoOpenPlotWindow && !GIsReconstructingBlueprintInstances;
+	NativeBarrier.AllocateNative(*Simulation->GetNative(), OutFile, AutoOpenWindow);
 }
