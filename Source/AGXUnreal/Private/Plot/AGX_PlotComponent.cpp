@@ -31,7 +31,6 @@ void UAGX_PlotComponent::CreatePlot(
 	if (!SeriesY.HasNative())
 		SeriesY.NativeBarrier.AllocateNative(SeriesY.Label);
 
-
 	if (!SeriesX.HasNative() || !SeriesY.HasNative())
 	{
 		UE_LOG(
@@ -123,6 +122,39 @@ void UAGX_PlotComponent::EndPlay(const EEndPlayReason::Type Reason)
 
 void UAGX_PlotComponent::CreateNative()
 {
+	/*A Plot Component's Native will "survive" a Blueprint reconstruction thanks to the fact that it
+	 * does not explicitly create a new AGX PlotSystem when calling AllocateNative on its barrier,
+	 * but instead gets the AGX PlotSystem pointer from the Simulation object.
+	 * So on Blueprint reconstruction the Plot Component will get a BeginPlay which calls
+	 * CreateNative which resets the pointer to the same underlying AGX Plot System object in
+	 * AllocateNative.
+	 *
+	 * The PlotDataSeries survives a Blueprint reconstruction if it is a variable in the same
+	 * Blueprint as the PlotComponent. This is because variables apparently survives Blueprint
+	 * reconstruction out-of-the-box without any special handling needed.
+	 *
+	 * @todo
+	 * One situation that will not work when getting a Blueprint reconstruction is if the
+	 * PlotDataSeries is part of a Blueprint that is a Component type, and we try to use it in
+	 * another Blueprint to create a plot by calling CreatePlot on a Plot Component in that second
+	 * Blueprint. If we get a Blueprint reconstruction in that situation, the PlotDataSeries will
+	 * loose it's native.
+	 * One solution to this would be to make the PlotComponent keep track of each PlotDataSeries it
+	 * creates Natives for (in CreatePlot) and then on Blueprint reconstruction, it stores away the
+	 * pointer addresses of all of those PlotDataSeries AGX Native objects and restores them right
+	 * after. We could leverage IAGX_NativeOwner but that would need to be extended to support
+	 * arrays of native addresses. Also, since we cannot have a UPROPERTY
+	 * TArray<FAGX_PlotDataSeries*> member (since FAGX_PlotDataSeries is a USTRUCT), we cannot
+	 * easily hold those pointers through a Blueprint reconstruction. Instead we would need to get
+	 * them from somewhere else. We could get them from the user by setting up a delegate in Plot
+	 * Component that the user can bind to that takes an array of PlotDataSeries as input. It would
+	 * put the responsibility on the user to then set this up in their Blueprint if using the
+	 * PlotComponent with PlotDataSeries from a Blueprint Component.
+	 * This has not been done (yet) but can be implemented in the future if we need to. If we do
+	 * this, we need to make very clear instructions on how to set this up since the user will be
+	 * expected to do some of the heavy lifting themselves.
+	 */
+
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
 	{
