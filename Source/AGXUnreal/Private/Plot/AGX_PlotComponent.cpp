@@ -31,6 +31,18 @@ void UAGX_PlotComponent::CreatePlot(
 	if (!SeriesY.HasNative())
 		SeriesY.NativeBarrier.AllocateNative(SeriesY.Label);
 
+
+	if (!SeriesX.HasNative() || !SeriesY.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("At least one of the Plot Data Series did not have a AGX Native object even "
+				 "though AllocateNative was called for it. CreatePlot failed for Plot Component "
+				 "'%s' in '%s'."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
 	NativeBarrier.CreatePlot(Name, SeriesX.NativeBarrier, SeriesY.NativeBarrier);
 }
 
