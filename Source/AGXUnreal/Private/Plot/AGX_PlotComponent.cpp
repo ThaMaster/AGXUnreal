@@ -87,11 +87,17 @@ FPlotBarrier* UAGX_PlotComponent::GetOrCreateNative()
 
 FPlotBarrier* UAGX_PlotComponent::GetNative()
 {
+	if (!HasNative())
+		return nullptr;
+
 	return &NativeBarrier;
 }
 
 const FPlotBarrier* UAGX_PlotComponent::GetNative() const
 {
+	if (!HasNative())
+		return nullptr;
+
 	return &NativeBarrier;
 }
 
