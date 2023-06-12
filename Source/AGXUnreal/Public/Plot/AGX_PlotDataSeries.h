@@ -20,7 +20,7 @@ struct AGXUNREAL_API FAGX_PlotDataSeries
 	FAGX_PlotDataSeries() = default;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Plot")
-	FString Label {"Label"};
+	FString Label {TEXT("Label")};
 
 	void Write(float Data);
 

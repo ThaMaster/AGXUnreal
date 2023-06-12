@@ -32,8 +32,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Plot")
 	void CreatePlot(
-		const FString& Name, UPARAM(ref) FAGX_PlotDataSeries& SeriesX,
-		UPARAM(ref) FAGX_PlotDataSeries& SeriesY);
+		UPARAM(ref) FAGX_PlotDataSeries& SeriesX, UPARAM(ref) FAGX_PlotDataSeries& SeriesY,
+		const FString& Name = TEXT("MyPlot"));
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Plot")
 	void OpenPlotWindow();
@@ -51,7 +51,7 @@ public:
 	 * Write data to file in csv format. The file location is the same as the project root.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Plot", Meta = (EditCondition = "bWriteToFile"))
-	FString FileOutputName {"AGXUnreal"};
+	FString FileOutputName {TEXT("AGXUnreal")};
 
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FPlotBarrier* GetOrCreateNative();

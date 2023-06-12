@@ -11,7 +11,7 @@ UAGX_PlotComponent::UAGX_PlotComponent()
 }
 
 void UAGX_PlotComponent::CreatePlot(
-	const FString& Name, FAGX_PlotDataSeries& SeriesX, FAGX_PlotDataSeries& SeriesY)
+	FAGX_PlotDataSeries& SeriesX, FAGX_PlotDataSeries& SeriesY, const FString& Name)
 {
 	if (!HasNative())
 	{
