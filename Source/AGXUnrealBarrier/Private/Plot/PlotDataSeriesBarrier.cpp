@@ -65,7 +65,7 @@ FString FPlotDataSeriesBarrier::GetName() const
 	return Convert(NativeRef->Native->getName());
 }
 
-void FPlotDataSeriesBarrier::Write(float Data)
+void FPlotDataSeriesBarrier::Write(double Data)
 {
 	check(HasNative());
 	NativeRef->Native->push(Data);

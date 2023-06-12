@@ -24,7 +24,7 @@ public:
 
 	FString GetName() const;
 
-	void Write(float Data);
+	void Write(double Data);
 
 private:
 	FPlotDataSeriesBarrier(const FPlotDataSeriesBarrier&) = delete;

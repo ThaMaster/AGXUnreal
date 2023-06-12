@@ -16,7 +16,7 @@ void FAGX_PlotDataSeries::Write(float Data)
 		return;
 	}
 
-	NativeBarrier.Write(Data);
+	NativeBarrier.Write(static_cast<double>(Data));
 }
 
 bool FAGX_PlotDataSeries::HasNative() const
