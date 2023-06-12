@@ -62,10 +62,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Plot", Meta = (EditCondition = "bWriteToFile"))
 	FString FileOutputName {TEXT("AGXUnreal")};
 
-	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
+	/// Get the native AGX Dynamics representation of this Plot Component. Create it if necessary.
 	FPlotBarrier* GetOrCreateNative();
 
-	/// Return the native AGX Dynamics representation of this rigid body. May return nullptr.
+	/// Return the native AGX Dynamics representation of this Plot Component. May return nullptr.
 	FPlotBarrier* GetNative();
 	const FPlotBarrier* GetNative() const;
 
