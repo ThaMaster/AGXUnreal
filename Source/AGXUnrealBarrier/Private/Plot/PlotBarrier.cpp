@@ -60,18 +60,37 @@ void FPlotBarrier::AllocateNative(
 		return; // We are done.
 	}
 
-	const FString RelOutputDir = FPaths::GetPath(FPaths::GetProjectFilePath());
-	const FString OutputDir =
-		IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*RelOutputDir);
-	if (!FPaths::DirectoryExists(OutputDir))
+	const FString OutputFileNameWExtension = [OutputFileName]()
+	{
+		if (FPaths::GetExtension(*OutputFileName).IsEmpty())
+			return *OutputFileName + FString(".csv");
+		else
+			return *OutputFileName;
+	}();
+
+	const FString OutputPath = [&OutputFileNameWExtension]()
+	{ 
+		if (FPaths::IsRelative(OutputFileNameWExtension))
+		{
+			const FString RelOutputDir = FPaths::GetPath(FPaths::GetProjectFilePath());
+			const FString OutputDir =
+				IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*RelOutputDir);
+			return FPaths::Combine(OutputDir, OutputFileNameWExtension);
+		}
+		else
+		{
+			return OutputFileNameWExtension;
+		}
+	}();
+
+	if (!FPaths::DirectoryExists(FPaths::GetPath(OutputPath)))
 	{
 		UE_LOG(
 			LogAGX, Error, TEXT("Unable to write file '%s' because directory '%s' does not exist."),
-			**OutputFileName, *OutputDir);
+			**OutputFileName, *FPaths::GetPath(OutputPath));
 	}
 	else
 	{
-		const FString OutputPath = FPaths::Combine(OutputDir, *OutputFileName + FString(".csv"));
 		NativeRef->Native->add(new agxPlot::FilePlot(Convert(OutputPath)));
 	}
 }

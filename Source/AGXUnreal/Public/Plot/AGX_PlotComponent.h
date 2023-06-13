@@ -58,6 +58,7 @@ public:
 
 	/**
 	 * Write data to file in csv format. The file location is the same as the project root.
+	 * The FileOutputName can also be a relative (to the project root) or absolute file path.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Plot", Meta = (EditCondition = "bWriteToFile"))
 	FString FileOutputName {TEXT("AGXUnreal")};

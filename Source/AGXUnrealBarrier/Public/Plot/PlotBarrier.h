@@ -22,6 +22,11 @@ public:
 	FPlotRef* GetNative();
 	const FPlotRef* GetNative() const;
 
+	/**
+	 * The OutputFileName can be a file name with or without extension, or a relative (to the
+	 * project root) or absolute file path. If no file extension is given, a .csv extension will be
+	 * appended to the final output path.
+	 */
 	void AllocateNative(
 		const FSimulationBarrier& Simulation, const FString* OutputFileName, bool bOpenWebPlot);
 	void ReleaseNative();
