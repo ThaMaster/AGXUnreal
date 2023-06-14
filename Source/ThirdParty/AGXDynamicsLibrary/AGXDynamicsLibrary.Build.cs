@@ -569,6 +569,7 @@ public class AGXDynamicsLibrary : ModuleRules
 				"agxHydraulics",
 				"agxIO",
 				"agxModel",
+				"agxNet",
 				"agxPlot",
 				"agxPowerLine",
 				"agxRender",

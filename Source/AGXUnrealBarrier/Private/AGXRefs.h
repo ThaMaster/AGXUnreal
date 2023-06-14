@@ -15,56 +15,58 @@
 #include <agx/MassProperties.h>
 #include <agx/ref_ptr.h>
 #include <agx/RigidBody.h>
+#include <agxCollide/Geometry.h>
+#include <agxCollide/Shape.h>
+#include <agxModel/Tire.h>
+#include <agxPlot/DataSeries.h>
+#include <agxPlot/System.h>
+#include <agxPlot/WebPlot.h>
 #include <agxSDK/MergeSplitHandler.h>
 #include <agxSDK/MergeSplitThresholds.h>
 #include <agxSDK/Simulation.h>
-#include <agxCollide/Geometry.h>
-#include <agxCollide/Shape.h>
 #include <agxTerrain/Terrain.h>
 #include <agxTerrain/TerrainMaterial.h>
 #include <agxTerrain/TerrainPager.h>
-#include <agxModel/Tire.h>
 #include "EndAGXIncludes.h"
 
-struct FSimulationRef
+struct FConstraintControllerRef
 {
-	agxSDK::SimulationRef Native;
-
-	FSimulationRef() = default;
-	FSimulationRef(agxSDK::Simulation* InNative)
+	agx::ref_ptr<agx::BasicControllerConstraint> Native;
+	FConstraintControllerRef() = default;
+	FConstraintControllerRef(agx::BasicControllerConstraint* InNative)
 		: Native(InNative)
 	{
 	}
 };
 
-struct FRigidBodyRef
+struct FConstraintRef
 {
-	agx::RigidBodyRef Native;
+	agx::ConstraintRef Native;
 
-	FRigidBodyRef() = default;
-	FRigidBodyRef(agx::RigidBody* InNative)
+	FConstraintRef() = default;
+	FConstraintRef(agx::Constraint* InNative)
 		: Native(InNative)
 	{
 	}
 };
 
-struct FGeometryRef
+struct FContactMaterialRef
 {
-	agxCollide::GeometryRef Native;
+	agx::ContactMaterialRef Native;
 
-	FGeometryRef() = default;
-	FGeometryRef(agxCollide::Geometry* InNative)
+	FContactMaterialRef() = default;
+	FContactMaterialRef(agx::ContactMaterial* InNative)
 		: Native(InNative)
 	{
 	}
 };
 
-struct FShapeRef
+struct FDataSeriesRef
 {
-	agxCollide::ShapeRef Native;
+	agxPlot::DataSeriesRef Native;
 
-	FShapeRef() = default;
-	FShapeRef(agxCollide::Shape* InNative)
+	FDataSeriesRef() = default;
+	FDataSeriesRef(agxPlot::DataSeries* InNative)
 		: Native(InNative)
 	{
 	}
@@ -83,12 +85,34 @@ struct FGeometryAndShapeRef
 	}
 };
 
+struct FGeometryRef
+{
+	agxCollide::GeometryRef Native;
+
+	FGeometryRef() = default;
+	FGeometryRef(agxCollide::Geometry* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
 struct FMassPropertiesPtr
 {
 	agx::MassProperties* Native = nullptr;
 
 	FMassPropertiesPtr() = default;
 	FMassPropertiesPtr(agx::MassProperties* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FMaterialRef
+{
+	agx::MaterialRef Native;
+
+	FMaterialRef() = default;
+	FMaterialRef(agx::Material* InNative)
 		: Native(InNative)
 	{
 	}
@@ -116,45 +140,78 @@ struct FMergeSplitThresholdsRef
 	}
 };
 
-
-struct FConstraintRef
+struct FNotifyRef
 {
-	agx::ConstraintRef Native;
+	agx::ref_ptr<FAGXNotify> Native;
 
-	FConstraintRef() = default;
-	FConstraintRef(agx::Constraint* InNative)
+	FNotifyRef() = default;
+	FNotifyRef(FAGXNotify* InNative)
 		: Native(InNative)
 	{
 	}
 };
 
-struct FConstraintControllerRef
+struct FPlotRef
 {
-	agx::ref_ptr<agx::BasicControllerConstraint> Native;
-	FConstraintControllerRef() = default;
-	FConstraintControllerRef(agx::BasicControllerConstraint* InNative)
+	agxPlot::SystemRef Native;
+
+	FPlotRef() = default;
+	FPlotRef(agxPlot::System* InNative)
 		: Native(InNative)
 	{
 	}
 };
 
-struct FMaterialRef
+struct FRigidBodyRef
 {
-	agx::MaterialRef Native;
+	agx::RigidBodyRef Native;
 
-	FMaterialRef() = default;
-	FMaterialRef(agx::Material* InNative)
+	FRigidBodyRef() = default;
+	FRigidBodyRef(agx::RigidBody* InNative)
 		: Native(InNative)
 	{
 	}
 };
 
-struct FContactMaterialRef
+struct FShapeRef
 {
-	agx::ContactMaterialRef Native;
+	agxCollide::ShapeRef Native;
 
-	FContactMaterialRef() = default;
-	FContactMaterialRef(agx::ContactMaterial* InNative)
+	FShapeRef() = default;
+	FShapeRef(agxCollide::Shape* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FSimulationRef
+{
+	agxSDK::SimulationRef Native;
+
+	FSimulationRef() = default;
+	FSimulationRef(agxSDK::Simulation* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FShovelRef
+{
+	agxTerrain::ShovelRef Native;
+
+	FShovelRef() = default;
+	FShovelRef(agxTerrain::Shovel* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FTerrainDataSourceRef
+{
+	agx::ref_ptr<agxTerrain::TerrainDataSource> Native;
+
+	FTerrainDataSourceRef() = default;
+	FTerrainDataSourceRef(agxTerrain::TerrainDataSource* InNative)
 		: Native(InNative)
 	{
 	}
@@ -166,17 +223,6 @@ struct FTerrainMaterialRef
 
 	FTerrainMaterialRef() = default;
 	FTerrainMaterialRef(agxTerrain::TerrainMaterial* InNative)
-		: Native(InNative)
-	{
-	}
-};
-
-struct FTerrainRef
-{
-	agxTerrain::TerrainRef Native;
-
-	FTerrainRef() = default;
-	FTerrainRef(agxTerrain::Terrain* InNative)
 		: Native(InNative)
 	{
 	}
@@ -194,34 +240,12 @@ struct FTerrainPagerRef
 	}
 };
 
-struct FTerrainDataSourceRef
+struct FTerrainRef
 {
-	agx::ref_ptr<agxTerrain::TerrainDataSource> Native;
+	agxTerrain::TerrainRef Native;
 
-	FTerrainDataSourceRef() = default;
-	FTerrainDataSourceRef(agxTerrain::TerrainDataSource* InNative)
-		: Native(InNative)
-	{
-	}
-};
-
-struct FShovelRef
-{
-	agxTerrain::ShovelRef Native;
-
-	FShovelRef() = default;
-	FShovelRef(agxTerrain::Shovel* InNative)
-		: Native(InNative)
-	{
-	}
-};
-
-struct FNotifyRef
-{
-	agx::ref_ptr<FAGXNotify> Native;
-
-	FNotifyRef() = default;
-	FNotifyRef(FAGXNotify* InNative)
+	FTerrainRef() = default;
+	FTerrainRef(agxTerrain::Terrain* InNative)
 		: Native(InNative)
 	{
 	}

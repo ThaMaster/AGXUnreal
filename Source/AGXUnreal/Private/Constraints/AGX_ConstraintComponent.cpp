@@ -489,10 +489,8 @@ bool UAGX_ConstraintComponent::GetLastForceBody(
 	const UAGX_RigidBodyComponent* Body, FVector& OutForce, FVector& OutTorque,
 	bool bForceAtCm) const
 {
-	if (!HasNative())
-	{
+	if (Body == nullptr || !HasNative())
 		return false;
-	}
 
 	return NativeBarrier->GetLastForce(Body->GetNative(), OutForce, OutTorque, bForceAtCm);
 }
