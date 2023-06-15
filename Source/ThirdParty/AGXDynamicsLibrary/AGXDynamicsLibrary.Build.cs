@@ -794,13 +794,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		return true;
 	}
 
-	private bool CopyRelativeDirectoryRecursively(string SourceBase, string DestBase, string Relative)
-	{
-		string Source = Path.Combine(SourceBase, Relative);
-		string Dest = Path.Combine(DestBase, Relative);
-		return CopyDirectoryRecursively(Source, Dest);
-	}
-
 	private bool CopyDirectoryRecursively(string SourceDir, string DestDir,
 		List<string> FilesToIgnore = null)
 	{
