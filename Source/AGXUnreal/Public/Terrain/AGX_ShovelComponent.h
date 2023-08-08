@@ -5,11 +5,13 @@
 // AGX Dynamics for Unreal include.s
 #include "AGX_NativeOwner.h"
 #include "AGX_RigidBodyReference.h"
+#include "Terrain/AGX_ShovelReference.h"
 #include "Terrain/ShovelBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+
 #include "AGX_ShovelComponent.generated.h"
 
 UCLASS(ClassGroup = "AGX_Terrain", meta = (BlueprintSpawnableComponent))
@@ -23,6 +25,11 @@ public:
 	/// The Rigid Body that is to be imbued with shovel behavior.
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
 	FAGX_RigidBodyReference RigidBody;
+
+	/// @todo For experimentation only, remove.
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
+	FAGX_ShovelReference OtherShovel;
+
 
 protected:
 	// ~Begin UActorComponent interface.

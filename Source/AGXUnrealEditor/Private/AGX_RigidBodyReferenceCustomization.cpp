@@ -283,7 +283,7 @@ void FAGX_RigidBodyReferenceCustomization::RebuildComboBox()
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("FAGX_RigidBodyReferenceCustomization::RebuildComboBox called with nullptr owner. "
-				 "That's not supposed to happen."));
+				 "Are we in a Blueprint?"));
 		BodyNames.Empty();
 		return;
 	}

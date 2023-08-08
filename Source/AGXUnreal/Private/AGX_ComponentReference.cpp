@@ -2,9 +2,6 @@
 
 #include "AGX_ComponentReference.h"
 
-// Standard library includes.
-#include <algorithm>
-
 FAGX_ComponentReference::FAGX_ComponentReference()
 	: FAGX_ComponentReference(TSubclassOf<UActorComponent>())
 {
@@ -35,6 +32,16 @@ UActorComponent* FAGX_ComponentReference::GetComponent() const
 	return IsValid(OwningActor) ? FAGX_ComponentReference_helpers::FindComponent(
 									  ComponentType, OwningActor, Name, bSearchChildActors)
 								: nullptr;
+}
+
+void FAGX_ComponentReference::GetCompatibleComponents(TArray<UActorComponent*>& OutComponents) const
+{
+	OutComponents.Empty();
+	if (OwningActor == nullptr)
+	{
+		return;
+	}
+	OwningActor->GetComponents(ComponentType, OutComponents, bSearchChildActors);
 }
 
 AActor* FAGX_ComponentReference::GetOwningActor() const

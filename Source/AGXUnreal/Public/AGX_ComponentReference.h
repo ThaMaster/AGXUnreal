@@ -31,6 +31,8 @@ struct AGXUNREAL_API FAGX_ComponentReference
 
 	UActorComponent* GetComponent() const;
 
+	void GetCompatibleComponents(TArray<UActorComponent*>& OutComponents) const;
+
 	template<typename T>
 	T* GetComponent() const;
 

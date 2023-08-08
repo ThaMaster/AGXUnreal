@@ -8,7 +8,10 @@
 
 // Unreal Engine includes.
 #include "CoreGlobals.h"
-#include "RigidBodyBarrier.h"
+
+class FRigidBodyBarrier;
+
+#define LOCTEXT_NAMESPACE "AGX_ShovelComponent"
 
 // Sets default values for this component's properties
 UAGX_ShovelComponent::UAGX_ShovelComponent()
@@ -171,3 +174,5 @@ bool UAGX_ShovelComponent::WritePropertiesToNative()
 
 	return true;
 }
+
+#undef LOCTEXT_NAMESPACE
