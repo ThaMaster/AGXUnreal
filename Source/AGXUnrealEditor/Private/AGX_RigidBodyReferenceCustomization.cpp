@@ -166,6 +166,14 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 		FetchBodyNamesFromBlueprint(BodyNames, BodyReferenceHandle.Get());
 	}
 
+	// Make body names easier to find.
+	BodyNames.Sort([](const TSharedPtr<FName>& Lhs, const TSharedPtr<FName>& Rhs)
+				   { return FNameLexicalLess()(*Lhs, *Rhs); });
+
+	// It should be possible not select None, i.e. nothing, i.e. null.
+	// None should always be last in the list since it is not a regular Rigid Body.
+	BodyNames.Add(MakeShareable(new FName(TEXT("None"))));
+
 	StructBuilder.AddProperty(OwningActorHandle.ToSharedRef());
 	StructBuilder.AddProperty(SearchChildActorsHandle.ToSharedRef());
 
