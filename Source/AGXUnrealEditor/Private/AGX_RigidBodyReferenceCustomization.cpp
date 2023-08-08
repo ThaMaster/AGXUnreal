@@ -6,18 +6,14 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_RigidBodyReference.h"
-#include "Constraints/AGX_ConstraintComponent.h"
 #include "Utilities/AGX_PropertyUtilities.h"
 
 // Unreal Engine includes.
-#include "DetailCategoryBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Engine/BlueprintGeneratedClass.h"
 #include "Engine/SCS_Node.h"
 #include "GameFramework/Actor.h"
 #include "IDetailChildrenBuilder.h"
-#include "IDetailPropertyRow.h"
-#include "PropertyCustomizationHelpers.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SComboBox.h"
 #include "Widgets/Input/SEditableTextBox.h"
@@ -63,13 +59,13 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeHeader(
  * changed, often via RebuildComboBox.
  */
 void FetchBodyNamesFromOwner(
-	TArray<TSharedPtr<FName>>& BodyNames, AActor* OwningActor,
-	TSharedPtr<IPropertyHandle>& SearchChildActorsHandle)
+	TArray<TSharedPtr<FName>>& BodyNames, const AActor* OwningActor,
+	const TSharedPtr<IPropertyHandle>& SearchChildActorsHandle)
 {
 	BodyNames.Empty();
 
 	bool bSearchChildActors;
-	FPropertyAccess::Result Result = SearchChildActorsHandle->GetValue(bSearchChildActors);
+	const FPropertyAccess::Result Result = SearchChildActorsHandle->GetValue(bSearchChildActors);
 	if (Result != FPropertyAccess::Success)
 	{
 		// Do not produce a list of body names if multiple RigidBodyReferences are selected. Here we
@@ -80,7 +76,7 @@ void FetchBodyNamesFromOwner(
 
 	TArray<UAGX_RigidBodyComponent*> RigidBodyComponents;
 	OwningActor->GetComponents(RigidBodyComponents, bSearchChildActors);
-	for (UAGX_RigidBodyComponent* RigidBody : RigidBodyComponents)
+	for (const UAGX_RigidBodyComponent* RigidBody : RigidBodyComponents)
 	{
 		BodyNames.Add(MakeShareable(new FName(RigidBody->GetFName())));
 	}
@@ -90,14 +86,14 @@ void FetchBodyNamesFromBlueprint(
 	TArray<TSharedPtr<FName>>& BodyNames, IPropertyHandle& BodyReferenceHandle)
 {
 	BodyNames.Empty();
-	UActorComponent* OwningComponent =
+	const UActorComponent* OwningComponent =
 		Cast<UActorComponent>(FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyReferenceHandle));
 	if (OwningComponent == nullptr)
 	{
 		return;
 	}
 
-	UBlueprintGeneratedClass* Blueprint =
+	const UBlueprintGeneratedClass* Blueprint =
 		Cast<UBlueprintGeneratedClass>(OwningComponent->GetOuter());
 	if (Blueprint == nullptr)
 	{
@@ -111,7 +107,7 @@ void FetchBodyNamesFromBlueprint(
 
 	for (UBlueprint* BP : BlueprintChain)
 	{
-		for (USCS_Node* Node : BP->SimpleConstructionScript->GetAllNodes())
+		for (const USCS_Node* Node : BP->SimpleConstructionScript->GetAllNodes())
 		{
 			if (UAGX_RigidBodyComponent* RigidBody =
 					Cast<UAGX_RigidBodyComponent>(Node->ComponentTemplate))
@@ -135,7 +131,7 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 {
 	RefreshStoreReferences(BodyReferenceHandle);
 
-	FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
+	const FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
 	if (RigidBodyReference == nullptr)
 	{
 		UE_LOG(
@@ -156,7 +152,7 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 	SearchChildActorsHandle->SetOnPropertyValueChanged(RebuildComboBoxDelegate);
 
 	SelectedBody = RigidBodyReference->BodyName;
-	AActor* OwningActor = GetOwningActor();
+	const AActor* OwningActor = GetOwningActor();
 	if (OwningActor != nullptr)
 	{
 		FetchBodyNamesFromOwner(BodyNames, OwningActor, SearchChildActorsHandle);
@@ -184,13 +180,13 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 							  .Text(FText::FromString("Rigid Body Component"))
 							  .Font(IPropertyTypeCustomizationUtils::GetRegularFont())];
 
-	TSharedRef<SComboBox<TSharedPtr<FName>>> ComboBox =
+	const TSharedRef<SComboBox<TSharedPtr<FName>>> ComboBox =
 		SNew(SComboBox<TSharedPtr<FName>>)
 			.Visibility_Lambda(
 				[this]()
 				{ return BodyNames.Num() == 0 ? EVisibility::Collapsed : EVisibility::Visible; })
 			.OptionsSource(&BodyNames)
-			.OnGenerateWidget_Lambda([](TSharedPtr<FName> Item)
+			.OnGenerateWidget_Lambda([](const TSharedPtr<FName>& Item)
 									 { return SNew(STextBlock).Text(FText::FromName(*Item)); })
 			.OnSelectionChanged(this, &FAGX_RigidBodyReferenceCustomization::OnComboBoxChanged)
 			.Content()[SNew(STextBlock)
@@ -208,7 +204,7 @@ void FAGX_RigidBodyReferenceCustomization::CustomizeChildren(
 		/// immediately? I'm not comfortable with GUI validation altering the data store. Feels odd.
 	}
 
-	TSharedRef<SEditableTextBox> NameBox =
+	const TSharedRef<SEditableTextBox> NameBox =
 		SNew(SEditableTextBox)
 			.Text_Lambda([this]() { return FText::FromName(SelectedBody); })
 			.OnTextCommitted(this, &FAGX_RigidBodyReferenceCustomization::OnBodyNameCommitted)
@@ -246,7 +242,7 @@ void FAGX_RigidBodyReferenceCustomization::OnBodyNameCommitted(
 }
 
 void FAGX_RigidBodyReferenceCustomization::RefreshStoreReferences(
-	TSharedRef<IPropertyHandle> BodyReferenceHandle)
+	const TSharedRef<IPropertyHandle>& BodyReferenceHandle)
 {
 	RigidBodyReferenceHandle = BodyReferenceHandle;
 	OwningActorHandle = BodyReferenceHandle->GetChildHandle(
@@ -259,17 +255,17 @@ void FAGX_RigidBodyReferenceCustomization::RefreshStoreReferences(
 
 FText FAGX_RigidBodyReferenceCustomization::GetHeaderText() const
 {
-	FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
+	const FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
 	if (RigidBodyReference == nullptr)
 	{
 		return LOCTEXT(
 			"NoRigidBodyReference",
 			"Rigid Body Reference Customization does not have a valid Rigid Body Reference.");
 	}
-	AActor* OwningActor = RigidBodyReference->GetOwningActor();
-	FName BodyName = RigidBodyReference->BodyName;
-	FName ActorName = OwningActor ? OwningActor->GetFName() : NAME_None;
-	FString Header = FString::Printf(TEXT("%s in %s"), *BodyName.ToString(), *ActorName.ToString());
+	const AActor* OwningActor = RigidBodyReference->GetOwningActor();
+	const FName BodyName = RigidBodyReference->BodyName;
+	const FName ActorName = OwningActor ? OwningActor->GetFName() : NAME_None;
+	const FString Header = FString::Printf(TEXT("%s in %s"), *BodyName.ToString(), *ActorName.ToString());
 	return FText::FromString(Header);
 }
 
@@ -277,7 +273,7 @@ void FAGX_RigidBodyReferenceCustomization::RebuildComboBox()
 {
 	SelectedBody = NAME_None;
 
-	AActor* OwningActor = GetOwningActor();
+	const AActor* OwningActor = GetOwningActor();
 	if (OwningActor != nullptr)
 	{
 		FetchBodyNamesFromOwner(BodyNames, GetOwningActor(), SearchChildActorsHandle);
@@ -326,9 +322,9 @@ void FAGX_RigidBodyReferenceCustomization::OnComboBoxChanged(
 	RigidBodyReference->InvalidateCache();
 }
 
-AActor* FAGX_RigidBodyReferenceCustomization::GetOwningActor()
+AActor* FAGX_RigidBodyReferenceCustomization::GetOwningActor() const
 {
-	FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
+	const FAGX_RigidBodyReference* RigidBodyReference = GetRigidBodyReference();
 	if (RigidBodyReference == nullptr)
 	{
 		UE_LOG(
@@ -359,7 +355,7 @@ FAGX_RigidBodyReference* FAGX_RigidBodyReferenceCustomization::GetRigidBodyRefer
 	}
 
 	void* UntypedPointer = nullptr;
-	FPropertyAccess::Result Result = RigidBodyReferenceHandle->GetValueData(UntypedPointer);
+	const FPropertyAccess::Result Result = RigidBodyReferenceHandle->GetValueData(UntypedPointer);
 	if (Result != FPropertyAccess::Success)
 	{
 		UE_LOG(

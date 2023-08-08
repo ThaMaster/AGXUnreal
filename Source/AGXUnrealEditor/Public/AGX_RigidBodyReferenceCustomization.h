@@ -34,7 +34,7 @@ private:
 	 * This should be called at the start of every Customize.+ function.
 	 */
 #if 1
-	void RefreshStoreReferences(TSharedRef<IPropertyHandle> BodyReferenceHandle);
+	void RefreshStoreReferences(const TSharedRef<IPropertyHandle>& BodyReferenceHandle);
 #else
 	void RefreshStoreReferences(IPropertyHandle& StructPropertyHandle);
 #endif
@@ -59,7 +59,7 @@ private:
 	 * Return the the currently selected body-owning Actor, if exactly one RigidBodyReference is
 	 * selected and that reference has a selected owning Actor.
 	 */
-	AActor* GetOwningActor();
+	AActor* GetOwningActor() const;
 
 private:
 	/// List of known body names in the selected owning Actor. Updated when FetchBodyNames is
