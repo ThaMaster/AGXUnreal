@@ -47,7 +47,9 @@ class AActor;
  * The RigidBodyReference supports caching of the RigidBodyComponent through the
  * CacheCurrentRigidBody member function. Only call this once the RigidBodyReference has been fully
  * formed, i.e., the OwningActor property set to the final Actor and when the referenced
- * RigidBodyComponent has been given its final name. BeginPlay is often a good choice.
+ * RigidBodyComponent has been given its final name. BeginPlay is often a good choice. Though beware
+ * that if the target Rigid Body is destroyed due to a Blueprint Reconstruction then the cache
+ * becomes a dangling pointer.
  */
 USTRUCT()
 struct AGXUNREAL_API FAGX_RigidBodyReference

@@ -17,6 +17,24 @@ UAGX_ShovelComponent::UAGX_ShovelComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+void UAGX_ShovelComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	// This code is run after the constructor and after InitProperties, where property values are
+	// copied from the Class Default Object, but before deserialization in cases where this object
+	// is created from another, such as at the start of a Play-in-Editor session or when loading
+	// a map in a cooked build (I hope).
+	//
+	// The intention is to provide by default a local scope that is the Actor outer that this
+	// component is part of. If the OwningActor is set anywhere else, such as in the Details Panel,
+	// then that "else" should overwrite this value shortly.
+	//
+	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
+	// but there will always be an outer chain. This worry may be unfounded.
+	RigidBody.OwningActor = GetTypedOuter<AActor>();
+}
+
 void UAGX_ShovelComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -101,9 +119,17 @@ void UAGX_ShovelComponent::AllocateNative()
 	check(!GIsReconstructingBlueprintInstances);
 	check(!HasNative());
 
-	/// @todo Implement the Properties required to initialize the Native.
-	FRigidBodyBarrier Body;
-	NativeBarrier.AllocateNative(Body, FTwoVectors(), FTwoVectors(), FVector());
+	FRigidBodyBarrier* Body = RigidBody.GetRigidBodyBarrier();
+	if (Body == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Shovel '%s' in '%s' does not have a Rigid Body. Ignoring this Shovel."));
+		return;
+	}
+
+	/// @todo Implement the remaining Properties required to initialize the Native.
+	NativeBarrier.AllocateNative(*Body, FTwoVectors(), FTwoVectors(), FVector());
 	check(HasNative()); /// \todo Consider better error handling than 'check'.
 
 	WritePropertiesToNative();

@@ -3,8 +3,9 @@
 #pragma once
 
 // AGX Dynamics for Unreal include.s
-#include <AGX_NativeOwner.h>
-#include <Terrain/ShovelBarrier.h>
+#include "AGX_NativeOwner.h"
+#include "AGX_RigidBodyReference.h"
+#include "Terrain/ShovelBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -17,11 +18,15 @@ class AGXUNREAL_API UAGX_ShovelComponent : public USceneComponent, public IAGX_N
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this Component's properties
 	UAGX_ShovelComponent();
+
+	/// The Rigid Body that is to be imbued with shovel behavior.
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
+	FAGX_RigidBodyReference RigidBody;
 
 protected:
 	// ~Begin UActorComponent interface.
+	virtual void PostInitProperties() override;
 	virtual void BeginPlay() override;
 	// ~End UActorComponent interface.
 

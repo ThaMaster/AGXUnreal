@@ -264,6 +264,7 @@ void FShovelBarrier::AllocateNative(
 	const FVector& CuttingDirection)
 {
 	check(!HasNative());
+	check(Body.HasNative());
 	agx::RigidBody* BodyAGX = Body.GetNative()->Native;
 	const agx::Line TopEdgeAGX = ConvertDisplacement(TopEdge);
 	const agx::Line CuttingEdgeAGX = ConvertDisplacement(CuttingEdge);
