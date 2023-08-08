@@ -31,6 +31,22 @@ protected:
 	virtual void SetNativeAddress(uint64 NativeAddress) override;
 	// ~/End IAGX_NativeOwner interface.
 
+	/// Get the native AGX Dynamics representation of this shovel. Create it if necessary.
+	FShovelBarrier* GetOrCreateNative();
+
+	/// Return the native AGX Dynamics representation of this shovel. May return nullptr.
+	FShovelBarrier* GetNative();
+
+	/// Return the native AGX Dynamics representation of this shovel. May return nullptr.
+	const FShovelBarrier* GetNative() const;
+
+	/// Write all Component Properties to the Native. This is rarely needed.
+	bool WritePropertiesToNative();
+
+private:
+	// Create the native AGX Dynamics object.
+	void AllocateNative();
+
 private:
 	FShovelBarrier NativeBarrier;
 };
