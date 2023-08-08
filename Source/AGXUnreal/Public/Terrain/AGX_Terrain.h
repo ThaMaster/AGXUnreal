@@ -9,6 +9,7 @@
 #include "Terrain/AGX_TerrainHeightFetcher.h"
 #include "Terrain/AGX_TerrainPagingSettings.h"
 #include "Terrain/AGX_Shovel.h"
+#include "AGX_ShovelReference.h"
 
 // Unreal Engine includes.
 #include "Misc/EngineVersionComparison.h"
@@ -175,6 +176,9 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	TArray<FAGX_Shovel> Shovels;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	TArray<FAGX_ShovelReference> ShovelComponents;
 
 	/** Whether the height field rendering should be updated with deformation data. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering")
