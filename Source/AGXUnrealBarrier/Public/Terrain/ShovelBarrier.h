@@ -92,6 +92,8 @@ public:
 		const FVector& CuttingDirection);
 	FShovelRef* GetNative();
 	const FShovelRef* GetNative() const;
+	uint64 GetNativeAddress() const;
+	void SetNativeAddress(uint64 Address);
 	void ReleaseNative();
 
 private:

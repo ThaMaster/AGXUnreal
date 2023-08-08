@@ -3,6 +3,7 @@
 #include "Terrain/ShovelBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGXRefs.h"
 #include "agxTerrain/Shovel.h"
 #include "RigidBodyBarrier.h"
@@ -235,6 +236,26 @@ bool FShovelBarrier::GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMod
 
 bool FShovelBarrier::HasNative() const
 {
+	AGX_CHECK(NativeRef.get() != nullptr); // TEXT("Found an FShovelBarrier that does not have a
+										   // NativeRef. This should never happen"));
+	ensureMsgf(
+		NativeRef.get() != nullptr, TEXT("AGXUnreal: Found an FShovelBarrier that does not have a "
+										 "NativeRef. This should never happen."));
+	if (NativeRef.get() == nullptr)
+	{
+		// We somehow ended up in a bad state where there is a Barrier that does not have a
+		// NativeRef. This should never happen and in local builds we will already have aborted
+		// after the failed AGX_CHECK above. In user applications we instead try to fix the
+		// situation so that the application can keep running and not crash. The user will hopefully
+		// see the ensureMsgf message printed above and let us know about the problem.
+		//
+		// HasNative is a const member function in that it never alters the salient value, but
+		// here we need to do some under-the-hood cleanup. We assume that a FShoveBarrier will never
+		// be an actual const value.
+		FShovelBarrier* MutableThis = const_cast<FShovelBarrier*>(this);
+		MutableThis->NativeRef.reset(new FShovelRef());
+	}
+
 	return NativeRef->Native != nullptr;
 }
 
@@ -267,6 +288,16 @@ const FShovelRef* FShovelBarrier::GetNative() const
 {
 	check(HasNative());
 	return NativeRef.get();
+}
+
+uint64 FShovelBarrier::GetNativeAddress() const
+{
+	return HasNative() ? reinterpret_cast<uint64>(NativeRef->Native.get()) : 0;
+}
+
+void FShovelBarrier::SetNativeAddress(uint64 Address)
+{
+	NativeRef->Native = reinterpret_cast<agxTerrain::Shovel*>(Address);
 }
 
 void FShovelBarrier::ReleaseNative()
