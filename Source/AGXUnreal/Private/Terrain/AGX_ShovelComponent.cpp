@@ -17,12 +17,14 @@ UAGX_ShovelComponent::UAGX_ShovelComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-// Called when the game starts
 void UAGX_ShovelComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/// @todo Call createNative.
+	if (!HasNative() && !GIsReconstructingBlueprintInstances)
+	{
+		AllocateNative();
+	}
 }
 
 bool UAGX_ShovelComponent::HasNative() const
