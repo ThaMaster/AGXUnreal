@@ -169,6 +169,10 @@ public class AGXUnreal : ModuleRules
 
 	private bool IsFileContentNew(List<string> NewContent, string Path)
 	{
+		if (!File.Exists(Path))
+		{
+			return true;
+		}
 		// I tried to make a better variant of this, but I don't know C# well enough.
 		List<string> OldContent = new List<string>();
 		foreach (string Line in File.ReadLines(Path))
@@ -353,8 +357,6 @@ public class AGXUnreal : ModuleRules
 			// in this case we should use CI_COMMIT_REF_NAME directly.
 			Name = "";
 		}
-
-		Console.WriteLine("AGXUnreal: Name={0}, Hash={1}", Name, Hash);
 
 		WriteGitInfo(Hash, Name);
 	}
