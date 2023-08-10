@@ -1,5 +1,7 @@
 // Copyright 2023, Algoryx Simulation AB.
 
+#pragma once
+
 // Unreal Engine includes.
 #include "Misc/AutomationTest.h"
 
