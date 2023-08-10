@@ -51,7 +51,7 @@ bool FBuildAngularVelocityCommand::Update()
 
 	// Spawn the Actor.
 	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.Name = FName("Angular Velocity Damping Actor");
+	SpawnParameters.Name = FName(TEXT("Angular Velocity Damping Actor"));
 	State->Actor = World->SpawnActor<AActor>(SpawnParameters);
 	USceneComponent* RootComponent = NewObject<USceneComponent>(
 		State->Actor, USceneComponent::GetDefaultSceneRootVariableName());
@@ -86,36 +86,29 @@ DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
 
 bool FCheckAngularVelocityCommand::Update()
 {
+	// Since no gravity the undamped body should keep the original velocity.
 	const UAGX_RigidBodyComponent* UndampedBody = State->UndampedBody;
 	const FVector UndampedVel = UndampedBody->GetVelocity();
 	const FVector UndampedAngVel = UndampedBody->GetAngularVelocity();
 	Test.TestEqual(TEXT("Undamped Velocity"), UndampedVel, FVector(1.0, 1.0, 1.0));
 	Test.TestEqual(TEXT("Undamped Angular Velocity"), UndampedAngVel, FVector(1.0, 1.0, 1.0));
-	UE_LOG(
-		LogAGX, Warning, TEXT("FCheckAngularVelocityCommand: Undamped velocity=%s."),
-		*UndampedVel.ToString());
-	UE_LOG(
-		LogAGX, Warning, TEXT("FCheckAngularVelocityCommand: Undamped angular velocity=%s."),
-		*UndampedAngVel.ToString());
 
+	// The damped body should lose velocity, the higher the damping the move velocicy should be
+	// lost.
 	const UAGX_RigidBodyComponent* DampedBody = State->DampedBody;
 	const FVector DampedVel = DampedBody->GetVelocity();
 	const FVector DampedAngVel = DampedBody->GetAngularVelocity();
 	AgxAutomationCommon::TestAllLess(
-		Test, TEXT("Actual"), DampedVel, TEXT("Initial"), FVector(1.0, 1.0, 1.0));
+		Test, TEXT("Dmaped velocity"), DampedVel, TEXT("Initial Velocity"), FVector(1.0, 1.0, 1.0));
 	AgxAutomationCommon::TestAllLess(
-		Test, TEXT("Actual"), DampedAngVel, TEXT("Initial"), FVector(1.0, 1.0, 1.0));
+		Test, TEXT("Damped Angular Velocity"), DampedAngVel, TEXT("Initial Angular Velocity"),
+		FVector(1.0, 1.0, 1.0));
 	AgxAutomationCommon::TestLess(Test, TEXT("Vel.Z"), DampedVel.Z, TEXT("Vel.Y"), DampedVel.Y);
 	AgxAutomationCommon::TestLess(Test, TEXT("Vel.Y"), DampedVel.Y, TEXT("Vel.X"), DampedVel.X);
-	AgxAutomationCommon::TestLess(Test, TEXT("AnglVel.Z"), DampedAngVel.Z, TEXT("AnglVel.Y"), DampedAngVel.Y);
-	AgxAutomationCommon::TestLess(Test, TEXT("AnglVel.Y"), DampedAngVel.Y, TEXT("AnglVel.X"), DampedAngVel.X);
-	UE_LOG(
-		LogAGX, Warning, TEXT("FCheckAngularVelocityCommand: Damped velocity=%s."),
-		*DampedVel.ToString());
-
-	UE_LOG(
-		LogAGX, Warning, TEXT("FCheckAngularVelocityCommand: Damped angular velocity=%s."),
-		*DampedAngVel.ToString());
+	AgxAutomationCommon::TestLess(
+		Test, TEXT("AngVel.Z"), DampedAngVel.Z, TEXT("AngVel.Y"), DampedAngVel.Y);
+	AgxAutomationCommon::TestLess(
+		Test, TEXT("AngVel.Y"), DampedAngVel.Y, TEXT("AngVel.X"), DampedAngVel.X);
 
 	return true;
 }
