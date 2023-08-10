@@ -59,6 +59,36 @@ int32 UAGX_Simulation::GetNumThreads() const
 	return NumThreads;
 }
 
+void UAGX_Simulation::SetGravityModel(EAGX_GravityModel InModel)
+{
+	GravityModel = InModel;
+	if (HasNative())
+	{
+		SetGravity();
+	}
+}
+
+void UAGX_Simulation::SetUniformGravity(FVector InGravity)
+{
+	UniformGravity = InGravity;
+	GravityModel = EAGX_GravityModel::Uniform;
+	if (HasNative())
+	{
+		SetGravity();
+	}
+}
+
+void UAGX_Simulation::SetPointGravity(FVector InOrigin, float InMagnitude)
+{
+	PointGravityOrigin = InOrigin;
+	PointGravityMagnitude = InMagnitude;
+	GravityModel = EAGX_GravityModel::Point;
+	if (HasNative())
+	{
+		SetGravity();
+	}
+}
+
 FAGX_Statistics UAGX_Simulation::GetStatistics()
 {
 	check(HasNative());

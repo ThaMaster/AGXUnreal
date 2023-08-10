@@ -126,11 +126,17 @@ public: // Properties.
 	UPROPERTY(Config, EditAnywhere, Category = "Gravity")
 	TEnumAsByte<enum EAGX_GravityModel> GravityModel = EAGX_GravityModel::Uniform;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Simulation")
+	void SetGravityModel(EAGX_GravityModel InModel);
+
 	/** Specifies the gravity vector when using Uniform Gravity Field with magnitude [cm/s^2]. */
 	UPROPERTY(
 		Config, EditAnywhere, Category = "Gravity",
 		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Uniform"))
 	FVector UniformGravity = FVector(0.0f, 0.0f, -980.665f);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Simulation")
+	void SetUniformGravity(FVector InGravity);
 
 	/** Specifies the world location towards which the gravity field is directed when using Point
 	 * Gravity Field [cm]. */
@@ -144,6 +150,9 @@ public: // Properties.
 		Config, EditAnywhere, Category = "Gravity",
 		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Point"))
 	float PointGravityMagnitude = -980.665f;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Simulation")
+	void SetPointGravity(FVector InOrigin, float InMagnitude);
 
 	/**
 	 * Simulation stepping mode. This controls what happens when the simulation is unable to keep
