@@ -167,17 +167,45 @@ public class AGXUnreal : ModuleRules
 		}
 	}
 
+	private bool IsFileContentNew(List<string> NewContent, string Path)
+	{
+		// I tried to make a better variant of this, but I don't know C# well enough.
+		List<string> OldContent = new List<string>();
+		foreach (string Line in File.ReadLines(Path))
+		{
+			OldContent.Add(Line);
+		}
+		if (NewContent.Count != OldContent.Count)
+		{
+			return true;
+		}
+		for (int i = 0; i < NewContent.Count; ++i)
+		{
+			if (NewContent[i] != OldContent[i])
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private void WriteGitInfo(string Hash, string Name)
 	{
 		List<string> GitInfo = new List<string>();
 		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_HASH {0}", (Hash != "" ? "1" : "0")));
-		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_HASH = TEXT(\"{0}\");\n", Hash));
-
+		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_HASH = TEXT(\"{0}\");", Hash));
+		GitInfo.Add("");
 		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_NAME {0}", (Name != "" ? "1" : "0")));
-		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_NAME = TEXT(\"{0}\");\n", Name));
+		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_NAME = TEXT(\"{0}\");", Name));
+		GitInfo.Add("");
 
 		string FilePath = Path.Combine(GetPluginRootPath(), "Source", "AGXUnrealBarrier", "Public", "AGX_BuildInfo.generated.h");
-		File.WriteAllLines(FilePath, GitInfo);
+
+
+		if (IsFileContentNew(GitInfo, FilePath))
+		{
+			File.WriteAllLines(FilePath, GitInfo);
+		}
 	}
 
 	private string GitArgs(string Args)
