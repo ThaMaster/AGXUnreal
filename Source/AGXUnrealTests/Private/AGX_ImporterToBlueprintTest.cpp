@@ -209,6 +209,33 @@ protected:
 		/// import tests interact though. Some form of level cleanup Latent Command at the end of
 		/// each test may be required. I really hope multiple tests don't run concurrently in the
 		/// same world.
+		///
+		/// Some news on the above. Map loading seems to work if commands are done in the following
+		/// order:
+		///
+		/// ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(EmptyMapPath))
+		/// ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
+		/// ADD_LATENT_AUTOMATION_COMMAND(AgxAutomationCommon::FWaitUntilPIEUpCommand);
+		///
+		/// After these you can queue commands that spawn Actors and create Components in the Play
+		/// In Editor session world, which you can get with
+		///
+		/// UWorld* World = GEditor->GetPIEWorldContext()->World();
+		///
+		/// To simulate until a specified time use
+		///
+		/// ADD_LATENT_AUTOMATION_COMMAND(FTickUntilTimeStamp(1.0));
+		///
+		/// Cleanup after the test with
+		///
+		/// ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
+		/// ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(EmptyMapPath));
+		///
+		/// Note that here we load an empty map, then launch a Play In Editor session, then create
+		/// our objects, then simulate a bit, then do our testing, then restore a known initial
+		/// state. If you have an already populated map, e.g. Test_MyTestMap, stored as an asset
+		/// then you can pass /Game/Tests/Test_MyTestMap instead of EmptyMapPath to FEditorLoadMap
+		/// and don't need to create any objects in code.
 #if 0
 		// ADD_LATENT_AUTOMATION_COMMAND(FLoadGameMapCommand(TEXT("Test_ArchiveImport")));
 		// ADD_LATENT_AUTOMATION_COMMAND(FWaitForMapToLoadCommand());
@@ -1533,8 +1560,8 @@ bool FClearCollisionGroupsImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles {
-		TEXT("Blueprint"), TEXT("BP_collision_groups_build.uasset"),
-		TEXT("ShapeMaterial"), TEXT("defaultWireMaterial_93.uasset")};
+		TEXT("Blueprint"), TEXT("BP_collision_groups_build.uasset"), TEXT("ShapeMaterial"),
+		TEXT("defaultWireMaterial_93.uasset")};
 
 	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
 	ExpectedFiles.Add(*BaseBlueprintName);
