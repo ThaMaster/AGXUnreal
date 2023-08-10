@@ -228,7 +228,6 @@ public class AGXUnreal : ModuleRules
 		ProcessResult TestGitResult = RunProcess("git", "--version");
 		if (!TestGitResult.Success)
 		{
-			Console.WriteLine("AGXUnreal: Do not have Git, cannot read revision information.");
 			return;
 		}
 
@@ -240,13 +239,11 @@ public class AGXUnreal : ModuleRules
 		ProcessResult GetRemoteResult = RunProcess("git", GitArgs("remote -v"));
 		if (!GetRemoteResult.IsValid())
 		{
-			Console.WriteLine("AGXUnreal: Could not determine Git remote, cannot read revision information.");
 			return;
 		}
 		if (!GetRemoteResult.Output.Contains("algoryx/unreal/agxunreal.git"))
 		{
 			// Not in an AGX Dynamics for Unreal working copy.
-			Console.WriteLine("AGXUnreal: Not an AGX Dynamics for Unreal working copy, cannot read revision information.");
 			return;
 		}
 
@@ -291,8 +288,11 @@ public class AGXUnreal : ModuleRules
 			}
 			else
 			{
-				Console.WriteLine("Failed to get Git tag:");
-				Console.WriteLine(GetTagResult.Error);
+				if (!string.IsNullOrEmpty(GetTagResult.Error))
+				{
+					Console.WriteLine("Failed to get Git tag:");
+					Console.WriteLine(GetTagResult.Error);
+				}
 			}
 		}
 
