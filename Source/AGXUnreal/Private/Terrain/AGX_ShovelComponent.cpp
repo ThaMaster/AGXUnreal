@@ -127,7 +127,8 @@ void UAGX_ShovelComponent::AllocateNative()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Shovel '%s' in '%s' does not have a Rigid Body. Ignoring this Shovel."));
+			TEXT("Shovel '%s' in '%s' does not have a Rigid Body. Ignoring this Shovel."),
+			*GetName(), *GetLabelSafe(GetOwner()));
 		return;
 	}
 
