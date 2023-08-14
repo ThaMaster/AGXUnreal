@@ -167,17 +167,49 @@ public class AGXUnreal : ModuleRules
 		}
 	}
 
+	private bool IsFileContentNew(List<string> NewContent, string Path)
+	{
+		if (!File.Exists(Path))
+		{
+			return true;
+		}
+		// I tried to make a better variant of this, but I don't know C# well enough.
+		List<string> OldContent = new List<string>();
+		foreach (string Line in File.ReadLines(Path))
+		{
+			OldContent.Add(Line);
+		}
+		if (NewContent.Count != OldContent.Count)
+		{
+			return true;
+		}
+		for (int i = 0; i < NewContent.Count; ++i)
+		{
+			if (NewContent[i] != OldContent[i])
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private void WriteGitInfo(string Hash, string Name)
 	{
 		List<string> GitInfo = new List<string>();
 		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_HASH {0}", (Hash != "" ? "1" : "0")));
-		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_HASH = TEXT(\"{0}\");\n", Hash));
-
+		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_HASH = TEXT(\"{0}\");", Hash));
+		GitInfo.Add("");
 		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_NAME {0}", (Name != "" ? "1" : "0")));
-		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_NAME = TEXT(\"{0}\");\n", Name));
+		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_NAME = TEXT(\"{0}\");", Name));
+		GitInfo.Add("");
 
 		string FilePath = Path.Combine(GetPluginRootPath(), "Source", "AGXUnrealBarrier", "Public", "AGX_BuildInfo.generated.h");
-		File.WriteAllLines(FilePath, GitInfo);
+
+
+		if (IsFileContentNew(GitInfo, FilePath))
+		{
+			File.WriteAllLines(FilePath, GitInfo);
+		}
 	}
 
 	private string GitArgs(string Args)
@@ -200,7 +232,6 @@ public class AGXUnreal : ModuleRules
 		ProcessResult TestGitResult = RunProcess("git", "--version");
 		if (!TestGitResult.Success)
 		{
-			Console.WriteLine("AGXUnreal: Do not have Git, cannot read revision information.");
 			return;
 		}
 
@@ -212,13 +243,11 @@ public class AGXUnreal : ModuleRules
 		ProcessResult GetRemoteResult = RunProcess("git", GitArgs("remote -v"));
 		if (!GetRemoteResult.IsValid())
 		{
-			Console.WriteLine("AGXUnreal: Could not determine Git remote, cannot read revision information.");
 			return;
 		}
 		if (!GetRemoteResult.Output.Contains("algoryx/unreal/agxunreal.git"))
 		{
 			// Not in an AGX Dynamics for Unreal working copy.
-			Console.WriteLine("AGXUnreal: Not an AGX Dynamics for Unreal working copy, cannot read revision information.");
 			return;
 		}
 
@@ -263,8 +292,11 @@ public class AGXUnreal : ModuleRules
 			}
 			else
 			{
-				Console.WriteLine("Failed to get Git tag:");
-				Console.WriteLine(GetTagResult.Error);
+				if (!string.IsNullOrEmpty(GetTagResult.Error))
+				{
+					Console.WriteLine("Failed to get Git tag:");
+					Console.WriteLine(GetTagResult.Error);
+				}
 			}
 		}
 
@@ -325,8 +357,6 @@ public class AGXUnreal : ModuleRules
 			// in this case we should use CI_COMMIT_REF_NAME directly.
 			Name = "";
 		}
-
-		Console.WriteLine("AGXUnreal: Name={0}, Hash={1}", Name, Hash);
 
 		WriteGitInfo(Hash, Name);
 	}
