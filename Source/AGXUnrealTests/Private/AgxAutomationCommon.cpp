@@ -147,6 +147,30 @@ void AgxAutomationCommon::TestEqual(
 	}
 }
 
+void AgxAutomationCommon::TestLess(
+	FAutomationTestBase& Test, const TCHAR* SmallerName, double Smaller, const TCHAR* LargerName,
+	double Larger)
+{
+	if (!(Smaller < Larger))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Expected '%s' (%f) to be smaller than '%s' (%f), but it was not."), SmallerName,
+			Smaller, LargerName, Larger));
+	}
+}
+
+void AgxAutomationCommon::TestAllLess(
+	FAutomationTestBase& Test, const TCHAR* SmallerName, const FVector& Smaller,
+	const TCHAR* LargerName, const FVector& Larger)
+{
+	for (int32 I = 0; I < 3; ++I)
+	{
+		TestLess(
+			Test, *FString::Printf(TEXT("%s.%c"), SmallerName, 'X' + I), Smaller[I],
+			*FString::Printf(TEXT("%s.%c"), LargerName, 'X' + I), Larger[I]);
+	}
+}
+
 FString AgxAutomationCommon::WorldTypeToString(EWorldType::Type Type)
 {
 	switch (Type)
@@ -454,7 +478,8 @@ bool AgxAutomationCommon::FLogErrorAgxCommand::Update()
 bool AgxAutomationCommon::FWaitUntilPIEUpCommand::Update()
 {
 	UE_LOG(LogAGX, Warning, TEXT("Polling for PIE up."));
-	return GEditor->IsPlayingSessionInEditor();
+	return GEditor->IsPlayingSessionInEditor() && GEditor->GetPIEWorldContext() != nullptr &&
+		   GEditor->GetPIEWorldContext()->World() != nullptr;
 }
 
 bool AgxAutomationCommon::FWaitUntilPIEDownCommand::Update()

@@ -126,25 +126,25 @@ FVector FRigidBodyBarrier::GetAngularVelocity() const
 void FRigidBodyBarrier::SetLinearVelocityDamping(const FVector& LinearVelocityDamping)
 {
 	check(HasNative());
-	NativeRef->Native->setLinearVelocityDamping(ConvertFloatVector(LinearVelocityDamping));
+	NativeRef->Native->setLinearVelocityDamping(ConvertFloat(LinearVelocityDamping));
 }
 
 FVector FRigidBodyBarrier::GetLinearVelocityDamping() const
 {
 	check(HasNative());
-	return ConvertFloatVector(NativeRef->Native->getLinearVelocityDamping());
+	return Convert(NativeRef->Native->getLinearVelocityDamping());
 }
 
 void FRigidBodyBarrier::SetAngularVelocityDamping(const FVector& AngularVelocityDamping)
 {
 	check(HasNative());
-	NativeRef->Native->setAngularVelocityDamping(ConvertFloatVector(AngularVelocityDamping));
+	NativeRef->Native->setAngularVelocityDamping(ConvertFloat(AngularVelocityDamping));
 }
 
 FVector FRigidBodyBarrier::GetAngularVelocityDamping() const
 {
 	check(HasNative());
-	return ConvertFloatVector(NativeRef->Native->getAngularVelocityDamping());
+	return Convert(NativeRef->Native->getAngularVelocityDamping());
 }
 
 FMassPropertiesBarrier& FRigidBodyBarrier::GetMassProperties()

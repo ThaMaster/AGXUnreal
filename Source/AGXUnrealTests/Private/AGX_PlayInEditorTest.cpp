@@ -1,42 +1,20 @@
 // Copyright 2023, Algoryx Simulation AB.
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_LogCategory.h"
+#include "AGX_PlayInEditorUtils.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "Shapes/AGX_BoxShapeComponent.h"
 #include "Terrain/AGX_Terrain.h"
 
 // Unreal Engine includes.
 #include "Containers/Map.h"
-#include "Kismet/GameplayStatics.h"
 #include "Misc/AutomationTest.h"
-#include "Tests/AutomationCommon.h"
 #include "Tests/AutomationEditorCommon.h"
 
 namespace AGX_PlayInEditorTest_helpers
 {
-	TMap<FString, AActor*> GetActorsByName(UWorld* TestWorld, const TArray<FString>& Names)
-	{
-		TMap<FString, AActor*> FoundActors;
-		if (TestWorld == nullptr)
-		{
-			return FoundActors;
-		}
-
-		TArray<AActor*> AllActors;
-		UGameplayStatics::GetAllActorsOfClass(TestWorld, AActor::StaticClass(), AllActors);
-		for (const FString& Name : Names)
-		{
-			AActor** FoundActor = AllActors.FindByPredicate(
-				[&Name](AActor* Actor) { return Actor->GetActorLabel().Equals(Name); });
-			if (FoundActor != nullptr)
-			{
-				FoundActors.Add(Name, *FoundActor);
-			}
-		}
-
-		return FoundActors;
-	}
+	using namespace AGX_PlayInEditorUtils;
 
 	template <typename T>
 	T* GetComponentByName(const AActor& Owner, const FString& Name)
@@ -69,24 +47,6 @@ namespace AGX_PlayInEditorTest_helpers
 		}
 
 		return nullptr;
-	}
-
-	DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
-		FTickOnlyCommand, int, TickCurrent, int, TickMax, FAutomationTestBase&, Test);
-
-	bool FTickOnlyCommand::Update()
-	{
-		using namespace AGX_PlayInEditorTest_helpers;
-		if (!GEditor->IsPlayingSessionInEditor())
-		{
-			return false;
-		}
-
-		TickCurrent++;
-		if (TickCurrent < TickMax)
-			return false;
-
-		return true;
 	}
 }
 
@@ -464,7 +424,7 @@ bool FStepExampleLevelsTest::RunTest(const FString& Parameters)
 
 	int TickCurrent = 0;
 	int TickMax = 3;
-	ADD_LATENT_AUTOMATION_COMMAND(FTickOnlyCommand(TickCurrent, TickMax, *this));
+	ADD_LATENT_AUTOMATION_COMMAND(FTickOnlyCommand(TickCurrent, TickMax));
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 
