@@ -46,7 +46,7 @@ void FAGXUnrealModule::RegisterCoreRedirects()
 {
 	// This is used to handle name changes of UFUNCTIONs, UPROPERTYs and UObjects (backward
 	// compatibility). See
-	// https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/Assets/CoreRedirects/
+	// https://docs.unrealengine.com/5.0/en-US/core-redirects-in-unreal-engine/
 
 	TArray<FCoreRedirect> Redirects;
 
