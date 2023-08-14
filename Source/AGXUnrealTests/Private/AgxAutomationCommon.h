@@ -67,6 +67,14 @@ namespace AgxAutomationCommon
 		FAutomationTestBase& Test, const TCHAR* What, const FLinearColor& Actual,
 		const FLinearColor& Expected, float Tolerance = KINDA_SMALL_NUMBER);
 
+	void TestLess(
+		FAutomationTestBase& Test, const TCHAR* SmallerName, double Smaller,
+		const TCHAR* LargerName, double Larger);
+
+	void TestAllLess(
+		FAutomationTestBase& Test, const TCHAR* SmallerName, const FVector& Smaller,
+		const TCHAR* LargerName, const FVector& Larger);
+
 	/// @todo Figure out how to use UEnum::GetValueAsString instead of this helper function.
 	/// I get linker errors.
 	FString WorldTypeToString(EWorldType::Type Type);
@@ -178,9 +186,9 @@ namespace AgxAutomationCommon
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
 	{
-		UActorComponent** Match = Components.FindByPredicate([Name](UActorComponent* Component) {
-			return Cast<T>(Component) && Component->GetName() == Name;
-		});
+		UActorComponent** Match = Components.FindByPredicate(
+			[Name](UActorComponent* Component)
+			{ return Cast<T>(Component) && Component->GetName() == Name; });
 
 		return Match != nullptr ? Cast<T>(*Match) : nullptr;
 	}
@@ -328,7 +336,7 @@ namespace AgxAutomationCommon
 		return AgxToUnrealDisplacement(FVector(X, Y, Z));
 	}
 
-		inline FVector AgxToUnrealVector(const FVector& Agx)
+	inline FVector AgxToUnrealVector(const FVector& Agx)
 	{
 		return FVector(Agx.X, -Agx.Y, Agx.Z);
 	}

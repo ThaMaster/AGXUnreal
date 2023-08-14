@@ -337,6 +337,25 @@ inline FVector ConvertDisplacement(const agx::Vec3& V)
 		ConvertDistanceToUnreal<decltype(FVector::X)>(V.z()));
 }
 
+// Float, i.e. agx::Vec3f, versions of the above.
+
+inline FVector Convert(const agx::Vec3f& V)
+{
+	using ElementType = decltype(FVector::X);
+	return FVector(
+		static_cast<ElementType>(V.x()), static_cast<ElementType>(V.y()),
+		static_cast<ElementType>(V.z()));
+}
+
+inline FVector ConvertDistance(const agx::Vec3f& V)
+{
+	using ElementType = decltype(FVector::X);
+	return FVector(
+		ConvertDistanceToUnreal<ElementType>(V.x()),
+		ConvertDistanceToUnreal<ElementType>(V.y()),
+		ConvertDistanceToUnreal<ElementType>(V.z()));
+}
+
 inline FVector ConvertDisplacement(const agx::Vec3f& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
@@ -353,6 +372,8 @@ inline FVector ConvertFloatVector(const agx::Vec3f& V)
 		ConvertToUnreal<decltype(FVector::X)>(V.x()), -ConvertToUnreal<decltype(FVector::X)>(V.y()),
 		ConvertToUnreal<decltype(FVector::X)>(V.z()));
 }
+
+// Rotation-related.
 
 inline FVector ConvertAngularVelocity(const agx::Vec3& V)
 {
@@ -430,11 +451,31 @@ inline agx::Vec3 ConvertDisplacement(const FVector& V)
 		ConvertDistanceToAGX(V.X), -ConvertDistanceToAGX(V.Y), ConvertDistanceToAGX(V.Z));
 }
 
+// Float, i.e. agx::Vec3f, versions for three-dimensional vectors. Unreal Engine to AGX Dynamics.
+// Same as the set above, but agx::Vec3f instead of agx::Vec3.
+
+inline agx::Vec3f ConvertFloat(const FVector& V)
+{
+	return agx::Vec3f(static_cast<float>(V.X), static_cast<float>(V.Y), static_cast<float>(V.Z));
+}
+
+inline agx::Vec3f ConvertFloatDistance(const FVector& V)
+{
+	return agx::Vec3f(
+		static_cast<float>(ConvertDistanceToAGX(V.X)),
+		static_cast<float>(ConvertDistanceToAGX(V.Y)),
+		static_cast<float>(ConvertDistanceToAGX(V.Z)));
+}
+
 inline agx::Vec3f ConvertFloatVector(const FVector& V)
 {
 	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
-	return agx::Vec3f(ConvertToAGX(V.X), -ConvertToAGX(V.Y), ConvertToAGX(V.Z));
+	return agx::Vec3f(
+		static_cast<float>(ConvertToAGX(V.X)), static_cast<float>(-ConvertToAGX(V.Y)),
+		static_cast<float>(ConvertToAGX(V.Z)));
 }
+
+// Rotation-related.
 
 inline agx::Vec3 ConvertAngularVelocity(const FVector& V)
 {
