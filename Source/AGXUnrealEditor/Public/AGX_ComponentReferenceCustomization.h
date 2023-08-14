@@ -95,13 +95,13 @@ private:
 	void ClearPropertyHandles();
 
 	/// Read the Component Reference through the Component Reference Handle.
-	TOptional<FAGX_ComponentReference*> GetComponentReference() const;
+	FAGX_ComponentReference* GetComponentReference() const;
 
 	/// Read the Owning Actor through the Owning Actor handle.
-	TOptional<AActor*> GetOwningActor() const;
+	AActor* GetOwningActor() const;
 
 	/// Read the Component name through the Name Handle.
-	TOptional<FName> GetName() const;
+	FName GetName() const;
 
 	/// Read the Search Child Actors flag through Search Child Actors Handle.
 	bool GetSearchChildActors() const;

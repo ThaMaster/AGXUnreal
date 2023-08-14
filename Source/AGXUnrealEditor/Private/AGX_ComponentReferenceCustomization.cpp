@@ -36,7 +36,6 @@ namespace AGX_ComponentReferenceCustomization_helpers
 		}
 	}
 
-	/// @return True of we are part of a Blueprint, false otherwise.
 	void GetComponentNamesFromBlueprint(
 		TArray<TSharedPtr<FName>>& OutNames, IPropertyHandle& ComponentReferenceHandle,
 		TSubclassOf<UActorComponent> Type)
@@ -108,7 +107,7 @@ void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 		LogAGX, Warning,
 		TEXT("FAGX_ComponentReferenceCustomization %p is customizing header for Component "
 			 "Reference %p using handle %p."),
-		this, GetComponentReference().Get(nullptr), ComponentReferenceHandle.Get());
+		this, GetComponentReference(), ComponentReferenceHandle.Get());
 
 	// clang-format off
 	HeaderRow
@@ -153,11 +152,11 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 		LogAGX, Warning,
 		TEXT("FAGX_ComponentReferenceCustomization %p is customizing children for Component "
 			 "Reference %p using handle %p."),
-		this, GetComponentReference().Get(nullptr), ComponentReferenceHandle.Get());
+		this, GetComponentReference(), ComponentReferenceHandle.Get());
 
 	// Make sure we have a single valid Component Reference that is being customized. Support for
 	// multi-select editing is a feature for the future.
-	const FAGX_ComponentReference* ComponentReference = GetComponentReference().Get(nullptr);
+	const FAGX_ComponentReference* ComponentReference = GetComponentReference();
 	if (ComponentReference == nullptr)
 	{
 		return;
@@ -204,7 +203,7 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 
 	ComboBoxPtr = &ComboBox.Get();
 
-	SelectedComponent = GetName().Get(NAME_None); // ComponentReference->Name;
+	SelectedComponent = GetName();
 
 	RebuildComboBox();
 
@@ -246,7 +245,7 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 
 FText FAGX_ComponentReferenceCustomization::GetHeaderText() const
 {
-	const FAGX_ComponentReference* ComponentReference = GetComponentReference().Get(nullptr);
+	const FAGX_ComponentReference* ComponentReference = GetComponentReference();
 	if (ComponentReference == nullptr)
 	{
 		return LOCTEXT(
@@ -254,9 +253,8 @@ FText FAGX_ComponentReferenceCustomization::GetHeaderText() const
 			"Component Reference Customization does not have a valid Component Reference");
 	}
 
-	const AActor* OwningActor =
-		GetOwningActor().Get(nullptr); // ComponentReference->GetOwningActor();
-	const FName ComponentName = GetName().Get(NAME_None); // ComponentReference->Name;
+	const AActor* OwningActor = GetOwningActor();
+	const FName ComponentName = GetName();
 	const FName ActorName = OwningActor ? OwningActor->GetFName() : NAME_None;
 	return FText::Format(
 		LOCTEXT("HeaderText", "{0} in {1}"), FText::FromName(ComponentName),
@@ -269,13 +267,13 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 
 	ComponentNames.Empty();
 
-	const FAGX_ComponentReference* ComponentReference = GetComponentReference().Get(nullptr);
+	const FAGX_ComponentReference* ComponentReference = GetComponentReference();
 	if (ComponentReference == nullptr)
 	{
 		return;
 	}
 
-	const AActor* OwningActor = GetOwningActor().Get(nullptr);
+	const AActor* OwningActor = GetOwningActor();
 	if (OwningActor != nullptr)
 	{
 		GetComponentNamesFromOwner(ComponentNames, *ComponentReference);
@@ -332,6 +330,7 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 		// Should the non-existing name be added to the list?
 		// If so, how do we make it clear that it is an invalid selection?
 		// If not, how do we show that the actual selection isn't among the options?
+		// Red text/background?
 		SelectedComponent = *ComponentNames[0];
 		ComboBoxPtr->SetSelectedItem(ComponentNames[0]);
 	}
@@ -365,7 +364,11 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 
 	SelectedComponent = NewSelection.IsValid() ? *NewSelection : NAME_None;
 
-	// Only set the new value if it is an actual new value. This is to prevent
+	// Only set the new value if it is an actual new value. This is to prevent infinite recursion
+	// when setting the value through the Property Handle triggers a Blueprint Reconstruction,
+	// which causes the Details panel to be rebuilt, which creates a new Component Reference
+	// Customization, which triggers a new call here, which we don't want triggering a new
+	// set on the Property Handle because that will trigger an assert in Unreal Editor code.
 	if (Result == FPropertyAccess::Success && SelectedComponent != CurrentValue)
 	{
 		UE_LOG(
@@ -416,7 +419,7 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 
 	// Even if we couldn't call SetValue because of the object creation loop, we still want to
 	// update the Component Reference with the new name, if we have a Component Reference.
-	FAGX_ComponentReference* Reference = GetComponentReference().Get(nullptr);
+	FAGX_ComponentReference* Reference = GetComponentReference();
 	if (Reference == nullptr)
 	{
 		UE_LOG(
@@ -445,13 +448,15 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 void FAGX_ComponentReferenceCustomization::OnComponentNameCommitted(
 	const FText& InText, ETextCommit::Type InCommitType)
 {
+	// @todo This function need similar safety checks as OnComboBoxChanged. Make a helper function?
+
 	SelectedComponent = FName(*InText.ToString());
 	if (NameHandle.IsValid() && NameHandle->IsValidHandle())
 	{
 		NameHandle->SetValue(SelectedComponent);
 	}
 
-	FAGX_ComponentReference* ComponentReference = GetComponentReference().Get(nullptr);
+	FAGX_ComponentReference* ComponentReference = GetComponentReference();
 	if (ComponentReference != nullptr)
 	{
 		// If/when we do caching in the Component Reference, then the cache needs to be invalidated
@@ -493,15 +498,14 @@ void FAGX_ComponentReferenceCustomization::ClearPropertyHandles()
 	SearchChildActorsHandle = nullptr;
 }
 
-TOptional<FAGX_ComponentReference*> FAGX_ComponentReferenceCustomization::GetComponentReference()
-	const
+FAGX_ComponentReference* FAGX_ComponentReferenceCustomization::GetComponentReference() const
 {
 	if (!ComponentReferenceHandle.IsValid())
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("ComponentReferenceCustomization: The Component Reference Handle is not valid."));
-		return {};
+		return nullptr;
 	}
 	if (!ComponentReferenceHandle->IsValidHandle())
 	{
@@ -509,7 +513,7 @@ TOptional<FAGX_ComponentReference*> FAGX_ComponentReferenceCustomization::GetCom
 			LogAGX, Warning,
 			TEXT("ComponentReferenceCustomization: The Component Reference Handle is not a valid "
 				 "handle."));
-		return {};
+		return nullptr;
 	}
 
 	// This will fail with FPropertyAccess::MultipleValues if multiple Component References is
@@ -546,7 +550,7 @@ TOptional<FAGX_ComponentReference*> FAGX_ComponentReferenceCustomization::GetCom
 			TEXT("ComponentReferenceCustomization: Failed to read value data from Property "
 				 "Handle. Got result %s."),
 			*ResultName);
-		return {};
+		return nullptr;
 	}
 	if (UntypedPointer == nullptr)
 	{
@@ -555,20 +559,20 @@ TOptional<FAGX_ComponentReference*> FAGX_ComponentReferenceCustomization::GetCom
 			TEXT("ComponentReferenceCustomization: Got null Component Reference from the handle."));
 		// Note that we consider a nullptr a failure even though we successfully read it. Is this
 		// a problem? When should we need to know that the actual Property is a nullptr. Can it be?
-		return {};
+		return nullptr;
 	}
 
 	return static_cast<FAGX_ComponentReference*>(UntypedPointer);
 }
 
-TOptional<AActor*> FAGX_ComponentReferenceCustomization::GetOwningActor() const
+AActor* FAGX_ComponentReferenceCustomization::GetOwningActor() const
 {
 	if (!OwningActorHandle.IsValid())
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("ComponentReferenceCustomization: The Owning Actor handle is not valid."));
-		return {};
+		return nullptr;
 	}
 
 	if (!OwningActorHandle->IsValidHandle())
@@ -577,7 +581,7 @@ TOptional<AActor*> FAGX_ComponentReferenceCustomization::GetOwningActor() const
 			LogAGX, Warning,
 			TEXT(
 				"ComponentReferenceCustomization: The Owning Actor Handle is not a valid handle."));
-		return {};
+		return nullptr;
 	}
 
 	void* UntypedPointer = nullptr;
@@ -589,7 +593,7 @@ TOptional<AActor*> FAGX_ComponentReferenceCustomization::GetOwningActor() const
 			TEXT("ComponentReferenceCustomization: Failed to read value data from Owning Actor "
 				 "Handle. Got result %d."),
 			Result);
-		return {};
+		return nullptr;
 	}
 	if (UntypedPointer == nullptr)
 	{
@@ -597,42 +601,32 @@ TOptional<AActor*> FAGX_ComponentReferenceCustomization::GetOwningActor() const
 			LogAGX, Warning,
 			TEXT("ComponentReferenceCustomization: Got null Owning Actor location from the "
 				 "handle."));
-		return {};
+		return nullptr;
 	}
 	AActor* OwningActor = *static_cast<AActor**>(UntypedPointer);
 
 	// Sanity check against reading through the Component Reference.
-	const TOptional<FAGX_ComponentReference*> ComponentReference = GetComponentReference();
-	if (OwningActor == nullptr && ComponentReference.IsSet() &&
-		ComponentReference.GetValue()->GetOwningActor() != nullptr)
+	FAGX_ComponentReference* ComponentReference = GetComponentReference();
+	if (ComponentReference == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("ComponentReferenceHandle and OwningActorHandle disagree on whether there is an "
-				 "Owning Actor or not.\n  From handle: %p.\n  From Component Reference: %p."),
-			OwningActor, ComponentReference.GetValue()->GetOwningActor());
+			TEXT("FAGX_ComponentReferenceCustomization: Fond an Owning Actor but not a Component "
+				 "Reference. Thats surprising."));
 	}
-	else if (OwningActor != nullptr && !ComponentReference.IsSet())
+	else if (ComponentReference->OwningActor != OwningActor)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("OwningActorHandle and ComponentReferenceHandle disagree on whether there is an "
-				 "Owning Actor or not."))
-	}
-	else if (
-		OwningActor != nullptr && ComponentReference.IsSet() &&
-		OwningActor != ComponentReference.GetValue()->GetOwningActor())
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("OwningActorHandle and ComponentReferenceHandle disagree on what the Owning Actor "
-				 "is."));
+			TEXT("ComponentReferenceHandle and OwningActorHandle disagree on the Owning Actor.\n"
+				 "  From handle: %p.\n  From Component Reference: %p."),
+			OwningActor, ComponentReference->OwningActor);
 	}
 
 	return OwningActor;
 }
 
-TOptional<FName> FAGX_ComponentReferenceCustomization::GetName() const
+FName FAGX_ComponentReferenceCustomization::GetName() const
 {
 	if (!NameHandle.IsValid())
 	{
@@ -672,8 +666,8 @@ TOptional<FName> FAGX_ComponentReferenceCustomization::GetName() const
 	FName Name = *static_cast<FName*>(UntypedPointer);
 
 	// Sanity check against reading through the Component Reference.
-	const TOptional<FAGX_ComponentReference*> ComponentReference = GetComponentReference();
-	if (ComponentReference.IsSet() && Name != ComponentReference.GetValue()->Name)
+	const FAGX_ComponentReference* ComponentReference = GetComponentReference();
+	if (ComponentReference != nullptr && Name != ComponentReference->Name)
 	{
 		UE_LOG(
 			LogAGX, Warning,
@@ -681,6 +675,22 @@ TOptional<FName> FAGX_ComponentReferenceCustomization::GetName() const
 	}
 
 	return Name;
+}
+
+bool FAGX_ComponentReferenceCustomization::GetSearchChildActors() const
+{
+	if (!SearchChildActorsHandle.IsValid() || !SearchChildActorsHandle->IsValidHandle())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_ComponentReferenceCustomization: Cannot read Search Child Actors property "
+				 "from handle."));
+		return false;
+	}
+
+	bool bValue = false;
+	SearchChildActorsHandle->GetValue(bValue);
+	return bValue;
 }
 
 #undef LOCTEXT_NAMESPACE
