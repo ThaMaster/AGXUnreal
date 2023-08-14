@@ -190,9 +190,9 @@ public:
 		{
 			ENQUEUE_RENDER_COMMAND(FAGX_ConstraintIconGraphicsVertexBuffersInit)
 			([Geometry = Geometry.Get()](FRHICommandListImmediate& RHICmdList) {
-				Geometry->VertexBuffers.PositionVertexBuffer.InitResource();
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.InitResource();
-				Geometry->VertexBuffers.ColorVertexBuffer.InitResource();
+				Geometry->VertexBuffers.PositionVertexBuffer.InitResource(RHICmdList);
+				Geometry->VertexBuffers.StaticMeshVertexBuffer.InitResource(RHICmdList);
+				Geometry->VertexBuffers.ColorVertexBuffer.InitResource(RHICmdList);
 
 				FLocalVertexFactory::FDataType Data;
 				Geometry->VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(
@@ -207,8 +207,8 @@ public:
 					&Geometry->VertexFactory, Data);
 				Geometry->VertexFactory.SetData(Data);
 
-				Geometry->VertexFactory.InitResource();
-				Geometry->IndexBuffer.InitResource();
+				Geometry->VertexFactory.InitResource(RHICmdList);
+				Geometry->IndexBuffer.InitResource(RHICmdList);
 			});
 		}
 	}

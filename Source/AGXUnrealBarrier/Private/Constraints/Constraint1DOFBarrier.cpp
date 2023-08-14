@@ -54,7 +54,7 @@ namespace
 	}
 
 	// Let's hope -1 is never used for a valid angle type.
-	constexpr agx::Angle::Type InvalidAngleType = agx::Angle::Type(-1);
+	/* constexpr */ const agx::Angle::Type InvalidAngleType = agx::Angle::Type(-1);
 
 	agx::Angle::Type GetDofType(const FConstraint1DOFBarrier& Constraint)
 	{
