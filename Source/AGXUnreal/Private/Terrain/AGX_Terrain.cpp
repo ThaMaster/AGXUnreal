@@ -43,6 +43,9 @@
 // Standard library includes.
 #include <algorithm>
 
+#include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelProperties.h"
+
 #ifdef LOCTEXT_NAMESPACE
 #error "LOCTEXT_NAMESPACE leakage."
 #endif
@@ -78,9 +81,10 @@ AAGX_Terrain::AAGX_Terrain()
 		auto AssetFinder = ConstructorHelpers::FObjectFinder<Type>(Path);
 		if (!AssetFinder.Succeeded())
 		{
-			UE_LOG(LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), *Path);
+			UE_LOG(
+				LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), *Path);
 			return;
-		}			
+		}
 
 		AssetRefProperty = AssetFinder.Object;
 	};
@@ -774,8 +778,7 @@ namespace
 	}
 
 	template <typename TPtr>
-	TPtr GetShovelComponent(
-		UAGX_RigidBodyComponent& Body, const TCHAR* TerrainName)
+	TPtr GetShovelComponent(UAGX_RigidBodyComponent& Body, const TCHAR* TerrainName)
 	{
 		auto RecursiveFind = [](const TArray<USceneComponent*>& Components, auto& recurse)
 		{
@@ -1049,12 +1052,13 @@ void AAGX_Terrain::CreateNativeShovels()
 			*GetName());
 	}
 
-	auto AddShovel = [this](FShovelBarrier& ShovelBarrier, const FAGX_Shovel& Shovel) -> bool
+	auto AddShovel =
+		[this](FShovelBarrier& ShovelBarrier, double RequiredRadius, double PreloadRadius) -> bool
 	{
 		if (bEnableTerrainPaging)
 		{
 			return NativeTerrainPagerBarrier.AddShovel(
-				ShovelBarrier, Shovel.RequiredRadius, Shovel.PreloadRadius);
+				ShovelBarrier, RequiredRadius, PreloadRadius);
 		}
 		else
 		{
@@ -1108,7 +1112,7 @@ void AAGX_Terrain::CreateNativeShovels()
 
 		FAGX_Shovel::UpdateNativeShovelProperties(ShovelBarrier, Shovel);
 
-		bool Added = AddShovel(ShovelBarrier, Shovel);
+		bool Added = AddShovel(ShovelBarrier, Shovel.RequiredRadius, Shovel.PreloadRadius);
 		if (!Added)
 		{
 			UE_LOG(
@@ -1120,7 +1124,7 @@ void AAGX_Terrain::CreateNativeShovels()
 			std::swap(CuttingEdgeLine.v1, CuttingEdgeLine.v2);
 			ShovelBarrier.SetTopEdge(TopEdgeLine);
 			ShovelBarrier.SetCuttingEdge(CuttingEdgeLine);
-			Added = AddShovel(ShovelBarrier, Shovel);
+			Added = AddShovel(ShovelBarrier, Shovel.RequiredRadius, Shovel.PreloadRadius);
 			if (!Added)
 			{
 				UE_LOG(
@@ -1139,6 +1143,46 @@ void AAGX_Terrain::CreateNativeShovels()
 		UE_LOG(
 			LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(),
 			*GetName());
+	}
+
+	for (FAGX_ShovelReference ShovelRef : ShovelComponents)
+	{
+		UAGX_ShovelComponent* ShovelComponent = ShovelRef.GetShovelComponent();
+		if (ShovelComponent == nullptr)
+		{
+			continue;
+		}
+
+		FShovelBarrier* ShovelBarrier = ShovelComponent->GetOrCreateNative();
+		if (ShovelBarrier == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Shovel '%s' in AGX Terrain '%s' could not create AGX Dynamics "
+					 "representation. Ignoring this shovel. It will not be able to deform the "
+					 "Terrain."),
+				*ShovelComponent->GetName(), *GetLabelSafe(this));
+			continue;
+		}
+		const double RequiredRadius = ShovelComponent->ShovelProperties->RequiredRadius;
+		const double PreloadRadius = ShovelComponent->ShovelProperties->PreloadRadius;
+		bool Added = AddShovel(*ShovelBarrier, RequiredRadius, PreloadRadius);
+		if (!Added)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Terrain '%s' rejected shovel '%s' in '%s'. Reversing edge directions and "
+					 "trying again."),
+				*GetLabelSafe(this), *ShovelComponent->GetName(),
+				*GetLabelSafe(ShovelComponent->GetOwner()));
+
+			UE_LOG(LogAGX, Error, TEXT("TODO: Implement edge / direction flipping"));
+			continue;
+		}
+
+		UE_LOG(
+			LogAGX, Warning, TEXT("Shovel '%s' added to Terrain '%s'"), *ShovelComponent->GetName(),
+			*GetLabelSafe(this));
 	}
 }
 
