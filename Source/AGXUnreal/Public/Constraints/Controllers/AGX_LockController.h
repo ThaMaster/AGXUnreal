@@ -31,7 +31,7 @@ struct AGXUNREAL_API FAGX_ConstraintLockController : public FAGX_ConstraintContr
 	double Position {0.0};
 
 	void SetPosition(double InPosisiton);
-	double GetPosition();
+	double GetPosition() const;
 
 public:
 	FAGX_ConstraintLockController() = default;

@@ -2,11 +2,13 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "PlayRecord/AGX_PlayRecordState.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
 #include "AGX_PlayRecord.generated.h"
-
 
 UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable)
 class AGXUNREAL_API UAGX_PlayRecord : public UObject
@@ -15,6 +17,6 @@ class AGXUNREAL_API UAGX_PlayRecord : public UObject
 
 public:
 
-	UPROPERTY(EditAnywhere, Category = "AGX Dynamics Play Record")
-	int32 Dummy;
+	UPROPERTY(EditAnywhere, Category = "AGX Play Record")
+	TArray<FAGX_PlayRecordState> States;
 };
