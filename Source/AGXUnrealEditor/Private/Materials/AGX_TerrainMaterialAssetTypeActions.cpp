@@ -17,6 +17,15 @@ FText FAGX_TerrainMaterialAssetTypeActions::GetName() const
 	return LOCTEXT("AssetName", "AGX Terrain Material");
 }
 
+const TArray<FText>& FAGX_TerrainMaterialAssetTypeActions::GetSubMenus() const
+{
+	static const TArray<FText> SubMenus {
+		LOCTEXT("TerrainMaterialSubMenu", "Terrain")
+	};
+
+	return SubMenus;
+}
+
 uint32 FAGX_TerrainMaterialAssetTypeActions::GetCategories()
 {
 	return AssetCategory;

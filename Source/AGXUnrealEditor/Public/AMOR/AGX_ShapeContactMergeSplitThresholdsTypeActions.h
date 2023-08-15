@@ -13,15 +13,15 @@ class AGXUNREALEDITOR_API FAGX_ShapeContactMergeSplitThresholdsTypeActions
 public:
 	FAGX_ShapeContactMergeSplitThresholdsTypeActions(EAssetTypeCategories::Type InAssetCategory);
 
-	FText GetName() const override;
+	virtual FText GetName() const override;
 
-	uint32 GetCategories() override;
+	virtual uint32 GetCategories() override;
 
-	FColor GetTypeColor() const override;
+	virtual FColor GetTypeColor() const override;
 
-	FText GetAssetDescription(const FAssetData& AssetData) const override;
+	virtual FText GetAssetDescription(const FAssetData& AssetData) const override;
 
-	UClass* GetSupportedClass() const override;
+	virtual UClass* GetSupportedClass() const override;
 
 private:
 	EAssetTypeCategories::Type AssetCategory;

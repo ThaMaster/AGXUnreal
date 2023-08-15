@@ -19,6 +19,15 @@ FText FAGX_ConstraintMergeSplitThresholdsTypeActions::GetName() const
 	return LOCTEXT("AssetName", "AGX Constraint Merge Split Thresholds");
 }
 
+const TArray<FText>& FAGX_ConstraintMergeSplitThresholdsTypeActions::GetSubMenus() const
+{
+	static const TArray<FText> SubMenus {
+		LOCTEXT("ConstraintMergeSplitThSubMenu", "Constraint"),
+	};
+
+	return SubMenus;
+}
+
 uint32 FAGX_ConstraintMergeSplitThresholdsTypeActions::GetCategories()
 {
 	return AssetCategory;
