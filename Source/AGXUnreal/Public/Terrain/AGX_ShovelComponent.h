@@ -14,6 +14,8 @@
 
 #include "AGX_ShovelComponent.generated.h"
 
+class UAGX_ShovelProperties;
+
 UCLASS(ClassGroup = "AGX_Terrain", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_ShovelComponent : public USceneComponent, public IAGX_NativeOwner
 {
@@ -25,6 +27,13 @@ public:
 	/// The Rigid Body that is to be imbued with shovel behavior.
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
 	FAGX_RigidBodyReference RigidBody;
+
+	/**
+	 * Configuration properties for the Shovel. If not set then the AGX Dynamics defaults are
+	 * used for all properties.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel")
+	UAGX_ShovelProperties* ShovelProperties;
 
 	/// @todo For experimentation only, remove.
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))

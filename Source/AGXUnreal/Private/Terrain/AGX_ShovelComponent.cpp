@@ -149,29 +149,47 @@ bool UAGX_ShovelComponent::WritePropertiesToNative()
 		return false;
 	}
 
-#if 1
-	UE_LOG(
-		LogAGX, Error, TEXT("UAGX_ShovelComponent::WritePropertiesToNative not yet implemented."));
-#else
-	NativeBarrier.SetToothLength();
-	NativeBarrier.SetMaximumPenetrationForce();
-	NativeBarrier.SetMaximumToothRadius();
-	NativeBarrier.SetNumberOfTeeth();
-	NativeBarrier.SetMinimumToothRadius();
-	NativeBarrier.SetPenetrationDepthThreshold();
-	NativeBarrier.SetPenetrationForceScaling();
-	NativeBarrier.SetAlwaysRemoveShovelContacts();
-	NativeBarrier.SetNoMergeExtensionDistance();
-	NativeBarrier.SetSecondarySeparationDeadloadLimit();
-	NativeBarrier.SetVerticalBladeSoilMergeDistance();
-	NativeBarrier.SetMinimumSubmergedContactLengthFraction();
+	if (ShovelProperties == nullptr)
+	{
+		// No properties means use the defaults everywhere. It is not an error.
+		return true;
+	}
+	NativeBarrier.SetToothLength(ShovelProperties->ToothLength);
+	NativeBarrier.SetMaximumPenetrationForce(ShovelProperties->MaximumPenetrationForce);
+	NativeBarrier.SetMaximumToothRadius(ShovelProperties->MaximumToothRadius);
+	NativeBarrier.SetNumberOfTeeth(ShovelProperties->NumberOfTeeth);
+	NativeBarrier.SetMinimumToothRadius(ShovelProperties->MinimumToothRadius);
+	NativeBarrier.SetPenetrationDepthThreshold(ShovelProperties->PenetrationDepthThreshold);
+	NativeBarrier.SetPenetrationForceScaling(ShovelProperties->PenetrationForceScaling);
+	NativeBarrier.SetAlwaysRemoveShovelContacts(ShovelProperties->AlwaysRemoveShovelContacts);
+	NativeBarrier.SetNoMergeExtensionDistance(ShovelProperties->NoMergeExtensionDistance);
+	NativeBarrier.SetSecondarySeparationDeadloadLimit(
+		ShovelProperties->SecondarySeparationDeadloadLimit);
+	NativeBarrier.SetVerticalBladeSoilMergeDistance(
+		ShovelProperties->VerticalBladeSoilMergeDistance);
+	NativeBarrier.SetMinimumSubmergedContactLengthFraction(
+		ShovelProperties->MinimumSubmergedContactLengthFraction);
 
-	NativeBarrier.SetExcavationSettingsEnabled();
-	NativeBarrier.SetExcavationSettingsEnableForceFeedback();
-	NativeBarrier.SetExcavationSettingsEnableCreateDynamicMass();
+	auto SetExcavationSettings =
+		[this](EAGX_ExcavationMode Mode, const FAGX_ShovelExcavationSettings& Settings)
+	{
+		NativeBarrier.SetExcavationSettingsEnabled(Mode, Settings.bEnabled);
+		NativeBarrier.SetExcavationSettingsEnableCreateDynamicMass(
+			Mode, Settings.bEnableCreateDynamicMass);
+		NativeBarrier.SetExcavationSettingsEnableForceFeedback(Mode, Settings.bEnableForceFeedback);
+	};
 
-	// Properties initialized by the AGX Dynamics Shovel constructor are not set here.
-#endif
+	SetExcavationSettings(
+		EAGX_ExcavationMode::Primary, ShovelProperties->PrimaryExcavationSettings);
+	SetExcavationSettings(
+		EAGX_ExcavationMode::DeformBack, ShovelProperties->DeformBackExcavationSettings);
+	SetExcavationSettings(
+		EAGX_ExcavationMode::DeformRight, ShovelProperties->DeformRightExcavationSettings);
+	SetExcavationSettings(
+		EAGX_ExcavationMode::DeformLeft, ShovelProperties->DeformLeftExcavationSettings);
+
+	// Properties initialized by the AGX Dynamics Shovel constructor, i.e. body, edges, and cutting
+	// direction, are not set here.
 
 	return true;
 }
