@@ -40,10 +40,10 @@ public:
 	FAGX_ShovelReference OtherShovel;
 
 
-protected:
 	// ~Begin UActorComponent interface.
 	virtual void PostInitProperties() override;
 	virtual void BeginPlay() override;
+	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	// ~End UActorComponent interface.
 
 	// ~Begin IAGX_NativeOwner interface.

@@ -306,3 +306,15 @@ void FShovelBarrier::ReleaseNative()
 	check(HasNative());
 	NativeRef->Native = nullptr;
 }
+
+void FShovelBarrier::IncrementRefCount() const
+{
+	check(HasNative());
+	NativeRef->Native->reference();
+}
+
+void FShovelBarrier::DecrementRefCount() const
+{
+	check(HasNative());
+	NativeRef->Native->unreference();
+}

@@ -4,9 +4,12 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_NativeOwnerInstanceData.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
+#include "AGX_RigidBodyComponent.h"
 #include "CoreGlobals.h"
 
 class FRigidBodyBarrier;
@@ -48,6 +51,18 @@ void UAGX_ShovelComponent::BeginPlay()
 	}
 }
 
+TStructOnScope<FActorComponentInstanceData> UAGX_ShovelComponent::GetComponentInstanceData() const
+{
+	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
+		this, this,
+		[](UActorComponent* Component)
+		{
+			ThisClass* AsThisClass = Cast<ThisClass>(Component);
+			return static_cast<IAGX_NativeOwner*>(AsThisClass);
+		});
+	return Super::GetComponentInstanceData();
+}
+
 bool UAGX_ShovelComponent::HasNative() const
 {
 	return NativeBarrier.HasNative();
@@ -55,14 +70,32 @@ bool UAGX_ShovelComponent::HasNative() const
 
 uint64 UAGX_ShovelComponent::GetNativeAddress() const
 {
-	// NativeBarrier.IncrementRefCount();
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("GetNativeAddress called on Shovel Component '%s' in '%s' that does not have an "
+				 "AGX Dynamics native."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return 0;
+	}
+	NativeBarrier.IncrementRefCount();
 	return NativeBarrier.GetNativeAddress();
 }
 
 void UAGX_ShovelComponent::SetNativeAddress(uint64 NativeAddress)
 {
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("SetNativeAddress called on Shovel Component '%s' in '%s' that does not have an "
+				 "AGX Dynamics native."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
 	NativeBarrier.SetNativeAddress(NativeAddress);
-	// NativeBarrier.DecrementRefCount();
+	NativeBarrier.DecrementRefCount();
 }
 
 FShovelBarrier* UAGX_ShovelComponent::GetOrCreateNative()
@@ -94,7 +127,14 @@ FShovelBarrier* UAGX_ShovelComponent::GetOrCreateNative()
 
 		AllocateNative();
 	}
-	check(HasNative()); /// \todo Consider better error handling than 'check'.
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("'%s' in '%s': Could not allocate AGX Dynamics Shovel in "
+				 "UAGX_ShovelComponent::GetOrCreateNative, nullptr will be returned to caller."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+	}
 	return GetNative();
 }
 
@@ -122,13 +162,25 @@ void UAGX_ShovelComponent::AllocateNative()
 	check(!GIsReconstructingBlueprintInstances);
 	check(!HasNative());
 
-	FRigidBodyBarrier* Body = RigidBody.GetRigidBodyBarrier();
-	if (Body == nullptr)
+	UAGX_RigidBodyComponent* BodyComponent = RigidBody.GetRigidBody();
+	if (BodyComponent == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Shovel '%s' in '%s' does not have a Rigid Body. Ignoring this Shovel."),
 			*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
+	FRigidBodyBarrier* Body = BodyComponent->GetOrCreateNative();
+	if (Body == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Shovel '%s' in '%s' has a Rigid Body, '%s' in '%s', that could not create its "
+				 "AGX Dynamics representation. Ignoring this Shovel."),
+			*GetName(), *GetLabelSafe(GetOwner()), *BodyComponent->GetName(),
+			*GetLabelSafe(BodyComponent->GetOwner()));
 		return;
 	}
 
@@ -140,6 +192,10 @@ void UAGX_ShovelComponent::AllocateNative()
 
 	// No need to add Shovel to Simulation. Shovels only needs to be added to the Terrain, and that
 	// is handled by the Terrain itself.
+
+	UE_LOG(
+		LogAGX, Log, TEXT("Shovel '%s' in '%s' has allocated AGX Dynamics native."), *GetName(),
+		*GetLabelSafe(GetOwner()));
 }
 
 bool UAGX_ShovelComponent::WritePropertiesToNative()
