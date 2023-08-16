@@ -8,6 +8,9 @@
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "PlayRecord/AGX_PlayRecord.h"
 
+// Standard library includes.
+#include <limits>
+
 UAGX_PlayRecordComponent::UAGX_PlayRecordComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -99,6 +102,27 @@ void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
 		return;
 	}
 
+	if (CurrentIndex == 0)
+	{
+		// At the beginning of the recording; setup secondary constraints for playback.
+		for (auto& Constraint : Constraints)
+		{
+			if (Constraint == nullptr)
+			{
+				continue;
+			}
+
+			if (!Constraint->LockController.GetEnable())
+				Constraint->LockController.SetEnable(true);
+
+			if (Constraint->TargetSpeedController.GetEnable())
+				Constraint->TargetSpeedController.SetEnable(false);
+
+			static constexpr auto INF = std::numeric_limits<double>::infinity();
+			Constraint->LockController.SetForceRange(FAGX_RealInterval(-INF, INF));
+		}
+	}
+
 	for (int32 i = 0; i < NumConstraintsInState; i++)
 	{
 		if (Constraints[i] == nullptr)
@@ -110,9 +134,6 @@ void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
 				*GetName());
 			continue;
 		}
-
-		if (!Constraints[i]->LockController.GetEnable())
-			Constraints[i]->LockController.SetEnable(true);
 
 		Constraints[i]->LockController.SetPosition(PlayRecord->States[CurrentIndex].Values[i]);
 	}
