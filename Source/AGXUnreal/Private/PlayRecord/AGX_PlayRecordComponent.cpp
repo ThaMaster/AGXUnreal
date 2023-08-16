@@ -6,6 +6,7 @@
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
+#include "Constraints/AGX_Constraint2DofComponent.h"
 #include "PlayRecord/AGX_PlayRecord.h"
 
 // Standard library includes.
@@ -22,8 +23,63 @@ void UAGX_PlayRecordComponent::BeginPlay()
 	CurrentIndex = 0;
 }
 
+namespace AGX_PlayRecordComponent_helpers
+{
+	void RecordAngle(const UAGX_ConstraintComponent& Constraint, FAGX_PlayRecordState& OutState)
+	{
+		if (const UAGX_Constraint1DofComponent* Constraint1Dof =
+				Cast<const UAGX_Constraint1DofComponent>(&Constraint))
+		{
+			OutState.Values.Add(Constraint1Dof->GetAngle());
+			return;
+		}
+
+		if (const UAGX_Constraint2DofComponent* Constraint2Dof =
+				Cast<const UAGX_Constraint2DofComponent>(&Constraint))
+		{
+			OutState.Values.Add(Constraint2Dof->GetAngle(EAGX_Constraint2DOFFreeDOF::FIRST));
+			OutState.Values.Add(Constraint2Dof->GetAngle(EAGX_Constraint2DOFFreeDOF::SECOND));
+			return;
+		}
+
+		UE_LOG(
+			LogAGX, Warning, TEXT("RecordAngle was called with unsupported Constraint '%s'."),
+			*Constraint.GetName());
+	}
+
+	void PrepareForPlayback(UAGX_ConstraintComponent& Constraint)
+	{
+		static constexpr auto INF = std::numeric_limits<double>::infinity();
+		if (UAGX_Constraint1DofComponent* Constraint1Dof =
+				Cast<UAGX_Constraint1DofComponent>(&Constraint))
+		{
+			Constraint1Dof->LockController.SetEnable(true);
+			Constraint1Dof->TargetSpeedController.SetEnable(false);
+			Constraint1Dof->LockController.SetForceRange(FAGX_RealInterval(-INF, INF));
+			return;
+		}
+
+		if (UAGX_Constraint2DofComponent* Constraint2Dof =
+				Cast<UAGX_Constraint2DofComponent>(&Constraint))
+		{
+			Constraint2Dof->LockController1.SetEnable(true);
+			Constraint2Dof->LockController2.SetEnable(true);
+			Constraint2Dof->TargetSpeedController1.SetEnable(false);
+			Constraint2Dof->TargetSpeedController2.SetEnable(false);
+			Constraint2Dof->LockController1.SetForceRange(FAGX_RealInterval(-INF, INF));
+			Constraint2Dof->LockController2.SetForceRange(FAGX_RealInterval(-INF, INF));
+			return;
+		}
+
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("PrepareForPlayback was called with unsupported Constraint '%s'."),
+			*Constraint.GetName());
+	}
+}
+
 void UAGX_PlayRecordComponent::RecordConstraintPositions(
-	const TArray<UAGX_Constraint1DofComponent*>& Constraints)
+	const TArray<UAGX_ConstraintComponent*>& Constraints)
 {
 	if (PlayRecord == nullptr)
 	{
@@ -58,15 +114,17 @@ void UAGX_PlayRecordComponent::RecordConstraintPositions(
 			continue;
 		}
 
-		State.Values.Add(Constraint->GetAngle());
+		AGX_PlayRecordComponent_helpers::RecordAngle(*Constraint, State);
 	}
 
 	CurrentIndex++;
 }
 
 void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
-	const TArray<UAGX_Constraint1DofComponent*>& Constraints)
+	const TArray<UAGX_ConstraintComponent*>& Constraints)
 {
+	using namespace AGX_PlayRecordComponent_helpers;
+
 	if (PlayRecord == nullptr)
 	{
 		UE_LOG(
@@ -90,42 +148,39 @@ void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
 	if (CurrentIndex >= PlayRecord->States.Num())
 		return; // We have passed the end of the recording.
 
-	const int32 NumConstraintsInState = PlayRecord->States[CurrentIndex].Values.Num();
-	if (Constraints.Num() != NumConstraintsInState)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("PlayBackConstraintPositions was called on '%s' but the number of Constraints "
-				 "given does not match the number of Constraints in the Play Record Asset. Got %d "
-				 "Constraints but %d was found in the Play Record Asset at index %d."),
-			*GetName(), Constraints.Num(), NumConstraintsInState, CurrentIndex);
-		return;
-	}
-
 	if (CurrentIndex == 0)
 	{
-		// At the beginning of the recording; setup secondary constraints for playback.
+		// At the beginning of the recording.
 		for (auto& Constraint : Constraints)
 		{
-			if (Constraint == nullptr)
-			{
-				continue;
-			}
-
-			if (!Constraint->LockController.GetEnable())
-				Constraint->LockController.SetEnable(true);
-
-			if (Constraint->TargetSpeedController.GetEnable())
-				Constraint->TargetSpeedController.SetEnable(false);
-
-			static constexpr auto INF = std::numeric_limits<double>::infinity();
-			Constraint->LockController.SetForceRange(FAGX_RealInterval(-INF, INF));
+			if (Constraint != nullptr)
+				PrepareForPlayback(*Constraint);
 		}
 	}
 
-	for (int32 i = 0; i < NumConstraintsInState; i++)
+	const int32 NumValuesInState = PlayRecord->States[CurrentIndex].Values.Num();
+
+	auto SetPosition = [NumValuesInState, this](
+						   FAGX_ConstraintLockController& LockController,
+						   const FString& PlayRecordName, int32 ValueIndex)
 	{
-		if (Constraints[i] == nullptr)
+		if (ValueIndex >= NumValuesInState)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("'%s' was given Play Record with too few entries to control the given "
+					 "Constraints at index %d."),
+				*PlayRecordName, CurrentIndex);
+			return;
+		}
+
+		LockController.SetPosition(PlayRecord->States[CurrentIndex].Values[ValueIndex]);
+	};
+
+	int32 CurrenDofIndex = 0;
+	for (UAGX_ConstraintComponent* Constraint : Constraints)
+	{
+		if (Constraint == nullptr)
 		{
 			UE_LOG(
 				LogAGX, Warning,
@@ -135,7 +190,21 @@ void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
 			continue;
 		}
 
-		Constraints[i]->LockController.SetPosition(PlayRecord->States[CurrentIndex].Values[i]);
+		if (UAGX_Constraint1DofComponent* Constraint1Dof =
+				Cast<UAGX_Constraint1DofComponent>(Constraint))
+		{
+			SetPosition(Constraint1Dof->LockController, GetName(), CurrenDofIndex);
+			CurrenDofIndex++;
+		}
+		else if (
+			UAGX_Constraint2DofComponent* Constraint2Dof =
+				Cast<UAGX_Constraint2DofComponent>(Constraint))
+		{
+			SetPosition(Constraint2Dof->LockController1, GetName(), CurrenDofIndex);
+			CurrenDofIndex++;
+			SetPosition(Constraint2Dof->LockController2, GetName(), CurrenDofIndex);
+			CurrenDofIndex++;
+		}
 	}
 
 	CurrentIndex++;

@@ -10,7 +10,7 @@
 
 #include "AGX_PlayRecord.generated.h"
 
-UCLASS(ClassGroup = "AGX", Category = "AGX", BlueprintType, Blueprintable)
+UCLASS(ClassGroup = "AGX", Category = "AGX", Experimental, BlueprintType, Blueprintable)
 class AGXUNREAL_API UAGX_PlayRecord : public UObject
 {
 	GENERATED_BODY()
