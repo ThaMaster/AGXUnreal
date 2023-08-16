@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
 #include "Constraints/Controllers/AGX_FrictionController.h"
@@ -74,6 +75,14 @@ public:
 	/** Screw controller that puts a relationship between the two free DOFs. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Secondary Constraints")
 	FAGX_ConstraintScrewController ScrewController;
+
+	/**
+	 * Get the current angle or position of the given free degree of freedom (DOF). If the given DOF
+	 * is translational then the position is in [cm], if this is a rotational constraint then the
+	 * angle is in [deg].
+	 * @return The angle [deg] or position [cm] of the given free degree of freedom.
+	 */
+	double GetAngle(EAGX_Constraint2DOFFreeDOF Dof) const;
 
 	UAGX_Constraint2DofComponent();
 
