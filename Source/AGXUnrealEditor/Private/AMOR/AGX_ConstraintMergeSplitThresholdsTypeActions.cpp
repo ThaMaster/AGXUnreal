@@ -22,7 +22,7 @@ FText FAGX_ConstraintMergeSplitThresholdsTypeActions::GetName() const
 const TArray<FText>& FAGX_ConstraintMergeSplitThresholdsTypeActions::GetSubMenus() const
 {
 	static const TArray<FText> SubMenus {
-		LOCTEXT("ConstraintMergeSplitThSubMenu", "Constraint"),
+		LOCTEXT("ConstraintSubMenu", "Constraint"),
 	};
 
 	return SubMenus;

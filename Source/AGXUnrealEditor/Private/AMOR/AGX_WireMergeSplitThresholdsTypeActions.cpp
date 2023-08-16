@@ -22,7 +22,7 @@ FText FAGX_WireMergeSplitThresholdsTypeActions::GetName() const
 const TArray<FText>& FAGX_WireMergeSplitThresholdsTypeActions::GetSubMenus() const
 {
 	static const TArray<FText> SubMenus {
-		LOCTEXT("WireMergeSplitThSubMenu", "Wire"),
+		LOCTEXT("WireSubMenu", "Wire"),
 	};
 
 	return SubMenus;

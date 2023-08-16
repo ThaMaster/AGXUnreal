@@ -20,7 +20,7 @@ FText FAGX_ContactMaterialAssetTypeActions::GetName() const
 const TArray<FText>& FAGX_ContactMaterialAssetTypeActions::GetSubMenus() const
 {
 	static const TArray<FText> SubMenus {
-		LOCTEXT("ContactMaterialSubMenu", "Shape"),
+		LOCTEXT("ShapeSubMenu", "Shape"),
 	};
 
 	return SubMenus;

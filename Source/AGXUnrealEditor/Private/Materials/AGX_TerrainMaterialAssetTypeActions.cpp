@@ -20,7 +20,7 @@ FText FAGX_TerrainMaterialAssetTypeActions::GetName() const
 const TArray<FText>& FAGX_TerrainMaterialAssetTypeActions::GetSubMenus() const
 {
 	static const TArray<FText> SubMenus {
-		LOCTEXT("TerrainMaterialSubMenu", "Terrain")
+		LOCTEXT("TerrainSubMenu", "Terrain")
 	};
 
 	return SubMenus;

@@ -21,7 +21,7 @@ FText FAGX_TrackPropertiesAssetTypeActions::GetName() const
 const TArray<FText>& FAGX_TrackPropertiesAssetTypeActions::GetSubMenus() const
 {
 	static const TArray<FText> SubMenus {
-		LOCTEXT("TrackPropertiesSubMenu", "Track"),
+		LOCTEXT("TrackSubMenu", "Track"),
 	};
 
 	return SubMenus;

@@ -21,7 +21,7 @@ FText FAGX_TrackInternalMergePropertiesAssetTypeActions::GetName() const
 const TArray<FText>& FAGX_TrackInternalMergePropertiesAssetTypeActions::GetSubMenus() const
 {
 	static const TArray<FText> SubMenus {
-		LOCTEXT("TrackInternalMSTSubMenu", "Track"),
+		LOCTEXT("TrackSubMenu", "Track"),
 	};
 
 	return SubMenus;
