@@ -10,6 +10,12 @@
 
 #include "AGX_PlayRecord.generated.h"
 
+
+/**
+ * EXPERIMENTAL
+ *
+ * This Asset can hold Recorded data stored by a Play Record Component.
+ */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Experimental, BlueprintType, Blueprintable)
 class AGXUNREAL_API UAGX_PlayRecord : public UObject
 {
