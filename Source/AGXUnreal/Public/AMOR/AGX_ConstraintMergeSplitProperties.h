@@ -23,7 +23,7 @@ class UAGX_ConstraintComponent;
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ConstraintMergeSplitProperties : public FAGX_MergeSplitPropertiesBase
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 public:
 	

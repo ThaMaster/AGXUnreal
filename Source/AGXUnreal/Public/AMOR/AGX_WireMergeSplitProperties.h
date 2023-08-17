@@ -23,7 +23,7 @@ class UAGX_WireComponent;
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_WireMergeSplitProperties : public FAGX_MergeSplitPropertiesBase
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 public:
 	UPROPERTY(EditAnywhere, Category = "AGX AMOR")

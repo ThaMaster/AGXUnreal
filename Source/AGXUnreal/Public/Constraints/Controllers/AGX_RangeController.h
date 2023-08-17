@@ -22,7 +22,7 @@ class FRangeControllerBarrier;
 USTRUCT()
 struct AGXUNREAL_API FAGX_ConstraintRangeController : public FAGX_ConstraintController
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	/**
 	 * Range in Degrees [deg] if controller is on a Rotational Degree-Of-Freedom,

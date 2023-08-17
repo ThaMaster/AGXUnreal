@@ -12,7 +12,7 @@ class UStaticMesh;
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_MeshWithTransform
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	FAGX_MeshWithTransform() = default;
 	FAGX_MeshWithTransform(const UStaticMesh* InMesh, const FTransform& InTransform);

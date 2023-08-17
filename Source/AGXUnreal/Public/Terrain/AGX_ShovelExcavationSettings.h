@@ -14,7 +14,7 @@
 USTRUCT()
 struct FAGX_ShovelExcavationSettings
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
 	bool bEnabled {true};

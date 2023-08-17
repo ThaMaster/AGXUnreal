@@ -14,7 +14,7 @@
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_PlayRecordState
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Play Record")
 	TArray<FAGX_Real> Values;

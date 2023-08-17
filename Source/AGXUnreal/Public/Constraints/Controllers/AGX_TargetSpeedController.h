@@ -21,7 +21,7 @@ class FTargetSpeedControllerBarrier;
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ConstraintTargetSpeedController : public FAGX_ConstraintController
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	/**
 	 * Target Speed in Degrees Per Second [deg/s] if controller is on a Rotational DOF,
