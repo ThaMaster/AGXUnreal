@@ -42,6 +42,26 @@ namespace
 	{
 		return static_cast<FConstraint2DOFBarrier*>(Constraint.GetNative());
 	}
+
+	const FConstraint2DOFBarrier* Get2DofBarrier(const UAGX_Constraint2DofComponent& Constraint)
+	{
+		return static_cast<const FConstraint2DOFBarrier*>(Constraint.GetNative());
+	}
+}
+
+double UAGX_Constraint2DofComponent::GetAngle(EAGX_Constraint2DOFFreeDOF Dof) const
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Get Angle was called in Constraint '%s' that does not have a Native object. Only "
+				 "call this function during Play."),
+			*GetName());
+		return 0.0;
+	}
+
+	return Get2DofBarrier(*this)->GetAngle(Dof);
 }
 
 namespace AGX_Constraint2DofComponent_helpers

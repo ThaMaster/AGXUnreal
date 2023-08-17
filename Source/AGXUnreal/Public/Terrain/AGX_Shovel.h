@@ -21,7 +21,7 @@ struct AGXUNREAL_API FAGX_Shovel
 {
 	/// /todo Consider making this a stand-alone Object/ActorComponent?
 
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	/**
 	 * The rigid body actor that should be used as terrain shovel.

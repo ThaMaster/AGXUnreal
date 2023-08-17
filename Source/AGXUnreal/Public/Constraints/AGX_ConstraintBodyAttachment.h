@@ -30,7 +30,7 @@ class FRigidBodyBarrier;
 USTRUCT()
 struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	FAGX_ConstraintBodyAttachment() = default;
 	FAGX_ConstraintBodyAttachment(USceneComponent* InOuter);

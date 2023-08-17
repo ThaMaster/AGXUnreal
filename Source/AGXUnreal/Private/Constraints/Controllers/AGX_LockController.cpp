@@ -23,6 +23,12 @@ namespace
 		// See comment in GetElectricMotorController.
 		return static_cast<FLockControllerBarrier*>(Controller.GetNative());
 	}
+
+	const FLockControllerBarrier* GetLockBarrier(const FAGX_ConstraintLockController& Controller)
+	{
+		// See comment in GetElectricMotorController.
+		return static_cast<const FLockControllerBarrier*>(Controller.GetNative());
+	}
 }
 
 void FAGX_ConstraintLockController::SetPosition(double InPosisiton)
@@ -41,7 +47,7 @@ void FAGX_ConstraintLockController::SetPosition(double InPosisiton)
 	Position = InPosisiton;
 }
 
-double FAGX_ConstraintLockController::GetPosition()
+double FAGX_ConstraintLockController::GetPosition() const
 {
 	if (HasNative())
 	{

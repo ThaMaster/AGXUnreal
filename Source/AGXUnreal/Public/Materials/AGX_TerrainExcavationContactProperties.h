@@ -20,7 +20,7 @@
 USTRUCT()
 struct AGXUNREAL_API FAGX_TerrainExcavationContactProperties
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 public:
 	/**

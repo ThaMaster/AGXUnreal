@@ -14,7 +14,7 @@
 USTRUCT()
 struct AGXUNREAL_API FAGX_TerrainPagingBodyReference
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	/**
 	 * Rigid Body tracked by the Terrain Pager. Is is used when deciding which Terrain tiles

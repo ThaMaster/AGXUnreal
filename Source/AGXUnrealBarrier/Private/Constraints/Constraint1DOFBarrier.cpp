@@ -52,29 +52,6 @@ namespace
 		return TUniquePtr<Barrier>(
 			new Barrier(std::make_unique<FConstraintControllerRef>(Controller)));
 	}
-
-	// Let's hope -1 is never used for a valid angle type.
-	constexpr agx::Angle::Type InvalidAngleType = agx::Angle::Type(-1);
-
-	agx::Angle::Type GetDofType(const FConstraint1DOFBarrier& Constraint)
-	{
-		const agx::Constraint1DOF* ConstraintAGX = Get1DOF(*Constraint.GetNative());
-		if (ConstraintAGX == nullptr)
-		{
-			return InvalidAngleType;
-		}
-		const agx::Motor1D* Motor = ConstraintAGX->getMotor1D();
-		if (Motor == nullptr)
-		{
-			return InvalidAngleType;
-		}
-		const agx::Angle* Angle = Motor->getData().getAngle();
-		if (Angle == nullptr)
-		{
-			return InvalidAngleType;
-		}
-		return Angle->getType();
-	}
 }
 
 double FConstraint1DOFBarrier::GetAngle() const
@@ -82,7 +59,8 @@ double FConstraint1DOFBarrier::GetAngle() const
 	check(HasNative());
 	const agx::Constraint1DOF* Constraint = Get1DOF(NativeRef);
 	const agx::Real NativeAngle = Constraint->getAngle();
-	agx::Angle::Type DofType = GetDofType(*this);
+	const agx::Motor1D* MotorAGX = Constraint->getMotor1D();
+	const agx::Angle::Type DofType = FAGX_BarrierConstraintUtilities::GetDofType(MotorAGX);
 	switch (DofType)
 	{
 		case agx::Angle::ROTATIONAL:
@@ -101,7 +79,8 @@ double FConstraint1DOFBarrier::GetSpeed() const
 
 	const agx::Constraint1DOF* Constraint = Get1DOF(NativeRef);
 	const agx::Real SpeedAGX = Constraint->getCurrentSpeed();
-	const agx::Angle::Type DofType = GetDofType(*this);
+	const agx::Motor1D* MotorAGX = Constraint->getMotor1D();
+	const agx::Angle::Type DofType = FAGX_BarrierConstraintUtilities::GetDofType(MotorAGX);
 	switch (DofType)
 	{
 		case agx::Angle::ROTATIONAL:

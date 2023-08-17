@@ -68,6 +68,7 @@
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialCustomization.h"
 #include "Materials/AGX_TerrainMaterialLibrary.h"
+#include "PlayRecord/AGX_PlayRecordTypeActions.h"
 #include "Plot/AGX_PlotComponent.h"
 #include "Plot/AGX_PlotComponentCustomization.h"
 #include "Shapes/AGX_ShapeComponent.h"
@@ -185,6 +186,9 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_ConstraintMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools,
+		MakeShareable(new FAGX_PlayRecordTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_ShapeContactMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
