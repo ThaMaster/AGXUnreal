@@ -181,9 +181,9 @@ void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("'%s' found nullptr Constraint in PlayBackConstraintPositions. Constraint "
-					 "position playback was aborted."),
+					 "position playback may not give the wanted result."),
 				*GetName());
-			break;
+			continue;;
 		}
 
 		if (UAGX_Constraint1DofComponent* Constraint1Dof =
