@@ -41,10 +41,11 @@ public:
 	UAGX_PlayRecord* PlayRecord = nullptr;
 
 	/**
-	 * Permanently writes the positions of the given Constraints to the PlayRecord Asset.
+	 * Writes the positions of the given Constraints to the PlayRecord Asset.
+	 * The written data is permanently stored in the asset, even after Play.
 	 * Note that it will overwrite any old data present in the PlayRecord Asset.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics Play Record")
+	UFUNCTION(BlueprintCallable, Category = "AGX Play Record")
 	void RecordConstraintPositions(const TArray<UAGX_ConstraintComponent*>& Constraints);
 
 	/**
@@ -53,8 +54,16 @@ public:
 	 * Asset if matching behavior is wanted. Note that this function uses purely position control
 	 * internally and does not guarantee same Constraint force/torques.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics Play Record")
+	UFUNCTION(BlueprintCallable, Category = "AGX Play Record")
 	void PlayBackConstraintPositions(const TArray<UAGX_ConstraintComponent*>& Constraints);
+
+	/**
+	 * Resets the internal counter such that e.g. a subsequent playback will start from the
+	 * beginning and any subsequent recording will be written at the beginning of the PlayRecord
+	 * Asset.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Play Record")
+	void Reset();
 
 	/**
 	 * Advanced: Initial allocation size for the number of States stored in the given PlayRecord

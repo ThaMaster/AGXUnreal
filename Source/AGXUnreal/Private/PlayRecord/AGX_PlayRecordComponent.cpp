@@ -100,8 +100,6 @@ void UAGX_PlayRecordComponent::RecordConstraintPositions(
 	AGX_CHECK(CurrentIndex == LastIndex);
 
 	FAGX_PlayRecordState& State = PlayRecord->States.Last();
-	State.Values.Reserve(Constraints.Num());
-
 	for (const auto& Constraint : Constraints)
 	{
 		if (Constraint == nullptr)
@@ -109,9 +107,9 @@ void UAGX_PlayRecordComponent::RecordConstraintPositions(
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("'%s' found nullptr Constraint in RecordConstraintPositions. Constraint "
-					 "position recording may not work as expected."),
+					 "position recording was aborted."),
 				*GetName());
-			continue;
+			break;
 		}
 
 		AGX_PlayRecordComponent_helpers::RecordAngle(*Constraint, State);
@@ -136,14 +134,7 @@ void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
 	}
 
 	if (PlayRecord->States.Num() == 0)
-	{
-		UE_LOG(
-			LogAGX, Log,
-			TEXT("PlayBackConstraintPositions was called on '%s' but the given Play Record Asset "
-				 "does not contain any data."),
-			*GetName());
 		return;
-	}
 
 	if (CurrentIndex >= PlayRecord->States.Num())
 		return; // We have passed the end of the recording.
@@ -159,7 +150,6 @@ void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
 	}
 
 	const int32 NumValuesInState = PlayRecord->States[CurrentIndex].Values.Num();
-
 	auto SetPosition = [NumValuesInState, this](
 						   FAGX_ConstraintLockController& LockController,
 						   const FString& PlayRecordName, int32 ValueIndex)
@@ -169,7 +159,7 @@ void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("'%s' was given Play Record with too few entries to control the given "
-					 "Constraints at index %d."),
+					 "Constraint, at PlayRecord index: %d."),
 				*PlayRecordName, CurrentIndex);
 			return;
 		}
@@ -185,9 +175,9 @@ void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("'%s' found nullptr Constraint in PlayBackConstraintPositions. Constraint "
-					 "position playback may not work as expected."),
+					 "position playback was aborted."),
 				*GetName());
-			continue;
+			break;
 		}
 
 		if (UAGX_Constraint1DofComponent* Constraint1Dof =
@@ -208,4 +198,9 @@ void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
 	}
 
 	CurrentIndex++;
+}
+
+void UAGX_PlayRecordComponent::Reset()
+{
+	CurrentIndex = 0;
 }
