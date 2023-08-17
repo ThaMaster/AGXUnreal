@@ -20,8 +20,8 @@ class UAGX_PlayRecord;
  * deterministic/stable tick event such as the Pre or Post Step Forward events exposed by the AGX
  * Simulation.
  *
- * This Component does not guarantee equivalent constraint forces/torques during playback and uses
- * position control internally.
+ * This Component does not guarantee exact constraint forces, torques or trajectories during
+ * playback and uses position control internally.
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Experimental, Meta = (BlueprintSpawnableComponent),
