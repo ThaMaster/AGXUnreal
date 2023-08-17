@@ -11,11 +11,11 @@
 
 #include "AGX_PlayRecordState.generated.h"
 
-USTRUCT()
-struct FAGX_PlayRecordState
+USTRUCT(BlueprintType)
+struct AGXUNREAL_API FAGX_PlayRecordState
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Category = "AGX Play Record")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Play Record")
 	TArray<FAGX_Real> Values;
 };

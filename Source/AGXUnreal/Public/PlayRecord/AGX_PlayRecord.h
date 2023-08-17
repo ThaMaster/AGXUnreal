@@ -23,6 +23,6 @@ class AGXUNREAL_API UAGX_PlayRecord : public UObject
 
 public:
 
-	UPROPERTY(EditAnywhere, Category = "AGX Play Record")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Play Record")
 	TArray<FAGX_PlayRecordState> States;
 };
