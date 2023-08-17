@@ -17,6 +17,15 @@ FText FAGX_ContactMaterialAssetTypeActions::GetName() const
 	return LOCTEXT("AssetName", "AGX Contact Material");
 }
 
+const TArray<FText>& FAGX_ContactMaterialAssetTypeActions::GetSubMenus() const
+{
+	static const TArray<FText> SubMenus {
+		LOCTEXT("ShapeSubMenu", "Shape"),
+	};
+
+	return SubMenus;
+}
+
 uint32 FAGX_ContactMaterialAssetTypeActions::GetCategories()
 {
 	return AssetCategory;
