@@ -113,9 +113,9 @@ void UAGX_PlayRecordComponent::RecordConstraintPositions(
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("'%s' found nullptr Constraint in RecordConstraintPositions. Constraint "
-					 "position recording was aborted."),
+					 "position recording may not give the wanted result."),
 				*GetName());
-			break;
+			continue;
 		}
 
 		AGX_PlayRecordComponent_helpers::RecordAngle(*Constraint, State);
