@@ -37,13 +37,14 @@ public:
 	virtual void BeginPlay() override;
 	//~ End UActorComponent Interface
 
-	UPROPERTY(EditAnywhere, Category = "AGX Play Record")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Play Record")
 	UAGX_PlayRecord* PlayRecord = nullptr;
 
 	/**
 	 * Writes the positions of the given Constraints to the PlayRecord Asset.
 	 * The written data is permanently stored in the asset, even after Play.
-	 * Note that it will overwrite any old data present in the PlayRecord Asset.
+	 * Note that old recorded data will be permanently removed from the Asset at the start of a new
+	 * recording.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Play Record")
 	void RecordConstraintPositions(const TArray<UAGX_ConstraintComponent*>& Constraints);
@@ -71,7 +72,7 @@ public:
 	 * second long recording, at least 6000 should be set for this property if re-allocation of the
 	 * internal States array should be avoided.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Play Record Advanced")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Play Record Advanced")
 	int32 InitialStatesAllocationSize {3600};
 
 private:
