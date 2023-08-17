@@ -54,6 +54,8 @@ namespace AGX_PlayRecordComponent_helpers
 				Cast<UAGX_Constraint1DofComponent>(&Constraint))
 		{
 			Constraint1Dof->LockController.SetEnable(true);
+			Constraint1Dof->ElectricMotorController.SetEnable(false);
+			Constraint1Dof->FrictionController.SetEnable(false);
 			Constraint1Dof->TargetSpeedController.SetEnable(false);
 			Constraint1Dof->LockController.SetForceRange(FAGX_RealInterval(-INF, INF));
 			return;
@@ -63,7 +65,11 @@ namespace AGX_PlayRecordComponent_helpers
 				Cast<UAGX_Constraint2DofComponent>(&Constraint))
 		{
 			Constraint2Dof->LockController1.SetEnable(true);
-			Constraint2Dof->LockController2.SetEnable(true);
+			Constraint2Dof->LockController2.SetEnable(true);			
+			Constraint2Dof->ElectricMotorController1.SetEnable(false);
+			Constraint2Dof->ElectricMotorController2.SetEnable(false);
+			Constraint2Dof->FrictionController1.SetEnable(false);
+			Constraint2Dof->FrictionController2.SetEnable(false);
 			Constraint2Dof->TargetSpeedController1.SetEnable(false);
 			Constraint2Dof->TargetSpeedController2.SetEnable(false);
 			Constraint2Dof->LockController1.SetForceRange(FAGX_RealInterval(-INF, INF));
