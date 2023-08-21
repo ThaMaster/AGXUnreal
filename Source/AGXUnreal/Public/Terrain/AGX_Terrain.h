@@ -295,6 +295,7 @@ private:
 	bool InitializeParticleSystemComponent();
 	bool InitializeParticlesMap();
 	void UpdateParticlesMap();
+	void UpdateParticlesArrays(); /// @todo Experimental code.
 	void ClearParticlesMap();
 #if WITH_EDITOR
 	void InitPropertyDispatcher();

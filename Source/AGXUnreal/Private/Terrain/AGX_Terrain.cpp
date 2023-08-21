@@ -35,6 +35,7 @@
 #include "Misc/AssertionMacros.h"
 #include "Misc/EngineVersionComparison.h"
 #include "NiagaraComponent.h"
+#include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectIterator.h"
@@ -654,6 +655,7 @@ void AAGX_Terrain::Tick(float DeltaTime)
 	if (bEnableParticleRendering)
 	{
 		UpdateParticlesMap();
+		UpdateParticlesArrays();
 	}
 }
 
@@ -1519,6 +1521,53 @@ void AAGX_Terrain::UpdateParticlesMap()
 	FAGX_TextureUtilities::UpdateRenderTextureRegions(
 		*TerrainParticlesDataMap, 1, ParticlesDataMapRegions.GetData(),
 		ResolutionX * NumBytesPerPixel, NumBytesPerPixel, PixelData, false);
+}
+
+void AAGX_Terrain::UpdateParticlesArrays()
+{
+	if (!NativeBarrier.HasNative())
+	{
+		return;
+	}
+	if (ParticleSystemComponent == nullptr)
+	{
+		return;
+	}
+
+	const FParticleData ParticleData = NativeBarrier.GetParticleData();
+	const TArray<FVector>& Positions = ParticleData.Positions;
+	const TArray<float>& Radii = ParticleData.Radii;
+	const TArray<FQuat>& Rotations = ParticleData.Rotations;
+
+	const int32 NumParticles = Positions.Num();
+
+	TArray<FVector4> PositionsAndScale;
+	PositionsAndScale.SetNum(NumParticles);
+	TArray<FVector4> Orientations;
+	Orientations.SetNum(NumParticles);
+
+	// Multiply position by 0.01 because it seems we need to pack floats to
+	// smaller range. The position floats are unpacked in the
+	// `GetTerrainParticleData` Niagara Module Script.
+	/// \todo Investigate!
+	const float PackingScale = 0.01f;
+
+	for (int32 I = 0; I < NumParticles; ++I)
+	{
+		// The particle size slot in the render target is a scale, not the
+		// actual size. The scale is relative to a SI unit cube, meaning that a
+		// scale of 1.0 should render a particle that is 1x1x1 m large, or
+		// 100x100x100 Unreal units. We multiply by 2.0 to convert from radius
+		// to full width.
+		float UnitCubeScale = (Radii[I] * 2.0f) / 100.0f;
+		PositionsAndScale[I] = FVector4(Positions[I] * PackingScale, UnitCubeScale);
+		Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
+	}
+
+	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
+		ParticleSystemComponent, "Positions And Scales", PositionsAndScale);
+	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
+		ParticleSystemComponent, "Orientations", Orientations);
 }
 
 void AAGX_Terrain::ClearParticlesMap()
