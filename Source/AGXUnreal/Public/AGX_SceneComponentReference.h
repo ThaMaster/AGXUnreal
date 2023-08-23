@@ -41,7 +41,7 @@ class AActor;
  * \todo The implementation is very similar to FAGX_SceneComponentReference. Find what can be shared
  * and put somewhere.
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_SceneComponentReference
 {
 	GENERATED_BODY()
@@ -81,5 +81,5 @@ struct AGXUNREAL_API FAGX_SceneComponentReference
 	void InvalidateCache();
 
 private:
-	USceneComponent* Cache;
+	USceneComponent* Cache {nullptr};
 };
