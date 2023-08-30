@@ -153,7 +153,7 @@ struct AGXUNREAL_API FAGX_Shovel
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Shovel",
-		Meta = (EditCondition = "OverrideBottomContactThreshold"))
+		Meta = (EditCondition = "bOverrideBottomContactThreshold"))
 	FAGX_Real BottomContactThreshold = 10;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
