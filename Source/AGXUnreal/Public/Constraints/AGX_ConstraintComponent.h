@@ -45,7 +45,9 @@ public:
 	 * The first Rigid Body bound by this constraint, and its Attachment Frame definition.
 	 * Rigid Body Actor must be set.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies", Meta = (SkipUCSModifiedProperties))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Constraint Bodies",
+		Meta = (SkipUCSModifiedProperties, ExposeOnSpawn))
 	FAGX_ConstraintBodyAttachment BodyAttachment1;
 	// SkipUCSModifiedProperties because we set OwningActor during creation but we still want to
 	// allow the user to override that default from the Details Panel. Normally, Properties set
@@ -61,7 +63,9 @@ public:
 	 * The second Rigid Body bound by this constraint, and its Attachment Frame definition.
 	 * If second Rigid Body is null, the first Rigid Body will be constrained to the World.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Constraint Bodies", Meta = (SkipUCSModifiedProperties))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Constraint Bodies",
+		Meta = (SkipUCSModifiedProperties, ExposeOnSpawn))
 	FAGX_ConstraintBodyAttachment BodyAttachment2;
 	// SkipUCSModifiedProperties because we set OwningActor during creation but we still want to
 	// allow the user to override that default from the Details Panel. Normally, Properties set

@@ -51,7 +51,7 @@ class AActor;
  * that if the target Rigid Body is destroyed due to a Blueprint Reconstruction then the cache
  * becomes a dangling pointer.
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_RigidBodyReference
 {
 	GENERATED_BODY()
@@ -75,12 +75,12 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 	 *    This reenables the local scope state.
 	 */
 	UPROPERTY(
-		EditInstanceOnly, Category = "AGX Dynamics",
+		EditInstanceOnly, BlueprintReadWrite, Category = "AGX Dynamics",
 		Meta = (Tooltip = "The Actor that owns the RigidBodyComponent."))
 	AActor* OwningActor = nullptr;
 
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Dynamics",
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics",
 		Meta = (Tooltip = "The name of the RigidBodyComponent."))
 	FName BodyName = NAME_None;
 
@@ -91,7 +91,7 @@ struct AGXUNREAL_API FAGX_RigidBodyReference
 
 	/// If true, then search not only within OwningActor's Components, but also recursively through
 	/// ChildActorComponents as well.
-	UPROPERTY(EditAnywhere, Category = "Body reference")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Body reference")
 	uint8 bSearchChildActors : 1;
 
 	/**
