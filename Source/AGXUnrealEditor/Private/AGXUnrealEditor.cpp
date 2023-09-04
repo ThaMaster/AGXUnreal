@@ -19,6 +19,8 @@
 #include "AGX_ComponentReferenceCustomization.h"
 #include "AGX_EditorStyle.h"
 #include "AGX_Environment.h"
+#include "AGX_Frame.h"
+#include "AGX_FrameCustomization.h"
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyReference.h"
 #include "AGX_RigidBodyReferenceCustomization.h"
@@ -236,6 +238,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 	 */
 
 	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_Frame::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+			&FAGX_FrameCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FAGX_Real::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FAGX_RealDetails::MakeInstance));
 
@@ -372,6 +379,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	/*
 	 * Property customizations.
 	 */
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_Frame::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_Real::StaticStruct()->GetFName());
 
