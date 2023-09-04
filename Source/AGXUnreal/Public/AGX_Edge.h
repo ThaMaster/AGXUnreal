@@ -10,6 +10,8 @@
 
 #include "AGX_Edge.generated.h"
 
+class USceneComponent;
+
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_Edge
 {
@@ -20,4 +22,6 @@ struct AGXUNREAL_API FAGX_Edge
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Edge")
 	FAGX_Frame End;
+
+	FTwoVectors GetLocationsRelativeTo(USceneComponent* Component);
 };

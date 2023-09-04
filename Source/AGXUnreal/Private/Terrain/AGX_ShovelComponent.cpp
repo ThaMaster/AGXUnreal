@@ -23,6 +23,43 @@ UAGX_ShovelComponent::UAGX_ShovelComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+bool UAGX_ShovelComponent::SwapEdgeDirections()
+{
+	std::swap(TopEdge.Start, TopEdge.End);
+	std::swap(CuttingEdge.Start, CuttingEdge.End);
+	if (HasNative())
+	{
+		UAGX_RigidBodyComponent* BodyComponent = RigidBody.GetRigidBody();
+		if (BodyComponent == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Shovel '%s' in '%s' does not have a Rigid Body. Ignoring this Shovel."),
+				*GetName(), *GetLabelSafe(GetOwner()));
+			return false;
+		}
+
+		FRigidBodyBarrier* BodyBarrier = BodyComponent->GetNative();
+		if (BodyBarrier == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT(
+					"Shovel '%s' in '%s' has a Rigid Body, '%s' in '%s', that could not create its "
+					"AGX Dynamics representation. Ignoring this Shovel."),
+				*GetName(), *GetLabelSafe(GetOwner()), *BodyComponent->GetName(),
+				*GetLabelSafe(BodyComponent->GetOwner()));
+			return false;
+		}
+
+		const FTwoVectors TopEdgeInBody = TopEdge.GetLocationsRelativeTo(BodyComponent);
+		const FTwoVectors CuttingEdgeInBody = CuttingEdge.GetLocationsRelativeTo(BodyComponent);
+		NativeBarrier.SetTopEdge(TopEdgeInBody);
+		NativeBarrier.SetCuttingEdge(CuttingEdgeInBody);
+	}
+	return true;
+}
+
 void UAGX_ShovelComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
@@ -177,8 +214,8 @@ void UAGX_ShovelComponent::AllocateNative()
 		return;
 	}
 
-	FRigidBodyBarrier* Body = BodyComponent->GetOrCreateNative();
-	if (Body == nullptr)
+	FRigidBodyBarrier* BodyBarrier = BodyComponent->GetOrCreateNative();
+	if (BodyBarrier == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Error,
@@ -190,7 +227,12 @@ void UAGX_ShovelComponent::AllocateNative()
 	}
 
 	/// @todo Implement the remaining Properties required to initialize the Native.
-	NativeBarrier.AllocateNative(*Body, FTwoVectors(), FTwoVectors(), FVector());
+	const FTwoVectors TopEdgeInBody = TopEdge.GetLocationsRelativeTo(BodyComponent);
+	const FTwoVectors CuttingEdgeInBody = CuttingEdge.GetLocationsRelativeTo(BodyComponent);
+	const FRotator CuttingRotation = CuttingDirection.GetRotationRelativeTo(BodyComponent);
+	const FVector CuttingDirectionInBody = CuttingRotation.RotateVector(FVector::ForwardVector);
+	NativeBarrier.AllocateNative(
+		*BodyBarrier, TopEdgeInBody, CuttingEdgeInBody, CuttingDirectionInBody);
 	check(HasNative()); /// \todo Consider better error handling than 'check'.
 
 	WritePropertiesToNative();

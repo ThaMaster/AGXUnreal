@@ -1066,8 +1066,16 @@ void AAGX_Terrain::CreateNativeShovels()
 		}
 	};
 
+	// Create and register legacy shovels.
 	for (FAGX_Shovel& Shovel : Shovels)
 	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Deprecation warning: AGX Terrain %s: AAGX_Terrain::Shovels has been deprecated "
+				 "and will be removed in a future release. Use AAGX_Terrain::ShovelComponents "
+				 "instead."),
+			*GetLabelSafe(this));
+
 		if (Shovel.RigidBodyActor == nullptr)
 		{
 			UE_LOG(
@@ -1145,6 +1153,7 @@ void AAGX_Terrain::CreateNativeShovels()
 			*GetName());
 	}
 
+	// Create and register Shovel Components.
 	for (FAGX_ShovelReference ShovelRef : ShovelComponents)
 	{
 		UAGX_ShovelComponent* ShovelComponent = ShovelRef.GetShovelComponent();
@@ -1176,7 +1185,17 @@ void AAGX_Terrain::CreateNativeShovels()
 				*GetLabelSafe(this), *ShovelComponent->GetName(),
 				*GetLabelSafe(ShovelComponent->GetOwner()));
 
-			UE_LOG(LogAGX, Error, TEXT("TODO: Implement edge / direction flipping"));
+			ShovelComponent->SwapEdgeDirections();
+			Added = AddShovel(*ShovelBarrier, RequiredRadius, PreloadRadius);
+			if (!Added)
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Terrain '%s' rejected shovel '%s' in '%s' after edge directions flip. "
+						 "Abandoning shovel."),
+					*GetLabelSafe(this), *GetNameSafe(ShovelComponent),
+					*GetLabelSafe(ShovelComponent->GetOwner()));
+			}
 			continue;
 		}
 

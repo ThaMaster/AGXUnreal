@@ -4,9 +4,9 @@
 
 // AGX Dynamics for Unreal include.s
 #include "AGX_Edge.h"
+#include "AGX_Frame.h"
 #include "AGX_NativeOwner.h"
 #include "AGX_RigidBodyReference.h"
-#include "Terrain/AGX_ShovelReference.h"
 #include "Terrain/ShovelBarrier.h"
 
 // Unreal Engine includes.
@@ -41,6 +41,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
 	FAGX_Edge CuttingEdge;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
+	FAGX_Frame CuttingDirection;
+
+
+	bool SwapEdgeDirections();
 
 	// ~Begin UActorComponent interface.
 	virtual void PostInitProperties() override;
