@@ -38,7 +38,12 @@ void UAGX_ShovelComponent::PostInitProperties()
 	//
 	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
 	// but there will always be an outer chain. This worry may be unfounded.
-	RigidBody.OwningActor = GetTypedOuter<AActor>();
+	AActor* Owner = GetTypedOuter<AActor>();
+	RigidBody.OwningActor = Owner;
+	TopEdge.Start.Parent.OwningActor = Owner;
+	TopEdge.End.Parent.OwningActor = Owner;
+	CuttingEdge.Start.Parent.OwningActor = Owner;
+	CuttingEdge.End.Parent.OwningActor = Owner;
 }
 
 void UAGX_ShovelComponent::BeginPlay()

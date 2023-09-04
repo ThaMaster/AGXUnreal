@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal include.s
+#include "AGX_Edge.h"
 #include "AGX_NativeOwner.h"
 #include "AGX_RigidBodyReference.h"
 #include "Terrain/AGX_ShovelReference.h"
@@ -35,10 +36,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel")
 	UAGX_ShovelProperties* ShovelProperties;
 
-	/// @todo For experimentation only, remove.
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
-	FAGX_ShovelReference OtherShovel;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
+	FAGX_Edge TopEdge;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
+	FAGX_Edge CuttingEdge;
 
 	// ~Begin UActorComponent interface.
 	virtual void PostInitProperties() override;
