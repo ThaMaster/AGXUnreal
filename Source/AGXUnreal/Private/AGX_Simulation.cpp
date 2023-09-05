@@ -1130,7 +1130,7 @@ namespace
 		FString Message =
 			"Invalid AGX Dynamics license. Status: " + Status +
 			"\n\nIt will not be possible to run simulations using the AGX "
-			"Dynamics for Unreal plugin.\n\nTo get your license, visit us at www.algoryx.se";
+			"Dynamics for Unreal plugin.\n\nTo get your license, visit us at www.algoryx.com";
 
 		if (!FAGX_Environment::IsSetupEnvRun())
 		{
