@@ -86,6 +86,9 @@ public:
 	void SetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode, bool Enable);
 	bool GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode) const;
 
+	void SetBottomContactThreshold(double BottomContactThreshold);
+	double GetBottomContactThreshold() const;	
+
 	bool HasNative() const;
 	void AllocateNative(
 		FRigidBodyBarrier& Body, const FTwoVectors& TopEdge, const FTwoVectors& CuttingEdge,

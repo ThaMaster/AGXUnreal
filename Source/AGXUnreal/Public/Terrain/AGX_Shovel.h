@@ -139,6 +139,23 @@ struct AGXUNREAL_API FAGX_Shovel
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
 	bool AlwaysRemoveShovelContacts = false;
 
+	/**
+	 * Whether or not to override the default value (CuttingEdgeLength/10.0) for BottomContactThreshold.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	bool bOverrideBottomContactThreshold = false;
+
+	/**
+	 * The distance threshold from the shovel planes where regular geometry contacts between the
+	 * shovel underside and the terrain are allowed to be created [cm].
+	 * The value of this property will not be used if OverrideBottomContactThreshold is false.
+	 * In that case AGX Dynamics automatically uses the value: CuttingEdgeLength/10.0.
+	 */
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Shovel",
+		Meta = (EditCondition = "bOverrideBottomContactThreshold"))
+	FAGX_Real BottomContactThreshold = 10;
+
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
 	FAGX_ShovelExcavationSettings PrimaryExcavationSettings;
 
