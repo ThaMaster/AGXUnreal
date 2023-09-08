@@ -17,15 +17,17 @@ class AGXUNREALEDITOR_API FAGX_ShapeMaterialTypeActions : public FAssetTypeActio
 public:
 	FAGX_ShapeMaterialTypeActions(EAssetTypeCategories::Type InAssetCategory);
 
-	FText GetName() const override;
+	virtual FText GetName() const override;
 
-	uint32 GetCategories() override;
+	virtual const TArray<FText>& GetSubMenus() const override;
 
-	FColor GetTypeColor() const override;
+	virtual uint32 GetCategories() override;
 
-	FText GetAssetDescription(const FAssetData& AssetData) const override;
+	virtual FColor GetTypeColor() const override;
 
-	UClass* GetSupportedClass() const override;
+	virtual FText GetAssetDescription(const FAssetData& AssetData) const override;
+
+	virtual UClass* GetSupportedClass() const override;
 
 private:
 	EAssetTypeCategories::Type AssetCategory;

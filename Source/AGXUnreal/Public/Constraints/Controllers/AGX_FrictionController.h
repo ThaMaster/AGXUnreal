@@ -21,7 +21,7 @@ class FFrictionControllerBarrier;
 USTRUCT()
 struct AGXUNREAL_API FAGX_ConstraintFrictionController : public FAGX_ConstraintController
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	/**
 	 * Note that if this controller is rotational (Hinge or CylindriclJoint)

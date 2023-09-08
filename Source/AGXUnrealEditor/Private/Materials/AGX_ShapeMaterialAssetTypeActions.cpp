@@ -17,6 +17,15 @@ FText FAGX_ShapeMaterialTypeActions::GetName() const
 	return LOCTEXT("AssetName", "AGX Shape Material");
 }
 
+const TArray<FText>& FAGX_ShapeMaterialTypeActions::GetSubMenus() const
+{
+	static const TArray<FText> SubMenus {
+		LOCTEXT("ShapeSubMenu", "Shape"),
+	};
+
+	return SubMenus;
+}
+
 uint32 FAGX_ShapeMaterialTypeActions::GetCategories()
 {
 	return AssetCategory;

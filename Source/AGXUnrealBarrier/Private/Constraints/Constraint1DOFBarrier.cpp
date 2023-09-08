@@ -82,7 +82,8 @@ double FConstraint1DOFBarrier::GetAngle() const
 	check(HasNative());
 	const agx::Constraint1DOF* Constraint = Get1DOF(NativeRef);
 	const agx::Real NativeAngle = Constraint->getAngle();
-	agx::Angle::Type DofType = GetDofType(*this);
+	const agx::Motor1D* MotorAGX = Constraint->getMotor1D();
+	const agx::Angle::Type DofType = FAGX_BarrierConstraintUtilities::GetDofType(MotorAGX);
 	switch (DofType)
 	{
 		case agx::Angle::ROTATIONAL:
@@ -101,7 +102,8 @@ double FConstraint1DOFBarrier::GetSpeed() const
 
 	const agx::Constraint1DOF* Constraint = Get1DOF(NativeRef);
 	const agx::Real SpeedAGX = Constraint->getCurrentSpeed();
-	const agx::Angle::Type DofType = GetDofType(*this);
+	const agx::Motor1D* MotorAGX = Constraint->getMotor1D();
+	const agx::Angle::Type DofType = FAGX_BarrierConstraintUtilities::GetDofType(MotorAGX);
 	switch (DofType)
 	{
 		case agx::Angle::ROTATIONAL:

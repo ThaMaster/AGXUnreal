@@ -18,6 +18,15 @@ FText FAGX_TrackInternalMergePropertiesAssetTypeActions::GetName() const
 	return LOCTEXT("AssetName", "AGX Track Internal Merge Properties");
 }
 
+const TArray<FText>& FAGX_TrackInternalMergePropertiesAssetTypeActions::GetSubMenus() const
+{
+	static const TArray<FText> SubMenus {
+		LOCTEXT("TrackSubMenu", "Track"),
+	};
+
+	return SubMenus;
+}
+
 uint32 FAGX_TrackInternalMergePropertiesAssetTypeActions::GetCategories()
 {
 	return AssetCategory;

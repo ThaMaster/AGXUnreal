@@ -8,6 +8,7 @@
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
+#include "Utilities/AGX_BarrierConstraintUtilities.h"
 
 FConstraint2DOFBarrier::FConstraint2DOFBarrier()
 	: FConstraintBarrier()
@@ -52,6 +53,25 @@ namespace
 		auto* Controller = ControllerGetter(Get2DOF(NativeRef));
 		return TUniquePtr<FControllerBarrier>(
 			new FControllerBarrier(std::make_unique<FConstraintControllerRef>(Controller)));
+	}
+}
+
+double FConstraint2DOFBarrier::GetAngle(EAGX_Constraint2DOFFreeDOF Dof) const
+{
+	check(NativeRef != nullptr && NativeRef->Native != nullptr);
+	agx::Constraint2DOF* Constraint = Get2DOF(NativeRef);
+	const agx::Motor1D* MotorAGX = Constraint->getMotor1D(Convert(Dof));
+	const agx::Angle::Type DofType = FAGX_BarrierConstraintUtilities::GetDofType(MotorAGX);
+	const agx::Real NativeAngle = Constraint->getAngle(Convert(Dof));
+	switch (DofType)
+	{
+		case agx::Angle::ROTATIONAL:
+			return ConvertAngleToUnreal<double>(NativeAngle);
+		case agx::Angle::TRANSLATIONAL:
+			return ConvertDistanceToUnreal<double>(NativeAngle);
+		default:
+			// Don't know the type, so pass the value unchanged to the caller.
+			return NativeAngle;
 	}
 }
 

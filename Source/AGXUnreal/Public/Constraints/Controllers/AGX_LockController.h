@@ -21,7 +21,7 @@ class FLockControllerBarrier;
 USTRUCT()
 struct AGXUNREAL_API FAGX_ConstraintLockController : public FAGX_ConstraintController
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	/**
 	 * Target position in degrees [deg] if controller is on a Rotational
@@ -31,7 +31,7 @@ struct AGXUNREAL_API FAGX_ConstraintLockController : public FAGX_ConstraintContr
 	double Position {0.0};
 
 	void SetPosition(double InPosisiton);
-	double GetPosition();
+	double GetPosition() const;
 
 public:
 	FAGX_ConstraintLockController() = default;

@@ -54,4 +54,9 @@ public:
 	static void ConvertConstraintBodyAndFrame(
 		const FRigidBodyBarrier& Body, const FVector& FramePosition, const FQuat& FrameRotation,
 		agx::RigidBody*& OutNativeBody, agx::FrameRef& OutNativeFrame);
+
+	// Let's hope -1 is never used for a valid angle type.
+	static constexpr agx::Angle::Type InvalidAngleType = agx::Angle::Type(-1);
+
+	static agx::Angle::Type GetDofType(const agx::Motor1D* Motor);
 };

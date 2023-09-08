@@ -19,6 +19,15 @@ FText FAGX_WireMergeSplitThresholdsTypeActions::GetName() const
 	return LOCTEXT("AssetName", "AGX Wire Merge Split Thresholds");
 }
 
+const TArray<FText>& FAGX_WireMergeSplitThresholdsTypeActions::GetSubMenus() const
+{
+	static const TArray<FText> SubMenus {
+		LOCTEXT("WireSubMenu", "Wire"),
+	};
+
+	return SubMenus;
+}
+
 uint32 FAGX_WireMergeSplitThresholdsTypeActions::GetCategories()
 {
 	return AssetCategory;
