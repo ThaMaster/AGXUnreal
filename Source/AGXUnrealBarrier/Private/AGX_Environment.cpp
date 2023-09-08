@@ -429,7 +429,10 @@ void FAGX_Environment::RemoveEnvironmentVariableEntry(
 
 TArray<FString> FAGX_Environment::GetEnvironmentVariableEntries(const FString& EnvVarName)
 {
-	FString EnvVarVal = FCurrentPlatformMisc::GetEnvironmentVariable(*EnvVarName);
+	const FString EnvVarVal = FCurrentPlatformMisc::GetEnvironmentVariable(*EnvVarName);
+	if (EnvVarVal.IsEmpty())
+		return TArray<FString>();
+
 	TArray<FString> EnvVarValArray;
 	EnvVarVal.ParseIntoArray(EnvVarValArray, TEXT(";"), false);
 	return EnvVarValArray;
