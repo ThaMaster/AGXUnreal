@@ -7,6 +7,7 @@
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
+#include "Utilities/AGX_BarrierConstraintUtilities.h"
 
 // Standard library includes.
 #include <memory>

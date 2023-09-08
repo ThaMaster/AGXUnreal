@@ -11,6 +11,8 @@
 
 // AGX Dynamics includes
 #include "BeginAGXIncludes.h"
+#include <agx/Constraint.h>
+#include <agx/ConstraintAngle.h>
 #include <agx/RigidBody.h>
 #include "EndAGXIncludes.h"
 
