@@ -80,7 +80,7 @@ AAGX_Terrain::AAGX_Terrain()
 		{
 			UE_LOG(LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), *Path);
 			return;
-		}			
+		}
 
 		AssetRefProperty = AssetFinder.Object;
 	};
@@ -1490,6 +1490,7 @@ void AAGX_Terrain::UpdateParticlesMap()
 
 	int32 NumParticles = FMath::Min(Positions.Num(), MaxNumParticles);
 	ParticleSystemComponent->SetNiagaraVariableInt("User.TargetParticleCount", NumParticles);
+	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", NumParticles);
 
 	for (int32 ParticleIndex = 0, PixelIndex = 0; ParticleIndex < NumParticles;
 		 ++ParticleIndex, PixelIndex += NumComponentsPerParticle)
@@ -1550,7 +1551,10 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	// smaller range. The position floats are unpacked in the
 	// `GetTerrainParticleData` Niagara Module Script.
 	/// \todo Investigate!
-	const float PackingScale = 0.01f;
+	//
+	// Testing with packing scale set to 1.0, i.e. unity scale, i.e. testing
+	// if we can remove this madness.
+	const float PackingScale = 1.0f; // 0.01f;
 
 	for (int32 I = 0; I < NumParticles; ++I)
 	{
