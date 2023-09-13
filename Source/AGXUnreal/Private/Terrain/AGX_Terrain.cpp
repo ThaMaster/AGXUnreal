@@ -1495,14 +1495,9 @@ void AAGX_Terrain::UpdateParticlesMap()
 	for (int32 ParticleIndex = 0, PixelIndex = 0; ParticleIndex < NumParticles;
 		 ++ParticleIndex, PixelIndex += NumComponentsPerParticle)
 	{
-		// Multiply position by 0.01 because it seems we need to pack floats to
-		// smaller range. The position floats are unpacked in the
-		// `GetTerrainParticleData` Niagara Module Script.
-		/// \todo Investigate!
-		const float PackingScale = 0.01f;
-		TerrainParticlesData[PixelIndex + 0] = Positions[ParticleIndex].X * PackingScale;
-		TerrainParticlesData[PixelIndex + 1] = Positions[ParticleIndex].Y * PackingScale;
-		TerrainParticlesData[PixelIndex + 2] = Positions[ParticleIndex].Z * PackingScale;
+		TerrainParticlesData[PixelIndex + 0] = Positions[ParticleIndex].X;
+		TerrainParticlesData[PixelIndex + 1] = Positions[ParticleIndex].Y;
+		TerrainParticlesData[PixelIndex + 2] = Positions[ParticleIndex].Z;
 
 		// The particle size slot in the render target is a scale, not the
 		// actual size. The scale is relative to a SI unit cube, meaning that a
@@ -1547,15 +1542,6 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	TArray<FVector4> Orientations;
 	Orientations.SetNum(NumParticles);
 
-	// Multiply position by 0.01 because it seems we need to pack floats to
-	// smaller range. The position floats are unpacked in the
-	// `GetTerrainParticleData` Niagara Module Script.
-	/// \todo Investigate!
-	//
-	// Testing with packing scale set to 1.0, i.e. unity scale, i.e. testing
-	// if we can remove this madness.
-	const float PackingScale = 1.0f; // 0.01f;
-
 	for (int32 I = 0; I < NumParticles; ++I)
 	{
 		// The particle size slot in the render target is a scale, not the
@@ -1564,7 +1550,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		// 100x100x100 Unreal units. We multiply by 2.0 to convert from radius
 		// to full width.
 		float UnitCubeScale = (Radii[I] * 2.0f) / 100.0f;
-		PositionsAndScale[I] = FVector4(Positions[I] * PackingScale, UnitCubeScale);
+		PositionsAndScale[I] = FVector4(Positions[I], UnitCubeScale);
 		Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
 	}
 
