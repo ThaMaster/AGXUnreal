@@ -11,6 +11,7 @@ class FTerrainBarrier;
 class FTerrainHeightFetcherBase;
 
 struct FParticleData;
+struct FParticleDataById;
 struct FTerrainDataSourceRef;
 struct FTerrainPagerRef;
 
@@ -34,6 +35,8 @@ public:
 	bool AddRigidBody(FRigidBodyBarrier& Body, double RequiredRadius, double PreloadRadius);
 
 	FParticleData GetParticleData() const;
+
+	FParticleDataById GetParticleDataById() const;
 
 	/**
 	 * Returns the total number of spawned Terrain particles.

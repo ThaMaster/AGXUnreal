@@ -382,10 +382,35 @@ FParticleData FTerrainBarrier::GetParticleData() const
 	const size_t NumParticles = FTerrainUtilities::GetNumParticles(*this);
 	FParticleData ParticleData;
 	ParticleData.Positions.Reserve(NumParticles);
+	ParticleData.Velocities.Reserve(NumParticles);
 	ParticleData.Radii.Reserve(NumParticles);
 	ParticleData.Rotations.Reserve(NumParticles);
 
 	FTerrainUtilities::AppendParticleData(*this, ParticleData);
+
+	return ParticleData;
+}
+
+FParticleDataById FTerrainBarrier::GetParticleDataById(EParticleDataFlags ToInclude) const
+{
+	FParticleDataById ParticleData;
+	FTerrainUtilities::GetParticleExistsById(*this, ParticleData.Exists);
+	if (ToInclude & EParticleDataFlags::Positions)
+	{
+		FTerrainUtilities::GetParticlePositionsById(*this, ParticleData.Positions);
+	}
+	if (ToInclude & EParticleDataFlags::Velocities)
+	{
+		FTerrainUtilities::GetParticleVelocitiesById(*this, ParticleData.Velocities);
+	}
+	if (ToInclude & EParticleDataFlags::Rotations)
+	{
+		FTerrainUtilities::GetParticleRotationsById(*this, ParticleData.Rotations);
+	}
+	if (ToInclude & EParticleDataFlags::Radii)
+	{
+		FTerrainUtilities::GetParticleRadiiById(*this, ParticleData.Radii);
+	}
 
 	return ParticleData;
 }

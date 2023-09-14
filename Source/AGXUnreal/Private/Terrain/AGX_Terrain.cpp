@@ -78,7 +78,8 @@ AAGX_Terrain::AAGX_Terrain()
 		auto AssetFinder = ConstructorHelpers::FObjectFinder<Type>(Path);
 		if (!AssetFinder.Succeeded())
 		{
-			UE_LOG(LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), *Path);
+			UE_LOG(
+				LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), *Path);
 			return;
 		}
 
@@ -775,8 +776,7 @@ namespace
 	}
 
 	template <typename TPtr>
-	TPtr GetShovelComponent(
-		UAGX_RigidBodyComponent& Body, const TCHAR* TerrainName)
+	TPtr GetShovelComponent(UAGX_RigidBodyComponent& Body, const TCHAR* TerrainName)
 	{
 		auto RecursiveFind = [](const TArray<USceneComponent*>& Components, auto& recurse)
 		{
@@ -1490,7 +1490,6 @@ void AAGX_Terrain::UpdateParticlesMap()
 
 	int32 NumParticles = FMath::Min(Positions.Num(), MaxNumParticles);
 	ParticleSystemComponent->SetNiagaraVariableInt("User.TargetParticleCount", NumParticles);
-	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", NumParticles);
 
 	for (int32 ParticleIndex = 0, PixelIndex = 0; ParticleIndex < NumParticles;
 		 ++ParticleIndex, PixelIndex += NumComponentsPerParticle)
@@ -1530,10 +1529,21 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		return;
 	}
 
+#define AGXUNREAL_INCLUDE_VELOCITIES 1
+
+#if 0
+// Copy compacted data.
+
 	const FParticleData ParticleData = NativeBarrier.GetParticleData();
 	const TArray<FVector>& Positions = ParticleData.Positions;
 	const TArray<float>& Radii = ParticleData.Radii;
 	const TArray<FQuat>& Rotations = ParticleData.Rotations;
+#if AGXUNREAL_INCLUDE_VELOCITIES
+	const TArray<FVector>& Velocities = ParticleData.Velocities;
+#endif
+
+	int32 NumParticles = FMath::Min(Positions.Num(), MaxNumParticles);
+	ParticleSystemComponent->SetNiagaraVariableInt("User.TargetParticleCount", NumParticles);
 
 	const int32 NumParticles = Positions.Num();
 
@@ -1558,6 +1568,63 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		ParticleSystemComponent, "Positions And Scales", PositionsAndScale);
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
 		ParticleSystemComponent, "Orientations", Orientations);
+#if AGXUNREAL_INCLUDE_VELOCITIES
+	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
+		ParticleSystemComponent, TEXT("Velocities"), Velocities);
+#endif
+
+#else
+// Copy data with holes.
+
+	const FParticleDataById ParticleData = NativeBarrier.GetParticleDataById(
+		EParticleDataFlags::Positions | EParticleDataFlags::Rotations | EParticleDataFlags::Radii
+#if AGXUNREAL_INCLUDE_VELOCITIES
+			| EParticleDataFlags::Velocities
+#endif
+		);
+
+	const TArray<FVector>& Positions = ParticleData.Positions;
+	const TArray<FQuat>& Rotations = ParticleData.Rotations;
+	const TArray<float>& Radii = ParticleData.Radii;
+	const TArray<bool>& Exists = ParticleData.Exists;
+#if AGXUNREAL_INCLUDE_VELOCITIES
+	const TArray<FVector>& Velocities = ParticleData.Velocities;
+#endif
+
+	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());
+
+	const int32 NumParticles = Positions.Num();
+
+	TArray<FVector4> PositionsAndScale;
+	PositionsAndScale.SetNum(NumParticles);
+	TArray<FVector4> Orientations;
+	Orientations.SetNum(NumParticles);
+
+	for (int32 I = 0; I < NumParticles; ++I)
+	{
+		// The particle size slot in the render target is a scale, not the
+		// actual size. The scale is relative to a SI unit cube, meaning that a
+		// scale of 1.0 should render a particle that is 1x1x1 m large, or
+		// 100x100x100 Unreal units. We multiply by 2.0 to convert from radius
+		// to full width.
+		float UnitCubeScale = (Radii[I] * 2.0f) / 100.0f;
+		PositionsAndScale[I] = FVector4(Positions[I], UnitCubeScale);
+		Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
+	}
+
+	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
+		ParticleSystemComponent, "Positions And Scales", PositionsAndScale);
+	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
+		ParticleSystemComponent, "Orientations", Orientations);
+	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayBool(
+		ParticleSystemComponent, "Exists", Exists);
+#if AGXUNREAL_INCLUDE_VELOCITIES
+	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
+		ParticleSystemComponent, TEXT("Velocities"), Velocities);
+#endif
+#endif
+
+#undef AGXUNREAL_INCLUDE_VELOCITIES
 }
 
 void AAGX_Terrain::ClearParticlesMap()
