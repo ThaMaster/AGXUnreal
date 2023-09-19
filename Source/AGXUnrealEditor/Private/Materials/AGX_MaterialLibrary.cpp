@@ -1,11 +1,11 @@
 // Copyright 2023, Algoryx Simulation AB.
 
-#include "Materials/AGX_TerrainMaterialLibrary.h"
+#include "Materials/AGX_MaterialLibrary.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_TerrainMaterial.h"
-#include "Materials/TerrainMaterialLibraryBarrier.h"
+#include "Materials/MaterialLibraryBarrier.h"
 
 // Unreal Engine includes.
 #include "AssetRegistry/AssetRegistryModule.h"
@@ -21,7 +21,7 @@
 //   PackagePath: /AGXUnreal/Terrain/TerrainMaterials/
 //   AssetPath: /AGXUnreal/Terrain/TerrainMaterials/AGX_TM_dirt_1.AGX_TM_dirt_1
 
-namespace AGX_TerrainMaterialLibrary_helpers
+namespace AGX_MaterialLibrary_helpers
 {
 	void EnsureMaterialImported(const FString& NameAGX)
 	{
@@ -46,7 +46,7 @@ namespace AGX_TerrainMaterialLibrary_helpers
 
 		// Create the asset itself, reading data from the AGX Dynamics terrain material library.
 		FTerrainMaterialBarrier Material =
-			AGX_TerrainMaterialLibraryBarrier::LoadMaterialProfile(Name);
+			AGX_MaterialLibraryBarrier::LoadMaterialProfile(Name);
 		UAGX_TerrainMaterial* Asset = NewObject<UAGX_TerrainMaterial>(
 			Package, FName(*AssetName), RF_Public | RF_Standalone);
 		Asset->CopyFrom(Material);
@@ -91,11 +91,11 @@ namespace AGX_TerrainMaterialLibrary_helpers
 	}
 }
 
-void AGX_TerrainMaterialLibrary::InitializeTerrainMaterialAssetLibrary()
+void AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary()
 {
-	using namespace AGX_TerrainMaterialLibrary_helpers;
+	using namespace AGX_MaterialLibrary_helpers;
 
-	const TArray<FString> Names = AGX_TerrainMaterialLibraryBarrier::GetAvailableLibraryMaterials();
+	const TArray<FString> Names = AGX_MaterialLibraryBarrier::GetAvailableLibraryMaterials();
 	for (const FString& NameAGX : Names)
 	{
 		EnsureMaterialImported(NameAGX);

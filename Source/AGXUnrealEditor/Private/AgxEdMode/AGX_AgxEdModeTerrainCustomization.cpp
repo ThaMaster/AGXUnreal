@@ -4,7 +4,7 @@
 
 // AGX Dynamics includes.
 #include "AGX_LogCategory.h"
-#include "Materials/AGX_TerrainMaterialLibrary.h"
+#include "Materials/AGX_MaterialLibrary.h"
 
 // Unreal Engine includes.
 #include "DetailLayoutBuilder.h"
@@ -24,7 +24,7 @@ namespace FAGX_AgxEdModeTerrainCustomization_helpers
 {
 	void RefreshTerrainMaterialLibrary()
 	{
-		AGX_TerrainMaterialLibrary::InitializeTerrainMaterialAssetLibrary();
+		AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary();
 	}
 }
 

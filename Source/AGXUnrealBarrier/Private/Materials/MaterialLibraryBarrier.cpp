@@ -1,6 +1,6 @@
 // Copyright 2023, Algoryx Simulation AB.
 
-#include "Materials/TerrainMaterialLibraryBarrier.h"
+#include "Materials/MaterialLibraryBarrier.h"
 
 // AGX Dynamics for Unreal includes.
 #include <TypeConversions.h>
@@ -13,7 +13,7 @@
 #include <agxUtil/agxUtil.h>
 #include <EndAGXIncludes.h>
 
-TArray<FString> AGX_TerrainMaterialLibraryBarrier::GetAvailableLibraryMaterials()
+TArray<FString> AGX_MaterialLibraryBarrier::GetAvailableLibraryMaterials()
 {
 	agx::StringVector NamesAGX =
 		agxTerrain::TerrainMaterialLibrary::getAvailableLibraryMaterials();
@@ -31,7 +31,7 @@ TArray<FString> AGX_TerrainMaterialLibraryBarrier::GetAvailableLibraryMaterials(
 	return NamesUnreal;
 }
 
-FTerrainMaterialBarrier AGX_TerrainMaterialLibraryBarrier::LoadMaterialProfile(
+FTerrainMaterialBarrier AGX_MaterialLibraryBarrier::LoadMaterialProfile(
 	const FString& MaterialName)
 {
 	const agx::String MaterialNameAGX = Convert(MaterialName);

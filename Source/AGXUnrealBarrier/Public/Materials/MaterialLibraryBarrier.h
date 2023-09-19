@@ -8,7 +8,7 @@
 // Unreal Engine includes.
 #include "Containers/Array.h"
 
-namespace AGX_TerrainMaterialLibraryBarrier
+namespace AGX_MaterialLibraryBarrier
 {
 	AGXUNREALBARRIER_API TArray<FString> GetAvailableLibraryMaterials();
 	AGXUNREALBARRIER_API FTerrainMaterialBarrier LoadMaterialProfile(const FString& MaterialName);

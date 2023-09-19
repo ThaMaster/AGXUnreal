@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace AGX_TerrainMaterialLibrary
+namespace AGX_MaterialLibrary
 {
 	void InitializeTerrainMaterialAssetLibrary();
 }
