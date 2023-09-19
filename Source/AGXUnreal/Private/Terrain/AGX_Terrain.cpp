@@ -79,7 +79,7 @@ AAGX_Terrain::AAGX_Terrain()
 		{
 			UE_LOG(LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), *Path);
 			return;
-		}			
+		}
 
 		AssetRefProperty = AssetFinder.Object;
 	};
@@ -1487,7 +1487,7 @@ void AAGX_Terrain::UpdateParticlesMap()
 	AGX_CHECK(Positions.Num() == Rotations.Num());
 
 	int32 NumParticles = FMath::Min(Positions.Num(), MaxNumParticles);
-	ParticleSystemComponent->SetNiagaraVariableInt("User.TargetParticleCount", NumParticles);
+	ParticleSystemComponent->SetVariableInt(FName(TEXT("User.TargetParticleCount")), NumParticles);
 
 	for (int32 ParticleIndex = 0, PixelIndex = 0; ParticleIndex < NumParticles;
 		 ++ParticleIndex, PixelIndex += NumComponentsPerParticle)

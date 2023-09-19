@@ -7,6 +7,7 @@
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
+#include "Utilities/AGX_BarrierConstraintUtilities.h"
 
 // Standard library includes.
 #include <memory>
@@ -51,6 +52,30 @@ namespace
 	{
 		return TUniquePtr<Barrier>(
 			new Barrier(std::make_unique<FConstraintControllerRef>(Controller)));
+	}
+
+	// Let's hope -1 is never used for a valid angle type.
+	// TODO: Find a better way than forcing a made-up enum value into an agx::Angle::Type.
+	/* constexpr */ const agx::Angle::Type InvalidAngleType = static_cast<agx::Angle::Type>(-1);
+
+	agx::Angle::Type GetDofType(const FConstraint1DOFBarrier& Constraint)
+	{
+		const agx::Constraint1DOF* ConstraintAGX = Get1DOF(*Constraint.GetNative());
+		if (ConstraintAGX == nullptr)
+		{
+			return InvalidAngleType;
+		}
+		const agx::Motor1D* Motor = ConstraintAGX->getMotor1D();
+		if (Motor == nullptr)
+		{
+			return InvalidAngleType;
+		}
+		const agx::Angle* Angle = Motor->getData().getAngle();
+		if (Angle == nullptr)
+		{
+			return InvalidAngleType;
+		}
+		return Angle->getType();
 	}
 }
 

@@ -42,7 +42,7 @@ void FHeightFieldShapeBarrier::AllocateNative(
 	const TArray<float>& Heights)
 {
 	FShapeBarrier::AllocateNative(
-		[=, &Heights]()
+		[this, NumVerticesX, NumVerticesY, SizeX, SizeY, &Heights]()
 		{ this->AllocateNativeHeightField(NumVerticesX, NumVerticesY, SizeX, SizeY, Heights); });
 }
 
