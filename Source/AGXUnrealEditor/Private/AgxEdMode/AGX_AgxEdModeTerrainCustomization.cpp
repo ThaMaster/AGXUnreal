@@ -47,6 +47,9 @@ void FAGX_AgxEdModeTerrainCustomization::CustomizeDetails(IDetailLayoutBuilder& 
 		[
 			SNew(SButton)
 			.Text(LOCTEXT("btnRefreshTerrainMaterialLibrary", "Refresh Terrain Material Library"))
+			.ToolTipText(LOCTEXT("TtRefreshTerrainMaterialLibrary", "Reads all Terrain Materials in the "
+				"AGX Dynamics Materials Library and updates the pre-defined Terrain Materials in the "
+				"Plugin Contents."))
 			.OnClicked_Lambda([]() { RefreshTerrainMaterialLibrary(); return FReply::Handled(); })
 		]
 	];

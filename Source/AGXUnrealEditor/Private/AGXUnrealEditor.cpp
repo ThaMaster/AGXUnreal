@@ -548,6 +548,8 @@ void FAGXUnrealEditorModule::UnregisterPlacementCategory()
 
 void FAGXUnrealEditorModule::InitializeAssets()
 {
+	AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary();
+	AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary();
 	AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary();
 }
 
