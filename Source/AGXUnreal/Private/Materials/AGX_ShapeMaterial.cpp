@@ -457,29 +457,24 @@ void UAGX_ShapeMaterial::SetSpookDampingBend(double InSpookDamping)
 	AGX_ASSET_SETTER_IMPL_VALUE(Wire.SpookDampingBend, InSpookDamping, SetSpookDampingBend);
 }
 
-void UAGX_ShapeMaterial::CopyFrom(const FShapeMaterialBarrier* Source)
+void UAGX_ShapeMaterial::CopyFrom(const FShapeMaterialBarrier& Source)
 {
-	if (Source == nullptr)
-	{
-		return;
-	}
-
 	// Copy shape material bulk properties.
-	Bulk.Density = Source->GetDensity();
-	Bulk.YoungsModulus = Source->GetYoungsModulus();
-	Bulk.Viscosity = Source->GetBulkViscosity();
-	Bulk.SpookDamping = Source->GetSpookDamping();
-	Bulk.MinElasticRestLength = Source->GetMinElasticRestLength();
-	Bulk.MaxElasticRestLength = Source->GetMaxElasticRestLength();
+	Bulk.Density = Source.GetDensity();
+	Bulk.YoungsModulus = Source.GetYoungsModulus();
+	Bulk.Viscosity = Source.GetBulkViscosity();
+	Bulk.SpookDamping = Source.GetSpookDamping();
+	Bulk.MinElasticRestLength = Source.GetMinElasticRestLength();
+	Bulk.MaxElasticRestLength = Source.GetMaxElasticRestLength();
 
 	// Copy shape material surface properties.
-	Surface.bFrictionEnabled = Source->GetFrictionEnabled();
-	Surface.Roughness = Source->GetRoughness();
-	Surface.Viscosity = Source->GetSurfaceViscosity();
-	Surface.AdhesiveForce = Source->GetAdhesiveForce();
-	Surface.AdhesiveOverlap = Source->GetAdhesiveOverlap();
+	Surface.bFrictionEnabled = Source.GetFrictionEnabled();
+	Surface.Roughness = Source.GetRoughness();
+	Surface.Viscosity = Source.GetSurfaceViscosity();
+	Surface.AdhesiveForce = Source.GetAdhesiveForce();
+	Surface.AdhesiveOverlap = Source.GetAdhesiveOverlap();
 
-	ImportGuid = Source->GetGuid();
+	ImportGuid = Source.GetGuid();
 }
 
 UAGX_MaterialBase* UAGX_ShapeMaterial::GetOrCreateInstance(UWorld* PlayingWorld)
@@ -551,7 +546,8 @@ void UAGX_ShapeMaterial::CommitToAsset()
 {
 	if (IsInstance())
 	{
-		Asset->CopyFrom(this->GetNative());
+		if (FShapeMaterialBarrier* Barrier = this->GetNative())
+			Asset->CopyFrom(*Barrier);
 	}
 	else if (Instance != nullptr) // IsAsset
 	{
