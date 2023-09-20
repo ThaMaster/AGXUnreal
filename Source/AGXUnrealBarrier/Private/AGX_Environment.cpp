@@ -387,6 +387,24 @@ FString FAGX_Environment::GetPluginRevision()
 	return FString::Printf(TEXT("%s%s"), *Hash, *Name);
 }
 
+FString FAGX_Environment::FindAgxEnvironmentResourcePath(const FString& RelativePath)
+{
+	const agx::String RelativePathAGX = Convert(RelativePath);
+	const FString FullPath = [&RelativePathAGX]()
+	{
+		agx::String FullPathAGX =
+			AGX_ENVIRONMENT().getFilePath(agxIO::Environment::RESOURCE_PATH).find(RelativePathAGX);
+		FString FullPathUnreal = Convert(FullPathAGX);
+
+		// Must be called to avoid crash due to different allocators used by AGX Dynamics and
+		// Unreal Engine.
+		agxUtil::freeContainerMemory(FullPathAGX);
+		return FullPathUnreal;
+	}();
+
+	return FullPath;
+}
+
 void FAGX_Environment::AddEnvironmentVariableEntry(const FString& EnvVarName, const FString& Entry)
 {
 	if (Entry.IsEmpty())
