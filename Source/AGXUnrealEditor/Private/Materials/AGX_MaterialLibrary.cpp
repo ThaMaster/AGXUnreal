@@ -8,7 +8,8 @@
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
 #include "Materials/MaterialLibraryBarrier.h"
-#include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
 #include "AssetRegistry/AssetRegistryModule.h"
@@ -77,21 +78,9 @@ namespace AGX_MaterialLibrary_helpers
 		// Create a package for our asset.
 		const FString Name = UPackageTools::SanitizePackageName(NameAGX);
 		const FString AssetName = ToAssetName(NameAGX, Type);
-		const FString PackagePath =
-			FString::Printf(TEXT("%s/%s"), *ToMaterialDirectoryContentBrowser(Type), *AssetName);
-		TMaterial* ExistingAsset = LoadObject<TMaterial>(nullptr, *PackagePath);
-		const bool OldAssetExists = ExistingAsset != nullptr;
-
-		UPackage* Package = nullptr;
-		if (!OldAssetExists)
-		{
-#if UE_VERSION_OLDER_THAN(4, 26, 0)
-			Package = CreatePackage(nullptr, *PackagePath);
-#else
-			Package = CreatePackage(*PackagePath);
-#endif
-			Package->FullyLoad();
-		}
+		const FString AssetDir = ToMaterialDirectoryContentBrowser(Type);
+		const FString AssetPath = FString::Printf(TEXT("%s/%s"), *AssetDir, *AssetName);
+		TMaterial* ExistingAsset = LoadObject<TMaterial>(nullptr, *AssetPath);
 
 		// Create the asset itself, reading data from the AGX Dynamics terrain material library.
 		auto OptionalBarrier = LoadFunc(Name);
@@ -102,62 +91,24 @@ namespace AGX_MaterialLibrary_helpers
 				TEXT("Unable to import Material '%s' from AGX Material Library to '%s'. The "
 					 "material may not be avaiable in the AGX Dynamics for Unreal Contents. Ensure "
 					 "the AGX Material Library is avaiable in the used AGX Dynamics resources."),
-				*NameAGX, *PackagePath);
+				*NameAGX, *AssetPath);
 			return nullptr;
 		}
 
 		const TBarrier& Material = OptionalBarrier.GetValue();
-		TMaterial* Asset =
-			OldAssetExists
-				? ExistingAsset
-				: NewObject<TMaterial>(Package, FName(*AssetName), RF_Public | RF_Standalone);
-		Asset->CopyFrom(Material);
-
-		if (!OldAssetExists)
+		TMaterial* Asset = nullptr;
+		if (ExistingAsset != nullptr)
 		{
-			// Do the cargo culting.
-			FAssetRegistryModule::AssetCreated(Asset);
-			Asset->MarkPackageDirty();
-			Asset->PostEditChange();
-			Asset->AddToRoot();
-			Package->SetDirtyFlag(true);
-			Package->FullyLoad();
-			Package->GetMetaData();
-
-			// Save the package to disk.
-			const FString PackageFilename = FPackageName::LongPackageNameToFilename(
-				PackagePath, FPackageName::GetAssetPackageExtension());
-
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-			const bool bSaved = UPackage::SavePackage(Package, Asset, RF_NoFlags, *PackageFilename);
-#else
-			FSavePackageArgs saveArgs;
-			saveArgs.TopLevelFlags = RF_NoFlags;
-			const bool bSaved = UPackage::SavePackage(Package, Asset, *PackageFilename, saveArgs);
-#endif
-			if (!bSaved)
-			{
-				UE_LOG(
-					LogAGX, Error,
-					TEXT("Could not create library material %s: UPackage::SavePackage failed."),
-					*NameAGX);
-				return nullptr;
-			}
-
-			// Must fully load the package or else project packaging will fail with:
-			//
-			//    Package /AGXUnreal/Terrain/TerrainMaterialLibrary/AGX_TM_gravel_1 supposed
-			//    to be fully loaded but isn't. RF_WasLoaded is set
-			//
-			//    Unable to cook package for platform because it is unable to be loaded:
-			//    <PATH>/AGXUnreal/Content/Terrain/TerrainMaterialLibrary/AGX_TM_gravel_1.uasset
-			//
-			// I'm not entirely sure where the FullyLoad call should be for it to
-			// take effect in all cases, so there are a few of them. Remove the
-			// unnecessary ones once we know which can safely be removed.
-			Package->FullyLoad();
+			Asset = ExistingAsset;
+		}
+		else
+		{
+			Asset = FAGX_ImportUtilities::CreateAsset<TMaterial>(
+				AssetDir, AssetName, "LibraryMaterial");
 		}
 
+		Asset->CopyFrom(Material);
+		FAGX_ObjectUtilities::SaveAsset(*Asset);
 		return Asset;
 	}
 
