@@ -602,22 +602,22 @@ public class AGXDynamicsLibrary : ModuleRules
 			};
 
 			foreach (var Dir in HeaderFileDirs)
-            {
-                if (!CopyDirectoryRecursively(Path.Combine(Source, Dir), Path.Combine(Dest, Dir)))
-                {
-                    CleanBundledAGXDynamicsResources();
-                    return;
-                }
-            }
-
-			foreach (var File in HeaderFiles)
-            {
-                if (!CopyFile(Path.Combine(Source, File), Path.Combine(Dest, File)))
-                {
+			{
+				if (!CopyDirectoryRecursively(Path.Combine(Source, Dir), Path.Combine(Dest, Dir)))
+				{
 					CleanBundledAGXDynamicsResources();
 					return;
-                }
-            }
+				}
+			}
+
+			foreach (var File in HeaderFiles)
+			{
+				if (!CopyFile(Path.Combine(Source, File), Path.Combine(Dest, File)))
+				{
+					CleanBundledAGXDynamicsResources();
+					return;
+				}
+			}
 		}
 
 		// Copy AGX Dynamics cfg directory.
@@ -1393,7 +1393,7 @@ public class AGXDynamicsLibrary : ModuleRules
 				null, null,
 				Path.Combine(BaseDir, "data", "MaterialLibrary", "TerrainMaterials")
 			));
-			LibSources.Add(LibSource.MaterialLibrary, new LibSourceInfo(
+			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
 				null, null,
 				Path.Combine(BaseDir, "data", "ContactMaterialLibrary", "ContactMaterials")
 			));
