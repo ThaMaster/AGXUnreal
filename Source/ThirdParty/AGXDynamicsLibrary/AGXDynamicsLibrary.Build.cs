@@ -563,7 +563,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			string Dest = BundledAGXResources.IncludePath(IncludePath);
 
 			// Directories to include containing header files.
-            List<string> HeaderFileDirs = new List<string>
+			List<string> HeaderFileDirs = new List<string>
 			{
 				"agx",
 				"agxCable",
