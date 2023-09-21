@@ -1395,7 +1395,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
 				null, null,
-				Path.Combine(BaseDir, "data", "ContactMaterialLibrary", "ContactMaterials")
+				Path.Combine(BaseDir, "data", "MaterialLibrary", "ContactMaterials")
 			));
 		}
 
