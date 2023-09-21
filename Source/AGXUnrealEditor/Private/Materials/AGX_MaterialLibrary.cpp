@@ -107,7 +107,7 @@ namespace AGX_MaterialLibrary_helpers
 		}
 
 		Asset->CopyFrom(Material);
-		FAGX_ObjectUtilities::SaveAsset(*Asset);
+		FAGX_ObjectUtilities::SaveAsset(*Asset, true);
 		return Asset;
 	}
 
