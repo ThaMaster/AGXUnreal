@@ -80,7 +80,7 @@ namespace AGX_MaterialLibrary_helpers
 		const FString AssetName = ToAssetName(NameAGX, Type);
 		const FString AssetDir = ToMaterialDirectoryContentBrowser(Type);
 		const FString AssetPath = FString::Printf(TEXT("%s/%s"), *AssetDir, *AssetName);
-		TMaterial* ExistingAsset = LoadObject<TMaterial>(nullptr, *AssetPath);
+		const bool OldAssetExists = FPackageName::DoesPackageExist(AssetPath);
 
 		// Create the asset itself, reading data from the AGX Dynamics terrain material library.
 		auto OptionalBarrier = LoadFunc(Name);
@@ -97,14 +97,13 @@ namespace AGX_MaterialLibrary_helpers
 
 		const TBarrier& Material = OptionalBarrier.GetValue();
 		TMaterial* Asset = nullptr;
-		if (ExistingAsset != nullptr)
+		if (OldAssetExists)
 		{
-			Asset = ExistingAsset;
+			Asset = LoadObject<TMaterial>(nullptr, *AssetPath);
 		}
 		else
 		{
-			Asset = FAGX_ImportUtilities::CreateAsset<TMaterial>(
-				AssetDir, AssetName, "LibraryMaterial");
+			Asset = FAGX_ImportUtilities::CreateAsset<TMaterial>(AssetDir, AssetName, "");
 		}
 
 		Asset->CopyFrom(Material);
