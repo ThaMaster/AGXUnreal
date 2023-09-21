@@ -435,6 +435,14 @@ bool FCheckMaterialLibraryStateCommand::Update()
 {
 	using namespace AGX_PlayInEditorTest_helpers;
 
+	static int32 NumTicks = 0;
+	NumTicks++;
+	if (NumTicks > 1000)
+	{
+		Test.AddError("Level never began play even after many attempts.");
+		return true;
+	}
+
 	if (!GEditor->IsPlayingSessionInEditor())
 	{
 		return false;
