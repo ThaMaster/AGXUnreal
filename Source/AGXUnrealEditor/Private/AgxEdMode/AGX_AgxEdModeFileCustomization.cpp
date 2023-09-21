@@ -89,8 +89,8 @@ void FAGX_AgxEdModeFileCustomization::CustomizeMaterialLibraryCategory(
 		[&]()
 		{
 			AGX_AgxEdModeFileCustomization_helpers::RefreshMaterialLibraries();
-			FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(
-				"Material Library Updated. The Console Log may contain more information.");
+			FAGX_NotificationUtilities::ShowNotification(
+				"Material Library Updated.", SNotificationItem::CS_None);
 			return FReply::Handled();
 		});
 }

@@ -5,6 +5,7 @@
 // AGX Dynamics includes.
 #include "AGX_LogCategory.h"
 #include "Materials/AGX_MaterialLibrary.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 
 // Unreal Engine includes.
 #include "DetailLayoutBuilder.h"
@@ -50,7 +51,13 @@ void FAGX_AgxEdModeTerrainCustomization::CustomizeDetails(IDetailLayoutBuilder& 
 			.ToolTipText(LOCTEXT("TtRefreshTerrainMaterialLibrary", "Reads all Terrain Materials in the "
 				"AGX Dynamics Materials Library and updates the pre-defined Terrain Materials in the "
 				"Plugin Contents."))
-			.OnClicked_Lambda([]() { RefreshTerrainMaterialLibrary(); return FReply::Handled(); })
+			.OnClicked_Lambda([]()
+			{
+				RefreshTerrainMaterialLibrary();
+				FAGX_NotificationUtilities::ShowNotification(
+				"Material Library Updated.", SNotificationItem::CS_None);
+				return FReply::Handled();
+			})
 		]
 	];
 	// clang-format on
