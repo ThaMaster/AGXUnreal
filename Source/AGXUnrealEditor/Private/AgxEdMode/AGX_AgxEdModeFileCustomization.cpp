@@ -64,11 +64,13 @@ void FAGX_AgxEdModeFileCustomization::CustomizeFileExporterCategory(
 
 namespace AGX_AgxEdModeFileCustomization_helpers
 {
-	void RefreshMaterialLibraries()
+	bool RefreshMaterialLibraries()
 	{
-		AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary();
-		AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary();		
-		AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary();
+		bool Success = true;
+		Success &= AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary();
+		Success &= AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary();
+		Success &= AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary();
+		return Success;
 	}
 }
 
@@ -88,9 +90,17 @@ void FAGX_AgxEdModeFileCustomization::CustomizeMaterialLibraryCategory(
 			"Library and updates the pre-defined Materials in the Plugin Contents."),
 		[&]()
 		{
-			AGX_AgxEdModeFileCustomization_helpers::RefreshMaterialLibraries();
-			FAGX_NotificationUtilities::ShowNotification(
-				"Material Library Updated.", SNotificationItem::CS_None);
+			if (AGX_AgxEdModeFileCustomization_helpers::RefreshMaterialLibraries())
+			{
+				FAGX_NotificationUtilities::ShowNotification(
+					"Material Library Updated.", SNotificationItem::CS_Success);
+			}
+			else
+			{
+				FAGX_NotificationUtilities::ShowNotification(
+					"Issues encountered during Refresh, see the Console Log for more details.",
+					SNotificationItem::CS_Fail);
+			}
 			return FReply::Handled();
 		});
 }

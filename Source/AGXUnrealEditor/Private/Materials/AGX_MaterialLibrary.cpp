@@ -151,19 +151,23 @@ namespace AGX_MaterialLibrary_helpers
 	}
 }
 
-void AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary()
+bool AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary()
 {
 	using namespace AGX_MaterialLibrary_helpers;
 	using namespace AGX_MaterialLibraryBarrier;
 
+	bool IssuesEncountered = false;
 	const TArray<FString> Names = AGX_MaterialLibraryBarrier::GetAvailableLibraryContactMaterials();
 	for (const FString& NameAGX : Names)
 	{
 		UAGX_ContactMaterial* Cm =
 			EnsureMaterialImported<UAGX_ContactMaterial, FContactMaterialBarrier>(
 				NameAGX, LibraryMaterialType::ContactMaterial, LoadContactMaterialProfile);
-		if (!Cm)
+		if (Cm == nullptr)
+		{
+			IssuesEncountered = true;
 			continue; // Logging done in EnsureMaterialImported.
+		}
 
 		if (!AssignLibraryShapeMaterialsToContactMaterial(*Cm, NameAGX))
 		{
@@ -173,33 +177,46 @@ void AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary()
 					 "Library. This Contact Material will not have the correct Shape Materials set "
 					 "up."),
 				*Cm->GetName());
+			IssuesEncountered = true;
 			continue;
 		}
 	}
+
+	return !IssuesEncountered;
 }
 
-void AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary()
+bool AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary()
 {
 	using namespace AGX_MaterialLibrary_helpers;
 	using namespace AGX_MaterialLibraryBarrier;
 
+	bool IssuesEncountered = false;
 	const TArray<FString> Names = AGX_MaterialLibraryBarrier::GetAvailableLibraryShapeMaterials();
 	for (const FString& NameAGX : Names)
 	{
-		EnsureMaterialImported<UAGX_ShapeMaterial, FShapeMaterialBarrier>(
+		auto mat = EnsureMaterialImported<UAGX_ShapeMaterial, FShapeMaterialBarrier>(
 			NameAGX, LibraryMaterialType::ShapeMaterial, LoadShapeMaterialProfile);
+		if (mat == nullptr)
+			IssuesEncountered = true;
 	}
+
+	return !IssuesEncountered;
 }
 
-void AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary()
+bool AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary()
 {
 	using namespace AGX_MaterialLibrary_helpers;
 	using namespace AGX_MaterialLibraryBarrier;
 
+	bool IssuesEncountered = false;
 	const TArray<FString> Names = GetAvailableLibraryTerrainMaterials();
 	for (const FString& NameAGX : Names)
 	{
-		EnsureMaterialImported<UAGX_TerrainMaterial, FTerrainMaterialBarrier>(
+		auto mat = EnsureMaterialImported<UAGX_TerrainMaterial, FTerrainMaterialBarrier>(
 			NameAGX, LibraryMaterialType::TerrainMaterial, LoadTerrainMaterialProfile);
+		if (mat == nullptr)
+			IssuesEncountered = true;
 	}
+
+	return !IssuesEncountered;
 }

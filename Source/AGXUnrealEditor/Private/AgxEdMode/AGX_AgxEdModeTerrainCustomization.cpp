@@ -23,9 +23,9 @@ TSharedRef<IDetailCustomization> FAGX_AgxEdModeTerrainCustomization::MakeInstanc
 
 namespace FAGX_AgxEdModeTerrainCustomization_helpers
 {
-	void RefreshTerrainMaterialLibrary()
+	bool RefreshTerrainMaterialLibrary()
 	{
-		AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary();
+		return AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary();
 	}
 }
 
@@ -53,9 +53,17 @@ void FAGX_AgxEdModeTerrainCustomization::CustomizeDetails(IDetailLayoutBuilder& 
 				"Plugin Contents."))
 			.OnClicked_Lambda([]()
 			{
-				RefreshTerrainMaterialLibrary();
-				FAGX_NotificationUtilities::ShowNotification(
-				"Material Library Updated.", SNotificationItem::CS_None);
+				if (RefreshTerrainMaterialLibrary())
+				{
+					FAGX_NotificationUtilities::ShowNotification(
+						"Material Library Updated.", SNotificationItem::CS_Success);
+				}
+				else
+				{
+					FAGX_NotificationUtilities::ShowNotification(
+						"Issues encountered during Refresh, see the Console Log for more details.",
+						SNotificationItem::CS_Fail);
+				}
 				return FReply::Handled();
 			})
 		]
