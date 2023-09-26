@@ -467,7 +467,7 @@ bool FCheckMaterialLibraryStateCommand::Update()
 	Test.TestTrue("Aluminium Library Shape Material not null", Box->ShapeMaterial != nullptr);
 	Test.TestTrue("Steel Library Shape Material not null", Sphere->ShapeMaterial != nullptr);
 	Test.TestTrue(
-		"Steel-Aluminium Library Contact Material not null and assigned material pari",
+		"Steel-Aluminium Library Contact Material not null and assigned material pair",
 		CMRegistrar->ContactMaterials.Num() == 1 &&
 		CMRegistrar->ContactMaterials[0] != nullptr &&
 		CMRegistrar->ContactMaterials[0]->Material1 != nullptr &&
