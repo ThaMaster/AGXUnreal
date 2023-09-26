@@ -100,7 +100,7 @@ public:
 	 * Saves (or re-saves) an asset to disk. The asset must have a valid Package setup before
 	 * passing it to this function.
 	 * Setting FullyLoad to true will call Package->FullyLoad after save. This has been noted
-	 * necessary when building cooked build on Linux.
+	 * necessary when building cooked build on Linux in some situations.
 	 */
 	static bool SaveAsset(UObject& Asset, bool FullyLoad = false);
 #endif
