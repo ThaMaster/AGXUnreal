@@ -1025,7 +1025,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 void FAGX_SimObjectsImporterHelper::UpdateAndSaveShapeMaterialAsset(
 	const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset)
 {
-	Asset.CopyFrom(&Barrier);
+	Asset.CopyFrom(Barrier);
 	FAGX_EditorUtilities::RenameAsset(Asset, Barrier.GetName(), "ShapeMaterial");
 	FAGX_ObjectUtilities::SaveAsset(Asset);
 

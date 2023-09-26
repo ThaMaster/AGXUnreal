@@ -451,7 +451,7 @@ FString FAGX_EditorUtilities::SanitizeName(const FString& Name)
 	for (TCHAR C : Name)
 	{
 		/// \todo Will this accept non-english characters? Should it?
-		if (TChar<TCHAR>::IsAlnum(C) || C == TCHAR('_'))
+		if (TChar<TCHAR>::IsAlnum(C) || C == TCHAR('_') || C == TCHAR('-'))
 		{
 			Sanitized.AppendChar(C);
 		}

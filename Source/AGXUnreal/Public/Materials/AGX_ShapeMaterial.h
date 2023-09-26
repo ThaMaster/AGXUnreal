@@ -196,7 +196,7 @@ public:
 
 	virtual void CommitToAsset() override;
 
-	void CopyFrom(const FShapeMaterialBarrier* Source);
+	void CopyFrom(const FShapeMaterialBarrier& Source);
 
 	static UAGX_ShapeMaterial* CreateInstanceFromAsset(
 		UWorld* PlayingWorld, UAGX_ShapeMaterial* Source);

@@ -34,7 +34,7 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 	// errors in the log.
 	if (!MayAttemptTrackPreview)
 	{
-		MayAttemptTrackPreview = FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid();
+		MayAttemptTrackPreview = FAGX_Environment::GetInstance().EnsureAGXDynamicsLicenseValid();
 		if (!MayAttemptTrackPreview)
 		{
 			return nullptr;
