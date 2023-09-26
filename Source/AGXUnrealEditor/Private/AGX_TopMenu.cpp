@@ -416,7 +416,7 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 
 	FString LicenseText;
 	FString LicenseStatus;
-	if (FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&LicenseStatus) == false)
+	if (FAGX_Environment::GetInstance().EnsureAGXDynamicsLicenseValid(&LicenseStatus) == false)
 	{
 		LicenseText =
 			"AGX Dynamics license: Invalid\n"

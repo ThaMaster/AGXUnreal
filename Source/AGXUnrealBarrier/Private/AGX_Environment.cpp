@@ -387,7 +387,7 @@ FString FAGX_Environment::GetPluginRevision()
 	return FString::Printf(TEXT("%s%s"), *Hash, *Name);
 }
 
-FString FAGX_Environment::FindAgxEnvironmentResourcePath(const FString& RelativePath)
+FString FAGX_Environment::FindAGXEnvironmentResourcePath(const FString& RelativePath)
 {
 	const agx::String RelativePathAGX = Convert(RelativePath);
 	const FString FullPath = [&RelativePathAGX]()
@@ -578,7 +578,7 @@ bool FAGX_Environment::ActivateAgxDynamicsServiceLicense(
 		LicenseId, Convert(ActivationCode), Convert(OutputFilePath));
 }
 
-TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& Key) const
+TOptional<FString> FAGX_Environment::GetAGXDynamicsLicenseValue(const FString& Key) const
 {
 	using namespace AGX_Environment_helpers;
 	agx::Runtime* AgxRuntime = GetAgxRuntime();
@@ -596,7 +596,7 @@ TOptional<FString> FAGX_Environment::GetAgxDynamicsLicenseValue(const FString& K
 	return Convert(AgxRuntime->readValue(KeyAGX.c_str()));
 }
 
-TArray<FString> FAGX_Environment::GetAgxDynamicsEnabledModules() const
+TArray<FString> FAGX_Environment::GetAGXDynamicsEnabledModules() const
 {
 	using namespace AGX_Environment_helpers;
 	TArray<FString> Modules;
@@ -614,7 +614,7 @@ TArray<FString> FAGX_Environment::GetAgxDynamicsEnabledModules() const
 	return Modules;
 }
 
-bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus) const
+bool FAGX_Environment::EnsureAGXDynamicsLicenseValid(FString* OutStatus) const
 {
 	using namespace AGX_Environment_helpers;
 	agx::Runtime* AgxRuntime = GetAgxRuntime();
@@ -634,7 +634,7 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus) const
 
 	// License is not valid. Attempt to unlock using a legacy license file (.lic) in the plugin's
 	// license directory that might have been put there recently by the user.
-	if (!TryUnlockAgxDynamicsLegacyLicense())
+	if (!TryUnlockAGXDynamicsLegacyLicense())
 	{
 #if !WITH_EDITOR
 		// For built executables, try to find and activate runtime activation (.rtflx).
@@ -652,7 +652,7 @@ bool FAGX_Environment::EnsureAgxDynamicsLicenseValid(FString* OutStatus) const
 	return LicenseValid;
 }
 
-bool FAGX_Environment::TryUnlockAgxDynamicsLegacyLicense() const
+bool FAGX_Environment::TryUnlockAGXDynamicsLegacyLicense() const
 {
 	using namespace AGX_Environment_helpers;
 	agx::Runtime* AgxRuntime = GetAgxRuntime();
@@ -916,7 +916,7 @@ TOptional<FString> FAGX_Environment::ProcessOfflineActivationResponse(
 bool FAGX_Environment::IsLoadedLicenseOfServiceType() const
 {
 	// Only service licenses has this key set. The legacy license key equivalence is "License".
-	return GetAgxDynamicsLicenseValue("InstallationID").IsSet();
+	return GetAGXDynamicsLicenseValue("InstallationID").IsSet();
 }
 
 bool FAGX_Environment::RefreshServiceLicense() const

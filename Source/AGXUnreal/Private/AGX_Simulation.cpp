@@ -1156,7 +1156,7 @@ namespace
 void UAGX_Simulation::EnsureValidLicense()
 {
 	FString Status;
-	if (FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&Status) == false)
+	if (FAGX_Environment::GetInstance().EnsureAGXDynamicsLicenseValid(&Status) == false)
 	{
 		InvalidLicenseMessage(Status);
 	}
