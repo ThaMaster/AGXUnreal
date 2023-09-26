@@ -71,9 +71,9 @@ namespace AGX_MaterialLibrary_helpers
 		return FString();
 	}
 
-	template <typename TMaterial, typename TBarrier, typename TMaterialLoadFunc>
-	TMaterial* EnsureMaterialImported(
-		const FString& NameAGX, LibraryMaterialType Type, TMaterialLoadFunc LoadFunc)
+	template <typename MaterialType, typename BarrierType, typename MaterialLoadFunc>
+	MaterialType* EnsureMaterialImported(
+		const FString& NameAGX, LibraryMaterialType Type, MaterialLoadFunc LoadFunc)
 	{
 		// Create a package for our asset.
 		const FString Name = UPackageTools::SanitizePackageName(NameAGX);
@@ -95,15 +95,15 @@ namespace AGX_MaterialLibrary_helpers
 			return nullptr;
 		}
 
-		const TBarrier& Material = OptionalBarrier.GetValue();
-		TMaterial* Asset = nullptr;
+		const BarrierType& Material = OptionalBarrier.GetValue();
+		MaterialType* Asset = nullptr;
 		if (OldAssetExists)
 		{
-			Asset = LoadObject<TMaterial>(nullptr, *AssetPath);
+			Asset = LoadObject<MaterialType>(nullptr, *AssetPath);
 		}
 		else
 		{
-			Asset = FAGX_ImportUtilities::CreateAsset<TMaterial>(AssetDir, AssetName, "");
+			Asset = FAGX_ImportUtilities::CreateAsset<MaterialType>(AssetDir, AssetName, "");
 		}
 
 		Asset->CopyFrom(Material);
