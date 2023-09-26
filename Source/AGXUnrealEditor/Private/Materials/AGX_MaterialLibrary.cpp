@@ -89,8 +89,7 @@ namespace AGX_MaterialLibrary_helpers
 			UE_LOG(
 				LogAGX, Error,
 				TEXT("Unable to import Material '%s' from AGX Material Library to '%s'. The "
-					 "material may not be avaiable in the AGX Dynamics for Unreal Contents. Ensure "
-					 "the AGX Material Library is available in the used AGX Dynamics resources."),
+					 "material may not be avaiable in the AGX Dynamics for Unreal Contents."),
 				*NameAGX, *AssetPath);
 			return nullptr;
 		}
