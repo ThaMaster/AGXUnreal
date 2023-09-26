@@ -83,7 +83,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		/// Points to the AGX Dynamics Terrain Material library location. 
 		TerrainMaterialLibrary,
 
-		/// Points to the AGX Dynamics Content Material library location.
+		/// Points to the AGX Dynamics Contact Material library location.
 		ContactMaterialLibrary
   };
 
