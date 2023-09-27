@@ -409,7 +409,8 @@ void UAGX_TrackComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// on the Track in GetNativeAddress / SetNativeAddress?
 	}
 	else if (
-		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition)
 	{
 		// This object is being destroyed / removed from a Play session that will continue without
 		// it, so there will be no global cleanup of everything, so we must cleanup after ourself.

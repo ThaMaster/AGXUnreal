@@ -606,16 +606,16 @@ void AAGX_Terrain::BeginPlay()
 	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 	{
 		// Update the Displacement Map on each PostStepForward
-		PostStepForwardHandle = FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(
-			*Simulation)
-			.AddLambda(
-				[this](float)
-				{
-					if (bEnableDisplacementRendering)
+		PostStepForwardHandle =
+			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
+				.AddLambda(
+					[this](float)
 					{
-						UpdateDisplacementMap();
-					}
-				});
+						if (bEnableDisplacementRendering)
+						{
+							UpdateDisplacementMap();
+						}
+					});
 	}
 }
 
@@ -625,7 +625,9 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
 
 	ClearDisplacementMap();
 	ClearParticlesMap();
-	if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+	if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition &&
+		Reason != EEndPlayReason::LevelTransition)
 	{
 		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 		{
@@ -777,8 +779,7 @@ namespace
 	}
 
 	template <typename TPtr>
-	TPtr GetShovelComponent(
-		UAGX_RigidBodyComponent& Body, const TCHAR* TerrainName)
+	TPtr GetShovelComponent(UAGX_RigidBodyComponent& Body, const TCHAR* TerrainName)
 	{
 		auto RecursiveFind = [](const TArray<USceneComponent*>& Components, auto& recurse)
 		{

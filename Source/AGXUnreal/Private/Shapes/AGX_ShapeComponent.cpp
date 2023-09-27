@@ -269,7 +269,8 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// necessary.
 	}
 	else if (
-		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition)
 	{
 		// @todo Figure out how to handle removal of Shape Materials from the Simulation. They can
 		// be shared between many Shape Components, so some kind of reference counting might be

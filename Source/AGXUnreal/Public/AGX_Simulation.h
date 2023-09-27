@@ -406,6 +406,10 @@ public: // Member functions.
 	) const override;
 #endif
 
+	void CreateNative();
+
+	friend class AAGX_Stepper;
+	
 private:
 	// ~Begin USubsystem interface.
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -422,6 +426,8 @@ private:
 #endif
 
 private:
+	void OnLevelTransition();
+
 	int32 StepCatchUpImmediately(float DeltaTime);
 	int32 StepCatchUpOverTime(float DeltaTime);
 	int32 StepCatchUpOverTimeCapped(float DeltaTime);
@@ -436,6 +442,8 @@ private:
 	void SetGravity();
 
 	void SetGlobalNativeMergeSplitThresholds();
+
+	void ReleaseNative();
 
 private:
 	FSimulationBarrier NativeBarrier;
