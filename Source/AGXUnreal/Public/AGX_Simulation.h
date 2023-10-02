@@ -426,6 +426,11 @@ private:
 #endif
 
 private:
+	/**
+	 * Releases the AGX Native object and also clears all bound Pre/Post StepForward delegates.
+	 * Objects surviving this Level Transition that also are bound to any of these delegates must
+	 * bind to it again in the new Level.
+	 */
 	void OnLevelTransition();
 
 	int32 StepCatchUpImmediately(float DeltaTime);
