@@ -626,8 +626,7 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
 	ClearDisplacementMap();
 	ClearParticlesMap();
 	if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
-		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition &&
-		Reason != EEndPlayReason::LevelTransition)
+		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition)
 	{
 		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 		{
