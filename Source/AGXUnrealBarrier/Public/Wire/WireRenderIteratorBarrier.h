@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Wire/WireNodeBarrier.h"
 
-// System includes.
+// Standard library includes.
 #include <memory>
 
 // Testing if we can forward declare the AGX Dynamics type in the Barrier header file.

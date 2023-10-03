@@ -2,7 +2,7 @@
 
 #pragma once
 
-// System includes.
+// Standard library includes.
 #include <memory>
 
 class FPlotDataSeriesBarrier;

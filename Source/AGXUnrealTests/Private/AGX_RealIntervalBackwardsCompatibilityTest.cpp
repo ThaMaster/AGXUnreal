@@ -15,7 +15,7 @@
 #include "Tests/AutomationEditorCommon.h"
 #include "GameFramework/Actor.h"
 
-// System includes.
+// Standard library includes.
 #include <limits>
 
 /*

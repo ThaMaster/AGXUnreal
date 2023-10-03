@@ -6,7 +6,7 @@
 #include "NativeBarrier.h"
 #include "Wire/WireRenderIteratorBarrier.h"
 
-// System includes.
+// Standard library includes.
 #include <memory>
 
 class FShapeMaterialBarrier;

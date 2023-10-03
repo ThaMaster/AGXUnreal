@@ -8,7 +8,7 @@
 // Unreal Engine includes.
 #include "Math/Vector.h"
 
-// System includes.
+// Standard library includes.
 #include <memory>
 
 struct FWireNodeRef;

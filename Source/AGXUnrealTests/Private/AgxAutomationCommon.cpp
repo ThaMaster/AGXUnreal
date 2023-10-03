@@ -20,7 +20,7 @@
 #include "Misc/Paths.h"
 #include "Misc/SecureHash.h"
 
-// System includes.
+// Standard library includes.
 #include <cmath>
 
 UWorld* AgxAutomationCommon::GetTestWorld()

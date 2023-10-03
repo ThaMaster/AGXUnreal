@@ -6,7 +6,7 @@
 #include "CoreMinimal.h"
 #include "Math/Vector.h"
 
-// System includes.
+// Standard library includes.
 #include <memory>
 
 struct FMassPropertiesPtr;
