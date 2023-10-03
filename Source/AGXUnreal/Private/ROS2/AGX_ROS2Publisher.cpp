@@ -22,20 +22,20 @@ void UAGX_ROS2Publisher::SendStdMsgsInt32(const FAGX_StdMsgsInt32& Msg, const FS
 FROS2PublisherBarrier* UAGX_ROS2Publisher::GetOrCreateBarrier(
 	EAGX_ROS2MessageType Type, const FString& Topic)
 {
-	bool bIsPlaying = GetWorld() != nullptr && GetWorld()->IsGameWorld();
-	if (!bIsPlaying)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("GetOrCreateBarrier was called on ROS2 Publisher Component '%s' when not in Play. "
-				 "Only call this function during Play."),
-			*GetName());
-		return nullptr;
-	}
-
 	FROS2PublisherBarrier* Barrier = NativeBarriers.Find(Topic);
 	if (Barrier == nullptr)
 	{
+		bool bIsPlaying = GetWorld() != nullptr && GetWorld()->IsGameWorld();
+		if (!bIsPlaying)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("GetOrCreateBarrier was called on ROS2 Publisher Component '%s' when not in "
+					 "Play. Only call this function during Play."),
+				*GetName());
+			return nullptr;
+		}
+
 		Barrier = &NativeBarriers.Add(Topic, FROS2PublisherBarrier());
 		Barrier->AllocateNative(Type, Topic);
 	}
