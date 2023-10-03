@@ -7,6 +7,7 @@
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
+#include "Utilities/AGX_BarrierConstraintUtilities.h"
 
 // Standard library includes.
 #include <memory>
@@ -54,7 +55,8 @@ namespace
 	}
 
 	// Let's hope -1 is never used for a valid angle type.
-	constexpr agx::Angle::Type InvalidAngleType = agx::Angle::Type(-1);
+	// TODO: Find a better way than forcing a made-up enum value into an agx::Angle::Type.
+	/* constexpr */ const agx::Angle::Type InvalidAngleType = static_cast<agx::Angle::Type>(-1);
 
 	agx::Angle::Type GetDofType(const FConstraint1DOFBarrier& Constraint)
 	{
@@ -82,7 +84,8 @@ double FConstraint1DOFBarrier::GetAngle() const
 	check(HasNative());
 	const agx::Constraint1DOF* Constraint = Get1DOF(NativeRef);
 	const agx::Real NativeAngle = Constraint->getAngle();
-	agx::Angle::Type DofType = GetDofType(*this);
+	const agx::Motor1D* MotorAGX = Constraint->getMotor1D();
+	const agx::Angle::Type DofType = FAGX_BarrierConstraintUtilities::GetDofType(MotorAGX);
 	switch (DofType)
 	{
 		case agx::Angle::ROTATIONAL:
@@ -101,7 +104,8 @@ double FConstraint1DOFBarrier::GetSpeed() const
 
 	const agx::Constraint1DOF* Constraint = Get1DOF(NativeRef);
 	const agx::Real SpeedAGX = Constraint->getCurrentSpeed();
-	const agx::Angle::Type DofType = GetDofType(*this);
+	const agx::Motor1D* MotorAGX = Constraint->getMotor1D();
+	const agx::Angle::Type DofType = FAGX_BarrierConstraintUtilities::GetDofType(MotorAGX);
 	switch (DofType)
 	{
 		case agx::Angle::ROTATIONAL:

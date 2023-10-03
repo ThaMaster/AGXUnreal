@@ -43,7 +43,7 @@ namespace AGX_HeightFieldBoundsComponent_helpers
 		return FVector(LargeNumber, LargeNumber, HalfExtentZ);
 	}
 
-	int32 GetClosestVertexIndex(double Distance, double QuadSize)
+	int64 GetClosestVertexIndex(double Distance, double QuadSize)
 	{
 		return FMath::RoundToInt(FMath::RoundToDouble(Distance / QuadSize));
 	}
@@ -75,8 +75,8 @@ UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 		return {};
 	}
 
-	int32 VertexCountX;
-	int32 VertexCountY;
+	int64 VertexCountX;
+	int64 VertexCountY;
 	std::tie(VertexCountX, VertexCountY) =
 		AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(Landscape);
 
@@ -95,11 +95,11 @@ UAGX_HeightFieldBoundsComponent::GetUserSetBounds() const
 		}
 	}();
 
-	const int32 ClosestVertexX = GetClosestVertexIndex(CenterPosLocal.X, QuadSizeX);
-	const int32 ClosestVertexY = GetClosestVertexIndex(CenterPosLocal.Y, QuadSizeY);
+	const int64 ClosestVertexX = GetClosestVertexIndex(CenterPosLocal.X, QuadSizeX);
+	const int64 ClosestVertexY = GetClosestVertexIndex(CenterPosLocal.Y, QuadSizeY);
 
-	int32 HalfExtentVertsX = GetClosestVertexIndex(SelectedHalfExtent.X, QuadSizeX);
-	int32 HalfExtentVertsY = GetClosestVertexIndex(SelectedHalfExtent.Y, QuadSizeY);
+	const int64 HalfExtentVertsX = GetClosestVertexIndex(SelectedHalfExtent.X, QuadSizeX);
+	const int64 HalfExtentVertsY = GetClosestVertexIndex(SelectedHalfExtent.Y, QuadSizeY);
 
 	const FVector BoundPosGlobal = Landscape.GetActorTransform().TransformPositionNoScale(FVector(
 		static_cast<double>(ClosestVertexX) * QuadSizeX,
@@ -125,8 +125,8 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	}
 
 	const ALandscape& Landscape = TransformAndLandscape->Landscape;
-	const int32 QuadSizeX = Landscape.GetActorScale().X;
-	const int32 QuadSizeY = Landscape.GetActorScale().Y;
+	const double QuadSizeX = Landscape.GetActorScale().X;
+	const double QuadSizeY = Landscape.GetActorScale().Y;
 
 	const FVector SelectedHalfExtent =
 		GetInfinateOrUserSelectedBounds(bInfiniteBounds, Landscape, HalfExtent);
@@ -140,8 +140,8 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 		return {};
 	}
 
-	int32 VertexCountX;
-	int32 VertexCountY;
+	int64 VertexCountX;
+	int64 VertexCountY;
 	std::tie(VertexCountX, VertexCountY) =
 		AGX_HeightFieldUtilities::GetLandscapeNumberOfVertsXY(Landscape);
 
@@ -160,15 +160,15 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 		}
 	}();
 
-	const int32 ClosestVertexX = GetClosestVertexIndex(CenterPosLocal.X, QuadSizeX);
-	const int32 ClosestVertexY = GetClosestVertexIndex(CenterPosLocal.Y, QuadSizeY);
+	const int64 ClosestVertexX = GetClosestVertexIndex(CenterPosLocal.X, QuadSizeX);
+	const int64 ClosestVertexY = GetClosestVertexIndex(CenterPosLocal.Y, QuadSizeY);
 
 	if (ClosestVertexX <= 0 || ClosestVertexX > VertexCountX || ClosestVertexY <= 0 ||
 		ClosestVertexY > VertexCountY)
 		return {};
 
-	int32 HalfExtentVertsX = GetClosestVertexIndex(SelectedHalfExtent.X, QuadSizeX);
-	int32 HalfExtentVertsY = GetClosestVertexIndex(SelectedHalfExtent.Y, QuadSizeY);
+	int64 HalfExtentVertsX = GetClosestVertexIndex(SelectedHalfExtent.X, QuadSizeX);
+	int64 HalfExtentVertsY = GetClosestVertexIndex(SelectedHalfExtent.Y, QuadSizeY);
 
 	// Ensure we are not outside the Landscape edge.
 	HalfExtentVertsX = std::min(HalfExtentVertsX, VertexCountX - ClosestVertexX - 1);

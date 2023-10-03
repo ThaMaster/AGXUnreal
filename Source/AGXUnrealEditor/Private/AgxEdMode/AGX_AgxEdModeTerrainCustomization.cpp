@@ -4,7 +4,8 @@
 
 // AGX Dynamics includes.
 #include "AGX_LogCategory.h"
-#include "Materials/AGX_TerrainMaterialLibrary.h"
+#include "Materials/AGX_MaterialLibrary.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 
 // Unreal Engine includes.
 #include "DetailLayoutBuilder.h"
@@ -22,9 +23,9 @@ TSharedRef<IDetailCustomization> FAGX_AgxEdModeTerrainCustomization::MakeInstanc
 
 namespace FAGX_AgxEdModeTerrainCustomization_helpers
 {
-	void RefreshTerrainMaterialLibrary()
+	bool RefreshTerrainMaterialLibrary()
 	{
-		AGX_TerrainMaterialLibrary::InitializeTerrainMaterialAssetLibrary();
+		return AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary();
 	}
 }
 
@@ -47,7 +48,24 @@ void FAGX_AgxEdModeTerrainCustomization::CustomizeDetails(IDetailLayoutBuilder& 
 		[
 			SNew(SButton)
 			.Text(LOCTEXT("btnRefreshTerrainMaterialLibrary", "Refresh Terrain Material Library"))
-			.OnClicked_Lambda([]() { RefreshTerrainMaterialLibrary(); return FReply::Handled(); })
+			.ToolTipText(LOCTEXT("TtRefreshTerrainMaterialLibrary", "Reads all Terrain Materials in the "
+				"AGX Dynamics Materials Library and updates the pre-defined Terrain Materials in the "
+				"Plugin Contents."))
+			.OnClicked_Lambda([]()
+			{
+				if (RefreshTerrainMaterialLibrary())
+				{
+					FAGX_NotificationUtilities::ShowNotification(
+						"Material Library Updated.", SNotificationItem::CS_Success);
+				}
+				else
+				{
+					FAGX_NotificationUtilities::ShowNotification(
+						"Issues encountered during Refresh, see the Console Log for more details.",
+						SNotificationItem::CS_Fail);
+				}
+				return FReply::Handled();
+			})
 		]
 	];
 	// clang-format on

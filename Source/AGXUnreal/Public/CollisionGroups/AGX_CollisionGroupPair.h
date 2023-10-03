@@ -8,7 +8,7 @@
 USTRUCT()
 struct AGXUNREAL_API FAGX_CollisionGroupPair
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "AGX Collision Groups")
 	FName Group1;

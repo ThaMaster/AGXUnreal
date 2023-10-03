@@ -234,6 +234,18 @@ bool FShovelBarrier::GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMod
 	return NativeRef->Native->getExcavationSettings(Convert(Mode)).getEnableForceFeedback();
 }
 
+void FShovelBarrier::SetBottomContactThreshold(double BottomContactThreshold)
+{
+	check(HasNative());
+	NativeRef->Native->setBottomContactThreshold(ConvertDistanceToAGX(BottomContactThreshold));
+}
+
+double FShovelBarrier::GetBottomContactThreshold() const
+{
+	check(HasNative());
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getBottomContactThreshold());
+}
+
 bool FShovelBarrier::HasNative() const
 {
 	AGX_CHECK(NativeRef.get() != nullptr); // TEXT("Found an FShovelBarrier that does not have a

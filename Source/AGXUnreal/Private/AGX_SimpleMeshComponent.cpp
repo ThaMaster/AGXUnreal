@@ -177,24 +177,36 @@ public:
 
 		// Enqueue initialization of render resource
 		ENQUEUE_RENDER_COMMAND(FAGX_SimpleMeshSceneProxyVertexBuffersInit)
-		([this, LightMapIndex](FRHICommandListImmediate& RHICmdList) {
-			VertexBuffers.PositionVertexBuffer.InitResource();
-			VertexBuffers.StaticMeshVertexBuffer.InitResource();
-			VertexBuffers.ColorVertexBuffer.InitResource();
+		(
+			[this, LightMapIndex](FRHICommandListImmediate& RHICmdList)
+			{
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
+				VertexBuffers.PositionVertexBuffer.InitResource();
+				VertexBuffers.StaticMeshVertexBuffer.InitResource();
+				VertexBuffers.ColorVertexBuffer.InitResource();
+#else
+				VertexBuffers.PositionVertexBuffer.InitResource(RHICmdList);
+				VertexBuffers.StaticMeshVertexBuffer.InitResource(RHICmdList);
+				VertexBuffers.ColorVertexBuffer.InitResource(RHICmdList);
+#endif
 
-			FLocalVertexFactory::FDataType Data;
-			VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&VertexFactory, Data);
-			VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&VertexFactory, Data);
-			VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
-				&VertexFactory, Data);
-			VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
-				&VertexFactory, Data, LightMapIndex);
-			VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&VertexFactory, Data);
-			VertexFactory.SetData(Data);
-
-			VertexFactory.InitResource();
-			IndexBuffer.InitResource();
-		});
+				FLocalVertexFactory::FDataType Data;
+				VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&VertexFactory, Data);
+				VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&VertexFactory, Data);
+				VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
+					&VertexFactory, Data);
+				VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
+					&VertexFactory, Data, LightMapIndex);
+				VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&VertexFactory, Data);
+				VertexFactory.SetData(Data);
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
+				VertexFactory.InitResource();
+				IndexBuffer.InitResource();
+#else
+				VertexFactory.InitResource(RHICmdList);
+				IndexBuffer.InitResource(RHICmdList);
+#endif
+			});
 
 		// Grab material
 		Material = Component->GetMaterial(0);

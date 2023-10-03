@@ -2,6 +2,7 @@
 
 #include "AGX_BarrierConstraintUtilities.h"
 
+// AGX Dynamics for Unreal includes.
 #include "TypeConversions.h"
 #include "AGXRefs.h"
 #include "AGX_AgxDynamicsObjectsAccess.h"
@@ -38,4 +39,18 @@ void FAGX_BarrierConstraintUtilities::ConvertConstraintBodyAndFrame(
 {
 	OutNativeBody = FAGX_AgxDynamicsObjectsAccess::GetFrom(Body);
 	OutNativeFrame = ConvertFrame(FramePosition, FrameRotation);
+}
+
+agx::Angle::Type FAGX_BarrierConstraintUtilities::GetDofType(const agx::Motor1D* Motor)
+{
+	if (Motor == nullptr)
+	{
+		return InvalidAngleType;
+	}
+	const agx::Angle* Angle = Motor->getData().getAngle();
+	if (Angle == nullptr)
+	{
+		return InvalidAngleType;
+	}
+	return Angle->getType();
 }

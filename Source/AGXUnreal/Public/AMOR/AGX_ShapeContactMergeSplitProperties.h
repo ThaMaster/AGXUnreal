@@ -25,7 +25,7 @@ class UAGX_ShapeComponent;
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ShapeContactMergeSplitProperties : public FAGX_MergeSplitPropertiesBase
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 public:
 

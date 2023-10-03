@@ -1817,7 +1817,7 @@ namespace AGX_MeshUtilities_helpers
 				RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
 #else
 			FVector3f* PositionData = static_cast<FVector3f*>(
-				RHILockBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
+				RHICmdList.LockBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
 #endif
 			for (uint32 I = 0; I < NumPositions; I++)
 			{
@@ -1826,7 +1826,7 @@ namespace AGX_MeshUtilities_helpers
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 			RHIUnlockVertexBuffer(PositionRHI);
 #else
-			RHIUnlockBuffer(PositionRHI);
+			RHICmdList.UnlockBuffer(PositionRHI);
 #endif
 
 			// Copy index buffer.
@@ -1839,7 +1839,7 @@ namespace AGX_MeshUtilities_helpers
 					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 #else
 				uint16* IndexData = static_cast<uint16*>(
-					RHILockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+					RHICmdList.LockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 #endif
 				for (uint32 i = 0; i < NumIndices; i++)
 				{
@@ -1856,7 +1856,7 @@ namespace AGX_MeshUtilities_helpers
 					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 #else
 				uint32* IndexData = static_cast<uint32*>(
-					RHILockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+					RHICmdList.LockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 #endif
 				for (uint32 i = 0; i < NumIndices; i++)
 				{
@@ -1867,7 +1867,7 @@ namespace AGX_MeshUtilities_helpers
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 			RHIUnlockIndexBuffer(IndexRHI);
 #else
-			RHIUnlockBuffer(IndexRHI);
+			RHICmdList.UnlockBuffer(IndexRHI);
 #endif
 		});
 
@@ -1949,7 +1949,7 @@ namespace AGX_MeshUtilities_helpers
 				RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
 #else
 			FVector3f* PositionData = static_cast<FVector3f*>(
-				RHILockBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+				RHICmdList.LockBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
 #endif
 			for (uint32 i = 0; i < NumPositions; i++)
 			{
@@ -1958,7 +1958,7 @@ namespace AGX_MeshUtilities_helpers
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 			RHIUnlockVertexBuffer(PositionRhi);
 #else
-			RHIUnlockBuffer(PositionRhi);
+			RHICmdList.UnlockBuffer(PositionRhi);
 #endif
 
 			// Copy index buffer.
@@ -1970,7 +1970,7 @@ namespace AGX_MeshUtilities_helpers
 					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #else
 				uint16* IndexBufferData = static_cast<uint16*>(
-					RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+					RHICmdList.LockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #endif
 				for (int32 i = 0; i < NumIndices; i++)
 				{
@@ -1986,7 +1986,7 @@ namespace AGX_MeshUtilities_helpers
 					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #else
 				uint32* IndexData = static_cast<uint32*>(
-					RHILockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+					RHICmdList.LockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #endif
 				for (int32 i = 0; i < NumIndices; i++)
 				{
@@ -1996,7 +1996,7 @@ namespace AGX_MeshUtilities_helpers
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
 			RHIUnlockIndexBuffer(IndexRhi);
 #else
-			RHIUnlockBuffer(IndexRhi);
+			RHICmdList.UnlockBuffer(IndexRhi);
 #endif
 		});
 

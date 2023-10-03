@@ -71,7 +71,8 @@
 #include "Materials/AGX_ShapeMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialCustomization.h"
-#include "Materials/AGX_TerrainMaterialLibrary.h"
+#include "Materials/AGX_MaterialLibrary.h"
+#include "PlayRecord/AGX_PlayRecordTypeActions.h"
 #include "Plot/AGX_PlotComponent.h"
 #include "Plot/AGX_PlotComponentCustomization.h"
 #include "Shapes/AGX_ShapeComponent.h"
@@ -191,6 +192,9 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_ConstraintMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools,
+		MakeShareable(new FAGX_PlayRecordTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_ShapeContactMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
@@ -576,7 +580,9 @@ void FAGXUnrealEditorModule::UnregisterPlacementCategory()
 
 void FAGXUnrealEditorModule::InitializeAssets()
 {
-	AGX_TerrainMaterialLibrary::InitializeTerrainMaterialAssetLibrary();
+	AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary();
+	AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary();
+	AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary();
 }
 
 #undef LOCTEXT_NAMESPACE

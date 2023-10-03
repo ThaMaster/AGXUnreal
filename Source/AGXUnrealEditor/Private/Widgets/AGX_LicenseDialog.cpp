@@ -34,7 +34,7 @@ namespace AGX_LicenseDialog_helpers
 		const TArray<FString> Keys {"User", "Contact", "EndDate"};
 		for (const auto& Key : Keys)
 		{
-			if (const auto Value = FAGX_Environment::GetInstance().GetAgxDynamicsLicenseValue(Key))
+			if (const auto Value = FAGX_Environment::GetInstance().GetAGXDynamicsLicenseValue(Key))
 			{
 				Info.Append(Key + ": " + Value.GetValue() + "\n");
 			}
@@ -92,7 +92,7 @@ void SAGX_LicenseDialog::UpdateLicenseDialogData()
 {
 	FString LicenseStatus;
 	const bool LicenseValid =
-		FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&LicenseStatus);
+		FAGX_Environment::GetInstance().EnsureAGXDynamicsLicenseValid(&LicenseStatus);
 
 	if (LicenseValid)
 	{
@@ -108,7 +108,7 @@ void SAGX_LicenseDialog::UpdateLicenseDialogData()
 	LicenseData.LicenseInfo = AGX_LicenseDialog_helpers::CreateLicenseInfo(LicenseStatus);
 
 	LicenseData.EnabledModules.Empty();
-	for (const FString& Module : FAGX_Environment::GetInstance().GetAgxDynamicsEnabledModules())
+	for (const FString& Module : FAGX_Environment::GetInstance().GetAGXDynamicsEnabledModules())
 	{
 		if (Module.Equals("AgX"))
 		{

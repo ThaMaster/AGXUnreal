@@ -611,15 +611,16 @@ void AAGX_Terrain::BeginPlay()
 	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 	{
 		// Update the Displacement Map on each PostStepForward
-		FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
-			.AddLambda(
-				[this](float)
-				{
-					if (bEnableDisplacementRendering)
+		PostStepForwardHandle =
+			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
+				.AddLambda(
+					[this](float)
 					{
-						UpdateDisplacementMap();
-					}
-				});
+						if (bEnableDisplacementRendering)
+						{
+							UpdateDisplacementMap();
+						}
+					});
 	}
 }
 
@@ -629,7 +630,8 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
 
 	ClearDisplacementMap();
 	ClearParticlesMap();
-	if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+	if (HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition)
 	{
 		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 		{
@@ -638,6 +640,9 @@ void AAGX_Terrain::EndPlay(const EEndPlayReason::Type Reason)
 			// Material from the simulation if this Terrain is the last one using it. Some
 			// reference counting may be needed.
 			Simulation->Remove(*this);
+
+			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
+				.Remove(PostStepForwardHandle);
 		}
 	}
 
@@ -1551,7 +1556,7 @@ void AAGX_Terrain::UpdateParticlesMap()
 	AGX_CHECK(Positions.Num() == Rotations.Num());
 
 	int32 NumParticles = FMath::Min(Positions.Num(), MaxNumParticles);
-	ParticleSystemComponent->SetNiagaraVariableInt("User.TargetParticleCount", NumParticles);
+	ParticleSystemComponent->SetVariableInt(FName(TEXT("User.TargetParticleCount")), NumParticles);
 
 	for (int32 ParticleIndex = 0, PixelIndex = 0; ParticleIndex < NumParticles;
 		 ++ParticleIndex, PixelIndex += NumComponentsPerParticle)

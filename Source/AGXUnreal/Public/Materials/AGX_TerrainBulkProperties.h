@@ -16,7 +16,7 @@
 USTRUCT()
 struct AGXUNREAL_API FAGX_TerrainBulkProperties
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 public:
 	/**

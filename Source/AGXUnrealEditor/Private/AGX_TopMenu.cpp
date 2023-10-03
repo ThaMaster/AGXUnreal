@@ -416,7 +416,7 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 
 	FString LicenseText;
 	FString LicenseStatus;
-	if (FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&LicenseStatus) == false)
+	if (FAGX_Environment::GetInstance().EnsureAGXDynamicsLicenseValid(&LicenseStatus) == false)
 	{
 		LicenseText =
 			"AGX Dynamics license: Invalid\n"
@@ -438,7 +438,7 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 		"AGX Dynamics version: " + FAGX_Environment::GetAGXDynamicsVersion() + "\n"
 		+ LicenseText + "\n"
 		"Copyright Algoryx Simulation AB\n"
-		"www.algoryx.se");
+		"www.algoryx.com");
 	// clang-format on
 
 	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(Message, Title);

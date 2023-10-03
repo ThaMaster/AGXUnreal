@@ -17,9 +17,12 @@
 #include "CoreMinimal.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/Actor.h"
-#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+#if UE_VERSION_OLDER_THAN(5, 2, 0)
 #include "RHI.h"
+#else
+#include "RHITypes.h"
 #endif
+
 
 // Standard library includes.
 #include <mutex>
@@ -312,6 +315,7 @@ private:
 	FTerrainBarrier NativeBarrier;
 	FTerrainPagerBarrier NativeTerrainPagerBarrier;
 	FAGX_TerrainHeightFetcher HeightFetcher;
+	FDelegateHandle PostStepForwardHandle;
 
 	// Height field related variables.
 	std::mutex OriginalHeightsMutex;

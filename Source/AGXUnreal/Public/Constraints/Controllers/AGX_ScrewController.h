@@ -21,7 +21,7 @@ class FScrewControllerBarrier;
 USTRUCT()
 struct AGXUNREAL_API FAGX_ConstraintScrewController : public FAGX_ConstraintController
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	/**
 	 * The distance along the screw's axis, that is covered by one complete rotation of the screw

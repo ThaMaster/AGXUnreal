@@ -21,7 +21,7 @@ class FElectricMotorControllerBarrier;
 USTRUCT()
 struct AGXUNREAL_API FAGX_ConstraintElectricMotorController : public FAGX_ConstraintController
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	/**
 	 * Available voltage or voltage drop across the terminals of this motor [V].

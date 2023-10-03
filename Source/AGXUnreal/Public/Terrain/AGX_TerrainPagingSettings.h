@@ -13,7 +13,7 @@
 USTRUCT()
 struct AGXUNREAL_API FAGX_TerrainPagingSettings
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	/**
 	 * Specifies the overlap between Terrain tiles [cm].

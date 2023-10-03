@@ -80,7 +80,7 @@ AActor* FAGX_ObjectUtilities::GetActorByName(const UWorld& World, const FString 
 }
 
 #if WITH_EDITOR
-bool FAGX_ObjectUtilities::SaveAsset(UObject& Asset)
+bool FAGX_ObjectUtilities::SaveAsset(UObject& Asset, bool FullyLoad)
 {
 	UPackage* Package = Asset.GetPackage();
 	if (Package == nullptr || Package->GetPathName().IsEmpty())
@@ -116,6 +116,9 @@ bool FAGX_ObjectUtilities::SaveAsset(UObject& Asset)
 	SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
 	return UPackage::SavePackage(Package, &Asset, *PackageFilename, SaveArgs);
 #endif
+
+	if (FullyLoad)
+		Package->FullyLoad();
 }
 #endif
 

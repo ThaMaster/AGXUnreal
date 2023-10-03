@@ -26,7 +26,7 @@ class FConstraintControllerBarrier;
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ConstraintController
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	/**
 	 * Whether this Constraint Controller is active or not. A disabled Constraint Controller has

@@ -199,7 +199,7 @@ private:
 USTRUCT()
 struct AGXUNREAL_API FAGX_ConstraintRangePropertyPerDof
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Property Per Dof",

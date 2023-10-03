@@ -16,7 +16,7 @@ class UAGX_MergeSplitThresholdsBase;
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_MergeSplitPropertiesBase
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 public:
 
