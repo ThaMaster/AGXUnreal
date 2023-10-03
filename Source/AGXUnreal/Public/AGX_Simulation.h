@@ -315,6 +315,10 @@ public: // Member functions.
 	 * Users may bind to this delegate in order to get a callback before each Simulation step
 	 * forward. This may be executed zero, one or several times per Unreal Engine Tick, depending on
 	 * the Step Mode and Time Step selected in the AGX Dynamics for Unreal settings.
+	 *
+	 * Note: all bound callbacks to this delegate are cleared on Level Transition meaning that
+	 * objects surviving a Level Transition that also are bound to this delegates must bind to it
+	 * again in the new Level.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Simulation")
 	FOnPreStepForward PreStepForward;
@@ -324,6 +328,10 @@ public: // Member functions.
 	 * Users may bind to this delegate in order to get a callback after each Simulation step
 	 * forward. This may be executed zero, one or several times per Unreal Engine Tick, depending on
 	 * the Step Mode and Time Step selected in the AGX Dynamics for Unreal settings.
+	 *
+	 * Note: all bound callbacks to this delegate are cleared on Level Transition meaning that
+	 * objects surviving a Level Transition that also are bound to this delegates must bind to it
+	 * again in the new Level.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Simulation")
 	FOnPostStepForward PostStepForward;
@@ -409,7 +417,7 @@ public: // Member functions.
 	void CreateNative();
 
 	friend class AAGX_Stepper;
-	
+
 private:
 	// ~Begin USubsystem interface.
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
