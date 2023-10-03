@@ -204,6 +204,9 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("agxModel", LibSource.AGX);
 		RuntimeLibFiles.Add("agxVehicle", LibSource.AGX);
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
+		RuntimeLibFiles.Add("agxROS2", LibSource.AGX);
+		RuntimeLibFiles.Add("fastcdr-*", LibSource.AGX);
+		RuntimeLibFiles.Add("fastrtps-*", LibSource.AGX);
 		if (TargetAGXVersion.IsOlderThan(2, 32, 0, 0))
 		{
 			RuntimeLibFiles.Add("vdbgrid", LibSource.AGX);
@@ -229,6 +232,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		LinkLibFiles.Add("agxCable", LibSource.AGX);
 		LinkLibFiles.Add("agxModel", LibSource.AGX);
 		LinkLibFiles.Add("agxVehicle", LibSource.AGX);
+		LinkLibFiles.Add("agxROS2", LibSource.AGX);
 
 		// List of the include directories from aGX Dynamics and its
 		// dependenciesthat we need. These will be added to the Unreal Engine
@@ -585,6 +589,7 @@ public class AGXDynamicsLibrary : ModuleRules
 				"agxUtil",
 				"agxVehicle",
 				"agxWire",
+				"agxROS2",
 				Path.Combine("external", "hedley"),
 				Path.Combine("external", "json"),
 				Path.Combine("external", "pystring")
