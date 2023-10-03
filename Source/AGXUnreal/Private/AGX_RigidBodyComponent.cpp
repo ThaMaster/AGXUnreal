@@ -332,7 +332,8 @@ void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// on the Rigid Body in GetNativeAddress / SetNativeAddress?
 	}
 	else if (
-		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition)
 	{
 		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
 		{

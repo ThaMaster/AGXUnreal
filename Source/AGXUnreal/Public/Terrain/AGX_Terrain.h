@@ -311,6 +311,7 @@ private:
 	FTerrainBarrier NativeBarrier;
 	FTerrainPagerBarrier NativeTerrainPagerBarrier;
 	FAGX_TerrainHeightFetcher HeightFetcher;
+	FDelegateHandle PostStepForwardHandle;
 
 	// Height field related variables.
 	std::mutex OriginalHeightsMutex;

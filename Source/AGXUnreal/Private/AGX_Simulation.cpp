@@ -578,6 +578,60 @@ bool UAGX_Simulation::GetEnableAMOR()
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+	CreateNative();
+}
+
+void UAGX_Simulation::Deinitialize()
+{
+	Super::Deinitialize();
+	if (!HasNative())
+	{
+		return;
+	}
+
+	ReleaseNative();
+}
+
+#if WITH_EDITOR
+
+void UAGX_Simulation::PostInitProperties()
+{
+	Super::PostInitProperties();
+	InitPropertyDispatcher();
+}
+
+void UAGX_Simulation::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
+	Super::PostEditChangeChainProperty(Event);
+}
+
+void UAGX_Simulation::InitPropertyDispatcher()
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bContactWarmstarting),
+		[](ThisClass* This) { This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bEnableAMOR),
+		[](ThisClass* This) { This->SetEnableAMOR(This->bEnableAMOR); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, NumThreads),
+		[](ThisClass* This) { This->SetNumThreads(This->NumThreads); });
+}
+#endif
+
+void UAGX_Simulation::CreateNative()
+{
+	check(!HasNative());
 	EnsureValidLicense();
 
 	NativeBarrier.AllocateNative();
@@ -628,54 +682,15 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 	FAGX_Environment::GetInstance().SetNumThreads(std::max(0, NumThreads));
 }
 
-void UAGX_Simulation::Deinitialize()
+void UAGX_Simulation::OnLevelTransition()
 {
-	Super::Deinitialize();
+	// During a level transition, Deinitialize will not be called. Instead we should release our
+	// Native so that a new one can be created and setup during BeginPlay in the next level.
 	if (!HasNative())
-	{
 		return;
-	}
-	NativeBarrier.SetStatisticsEnabled(false);
-	NativeBarrier.ReleaseNative();
+
+	ReleaseNative();
 }
-
-#if WITH_EDITOR
-
-void UAGX_Simulation::PostInitProperties()
-{
-	Super::PostInitProperties();
-	InitPropertyDispatcher();
-}
-
-void UAGX_Simulation::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
-{
-	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
-	Super::PostEditChangeChainProperty(Event);
-}
-
-void UAGX_Simulation::InitPropertyDispatcher()
-{
-	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
-		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
-	if (PropertyDispatcher.IsInitialized())
-	{
-		return;
-	}
-
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, bContactWarmstarting),
-		[](ThisClass* This) { This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
-
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bEnableAMOR),
-		[](ThisClass* This) { This->SetEnableAMOR(This->bEnableAMOR); });
-
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, NumThreads),
-		[](ThisClass* This) { This->SetNumThreads(This->NumThreads); });
-}
-
-#endif
 
 bool UAGX_Simulation::WriteAGXArchive(const FString& Filename) const
 {
@@ -1073,7 +1088,14 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const UGameInstance* GameInstance)
 	if (!GameInstance)
 		return nullptr;
 
-	return GameInstance->GetSubsystem<UAGX_Simulation>();
+	UAGX_Simulation* Sim = GameInstance->GetSubsystem<UAGX_Simulation>();
+	if (Sim == nullptr)
+		return nullptr;
+
+	if (!Sim->HasNative())
+		Sim->CreateNative();
+
+	return Sim;
 }
 
 TArray<FShapeContactBarrier> UAGX_Simulation::GetShapeContacts(const FShapeBarrier& Shape) const
@@ -1213,6 +1235,17 @@ void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 		FWireMergeSplitThresholdsBarrier Thresholds = NativeBarrier.GetGlobalWireTresholds();
 		SC->CopyTo(Thresholds);
 	}
+}
+
+void UAGX_Simulation::ReleaseNative()
+{
+	NativeBarrier.SetStatisticsEnabled(false);
+	NativeBarrier.ReleaseNative();
+
+	PreStepForward.Clear();
+	PreStepForwardInternal.Clear();
+	PostStepForward.Clear();
+	PostStepForwardInternal.Clear();
 }
 
 void UAGX_Simulation::PreStep()

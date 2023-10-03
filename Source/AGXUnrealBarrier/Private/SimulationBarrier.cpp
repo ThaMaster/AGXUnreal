@@ -521,12 +521,12 @@ FAGX_Statistics FSimulationBarrier::GetStatistics()
 
 bool FSimulationBarrier::HasNative() const
 {
-	return NativeRef->Native != nullptr;
+	return NativeRef != nullptr && NativeRef->Native != nullptr;
 }
 
 void FSimulationBarrier::AllocateNative()
 {
-	NativeRef->Native = new agxSDK::Simulation();
+	NativeRef = std::make_unique<FSimulationRef>(new agxSDK::Simulation());
 }
 
 FSimulationRef* FSimulationBarrier::GetNative()

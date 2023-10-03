@@ -14,5 +14,8 @@ public:
 	AAGX_Stepper();
 	virtual ~AAGX_Stepper() override;
 
+	virtual void BeginPlay() override;
 	void Tick(float DeltaTime) override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 };

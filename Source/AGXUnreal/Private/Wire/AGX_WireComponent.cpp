@@ -1394,7 +1394,8 @@ void UAGX_WireComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// Another UAGX_WireComponent will inherit this one's Native Barrier, so don't wreck it.
 	}
 	else if (
-		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition)
 	{
 		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 		{
