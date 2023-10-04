@@ -306,6 +306,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			DelayLoadLibraries.Add("agxCable", LibSource.AGX);
 			DelayLoadLibraries.Add("agxModel", LibSource.AGX);
 			DelayLoadLibraries.Add("agxVehicle", LibSource.AGX);
+			DelayLoadLibraries.Add("agxROS2", LibSource.AGX);
 			AddDelayLoadDependencies(DelayLoadLibraries);
 		}
 
