@@ -16,6 +16,18 @@
 	"Installed": false,
 	"Modules": [
 		{
+			"Name": "AGXCommon",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Linux",
+				"Win64"
+			],
+			"BlacklistPlatforms": [
+				"IOS"
+			]
+		},
+		{
 			"Name": "AGXUnrealBarrier",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
@@ -43,18 +55,6 @@
 			"Name": "AGXUnrealEditor",
 			"Type": "Editor",
 			"LoadingPhase": "PostEngineInit",
-			"WhitelistPlatforms": [
-				"Linux",
-				"Win64"
-			],
-			"BlacklistPlatforms": [
-				"IOS"
-			]
-		},
-		{
-			"Name": "AGXCommon",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [
 				"Linux",
 				"Win64"
