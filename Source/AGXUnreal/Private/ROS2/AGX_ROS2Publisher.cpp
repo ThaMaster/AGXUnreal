@@ -37,7 +37,7 @@ FROS2PublisherBarrier* UAGX_ROS2Publisher::GetOrCreateBarrier(
 		}
 
 		Barrier = &NativeBarriers.Add(Topic, FROS2PublisherBarrier());
-		Barrier->AllocateNative(Type, Topic);
+		Barrier->AllocateNative(Type, Topic, Qos);
 	}
 	else if (Barrier->GetMessageType() != Type)
 	{
@@ -51,4 +51,19 @@ FROS2PublisherBarrier* UAGX_ROS2Publisher::GetOrCreateBarrier(
 
 	AGX_CHECK(Barrier->HasNative());
 	return Barrier;
+}
+
+bool UAGX_ROS2Publisher::CanEditChange(const FProperty* InProperty) const
+{
+	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
+	if (!SuperCanEditChange)
+		return false;
+
+	if (InProperty->GetFName().IsEqual(GET_MEMBER_NAME_CHECKED(UAGX_ROS2Publisher, Qos)))
+	{
+		UWorld* World = GetWorld();
+		return World == nullptr || !World->IsGameWorld();
+	}
+
+	return SuperCanEditChange;
 }

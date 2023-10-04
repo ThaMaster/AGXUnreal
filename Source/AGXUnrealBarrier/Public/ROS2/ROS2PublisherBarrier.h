@@ -9,7 +9,9 @@
 #include <memory>
 
 struct FAGX_ROS2Message;
+struct FAGX_ROS2Qos;
 struct FROS2Publisher;
+
 
 class AGXUNREALBARRIER_API FROS2PublisherBarrier
 {
@@ -21,7 +23,8 @@ public:
 
 	bool HasNative() const;
 
-	void AllocateNative(EAGX_ROS2MessageType InMessageType, const FString& Topic);
+	void AllocateNative(
+		EAGX_ROS2MessageType InMessageType, const FString& Topic, const FAGX_ROS2Qos& Qos);
 
 	FROS2Publisher* GetNative();
 	const FROS2Publisher* GetNative() const;
