@@ -8,13 +8,14 @@
 #include "ROS2/AGX_ROS2Messages.h"
 #include "ROS2/ROS2Conversions.h"
 
-// Helper macro to minimize amount of code needed in large switch-statement.
+// Helper macros to minimize amount of code needed in large switch-statement.
 // clang-format off
 #define AGX_SEND_ROS2_MSGS(PubType, MsgType)                                            \
 {                                                                                       \
 	if (auto Pub = dynamic_cast<const PubType*>(Native.get()))                            \
 	{                                                                                     \
 		Pub->Native->sendMessage(Convert(*static_cast<const MsgType*>(&Msg)));              \
+		return true;                                                                        \
 	}                                                                                     \
 	else                                                                                  \
 	{                                                                                     \
@@ -23,8 +24,8 @@
 			TEXT(                                                                             \
 				"Unexpected internal error: unable to downcast to the correct Publisher type "  \
 				"in FROS2PublisherBarrier::SendMessage. The message will not be sent."));       \
+		return false;                                                                       \
 	}                                                                                     \
-	return;                                                                               \
 }
 
 #define AGX_ASSIGN_ROS2_NATIVE(PubTypeUnreal, PubTypeROS2)                                   \
@@ -66,7 +67,6 @@ bool FROS2PublisherBarrier::HasNative() const
 void FROS2PublisherBarrier::AllocateNative(
 	EAGX_ROS2MessageType InMessageType, const FString& Topic, const FAGX_ROS2Qos& Qos)
 {
-	using namespace StdMsgs;
 	using namespace agxIO::ROS2::stdMsgs;
 
 	MessageType = InMessageType;
@@ -105,7 +105,7 @@ EAGX_ROS2MessageType FROS2PublisherBarrier::GetMessageType() const
 	return MessageType;
 }
 
-void FROS2PublisherBarrier::SendMessage(const FAGX_ROS2Message& Msg) const
+bool FROS2PublisherBarrier::SendMessage(const FAGX_ROS2Message& Msg) const
 {
 	check(HasNative());
 
@@ -114,15 +114,16 @@ void FROS2PublisherBarrier::SendMessage(const FAGX_ROS2Message& Msg) const
 		case EAGX_ROS2MessageType::Invalid:
 			break; // Log error after this switch statement.
 		case EAGX_ROS2MessageType::StdMsgsFloat32:
-			AGX_SEND_ROS2_MSGS(StdMsgs::FPublisherFloat32, FAGX_StdMsgsFloat32)
+			AGX_SEND_ROS2_MSGS(FPublisherFloat32, FAGX_StdMsgsFloat32)
 		case EAGX_ROS2MessageType::StdMsgsInt32:
-			AGX_SEND_ROS2_MSGS(StdMsgs::FPublisherInt32, FAGX_StdMsgsInt32)
+			AGX_SEND_ROS2_MSGS(FPublisherInt32, FAGX_StdMsgsInt32)
 	}
 
 	UE_LOG(
 		LogAGX, Error,
 		TEXT("FROS2PublisherBarrier::SendMessage called on PublisherBarrier with an invalid "
 			 "MessageType. The message will not be sent."));
+	return false;
 }
 
 void FROS2PublisherBarrier::ReleaseNative()

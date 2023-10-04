@@ -12,17 +12,17 @@
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
 
-#include "AGX_ROS2Publisher.generated.h"
+#include "AGX_ROS2PublisherComponent.generated.h"
 
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
-class AGXUNREAL_API UAGX_ROS2Publisher : public USceneComponent
+class AGXUNREAL_API UAGX_ROS2PublisherComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
 public:
-	UAGX_ROS2Publisher();
+	UAGX_ROS2PublisherComponent();
 
 	/**
 	 * Struct containing Quality of Service (QOS) settings.
@@ -35,11 +35,11 @@ public:
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX ROS2", Meta = (DisplayName = "Send std_msgs::Float32"))
-	void SendStdMsgsFloat32(const FAGX_StdMsgsFloat32& Message, const FString& Topic);
+	bool SendStdMsgsFloat32(const FAGX_StdMsgsFloat32& Message, const FString& Topic);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX ROS2", Meta = (DisplayName = "Send std_msgs::Int32"))
-	void SendStdMsgsInt32(const FAGX_StdMsgsInt32& Message, const FString& Topic);
+	bool SendStdMsgsInt32(const FAGX_StdMsgsInt32& Message, const FString& Topic);
 
 private:
 	TMap<FString, FROS2PublisherBarrier> NativeBarriers;

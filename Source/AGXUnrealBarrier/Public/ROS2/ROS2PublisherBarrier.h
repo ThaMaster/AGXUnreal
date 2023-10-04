@@ -32,7 +32,7 @@ public:
 	void ReleaseNative();
 
 	EAGX_ROS2MessageType GetMessageType() const;
-	void SendMessage(const FAGX_ROS2Message& Msg) const;
+	bool SendMessage(const FAGX_ROS2Message& Msg) const;
 
 private:
 	FROS2PublisherBarrier(const FROS2PublisherBarrier&) = delete;
