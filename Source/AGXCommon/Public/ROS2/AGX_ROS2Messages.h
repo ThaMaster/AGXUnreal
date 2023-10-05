@@ -478,7 +478,7 @@ struct AGXCOMMON_API FAGX_GeometryMsgsAccelWithCovariance : public FAGX_ROS2Mess
 	FAGX_GeometryMsgsAccel Accel;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<int32> Covariance; // Static arrays not supported by Blueprints.
+	TArray<double> Covariance; // Static arrays not supported by Blueprints.
 };
 
 USTRUCT(BlueprintType)
