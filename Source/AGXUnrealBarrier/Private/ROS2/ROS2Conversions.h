@@ -107,11 +107,37 @@ FAGX_AgxMsgsAny Convert(const agxIO::ROS2::agxMsgs::Any& InMsg)
 FAGX_AgxMsgsAnySequence Convert(const agxIO::ROS2::agxMsgs::AnySequence& InMsg)
 {
 	FAGX_AgxMsgsAnySequence Msg;
-	Msg.Data.SetNum(InMsg.data.size());
 
+	Msg.Data.SetNum(InMsg.data.size());
 	for (int32 i = 0; i < InMsg.data.size(); ++i)
 	{
 		Msg.Data[i] = Convert(InMsg.data[i]);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::agxMsgs::Any Convert(const FAGX_AgxMsgsAny& InMsg)
+{
+	agxIO::ROS2::agxMsgs::Any Msg;
+
+	Msg.data.reserve(InMsg.Data.Num());
+	for (const auto& Element : InMsg.Data)
+	{
+		Msg.data.push_back(Element);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::agxMsgs::AnySequence Convert(const FAGX_AgxMsgsAnySequence& InMsg)
+{
+	agxIO::ROS2::agxMsgs::AnySequence Msg;
+
+	Msg.data.reserve(InMsg.Data.Num());
+	for (const auto& AnyElement : InMsg.Data)
+	{
+		Msg.data.emplace_back(Convert(AnyElement));
 	}
 
 	return Msg;
@@ -137,6 +163,22 @@ FAGX_BuiltinInterfacesDuration Convert(const agxIO::ROS2::builtinInterfaces::Dur
 	return Msg;
 }
 
+agxIO::ROS2::builtinInterfaces::Time Convert(const FAGX_BuiltinInterfacesTime& InMsg)
+{
+	agxIO::ROS2::builtinInterfaces::Time Msg;
+	Msg.sec = InMsg.Sec;
+	Msg.nanosec = static_cast<uint32_t>(InMsg.Nanosec);
+	return Msg;
+}
+
+agxIO::ROS2::builtinInterfaces::Duration Convert(const FAGX_BuiltinInterfacesDuration& InMsg)
+{
+	agxIO::ROS2::builtinInterfaces::Duration Msg;
+	Msg.sec = InMsg.Sec;
+	Msg.nanosec = static_cast<uint32_t>(InMsg.Nanosec);
+	return Msg;
+}
+
 //
 // RosgraphMsgs
 //
@@ -145,6 +187,13 @@ FAGX_RosgraphMsgsClock Convert(const agxIO::ROS2::rosgraphMsgs::Clock& InMsg)
 {
 	FAGX_RosgraphMsgsClock Msg;
 	Msg.Clock = Convert(InMsg.clock);
+	return Msg;
+}
+
+agxIO::ROS2::rosgraphMsgs::Clock Convert(const FAGX_RosgraphMsgsClock& InMsg)
+{
+	agxIO::ROS2::rosgraphMsgs::Clock Msg;
+	Msg.clock = Convert(InMsg.Clock);
 	return Msg;
 }
 
@@ -451,6 +500,306 @@ FAGX_StdMsgsHeader Convert(const agxIO::ROS2::stdMsgs::Header& InMsg)
 	return Msg;
 }
 
+agxIO::ROS2::stdMsgs::MultiArrayDimension Convert(const FAGX_StdMsgsMultiArrayDimension& InMsg)
+{
+	agxIO::ROS2::stdMsgs::MultiArrayDimension Msg;
+	Msg.label = TCHAR_TO_UTF8(*InMsg.Label);
+	Msg.size = static_cast<uint32_t>(InMsg.Size);
+	Msg.stride = static_cast<uint32_t>(InMsg.Stride);
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::MultiArrayLayout Convert(const FAGX_StdMsgsMultiArrayLayout& InMsg)
+{
+	agxIO::ROS2::stdMsgs::MultiArrayLayout Msg;
+	Msg.dim.reserve(InMsg.Dim.Num());
+
+	for (const auto& Dimension : InMsg.Dim)
+	{
+		Msg.dim.emplace_back(Convert(Dimension));
+	}
+
+	Msg.data_offset = static_cast<uint32_t>(InMsg.DataOffset);
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Bool Convert(const FAGX_StdMsgsBool& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Bool Msg;
+	Msg.data = InMsg.Data;
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Byte Convert(const FAGX_StdMsgsByte& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Byte Msg;
+	Msg.data = InMsg.Data;
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::ByteMultiArray Convert(const FAGX_StdMsgsByteMultiArray& InMsg)
+{
+	agxIO::ROS2::stdMsgs::ByteMultiArray Msg;
+	Msg.layout = Convert(InMsg.Layout);
+	Msg.data.reserve(InMsg.Data.Num());
+
+	for (const auto& ByteElement : InMsg.Data)
+	{
+		Msg.data.push_back(ByteElement);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Char Convert(const FAGX_StdMsgsChar& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Char Msg;
+	Msg.data = InMsg.Data;
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::ColorRGBA Convert(const FAGX_StdMsgsColorRGBA& InMsg)
+{
+	agxIO::ROS2::stdMsgs::ColorRGBA Msg;
+	Msg.r = InMsg.R;
+	Msg.g = InMsg.G;
+	Msg.b = InMsg.B;
+	Msg.a = InMsg.A;
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Empty Convert(const FAGX_StdMsgsEmpty& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Empty Msg;
+	Msg.structure_needs_at_least_one_member = InMsg.StructureNeedsAtLeastOneMember;
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Float32 Convert(const FAGX_StdMsgsFloat32& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Float32 Msg;
+	Msg.data = InMsg.Data;
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Float32MultiArray Convert(const FAGX_StdMsgsFloat32MultiArray& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Float32MultiArray Msg;
+	Msg.layout = Convert(InMsg.Layout);
+	Msg.data.reserve(InMsg.Data.Num());
+
+	for (const auto& FloatElement : InMsg.Data)
+	{
+		Msg.data.push_back(FloatElement);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Float64 Convert(const FAGX_StdMsgsFloat64& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Float64 Msg;
+	Msg.data = InMsg.Data;
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Float64MultiArray Convert(const FAGX_StdMsgsFloat64MultiArray& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Float64MultiArray Msg;
+	Msg.layout = Convert(InMsg.Layout);
+	Msg.data.reserve(InMsg.Data.Num());
+
+	for (const auto& DoubleElement : InMsg.Data)
+	{
+		Msg.data.push_back(DoubleElement);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Int16 Convert(const FAGX_StdMsgsInt16& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Int16 Msg;
+	Msg.data = static_cast<int16_t>(InMsg.Data);
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Int16MultiArray Convert(const FAGX_StdMsgsInt16MultiArray& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Int16MultiArray Msg;
+	Msg.layout = Convert(InMsg.Layout);
+	Msg.data.reserve(InMsg.Data.Num());
+
+	for (const auto& Int16Element : InMsg.Data)
+	{
+		Msg.data.push_back(static_cast<int16_t>(Int16Element));
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Int32 Convert(const FAGX_StdMsgsInt32& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Int32 Msg;
+	Msg.data = InMsg.Data;
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Int32MultiArray Convert(const FAGX_StdMsgsInt32MultiArray& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Int32MultiArray Msg;
+	Msg.layout = Convert(InMsg.Layout);
+	Msg.data.reserve(InMsg.Data.Num());
+
+	for (const auto& Int32Element : InMsg.Data)
+	{
+		Msg.data.push_back(Int32Element);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Int64 Convert(const FAGX_StdMsgsInt64& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Int64 Msg;
+	Msg.data = InMsg.Data;
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Int64MultiArray Convert(const FAGX_StdMsgsInt64MultiArray& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Int64MultiArray Msg;
+	Msg.layout = Convert(InMsg.Layout);
+	Msg.data.reserve(InMsg.Data.Num());
+
+	for (const auto& Int64Element : InMsg.Data)
+	{
+		Msg.data.push_back(Int64Element);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Int8 Convert(const FAGX_StdMsgsInt8& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Int8 Msg;
+	Msg.data = static_cast<int8_t>(InMsg.Data);
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Int8MultiArray Convert(const FAGX_StdMsgsInt8MultiArray& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Int8MultiArray Msg;
+	Msg.layout = Convert(InMsg.Layout);
+	Msg.data.reserve(InMsg.Data.Num());
+
+	for (const auto& Int8Element : InMsg.Data)
+	{
+		Msg.data.push_back(static_cast<int8_t>(Int8Element));
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::String Convert(const FAGX_StdMsgsString& InMsg)
+{
+	agxIO::ROS2::stdMsgs::String Msg;
+	Msg.data = TCHAR_TO_UTF8(*InMsg.Data);
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::UInt16 Convert(const FAGX_StdMsgsUInt16& InMsg)
+{
+	agxIO::ROS2::stdMsgs::UInt16 Msg;
+	Msg.data = static_cast<uint16_t>(InMsg.Data);
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::UInt16MultiArray Convert(const FAGX_StdMsgsUInt16MultiArray& InMsg)
+{
+	agxIO::ROS2::stdMsgs::UInt16MultiArray Msg;
+	Msg.layout = Convert(InMsg.Layout);
+	Msg.data.reserve(InMsg.Data.Num());
+
+	for (const auto& UInt16Element : InMsg.Data)
+	{
+		Msg.data.push_back(static_cast<uint16_t>(UInt16Element));
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::UInt32 Convert(const FAGX_StdMsgsUInt32& InMsg)
+{
+	agxIO::ROS2::stdMsgs::UInt32 Msg;
+	Msg.data = static_cast<uint32_t>(InMsg.Data);
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::UInt32MultiArray Convert(const FAGX_StdMsgsUInt32MultiArray& InMsg)
+{
+	agxIO::ROS2::stdMsgs::UInt32MultiArray Msg;
+	Msg.layout = Convert(InMsg.Layout);
+	Msg.data.reserve(InMsg.Data.Num());
+
+	for (const auto& UInt32Element : InMsg.Data)
+	{
+		Msg.data.push_back(static_cast<uint32_t>(UInt32Element));
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::UInt64 Convert(const FAGX_StdMsgsUInt64& InMsg)
+{
+	agxIO::ROS2::stdMsgs::UInt64 Msg;
+	Msg.data = static_cast<uint64_t>(InMsg.Data);
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::UInt64MultiArray Convert(const FAGX_StdMsgsUInt64MultiArray& InMsg)
+{
+	agxIO::ROS2::stdMsgs::UInt64MultiArray Msg;
+	Msg.layout = Convert(InMsg.Layout);
+	Msg.data.reserve(InMsg.Data.Num());
+
+	for (const auto& UInt64Element : InMsg.Data)
+	{
+		Msg.data.push_back(static_cast<uint64_t>(UInt64Element));
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::UInt8 Convert(const FAGX_StdMsgsUInt8& InMsg)
+{
+	agxIO::ROS2::stdMsgs::UInt8 Msg;
+	Msg.data = InMsg.Data;
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::UInt8MultiArray Convert(const FAGX_StdMsgsUInt8MultiArray& InMsg)
+{
+	agxIO::ROS2::stdMsgs::UInt8MultiArray Msg;
+	Msg.layout = Convert(InMsg.Layout);
+	Msg.data.reserve(InMsg.Data.Num());
+
+	for (const auto& UInt8Element : InMsg.Data)
+	{
+		Msg.data.push_back(UInt8Element);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::stdMsgs::Header Convert(const FAGX_StdMsgsHeader& InMsg)
+{
+	agxIO::ROS2::stdMsgs::Header Msg;
+	Msg.stamp = Convert(InMsg.Stamp);
+	Msg.frame_id = TCHAR_TO_UTF8(*InMsg.FrameId);
+	return Msg;
+}
+
 //
 // GeometryMsgs
 //
@@ -730,6 +1079,275 @@ FAGX_GeometryMsgsWrenchStamped Convert(const agxIO::ROS2::geometryMsgs::WrenchSt
 	return Msg;
 }
 
+agxIO::ROS2::geometryMsgs::Vector3 Convert(const FAGX_GeometryMsgsVector3& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Vector3 Msg;
+	Msg.x = InMsg.X;
+	Msg.y = InMsg.Y;
+	Msg.z = InMsg.Z;
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::Quaternion Convert(const FAGX_GeometryMsgsQuaternion& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Quaternion Msg;
+	Msg.x = InMsg.X;
+	Msg.y = InMsg.Y;
+	Msg.z = InMsg.Z;
+	Msg.w = InMsg.W;
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::Accel Convert(const FAGX_GeometryMsgsAccel& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Accel Msg;
+	Msg.linear = Convert(InMsg.Linear);
+	Msg.angular = Convert(InMsg.Angular);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::AccelStamped Convert(const FAGX_GeometryMsgsAccelStamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::AccelStamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.accel = Convert(InMsg.Accel);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::AccelWithCovariance Convert(
+	const FAGX_GeometryMsgsAccelWithCovariance& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::AccelWithCovariance Msg;
+	Msg.accel = Convert(InMsg.Accel);
+
+	const int32 Max = std::min(InMsg.Covariance.Num(), 36);
+	for (int32 i = 0; i < Max; i++)
+		Msg.covariance[i] = InMsg.Covariance[i];
+
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::AccelWithCovarianceStamped Convert(
+	const FAGX_GeometryMsgsAccelWithCovarianceStamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::AccelWithCovarianceStamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.accel = Convert(InMsg.Accel);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::Inertia Convert(const FAGX_GeometryMsgsInertia& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Inertia Msg;
+	Msg.m = InMsg.M;
+	Msg.com = Convert(InMsg.COM);
+	Msg.ixx = InMsg.Ixx;
+	Msg.ixy = InMsg.Ixy;
+	Msg.ixz = InMsg.Ixz;
+	Msg.iyy = InMsg.Iyy;
+	Msg.iyz = InMsg.Iyz;
+	Msg.izz = InMsg.Izz;
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::InertiaStamped Convert(const FAGX_GeometryMsgsInertiaStamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::InertiaStamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.inertia = Convert(InMsg.Inertia);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::Point Convert(const FAGX_GeometryMsgsPoint& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Point Msg;
+	Msg.x = InMsg.X;
+	Msg.y = InMsg.Y;
+	Msg.z = InMsg.Z;
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::Point32 Convert(const FAGX_GeometryMsgsPoint32& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Point32 Msg;
+	Msg.x = InMsg.X;
+	Msg.y = InMsg.Y;
+	Msg.z = InMsg.Z;
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::PointStamped Convert(const FAGX_GeometryMsgsPointStamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::PointStamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.point = Convert(InMsg.Point);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::Polygon Convert(const FAGX_GeometryMsgsPolygon& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Polygon Msg;
+	for (const auto& Point32Element : InMsg.Points)
+	{
+		Msg.points.push_back(Convert(Point32Element));
+	}
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::PolygonStamped Convert(const FAGX_GeometryMsgsPolygonStamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::PolygonStamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.polygon = Convert(InMsg.Polygon);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::Pose Convert(const FAGX_GeometryMsgsPose& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Pose Msg;
+	Msg.position = Convert(InMsg.Position);
+	Msg.orientation = Convert(InMsg.Orientation);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::Pose2D Convert(const FAGX_GeometryMsgsPose2D& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Pose2D Msg;
+	Msg.x = InMsg.X;
+	Msg.y = InMsg.Y;
+	Msg.theta = InMsg.Theta;
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::PoseArray Convert(const FAGX_GeometryMsgsPoseArray& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::PoseArray Msg;
+	Msg.header = Convert(InMsg.Header);
+	for (const auto& PoseElement : InMsg.Poses)
+	{
+		Msg.poses.push_back(Convert(PoseElement));
+	}
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::PoseStamped Convert(const FAGX_GeometryMsgsPoseStamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::PoseStamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.pose = Convert(InMsg.Pose);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::PoseWithCovariance Convert(
+	const FAGX_GeometryMsgsPoseWithCovariance& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::PoseWithCovariance Msg;
+	Msg.pose = Convert(InMsg.Pose);
+
+	const int32 Max = std::min(InMsg.Covariance.Num(), 36);
+	for (int32 i = 0; i < Max; i++)
+		Msg.covariance[i] = InMsg.Covariance[i];
+
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::PoseWithCovarianceStamped Convert(
+	const FAGX_GeometryMsgsPoseWithCovarianceStamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::PoseWithCovarianceStamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.pose = Convert(InMsg.Pose);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::QuaternionStamped Convert(
+	const FAGX_GeometryMsgsQuaternionStamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::QuaternionStamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.quaternion = Convert(InMsg.Quaternion);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::Transform Convert(const FAGX_GeometryMsgsTransform& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Transform Msg;
+	Msg.translation = Convert(InMsg.Translation);
+	Msg.rotation = Convert(InMsg.Rotation);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::TransformStamped Convert(const FAGX_GeometryMsgsTransformStamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::TransformStamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.child_frame_id = TCHAR_TO_UTF8(*InMsg.ChildFrameId);
+	Msg.transform = Convert(InMsg.Transform);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::Twist Convert(const FAGX_GeometryMsgsTwist& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Twist Msg;
+	Msg.linear = Convert(InMsg.Linear);
+	Msg.angular = Convert(InMsg.Angular);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::TwistStamped Convert(const FAGX_GeometryMsgsTwistStamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::TwistStamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.twist = Convert(InMsg.Twist);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::TwistWithCovariance Convert(
+	const FAGX_GeometryMsgsTwistWithCovariance& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::TwistWithCovariance Msg;
+	Msg.twist = Convert(InMsg.Twist);
+
+	const int32 Max = std::min(InMsg.Covariance.Num(), 36);
+	for (int32 i = 0; i < Max; i++)
+		Msg.covariance[i] = InMsg.Covariance[i];
+
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::TwistWithCovarianceStamped Convert(
+	const FAGX_GeometryMsgsTwistWithCovarianceStamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::TwistWithCovarianceStamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.twist = Convert(InMsg.Twist);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::Vector3Stamped Convert(const FAGX_GeometryMsgsVector3Stamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Vector3Stamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.vector = Convert(InMsg.Vector);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::Wrench Convert(const FAGX_GeometryMsgsWrench& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::Wrench Msg;
+	Msg.force = Convert(InMsg.Force);
+	Msg.torque = Convert(InMsg.Torque);
+	return Msg;
+}
+
+agxIO::ROS2::geometryMsgs::WrenchStamped Convert(const FAGX_GeometryMsgsWrenchStamped& InMsg)
+{
+	agxIO::ROS2::geometryMsgs::WrenchStamped Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.wrench = Convert(InMsg.Wrench);
+	return Msg;
+}
+
 //
 // SensorMsgs
 //
@@ -966,16 +1584,748 @@ FAGX_SensorMsgsMagneticField Convert(const agxIO::ROS2::sensorMsgs::MagneticFiel
 	return Msg;
 }
 
-agxIO::ROS2::stdMsgs::Float32 Convert(const FAGX_StdMsgsFloat32& InMsg)
+FAGX_SensorMsgsMultiDOFJointState Convert(const agxIO::ROS2::sensorMsgs::MultiDOFJointState& InMsg)
 {
-	agxIO::ROS2::stdMsgs::Float32 Msg;
-	Msg.data = InMsg.Data;
+	FAGX_SensorMsgsMultiDOFJointState Msg;
+
+	Msg.Header = Convert(InMsg.header);
+
+	Msg.JointNames.Reserve(InMsg.joint_names.size());
+	for (const auto& JointName : InMsg.joint_names)
+	{
+		Msg.JointNames.Add(JointName.c_str());
+	}
+
+	Msg.Transforms.Reserve(InMsg.transforms.size());
+	for (const auto& Transform : InMsg.transforms)
+	{
+		Msg.Transforms.Add(Convert(Transform));
+	}
+
+	Msg.Twist.Reserve(InMsg.twist.size());
+	for (const auto& Twist : InMsg.twist)
+	{
+		Msg.Twist.Add(Convert(Twist));
+	}
+
+	Msg.Wrench.Reserve(InMsg.wrench.size());
+	for (const auto& Wrench : InMsg.wrench)
+	{
+		Msg.Wrench.Add(Convert(Wrench));
+	}
+
 	return Msg;
 }
 
-agxIO::ROS2::stdMsgs::Int32 Convert(const FAGX_StdMsgsInt32& InMsg)
+FAGX_SensorMsgsMultiEchoLaserScan Convert(const agxIO::ROS2::sensorMsgs::MultiEchoLaserScan& InMsg)
 {
-	agxIO::ROS2::stdMsgs::Int32 Msg;
-	Msg.data = InMsg.Data;
+	FAGX_SensorMsgsMultiEchoLaserScan Msg;
+
+	Msg.Header = Convert(InMsg.header);
+	Msg.AngleMin = InMsg.angle_min;
+	Msg.AngleMax = InMsg.angle_max;
+	Msg.AngleIncrement = InMsg.angle_increment;
+	Msg.TimeIncrement = InMsg.time_increment;
+	Msg.ScanTime = InMsg.scan_time;
+	Msg.RangeMin = InMsg.range_min;
+	Msg.RangeMax = InMsg.range_max;
+
+	Msg.Ranges.Reserve(InMsg.ranges.size());
+	for (const auto& Range : InMsg.ranges)
+	{
+		Msg.Ranges.Add(Convert(Range));
+	}
+
+	Msg.Intensities.Reserve(InMsg.intensities.size());
+	for (const auto& Intensity : InMsg.intensities)
+	{
+		Msg.Intensities.Add(Convert(Intensity));
+	}
+
+	return Msg;
+}
+
+FAGX_SensorMsgsNavSatStatus Convert(const agxIO::ROS2::sensorMsgs::NavSatStatus& InMsg)
+{
+	FAGX_SensorMsgsNavSatStatus Msg;
+
+	Msg.Status = static_cast<uint8>(InMsg.status);
+	Msg.Service = static_cast<int32>(InMsg.service);
+
+	return Msg;
+}
+
+FAGX_SensorMsgsNavSatFix Convert(const agxIO::ROS2::sensorMsgs::NavSatFix& InMsg)
+{
+	FAGX_SensorMsgsNavSatFix Msg;
+
+	Msg.Header = Convert(InMsg.header);
+	Msg.Status = Convert(InMsg.status);
+	Msg.Latitude = InMsg.latitude;
+	Msg.Longitude = InMsg.longitude;
+	Msg.Altitude = InMsg.altitude;
+
+	Msg.PositionCovariance.Reserve(9);
+	for (int i = 0; i < 9; ++i)
+	{
+		Msg.PositionCovariance.Add(InMsg.position_covariance[i]);
+	}
+
+	Msg.PositionCovarianceType = InMsg.position_covariance_type;
+
+	return Msg;
+}
+
+FAGX_SensorMsgsPointCloud Convert(const agxIO::ROS2::sensorMsgs::PointCloud& InMsg)
+{
+	FAGX_SensorMsgsPointCloud Msg;
+
+	Msg.Header = Convert(InMsg.header);
+
+	Msg.Points.Reserve(InMsg.points.size());
+	for (const auto& Point : InMsg.points)
+	{
+		Msg.Points.Add(Convert(Point));
+	}
+
+	Msg.Channels.Reserve(InMsg.channels.size());
+	for (const auto& Channel : InMsg.channels)
+	{
+		Msg.Channels.Add(Convert(Channel));
+	}
+
+	return Msg;
+}
+
+FAGX_SensorMsgsPointField Convert(const agxIO::ROS2::sensorMsgs::PointField& InMsg)
+{
+	FAGX_SensorMsgsPointField Msg;
+
+	Msg.Name = InMsg.name.c_str();
+	Msg.Offset = static_cast<int32>(InMsg.offset);
+	Msg.Datatype = InMsg.datatype;
+	Msg.Count = static_cast<int32>(InMsg.count);
+
+	return Msg;
+}
+
+FAGX_SensorMsgsPointCloud2 Convert(const agxIO::ROS2::sensorMsgs::PointCloud2& InMsg)
+{
+	FAGX_SensorMsgsPointCloud2 Msg;
+
+	Msg.Header = Convert(InMsg.header);
+	Msg.Height = static_cast<int32>(InMsg.height);
+	Msg.Width = static_cast<int32>(InMsg.width);
+
+	Msg.Fields.Reserve(InMsg.fields.size());
+	for (const auto& Field : InMsg.fields)
+	{
+		Msg.Fields.Add(Convert(Field));
+	}
+
+	Msg.IsBigendian = InMsg.is_bigendian;
+	Msg.PointStep = static_cast<int32>(InMsg.point_step);
+	Msg.RowStep = static_cast<int32>(InMsg.row_step);
+
+	Msg.Data.Reserve(InMsg.data.size());
+	for (const auto& Byte : InMsg.data)
+	{
+		Msg.Data.Add(Byte);
+	}
+
+	Msg.IsDense = InMsg.is_dense;
+
+	return Msg;
+}
+
+FAGX_SensorMsgsRange Convert(const agxIO::ROS2::sensorMsgs::Range& InMsg)
+{
+	FAGX_SensorMsgsRange Msg;
+
+	Msg.Header = Convert(InMsg.header);
+	Msg.RadiationType = InMsg.radiation_type;
+	Msg.FieldOfView = InMsg.field_of_view;
+	Msg.MinRange = InMsg.min_range;
+	Msg.MaxRange = InMsg.max_range;
+	Msg.Range = InMsg.range;
+
+	return Msg;
+}
+
+FAGX_SensorMsgsRegionOfInterest Convert(const agxIO::ROS2::sensorMsgs::RegionOfInterest& InMsg)
+{
+	FAGX_SensorMsgsRegionOfInterest Msg;
+
+	Msg.XOffset = static_cast<int32>(InMsg.x_offset);
+	Msg.YOffset = static_cast<int32>(InMsg.y_offset);
+	Msg.Height = static_cast<int32>(InMsg.height);
+	Msg.Width = static_cast<int32>(InMsg.width);
+	Msg.DoRectify = InMsg.do_rectify;
+
+	return Msg;
+}
+
+FAGX_SensorMsgsCameraInfo Convert(const agxIO::ROS2::sensorMsgs::CameraInfo& InMsg)
+{
+	FAGX_SensorMsgsCameraInfo Msg;
+
+	Msg.Header = Convert(InMsg.header);
+	Msg.Height = static_cast<int32>(InMsg.height);
+	Msg.Width = static_cast<int32>(InMsg.width);
+	Msg.DistortionModel = InMsg.distortion_model.c_str();
+
+	Msg.D.Reserve(InMsg.d.size());
+	for (const auto& D : InMsg.d)
+	{
+		Msg.D.Add(D);
+	}
+
+	for (int i = 0; i < 9; ++i)
+	{
+		Msg.K.Add(InMsg.k[i]);
+		Msg.R.Add(InMsg.r[i]);
+	}
+
+	for (int i = 0; i < 12; ++i)
+	{
+		Msg.P.Add(InMsg.p[i]);
+	}
+
+	Msg.BinningX = static_cast<int32>(InMsg.binning_x);
+	Msg.BinningY = static_cast<int32>(InMsg.binning_y);
+	Msg.ROI = Convert(InMsg.roi);
+
+	return Msg;
+}
+
+FAGX_SensorMsgsRelativeHumidity Convert(const agxIO::ROS2::sensorMsgs::RelativeHumidity& InMsg)
+{
+	FAGX_SensorMsgsRelativeHumidity Msg;
+
+	Msg.Header = Convert(InMsg.header);
+	Msg.RelativeHumidity = InMsg.relative_humidity;
+	Msg.Variance = InMsg.variance;
+
+	return Msg;
+}
+
+FAGX_SensorMsgsTemperature Convert(const agxIO::ROS2::sensorMsgs::Temperature& InMsg)
+{
+	FAGX_SensorMsgsTemperature Msg;
+
+	Msg.Header = Convert(InMsg.header);
+	Msg.Temperature = InMsg.temperature;
+	Msg.Variance = InMsg.variance;
+
+	return Msg;
+}
+
+FAGX_SensorMsgsTimeReference Convert(const agxIO::ROS2::sensorMsgs::TimeReference& InMsg)
+{
+	FAGX_SensorMsgsTimeReference Msg;
+
+	Msg.Header = Convert(InMsg.header);
+	Msg.TimeRef = Convert(InMsg.time_ref);
+	Msg.Source = InMsg.source.c_str();
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::BatteryState Convert(const FAGX_SensorMsgsBatteryState& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::BatteryState Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.voltage = InMsg.Voltage;
+	Msg.temperature = InMsg.Temperature;
+	Msg.current = InMsg.Current;
+	Msg.charge = InMsg.Charge;
+	Msg.capacity = InMsg.Capacity;
+	Msg.design_capacity = InMsg.DesignCapacity;
+	Msg.percentage = InMsg.Percentage;
+	Msg.power_supply_status = InMsg.PowerSupplyStatus;
+	Msg.power_supply_health = InMsg.PowerSupplyHealth;
+	Msg.power_supply_technology = InMsg.PowerSupplyTechnology;
+	Msg.present = InMsg.Present;
+
+	Msg.cell_voltage.reserve(InMsg.CellVoltage.Num());
+	for (const auto& CV : InMsg.CellVoltage)
+		Msg.cell_voltage.push_back(CV);
+
+	Msg.cell_temperature.reserve(InMsg.CellTemperature.Num());
+	for (const auto& CT : InMsg.CellTemperature)
+		Msg.cell_temperature.push_back(CT);
+
+	Msg.location = TCHAR_TO_UTF8(*InMsg.Location);
+	Msg.serial_number = TCHAR_TO_UTF8(*InMsg.SerialNumber);
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::ChannelFloat32 Convert(const FAGX_SensorMsgsChannelFloat32& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::ChannelFloat32 Msg;
+	Msg.name = TCHAR_TO_UTF8(*InMsg.Name);
+
+	Msg.values.reserve(InMsg.Values.Num());
+	for (float Value : InMsg.Values)
+	{
+		Msg.values.push_back(Value);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::CompressedImage Convert(const FAGX_SensorMsgsCompressedImage& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::CompressedImage Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.format = TCHAR_TO_UTF8(*InMsg.Format);
+
+	Msg.data.reserve(InMsg.Data.Num());
+	for (uint8 Value : InMsg.Data)
+	{
+		Msg.data.push_back(Value);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::FluidPressure Convert(const FAGX_SensorMsgsFluidPressure& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::FluidPressure Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.fluid_pressure = InMsg.FluidPressure;
+	Msg.variance = InMsg.Variance;
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::Illuminance Convert(const FAGX_SensorMsgsIlluminance& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::Illuminance Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.illuminance = InMsg.Illuminance;
+	Msg.variance = InMsg.Variance;
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::Image Convert(const FAGX_SensorMsgsImage& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::Image Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.height = static_cast<uint32_t>(InMsg.Height);
+	Msg.width = static_cast<uint32_t>(InMsg.Width);
+	Msg.encoding = TCHAR_TO_UTF8(*InMsg.Encoding);
+	Msg.is_bigendian = InMsg.IsBigendian;
+	Msg.step = static_cast<uint32_t>(InMsg.Step);
+
+	Msg.data.reserve(InMsg.Data.Num());
+	for (uint8 Value : InMsg.Data)
+	{
+		Msg.data.push_back(Value);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::Imu Convert(const FAGX_SensorMsgsImu& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::Imu Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.orientation = Convert(InMsg.Orientation);
+
+	{
+		const int32 MaxOc = std::min(9, InMsg.OrientationCovariance.Num());
+		for (int i = 0; i < MaxOc; i++)
+			Msg.orientation_covariance[i] = InMsg.OrientationCovariance[i];
+	}
+
+	Msg.angular_velocity = Convert(InMsg.AngularVelocity);
+
+	{
+		const int32 MaxAvc = std::min(9, InMsg.AngularVelocityCovariance.Num());
+		for (int i = 0; i < MaxAvc; i++)
+			Msg.angular_velocity_covariance[i] = InMsg.AngularVelocityCovariance[i];
+	}
+
+	Msg.linear_acceleration = Convert(InMsg.LinearAcceleration);
+
+	{
+		const int32 MaxLac = std::min(9, InMsg.LinearAccelerationCovariance.Num());
+		for (int i = 0; i < MaxLac; i++)
+			Msg.linear_acceleration_covariance[i] = InMsg.LinearAccelerationCovariance[i];
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::JointState Convert(const FAGX_SensorMsgsJointState& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::JointState Msg;
+	Msg.header = Convert(InMsg.Header);
+
+	Msg.name.reserve(InMsg.Name.Num());
+	for (const FString& Value : InMsg.Name)
+	{
+		Msg.name.push_back(TCHAR_TO_UTF8(*Value));
+	}
+
+	Msg.position.reserve(InMsg.Position.Num());
+	for (double Value : InMsg.Position)
+	{
+		Msg.position.push_back(Value);
+	}
+
+	Msg.velocity.reserve(InMsg.Velocity.Num());
+	for (double Value : InMsg.Velocity)
+	{
+		Msg.velocity.push_back(Value);
+	}
+
+	Msg.effort.reserve(InMsg.Effort.Num());
+	for (double Value : InMsg.Effort)
+	{
+		Msg.effort.push_back(Value);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::Joy Convert(const FAGX_SensorMsgsJoy& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::Joy Msg;
+	Msg.header = Convert(InMsg.Header);
+
+	Msg.axes.reserve(InMsg.Axes.Num());
+	for (float Value : InMsg.Axes)
+	{
+		Msg.axes.push_back(Value);
+	}
+
+	Msg.buttons.reserve(InMsg.Buttons.Num());
+	for (int32 Value : InMsg.Buttons)
+	{
+		Msg.buttons.push_back(Value);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::JoyFeedback Convert(const FAGX_SensorMsgsJoyFeedback& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::JoyFeedback Msg;
+	Msg.type = InMsg.Type;
+	Msg.id = InMsg.Id;
+	Msg.intensity = InMsg.Intensity;
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::JoyFeedbackArray Convert(const FAGX_SensorMsgsJoyFeedbackArray& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::JoyFeedbackArray Msg;
+
+	Msg.array.reserve(InMsg.Array.Num());
+	for (const FAGX_SensorMsgsJoyFeedback& Value : InMsg.Array)
+	{
+		Msg.array.push_back(Convert(Value));
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::LaserEcho Convert(const FAGX_SensorMsgsLaserEcho& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::LaserEcho Msg;
+
+	Msg.echoes.reserve(InMsg.Echoes.Num());
+	for (float Value : InMsg.Echoes)
+	{
+		Msg.echoes.push_back(Value);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::LaserScan Convert(const FAGX_SensorMsgsLaserScan& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::LaserScan Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.angle_min = InMsg.AngleMin;
+	Msg.angle_max = InMsg.AngleMax;
+	Msg.angle_increment = InMsg.AngleIncrement;
+	Msg.time_increment = InMsg.TimeIncrement;
+	Msg.scan_time = InMsg.ScanTime;
+	Msg.range_min = InMsg.RangeMin;
+	Msg.range_max = InMsg.RangeMax;
+
+	Msg.ranges.reserve(InMsg.Ranges.Num());
+	for (float Value : InMsg.Ranges)
+	{
+		Msg.ranges.push_back(Value);
+	}
+
+	Msg.intensities.reserve(InMsg.Intensities.Num());
+	for (float Value : InMsg.Intensities)
+	{
+		Msg.intensities.push_back(Value);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::MagneticField Convert(const FAGX_SensorMsgsMagneticField& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::MagneticField Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.magnetic_field = Convert(InMsg.MagneticField);
+
+	{
+		const int32 Max = std::min(9, InMsg.MagneticFieldCovariance.Num());
+		for (int i = 0; i < Max; i++)
+			Msg.magnetic_field_covariance[i] = InMsg.MagneticFieldCovariance[i];
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::MultiDOFJointState Convert(const FAGX_SensorMsgsMultiDOFJointState& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::MultiDOFJointState Msg;
+	Msg.header = Convert(InMsg.Header);
+
+	Msg.joint_names.reserve(InMsg.JointNames.Num());
+	for (const FString& Value : InMsg.JointNames)
+	{
+		Msg.joint_names.push_back(TCHAR_TO_UTF8(*Value));
+	}
+
+	Msg.transforms.reserve(InMsg.Transforms.Num());
+	for (const FAGX_GeometryMsgsTransform& Value : InMsg.Transforms)
+	{
+		Msg.transforms.push_back(Convert(Value));
+	}
+
+	Msg.twist.reserve(InMsg.Twist.Num());
+	for (const FAGX_GeometryMsgsTwist& Value : InMsg.Twist)
+	{
+		Msg.twist.push_back(Convert(Value));
+	}
+
+	Msg.wrench.reserve(InMsg.Wrench.Num());
+	for (const FAGX_GeometryMsgsWrench& Value : InMsg.Wrench)
+	{
+		Msg.wrench.push_back(Convert(Value));
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::MultiEchoLaserScan Convert(const FAGX_SensorMsgsMultiEchoLaserScan& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::MultiEchoLaserScan Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.angle_min = InMsg.AngleMin;
+	Msg.angle_max = InMsg.AngleMax;
+	Msg.angle_increment = InMsg.AngleIncrement;
+	Msg.time_increment = InMsg.TimeIncrement;
+	Msg.scan_time = InMsg.ScanTime;
+	Msg.range_min = InMsg.RangeMin;
+	Msg.range_max = InMsg.RangeMax;
+
+	Msg.ranges.reserve(InMsg.Ranges.Num());
+	for (const FAGX_SensorMsgsLaserEcho& Value : InMsg.Ranges)
+	{
+		Msg.ranges.push_back(Convert(Value));
+	}
+
+	Msg.intensities.reserve(InMsg.Intensities.Num());
+	for (const FAGX_SensorMsgsLaserEcho& Value : InMsg.Intensities)
+	{
+		Msg.intensities.push_back(Convert(Value));
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::NavSatStatus Convert(const FAGX_SensorMsgsNavSatStatus& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::NavSatStatus Msg;
+	Msg.status = InMsg.Status;
+	Msg.service = static_cast<uint16_t>(InMsg.Service);
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::NavSatFix Convert(const FAGX_SensorMsgsNavSatFix& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::NavSatFix Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.status = Convert(InMsg.Status);
+	Msg.latitude = InMsg.Latitude;
+	Msg.longitude = InMsg.Longitude;
+	Msg.altitude = InMsg.Altitude;
+
+	{
+		const int32 Max = std::min(9, InMsg.PositionCovariance.Num());
+		for (int i = 0; i < Max; i++)
+			Msg.position_covariance[i] = InMsg.PositionCovariance[i];
+	}
+
+	Msg.position_covariance_type = InMsg.PositionCovarianceType;
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::PointCloud Convert(const FAGX_SensorMsgsPointCloud& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::PointCloud Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.points.reserve(InMsg.Points.Num());
+	Msg.channels.reserve(InMsg.Channels.Num());
+
+	for (const FAGX_GeometryMsgsPoint32& Value : InMsg.Points)
+	{
+		Msg.points.push_back(Convert(Value));
+	}
+
+	for (const FAGX_SensorMsgsChannelFloat32& Value : InMsg.Channels)
+	{
+		Msg.channels.push_back(Convert(Value));
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::PointField Convert(const FAGX_SensorMsgsPointField& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::PointField Msg;
+	Msg.name = TCHAR_TO_UTF8(*InMsg.Name);
+	Msg.offset = static_cast<uint32_t>(InMsg.Offset);
+	Msg.datatype = InMsg.Datatype;
+	Msg.count = static_cast<uint32_t>(InMsg.Count);
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::PointCloud2 Convert(const FAGX_SensorMsgsPointCloud2& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::PointCloud2 Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.height = InMsg.Height;
+	Msg.width = InMsg.Width;
+	Msg.fields.reserve(InMsg.Fields.Num());
+
+	for (const FAGX_SensorMsgsPointField& Value : InMsg.Fields)
+	{
+		Msg.fields.push_back(Convert(Value));
+	}
+
+	Msg.is_bigendian = InMsg.IsBigendian;
+	Msg.point_step = InMsg.PointStep;
+	Msg.row_step = InMsg.RowStep;
+	Msg.is_dense = InMsg.IsDense;
+
+	Msg.data.reserve(InMsg.Data.Num());
+	for (uint8 Value : InMsg.Data)
+	{
+		Msg.data.push_back(Value);
+	}
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::Range Convert(const FAGX_SensorMsgsRange& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::Range Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.radiation_type = InMsg.RadiationType;
+	Msg.field_of_view = InMsg.FieldOfView;
+	Msg.min_range = InMsg.MinRange;
+	Msg.max_range = InMsg.MaxRange;
+	Msg.range = InMsg.Range;
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::RegionOfInterest Convert(const FAGX_SensorMsgsRegionOfInterest& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::RegionOfInterest Msg;
+	Msg.x_offset = InMsg.XOffset;
+	Msg.y_offset = InMsg.YOffset;
+	Msg.height = InMsg.Height;
+	Msg.width = InMsg.Width;
+	Msg.do_rectify = InMsg.DoRectify;
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::CameraInfo Convert(const FAGX_SensorMsgsCameraInfo& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::CameraInfo Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.height = static_cast<uint32_t>(InMsg.Height);
+	Msg.width = static_cast<uint32_t>(InMsg.Width);
+	Msg.distortion_model = TCHAR_TO_UTF8(*InMsg.DistortionModel);
+
+	Msg.d.reserve(InMsg.D.Num());
+	for (double Value : InMsg.D)
+	{
+		Msg.d.push_back(Value);
+	}
+
+	{
+		const int32 Maxk = std::min(InMsg.K.Num(), 9);
+		for (int32 i = 0; i < Maxk; i++)
+			Msg.k[i] = InMsg.K[i];
+	}
+
+	{
+		const int32 Maxr = std::min(InMsg.R.Num(), 9);
+		for (int32 i = 0; i < Maxr; i++)
+			Msg.r[i] = InMsg.R[i];
+	}
+
+	{
+		const int32 Maxp = std::min(InMsg.P.Num(), 12);
+		for (int32 i = 0; i < Maxp; i++)
+			Msg.p[i] = InMsg.P[i];
+	}
+
+	Msg.binning_x = static_cast<uint32_t>(InMsg.BinningX);
+	Msg.binning_y = static_cast<uint32_t>(InMsg.BinningY);
+	Msg.roi = Convert(InMsg.ROI);
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::RelativeHumidity Convert(const FAGX_SensorMsgsRelativeHumidity& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::RelativeHumidity Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.relative_humidity = InMsg.RelativeHumidity;
+	Msg.variance = InMsg.Variance;
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::Temperature Convert(const FAGX_SensorMsgsTemperature& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::Temperature Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.temperature = InMsg.Temperature;
+	Msg.variance = InMsg.Variance;
+
+	return Msg;
+}
+
+agxIO::ROS2::sensorMsgs::TimeReference Convert(const FAGX_SensorMsgsTimeReference& InMsg)
+{
+	agxIO::ROS2::sensorMsgs::TimeReference Msg;
+	Msg.header = Convert(InMsg.Header);
+	Msg.time_ref = Convert(InMsg.TimeRef);
+	Msg.source = TCHAR_TO_UTF8(*InMsg.Source);
+
 	return Msg;
 }
