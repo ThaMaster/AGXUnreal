@@ -94,27 +94,27 @@ agxIO::ROS2::QOS Convert(const FAGX_ROS2Qos& Qos)
 agxIO::ROS2::stdMsgs::Float32 Convert(const FAGX_StdMsgsFloat32& InMsg)
 {
 	agxIO::ROS2::stdMsgs::Float32 Msg;
-	Msg.data = InMsg.data;
+	Msg.data = InMsg.Data;
 	return Msg;
 }
 
 agxIO::ROS2::stdMsgs::Int32 Convert(const FAGX_StdMsgsInt32& InMsg)
 {
 	agxIO::ROS2::stdMsgs::Int32 Msg;
-	Msg.data = InMsg.data;
+	Msg.data = InMsg.Data;
 	return Msg;
 }
 
 FAGX_StdMsgsFloat32 Convert(const agxIO::ROS2::stdMsgs::Float32& InMsg)
 {
 	FAGX_StdMsgsFloat32 Msg;
-	Msg.data = InMsg.data;
+	Msg.Data = InMsg.data;
 	return Msg;
 }
 
 FAGX_StdMsgsInt32 Convert(const agxIO::ROS2::stdMsgs::Int32& InMsg)
 {
 	FAGX_StdMsgsInt32 Msg;
-	Msg.data = InMsg.data;
+	Msg.Data = InMsg.data;
 	return Msg;
 }
