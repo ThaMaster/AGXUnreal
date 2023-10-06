@@ -75,8 +75,6 @@ void FROS2PublisherBarrier::AllocateNative(
 	using namespace agxIO::ROS2::sensorMsgs;
 
 	MessageType = InMessageType;
-	const auto QOSROS2 = Convert(Qos);
-	const auto TopicROS2 = Convert(Topic);
 	switch (InMessageType)
 	{
 		case EAGX_ROS2MessageType::Invalid:
