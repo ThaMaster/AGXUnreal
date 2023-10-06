@@ -7,19 +7,22 @@
 #include "AGXROS2Types.h"
 #include "ROS2/AGX_ROS2Messages.h"
 #include "ROS2/ROS2Conversions.h"
+#include "ROS2/ROS2Utils.h"
 
 // Helper macros to minimize amount of code needed in large switch-statement.
 // clang-format off
 #define AGX_RECEIVE_ROS2_MSGS(SubType, MsgTypeUnreal, MsgTypeROS2)                          \
 {                                                                                           \
-	MsgTypeROS2 MsgROS2;                                                                      \
 	if (auto Sub = dynamic_cast<const SubType*>(Native.get()))                                \
 	{                                                                                         \
-		if (Sub->Native->receiveMessage(MsgROS2))                                               \
+		MsgTypeROS2 MsgAGX;                                                                     \
+		if (Sub->Native->receiveMessage(MsgAGX))                                                \
 		{                                                                                       \
-			*static_cast<MsgTypeUnreal*>(&OutMsg) = Convert(MsgROS2);                             \
+			*static_cast<MsgTypeUnreal*>(&OutMsg) = Convert(MsgAGX);                              \
+			AGX_ROS2Utils::FreeContainers(MsgAGX);                                                \
 			return true;                                                                          \
 		}                                                                                       \
+		AGX_ROS2Utils::FreeContainers(MsgAGX);                                                  \
 	}                                                                                         \
 	else                                                                                      \
 	{                                                                                         \

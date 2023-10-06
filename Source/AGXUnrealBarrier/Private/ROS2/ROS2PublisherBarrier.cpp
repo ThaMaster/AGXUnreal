@@ -7,6 +7,8 @@
 #include "AGXROS2Types.h"
 #include "ROS2/AGX_ROS2Messages.h"
 #include "ROS2/ROS2Conversions.h"
+#include "ROS2/ROS2Utils.h"
+
 
 // Helper macros to minimize amount of code needed in large switch-statement.
 // clang-format off
@@ -14,7 +16,9 @@
 {                                                                                       \
 	if (auto Pub = dynamic_cast<const PubType*>(Native.get()))                            \
 	{                                                                                     \
-		Pub->Native->sendMessage(Convert(*static_cast<const MsgType*>(&Msg)));              \
+		auto MsgAGX = Convert(*static_cast<const MsgType*>(&Msg));                          \
+		Pub->Native->sendMessage(MsgAGX);                                                   \
+		AGX_ROS2Utils::FreeContainers(MsgAGX);                                              \
 		return true;                                                                        \
 	}                                                                                     \
 	else                                                                                  \
