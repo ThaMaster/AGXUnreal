@@ -807,7 +807,10 @@ bool UAGX_ROS2SubscriberComponent::CanEditChange(const FProperty* InProperty) co
 	if (!SuperCanEditChange)
 		return false;
 
-	if (InProperty->GetFName().IsEqual(GET_MEMBER_NAME_CHECKED(UAGX_ROS2SubscriberComponent, Qos)))
+	if (InProperty->GetFName().IsEqual(
+			GET_MEMBER_NAME_CHECKED(UAGX_ROS2SubscriberComponent, Qos)) ||
+		InProperty->GetFName().IsEqual(
+			GET_MEMBER_NAME_CHECKED(UAGX_ROS2SubscriberComponent, DomainID)))
 	{
 		UWorld* World = GetWorld();
 		return World == nullptr || !World->IsGameWorld();

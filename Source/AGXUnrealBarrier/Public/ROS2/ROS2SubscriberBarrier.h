@@ -12,7 +12,6 @@ struct FAGX_ROS2Message;
 struct FAGX_ROS2Qos;
 struct FROS2Subscriber;
 
-
 class AGXUNREALBARRIER_API FROS2SubscriberBarrier
 {
 public:
@@ -24,7 +23,8 @@ public:
 	bool HasNative() const;
 
 	void AllocateNative(
-		EAGX_ROS2MessageType InMessageType, const FString& Topic, const FAGX_ROS2Qos& Qos);
+		EAGX_ROS2MessageType InMessageType, const FString& Topic, const FAGX_ROS2Qos& Qos,
+		uint8 DomainID = 0);
 
 	FROS2Subscriber* GetNative();
 	const FROS2Subscriber* GetNative() const;

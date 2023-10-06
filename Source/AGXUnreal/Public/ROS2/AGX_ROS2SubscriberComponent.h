@@ -33,6 +33,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX ROS2")
 	FAGX_ROS2Qos Qos;
 
+	/**
+	 * Specifies which DDS domain ID to use (advanced).
+	 * Only Publishers/Subscribers using the same Domain ID can communicate, meaning it can be used
+	 * to isolate groups of Publishers/Subscribers from other groups.
+	 * Default value for ROS2 is 0.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX ROS2")
+	uint8 DomainID {0};
+
 	// AgxMsgs
 
 	UFUNCTION(

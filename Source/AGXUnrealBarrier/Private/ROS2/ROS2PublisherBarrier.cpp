@@ -9,7 +9,6 @@
 #include "ROS2/ROS2Conversions.h"
 #include "ROS2/ROS2Utils.h"
 
-
 // Helper macros to minimize amount of code needed in large switch-statement.
 // clang-format off
 #define AGX_SEND_ROS2_MSGS(PubType, MsgType)                                            \
@@ -32,10 +31,11 @@
 	}                                                                                     \
 }
 
-#define AGX_ASSIGN_ROS2_NATIVE(PubTypeUnreal, PubTypeROS2)                                   \
-{                                                                                            \
-	Native = std::make_unique<PubTypeUnreal>(new PubTypeROS2(Convert(Topic), Convert(Qos)));   \
-	return;                                                                                    \
+#define AGX_ASSIGN_ROS2_NATIVE(PubTypeUnreal, PubTypeROS2)                   \
+{                                                                            \
+	Native = std::make_unique<PubTypeUnreal>(                                  \
+		new PubTypeROS2(Convert(Topic), Convert(Qos), DomainID));                \
+	return;                                                                    \
 }
 // clang-format on
 
@@ -69,7 +69,8 @@ bool FROS2PublisherBarrier::HasNative() const
 }
 
 void FROS2PublisherBarrier::AllocateNative(
-	EAGX_ROS2MessageType InMessageType, const FString& Topic, const FAGX_ROS2Qos& Qos)
+	EAGX_ROS2MessageType InMessageType, const FString& Topic, const FAGX_ROS2Qos& Qos,
+	uint8 DomainID)
 {
 	using namespace agxIO::ROS2::agxMsgs;
 	using namespace agxIO::ROS2::builtinInterfaces;
