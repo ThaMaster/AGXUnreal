@@ -197,6 +197,8 @@ public:
 		BlueprintCallable, Category = "AGX ROS2", Meta = (DisplayName = "Send std_msgs::Header"))
 	bool SendStdMsgsHeader(const FAGX_StdMsgsHeader& Message, const FString& Topic);
 
+	// GeometryMsgs
+
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX ROS2",
 		Meta = (DisplayName = "Send geometry_msgs::Vector3"))
@@ -357,6 +359,8 @@ public:
 		Meta = (DisplayName = "Send geometry_msgs::WrenchStamped"))
 	bool SendGeometryMsgsWrenchStamped(
 		const FAGX_GeometryMsgsWrenchStamped& Message, const FString& Topic);
+
+	// SensorMsgs
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX ROS2",

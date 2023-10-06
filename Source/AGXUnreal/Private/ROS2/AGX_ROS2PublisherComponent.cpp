@@ -286,6 +286,10 @@ bool UAGX_ROS2PublisherComponent::SendStdMsgsHeader(
 	return false;
 }
 
+//
+// GeometryMsgs
+//
+
 bool UAGX_ROS2PublisherComponent::SendGeometryMsgsVector3(
 	const FAGX_GeometryMsgsVector3& Msg, const FString& Topic)
 {
@@ -525,6 +529,10 @@ bool UAGX_ROS2PublisherComponent::SendGeometryMsgsWrenchStamped(
 		return Barrier->SendMessage(Msg);
 	return false;
 }
+
+//
+// SensorMsgs
+//
 
 bool UAGX_ROS2PublisherComponent::SendSensorMsgsBatteryState(
 	const FAGX_SensorMsgsBatteryState& Msg, const FString& Topic)
