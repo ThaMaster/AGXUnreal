@@ -38,13 +38,6 @@ namespace AGX_ROS2Utils
 		Msg.data.shrink_to_fit();
 	}
 
-	template <>
-	void FreeContainers(agxIO::ROS2::stdMsgs::String& Msg)
-	{
-		Msg.data.resize(0);
-		Msg.data.shrink_to_fit();
-	}
-
 	//
 	// StdMsgs
 	//
@@ -81,4 +74,91 @@ namespace AGX_ROS2Utils
 		Msg.data.resize(0);
 		Msg.data.shrink_to_fit();
 	}
+
+	template <>
+	void FreeContainers(agxIO::ROS2::stdMsgs::Float64MultiArray& Msg)
+	{
+		FreeContainers(Msg.layout);
+		Msg.data.resize(0);
+		Msg.data.shrink_to_fit();
+	}
+
+	template <>
+	void FreeContainers(agxIO::ROS2::stdMsgs::Int16MultiArray& Msg)
+	{
+		FreeContainers(Msg.layout);
+		Msg.data.resize(0);
+		Msg.data.shrink_to_fit();
+	}
+
+	template <>
+	void FreeContainers(agxIO::ROS2::stdMsgs::Int32MultiArray& Msg)
+	{
+		FreeContainers(Msg.layout);
+		Msg.data.resize(0);
+		Msg.data.shrink_to_fit();
+	}
+
+	template <>
+	void FreeContainers(agxIO::ROS2::stdMsgs::Int64MultiArray& Msg)
+	{
+		FreeContainers(Msg.layout);
+		Msg.data.resize(0);
+		Msg.data.shrink_to_fit();
+	}
+
+	template <>
+	void FreeContainers(agxIO::ROS2::stdMsgs::Int8MultiArray& Msg)
+	{
+		FreeContainers(Msg.layout);
+		Msg.data.resize(0);
+		Msg.data.shrink_to_fit();
+	}
+
+	template <>
+	void FreeContainers(agxIO::ROS2::stdMsgs::String& Msg)
+	{
+		Msg.data.resize(0);
+		Msg.data.shrink_to_fit();
+	}
+
+	template <>
+	void FreeContainers(agxIO::ROS2::stdMsgs::UInt16MultiArray& Msg)
+	{
+		FreeContainers(Msg.layout);
+		Msg.data.resize(0);
+		Msg.data.shrink_to_fit();
+	}
+
+	template <>
+	void FreeContainers(agxIO::ROS2::stdMsgs::UInt32MultiArray& Msg)
+	{
+		FreeContainers(Msg.layout);
+		Msg.data.resize(0);
+		Msg.data.shrink_to_fit();
+	}
+
+	template <>
+	void FreeContainers(agxIO::ROS2::stdMsgs::UInt64MultiArray& Msg)
+	{
+		FreeContainers(Msg.layout);
+		Msg.data.resize(0);
+		Msg.data.shrink_to_fit();
+	}
+
+	template <>
+	void FreeContainers(agxIO::ROS2::stdMsgs::UInt8MultiArray& Msg)
+	{
+		FreeContainers(Msg.layout);
+		Msg.data.resize(0);
+		Msg.data.shrink_to_fit();
+	}
+
+	template <>
+	void FreeContainers(agxIO::ROS2::stdMsgs::Header& Msg)
+	{
+		Msg.frame_id.resize(0);
+		Msg.frame_id.shrink_to_fit();
+	}
+
 }
