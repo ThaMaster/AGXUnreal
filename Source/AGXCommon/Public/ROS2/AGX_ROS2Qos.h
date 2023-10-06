@@ -4,6 +4,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "ROS2/AGX_ROS2Enums.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "UObject/Class.h"
