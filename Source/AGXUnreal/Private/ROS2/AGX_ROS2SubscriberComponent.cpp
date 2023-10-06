@@ -2,6 +2,10 @@
 
 #include "ROS2/AGX_ROS2SubscriberComponent.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
+#include "AGX_LogCategory.h"
+
 UAGX_ROS2SubscriberComponent::UAGX_ROS2SubscriberComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
