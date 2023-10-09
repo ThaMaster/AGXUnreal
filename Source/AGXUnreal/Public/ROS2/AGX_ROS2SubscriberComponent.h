@@ -14,6 +14,11 @@
 
 #include "AGX_ROS2SubscriberComponent.generated.h"
 
+/**
+ * Class representing a ROS2 Subscriber used for receiving ROS2 messages.
+ * A single ROS2 Subscriber Component can be used to receive messages on multiple topics and message
+ * types.
+ */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))

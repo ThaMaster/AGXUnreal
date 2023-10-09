@@ -14,6 +14,11 @@
 
 #include "AGX_ROS2PublisherComponent.generated.h"
 
+/**
+ * Class representing a ROS2 Publisher used for sending ROS2 messages.
+ * A single ROS2 Publisher Component can be used to send messages on multiple topics and message
+ * types.
+ */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
