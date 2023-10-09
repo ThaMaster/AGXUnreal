@@ -2,9 +2,41 @@
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
+#include <agxROS2/AnyMessageBuilder.h>
+#include <agxROS2/AnyMessageParser.h>
 #include <agxROS2/Publisher.h>
 #include <agxROS2/Subscriber.h>
 #include "EndAGXIncludes.h"
+
+struct FAnyMessageBuilder
+{
+	FAnyMessageBuilder(agxIO::ROS2::AnyMessageBuilder* InNative)
+		: Native(InNative)
+	{
+	}
+
+	std::unique_ptr<agxIO::ROS2::AnyMessageBuilder> Native;
+};
+
+struct FAnyMessageParser
+{
+	FAnyMessageParser(agxIO::ROS2::AnyMessageParser* InNative)
+		: Native(InNative)
+	{
+	}
+
+	std::unique_ptr<agxIO::ROS2::AnyMessageParser> Native;
+};
+
+struct FAgxAny
+{
+	FAgxAny(agxIO::ROS2::agxMsgs::Any* InNative)
+		: Native(InNative)
+	{
+	}
+
+	std::unique_ptr<agxIO::ROS2::agxMsgs::Any> Native;
+};
 
 struct FROS2Publisher
 {
