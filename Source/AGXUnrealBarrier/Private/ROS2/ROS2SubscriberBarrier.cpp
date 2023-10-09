@@ -9,6 +9,11 @@
 #include "ROS2/ROS2Conversions.h"
 #include "ROS2/ROS2Utils.h"
 
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agxUtil/agxUtil.h>
+#include "EndAGXIncludes.h"
+
 // Helper macros to minimize amount of code needed in large switch-statement.
 // clang-format off
 #define AGX_RECEIVE_ROS2_MSGS(SubType, MsgTypeUnreal, MsgTypeROS2)                          \
@@ -19,10 +24,9 @@
 		if (Sub->Native->receiveMessage(MsgAGX))                                                \
 		{                                                                                       \
 			*static_cast<MsgTypeUnreal*>(&OutMsg) = Convert(MsgAGX);                              \
-			AGX_ROS2Utils::FreeContainers(MsgAGX);                                                \
+			agxUtil::freeContainerMemory(MsgAGX);                                                 \
 			return true;                                                                          \
 		}                                                                                       \
-		AGX_ROS2Utils::FreeContainers(MsgAGX);                                                  \
 	}                                                                                         \
 	else                                                                                      \
 	{                                                                                         \
