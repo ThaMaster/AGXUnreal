@@ -452,12 +452,11 @@ bool FCheckMaterialLibraryStateCommand::Update()
 	auto Box = GetComponentByName<UAGX_BoxShapeComponent>(TestWorld, "Actor", "BoxShape");
 	Test.TestNotNull("Box", Box);
 
-	auto Sphere =
-		GetComponentByName<UAGX_SphereShapeComponent>(TestWorld, "Actor", "SphereShape");
+	auto Sphere = GetComponentByName<UAGX_SphereShapeComponent>(TestWorld, "Actor", "SphereShape");
 	Test.TestNotNull("Sphere", Sphere);
 
-	auto CMRegistrar =
-		GetComponentByName<UAGX_ContactMaterialRegistrarComponent>(TestWorld, "Actor", "CMRegistrar");
+	auto CMRegistrar = GetComponentByName<UAGX_ContactMaterialRegistrarComponent>(
+		TestWorld, "Actor", "CMRegistrar");
 	Test.TestNotNull("CMRegistrar", CMRegistrar);
 
 	if (Box == nullptr || Sphere == nullptr || CMRegistrar == nullptr)
@@ -468,10 +467,9 @@ bool FCheckMaterialLibraryStateCommand::Update()
 	Test.TestTrue("Steel Library Shape Material not null", Sphere->ShapeMaterial != nullptr);
 	Test.TestTrue(
 		"Steel-Aluminium Library Contact Material not null and assigned material pair",
-		CMRegistrar->ContactMaterials.Num() == 1 &&
-		CMRegistrar->ContactMaterials[0] != nullptr &&
-		CMRegistrar->ContactMaterials[0]->Material1 != nullptr &&
-		CMRegistrar->ContactMaterials[0]->Material2 != nullptr);
+		CMRegistrar->ContactMaterials.Num() == 1 && CMRegistrar->ContactMaterials[0] != nullptr &&
+			CMRegistrar->ContactMaterials[0]->Material1 != nullptr &&
+			CMRegistrar->ContactMaterials[0]->Material2 != nullptr);
 
 	return true;
 }
@@ -487,8 +485,97 @@ bool FMaterialLibraryTest::RunTest(const FString& Parameters)
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath));
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
-	ADD_LATENT_AUTOMATION_COMMAND(
-		FCheckMaterialLibraryStateCommand(*this));
+	ADD_LATENT_AUTOMATION_COMMAND(FCheckMaterialLibraryStateCommand(*this));
+
+	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
+	return true;
+}
+
+//
+// ROS2 test starts here.
+//
+
+DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
+	FCheckROS2MovedCommand, float, SimTimeMax, ComponentMap, ComponentsOfInterest,
+	FAutomationTestBase&, Test);
+
+bool FCheckROS2MovedCommand::Update()
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	if (!GEditor->IsPlayingSessionInEditor())
+	{
+		return false;
+	}
+
+	static int32 NumTicks = 0;
+	UWorld* TestWorld = GEditor->GetPIEWorldContext()->World();
+	if (ComponentsOfInterest.Num() == 0)
+	{
+		NumTicks = 0;
+		ActorMap Actors = GetActorsByName(TestWorld, {"BP_ROS2"});
+
+		Test.TestTrue("Found actor of interest", Actors.Contains("BP_ROS2"));
+		if (!Actors.Contains("BP_ROS2"))
+		{
+			return true;
+		}
+
+		auto Body = GetComponentByName<UAGX_RigidBodyComponent>(*Actors["BP_ROS2"], "Body");
+		Test.TestNotNull("Body", Body);
+		if (Body == nullptr)
+			return true;
+
+		ComponentsOfInterest.Add("Body", Body);
+		Test.TestTrue("Body initial x pos", Body->GetComponentLocation().X < 1.0);
+		Test.TestTrue("Body initial y pos", Body->GetComponentLocation().Y < 1.0);
+	}
+
+	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(TestWorld);
+	Test.TestNotNull("Simulation", Sim);
+	if (Sim == nullptr)
+		return true;
+
+	const float SimTime = Sim->GetTimeStamp();
+	{
+		// Sanity check to avoid hanging forever if the Simulation is not ticking.
+		NumTicks++;
+		if (NumTicks > 1000 && FMath::IsNearlyZero(SimTime))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("SimTime too small: %f. The Simulation has not stepped as expected."),
+				SimTime));
+			return true;
+		}
+	}
+
+	if (SimTime < SimTimeMax)
+	{
+		return false; // Continue ticking..
+	}
+
+	// At this point we have ticked to TickMax. In this test, the body will be moved in +x and +y
+	// >100cm if the tests succeeds.
+	auto Body = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["Body"]);
+	Test.TestTrue("Body final x pos", Body->GetComponentLocation().X > 100.0);
+	Test.TestTrue("Body final y pos", Body->GetComponentLocation().Y > 100.0);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FROS2Test, "AGXUnreal.Game.AGX_PlayInEditorTest.ROS2",
+	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+
+bool FROS2Test::RunTest(const FString& Parameters)
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	FString MapPath = FString("/Game/Tests/Test_ROS2");
+
+	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath))
+	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
+
+	ComponentMap ComponentsOfInterest;
+	float SimTimeMax = 5.0f;
+	ADD_LATENT_AUTOMATION_COMMAND(FCheckROS2MovedCommand(SimTimeMax, ComponentsOfInterest, *this));
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 	return true;
