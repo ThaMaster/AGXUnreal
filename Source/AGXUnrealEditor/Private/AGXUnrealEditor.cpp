@@ -81,8 +81,10 @@
 #include "Terrain/AGX_HeightFieldBoundsComponent.h"
 #include "Terrain/AGX_HeightFieldBoundsComponentCustomization.h"
 #include "Terrain/AGX_HeightFieldBoundsComponentVisualizer.h"
-#include "Terrain/AGX_ShovelReference.h"
+#include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelComponentVisualizer.h"
 #include "Terrain/AGX_ShovelPropertiesActions.h"
+#include "Terrain/AGX_ShovelReference.h"
 #include "Tires/AGX_TireComponentVisualizer.h"
 #include "Tires/AGX_TireComponent.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
@@ -475,6 +477,10 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 	RegisterComponentVisualizer(
 		UAGX_WireComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_WireComponentVisualizer));
+
+	RegisterComponentVisualizer(
+		UAGX_ShovelComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_ShovelComponentVisualizer));
 
 	RegisterComponentVisualizer(
 		UAGX_WireWinchComponent::StaticClass()->GetFName(),

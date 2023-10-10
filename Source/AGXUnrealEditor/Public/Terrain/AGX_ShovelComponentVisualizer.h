@@ -1,0 +1,83 @@
+// Copyright 2023, Algoryx Simulation AB.
+
+#pragma once
+
+// Unreal Engine includes.
+#include "ComponentVisualizer.h"
+
+class UAGX_ShovelComponent;
+struct FAGX_Frame;
+
+UENUM()
+enum class EAGX_ShovelFrame : uint8
+{
+	None,
+	TopEdgeBegin,
+	TopEdgeEnd,
+	CuttingEdgeBegin,
+	CuttingEdgeEnd,
+	CuttingDirection
+};
+
+/**
+ * The Shovel Visualizer uses lines and points to visualize the various edges and directions that
+ * characterizes a AGX Dynamics Shovel. The Shovel Visualizer maintains a frame selection state
+ * which can be used to provide additional operations on the frame, such as from a Details
+ * Customization.
+ */
+class AGXUNREALEDITOR_API FAGX_ShovelComponentVisualizer : public FComponentVisualizer
+{
+public:
+	FAGX_ShovelComponentVisualizer();
+	virtual ~FAGX_ShovelComponentVisualizer();
+
+	//~ Begin FComponentVisualizer interface.
+
+	virtual void OnRegister() override;
+
+	virtual void DrawVisualization(
+		const UActorComponent* Component, const FSceneView* View,
+		FPrimitiveDrawInterface* PDI) override;
+
+	virtual bool VisProxyHandleClick(
+		FEditorViewportClient* InViewportClient, HComponentVisProxy* VisProxy,
+		const FViewportClick& Click) override;
+
+	virtual bool GetWidgetLocation(
+		const FEditorViewportClient* ViewportClient, FVector& OutLocation) const override;
+
+	virtual bool HandleInputDelta(
+		FEditorViewportClient* ViewportClient, FViewport* Viewport, FVector& DeltaTranslate,
+		FRotator& DeltaRotate, FVector& DeltaScale) override;
+
+	virtual bool HandleInputKey(
+		FEditorViewportClient* ViewportClient, FViewport* Viewport, FKey Key,
+		EInputEvent Event) override;
+
+	virtual bool IsVisualizingArchetype() const override;
+
+	virtual void EndEditing() override;
+
+	//~ End FComponentVisualizer interface.
+
+	bool HasValidFrameSection() const;
+	FAGX_Frame* GetSelectedFrame() const;
+	EAGX_ShovelFrame GetSelectedFrameSource() const;
+	void ClearSelection();
+
+	UAGX_ShovelComponent* GetSelectedShovel() const;
+
+private:
+	EAGX_ShovelFrame SelectedFrameSource {EAGX_ShovelFrame::None};
+
+	FProperty* TopEdgeProperty;
+	FProperty* CuttingEdgeProperty;
+	FProperty* CuttingDirectionProperty;
+
+	/**
+	 * Property path from the owning Actor to the Shovel Component of the currently selected shovel.
+	 * We must use a path instead of a pointer because during Blueprint Reconstruction the Shovel
+	 * Component will be replaced by a new instance.
+	 */
+	FComponentPropertyPath ShovelPropertyPath;
+};
