@@ -45,13 +45,91 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
 	UAGX_ROS2AnyMessageBuilderComponent* BeginMessage();
 
-	/** The input is cast to an int8_t internally. */
+	/** The input is cast to int8_t internally. */
 	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
-	UAGX_ROS2AnyMessageBuilderComponent* WriteInt8(int32 data);
+	UAGX_ROS2AnyMessageBuilderComponent* WriteInt8(int32 Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteUInt8(uint8 Data);
+
+	/** The input is cast to int16_t internally. */
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteInt16(int32 Data);
+
+	/** The input is cast to uint16_t internally. */
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteUInt16(int32 Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteInt32(int32 Data);
+
+	/** The input is cast to uint32_t internally. */
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteUInt32(int64 Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteInt64(int64 Data);
+
+	/** The input is cast to uint64_t internally. */
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteUInt64(int64 Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteFloat32(float Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteDouble64(double Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteString(const FString& Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteBool(bool Data);
+
+	/** The input is cast to int8_t internally. */
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteInt8Sequence(const TArray<int32>& Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteUInt8Sequence(const TArray<uint8>& Data);
+
+	/** The input is cast to int16_t internally. */
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteInt16Sequence(const TArray<int32>& Data);
+
+	/** The input is cast to uint16_t internally. */
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteUInt16Sequence(const TArray<int32>& Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteInt32Sequence(const TArray<int32>& Data);
+
+	/** The input is cast to uint32_t internally. */
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteUInt32Sequence(const TArray<int64>& Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteInt64Sequence(const TArray<int64>& Data);
+
+	/** The input is cast to uint64_t internally. */
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteUInt64Sequence(const TArray<int64>& Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteFloat32Sequence(const TArray<float>& Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteDouble64Sequence(const TArray<double>& Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteStringSequence(const TArray<FString>& Data);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
+	UAGX_ROS2AnyMessageBuilderComponent* WriteBoolSequence(const TArray<bool>& Data);
 
 	/**
-	* Returns the message that has been built by this Component.
-	*/
+	 * Returns the message that has been built by this Component.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX ROS2 Any Message")
 	FAGX_AgxMsgsAny GetMessage() const;
 
