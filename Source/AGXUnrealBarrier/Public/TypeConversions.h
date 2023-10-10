@@ -48,7 +48,10 @@
 #include "EndAGXIncludes.h"
 
 // Standard library includes.
+#include <cstdint>
 #include <limits>
+#include <string>
+#include <vector>
 
 // These functions assume that agx::Real and float are different types.
 // They also assume that agx::Real has higher (or equal) precision than float.
@@ -1238,3 +1241,35 @@ inline ELogVerbosity::Type ConvertLogLevelVerbosity(agx::Notify::NotifyLevel Lev
 		static_cast<int>(Level));
 	return ELogVerbosity::Warning;
 }
+
+//
+// Standard Library to Unreal
+//
+
+inline FString Convert(const std::string& Str)
+{
+	return FString(Str.c_str());
+}
+
+template <typename T>
+inline TArray<T> ToUnrealArray(const std::vector<T>& V)
+{
+	TArray<T> Arr;
+	Arr.Reserve(V.size());
+	for (const auto& Val : V)
+		Arr.Add(Val);
+
+	return Arr;
+}
+
+
+inline TArray<FString> ToUnrealStringArray(const std::vector<std::string>& V)
+{
+	TArray<FString> Arr;
+	Arr.Reserve(V.size());
+	for (const auto& Val : V)
+		Arr.Add(Convert(Val));
+
+	return Arr;
+}
+

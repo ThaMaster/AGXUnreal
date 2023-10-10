@@ -29,6 +29,30 @@ public:
 
 	void BeginParse(const FAGX_AgxMsgsAny& Message);
 	int8_t ReadInt8();
+	uint8_t ReadUInt8();
+	int16_t ReadInt16();
+	uint16_t ReadUInt16();
+	int32_t ReadInt32();
+	uint32_t ReadUInt32();
+	int64_t ReadInt64();
+	uint64_t ReadUInt64();
+	float ReadFloat32();
+	double ReadDouble64();
+	FString ReadString();
+	bool ReadBool();
+
+	TArray<int8_t> ReadInt8Sequence();
+	TArray<uint8_t> ReadUInt8Sequence();
+	TArray<int16_t> ReadInt16Sequence();
+	TArray<uint16_t> ReadUInt16Sequence();
+	TArray<int32_t> ReadInt32Sequence();
+	TArray<uint32_t> ReadUInt32Sequence();
+	TArray<int64_t> ReadInt64Sequence();
+	TArray<uint64_t> ReadUInt64Sequence();
+	TArray<float> ReadFloat32Sequence();
+	TArray<double> ReadDouble64Sequence();
+	TArray<FString> ReadStringSequence();
+	TArray<bool> ReadBoolSequence();
 
 private:
 	FROS2AnyMessageParserBarrier(const FROS2AnyMessageParserBarrier&) = delete;

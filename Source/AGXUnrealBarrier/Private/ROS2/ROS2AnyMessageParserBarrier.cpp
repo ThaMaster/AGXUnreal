@@ -7,6 +7,7 @@
 #include "AGXROS2Types.h"
 #include "ROS2/AGX_ROS2Messages.h"
 #include "ROS2/ROS2Conversions.h"
+#include "TypeConversions.h"
 #include "Utilities/ROS2Utilities.h"
 
 FROS2AnyMessageParserBarrier::FROS2AnyMessageParserBarrier()
@@ -108,4 +109,280 @@ int8_t FROS2AnyMessageParserBarrier::ReadInt8()
 	}
 
 	return Native->Native->readInt8(*Message->Native);
+}
+
+uint8_t FROS2AnyMessageParserBarrier::ReadUInt8()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return 0;
+	}
+
+	return Native->Native->readUInt8(*Message->Native);
+}
+
+int16_t FROS2AnyMessageParserBarrier::ReadInt16()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return 0;
+	}
+
+	return Native->Native->readInt16(*Message->Native);
+}
+
+uint16_t FROS2AnyMessageParserBarrier::ReadUInt16()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return 0;
+	}
+
+	return Native->Native->readUInt16(*Message->Native);
+}
+
+int32_t FROS2AnyMessageParserBarrier::ReadInt32()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return 0;
+	}
+
+	return Native->Native->readInt32(*Message->Native);
+}
+
+uint32_t FROS2AnyMessageParserBarrier::ReadUInt32()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return 0;
+	}
+
+	return Native->Native->readUInt32(*Message->Native);
+}
+
+int64_t FROS2AnyMessageParserBarrier::ReadInt64()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return 0;
+	}
+
+	return Native->Native->readInt64(*Message->Native);
+}
+
+uint64_t FROS2AnyMessageParserBarrier::ReadUInt64()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return 0;
+	}
+
+	return Native->Native->readUInt64(*Message->Native);
+}
+
+float FROS2AnyMessageParserBarrier::ReadFloat32()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return 0.f;
+	}
+
+	return Native->Native->readFloat32(*Message->Native);
+}
+
+double FROS2AnyMessageParserBarrier::ReadDouble64()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return 0.0;
+	}
+
+	return Native->Native->readDouble64(*Message->Native);
+}
+
+FString FROS2AnyMessageParserBarrier::ReadString()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return FString();
+	}
+
+	return Convert(Native->Native->readString(*Message->Native));
+}
+
+bool FROS2AnyMessageParserBarrier::ReadBool()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return false;
+	}
+
+	return Native->Native->readBool(*Message->Native);
+}
+
+TArray<int8_t> FROS2AnyMessageParserBarrier::ReadInt8Sequence()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return TArray<int8_t>();
+	}
+
+	return ToUnrealArray(Native->Native->readInt8Sequence(*Message->Native));
+}
+
+TArray<uint8_t> FROS2AnyMessageParserBarrier::ReadUInt8Sequence()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return TArray<uint8_t>();
+	}
+
+	return ToUnrealArray(Native->Native->readUInt8Sequence(*Message->Native));
+}
+
+TArray<int16_t> FROS2AnyMessageParserBarrier::ReadInt16Sequence()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return TArray<int16_t>();
+	}
+
+	return ToUnrealArray(Native->Native->readInt16Sequence(*Message->Native));
+}
+
+TArray<uint16_t> FROS2AnyMessageParserBarrier::ReadUInt16Sequence()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return TArray<uint16_t>();
+	}
+
+	return ToUnrealArray(Native->Native->readUInt16Sequence(*Message->Native));
+}
+
+TArray<int32_t> FROS2AnyMessageParserBarrier::ReadInt32Sequence()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return TArray<int32_t>();
+	}
+
+	return ToUnrealArray(Native->Native->readInt32Sequence(*Message->Native));
+}
+
+TArray<uint32_t> FROS2AnyMessageParserBarrier::ReadUInt32Sequence()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return TArray<uint32_t>();
+	}
+
+	return ToUnrealArray(Native->Native->readUInt32Sequence(*Message->Native));
+}
+
+TArray<int64_t> FROS2AnyMessageParserBarrier::ReadInt64Sequence()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return TArray<int64_t>();
+	}
+
+	return ToUnrealArray(Native->Native->readInt64Sequence(*Message->Native));
+}
+
+TArray<uint64_t> FROS2AnyMessageParserBarrier::ReadUInt64Sequence()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return TArray<uint64_t>();
+	}
+
+	return ToUnrealArray(Native->Native->readUInt64Sequence(*Message->Native));
+}
+
+TArray<float> FROS2AnyMessageParserBarrier::ReadFloat32Sequence()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return TArray<float>();
+	}
+
+	return ToUnrealArray(Native->Native->readFloat32Sequence(*Message->Native));
+}
+
+TArray<double> FROS2AnyMessageParserBarrier::ReadDouble64Sequence()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return TArray<double>();
+	}
+
+	return ToUnrealArray(Native->Native->readDouble64Sequence(*Message->Native));
+}
+
+TArray<FString> FROS2AnyMessageParserBarrier::ReadStringSequence()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return TArray<FString>();
+	}
+
+	return ToUnrealStringArray(Native->Native->readStringSequence(*Message->Native));
+}
+
+TArray<bool> FROS2AnyMessageParserBarrier::ReadBoolSequence()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
+		return TArray<bool>();
+	}
+
+	return ToUnrealArray(Native->Native->readBoolSequence(*Message->Native));
 }
