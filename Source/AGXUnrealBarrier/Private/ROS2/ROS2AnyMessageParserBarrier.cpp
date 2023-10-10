@@ -10,6 +10,11 @@
 #include "TypeConversions.h"
 #include "Utilities/ROS2Utilities.h"
 
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agxUtil/agxUtil.h>
+#include "EndAGXIncludes.h"
+
 FROS2AnyMessageParserBarrier::FROS2AnyMessageParserBarrier()
 {
 }
@@ -228,7 +233,17 @@ FString FROS2AnyMessageParserBarrier::ReadString()
 		return FString();
 	}
 
-	return Convert(Native->Native->readString(*Message->Native));
+	FString StrUnreal;
+	{
+		std::string StrAGX = Native->Native->readString(*Message->Native);
+		StrUnreal = Convert(StrAGX);
+
+		// Must be called to avoid crash due to different allocators used by AGX Dynamics and
+		// Unreal Engine.
+		agxUtil::freeContainerMemory(StrAGX);
+	}
+
+	return StrUnreal;
 }
 
 bool FROS2AnyMessageParserBarrier::ReadBool()
@@ -372,7 +387,16 @@ TArray<FString> FROS2AnyMessageParserBarrier::ReadStringSequence()
 		return TArray<FString>();
 	}
 
-	return ToUnrealStringArray(Native->Native->readStringSequence(*Message->Native));
+	TArray<FString> StrArrUnreal;
+	{
+		std::vector<std::string> StrVecAGX = Native->Native->readStringSequence(*Message->Native);
+		StrArrUnreal = ToUnrealStringArray(StrVecAGX);
+
+		// Must be called to avoid crash due to different allocators used by AGX Dynamics and
+		// Unreal Engine.
+		agxUtil::freeContainerMemory(StrVecAGX);
+	}
+	return StrArrUnreal;
 }
 
 TArray<bool> FROS2AnyMessageParserBarrier::ReadBoolSequence()
