@@ -15,8 +15,8 @@ class AGXUNREALBARRIER_API FROS2AnyMessageParserBarrier
 public:
 	FROS2AnyMessageParserBarrier();
 	~FROS2AnyMessageParserBarrier();
-	FROS2AnyMessageParserBarrier(FROS2AnyMessageParserBarrier&& Other);
-	FROS2AnyMessageParserBarrier& operator=(FROS2AnyMessageParserBarrier&& Other);
+	FROS2AnyMessageParserBarrier(FROS2AnyMessageParserBarrier&& Other) noexcept;
+	FROS2AnyMessageParserBarrier& operator=(FROS2AnyMessageParserBarrier&& Other) noexcept;
 
 	bool HasNative() const;
 
@@ -27,8 +27,8 @@ public:
 
 	void ReleaseNative();
 
-	void BeginParse(FAGX_AgxMsgsAny& Message);
-	int8_t readInt8();
+	void BeginParse(const FAGX_AgxMsgsAny& Message);
+	int8_t ReadInt8();
 
 private:
 	FROS2AnyMessageParserBarrier(const FROS2AnyMessageParserBarrier&) = delete;

@@ -19,12 +19,14 @@ FROS2AnyMessageBuilderBarrier::~FROS2AnyMessageBuilderBarrier()
 	// not just the forward declaration of the Native.
 }
 
-FROS2AnyMessageBuilderBarrier::FROS2AnyMessageBuilderBarrier(FROS2AnyMessageBuilderBarrier&& Other)
+FROS2AnyMessageBuilderBarrier::FROS2AnyMessageBuilderBarrier(
+	FROS2AnyMessageBuilderBarrier&& Other) noexcept
 {
 	*this = std::move(Other);
 }
 
-FROS2AnyMessageBuilderBarrier& FROS2AnyMessageBuilderBarrier::operator=(FROS2AnyMessageBuilderBarrier&& Other)
+FROS2AnyMessageBuilderBarrier& FROS2AnyMessageBuilderBarrier::operator=(
+	FROS2AnyMessageBuilderBarrier&& Other) noexcept
 {
 	Native = std::move(Other.Native);
 	Other.Native = nullptr;
@@ -33,7 +35,7 @@ FROS2AnyMessageBuilderBarrier& FROS2AnyMessageBuilderBarrier::operator=(FROS2Any
 
 bool FROS2AnyMessageBuilderBarrier::HasNative() const
 {
-	return Native != nullptr;
+	return Native != nullptr && Native->Native != nullptr;
 }
 
 void FROS2AnyMessageBuilderBarrier::AllocateNative()
@@ -69,7 +71,7 @@ void FROS2AnyMessageBuilderBarrier::WriteInt8(int8_t d)
 	Native->Native->writeInt8(d);
 }
 
-FAGX_AgxMsgsAny FROS2AnyMessageBuilderBarrier::GetMessage()
+FAGX_AgxMsgsAny FROS2AnyMessageBuilderBarrier::GetMessage() const
 {
 	return Convert(Native->Native->getMessage());
 }

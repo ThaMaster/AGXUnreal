@@ -14,8 +14,8 @@ class AGXUNREALBARRIER_API FROS2AnyMessageBuilderBarrier
 public:
 	FROS2AnyMessageBuilderBarrier();
 	~FROS2AnyMessageBuilderBarrier();
-	FROS2AnyMessageBuilderBarrier(FROS2AnyMessageBuilderBarrier&& Other);
-	FROS2AnyMessageBuilderBarrier& operator=(FROS2AnyMessageBuilderBarrier&& Other);
+	FROS2AnyMessageBuilderBarrier(FROS2AnyMessageBuilderBarrier&& Other) noexcept;
+	FROS2AnyMessageBuilderBarrier& operator=(FROS2AnyMessageBuilderBarrier&& Other) noexcept;
 
 	bool HasNative() const;
 
@@ -29,7 +29,7 @@ public:
 	void BeginMessage();
 	void WriteInt8(int8_t d);
 
-	FAGX_AgxMsgsAny GetMessage();
+	FAGX_AgxMsgsAny GetMessage() const;
 
 private:
 	FROS2AnyMessageBuilderBarrier(const FROS2AnyMessageBuilderBarrier&) = delete;

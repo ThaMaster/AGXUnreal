@@ -7,6 +7,7 @@
 #include "AGXROS2Types.h"
 #include "ROS2/AGX_ROS2Messages.h"
 #include "ROS2/ROS2Conversions.h"
+#include "Utilities/ROS2Utilities.h"
 
 FROS2AnyMessageParserBarrier::FROS2AnyMessageParserBarrier()
 {
@@ -14,18 +15,23 @@ FROS2AnyMessageParserBarrier::FROS2AnyMessageParserBarrier()
 
 FROS2AnyMessageParserBarrier::~FROS2AnyMessageParserBarrier()
 {
-	// Must provide a destructor implementation in the .cpp file because the
-	// std::unique_ptr Native's destructor must be able to see the definition,
-	// not just the forward declaration of the Native.
+	// Message must be free'd using AGX_ROS2Utilities::FreeContainers.
+	// This is similar to agxUtil::freeContainerMemory but on the Unreal-side.
+	// Not doing this may cause a runtime crash on object destruction.
+	if (Message != nullptr && Message->Native != nullptr)
+	{
+		AGX_ROS2Utilities::FreeContainers(*Message->Native);
+	}
 }
 
-FROS2AnyMessageParserBarrier::FROS2AnyMessageParserBarrier(FROS2AnyMessageParserBarrier&& Other)
+FROS2AnyMessageParserBarrier::FROS2AnyMessageParserBarrier(
+	FROS2AnyMessageParserBarrier&& Other) noexcept
 {
 	*this = std::move(Other);
 }
 
 FROS2AnyMessageParserBarrier& FROS2AnyMessageParserBarrier::operator=(
-	FROS2AnyMessageParserBarrier&& Other)
+	FROS2AnyMessageParserBarrier&& Other) noexcept
 {
 	Native = std::move(Other.Native);
 	Other.Native = nullptr;
@@ -34,7 +40,7 @@ FROS2AnyMessageParserBarrier& FROS2AnyMessageParserBarrier::operator=(
 
 bool FROS2AnyMessageParserBarrier::HasNative() const
 {
-	return Native != nullptr;
+	return Native != nullptr && Native->Native != nullptr;
 }
 
 void FROS2AnyMessageParserBarrier::AllocateNative()
@@ -58,27 +64,46 @@ void FROS2AnyMessageParserBarrier::ReleaseNative()
 	Native = nullptr;
 }
 
-void FROS2AnyMessageParserBarrier::BeginParse(FAGX_AgxMsgsAny& InMessage)
+void FROS2AnyMessageParserBarrier::BeginParse(const FAGX_AgxMsgsAny& InMessage)
 {
 	check(HasNative());
 
-	// Here we store away a copy (of AGX type) of the message, used for subsequent reads.
-	agxIO::ROS2::agxMsgs::Any* MessageAGX = new agxIO::ROS2::agxMsgs::Any();
-	*MessageAGX = Convert(InMessage);
-	Message = std::make_unique<FAgxAny>(MessageAGX);
+	// Any previously used Message must be free'd using AGX_ROS2Utilities::FreeContainers.
+	// This is similar to agxUtil::freeContainerMemory but on the Unreal-side.
+	// Not doing this may cause a runtime crash on object destruction.
+	if (Message != nullptr && Message->Native != nullptr)
+	{
+		AGX_ROS2Utilities::FreeContainers(*Message->Native);
+	}
+
+	{
+		// Here we store away a copy (of AGX type) of the message, used for subsequent reads.
+		agxIO::ROS2::agxMsgs::Any* MessageAGX = new agxIO::ROS2::agxMsgs::Any();
+		*MessageAGX = Convert(InMessage);
+		Message = std::make_unique<FAgxAny>(MessageAGX);
+	}
+
 	Native->Native->beginParse();
 }
 
-int8_t FROS2AnyMessageParserBarrier::readInt8()
+namespace ROS2AnyMessageParserBarrier_helpers
 {
-	check(HasNative());
-	if (Message == nullptr)
+	void PrintMissingMessageWarning()
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT(
 				"Tried to read using a FROS2AnyMessageParserBarrier that does not have a reference "
 				"to a Message. Ensure BeginParse has been called before calling this function."));
+	}
+}
+
+int8_t FROS2AnyMessageParserBarrier::ReadInt8()
+{
+	check(HasNative());
+	if (Message == nullptr)
+	{
+		ROS2AnyMessageParserBarrier_helpers::PrintMissingMessageWarning();
 		return 0;
 	}
 
