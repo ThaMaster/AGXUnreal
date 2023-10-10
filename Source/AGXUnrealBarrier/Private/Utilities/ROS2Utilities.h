@@ -1,6 +1,6 @@
 #pragma once
 
-namespace AGX_ROS2Utils
+namespace AGX_ROS2Utilities
 {
 	/**
 	 * These FreeContainsers functions are similar to the agxUtils::FreeContainerMemory dance we do

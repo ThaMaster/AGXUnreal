@@ -7,7 +7,7 @@
 #include "AGXROS2Types.h"
 #include "ROS2/AGX_ROS2Messages.h"
 #include "ROS2/ROS2Conversions.h"
-#include "ROS2/ROS2Utils.h"
+#include "Utilities/ROS2Utilities.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -57,12 +57,12 @@ FROS2SubscriberBarrier::~FROS2SubscriberBarrier()
 	// not just the forward declaration, of FROS2Subscriber.
 }
 
-FROS2SubscriberBarrier::FROS2SubscriberBarrier(FROS2SubscriberBarrier&& Other)
+FROS2SubscriberBarrier::FROS2SubscriberBarrier(FROS2SubscriberBarrier&& Other) noexcept
 {
 	*this = std::move(Other);
 }
 
-FROS2SubscriberBarrier& FROS2SubscriberBarrier::operator=(FROS2SubscriberBarrier&& Other)
+FROS2SubscriberBarrier& FROS2SubscriberBarrier::operator=(FROS2SubscriberBarrier&& Other) noexcept
 {
 	Native = std::move(Other.Native);
 	Other.Native = nullptr;

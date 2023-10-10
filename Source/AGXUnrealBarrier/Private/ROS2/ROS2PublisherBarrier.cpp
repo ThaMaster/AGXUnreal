@@ -7,7 +7,7 @@
 #include "AGXROS2Types.h"
 #include "ROS2/AGX_ROS2Messages.h"
 #include "ROS2/ROS2Conversions.h"
-#include "ROS2/ROS2Utils.h"
+#include "Utilities/ROS2Utilities.h"
 
 // Helper macros to minimize amount of code needed in large switch-statement.
 // clang-format off
@@ -17,7 +17,7 @@
 	{                                                                                     \
 		auto MsgAGX = Convert(*static_cast<const MsgType*>(&Msg));                          \
 		Pub->Native->sendMessage(MsgAGX);                                                   \
-		AGX_ROS2Utils::FreeContainers(MsgAGX);                                              \
+		AGX_ROS2Utilities::FreeContainers(MsgAGX);                                          \
 		return true;                                                                        \
 	}                                                                                     \
 	else                                                                                  \
@@ -50,12 +50,12 @@ FROS2PublisherBarrier::~FROS2PublisherBarrier()
 	// not just the forward declaration, of FROS2Publisher.
 }
 
-FROS2PublisherBarrier::FROS2PublisherBarrier(FROS2PublisherBarrier&& Other)
+FROS2PublisherBarrier::FROS2PublisherBarrier(FROS2PublisherBarrier&& Other) noexcept
 {
 	*this = std::move(Other);
 }
 
-FROS2PublisherBarrier& FROS2PublisherBarrier::operator=(FROS2PublisherBarrier&& Other)
+FROS2PublisherBarrier& FROS2PublisherBarrier::operator=(FROS2PublisherBarrier&& Other) noexcept
 {
 	Native = std::move(Other.Native);
 	Other.Native = nullptr;

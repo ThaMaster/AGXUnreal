@@ -17,8 +17,8 @@ class AGXUNREALBARRIER_API FROS2PublisherBarrier
 public:
 	FROS2PublisherBarrier();
 	~FROS2PublisherBarrier();
-	FROS2PublisherBarrier(FROS2PublisherBarrier&& Other);
-	FROS2PublisherBarrier& operator=(FROS2PublisherBarrier&& Other);
+	FROS2PublisherBarrier(FROS2PublisherBarrier&& Other) noexcept;
+	FROS2PublisherBarrier& operator=(FROS2PublisherBarrier&& Other) noexcept;
 
 	bool HasNative() const;
 

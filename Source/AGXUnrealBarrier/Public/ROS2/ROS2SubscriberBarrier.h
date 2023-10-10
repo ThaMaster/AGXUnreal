@@ -17,8 +17,8 @@ class AGXUNREALBARRIER_API FROS2SubscriberBarrier
 public:
 	FROS2SubscriberBarrier();
 	~FROS2SubscriberBarrier();
-	FROS2SubscriberBarrier(FROS2SubscriberBarrier&& Other);
-	FROS2SubscriberBarrier& operator=(FROS2SubscriberBarrier&& Other);
+	FROS2SubscriberBarrier(FROS2SubscriberBarrier&& Other) noexcept ;
+	FROS2SubscriberBarrier& operator=(FROS2SubscriberBarrier&& Other) noexcept;
 
 	bool HasNative() const;
 
