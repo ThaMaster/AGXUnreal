@@ -12,15 +12,12 @@
 #include "Engine/SimpleConstructionScript.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
-
 #define LOCTEXT_NAMESPACE "AGX_FrameCustomization"
-
 
 TSharedRef<IPropertyTypeCustomization> FAGX_FrameCustomization::MakeInstance()
 {
 	return MakeShareable(new FAGX_FrameCustomization());
 }
-
 
 void FAGX_FrameCustomization::CustomizeHeader(
 	TSharedRef<IPropertyHandle> InComponentReferenceHandle, FDetailWidgetRow& HeaderRow,
@@ -73,10 +70,16 @@ void FAGX_FrameCustomization::CustomizeChildren(
 	TSharedRef<IPropertyHandle> PropertyHandle, IDetailChildrenBuilder& ChildBuilder,
 	IPropertyTypeCustomizationUtils& CustomizationUtils)
 {
+	// Create default widgets for the Properties that don't need any special attention.
+	ChildBuilder.AddProperty(ParentHandle.ToSharedRef());
+	ChildBuilder.AddProperty(LocalLocationHandle.ToSharedRef());
+	ChildBuilder.AddProperty(LocalRotationHandle.ToSharedRef());
 }
 
 bool FAGX_FrameCustomization::RefetchPropertyHandles(TSharedRef<IPropertyHandle>& InFrameHandle)
 {
+	ClearPropertyHandles();
+
 	FrameHandle = InFrameHandle;
 	if (!FrameHandle.IsValid() || !FrameHandle->IsValidHandle())
 	{
@@ -91,13 +94,16 @@ bool FAGX_FrameCustomization::RefetchPropertyHandles(TSharedRef<IPropertyHandle>
 		return false;
 	}
 
-	OwningActorHandle = ParentHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FAGX_ComponentReference, OwningActor));
-	LocalLocationHandle = FrameHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FAGX_Frame, LocalLocation));
-	LocalRotationHandle = FrameHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FAGX_Frame, LocalRotation));
+	OwningActorHandle =
+		ParentHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FAGX_ComponentReference, OwningActor));
+	LocalLocationHandle =
+		FrameHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FAGX_Frame, LocalLocation));
+	LocalRotationHandle =
+		FrameHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FAGX_Frame, LocalRotation));
 
-	if (!OwningActorHandle.IsValid() || !OwningActorHandle->IsValidHandle()
-		|| !LocalLocationHandle.IsValid() || !LocalLocationHandle->IsValidHandle()
-		|| !LocalRotationHandle.IsValid() || !LocalRotationHandle->IsValidHandle())
+	if (!OwningActorHandle.IsValid() || !OwningActorHandle->IsValidHandle() ||
+		!LocalLocationHandle.IsValid() || !LocalLocationHandle->IsValidHandle() ||
+		!LocalRotationHandle.IsValid() || !LocalRotationHandle->IsValidHandle())
 	{
 		ClearPropertyHandles();
 		return false;
@@ -121,8 +127,8 @@ FAGX_Frame* FAGX_FrameCustomization::GetFrame() const
 		return nullptr;
 	}
 
-	void*  UntypedPointer = nullptr;
-	const FPropertyAccess::Result Result =  FrameHandle->GetValueData(UntypedPointer);
+	void* UntypedPointer = nullptr;
+	const FPropertyAccess::Result Result = FrameHandle->GetValueData(UntypedPointer);
 	if (Result != FPropertyAccess::Success || UntypedPointer == nullptr)
 	{
 		return nullptr;
@@ -130,7 +136,6 @@ FAGX_Frame* FAGX_FrameCustomization::GetFrame() const
 
 	return reinterpret_cast<FAGX_Frame*>(UntypedPointer);
 }
-
 
 FText FAGX_FrameCustomization::GetHeaderText() const
 {
