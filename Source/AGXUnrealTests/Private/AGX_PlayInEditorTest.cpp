@@ -553,10 +553,10 @@ bool FCheckROS2MovedCommand::Update()
 		return false; // Continue ticking..
 	}
 
-	// At this point we have ticked to TickMax. In this test, the body will be moved in +x and +y
-	// >100cm if the tests succeeds.
+	// At this point we have ticked to TickMax. In this test, the body will be moved in +x >300cm
+	// and +y >100cm if the tests succeeds.
 	auto Body = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["Body"]);
-	Test.TestTrue("Body final x pos", Body->GetComponentLocation().X > 100.0);
+	Test.TestTrue("Body final x pos", Body->GetComponentLocation().X > 300.0);
 	Test.TestTrue("Body final y pos", Body->GetComponentLocation().Y > 100.0);
 	return true;
 }

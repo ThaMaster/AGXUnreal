@@ -148,6 +148,10 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set("ClassIcon.AGX_PlotComponent", new IMAGE_BRUSH("Icons/plot_32x32", IconSize16));
 	// ROS2.
 	Style->Set(
+		"ClassIcon.AGX_ROS2AnyMessageBuilderComponent", new IMAGE_BRUSH("Icons/ros2_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_ROS2AnyMessageParserComponent", new IMAGE_BRUSH("Icons/ros2_32x32", IconSize16));
+	Style->Set(
 		"ClassIcon.AGX_ROS2PublisherComponent", new IMAGE_BRUSH("Icons/ros2_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_ROS2SubscriberComponent", new IMAGE_BRUSH("Icons/ros2_32x32", IconSize16));
