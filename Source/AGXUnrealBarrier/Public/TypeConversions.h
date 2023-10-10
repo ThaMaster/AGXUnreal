@@ -1243,7 +1243,7 @@ inline ELogVerbosity::Type ConvertLogLevelVerbosity(agx::Notify::NotifyLevel Lev
 }
 
 //
-// Standard Library to Unreal
+// Standard Library to Unreal.
 //
 
 inline FString Convert(const std::string& Str)
@@ -1269,6 +1269,36 @@ inline TArray<FString> ToUnrealStringArray(const std::vector<std::string>& V)
 	Arr.Reserve(V.size());
 	for (const auto& Val : V)
 		Arr.Add(Convert(Val));
+
+	return Arr;
+}
+
+//
+// Unreal to Standard Library.
+//
+
+inline std::string ToStdString(const FString& Str)
+{
+	return std::string(TCHAR_TO_UTF8(*Str));
+}
+
+template <typename T>
+inline std::vector<T> ToStdArray(const TArray<T>& A)
+{
+	std::vector<T> Arr;
+	Arr.reserve(A.Num());
+	for (const auto& Val : A)
+		Arr.push_back(Val);
+
+	return Arr;
+}
+
+inline std::vector<std::string> ToStdStringArray(const TArray<FString>& A)
+{
+	std::vector<std::string> Arr;
+	Arr.reserve(A.Num());
+	for (const auto& Val : A)
+		Arr.push_back(ToStdString(Val));
 
 	return Arr;
 }
