@@ -10,6 +10,7 @@
 #include "Terrain/AGX_Terrain.h"
 
 // Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
 #include "Containers/Map.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationEditorCommon.h"
@@ -520,14 +521,30 @@ bool FCheckROS2MovedCommand::Update()
 			return true;
 		}
 
-		auto Body = GetComponentByName<UAGX_RigidBodyComponent>(*Actors["BP_ROS2"], "Body");
-		Test.TestNotNull("Body", Body);
-		if (Body == nullptr)
+		auto CubeComplexMsg =
+			GetComponentByName<UStaticMeshComponent>(*Actors["BP_ROS2"], "Cube_ComplexMessage");
+		Test.TestNotNull("CubeComplexMsg", CubeComplexMsg);
+		if (CubeComplexMsg == nullptr)
 			return true;
 
-		ComponentsOfInterest.Add("Body", Body);
-		Test.TestTrue("Body initial x pos", Body->GetComponentLocation().X < 1.0);
-		Test.TestTrue("Body initial y pos", Body->GetComponentLocation().Y < 1.0);
+		auto CubeQOS = GetComponentByName<UStaticMeshComponent>(*Actors["BP_ROS2"], "Cube_QOS");
+		Test.TestNotNull("CubeQOS", CubeQOS);
+		if (CubeQOS == nullptr)
+			return true;
+
+		auto CubeAnyMsg =
+			GetComponentByName<UStaticMeshComponent>(*Actors["BP_ROS2"], "Cube_AnyMessage");
+		Test.TestNotNull("CubeAnyMsg", CubeAnyMsg);
+		if (CubeAnyMsg == nullptr)
+			return true;
+
+		ComponentsOfInterest.Add("CubeComplexMsg", CubeComplexMsg);
+		ComponentsOfInterest.Add("CubeQOS", CubeQOS);
+		ComponentsOfInterest.Add("CubeAnyMsg", CubeAnyMsg);
+		Test.TestTrue(
+			"CubeComplexMsg initial x pos", CubeComplexMsg->GetComponentLocation().X < 1.0);
+		Test.TestTrue("CubeQOS initial x pos", CubeQOS->GetComponentLocation().X < 1.0);
+		Test.TestTrue("CubeAnyMsg initial x pos", CubeAnyMsg->GetComponentLocation().X < 1.0);
 	}
 
 	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(TestWorld);
@@ -553,11 +570,14 @@ bool FCheckROS2MovedCommand::Update()
 		return false; // Continue ticking..
 	}
 
-	// At this point we have ticked to TickMax. In this test, the body will be moved in +x >300cm
-	// and +y >100cm if the tests succeeds.
-	auto Body = Cast<UAGX_RigidBodyComponent>(ComponentsOfInterest["Body"]);
-	Test.TestTrue("Body final x pos", Body->GetComponentLocation().X > 300.0);
-	Test.TestTrue("Body final y pos", Body->GetComponentLocation().Y > 100.0);
+	// At this point we have ticked to TickMax. In this test, the Cubes will be moved in +x >100cm
+	// if the tests succeeded.
+	auto CubeComplexMsg = Cast<UStaticMeshComponent>(ComponentsOfInterest["CubeComplexMsg"]);
+	auto CubeQOS = Cast<UStaticMeshComponent>(ComponentsOfInterest["CubeQOS"]);
+	auto CubeAnyMsg = Cast<UStaticMeshComponent>(ComponentsOfInterest["CubeAnyMsg"]);
+	Test.TestTrue("CubeComplexMsg final x pos", CubeComplexMsg->GetComponentLocation().X > 100.0);
+	Test.TestTrue("CubeQOS final x pos", CubeQOS->GetComponentLocation().X > 100.0);
+	Test.TestTrue("CubeAnyMsg final x pos", CubeAnyMsg->GetComponentLocation().X > 100.0);
 	return true;
 }
 
