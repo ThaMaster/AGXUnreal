@@ -47,10 +47,30 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 	}
 
 	// Draw the top edge.
-	const FVector BeginLocation = Shovel->TopEdge.Start.GetWorldLocation();
-	const FVector EndLocation = Shovel->TopEdge.End.GetWorldLocation();
-	FLinearColor Color = FLinearColor::Red;
-	PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground);
+	{
+		const FVector BeginLocation = Shovel->TopEdge.Start.GetWorldLocation();
+		const FVector EndLocation = Shovel->TopEdge.End.GetWorldLocation();
+		FLinearColor Color = FLinearColor::White;
+		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
+	}
+
+	// Draw the cutting edge.
+	{
+		const FVector BeginLocation = Shovel->CuttingEdge.Start.GetWorldLocation();
+		const FVector EndLocation = Shovel->CuttingEdge.End.GetWorldLocation();
+		FLinearColor Color = FLinearColor::Red;
+		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
+	}
+
+	// Draw the cutting direction.
+	{
+		const FVector BeginLocation = Shovel->CuttingDirection.GetWorldLocation();
+		const FRotator Rotation = Shovel->CuttingDirection.GetWorldRotation();
+		const FVector Direction = Rotation.RotateVector(FVector::ForwardVector);
+		const FVector EndLocation = BeginLocation + 100 * Direction;
+		const FLinearColor Color = FLinearColor::Red;//.Desaturate(0.5f);
+		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
+	}
 }
 
 bool FAGX_ShovelComponentVisualizer::VisProxyHandleClick(
