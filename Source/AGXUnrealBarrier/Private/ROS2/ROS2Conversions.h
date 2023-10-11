@@ -151,7 +151,7 @@ FAGX_BuiltinInterfacesTime Convert(const agxIO::ROS2::builtinInterfaces::Time& I
 {
 	FAGX_BuiltinInterfacesTime Msg;
 	Msg.Sec = InMsg.sec;
-	Msg.Nanosec = static_cast<int32>(InMsg.nanosec);
+	Msg.Nanosec = static_cast<int64>(InMsg.nanosec);
 	return Msg;
 }
 
@@ -159,7 +159,7 @@ FAGX_BuiltinInterfacesDuration Convert(const agxIO::ROS2::builtinInterfaces::Dur
 {
 	FAGX_BuiltinInterfacesDuration Msg;
 	Msg.Sec = InMsg.sec;
-	Msg.Nanosec = static_cast<int32>(InMsg.nanosec);
+	Msg.Nanosec = static_cast<int64>(InMsg.nanosec);
 	return Msg;
 }
 
@@ -205,15 +205,15 @@ FAGX_StdMsgsMultiArrayDimension Convert(const agxIO::ROS2::stdMsgs::MultiArrayDi
 {
 	FAGX_StdMsgsMultiArrayDimension Msg;
 	Msg.Label = FString(InMsg.label.c_str());
-	Msg.Size = static_cast<int32>(InMsg.size);
-	Msg.Stride = static_cast<int32>(InMsg.stride);
+	Msg.Size = static_cast<int64>(InMsg.size);
+	Msg.Stride = static_cast<int64>(InMsg.stride);
 	return Msg;
 }
 
 FAGX_StdMsgsMultiArrayLayout Convert(const agxIO::ROS2::stdMsgs::MultiArrayLayout& InMsg)
 {
 	FAGX_StdMsgsMultiArrayLayout Msg;
-	Msg.DataOffset = static_cast<int32>(InMsg.data_offset);
+	Msg.DataOffset = static_cast<int64>(InMsg.data_offset);
 
 	for (const auto& dimension : InMsg.dim)
 	{
@@ -383,7 +383,7 @@ FAGX_StdMsgsInt64MultiArray Convert(const agxIO::ROS2::stdMsgs::Int64MultiArray&
 FAGX_StdMsgsInt8 Convert(const agxIO::ROS2::stdMsgs::Int8& InMsg)
 {
 	FAGX_StdMsgsInt8 Msg;
-	Msg.Data = static_cast<uint8>(InMsg.data);
+	Msg.Data = static_cast<int32>(InMsg.data);
 	return Msg;
 }
 
@@ -395,7 +395,7 @@ FAGX_StdMsgsInt8MultiArray Convert(const agxIO::ROS2::stdMsgs::Int8MultiArray& I
 
 	for (int32 i = 0; i < InMsg.data.size(); ++i)
 	{
-		Msg.Data[i] = static_cast<uint8>(InMsg.data[i]);
+		Msg.Data[i] = static_cast<int32>(InMsg.data[i]);
 	}
 
 	return Msg;
@@ -432,7 +432,7 @@ FAGX_StdMsgsUInt16MultiArray Convert(const agxIO::ROS2::stdMsgs::UInt16MultiArra
 FAGX_StdMsgsUInt32 Convert(const agxIO::ROS2::stdMsgs::UInt32& InMsg)
 {
 	FAGX_StdMsgsUInt32 Msg;
-	Msg.Data = static_cast<int32>(InMsg.data);
+	Msg.Data = static_cast<int64>(InMsg.data);
 	return Msg;
 }
 
@@ -444,7 +444,7 @@ FAGX_StdMsgsUInt32MultiArray Convert(const agxIO::ROS2::stdMsgs::UInt32MultiArra
 	Msg.Data.SetNum(InMsg.data.size());
 	for (int32 i = 0; i < InMsg.data.size(); ++i)
 	{
-		Msg.Data[i] = static_cast<int32>(InMsg.data[i]);
+		Msg.Data[i] = static_cast<int64>(InMsg.data[i]);
 	}
 
 	return Msg;
@@ -453,7 +453,7 @@ FAGX_StdMsgsUInt32MultiArray Convert(const agxIO::ROS2::stdMsgs::UInt32MultiArra
 FAGX_StdMsgsUInt64 Convert(const agxIO::ROS2::stdMsgs::UInt64& InMsg)
 {
 	FAGX_StdMsgsUInt64 Msg;
-	Msg.Data = static_cast<int32>(InMsg.data);
+	Msg.Data = static_cast<int64>(InMsg.data);
 	return Msg;
 }
 
@@ -465,7 +465,7 @@ FAGX_StdMsgsUInt64MultiArray Convert(const agxIO::ROS2::stdMsgs::UInt64MultiArra
 
 	for (int32 i = 0; i < InMsg.data.size(); ++i)
 	{
-		Msg.Data[i] = static_cast<int32>(InMsg.data[i]);
+		Msg.Data[i] = static_cast<int64>(InMsg.data[i]);
 	}
 
 	return Msg;
@@ -1435,11 +1435,11 @@ FAGX_SensorMsgsImage Convert(const agxIO::ROS2::sensorMsgs::Image& InMsg)
 {
 	FAGX_SensorMsgsImage Msg;
 	Msg.Header = Convert(InMsg.header);
-	Msg.Height = static_cast<int32>(InMsg.height);
-	Msg.Width = static_cast<int32>(InMsg.width);
+	Msg.Height = static_cast<int64>(InMsg.height);
+	Msg.Width = static_cast<int64>(InMsg.width);
 	Msg.Encoding = FString(InMsg.encoding.c_str());
 	Msg.IsBigendian = static_cast<uint8>(InMsg.is_bigendian);
-	Msg.Step = static_cast<int32>(InMsg.step);
+	Msg.Step = static_cast<int64>(InMsg.step);
 
 	Msg.Data.SetNum(InMsg.data.size());
 	for (int32 i = 0; i < InMsg.data.size(); ++i)
@@ -1649,7 +1649,7 @@ FAGX_SensorMsgsNavSatStatus Convert(const agxIO::ROS2::sensorMsgs::NavSatStatus&
 {
 	FAGX_SensorMsgsNavSatStatus Msg;
 
-	Msg.Status = static_cast<uint8>(InMsg.status);
+	Msg.Status = static_cast<int32>(InMsg.status);
 	Msg.Service = static_cast<int32>(InMsg.service);
 
 	return Msg;
@@ -1702,9 +1702,9 @@ FAGX_SensorMsgsPointField Convert(const agxIO::ROS2::sensorMsgs::PointField& InM
 	FAGX_SensorMsgsPointField Msg;
 
 	Msg.Name = InMsg.name.c_str();
-	Msg.Offset = static_cast<int32>(InMsg.offset);
+	Msg.Offset = static_cast<int64>(InMsg.offset);
 	Msg.Datatype = InMsg.datatype;
-	Msg.Count = static_cast<int32>(InMsg.count);
+	Msg.Count = static_cast<int64>(InMsg.count);
 
 	return Msg;
 }
@@ -1714,8 +1714,8 @@ FAGX_SensorMsgsPointCloud2 Convert(const agxIO::ROS2::sensorMsgs::PointCloud2& I
 	FAGX_SensorMsgsPointCloud2 Msg;
 
 	Msg.Header = Convert(InMsg.header);
-	Msg.Height = static_cast<int32>(InMsg.height);
-	Msg.Width = static_cast<int32>(InMsg.width);
+	Msg.Height = static_cast<int64>(InMsg.height);
+	Msg.Width = static_cast<int64>(InMsg.width);
 
 	Msg.Fields.Reserve(InMsg.fields.size());
 	for (const auto& Field : InMsg.fields)
@@ -1724,8 +1724,8 @@ FAGX_SensorMsgsPointCloud2 Convert(const agxIO::ROS2::sensorMsgs::PointCloud2& I
 	}
 
 	Msg.IsBigendian = InMsg.is_bigendian;
-	Msg.PointStep = static_cast<int32>(InMsg.point_step);
-	Msg.RowStep = static_cast<int32>(InMsg.row_step);
+	Msg.PointStep = static_cast<int64>(InMsg.point_step);
+	Msg.RowStep = static_cast<int64>(InMsg.row_step);
 
 	Msg.Data.Reserve(InMsg.data.size());
 	for (const auto& Byte : InMsg.data)
@@ -1756,10 +1756,10 @@ FAGX_SensorMsgsRegionOfInterest Convert(const agxIO::ROS2::sensorMsgs::RegionOfI
 {
 	FAGX_SensorMsgsRegionOfInterest Msg;
 
-	Msg.XOffset = static_cast<int32>(InMsg.x_offset);
-	Msg.YOffset = static_cast<int32>(InMsg.y_offset);
-	Msg.Height = static_cast<int32>(InMsg.height);
-	Msg.Width = static_cast<int32>(InMsg.width);
+	Msg.XOffset = static_cast<int64>(InMsg.x_offset);
+	Msg.YOffset = static_cast<int64>(InMsg.y_offset);
+	Msg.Height = static_cast<int64>(InMsg.height);
+	Msg.Width = static_cast<int64>(InMsg.width);
 	Msg.DoRectify = InMsg.do_rectify;
 
 	return Msg;
@@ -1770,8 +1770,8 @@ FAGX_SensorMsgsCameraInfo Convert(const agxIO::ROS2::sensorMsgs::CameraInfo& InM
 	FAGX_SensorMsgsCameraInfo Msg;
 
 	Msg.Header = Convert(InMsg.header);
-	Msg.Height = static_cast<int32>(InMsg.height);
-	Msg.Width = static_cast<int32>(InMsg.width);
+	Msg.Height = static_cast<int64>(InMsg.height);
+	Msg.Width = static_cast<int64>(InMsg.width);
 	Msg.DistortionModel = InMsg.distortion_model.c_str();
 
 	Msg.D.Reserve(InMsg.d.size());
@@ -1791,8 +1791,8 @@ FAGX_SensorMsgsCameraInfo Convert(const agxIO::ROS2::sensorMsgs::CameraInfo& InM
 		Msg.P.Add(InMsg.p[i]);
 	}
 
-	Msg.BinningX = static_cast<int32>(InMsg.binning_x);
-	Msg.BinningY = static_cast<int32>(InMsg.binning_y);
+	Msg.BinningX = static_cast<int64>(InMsg.binning_x);
+	Msg.BinningY = static_cast<int64>(InMsg.binning_y);
 	Msg.ROI = Convert(InMsg.roi);
 
 	return Msg;

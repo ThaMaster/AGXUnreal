@@ -51,7 +51,7 @@ struct AGXCOMMON_API FAGX_BuiltinInterfacesTime : public FAGX_ROS2Message
 	int32 Sec {0};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Nanosec {0}; // uint32 not supported by Blueprints.
+	int64 Nanosec {0}; // uint32 not supported by Blueprints.
 };
 
 USTRUCT(BlueprintType)
@@ -63,7 +63,7 @@ struct AGXCOMMON_API FAGX_BuiltinInterfacesDuration : public FAGX_ROS2Message
 	int32 Sec {0};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Nanosec {0}; // uint32 not supported by Blueprints.
+	int64 Nanosec {0}; // uint32 not supported by Blueprints.
 };
 
 //
@@ -92,10 +92,10 @@ struct AGXCOMMON_API FAGX_StdMsgsMultiArrayDimension : public FAGX_ROS2Message
 	FString Label;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Size {0}; // uint32 not supported by Blueprints.
+	int64 Size {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Stride {0}; // uint32 not supported by Blueprints.
+	int64 Stride {0}; // uint32 not supported by Blueprints.
 };
 
 USTRUCT(BlueprintType)
@@ -107,7 +107,7 @@ struct AGXCOMMON_API FAGX_StdMsgsMultiArrayLayout : public FAGX_ROS2Message
 	TArray<FAGX_StdMsgsMultiArrayDimension> Dim;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 DataOffset {0}; // uint32 not supported by Blueprints.
+	int64 DataOffset {0}; // uint32 not supported by Blueprints.
 };
 
 USTRUCT(BlueprintType)
@@ -287,7 +287,7 @@ struct AGXCOMMON_API FAGX_StdMsgsInt8 : public FAGX_ROS2Message
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	uint8 Data {0}; // int8 not supported by Blueprints.
+	int32 Data {0}; // int8 not supported by Blueprints.
 };
 
 USTRUCT(BlueprintType)
@@ -299,7 +299,7 @@ struct AGXCOMMON_API FAGX_StdMsgsInt8MultiArray : public FAGX_ROS2Message
 	FAGX_StdMsgsMultiArrayLayout Layout;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<uint8> Data; // int8 not supported by Blueprints.
+	TArray<int32> Data; // int8 not supported by Blueprints.
 };
 
 USTRUCT(BlueprintType)
@@ -338,7 +338,7 @@ struct AGXCOMMON_API FAGX_StdMsgsUInt32 : public FAGX_ROS2Message
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Data {0}; // uint32 not supported by Blueprints.
+	int64 Data {0}; // uint32 not supported by Blueprints.
 };
 
 USTRUCT(BlueprintType)
@@ -350,7 +350,7 @@ struct AGXCOMMON_API FAGX_StdMsgsUInt32MultiArray : public FAGX_ROS2Message
 	FAGX_StdMsgsMultiArrayLayout Layout;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<int32> Data; // uint32 not supported by Blueprints.
+	TArray<int64> Data; // uint32 not supported by Blueprints.
 };
 
 USTRUCT(BlueprintType)
@@ -359,7 +359,7 @@ struct AGXCOMMON_API FAGX_StdMsgsUInt64 : public FAGX_ROS2Message
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Data {0}; // uint64 not supported by Blueprints.
+	int64 Data {0}; // uint64 not supported by Blueprints.
 };
 
 USTRUCT(BlueprintType)
@@ -371,7 +371,7 @@ struct AGXCOMMON_API FAGX_StdMsgsUInt64MultiArray : public FAGX_ROS2Message
 	FAGX_StdMsgsMultiArrayLayout Layout;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<int32> Data; // uint64 not supported by Blueprints.
+	TArray<int64> Data; // uint64 not supported by Blueprints.
 };
 
 USTRUCT(BlueprintType)
@@ -920,10 +920,10 @@ struct AGXCOMMON_API FAGX_SensorMsgsImage : public FAGX_ROS2Message
 	FAGX_StdMsgsHeader Header;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Height {0}; // uint32 not supported by Blueprints.
+	int64 Height {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Width {0}; // uint32 not supported by Blueprints.
+	int64 Width {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	FString Encoding;
@@ -932,7 +932,7 @@ struct AGXCOMMON_API FAGX_SensorMsgsImage : public FAGX_ROS2Message
 	uint8 IsBigendian {0};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Step {0}; // uint32 not supported by Blueprints.
+	int64 Step {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	TArray<uint8> Data;
@@ -1148,7 +1148,7 @@ struct AGXCOMMON_API FAGX_SensorMsgsNavSatStatus : public FAGX_ROS2Message
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	uint8 Status {0}; // int8 not supported by Blueprints.
+	int32 Status {0}; // int8 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	int32 Service {0}; // uint16 not supported by Blueprints.
@@ -1205,13 +1205,13 @@ struct AGXCOMMON_API FAGX_SensorMsgsPointField : public FAGX_ROS2Message
 	FString Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Offset {0}; // uint32 not supported by Blueprints.
+	int64 Offset {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	uint8 Datatype {0};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Count {0}; // uint32 not supported by Blueprints.
+	int64 Count {0}; // uint32 not supported by Blueprints.
 };
 
 USTRUCT(BlueprintType)
@@ -1223,10 +1223,10 @@ struct AGXCOMMON_API FAGX_SensorMsgsPointCloud2 : public FAGX_ROS2Message
 	FAGX_StdMsgsHeader Header;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Height {0}; // uint32 not supported by Blueprints.
+	int64 Height {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Width {0}; // uint32 not supported by Blueprints.
+	int64 Width {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	TArray<FAGX_SensorMsgsPointField> Fields;
@@ -1235,10 +1235,10 @@ struct AGXCOMMON_API FAGX_SensorMsgsPointCloud2 : public FAGX_ROS2Message
 	bool IsBigendian {false};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 PointStep {0}; // uint32 not supported by Blueprints.
+	int64 PointStep {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 RowStep {0}; // uint32 not supported by Blueprints.
+	int64 RowStep {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	TArray<uint8> Data;
@@ -1277,16 +1277,16 @@ struct AGXCOMMON_API FAGX_SensorMsgsRegionOfInterest : public FAGX_ROS2Message
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 XOffset {0}; // uint32 not supported by Blueprints.
+	int64 XOffset {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 YOffset {0}; // uint32 not supported by Blueprints.
+	int64 YOffset {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Height {0}; // uint32 not supported by Blueprints.
+	int64 Height {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Width {0}; // uint32 not supported by Blueprints.
+	int64 Width {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	bool DoRectify {false};
@@ -1301,10 +1301,10 @@ struct AGXCOMMON_API FAGX_SensorMsgsCameraInfo : public FAGX_ROS2Message
 	FAGX_StdMsgsHeader Header;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Height {0}; // uint32 not supported by Blueprints.
+	int64 Height {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Width {0}; // uint32 not supported by Blueprints.
+	int64 Width {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	FString DistortionModel;
@@ -1322,10 +1322,10 @@ struct AGXCOMMON_API FAGX_SensorMsgsCameraInfo : public FAGX_ROS2Message
 	TArray<double> P; // Static arrays not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 BinningX {0}; // uint32 not supported by Blueprints.
+	int64 BinningX {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 BinningY {0}; // uint32 not supported by Blueprints.
+	int64 BinningY {0}; // uint32 not supported by Blueprints.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	FAGX_SensorMsgsRegionOfInterest ROI;
