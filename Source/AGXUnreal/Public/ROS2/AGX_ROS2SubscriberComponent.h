@@ -32,8 +32,7 @@ public:
 	/**
 	 * Struct containing Quality of Service (QOS) settings.
 	 * Reliability, durability, history and historyDepth are supported.
-	 * By default the QOS settings are the same as in ROS2, i.e.
-	 * Reliability "reliable", Durability "volatile", Durability "keep last" and history depth 10.
+	 * By default the QOS settings are the same as in ROS2.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX ROS2")
 	FAGX_ROS2Qos Qos;
