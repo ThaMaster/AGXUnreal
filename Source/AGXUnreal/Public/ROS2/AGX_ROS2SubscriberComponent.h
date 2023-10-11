@@ -526,6 +526,8 @@ public:
 		FAGX_SensorMsgsTimeReference& OutMessage, const FString& Topic);
 
 private:
+
+	// Key is the Topic.
 	TMap<FString, FROS2SubscriberBarrier> NativeBarriers;
 
 	FROS2SubscriberBarrier* GetOrCreateBarrier(EAGX_ROS2MessageType Type, const FString& Topic);
