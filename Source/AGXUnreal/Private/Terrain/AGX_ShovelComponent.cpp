@@ -81,6 +81,7 @@ void UAGX_ShovelComponent::PostInitProperties()
 	TopEdge.End.Parent.OwningActor = Owner;
 	CuttingEdge.Start.Parent.OwningActor = Owner;
 	CuttingEdge.End.Parent.OwningActor = Owner;
+	CuttingDirection.Parent.OwningActor = Owner;
 }
 
 void UAGX_ShovelComponent::BeginPlay()
