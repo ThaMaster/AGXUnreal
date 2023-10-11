@@ -5,6 +5,8 @@
 // AGX Dynamics for Unreal includes.
 #include "ActorEditorUtils.h"
 #include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelHitProxies.h"
+#include "Terrain/AGX_ShovelUtilities.h"
 
 #define LOCTEXT_NAMESPACE "AGX_ShovelComponentVisualizer"
 #define MEMBER(Name) GET_MEMBER_NAME_CHECKED(UAGX_ShovelComponent, Name)
@@ -52,6 +54,12 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 		const FVector EndLocation = Shovel->TopEdge.End.GetWorldLocation();
 		FLinearColor Color = FLinearColor::White;
 		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
+
+		PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::TopEdgeBegin));
+		PDI->DrawPoint(BeginLocation, Color, FAGX_ShovelUtilities::HitProxySize, SDPG_Foreground);
+		PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::TopEdgeEnd));
+		PDI->DrawPoint(EndLocation, Color, FAGX_ShovelUtilities::HitProxySize, SDPG_Foreground);
+		PDI->SetHitProxy(nullptr);
 	}
 
 	// Draw the cutting edge.

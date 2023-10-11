@@ -2,22 +2,16 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Terrain/AGX_TerrainEnums.h"
+
 // Unreal Engine includes.
 #include "ComponentVisualizer.h"
 
 class UAGX_ShovelComponent;
 struct FAGX_Frame;
 
-UENUM()
-enum class EAGX_ShovelFrame : uint8
-{
-	None,
-	TopEdgeBegin,
-	TopEdgeEnd,
-	CuttingEdgeBegin,
-	CuttingEdgeEnd,
-	CuttingDirection
-};
+
 
 /**
  * The Shovel Visualizer uses lines and points to visualize the various edges and directions that
