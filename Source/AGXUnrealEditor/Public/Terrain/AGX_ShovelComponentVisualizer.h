@@ -70,14 +70,17 @@ public:
 private:
 	EAGX_ShovelFrame SelectedFrameSource {EAGX_ShovelFrame::None};
 
-	FProperty* TopEdgeProperty;
-	FProperty* CuttingEdgeProperty;
-	FProperty* CuttingDirectionProperty;
+	FProperty* TopEdgeProperty {nullptr};
+	FProperty* CuttingEdgeProperty {nullptr};
+	FProperty* CuttingDirectionProperty {nullptr};
 
 	/**
 	 * Property path from the owning Actor to the Shovel Component of the currently selected shovel.
 	 * We must use a path instead of a pointer because during Blueprint Reconstruction the Shovel
 	 * Component will be replaced by a new instance.
+	 *
+	 * By "selected" we mean the Shovel owning the selected edge or direction, a single Visualizer
+	 * may be rendering multiple shovels in the same frame.
 	 */
 	FComponentPropertyPath ShovelPropertyPath;
 };
