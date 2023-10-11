@@ -11,6 +11,39 @@
 #define LOCTEXT_NAMESPACE "AGX_ShovelComponentVisualizer"
 #define MEMBER(Name) GET_MEMBER_NAME_CHECKED(UAGX_ShovelComponent, Name)
 
+struct FShovelVisualizerOperations
+{
+	static bool ShovelProxyClicked(
+		FAGX_ShovelComponentVisualizer& Visualizer, const UAGX_ShovelComponent& Shovel,
+		HShovelHitProxy& Proxy)
+	{
+		if (Shovel.HasNative())
+		{
+			// Not allowed to modify the shovel configuration once it has been instantiated.
+			Visualizer.ClearSelection();
+			return false;
+		}
+
+		if (Proxy.Frame == Visualizer.SelectedFrame)
+		{
+			// Clicking a selected node deselects it.
+			Visualizer.ClearSelection();
+			return true;
+		}
+
+		SelectFrame(Visualizer, Shovel, Proxy.Frame);
+		return true;
+	}
+
+	static void SelectFrame(
+		FAGX_ShovelComponentVisualizer& Visualizer, const UAGX_ShovelComponent& Shovel,
+		EAGX_ShovelFrame Frame)
+	{
+		Visualizer.SelectedFrame = Frame;
+		Visualizer.ShovelPropertyPath = FComponentPropertyPath(&Shovel);
+	}
+};
+
 FAGX_ShovelComponentVisualizer::FAGX_ShovelComponentVisualizer()
 {
 	UClass* Class = UAGX_ShovelComponent::StaticClass();
@@ -76,7 +109,7 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 		const FRotator Rotation = Shovel->CuttingDirection.GetWorldRotation();
 		const FVector Direction = Rotation.RotateVector(FVector::ForwardVector);
 		const FVector EndLocation = BeginLocation + 100 * Direction;
-		const FLinearColor Color = FLinearColor::Red;//.Desaturate(0.5f);
+		const FLinearColor Color = FLinearColor::Red; //.Desaturate(0.5f);
 		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
 	}
 }
@@ -85,13 +118,52 @@ bool FAGX_ShovelComponentVisualizer::VisProxyHandleClick(
 	FEditorViewportClient* InViewportClient, HComponentVisProxy* VisProxy,
 	const FViewportClick& Click)
 {
-	return FComponentVisualizer::VisProxyHandleClick(InViewportClient, VisProxy, Click);
+	const UAGX_ShovelComponent* Shovel = Cast<const UAGX_ShovelComponent>(VisProxy->Component);
+	if (Shovel == nullptr)
+	{
+		// Clicked something not a shovel, deselect whatever we had selected before.
+		ClearSelection();
+		return false;
+	}
+
+	AActor* OldOwningActor = ShovelPropertyPath.GetParentOwningActor();
+	AActor* NewOwningActor = Shovel->GetOwner();
+	if (NewOwningActor != OldOwningActor)
+	{
+		// Don't reuse selection data between Actors, it's completely different shovels.
+		ClearSelection();
+	}
+
+	if (HShovelHitProxy* Proxy = HitProxyCast<HShovelHitProxy>(VisProxy))
+	{
+		return FShovelVisualizerOperations::ShovelProxyClicked(*this, *Shovel, *Proxy);
+	}
+
+	// Add additional proxy types here when needed.
+
+	// The clicked proxy isn't a Shovel proxy, return false to pass on to the next handler in line.
+	return false;
 }
 
+
+// Call by Unreal Editor to decide where the transform widget should be rendered. We place it on
+// the selected frame, if there is one.
 bool FAGX_ShovelComponentVisualizer::GetWidgetLocation(
 	const FEditorViewportClient* ViewportClient, FVector& OutLocation) const
 {
-	return FComponentVisualizer::GetWidgetLocation(ViewportClient, OutLocation);
+	UAGX_ShovelComponent* Shovel = GetSelectedShovel();
+	if (Shovel == nullptr)
+	{
+		return false;
+	}
+
+	if (FAGX_Frame* Frame = GetSelectedFrame())
+	{
+		OutLocation = Frame->GetWorldLocation();
+		return true;
+	}
+
+	return false;
 }
 
 bool FAGX_ShovelComponentVisualizer::HandleInputDelta(
@@ -140,25 +212,31 @@ FAGX_Frame* FAGX_ShovelComponentVisualizer::GetSelectedFrame() const
 	{
 		return nullptr;
 	}
-	switch (SelectedFrameSource)
+	switch (SelectedFrame)
 	{
-		case EAGX_ShovelFrame::None: return nullptr;
-		case EAGX_ShovelFrame::CuttingDirection: return &Shovel->CuttingDirection;
-		case EAGX_ShovelFrame::CuttingEdgeBegin: return &Shovel->CuttingEdge.Start;
-		case EAGX_ShovelFrame::CuttingEdgeEnd: return &Shovel->CuttingEdge.End;
-		case EAGX_ShovelFrame::TopEdgeBegin: return &Shovel->TopEdge.Start;
-		case EAGX_ShovelFrame::TopEdgeEnd: return &Shovel->TopEdge.End;
+		case EAGX_ShovelFrame::None:
+			return nullptr;
+		case EAGX_ShovelFrame::CuttingDirection:
+			return &Shovel->CuttingDirection;
+		case EAGX_ShovelFrame::CuttingEdgeBegin:
+			return &Shovel->CuttingEdge.Start;
+		case EAGX_ShovelFrame::CuttingEdgeEnd:
+			return &Shovel->CuttingEdge.End;
+		case EAGX_ShovelFrame::TopEdgeBegin:
+			return &Shovel->TopEdge.Start;
+		case EAGX_ShovelFrame::TopEdgeEnd:
+			return &Shovel->TopEdge.End;
 	}
 }
 
 EAGX_ShovelFrame FAGX_ShovelComponentVisualizer::GetSelectedFrameSource() const
 {
-	return SelectedFrameSource;
+	return SelectedFrame;
 }
 
 void FAGX_ShovelComponentVisualizer::ClearSelection()
 {
-	SelectedFrameSource = EAGX_ShovelFrame::None;
+	SelectedFrame = EAGX_ShovelFrame::None;
 	ShovelPropertyPath.Reset();
 }
 

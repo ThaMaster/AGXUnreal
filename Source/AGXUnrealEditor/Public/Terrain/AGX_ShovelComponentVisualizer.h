@@ -62,11 +62,7 @@ public:
 	UAGX_ShovelComponent* GetSelectedShovel() const;
 
 private:
-	EAGX_ShovelFrame SelectedFrameSource {EAGX_ShovelFrame::None};
-
-	FProperty* TopEdgeProperty {nullptr};
-	FProperty* CuttingEdgeProperty {nullptr};
-	FProperty* CuttingDirectionProperty {nullptr};
+	EAGX_ShovelFrame SelectedFrame {EAGX_ShovelFrame::None};
 
 	/**
 	 * Property path from the owning Actor to the Shovel Component of the currently selected shovel.
@@ -77,4 +73,11 @@ private:
 	 * may be rendering multiple shovels in the same frame.
 	 */
 	FComponentPropertyPath ShovelPropertyPath;
+
+	FProperty* TopEdgeProperty {nullptr};
+	FProperty* CuttingEdgeProperty {nullptr};
+	FProperty* CuttingDirectionProperty {nullptr};
+
+	/// A library of helper function manipulating the private state of FAGX_WireComponentVisualizer.
+	friend struct FShovelVisualizerOperations;
 };
