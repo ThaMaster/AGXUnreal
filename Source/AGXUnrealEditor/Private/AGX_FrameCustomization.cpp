@@ -11,6 +11,7 @@
 #include "IDetailChildrenBuilder.h"
 #include "Engine/SimpleConstructionScript.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 #define LOCTEXT_NAMESPACE "AGX_FrameCustomization"
 
@@ -149,10 +150,10 @@ FText FAGX_FrameCustomization::GetHeaderText() const
 
 	const AActor* OwningActor = Frame->Parent.OwningActor;
 	const FName ComponentName = Frame->Parent.Name;
-	const FName ActorName = OwningActor ? OwningActor->GetFName() : NAME_None;
+	const FString ActorName = OwningActor ? GetLabelSafe(OwningActor) : TEXT("(Self)");
 	return FText::Format(
 		LOCTEXT("HeaderText", "{0} in {1}"), FText::FromName(ComponentName),
-		FText::FromName(ActorName));
+		FText::FromString(ActorName));
 }
 
 #undef LOCTEXT_NAMESPACE

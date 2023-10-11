@@ -5,15 +5,15 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_ComponentReference.h"
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_PropertyUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "DetailWidgetRow.h"
 #include "IDetailChildrenBuilder.h"
-#include "AgxEdMode/AGX_AgxEdModeConstraints.h"
 #include "Engine/SCS_Node.h"
 #include "Engine/SimpleConstructionScript.h"
-#include "Utilities/AGX_EditorUtilities.h"
-#include "Utilities/AGX_PropertyUtilities.h"
 
 #define LOCTEXT_NAMESPACE "AGX_ComponentReferenceCustomization"
 
@@ -255,10 +255,10 @@ FText FAGX_ComponentReferenceCustomization::GetHeaderText() const
 
 	const AActor* OwningActor = GetOwningActor();
 	const FName ComponentName = GetName();
-	const FName ActorName = OwningActor ? OwningActor->GetFName() : NAME_None;
+	const FString ActorName = OwningActor ? GetLabelSafe(OwningActor) : TEXT("(Self)");
 	return FText::Format(
 		LOCTEXT("HeaderText", "{0} in {1}"), FText::FromName(ComponentName),
-		FText::FromName(ActorName));
+		FText::FromString(ActorName));
 }
 
 void FAGX_ComponentReferenceCustomization::RebuildComboBox()
