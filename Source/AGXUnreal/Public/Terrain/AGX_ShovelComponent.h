@@ -8,6 +8,7 @@
 #include "AGX_NativeOwner.h"
 #include "AGX_RigidBodyReference.h"
 #include "Terrain/ShovelBarrier.h"
+#include "Terrain/AGX_TerrainEnums.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -45,6 +46,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
 	FAGX_Frame CuttingDirection;
 
+	/**
+	 * Get one of the frames that are used to define the edges and directions of the shovel.
+	 */
+	FAGX_Frame* GetFrame(EAGX_ShovelFrame Frame);
 
 	bool SwapEdgeDirections();
 

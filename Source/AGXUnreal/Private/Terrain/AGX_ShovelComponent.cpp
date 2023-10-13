@@ -11,6 +11,7 @@
 // Unreal Engine includes.
 #include "AGX_RigidBodyComponent.h"
 #include "CoreGlobals.h"
+#include "Terrain/AGX_TerrainEnums.h"
 
 class FRigidBodyBarrier;
 
@@ -21,6 +22,30 @@ UAGX_ShovelComponent::UAGX_ShovelComponent()
 {
 	// Keep ticking off until we have a reason to turn it on.
 	PrimaryComponentTick.bCanEverTick = false;
+}
+
+FAGX_Frame* UAGX_ShovelComponent::GetFrame(EAGX_ShovelFrame Frame)
+{
+	switch (Frame)
+	{
+		case EAGX_ShovelFrame::CuttingDirection:
+			return &CuttingDirection;
+		case EAGX_ShovelFrame::CuttingEdgeBegin:
+			return &CuttingEdge.Start;
+		case EAGX_ShovelFrame::CuttingEdgeEnd:
+			return &CuttingEdge.End;
+		case EAGX_ShovelFrame::TopEdgeBegin:
+			return &TopEdge.Start;
+		case EAGX_ShovelFrame::TopEdgeEnd:
+			return &TopEdge.End;
+		case EAGX_ShovelFrame::None:
+			return nullptr;
+	}
+	UE_LOG(
+		LogAGX, Warning,
+		TEXT("Unknown Shovel Frame source, %d, passed to UAGX_ShovelComponent::GetFrame."),
+		static_cast<int>(Frame));
+	return nullptr;
 }
 
 bool UAGX_ShovelComponent::SwapEdgeDirections()
