@@ -15,9 +15,9 @@ struct FAGX_Frame;
 
 /**
  * The Shovel Visualizer uses lines and points to visualize the various edges and directions that
- * characterizes a AGX Dynamics Shovel. The Shovel Visualizer maintains a frame selection state
+ * characterizes an AGX Dynamics Shovel. The Shovel Visualizer maintains a frame selection state
  * which can be used to provide additional operations on the frame, such as from a Details
- * Customization.
+ * Customization, and for interactive editing in the viewport.
  */
 class AGXUNREALEDITOR_API FAGX_ShovelComponentVisualizer : public FComponentVisualizer
 {
@@ -57,6 +57,7 @@ public:
 	bool HasValidFrameSection() const;
 	FAGX_Frame* GetSelectedFrame() const;
 	EAGX_ShovelFrame GetSelectedFrameSource() const;
+	FProperty* GetSelectedFrameProperty() const;
 	void ClearSelection();
 
 	UAGX_ShovelComponent* GetSelectedShovel() const;

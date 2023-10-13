@@ -35,8 +35,13 @@ public class AGXUnrealEditor : ModuleRules
 			"AGXDynamicsLibrary", "AssetTools", "CoreUObject",
 			"DesktopPlatform", "EditorStyle", "Engine", "InputCore", "Json",
 			"LevelEditor", "PlacementMode", "Projects", "PropertyEditor", "PropertyPath",
-			"RenderCore","RHI", "Slate", "SlateCore", "SlateCore", "UnrealEd",
-			"SceneOutliner"
+			"RenderCore", "RHI", "SceneOutliner", "Slate", "SlateCore",
+
+			// Used to in Component Visualizers to determine if the visualized object is currently
+			// selected or not. Provides FSubobjectEditorTreeNode.
+			"SubobjectEditor",
+
+			"UnrealEd"
 		});
 
 #if UE_5_0_OR_LATER

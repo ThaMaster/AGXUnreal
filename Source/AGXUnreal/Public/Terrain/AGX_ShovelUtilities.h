@@ -2,9 +2,13 @@
 
 #pragma once
 
+class UAGX_ShovelComponent;
+
 class AGXUNREAL_API FAGX_ShovelUtilities
 {
 public:
+
+	static UAGX_ShovelComponent* GetShovelToModify(UAGX_ShovelComponent* Shovel);
 
 	/**
 	 * See FPropertyHandleFloat::SetValue in PropertyHandleImpl.cpp.
