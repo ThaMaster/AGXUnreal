@@ -103,11 +103,13 @@ void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 		return;
 	}
 
+#if 0
 	UE_LOG(
 		LogAGX, Warning,
 		TEXT("FAGX_ComponentReferenceCustomization %p is customizing header for Component "
 			 "Reference %p using handle %p."),
 		this, GetComponentReference(), ComponentReferenceHandle.Get());
+#endif
 
 	// clang-format off
 	HeaderRow
@@ -148,11 +150,13 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 		return;
 	}
 
+#if 0
 	UE_LOG(
 		LogAGX, Warning,
 		TEXT("FAGX_ComponentReferenceCustomization %p is customizing children for Component "
 			 "Reference %p using handle %p."),
 		this, GetComponentReference(), ComponentReferenceHandle.Get());
+#endif
 
 	// Make sure we have a single valid Component Reference that is being customized. Support for
 	// multi-select editing is a feature for the future.
@@ -344,7 +348,7 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 
 	static int32 Nesting {0};
 	const int32 CurrentNest = Nesting++;
-
+#if 0
 	UE_LOG(
 		LogAGX, Warning, TEXT("[%d] %p: OnComboBoxChanged with NameHandle %p."), Nesting, this,
 		NameHandle.Get());
@@ -361,7 +365,7 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 	UE_LOG(
 		LogAGX, Warning, TEXT("[%d] %p: New selection:     '%s'"), Nesting, this,
 		(NewSelection.IsValid() ? *NewSelection->ToString() : TEXT("(INVALID)")));
-
+#endif
 	SelectedComponent = NewSelection.IsValid() ? *NewSelection : NAME_None;
 
 	// Only set the new value if it is an actual new value. This is to prevent infinite recursion
@@ -434,12 +438,13 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 
 	// @todo Not sure if the direct assignment below if necessary, or if NameHandle->SetValue will
 	// do that for us.
+#if 0
 	UE_LOG(
 		LogAGX, Warning,
 		TEXT("[%d] %p: After (eventual) NameHandle->SetValue but before direct assignment on "
 			 "Reference: '%s'"),
 		Nesting, this, *Reference->Name.ToString());
-
+#endif
 	Reference->Name = SelectedComponent;
 
 	--Nesting;
@@ -611,7 +616,7 @@ AActor* FAGX_ComponentReferenceCustomization::GetOwningActor() const
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("FAGX_ComponentReferenceCustomization: Fond an Owning Actor but not a Component "
+			TEXT("FAGX_ComponentReferenceCustomization: Found an Owning Actor but not a Component "
 				 "Reference. Thats surprising."));
 	}
 	else if (ComponentReference->OwningActor != OwningActor)

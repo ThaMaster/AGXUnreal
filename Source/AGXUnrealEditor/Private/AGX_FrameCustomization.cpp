@@ -44,10 +44,12 @@ void FAGX_FrameCustomization::CustomizeHeader(
 	}
 
 	// TODO Debug code, remove.
+#if 0
 	UE_LOG(
 		LogAGX, Warning,
 		TEXT("FAGX_FrameCustomization %p is customizing header for Frame  %p using handle %p."),
 		this, GetFrame(), FrameHandle.Get());
+#endif
 
 	// clang-format off
 	HeaderRow

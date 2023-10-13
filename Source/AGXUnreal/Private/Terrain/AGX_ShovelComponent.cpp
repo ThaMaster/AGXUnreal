@@ -128,7 +128,6 @@ TStructOnScope<FActorComponentInstanceData> UAGX_ShovelComponent::GetComponentIn
 			ThisClass* AsThisClass = Cast<ThisClass>(Component);
 			return static_cast<IAGX_NativeOwner*>(AsThisClass);
 		});
-	return Super::GetComponentInstanceData();
 }
 
 bool UAGX_ShovelComponent::HasNative() const
@@ -140,11 +139,6 @@ uint64 UAGX_ShovelComponent::GetNativeAddress() const
 {
 	if (!HasNative())
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("GetNativeAddress called on Shovel Component '%s' in '%s' that does not have an "
-				 "AGX Dynamics native."),
-			*GetName(), *GetLabelSafe(GetOwner()));
 		return 0;
 	}
 	NativeBarrier.IncrementRefCount();
@@ -192,7 +186,6 @@ FShovelBarrier* UAGX_ShovelComponent::GetOrCreateNative()
 				*GetName(), *GetLabelSafe(GetOwner()));
 			return nullptr;
 		}
-
 		AllocateNative();
 	}
 	if (!HasNative())
