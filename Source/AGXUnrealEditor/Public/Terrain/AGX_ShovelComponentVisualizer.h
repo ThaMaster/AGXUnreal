@@ -11,12 +11,10 @@
 class UAGX_ShovelComponent;
 struct FAGX_Frame;
 
-
-
 /**
  * The Shovel Visualizer uses lines and points to visualize the various edges and directions that
  * characterizes an AGX Dynamics Shovel. The Shovel Visualizer maintains a frame selection state
- * which can be used to provide additional operations on the frame, such as from a Details
+ * that can be used to provide additional operations on the frame, such as from a Details
  * Customization, and for interactive editing in the viewport.
  */
 class AGXUNREALEDITOR_API FAGX_ShovelComponentVisualizer : public FComponentVisualizer
@@ -63,22 +61,32 @@ public:
 	UAGX_ShovelComponent* GetSelectedShovel() const;
 
 private:
+	/**
+	 * The type of frame (TopEdgeBegin, CuttingDirection, etc) that was most recently clicked by
+	 * the user.
+	 */
 	EAGX_ShovelFrame SelectedFrame {EAGX_ShovelFrame::None};
 
 	/**
 	 * Property path from the owning Actor to the Shovel Component of the currently selected shovel.
 	 * We must use a path instead of a pointer because during Blueprint Reconstruction the Shovel
-	 * Component will be replaced by a new instance.
+	 * Component will be replaced by a new instance and a raw pointer would be left dangling.
 	 *
-	 * By "selected" we mean the Shovel owning the selected edge or direction, a single Visualizer
-	 * may be rendering multiple shovels in the same frame.
+	 * By "selected" we mean the Shovel owning the selected edge or direction. Note that a single
+	 * Visualizer may be rendering multiple shovels in the same frame but only a single one of them
+	 * may be selected by the Shovel Visualizer. Note that the Shovel Visualizer selection need not
+	 * match the selected Component in any Components panel.
 	 */
 	FComponentPropertyPath ShovelPropertyPath;
 
+	// Properties used when triggering modify events. Note that we only trigger events for the
+	// top-level properties, i.e. entire edges or directions, not the leaf properties within those
+	// structs.
 	FProperty* TopEdgeProperty {nullptr};
 	FProperty* CuttingEdgeProperty {nullptr};
 	FProperty* CuttingDirectionProperty {nullptr};
 
-	/// A library of helper function manipulating the private state of FAGX_WireComponentVisualizer.
+	/// A library of helper functions manipulating the private state of
+	/// FAGX_WireComponentVisualizer.
 	friend struct FShovelVisualizerOperations;
 };
