@@ -11,6 +11,7 @@
 #include "ActorEditorUtils.h"
 #include "Templates/UnrealTypeTraits.h"
 
+#if 0
 UAGX_ShovelComponent* FAGX_ShovelUtilities::GetShovelToModify(UAGX_ShovelComponent* Shovel)
 {
 	UAGX_ShovelComponent* Archetype = Cast<UAGX_ShovelComponent>(Shovel->GetArchetype());
@@ -89,6 +90,7 @@ UAGX_ShovelComponent* FAGX_ShovelUtilities::GetShovelToModify(UAGX_ShovelCompone
 		Shovel);
 	return Shovel;
 }
+#endif
 
 void FAGX_ShovelUtilities::TruncateForDetailsPanel(double& Value)
 {

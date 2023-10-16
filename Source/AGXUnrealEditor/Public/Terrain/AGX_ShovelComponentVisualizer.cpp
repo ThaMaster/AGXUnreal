@@ -3,6 +3,7 @@
 #include "AGX_ShovelComponentVisualizer.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "Terrain/AGX_ShovelComponent.h"
 #include "Terrain/AGX_ShovelHitProxies.h"
@@ -85,6 +86,7 @@ struct FShovelVisualizerOperations
 		UE_LOG(LogAGX, Warning, TEXT("Truncating new local location for details panel"));
 		FAGX_ShovelUtilities::TruncateForDetailsPanel(NewLocalLocation);
 #endif
+#if 0
 		for (UAGX_ShovelComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Shovel))
 		{
 			UE_LOG(LogAGX, Warning, TEXT("  Updating shovel instance %p."), Instance);
@@ -96,15 +98,215 @@ struct FShovelVisualizerOperations
 				Visualizer.NotifyPropertyModified(Instance, Visualizer.GetSelectedFrameProperty());
 			}
 		}
+#endif
 		Shovel.GetFrame(FrameSource)->LocalLocation = NewLocalLocation;
-		Visualizer.NotifyPropertyModified(&Shovel, Visualizer.GetSelectedFrameProperty());
+		/*
+		  This doesn't work because this looks at the entire Top- or CuttingEdge property,
+		  not just the Local Location. This means that is also compares the
+		  FAGX_ComponentReference. These may contain different bytes even when they are
+		  conceptually the same, i.e. when Parent.OwningActor points to the shovel's GetOwner(). I
+		  don't see a way to have ComponentVisualizer::NotifyPropertyModified look into a struct
+		  property and compare a specific member within that struct. I don't think we can pass
+		  the FProperty for FAGX_Frame::LocalLocation.
+		*/
+		// Visualizer.NotifyPropertyModified(&Shovel, Visualizer.GetSelectedFrameProperty());
+		NotifyFrameModified(Visualizer, Shovel);
+	}
+
+	/**
+	 * Apply the change made on the Shovel to all instances of that Shovel. If the Shovel is part
+	 * of a preview, i.e. lives in the world shown in a Blueprint editor viewport then the change
+	 * is promoted to be applied on the Blueprint's CSC node's template Component and its instances
+	 * instead.
+	 *
+	 * This does conceptually the same thing as FComponentVisualizer::NotifyPropertyModified, with
+	 * the difference being that this implementation is specialized for FAGX_Frame. We cannot use
+	 * FComponentVisualizer::NotifyPropertyModified because I have not been able to figure out how
+	 * to use that with nested properties, i.e. when a struct member is modified, and we cannot call
+	 * FComponentVisualizer::NotifyPropertyModified for the entire Shovel property because the frame
+	 * contains a parent Component reference which may be conceptually equal but bit-wise non-equal,
+	 * for example in the common case of a local reference, i.e. the frame has a parent that is in
+	 * the same Actor.
+	 *
+	 * If this part of the code breaks then compare this implementation with that of
+	 * FComponentVisualizer::NotifyPropertyModified, perhaps Epic Games changed something and we
+	 * need to do the same change here.
+	 */
+	static void NotifyFrameModified(
+		FAGX_ShovelComponentVisualizer& Visualizer, UAGX_ShovelComponent& Shovel)
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("NotifyFrameModified for shovel %p, %s."), &Shovel,
+			*Shovel.GetName());
+
+		const EAGX_ShovelFrame FrameSource = Visualizer.GetSelectedFrameSource();
+		FProperty* FrameProperty = Visualizer.GetSelectedFrameProperty();
+
+		auto RerunConstructionScript = [](AActor& Actor)
+		{
+			// todo Should the parameter be true or false?
+			//      Depends on if this was the last input delta for the transform gizmo drag or not.
+			//      Passing false for now because that is what calling
+			//      FComponentVisualizer::NotifyFrameModified does when called with default
+			//      arguments.
+			Actor.PostEditMove(false);
+		};
+
+		{
+			FPropertyChangedEvent Event(FrameProperty);
+			Shovel.PostEditChangeProperty(Event);
+		}
+
+		AActor* Owner = Shovel.GetOwner();
+		if (Owner == nullptr)
+		{
+			// Is there any case where a Component does not have an owner but does have instances?
+			// That is, an archetype Component without an Owner. The
+			// FComponentVisualizer::NotifyFrameModified code does not handle that case, so we
+			// early-out as well.
+			return;
+		}
+		if (!FActorEditorUtils::IsAPreviewOrInactiveActor(Owner))
+		{
+			// If the owner is not a preview Actor then we don't need to do all the change
+			// propagation done below. Just recreate the Actor that was directly modified.
+			//
+			// Similar question as with a nullptr Owner, is there no case in which a non-preview
+			// Actor can contain a Component that is an archetype, i.e. has instances? The
+			// FComponentVisualizer::NotifyFrameModified code does not handle that case, so we
+			// early-out as well.
+			RerunConstructionScript(*Owner);
+			return;
+		}
+
+		UE_LOG(LogAGX, Warning, TEXT("  Is in a Blueprint."));
+
+		// We now know that we have a Component that is apart of a preview Actor, i.e. one that
+		// lives in e.g. the Blueprint editor viewport.
+
+		// The component belongs to the preview actor in the BP editor, so we need to propagate the
+		// property change to the archetype. Before this, we exploit the fact that the archetype and
+		// the preview actor have the old and new value of the property, respectively. So we can go
+		// through all archetype instances, and if they hold the (old) archetype value, update it to
+		// the new value.
+
+		// Get archetype, which should be a Blueprint CSC node's template Component.
+		UAGX_ShovelComponent* Archetype = Cast<UAGX_ShovelComponent>(Shovel.GetArchetype());
+		UE_LOG(LogAGX, Warning, TEXT("  Archetype:   %p, %s."), Archetype, *Archetype->GetName());
+		UE_LOG(
+			LogAGX, Warning, TEXT("  Default obj: %p, %s."),
+			UAGX_ShovelComponent::StaticClass()->GetDefaultObject(),
+			*UAGX_ShovelComponent::StaticClass()->GetDefaultObject()->GetName());
+		AGX_CHECK(Archetype != nullptr);
+		if (Archetype == nullptr)
+		{
+			return;
+		}
+		AGX_CHECK(Archetype != UAGX_ShovelComponent::StaticClass()->GetDefaultObject());
+		if (Archetype == UAGX_ShovelComponent::StaticClass()->GetDefaultObject())
+		{
+			return;
+		}
+
+		// Get all archetype instances, which should include the preview Shovel.
+		TArray<UObject*> ArchetypeInstances;
+		Archetype->GetArchetypeInstances(ArchetypeInstances);
+		AGX_CHECK(ArchetypeInstances.Contains(&Shovel));
+
+		const FVector OriginalValue = Archetype->GetFrame(FrameSource)->LocalLocation;
+
+		// Among the archetype instances, find the ones that have the same Local Location as the
+		// archetype, which still has the old value. These are the Shovels that should be updated.
+		TArray<UAGX_ShovelComponent*> InstancesToUpdate;
+		InstancesToUpdate.Reserve(ArchetypeInstances.Num());
+		for (UObject* Instance : ArchetypeInstances)
+		{
+			UAGX_ShovelComponent* InstanceShovel = Cast<UAGX_ShovelComponent>(Instance);
+			AGX_CHECK(InstanceShovel != nullptr);
+			if (InstanceShovel == &Shovel || InstanceShovel == nullptr)
+			{
+				// This is the preview Shovel that the original write was done on, do not
+				// propagate to this one. Or either a nullptr instance or an instance that wasn't
+				// a shovel at all, don't think either of those can ever happen.
+				continue;
+			}
+
+			const FVector CurrentValue = InstanceShovel->GetFrame(FrameSource)->LocalLocation;
+			if (CurrentValue == OriginalValue)
+			{
+				InstancesToUpdate.Add(InstanceShovel);
+			}
+		}
+
+		const FVector NewValue = Shovel.GetFrame(FrameSource)->LocalLocation;
+
+		// Propagate the write to the archetype.
+		Archetype->SetFlags(RF_Transactional);
+		Archetype->Modify();
+		if (Archetype->GetOwner())
+		{
+			Archetype->GetOwner()->Modify();
+		}
+		Archetype->GetFrame(FrameSource)->LocalLocation = NewValue;
+		{
+			FPropertyChangedEvent Event(FrameProperty);
+			Archetype->PostEditChangeProperty(Event);
+		}
+
+		// Propagate the write to the archetype instances.
+		for (UAGX_ShovelComponent* InstanceToUpdate : InstancesToUpdate)
+		{
+			InstanceToUpdate->SetFlags(RF_Transactional);
+			InstanceToUpdate->Modify();
+			AActor* OwnerToUpdate = InstanceToUpdate->GetOwner();
+			if (OwnerToUpdate != nullptr)
+			{
+				OwnerToUpdate->Modify();
+			}
+			InstanceToUpdate->GetFrame(FrameSource)->LocalLocation = NewValue;
+			FPropertyChangedEvent Event(FrameProperty);
+			InstanceToUpdate->PostEditChangeProperty(Event);
+			if (OwnerToUpdate != nullptr)
+			{
+				RerunConstructionScript(*OwnerToUpdate);
+			}
+		}
+
+		RerunConstructionScript(*Owner);
 	}
 };
 
 FAGX_ShovelComponentVisualizer::FAGX_ShovelComponentVisualizer()
 {
 	UClass* Class = UAGX_ShovelComponent::StaticClass();
+
 	TopEdgeProperty = FindFProperty<FProperty>(Class, MEMBER(TopEdge));
+	// UE_LOG(LogAGX, Warning, TEXT("TopEdgeProperty: %p"), TopEdgeProperty);
+
+	// FStructProperty* TopEdgeStructProperty = CastField<FStructProperty>(TopEdgeProperty);
+	// UE_LOG(LogAGX, Warning, TEXT("TopEdgeStructProperty: %p"), TopEdgeStructProperty);
+
+	// FField* TopEdgeStartField = TopEdgeStructProperty->GetInnerFieldByName(TEXT("Start"));
+	// UE_LOG(LogAGX, Warning, TEXT("TopEdgeStartField: %p"), TopEdgeStartField);
+
+	// FStructProperty* TopEdgeStartStructProperty = CastField<FStructProperty>(TopEdgeStartField);
+	// UE_LOG(LogAGX, Warning, TEXT("TopEdgeStartStructProperty: %p"), TopEdgeStartStructProperty);
+
+	// FField* TopEdgeStartLocalLocationField =
+	// TopEdgeStartStructProperty->GetInnerFieldByName(TEXT("LocalLocation"));
+	// UE_LOG(
+	// LogAGX, Warning, TEXT("TopEdgeStartLocalLocationField: %p"),
+	// TopEdgeStartLocalLocationField);
+
+	// FProperty* TopEdgeStartLocalLocationProperty =
+	// CastField<FStructProperty>(TopEdgeStartLocalLocationField);
+	// UE_LOG(
+	// LogAGX, Warning, TEXT("TopEdgeStartLocalLocationProperty: %p"),
+	// TopEdgeStartLocalLocationProperty);
+
+	// TopEdgeStartLocationProperty = FindFProperty<FProperty>(
+	// FAGX_Frame::StaticStruct(), GET_MEMBER_NAME_CHECKED(FAGX_Frame, LocalLocation));
+
 	CuttingEdgeProperty = FindFProperty<FProperty>(Class, MEMBER(CuttingEdge));
 	CuttingDirectionProperty = FindFProperty<FProperty>(Class, MEMBER(CuttingDirection));
 
@@ -196,9 +398,33 @@ bool FAGX_ShovelComponentVisualizer::VisProxyHandleClick(
 	UAGX_ShovelComponent* CDO =
 		Cast<UAGX_ShovelComponent>(UAGX_ShovelComponent::StaticClass()->GetDefaultObject(true));
 
-	UE_LOG(LogAGX, Warning, TEXT("Shovel: %p"), Shovel);
-	UE_LOG(LogAGX, Warning, TEXT("Archetype: %p"), Archetype);
-	UE_LOG(LogAGX, Warning, TEXT("COD: %p"), CDO);
+	UE_LOG(LogAGX, Warning, TEXT("Shovel: %p: %s"), Shovel, *Shovel->GetName());
+	UE_LOG(
+		LogAGX, Warning, TEXT("Archetype: %p: %s"), Archetype,
+		(Archetype != nullptr ? *Archetype->GetName() : TEXT("")));
+	UE_LOG(
+		LogAGX, Warning, TEXT("COD: %p: %s. Parent=%p: %s. Owner=%p: %s, preview=%d"), CDO,
+		*CDO->GetName(), CDO->GetArchetype(),
+		(CDO->GetArchetype() != nullptr ? *CDO->GetArchetype()->GetName() : TEXT("")),
+		CDO->GetOwner(), (CDO->GetOwner() != nullptr ? *CDO->GetOwner()->GetName() : TEXT("")),
+		(CDO->GetOwner() != nullptr ? FActorEditorUtils::IsAPreviewOrInactiveActor(CDO->GetOwner())
+									: 0));
+
+	{
+		UE_LOG(LogAGX, Warning, TEXT("All instances of the CDO:"));
+		TArray<UAGX_ShovelComponent*> AllInstances =
+			FAGX_ObjectUtilities::GetArchetypeInstances(*CDO);
+		for (UAGX_ShovelComponent* Instance : AllInstances)
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("  %p: %s. Parent=%p. Owner=%p: %s, preview=%d"), Instance,
+				*Instance->GetName(), Instance->GetArchetype(), Instance->GetOwner(),
+				(Instance->GetOwner() != nullptr ? *Instance->GetOwner()->GetName() : TEXT("")),
+				(Instance->GetOwner() != nullptr
+					 ? FActorEditorUtils::IsAPreviewOrInactiveActor(Instance->GetOwner())
+					 : 0));
+		}
+	}
 
 	TSharedPtr<IBlueprintEditor> ShovelBlueprintEditor =
 		FKismetEditorUtilities::GetIBlueprintEditorForObject(Shovel, false);
@@ -300,7 +526,8 @@ bool FAGX_ShovelComponentVisualizer::VisProxyHandleClick(
 					const UActorComponent* SelectedComponent = Selected->GetComponentTemplate();
 					UE_LOG(
 						LogAGX, Warning,
-						TEXT("VisProxyHandleClick:   Selected object in shovel Blueprint editor: %p"),
+						TEXT("VisProxyHandleClick:   Selected object in shovel Blueprint editor: "
+							 "%p"),
 						Selected->GetComponentTemplate());
 					if (SelectedComponent == Shovel)
 					{
@@ -354,11 +581,13 @@ bool FAGX_ShovelComponentVisualizer::VisProxyHandleClick(
 					const UActorComponent* SelectedComponent = Selected->GetComponentTemplate();
 					UE_LOG(
 						LogAGX, Warning,
-						TEXT("VisProxyHandleClick:   Selected object in Archetype Blueprint editor: %p"),
+						TEXT("VisProxyHandleClick:   Selected object in Archetype Blueprint "
+							 "editor: %p"),
 						Selected->GetComponentTemplate());
 					if (SelectedComponent == Archetype)
 					{
-						UE_LOG(LogAGX, Warning, TEXT("VisProxyHandleClick:   This is the Archetype."));
+						UE_LOG(
+							LogAGX, Warning, TEXT("VisProxyHandleClick:   This is the Archetype."));
 					}
 				}
 			}
@@ -441,7 +670,10 @@ bool FAGX_ShovelComponentVisualizer::HandleInputDelta(
 	if (Owner != nullptr)
 	{
 		UWorld* ShovelWorld = Owner->GetWorld();
-		UWorld* ViewportWorld = ViewportClient->GetPreviewScene()->GetWorld();
+		UWorld* ViewportWorld =
+			(ViewportClient != nullptr && ViewportClient->GetPreviewScene() != nullptr)
+				? ViewportClient->GetPreviewScene()->GetWorld()
+				: nullptr;
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("HandleInputDelta: Selected shovel %p is in world %p, viewport world=%p"), Shovel,
@@ -455,7 +687,11 @@ bool FAGX_ShovelComponentVisualizer::HandleInputDelta(
 
 	if (HasValidFrameSection())
 	{
+#if 1
+		UAGX_ShovelComponent* ToModify = Shovel;
+#else
 		UAGX_ShovelComponent* ToModify = FAGX_ShovelUtilities::GetShovelToModify(Shovel);
+#endif
 		FShovelVisualizerOperations::FrameProxyDragged(
 			*this, *ToModify, *ViewportClient, DeltaTranslate);
 	}
@@ -553,6 +789,7 @@ FProperty* FAGX_ShovelComponentVisualizer::GetSelectedFrameProperty() const
 		case EAGX_ShovelFrame::CuttingEdgeEnd:
 			return CuttingEdgeProperty;
 		case EAGX_ShovelFrame::TopEdgeBegin:
+			return TopEdgeStartLocationProperty;
 		case EAGX_ShovelFrame::TopEdgeEnd:
 			return TopEdgeProperty;
 	}

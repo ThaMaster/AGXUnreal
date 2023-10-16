@@ -76,6 +76,7 @@ private:
 	FComponentPropertyPath ShovelPropertyPath;
 
 	FProperty* TopEdgeProperty {nullptr};
+	FProperty* TopEdgeStartLocationProperty {nullptr};
 	FProperty* CuttingEdgeProperty {nullptr};
 	FProperty* CuttingDirectionProperty {nullptr};
 
