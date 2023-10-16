@@ -281,32 +281,6 @@ FAGX_ShovelComponentVisualizer::FAGX_ShovelComponentVisualizer()
 	UClass* Class = UAGX_ShovelComponent::StaticClass();
 
 	TopEdgeProperty = FindFProperty<FProperty>(Class, MEMBER(TopEdge));
-	// UE_LOG(LogAGX, Warning, TEXT("TopEdgeProperty: %p"), TopEdgeProperty);
-
-	// FStructProperty* TopEdgeStructProperty = CastField<FStructProperty>(TopEdgeProperty);
-	// UE_LOG(LogAGX, Warning, TEXT("TopEdgeStructProperty: %p"), TopEdgeStructProperty);
-
-	// FField* TopEdgeStartField = TopEdgeStructProperty->GetInnerFieldByName(TEXT("Start"));
-	// UE_LOG(LogAGX, Warning, TEXT("TopEdgeStartField: %p"), TopEdgeStartField);
-
-	// FStructProperty* TopEdgeStartStructProperty = CastField<FStructProperty>(TopEdgeStartField);
-	// UE_LOG(LogAGX, Warning, TEXT("TopEdgeStartStructProperty: %p"), TopEdgeStartStructProperty);
-
-	// FField* TopEdgeStartLocalLocationField =
-	// TopEdgeStartStructProperty->GetInnerFieldByName(TEXT("LocalLocation"));
-	// UE_LOG(
-	// LogAGX, Warning, TEXT("TopEdgeStartLocalLocationField: %p"),
-	// TopEdgeStartLocalLocationField);
-
-	// FProperty* TopEdgeStartLocalLocationProperty =
-	// CastField<FStructProperty>(TopEdgeStartLocalLocationField);
-	// UE_LOG(
-	// LogAGX, Warning, TEXT("TopEdgeStartLocalLocationProperty: %p"),
-	// TopEdgeStartLocalLocationProperty);
-
-	// TopEdgeStartLocationProperty = FindFProperty<FProperty>(
-	// FAGX_Frame::StaticStruct(), GET_MEMBER_NAME_CHECKED(FAGX_Frame, LocalLocation));
-
 	CuttingEdgeProperty = FindFProperty<FProperty>(Class, MEMBER(CuttingEdge));
 	CuttingDirectionProperty = FindFProperty<FProperty>(Class, MEMBER(CuttingDirection));
 
@@ -789,7 +763,6 @@ FProperty* FAGX_ShovelComponentVisualizer::GetSelectedFrameProperty() const
 		case EAGX_ShovelFrame::CuttingEdgeEnd:
 			return CuttingEdgeProperty;
 		case EAGX_ShovelFrame::TopEdgeBegin:
-			return TopEdgeStartLocationProperty;
 		case EAGX_ShovelFrame::TopEdgeEnd:
 			return TopEdgeProperty;
 	}
