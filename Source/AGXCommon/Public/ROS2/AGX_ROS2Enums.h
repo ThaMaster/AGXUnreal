@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 
 UENUM()
-enum EAGX_ROS2MessageType
+enum class EAGX_ROS2MessageType
 {
 	Invalid,
 	AgxMsgsAny,
@@ -100,7 +100,7 @@ enum EAGX_ROS2MessageType
 };
 
 UENUM()
-enum EAGX_ROS2QosReliability
+enum class EAGX_ROS2QosReliability
 {
 	ReliabilityDefault,
 	BestEffort,
@@ -108,7 +108,7 @@ enum EAGX_ROS2QosReliability
 };
 
 UENUM()
-enum EAGX_ROS2QosDurability
+enum class EAGX_ROS2QosDurability
 {
 	DurabilityDefault,
 	Volatile,
@@ -118,7 +118,7 @@ enum EAGX_ROS2QosDurability
 };
 
 UENUM()
-enum EAGX_ROS2QosHistory
+enum class EAGX_ROS2QosHistory
 {
 	HistoryDefault,
 	KeepLastHistoryQos,

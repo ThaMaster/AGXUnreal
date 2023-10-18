@@ -22,20 +22,19 @@ struct AGXCOMMON_API FAGX_ROS2Qos
 	 * By default the Reliability QOS settings are the same as in ROS2.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX ROS2")
-	TEnumAsByte<enum EAGX_ROS2QosReliability> Reliability {
-		EAGX_ROS2QosReliability::ReliabilityDefault};
+	EAGX_ROS2QosReliability Reliability {EAGX_ROS2QosReliability::ReliabilityDefault};
 
 	/**
 	 * By default the Durability QOS settings are the same as in ROS2.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX ROS2")
-	TEnumAsByte<enum EAGX_ROS2QosDurability> Durability {EAGX_ROS2QosDurability::DurabilityDefault};
+	EAGX_ROS2QosDurability Durability {EAGX_ROS2QosDurability::DurabilityDefault};
 
 	/**
 	 * By default the History QOS settings are the same as in ROS2.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX ROS2")
-	TEnumAsByte<enum EAGX_ROS2QosHistory> History {EAGX_ROS2QosHistory::HistoryDefault};
+	EAGX_ROS2QosHistory History {EAGX_ROS2QosHistory::HistoryDefault};
 
 	/**
 	 * HistoryDepth determines how many messages can be queued before reading, without loosing
