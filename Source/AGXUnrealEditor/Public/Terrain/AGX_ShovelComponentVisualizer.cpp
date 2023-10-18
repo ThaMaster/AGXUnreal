@@ -28,6 +28,53 @@
  */
 struct FShovelVisualizerOperations
 {
+	static bool IsSelected(const UAGX_ShovelComponent& Shovel)
+	{
+		if (Shovel.IsSelected())
+		{
+			// The shovel is directly selected in the level editor.
+			return true;
+		}
+
+		// Check if the shovel is owned by a Blueprint editor and if so if the shovel is currently
+		// selected in that Blueprint editor.
+		TSharedPtr<IBlueprintEditor> BlueprintEditor =
+			FKismetEditorUtilities::GetIBlueprintEditorForObject(&Shovel, false);
+		if (BlueprintEditor.IsValid())
+		{
+			TArray<TSharedPtr<FSubobjectEditorTreeNode>> Selection =
+				BlueprintEditor->GetSelectedSubobjectEditorTreeNodes();
+			for (TSharedPtr<FSubobjectEditorTreeNode>& Selected : Selection)
+			{
+				const UActorComponent* SelectedComponent = Selected->GetComponentTemplate();
+				if (SelectedComponent == &Shovel)
+				{
+					return true;
+				}
+			}
+		}
+
+		// If the Shovel is part of a preview that we also want to consider it selected if the
+		// Shovel it is a preview of is selected. This happens when we are looking at the Shovel
+		// that exists within the viewport of a Blueprint editor. Then the shovel we see isn't
+		// selected anywhere, but the CSC node template shovel the preview shovel was created from
+		// might be.
+		if (Shovel.GetOwner() != nullptr &&
+			FActorEditorUtils::IsAPreviewOrInactiveActor(Shovel.GetOwner()))
+		{
+			// The archetype of a preview component is the template instance in the Blueprint.
+			// If the template instance is selected then we consider the preview instance to be
+			// selected as well.
+			UAGX_ShovelComponent* Archetype = Cast<UAGX_ShovelComponent>(Shovel.GetArchetype());
+			if (Archetype != nullptr && IsSelected(*Archetype))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	static bool ShovelProxyClicked(
 		FAGX_ShovelComponentVisualizer& Visualizer, const UAGX_ShovelComponent& Shovel,
 		HShovelHitProxy& Proxy, FEditorViewportClient& InViewportClient)
@@ -377,6 +424,8 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 		return;
 	}
 
+	const bool bSelected = FShovelVisualizerOperations::IsSelected(*Shovel);
+
 	// UE_LOG(LogAGX, Warning, TEXT("DrawVisualization: For shovel %p."), Shovel);
 
 	const float PointSize {FAGX_ShovelUtilities::HitProxySize};
@@ -388,11 +437,14 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 		FLinearColor Color = FLinearColor::White;
 		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
 
-		PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::TopEdgeBegin));
-		PDI->DrawPoint(BeginLocation, Color, PointSize, SDPG_Foreground);
-		PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::TopEdgeEnd));
-		PDI->DrawPoint(EndLocation, Color, PointSize, SDPG_Foreground);
-		PDI->SetHitProxy(nullptr);
+		if (bSelected)
+		{
+			PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::TopEdgeBegin));
+			PDI->DrawPoint(BeginLocation, Color, PointSize, SDPG_Foreground);
+			PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::TopEdgeEnd));
+			PDI->DrawPoint(EndLocation, Color, PointSize, SDPG_Foreground);
+			PDI->SetHitProxy(nullptr);
+		}
 	}
 
 	// Draw the cutting edge.
@@ -402,11 +454,14 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 		FLinearColor Color = FLinearColor::Red;
 		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
 
-		PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::CuttingEdgeBegin));
-		PDI->DrawPoint(BeginLocation, Color, PointSize, SDPG_Foreground);
-		PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::CuttingEdgeEnd));
-		PDI->DrawPoint(EndLocation, Color, PointSize, SDPG_Foreground);
-		PDI->SetHitProxy(nullptr);
+		if (bSelected)
+		{
+			PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::CuttingEdgeBegin));
+			PDI->DrawPoint(BeginLocation, Color, PointSize, SDPG_Foreground);
+			PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::CuttingEdgeEnd));
+			PDI->DrawPoint(EndLocation, Color, PointSize, SDPG_Foreground);
+			PDI->SetHitProxy(nullptr);
+		}
 	}
 
 	// Draw the cutting direction.
@@ -417,9 +472,27 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 		const FVector EndLocation = BeginLocation + 100 * Direction;
 		const FLinearColor Color = FLinearColor::Red; //.Desaturate(0.5f);
 		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
-		PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::CuttingDirection));
-		PDI->DrawPoint(BeginLocation, Color, PointSize, SDPG_Foreground);
-		PDI->SetHitProxy(nullptr);
+
+		if (bSelected)
+		{
+			PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::CuttingDirection));
+			PDI->DrawPoint(BeginLocation, Color, PointSize, SDPG_Foreground);
+			PDI->SetHitProxy(nullptr);
+		}
+	}
+
+	// Not sure where to best put this. Don't want to miss a deselection if the we don't get
+	// any more calls to DrawVisualization after the deselection.
+	if (HasValidFrameSection())
+	{
+		if (!FShovelVisualizerOperations::IsSelected(*GetSelectedShovel()))
+		{
+			// Do not maintain a frame selection if the selected shovel isn't selected anymore.
+			// This is so that the transform widget is placed at the newly selected Component
+			// instead of at the now no longer selected frame.
+			UE_LOG(LogAGX, Warning, TEXT("Shovel Visualizer lost selection."));
+			ClearSelection();
+		}
 	}
 }
 
@@ -448,12 +521,13 @@ bool FAGX_ShovelComponentVisualizer::VisProxyHandleClick(
 		LogAGX, Warning, TEXT("Archetype: %p: %s"), Archetype,
 		(Archetype != nullptr ? *Archetype->GetName() : TEXT("")));
 	UE_LOG(
-		LogAGX, Warning, TEXT("COD: %p: %s. Parent=%p: %s. Owner=%p: %s, preview=%d"), CDO,
-		*CDO->GetName(), CDO->GetArchetype(),
+		LogAGX, Warning, TEXT("COD: %p: %s. Parent=%p: %s. Owner=%p: %s, preview=%d, template=%d"),
+		CDO, *CDO->GetName(), CDO->GetArchetype(),
 		(CDO->GetArchetype() != nullptr ? *CDO->GetArchetype()->GetName() : TEXT("")),
 		CDO->GetOwner(), (CDO->GetOwner() != nullptr ? *CDO->GetOwner()->GetName() : TEXT("")),
 		(CDO->GetOwner() != nullptr ? FActorEditorUtils::IsAPreviewOrInactiveActor(CDO->GetOwner())
-									: 0));
+									: 0),
+		CDO->IsTemplate());
 
 	{
 		UE_LOG(LogAGX, Warning, TEXT("All instances of the CDO:"));
@@ -462,12 +536,13 @@ bool FAGX_ShovelComponentVisualizer::VisProxyHandleClick(
 		for (UAGX_ShovelComponent* Instance : AllInstances)
 		{
 			UE_LOG(
-				LogAGX, Warning, TEXT("  %p: %s. Parent=%p. Owner=%p: %s, preview=%d"), Instance,
-				*Instance->GetName(), Instance->GetArchetype(), Instance->GetOwner(),
+				LogAGX, Warning, TEXT("  %p: %s. Parent=%p. Owner=%p: %s, preview=%d, template=%d"),
+				Instance, *Instance->GetName(), Instance->GetArchetype(), Instance->GetOwner(),
 				(Instance->GetOwner() != nullptr ? *Instance->GetOwner()->GetName() : TEXT("")),
 				(Instance->GetOwner() != nullptr
 					 ? FActorEditorUtils::IsAPreviewOrInactiveActor(Instance->GetOwner())
-					 : 0));
+					 : 0),
+				Instance->IsTemplate());
 		}
 	}
 
@@ -672,7 +747,7 @@ bool FAGX_ShovelComponentVisualizer::VisProxyHandleClick(
 	return false;
 }
 
-// Call by Unreal Editor to decide where the transform widget should be rendered. We place it on
+// Called by Unreal Editor to decide where the transform widget should be rendered. We place it on
 // the selected frame, if there is one.
 bool FAGX_ShovelComponentVisualizer::GetWidgetLocation(
 	const FEditorViewportClient* ViewportClient, FVector& OutLocation) const
@@ -682,12 +757,13 @@ bool FAGX_ShovelComponentVisualizer::GetWidgetLocation(
 	{
 		return false;
 	}
-#if 0
-	if (!Shovel->IsSelectedInEditor())
+	if (!FShovelVisualizerOperations::IsSelected(*Shovel))
 	{
+		// Is this const-cast safe?
+		// If not, how do we clear the frame selection when the Shovel becomes unselected?
+		const_cast<FAGX_ShovelComponentVisualizer*>(this)->ClearSelection();
 		return false;
 	}
-#endif
 	if (FAGX_Frame* Frame = GetSelectedFrame())
 	{
 		OutLocation = Frame->GetWorldLocation();
