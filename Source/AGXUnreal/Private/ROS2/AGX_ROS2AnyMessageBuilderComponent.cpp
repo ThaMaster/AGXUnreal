@@ -51,8 +51,10 @@ namespace AGX_ROS2AnyMessageBuilderComponent_helpers
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("'%s' was called on Any Message Builder '%s' that does not have a Native "
-				 "object. Only call this function during Play."), *FunctionName, *Component.GetName());
+			TEXT(
+				"'%s' was called on Any Message Builder Component '%s' in Actor '%s' that does not "
+				"have a Native object. Only call this function during Play."),
+			*FunctionName, *Component.GetName(), *GetLabelSafe(Component.GetOwner()));
 	}
 
 	template <typename FromType, typename ToType>

@@ -2,6 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "ROS2/AGX_ROS2Messages.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 UAGX_ROS2AnyMessageParserComponent::UAGX_ROS2AnyMessageParserComponent()
 {
@@ -50,9 +51,9 @@ namespace AGX_ROS2AnyMessageParserComponent_helpers
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("'%s' was called on Any Message Parser '%s' that does not have a Native "
-				 "object. Only call this function during Play."),
-			*FunctionName, *Component.GetName());
+			TEXT("'%s' was called on Any Message Parser Component '%s' in Actor '%s' that does not "
+				 "have a Native object. Only call this function during Play."),
+			*FunctionName, *Component.GetName(), *GetLabelSafe(Component.GetOwner()));
 	}
 
 	template <typename FromType, typename ToType>
