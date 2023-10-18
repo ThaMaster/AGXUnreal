@@ -477,8 +477,9 @@ struct AGXCOMMON_API FAGX_GeometryMsgsAccelWithCovariance : public FAGX_ROS2Mess
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	FAGX_GeometryMsgsAccel Accel;
 
+	/** Static arrays not supported by Blueprints. 36 elements is expected.*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<double> Covariance; // Static arrays not supported by Blueprints.
+	TArray<double> Covariance;
 };
 
 USTRUCT(BlueprintType)
@@ -657,8 +658,9 @@ struct AGXCOMMON_API FAGX_GeometryMsgsPoseWithCovariance : public FAGX_ROS2Messa
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	FAGX_GeometryMsgsPose Pose;
 
+	/** Static arrays not supported by Blueprints. 36 elements is expected.*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<double> Covariance; // Static arrays not supported by Blueprints.
+	TArray<double> Covariance;
 };
 
 USTRUCT(BlueprintType)
@@ -744,8 +746,9 @@ struct AGXCOMMON_API FAGX_GeometryMsgsTwistWithCovariance : public FAGX_ROS2Mess
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	FAGX_GeometryMsgsTwist Twist;
 
+	/** Static arrays not supported by Blueprints. 36 elements is expected.*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<double> Covariance; // Static arrays not supported by Blueprints.
+	TArray<double> Covariance;
 };
 
 USTRUCT(BlueprintType)
@@ -949,20 +952,23 @@ struct AGXCOMMON_API FAGX_SensorMsgsImu : public FAGX_ROS2Message
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	FAGX_GeometryMsgsQuaternion Orientation;
 
+	/** Static arrays not supported by Blueprints. 9 elements is expected.*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<double> OrientationCovariance; // Static arrays not supported by Blueprints.
+	TArray<double> OrientationCovariance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	FAGX_GeometryMsgsVector3 AngularVelocity;
 
+	/** Static arrays not supported by Blueprints. 9 elements is expected.*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<double> AngularVelocityCovariance; // Static arrays not supported by Blueprints.
+	TArray<double> AngularVelocityCovariance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	FAGX_GeometryMsgsVector3 LinearAcceleration;
 
+	/** Static arrays not supported by Blueprints. 9 elements is expected.*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<double> LinearAccelerationCovariance; // Static arrays not supported by Blueprints.
+	TArray<double> LinearAccelerationCovariance;
 };
 
 USTRUCT(BlueprintType)
@@ -1081,8 +1087,9 @@ struct AGXCOMMON_API FAGX_SensorMsgsMagneticField : public FAGX_ROS2Message
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	FAGX_GeometryMsgsVector3 MagneticField;
 
+	/** Static arrays not supported by Blueprints. 9 elements is expected.*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<double> MagneticFieldCovariance; // Static arrays not supported by Blueprints.
+	TArray<double> MagneticFieldCovariance;
 };
 
 USTRUCT(BlueprintType)
@@ -1174,8 +1181,9 @@ struct AGXCOMMON_API FAGX_SensorMsgsNavSatFix : public FAGX_ROS2Message
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	double Altitude {0.0};
 
+	/** Static arrays not supported by Blueprints. 9 elements is expected.*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<double> PositionCovariance; // Static arrays not supported by Blueprints.
+	TArray<double> PositionCovariance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	uint8 PositionCovarianceType {0};
@@ -1312,14 +1320,17 @@ struct AGXCOMMON_API FAGX_SensorMsgsCameraInfo : public FAGX_ROS2Message
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	TArray<double> D;
 
+	/** Static arrays not supported by Blueprints. 9 elements is expected.*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<double> K; // Static arrays not supported by Blueprints.
+	TArray<double> K;
 
+	/** Static arrays not supported by Blueprints. 9 elements is expected.*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<double> R; // Static arrays not supported by Blueprints.
+	TArray<double> R;
 
+	/** Static arrays not supported by Blueprints. 12 elements is expected.*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<double> P; // Static arrays not supported by Blueprints.
+	TArray<double> P;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	int64 BinningX {0}; // uint32 not supported by Blueprints.
