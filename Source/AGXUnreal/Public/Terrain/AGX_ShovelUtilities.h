@@ -17,6 +17,7 @@ public:
 	 */
 	static void TruncateForDetailsPanel(double& Value);
 	static void TruncateForDetailsPanel(FVector& Values);
+	static void TruncateForDetailsPanel(FRotator& Values);
 
 	// The size of Hit Proxies created by the various Shovel-related Visualizers we have.
 	// This may become a configurable setting in the future.

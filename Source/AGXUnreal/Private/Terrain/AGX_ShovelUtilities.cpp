@@ -107,3 +107,10 @@ void FAGX_ShovelUtilities::TruncateForDetailsPanel(FVector& Values)
 	TruncateForDetailsPanel(Values.Y);
 	TruncateForDetailsPanel(Values.Z);
 }
+
+void FAGX_ShovelUtilities::TruncateForDetailsPanel(FRotator& Values)
+{
+	TruncateForDetailsPanel(Values.Pitch);
+	TruncateForDetailsPanel(Values.Yaw);
+	TruncateForDetailsPanel(Values.Roll);
+}

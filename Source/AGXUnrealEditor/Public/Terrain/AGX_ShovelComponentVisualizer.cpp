@@ -74,15 +74,20 @@ struct FShovelVisualizerOperations
 		return true;
 	}
 
+	static bool CanDrag(FAGX_ShovelComponentVisualizer& Visualizer, const FVector& DeltaTranslate)
+	{
+		return IsTranslatable(Visualizer.GetSelectedFrameSource()) && !DeltaTranslate.IsZero();
+	}
+
+	static bool CanRotate(FAGX_ShovelComponentVisualizer& Visualizer, const FRotator& DeltaRotate)
+	{
+		return IsRotatable(Visualizer.GetSelectedFrameSource()) && !DeltaRotate.IsZero();
+	}
+
 	static void FrameProxyDragged(
 		FAGX_ShovelComponentVisualizer& Visualizer, UAGX_ShovelComponent& Shovel,
 		FEditorViewportClient& ViewportClient, const FVector& DeltaTranslate)
 	{
-		if (DeltaTranslate.IsZero() || ViewportClient.GetWidgetMode() != UE::Widget::WM_Translate)
-		{
-			return;
-		}
-
 		UE_LOG(LogAGX, Warning, TEXT("MoveFrame: Moving frame for shovel %p."), &Shovel);
 		FAGX_Frame* Frame = Visualizer.GetSelectedFrame();
 		EAGX_ShovelFrame FrameSource = Visualizer.GetSelectedFrameSource();
@@ -113,7 +118,37 @@ struct FShovelVisualizerOperations
 #endif
 
 		// Instead of calling Visualizer.NotifyPropertyModified, call our shadow implementation.
-		NotifyFrameModified(Visualizer, Shovel);
+		auto ReadLocalLocation = [](const FAGX_Frame* Frame) { return Frame->LocalLocation; };
+
+		auto WriteLocalLocation = [](FAGX_Frame* Frame, const FVector& NewLocalLocation)
+		{ Frame->LocalLocation = NewLocalLocation; };
+
+		NotifyFrameModified<FVector>(Visualizer, Shovel, ReadLocalLocation, WriteLocalLocation);
+	}
+
+	static void FrameProxyRotated(
+		FAGX_ShovelComponentVisualizer& Visualizer, UAGX_ShovelComponent& Shovel,
+		FEditorViewportClient& ViewportClient, const FRotator& DeltaRotate)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("RotateFrame: Rotating frame for shovel %p."), &Shovel);
+
+		FAGX_Frame* Frame = Visualizer.GetSelectedFrame();
+		EAGX_ShovelFrame FrameSource = Visualizer.GetSelectedFrameSource();
+		const FTransform& WorldToLocal =
+			Frame->GetParentComponent()->GetComponentTransform().Inverse();
+		const FRotator CurrentRotation = Frame->LocalRotation;
+		FRotator NewRotation = CurrentRotation + DeltaRotate;
+		UE_LOG(LogAGX, Warning, TEXT("Truncating new local rotation for details panel."));
+		FAGX_ShovelUtilities::TruncateForDetailsPanel(NewRotation);
+		Shovel.Modify();
+		Frame->LocalRotation = NewRotation;
+
+		auto ReadLocalRotation = [](const FAGX_Frame* Frame) { return Frame->LocalRotation; };
+
+		auto WriteLocalRotation = [](FAGX_Frame* Frame, const FRotator& NewLocalRotation)
+		{ Frame->LocalRotation = NewLocalRotation; };
+
+		NotifyFrameModified<FRotator>(Visualizer, Shovel, ReadLocalRotation, WriteLocalRotation);
 	}
 
 	/**
@@ -135,8 +170,10 @@ struct FShovelVisualizerOperations
 	 * FComponentVisualizer::NotifyPropertyModified, perhaps Epic Games changed something and we
 	 * need to do the same change here.
 	 */
+	template <typename FPropertyType, typename FReadFunc, typename FWriteFunc>
 	static void NotifyFrameModified(
-		FAGX_ShovelComponentVisualizer& Visualizer, UAGX_ShovelComponent& Shovel)
+		FAGX_ShovelComponentVisualizer& Visualizer, UAGX_ShovelComponent& Shovel,
+		FReadFunc ReadFunc, FWriteFunc WriteFunc)
 	{
 		UE_LOG(
 			LogAGX, Warning, TEXT("NotifyFrameModified for shovel %p, %s."), &Shovel,
@@ -230,7 +267,7 @@ struct FShovelVisualizerOperations
 
 		// This is the old value for Local Location. Only instances that has this exact value
 		// should be updated.
-		const FVector OriginalValue = Archetype->GetFrame(FrameSource)->LocalLocation;
+		const FPropertyType OriginalValue = ReadFunc(Archetype->GetFrame(FrameSource));
 
 		// Among the archetype instances, find the ones that have the old value for Local Location.
 		// These are the Shovels that should be updated.
@@ -249,7 +286,7 @@ struct FShovelVisualizerOperations
 				continue;
 			}
 
-			const FVector CurrentValue = InstanceShovel->GetFrame(FrameSource)->LocalLocation;
+			const FPropertyType CurrentValue = ReadFunc(InstanceShovel->GetFrame(FrameSource));
 			if (CurrentValue == OriginalValue)
 			{
 				InstancesToUpdate.Add(InstanceShovel);
@@ -257,7 +294,7 @@ struct FShovelVisualizerOperations
 		}
 
 		// Value that should be propagated.
-		const FVector NewValue = Shovel.GetFrame(FrameSource)->LocalLocation;
+		const FPropertyType NewValue = ReadFunc(Shovel.GetFrame(FrameSource));
 
 		// Propagate the new value to the archetype.
 		{
@@ -268,11 +305,12 @@ struct FShovelVisualizerOperations
 			{
 				ArchetypeOwner->Modify();
 			}
-			Archetype->GetFrame(FrameSource)->LocalLocation = NewValue;
+			WriteFunc(Archetype->GetFrame(FrameSource), NewValue);
 			FPropertyChangedEvent Event(FrameProperty);
 			Archetype->PostEditChangeProperty(Event);
 			// todo Why not call RerunConstructionScript for ArchetypeOwner?
-			// FComponentVisualizer::NotifyPropertyModified doesn't, but why not? Should we?
+			// We don't because FComponentVisualizer::NotifyPropertyModified doesn't, but why
+			// doesn't it? Should we?
 		}
 
 		// Propagate the new value to the archetype instances.
@@ -285,7 +323,7 @@ struct FShovelVisualizerOperations
 			{
 				OwnerToUpdate->Modify();
 			}
-			InstanceToUpdate->GetFrame(FrameSource)->LocalLocation = NewValue;
+			WriteFunc(InstanceToUpdate->GetFrame(FrameSource), NewValue);
 			FPropertyChangedEvent Event(FrameProperty);
 			InstanceToUpdate->PostEditChangeProperty(Event);
 			if (OwnerToUpdate != nullptr)
@@ -700,8 +738,16 @@ bool FAGX_ShovelComponentVisualizer::HandleInputDelta(
 #else
 		UAGX_ShovelComponent* ToModify = FAGX_ShovelUtilities::GetShovelToModify(Shovel);
 #endif
-		FShovelVisualizerOperations::FrameProxyDragged(
-			*this, *ToModify, *ViewportClient, DeltaTranslate);
+		if (FShovelVisualizerOperations::CanDrag(*this, DeltaTranslate))
+		{
+			FShovelVisualizerOperations::FrameProxyDragged(
+				*this, *ToModify, *ViewportClient, DeltaTranslate);
+		}
+		if (FShovelVisualizerOperations::CanRotate(*this, DeltaRotate))
+		{
+			FShovelVisualizerOperations::FrameProxyRotated(
+				*this, *ToModify, *ViewportClient, DeltaRotate);
+		}
 	}
 	// Add additional selection types here, if we ever get new types.
 	else
