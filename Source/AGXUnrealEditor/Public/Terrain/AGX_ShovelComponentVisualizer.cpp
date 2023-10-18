@@ -30,7 +30,7 @@ struct FShovelVisualizerOperations
 {
 	static bool ShovelProxyClicked(
 		FAGX_ShovelComponentVisualizer& Visualizer, const UAGX_ShovelComponent& Shovel,
-		HShovelHitProxy& Proxy)
+		HShovelHitProxy& Proxy, FEditorViewportClient& InViewportClient)
 	{
 		UE_LOG(LogAGX, Warning, TEXT("ShovelProxyClicked: Clicked shovel %p."), &Shovel);
 
@@ -48,9 +48,29 @@ struct FShovelVisualizerOperations
 			return true;
 		}
 
-		// All checkes passed, we really should select a frame.
+		// All checks passed, we really should select a frame.
 		Visualizer.SelectedFrame = Proxy.Frame;
 		Visualizer.ShovelPropertyPath = FComponentPropertyPath(&Shovel);
+		switch (Visualizer.GetSelectedFrameSource())
+		{
+			// Some frames (begin and end for an edge) only support translation while some
+			// (directions) is mainly controlled through rotation. This code tries to switch to
+			// the appropriate transform gizmo mode but fails (on Unreal Engine 5.0) while in the
+			// level editor because the ModesTool is currently in tracking mode. Leaving the code
+			// anyway, maybe it starts working in the future, and since it does work in the
+			// Blueprint editor viewport.
+			case EAGX_ShovelFrame::None:
+				break;
+			case EAGX_ShovelFrame::CuttingDirection:
+				InViewportClient.SetWidgetMode(UE::Widget::WM_Rotate);
+				break;
+			case EAGX_ShovelFrame::CuttingEdgeBegin:
+			case EAGX_ShovelFrame::CuttingEdgeEnd:
+			case EAGX_ShovelFrame::TopEdgeBegin:
+			case EAGX_ShovelFrame::TopEdgeEnd:
+				InViewportClient.SetWidgetMode(UE::Widget::WM_Translate);
+				break;
+		}
 		return true;
 	}
 
@@ -593,7 +613,8 @@ bool FAGX_ShovelComponentVisualizer::VisProxyHandleClick(
 
 	if (HShovelHitProxy* Proxy = HitProxyCast<HShovelHitProxy>(VisProxy))
 	{
-		return FShovelVisualizerOperations::ShovelProxyClicked(*this, *Shovel, *Proxy);
+		return FShovelVisualizerOperations::ShovelProxyClicked(
+			*this, *Shovel, *Proxy, *InViewportClient);
 	}
 
 	// Add additional proxy types here when needed.
