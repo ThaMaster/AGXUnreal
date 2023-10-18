@@ -46,6 +46,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX ROS2")
 	uint8 DomainID {0};
 
+	/**
+	 * Returns a Barrier object from the Barrier pool, given the specific Topic.
+	 * If no previous Barrier exists for the passed Topic, a new one is created and stored.
+	 */
+	FROS2SubscriberBarrier* GetOrCreateBarrier(EAGX_ROS2MessageType Type, const FString& Topic);
+
 	// AgxMsgs
 
 	UFUNCTION(
@@ -529,8 +535,6 @@ private:
 
 	// Key is the Topic.
 	TMap<FString, FROS2SubscriberBarrier> NativeBarriers;
-
-	FROS2SubscriberBarrier* GetOrCreateBarrier(EAGX_ROS2MessageType Type, const FString& Topic);
 
 	// ~Begin UActorComponent interface.
 	virtual bool CanEditChange(const FProperty* InProperty) const override;
