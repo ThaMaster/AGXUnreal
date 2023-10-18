@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 UAGX_ROS2PublisherComponent::UAGX_ROS2PublisherComponent()
 {
@@ -762,9 +763,9 @@ FROS2PublisherBarrier* UAGX_ROS2PublisherComponent::GetOrCreateBarrier(
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("GetOrCreateBarrier was called on ROS2 Publisher Component '%s' whith an "
-					 "empty Topic String. Ensure a Topic has been set."),
-				*GetName());
+				TEXT("GetOrCreateBarrier was called on ROS2 Publisher Component '%s' in Actor '%s' "
+					 "whith an empty Topic String. Ensure a Topic has been set."),
+				*GetName(), *GetLabelSafe(GetOwner()));
 			return nullptr;
 		}
 
@@ -773,9 +774,9 @@ FROS2PublisherBarrier* UAGX_ROS2PublisherComponent::GetOrCreateBarrier(
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("GetOrCreateBarrier was called on ROS2 Publisher Component '%s' when not in "
-					 "Play. Only call this function during Play."),
-				*GetName());
+				TEXT("GetOrCreateBarrier was called on ROS2 Publisher Component '%s' in Actor '%s' "
+					 "when not inPlay. Only call this function during Play."),
+				*GetName(), *GetLabelSafe(GetOwner()));
 			return nullptr;
 		}
 
@@ -787,8 +788,9 @@ FROS2PublisherBarrier* UAGX_ROS2PublisherComponent::GetOrCreateBarrier(
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Existing Native ROS2 Publisher with different message type found in "
-				 "UAGX_ROS2Publisher::GetOrCreateBarrier for Topic: '%s'. Ensure only single "
-				 "message types are used for a specific Topic."));
+				 "UAGX_ROS2Publisher::GetOrCreateBarrier for Topic: '%s', Publisher Compoent '%s' "
+				 "in Actor '%s'. Ensure only single message types are used for a specific Topic."),
+			*Topic, *GetName(), *GetLabelSafe(GetOwner()));
 		return nullptr;
 	}
 

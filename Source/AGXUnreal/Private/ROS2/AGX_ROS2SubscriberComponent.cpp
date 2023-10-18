@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 UAGX_ROS2SubscriberComponent::UAGX_ROS2SubscriberComponent()
 {
@@ -767,9 +768,10 @@ FROS2SubscriberBarrier* UAGX_ROS2SubscriberComponent::GetOrCreateBarrier(
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("GetOrCreateBarrier was called on ROS2 Subscriber Component '%s' whith an "
-					 "empty Topic String. Ensure a Topic has been set."),
-				*GetName());
+				TEXT(
+					"GetOrCreateBarrier was called on ROS2 Subscriber Component '%s' in Actor '%s' "
+					"with an empty Topic String. Ensure a Topic has been set."),
+				*GetName(), *GetLabelSafe(GetOwner()));
 			return nullptr;
 		}
 
@@ -778,9 +780,10 @@ FROS2SubscriberBarrier* UAGX_ROS2SubscriberComponent::GetOrCreateBarrier(
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("GetOrCreateBarrier was called on ROS2 Subscriber Component '%s' when not in "
-					 "Play. Only call this function during Play."),
-				*GetName());
+				TEXT(
+					"GetOrCreateBarrier was called on ROS2 Subscriber Component '%s' in Actor '%s' "
+					"when not in Play. Only call this function during Play."),
+				*GetName(), *GetLabelSafe(GetOwner()));
 			return nullptr;
 		}
 
@@ -792,8 +795,9 @@ FROS2SubscriberBarrier* UAGX_ROS2SubscriberComponent::GetOrCreateBarrier(
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Existing Native ROS2 Subscriber with different message type found in "
-				 "UAGX_ROS2Subscriber::GetOrCreateBarrier for Topic: '%s'. Ensure only single "
-				 "message types are used for a specific Topic."));
+				 "UAGX_ROS2Subscriber::GetOrCreateBarrier for Topic: '%s', Publisher Compoent '%s' "
+				 "in Actor '%s'. Ensure only single message types are used for a specific Topic."),
+			*Topic, *GetName(), *GetLabelSafe(GetOwner()));
 		return nullptr;
 	}
 
