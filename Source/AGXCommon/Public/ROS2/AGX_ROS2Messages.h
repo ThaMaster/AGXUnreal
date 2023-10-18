@@ -219,6 +219,27 @@ struct AGXCOMMON_API FAGX_StdMsgsFloat64MultiArray : public FAGX_ROS2Message
 };
 
 USTRUCT(BlueprintType)
+struct AGXCOMMON_API FAGX_StdMsgsInt8 : public FAGX_ROS2Message
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
+	int32 Data {0}; // int8 not supported by Blueprints.
+};
+
+USTRUCT(BlueprintType)
+struct AGXCOMMON_API FAGX_StdMsgsInt8MultiArray : public FAGX_ROS2Message
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
+	FAGX_StdMsgsMultiArrayLayout Layout;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
+	TArray<int32> Data; // int8 not supported by Blueprints.
+};
+
+USTRUCT(BlueprintType)
 struct AGXCOMMON_API FAGX_StdMsgsInt16 : public FAGX_ROS2Message
 {
 	GENERATED_BODY()
@@ -282,16 +303,16 @@ struct AGXCOMMON_API FAGX_StdMsgsInt64MultiArray : public FAGX_ROS2Message
 };
 
 USTRUCT(BlueprintType)
-struct AGXCOMMON_API FAGX_StdMsgsInt8 : public FAGX_ROS2Message
+struct AGXCOMMON_API FAGX_StdMsgsUInt8 : public FAGX_ROS2Message
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	int32 Data {0}; // int8 not supported by Blueprints.
+	uint8 Data {0};
 };
 
 USTRUCT(BlueprintType)
-struct AGXCOMMON_API FAGX_StdMsgsInt8MultiArray : public FAGX_ROS2Message
+struct AGXCOMMON_API FAGX_StdMsgsUInt8MultiArray : public FAGX_ROS2Message
 {
 	GENERATED_BODY()
 
@@ -299,16 +320,7 @@ struct AGXCOMMON_API FAGX_StdMsgsInt8MultiArray : public FAGX_ROS2Message
 	FAGX_StdMsgsMultiArrayLayout Layout;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<int32> Data; // int8 not supported by Blueprints.
-};
-
-USTRUCT(BlueprintType)
-struct AGXCOMMON_API FAGX_StdMsgsString : public FAGX_ROS2Message
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	FString Data;
+	TArray<uint8> Data;
 };
 
 USTRUCT(BlueprintType)
@@ -375,24 +387,12 @@ struct AGXCOMMON_API FAGX_StdMsgsUInt64MultiArray : public FAGX_ROS2Message
 };
 
 USTRUCT(BlueprintType)
-struct AGXCOMMON_API FAGX_StdMsgsUInt8 : public FAGX_ROS2Message
+struct AGXCOMMON_API FAGX_StdMsgsString : public FAGX_ROS2Message
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	uint8 Data {0};
-};
-
-USTRUCT(BlueprintType)
-struct AGXCOMMON_API FAGX_StdMsgsUInt8MultiArray : public FAGX_ROS2Message
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	FAGX_StdMsgsMultiArrayLayout Layout;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	TArray<uint8> Data;
+	FString Data;
 };
 
 USTRUCT(BlueprintType)
