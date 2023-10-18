@@ -341,6 +341,8 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 
 	// UE_LOG(LogAGX, Warning, TEXT("DrawVisualization: For shovel %p."), Shovel);
 
+	const float PointSize {FAGX_ShovelUtilities::HitProxySize};
+
 	// Draw the top edge.
 	{
 		const FVector BeginLocation = Shovel->TopEdge.Start.GetWorldLocation();
@@ -349,9 +351,9 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
 
 		PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::TopEdgeBegin));
-		PDI->DrawPoint(BeginLocation, Color, FAGX_ShovelUtilities::HitProxySize, SDPG_Foreground);
+		PDI->DrawPoint(BeginLocation, Color, PointSize, SDPG_Foreground);
 		PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::TopEdgeEnd));
-		PDI->DrawPoint(EndLocation, Color, FAGX_ShovelUtilities::HitProxySize, SDPG_Foreground);
+		PDI->DrawPoint(EndLocation, Color, PointSize, SDPG_Foreground);
 		PDI->SetHitProxy(nullptr);
 	}
 
@@ -361,6 +363,12 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 		const FVector EndLocation = Shovel->CuttingEdge.End.GetWorldLocation();
 		FLinearColor Color = FLinearColor::Red;
 		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
+
+		PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::CuttingEdgeBegin));
+		PDI->DrawPoint(BeginLocation, Color, PointSize, SDPG_Foreground);
+		PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::CuttingEdgeEnd));
+		PDI->DrawPoint(EndLocation, Color, PointSize, SDPG_Foreground);
+		PDI->SetHitProxy(nullptr);
 	}
 
 	// Draw the cutting direction.
@@ -371,6 +379,9 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 		const FVector EndLocation = BeginLocation + 100 * Direction;
 		const FLinearColor Color = FLinearColor::Red; //.Desaturate(0.5f);
 		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
+		PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::CuttingDirection));
+		PDI->DrawPoint(BeginLocation, Color, PointSize, SDPG_Foreground);
+		PDI->SetHitProxy(nullptr);
 	}
 }
 
