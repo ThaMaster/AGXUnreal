@@ -23,5 +23,15 @@ struct AGXUNREAL_API FAGX_Edge
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Edge")
 	FAGX_Frame End;
 
-	FTwoVectors GetLocationsRelativeTo(USceneComponent* Component);
+	FTwoVectors GetLocationsRelativeTo(const USceneComponent& Component);
+
+	/**
+	 * Get the start and end locations expressed as offsets in the given Component's local
+	 * coordinate system.
+	 *
+	 * If a frame, Start or End, does not have a valid parent Component, then FallbackParent is
+	 * used instead for that frame.
+	 */
+	FTwoVectors GetLocationsRelativeTo(
+		const USceneComponent& Component, const USceneComponent& FallbackParent);
 };

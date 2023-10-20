@@ -7,10 +7,6 @@ class UAGX_ShovelComponent;
 class AGXUNREAL_API FAGX_ShovelUtilities
 {
 public:
-#if 0
-	static UAGX_ShovelComponent* GetShovelToModify(UAGX_ShovelComponent* Shovel);
-#endif
-
 	/**
 	 * See FPropertyHandleFloat::SetValue in PropertyHandleImpl.cpp.
 	 * See Expose_TFormatSpecifier(double in UnrealTypeTraits.h.

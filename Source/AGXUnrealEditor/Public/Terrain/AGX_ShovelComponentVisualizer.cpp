@@ -101,7 +101,7 @@ struct FShovelVisualizerOperations
 		switch (Visualizer.GetSelectedFrameSource())
 		{
 			// Some frames (begin and end for an edge) only support translation while some
-			// (directions) is mainly controlled through rotation. This code tries to switch to
+			// (directions) are mainly controlled through rotation. This code tries to switch to
 			// the appropriate transform gizmo mode but fails (on Unreal Engine 5.0) while in the
 			// level editor because the ModesTool is currently in tracking mode. Leaving the code
 			// anyway, maybe it starts working in the future, and since it does work in the
@@ -413,7 +413,6 @@ struct FShovelVisualizerOperations
 FAGX_ShovelComponentVisualizer::FAGX_ShovelComponentVisualizer()
 {
 	UClass* Class = UAGX_ShovelComponent::StaticClass();
-
 	TopEdgeProperty = FindFProperty<FProperty>(Class, MEMBER(TopEdge));
 	CuttingEdgeProperty = FindFProperty<FProperty>(Class, MEMBER(CuttingEdge));
 	CuttingDirectionProperty = FindFProperty<FProperty>(Class, MEMBER(CuttingDirection));
@@ -452,6 +451,8 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 	}
 
 	const bool bSelected = FShovelVisualizerOperations::IsSelected(*Shovel);
+	const bool bHasNative = Shovel->HasNative();
+	const bool bEditable = bSelected && !bHasNative;
 
 	// UE_LOG(LogAGX, Warning, TEXT("DrawVisualization: For shovel %p."), Shovel);
 
@@ -459,12 +460,12 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 
 	// Draw the top edge.
 	{
-		const FVector BeginLocation = Shovel->TopEdge.Start.GetWorldLocation();
-		const FVector EndLocation = Shovel->TopEdge.End.GetWorldLocation();
+		const FVector BeginLocation = Shovel->TopEdge.Start.GetWorldLocation(*Shovel);
+		const FVector EndLocation = Shovel->TopEdge.End.GetWorldLocation(*Shovel);
 		FLinearColor Color = FLinearColor::White;
 		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
 
-		if (bSelected)
+		if (bEditable)
 		{
 			PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::TopEdgeBegin));
 			PDI->DrawPoint(BeginLocation, Color, PointSize, SDPG_Foreground);
@@ -476,12 +477,12 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 
 	// Draw the cutting edge.
 	{
-		const FVector BeginLocation = Shovel->CuttingEdge.Start.GetWorldLocation();
-		const FVector EndLocation = Shovel->CuttingEdge.End.GetWorldLocation();
+		const FVector BeginLocation = Shovel->CuttingEdge.Start.GetWorldLocation(*Shovel);
+		const FVector EndLocation = Shovel->CuttingEdge.End.GetWorldLocation(*Shovel);
 		FLinearColor Color = FLinearColor::Red;
 		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
 
-		if (bSelected)
+		if (bEditable)
 		{
 			PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::CuttingEdgeBegin));
 			PDI->DrawPoint(BeginLocation, Color, PointSize, SDPG_Foreground);
@@ -493,14 +494,14 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 
 	// Draw the cutting direction.
 	{
-		const FVector BeginLocation = Shovel->CuttingDirection.GetWorldLocation();
-		const FRotator Rotation = Shovel->CuttingDirection.GetWorldRotation();
+		const FVector BeginLocation = Shovel->CuttingDirection.GetWorldLocation(*Shovel);
+		const FRotator Rotation = Shovel->CuttingDirection.GetWorldRotation(*Shovel);
 		const FVector Direction = Rotation.RotateVector(FVector::ForwardVector);
 		const FVector EndLocation = BeginLocation + 100 * Direction;
 		const FLinearColor Color = FLinearColor::Red; //.Desaturate(0.5f);
 		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
 
-		if (bSelected)
+		if (bEditable)
 		{
 			PDI->SetHitProxy(new HShovelHitProxy(Shovel, EAGX_ShovelFrame::CuttingDirection));
 			PDI->DrawPoint(BeginLocation, Color, PointSize, SDPG_Foreground);
@@ -793,7 +794,7 @@ bool FAGX_ShovelComponentVisualizer::GetWidgetLocation(
 	}
 	if (FAGX_Frame* Frame = GetSelectedFrame())
 	{
-		OutLocation = Frame->GetWorldLocation();
+		OutLocation = Frame->GetWorldLocation(*Shovel);
 		return true;
 	}
 
@@ -836,11 +837,7 @@ bool FAGX_ShovelComponentVisualizer::HandleInputDelta(
 
 	if (HasValidFrameSection())
 	{
-#if 1
 		UAGX_ShovelComponent* ToModify = Shovel;
-#else
-		UAGX_ShovelComponent* ToModify = FAGX_ShovelUtilities::GetShovelToModify(Shovel);
-#endif
 		if (FShovelVisualizerOperations::CanDrag(*this, DeltaTranslate))
 		{
 			FShovelVisualizerOperations::FrameProxyDragged(
@@ -852,7 +849,7 @@ bool FAGX_ShovelComponentVisualizer::HandleInputDelta(
 				*this, *ToModify, *ViewportClient, DeltaRotate);
 		}
 	}
-	// Add additional selection types here, if we ever get new types.
+	// Add additional selection types, i.e. not frame, here, if we ever get new types.
 	else
 	{
 		// We got a move request but we have no valid selection so don't know what to move.

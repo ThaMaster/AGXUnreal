@@ -77,8 +77,9 @@ bool UAGX_ShovelComponent::SwapEdgeDirections()
 			return false;
 		}
 
-		const FTwoVectors TopEdgeInBody = TopEdge.GetLocationsRelativeTo(BodyComponent);
-		const FTwoVectors CuttingEdgeInBody = CuttingEdge.GetLocationsRelativeTo(BodyComponent);
+		const FTwoVectors TopEdgeInBody = TopEdge.GetLocationsRelativeTo(*BodyComponent, *this);
+		const FTwoVectors CuttingEdgeInBody =
+			CuttingEdge.GetLocationsRelativeTo(*BodyComponent, *this);
 		NativeBarrier.SetTopEdge(TopEdgeInBody);
 		NativeBarrier.SetCuttingEdge(CuttingEdgeInBody);
 	}
@@ -246,9 +247,9 @@ void UAGX_ShovelComponent::AllocateNative()
 	}
 
 	/// @todo Implement the remaining Properties required to initialize the Native.
-	const FTwoVectors TopEdgeInBody = TopEdge.GetLocationsRelativeTo(BodyComponent);
-	const FTwoVectors CuttingEdgeInBody = CuttingEdge.GetLocationsRelativeTo(BodyComponent);
-	const FRotator CuttingRotation = CuttingDirection.GetRotationRelativeTo(BodyComponent);
+	const FTwoVectors TopEdgeInBody = TopEdge.GetLocationsRelativeTo(*BodyComponent, *this);
+	const FTwoVectors CuttingEdgeInBody = CuttingEdge.GetLocationsRelativeTo(*BodyComponent, *this);
+	const FRotator CuttingRotation = CuttingDirection.GetRotationRelativeTo(*BodyComponent, *this);
 	const FVector CuttingDirectionInBody = CuttingRotation.RotateVector(FVector::ForwardVector);
 	NativeBarrier.AllocateNative(
 		*BodyBarrier, TopEdgeInBody, CuttingEdgeInBody, CuttingDirectionInBody);
