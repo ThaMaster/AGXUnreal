@@ -131,6 +131,27 @@ struct FShovelVisualizerOperations
 		return IsRotatable(Visualizer.GetSelectedFrameSource()) && !DeltaRotate.IsZero();
 	}
 
+	// TODO: Consider merging with FAGX_WireWinchPose. Is there a larger concept here that we want
+	// to realize? Is it FAGX_Frame that is that larger concept and we want Wire Winch to use that?
+	struct FAGX_ShovelFramePose
+	{
+		const FTransform& LocalToWorld; // Will reference into the frame's parent, or the shovel.
+		const FVector LocalLocation;
+		const FRotator LocalRotation;
+	};
+
+	static FAGX_ShovelFramePose GetShovelPose(FAGX_Frame& Frame, UAGX_ShovelComponent& Shovel)
+	{
+		USceneComponent* Parent = Frame.GetParentComponent();
+		if (Parent == nullptr)
+		{
+			// No parent has been set of the frame, which means that the location and rotation is
+			// relative to the shovel.
+			Parent = &Shovel;
+		}
+		return {Parent->GetComponentTransform(), Frame.LocalLocation, Frame.LocalRotation};
+	}
+
 	static void FrameProxyDragged(
 		FAGX_ShovelComponentVisualizer& Visualizer, UAGX_ShovelComponent& Shovel,
 		FEditorViewportClient& ViewportClient, const FVector& DeltaTranslate)
@@ -140,13 +161,11 @@ struct FShovelVisualizerOperations
 		EAGX_ShovelFrame FrameSource = Visualizer.GetSelectedFrameSource();
 		// Consider transforming DeltaTranslate to the  local coordinate system and doing the
 		// add there instead of the other way around. Fewer transformations.
-		const FTransform& LocalToWorld = Frame->GetParentComponent() != nullptr
-											 ? Frame->GetParentComponent()->GetComponentTransform()
-											 : FTransform();
-		const FVector CurrentLocalLocation = Frame->LocalLocation;
-		const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
+		FAGX_ShovelFramePose Pose = GetShovelPose(*Frame, Shovel);
+		const FVector CurrentWorldLocation =
+			Pose.LocalToWorld.TransformPosition(Pose.LocalLocation);
 		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
-		FVector NewLocalLocation = LocalToWorld.InverseTransformPosition(NewWorldLocation);
+		FVector NewLocalLocation = Pose.LocalToWorld.InverseTransformPosition(NewWorldLocation);
 		UE_LOG(LogAGX, Warning, TEXT("Truncating new local location for details panel"));
 		FAGX_ShovelUtilities::TruncateForDetailsPanel(NewLocalLocation);
 		Shovel.Modify();
@@ -183,16 +202,20 @@ struct FShovelVisualizerOperations
 
 		FAGX_Frame* Frame = Visualizer.GetSelectedFrame();
 		EAGX_ShovelFrame FrameSource = Visualizer.GetSelectedFrameSource();
-		const FTransform& WorldToLocal =
-			Frame->GetParentComponent() != nullptr
-				? Frame->GetParentComponent()->GetComponentTransform().Inverse()
-				: FTransform();
-		const FRotator CurrentRotation = Frame->LocalRotation;
-		FRotator NewRotation = CurrentRotation + DeltaRotate;
+		FAGX_ShovelFramePose Pose = GetShovelPose(*Frame, Shovel);
+
+		// Convert the current local rotation to world space, apply the delta, and then transform
+		// back to local space.
+		const FRotator CurrentWorldRotation =
+			FRotator(Pose.LocalToWorld.TransformRotation(FQuat(Pose.LocalRotation)));
+		FRotator NewWorldRotation = CurrentWorldRotation + DeltaRotate;
+		FRotator NewLocalRotation =
+			FRotator(Pose.LocalToWorld.InverseTransformRotation(FQuat(NewWorldRotation)));
+
 		UE_LOG(LogAGX, Warning, TEXT("Truncating new local rotation for details panel."));
-		FAGX_ShovelUtilities::TruncateForDetailsPanel(NewRotation);
+		FAGX_ShovelUtilities::TruncateForDetailsPanel(NewWorldRotation);
 		Shovel.Modify();
-		Frame->LocalRotation = NewRotation;
+		Frame->LocalRotation = NewLocalRotation;
 
 		auto ReadLocalRotation = [](const FAGX_Frame* Frame) { return Frame->LocalRotation; };
 
