@@ -140,7 +140,9 @@ struct FShovelVisualizerOperations
 		EAGX_ShovelFrame FrameSource = Visualizer.GetSelectedFrameSource();
 		// Consider transforming DeltaTranslate to the  local coordinate system and doing the
 		// add there instead of the other way around. Fewer transformations.
-		const FTransform& LocalToWorld = Frame->GetParentComponent()->GetComponentTransform();
+		const FTransform& LocalToWorld = Frame->GetParentComponent() != nullptr
+											 ? Frame->GetParentComponent()->GetComponentTransform()
+											 : FTransform();
 		const FVector CurrentLocalLocation = Frame->LocalLocation;
 		const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
 		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
@@ -182,7 +184,9 @@ struct FShovelVisualizerOperations
 		FAGX_Frame* Frame = Visualizer.GetSelectedFrame();
 		EAGX_ShovelFrame FrameSource = Visualizer.GetSelectedFrameSource();
 		const FTransform& WorldToLocal =
-			Frame->GetParentComponent()->GetComponentTransform().Inverse();
+			Frame->GetParentComponent() != nullptr
+				? Frame->GetParentComponent()->GetComponentTransform().Inverse()
+				: FTransform();
 		const FRotator CurrentRotation = Frame->LocalRotation;
 		FRotator NewRotation = CurrentRotation + DeltaRotate;
 		UE_LOG(LogAGX, Warning, TEXT("Truncating new local rotation for details panel."));
