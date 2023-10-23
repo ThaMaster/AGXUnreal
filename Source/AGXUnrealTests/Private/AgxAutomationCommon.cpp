@@ -451,6 +451,15 @@ TArray<FString> AgxAutomationCommon::GetReferencedStaticMeshAssets(
 	return Assets;
 }
 
+void AgxAutomationCommon::AddExpectedError(FAutomationTestBase& Test, const FString& Error)
+{
+	Test.AddExpectedError(
+				Error,
+				EAutomationExpectedErrorFlags::Contains, 0);
+	Test.AddError(Error);
+
+}
+
 bool AgxAutomationCommon::FCheckWorldsCommand::Update()
 {
 	UWorld* TestWorld = AgxAutomationCommon::GetTestWorld();

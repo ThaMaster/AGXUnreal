@@ -223,6 +223,8 @@ namespace AgxAutomationCommon
 		return Centimeter / T {100};
 	}
 
+	void AddExpectedError(FAutomationTestBase& Test, const FString& Error);
+
 	/**
 	 * Latent Command that tests that TestHelper::GetTestWorld and
 	 * FAGX_EditorUtilities::GetCurrentWorld return the same world.

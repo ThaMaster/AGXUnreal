@@ -10,6 +10,7 @@
 #include "Terrain/AGX_Terrain.h"
 
 // Unreal Engine includes.
+#include "AgxAutomationCommon.h"
 #include "Containers/Map.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationEditorCommon.h"
@@ -389,9 +390,7 @@ void FStepExampleLevelsTest::GetTests(
 {
 	// ComponentGallery ignored because it produces several errors on Play: for example Constraints
 	// without a Body.
-	// SimpleTerrain and AdvancedTerrain are ignored because they will attempt to resize the
-	// Landscape Displacement map texture which is not allowed in this Unit test context apparently.
-	const TArray<FString> IgnoreLevels {"ComponentGallery", "SimpleTerrain", "AdvancedTerrain"};
+	const TArray<FString> IgnoreLevels {"ComponentGallery"};
 
 	const FString LevelsDir = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Levels"));
 	TArray<FString> FoundAssetes;
@@ -410,6 +409,9 @@ void FStepExampleLevelsTest::GetTests(
 
 bool FStepExampleLevelsTest::RunTest(const FString& Parameters)
 {
+	AgxAutomationCommon::AddExpectedError(
+		*this, TEXT("Could not allocate resource for Landscape Displacement Map for AGX Terrain "
+					".*. There may be rendering issues."));
 	using namespace AGX_PlayInEditorTest_helpers;
 	const FString LevelPath = Parameters;
 	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(LevelPath))
