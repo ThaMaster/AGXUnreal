@@ -5,6 +5,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Terrain/AGX_Terrain.h"
@@ -454,12 +455,11 @@ bool FCheckMaterialLibraryStateCommand::Update()
 	auto Box = GetComponentByName<UAGX_BoxShapeComponent>(TestWorld, "Actor", "BoxShape");
 	Test.TestNotNull("Box", Box);
 
-	auto Sphere =
-		GetComponentByName<UAGX_SphereShapeComponent>(TestWorld, "Actor", "SphereShape");
+	auto Sphere = GetComponentByName<UAGX_SphereShapeComponent>(TestWorld, "Actor", "SphereShape");
 	Test.TestNotNull("Sphere", Sphere);
 
-	auto CMRegistrar =
-		GetComponentByName<UAGX_ContactMaterialRegistrarComponent>(TestWorld, "Actor", "CMRegistrar");
+	auto CMRegistrar = GetComponentByName<UAGX_ContactMaterialRegistrarComponent>(
+		TestWorld, "Actor", "CMRegistrar");
 	Test.TestNotNull("CMRegistrar", CMRegistrar);
 
 	if (Box == nullptr || Sphere == nullptr || CMRegistrar == nullptr)
@@ -470,10 +470,9 @@ bool FCheckMaterialLibraryStateCommand::Update()
 	Test.TestTrue("Steel Library Shape Material not null", Sphere->ShapeMaterial != nullptr);
 	Test.TestTrue(
 		"Steel-Aluminium Library Contact Material not null and assigned material pair",
-		CMRegistrar->ContactMaterials.Num() == 1 &&
-		CMRegistrar->ContactMaterials[0] != nullptr &&
-		CMRegistrar->ContactMaterials[0]->Material1 != nullptr &&
-		CMRegistrar->ContactMaterials[0]->Material2 != nullptr);
+		CMRegistrar->ContactMaterials.Num() == 1 && CMRegistrar->ContactMaterials[0] != nullptr &&
+			CMRegistrar->ContactMaterials[0]->Material1 != nullptr &&
+			CMRegistrar->ContactMaterials[0]->Material2 != nullptr);
 
 	return true;
 }
@@ -489,8 +488,7 @@ bool FMaterialLibraryTest::RunTest(const FString& Parameters)
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath));
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
-	ADD_LATENT_AUTOMATION_COMMAND(
-		FCheckMaterialLibraryStateCommand(*this));
+	ADD_LATENT_AUTOMATION_COMMAND(FCheckMaterialLibraryStateCommand(*this));
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 	return true;
