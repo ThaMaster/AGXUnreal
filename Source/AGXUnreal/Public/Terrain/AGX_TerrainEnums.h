@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "AGX_Check.h"
+
 /**
  * All frames that a Shovel keeps track of.
  */
@@ -31,6 +33,11 @@ inline bool IsTranslatable(EAGX_ShovelFrame ShovelFrame)
 		case EAGX_ShovelFrame::TopEdgeEnd:
 			return true;
 	}
+
+	// Unknown shovel frame passed, should never happen. Crash in unit tests, assume not
+	// translatable in user builds.
+	AGX_CHECK(false);
+	return false;
 }
 
 inline bool IsRotatable(EAGX_ShovelFrame ShovelFrame)
@@ -47,4 +54,9 @@ inline bool IsRotatable(EAGX_ShovelFrame ShovelFrame)
 		case EAGX_ShovelFrame::TopEdgeEnd:
 			return false;
 	}
+
+	// Unknown shovel frame passed, should never happen. Crash in unit tests, assume not rotatable
+	// in user builds.
+	AGX_CHECK(false);
+	return false;
 }

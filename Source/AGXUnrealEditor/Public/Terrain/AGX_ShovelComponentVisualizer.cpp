@@ -808,7 +808,6 @@ bool FAGX_ShovelComponentVisualizer::GetWidgetLocation(
 	return false;
 }
 
-
 /*
  * The custom input coordinate system is used when the user is currently interacting with the
  * transformation gizmo in the rotate mode. It is used to tell the engine how our object has been
@@ -934,6 +933,7 @@ FAGX_Frame* FAGX_ShovelComponentVisualizer::GetSelectedFrame() const
 	{
 		return nullptr;
 	}
+
 	switch (SelectedFrame)
 	{
 		case EAGX_ShovelFrame::None:
@@ -949,6 +949,11 @@ FAGX_Frame* FAGX_ShovelComponentVisualizer::GetSelectedFrame() const
 		case EAGX_ShovelFrame::TopEdgeEnd:
 			return &Shovel->TopEdge.End;
 	}
+
+	// Unknown shovel frame selected, should never happen. Crash in unit tests, return nullptr
+	// in user builds.
+	AGX_CHECK(false);
+	return nullptr;
 }
 
 EAGX_ShovelFrame FAGX_ShovelComponentVisualizer::GetSelectedFrameSource() const
@@ -963,6 +968,7 @@ FProperty* FAGX_ShovelComponentVisualizer::GetSelectedFrameProperty() const
 	{
 		return nullptr;
 	}
+
 	switch (SelectedFrame)
 	{
 		case EAGX_ShovelFrame::None:
@@ -976,6 +982,11 @@ FProperty* FAGX_ShovelComponentVisualizer::GetSelectedFrameProperty() const
 		case EAGX_ShovelFrame::TopEdgeEnd:
 			return TopEdgeProperty;
 	}
+
+	// Unknown shovel frame selected, should never happen. Crash in unit tests, return nullptr
+	// in user builds.
+	AGX_CHECK(false);
+	return nullptr;
 }
 
 void FAGX_ShovelComponentVisualizer::ClearSelection()
