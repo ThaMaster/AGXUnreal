@@ -1330,6 +1330,17 @@ void AAGX_Terrain::InitializeDisplacementMap()
 	/// \todo I'm not sure why we need this. Does the texture sampler "fudge the
 	/// values" when using non-linear gamma?
 	LandscapeDisplacementMap->bForceLinearGamma = true;
+
+	if (LandscapeDisplacementMap->GetResource() == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not allocate resource for Landscape Displacement Map for AGX Terrain %s. "
+				 "There may be rendering issues."),
+			*GetName());
+		return;
+	}
+
 	DisplacementMapInitialized = true;
 }
 
@@ -1441,10 +1452,15 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 #endif
 	);
 #if WITH_EDITORONLY_DATA
-	ParticleSystemComponent->bVisualizeComponent = true;
+	// Must check for nullptr here because no particle system component is created with running
+	// as a unit test without graphics, i.e. with our run_unit_tests script in GitLab CI.
+	if (ParticleSystemComponent != nullptr)
+	{
+		ParticleSystemComponent->bVisualizeComponent = true;
+	}
 #endif
 
-	return true;
+	return ParticleSystemComponent != nullptr;
 }
 
 bool AAGX_Terrain::InitializeParticlesMap()
