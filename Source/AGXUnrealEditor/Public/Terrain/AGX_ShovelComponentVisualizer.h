@@ -38,6 +38,9 @@ public:
 	virtual bool GetWidgetLocation(
 		const FEditorViewportClient* ViewportClient, FVector& OutLocation) const override;
 
+	virtual bool GetCustomInputCoordinateSystem(
+		const FEditorViewportClient* ViewportClient, FMatrix& OutMatrix) const override;
+
 	virtual bool HandleInputDelta(
 		FEditorViewportClient* ViewportClient, FViewport* Viewport, FVector& DeltaTranslate,
 		FRotator& DeltaRotate, FVector& DeltaScale) override;
@@ -85,6 +88,8 @@ private:
 	FProperty* TopEdgeProperty {nullptr};
 	FProperty* CuttingEdgeProperty {nullptr};
 	FProperty* CuttingDirectionProperty {nullptr};
+
+	FQuat CachedRotation {ForceInit};
 
 	/// A library of helper functions manipulating the private state of
 	/// FAGX_WireComponentVisualizer.

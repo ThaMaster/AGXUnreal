@@ -98,6 +98,10 @@ struct FShovelVisualizerOperations
 		// All checks passed, we really should select a frame.
 		Visualizer.SelectedFrame = Proxy.Frame;
 		Visualizer.ShovelPropertyPath = FComponentPropertyPath(&Shovel);
+		if (FAGX_Frame* Frame = Visualizer.GetSelectedFrame())
+		{
+			Visualizer.CachedRotation = Frame->GetWorldRotation(Shovel).Quaternion();
+		}
 		switch (Visualizer.GetSelectedFrameSource())
 		{
 			// Some frames (begin and end for an edge) only support translation while some
@@ -224,6 +228,8 @@ struct FShovelVisualizerOperations
 		{ Frame->LocalRotation = NewLocalRotation; };
 
 		NotifyFrameModified<FRotator>(Visualizer, Shovel, ReadLocalRotation, WriteLocalRotation);
+
+		Visualizer.CachedRotation = NewWorld;
 	}
 
 	/**
@@ -802,6 +808,29 @@ bool FAGX_ShovelComponentVisualizer::GetWidgetLocation(
 	return false;
 }
 
+
+/*
+ * The custom input coordinate system is used when the user is currently interacting with the
+ * transformation gizmo in the rotate mode. It is used to tell the engine how our object has been
+ * rotated. Without this the transform gizmo visualization rotates backwards instead of showing
+ * a delta rotation forwards.
+ */
+bool FAGX_ShovelComponentVisualizer::GetCustomInputCoordinateSystem(
+	const FEditorViewportClient* ViewportClient, FMatrix& OutMatrix) const
+{
+	if (ViewportClient->GetWidgetCoordSystemSpace() == COORD_Local ||
+		ViewportClient->GetWidgetMode() == UE::Widget::WM_Rotate)
+	{
+		if (HasValidFrameSection())
+		{
+			OutMatrix = FRotationMatrix::Make(CachedRotation);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool FAGX_ShovelComponentVisualizer::HandleInputDelta(
 	FEditorViewportClient* ViewportClient, FViewport* Viewport, FVector& DeltaTranslate,
 	FRotator& DeltaRotate, FVector& DeltaScale)
@@ -953,6 +982,7 @@ void FAGX_ShovelComponentVisualizer::ClearSelection()
 {
 	SelectedFrame = EAGX_ShovelFrame::None;
 	ShovelPropertyPath.Reset();
+	CachedRotation = FQuat(ForceInit);
 }
 
 UAGX_ShovelComponent* FAGX_ShovelComponentVisualizer::GetSelectedShovel() const
