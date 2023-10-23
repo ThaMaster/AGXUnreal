@@ -204,16 +204,17 @@ struct FShovelVisualizerOperations
 		EAGX_ShovelFrame FrameSource = Visualizer.GetSelectedFrameSource();
 		FAGX_ShovelFramePose Pose = GetShovelPose(*Frame, Shovel);
 
-		// Convert the current local rotation to world space, apply the delta, and then transform
-		// back to local space.
-		const FRotator CurrentWorldRotation =
-			FRotator(Pose.LocalToWorld.TransformRotation(FQuat(Pose.LocalRotation)));
-		FRotator NewWorldRotation = CurrentWorldRotation + DeltaRotate;
-		FRotator NewLocalRotation =
-			FRotator(Pose.LocalToWorld.InverseTransformRotation(FQuat(NewWorldRotation)));
+		// Convert the current local rotation to world space, rotate spline rotation according to
+		// delta rotation, and then transform back to local space. Do the computation using
+		// quaternions instead of rotators to avoid unwanted signed flip at 90 degree angles.
+		const FQuat CurrentLocal = Pose.LocalRotation.Quaternion();
+		const FQuat CurrentWorld = Pose.LocalToWorld.GetRotation() * CurrentLocal;
+		const FQuat NewWorld = DeltaRotate.Quaternion() * CurrentWorld;
+		const FQuat NewLocal = Pose.LocalToWorld.GetRotation().Inverse() * NewWorld;
+		FRotator NewLocalRotation = NewLocal.Rotator();
 
 		UE_LOG(LogAGX, Warning, TEXT("Truncating new local rotation for details panel."));
-		FAGX_ShovelUtilities::TruncateForDetailsPanel(NewWorldRotation);
+		FAGX_ShovelUtilities::TruncateForDetailsPanel(NewLocalRotation);
 		Shovel.Modify();
 		Frame->LocalRotation = NewLocalRotation;
 
