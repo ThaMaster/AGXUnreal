@@ -148,15 +148,7 @@ uint64 UAGX_ShovelComponent::GetNativeAddress() const
 
 void UAGX_ShovelComponent::SetNativeAddress(uint64 NativeAddress)
 {
-	if (!HasNative())
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("SetNativeAddress called on Shovel Component '%s' in '%s' that does not have an "
-				 "AGX Dynamics native."),
-			*GetName(), *GetLabelSafe(GetOwner()));
-		return;
-	}
+	check(!HasNative());
 	NativeBarrier.SetNativeAddress(NativeAddress);
 	NativeBarrier.DecrementRefCount();
 }
