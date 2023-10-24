@@ -37,13 +37,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel")
 	UAGX_ShovelProperties* ShovelProperties;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
+	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
+	void SetShovelProperties(UAGX_ShovelProperties* Properties);
+
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel",
+		Meta = (SkipUCSModifiedProperties))
 	FAGX_Edge TopEdge;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel",
+		Meta = (SkipUCSModifiedProperties))
 	FAGX_Edge CuttingEdge;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel",
+		Meta = (SkipUCSModifiedProperties))
 	FAGX_Frame CuttingDirection;
 
 	/**
@@ -53,8 +62,14 @@ public:
 
 	bool SwapEdgeDirections();
 
-	// ~Begin UActorComponent interface.
+#if WITH_EDITOR
+	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+#endif
+	// ~End UObject interface.
+
+	// ~Begin UActorComponent interface.
 	virtual void BeginPlay() override;
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	// ~End UActorComponent interface.
@@ -78,6 +93,12 @@ public:
 	bool WritePropertiesToNative();
 
 private:
+#if WITH_EDITOR
+	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each
+	// and every UPROPERTY in PostEditChangeProperty and PostEditChangeChainProperty.
+	void InitPropertyDispatcher();
+#endif
+
 	// Create the native AGX Dynamics object.
 	void AllocateNative();
 

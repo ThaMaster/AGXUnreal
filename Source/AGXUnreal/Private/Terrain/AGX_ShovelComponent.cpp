@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Terrain/AGX_ShovelProperties.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -22,6 +23,31 @@ UAGX_ShovelComponent::UAGX_ShovelComponent()
 {
 	// Keep ticking off until we have a reason to turn it on.
 	PrimaryComponentTick.bCanEverTick = false;
+}
+
+void UAGX_ShovelComponent::SetShovelProperties(UAGX_ShovelProperties* Properties)
+{
+	ShovelProperties = Properties;
+	if (HasNative())
+	{
+		if (ShovelProperties != nullptr)
+		{
+			WritePropertiesToNative();
+		}
+		else
+		{
+			// TODO Not sure what to do here. With a nullptr Shovel Properties we want to use the
+			// default settings for everything. WritePropertiesToNative achieves this by doing
+			// nothing when Shovel Properties is nullptr, which works from Allocate Native since
+			// at that point nothing has yet changed the AGX Dynamics instance of the shovel. Here,
+			// however, we want to restore the default values. Where can we find those default
+			// values? Can we new up a template agxTerrain::Shovel in the Shovel Barrier and copy
+			// the values from that?
+#if 0
+			NativeBarrier.SetDefaultProperties();
+#endif
+		}
+	}
 }
 
 FAGX_Frame* UAGX_ShovelComponent::GetFrame(EAGX_ShovelFrame Frame)
@@ -108,6 +134,18 @@ void UAGX_ShovelComponent::PostInitProperties()
 	CuttingEdge.Start.Parent.OwningActor = Owner;
 	CuttingEdge.End.Parent.OwningActor = Owner;
 	CuttingDirection.Parent.OwningActor = Owner;
+
+	InitPropertyDispatcher();
+}
+
+void UAGX_ShovelComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeChainProperty(Event);
 }
 
 void UAGX_ShovelComponent::BeginPlay()
@@ -255,6 +293,20 @@ void UAGX_ShovelComponent::AllocateNative()
 	UE_LOG(
 		LogAGX, Log, TEXT("Shovel '%s' in '%s' has allocated AGX Dynamics native."), *GetName(),
 		*GetLabelSafe(GetOwner()));
+}
+
+void UAGX_ShovelComponent::InitPropertyDispatcher()
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, ShovelProperties),
+		[](ThisClass* This) {This->SetShovelProperties(This->ShovelProperties);});
 }
 
 bool UAGX_ShovelComponent::WritePropertiesToNative()

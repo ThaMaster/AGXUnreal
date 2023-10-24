@@ -372,8 +372,8 @@ public:
 	virtual void SetNativeAddress(uint64 NativeAddress) override;
 	// ~End IAGX_NativeOwner interface.
 
-	// ~Begin UObject interface.
 #if WITH_EDITOR
+	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
