@@ -40,7 +40,7 @@ void SetAndPropagate(
 	}
 }
 
-// TODO Reduce this:
+TODO Reduce this:
 #define AGX_SHOVEL_SETTER_IMPL(PropertyName)                                                       \
 	{                                                                                              \
 		if (IsInstance())                                                                          \
