@@ -788,7 +788,7 @@ FROS2PublisherBarrier* UAGX_ROS2PublisherComponent::GetOrCreateBarrier(
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("Existing Native ROS2 Publisher with different message type found in "
-				 "UAGX_ROS2Publisher::GetOrCreateBarrier for Topic: '%s', Publisher Compoent '%s' "
+				 "UAGX_ROS2Publisher::GetOrCreateBarrier for Topic: '%s', Publisher Component '%s' "
 				 "in Actor '%s'. Ensure only single message types are used for a specific Topic."),
 			*Topic, *GetName(), *GetLabelSafe(GetOwner()));
 		return nullptr;
