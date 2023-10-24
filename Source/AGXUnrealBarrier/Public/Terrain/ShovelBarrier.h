@@ -40,6 +40,7 @@ public:
 
 	void SetTopEdge(const FTwoVectors& TopEdge);
 	void SetCuttingEdge(const FTwoVectors& CuttingEdge);
+	void SetCuttingDirection(const FVector& CuttingDirection);
 
 	void SetNumberOfTeeth(int32 NumberOfTeeth);
 	int32 GetNumberOfTeeth() const;
@@ -87,7 +88,7 @@ public:
 	bool GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode) const;
 
 	void SetBottomContactThreshold(double BottomContactThreshold);
-	double GetBottomContactThreshold() const;	
+	double GetBottomContactThreshold() const;
 
 	bool HasNative() const;
 	void AllocateNative(

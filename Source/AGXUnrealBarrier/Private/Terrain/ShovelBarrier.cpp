@@ -38,15 +38,22 @@ FShovelBarrier::~FShovelBarrier()
 void FShovelBarrier::SetTopEdge(const FTwoVectors& TopEdgeUnreal)
 {
 	check(HasNative());
-	agx::Line TopEdgeAGX = ConvertDisplacement(TopEdgeUnreal);
+	const agx::Line TopEdgeAGX = ConvertDisplacement(TopEdgeUnreal);
 	NativeRef->Native->setTopEdge(TopEdgeAGX);
 }
 
 void FShovelBarrier::SetCuttingEdge(const FTwoVectors& CuttingEdge)
 {
 	check(HasNative());
-	agx::Line CuttingEdgeAGX = ConvertDisplacement(CuttingEdge);
+	const agx::Line CuttingEdgeAGX = ConvertDisplacement(CuttingEdge);
 	NativeRef->Native->setCuttingEdge(CuttingEdgeAGX);
+}
+
+void FShovelBarrier::SetCuttingDirection(const FVector& CuttingDirection)
+{
+	check(HasNative());
+	const agx::Vec3 DirectionAGX = ConvertVector(CuttingDirection);
+	NativeRef->Native->setCuttingDirection(DirectionAGX);
 }
 
 void FShovelBarrier::SetNumberOfTeeth(int32 NumberOfTeeth)
