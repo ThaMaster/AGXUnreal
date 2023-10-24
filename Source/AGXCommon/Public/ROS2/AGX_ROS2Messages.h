@@ -171,9 +171,6 @@ USTRUCT(BlueprintType)
 struct AGXCOMMON_API FAGX_StdMsgsEmpty : public FAGX_ROS2Message
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
-	uint8 StructureNeedsAtLeastOneMember {0};
 };
 
 USTRUCT(BlueprintType)

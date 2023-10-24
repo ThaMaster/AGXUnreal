@@ -271,7 +271,6 @@ FAGX_StdMsgsColorRGBA Convert(const agxIO::ROS2::stdMsgs::ColorRGBA& InMsg)
 FAGX_StdMsgsEmpty Convert(const agxIO::ROS2::stdMsgs::Empty& InMsg)
 {
 	FAGX_StdMsgsEmpty Msg;
-	Msg.StructureNeedsAtLeastOneMember = InMsg.structure_needs_at_least_one_member;
 	return Msg;
 }
 
@@ -571,7 +570,6 @@ agxIO::ROS2::stdMsgs::ColorRGBA Convert(const FAGX_StdMsgsColorRGBA& InMsg)
 agxIO::ROS2::stdMsgs::Empty Convert(const FAGX_StdMsgsEmpty& InMsg)
 {
 	agxIO::ROS2::stdMsgs::Empty Msg;
-	Msg.structure_needs_at_least_one_member = InMsg.StructureNeedsAtLeastOneMember;
 	return Msg;
 }
 
