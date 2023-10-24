@@ -6,7 +6,7 @@
 #include "AGX_Edge.h"
 #include "AGX_Frame.h"
 #include "AGX_NativeOwner.h"
-#include "AGX_RigidBodyReference.h"
+#include "AGX_BodyReference.h"
 #include "Terrain/ShovelBarrier.h"
 #include "Terrain/AGX_TerrainEnums.h"
 
@@ -28,7 +28,7 @@ public:
 
 	/// The Rigid Body that is to be imbued with shovel behavior.
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
-	FAGX_RigidBodyReference RigidBody;
+	FAGX_BodyReference RigidBody;
 
 	/**
 	 * Configuration properties for the Shovel. If not set then the AGX Dynamics defaults are

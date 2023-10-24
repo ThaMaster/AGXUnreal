@@ -15,6 +15,7 @@
 #include "UnrealEdGlobals.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_BodyReference.h"
 #include "AGX_ComponentReference.h"
 #include "AGX_ComponentReferenceCustomization.h"
 #include "AGX_EditorStyle.h"
@@ -273,6 +274,12 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_ComponentReferenceCustomization::MakeInstance));
 
+	// Body Reference uses the base class customization.
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_BodyReference::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+			&FAGX_ComponentReferenceCustomization::MakeInstance));
+
 	/*
 	 * Class customizations.
 	 */
@@ -401,6 +408,9 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_ShovelReference::StaticStruct()->GetFName());
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		FAGX_BodyReference::StaticStruct()->GetFName());
 
 	/*
 	 * Class Customizations.

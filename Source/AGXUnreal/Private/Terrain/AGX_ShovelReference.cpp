@@ -1,3 +1,5 @@
+// Copyright 2023, Algoryx Simulation AB.
+
 #include "Terrain/AGX_ShovelReference.h"
 
 // AGX Dynamics for Unreal includes.

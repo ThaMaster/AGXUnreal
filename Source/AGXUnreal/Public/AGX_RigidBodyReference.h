@@ -50,6 +50,8 @@ class AActor;
  * RigidBodyComponent has been given its final name. BeginPlay is often a good choice. Though beware
  * that if the target Rigid Body is destroyed due to a Blueprint Reconstruction then the cache
  * becomes a dangling pointer.
+ *
+ * @deprecated Use FAGX_BodyReference instead.
  */
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_RigidBodyReference
