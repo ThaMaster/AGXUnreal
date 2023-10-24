@@ -59,12 +59,12 @@ struct AGXUNREAL_API FAGX_ComponentReference
 	FAGX_ComponentReference(TSubclassOf<UActorComponent> InComponentType);
 
 	UPROPERTY(
-		EditInstanceOnly, Category = "AGX Component Reference",
+		EditInstanceOnly, BlueprintReadWrite, Category = "AGX Component Reference",
 		Meta = (Tooltip = "The Actor that owns the RigidBodyComponent."))
 	AActor* OwningActor {nullptr};
 
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Component Reference",
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Component Reference",
 		Meta = (Tooltip = "The name of the Component."))
 	FName Name {NAME_None};
 
