@@ -25,9 +25,47 @@ UAGX_ShovelComponent::UAGX_ShovelComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+UAGX_ShovelComponent::~UAGX_ShovelComponent()
+{
+	if (ShovelProperties != nullptr && ShovelProperties->IsInstance())
+	{
+		ShovelProperties->UnregisterShovel(*this);
+	}
+}
+
 void UAGX_ShovelComponent::SetShovelProperties(UAGX_ShovelProperties* Properties)
 {
+	if (ShovelProperties != nullptr && ShovelProperties->IsInstance())
+	{
+		ShovelProperties->UnregisterShovel(*this);
+	}
+
 	ShovelProperties = Properties;
+	if (ShovelProperties != nullptr)
+	{
+		if (ShovelProperties->IsAsset())
+		{
+			ShovelProperties = ShovelProperties->GetOrCreateInstance(GetWorld());
+			if (ShovelProperties != nullptr)
+			{
+				ShovelProperties->RegisterShovel(*this);
+			}
+			else
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Shovel %s in %s: Could not create Shovel Properties instance. Default "
+						 "shovel "
+						 "settings will be used."),
+					*GetName(), *GetLabelSafe(GetOwner()));
+			}
+		}
+		else
+		{
+			ShovelProperties->RegisterShovel(*this);
+		}
+	}
+
 	if (HasNative())
 	{
 		if (ShovelProperties != nullptr)
@@ -326,7 +364,23 @@ void UAGX_ShovelComponent::AllocateNative()
 		return;
 	}
 
-	/// @todo Implement the remaining Properties required to initialize the Native.
+	if (ShovelProperties != nullptr)
+	{
+		ShovelProperties = ShovelProperties->GetOrCreateInstance(GetWorld());
+		if (ShovelProperties != nullptr)
+		{
+			ShovelProperties->RegisterShovel(*this);
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Shovel %s in %s: Could not create Shovel Properties instance. Default shovel "
+					 "settings will be used."),
+				*GetName(), *GetLabelSafe(GetOwner()));
+		}
+	}
+
 	const FTwoVectors TopEdgeInBody = TopEdge.GetLocationsRelativeTo(*BodyComponent, *this);
 	const FTwoVectors CuttingEdgeInBody = CuttingEdge.GetLocationsRelativeTo(*BodyComponent, *this);
 	const FRotator CuttingRotation = CuttingDirection.GetRotationRelativeTo(*BodyComponent, *this);
@@ -356,7 +410,7 @@ void UAGX_ShovelComponent::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, ShovelProperties),
-		[](ThisClass* This) {This->SetShovelProperties(This->ShovelProperties);});
+		[](ThisClass* This) { This->SetShovelProperties(This->ShovelProperties); });
 }
 
 bool UAGX_ShovelComponent::WritePropertiesToNative()
@@ -368,9 +422,18 @@ bool UAGX_ShovelComponent::WritePropertiesToNative()
 
 	if (ShovelProperties == nullptr)
 	{
-		// No properties means use the defaults everywhere. It is not an error.
+		// No properties means use the defaults. It is not an error.
+		// todo Simply returning is not correct if we used to have a Shovel Properties but don't
+		// anymore. In that case we would like to restore the default values. Read from the
+		// UAGX_ShovelProperties class default object?
 		return true;
 	}
+#if 0
+	NativeBarrier.SetEnable(ShovelProperties->Enable);
+#endif
+	NativeBarrier.SetAlwaysRemoveShovelContacts(ShovelProperties->AlwaysRemoveShovelContacts);
+	NativeBarrier.SetEnableInnerShapeCreateDynamicMass(ShovelProperties->EnableInnerShapeCreateDynamicMass);
+
 	NativeBarrier.SetToothLength(ShovelProperties->ToothLength);
 	NativeBarrier.SetMaximumPenetrationForce(ShovelProperties->MaximumPenetrationForce);
 	NativeBarrier.SetMaximumToothRadius(ShovelProperties->MaximumToothRadius);
@@ -378,7 +441,6 @@ bool UAGX_ShovelComponent::WritePropertiesToNative()
 	NativeBarrier.SetMinimumToothRadius(ShovelProperties->MinimumToothRadius);
 	NativeBarrier.SetPenetrationDepthThreshold(ShovelProperties->PenetrationDepthThreshold);
 	NativeBarrier.SetPenetrationForceScaling(ShovelProperties->PenetrationForceScaling);
-	NativeBarrier.SetAlwaysRemoveShovelContacts(ShovelProperties->AlwaysRemoveShovelContacts);
 	NativeBarrier.SetNoMergeExtensionDistance(ShovelProperties->NoMergeExtensionDistance);
 	NativeBarrier.SetSecondarySeparationDeadloadLimit(
 		ShovelProperties->SecondarySeparationDeadloadLimit);

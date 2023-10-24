@@ -180,6 +180,18 @@ double FShovelBarrier::GetPenetrationForceScaling() const
 	return NativeRef->Native->getPenetrationForceScaling();
 }
 
+void FShovelBarrier::SetEnableParticleFreeDeformers(bool Enable)
+{
+	check(HasNative());
+	NativeRef->Native->setEnableParticleFreeDeformers(Enable);
+}
+
+bool FShovelBarrier::GetEnableParticleFreeDeformers() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnableParticleFreeDeformers();
+}
+
 void FShovelBarrier::SetMaximumPenetrationForce(double MaximumPenetrationForce)
 {
 	check(HasNative());
@@ -191,6 +203,21 @@ double FShovelBarrier::GetMaximumPenetrationForce() const
 	check(HasNative());
 	return NativeRef->Native->getMaxPenetrationForce();
 }
+
+// These are added with AGX Dynamics 2.37, or there about.
+#if 0
+void FShovelBarrier::SetContactRegionThreshold(double Threshold)
+{
+	check(HasNative());
+	NativeRef->Native->setContactRegionThreshold(Threshold);
+}
+
+double FShovelBarrier::GetContactRegionThreshold() const
+{
+	check(HasNative());
+	return NativeRef->Native->getContactRegionThreshold();
+}
+#endif
 
 void FShovelBarrier::SetAlwaysRemoveShovelContacts(bool Enable)
 {
@@ -251,6 +278,41 @@ double FShovelBarrier::GetBottomContactThreshold() const
 {
 	check(HasNative());
 	return ConvertDistanceToUnreal<double>(NativeRef->Native->getBottomContactThreshold());
+}
+
+void FShovelBarrier::SetEnableInnerShapeCreateDynamicMass(bool Enable)
+{
+	check(HasNative());
+	NativeRef->Native->setEnableInnerShapeCreateDynamicMass(Enable);
+}
+
+bool FShovelBarrier::GetEnableInnerShapeCreateDynamicMass() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnableInnerShapeCreateDynamicMass();
+}
+
+void FShovelBarrier::SetEnableParticleForceFeedback(bool Enable)
+{
+	check(HasNative());
+	NativeRef->Native->setEnableParticleForceFeedback(Enable);
+}
+
+bool FShovelBarrier::GetEnableParticleForceFeedback()
+{
+	check(HasNative());
+	return NativeRef->Native->getEnableParticleForceFeedback();
+}
+
+void FShovelBarrier::SetEnable(bool Enable)
+{
+	check(HasNative());
+	NativeRef->Native->setEnable(Enable);
+}
+bool FShovelBarrier::GetEnable() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnable();
 }
 
 bool FShovelBarrier::HasNative() const

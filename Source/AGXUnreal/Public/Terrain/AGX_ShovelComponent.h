@@ -25,6 +25,7 @@ class AGXUNREAL_API UAGX_ShovelComponent : public USceneComponent, public IAGX_N
 
 public:
 	UAGX_ShovelComponent();
+	~UAGX_ShovelComponent();
 
 	/// The Rigid Body that is to be imbued with shovel behavior.
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
@@ -105,8 +106,8 @@ public:
 	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
-#endif
 	// ~End UObject interface.
+#endif
 
 	// ~Begin UActorComponent interface.
 	virtual void BeginPlay() override;

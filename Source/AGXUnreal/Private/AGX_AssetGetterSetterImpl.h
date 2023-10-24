@@ -119,4 +119,10 @@
 	This->SetFunc(This->PropertyName); \
 }
 
+#define AGX_ASSET_DEFAULT_DISPATCHER(PropertyName) \
+	PropertyDispatcher.Add(GET_MEMBER_NAME_CHECKED(ThisClass, PropertyName), \
+	[](ThisClass* This) { \
+		AGX_ASSET_DISPATCHER_LAMBDA_BODY(PropertyName, Set ## PropertyName) \
+	})
+
 // clang-format on

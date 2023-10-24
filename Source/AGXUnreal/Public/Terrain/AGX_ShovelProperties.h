@@ -12,6 +12,9 @@
 
 #include "AGX_ShovelProperties.generated.h"
 
+class UAGX_ShovelComponent;
+class UWorld;
+
 /**
  * An asset used to hold configuration properties for Shovel Components.
  */
@@ -21,48 +24,74 @@ class AGXUNREAL_API UAGX_ShovelProperties : public UObject
 	GENERATED_BODY()
 
 public:
-	// @todo Add a bunch of Barrier-aware setter and getter functions.
-
-	UPROPERTY(EditAnywhere, Category = "Shovel")
-	bool Enable;
-
 	UPROPERTY(EditAnywhere, Category = "Contacts")
 	bool AlwaysRemoveShovelContacts {false};
 
-	UPROPERTY(EditAnywhere, Category = "Shovel")
-	bool EnableInnerShapeCreateDynamicMass;
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetAlwaysRemoveShovelContacts(bool InAlwaysRemoveShovelContacts);
 
 	UPROPERTY(EditAnywhere, Category = "Shovel")
-	bool EnableParticleForceFeedback;
+	bool EnableInnerShapeCreateDynamicMass {true};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetEnableInnerShapeCreateDynamicMass(bool InEnableInnerShapeCreateDynamicMass);
 
 	UPROPERTY(EditAnywhere, Category = "Shovel")
-	bool EnableParticleFreeDeformers;
+	bool EnableParticleForceFeedback {false};
 
-	// @todo Excavation settings.
-
-	UPROPERTY(EditAnywhere, Category = "Shovel")
-	FAGX_Real MinimumSubmergedContactLengthFraction;
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetEnableParticleForceFeedback (bool InSetEnableParticleForceFeedback);
 
 	UPROPERTY(EditAnywhere, Category = "Shovel")
-	FAGX_Real VerticalBladeSoilMergeDistance;
+	bool EnableParticleFreeDeformers {false};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetEnableParticleFreeDeformers(bool InEnableParticleFreeDeformers);
 
 	UPROPERTY(EditAnywhere, Category = "Shovel")
-	FAGX_Real NoMergeExtensionDistance;
+	FAGX_Real MinimumSubmergedContactLengthFraction {0.5};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetMinimumSubmergedContactLengthFraction(double InMinimumSubmergedContactLengthFraction);
+
+	UPROPERTY(EditAnywhere, Category = "Shovel")
+	FAGX_Real VerticalBladeSoilMergeDistance {0.0};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetVerticalBladeSoilMergeDistance(double InVerticalBladeSoilMergeDistance);
+
+	UPROPERTY(EditAnywhere, Category = "Shovel Properties")
+	FAGX_Real NoMergeExtensionDistance {50.0};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetNoMergeExtensionDistance(double InNoMergeExtensionDistance);
 
 	/**
 	 * Number of teeth of the Shovel.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Teeth")
-	uint32 NumberOfTeeth;
+	int32 NumberOfTeeth {6};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetNumberOfTeeth(int32 InNumberOfTeeth);
 
 	UPROPERTY(EditAnywhere, Category = "Teeth")
-	FAGX_Real ToothLength;
+	FAGX_Real ToothLength {15.0};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetToothLength(double InToothLength);
 
 	UPROPERTY(EditAnywhere, Category = "Teeth")
-	FAGX_Real MaximumToothRadius;
+	FAGX_Real MaximumToothRadius {7.5};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetMaximumToothRadius(double InMaximumToothRadius);
 
 	UPROPERTY(EditAnywhere, Category = "Teeth")
-	FAGX_Real MinimumToothRadius;
+	FAGX_Real MinimumToothRadius {1.5};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetMinimumToothRadius(double InMinimumToothRadius);
 
 	// @todo Should Paging Terrain settings be here or somewhere else?
 	// The other option is in the Terrain's Shovels list, which is currently just a list of Shovel
@@ -76,6 +105,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Paging Terrain")
 	FAGX_Real RequiredRadius {600.f};
 
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetRequiredRadius(double InRequiredRadius);
+
 	/**
 	 * The max distance from the Shovel at which new Terrain Tiles will be preloaded [cm].
 	 * Only relevant when using Terrain Paging.
@@ -83,20 +115,42 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Paging Terrain")
 	FAGX_Real PreloadRadius {1000.f};
 
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetPreloadRadius(double InPreloadRadius);
+
+// Introduced with AGX Dynamics 2.37.
+#if 0
 	UPROPERTY(EditAnywhere, Category = "Shovel")
-	FAGX_Real ParticleInclusionMultiplier;
+	FAGX_Real ParticleInclusionMultiplier {1.0};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetParticleInclusionMultiplier(double InParticleInclusionMultiplier);
+#endif
 
 	UPROPERTY(EditAnywhere, Category = "Shovel")
-	FAGX_Real PenetrationDepthThreshold;
+	FAGX_Real PenetrationDepthThreshold {50.0};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetPenetrationDepthThreshold(double InPenetrationDepthThreshold);
 
 	UPROPERTY(EditAnywhere, Category = "Shovel")
-	FAGX_Real PenetrationForceScaling;
+	FAGX_Real PenetrationForceScaling {1.0};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetPenetrationForceScaling(double InPenetrationForceScaling);
 
 	UPROPERTY(EditAnywhere, Category = "Shovel")
-	FAGX_Real MaximumPenetrationForce;
+	FAGX_Real MaximumPenetrationForce {std::numeric_limits<double>::infinity()};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetMaximumPenetrationForce(double InMaximumPenetrationForce);
 
 	UPROPERTY(EditAnywhere, Category = "Shovel")
-	FAGX_Real SecondarySeparationDeadloadLimit;
+	FAGX_Real SecondarySeparationDeadloadLimit {0.8};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetSecondarySeparationDeadloadLimit(double InSecondarySeparationDeadloadLimit);
 
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
 	FAGX_ShovelExcavationSettings PrimaryExcavationSettings;
@@ -113,4 +167,32 @@ public:
 	// @todo Soil Penetration Model.
 	// See
 	// https://www.algoryx.se/documentation/complete/agx/html/doc/html/classagxTerrain_1_1Shovel.html#a5686243f6a966d59b17b127a83c3a88a
+
+	#if WITH_EDITOR
+	// ~Begin UObject interface.
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	// ~End UObject interface.
+	#endif
+
+	UAGX_ShovelProperties* GetOrCreateInstance(UWorld* PlayingWorld);
+
+	bool IsInstance() const;
+	UAGX_ShovelProperties* GetInstance();
+	UAGX_ShovelProperties* GetAsset();
+
+	void RegisterShovel(UAGX_ShovelComponent& Shovel);
+	void UnregisterShovel(UAGX_ShovelComponent& Shovel);
+
+private:
+#if WITH_EDITOR
+	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each
+	// and every UPROPERTY in PostEditChangeProperty and PostEditChangeChainProperty.
+	void InitPropertyDispatcher();
+#endif
+
+private:
+	TWeakObjectPtr<UAGX_ShovelProperties> Asset {nullptr};
+	TWeakObjectPtr<UAGX_ShovelProperties> Instance {nullptr}; // Handle multiple worlds?
+	TArray<TWeakObjectPtr<UAGX_ShovelComponent>> Shovels; // Only populated for instances, not for assets.
 };

@@ -42,9 +42,6 @@ public:
 	void SetCuttingEdge(const FTwoVectors& CuttingEdge);
 	void SetCuttingDirection(const FVector& CuttingDirection);
 
-	void SetNumberOfTeeth(int32 NumberOfTeeth);
-	int32 GetNumberOfTeeth() const;
-
 	void SetToothLength(double ToothLength);
 	double GetToothLength() const;
 
@@ -53,6 +50,9 @@ public:
 
 	void SetMaximumToothRadius(double MaximumToothRadius);
 	double GetMaximumToothRadius() const;
+
+	void SetNumberOfTeeth(int32 NumberOfTeeth);
+	int32 GetNumberOfTeeth() const;
 
 	void SetNoMergeExtensionDistance(double NoMergeExtensionDistance);
 	double GetNoMergeExtensionDistance() const;
@@ -69,14 +69,37 @@ public:
 	void SetPenetrationDepthThreshold(double PenetrationDepthThreshold);
 	double GetPenetrationDepthThreshold() const;
 
+	// TODO SetSoilPenetrationModel goes here.
+
 	void SetPenetrationForceScaling(double PenetrationForceScaling);
 	double GetPenetrationForceScaling() const;
+
+	void SetEnableParticleFreeDeformers(bool Enable);
+	bool GetEnableParticleFreeDeformers() const;
+
+	void SetAlwaysRemoveShovelContacts(bool Enable);
+	bool GetAlwaysRemoveShovelContacts() const;
 
 	void SetMaximumPenetrationForce(double MaximumPenetrationForce);
 	double GetMaximumPenetrationForce() const;
 
-	void SetAlwaysRemoveShovelContacts(bool Enable);
-	bool GetAlwaysRemoveShovelContacts() const;
+	// These are added with AGX Dynamics 2.37. (Or there about.)
+#if 0
+	void SetContactRegionThreshold(double Threshold);
+	double GetContactRegionThreshold() const;
+#endif
+
+	void SetBottomContactThreshold(double BottomContactThreshold);
+	double GetBottomContactThreshold() const;
+
+	void SetEnableInnerShapeCreateDynamicMass(bool Enable);
+	bool GetEnableInnerShapeCreateDynamicMass() const;
+
+	void SetEnableParticleForceFeedback(bool Enable);
+	bool GetEnableParticleForceFeedback();
+
+	void SetEnable(bool Enable);
+	bool GetEnable() const;
 
 	void SetExcavationSettingsEnabled(EAGX_ExcavationMode Mode, bool Enable);
 	bool GetExcavationSettingsEnabled(EAGX_ExcavationMode Mode) const;
@@ -87,8 +110,6 @@ public:
 	void SetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode, bool Enable);
 	bool GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode) const;
 
-	void SetBottomContactThreshold(double BottomContactThreshold);
-	double GetBottomContactThreshold() const;
 
 	bool HasNative() const;
 	void AllocateNative(
