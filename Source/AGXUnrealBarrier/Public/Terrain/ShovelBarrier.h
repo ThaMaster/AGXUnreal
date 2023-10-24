@@ -86,8 +86,8 @@ public:
 	void SetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode, bool Enable);
 	bool GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode) const;
 
-	void SetBottomContactThreshold(double BottomContactThreshold);
-	double GetBottomContactThreshold() const;	
+	void SetContactRegionThreshold(double ContactRegionThreshold);
+	double GetContactRegionThreshold() const;	
 
 	bool HasNative() const;
 	void AllocateNative(
