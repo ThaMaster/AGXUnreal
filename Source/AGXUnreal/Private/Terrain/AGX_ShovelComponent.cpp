@@ -50,6 +50,56 @@ void UAGX_ShovelComponent::SetShovelProperties(UAGX_ShovelProperties* Properties
 	}
 }
 
+void UAGX_ShovelComponent::SetTopEdge(FAGX_Edge InTopEdge)
+{
+	TopEdge = InTopEdge;
+	if (HasNative())
+	{
+		if (UAGX_RigidBodyComponent* Body = RigidBody.GetRigidBody())
+		{
+			const FTwoVectors TopEdgeInBody = TopEdge.GetLocationsRelativeTo(*Body, *this);
+			NativeBarrier.SetTopEdge(TopEdgeInBody);
+		}
+	}
+}
+
+void UAGX_ShovelComponent::SetCuttingEdge(FAGX_Edge InCuttingEdge)
+{
+	CuttingEdge = InCuttingEdge;
+	if (HasNative())
+	{
+		if (UAGX_RigidBodyComponent* Body = RigidBody.GetRigidBody())
+		{
+			const FTwoVectors CuttingEdgeInBody = CuttingEdge.GetLocationsRelativeTo(*Body, *this);
+			NativeBarrier.SetCuttingEdge(CuttingEdgeInBody);
+		}
+	}
+}
+
+void UAGX_ShovelComponent::SetCuttingDirection(FAGX_Frame InCuttingDirection)
+{
+	CuttingDirection = InCuttingDirection;
+	if (HasNative())
+	{
+		if (UAGX_RigidBodyComponent* Body = RigidBody.GetRigidBody())
+		{
+			const FRotator CuttingRotation = CuttingDirection.GetRotationRelativeTo(*Body, *this);
+			const FVector DirectionInBody = CuttingRotation.RotateVector(FVector::ForwardVector);
+			NativeBarrier.SetCuttingDirection(DirectionInBody);
+		}
+	}
+}
+
+void UAGX_ShovelComponent::FinalizeShovelEdit()
+{
+	if (HasNative())
+	{
+		SetTopEdge(TopEdge);
+		SetCuttingEdge(CuttingEdge);
+		SetCuttingDirection(CuttingDirection);
+	}
+}
+
 FAGX_Frame* UAGX_ShovelComponent::GetFrame(EAGX_ShovelFrame Frame)
 {
 	switch (Frame)

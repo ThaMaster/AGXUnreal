@@ -40,20 +40,59 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
 	void SetShovelProperties(UAGX_ShovelProperties* Properties);
 
+	/**
+	 * The top edge of the active zone.
+	 *
+	 * If the top edge is edited while the simulation is running then either Set Top Edge or
+	 * Finalize Shovel Edit must be called to commit the changes to the native AGX Dynamics
+	 * representation of the shovel
+	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel",
 		Meta = (SkipUCSModifiedProperties))
 	FAGX_Edge TopEdge;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
+	void SetTopEdge(FAGX_Edge InTopEdge);
+
+	/**
+	 * The cutting edge of the active zone.
+	 *
+	 * If the cutting edge is edited while the simulation is running then either Set Cutting Edge or
+	 * Finalize Shovel Edit must be called to commit the changes to the native AGX Dynamics
+	 * representation of the shovel
+	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel",
 		Meta = (SkipUCSModifiedProperties))
 	FAGX_Edge CuttingEdge;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
+	void SetCuttingEdge(FAGX_Edge InCuttingEdge);
+
+	/**
+	 * The cutting direction of the shovel where the penetration resistance will be active, which is
+	 * usually parallel to the lowest shovel plate that is used to initially penetrate the soil.
+	 *
+	 * If the cutting direction is edited while the simulation is running then either Set Cutting
+	 * Direction or Finalize Shovel Edit must be called to commit the changes to the native AGX
+	 * Dynamics representation of the shovel
+	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel",
 		Meta = (SkipUCSModifiedProperties))
 	FAGX_Frame CuttingDirection;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
+	void SetCuttingDirection(FAGX_Frame InCuttingDirection);
+
+	/**
+	 * Apply any changes made to the Top Edge, Cutting Edge, or Cutting Direction properties onto
+	 * the native AGX Dynamics representation of the shovel.
+	 *
+	 * It is not necessary to call this if using the Set functions to edit the shovel configuration.
+	 */
+	void FinalizeShovelEdit();
 
 	/**
 	 * Get one of the frames that are used to define the edges and directions of the shovel.
