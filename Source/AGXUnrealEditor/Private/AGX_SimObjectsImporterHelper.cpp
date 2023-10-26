@@ -659,8 +659,8 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	{
 		const FString FallbackName =
 			ShapeBarrier.GetName().IsEmpty()
-				? "CollisionMesh"
-				: FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
+				? "SM_CollisionMesh"
+				: FString("SM_CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
 		UStaticMesh* Asset = GetOrCreateStaticMeshAsset(
 			ShapeBarrier, FallbackName, ProcessedMeshes, RootDirectoryPath);
 		NewMeshAsset = Asset;
@@ -1072,9 +1072,9 @@ UMaterialInterface* FAGX_SimObjectsImporterHelper::InstantiateRenderMaterial(
 	Factory->InitialParent = Base;
 
 	const FGuid Guid = Barrier.Guid;
-	const FString MaterialName = Barrier.Name.IsNone()
-									 ? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
-									 : Barrier.Name.ToString();
+	const FString MaterialName =
+		Barrier.Name.IsNone() ? FString::Printf(TEXT("MI_RenderMaterial_%s"), *Guid.ToString())
+							  : FString::Printf(TEXT("MI_%s"), *Barrier.Name.ToString());
 
 	FString AssetName = FAGX_ImportUtilities::CreateAssetName(
 		MaterialName, TEXT("ImportedAGXDynamicsMaterial"),
