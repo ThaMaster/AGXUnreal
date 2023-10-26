@@ -17,6 +17,14 @@ void SetAndPropagateShovelProperty(
 	void (UAGX_ShovelProperties::*ComponentSetter)(ParameterT),
 	void (FShovelBarrier::*BarrierSetter)(ParameterT))
 {
+	/*
+	This implementation should follow the pattern set by AGX_ASSET_SETTER_IMPL_INTERNAL, but
+	adapted due to the fact that we don't have a single Barrier object but instead a collection
+	of Shovel Components that own the Barriers.
+
+	The general idea is that changes made to an instance should propagate to Barriers, and changes
+	made to an asset should be applied on the instance instead, if there is one.
+	*/
 	if (Properties.IsInstance())
 	{
 		*Storage = NewValue;
