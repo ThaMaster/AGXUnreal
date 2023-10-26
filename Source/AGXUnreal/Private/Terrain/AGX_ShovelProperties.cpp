@@ -251,6 +251,27 @@ void UAGX_ShovelProperties::CommitToAsset()
 #endif
 }
 
+namespace AGX_ShovelProperties_helpers
+{
+	/*
+	 *  The intention is that shovels should always unregister themselves before being destroyed.
+	 *  If we ever find a nullptr shovel in a Shovel Properties then that is a sign that we've
+	 * either misunderstood something or that there is something we don't know. Either way,
+	 * investigation required.
+	 */
+	bool CheckNoNullptr(const TArray<TWeakObjectPtr<UAGX_ShovelComponent>>& Shovels)
+	{
+		for (const TWeakObjectPtr<UAGX_ShovelComponent>& Shovel : Shovels)
+		{
+			if (Shovel.Get() == nullptr)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+}
+
 void UAGX_ShovelProperties::RegisterShovel(UAGX_ShovelComponent& Shovel)
 {
 	if (!IsInstance())
@@ -262,6 +283,7 @@ void UAGX_ShovelProperties::RegisterShovel(UAGX_ShovelComponent& Shovel)
 			*Shovel.GetName(), *GetLabelSafe(Shovel.GetOwner()), *GetName());
 		return;
 	}
+	AGX_CHECK(AGX_ShovelProperties_helpers::CheckNoNullptr(Shovels));
 	Shovels.AddUnique(&Shovel);
 }
 
@@ -276,6 +298,7 @@ void UAGX_ShovelProperties::UnregisterShovel(UAGX_ShovelComponent& Shovel)
 			*Shovel.GetName(), *GetLabelSafe(Shovel.GetOwner()), *GetName());
 		return;
 	}
+	AGX_CHECK(AGX_ShovelProperties_helpers::CheckNoNullptr(Shovels));
 	Shovels.RemoveSwap(&Shovel);
 }
 
