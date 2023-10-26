@@ -232,6 +232,25 @@ void UAGX_ShovelComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// We are now in a game world. Make sure we use an instance of the Shovel Properties and that
+	// we are registered with that instance.
+	if (ShovelProperties != nullptr)
+	{
+		ShovelProperties = ShovelProperties->GetOrCreateInstance(GetWorld());
+		if (ShovelProperties != nullptr && ShovelProperties->IsInstance())
+		{
+			ShovelProperties->RegisterShovel(*this);
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Shovel %s in %s: Could not create Shovel Properties instance. Default shovel "
+					 "settings will be used."),
+				*GetName(), *GetLabelSafe(GetOwner()));
+		}
+	}
+
 	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{
 		AllocateNative();
@@ -363,23 +382,6 @@ void UAGX_ShovelComponent::AllocateNative()
 			*GetName(), *GetLabelSafe(GetOwner()), *BodyComponent->GetName(),
 			*GetLabelSafe(BodyComponent->GetOwner()));
 		return;
-	}
-
-	if (ShovelProperties != nullptr)
-	{
-		ShovelProperties = ShovelProperties->GetOrCreateInstance(GetWorld());
-		if (ShovelProperties != nullptr && ShovelProperties->IsInstance())
-		{
-			ShovelProperties->RegisterShovel(*this);
-		}
-		else
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Shovel %s in %s: Could not create Shovel Properties instance. Default shovel "
-					 "settings will be used."),
-				*GetName(), *GetLabelSafe(GetOwner()));
-		}
 	}
 
 	const FTwoVectors TopEdgeInBody = TopEdge.GetLocationsRelativeTo(*BodyComponent, *this);
