@@ -368,7 +368,7 @@ void UAGX_ShovelComponent::AllocateNative()
 	if (ShovelProperties != nullptr)
 	{
 		ShovelProperties = ShovelProperties->GetOrCreateInstance(GetWorld());
-		if (ShovelProperties != nullptr)
+		if (ShovelProperties != nullptr && ShovelProperties->IsInstance())
 		{
 			ShovelProperties->RegisterShovel(*this);
 		}

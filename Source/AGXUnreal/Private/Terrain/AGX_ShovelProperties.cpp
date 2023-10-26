@@ -265,11 +265,29 @@ void UAGX_ShovelProperties::CommitToAsset()
 
 void UAGX_ShovelProperties::RegisterShovel(UAGX_ShovelComponent& Shovel)
 {
+	if (!IsInstance())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Shovel Component %s in %s called Register Shovel on non-instance Shovel "
+				 "Properties %s."),
+			*Shovel.GetName(), *GetLabelSafe(Shovel.GetOwner()), *GetName());
+		return;
+	}
 	Shovels.AddUnique(&Shovel);
 }
 
 void UAGX_ShovelProperties::UnregisterShovel(UAGX_ShovelComponent& Shovel)
 {
+	if (!IsInstance())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Shovel Component %s in %s called Unregister Shovel on non-instance Shovel "
+				 "Properties %s."),
+			*Shovel.GetName(), *GetLabelSafe(Shovel.GetOwner()), *GetName());
+		return;
+	}
 	Shovels.RemoveSwap(&Shovel);
 }
 
