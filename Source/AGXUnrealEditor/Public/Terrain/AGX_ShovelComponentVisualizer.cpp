@@ -81,13 +81,6 @@ struct FShovelVisualizerOperations
 	{
 		UE_LOG(LogAGX, Warning, TEXT("ShovelProxyClicked: Clicked shovel %p."), &Shovel);
 
-		if (Shovel.HasNative())
-		{
-			// Not allowed to modify the shovel configuration once the native has been created.
-			Visualizer.ClearSelection();
-			return false;
-		}
-
 		if (Proxy.Frame == Visualizer.SelectedFrame)
 		{
 			// Clicking a selected node deselects it.
@@ -275,8 +268,13 @@ struct FShovelVisualizerOperations
 		};
 
 		{
-			FPropertyChangedEvent Event(FrameProperty);
-			Shovel.PostEditChangeProperty(Event);
+			TArray<FProperty*> PropertyChainArray;
+			FString Path = FrameProperty->GetPathName();
+			UE_LOG(LogAGX, Warning, TEXT("Property path: %s"), *Path);
+			FEditPropertyChain PropertyChain;
+			FPropertyChangedEvent ChangedEvent(FrameProperty);
+			FPropertyChangedChainEvent ChainEvent(PropertyChain, ChangedEvent);
+			Shovel.PostEditChangeChainProperty(ChainEvent);
 		}
 
 		AActor* Owner = Shovel.GetOwner();
@@ -458,8 +456,7 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 	}
 
 	const bool bSelected = FShovelVisualizerOperations::IsSelected(*Shovel);
-	const bool bHasNative = Shovel->HasNative();
-	const bool bEditable = bSelected && !bHasNative;
+	const bool bEditable = bSelected;
 
 	// UE_LOG(LogAGX, Warning, TEXT("DrawVisualization: For shovel %p."), Shovel);
 
@@ -837,11 +834,6 @@ bool FAGX_ShovelComponentVisualizer::HandleInputDelta(
 	UAGX_ShovelComponent* Shovel = GetSelectedShovel();
 	if (Shovel == nullptr)
 	{
-		return false;
-	}
-	if (Shovel->HasNative())
-	{
-		// Not possible to modify the shovel configuration after the shovel has been created.
 		return false;
 	}
 

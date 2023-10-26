@@ -414,6 +414,10 @@ void UAGX_ShovelComponent::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, ShovelProperties),
 		[](ThisClass* This) { This->SetShovelProperties(This->ShovelProperties); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, TopEdge),
+		[](ThisClass* This) { This->SetTopEdge(This->TopEdge); });
 }
 
 bool UAGX_ShovelComponent::WritePropertiesToNative()
