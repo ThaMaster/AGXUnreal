@@ -245,6 +245,24 @@ UAGX_ShovelProperties* UAGX_ShovelProperties::GetAsset()
 	return Asset.Get();
 }
 
+void UAGX_ShovelProperties::CommitToAsset()
+{
+	// TODO Figure out how CommitToAsset should work.
+#if 0
+	if (IsInstance())
+	{
+		if (FShapeMaterialBarrier* Barrier = this->GetNative())
+		{
+			Asset->CopyFrom(*Barrier);
+		}
+	}
+	else if (Instance != nullptr)
+	{
+		Instance->CommitToAsset();
+	}
+#endif
+}
+
 void UAGX_ShovelProperties::RegisterShovel(UAGX_ShovelComponent& Shovel)
 {
 	Shovels.AddUnique(&Shovel);

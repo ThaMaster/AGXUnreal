@@ -1159,8 +1159,10 @@ void AAGX_Terrain::CreateNativeShovels()
 	}
 
 	// Create and register Shovel Components.
-	for (FAGX_ShovelReference ShovelRef : ShovelComponents)
+	//for (FShovelReferenceWithSettings& ShovelRef : ShovelComponents)
+	for (FAGX_ShovelReference& ShovelRef : ShovelComponents)
 	{
+		// UAGX_ShovelComponent* ShovelComponent = ShovelRef.Shovel.GetShovelComponent();
 		UAGX_ShovelComponent* ShovelComponent = ShovelRef.GetShovelComponent();
 		if (ShovelComponent == nullptr)
 		{
@@ -1178,8 +1180,13 @@ void AAGX_Terrain::CreateNativeShovels()
 				*ShovelComponent->GetName(), *GetLabelSafe(this));
 			continue;
 		}
+#if 0
+		const double RequiredRadius = ShovelRef.RequiredRadius;
+		const double PreloadRadius = ShovelRef.PreloadRadius;
+#else
 		const double RequiredRadius = ShovelComponent->ShovelProperties->RequiredRadius;
 		const double PreloadRadius = ShovelComponent->ShovelProperties->PreloadRadius;
+#endif
 		bool Added = AddShovel(*ShovelBarrier, RequiredRadius, PreloadRadius);
 		if (!Added)
 		{

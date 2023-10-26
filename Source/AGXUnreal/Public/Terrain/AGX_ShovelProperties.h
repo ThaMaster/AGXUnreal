@@ -181,6 +181,8 @@ public:
 	UAGX_ShovelProperties* GetInstance();
 	UAGX_ShovelProperties* GetAsset();
 
+	void CommitToAsset();
+
 	void RegisterShovel(UAGX_ShovelComponent& Shovel);
 	void UnregisterShovel(UAGX_ShovelComponent& Shovel);
 
