@@ -80,10 +80,42 @@ namespace AGX_ComponentReferenceCustomization_helpers
 	}
 }
 
+struct FAGX_ComponentReferenceCustomizationOperations
+{
+	static TSharedRef<SComboBox<TSharedPtr<FName>>> CreateNameComboBox(
+		FAGX_ComponentReferenceCustomization& This)
+	{
+		// clang-format off
+		return SNew(SComboBox<TSharedPtr<FName>>)
+			.Visibility_Lambda([&This](){ return FAGX_EditorUtilities::VisibleIf(This.bFoundComponents); })
+			.OptionsSource(&This.ComponentNames)
+			.OnGenerateWidget_Lambda(
+				[](const TSharedPtr<FName>& Item)
+				{
+					return SNew(STextBlock)
+						.Text(FText::FromName(*Item));
+				})
+			.OnSelectionChanged(&This, &FAGX_ComponentReferenceCustomization::OnComboBoxChanged)
+			.Content()
+			[
+				SNew(STextBlock)
+				.Text_Lambda(
+					[&This]()
+					{
+						return FText::FromName(This.SelectedComponent);
+					})
+			];
+		// clang-format on
+	}
+};
+
 void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 	TSharedRef<IPropertyHandle> InComponentReferenceHandle, FDetailWidgetRow& HeaderRow,
 	IPropertyTypeCustomizationUtils& CustomizationUtils)
 {
+	// TODO Find a better name.
+	bInCustomizeChildren = true;
+
 	if (!RefetchPropertyHandles(InComponentReferenceHandle))
 	{
 		// There is something wrong with the Property Handles that we need. Generate a warning text
@@ -111,6 +143,13 @@ void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 		this, GetComponentReference(), ComponentReferenceHandle.Get());
 #endif
 
+	TSharedRef<SComboBox<TSharedPtr<FName>>> ComboBox =
+		FAGX_ComponentReferenceCustomizationOperations::CreateNameComboBox(*this);
+
+	HeaderComboBoxPtr = &ComboBox.Get();
+	SelectedComponent = GetName();
+	RebuildComboBox();
+
 	// clang-format off
 	HeaderRow
 	.NameContent()
@@ -120,13 +159,28 @@ void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 	.ValueContent()
 	.MinDesiredWidth(250.0f)
 	[
-		SNew(STextBlock)
-		.Text(this, &FAGX_ComponentReferenceCustomization::GetHeaderText)
-		.ToolTipText(this, &FAGX_ComponentReferenceCustomization::GetHeaderText)
-		.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
-		.MinDesiredWidth(250.0f)
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		[
+			ComboBox
+		]
+		+ SHorizontalBox::Slot()
+		[
+			SNew(STextBlock)
+				.Text(this, &FAGX_ComponentReferenceCustomization::GetHeaderText)
+				.ToolTipText(this, &FAGX_ComponentReferenceCustomization::GetHeaderText)
+				.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
+				.MinDesiredWidth(250.0f)
+		]
 	];
 	// clang-format on
+
+	// The combo-box must be rebuilt when the search settings are changed.
+	RebuildComboBoxDelegate.BindRaw(this, &FAGX_ComponentReferenceCustomization::RebuildComboBox);
+	OwningActorHandle->SetOnPropertyValueChanged(RebuildComboBoxDelegate);
+	SearchChildActorsHandle->SetOnPropertyValueChanged(RebuildComboBoxDelegate);
+
+	bInCustomizeChildren = false;
 }
 
 void FAGX_ComponentReferenceCustomization::CustomizeChildren(
@@ -179,31 +233,13 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 		.Text(FText::FromString("Component"))
 		.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
 	];
+	// clang-format on
 
 	/* Create a combo-box with the names of all the compatible Components in the Owning Actor. */
 
 	// Combo box that is shown when compatible Components have been found.
-	const TSharedRef<SComboBox<TSharedPtr<FName>>> ComboBox =
-		SNew(SComboBox<TSharedPtr<FName>>)
-		.Visibility_Lambda([this](){ return FAGX_EditorUtilities::VisibleIf(bFoundComponents); })
-		.OptionsSource(&ComponentNames)
-		.OnGenerateWidget_Lambda(
-			[](const TSharedPtr<FName>& Item)
-			{
-				return SNew(STextBlock)
-				.Text(FText::FromName(*Item));
-			})
-		.OnSelectionChanged(this, &FAGX_ComponentReferenceCustomization::OnComboBoxChanged)
-		.Content()
-		[
-			SNew(STextBlock)
-			.Text_Lambda(
-				[this]()
-				{
-					return FText::FromName(SelectedComponent);
-				})
-		];
-	// clang-format on
+	TSharedRef<SComboBox<TSharedPtr<FName>>> ComboBox =
+		FAGX_ComponentReferenceCustomizationOperations::CreateNameComboBox(*this);
 
 	ComboBoxPtr = &ComboBox.Get();
 
@@ -302,7 +338,15 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 	ComponentNames.Add(MakeShareable(new FName(TEXT("None"))));
 
 	// We now know what options the user has to chose between. Let the combo-box know.
-	ComboBoxPtr->RefreshOptions();
+	// Don't always have all combo-boxes. Update the ones we have.
+	if (ComboBoxPtr != nullptr)
+	{
+		ComboBoxPtr->RefreshOptions();
+	}
+	if (HeaderComboBoxPtr != nullptr)
+	{
+		HeaderComboBoxPtr->RefreshOptions();
+	}
 
 	// Find which combo-box item match the current selection and select it.
 	bool SelectionFound = false;
@@ -310,7 +354,14 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 	{
 		if (*ComponentName == SelectedComponent)
 		{
-			ComboBoxPtr->SetSelectedItem(ComponentName);
+			if (ComboBoxPtr != nullptr)
+			{
+				ComboBoxPtr->SetSelectedItem(ComponentName);
+			}
+			if (HeaderComboBoxPtr != nullptr)
+			{
+				HeaderComboBoxPtr->SetSelectedItem(ComponentName);
+			}
 			SelectionFound = true;
 			break;
 		}
@@ -336,7 +387,14 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 		// If not, how do we show that the actual selection isn't among the options?
 		// Red text/background?
 		SelectedComponent = *ComponentNames[0];
-		ComboBoxPtr->SetSelectedItem(ComponentNames[0]);
+		if (ComboBoxPtr != nullptr)
+		{
+			ComboBoxPtr->SetSelectedItem(ComponentNames[0]);
+		}
+		if (HeaderComboBoxPtr)
+		{
+			HeaderComboBoxPtr->SetSelectedItem(ComponentNames[0]);
+		}
 	}
 }
 

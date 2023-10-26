@@ -60,6 +60,9 @@ private:
 	/// The combo-box listing the names of the compatible Components found, and the extra entries.
 	SComboBox<TSharedPtr<FName>>* ComboBoxPtr = nullptr;
 
+	/// Combo box identical to ComboBoxPtr, but shown in the header instead of as a child.
+	SComboBox<TSharedPtr<FName>>* HeaderComboBoxPtr = nullptr;
+
 	/// Delegate called when the search settings, i.e. Owning Actor and Search Child Actors, are
 	/// changed. Repopulates the ComponentNames array.
 	FSimpleDelegate RebuildComboBoxDelegate;
@@ -110,4 +113,6 @@ private:
 	TSharedPtr<IPropertyHandle> OwningActorHandle;
 	TSharedPtr<IPropertyHandle> NameHandle;
 	TSharedPtr<IPropertyHandle> SearchChildActorsHandle;
+
+	friend struct FAGX_ComponentReferenceCustomizationOperations;
 };
