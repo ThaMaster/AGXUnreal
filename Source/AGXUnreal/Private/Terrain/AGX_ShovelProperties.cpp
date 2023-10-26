@@ -10,11 +10,12 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Terrain/AGX_ShovelComponent.h"
 
-template <typename T>
-void SetAndPropagate(
+template <typename StorageT, typename ParameterT>
+void SetAndPropagateShovelProperty(
 	UAGX_ShovelProperties& Properties, TArray<TWeakObjectPtr<UAGX_ShovelComponent>>& Shovels,
-	T* Storage, T NewValue, void(UAGX_ShovelProperties::*ComponentSetter)(T),
-	void(FShovelBarrier::*BarrierSetter)(T))
+	StorageT* Storage, ParameterT NewValue,
+	void (UAGX_ShovelProperties::*ComponentSetter)(ParameterT),
+	void (FShovelBarrier::*BarrierSetter)(ParameterT))
 {
 	if (Properties.IsInstance())
 	{
@@ -40,42 +41,15 @@ void SetAndPropagate(
 	}
 }
 
-TODO Reduce this:
-#define AGX_SHOVEL_SETTER_IMPL(PropertyName)                                                       \
-	{                                                                                              \
-		if (IsInstance())                                                                          \
-		{                                                                                          \
-			/* Calling Set on an instance updates both the instance and the shovels. */            \
-			/* Does not update the source asset. */                                                \
-			PropertyName = In##PropertyName;                                                       \
-			for (TWeakObjectPtr<UAGX_ShovelComponent> & Shovel : Shovels)                          \
-			{                                                                                      \
-				if (Shovel.IsValid() && Shovel->HasNative())                                       \
-				{                                                                                  \
-					Shovel->GetNative()->Set##PropertyName(PropertyName);                          \
-				}                                                                                  \
-			}                                                                                      \
-		}                                                                                          \
-		else                                                                                       \
-		{                                                                                          \
-			if (Instance != nullptr)                                                               \
-			{                                                                                      \
-				/* Calling Set on an asset with an instance forwards the call to that instance. */ \
-				/* Does not update the asset itself. */                                            \
-				Instance->Set##PropertyName(PropertyName);                                         \
-			}                                                                                      \
-			else                                                                                   \
-			{                                                                                      \
-				/* Calling Set on an asset without an instance simply sets the value. */           \
-				PropertyName = In##PropertyName;                                                   \
-			}                                                                                      \
-		}                                                                                          \
-	}
+#define AGX_SHOVEL_SETTER_IMPL(PropertyName)             \
+	SetAndPropagateShovelProperty(                       \
+		*this, Shovels, &PropertyName, In##PropertyName, \
+		&UAGX_ShovelProperties::Set##PropertyName, &FShovelBarrier::Set##PropertyName)
 
 void UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts(bool InAlwaysRemoveShovelContacts)
 {
 	// AGX_SHOVEL_SETTER_IMPL(AlwaysRemoveShovelContacts);
-	SetAndPropagate(
+	SetAndPropagateShovelProperty(
 		*this, Shovels, &AlwaysRemoveShovelContacts, InAlwaysRemoveShovelContacts,
 		&UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts,
 		&FShovelBarrier::SetAlwaysRemoveShovelContacts);
