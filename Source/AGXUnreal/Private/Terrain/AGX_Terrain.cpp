@@ -194,6 +194,8 @@ namespace AGX_Terrain_helpers
 				FunctionName, TerrainName);
 			return nullptr;
 		}
+
+		return Element;
 	}
 
 	bool WriteBarrierRadii(FTerrainPagerBarrier& Barrier, FShovelReferenceWithSettings& Element)
