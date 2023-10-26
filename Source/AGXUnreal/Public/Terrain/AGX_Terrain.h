@@ -23,7 +23,6 @@
 #include "RHITypes.h"
 #endif
 
-
 // Standard library includes.
 #include <mutex>
 
@@ -36,7 +35,6 @@ class ALandscape;
 class UNiagaraComponent;
 class UNiagaraSystem;
 
-#if 0
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FShovelReferenceWithSettings
 {
@@ -46,20 +44,19 @@ struct AGXUNREAL_API FShovelReferenceWithSettings
 	FAGX_ShovelReference Shovel;
 
 	/**
-	 * The max distance from the Shovel at which new Terrain Tiles is guaranteed to be loaded [cm].
-	 * Only relevant when using Terrain Paging.
-	 */
-	UPROPERTY(EditAnywhere, Category = "Paging Terrain")
-	FAGX_Real RequiredRadius {600.f};
-
-	/**
 	 * The max distance from the Shovel at which new Terrain Tiles will be preloaded [cm].
 	 * Only relevant when using Terrain Paging.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Paging Terrain")
 	FAGX_Real PreloadRadius {1000.f};
+
+	/**
+	 * The max distance from the Shovel at which new Terrain Tiles is guaranteed to be loaded [cm].
+	 * Only relevant when using Terrain Paging.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Paging Terrain")
+	FAGX_Real RequiredRadius {600.f};
 };
-#endif
 
 UCLASS(ClassGroup = "AGX_Terrain", Blueprintable, Category = "AGX")
 class AGXUNREAL_API AAGX_Terrain : public AActor
@@ -206,8 +203,17 @@ public:
 	TArray<FAGX_Shovel> Shovels;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
-	TArray<FAGX_ShovelReference> ShovelComponents;
-	// TArray<FShovelReferenceWithSettings> ShovelComponents;
+	TArray<FShovelReferenceWithSettings> ShovelComponents;
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	bool SetPreloadRadius(UAGX_ShovelComponent* Shovel, double InPreloadRadius);
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	bool SetRequiredRadius(UAGX_ShovelComponent* Shovel, double InRequiredRadius);
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	bool SetTerrainPagerRadii(
+		UAGX_ShovelComponent* Shovel, double InPreloadRadius, double InRequiredRadius);
 
 	/** Whether the height field rendering should be updated with deformation data. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering")

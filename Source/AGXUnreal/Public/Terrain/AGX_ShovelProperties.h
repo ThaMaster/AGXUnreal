@@ -93,32 +93,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
 	void SetMinimumToothRadius(double InMinimumToothRadius);
 
-	// @todo Should Paging Terrain settings be here or somewhere else?
-	// The other option is in the Terrain's Shovels list, which is currently just a list of Shovel
-	// References. That would need to become a struct again, if so. Do we expect the need for
-	// shovels with varying radii depending on the scene?
-
-	/**
-	 * The max distance from the Shovel at which new Terrain Tiles is guaranteed to be loaded [cm].
-	 * Only relevant when using Terrain Paging.
-	 */
-	UPROPERTY(EditAnywhere, Category = "Paging Terrain")
-	FAGX_Real RequiredRadius {600.f};
-
-	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetRequiredRadius(double InRequiredRadius);
-
-	/**
-	 * The max distance from the Shovel at which new Terrain Tiles will be preloaded [cm].
-	 * Only relevant when using Terrain Paging.
-	 */
-	UPROPERTY(EditAnywhere, Category = "Paging Terrain")
-	FAGX_Real PreloadRadius {1000.f};
-
-
-	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetPreloadRadius(double InPreloadRadius);
-
 // Introduced with AGX Dynamics 2.37.
 #if 0
 	UPROPERTY(EditAnywhere, Category = "Shovel")

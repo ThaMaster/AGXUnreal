@@ -116,18 +116,6 @@ void UAGX_ShovelProperties::SetMinimumToothRadius(double InMinimumToothRadius)
 	AGX_SHOVEL_SETTER_IMPL(MinimumToothRadius);
 }
 
-void UAGX_ShovelProperties::SetRequiredRadius(double InRequiredRadius)
-{
-	// TODO This is not a Shovel property, but a (Shovel, TerrainPager) property.
-	// How can I find the TerrainPager holding this shovel?
-}
-
-void UAGX_ShovelProperties::SetPreloadRadius(double InPreloadRadius)
-{
-	// TODO This is not a Shovel property, but a (Shovel, TerrainPager) property.
-	// How can I find the TerrainPager holding this shovel?
-}
-
 // Introduced with AGX Dynamics 2.37.
 #if 0
 void UAGX_ShovelProperties::SetParticleInclusionMultiplier(double InParticleInclusionMultiplier)
@@ -311,8 +299,6 @@ void UAGX_ShovelProperties::InitPropertyDispatcher()
 	AGX_ASSET_DEFAULT_DISPATCHER(ToothLength);
 	AGX_ASSET_DEFAULT_DISPATCHER(MaximumToothRadius);
 	AGX_ASSET_DEFAULT_DISPATCHER(MinimumToothRadius);
-	AGX_ASSET_DEFAULT_DISPATCHER(RequiredRadius);
-	AGX_ASSET_DEFAULT_DISPATCHER(PreloadRadius);
 // Introduced with AGX Dynamics 2.37.
 #if 0
 	AGX_ASSET_DEFAULT_DISPATCHER(ParticleInclusionMultiplier);

@@ -177,6 +177,90 @@ int32 AAGX_Terrain::GetNumParticles() const
 	}
 }
 
+namespace AGX_Terrain_helpers
+{
+	FShovelReferenceWithSettings* FindShovelSettings(
+		TArray<FShovelReferenceWithSettings>& Shovels, UAGX_ShovelComponent* Shovel,
+		const TCHAR* FunctionName, const TCHAR* TerrainName)
+	{
+		FShovelReferenceWithSettings* Element =
+			Shovels.FindByPredicate([Shovel](const FShovelReferenceWithSettings& Element)
+									{ return Element.Shovel.GetShovelComponent() == Shovel; });
+		if (Element == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("%s called for a shovel that the AGX Terrain %s doesn't know about."),
+				FunctionName, TerrainName);
+			return nullptr;
+		}
+	}
+
+	bool WriteBarrierRadii(FTerrainPagerBarrier& Barrier, FShovelReferenceWithSettings& Element)
+	{
+		if (!Barrier.HasNative())
+		{
+			return false;
+		}
+
+		UAGX_ShovelComponent* Shovel = Element.Shovel.GetShovelComponent();
+		if (Shovel == nullptr)
+		{
+			return false;
+		}
+
+		UAGX_RigidBodyComponent* Body = Shovel->RigidBody.GetRigidBody();
+		if (Body == nullptr || !Body->HasNative())
+		{
+			return false;
+		}
+
+		return Barrier.SetTileLoadRadii(
+			*Body->GetNative(), Element.PreloadRadius, Element.RequiredRadius);
+	}
+}
+
+bool AAGX_Terrain::SetPreloadRadius(UAGX_ShovelComponent* Shovel, double InPreloadRadius)
+{
+	FShovelReferenceWithSettings* Element = AGX_Terrain_helpers::FindShovelSettings(
+		ShovelComponents, Shovel, TEXT("Set Preload Radius"), *GetName());
+	if (Element == nullptr)
+	{
+		return false;
+	}
+
+	Element->PreloadRadius = InPreloadRadius;
+	return AGX_Terrain_helpers::WriteBarrierRadii(NativeTerrainPagerBarrier, *Element);
+}
+
+bool AAGX_Terrain::SetRequiredRadius(UAGX_ShovelComponent* Shovel, double InRequiredRadius)
+{
+	FShovelReferenceWithSettings* Element = AGX_Terrain_helpers::FindShovelSettings(
+		ShovelComponents, Shovel, TEXT("Set Required Radius"), *GetName());
+	if (Element == nullptr)
+	{
+		return false;
+	}
+
+	Element->RequiredRadius = InRequiredRadius;
+	return AGX_Terrain_helpers::WriteBarrierRadii(NativeTerrainPagerBarrier, *Element);
+}
+
+bool AAGX_Terrain::SetTerrainPagerRadii(
+	UAGX_ShovelComponent* Shovel, double InPreloadRadius, double InRequiredRadius)
+{
+	FShovelReferenceWithSettings* Element = AGX_Terrain_helpers::FindShovelSettings(
+		ShovelComponents, Shovel, TEXT("Set Required Radius"), *GetName());
+	if (Element == nullptr)
+	{
+		return false;
+	}
+
+	Element->PreloadRadius = InPreloadRadius;
+	Element->RequiredRadius = InRequiredRadius;
+	return AGX_Terrain_helpers::WriteBarrierRadii(NativeTerrainPagerBarrier, *Element);
+}
+
 void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
 {
 	if (HasNative())
@@ -1159,11 +1243,9 @@ void AAGX_Terrain::CreateNativeShovels()
 	}
 
 	// Create and register Shovel Components.
-	//for (FShovelReferenceWithSettings& ShovelRef : ShovelComponents)
-	for (FAGX_ShovelReference& ShovelRef : ShovelComponents)
+	for (FShovelReferenceWithSettings& ShovelRef : ShovelComponents)
 	{
-		// UAGX_ShovelComponent* ShovelComponent = ShovelRef.Shovel.GetShovelComponent();
-		UAGX_ShovelComponent* ShovelComponent = ShovelRef.GetShovelComponent();
+		UAGX_ShovelComponent* ShovelComponent = ShovelRef.Shovel.GetShovelComponent();
 		if (ShovelComponent == nullptr)
 		{
 			continue;
@@ -1180,13 +1262,9 @@ void AAGX_Terrain::CreateNativeShovels()
 				*ShovelComponent->GetName(), *GetLabelSafe(this));
 			continue;
 		}
-#if 0
 		const double RequiredRadius = ShovelRef.RequiredRadius;
 		const double PreloadRadius = ShovelRef.PreloadRadius;
-#else
-		const double RequiredRadius = ShovelComponent->ShovelProperties->RequiredRadius;
-		const double PreloadRadius = ShovelComponent->ShovelProperties->PreloadRadius;
-#endif
+
 		bool Added = AddShovel(*ShovelBarrier, RequiredRadius, PreloadRadius);
 		if (!Added)
 		{
