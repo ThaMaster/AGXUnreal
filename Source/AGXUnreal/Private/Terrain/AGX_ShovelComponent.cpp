@@ -25,14 +25,6 @@ UAGX_ShovelComponent::UAGX_ShovelComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-UAGX_ShovelComponent::~UAGX_ShovelComponent()
-{
-	if (ShovelProperties != nullptr && ShovelProperties->IsInstance())
-	{
-		ShovelProperties->UnregisterShovel(*this);
-	}
-}
-
 void UAGX_ShovelComponent::SetShovelProperties(UAGX_ShovelProperties* Properties)
 {
 	if (ShovelProperties != nullptr && ShovelProperties->IsInstance())
@@ -243,6 +235,15 @@ void UAGX_ShovelComponent::BeginPlay()
 	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{
 		AllocateNative();
+	}
+}
+
+void UAGX_ShovelComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	if (ShovelProperties != nullptr && ShovelProperties->IsInstance())
+	{
+		ShovelProperties->UnregisterShovel(*this);
 	}
 }
 
