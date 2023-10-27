@@ -1250,6 +1250,11 @@ void AAGX_Terrain::CreateNativeShovels()
 		UAGX_ShovelComponent* ShovelComponent = ShovelRef.Shovel.GetShovelComponent();
 		if (ShovelComponent == nullptr)
 		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("AGX Terrain %s have a Shovel Component that does not reference a valid "
+					 "shovel."),
+				*GetLabelSafe(this));
 			continue;
 		}
 
