@@ -125,4 +125,13 @@
 		AGX_ASSET_DISPATCHER_LAMBDA_BODY(PropertyName, Set ## PropertyName) \
 	})
 
+
+/// Default implementation for adding a Property Dispatcher callback. Call the corresponding Set
+/// member function, passing in that very same property member variable.
+#define AGX_COMPONENT_DEFAULT_DISPATCHER(PropertyName) \
+	PropertyDispatcher.Add(GET_MEMBER_NAME_CHECKED(ThisClass, PropertyName), \
+		[](ThisClass* This) { \
+			This->Set ## PropertyName(This->PropertyName); \
+		})
+
 // clang-format on

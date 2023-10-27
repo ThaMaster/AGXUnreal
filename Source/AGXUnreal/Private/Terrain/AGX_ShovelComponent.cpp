@@ -10,6 +10,7 @@
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
+#include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_RigidBodyComponent.h"
 #include "CoreGlobals.h"
 #include "Terrain/AGX_TerrainEnums.h"
@@ -411,13 +412,10 @@ void UAGX_ShovelComponent::InitPropertyDispatcher()
 		return;
 	}
 
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, ShovelProperties),
-		[](ThisClass* This) { This->SetShovelProperties(This->ShovelProperties); });
-
-	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(ThisClass, TopEdge),
-		[](ThisClass* This) { This->SetTopEdge(This->TopEdge); });
+	AGX_COMPONENT_DEFAULT_DISPATCHER(ShovelProperties);
+	AGX_COMPONENT_DEFAULT_DISPATCHER(TopEdge);
+	AGX_COMPONENT_DEFAULT_DISPATCHER(CuttingEdge);
+	AGX_COMPONENT_DEFAULT_DISPATCHER(CuttingDirection);
 }
 
 bool UAGX_ShovelComponent::WritePropertiesToNative()
