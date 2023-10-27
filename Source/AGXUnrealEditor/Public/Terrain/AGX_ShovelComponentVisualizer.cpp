@@ -226,10 +226,11 @@ struct FShovelVisualizerOperations
 	}
 
 	/**
-	 * Apply the change made on the Shovel to all instances of that Shovel. If the Shovel is part
-	 * of a preview, i.e. lives in the world shown in a Blueprint editor viewport, then the change
-	 * is promoted to be applied on the Blueprint's CSC node's template Component and its instances
-	 * instead.
+	 * Apply the change made on the Shovel to all instances of that Shovel, and call the Property
+	 * Changed callback. If the Shovel is part of a preview, i.e. lives in the world shown in a
+	 * Blueprint editor viewport, then the change is promoted to be applied on the Blueprint's CSC
+	 * node's template Component and its instances instead, excluding the preview shovel since that
+	 * has already been updated.
 	 *
 	 * This does conceptually the same thing as FComponentVisualizer::NotifyPropertyModified, with
 	 * the difference being that this implementation is specialized for FAGX_Frame. We cannot use
@@ -249,16 +250,20 @@ struct FShovelVisualizerOperations
 		FAGX_ShovelComponentVisualizer& Visualizer, UAGX_ShovelComponent& Shovel,
 		FReadFunc ReadFunc, FWriteFunc WriteFunc)
 	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("NotifyFrameModified for shovel %p, %s."), &Shovel,
-			*Shovel.GetName());
-
+		// Get the frame that is currently being modified.
 		const EAGX_ShovelFrame FrameSource = Visualizer.GetSelectedFrameSource();
 		FProperty* FrameProperty = Visualizer.GetSelectedFrameProperty();
 
+		// If the owning Actor of a Component is a Blueprint or a Blueprint instance then the
+		// Construction Script needs to be run after each edit. There is no direct way to trigger
+		// a Blueprint Reconstruction, so we rely on the Post Edit Move event to eventually trigger
+		// a Blueprint Reconstruction, if necessary for a particular Actor.
+		//
+		// I'm not 100% sure that we really need this, or if the PostEditChangeChainProperty call
+		// will do this for us.
 		auto RerunConstructionScript = [](AActor& Actor)
 		{
-			// todo Should the parameter be true or false?
+			// todo Should the parameter, bFinished, be true or false?
 			//      Depends on if this was the last input delta for the transform gizmo drag or not.
 			//      Passing false for now because that is what calling
 			//      FComponentVisualizer::NotifyFrameModified does when called with default
@@ -267,15 +272,35 @@ struct FShovelVisualizerOperations
 			Actor.PostEditMove(false);
 		};
 
+		// Construct a Property Changed Chain Event and trigger that for the given object. We need
+		// this because we apply side effects in the PostEditChangeChainProperty callback in our
+		// Native Owner objects. A common side effect is to apply the new state to the AGX Dynamics
+		// instance.
+		//
+		// It may be that we should collect all modified objects in a single Property Changed Chain
+		// Event, but this seems to work for now.
+		auto TriggerChainEvent = [FrameProperty](UObject* ModifiedObject)
 		{
-			TArray<FProperty*> PropertyChainArray;
-			FString Path = FrameProperty->GetPathName();
-			UE_LOG(LogAGX, Warning, TEXT("Property path: %s"), *Path);
 			FEditPropertyChain PropertyChain;
-			FPropertyChangedEvent ChangedEvent(FrameProperty);
+			PropertyChain.AddTail(FrameProperty);
+			TArray<const UObject*> ModifiedObjects {ModifiedObject};
+
+			// We would like to pass EPropertyChangeType::Interactive for all calls to
+			// HandleInputDelta except for the last one, but I don't know how to detect if this is
+			// the last one or not. or is there some other function that is called when the user
+			// releases the transform gizmo?
+			//
+			// For now use ValueSet, that is the safest but also the most costly.
+			FPropertyChangedEvent ChangedEvent(
+				FrameProperty, EPropertyChangeType::ValueSet, ModifiedObjects);
+
 			FPropertyChangedChainEvent ChainEvent(PropertyChain, ChangedEvent);
-			Shovel.PostEditChangeChainProperty(ChainEvent);
-		}
+			ModifiedObject->PostEditChangeChainProperty(ChainEvent);
+		};
+
+		// The source shovel has already been updated, so trigger its property changed chain event
+		// immediately.
+		TriggerChainEvent(&Shovel);
 
 		AActor* Owner = Shovel.GetOwner();
 		if (Owner == nullptr)
@@ -300,8 +325,6 @@ struct FShovelVisualizerOperations
 			return;
 		}
 
-		UE_LOG(LogAGX, Warning, TEXT("  Is in a Blueprint."));
-
 		// We now know that we have a Component that is part of a preview Actor, i.e. one that
 		// lives in e.g. the Blueprint editor viewport.
 
@@ -321,6 +344,11 @@ struct FShovelVisualizerOperations
 		AGX_CHECK(Archetype != nullptr);
 		if (Archetype == nullptr)
 		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("AGX_ShovelComponentVisualzier::NotifyFrameModified found a preview shovel "
+					 "named '%s' that does not have an archetype."),
+				*Shovel.GetName());
 			return;
 		}
 		if (!IsValid(Archetype))
@@ -332,6 +360,10 @@ struct FShovelVisualizerOperations
 		AGX_CHECK(Archetype != UAGX_ShovelComponent::StaticClass()->GetDefaultObject());
 		if (Archetype == UAGX_ShovelComponent::StaticClass()->GetDefaultObject())
 		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("AGX_ShovelComponentVisualzier::NotifyFrameModified found a preview shovel "
+					 "that has the Class Default Object as its archetype."));
 			// The preview instance of a Blueprint template Component always (I hope.) has the
 			// template Component as its archetype, and the template Component is never the Class
 			// Default Object for the type. If we ever try to modify the Class Default Object
@@ -366,13 +398,13 @@ struct FShovelVisualizerOperations
 			}
 
 			const FPropertyType CurrentValue = ReadFunc(InstanceShovel->GetFrame(FrameSource));
-			if (CurrentValue == OriginalValue)
+			if (CurrentValue == OriginalValue) // Bit comparison even for floating-point types.
 			{
 				InstancesToUpdate.Add(InstanceShovel);
 			}
 		}
 
-		// Value that should be propagated.
+		// Value that should be propagated to the archetype and the archetype instances.
 		const FPropertyType NewValue = ReadFunc(Shovel.GetFrame(FrameSource));
 
 		// Propagate the new value to the archetype.
@@ -385,8 +417,8 @@ struct FShovelVisualizerOperations
 				ArchetypeOwner->Modify();
 			}
 			WriteFunc(Archetype->GetFrame(FrameSource), NewValue);
-			FPropertyChangedEvent Event(FrameProperty);
-			Archetype->PostEditChangeProperty(Event);
+			TriggerChainEvent(Archetype);
+
 			// todo Why not call RerunConstructionScript for ArchetypeOwner?
 			// We don't because FComponentVisualizer::NotifyPropertyModified doesn't, but why
 			// doesn't it? Should we?
@@ -403,8 +435,7 @@ struct FShovelVisualizerOperations
 				OwnerToUpdate->Modify();
 			}
 			WriteFunc(InstanceToUpdate->GetFrame(FrameSource), NewValue);
-			FPropertyChangedEvent Event(FrameProperty);
-			InstanceToUpdate->PostEditChangeProperty(Event);
+			TriggerChainEvent(InstanceToUpdate);
 			if (OwnerToUpdate != nullptr)
 			{
 				RerunConstructionScript(*OwnerToUpdate);
