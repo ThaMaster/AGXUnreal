@@ -38,19 +38,21 @@ void UAGX_ShovelComponent::SetShovelProperties(UAGX_ShovelProperties* Properties
 	{
 		if (ShovelProperties->IsAsset())
 		{
-			ShovelProperties = ShovelProperties->GetOrCreateInstance(GetWorld());
-			if (ShovelProperties != nullptr)
+			if (GetWorld()->IsGameWorld())
 			{
-				ShovelProperties->RegisterShovel(*this);
-			}
-			else
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Shovel %s in %s: Could not create Shovel Properties instance. Default "
-						 "shovel "
-						 "settings will be used."),
-					*GetName(), *GetLabelSafe(GetOwner()));
+				ShovelProperties = ShovelProperties->GetOrCreateInstance(GetWorld());
+				if (ShovelProperties != nullptr)
+				{
+					ShovelProperties->RegisterShovel(*this);
+				}
+				else
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("Shovel %s in %s: Could not create Shovel Properties instance. Default "
+							 "shovel settings will be used."),
+						*GetName(), *GetLabelSafe(GetOwner()));
+				}
 			}
 		}
 		else
