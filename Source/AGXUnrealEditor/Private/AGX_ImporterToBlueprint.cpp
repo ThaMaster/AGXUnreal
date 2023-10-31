@@ -424,6 +424,17 @@ namespace
 		return Success;
 	}
 
+	bool AddShovels(AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool bSuccess = true;
+		for (const auto& Shovel : SimObjects.GetShovels())
+		{
+			bSuccess &= Helper.InstantiateShovel(Shovel, ImportedActor) != nullptr;
+		}
+		return bSuccess;
+	}
+
 	bool AddObserverFrames(
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
 		FAGX_SimObjectsImporterHelper& Helper)
@@ -480,6 +491,9 @@ namespace
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Observer Frames"));
 		Success &= AddObserverFrames(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Reading Shovels"));
+		Success &= AddShovels(ImportedActor, SimObjects, Helper);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Import"));
 		Helper.InstantiateModelSourceComponent(ImportedActor);

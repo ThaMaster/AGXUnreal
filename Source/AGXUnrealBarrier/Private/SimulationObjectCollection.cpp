@@ -269,6 +269,16 @@ const TArray<FWireBarrier>& FSimulationObjectCollection::GetWires() const
 	return Wires;
 }
 
+TArray<FShovelBarrier>& FSimulationObjectCollection::GetShovels()
+{
+	return Shovels;
+}
+
+const TArray<FShovelBarrier>& FSimulationObjectCollection::GetShovels() const
+{
+	return Shovels;
+}
+
 TArray<FTrackBarrier>& FSimulationObjectCollection::GetTracks()
 {
 	return Tracks;

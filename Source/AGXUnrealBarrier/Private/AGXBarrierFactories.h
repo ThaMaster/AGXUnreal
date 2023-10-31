@@ -23,6 +23,7 @@
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/TerrainMaterialBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Terrain/ShovelBarrier.h"
 #include "Wire/WireBarrier.h"
 #include "Wire/WireRef.h"
 #include "Wire/WireNodeBarrier.h"
@@ -64,8 +65,9 @@ namespace agxModel
 
 namespace agxTerrain
 {
+	class Shovel;
 	class Terrain;
-	class TerrainMaterial;	
+	class TerrainMaterial;
 }
 
 namespace agxWire
@@ -139,6 +141,8 @@ namespace AGXBarrierFactories
 	FWireNodeBarrier CreateWireNodeBarrier(agxWire::Node* Node);
 
 	FWireWinchBarrier CreateWireWinchBarrier(agxWire::WireWinchController* Winch);
+
+	FShovelBarrier CreateShovelBarrier(agxTerrain::Shovel* Shovel);
 
 	FTrackBarrier CreateTrackBarrier(agxVehicle::Track* Track);
 }

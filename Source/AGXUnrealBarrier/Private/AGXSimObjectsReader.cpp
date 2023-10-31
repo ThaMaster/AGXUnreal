@@ -6,6 +6,7 @@
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGXBarrierFactories.h"
+#include "AGXRefs.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
@@ -40,6 +41,8 @@
 #include <agxModel/TwoBodyTire.h>
 #include <agxModel/UrdfReader.h>
 #include <agxSDK/Simulation.h>
+#include <agxTerrain/Shovel.h>
+#include <agxTerrain/Terrain.h>
 #include <agxWire/Wire.h>
 #include <agxVehicle/Track.h>
 #include "EndAGXIncludes.h"
@@ -358,6 +361,28 @@ namespace
 		}
 	}
 
+	void ReadShovels(agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
+	{
+		TSet<agxTerrain::Shovel*> SeenShovels;
+
+		agxTerrain::TerrainPtrVector Terrains = agxTerrain::Terrain::findAll(&Simulation);
+		for (agxTerrain::Terrain* Terrain : Terrains)
+		{
+			const agx::Vector<agxTerrain::ShovelRef>& Shovels = Terrain->getShovels();
+			for (const agxTerrain::ShovelRef& Shovel : Shovels)
+			{
+				if (Shovel == nullptr)
+					continue;
+				SeenShovels.Add(Shovel);
+			}
+		}
+
+		for (agxTerrain::Shovel* Shovel : SeenShovels)
+		{
+			OutSimObjects.GetShovels().Add(AGXBarrierFactories::CreateShovelBarrier(Shovel));
+		}
+	}
+
 	void ReadObserverFrames(
 		agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
 	{
@@ -392,6 +417,7 @@ namespace
 		ReadConstraints(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadCollisionGroups(Simulation, OutSimObjects);
 		ReadWires(Simulation, OutSimObjects);
+		ReadShovels(Simulation, OutSimObjects);
 		ReadObserverFrames(Simulation, OutSimObjects);
 	}
 }

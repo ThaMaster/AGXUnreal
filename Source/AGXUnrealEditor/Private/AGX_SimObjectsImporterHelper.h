@@ -17,8 +17,8 @@ struct FAGX_ImportSettings;
 class FBallJointBarrier;
 class FBoxShapeBarrier;
 class FCapsuleShapeBarrier;
-class FContactMaterialBarrier;
 class FConstraintBarrier;
+class FContactMaterialBarrier;
 class FCylinderShapeBarrier;
 class FCylindricalJointBarrier;
 class FDistanceJointBarrier;
@@ -26,41 +26,42 @@ class FHingeBarrier;
 class FLockJointBarrier;
 class FPrismaticBarrier;
 class FRigidBodyBarrier;
-class FSphereShapeBarrier;
 class FShapeMaterialBarrier;
+class FShovelBarrier;
+class FSphereShapeBarrier;
 class FTwoBodyTireBarrier;
 class FWireBarrier;
-class UAGX_RigidBodyComponent;
-class UAGX_SphereShapeComponent;
-class UAGX_BoxShapeComponent;
-class UAGX_ConstraintComponent;
-class UAGX_CylinderShapeComponent;
-class UAGX_CapsuleShapeComponent;
-class UAGX_TrimeshShapeComponent;
-class UAGX_ShapeMaterial;
-class UAGX_ShapeComponent;
-class UAGX_ContactMaterial;
-class UAGX_HingeConstraintComponent;
-class UAGX_ObserverFrameComponent;
-class UAGX_PrismaticConstraintComponent;
 class UAGX_BallConstraintComponent;
+class UAGX_BoxShapeComponent;
+class UAGX_CapsuleShapeComponent;
+class UAGX_CollisionGroupDisablerComponent;
+class UAGX_ConstraintComponent;
+class UAGX_ContactMaterial;
+class UAGX_ContactMaterialRegistrarComponent;
+class UAGX_CylinderShapeComponent;
 class UAGX_CylindricalConstraintComponent;
 class UAGX_DistanceConstraintComponent;
+class UAGX_HingeConstraintComponent;
 class UAGX_LockConstraintComponent;
 class UAGX_MergeSplitThresholdsBase;
 class UAGX_ModelSourceComponent;
-class FTwoBodyTireBarrier;
-class UAGX_TwoBodyTireComponent;
-class UAGX_CollisionGroupDisablerComponent;
-class UAGX_ContactMaterialRegistrarComponent;
-class UAGX_WireComponent;
+class UAGX_ObserverFrameComponent;
+class UAGX_PrismaticConstraintComponent;
+class UAGX_RigidBodyComponent;
+class UAGX_ShapeComponent;
+class UAGX_ShapeMaterial;
+class UAGX_ShovelComponent;
+class UAGX_SphereShapeComponent;
 class UAGX_TrackComponent;
 class UAGX_TrackProperties;
+class UAGX_TrimeshShapeComponent;
+class UAGX_TwoBodyTireComponent;
+class UAGX_WireComponent;
 
 // Unreal Engine classes.
 class AActor;
-class USceneComponent;
 class UMaterialInstanceConstant;
+class USceneComponent;
 class UStaticMesh;
 
 /**
@@ -201,6 +202,8 @@ public:
 
 	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
 
+	UAGX_ShovelComponent* InstantiateShovel(const FShovelBarrier& Barrier, AActor& Owner);
+
 	UAGX_TrackComponent* InstantiateTrack(const FTrackBarrier& Barrier, AActor& Owner);
 
 	void UpdateModelSourceComponent(UAGX_ModelSourceComponent& Component);
@@ -243,7 +246,7 @@ public:
 	const FString SourceFilePath;
 	const FString SourceFileName;
 	const FString RootDirectoryName;
-	const FString RootDirectoryPath;		
+	const FString RootDirectoryPath;
 	const bool bIgnoreDisabledTrimeshes;
 
 private:

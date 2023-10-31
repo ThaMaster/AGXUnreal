@@ -9,52 +9,53 @@
 #include "AGX_ObserverFrameComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_AmorEnums.h"
-#include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
 #include "AMOR/ConstraintMergeSplitThresholdsBarrier.h"
+#include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
 #include "AMOR/WireMergeSplitThresholdsBarrier.h"
-#include "RigidBodyBarrier.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
+#include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
-#include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_CylindricalConstraintComponent.h"
 #include "Constraints/AGX_DistanceConstraintComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_LockConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
-#include "Constraints/ConstraintBarrier.h"
+#include "Constraints/BallJointBarrier.h"
 #include "Constraints/Constraint1DOFBarrier.h"
 #include "Constraints/Constraint2DOFBarrier.h"
-#include "Constraints/BallJointBarrier.h"
+#include "Constraints/ConstraintBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Constraints/DistanceJointBarrier.h"
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
-#include "Shapes/AGX_SphereShapeComponent.h"
-#include "Shapes/AGX_BoxShapeComponent.h"
-#include "Shapes/AGX_CylinderShapeComponent.h"
-#include "Shapes/AGX_CapsuleShapeComponent.h"
-#include "Shapes/AGX_TrimeshShapeComponent.h"
-#include "Shapes/RenderDataBarrier.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
-#include "Tires/TwoBodyTireBarrier.h"
+#include "RigidBodyBarrier.h"
+#include "Shapes/AGX_BoxShapeComponent.h"
+#include "Shapes/AGX_CapsuleShapeComponent.h"
+#include "Shapes/AGX_CylinderShapeComponent.h"
+#include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Shapes/RenderDataBarrier.h"
+#include "Terrain/AGX_ShovelComponent.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
-#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
+#include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
-#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_TextureUtilities.h"
-#include "Wire/AGX_WireComponent.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/TrackPropertiesBarrier.h"
 #include "Vehicle/TrackWheelBarrier.h"
+#include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
 #include "AssetToolsModule.h"
@@ -64,8 +65,8 @@
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
 #include "IAssetTools.h"
-#include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceConstant.h"
+#include "Materials/MaterialInterface.h"
 #include "MeshDescription.h"
 #include "Misc/Paths.h"
 #include "UObject/UObjectGlobals.h"
@@ -1508,7 +1509,6 @@ FAGX_SimObjectsImporterHelper::InstantiateCollisionGroupDisabler(
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
 	Component->RegisterComponent();
-
 	return Component;
 }
 
@@ -1755,6 +1755,33 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	Component->RegisterComponent();
 	Component->PostEditChange();
 	// May chose to store a table of all imported wires. If so, add this wire to the table here.
+	return Component;
+}
+
+UAGX_ShovelComponent* FAGX_SimObjectsImporterHelper::InstantiateShovel(
+	const FShovelBarrier& Barrier, AActor& Owner)
+{
+	UAGX_ShovelComponent* Component = NewObject<UAGX_ShovelComponent>(&Owner);
+	if (Component == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Shovel"), TEXT("Shovel")/*Barrier.GetName()*/, SourceFilePath,
+			TEXT("Could not create new AGX_ShovelComponent"));
+		return nullptr;
+	}
+
+	// TODO Implement UAGX_ShovelComponent::CopyFrom(FShovelBarrier).
+#if 0
+#pragma warning("Component->CopyFrom(Barrier) not yet implemented.")
+	Component->CopyFrom(Barrier);
+#endif
+
+	// TODO Create and populate Shape Properties.
+
+	Component->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(Component);
+	Component->RegisterComponent();
+	// Component->PostEditChange(); // Some have PostEditChange here, some don't. What's the rule?
 	return Component;
 }
 
