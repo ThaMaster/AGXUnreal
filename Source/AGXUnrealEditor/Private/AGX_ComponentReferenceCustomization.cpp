@@ -361,13 +361,12 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 
 	// We now know what options the user has to chose between. Let the combo-box know.
 	// Don't always have all combo-boxes. Update the ones we have.
-	if (ComboBoxPtr != nullptr)
+	for (auto* ComboBox : {HeaderComboBoxPtr, ComboBoxPtr})
 	{
-		ComboBoxPtr->RefreshOptions();
-	}
-	if (HeaderComboBoxPtr != nullptr)
-	{
-		HeaderComboBoxPtr->RefreshOptions();
+		if (ComboBox != nullptr)
+		{
+			ComboBox->RefreshOptions();
+		}
 	}
 
 	// Find which combo-box item match the current selection and select it.
@@ -376,13 +375,12 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 	{
 		if (*ComponentName == SelectedComponent)
 		{
-			if (ComboBoxPtr != nullptr)
+			for (auto* ComboBox : {HeaderComboBoxPtr, ComboBoxPtr})
 			{
-				ComboBoxPtr->SetSelectedItem(ComponentName);
-			}
-			if (HeaderComboBoxPtr != nullptr)
-			{
-				HeaderComboBoxPtr->SetSelectedItem(ComponentName);
+				if (ComboBox != nullptr)
+				{
+					ComboBox->SetSelectedItem(ComponentName);
+				}
 			}
 			SelectionFound = true;
 			break;
@@ -408,14 +406,19 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 		// If so, how do we make it clear that it is an invalid selection?
 		// If not, how do we show that the actual selection isn't among the options?
 		// Red text/background?
+		//
+		// For now select the first name, despite the tirade above. Do something better when we have
+		// got the basics working and can start tweaking things like this.
+		//
+		// There is always at least one valid option in ComponentNames. If there are no valid
+		// Components in the owning Actor then the None FName is selected.
 		SelectedComponent = *ComponentNames[0];
-		if (ComboBoxPtr != nullptr)
+		for (auto* ComboBox : {HeaderComboBoxPtr, ComboBoxPtr})
 		{
-			ComboBoxPtr->SetSelectedItem(ComponentNames[0]);
-		}
-		if (HeaderComboBoxPtr)
-		{
-			HeaderComboBoxPtr->SetSelectedItem(ComponentNames[0]);
+			if (ComboBox != nullptr)
+			{
+				ComboBox->SetSelectedItem(ComponentNames[0]);
+			}
 		}
 	}
 }
