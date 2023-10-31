@@ -58,17 +58,17 @@ private:
 	FName SelectedComponent;
 
 	/// The combo-box listing the names of the compatible Components found, and the extra entries.
-	SComboBox<TSharedPtr<FName>>* ComboBoxPtr = nullptr;
+	TSharedPtr<SComboBox<TSharedPtr<FName>>> ComboBoxPtr;
 
 	/// Combo box identical to ComboBoxPtr, but shown in the header instead of as a child.
-	SComboBox<TSharedPtr<FName>>* HeaderComboBoxPtr = nullptr;
+	TSharedPtr<SComboBox<TSharedPtr<FName>>> HeaderComboBoxPtr;
 
 	/// Delegate called when the search settings, i.e. Owning Actor and Search Child Actors, are
 	/// changed. Repopulates the ComponentNames array.
 	FSimpleDelegate RebuildComboBoxDelegate;
 
 	/// The text box where the user can write a name by hand.
-	SEditableTextBox* ComponentNameBoxPtr = nullptr;
+	TSharedPtr<SEditableTextBox> ComponentNameBoxPtr;
 
 	/**
 	 * We must not write through property handles while the Details panel is being constructed, that

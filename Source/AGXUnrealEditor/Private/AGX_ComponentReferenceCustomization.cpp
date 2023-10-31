@@ -109,10 +109,10 @@ struct FAGX_ComponentReferenceCustomizationOperations
 	 * @return A combo-box widget displaying the contents of ComponentNames.
 	 */
 	static TSharedRef<SComboBox<TSharedPtr<FName>>> CreateNameComboBox(
-		FAGX_ComponentReferenceCustomization& This)
+		FAGX_ComponentReferenceCustomization& This, TSharedPtr<SComboBox<TSharedPtr<FName>>>& OutWidget)
 	{
 		// clang-format off
-		return SNew(SComboBox<TSharedPtr<FName>>)
+		return SAssignNew(OutWidget, SComboBox<TSharedPtr<FName>>)
 			.Visibility_Lambda([&This](){ return FAGX_EditorUtilities::VisibleIf(This.bFoundComponents); })
 			.OptionsSource(&This.ComponentNames)
 			.OnGenerateWidget_Lambda(
@@ -187,12 +187,6 @@ void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 	}
 
 	// Create and configure the Component name combo-box shown in the header.
-	TSharedRef<SComboBox<TSharedPtr<FName>>> ComboBox =
-		FAGX_ComponentReferenceCustomizationOperations::CreateNameComboBox(*this);
-	HeaderComboBoxPtr = &ComboBox.Get();
-	SelectedComponent = GetName();
-	RebuildComboBox();
-
 	// clang-format off
 	HeaderRow
 	.NameContent()
@@ -207,7 +201,7 @@ void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 		SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
 		[
-			ComboBox
+			FAGX_ComponentReferenceCustomizationOperations::CreateNameComboBox(*this, HeaderComboBoxPtr)
 		]
 		+ SHorizontalBox::Slot()
 		[
@@ -219,6 +213,8 @@ void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 		]
 	];
 	// clang-format on
+	SelectedComponent = GetName();
+	RebuildComboBox();
 
 	// The combo-box must be rebuilt when the search settings are changed.
 	RebuildComboBoxDelegate.BindRaw(this, &FAGX_ComponentReferenceCustomization::RebuildComboBox);
@@ -267,40 +263,27 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 	];
 	// clang-format on
 
-	// Create and configure the Component name combo-box shown in the children.
-	TSharedRef<SComboBox<TSharedPtr<FName>>> ComboBox =
-		FAGX_ComponentReferenceCustomizationOperations::CreateNameComboBox(*this);
-	ComboBoxPtr = &ComboBox.Get();
-	SelectedComponent = GetName();
-	RebuildComboBox();
-
-	// Fallback text box that is shown if no compatible Components are found.
-	// clang-format off
-	const TSharedRef<SEditableTextBox> NameBox =
-		SNew(SEditableTextBox)
-		.Text_Lambda([this]() { return FText::FromName(SelectedComponent); })
-		.OnTextCommitted(this, &FAGX_ComponentReferenceCustomization::OnComponentNameCommitted)
-		.Visibility_Lambda([this]() { return FAGX_EditorUtilities::VisibleIf(!bFoundComponents); });
-	// clang-format on
-
-	ComponentNameBoxPtr = &NameBox.Get();
-
-	// Add both the combo-box and the text box to the row.
-	// clang-format off
 	NameRow
 	.ValueContent()
 	[
 		SNew(SVerticalBox)
 		+ SVerticalBox::Slot()
 		[
-			ComboBox
+			// Create the Component name combo-box shown among the children.
+			FAGX_ComponentReferenceCustomizationOperations::CreateNameComboBox(*this, ComboBoxPtr)
 		]
 		+ SVerticalBox::Slot()
 		[
-			NameBox
+			// Fallback text box that is shown if no compatible Components are found.
+			SAssignNew(ComponentNameBoxPtr, SEditableTextBox)
+				.Text_Lambda([this]() { return FText::FromName(SelectedComponent); })
+				.OnTextCommitted(this, &FAGX_ComponentReferenceCustomization::OnComponentNameCommitted)
+				.Visibility_Lambda([this]() { return FAGX_EditorUtilities::VisibleIf(!bFoundComponents); })
 		]
 	];
 	// clang-format on
+	SelectedComponent = GetName();
+	RebuildComboBox();
 
 	// The combo-box must be rebuilt when the search settings are changed.
 	RebuildComboBoxDelegate.BindRaw(this, &FAGX_ComponentReferenceCustomization::RebuildComboBox);
@@ -375,7 +358,7 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 
 	// We now know what options the user has to chose between. Let the combo-box know.
 	// Don't always have all combo-boxes. Update the ones we have.
-	for (auto* ComboBox : {HeaderComboBoxPtr, ComboBoxPtr})
+	for (auto& ComboBox : {HeaderComboBoxPtr, ComboBoxPtr})
 	{
 		if (ComboBox != nullptr)
 		{
@@ -401,7 +384,7 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 	{
 		if (*ComponentName == SelectedComponent)
 		{
-			for (auto* ComboBox : {HeaderComboBoxPtr, ComboBoxPtr})
+			for (auto& ComboBox : {HeaderComboBoxPtr, ComboBoxPtr})
 			{
 				if (ComboBox != nullptr)
 				{
@@ -440,7 +423,7 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 		// There is always at least one valid option in ComponentNames. If there are no valid
 		// Components in the owning Actor then the None FName is selected.
 		SelectedComponent = *ComponentNames[0];
-		for (auto* ComboBox : {HeaderComboBoxPtr, ComboBoxPtr})
+		for (auto& ComboBox : {HeaderComboBoxPtr, ComboBoxPtr})
 		{
 			if (ComboBox != nullptr)
 			{
