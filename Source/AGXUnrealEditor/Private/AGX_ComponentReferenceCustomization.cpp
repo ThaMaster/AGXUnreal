@@ -8,6 +8,7 @@
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_PropertyUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Utilities/AGX_Utilities.h"
 
 // Unreal Engine includes.
 #include "DetailWidgetRow.h"
@@ -115,7 +116,11 @@ void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 	TSharedRef<IPropertyHandle> InComponentReferenceHandle, FDetailWidgetRow& HeaderRow,
 	IPropertyTypeCustomizationUtils& CustomizationUtils)
 {
+	// Slate callback functions may be called during setup and some of our callbacks manipulate
+	// the Slate state, which we don't want to do during construction. Such code is therefore
+	// guarded behind checks of this flag.
 	bInCustomize = true;
+	FAGX_Finalizer LeaveCustomize([this]() { this->bInCustomize = false; });
 
 	if (!RefetchPropertyHandles(InComponentReferenceHandle))
 	{
@@ -180,8 +185,6 @@ void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 	RebuildComboBoxDelegate.BindRaw(this, &FAGX_ComponentReferenceCustomization::RebuildComboBox);
 	OwningActorHandle->SetOnPropertyValueChanged(RebuildComboBoxDelegate);
 	SearchChildActorsHandle->SetOnPropertyValueChanged(RebuildComboBoxDelegate);
-
-	bInCustomizeChildren = false;
 }
 
 void FAGX_ComponentReferenceCustomization::CustomizeChildren(
@@ -191,6 +194,7 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 	using namespace AGX_ComponentReferenceCustomization_helpers;
 
 	bInCustomize = true;
+	FAGX_Finalizer LeaveCustomize([this]() { this->bInCustomize = false; });
 
 	if (!RefetchPropertyHandles(InComponentReferenceHandle))
 	{
@@ -280,8 +284,6 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 	RebuildComboBoxDelegate.BindRaw(this, &FAGX_ComponentReferenceCustomization::RebuildComboBox);
 	OwningActorHandle->SetOnPropertyValueChanged(RebuildComboBoxDelegate);
 	SearchChildActorsHandle->SetOnPropertyValueChanged(RebuildComboBoxDelegate);
-
-	bInCustomize = false;
 }
 
 FText FAGX_ComponentReferenceCustomization::GetHeaderText() const
