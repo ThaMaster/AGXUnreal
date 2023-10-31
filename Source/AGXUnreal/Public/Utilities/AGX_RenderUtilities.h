@@ -24,6 +24,7 @@ public:
 
 	/**
 	 * Renders the given ShapeContacts to the screen.
+	 * The rendering is not avaiable in built applications built with Shipping configuration.
 	 */
 	static void DrawContactPoints(const TArray<FShapeContactBarrier>& ShapeContacts, float LifeTime, UWorld* World);
 };
