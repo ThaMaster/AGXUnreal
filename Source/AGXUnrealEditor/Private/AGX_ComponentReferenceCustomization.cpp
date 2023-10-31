@@ -115,8 +115,7 @@ void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 	TSharedRef<IPropertyHandle> InComponentReferenceHandle, FDetailWidgetRow& HeaderRow,
 	IPropertyTypeCustomizationUtils& CustomizationUtils)
 {
-	// TODO Find a better name.
-	bInCustomizeChildren = true;
+	bInCustomize = true;
 
 	if (!RefetchPropertyHandles(InComponentReferenceHandle))
 	{
@@ -191,7 +190,7 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 {
 	using namespace AGX_ComponentReferenceCustomization_helpers;
 
-	bInCustomizeChildren = true;
+	bInCustomize = true;
 
 	if (!RefetchPropertyHandles(InComponentReferenceHandle))
 	{
@@ -282,7 +281,7 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 	OwningActorHandle->SetOnPropertyValueChanged(RebuildComboBoxDelegate);
 	SearchChildActorsHandle->SetOnPropertyValueChanged(RebuildComboBoxDelegate);
 
-	bInCustomizeChildren = false;
+	bInCustomize = false;
 }
 
 FText FAGX_ComponentReferenceCustomization::GetHeaderText() const
@@ -442,7 +441,7 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 			Nesting, this, *SelectedComponent.ToString(), *CurrentValue.ToString(),
 			*SelectedComponent.ToString());
 
-		if (bInCustomizeChildren)
+		if (bInCustomize)
 		{
 			UE_LOG(
 				LogAGX, Warning,

@@ -84,7 +84,7 @@ private:
 	 *
 	 * I hope this doesn't cause us to miss any updates.
 	 */
-	bool bInCustomizeChildren {false};
+	bool bInCustomize {false};
 
 	/**
 	 * Re-fetch the property handles to the underlying data stores.
