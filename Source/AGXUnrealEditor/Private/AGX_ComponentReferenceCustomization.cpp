@@ -148,6 +148,25 @@ void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 			 "Reference %p using handle %p."),
 		this, GetComponentReference(), ComponentReferenceHandle.Get());
 #endif
+	// Make sure we have a single valid Component Reference that is being customized. Support for
+	// multi-select editing is a feature for the future.
+	const FAGX_ComponentReference* ComponentReference = GetComponentReference();
+	if (ComponentReference == nullptr)
+	{
+		// clang-format off
+		HeaderRow
+		.WholeRowContent()
+		[
+			SNew(STextBlock)
+			.Text(LOCTEXT(
+				"MultipleShovelsSelected",
+				"Multi-select editing of references not yet supported"))
+			.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
+			.MinDesiredWidth(250.0f)
+		];
+		// clang-format on
+		return;
+	}
 
 	TSharedRef<SComboBox<TSharedPtr<FName>>> ComboBox =
 		FAGX_ComponentReferenceCustomizationOperations::CreateNameComboBox(*this);
