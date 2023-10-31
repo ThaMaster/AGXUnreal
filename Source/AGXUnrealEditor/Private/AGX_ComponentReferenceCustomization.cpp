@@ -93,7 +93,8 @@ struct FAGX_ComponentReferenceCustomizationOperations
 				[](const TSharedPtr<FName>& Item)
 				{
 					return SNew(STextBlock)
-						.Text(FText::FromName(*Item));
+						.Text(FText::FromName(*Item))
+						.Font(IDetailLayoutBuilder::GetDetailFont());
 				})
 			.OnSelectionChanged(&This, &FAGX_ComponentReferenceCustomization::OnComboBoxChanged)
 			.Content()
@@ -104,6 +105,7 @@ struct FAGX_ComponentReferenceCustomizationOperations
 					{
 						return FText::FromName(This.SelectedComponent);
 					})
+				.Font(IDetailLayoutBuilder::GetDetailFont())
 			];
 		// clang-format on
 	}
@@ -169,7 +171,7 @@ void FAGX_ComponentReferenceCustomization::CustomizeHeader(
 			SNew(STextBlock)
 				.Text(this, &FAGX_ComponentReferenceCustomization::GetHeaderText)
 				.ToolTipText(this, &FAGX_ComponentReferenceCustomization::GetHeaderText)
-				.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
+				.Font(IDetailLayoutBuilder::GetDetailFont())
 				.MinDesiredWidth(250.0f)
 		]
 	];
