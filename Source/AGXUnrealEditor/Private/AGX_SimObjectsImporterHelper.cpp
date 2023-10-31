@@ -48,7 +48,7 @@
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
-#include "Utilities/AGX_TextureUtilities.h"
+#include "Utilities/AGX_RenderUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
@@ -124,7 +124,7 @@ namespace
 			bIsSensor
 				? TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'")
 				: TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'");
-		UMaterial* Material = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
+		UMaterial* Material = FAGX_RenderUtilities::GetMaterialFromAssetPath(AssetPath);
 		if (Material == nullptr)
 		{
 			UE_LOG(

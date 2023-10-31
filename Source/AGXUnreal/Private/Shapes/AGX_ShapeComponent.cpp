@@ -13,7 +13,7 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
-#include "Utilities/AGX_TextureUtilities.h"
+#include "Utilities/AGX_RenderUtilities.h"
 
 // Unreal Engine includes.
 #include "Materials/Material.h"
@@ -523,7 +523,7 @@ void UAGX_ShapeComponent::ApplySensorMaterial(UMeshComponent& Mesh)
 {
 	static const TCHAR* AssetPath =
 		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
-	static UMaterial* SensorMaterial = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
+	static UMaterial* SensorMaterial = FAGX_RenderUtilities::GetMaterialFromAssetPath(AssetPath);
 	if (SensorMaterial == nullptr)
 	{
 		return;

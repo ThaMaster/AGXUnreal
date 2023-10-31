@@ -1,11 +1,13 @@
 // Copyright 2023, Algoryx Simulation AB.
 
-#include "Utilities/AGX_TextureUtilities.h"
+#include "Utilities/AGX_RenderUtilities.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "Contacts/ShapeContactBarrier.h"
 
 // Unreal Engine includes.
+#include "DrawDebugHelpers.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
@@ -13,7 +15,7 @@
 #include "RHICommandList.h"
 #include "TextureResource.h"
 
-bool FAGX_TextureUtilities::UpdateRenderTextureRegions(
+bool FAGX_RenderUtilities::UpdateRenderTextureRegions(
 	UTextureRenderTarget2D& RenderTarget, uint32 NumRegions, FUpdateTextureRegion2D* Regions,
 	uint32 SourcePitch, uint32 SourceBitsPerPixel, uint8* SourceData, bool bFreeData)
 {
@@ -52,7 +54,7 @@ bool FAGX_TextureUtilities::UpdateRenderTextureRegions(
 	return true;
 }
 
-UMaterial* FAGX_TextureUtilities::GetMaterialFromAssetPath(const TCHAR* AssetPath)
+UMaterial* FAGX_RenderUtilities::GetMaterialFromAssetPath(const TCHAR* AssetPath)
 {
 	UObject* LoadResult = StaticLoadObject(UMaterial::StaticClass(), nullptr, AssetPath);
 	if (LoadResult == nullptr)
@@ -65,4 +67,21 @@ UMaterial* FAGX_TextureUtilities::GetMaterialFromAssetPath(const TCHAR* AssetPat
 	}
 
 	return Cast<UMaterial>(LoadResult);
+}
+
+void FAGX_RenderUtilities::DrawContactPoints(
+	const TArray<FShapeContactBarrier>& ShapeContacts, float LifeTime, UWorld* World)
+{
+	for (const FShapeContactBarrier& ShapeContact : ShapeContacts)
+	{
+		for (const FContactPointBarrier& ContactPoint : ShapeContact.GetContactPoints())
+		{
+			const FVector PointLocation = ContactPoint.GetLocation();
+			DrawDebugPoint(World, PointLocation, 7.f, FColor::Orange, false, LifeTime, 99);
+			
+			// The Normal is drawn as a 2 cm line.
+			const FVector NormalEnd = PointLocation + ContactPoint.GetNormal() * 2.0;
+			DrawDebugLine(World, PointLocation, NormalEnd, FColor::Orange, false, LifeTime, 99, 0.2f);
+		}
+	}
 }
