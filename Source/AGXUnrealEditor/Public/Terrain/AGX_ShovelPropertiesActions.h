@@ -2,11 +2,10 @@
 
 #pragma once
 
-
 // Unreal Engine includes.
 #include "CoreMinimal.h"
-#include "AssetTypeCategories.h"
 #include "AssetTypeActions_Base.h"
+#include "AssetTypeCategories.h"
 
 
 /**
@@ -19,11 +18,12 @@ public:
 	FAGX_ShovelPropertiesActions(EAssetTypeCategories::Type InAssetCategory);
 
 	// ~Begin IAssetTypeActions interface.
-	FText GetName() const override;
-	uint32 GetCategories() override;
-	FColor GetTypeColor() const override;
-	FText GetAssetDescription(const FAssetData& AssetData) const override;
-	UClass* GetSupportedClass() const override;
+	virtual FText GetName() const override;
+	virtual const TArray<FText>& GetSubMenus() const override;
+	virtual uint32 GetCategories() override;
+	virtual FColor GetTypeColor() const override;
+	virtual FText GetAssetDescription(const FAssetData& AssetData) const override;
+	virtual UClass* GetSupportedClass() const override;
 	// ~End IAssetTypeActions interface.
 
 private:

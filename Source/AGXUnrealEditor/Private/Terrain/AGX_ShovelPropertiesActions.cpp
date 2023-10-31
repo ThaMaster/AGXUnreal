@@ -18,6 +18,15 @@ FText FAGX_ShovelPropertiesActions::GetName() const
 	return LOCTEXT("AssetName", "AGX Shovel Properties");
 }
 
+const TArray<FText>& FAGX_ShovelPropertiesActions::GetSubMenus() const
+{
+	static const TArray<FText> SubMenus {
+		LOCTEXT("TerrainSubMenu", "Terrain")
+	};
+
+	return SubMenus;
+}
+
 uint32 FAGX_ShovelPropertiesActions::GetCategories()
 {
 	return AssetCategory;
