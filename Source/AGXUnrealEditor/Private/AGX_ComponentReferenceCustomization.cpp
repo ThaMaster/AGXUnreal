@@ -228,14 +228,6 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 		return;
 	}
 
-#if 0
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("FAGX_ComponentReferenceCustomization %p is customizing children for Component "
-			 "Reference %p using handle %p."),
-		this, GetComponentReference(), ComponentReferenceHandle.Get());
-#endif
-
 	// Make sure we have a single valid Component Reference that is being customized. Support for
 	// multi-select editing is a feature for the future.
 	const FAGX_ComponentReference* ComponentReference = GetComponentReference();
@@ -436,26 +428,6 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 	FName CurrentValue;
 	FPropertyAccess::Result Result = NameHandle->GetValue(CurrentValue);
 
-	static int32 Nesting {0};
-	const int32 CurrentNest = Nesting++;
-#if 0
-	UE_LOG(
-		LogAGX, Warning, TEXT("[%d] %p: OnComboBoxChanged with NameHandle %p."), Nesting, this,
-		NameHandle.Get());
-
-	UE_LOG(
-		LogAGX, Warning, TEXT("[%d] %p: FAGX_ComponentReferenceCustomization::OnComboBoxChanged:"),
-		Nesting, this);
-	UE_LOG(
-		LogAGX, Warning, TEXT("[%d] %p: SelectedComponent: '%s'"), Nesting, this,
-		*SelectedComponent.ToString());
-	UE_LOG(
-		LogAGX, Warning, TEXT("[%d] %p: Handle->GetValue:  '%s'"), Nesting, this,
-		(Result == FPropertyAccess::Success ? *CurrentValue.ToString() : TEXT("(READ FAILED)")));
-	UE_LOG(
-		LogAGX, Warning, TEXT("[%d] %p: New selection:     '%s'"), Nesting, this,
-		(NewSelection.IsValid() ? *NewSelection->ToString() : TEXT("(INVALID)")));
-#endif
 	SelectedComponent = NewSelection.IsValid() ? *NewSelection : NAME_None;
 
 	// Only set the new value if it is an actual new value. This is to prevent infinite recursion
@@ -465,49 +437,18 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 	// set on the Property Handle because that will trigger an assert in Unreal Editor code.
 	if (Result == FPropertyAccess::Success && SelectedComponent != CurrentValue)
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("[%d] %p: New value ('%s') is different from current value ('%s'), considering "
-				 "calling SetValue('%s')."),
-			Nesting, this, *SelectedComponent.ToString(), *CurrentValue.ToString(),
-			*SelectedComponent.ToString());
-
 		if (bInCustomize)
 		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("[%d] %p: In Customize Children flag is up, not calling SetValue()."), Nesting,
-				this);
+			// TODO Add comment here.
 		}
 		else
 		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("[%d] %p: In Customize Children flag is not up, calling SetValue()."), Nesting,
-				this);
-
 			/*
 			 * This may trigger a Blueprint Reconstruction. If it does then the object being
 			 * customized will be deleted and the entire Details panel replaced. Once we return
 			 * from SetValue... something-something all handles invalid.
 			 */
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("[%d] %p: Before SetValue: Reference handle valid = %d. Name handle valid = "
-					 "%d."),
-				Nesting, this,
-				(ComponentReferenceHandle.IsValid() && ComponentReferenceHandle->IsValidHandle()),
-				(NameHandle.IsValid() && NameHandle->IsValidHandle()));
-
 			NameHandle->SetValue(SelectedComponent);
-
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("[%d] %p: After SetValue: Reference handle valid = %d. Name handle valid = "
-					 "%d."),
-				Nesting, this,
-				(ComponentReferenceHandle.IsValid() && ComponentReferenceHandle->IsValidHandle()),
-				(NameHandle.IsValid() && NameHandle->IsValidHandle()));
 		}
 	}
 
@@ -516,28 +457,12 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 	FAGX_ComponentReference* Reference = GetComponentReference();
 	if (Reference == nullptr)
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("[%d] %p: FAGX_ComponentReferenceCustomization::OnComboBoxChanged cannot do "
-				 "direct write of FAGX_ComponentReference::Name because got nullptr "
-				 "FAGX_ComponentReference from the PropertyHandle."),
-			Nesting, this);
-		--Nesting;
 		return;
 	}
 
 	// @todo Not sure if the direct assignment below if necessary, or if NameHandle->SetValue will
 	// do that for us.
-#if 0
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("[%d] %p: After (eventual) NameHandle->SetValue but before direct assignment on "
-			 "Reference: '%s'"),
-		Nesting, this, *Reference->Name.ToString());
-#endif
 	Reference->Name = SelectedComponent;
-
-	--Nesting;
 }
 
 void FAGX_ComponentReferenceCustomization::OnComponentNameCommitted(
