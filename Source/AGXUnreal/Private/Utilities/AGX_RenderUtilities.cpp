@@ -77,11 +77,12 @@ void FAGX_RenderUtilities::DrawContactPoints(
 		for (const FContactPointBarrier& ContactPoint : ShapeContact.GetContactPoints())
 		{
 			const FVector PointLocation = ContactPoint.GetLocation();
-			DrawDebugPoint(World, PointLocation, 7.f, FColor::Orange, false, LifeTime, 99);
-			
-			// The Normal is drawn as a 2 cm line.
-			const FVector NormalEnd = PointLocation + ContactPoint.GetNormal() * 2.0;
-			DrawDebugLine(World, PointLocation, NormalEnd, FColor::Orange, false, LifeTime, 99, 0.2f);
+			DrawDebugSphere(World, PointLocation, 1.5f, 10, FColor::Orange, false, LifeTime, 99);
+
+			// The Normal is drawn as a 3.5 cm line.
+			const FVector NormalEnd = PointLocation + ContactPoint.GetNormal() * 3.5;
+			DrawDebugLine(
+				World, PointLocation, NormalEnd, FColor::Orange, false, LifeTime, 99, 0.35f);
 		}
 	}
 }
