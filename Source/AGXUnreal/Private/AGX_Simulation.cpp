@@ -518,6 +518,21 @@ void UAGX_Simulation::SetEnableCollision(
 	FSimulationBarrier::SetEnableCollision(*Body1.GetNative(), *Body2.GetNative(), Enable);
 }
 
+TArray<FAGX_ShapeContact> UAGX_Simulation::GetShapeContacts() const
+{
+	if (!HasNative())
+		return TArray<FAGX_ShapeContact>();
+
+	TArray<FShapeContactBarrier> Barriers = NativeBarrier.GetShapeContacts();
+	TArray<FAGX_ShapeContact> ShapeContacts;
+	ShapeContacts.Reserve(Barriers.Num());
+	for (FShapeContactBarrier& Barrier : Barriers)
+	{
+		ShapeContacts.Emplace(std::move(Barrier));
+	}
+	return ShapeContacts;
+}
+
 void UAGX_Simulation::SetEnableContactWarmstarting(bool bEnable)
 {
 	bContactWarmstarting = bEnable;
