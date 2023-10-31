@@ -370,6 +370,13 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 	}
 
 	// Find which combo-box item match the current selection and select it.
+	// If we didn't have a selection before, then pick the first one. This may be the None FName
+	// added at the end above, if there are no valid Components in the owning Actor or Blueprint.
+	if (SelectedComponent == NAME_None)
+	{
+		SelectedComponent = *ComponentNames[0];
+	}
+
 	bool SelectionFound = false;
 	for (TSharedPtr<FName>& ComponentName : ComponentNames)
 	{
