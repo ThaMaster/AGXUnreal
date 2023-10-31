@@ -361,14 +361,19 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 		}
 	}
 
-	// Find which combo-box item match the current selection and select it.
+// This was an attempt to be helpful, but it makes it impossible to select None, it immediately
+// switches back to the first valid Component. Is there a way to detect and handle the I-want-None
+// case?
+#if 0
 	// If we didn't have a selection before, then pick the first one. This may be the None FName
 	// added at the end above, if there are no valid Components in the owning Actor or Blueprint.
 	if (SelectedComponent == NAME_None)
 	{
 		SelectedComponent = *ComponentNames[0];
 	}
+#endif
 
+	// Find which combo-box item matches the current selection and select it.
 	bool SelectionFound = false;
 	for (TSharedPtr<FName>& ComponentName : ComponentNames)
 	{
