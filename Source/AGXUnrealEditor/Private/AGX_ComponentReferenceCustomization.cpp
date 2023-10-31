@@ -448,25 +448,29 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 		}
 		else
 		{
-			/*
-			 * This may trigger a Blueprint Reconstruction. If it does then the object being
-			 * customized will be deleted and the entire Details panel replaced. Once we return
-			 * from SetValue... something-something all handles invalid.
-			 */
+			// This may trigger a Blueprint Reconstruction. If it does then the object being
+			// customized will be deleted and the entire Details panel replaced. Once we return
+			// from SetValue we must detect if it is safe to continue working with the objects we
+			// have and bail out if not.
 			NameHandle->SetValue(SelectedComponent);
 		}
 	}
 
-	// Even if we couldn't call SetValue because of the object creation loop, we still want to
+	if (ComponentReferenceHandle.IsValid() && ComponentReferenceHandle->IsValidHandle() &&
+		ComponentReferenceHandle->GetNumPerObjectValues() == 0)
+	{
+		// I looks like Blueprint Reconstruction happened, which means that both the object we
+		// were editing and the entire Details panel has been destroyed. We can do nothing more.
+		return;
+	}
+
+	// Even if we couldn't call SetValue because of the object creation loop we still want to
 	// update the Component Reference with the new name, if we have a Component Reference.
 	FAGX_ComponentReference* Reference = GetComponentReference();
 	if (Reference == nullptr)
 	{
 		return;
 	}
-
-	// @todo Not sure if the direct assignment below if necessary, or if NameHandle->SetValue will
-	// do that for us.
 	Reference->Name = SelectedComponent;
 }
 
