@@ -21,6 +21,7 @@
 #include "Tires/AGX_TireComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Utilities/AGX_RenderUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_Stats.h"
 #include "Wire/AGX_WireComponent.h"
@@ -896,6 +897,15 @@ void UAGX_Simulation::Step(float DeltaTime)
 	{
 		FAGX_Statistics AGXStatistics = GetStatistics();
 		ReportStepStatistics(AGXStatistics);
+	}
+
+	if (bDrawShapeContacts)
+	{
+		// The LifeTime argument below is set such that the points will be drawn even during pause.
+		// It is somewhat of a hack, but is the best solution known currently without making e.g.
+		// a specialized Primitive Component or similar talking to the GPU more directly.
+		FAGX_RenderUtilities::DrawContactPoints(
+			NativeBarrier.GetShapeContacts(), DeltaTime * 1.5f, GetWorld());
 	}
 }
 

@@ -240,6 +240,15 @@ public: // Properties.
 	int16 RemoteDebuggingPort;
 
 	/**
+	 * Draws all Shape Contacts to the screen each Simulation time step.
+	 * This can be helpful for quicly inspecting contact behaviours between objects in a Simulation.
+	 * Note that this operation is computationally intensive, meaning it should be turned off
+	 * whenever performance is important.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool bDrawShapeContacts {false};
+
+	/**
 	 * Maximum distance between the active Viewport camera and any AGX Constraint within which
 	 * the AGX Constraint graphical representation is scaled such that it's size is constant as
 	 * drawn on the screen [cm].
