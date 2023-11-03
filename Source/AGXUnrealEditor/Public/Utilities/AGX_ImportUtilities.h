@@ -163,6 +163,7 @@ public:
 	static FString GetImportMergeSplitThresholdsDirectoryName();
 	static FString GetImportStaticMeshDirectoryName();
 	static FString GetImportRenderMeshDirectoryName();
+	static FString GetImportShovelPropertiesDirectoryName();
 
 	/**
 	 * Template version of the asset directory name getter.

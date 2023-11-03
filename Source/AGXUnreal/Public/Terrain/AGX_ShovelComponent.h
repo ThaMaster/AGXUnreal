@@ -99,6 +99,8 @@ public:
 	 */
 	FAGX_Frame* GetFrame(EAGX_ShovelFrame Frame);
 
+	void CopyFrom(const FShovelBarrier& Barrier, bool ForceOverwriteInstances = false);
+
 	bool SwapEdgeDirections();
 
 #if WITH_EDITOR

@@ -7,6 +7,7 @@
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Terrain/AGX_ShovelProperties.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
@@ -49,8 +50,9 @@ void UAGX_ShovelComponent::SetShovelProperties(UAGX_ShovelProperties* Properties
 				{
 					UE_LOG(
 						LogAGX, Warning,
-						TEXT("Shovel %s in %s: Could not create Shovel Properties instance. Default "
-							 "shovel settings will be used."),
+						TEXT(
+							"Shovel %s in %s: Could not create Shovel Properties instance. Default "
+							"shovel settings will be used."),
 						*GetName(), *GetLabelSafe(GetOwner()));
 				}
 			}
@@ -155,6 +157,61 @@ FAGX_Frame* UAGX_ShovelComponent::GetFrame(EAGX_ShovelFrame Frame)
 		TEXT("Unknown Shovel Frame source, %d, passed to UAGX_ShovelComponent::GetFrame."),
 		static_cast<int>(Frame));
 	return nullptr;
+}
+
+void UAGX_ShovelComponent::CopyFrom(const FShovelBarrier& Barrier, bool ForceOverwriteInstances)
+{
+	const FTwoVectors Top = Barrier.GetTopEdge();
+	TopEdge.Start.LocalLocation = Top.v1;
+	TopEdge.Start.LocalRotation = FRotator(ForceInitToZero);
+	TopEdge.End.LocalLocation = Top.v2;
+	TopEdge.End.LocalRotation = FRotator(ForceInitToZero);
+	const FTwoVectors Cutting = Barrier.GetCuttingEdge();
+	CuttingEdge.Start.LocalLocation = Cutting.v1;
+	CuttingEdge.Start.LocalRotation = FRotator(ForceInitToZero);
+	CuttingEdge.End.LocalLocation = Cutting.v2;
+	CuttingEdge.End.LocalRotation = FRotator(ForceInitToZero);
+	CuttingDirection.LocalRotation =
+		FRotationMatrix::MakeFromX(Barrier.GetCuttingDirection()).Rotator();
+
+	if (ShovelProperties != nullptr)
+	{
+		ShovelProperties->AlwaysRemoveShovelContacts = Barrier.GetAlwaysRemoveShovelContacts();
+		ShovelProperties->EnableInnerShapeCreateDynamicMass =
+			Barrier.GetEnableInnerShapeCreateDynamicMass();
+		ShovelProperties->ToothLength = Barrier.GetToothLength();
+		ShovelProperties->MaximumPenetrationForce = Barrier.GetMaximumPenetrationForce();
+		ShovelProperties->MaximumToothRadius = Barrier.GetMaximumToothRadius();
+		ShovelProperties->NumberOfTeeth = Barrier.GetNumberOfTeeth();
+		ShovelProperties->MinimumToothRadius = Barrier.GetMinimumToothRadius();
+		ShovelProperties->PenetrationDepthThreshold = Barrier.GetPenetrationDepthThreshold();
+		ShovelProperties->PenetrationForceScaling = Barrier.GetPenetrationForceScaling();
+		ShovelProperties->NoMergeExtensionDistance = Barrier.GetNoMergeExtensionDistance();
+		ShovelProperties->SecondarySeparationDeadloadLimit =
+			Barrier.GetSecondarySeparationDeadloadLimit();
+		ShovelProperties->VerticalBladeSoilMergeDistance =
+			Barrier.GetVerticalBladeSoilMergeDistance();
+		ShovelProperties->MinimumSubmergedContactLengthFraction =
+			Barrier.GetMinimumSubmergedContactLengthFraction();
+
+		auto CopyExcavationSettings =
+			[&Barrier](EAGX_ExcavationMode Mode, FAGX_ShovelExcavationSettings& Settings)
+		{
+			Settings.bEnabled = Barrier.GetExcavationSettingsEnabled(Mode);
+			Settings.bEnableCreateDynamicMass =
+				Barrier.GetExcavationSettingsEnableCreateDynamicMass(Mode);
+			Settings.bEnableForceFeedback = Barrier.GetExcavationSettingsEnableForceFeedback(Mode);
+		};
+
+		CopyExcavationSettings(
+			EAGX_ExcavationMode::Primary, ShovelProperties->PrimaryExcavationSettings);
+		CopyExcavationSettings(
+			EAGX_ExcavationMode::DeformBack, ShovelProperties->DeformBackExcavationSettings);
+		CopyExcavationSettings(
+			EAGX_ExcavationMode::DeformRight, ShovelProperties->DeformRightExcavationSettings);
+		CopyExcavationSettings(
+			EAGX_ExcavationMode::DeformLeft, ShovelProperties->DeformLeftExcavationSettings);
+	}
 }
 
 bool UAGX_ShovelComponent::SwapEdgeDirections()
@@ -439,7 +496,8 @@ bool UAGX_ShovelComponent::WritePropertiesToNative()
 	NativeBarrier.SetEnable(ShovelProperties->Enable);
 #endif
 	NativeBarrier.SetAlwaysRemoveShovelContacts(ShovelProperties->AlwaysRemoveShovelContacts);
-	NativeBarrier.SetEnableInnerShapeCreateDynamicMass(ShovelProperties->EnableInnerShapeCreateDynamicMass);
+	NativeBarrier.SetEnableInnerShapeCreateDynamicMass(
+		ShovelProperties->EnableInnerShapeCreateDynamicMass);
 
 	NativeBarrier.SetToothLength(ShovelProperties->ToothLength);
 	NativeBarrier.SetMaximumPenetrationForce(ShovelProperties->MaximumPenetrationForce);

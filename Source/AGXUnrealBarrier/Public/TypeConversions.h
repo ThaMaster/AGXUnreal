@@ -601,6 +601,25 @@ inline agx::Line ConvertDisplacement(const FTwoVectors& Vs)
 }
 
 //
+// TwoVectors/Line. AGX Dynamics to Unreal Engine.
+//
+
+inline FTwoVectors Convert(const agx::Line& Vs)
+{
+	return {Convert(Vs.p1), Convert(Vs.p2)};
+}
+
+inline FTwoVectors ConvertDistance(const agx::Line& Vs)
+{
+	return {ConvertDistance(Vs.p1), ConvertDistance(Vs.p2)};
+}
+
+inline FTwoVectors ConvertDisplacement(const agx::Line& Vs)
+{
+	return {ConvertDisplacement(Vs.p1), ConvertDisplacement(Vs.p2)};
+}
+
+//
 // Quaternions.
 //
 

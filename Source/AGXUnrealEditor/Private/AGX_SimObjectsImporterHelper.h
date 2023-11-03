@@ -202,7 +202,11 @@ public:
 
 	UAGX_WireComponent* InstantiateWire(const FWireBarrier& Barrier, AActor& Owner);
 
-	UAGX_ShovelComponent* InstantiateShovel(const FShovelBarrier& Barrier, AActor& Owner);
+	UAGX_ShovelComponent* InstantiateShovel(const FShovelBarrier& ShovelBarrier, AActor& Owner);
+	void UpdateShovel(
+		const FShovelBarrier& ShovelBarrier, UAGX_ShovelComponent& ShovelComponent,
+		const FString& BodyName, const UAGX_RigidBodyComponent* BodyComponent,
+		bool ForceOverwriteInstances);
 
 	UAGX_TrackComponent* InstantiateTrack(const FTrackBarrier& Barrier, AActor& Owner);
 

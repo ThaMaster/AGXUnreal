@@ -43,6 +43,7 @@
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Shapes/RenderDataBarrier.h"
 #include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
@@ -1475,7 +1476,7 @@ void FAGX_SimObjectsImporterHelper::UpdateTwoBodyTire(
 		BodyRef.BodyName = Body->GetFName();
 	};
 
-	// Update any archetype isntance.
+	// Update any archetype instance.
 	for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 	{
 		if (ForceOverwriteInstances ||
@@ -1759,30 +1760,77 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 }
 
 UAGX_ShovelComponent* FAGX_SimObjectsImporterHelper::InstantiateShovel(
-	const FShovelBarrier& Barrier, AActor& Owner)
+	const FShovelBarrier& ShovelBarrier, AActor& Owner)
 {
-	UAGX_ShovelComponent* Component = NewObject<UAGX_ShovelComponent>(&Owner);
-	if (Component == nullptr)
+	const UAGX_RigidBodyComponent* BodyComponent = GetBody(ShovelBarrier.GetRigidBody());
+
+	// Shovels don't have names in AGX Dynamics so borrow the body's name. There can only be one
+	// shovel per body, at least as of AGX Dynamics 2.36, so this is still unique.
+	const FString BaseName =
+		BodyComponent != nullptr ? BodyComponent->GetName() : FString("Bodiless");
+
+	UAGX_ShovelComponent* ShovelComponent = NewObject<UAGX_ShovelComponent>(&Owner);
+	if (ShovelComponent == nullptr)
 	{
 		WriteImportErrorMessage(
-			TEXT("AGX Dynamics Shovel"), TEXT("Shovel")/*Barrier.GetName()*/, SourceFilePath,
+			TEXT("AGX Dynamics Shovel"), BaseName, SourceFilePath,
 			TEXT("Could not create new AGX_ShovelComponent"));
 		return nullptr;
 	}
 
-	// TODO Implement UAGX_ShovelComponent::CopyFrom(FShovelBarrier).
-#if 0
-#pragma warning("Component->CopyFrom(Barrier) not yet implemented.")
-	Component->CopyFrom(Barrier);
-#endif
+	// We don't try to share equal Shovel Properties assets, every Shovel gets its own instance.
+	// This matches AGX Dynamics since its Shovels also can't share properties since the properties
+	// are members of the Shove class.
+	{
+		const FString AssetName = FString::Printf(TEXT("AGX_SP_%s"), *BaseName);
+		const FString AssetFolder = FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName();
+		UAGX_ShovelProperties* ShovelProperties =
+			FAGX_ImportUtilities::CreateAsset<UAGX_ShovelProperties>(
+				RootDirectoryPath, AssetName, AssetFolder);
+		if (ShovelProperties == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("Unable to create Shovel Properties asset %s."), *AssetName);
+			// No return, must complete as much as we can of the setup without the asset.
+		}
+		ShovelComponent->ShovelProperties = ShovelProperties;
+	}
 
-	// TODO Create and populate Shape Properties.
+	UpdateShovel(ShovelBarrier, *ShovelComponent, BaseName, BodyComponent, false);
 
-	Component->SetFlags(RF_Transactional);
-	Owner.AddInstanceComponent(Component);
-	Component->RegisterComponent();
+	ShovelComponent->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(ShovelComponent);
+	ShovelComponent->RegisterComponent();
 	// Component->PostEditChange(); // Some have PostEditChange here, some don't. What's the rule?
-	return Component;
+	return ShovelComponent;
+}
+
+void FAGX_SimObjectsImporterHelper::UpdateShovel(
+	const FShovelBarrier& ShovelBarrier, UAGX_ShovelComponent& ShovelComponent,
+	const FString& BaseName, const UAGX_RigidBodyComponent* BodyComponent,
+	bool ForceOverwriteInstances)
+{
+	// The edges and the direction in AGX Dynamics are relative to the body, so try to make all
+	// frames relative to that. If we don't have a body then the frames will be relative to the
+	// shovel instead, which is not correct but the best we can do.
+	const FName BodyName = BodyComponent != nullptr ? BodyComponent->GetFName() : NAME_None;
+	ShovelComponent.RigidBody.Name = BodyName;
+	ShovelComponent.TopEdge.Start.Parent.Name = BodyName;
+	ShovelComponent.TopEdge.End.Parent.Name = BodyName;
+	ShovelComponent.CuttingEdge.Start.Parent.Name = BodyName;
+	ShovelComponent.CuttingEdge.End.Parent.Name = BodyName;
+	ShovelComponent.CuttingDirection.Parent.Name = BodyName;
+
+	// Copy the values that have a 1:1 mapping from the Barrier to the Component.
+	ShovelComponent.CopyFrom(ShovelBarrier, ForceOverwriteInstances);
+
+	const FString Name = FString::Printf(TEXT("Shovel_%s"), *BaseName);
+	FAGX_ImportUtilities::Rename(ShovelComponent, Name);
+
+	if (ShovelComponent.ShovelProperties != nullptr)
+	{
+		FAGX_ObjectUtilities::SaveAsset(*ShovelComponent.ShovelProperties);
+	}
 }
 
 UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(

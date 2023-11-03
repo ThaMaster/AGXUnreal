@@ -11,6 +11,7 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -492,6 +493,11 @@ FString FAGX_ImportUtilities::GetImportRenderMeshDirectoryName()
 	return FString("RenderMesh");
 }
 
+FString FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName()
+{
+	return FString("ShovelProperties");
+}
+
 template <>
 AGXUNREALEDITOR_API_TEMPLATE FString
 FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeMaterial>()
@@ -539,6 +545,13 @@ AGXUNREALEDITOR_API_TEMPLATE FString
 FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_WireMergeSplitThresholds>()
 {
 	return GetImportMergeSplitThresholdsDirectoryName();
+}
+
+template <>
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShovelProperties>()
+{
+	return GetImportShovelPropertiesDirectoryName();
 }
 
 FString FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName()

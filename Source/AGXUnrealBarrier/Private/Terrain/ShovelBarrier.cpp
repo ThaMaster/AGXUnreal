@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
+#include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
 #include "agxTerrain/Shovel.h"
 #include "RigidBodyBarrier.h"
@@ -42,6 +43,14 @@ void FShovelBarrier::SetTopEdge(const FTwoVectors& TopEdgeUnreal)
 	NativeRef->Native->setTopEdge(TopEdgeAGX);
 }
 
+FTwoVectors FShovelBarrier::GetTopEdge() const
+{
+	check(HasNative());
+	const agx::Line TopEdgeAGX = NativeRef->Native->getTopEdge();
+	const FTwoVectors TopEdgeUnreal = ConvertDisplacement(TopEdgeAGX);
+	return TopEdgeUnreal;
+}
+
 void FShovelBarrier::SetCuttingEdge(const FTwoVectors& CuttingEdge)
 {
 	check(HasNative());
@@ -49,11 +58,28 @@ void FShovelBarrier::SetCuttingEdge(const FTwoVectors& CuttingEdge)
 	NativeRef->Native->setCuttingEdge(CuttingEdgeAGX);
 }
 
+FTwoVectors FShovelBarrier::GetCuttingEdge() const
+{
+	check(HasNative());
+	const agx::Line CuttingEdgeAGX = NativeRef->Native->getCuttingEdge();
+	const FTwoVectors CuttingEdgeUnreal = ConvertDisplacement(CuttingEdgeAGX);
+	return CuttingEdgeUnreal;
+
+}
+
 void FShovelBarrier::SetCuttingDirection(const FVector& CuttingDirection)
 {
 	check(HasNative());
 	const agx::Vec3 DirectionAGX = ConvertVector(CuttingDirection);
 	NativeRef->Native->setCuttingDirection(DirectionAGX);
+}
+
+FVector FShovelBarrier::GetCuttingDirection() const
+{
+	check(HasNative());
+	const agx::Vec3 DirectionAGX = NativeRef->Native->getCuttingDirection();
+	const FVector DirectionUnreal = ConvertVector(DirectionAGX);
+	return DirectionUnreal;
 }
 
 void FShovelBarrier::SetNumberOfTeeth(int32 NumberOfTeeth)
@@ -266,6 +292,13 @@ bool FShovelBarrier::GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMod
 {
 	check(HasNative());
 	return NativeRef->Native->getExcavationSettings(Convert(Mode)).getEnableForceFeedback();
+}
+
+FRigidBodyBarrier FShovelBarrier::GetRigidBody() const
+{
+	check(HasNative());
+	agx::RigidBody* Body = NativeRef->Native->getRigidBody();
+	return AGXBarrierFactories::CreateRigidBodyBarrier(Body);
 }
 
 void FShovelBarrier::SetBottomContactThreshold(double BottomContactThreshold)

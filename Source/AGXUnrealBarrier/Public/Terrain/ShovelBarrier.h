@@ -39,8 +39,11 @@ public:
 	~FShovelBarrier();
 
 	void SetTopEdge(const FTwoVectors& TopEdge);
+	FTwoVectors GetTopEdge() const;
 	void SetCuttingEdge(const FTwoVectors& CuttingEdge);
+	FTwoVectors GetCuttingEdge() const;
 	void SetCuttingDirection(const FVector& CuttingDirection);
+	FVector GetCuttingDirection() const;
 
 	void SetToothLength(double ToothLength);
 	double GetToothLength() const;
@@ -110,6 +113,7 @@ public:
 	void SetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode, bool Enable);
 	bool GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode) const;
 
+	FRigidBodyBarrier GetRigidBody() const;
 
 	bool HasNative() const;
 	void AllocateNative(
