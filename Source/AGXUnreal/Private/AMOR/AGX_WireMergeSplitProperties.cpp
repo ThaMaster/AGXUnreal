@@ -19,6 +19,7 @@ void FAGX_WireMergeSplitProperties::OnBeginPlay(UAGX_WireComponent& Owner)
 	// Not having a native is a perfectly valid and regular thing for this class.
 	if (bEnableMerge || bEnableSplit)
 	{
+		FAGX_NotificationUtilities::LogWarningIfAmorDisabled("Wire");
 		CreateNative(Owner);
 		CreateNativeThresholds(Owner.GetWorld());
 		UpdateNativeProperties();
