@@ -1789,6 +1789,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 				BodyComponent = Cast<UAGX_RigidBodyComponent>(BodyNode->ComponentTemplate);
 				BaseName =
 					BodyComponent != nullptr ? BodyComponent->GetName() : FString("Bodiless");
+				BaseName.RemoveFromEnd(UActorComponent::ComponentTemplateNameSuffix);
 			}
 			Helper.UpdateShovel(
 				ShovelBarrier, *ShovelComponent, BaseName, BodyComponent,
