@@ -1762,7 +1762,7 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 UAGX_ShovelComponent* FAGX_SimObjectsImporterHelper::InstantiateShovel(
 	const FShovelBarrier& ShovelBarrier, AActor& Owner)
 {
-	const UAGX_RigidBodyComponent* BodyComponent = GetBody(ShovelBarrier.GetRigidBody());
+	UAGX_RigidBodyComponent* BodyComponent = GetBody(ShovelBarrier.GetRigidBody());
 
 	// Shovels don't have names in AGX Dynamics so borrow the body's name. There can only be one
 	// shovel per body, at least as of AGX Dynamics 2.36, so this is still unique.
@@ -1802,6 +1802,13 @@ UAGX_ShovelComponent* FAGX_SimObjectsImporterHelper::InstantiateShovel(
 	Owner.AddInstanceComponent(ShovelComponent);
 	ShovelComponent->RegisterComponent();
 	// Component->PostEditChange(); // Some have PostEditChange here, some don't. What's the rule?
+
+	if (BodyComponent != nullptr)
+	{
+		ShovelComponent->AttachToComponent(
+			BodyComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	}
+
 	return ShovelComponent;
 }
 
