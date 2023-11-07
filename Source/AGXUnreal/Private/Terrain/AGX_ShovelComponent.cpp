@@ -162,20 +162,30 @@ FAGX_Frame* UAGX_ShovelComponent::GetFrame(EAGX_ShovelFrame Frame)
 void UAGX_ShovelComponent::CopyFrom(const FShovelBarrier& Barrier, bool ForceOverwriteInstances)
 {
 	const FTwoVectors Top = Barrier.GetTopEdge();
-	TopEdge.Start.LocalLocation = Top.v1;
-	TopEdge.Start.LocalRotation = FRotator(ForceInitToZero);
-	TopEdge.End.LocalLocation = Top.v2;
-	TopEdge.End.LocalRotation = FRotator(ForceInitToZero);
+	AGX_COPY_PROPERTY_FROM(TopEdge.Start.LocalLocation, Top.v1, *this, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(
+		TopEdge.Start.LocalRotation, FRotator(ForceInitToZero), *this, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(TopEdge.End.LocalLocation, Top.v2, *this, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(
+		TopEdge.End.LocalRotation, FRotator(ForceInitToZero), *this, ForceOverwriteInstances);
 	const FTwoVectors Cutting = Barrier.GetCuttingEdge();
-	CuttingEdge.Start.LocalLocation = Cutting.v1;
-	CuttingEdge.Start.LocalRotation = FRotator(ForceInitToZero);
-	CuttingEdge.End.LocalLocation = Cutting.v2;
-	CuttingEdge.End.LocalRotation = FRotator(ForceInitToZero);
-	CuttingDirection.LocalLocation = 0.5 * (Cutting.v1 + Cutting.v2);
-	CuttingDirection.LocalRotation =
+	AGX_COPY_PROPERTY_FROM(
+		CuttingEdge.Start.LocalLocation, Cutting.v1, *this, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(
+		CuttingEdge.Start.LocalRotation, FRotator(ForceInitToZero), *this, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(
+		CuttingEdge.End.LocalLocation, Cutting.v2, *this, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(
+		CuttingEdge.End.LocalRotation, FRotator(ForceInitToZero), *this, ForceOverwriteInstances);
+	AGX_COPY_PROPERTY_FROM(
+		CuttingDirection.LocalLocation, 0.5 * (Cutting.v1 + Cutting.v2), *this,
+		ForceOverwriteInstances);
+	const FRotator CuttingDirectionRotation =
 		FRotationMatrix::MakeFromX(Barrier.GetCuttingDirection()).Rotator();
+	AGX_COPY_PROPERTY_FROM(
+		CuttingDirection.LocalRotation, CuttingDirectionRotation, *this, ForceOverwriteInstances);
 
-	ImportGuid = Barrier.GetGuid();
+	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetGuid(), *this, ForceOverwriteInstances);
 
 	if (ShovelProperties != nullptr)
 	{

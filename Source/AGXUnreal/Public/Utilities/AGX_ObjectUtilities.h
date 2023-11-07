@@ -254,19 +254,36 @@ T* FAGX_ObjectUtilities::GetMatchedInstance(T* TemplateComponent, UObject* Outer
 	return nullptr;
 }
 
-// clang-format off
-#define AGX_COPY_PROPERTY_FROM(UpropertyName, GetterExpression, Component, ForceOverwriteInstances) \
-{ \
-	if (FAGX_ObjectUtilities::IsTemplateComponent(Component)) \
-	{ \
-		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component)) \
-		{ \
-			if (ForceOverwriteInstances || Instance->UpropertyName == (Component).UpropertyName) \
-			{ \
-				Instance->UpropertyName = GetterExpression; \
-			} \
-		} \
-	} \
-	(Component).UpropertyName = GetterExpression; \
-}
-// clang-format on
+#define AGX_COPY_PROPERTY_FROM(                                                          \
+	UpropertyName, GetterExpression, Component, ForceOverwriteInstances)                 \
+	{                                                                                    \
+		if (FAGX_ObjectUtilities::IsTemplateComponent(Component))                        \
+		{                                                                                \
+			for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component)) \
+			{                                                                            \
+				if (ForceOverwriteInstances ||                                           \
+					Instance->UpropertyName == (Component).UpropertyName)                \
+				{                                                                        \
+					Instance->UpropertyName = GetterExpression;                          \
+				}                                                                        \
+			}                                                                            \
+		}                                                                                \
+		(Component).UpropertyName = GetterExpression;                                    \
+	}
+
+#define AGX_COPY_ASSET_PROPERTY_FROM(                                                         \
+	AssetName, PropertyName, GetterExpression, Component, ForceOverwriteInstances)            \
+	{                                                                                         \
+		if (FAGX_ObjectUtilities::IsTemplateComponent(Component))                             \
+		{                                                                                     \
+			for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))      \
+			{                                                                                 \
+				if (ForceOverwriteInstances ||                                                \
+					Instance->AssetName->PropertyName == (Component).AssetName->PropertyName) \
+				{                                                                             \
+					Instance->AssetName->PropertyName = GetterExpression;                     \
+				}                                                                             \
+			}                                                                                 \
+		}                                                                                     \
+		(Component).AssetName->PropertyName = GetterExpression;                               \
+	}
