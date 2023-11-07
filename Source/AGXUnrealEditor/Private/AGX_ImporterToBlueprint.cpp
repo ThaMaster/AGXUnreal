@@ -456,7 +456,7 @@ namespace
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
 		FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FScopedSlowTask ImportTask(105.f, LOCTEXT("ImportModel", "Importing model"), true);
+		FScopedSlowTask ImportTask(110.f, LOCTEXT("ImportModel", "Importing model"), true);
 		ImportTask.MakeDialog();
 		bool Success = true;
 
