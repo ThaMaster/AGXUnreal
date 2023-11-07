@@ -51,6 +51,7 @@
 #include "Shapes/RenderDataBarrier.h"
 #include "SimulationObjectCollection.h"
 #include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
@@ -66,7 +67,6 @@
 #include "ActorFactories/ActorFactoryEmptyActor.h"
 #include "AssetSelection.h"
 #include "AssetToolsModule.h"
-#include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Editor.h"
 #include "FileHelpers.h"
@@ -1791,6 +1791,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					BodyComponent != nullptr ? BodyComponent->GetName() : FString("Bodiless");
 				BaseName.RemoveFromEnd(UActorComponent::ComponentTemplateNameSuffix);
 			}
+
 			Helper.UpdateShovel(
 				ShovelBarrier, *ShovelComponent, BaseName, BodyComponent,
 				Settings.bForceOverwriteProperties);
@@ -2068,7 +2069,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
-	void DeleteRemovedShovels(UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+	void DeleteRemovedShovels(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects)
 	{
 		const TArray<FGuid> BarrierGuids = GetGuidsFromBarriers(SimulationObjects.GetShovels());
@@ -2258,6 +2260,65 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			if (!InSimulation.Contains(Guid))
 			{
 				// Not part of the current import data, delete the asset.
+				AssetsToDelete.Add(Asset);
+			}
+		}
+	}
+
+	void CollectRemovedShovelProperties(
+		SCSNodeCollection& SCSNodes, const FSimulationObjectCollection& SimulationObjects,
+		FAGX_SimObjectsImporterHelper& Helper, TArray<UObject*>& AssetsToDelete)
+	{
+		// Find the Shovel Properties assets that still exists in the simulation, i.e., that should
+		// not be removed. We find them by first finding Shovel SCS nodes that still have a
+		// corresponding Shovel Barrier.
+		TSet<UAGX_ShovelProperties*> AssetsToKeep;
+		TArray<FGuid> Guids = GetGuidsFromBarriers(SimulationObjects.GetShovels());
+		for (const FGuid& Guid : Guids)
+		{
+			USCS_Node* Node = SCSNodes.Shovels.FindRef(Guid);
+			if (Node == nullptr)
+			{
+				// The in-simulation shovel is brand new, cannot have a Shovel Properties asset yet.
+				continue;
+			}
+
+			UAGX_ShovelComponent* Component = Cast<UAGX_ShovelComponent>(Node->ComponentTemplate);
+			if (Component == nullptr)
+			{
+				// Should never get here.
+				continue;
+			}
+
+			if (Component->ShovelProperties->ImportGuid == Guid)
+			{
+				AssetsToKeep.Add(Component->ShovelProperties);
+			}
+			else
+			{
+				// Imported Shovel Properties have the same Import GUID as the imported Shovel that
+				// the Shovel Properties data was read from. The fact that we end up here means that
+				// a Shovel Component in the base Blueprint has been edited. Changes to the base
+				// Blueprint should be overwritten on synchronize. By clearing the Shovel Properties
+				// pointer here we ensure that the asset is recreated later, in UpdateShovel. If the
+				// asset belongs to another Shovel that still exists then that shovel will mark the
+				// asset for keeping, if that shovel still references it. If it does not then that
+				// shovel will also recreates its Shovel Properties asset in the same way.
+				Component->ShovelProperties = nullptr;
+			}
+		}
+
+		// Find all Shovel Properties assets.
+		const FString ShovelPropertiesDirPath = GetImportDirPath(
+			Helper, FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName());
+		TArray<UAGX_ShovelProperties*> Assets =
+			FAGX_EditorUtilities::FindAssets<UAGX_ShovelProperties>(ShovelPropertiesDirPath);
+
+		// Mark for deletion any asset that exists but shouldn't be kept.
+		for (UAGX_ShovelProperties* Asset : Assets)
+		{
+			if (!AssetsToKeep.Contains(Asset))
+			{
 				AssetsToDelete.Add(Asset);
 			}
 		}
@@ -2528,6 +2589,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		TSet<UMaterialInterface*> RenderMaterialsToDelete =
 			CollectRemovedRenderMaterialAssets(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
 		CollectRemovedShapeMaterialAssets(SimulationObjects, Helper, AssetsToDelete);
+		CollectRemovedShovelProperties(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
 
 		// Currently do not support model synchronization of Terrain, but when we do implement
 		// Terrain Material removed asset deletion here.
