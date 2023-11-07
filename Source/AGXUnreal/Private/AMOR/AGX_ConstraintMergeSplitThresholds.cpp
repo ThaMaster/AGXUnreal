@@ -307,12 +307,10 @@ UAGX_ConstraintMergeSplitThresholds* UAGX_ConstraintMergeSplitThresholds::Create
 	AGX_CHECK(PlayingWorld->IsGameWorld());
 	AGX_CHECK(!Source.IsInstance());
 
-	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
-	AGX_CHECK(Outer);
-
 	const FString InstanceName = Source.GetName() + "_Instance";
 	auto NewInstance = NewObject<UAGX_ConstraintMergeSplitThresholds>(
-		Outer, UAGX_ConstraintMergeSplitThresholds::StaticClass(), *InstanceName, RF_Transient);
+		GetTransientPackage(), UAGX_ConstraintMergeSplitThresholds::StaticClass(), *InstanceName,
+		RF_Transient);
 	NewInstance->Asset = &Source;
 	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(PlayingWorld, bIsRotational);
@@ -354,8 +352,7 @@ void UAGX_ConstraintMergeSplitThresholds::CopyFrom(
 	MaxRelativeSpeed = Source.MaxRelativeSpeed;
 }
 
-void UAGX_ConstraintMergeSplitThresholds::CopyTo(
-	FConstraintMergeSplitThresholdsBarrier& Barrier)
+void UAGX_ConstraintMergeSplitThresholds::CopyTo(FConstraintMergeSplitThresholdsBarrier& Barrier)
 {
 	Barrier.SetMaxDesiredForceRangeDiff(MaxDesiredForceRangeDiff);
 	Barrier.SetMaxDesiredLockAngleDiff(MaxDesiredLockAngleDiff);

@@ -487,13 +487,10 @@ UAGX_TrackProperties* UAGX_TrackProperties::CreateInstanceFromAsset(
 	check(PlayingWorld != nullptr);
 	check(PlayingWorld->IsGameWorld());
 
-	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
-	check(Outer);
-
 	const FString InstanceName = Source->GetName() + "_Instance";
 
 	UAGX_TrackProperties* NewInstance = NewObject<UAGX_TrackProperties>(
-		Outer, UAGX_TrackProperties::StaticClass(), *InstanceName, RF_Transient);
+		GetTransientPackage(), UAGX_TrackProperties::StaticClass(), *InstanceName, RF_Transient);
 	NewInstance->Asset = Source;
 	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative();

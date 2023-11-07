@@ -787,13 +787,10 @@ UAGX_ContactMaterial* UAGX_ContactMaterial::CreateInstanceFromAsset(
 	check(World != nullptr);
 	check(World->IsGameWorld());
 
-	UObject* Outer = UAGX_Simulation::GetFrom(World);
-	check(Outer);
-
 	const FString InstanceName = Source->GetName() + "_Instance";
 
 	UAGX_ContactMaterial* NewInstance = NewObject<UAGX_ContactMaterial>(
-		Outer, UAGX_ContactMaterial::StaticClass(), *InstanceName, RF_Transient);
+		GetTransientPackage(), UAGX_ContactMaterial::StaticClass(), *InstanceName, RF_Transient);
 	NewInstance->Asset = Source;
 	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(Registrar);

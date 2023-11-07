@@ -224,12 +224,10 @@ UAGX_WireMergeSplitThresholds* UAGX_WireMergeSplitThresholds::CreateFromAsset(
 	AGX_CHECK(PlayingWorld->IsGameWorld());
 	AGX_CHECK(!Source.IsInstance());
 
-	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
-	AGX_CHECK(Outer);
-
 	const FString InstanceName = Source.GetName() + "_Instance";
 	auto NewInstance = NewObject<UAGX_WireMergeSplitThresholds>(
-		Outer, UAGX_WireMergeSplitThresholds::StaticClass(), *InstanceName, RF_Transient);
+		GetTransientPackage(), UAGX_WireMergeSplitThresholds::StaticClass(), *InstanceName,
+		RF_Transient);
 	NewInstance->Asset = &Source;
 	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(PlayingWorld);

@@ -359,12 +359,10 @@ UAGX_ShapeContactMergeSplitThresholds* UAGX_ShapeContactMergeSplitThresholds::Cr
 	AGX_CHECK(PlayingWorld->IsGameWorld());
 	AGX_CHECK(!Source.IsInstance());
 
-	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
-	AGX_CHECK(Outer);
-
 	const FString InstanceName = Source.GetName() + "_Instance";
 	auto NewInstance = NewObject<UAGX_ShapeContactMergeSplitThresholds>(
-		Outer, UAGX_ShapeContactMergeSplitThresholds::StaticClass(), *InstanceName, RF_Transient);
+		GetTransientPackage(), UAGX_ShapeContactMergeSplitThresholds::StaticClass(), *InstanceName,
+		RF_Transient);
 	NewInstance->Asset = &Source;
 	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(PlayingWorld);
