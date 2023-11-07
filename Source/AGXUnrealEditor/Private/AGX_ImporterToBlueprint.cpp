@@ -2068,6 +2068,20 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
+	void DeleteRemovedShovels(UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects)
+	{
+		const TArray<FGuid> BarrierGuids = GetGuidsFromBarriers(SimulationObjects.GetShovels());
+		for (auto It = SCSNodes.Shovels.CreateIterator(); It; ++It)
+		{
+			if (!BarrierGuids.Contains(It->Key))
+			{
+				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
+				It.RemoveCurrent();
+			}
+		}
+	}
+
 	/*
 	 * Here follows a set of functions that deal with removing assets from the model import
 	 * directory. Assets are deleted either because the corresponding AGX Dynamics object no longer
@@ -2561,6 +2575,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		DeleteRemovedConstraints(BaseBP, SCSNodes, SimulationObjects);
 		DeleteRemovedTireModels(BaseBP, SCSNodes, SimulationObjects);
 		DeleteRemovedObserverFrames(BaseBP, SCSNodes, SimulationObjects);
+		DeleteRemovedShovels(BaseBP, SCSNodes, SimulationObjects);
 
 		// The fact that we compile the Blueprint here is important, and the reason complicated.
 		// Apparently, when removing SCS Nodes, their Component Template (and archetype instances)
@@ -2609,6 +2624,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		SetUnnamedNameForAll(SCSNodes.LockConstraints);
 		SetUnnamedNameForAll(SCSNodes.TwoBodyTires);
 		SetUnnamedNameForAll(SCSNodes.ObserverFrames);
+		SetUnnamedNameForAll(SCSNodes.Shovels);
 
 		SetUnnamedName(SCSNodes.CollisionGroupDisablerComponent);
 		SetUnnamedName(SCSNodes.ContactMaterialRegistrarComponent);
