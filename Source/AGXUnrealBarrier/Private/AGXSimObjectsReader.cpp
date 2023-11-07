@@ -160,7 +160,8 @@ namespace
 
 	void ReadTireModels(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects, TArray<agx::Constraint*>& NonFreeConstraint)
+		FSimulationObjectCollection& OutSimObjects,
+		TArray<const agx::Constraint*>& NonFreeConstraint)
 	{
 		const agxSDK::AssemblyHash& Assemblies = Simulation.getAssemblies();
 
@@ -192,27 +193,28 @@ namespace
 
 	void ReadRigidBodies(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects)
+		FSimulationObjectCollection& OutSimObjects,
+		const TSet<const agx::RigidBody*>& NonFreeBodies)
 	{
 		agx::RigidBodyRefVector& Bodies {Simulation.getRigidBodies()};
 		for (agx::RigidBodyRef& Body : Bodies)
 		{
 			if (Body == nullptr)
-			{
 				continue;
-			}
 			if (!IsRegularBody(*Body))
+				continue;
+			if (NonFreeBodies.Contains(Body))
 			{
 				continue;
 			}
-
 			OutSimObjects.GetRigidBodies().Add(AGXBarrierFactories::CreateRigidBodyBarrier(Body));
 		}
 	}
 
 	void ReadTracks(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects, TArray<agx::Constraint*>& NonFreeConstraint)
+		FSimulationObjectCollection& OutSimObjects,
+		TArray<const agx::Constraint*>& NonFreeConstraint)
 	{
 		agxVehicle::TrackPtrVector Tracks = agxVehicle::Track::findAll(&Simulation);
 
@@ -258,7 +260,7 @@ namespace
 	void ReadConstraints(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FSimulationObjectCollection& OutSimObjects,
-		const TArray<agx::Constraint*>& NonFreeConstraint)
+		const TArray<const agx::Constraint*>& NonFreeConstraint)
 	{
 		agx::ConstraintRefSetVector& Constraints = Simulation.getConstraints();
 		for (agx::ConstraintRef& Constraint : Constraints)
@@ -361,7 +363,10 @@ namespace
 		}
 	}
 
-	void ReadShovels(agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
+	void ReadShovels(
+		agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects,
+		TSet<const agx::RigidBody*>& NonFreeBodies,
+		TArray<const agx::Constraint*>& NonFreeConstraints)
 	{
 		TSet<agxTerrain::Shovel*> SeenShovels;
 
@@ -373,7 +378,41 @@ namespace
 			{
 				if (Shovel == nullptr)
 					continue;
+
 				SeenShovels.Add(Shovel);
+
+				// Shovels contains a bunch of rigid bodies that are internal to the shovel, or
+				// rather shovel-terrain pairs, that should not be turned in Rigid Body Components.
+				// Add all such bodies are fetched and added to the non-free bodies below.
+				//
+				// todo This code has been written for AGX Dynamics 2.36.1. There are changes to the
+				// wedges made in later 2.36 versions and 2.37.
+
+				agxTerrain::TerrainToolCollection* Tools = Terrain->getToolCollection(Shovel);
+
+				// The primary excavator is accessed through the soil particle aggregate.
+				agxTerrain::SoilParticleAggregate* Aggregate = Tools->getSoilParticleAggregate();
+				NonFreeBodies.Add(Aggregate->getInnerBody());
+				NonFreeBodies.Add(Aggregate->getWedgeBody());
+				NonFreeConstraints.Add(Aggregate->getLockJoint());
+
+				// All other excavators are accessed through their respective deform controllers.
+				using EExcavationMode = agxTerrain::Shovel::ExcavationMode;
+				for (EExcavationMode ExcavationMode :
+					 {EExcavationMode::DEFORM_BACK, EExcavationMode::DEFORM_LEFT,
+					  EExcavationMode::DEFORM_RIGHT})
+				{
+					const agx::UInt DeformersId = static_cast<agx::UInt>(ExcavationMode) - 1;
+					agxTerrain::DeformerCollection* Deformers =
+						Tools->getDeformController()->getDeformerCollection(DeformersId);
+					NonFreeBodies.Add(Deformers->getAggregate()->getWedgeBody());
+					NonFreeBodies.Add(Deformers->getAggregate()->getInnerBody());
+					NonFreeConstraints.Add(Deformers->getAggregate()->getLockJoint());
+				}
+
+				// The penetration prismatic is not related to any particular aggregate.
+				NonFreeConstraints.Add(
+					Tools->getPenetrationResistance()->getPenetrationPrismatic());
 			}
 		}
 
@@ -407,17 +446,18 @@ namespace
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FSimulationObjectCollection& OutSimObjects)
 	{
-		TArray<agx::Constraint*> NonFreeConstraints;
+		TSet<const agx::RigidBody*> NonFreeBodies;
+		TArray<const agx::Constraint*> NonFreeConstraints;
 
 		ReadMaterials(Simulation, OutSimObjects);
 		ReadTireModels(Simulation, Filename, OutSimObjects, NonFreeConstraints);
+		ReadShovels(Simulation, OutSimObjects, NonFreeBodies, NonFreeConstraints);
 		ReadBodilessGeometries(Simulation, Filename, OutSimObjects);
-		ReadRigidBodies(Simulation, Filename, OutSimObjects);
+		ReadRigidBodies(Simulation, Filename, OutSimObjects, NonFreeBodies);
 		ReadTracks(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadConstraints(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadCollisionGroups(Simulation, OutSimObjects);
 		ReadWires(Simulation, OutSimObjects);
-		ReadShovels(Simulation, OutSimObjects);
 		ReadObserverFrames(Simulation, OutSimObjects);
 	}
 }
