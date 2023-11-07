@@ -1778,28 +1778,6 @@ UAGX_ShovelComponent* FAGX_SimObjectsImporterHelper::InstantiateShovel(
 		return nullptr;
 	}
 
-	// We don't try to share equal Shovel Properties assets, every Shovel gets its own instance.
-	// This matches AGX Dynamics since its Shovels also can't share properties since the properties
-	// are members of the Shove class.
-	{
-		const FString AssetName = FString::Printf(TEXT("AGX_SP_%s"), *BaseName);
-		const FString AssetFolder = FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName();
-		UAGX_ShovelProperties* ShovelProperties =
-			FAGX_ImportUtilities::CreateAsset<UAGX_ShovelProperties>(
-				RootDirectoryPath, AssetName, AssetFolder);
-		if (ShovelProperties == nullptr)
-		{
-			UE_LOG(
-				LogAGX, Warning, TEXT("Unable to create Shovel Properties asset %s."), *AssetName);
-			// No return, must complete as much as we can of the setup without the asset.
-		}
-		else
-		{
-			ShovelProperties->ImportGuid = ShovelBarrier.GetGuid();
-		}
-		ShovelComponent->ShovelProperties = ShovelProperties;
-	}
-
 	UpdateShovel(ShovelBarrier, *ShovelComponent, BaseName, BodyComponent, false);
 
 	ShovelComponent->SetFlags(RF_Transactional);
@@ -1821,6 +1799,29 @@ void FAGX_SimObjectsImporterHelper::UpdateShovel(
 	const FString& BaseName, const UAGX_RigidBodyComponent* BodyComponent,
 	bool ForceOverwriteInstances)
 {
+	if (ShovelComponent.ShovelProperties == nullptr)
+	{
+		// We don't try to share equal Shovel Properties assets, every Shovel gets its own instance.
+		// This matches AGX Dynamics since its Shovels also can't share properties since the
+		// properties are members of the Shove class.
+		const FString AssetName = FString::Printf(TEXT("AGX_SP_%s"), *BaseName);
+		const FString AssetFolder = FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName();
+		UAGX_ShovelProperties* ShovelProperties =
+			FAGX_ImportUtilities::CreateAsset<UAGX_ShovelProperties>(
+				RootDirectoryPath, AssetName, AssetFolder);
+		if (ShovelProperties == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("Unable to create Shovel Properties asset %s."), *AssetName);
+			// No return, must complete as much as we can of the setup without the asset.
+		}
+		else
+		{
+			ShovelProperties->ImportGuid = ShovelBarrier.GetGuid();
+			ShovelComponent.ShovelProperties = ShovelProperties;
+		}
+	}
+
 	// The edges and the direction in AGX Dynamics are relative to the body, so try to make all
 	// frames relative to that. If we don't have a body then the frames will be relative to the
 	// shovel instead, which is not correct but the best we can do.
