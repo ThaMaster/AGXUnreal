@@ -142,6 +142,13 @@ public:
 	// See
 	// https://www.algoryx.se/documentation/complete/agx/html/doc/html/classagxTerrain_1_1Shovel.html#a5686243f6a966d59b17b127a83c3a88a
 
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
+
 	#if WITH_EDITOR
 	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;

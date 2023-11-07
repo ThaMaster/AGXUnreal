@@ -1793,6 +1793,10 @@ UAGX_ShovelComponent* FAGX_SimObjectsImporterHelper::InstantiateShovel(
 				LogAGX, Warning, TEXT("Unable to create Shovel Properties asset %s."), *AssetName);
 			// No return, must complete as much as we can of the setup without the asset.
 		}
+		else
+		{
+			ShovelProperties->ImportGuid = ShovelBarrier.GetGuid();
+		}
 		ShovelComponent->ShovelProperties = ShovelProperties;
 	}
 
