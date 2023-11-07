@@ -348,6 +348,12 @@ bool FShovelBarrier::GetEnable() const
 	return NativeRef->Native->getEnable();
 }
 
+FGuid FShovelBarrier::GetGuid() const
+{
+	check(HasNative());
+	return Convert(NativeRef->Native->getUuid());
+}
+
 bool FShovelBarrier::HasNative() const
 {
 	AGX_CHECK(NativeRef.get() != nullptr); // TEXT("Found an FShovelBarrier that does not have a

@@ -115,6 +115,8 @@ public:
 
 	FRigidBodyBarrier GetRigidBody() const;
 
+	FGuid GetGuid() const;
+
 	bool HasNative() const;
 	void AllocateNative(
 		FRigidBodyBarrier& Body, const FTwoVectors& TopEdge, const FTwoVectors& CuttingEdge,

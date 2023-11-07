@@ -175,6 +175,8 @@ void UAGX_ShovelComponent::CopyFrom(const FShovelBarrier& Barrier, bool ForceOve
 	CuttingDirection.LocalRotation =
 		FRotationMatrix::MakeFromX(Barrier.GetCuttingDirection()).Rotator();
 
+	ImportGuid = Barrier.GetGuid();
+
 	if (ShovelProperties != nullptr)
 	{
 		ShovelProperties->AlwaysRemoveShovelContacts = Barrier.GetAlwaysRemoveShovelContacts();

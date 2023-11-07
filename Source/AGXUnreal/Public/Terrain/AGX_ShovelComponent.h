@@ -86,6 +86,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
 	void SetCuttingDirection(FAGX_Frame InCuttingDirection);
 
+	/*
+	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
+	FGuid ImportGuid;
+
 	/**
 	 * Apply any changes made to the Top Edge, Cutting Edge, or Cutting Direction properties onto
 	 * the native AGX Dynamics representation of the shovel.
