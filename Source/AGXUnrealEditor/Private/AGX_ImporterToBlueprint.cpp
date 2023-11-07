@@ -50,6 +50,7 @@
 #include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
 #include "SimulationObjectCollection.h"
+#include "Terrain/AGX_ShovelComponent.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
@@ -424,7 +425,8 @@ namespace
 		return Success;
 	}
 
-	bool AddShovels(AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+	bool AddShovels(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
 		FAGX_SimObjectsImporterHelper& Helper)
 	{
 		bool bSuccess = true;
@@ -1016,6 +1018,12 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					if (Ob->ImportGuid.IsValid())
 						ObserverFrames.Add(Ob->ImportGuid, Node);
 				}
+				else if (auto Shovel = Cast<UAGX_ShovelComponent>(Component))
+				{
+					AGX_CHECK(!Shovels.Contains(Shovel->ImportGuid))
+					if (Shovel->ImportGuid.IsValid())
+						Shovels.Add(Shovel->ImportGuid, Node);
+				}
 				else if (auto Wi = Cast<UAGX_WireComponent>(Component))
 				{
 					// Not supported, will be ignored.
@@ -1055,6 +1063,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		TMap<FGuid, USCS_Node*> LockConstraints;
 		TMap<FGuid, USCS_Node*> TwoBodyTires;
 		TMap<FGuid, USCS_Node*> ObserverFrames;
+		TMap<FGuid, USCS_Node*> Shovels;
 
 		// Guid is the AGX Dynamics shape (Trimesh) guid.
 		TMap<FGuid, USCS_Node*> CollisionStaticMeshComponents;
@@ -1731,6 +1740,59 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
+	void AddOrUpdateShovels(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
+		const FAGX_SynchronizeModelSettings& Settings)
+	{
+		for (const FShovelBarrier& ShovelBarrier : SimulationObjects.GetShovels())
+		{
+			const FGuid Guid = ShovelBarrier.GetGuid();
+			USCS_Node* ShovelNode = SCSNodes.Shovels.FindRef(Guid);
+			if (ShovelNode == nullptr)
+			{
+				ShovelNode = BaseBP.SimpleConstructionScript->CreateNode(
+					UAGX_ShovelComponent::StaticClass(),
+					FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+				SCSNodes.Shovels.Add(Guid, ShovelNode);
+			}
+
+			UAGX_ShovelComponent* ShovelComponent =
+				Cast<UAGX_ShovelComponent>(ShovelNode->ComponentTemplate);
+			if (ShovelComponent == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("While synchronizing shovels, found shovel SCS Node %s that does not have "
+						 "a shovel template."),
+					*ShovelNode->GetName());
+				continue;
+			}
+
+			FGuid BodyGuid = ShovelBarrier.GetRigidBody().GetGuid();
+			USCS_Node* BodyNode = SCSNodes.RigidBodies.FindRef(BodyGuid);
+			UAGX_RigidBodyComponent* BodyComponent = nullptr;
+			FString BaseName;
+			if (BodyNode != nullptr)
+			{
+				// todo What if the Shovel Node already had a different parent? That will happen
+				// when a shovel is moved from one Rigid Body to another. How do we support that?
+				// Doesn't seem to be a way to find the current parent of the Shovel Node, other
+				// than looping through all children of all nodes in the entire Blueprint.
+				if (!BodyNode->GetChildNodes().Contains(ShovelNode))
+				{
+					BodyNode->AddChildNode(ShovelNode);
+				}
+				BodyComponent = Cast<UAGX_RigidBodyComponent>(BodyNode->ComponentTemplate);
+				BaseName =
+					BodyComponent != nullptr ? BodyComponent->GetName() : FString("Bodiless");
+			}
+			Helper.UpdateShovel(
+				ShovelBarrier, *ShovelComponent, BaseName, BodyComponent,
+				Settings.bForceOverwriteProperties);
+		}
+	}
+
 	void AddOrUpdateModelSourceComponent(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper)
 	{
@@ -1771,7 +1833,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		const FSimulationObjectCollection& SimulationObjects,
 		const FAGX_SynchronizeModelSettings& Settings, FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FScopedSlowTask ImportTask(105.f, LOCTEXT("AddOrUpdateAll", "Adding new data"), true);
+		FScopedSlowTask ImportTask(110.f, LOCTEXT("AddOrUpdateAll", "Adding new data"), true);
 		ImportTask.MakeDialog();
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Adding data"));
@@ -1815,6 +1877,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Observer Frames"));
 		AddOrUpdateObserverFrames(BaseBP, SCSNodes, SimulationObjects, Helper, Settings);
+
+		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Synchronizing Shovels"));
+		AddOrUpdateShovels(BaseBP, SCSNodes, SimulationObjects, Helper, Settings);
 
 		ImportTask.EnterProgressFrame(
 			5.f, FText::FromString("Synchronizing Model Source Component"));
