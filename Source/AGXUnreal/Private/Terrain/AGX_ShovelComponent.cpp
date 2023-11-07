@@ -171,6 +171,7 @@ void UAGX_ShovelComponent::CopyFrom(const FShovelBarrier& Barrier, bool ForceOve
 	CuttingEdge.Start.LocalRotation = FRotator(ForceInitToZero);
 	CuttingEdge.End.LocalLocation = Cutting.v2;
 	CuttingEdge.End.LocalRotation = FRotator(ForceInitToZero);
+	CuttingDirection.LocalLocation = 0.5 * (Cutting.v1 + Cutting.v2);
 	CuttingDirection.LocalRotation =
 		FRotationMatrix::MakeFromX(Barrier.GetCuttingDirection()).Rotator();
 
