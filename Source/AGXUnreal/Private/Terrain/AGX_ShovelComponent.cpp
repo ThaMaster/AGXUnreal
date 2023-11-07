@@ -39,7 +39,7 @@ void UAGX_ShovelComponent::SetShovelProperties(UAGX_ShovelProperties* Properties
 	{
 		if (ShovelProperties->IsAsset())
 		{
-			if (GetWorld()->IsGameWorld())
+			if (GetWorld() != nullptr && GetWorld()->IsGameWorld())
 			{
 				ShovelProperties = ShovelProperties->GetOrCreateInstance(GetWorld());
 				if (ShovelProperties != nullptr)
