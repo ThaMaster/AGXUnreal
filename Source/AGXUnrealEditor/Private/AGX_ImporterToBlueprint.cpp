@@ -955,8 +955,10 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					else
 					{
 						UE_LOG(
-							LogAGX, Error, TEXT("Found Node: '%s' with unsupported type."),
-							*Node->GetName());
+							LogAGX, Error,
+							TEXT("SCSNodeCollection found constraint node: '%s' with unsupported "
+								 "type %s."),
+							*Node->GetName(), *Component->GetClass()->GetName());
 						AGX_CHECK(false);
 					}
 				}
@@ -1037,8 +1039,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					// We should never encounter a Component type that does not match any of the
 					// above.
 					UE_LOG(
-						LogAGX, Warning, TEXT("Found Node: '%s' with unsupported type."),
-						*Node->GetName());
+						LogAGX, Warning,
+						TEXT("SCSNodeCollection found node '%s' with unsupported type %s."),
+						*Node->GetName(), *Component->GetClass()->GetName());
 					AGX_CHECK(false);
 				}
 			}
