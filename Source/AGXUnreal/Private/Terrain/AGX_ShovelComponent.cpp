@@ -202,20 +202,22 @@ void UAGX_ShovelComponent::CopyFrom(const FShovelBarrier& Barrier, bool ForceOve
 		ShovelProperties->AlwaysRemoveShovelContacts = Barrier.GetAlwaysRemoveShovelContacts();
 		ShovelProperties->EnableInnerShapeCreateDynamicMass =
 			Barrier.GetEnableInnerShapeCreateDynamicMass();
-		ShovelProperties->ToothLength = Barrier.GetToothLength();
-		ShovelProperties->MaximumPenetrationForce = Barrier.GetMaximumPenetrationForce();
-		ShovelProperties->MaximumToothRadius = Barrier.GetMaximumToothRadius();
+		ShovelProperties->EnableParticleForceFeedback = Barrier.GetEnableParticleForceFeedback();
+		ShovelProperties->EnableParticleFreeDeformers = Barrier.GetEnableParticleFreeDeformers();
+		ShovelProperties->MinimumSubmergedContactLengthFraction =
+			Barrier.GetMinimumSubmergedContactLengthFraction();
+		ShovelProperties->VerticalBladeSoilMergeDistance =
+			Barrier.GetVerticalBladeSoilMergeDistance();
+		ShovelProperties->NoMergeExtensionDistance = Barrier.GetNoMergeExtensionDistance();
 		ShovelProperties->NumberOfTeeth = Barrier.GetNumberOfTeeth();
+		ShovelProperties->ToothLength = Barrier.GetToothLength();
+		ShovelProperties->MaximumToothRadius = Barrier.GetMaximumToothRadius();
 		ShovelProperties->MinimumToothRadius = Barrier.GetMinimumToothRadius();
 		ShovelProperties->PenetrationDepthThreshold = Barrier.GetPenetrationDepthThreshold();
 		ShovelProperties->PenetrationForceScaling = Barrier.GetPenetrationForceScaling();
-		ShovelProperties->NoMergeExtensionDistance = Barrier.GetNoMergeExtensionDistance();
+		ShovelProperties->MaximumPenetrationForce = Barrier.GetMaximumPenetrationForce();
 		ShovelProperties->SecondarySeparationDeadloadLimit =
 			Barrier.GetSecondarySeparationDeadloadLimit();
-		ShovelProperties->VerticalBladeSoilMergeDistance =
-			Barrier.GetVerticalBladeSoilMergeDistance();
-		ShovelProperties->MinimumSubmergedContactLengthFraction =
-			Barrier.GetMinimumSubmergedContactLengthFraction();
 
 		auto CopyExcavationSettings =
 			[&Barrier](EAGX_ExcavationMode Mode, FAGX_ShovelExcavationSettings& Settings)
