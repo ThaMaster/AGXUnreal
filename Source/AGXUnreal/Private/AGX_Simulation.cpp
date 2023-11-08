@@ -40,6 +40,7 @@
 #endif 
 
 #include <algorithm>
+#include <chrono>
 
 void UAGX_Simulation::SetNumThreads(int32 InNumThreads)
 {
@@ -629,6 +630,8 @@ void UAGX_Simulation::Deinitialize()
 {
 	using namespace AGX_Simulation_helpers;
 
+
+	auto startTime = std::chrono::high_resolution_clock::now();
 	// Explicitly close any asset editors that may be open.
 	// This fixes a crash where if any asset instances have an editor opened for them,
 	// the Unreal Editor would crash on Stop.
@@ -644,6 +647,11 @@ void UAGX_Simulation::Deinitialize()
 	CloseInstancedAssetEditors<UAGX_TrackInternalMergeProperties>();
 	CloseInstancedAssetEditors<UAGX_TrackProperties>();
 #endif
+
+	auto stopTime = std::chrono::high_resolution_clock::now();
+	UE_LOG(
+		LogAGX, Warning, TEXT("Closing Asset Editors took %d microseconds."),
+		std::chrono::duration_cast<std::chrono::microseconds>(stopTime - startTime).count());
 
 	Super::Deinitialize();
 	if (!HasNative())
