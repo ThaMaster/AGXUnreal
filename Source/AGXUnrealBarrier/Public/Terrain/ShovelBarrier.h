@@ -99,7 +99,7 @@ public:
 	bool GetEnableInnerShapeCreateDynamicMass() const;
 
 	void SetEnableParticleForceFeedback(bool Enable);
-	bool GetEnableParticleForceFeedback();
+	bool GetEnableParticleForceFeedback() const;
 
 	void SetEnable(bool Enable);
 	bool GetEnable() const;

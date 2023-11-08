@@ -331,7 +331,7 @@ void FShovelBarrier::SetEnableParticleForceFeedback(bool Enable)
 	NativeRef->Native->setEnableParticleForceFeedback(Enable);
 }
 
-bool FShovelBarrier::GetEnableParticleForceFeedback()
+bool FShovelBarrier::GetEnableParticleForceFeedback() const
 {
 	check(HasNative());
 	return NativeRef->Native->getEnableParticleForceFeedback();
