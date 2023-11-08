@@ -190,7 +190,7 @@ namespace AGX_Simulation_helpers
 		return LoadObject<T>(GetTransientPackage(), *Path.GetAssetPathString());
 	}
 
-	#if WITH_EDITORONLY_DATA
+#if WITH_EDITORONLY_DATA
 	template <typename T>
 	void CloseInstancedAssetEditors()
 	{
