@@ -27,6 +27,15 @@ UAGX_ShovelComponent::UAGX_ShovelComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+void UAGX_ShovelComponent::SetEnable(bool bInEnable)
+{
+	bEnable = bInEnable;
+	if (HasNative())
+	{
+		NativeBarrier.SetEnable(bEnable);
+	}
+}
+
 void UAGX_ShovelComponent::SetShovelProperties(UAGX_ShovelProperties* Properties)
 {
 	if (ShovelProperties != nullptr && ShovelProperties->IsInstance())
@@ -161,6 +170,7 @@ FAGX_Frame* UAGX_ShovelComponent::GetFrame(EAGX_ShovelFrame Frame)
 
 void UAGX_ShovelComponent::CopyFrom(const FShovelBarrier& Barrier, bool ForceOverwriteInstances)
 {
+	AGX_COPY_PROPERTY_FROM(bEnable, Barrier.GetEnable(), *this, ForceOverwriteInstances);
 	const FTwoVectors Top = Barrier.GetTopEdge();
 	AGX_COPY_PROPERTY_FROM(TopEdge.Start.LocalLocation, Top.v1, *this, ForceOverwriteInstances);
 	AGX_COPY_PROPERTY_FROM(
@@ -475,6 +485,12 @@ void UAGX_ShovelComponent::AllocateNative()
 		*GetLabelSafe(GetOwner()));
 }
 
+void UAGX_ShovelComponent::SetbEnable(bool bInEnable)
+{
+	SetEnable(bInEnable);
+}
+
+
 void UAGX_ShovelComponent::InitPropertyDispatcher()
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
@@ -484,6 +500,7 @@ void UAGX_ShovelComponent::InitPropertyDispatcher()
 		return;
 	}
 
+	AGX_COMPONENT_DEFAULT_DISPATCHER(bEnable);
 	AGX_COMPONENT_DEFAULT_DISPATCHER(ShovelProperties);
 	AGX_COMPONENT_DEFAULT_DISPATCHER(TopEdge);
 	AGX_COMPONENT_DEFAULT_DISPATCHER(CuttingEdge);

@@ -26,6 +26,12 @@ class AGXUNREAL_API UAGX_ShovelComponent : public USceneComponent, public IAGX_N
 public:
 	UAGX_ShovelComponent();
 
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	bool bEnable {true};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
+	void SetEnable(bool bInEnable);
+
 	/// The Rigid Body that is to be imbued with shovel behavior.
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
 	FAGX_BodyReference RigidBody;
@@ -142,6 +148,9 @@ public:
 	bool WritePropertiesToNative();
 
 private:
+	// Alias for SetEnable used by Property Dispatcher.
+	void SetbEnable(bool bInEnable);
+
 #if WITH_EDITOR
 	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each
 	// and every UPROPERTY in PostEditChangeProperty and PostEditChangeChainProperty.
