@@ -190,7 +190,7 @@ namespace AGX_Simulation_helpers
 		return LoadObject<T>(GetTransientPackage(), *Path.GetAssetPathString());
 	}
 
-#if WITH_EDITORONLY_DATA
+#if WITH_EDITOR
 	template <typename T>
 	void CloseInstancedAssetEditors()
 	{
@@ -198,7 +198,7 @@ namespace AGX_Simulation_helpers
 		for (TObjectIterator<T> ObjectIt; ObjectIt; ++ObjectIt)
 		{
 			UPackage* Package = Cast<UPackage>((*ObjectIt)->GetOuter());
-			if (Package == nullptr || Package != TransientPackage)
+			if (Package != TransientPackage)
 			{
 				continue;
 			}
@@ -632,7 +632,7 @@ void UAGX_Simulation::Deinitialize()
 	// Explicitly close any asset editors that may be open.
 	// This fixes a crash where if any asset instances have an editor opened for them,
 	// the Unreal Editor would crash on Stop.
-#if WITH_EDITORONLY_DATA
+#if WITH_EDITOR
 	CloseInstancedAssetEditors<UAGX_ContactMaterial>();
 	CloseInstancedAssetEditors<UAGX_TerrainMaterial>();
 	CloseInstancedAssetEditors<UAGX_ShapeMaterial>();
