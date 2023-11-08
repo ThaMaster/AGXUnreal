@@ -15,10 +15,13 @@
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
+#include "Materials/AGX_TerrainMaterial.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/ShapeBarrier.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Tires/AGX_TireComponent.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
+#include "Vehicle/AGX_TrackProperties.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_RenderUtilities.h"
@@ -32,6 +35,9 @@
 #include "HAL/PlatformTime.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/Paths.h"
+#if WITH_EDITORONLY_DATA
+#include "Subsystems/AssetEditorSubsystem.h"
+#endif 
 
 #include <algorithm>
 
@@ -183,6 +189,28 @@ namespace AGX_Simulation_helpers
 
 		return LoadObject<T>(GetTransientPackage(), *Path.GetAssetPathString());
 	}
+
+#if WITH_EDITOR
+	template <typename T>
+	void CloseInstancedAssetEditors()
+	{
+		UPackage* TransientPackage = GetTransientPackage();
+		for (TObjectIterator<T> ObjectIt; ObjectIt; ++ObjectIt)
+		{
+			UPackage* Package = Cast<UPackage>((*ObjectIt)->GetOuter());
+			if (Package != TransientPackage)
+			{
+				continue;
+			}
+
+			if ((*ObjectIt)->IsInstance())
+			{
+				GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllEditorsForAsset(
+					*ObjectIt);
+			}
+		}
+	}
+#endif
 }
 
 void UAGX_Simulation::Add(UAGX_ConstraintComponent& Constraint)
@@ -599,6 +627,24 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 
 void UAGX_Simulation::Deinitialize()
 {
+	using namespace AGX_Simulation_helpers;
+
+	// Explicitly close any asset editors that may be open.
+	// This fixes a crash where if any asset instances have an editor opened for them,
+	// the Unreal Editor would crash on Stop.
+#if WITH_EDITOR
+	CloseInstancedAssetEditors<UAGX_ContactMaterial>();
+	CloseInstancedAssetEditors<UAGX_TerrainMaterial>();
+	CloseInstancedAssetEditors<UAGX_ShapeMaterial>();
+
+	CloseInstancedAssetEditors<UAGX_ConstraintMergeSplitThresholds>();
+	CloseInstancedAssetEditors<UAGX_ShapeContactMergeSplitThresholds>();
+	CloseInstancedAssetEditors<UAGX_WireMergeSplitThresholds>();
+
+	CloseInstancedAssetEditors<UAGX_TrackInternalMergeProperties>();
+	CloseInstancedAssetEditors<UAGX_TrackProperties>();
+#endif
+
 	Super::Deinitialize();
 	if (!HasNative())
 	{
