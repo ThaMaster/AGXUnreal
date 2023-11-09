@@ -308,7 +308,7 @@ namespace
 			{
 				if (Helper.bIgnoreDisabledTrimeshes && !Trimesh.GetEnableCollisions())
 				{
-					if (Trimesh.HasRenderData())
+					if (Trimesh.HasRenderData() && Trimesh.GetRenderData().HasMesh())
 					{
 						Success &= Helper.InstantiateRenderDataInBodyOrRoot(
 									   Trimesh, ImportedActor, &Body) != nullptr;
