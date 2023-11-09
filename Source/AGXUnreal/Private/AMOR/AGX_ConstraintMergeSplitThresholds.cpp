@@ -11,6 +11,7 @@
 
 // Unreal Engine includes.
 #include "Engine/World.h"
+#include "UObject/Package.h"
 
 void UAGX_ConstraintMergeSplitThresholds::SetMaxDesiredForceRangeDiff_BP(
 	float InMaxDesiredForceRangeDiff)

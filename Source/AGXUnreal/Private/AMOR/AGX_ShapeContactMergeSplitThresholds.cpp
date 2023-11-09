@@ -11,6 +11,7 @@
 
 // Unreal Engine includes.
 #include "Engine/World.h"
+#include "UObject/Package.h"
 
 void UAGX_ShapeContactMergeSplitThresholds::SetMaxImpactSpeed_BP(float InMaxImpactSpeed)
 {
