@@ -112,7 +112,8 @@ namespace
 					return "Unknown falure.";
 			}
 
-			UE_LOG(LogAGX, Warning, TEXT("Unknown enum literal passed to ShowImportErrorDialogBox."));
+			UE_LOG(
+				LogAGX, Warning, TEXT("Unknown enum literal passed to ShowImportErrorDialogBox."));
 			return "";
 		}();
 
