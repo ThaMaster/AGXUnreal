@@ -86,8 +86,8 @@ namespace
 	{
 		UnknownFailure,
 		Success,
-		FailureReadingArchive,
-		FailureDuringInstantiations
+		ErrorReadingSourceFile,
+		ErrorDuringInstantiations
 	};
 
 	void ShowImportErrorDialogBox(EImportResult Result)
@@ -100,9 +100,9 @@ namespace
 		{
 			case EImportResult::UnknownFailure:
 				ResultStr = "Unknown falure.";
-			case EImportResult::FailureReadingArchive:
+			case EImportResult::ErrorReadingSourceFile:
 				ResultStr = "Error while reading source file.";
-			case EImportResult::FailureDuringInstantiations:
+			case EImportResult::ErrorDuringInstantiations:
 				ResultStr = "Error while instantiating objects.";
 			default:
 				break;
@@ -540,12 +540,12 @@ namespace
 		FSimulationObjectCollection SimObjects;
 		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, SimObjects))
 		{
-			return EImportResult::FailureReadingArchive;
+			return EImportResult::ErrorReadingSourceFile;
 		}
 
 		if (!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
-			return EImportResult::FailureDuringInstantiations;
+			return EImportResult::ErrorDuringInstantiations;
 		}
 
 		return EImportResult::Success;
@@ -559,12 +559,12 @@ namespace
 		if (!FAGXSimObjectsReader::ReadUrdf(
 				ImportSettings.FilePath, ImportSettings.UrdfPackagePath, SimObjects))
 		{
-			return EImportResult::FailureReadingArchive;
+			return EImportResult::ErrorReadingSourceFile;
 		}
 
 		if (!AddAllComponents(ImportedActor, SimObjects, Helper))
 		{
-			return EImportResult::FailureDuringInstantiations;
+			return EImportResult::ErrorDuringInstantiations;
 		}
 
 		return EImportResult::Success;
