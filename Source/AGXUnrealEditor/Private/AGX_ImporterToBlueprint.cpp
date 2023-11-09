@@ -84,33 +84,41 @@ namespace
 {
 	enum class EImportResult
 	{
-		UnknownFailure,
 		Success,
 		ErrorReadingSourceFile,
-		ErrorDuringInstantiations
+		ErrorDuringInstantiations,
+		UnknownFailure = 999
 	};
 
 	void ShowImportErrorDialogBox(EImportResult Result)
 	{
-		if (Result == EImportResult::Success)
-			return;
-
-		FString ResultStr = "";
-		switch (Result)
+		const FString ResultStr = [&Result]()
 		{
-			case EImportResult::UnknownFailure:
-				ResultStr = "Unknown falure.";
-			case EImportResult::ErrorReadingSourceFile:
-				ResultStr = "Error while reading source file.";
-			case EImportResult::ErrorDuringInstantiations:
-				ResultStr = "Error while instantiating objects.";
-			default:
-				break;
-		}
+			switch (Result)
+			{
+				case EImportResult::Success:
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("ShowImportErrorDialogBox was called with EImportResult::Success "
+							 "which is unexpected."));
+					return "";
+				}
+				case EImportResult::ErrorReadingSourceFile:
+					return "Error while reading source file.";
+				case EImportResult::ErrorDuringInstantiations:
+					return "Error while instantiating objects.";
+				case EImportResult::UnknownFailure:
+					return "Unknown falure.";
+			}
+
+			UE_LOG(LogAGX, Warning, TEXT("Unknown enum literal passed to ShowImportErrorDialogBox."));
+			return "";
+		}();
 
 		const FString Text = FString::Printf(
 			TEXT("Some issues occurred during import. Status: '%s'. Log category LogAGX in the "
-				 "Console may contain more information."),
+				 "Output Log may contain more information."),
 			*ResultStr);
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Text, "Import model to Blueprint");
 	}
