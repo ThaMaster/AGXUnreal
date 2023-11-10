@@ -20,6 +20,7 @@
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
@@ -3517,19 +3518,17 @@ bool FCheckAmorImportedCommand::Update()
 	}
 
 	Test.TestEqual(
-		"Body Thresholds MaxImpactSpeed",
-		Body->MergeSplitProperties.Thresholds->MaxImpactSpeed, AgxToUnrealDistance(13.0));
+		"Body Thresholds MaxImpactSpeed", Body->MergeSplitProperties.Thresholds->MaxImpactSpeed,
+		AgxToUnrealDistance(13.0));
 	Test.TestEqual(
 		"Body Thresholds MaxRelativeNormalSpeed",
-		Body->MergeSplitProperties.Thresholds->MaxRelativeNormalSpeed,
-		AgxToUnrealDistance(14.0));
+		Body->MergeSplitProperties.Thresholds->MaxRelativeNormalSpeed, AgxToUnrealDistance(14.0));
 	Test.TestEqual(
 		"Body Thresholds MaxRelativeTangentSpeed",
-		Body->MergeSplitProperties.Thresholds->MaxRelativeTangentSpeed,
-		AgxToUnrealDistance(15.0));
+		Body->MergeSplitProperties.Thresholds->MaxRelativeTangentSpeed, AgxToUnrealDistance(15.0));
 	Test.TestEqual(
-		"Body Thresholds MaxRollingSpeed",
-		Body->MergeSplitProperties.Thresholds->MaxRollingSpeed, AgxToUnrealDistance(16.0));
+		"Body Thresholds MaxRollingSpeed", Body->MergeSplitProperties.Thresholds->MaxRollingSpeed,
+		AgxToUnrealDistance(16.0));
 	Test.TestTrue(
 		"Body Thresholds MaySplitInGravityField",
 		Body->MergeSplitProperties.Thresholds->bMaySplitInGravityField);
@@ -3713,22 +3712,189 @@ bool FCheckShovelImportedCommand::Update()
 		return true;
 	}
 
-	// Get all the imported Components. The test for the number of Components is a safety check.
-	// It should be updated whenever the test scene is changed.
+	// Get all the imported Components.
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
-	// One Rigid Body (1), two Shape (3), one Shovel (4), one Contact Material Registrar (5), and
+	// One Rigid Body (1), two Shapes (3), one Shovel (4), one Contact Material Registrar (5), one
 	// Model Source (6), and one default scene root (7).
 	const int32 ExpectedNumComponents {7};
 	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), ExpectedNumComponents);
 
-	UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(
+	UAGX_RigidBodyComponent* ShovelBody = GetByName<UAGX_RigidBodyComponent>(
 		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Shovel Body"));
+	Test.TestNotNull(TEXT("Shovel Body"), ShovelBody);
+	if (ShovelBody == nullptr)
+		return true;
 	Test.TestEqual(
-		TEXT("Body Import GUID"), Body->ImportGuid.ToString(EGuidFormats::DigitsWithHyphensLower),
+		TEXT("Body Import GUID"),
+		ShovelBody->ImportGuid.ToString(EGuidFormats::DigitsWithHyphensLower),
 		TEXT("8c48a356-d44b-1f4a-134c-e7e7a1f4c003"));
+	Test.TestEqual(
+		TEXT("Shovel Body Position"), ShovelBody->GetRelativeLocation(), FVector(0.0, 0.0, 100.0));
 
-	// todo More code here.
+	UAGX_BoxShapeComponent* VerticalBox = GetByName<UAGX_BoxShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Vertical Box"));
+	Test.TestNotNull(TEXT("Vertical Box"), VerticalBox);
+	if (VerticalBox == nullptr)
+		return true;
+	Test.TestEqual(
+		TEXT("Vertical Box Import GUID"),
+		VerticalBox->ImportGuid.ToString(EGuidFormats::DigitsWithHyphensLower),
+		TEXT("8c48a356-d44b-1f4a-134c-e7e7a1f4c004"));
+	Test.TestEqual(
+		TEXT("Vertical Box Half Extent"), VerticalBox->HalfExtent, FVector(10.0, 100.0, 100.0));
+
+	UAGX_ShovelComponent* Shovel = GetByName<UAGX_ShovelComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(TEXT("Shovel_Shovel Body")));
+	Test.TestNotNull(TEXT("Shovel Component"), Shovel);
+	if (Shovel == nullptr)
+		return true;
+	Test.TestEqual(
+		TEXT("Shovel Import GUID"),
+		Shovel->ImportGuid.ToString(EGuidFormats::DigitsWithHyphensLower),
+		"8c48a356-d44b-1f4a-134c-e7e7a1f4c008");
+	Test.TestEqual(TEXT("bEnable"), Shovel->bEnable, false);
+	Test.TestEqual(
+		TEXT("Top Edge Start Location"), Shovel->TopEdge.Start.LocalLocation,
+		AgxToUnrealDisplacement(0.1, -1.0, 1.0));
+	Test.TestEqual(
+		TEXT("Top Edge Start Parent Name"), Shovel->TopEdge.Start.Parent.Name,
+		FName(TEXT("Shovel Body")));
+	Test.TestEqual(
+		TEXT("Top Edge End Location"), Shovel->TopEdge.End.LocalLocation,
+		AgxToUnrealDisplacement(0.1, 1.0, 1.0));
+	Test.TestEqual(
+		TEXT("Top Edge End Parent Name"), Shovel->TopEdge.End.Parent.Name,
+		FName(TEXT("Shovel Body")));
+	Test.TestEqual(
+		TEXT("Cutting Edge Start Location"), Shovel->CuttingEdge.Start.LocalLocation,
+		AgxToUnrealDisplacement(1.0, -1.0, 0.1));
+	Test.TestEqual(
+		TEXT("Cutting Edge Start Parent Name"), Shovel->CuttingEdge.Start.Parent.Name,
+		FName(TEXT("Shovel Body")));
+	Test.TestEqual(
+		TEXT("Cutting Edge End Location"), Shovel->CuttingEdge.End.LocalLocation,
+		AgxToUnrealDisplacement(1.0, 1.0, 0.1));
+	Test.TestEqual(
+		TEXT("Cutting Edge End Parent Name"), Shovel->CuttingEdge.End.Parent.Name,
+		FName(TEXT("Shovel Body")));
+	Test.TestEqual(
+		TEXT("Cutting Direction"), Shovel->CuttingDirection.LocalRotation,
+		FRotator(ForceInitToZero));
+
+	Test.TestNotNull(TEXT("Shovel Properties"), Shovel->ShovelProperties);
+	if (Shovel->ShovelProperties == nullptr)
+		return true;
+	Test.TestTrue(TEXT("Shovel Properties is asset"), Shovel->ShovelProperties->IsAsset());
+	Test.TestFalse(TEXT("Shovel Properties is instance"), Shovel->ShovelProperties->IsInstance());
+	Test.TestEqual(
+		TEXT("ToothLength"), Shovel->ShovelProperties->ToothLength, AgxToUnrealDistance(1.0));
+	Test.TestEqual(
+		TEXT("ToothMinimumRadius"), Shovel->ShovelProperties->ToothMinimumRadius,
+		AgxToUnrealDistance(2.0));
+	Test.TestEqual(
+		TEXT("ToothMaximumRadius"), Shovel->ShovelProperties->ToothMaximumRadius,
+		AgxToUnrealDistance(3.0));
+	Test.TestEqual(TEXT("NumberOfTeeth"), Shovel->ShovelProperties->NumberOfTeeth, 4);
+	Test.TestEqual(
+		TEXT("NoMergeExtensionDistance"), Shovel->ShovelProperties->NoMergeExtensionDistance,
+		AgxToUnrealDistance(5.0));
+	Test.TestEqual(
+		TEXT("MinimumSubmergedContactLengthFraction"),
+		Shovel->ShovelProperties->MinimumSubmergedContactLengthFraction, 6.0);
+	Test.TestEqual(
+		TEXT("VerticalBladeSoilMergeDistance"),
+		Shovel->ShovelProperties->VerticalBladeSoilMergeDistance, AgxToUnrealDistance(7.0));
+	Test.TestEqual(
+		TEXT("SecondarySeparationDeadloadLimit"),
+		Shovel->ShovelProperties->SecondarySeparationDeadloadLimit, 8.0);
+	Test.TestEqual(
+		TEXT("PenetrationDepthThreshold"), Shovel->ShovelProperties->PenetrationDepthThreshold,
+		AgxToUnrealDistance(9.0));
+
+	// Don't know how to set soil penetration model in Python:
+	//   AttributeError: type object 'SoilPenetrationResistance' has no attribute 'PLASTIC'
+	// shovel.setSoilPenetrationModel(
+	//     agxTerrain.SoilPenetrationResistance.PLASTIC, terrain
+	// )
+
+	Test.TestEqual(
+		TEXT("PenetrationForceScaling"), Shovel->ShovelProperties->PenetrationForceScaling, 10.0);
+	Test.TestEqual(
+		TEXT("EnableParticleFreeDeformers"), Shovel->ShovelProperties->EnableParticleFreeDeformers,
+		true);
+	Test.TestEqual(
+		TEXT("AlwaysRemoveShovelContacts"), Shovel->ShovelProperties->AlwaysRemoveShovelContacts,
+		true);
+	Test.TestEqual(
+		TEXT("MaxPenetrationForce"), Shovel->ShovelProperties->MaximumPenetrationForce, 11.0);
+
+	// Cannot set the contact region from Python:
+	// AttributeError: 'Shovel' object has no attribute 'setContactRegionThreshold'
+	// Not sure why. Added after 2.36.1.3?
+	// Test.TestEqual(TEXT("ContactRegionThreshold"),
+	// Shovel->ShovelProperties->ContactRegionThreshold, 12.0);
+
+	// Cannot set contact region vertical limit from Python:
+	// AttributeError: 'Shovel' object has no attribute 'setContactRegionThreshold'
+	// Not sure why. Added after 2.36.1.3?
+	// Test.TestEqual(TEXT("ContactRegionVerticalLimit"),
+	// Shovel->ShovelProperties->ContactRegionVerticalLimit, 13.0);
+
+	Test.TestEqual(
+		TEXT("EnableInnerShapeCreateDynamicMass"),
+		Shovel->ShovelProperties->EnableInnerShapeCreateDynamicMass, false);
+	Test.TestEqual(
+		TEXT("EnableParticleForceFeedback"), Shovel->ShovelProperties->EnableParticleForceFeedback,
+		true);
+
+	// Cannot set particle inclusion multiplier from Python:
+	// AttributeError: 'Shovel' object has no attribute 'setContactRegionThreshold'
+	// Not sure why. Added after 2.36.1.3?
+	// Test.TestEqual(TEXT("ParticleInclusionMultiplier"),
+	// Shovel->ShovelProperties->ParticleInclusionMultiplier, 14.0);
+
+	Test.TestEqual(
+		TEXT("Primary enabled"), Shovel->ShovelProperties->PrimaryExcavationSettings.bEnabled,
+		false);
+	Test.TestEqual(
+		TEXT("Primary create dynamic mass"),
+		Shovel->ShovelProperties->PrimaryExcavationSettings.bEnableCreateDynamicMass, false);
+	Test.TestEqual(
+		TEXT("Primary force feedback"),
+		Shovel->ShovelProperties->PrimaryExcavationSettings.bEnableForceFeedback, false);
+
+	Test.TestEqual(
+		TEXT("Deform back  enabled"),
+		Shovel->ShovelProperties->DeformBackExcavationSettings.bEnabled, false);
+	Test.TestEqual(
+		TEXT("Deform back create dynamic mass"),
+		Shovel->ShovelProperties->DeformBackExcavationSettings.bEnableCreateDynamicMass, false);
+	Test.TestEqual(
+		TEXT("Deform back force feedback"),
+		Shovel->ShovelProperties->DeformBackExcavationSettings.bEnableForceFeedback, true);
+
+
+	Test.TestEqual(
+		TEXT("Deform right enabled"),
+		Shovel->ShovelProperties->DeformRightExcavationSettings.bEnabled, false);
+	Test.TestEqual(
+		TEXT("Deform right create dynamic mass"),
+		Shovel->ShovelProperties->DeformRightExcavationSettings.bEnableCreateDynamicMass, true);
+	Test.TestEqual(
+		TEXT("Deform right force feedback"),
+		Shovel->ShovelProperties->DeformRightExcavationSettings.bEnableForceFeedback, false);
+
+
+	Test.TestEqual(
+		TEXT("Deform left enabled"),
+		Shovel->ShovelProperties->DeformLeftExcavationSettings.bEnabled, true);
+	Test.TestEqual(
+		TEXT("Deform left create dynamic mass"),
+		Shovel->ShovelProperties->DeformLeftExcavationSettings.bEnableCreateDynamicMass, false);
+	Test.TestEqual(
+		TEXT("Deform left force feedback"),
+		Shovel->ShovelProperties->DeformLeftExcavationSettings.bEnableForceFeedback, false);
 
 	return true;
 }
