@@ -106,14 +106,14 @@ void UAGX_ShovelProperties::SetToothLength(double InToothLength)
 	AGX_SHOVEL_SETTER_IMPL(ToothLength);
 }
 
-void UAGX_ShovelProperties::SetMaximumToothRadius(double InMaximumToothRadius)
+void UAGX_ShovelProperties::SetToothMaximumRadius(double InToothMaximumRadius)
 {
-	AGX_SHOVEL_SETTER_IMPL(MaximumToothRadius);
+	AGX_SHOVEL_SETTER_IMPL(ToothMaximumRadius);
 }
 
-void UAGX_ShovelProperties::SetMinimumToothRadius(double InMinimumToothRadius)
+void UAGX_ShovelProperties::SetToothMinimumRadius(double InToothMinimumRadius)
 {
-	AGX_SHOVEL_SETTER_IMPL(MinimumToothRadius);
+	AGX_SHOVEL_SETTER_IMPL(ToothMinimumRadius);
 }
 
 // Introduced with AGX Dynamics 2.37.
@@ -320,8 +320,8 @@ void UAGX_ShovelProperties::InitPropertyDispatcher()
 	AGX_ASSET_DEFAULT_DISPATCHER(NoMergeExtensionDistance);
 	AGX_ASSET_DEFAULT_DISPATCHER(NumberOfTeeth);
 	AGX_ASSET_DEFAULT_DISPATCHER(ToothLength);
-	AGX_ASSET_DEFAULT_DISPATCHER(MaximumToothRadius);
-	AGX_ASSET_DEFAULT_DISPATCHER(MinimumToothRadius);
+	AGX_ASSET_DEFAULT_DISPATCHER(ToothMaximumRadius);
+	AGX_ASSET_DEFAULT_DISPATCHER(ToothMinimumRadius);
 // Introduced with AGX Dynamics 2.37.
 #if 0
 	AGX_ASSET_DEFAULT_DISPATCHER(ParticleInclusionMultiplier);

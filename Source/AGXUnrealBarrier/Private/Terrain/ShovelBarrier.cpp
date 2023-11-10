@@ -106,25 +106,25 @@ double FShovelBarrier::GetToothLength() const
 	return ConvertDistanceToUnreal<double>(NativeRef->Native->getToothLength());
 }
 
-void FShovelBarrier::SetMinimumToothRadius(double MinimumToothRadius)
+void FShovelBarrier::SetToothMinimumRadius(double MinimumToothRadius)
 {
 	check(HasNative());
 	NativeRef->Native->setToothMinimumRadius(ConvertDistanceToAGX(MinimumToothRadius));
 }
 
-double FShovelBarrier::GetMinimumToothRadius() const
+double FShovelBarrier::GetToothMinimumRadius() const
 {
 	check(HasNative());
 	return ConvertDistanceToUnreal<double>(NativeRef->Native->getToothMinimumRadius());
 }
 
-void FShovelBarrier::SetMaximumToothRadius(double MaximumToothRadius)
+void FShovelBarrier::SetToothMaximumRadius(double MaximumToothRadius)
 {
 	check(HasNative());
 	NativeRef->Native->setToothMaximumRadius(ConvertDistanceToAGX(MaximumToothRadius));
 }
 
-double FShovelBarrier::GetMaximumToothRadius() const
+double FShovelBarrier::GetToothMaximumRadius() const
 {
 	check(HasNative());
 	return ConvertDistanceToUnreal<double>(NativeRef->Native->getToothMaximumRadius());

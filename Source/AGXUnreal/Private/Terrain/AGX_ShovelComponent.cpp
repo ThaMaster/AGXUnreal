@@ -211,8 +211,8 @@ void UAGX_ShovelComponent::CopyFrom(const FShovelBarrier& Barrier, bool ForceOve
 		ShovelProperties->NoMergeExtensionDistance = Barrier.GetNoMergeExtensionDistance();
 		ShovelProperties->NumberOfTeeth = Barrier.GetNumberOfTeeth();
 		ShovelProperties->ToothLength = Barrier.GetToothLength();
-		ShovelProperties->MaximumToothRadius = Barrier.GetMaximumToothRadius();
-		ShovelProperties->MinimumToothRadius = Barrier.GetMinimumToothRadius();
+		ShovelProperties->ToothMaximumRadius = Barrier.GetToothMaximumRadius();
+		ShovelProperties->ToothMinimumRadius = Barrier.GetToothMinimumRadius();
 		ShovelProperties->PenetrationDepthThreshold = Barrier.GetPenetrationDepthThreshold();
 		ShovelProperties->PenetrationForceScaling = Barrier.GetPenetrationForceScaling();
 		ShovelProperties->MaximumPenetrationForce = Barrier.GetMaximumPenetrationForce();
@@ -533,9 +533,9 @@ bool UAGX_ShovelComponent::WritePropertiesToNative()
 
 	NativeBarrier.SetToothLength(ShovelProperties->ToothLength);
 	NativeBarrier.SetMaximumPenetrationForce(ShovelProperties->MaximumPenetrationForce);
-	NativeBarrier.SetMaximumToothRadius(ShovelProperties->MaximumToothRadius);
 	NativeBarrier.SetNumberOfTeeth(ShovelProperties->NumberOfTeeth);
-	NativeBarrier.SetMinimumToothRadius(ShovelProperties->MinimumToothRadius);
+	NativeBarrier.SetToothMaximumRadius(ShovelProperties->ToothMaximumRadius);
+	NativeBarrier.SetToothMinimumRadius(ShovelProperties->ToothMinimumRadius);
 	NativeBarrier.SetPenetrationDepthThreshold(ShovelProperties->PenetrationDepthThreshold);
 	NativeBarrier.SetPenetrationForceScaling(ShovelProperties->PenetrationForceScaling);
 	NativeBarrier.SetNoMergeExtensionDistance(ShovelProperties->NoMergeExtensionDistance);

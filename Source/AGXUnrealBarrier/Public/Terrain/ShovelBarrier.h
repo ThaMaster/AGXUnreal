@@ -48,11 +48,11 @@ public:
 	void SetToothLength(double ToothLength);
 	double GetToothLength() const;
 
-	void SetMinimumToothRadius(double MinimumToothRadius);
-	double GetMinimumToothRadius() const;
+	void SetToothMinimumRadius(double MinimumToothRadius);
+	double GetToothMinimumRadius() const;
 
-	void SetMaximumToothRadius(double MaximumToothRadius);
-	double GetMaximumToothRadius() const;
+	void SetToothMaximumRadius(double MaximumToothRadius);
+	double GetToothMaximumRadius() const;
 
 	void SetNumberOfTeeth(int32 NumberOfTeeth);
 	int32 GetNumberOfTeeth() const;

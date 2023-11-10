@@ -82,16 +82,16 @@ public:
 	void SetToothLength(double InToothLength);
 
 	UPROPERTY(EditAnywhere, Category = "Teeth")
-	FAGX_Real MaximumToothRadius {7.5};
+	FAGX_Real ToothMaximumRadius {7.5};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetMaximumToothRadius(double InMaximumToothRadius);
+	void SetToothMaximumRadius(double InMaximumToothRadius);
 
 	UPROPERTY(EditAnywhere, Category = "Teeth")
-	FAGX_Real MinimumToothRadius {1.5};
+	FAGX_Real ToothMinimumRadius {1.5};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetMinimumToothRadius(double InMinimumToothRadius);
+	void SetToothMinimumRadius(double InMinimumToothRadius);
 
 // Introduced with AGX Dynamics 2.37.
 #if 0
