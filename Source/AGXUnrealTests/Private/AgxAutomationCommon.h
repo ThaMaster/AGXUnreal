@@ -328,6 +328,11 @@ namespace AgxAutomationCommon
 		return Agx * AgxToUnreal;
 	}
 
+	inline double AgxToUnrealDistance(double Agx)
+	{
+		return Agx * AgxToUnreal;
+	}
+
 	inline FVector AgxToUnrealDisplacement(const FVector& Agx)
 	{
 		return FVector(Agx.X * AgxToUnreal, -Agx.Y * AgxToUnreal, Agx.Z * AgxToUnreal);

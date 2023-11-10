@@ -2586,8 +2586,7 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Cm1 youngs modulus", (*Cm1)->YoungsModulus, 123451234.0);
 	Test.TestEqual("Cm1 damping", (*Cm1)->SpookDamping, 0.14);
 	Test.TestEqual("Cm1 adhesive force", (*Cm1)->AdhesiveForce, 0.15);
-	Test.TestEqual(
-		"Cm1 adhesive overlap", (float) (*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
+	Test.TestEqual("Cm1 adhesive overlap", (*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
 
 	UAGX_ContactMaterial** Cm2 = Registrar->ContactMaterials.FindByPredicate(
 		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat3Mat4"; });
@@ -2622,8 +2621,7 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Cm2 youngs modulus", (*Cm2)->YoungsModulus, 101010101.0);
 	Test.TestEqual("Cm2 damping", (*Cm2)->SpookDamping, 0.24);
 	Test.TestEqual("Cm2 adhesive force", (*Cm2)->AdhesiveForce, 0.25);
-	Test.TestEqual(
-		"Cm2 adhesive overlap", (float) (*Cm2)->AdhesiveOverlap, AgxToUnrealDistance(0.26));
+	Test.TestEqual("Cm2 adhesive overlap", (*Cm2)->AdhesiveOverlap, AgxToUnrealDistance(0.26));
 
 	return true;
 }
@@ -3520,18 +3518,18 @@ bool FCheckAmorImportedCommand::Update()
 
 	Test.TestEqual(
 		"Body Thresholds MaxImpactSpeed",
-		(float) Body->MergeSplitProperties.Thresholds->MaxImpactSpeed, AgxToUnrealDistance(13.0));
+		Body->MergeSplitProperties.Thresholds->MaxImpactSpeed, AgxToUnrealDistance(13.0));
 	Test.TestEqual(
 		"Body Thresholds MaxRelativeNormalSpeed",
-		(float) Body->MergeSplitProperties.Thresholds->MaxRelativeNormalSpeed,
+		Body->MergeSplitProperties.Thresholds->MaxRelativeNormalSpeed,
 		AgxToUnrealDistance(14.0));
 	Test.TestEqual(
 		"Body Thresholds MaxRelativeTangentSpeed",
-		(float) Body->MergeSplitProperties.Thresholds->MaxRelativeTangentSpeed,
+		Body->MergeSplitProperties.Thresholds->MaxRelativeTangentSpeed,
 		AgxToUnrealDistance(15.0));
 	Test.TestEqual(
 		"Body Thresholds MaxRollingSpeed",
-		(float) Body->MergeSplitProperties.Thresholds->MaxRollingSpeed, AgxToUnrealDistance(16.0));
+		Body->MergeSplitProperties.Thresholds->MaxRollingSpeed, AgxToUnrealDistance(16.0));
 	Test.TestTrue(
 		"Body Thresholds MaySplitInGravityField",
 		Body->MergeSplitProperties.Thresholds->bMaySplitInGravityField);
