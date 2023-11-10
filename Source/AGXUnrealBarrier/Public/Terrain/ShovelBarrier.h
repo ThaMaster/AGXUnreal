@@ -69,6 +69,9 @@ public:
 	void SetSecondarySeparationDeadloadLimit(double SecondarySeparationDeadloadLimit);
 	double GetSecondarySeparationDeadloadLimit() const;
 
+	void SetInnerContactArea(double InnerContactArea);
+	double GetInnerContactArea() const;
+
 	void SetPenetrationDepthThreshold(double PenetrationDepthThreshold);
 	double GetPenetrationDepthThreshold() const;
 

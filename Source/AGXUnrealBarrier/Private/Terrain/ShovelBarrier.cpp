@@ -181,6 +181,22 @@ double FShovelBarrier::GetSecondarySeparationDeadloadLimit() const
 	return NativeRef->Native->getSecondarySeparationDeadloadLimit();
 }
 
+
+void FShovelBarrier::SetInnerContactArea(double InnerContactArea)
+{
+	check(HasNative());
+	const agx::Real AreaAGX = ConvertAreaToAGX(InnerContactArea);
+	NativeRef->Native->setInnerContactArea(AreaAGX);
+}
+
+double FShovelBarrier::GetInnerContactArea() const
+{
+	check(HasNative());
+	const agx::Real AreaAGX = NativeRef->Native->getInnerContactArea();
+	const double AreaUnreal = ConvertAreaToUnreal<double>(AreaAGX);
+	return AreaUnreal;
+}
+
 void FShovelBarrier::SetPenetrationDepthThreshold(double PenetrationDepthThreshold)
 {
 	check(HasNative());
