@@ -160,8 +160,7 @@ namespace
 
 	void ReadTireModels(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects,
-		TArray<const agx::Constraint*>& NonFreeConstraint)
+		FSimulationObjectCollection& OutSimObjects, TSet<const agx::Constraint*>& NonFreeConstraint)
 	{
 		const agxSDK::AssemblyHash& Assemblies = Simulation.getAssemblies();
 
@@ -213,8 +212,7 @@ namespace
 
 	void ReadTracks(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects,
-		TArray<const agx::Constraint*>& NonFreeConstraint)
+		FSimulationObjectCollection& OutSimObjects, TSet<const agx::Constraint*>& NonFreeConstraint)
 	{
 		agxVehicle::TrackPtrVector Tracks = agxVehicle::Track::findAll(&Simulation);
 
@@ -242,13 +240,14 @@ namespace
 	// Reads and instantiates all Geometries not owned by a RigidBody.
 	void ReadBodilessGeometries(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects)
+		FSimulationObjectCollection& OutSimObjects,
+		TSet<const agxCollide::Geometry*>& NonFreeGeometries)
 	{
 		const agxCollide::GeometryRefVector& Geometries = Simulation.getGeometries();
-
 		for (const agxCollide::GeometryRef& Geometry : Geometries)
 		{
-			if (Geometry == nullptr || Geometry->getRigidBody() != nullptr)
+			if (Geometry == nullptr || Geometry->getRigidBody() != nullptr ||
+				NonFreeGeometries.Contains(Geometry))
 			{
 				continue;
 			}
@@ -260,7 +259,7 @@ namespace
 	void ReadConstraints(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FSimulationObjectCollection& OutSimObjects,
-		const TArray<const agx::Constraint*>& NonFreeConstraint)
+		const TSet<const agx::Constraint*>& NonFreeConstraint)
 	{
 		agx::ConstraintRefSetVector& Constraints = Simulation.getConstraints();
 		for (agx::ConstraintRef& Constraint : Constraints)
@@ -366,10 +365,15 @@ namespace
 	void ReadShovels(
 		agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects,
 		TSet<const agx::RigidBody*>& NonFreeBodies,
-		TArray<const agx::Constraint*>& NonFreeConstraints)
+		TSet<const agxCollide::Geometry*>& NonFreeGeometries,
+		TSet<const agx::Constraint*>& NonFreeConstraints)
 	{
+		// Shovels are found though Terrains, but a single Shovel may exist in multiple Terrains.
+		// This set tracks unique shovels we find.
 		TSet<agxTerrain::Shovel*> SeenShovels;
 
+		// Loop through the Terrains and extract all Shovels. Also extract any internal Rigid
+		// Bodies, Geometries, and Constraints that should not be turned into Actor Components.
 		agxTerrain::TerrainPtrVector Terrains = agxTerrain::Terrain::findAll(&Simulation);
 		for (agxTerrain::Terrain* Terrain : Terrains)
 		{
@@ -381,14 +385,17 @@ namespace
 
 				SeenShovels.Add(Shovel);
 
-				// Shovels contains a bunch of rigid bodies that are internal to the shovel, or
-				// rather shovel-terrain pairs, that should not be turned in Rigid Body Components.
-				// Add all such bodies are fetched and added to the non-free bodies below.
+				// Shovels contains a bunch of rigid bodies, geometries, and constraints that are
+				// internal to the shovel, or rather shovel-terrain pairs, that should not be turned
+				// in Actor Components. Add all such objects are fetched and added to the
+				// non-free sets.
 				//
-				// todo This code has been written for AGX Dynamics 2.36.1. There are changes to the
-				// wedges made in later 2.36 versions and 2.37.
+				// todo This code has been written for AGX Dynamics 2.36.1. There are changes made
+				// in later 2.36 versions and 2.37.
 
+				// Tools is the entry-point to everything Terrain-Shovel related.
 				agxTerrain::TerrainToolCollection* Tools = Terrain->getToolCollection(Shovel);
+				NonFreeGeometries.Add(Tools->getActiveZone()->getGeometry());
 
 				// The primary excavator is accessed through the soil particle aggregate.
 				agxTerrain::SoilParticleAggregate* Aggregate = Tools->getSoilParticleAggregate();
@@ -397,6 +404,7 @@ namespace
 				NonFreeConstraints.Add(Aggregate->getLockJoint());
 
 				// All other excavators are accessed through their respective deform controllers.
+				agxTerrain::DeformController* DeformController = Tools->getDeformController();
 				using EExcavationMode = agxTerrain::Shovel::ExcavationMode;
 				for (EExcavationMode ExcavationMode :
 					 {EExcavationMode::DEFORM_BACK, EExcavationMode::DEFORM_LEFT,
@@ -404,18 +412,31 @@ namespace
 				{
 					const agx::UInt DeformersId = static_cast<agx::UInt>(ExcavationMode) - 1;
 					agxTerrain::DeformerCollection* Deformers =
-						Tools->getDeformController()->getDeformerCollection(DeformersId);
+						DeformController->getDeformerCollection(DeformersId);
 					NonFreeBodies.Add(Deformers->getAggregate()->getWedgeBody());
 					NonFreeBodies.Add(Deformers->getAggregate()->getInnerBody());
 					NonFreeConstraints.Add(Deformers->getAggregate()->getLockJoint());
+
+					// In addition to the soil particle aggregate objects, a deformer also has an
+					// active zone with a geometry.
+					NonFreeGeometries.Add(Deformers->getActiveZone()->getGeometry());
 				}
 
-				// The penetration prismatic is not related to any particular aggregate.
+				// Each shovel holds a bunch of internal convex shapes for each Terrain.
+				const agxCollide::GeometryRefVector& InternalGeometries =
+					Tools->getVoxelCollisionGeometries();
+				for (const agxCollide::GeometryRef& InternalGeometry : InternalGeometries)
+				{
+					NonFreeGeometries.Add(InternalGeometry);
+				}
+
+				// Each shovel holds a prismatic for each terrain.
 				NonFreeConstraints.Add(
 					Tools->getPenetrationResistance()->getPenetrationPrismatic());
 			}
 		}
 
+		// All shovels found, record them.
 		for (agxTerrain::Shovel* Shovel : SeenShovels)
 		{
 			OutSimObjects.GetShovels().Add(AGXBarrierFactories::CreateShovelBarrier(Shovel));
@@ -446,13 +467,18 @@ namespace
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FSimulationObjectCollection& OutSimObjects)
 	{
+		// These contain objects that are not free-standing but owned by something else and will
+		// be created by that something else. Should not result in Actor Components in the imported
+		// Actor or Blueprint.
 		TSet<const agx::RigidBody*> NonFreeBodies;
-		TArray<const agx::Constraint*> NonFreeConstraints;
+		TSet<const agxCollide::Geometry*> NonFreeGeometries;
+		TSet<const agx::Constraint*> NonFreeConstraints;
 
 		ReadMaterials(Simulation, OutSimObjects);
 		ReadTireModels(Simulation, Filename, OutSimObjects, NonFreeConstraints);
-		ReadShovels(Simulation, OutSimObjects, NonFreeBodies, NonFreeConstraints);
-		ReadBodilessGeometries(Simulation, Filename, OutSimObjects);
+		ReadShovels(
+			Simulation, OutSimObjects, NonFreeBodies, NonFreeGeometries, NonFreeConstraints);
+		ReadBodilessGeometries(Simulation, Filename, OutSimObjects, NonFreeGeometries);
 		ReadRigidBodies(Simulation, Filename, OutSimObjects, NonFreeBodies);
 		ReadTracks(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadConstraints(Simulation, Filename, OutSimObjects, NonFreeConstraints);
