@@ -19,6 +19,7 @@
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Terrain/AGX_ShovelComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
@@ -3660,6 +3661,108 @@ bool FClearAmorImportedCommand::Update()
 	ExpectedFiles.Add(*BaseBlueprintName);
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("amor_build"), ExpectedFiles);
+
+	return true;
+}
+
+//
+// Shovel test starts here.
+//
+
+class FImporterToBlueprint_ShovelTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckShovelImportedCommand, FImporterToBlueprint_ShovelTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearShovelImportedCommand, FImporterToBlueprint_ShovelTest&, Test);
+
+class FImporterToBlueprint_ShovelTest final : public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FImporterToBlueprint_ShovelTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FImporterToBlueprint_ShovelTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.Shovel"))
+	{
+	}
+
+	UBlueprint* Contents = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveBlueprintCommand(TEXT("terrain_build.agx"), Contents, *this));
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckShovelImportedCommand(*this));
+		ADD_LATENT_AUTOMATION_COMMAND(FClearShovelImportedCommand(*this));
+		return true;
+	}
+};
+
+namespace
+{
+	FImporterToBlueprint_ShovelTest ImporterToBlueprint_ShovelTest;
+}
+
+bool FCheckShovelImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import Shovel test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported Components. The test for the number of Components is a safety check.
+	// It should be updated whenever the test scene is changed.
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
+	// One Rigid Body (1), two Shape (3), one Shovel (4), one Contact Material Registrar (5), and
+	// Model Source (6), and one default scene root (7).
+	const int32 ExpectedNumComponents {7};
+	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), ExpectedNumComponents);
+
+	UAGX_RigidBodyComponent* Body = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Shovel Body"));
+	Test.TestEqual(
+		TEXT("Body Import GUID"), Body->ImportGuid.ToString(EGuidFormats::DigitsWithHyphensLower),
+		TEXT("8c48a356-d44b-1f4a-134c-e7e7a1f4c003"));
+
+	// todo More code here.
+
+	return true;
+}
+
+bool FClearShovelImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	// clang-format off
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("BP_terrain_build.uasset"),
+			*BaseBlueprintName,
+		TEXT("Blueprint"),
+		TEXT("ContactMaterial"),
+			TEXT("CM_agxTerrainTerrainAggregateDefault.uasset"),
+			TEXT("CM_agxTerrainTerrainParticleagxTerrainTerrainParticle.uasset"),
+			TEXT("CM_agxTerrainTerrainTerrainagxTerrainTerrainAggregate.uasset"),
+			TEXT("CM_agxTerrainTerrainTerrainagxTerrainTerrainParticle.uasset"),
+		TEXT("ShapeMaterial"),
+			TEXT("agxTerrainTerrainAggregate.uasset"),
+			TEXT("agxTerrainTerrainParticle.uasset"),
+			TEXT("agxTerrainTerrainTerrain.uasset"),
+		TEXT("ShovelProperties"),
+			TEXT("AGX_SP_ShovelBody.uasset")
+	};
+	// clang-format on
+
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("terrain_build"), ExpectedFiles);
 
 	return true;
 }
