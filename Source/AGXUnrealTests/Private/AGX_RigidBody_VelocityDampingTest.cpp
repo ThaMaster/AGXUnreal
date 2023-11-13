@@ -9,9 +9,9 @@
 #include "AGX_PlayInEditorUtils.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "AgxAutomationCommon.h"
 
 // Unreal Engine includes.
-#include "AgxAutomationCommon.h"
 #include "Editor.h"
 #include "GameFramework/Actor.h"
 #include "Misc/AutomationTest.h"
