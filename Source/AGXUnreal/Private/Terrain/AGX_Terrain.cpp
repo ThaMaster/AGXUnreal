@@ -1295,10 +1295,6 @@ void AAGX_Terrain::CreateNativeShovels()
 			}
 			continue;
 		}
-
-		UE_LOG(
-			LogAGX, Warning, TEXT("Shovel '%s' added to Terrain '%s'"), *ShovelComponent->GetName(),
-			*GetLabelSafe(this));
 	}
 }
 

@@ -79,8 +79,6 @@ struct FShovelVisualizerOperations
 		FAGX_ShovelComponentVisualizer& Visualizer, const UAGX_ShovelComponent& Shovel,
 		HShovelHitProxy& Proxy, FEditorViewportClient& InViewportClient)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("ShovelProxyClicked: Clicked shovel %p."), &Shovel);
-
 		if (Proxy.Frame == Visualizer.SelectedFrame)
 		{
 			// Clicking a selected node deselects it.
@@ -153,7 +151,6 @@ struct FShovelVisualizerOperations
 		FAGX_ShovelComponentVisualizer& Visualizer, UAGX_ShovelComponent& Shovel,
 		FEditorViewportClient& ViewportClient, const FVector& DeltaTranslate)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("MoveFrame: Moving frame for shovel %p."), &Shovel);
 		FAGX_Frame* Frame = Visualizer.GetSelectedFrame();
 		EAGX_ShovelFrame FrameSource = Visualizer.GetSelectedFrameSource();
 		// Consider transforming DeltaTranslate to the  local coordinate system and doing the
@@ -163,7 +160,6 @@ struct FShovelVisualizerOperations
 			Pose.LocalToWorld.TransformPosition(Pose.LocalLocation);
 		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
 		FVector NewLocalLocation = Pose.LocalToWorld.InverseTransformPosition(NewWorldLocation);
-		UE_LOG(LogAGX, Warning, TEXT("Truncating new local location for details panel"));
 		FAGX_ShovelUtilities::TruncateForDetailsPanel(NewLocalLocation);
 		Shovel.Modify();
 		Shovel.GetFrame(FrameSource)->LocalLocation = NewLocalLocation;
@@ -195,8 +191,6 @@ struct FShovelVisualizerOperations
 		FAGX_ShovelComponentVisualizer& Visualizer, UAGX_ShovelComponent& Shovel,
 		FEditorViewportClient& ViewportClient, const FRotator& DeltaRotate)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("RotateFrame: Rotating frame for shovel %p."), &Shovel);
-
 		FAGX_Frame* Frame = Visualizer.GetSelectedFrame();
 		EAGX_ShovelFrame FrameSource = Visualizer.GetSelectedFrameSource();
 		FAGX_ShovelFramePose Pose = GetShovelPose(*Frame, Shovel);
@@ -210,7 +204,6 @@ struct FShovelVisualizerOperations
 		const FQuat NewLocal = Pose.LocalToWorld.GetRotation().Inverse() * NewWorld;
 		FRotator NewLocalRotation = NewLocal.Rotator();
 
-		UE_LOG(LogAGX, Warning, TEXT("Truncating new local rotation for details panel."));
 		FAGX_ShovelUtilities::TruncateForDetailsPanel(NewLocalRotation);
 		Shovel.Modify();
 		Frame->LocalRotation = NewLocalRotation;
@@ -336,17 +329,14 @@ struct FShovelVisualizerOperations
 
 		// Get archetype, which should be a Blueprint CSC node's template Component.
 		UAGX_ShovelComponent* Archetype = Cast<UAGX_ShovelComponent>(Shovel.GetArchetype());
-		UE_LOG(LogAGX, Warning, TEXT("  Archetype:   %p, %s."), Archetype, *Archetype->GetName());
-		UE_LOG(
-			LogAGX, Warning, TEXT("  Default obj: %p, %s."),
-			UAGX_ShovelComponent::StaticClass()->GetDefaultObject(),
-			*UAGX_ShovelComponent::StaticClass()->GetDefaultObject()->GetName());
 		AGX_CHECK(Archetype != nullptr);
 		if (Archetype == nullptr)
 		{
+			// Don't think this can even happen. Leaving a log message so we can be made aware if it
+			// even does.
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("AGX_ShovelComponentVisualzier::NotifyFrameModified found a preview shovel "
+				TEXT("AGX_ShovelComponentVisualizer::NotifyFrameModified found a preview shovel "
 					 "named '%s' that does not have an archetype."),
 				*Shovel.GetName());
 			return;
@@ -360,6 +350,8 @@ struct FShovelVisualizerOperations
 		AGX_CHECK(Archetype != UAGX_ShovelComponent::StaticClass()->GetDefaultObject());
 		if (Archetype == UAGX_ShovelComponent::StaticClass()->GetDefaultObject())
 		{
+			// Don't think this can even happen. Leaving a log message so we can be made aware if it
+			// even does.
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("AGX_ShovelComponentVisualzier::NotifyFrameModified found a preview shovel "
@@ -479,17 +471,13 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 	const UAGX_ShovelComponent* Shovel = Cast<UAGX_ShovelComponent>(Component);
 	if (Component == nullptr)
 	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("DrawVisualization: For component %p that is not a shovel."),
-			Component);
+		// Visualizing something not a Shovel, assume we lost the shovel selection.
 		ClearSelection();
 		return;
 	}
 
 	const bool bSelected = FShovelVisualizerOperations::IsSelected(*Shovel);
 	const bool bEditable = bSelected;
-
-	// UE_LOG(LogAGX, Warning, TEXT("DrawVisualization: For shovel %p."), Shovel);
 
 	const float PointSize {FAGX_ShovelUtilities::HitProxySize};
 
@@ -555,7 +543,6 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 			// Do not maintain a frame selection if the selected shovel isn't selected anymore.
 			// This is so that the transform widget is placed at the newly selected Component
 			// instead of at the now no longer selected frame.
-			UE_LOG(LogAGX, Warning, TEXT("Shovel Visualizer lost selection."));
 			ClearSelection();
 		}
 	}
@@ -572,225 +559,6 @@ bool FAGX_ShovelComponentVisualizer::VisProxyHandleClick(
 		ClearSelection();
 		return false;
 	}
-
-	UE_LOG(LogAGX, Warning, TEXT("VisProxyHandleClick: Clicked proxy for shovel %p."), Shovel);
-
-	bool Bail = false;
-
-	UAGX_ShovelComponent* Archetype = Cast<UAGX_ShovelComponent>(Shovel->GetArchetype());
-	UAGX_ShovelComponent* CDO =
-		Cast<UAGX_ShovelComponent>(UAGX_ShovelComponent::StaticClass()->GetDefaultObject(true));
-
-	UE_LOG(LogAGX, Warning, TEXT("Shovel: %p: %s"), Shovel, *Shovel->GetName());
-	UE_LOG(
-		LogAGX, Warning, TEXT("Archetype: %p: %s"), Archetype,
-		(Archetype != nullptr ? *Archetype->GetName() : TEXT("")));
-	UE_LOG(
-		LogAGX, Warning, TEXT("COD: %p: %s. Parent=%p: %s. Owner=%p: %s, preview=%d, template=%d"),
-		CDO, *CDO->GetName(), CDO->GetArchetype(),
-		(CDO->GetArchetype() != nullptr ? *CDO->GetArchetype()->GetName() : TEXT("")),
-		CDO->GetOwner(), (CDO->GetOwner() != nullptr ? *CDO->GetOwner()->GetName() : TEXT("")),
-		(CDO->GetOwner() != nullptr ? FActorEditorUtils::IsAPreviewOrInactiveActor(CDO->GetOwner())
-									: 0),
-		CDO->IsTemplate());
-
-	{
-		UE_LOG(LogAGX, Warning, TEXT("All instances of the CDO:"));
-		TArray<UAGX_ShovelComponent*> AllInstances =
-			FAGX_ObjectUtilities::GetArchetypeInstances(*CDO);
-		for (UAGX_ShovelComponent* Instance : AllInstances)
-		{
-			UE_LOG(
-				LogAGX, Warning, TEXT("  %p: %s. Parent=%p. Owner=%p: %s, preview=%d, template=%d"),
-				Instance, *Instance->GetName(), Instance->GetArchetype(), Instance->GetOwner(),
-				(Instance->GetOwner() != nullptr ? *Instance->GetOwner()->GetName() : TEXT("")),
-				(Instance->GetOwner() != nullptr
-					 ? FActorEditorUtils::IsAPreviewOrInactiveActor(Instance->GetOwner())
-					 : 0),
-				Instance->IsTemplate());
-		}
-	}
-
-	TSharedPtr<IBlueprintEditor> ShovelBlueprintEditor =
-		FKismetEditorUtilities::GetIBlueprintEditorForObject(Shovel, false);
-	if (ShovelBlueprintEditor.IsValid())
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("VisProxyHandleClick: There is a Blueprint editor for shovel %p."), Shovel);
-		TArray<TSharedPtr<FSubobjectEditorTreeNode>> Selection =
-			ShovelBlueprintEditor->GetSelectedSubobjectEditorTreeNodes();
-		for (TSharedPtr<FSubobjectEditorTreeNode>& Selected : Selection)
-		{
-			const UActorComponent* SelectedComponent = Selected->GetComponentTemplate();
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("VisProxyHandleClick:   Selected object in shovel Blueprint editor: %p"),
-				Selected->GetComponentTemplate());
-			if (SelectedComponent == Shovel)
-			{
-				UE_LOG(LogAGX, Warning, TEXT("VisProxyHandleClick:   This is the shovel."));
-			}
-		}
-	}
-	else
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("VisProxyHandleClick: There is no Blueprint editor for shovel %p."), Shovel);
-	}
-
-	TSharedPtr<IBlueprintEditor> ArchetypeBlueprintEditor =
-		FKismetEditorUtilities::GetIBlueprintEditorForObject(Archetype, false);
-	if (ArchetypeBlueprintEditor.IsValid())
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("VisProxyHandleClick: There is a Blueprint editor for Archetype %p."), Archetype);
-		TArray<TSharedPtr<FSubobjectEditorTreeNode>> Selection =
-			ArchetypeBlueprintEditor->GetSelectedSubobjectEditorTreeNodes();
-		for (TSharedPtr<FSubobjectEditorTreeNode>& Selected : Selection)
-		{
-			const UActorComponent* SelectedComponent = Selected->GetComponentTemplate();
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("VisProxyHandleClick:   Selected object in Archetype Blueprint editor: %p"),
-				Selected->GetComponentTemplate());
-			if (SelectedComponent == Archetype)
-			{
-				UE_LOG(LogAGX, Warning, TEXT("VisProxyHandleClick:   This is the Archetype."));
-			}
-		}
-	}
-	else
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("VisProxyHandleClick: There is no Blueprint editor for archetype %p."), Archetype);
-	}
-
-	UBlueprint* ShovelBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*Shovel);
-	UBlueprint* ArchetypeBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*Archetype);
-	UE_LOG(LogAGX, Warning, TEXT("Shovel Blueprint: %p"), ShovelBlueprint);
-	UE_LOG(LogAGX, Warning, TEXT("Archetype Blueprint: %p"), ArchetypeBlueprint);
-
-	if (ShovelBlueprint != nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("VisProxyHandleClick: There is a Blueprint for Shovel %p."),
-			Shovel);
-		FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult Result =
-			FAGX_BlueprintUtilities::GetSCSNodeFromComponent(*ShovelBlueprint, Shovel, true);
-		if (Result.FoundNode != nullptr)
-		{
-			UAGX_ShovelComponent* Template =
-				Cast<UAGX_ShovelComponent>(Result.FoundNode->ComponentTemplate);
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("VisProxyHandleClick: The Shovel Blueprint has an SCS node for the "
-					 "Shovel %p with templace component %p."),
-				Shovel, Template);
-			if (Result.FoundNode->IsSelected())
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("VisProxyHandleClick: The SCS node reports that it is selected."));
-			}
-			TSharedPtr<IBlueprintEditor> BlueprintEditor =
-				FKismetEditorUtilities::GetIBlueprintEditorForObject(ShovelBlueprint, false);
-			if (BlueprintEditor.IsValid())
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("VisProxyHandleClick: There is a Blueprint Editor for the shovel "
-						 "Blueprint, getting its selection."));
-				TArray<TSharedPtr<FSubobjectEditorTreeNode>> Selection =
-					BlueprintEditor->GetSelectedSubobjectEditorTreeNodes();
-				for (TSharedPtr<FSubobjectEditorTreeNode>& Selected : Selection)
-				{
-					const UActorComponent* SelectedComponent = Selected->GetComponentTemplate();
-					UE_LOG(
-						LogAGX, Warning,
-						TEXT("VisProxyHandleClick:   Selected object in shovel Blueprint editor: "
-							 "%p"),
-						Selected->GetComponentTemplate());
-					if (SelectedComponent == Shovel)
-					{
-						UE_LOG(LogAGX, Warning, TEXT("VisProxyHandleClick:   This is the shovel."));
-					}
-				}
-			}
-		}
-		else
-		{
-			UE_LOG(
-				LogAGX, Warning, TEXT("Did not find a SCS Node for Shovel %p in the Blueprint."),
-				Shovel);
-		}
-	}
-
-	if (ArchetypeBlueprint != nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("VisProxyHandleClick: There is a Blueprint for Archetype %p."),
-			Archetype);
-		FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult Result =
-			FAGX_BlueprintUtilities::GetSCSNodeFromComponent(*ArchetypeBlueprint, Archetype, true);
-		if (Result.FoundNode != nullptr)
-		{
-			UAGX_ShovelComponent* Template =
-				Cast<UAGX_ShovelComponent>(Result.FoundNode->ComponentTemplate);
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("VisProxyHandleClick: The Archetype Blueprint has an SCS node for the "
-					 "Archetype %p with templace component %p."),
-				Archetype, Template);
-			if (Result.FoundNode->IsSelected())
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("VisProxyHandleClick: The SCS node reports that it is selected."));
-			}
-			TSharedPtr<IBlueprintEditor> BlueprintEditor =
-				FKismetEditorUtilities::GetIBlueprintEditorForObject(ArchetypeBlueprint, false);
-			if (BlueprintEditor.IsValid())
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("VisProxyHandleClick: There is a Blueprint Editor for the Archetype "
-						 "Blueprint, getting its selection."));
-				TArray<TSharedPtr<FSubobjectEditorTreeNode>> Selection =
-					BlueprintEditor->GetSelectedSubobjectEditorTreeNodes();
-				for (TSharedPtr<FSubobjectEditorTreeNode>& Selected : Selection)
-				{
-					const UActorComponent* SelectedComponent = Selected->GetComponentTemplate();
-					UE_LOG(
-						LogAGX, Warning,
-						TEXT("VisProxyHandleClick:   Selected object in Archetype Blueprint "
-							 "editor: %p"),
-						Selected->GetComponentTemplate());
-					if (SelectedComponent == Archetype)
-					{
-						UE_LOG(
-							LogAGX, Warning, TEXT("VisProxyHandleClick:   This is the Archetype."));
-					}
-				}
-			}
-		}
-		else
-		{
-			UE_LOG(
-				LogAGX, Warning, TEXT("Did not find a SCS Node for Archetype %p in the Blueprint."),
-				Archetype);
-		}
-	}
-
-#if 0
-	if (Bail)
-	{
-		return false;
-	}
-#endif
 
 	AActor* OldOwningActor = ShovelPropertyPath.GetParentOwningActor();
 	AActor* NewOwningActor = Shovel->GetOwner();
@@ -870,25 +638,6 @@ bool FAGX_ShovelComponentVisualizer::HandleInputDelta(
 		return false;
 	}
 
-	AActor* Owner = Shovel->GetOwner();
-	if (Owner != nullptr)
-	{
-		UWorld* ShovelWorld = Owner->GetWorld();
-		UWorld* ViewportWorld =
-			(ViewportClient != nullptr && ViewportClient->GetPreviewScene() != nullptr)
-				? ViewportClient->GetPreviewScene()->GetWorld()
-				: nullptr;
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("HandleInputDelta: Selected shovel %p is in world %p, viewport world=%p"), Shovel,
-			ShovelWorld, ViewportWorld);
-	}
-	else
-	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("HandleInputDelta: Shovel %p does not have an owner."), Shovel);
-	}
-
 	if (HasValidFrameSection())
 	{
 		UAGX_ShovelComponent* ToModify = Shovel;
@@ -939,9 +688,6 @@ bool FAGX_ShovelComponentVisualizer::IsVisualizingArchetype() const
 
 void FAGX_ShovelComponentVisualizer::EndEditing()
 {
-	UAGX_ShovelComponent* Shovel = GetSelectedShovel();
-	UE_LOG(LogAGX, Warning, TEXT("Visualizer for %p is ending editing."), Shovel);
-
 	FComponentVisualizer::EndEditing();
 	ClearSelection();
 }
