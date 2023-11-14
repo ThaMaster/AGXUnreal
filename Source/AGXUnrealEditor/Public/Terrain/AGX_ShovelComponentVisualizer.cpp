@@ -533,7 +533,9 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 		const FRotator Rotation = Shovel->CuttingDirection.GetWorldRotation(*Shovel);
 		const FVector Direction = Rotation.RotateVector(FVector::ForwardVector);
 		const FVector EndLocation = BeginLocation + 100 * Direction;
-		const FLinearColor Color = FLinearColor::Red; //.Desaturate(0.5f);
+		// The color used by the diagram in the Shovel Setup section of the
+		// Terrain chapter of the AGX Dynamics user manual.
+		const FLinearColor Color = FLinearColor(FColor(143, 188, 143));
 		PDI->DrawLine(BeginLocation, EndLocation, Color, SDPG_Foreground, 1.0f);
 
 		if (bEditable)
