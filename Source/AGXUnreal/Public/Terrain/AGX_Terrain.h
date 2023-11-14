@@ -99,7 +99,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
 	bool GetCreateParticles() const;
 
-	/** Whether the native terrain simulation should auto-delete particles that are out of bounds.
+	/**
+	 * Whether the native terrain simulation should auto-delete particles that are out of bounds.
+	 *
+	 * Cannot be combined with Terrain Paging.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "!bEnableTerrainPaging"))
