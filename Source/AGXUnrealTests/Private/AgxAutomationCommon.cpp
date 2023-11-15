@@ -11,6 +11,7 @@
 
 // Unreal Engine includes.
 #include "Editor.h"
+#include "Engine/Blueprint.h"
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/SCS_Node.h"
@@ -601,3 +602,37 @@ void AgxAutomationCommon::FAgxAutomationTest::GetTests(
 	OutBeautifiedNames.Add(GetBeautifiedTestName());
 	OutTestCommands.Add(FString());
 };
+
+USCS_Node* AgxAutomationCommon::GetNodeChecked(const UBlueprint& Blueprint, const FString& Name)
+{
+	USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
+	if (Node == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("Did not find SCS Node '%s' in the Blueprint."), *Name);
+		return nullptr;
+	}
+
+	return Node;
+}
+
+USCS_Node* AgxAutomationCommon::GetOnlyAttachChildChecked(USCS_Node* Node)
+{
+	if (Node == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("GetOnlyAttachChildChecked failed because the passed Node was nullptr."));
+		return nullptr;
+	}
+
+	const auto& Children = Node->GetChildNodes();
+	if (Children.Num() != 1)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("Number of children of node '%s' was expected to be 1 but was %d."),
+			*Node->GetVariableName().ToString(), Children.Num());
+		return nullptr;
+	}
+
+	return Children[0];
+}
