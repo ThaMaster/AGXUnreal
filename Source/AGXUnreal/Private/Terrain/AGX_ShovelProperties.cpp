@@ -10,6 +10,9 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Terrain/AGX_ShovelComponent.h"
 
+// Unreal Engine includes.
+#include "UObject/UObjectGlobals.h"
+
 template <typename StorageT, typename ParameterT>
 void SetAndPropagateShovelProperty(
 	UAGX_ShovelProperties& Properties, TArray<TWeakObjectPtr<UAGX_ShovelComponent>>& Shovels,
@@ -198,19 +201,9 @@ UAGX_ShovelProperties* UAGX_ShovelProperties::GetOrCreateInstance(UWorld* Playin
 		return nullptr;
 	}
 
-	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
-	if (Outer == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Could not create Shovel Properties instance because there is no AGX Simulation "
-				 "in the world."));
-		return nullptr;
-	}
-
 	const FString InstanceName = GetName() + "_Instance";
 	UAGX_ShovelProperties* NewInstance =
-		NewObject<UAGX_ShovelProperties>(Outer, *InstanceName, RF_Transient, this);
+		NewObject<UAGX_ShovelProperties>(GetTransientPackage(), *InstanceName, RF_Transient, this);
 	NewInstance->Asset = this;
 	this->Instance = NewInstance;
 	return NewInstance;
