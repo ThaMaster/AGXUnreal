@@ -25,7 +25,7 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
-#include "Utilities/AGX_TextureUtilities.h"
+#include "Utilities/AGX_RenderUtilities.h"
 
 // Unreal Engine includes.
 #include "Landscape.h"
@@ -1311,7 +1311,7 @@ void AAGX_Terrain::UpdateDisplacementMap()
 
 	const uint32 BytesPerPixel = sizeof(FFloat16);
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
-	FAGX_TextureUtilities::UpdateRenderTextureRegions(
+	FAGX_RenderUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
 		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
@@ -1341,7 +1341,7 @@ void AAGX_Terrain::ClearDisplacementMap()
 		Displacement = FFloat16();
 	}
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
-	FAGX_TextureUtilities::UpdateRenderTextureRegions(
+	FAGX_RenderUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
 		NumVerticesX * BytesPerPixel, BytesPerPixel, PixelData, false);
 }
@@ -1520,7 +1520,7 @@ void AAGX_Terrain::UpdateParticlesMap()
 	}
 
 	uint8* PixelData = reinterpret_cast<uint8*>(TerrainParticlesData.GetData());
-	FAGX_TextureUtilities::UpdateRenderTextureRegions(
+	FAGX_RenderUtilities::UpdateRenderTextureRegions(
 		*TerrainParticlesDataMap, 1, ParticlesDataMapRegions.GetData(),
 		ResolutionX * NumBytesPerPixel, NumBytesPerPixel, PixelData, false);
 }
@@ -1552,7 +1552,7 @@ void AAGX_Terrain::ClearParticlesMap()
 		Pixel = FFloat32();
 	}
 	uint8* PixelData = reinterpret_cast<uint8*>(TerrainParticlesData.GetData());
-	FAGX_TextureUtilities::UpdateRenderTextureRegions(
+	FAGX_RenderUtilities::UpdateRenderTextureRegions(
 		*TerrainParticlesDataMap, 1, ParticlesDataMapRegions.GetData(),
 		ResolutionX * NumBytesPerPixel, NumBytesPerPixel, PixelData, false);
 }

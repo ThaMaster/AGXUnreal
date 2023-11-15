@@ -15,12 +15,16 @@
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
+#include "Materials/AGX_TerrainMaterial.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/ShapeBarrier.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Tires/AGX_TireComponent.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
+#include "Vehicle/AGX_TrackProperties.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Utilities/AGX_RenderUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_Stats.h"
 #include "Wire/AGX_WireComponent.h"
@@ -31,6 +35,9 @@
 #include "HAL/PlatformTime.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/Paths.h"
+#if WITH_EDITORONLY_DATA
+#include "Subsystems/AssetEditorSubsystem.h"
+#endif 
 
 #include <algorithm>
 
@@ -182,6 +189,28 @@ namespace AGX_Simulation_helpers
 
 		return LoadObject<T>(GetTransientPackage(), *Path.GetAssetPathString());
 	}
+
+#if WITH_EDITOR
+	template <typename T>
+	void CloseInstancedAssetEditors()
+	{
+		UPackage* TransientPackage = GetTransientPackage();
+		for (TObjectIterator<T> ObjectIt; ObjectIt; ++ObjectIt)
+		{
+			UPackage* Package = Cast<UPackage>((*ObjectIt)->GetOuter());
+			if (Package != TransientPackage)
+			{
+				continue;
+			}
+
+			if ((*ObjectIt)->IsInstance())
+			{
+				GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllEditorsForAsset(
+					*ObjectIt);
+			}
+		}
+	}
+#endif
 }
 
 void UAGX_Simulation::Add(UAGX_ConstraintComponent& Constraint)
@@ -517,6 +546,21 @@ void UAGX_Simulation::SetEnableCollision(
 	FSimulationBarrier::SetEnableCollision(*Body1.GetNative(), *Body2.GetNative(), Enable);
 }
 
+TArray<FAGX_ShapeContact> UAGX_Simulation::GetShapeContacts() const
+{
+	if (!HasNative())
+		return TArray<FAGX_ShapeContact>();
+
+	TArray<FShapeContactBarrier> Barriers = NativeBarrier.GetShapeContacts();
+	TArray<FAGX_ShapeContact> ShapeContacts;
+	ShapeContacts.Reserve(Barriers.Num());
+	for (FShapeContactBarrier& Barrier : Barriers)
+	{
+		ShapeContacts.Emplace(std::move(Barrier));
+	}
+	return ShapeContacts;
+}
+
 void UAGX_Simulation::SetEnableContactWarmstarting(bool bEnable)
 {
 	bContactWarmstarting = bEnable;
@@ -583,6 +627,24 @@ void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 
 void UAGX_Simulation::Deinitialize()
 {
+	using namespace AGX_Simulation_helpers;
+
+	// Explicitly close any asset editors that may be open.
+	// This fixes a crash where if any asset instances have an editor opened for them,
+	// the Unreal Editor would crash on Stop.
+#if WITH_EDITOR
+	CloseInstancedAssetEditors<UAGX_ContactMaterial>();
+	CloseInstancedAssetEditors<UAGX_TerrainMaterial>();
+	CloseInstancedAssetEditors<UAGX_ShapeMaterial>();
+
+	CloseInstancedAssetEditors<UAGX_ConstraintMergeSplitThresholds>();
+	CloseInstancedAssetEditors<UAGX_ShapeContactMergeSplitThresholds>();
+	CloseInstancedAssetEditors<UAGX_WireMergeSplitThresholds>();
+
+	CloseInstancedAssetEditors<UAGX_TrackInternalMergeProperties>();
+	CloseInstancedAssetEditors<UAGX_TrackProperties>();
+#endif
+
 	Super::Deinitialize();
 	if (!HasNative())
 	{
@@ -896,6 +958,15 @@ void UAGX_Simulation::Step(float DeltaTime)
 	{
 		FAGX_Statistics AGXStatistics = GetStatistics();
 		ReportStepStatistics(AGXStatistics);
+	}
+
+	if (bDrawShapeContacts)
+	{
+		// The LifeTime argument below is set such that the points will be drawn even during pause.
+		// It is somewhat of a hack, but is the best solution known currently without making e.g.
+		// a specialized Primitive Component or similar talking to the GPU more directly.
+		FAGX_RenderUtilities::DrawContactPoints(
+			NativeBarrier.GetShapeContacts(), DeltaTime * 1.5f, GetWorld());
 	}
 }
 

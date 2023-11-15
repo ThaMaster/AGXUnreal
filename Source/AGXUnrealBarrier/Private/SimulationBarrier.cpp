@@ -403,6 +403,29 @@ TArray<FShapeContactBarrier> FSimulationBarrier::GetShapeContacts(const FShapeBa
 	return Contacts;
 }
 
+TArray<FShapeContactBarrier> FSimulationBarrier::GetShapeContacts() const
+{
+	check(HasNative());
+	
+	TArray<FShapeContactBarrier> ShapeContactBarriers;
+
+	const agxCollide::GeometryContactPtrVector& ContactVectorAGX =
+		NativeRef->Native->getSpace()->getGeometryContacts();
+	if (ContactVectorAGX.size() == 0)
+		return ShapeContactBarriers;
+
+	ShapeContactBarriers.Reserve(ContactVectorAGX.size());
+	for (agxCollide::GeometryContact* ContactAGX : ContactVectorAGX)
+	{
+		if (ContactAGX == nullptr || !ContactAGX->isValid())
+			continue;
+
+		ShapeContactBarriers.Add(AGXBarrierFactories::CreateShapeContactBarrier(*ContactAGX));
+	}
+
+	return ShapeContactBarriers;
+}
+
 void FSimulationBarrier::Step()
 {
 	check(HasNative());
