@@ -1293,7 +1293,6 @@ void AAGX_Terrain::CreateNativeShovels()
 					*GetLabelSafe(this), *GetNameSafe(ShovelComponent),
 					*GetLabelSafe(ShovelComponent->GetOwner()));
 			}
-			continue;
 		}
 	}
 }
@@ -1397,7 +1396,7 @@ void AAGX_Terrain::InitializeDisplacementMap()
 			TEXT("The size of the Displacement Map render target (%dx%d) for "
 				 "AGX Terrain '%s' does not match the vertices in the Terrain (%dx%d). "
 				 "Resizing the displacement map."),
-			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(),
+			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetLabelSafe(this),
 			NumVerticesX, NumVerticesY);
 
 		LandscapeDisplacementMap->ResizeTarget(NumVerticesX, NumVerticesY);

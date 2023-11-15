@@ -481,10 +481,6 @@ void UAGX_ShovelComponent::AllocateNative()
 
 	// No need to add Shovel to Simulation. Shovels only needs to be added to the Terrain, and that
 	// is handled by the Terrain itself.
-
-	UE_LOG(
-		LogAGX, Log, TEXT("Shovel '%s' in '%s' has allocated AGX Dynamics native."), *GetName(),
-		*GetLabelSafe(GetOwner()));
 }
 
 void UAGX_ShovelComponent::SetbEnable(bool bInEnable)

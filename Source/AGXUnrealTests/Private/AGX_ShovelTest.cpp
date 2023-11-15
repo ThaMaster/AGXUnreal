@@ -37,10 +37,7 @@ bool FCheckShovelDiggingCommand::Update()
 	check(World != nullptr);
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(World);
 	FAGX_Statistics Statistics = Simulation->GetStatistics();
-
 	Test.TestTrue(TEXT("Number of particles in statistics."), Statistics.NumParticles > 0);
-	UE_LOG(LogAGX, Warning, TEXT("Number of particles: %d"), Statistics.NumParticles);
-
 	TArray<AActor*> AllTerrains;
 	UGameplayStatics::GetAllActorsOfClass(World, AAGX_Terrain::StaticClass(), AllTerrains);
 	Test.TestEqual(TEXT("Number of terrains"), AllTerrains.Num(), 1);
@@ -50,7 +47,6 @@ bool FCheckShovelDiggingCommand::Update()
 	Test.TestNotNull(TEXT("Terrain"), Terrain);
 	if (Terrain == nullptr)
 		return true;
-
 	Test.TestTrue(TEXT("Number of particles in Terrain."), Terrain->GetNumParticles() > 0);
 	return true;
 }

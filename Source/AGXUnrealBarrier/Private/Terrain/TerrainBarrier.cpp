@@ -54,7 +54,6 @@ void FTerrainBarrier::AllocateNative(FHeightFieldShapeBarrier& SourceHeightField
 	agxCollide::HeightField* HeightFieldAGX =
 		SourceHeightField.GetNativeShape<agxCollide::HeightField>();
 	NativeRef->Native = agxTerrain::Terrain::createFromHeightField(HeightFieldAGX, MaxDepthAGX);
-	UE_LOG(LogAGX, Log, TEXT("Native terrain allocated."));
 }
 
 FTerrainRef* FTerrainBarrier::GetNative()
