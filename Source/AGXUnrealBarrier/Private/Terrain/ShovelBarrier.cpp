@@ -64,7 +64,6 @@ FTwoVectors FShovelBarrier::GetCuttingEdge() const
 	const agx::Line CuttingEdgeAGX = NativeRef->Native->getCuttingEdge();
 	const FTwoVectors CuttingEdgeUnreal = ConvertDisplacement(CuttingEdgeAGX);
 	return CuttingEdgeUnreal;
-
 }
 
 void FShovelBarrier::SetCuttingDirection(const FVector& CuttingDirection)
@@ -97,49 +96,61 @@ int32 FShovelBarrier::GetNumberOfTeeth() const
 void FShovelBarrier::SetToothLength(double ToothLength)
 {
 	check(HasNative());
-	NativeRef->Native->setToothLength(ConvertDistanceToAGX(ToothLength));
+	const agx::Real LengthAGX = ConvertDistanceToAGX(ToothLength);
+	NativeRef->Native->setToothLength(LengthAGX);
 }
 
 double FShovelBarrier::GetToothLength() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getToothLength());
+	const agx::Real LengthAGX = NativeRef->Native->getToothLength();
+	const double LengthUnreal = ConvertDistanceToUnreal<double>(LengthAGX);
+	return LengthUnreal;
 }
 
 void FShovelBarrier::SetToothMinimumRadius(double MinimumToothRadius)
 {
 	check(HasNative());
-	NativeRef->Native->setToothMinimumRadius(ConvertDistanceToAGX(MinimumToothRadius));
+	const agx::Real RadiusAGX = ConvertDistanceToAGX(MinimumToothRadius);
+	NativeRef->Native->setToothMinimumRadius(RadiusAGX);
 }
 
 double FShovelBarrier::GetToothMinimumRadius() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getToothMinimumRadius());
+	const agx::Real RadiusAGX = NativeRef->Native->getToothMinimumRadius();
+	const double RadiusUnreal = ConvertDistanceToUnreal<double>(RadiusAGX);
+	return RadiusUnreal;
 }
 
 void FShovelBarrier::SetToothMaximumRadius(double MaximumToothRadius)
 {
 	check(HasNative());
-	NativeRef->Native->setToothMaximumRadius(ConvertDistanceToAGX(MaximumToothRadius));
+	const agx::Real RadiusAgx = ConvertDistanceToAGX(MaximumToothRadius);
+	NativeRef->Native->setToothMaximumRadius(RadiusAgx);
 }
 
 double FShovelBarrier::GetToothMaximumRadius() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getToothMaximumRadius());
+	const agx::Real RadiusAGX = NativeRef->Native->getToothMaximumRadius();
+	const double RadiusUnreal = ConvertDistanceToUnreal<double>(RadiusAGX);
+	return RadiusUnreal;
 }
 
 void FShovelBarrier::SetNoMergeExtensionDistance(double NoMergeExtensionDistance)
 {
 	check(HasNative());
-	NativeRef->Native->setNoMergeExtensionDistance(ConvertDistanceToAGX(NoMergeExtensionDistance));
+	const agx::Real DistanceAGX = ConvertDistanceToAGX(NoMergeExtensionDistance);
+	NativeRef->Native->setNoMergeExtensionDistance(DistanceAGX);
 }
 
 double FShovelBarrier::GetNoMergeExtensionDistance() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getNoMergeExtensionDistance());
+	const agx::Real DistanceAGX = NativeRef->Native->getNoMergeExtensionDistance();
+	const double DistanceUnreal = ConvertDistanceToUnreal<double>(DistanceAGX);
+	return DistanceUnreal;
 }
 
 void FShovelBarrier::SetMinimumSubmergedContactLengthFraction(
@@ -159,14 +170,16 @@ double FShovelBarrier::GetMinimumSubmergedContactLengthFraction() const
 void FShovelBarrier::SetVerticalBladeSoilMergeDistance(double VerticalBladeSoilMergeDistance)
 {
 	check(HasNative());
-	NativeRef->Native->setVerticalBladeSoilMergeDistance(
-		ConvertDistanceToAGX(VerticalBladeSoilMergeDistance));
+	const agx::Real DistanceAGX = ConvertDistanceToAGX(VerticalBladeSoilMergeDistance);
+	NativeRef->Native->setVerticalBladeSoilMergeDistance(DistanceAGX);
 }
 
 double FShovelBarrier::GetVerticalBladeSoilMergeDistance() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getVerticalBladeSoilMergeDistance());
+	const agx::Real DistanceAGX = NativeRef->Native->getVerticalBladeSoilMergeDistance();
+	const double DistanceUnreal = ConvertDistanceToUnreal<double>(DistanceAGX);
+	return DistanceUnreal;
 }
 
 void FShovelBarrier::SetSecondarySeparationDeadloadLimit(double SecondarySeparationDeadloadLimit)
@@ -180,7 +193,6 @@ double FShovelBarrier::GetSecondarySeparationDeadloadLimit() const
 	check(HasNative());
 	return NativeRef->Native->getSecondarySeparationDeadloadLimit();
 }
-
 
 void FShovelBarrier::SetInnerContactArea(double InnerContactArea)
 {
@@ -200,14 +212,16 @@ double FShovelBarrier::GetInnerContactArea() const
 void FShovelBarrier::SetPenetrationDepthThreshold(double PenetrationDepthThreshold)
 {
 	check(HasNative());
-	NativeRef->Native->setPenetrationDepthThreshold(
-		ConvertDistanceToAGX(PenetrationDepthThreshold));
+	const agx::Real DepthAGX = ConvertDistanceToAGX(PenetrationDepthThreshold);
+	NativeRef->Native->setPenetrationDepthThreshold(DepthAGX);
 }
 
 double FShovelBarrier::GetPenetrationDepthThreshold() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getPenetrationDepthThreshold());
+	const agx::Real DepthAGX = NativeRef->Native->getPenetrationDepthThreshold();
+	const double DepthUnreal = ConvertDistanceToUnreal<double>(DepthAGX);
+	return DepthUnreal;
 }
 
 void FShovelBarrier::SetPenetrationForceScaling(double PenetrationForceScaling)

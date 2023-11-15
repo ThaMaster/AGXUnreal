@@ -10,18 +10,27 @@
 
 #include "AGX_ShovelExcavationSettings.generated.h"
 
-
 USTRUCT()
 struct FAGX_ShovelExcavationSettings
 {
 	GENERATED_BODY()
 
+	/**
+	 * Whether this excavation mode should be creating dynamic mass and generating force feedback or
+	 * not.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
 	bool bEnabled {true};
 
+	/**
+	 * Whether the excavation mode should create dynamic mass or not.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
 	bool bEnableCreateDynamicMass {true};
 
+	/**
+	 * Whether the excavation mode should generate force feedback from created aggregates or not.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
 	bool bEnableForceFeedback {true};
 };
