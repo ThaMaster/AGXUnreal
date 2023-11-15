@@ -238,7 +238,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		// PublicIncludePaths.
 		List<LibSource> IncludePaths = new List<LibSource>();
 		IncludePaths.Add(LibSource.AGX);
-		IncludePaths.Add(LibSource.External);
 
 		// OS specific dependencies.
 		if (Target.Platform == UnrealTargetPlatform.Linux)
@@ -295,6 +294,11 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			AddIncludePath(HeaderPath);
 		}
+
+		// Explicitly add include/external as a public include path. Not part of
+		// IncludePaths above since those are all copied, and we do a more granual
+		// selection of external include files in BundleAGXResources().
+		PublicIncludePaths.Add(BundledAGXResources.IncludePath(LibSource.External));
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
