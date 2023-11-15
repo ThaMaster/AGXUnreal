@@ -192,6 +192,8 @@ public:
 	int32 GetNumParticles() const;
 
 	/**
+	 * Deprecated. Use Shovel Components instead.
+	 *
 	 * A list of the rigid body actors that should be used as terrain shovels.
 	 *
 	 * Every actor used as shovel MUST have the following components:
@@ -202,7 +204,9 @@ public:
 	 *
 	 * in addition to the usual Rigid Body and Shape components.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain",
+		Meta = (DeprecatedProperty, DeprecationMessage = "Use Shovel Components instead."))
 	TArray<FAGX_Shovel> Shovels;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
