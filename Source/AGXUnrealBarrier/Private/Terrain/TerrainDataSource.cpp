@@ -1,12 +1,12 @@
 #include "Terrain/TerrainDataSource.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "Terrain/TerrainHeightFetcherBase.h"
+#include "TypeConversions.h"
 
-using namespace agxTerrain;
-
-TerrainDataSource::TerrainHeightType FTerrainDataSource::fetchTerrainTile(
-	const TileSpecification& ts, TileId id)
+agxTerrain::TerrainDataSource::TerrainHeightType FTerrainDataSource::fetchTerrainTile(
+	const agxTerrain::TileSpecification& ts, agxTerrain::TileId id)
 {
 	TerrainHeightType HeightsAGX;
 

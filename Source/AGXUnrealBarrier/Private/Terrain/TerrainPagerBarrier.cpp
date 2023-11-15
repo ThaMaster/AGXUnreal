@@ -216,7 +216,7 @@ TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(
 	TPFrame->setRotate(NativeRef->Native->getTileSpecification().getReferenceRotation());
 	TPFrame->setTranslate(NativeRef->Native->getTileSpecification().getReferencePoint());
 
-	for (TerrainPager::TileAttachments* Tile : ActiveTiles)
+	for (agxTerrain::TerrainPager::TileAttachments* Tile : ActiveTiles)
 	{
 		if (Tile == nullptr || Tile->m_terrainTile == nullptr)
 			continue;
@@ -268,12 +268,12 @@ TArray<FTransform> FTerrainPagerBarrier::GetActiveTileTransforms() const
 	if (!HasNative())
 		return TileTransforms;
 
-	const TerrainPager::TileAttachmentPtrVector ActiveTiles =
+	const agxTerrain::TerrainPager::TileAttachmentPtrVector ActiveTiles =
 		NativeRef->Native->getActiveTileAttachments();
 
 	TileTransforms.Reserve(ActiveTiles.size());
 
-	for (TerrainPager::TileAttachments* Tile : ActiveTiles)
+	for (agxTerrain::TerrainPager::TileAttachments* Tile : ActiveTiles)
 	{
 		if (Tile == nullptr || Tile->m_terrainTile == nullptr)
 			continue;
