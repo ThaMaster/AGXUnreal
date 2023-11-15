@@ -18,6 +18,8 @@
 #include "DetailWidgetRow.h"
 #include "Editor/UnrealEdEngine.h"
 #include "Engine/BlueprintGeneratedClass.h"
+#include "Engine/SCS_Node.h"
+#include "Engine/SimpleConstructionScript.h"
 #include "IDetailChildrenBuilder.h"
 #include "IDetailGroup.h"
 #include "Misc/Attribute.h"
@@ -509,13 +511,13 @@ void FAGX_WireNodeDetails::OnSetNodeType(TSharedPtr<FString> NewValue, ESelectIn
 	{
 		// The RigidBody selector is about to be shown. Prepare it's backing storage.
 		NewBodyName = RebuildRigidBodyComboBox_Edit(
-			Node.RigidBody.BodyName.ToString(), Node.RigidBody.OwningActor);
+			Node.RigidBody.Name.ToString(), Node.RigidBody.OwningActor);
 	}
 
 	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeType", "Set wire node type"));
 	Wire->Modify();
 	Node.NodeType = NewNodeType;
-	Node.RigidBody.BodyName = FName(*NewBodyName);
+	Node.RigidBody.Name = FName(*NewBodyName);
 	FComponentVisualizer::NotifyPropertyModified(Wire, RouteNodesProperty);
 	UpdateValues();
 }
@@ -610,7 +612,7 @@ void FAGX_WireNodeDetails::OnSetRigidBody(
 	FWireRoutingNode& Node = Wire->RouteNodes[NodeIndex];
 
 	FName NewName = NewValue.IsValid() ? FName(*NewValue) : NAME_None;
-	if (NewName == Node.RigidBody.BodyName)
+	if (NewName == Node.RigidBody.Name)
 	{
 		return;
 	}
@@ -618,7 +620,7 @@ void FAGX_WireNodeDetails::OnSetRigidBody(
 	const FScopedTransaction Transaction(
 		LOCTEXT("SetWireNodeRigidBodyName", "Set Wire Node Rigid Body Name"));
 	Wire->Modify();
-	Node.RigidBody.BodyName = NewName;
+	Node.RigidBody.Name = NewName;
 	FComponentVisualizer::NotifyPropertyModified(Wire, RouteNodesProperty);
 	UpdateValues();
 }
@@ -648,9 +650,9 @@ void FAGX_WireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
 	FWireRoutingNode& Node = Wire->RouteNodes[NodeIndex];
 
 	FName NewBodyName =
-		FName(*RebuildRigidBodyComboBox_Edit(Node.RigidBody.BodyName.ToString(), Actor));
+		FName(*RebuildRigidBodyComboBox_Edit(Node.RigidBody.Name.ToString(), Actor));
 
-	if (Actor == Node.RigidBody.OwningActor && NewBodyName == Node.RigidBody.BodyName)
+	if (Actor == Node.RigidBody.OwningActor && NewBodyName == Node.RigidBody.Name)
 	{
 		return;
 	}
@@ -659,7 +661,7 @@ void FAGX_WireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
 		LOCTEXT("SetWireNodeBodyActor", "Set wire node body actor"));
 	Wire->Modify();
 	Node.RigidBody.OwningActor = Actor;
-	Node.RigidBody.BodyName = NewBodyName;
+	Node.RigidBody.Name = NewBodyName;
 	FComponentVisualizer::NotifyPropertyModified(Wire, RouteNodesProperty);
 	UpdateValues();
 }
@@ -828,10 +830,10 @@ void FAGX_WireNodeDetails::UpdateValues()
 	if (bSelectionChanged)
 	{
 		RebuildRigidBodyComboBox_View(
-			Node.RigidBody.BodyName.ToString(), Node.RigidBody.OwningActor);
+			Node.RigidBody.Name.ToString(), Node.RigidBody.OwningActor);
 	}
 
-	RigidBodyNameText = FText::FromName(Node.RigidBody.BodyName);
+	RigidBodyNameText = FText::FromName(Node.RigidBody.Name);
 	RigidBodyOwnerLabelText = FText::FromString(GetLabelSafe(Node.RigidBody.OwningActor));
 }
 

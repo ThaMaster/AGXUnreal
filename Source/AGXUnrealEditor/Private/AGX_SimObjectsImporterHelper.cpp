@@ -1270,17 +1270,17 @@ namespace
 		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Constraint))
 		{
 			if (BodyName1.IsSet() &&
-				(ForceOverwriteInstances || Instance->BodyAttachment1.RigidBody.BodyName ==
-												Constraint.BodyAttachment1.RigidBody.BodyName))
+				(ForceOverwriteInstances || Instance->BodyAttachment1.RigidBody.Name ==
+												Constraint.BodyAttachment1.RigidBody.Name))
 			{
-				Instance->BodyAttachment1.RigidBody.BodyName = BodyName1.GetValue();
+				Instance->BodyAttachment1.RigidBody.Name = BodyName1.GetValue();
 			}
 
 			if (BodyName2.IsSet() &&
-				(ForceOverwriteInstances || Instance->BodyAttachment2.RigidBody.BodyName ==
-												Constraint.BodyAttachment2.RigidBody.BodyName))
+				(ForceOverwriteInstances || Instance->BodyAttachment2.RigidBody.Name ==
+												Constraint.BodyAttachment2.RigidBody.Name))
 			{
-				Instance->BodyAttachment2.RigidBody.BodyName = BodyName2.GetValue();
+				Instance->BodyAttachment2.RigidBody.Name = BodyName2.GetValue();
 			}
 
 			if (ForceOverwriteInstances || Instance->MergeSplitProperties.Thresholds ==
@@ -1293,11 +1293,11 @@ namespace
 
 		if (BodyName1.IsSet())
 		{
-			Constraint.BodyAttachment1.RigidBody.BodyName = BodyName1.GetValue();
+			Constraint.BodyAttachment1.RigidBody.Name = BodyName1.GetValue();
 		}
 		if (BodyName2.IsSet())
 		{
-			Constraint.BodyAttachment2.RigidBody.BodyName = BodyName2.GetValue();
+			Constraint.BodyAttachment2.RigidBody.Name = BodyName2.GetValue();
 		}
 
 		FAGX_ImportUtilities::Rename(Constraint, Barrier.GetName());
@@ -1473,20 +1473,20 @@ void FAGX_SimObjectsImporterHelper::UpdateTwoBodyTire(
 			return;
 		}
 
-		BodyRef.BodyName = Body->GetFName();
+		BodyRef.Name = Body->GetFName();
 	};
 
 	// Update any archetype instance.
 	for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 	{
 		if (ForceOverwriteInstances ||
-			Instance->TireRigidBody.BodyName == Component.TireRigidBody.BodyName)
+			Instance->TireRigidBody.Name == Component.TireRigidBody.Name)
 		{
 			SetRigidBody(GetBody(Barrier.GetTireRigidBody()), Instance->TireRigidBody);
 		}
 
 		if (ForceOverwriteInstances ||
-			Instance->HubRigidBody.BodyName == Component.HubRigidBody.BodyName)
+			Instance->HubRigidBody.Name == Component.HubRigidBody.Name)
 		{
 			SetRigidBody(GetBody(Barrier.GetHubRigidBody()), Instance->HubRigidBody);
 		}
@@ -1915,7 +1915,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 			return;
 		}
 
-		BodyRef.BodyName = Body->GetFName();
+		BodyRef.Name = Body->GetFName();
 	};
 
 	// Copy Wheels.

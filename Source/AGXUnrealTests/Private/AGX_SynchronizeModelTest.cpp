@@ -956,7 +956,7 @@ bool FSynchronizeLargeModelCommand::Update()
 			"HingeToChange Compliance", Constraint->GetCompliance(EGenericDofIndex::Translational1),
 			102.0);
 		Test.TestEqual(
-			"HingeToChange Body1", Constraint->BodyAttachment1.RigidBody.BodyName,
+			"HingeToChange Body1", Constraint->BodyAttachment1.RigidBody.Name,
 			FName("BodyWithNewName"));
 	}
 
@@ -998,11 +998,11 @@ bool FSynchronizeLargeModelCommand::Update()
 		}
 
 		Test.TestEqual(
-			"NewHinge Body1", Constraint->BodyAttachment1.RigidBody.BodyName,
+			"NewHinge Body1", Constraint->BodyAttachment1.RigidBody.Name,
 			FName("TrimeshBodyToGainGeom"));
 
 		Test.TestEqual(
-			"NewHinge Body2", Constraint->BodyAttachment2.RigidBody.BodyName,
+			"NewHinge Body2", Constraint->BodyAttachment2.RigidBody.Name,
 			FName("TrimeshBodyToLooseGeom"));
 	}
 

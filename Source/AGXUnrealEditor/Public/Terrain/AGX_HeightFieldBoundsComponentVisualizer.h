@@ -4,6 +4,7 @@
 
 // AGX Unreal includes.
 #include "CoreMinimal.h"
+#include "ComponentVisualizer.h"
 #include "IDetailCustomization.h"
 
 class AGXUNREALEDITOR_API FAGX_HeightFieldBoundsComponentVisualizer : public FComponentVisualizer

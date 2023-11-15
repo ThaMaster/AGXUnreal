@@ -15,7 +15,7 @@
 #include "UnrealEdGlobals.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_BodyReference.h"
+#include "AGX_RigidBodyReference.h"
 #include "AGX_ComponentReference.h"
 #include "AGX_ComponentReferenceCustomization.h"
 #include "AGX_EditorStyle.h"
@@ -23,8 +23,6 @@
 #include "AGX_Frame.h"
 #include "AGX_FrameCustomization.h"
 #include "AGX_RigidBodyActor.h"
-#include "AGX_RigidBodyReference.h"
-#include "AGX_RigidBodyReferenceCustomization.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_RigidBodyComponentCustomization.h"
 #include "AGX_Real.h"
@@ -196,8 +194,7 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 		AssetTools,
 		MakeShareable(new FAGX_ConstraintMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
-		AssetTools,
-		MakeShareable(new FAGX_PlayRecordTypeActions(AgxAssetCategoryBit)));
+		AssetTools, MakeShareable(new FAGX_PlayRecordTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_ShapeContactMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
@@ -259,11 +256,6 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomPropertyTypeLayout(
-		FAGX_RigidBodyReference::StaticStruct()->GetFName(),
-		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
-			&FAGX_RigidBodyReferenceCustomization::MakeInstance));
-
-	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FAGX_ComponentReference::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_ComponentReferenceCustomization::MakeInstance));
@@ -276,7 +268,7 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 
 	// Body Reference uses the base class customization.
 	PropertyModule.RegisterCustomPropertyTypeLayout(
-		FAGX_BodyReference::StaticStruct()->GetFName(),
+		FAGX_RigidBodyReference::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_ComponentReferenceCustomization::MakeInstance));
 
@@ -401,16 +393,13 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		FAGX_RigidBodyReference::StaticStruct()->GetFName());
-
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_ComponentReference::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_ShovelReference::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		FAGX_BodyReference::StaticStruct()->GetFName());
+		FAGX_RigidBodyReference::StaticStruct()->GetFName());
 
 	/*
 	 * Class Customizations.

@@ -60,6 +60,9 @@ public:
 	void SetNoMergeExtensionDistance(double NoMergeExtensionDistance);
 	double GetNoMergeExtensionDistance() const;
 
+	void SetParticleInclusionMultiplier(double Multiplier);
+	double GetParticleInclusionMultiplier() const;
+
 	void SetMinimumSubmergedContactLengthFraction(double MinimumSubmergedContactLengthFraction);
 	double GetMinimumSubmergedContactLengthFraction() const;
 

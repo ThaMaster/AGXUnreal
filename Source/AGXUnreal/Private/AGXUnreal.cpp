@@ -76,6 +76,25 @@ void FAGXUnrealModule::RegisterCoreRedirects()
 		ECoreRedirectFlags::Type_Class, TEXT("AGX_TerrainMaterialInstance"),
 		TEXT("AGX_TerrainMaterial"));
 
+	// The Shovel Refactor effort, the addition of Shovel Component, also introduced
+	// FAGX_ComponentReference and replaced the FAGX_RigidBodyComponent implementation with one
+	// based on the new reference class. For a while we had both FAGX_BodyReference and
+	// FAGX_RigidBodyReference used in different parts of the code. Eventually the old one was
+	// removed and the new took the old ones' name. This redirect makes it so that scenes created
+	// during that interim time can find the new name even though the asset was saved with the old.
+	// I think this was only ever used by the Shovel Component and never released to users.
+	//
+	// In the switch the name of the property naming the referenced Component was changed from
+	// BodyName to just Name. Add a redirect for that as well, so that assets using the old
+	// FAGX_RigidBodyReference can be restored into the the new FAGX_ComponentReference based
+	// FAGX_RigidBodyReference.
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Struct, TEXT("AGX_BodyReference"), TEXT("AGX_RigidBodyReference"));
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Property,
+		TEXT("/Script/AGXUnreal.AGX_RigidBodyReference.BodyName"),
+		TEXT("/Script/AGXUnreal.AGX_RigidBodyReference.Name"));
+
 	FCoreRedirects::AddRedirectList(Redirects, TEXT("AGXUnreal"));
 }
 

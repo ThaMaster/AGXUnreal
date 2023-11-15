@@ -1886,7 +1886,7 @@ bool FCheckWireImportedCommand::Update()
 	RangeHasType(12, 22, EWireNodeType::Free);
 	RangeHasType(22, 23, EWireNodeType::BodyFixed);
 
-	const FString WinchBodyName = Winch.BodyAttachment.BodyName.ToString();
+	const FString WinchBodyName = Winch.BodyAttachment.Name.ToString();
 	Test.TestEqual(TEXT("Winch Body Name"), WinchBodyName, FString("Winch Body"));
 
 	auto RangeHasBody =
@@ -1894,7 +1894,7 @@ bool FCheckWireImportedCommand::Update()
 	{
 		for (int32 I = Begin; I < End; ++I)
 		{
-			const FString NodeBodyName = Nodes[I].RigidBody.BodyName.ToString();
+			const FString NodeBodyName = Nodes[I].RigidBody.Name.ToString();
 			Test.TestEqual(TEXT("NodeBodyName"), NodeBodyName, BodyName);
 		}
 	};
@@ -3298,7 +3298,7 @@ bool FCheckTrackImportedCommand::Update()
 		Test.TestEqual("Number of Wheels", Track->Wheels.Num(), 12);
 		for (const FAGX_TrackWheel& Wheel : Track->Wheels)
 		{
-			Test.TestEqual("Rigid Body Name", Wheel.RigidBody.BodyName.IsNone(), false);
+			Test.TestEqual("Rigid Body Name", Wheel.RigidBody.Name.IsNone(), false);
 		}
 
 		Test.TestEqual(
