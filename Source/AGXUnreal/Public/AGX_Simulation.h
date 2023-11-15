@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_SimulationEnums.h"
+#include "Contacts/AGX_ShapeContact.h"
 #include "Contacts/ShapeContactBarrier.h"
 #include "SimulationBarrier.h"
 
@@ -238,6 +239,21 @@ public: // Properties.
 	/** Network port to use for remote debugging. */
 	UPROPERTY(Config, EditAnywhere, Category = "Debug", Meta = (EditCondition = "bRemoteDebugging"))
 	int16 RemoteDebuggingPort;
+
+	/**
+	 * Draws all Shape Contacts to the screen each Simulation time step.
+	 * This can be helpful for quicly inspecting contact behaviours between objects in a Simulation.
+	 * Note that this operation is computationally intensive, meaning it should be turned off
+	 * whenever performance is important.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool bDrawShapeContacts {false};
+
+	/**
+	 * Returns all Shape Contacts in the currently running Simulation.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	TArray<FAGX_ShapeContact> GetShapeContacts() const;
 
 	/**
 	 * Maximum distance between the active Viewport camera and any AGX Constraint within which

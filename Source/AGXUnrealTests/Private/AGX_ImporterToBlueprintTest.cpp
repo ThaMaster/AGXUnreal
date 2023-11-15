@@ -1190,17 +1190,17 @@ bool FClearRenderMaterialImportedCommand::Update()
 		TEXT("Blueprint"),
 		TEXT("BP_render_materials_build.uasset"),
 		TEXT("RenderMaterial"),
-		TEXT("RenderMaterial_274110F45BCA6D0F728F384964FC8A97.uasset"),
-		TEXT("RenderMaterial_2C49A0878C9DF1A680CF4F43FFA9D8A8.uasset"),
-		TEXT("RenderMaterial_6A442859AF55D4C69B7CFF9FB4A7FEAC.uasset"),
-		TEXT("RenderMaterial_8F431C2CCB192A86C718162E2E3D3FB7.uasset"),
-		TEXT("RenderMaterial_994C5229D2BA24D5EED45ED674E35BA2.uasset"),
-		TEXT("RenderMaterial_9E48710314666BACEFAE4D5EBCB6B4A9.uasset"),
-		TEXT("RenderMaterial_A24D8BD273490D42A47FE975DC5A36B5.uasset"),
-		TEXT("RenderMaterial_A34BAE8D67A33E0D69C00FD35B724092.uasset"),
-		TEXT("RenderMaterial_AD4C1FCF18CF2C3440CCEF63A49B6093.uasset"),
-		TEXT("RenderMaterial_B14E6761F28A56E14C9FED220BB74088.uasset"),
-		TEXT("RenderMaterial_D04C16D4174ACDF77E2BFC06F0E0AC85.uasset")};
+		TEXT("MI_RenderMaterial_274110F45BCA6D0F728F384964FC8A97.uasset"),
+		TEXT("MI_RenderMaterial_2C49A0878C9DF1A680CF4F43FFA9D8A8.uasset"),
+		TEXT("MI_RenderMaterial_6A442859AF55D4C69B7CFF9FB4A7FEAC.uasset"),
+		TEXT("MI_RenderMaterial_8F431C2CCB192A86C718162E2E3D3FB7.uasset"),
+		TEXT("MI_RenderMaterial_994C5229D2BA24D5EED45ED674E35BA2.uasset"),
+		TEXT("MI_RenderMaterial_9E48710314666BACEFAE4D5EBCB6B4A9.uasset"),
+		TEXT("MI_RenderMaterial_A24D8BD273490D42A47FE975DC5A36B5.uasset"),
+		TEXT("MI_RenderMaterial_A34BAE8D67A33E0D69C00FD35B724092.uasset"),
+		TEXT("MI_RenderMaterial_AD4C1FCF18CF2C3440CCEF63A49B6093.uasset"),
+		TEXT("MI_RenderMaterial_B14E6761F28A56E14C9FED220BB74088.uasset"),
+		TEXT("MI_RenderMaterial_D04C16D4174ACDF77E2BFC06F0E0AC85.uasset")};
 
 	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
 	ExpectedFiles.Add(*BaseBlueprintName);
@@ -1320,7 +1320,7 @@ bool FClearRenderDataImportedCommand::Update()
 	// names to the render materials in the source .agxPy file.
 	TArray<const TCHAR*> ExpectedFiles = {
 		TEXT("Blueprint"), TEXT("BP_render_data_build.uasset"), TEXT("RenderMesh"),
-		TEXT("RenderMesh_944C2AF4E9279E2C61D073B86467F6BA.uasset")};
+		TEXT("SM_RenderMesh_944C2AF4E9279E2C61D073B86467F6BA.uasset")};
 
 	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
 	ExpectedFiles.Add(*BaseBlueprintName);
@@ -2460,7 +2460,7 @@ bool FClearSimpleGeometriesImportedCommand::Update()
 
 	TArray<const TCHAR*> ExpectedFiles = {
 		TEXT("Blueprint"), TEXT("BP_single_geometries_build.uasset"), TEXT("StaticMesh"),
-		TEXT("trimeshShape.uasset"), TEXT("trimeshShapeFree.uasset")};
+		TEXT("SM_trimeshShape.uasset"), TEXT("SM_trimeshShapeFree.uasset")};
 
 	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
 	ExpectedFiles.Add(*BaseBlueprintName);

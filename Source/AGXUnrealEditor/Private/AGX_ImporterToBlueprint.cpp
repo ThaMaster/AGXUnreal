@@ -83,6 +83,60 @@
 
 namespace
 {
+	enum class EImportResult
+	{
+		Success,
+		ErrorReadingSourceFile,
+		ErrorDuringInstantiations,
+		UnknownFailure = 999
+	};
+
+	void ShowImportErrorDialogBox(EImportResult Result)
+	{
+		const FString ResultStr = [&Result]()
+		{
+			switch (Result)
+			{
+				case EImportResult::Success:
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("ShowImportErrorDialogBox was called with EImportResult::Success "
+							 "which is unexpected."));
+					return "";
+				}
+				case EImportResult::ErrorReadingSourceFile:
+					return "Error while reading source file.";
+				case EImportResult::ErrorDuringInstantiations:
+					return "Error while instantiating objects.";
+				case EImportResult::UnknownFailure:
+					return "Unknown falure.";
+			}
+
+			UE_LOG(
+				LogAGX, Warning, TEXT("Unknown enum literal passed to ShowImportErrorDialogBox."));
+			return "";
+		}();
+
+		const FString Text = FString::Printf(
+			TEXT("Some issues occurred during import. Status: '%s'. Log category LogAGX in the "
+				 "Output Log may contain more information."),
+			*ResultStr);
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Text, "Import model to Blueprint");
+	}
+
+	struct ImportActorResult
+	{
+		EImportResult Result {EImportResult::UnknownFailure};
+		AActor* Actor {nullptr};
+	};
+
+	struct ImportBlueprintResult
+	{
+		EImportResult Result {EImportResult::UnknownFailure};
+		UBlueprint* Blueprint {nullptr};
+	};
+
 	void PreCreationSetup()
 	{
 		GEditor->SelectNone(false, false);
@@ -309,7 +363,7 @@ namespace
 			{
 				if (Helper.bIgnoreDisabledTrimeshes && !Trimesh.GetEnableCollisions())
 				{
-					if (Trimesh.HasRenderData())
+					if (Trimesh.HasRenderData() && Trimesh.GetRenderData().HasMesh())
 					{
 						Success &= Helper.InstantiateRenderDataInBodyOrRoot(
 									   Trimesh, ImportedActor, &Body) != nullptr;
@@ -505,34 +559,43 @@ namespace
 		return Success;
 	}
 
-	bool AddComponentsFromAGXArchive(AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
+	EImportResult AddComponentsFromAGXArchive(
+		AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
 	{
 		FSimulationObjectCollection SimObjects;
-		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, SimObjects) ||
-			!AddAllComponents(ImportedActor, SimObjects, Helper))
+		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, SimObjects))
 		{
-			return false;
+			return EImportResult::ErrorReadingSourceFile;
 		}
 
-		return true;
+		if (!AddAllComponents(ImportedActor, SimObjects, Helper))
+		{
+			return EImportResult::ErrorDuringInstantiations;
+		}
+
+		return EImportResult::Success;
 	}
 
-	bool AddComponentsFromUrdf(
+	EImportResult AddComponentsFromUrdf(
 		AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper,
 		const FAGX_ImportSettings& ImportSettings)
 	{
 		FSimulationObjectCollection SimObjects;
 		if (!FAGXSimObjectsReader::ReadUrdf(
-				ImportSettings.FilePath, ImportSettings.UrdfPackagePath, SimObjects) ||
-			!AddAllComponents(ImportedActor, SimObjects, Helper))
+				ImportSettings.FilePath, ImportSettings.UrdfPackagePath, SimObjects))
 		{
-			return false;
+			return EImportResult::ErrorReadingSourceFile;
 		}
 
-		return true;
+		if (!AddAllComponents(ImportedActor, SimObjects, Helper))
+		{
+			return EImportResult::ErrorDuringInstantiations;
+		}
+
+		return EImportResult::Success;
 	}
 
-	AActor* CreateTemplate(
+	ImportActorResult CreateTemplate(
 		FAGX_SimObjectsImporterHelper& Helper, const FAGX_ImportSettings& ImportSettings)
 	{
 		UActorFactory* Factory =
@@ -567,22 +630,12 @@ namespace
 		RootActorContainer->SetRootComponent(ActorRootComponent);
 #endif
 
-		const bool Result = ImportSettings.ImportType == EAGX_ImportType::Urdf
-								? AddComponentsFromUrdf(*RootActorContainer, Helper, ImportSettings)
-								: AddComponentsFromAGXArchive(*RootActorContainer, Helper);
+		EImportResult Result =
+			ImportSettings.ImportType == EAGX_ImportType::Urdf
+				? AddComponentsFromUrdf(*RootActorContainer, Helper, ImportSettings)
+				: AddComponentsFromAGXArchive(*RootActorContainer, Helper);
 
-		if (!Result)
-		{
-			/// @todo Is there some clean-up I need to do for RootActorContainer and/or
-			/// EmptyActorAsset here? I tried with MarkPendingKill but that caused
-			///    Assertion failed: !IsRooted()
-			// RootActorContainer->MarkPendingKill();
-			// EmptyActorAsset->MarkPendingKill();
-			return nullptr;
-		}
-
-		// Should the EmptyActorAsset be cleaned up somehow? MarkPendingKill?
-		return RootActorContainer;
+		return {Result, RootActorContainer};
 	}
 
 	UBlueprint* CreateBaseBlueprint(UPackage* Package, AActor* Template)
@@ -631,21 +684,22 @@ namespace
 #endif
 	}
 
-	UBlueprint* ImportToBaseBlueprint(
+	ImportBlueprintResult ImportToBaseBlueprint(
 		FAGX_SimObjectsImporterHelper& Helper, const FAGX_ImportSettings& ImportSettings)
 	{
 		PreCreationSetup();
 		FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper, true);
 		UPackage* Package = GetPackage(BlueprintPackagePath);
-		AActor* Template = CreateTemplate(Helper, ImportSettings);
+		ImportActorResult TemplateResult = CreateTemplate(Helper, ImportSettings);
+		AActor* Template = TemplateResult.Actor;
 		if (Template == nullptr)
 		{
-			return nullptr;
+			return {TemplateResult.Result, nullptr};
 		}
 
 		UBlueprint* Blueprint = CreateBaseBlueprint(Package, Template);
 		PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
-		return Blueprint;
+		return {TemplateResult.Result, Blueprint};
 	}
 
 	UBlueprint* CreateChildBlueprint(
@@ -670,7 +724,7 @@ namespace
 		return BlueprintChild;
 	}
 
-	UBlueprint* ImportToBlueprint(
+	ImportBlueprintResult ImportToBlueprint(
 		FAGX_SimObjectsImporterHelper& Helper, const FAGX_ImportSettings& ImportSettings)
 	{
 		// The result of the import is stored in the BlueprintBase which is placed in the
@@ -678,10 +732,11 @@ namespace
 		// is the "original". The BlueprintChild is what the user will interact directly with, and
 		// it is a child of the BlueprintBase. This way, we can ensure model synchronization works
 		// as intended.
-		UBlueprint* BlueprintBase = ImportToBaseBlueprint(Helper, ImportSettings);
+		ImportBlueprintResult BlueprintBaseResult = ImportToBaseBlueprint(Helper, ImportSettings);
+		UBlueprint* BlueprintBase = BlueprintBaseResult.Blueprint;
 		if (BlueprintBase == nullptr)
 		{
-			return nullptr;
+			return {BlueprintBaseResult.Result, nullptr};
 		}
 
 		UBlueprint* BlueprintChild = CreateChildBlueprint(BlueprintBase, Helper);
@@ -692,7 +747,7 @@ namespace
 				BlueprintChild);
 		}
 
-		return BlueprintChild;
+		return {BlueprintBaseResult.Result, BlueprintChild};
 	}
 }
 
@@ -700,13 +755,11 @@ UBlueprint* AGX_ImporterToBlueprint::Import(const FAGX_ImportSettings& ImportSet
 {
 	FAGX_SimObjectsImporterHelper Helper(
 		ImportSettings.FilePath, ImportSettings.bIgnoreDisabledTrimeshes);
-	UBlueprint* Bp = ImportToBlueprint(Helper, ImportSettings);
-	if (Bp == nullptr)
+	ImportBlueprintResult BpResult = ImportToBlueprint(Helper, ImportSettings);
+	UBlueprint* Bp = BpResult.Blueprint;
+	if (Bp == nullptr || BpResult.Result != EImportResult::Success)
 	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Some issues occurred during import. Log category LogAGX in the Console may "
-			"contain more information.",
-			"Import model to Blueprint");
+		ShowImportErrorDialogBox(BpResult.Result);
 	}
 
 	return Bp;

@@ -178,6 +178,11 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 		TrimeshSourceName = FPaths::GetBaseFilename(TrimeshSourceName);
 	}
 
+	if (!TrimeshSourceName.StartsWith(TEXT("SM_")) && !TrimeshSourceName.IsEmpty())
+	{
+		TrimeshSourceName = FString::Printf(TEXT("SM_%s"), *TrimeshSourceName);
+	}
+
 	return PrepareWriteAssetToDisk<UStaticMesh>(
 		DirectoryPath, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset);
 }
@@ -192,8 +197,8 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 	};
 
 	return PrepareWriteAssetToDisk<UStaticMesh>(
-		DirectoryPath, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
-		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset);
+		DirectoryPath, FString::Printf(TEXT("SM_RenderMesh_%s"), *RenderData.GetGuid().ToString()),
+		TEXT("SM_RenderMesh"), TEXT("RenderMesh"), InitAsset);
 }
 
 namespace

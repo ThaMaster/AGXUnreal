@@ -42,6 +42,7 @@ public class AGXUnreal : ModuleRules
 		if (Target.bBuildEditor)
 		{
 			PrivateDependencyModuleNames.Add("EditorStyle");
+			PrivateDependencyModuleNames.Add("UnrealEd");
 		}
 
 		UpdateEngineVersionInUPlugin();

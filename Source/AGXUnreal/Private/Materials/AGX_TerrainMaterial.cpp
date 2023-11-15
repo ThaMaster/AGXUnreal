@@ -1500,13 +1500,10 @@ UAGX_TerrainMaterial* UAGX_TerrainMaterial::CreateFromAsset(
 	check(PlayingWorld);
 	check(PlayingWorld->IsGameWorld());
 
-	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
-	check(Outer);
-
 	FString InstanceName = Source->GetName() + "_Instance";
 
 	UAGX_TerrainMaterial* NewInstance = NewObject<UAGX_TerrainMaterial>(
-		Outer, UAGX_TerrainMaterial::StaticClass(), *InstanceName, RF_Transient);
+		GetTransientPackage(), UAGX_TerrainMaterial::StaticClass(), *InstanceName, RF_Transient);
 	NewInstance->Asset = Source;
 
 	// Copy the terrain material properties
