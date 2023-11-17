@@ -2553,7 +2553,7 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Num Contact Materials in Registrar", Registrar->ContactMaterials.Num(), 2);
 
 	UAGX_ContactMaterial** Cm1 = Registrar->ContactMaterials.FindByPredicate(
-		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat1Mat2"; });
+		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat1_Mat2"; });
 	Test.TestNotNull("Cm1", Cm1);
 	if (Cm1 == nullptr)
 	{
@@ -2590,7 +2590,7 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Cm1 adhesive overlap", (*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
 
 	UAGX_ContactMaterial** Cm2 = Registrar->ContactMaterials.FindByPredicate(
-		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat3Mat4"; });
+		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat3_Mat4"; });
 	Test.TestNotNull("Cm2", Cm2);
 	if (Cm2 == nullptr)
 	{
@@ -2647,11 +2647,11 @@ bool FClearContactMaterialsImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("Blueprint"),			TEXT("BP_contact_materials_build.uasset"),
-		TEXT("ContactMaterial"),	TEXT("CM_Mat1Mat2.uasset"),
-		TEXT("CM_Mat3Mat4.uasset"), TEXT("ShapeMaterial"),
-		TEXT("Mat1.uasset"),		TEXT("Mat2.uasset"),
-		TEXT("Mat3.uasset"),		TEXT("Mat4.uasset")};
+		TEXT("Blueprint"),			 TEXT("BP_contact_materials_build.uasset"),
+		TEXT("ContactMaterial"),	 TEXT("CM_Mat1_Mat2.uasset"),
+		TEXT("CM_Mat3_Mat4.uasset"), TEXT("ShapeMaterial"),
+		TEXT("Mat1.uasset"),		 TEXT("Mat2.uasset"),
+		TEXT("Mat3.uasset"),		 TEXT("Mat4.uasset")};
 
 	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
 	ExpectedFiles.Add(*BaseBlueprintName);
@@ -3410,8 +3410,8 @@ bool FClearTrackImportedCommand::Update()
 		TEXT("Blueprint"),
 		TEXT("BP_track_build.uasset"),
 		TEXT("ContactMaterial"),
-		TEXT("CM_trackground.uasset"),
-		TEXT("CM_trackwheel.uasset"),
+		TEXT("CM_track_ground.uasset"),
+		TEXT("CM_track_wheel.uasset"),
 		TEXT("ShapeMaterial"),
 		TEXT("ground.uasset"),
 		TEXT("track.uasset"),
@@ -3874,7 +3874,6 @@ bool FCheckShovelImportedCommand::Update()
 		TEXT("Deform back force feedback"),
 		Shovel->ShovelProperties->DeformBackExcavationSettings.bEnableForceFeedback, true);
 
-
 	Test.TestEqual(
 		TEXT("Deform right enabled"),
 		Shovel->ShovelProperties->DeformRightExcavationSettings.bEnabled, false);
@@ -3884,7 +3883,6 @@ bool FCheckShovelImportedCommand::Update()
 	Test.TestEqual(
 		TEXT("Deform right force feedback"),
 		Shovel->ShovelProperties->DeformRightExcavationSettings.bEnableForceFeedback, false);
-
 
 	Test.TestEqual(
 		TEXT("Deform left enabled"),
@@ -3913,10 +3911,7 @@ bool FClearShovelImportedCommand::Update()
 			*BaseBlueprintName,
 		TEXT("Blueprint"),
 		TEXT("ContactMaterial"),
-			TEXT("CM_agxTerrainTerrainAggregateDefault.uasset"),
-			TEXT("CM_agxTerrainTerrainParticleagxTerrainTerrainParticle.uasset"),
-			TEXT("CM_agxTerrainTerrainTerrainagxTerrainTerrainAggregate.uasset"),
-			TEXT("CM_agxTerrainTerrainTerrainagxTerrainTerrainParticle.uasset"),
+			TEXT("CM_agxTerrainTerrainAggregate_Default.uasset"),
 		TEXT("ShapeMaterial"),
 			TEXT("agxTerrainTerrainAggregate.uasset"),
 			TEXT("agxTerrainTerrainParticle.uasset"),
