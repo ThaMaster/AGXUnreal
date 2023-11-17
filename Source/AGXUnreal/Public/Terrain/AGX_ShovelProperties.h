@@ -27,7 +27,7 @@ public:
 	/**
 	 * Set to true if Shovel <-> Terrain contacts should always be removed.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Contacts")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, BlueprintReadOnly, Category = "Contacts")
 	bool AlwaysRemoveShovelContacts {false};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -37,7 +37,7 @@ public:
 	 * Set if inner shape alone should always create dynamic mass. The alternative is to only create
 	 * dynamic mass in the inner shape when primary excavation soil wedges create mass.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
 	bool EnableInnerShapeCreateDynamicMass {true};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -47,7 +47,7 @@ public:
 	 * Set whenever the excavation force feedback during PRIMARY excavation should be generated from
 	 * particle contacts instead of aggregate contacts.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
 	bool EnableParticleForceFeedback {false};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -59,7 +59,7 @@ public:
 	 * Note, if this is true all excavation modes will make particle free deformations. Even if
 	 * enableCreateDynamicMass is set to false for one or more excavation modes.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
 	bool EnableParticleFreeDeformers {false};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -69,7 +69,7 @@ public:
 	 * Set the minimum submerged cutting edge length fraction (0 to 1) that generates submerged
 	 * cutting.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
 	FAGX_Real MinimumSubmergedContactLengthFraction {0.5};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -79,7 +79,7 @@ public:
 	 * Sets the vertical distance under the blade cutting edge that the soil is allowed to instantly
 	 * merge up to [cm].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
 	FAGX_Real VerticalBladeSoilMergeDistance {0.0};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -89,7 +89,7 @@ public:
 	 * Set the extension outside the shovel bounding box where soil particle merging is forbidden
 	 * [cm].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Shovel Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel Properties")
 	FAGX_Real NoMergeExtensionDistance {50.0};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -98,7 +98,7 @@ public:
 	/**
 	 * Number of teeth of the Shovel.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Teeth")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Teeth")
 	int32 NumberOfTeeth {6};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -107,7 +107,7 @@ public:
 	/**
 	 * The length of each tooth [cm].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Teeth")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Teeth")
 	FAGX_Real ToothLength {15.0};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -116,7 +116,7 @@ public:
 	/**
 	 * Maximum radius of the shovel teeth [cm].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Teeth")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Teeth")
 	FAGX_Real ToothMaximumRadius {7.5};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -125,7 +125,7 @@ public:
 	/**
 	 * Minimum radius of the shovel teeth [cm].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Teeth")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Teeth")
 	FAGX_Real ToothMinimumRadius {1.5};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -140,7 +140,7 @@ public:
 	 * This will only be active post-excavation and NOT during excavation when we have active soil
 	 * wedges.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
 	FAGX_Real ParticleInclusionMultiplier {1.0};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -156,7 +156,7 @@ public:
 	 * baseline of 10% until maximum effectiveness is reached when the vertical penetration depth of
 	 * the shovel reaches the specified value.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
 	FAGX_Real PenetrationDepthThreshold {50.0};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -166,7 +166,7 @@ public:
 	 * Set the linear scaling coefficient for the penetration force that the terrain will give on
 	 * this shovel.
 	 */
-	UPROPERTY(EditAnywhere, Category = "Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
 	FAGX_Real PenetrationForceScaling {1.0};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -175,7 +175,7 @@ public:
 	/**
 	 * The maximum limit on penetration force that the terrain will generate on the shovel [N].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
 	FAGX_Real MaximumPenetrationForce {std::numeric_limits<double>::infinity()};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -186,7 +186,7 @@ public:
 	 * direction starts to change according to the virtual separation plate created by the material
 	 * inside the shovel [?].
 	 */
-	UPROPERTY(EditAnywhere, Category = "Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
 	FAGX_Real SecondarySeparationDeadloadLimit {0.8};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
@@ -196,7 +196,7 @@ public:
 	 * Excavation settings for the primary excavation mode, when digging along the cutting
 	 * direction in the terrain horizontal plane.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel")
 	FAGX_ShovelExcavationSettings PrimaryExcavationSettings;
 
 	/**
@@ -204,7 +204,7 @@ public:
 	 * direction of the cutting direction in the terrain horizontal plane. For example when backside
 	 * grading.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel")
 	FAGX_ShovelExcavationSettings DeformBackExcavationSettings;
 
 	/**
@@ -212,7 +212,7 @@ public:
 	 * direction orthogonal to the cutting direction in the terrain horizontal plane. For example
 	 * when pushing or grading.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel")
 	FAGX_ShovelExcavationSettings DeformRightExcavationSettings;
 
 	/**
@@ -220,7 +220,7 @@ public:
 	 * counter-clock-wise direction orthogonal to the cutting direction in the terrain horizontal
 	 * plane. For example when pushing or grading.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel")
 	FAGX_ShovelExcavationSettings DeformLeftExcavationSettings;
 
 	// @todo Soil Penetration Model.
@@ -291,6 +291,7 @@ public:
 	 *
 	 * Can be called on either the asset or the instance, with the same effect.
 	 */
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
 	void CommitToAsset();
 
 	/**
