@@ -1160,7 +1160,7 @@ void FAGX_SimObjectsImporterHelper::UpdateAndSaveContactMaterialAsset(
 	Asset.Material1 = Materials.first;
 	Asset.Material2 = Materials.second;
 
-	const FString Name = TEXT("CM_") + GetName(Materials.first) + GetName(Materials.second);
+	const FString Name = TEXT("CM_") + GetName(Materials.first) + TEXT("_") + GetName(Materials.second);
 	FAGX_EditorUtilities::RenameAsset(Asset, Name, "ContactMaterial");
 	FAGX_ObjectUtilities::SaveAsset(Asset);
 
@@ -1179,7 +1179,7 @@ UAGX_ContactMaterial* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
 	const FContactMaterialBarrier& Barrier, UAGX_ContactMaterialRegistrarComponent& CMRegistrar)
 {
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
-	const FString Name = TEXT("CM_") + GetName(Materials.first) + GetName(Materials.second);
+	const FString Name = TEXT("CM_") + GetName(Materials.first) + TEXT("_") + GetName(Materials.second);
 	UAGX_ContactMaterial* Asset = FAGX_ImportUtilities::CreateAsset<UAGX_ContactMaterial>(
 		RootDirectoryPath, Name, FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
 	if (Asset == nullptr)
