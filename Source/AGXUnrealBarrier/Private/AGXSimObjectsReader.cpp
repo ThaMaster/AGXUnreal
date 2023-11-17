@@ -135,7 +135,10 @@ namespace
 	/**
 	 * Several agx::Geometries may use the same agx::Material.
 	 */
-	void ReadMaterials(agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
+	void ReadMaterials(
+		agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects,
+		TSet<const agx::Material*>& NonFreeMaterials,
+		TSet<const agx::ContactMaterial*>& NonFreeContactMaterials)
 	{
 		const agxSDK::StringMaterialRefTable& MaterialsTable =
 			Simulation.getMaterialManager()->getMaterials();
@@ -143,6 +146,8 @@ namespace
 		for (auto& It : MaterialsTable)
 		{
 			agx::Material* Mat = It.second.get();
+			if (NonFreeMaterials.Contains(Mat))
+				continue;
 			OutSimObjects.GetShapeMaterials().Add(
 				AGXBarrierFactories::CreateShapeMaterialBarrier(Mat));
 		}
@@ -153,6 +158,8 @@ namespace
 		for (auto& It : ContactMaterialsTable)
 		{
 			agx::ContactMaterial* ContMat = It.second.get();
+			if (NonFreeContactMaterials.Contains(ContMat))
+				continue;
 			OutSimObjects.GetContactMaterials().Add(
 				AGXBarrierFactories::CreateContactMaterialBarrier(ContMat));
 		}
@@ -366,7 +373,9 @@ namespace
 		agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects,
 		TSet<const agx::RigidBody*>& NonFreeBodies,
 		TSet<const agxCollide::Geometry*>& NonFreeGeometries,
-		TSet<const agx::Constraint*>& NonFreeConstraints)
+		TSet<const agx::Constraint*>& NonFreeConstraints,
+		TSet<const agx::Material*>& NonFreeMaterials,
+		TSet<const agx::ContactMaterial*>& NonFreeContactMaterials)
 	{
 		// Shovels are found though Terrains, but a single Shovel may exist in multiple Terrains.
 		// This set tracks unique shovels we find.
@@ -377,6 +386,14 @@ namespace
 		agxTerrain::TerrainPtrVector Terrains = agxTerrain::Terrain::findAll(&Simulation);
 		for (agxTerrain::Terrain* Terrain : Terrains)
 		{
+			using MaterialType = agxTerrain::Terrain::MaterialType;
+			NonFreeContactMaterials.Add(
+				Terrain->getContactMaterial(MaterialType::TERRAIN, MaterialType::PARTICLE));
+			NonFreeContactMaterials.Add(
+				Terrain->getContactMaterial(MaterialType::PARTICLE, MaterialType::PARTICLE));
+			NonFreeContactMaterials.Add(
+				Terrain->getContactMaterial(MaterialType::TERRAIN, MaterialType::AGGREGATE));
+
 			const agx::Vector<agxTerrain::ShovelRef>& Shovels = Terrain->getShovels();
 			for (const agxTerrain::ShovelRef& Shovel : Shovels)
 			{
@@ -397,6 +414,19 @@ namespace
 				agxTerrain::TerrainToolCollection* Tools = Terrain->getToolCollection(Shovel);
 				NonFreeGeometries.Add(Tools->getActiveZone()->getGeometry());
 
+				using EExcavationMode = agxTerrain::Shovel::ExcavationMode;
+
+				agxTerrain::ShovelAggregateContactMaterialContainer* MaterialContainer =
+					Tools->getShovelTerrainContactMaterialContainer();
+				NonFreeContactMaterials.Add(
+					MaterialContainer->getContactMaterial(EExcavationMode::PRIMARY));
+				NonFreeContactMaterials.Add(
+					MaterialContainer->getContactMaterial(EExcavationMode::DEFORM_BACK));
+				NonFreeContactMaterials.Add(
+					MaterialContainer->getContactMaterial(EExcavationMode::DEFORM_RIGHT));
+				NonFreeContactMaterials.Add(
+					MaterialContainer->getContactMaterial(EExcavationMode::DEFORM_LEFT));
+
 				// The primary excavator is accessed through the soil particle aggregate.
 				agxTerrain::SoilParticleAggregate* Aggregate = Tools->getSoilParticleAggregate();
 				NonFreeBodies.Add(Aggregate->getInnerBody());
@@ -405,7 +435,6 @@ namespace
 
 				// All other excavators are accessed through their respective deform controllers.
 				agxTerrain::DeformController* DeformController = Tools->getDeformController();
-				using EExcavationMode = agxTerrain::Shovel::ExcavationMode;
 				for (EExcavationMode ExcavationMode :
 					 {EExcavationMode::DEFORM_BACK, EExcavationMode::DEFORM_LEFT,
 					  EExcavationMode::DEFORM_RIGHT})
@@ -420,6 +449,11 @@ namespace
 					// In addition to the soil particle aggregate objects, a deformer also has an
 					// active zone with a geometry.
 					NonFreeGeometries.Add(Deformers->getActiveZone()->getGeometry());
+
+					NonFreeContactMaterials.Add(
+						DeformController->getAggregateShovelContactMaterial(DeformersId));
+					NonFreeContactMaterials.Add(
+						DeformController->getAggregateTerrainContactMaterial(DeformersId));
 				}
 
 				// Each shovel holds a bunch of internal convex shapes for each Terrain.
@@ -433,6 +467,11 @@ namespace
 				// Each shovel holds a prismatic for each terrain.
 				NonFreeConstraints.Add(
 					Tools->getPenetrationResistance()->getPenetrationPrismatic());
+
+				agxTerrain::AggregateContactGenerator* ContactGenerator =
+					Tools->getAggregateContactGenerator();
+				NonFreeContactMaterials.Add(ContactGenerator->getAggregateShovelContactMaterial());
+				NonFreeContactMaterials.Add(ContactGenerator->getAggregateTerrainContactMaterial());
 			}
 		}
 
@@ -473,11 +512,14 @@ namespace
 		TSet<const agx::RigidBody*> NonFreeBodies;
 		TSet<const agxCollide::Geometry*> NonFreeGeometries;
 		TSet<const agx::Constraint*> NonFreeConstraints;
+		TSet<const agx::Material*> NonFreeMaterials;
+		TSet<const agx::ContactMaterial*> NonFreeContactMaterials;
 
-		ReadMaterials(Simulation, OutSimObjects);
 		ReadTireModels(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadShovels(
-			Simulation, OutSimObjects, NonFreeBodies, NonFreeGeometries, NonFreeConstraints);
+			Simulation, OutSimObjects, NonFreeBodies, NonFreeGeometries, NonFreeConstraints,
+			NonFreeMaterials, NonFreeContactMaterials);
+		ReadMaterials(Simulation, OutSimObjects, NonFreeMaterials, NonFreeContactMaterials);
 		ReadBodilessGeometries(Simulation, Filename, OutSimObjects, NonFreeGeometries);
 		ReadRigidBodies(Simulation, Filename, OutSimObjects, NonFreeBodies);
 		ReadTracks(Simulation, Filename, OutSimObjects, NonFreeConstraints);
