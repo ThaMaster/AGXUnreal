@@ -3715,9 +3715,9 @@ bool FCheckShovelImportedCommand::Update()
 	// Get all the imported Components.
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
-	// One Rigid Body (1), two Shapes (3), one Shovel (4), one Contact Material Registrar (5), one
-	// Model Source (6), and one default scene root (7).
-	const int32 ExpectedNumComponents {7};
+	// One Rigid Body (1), two Shapes (3), one Shovel (4), one Model Source (5), and one default
+	// scene root (6).
+	const int32 ExpectedNumComponents {6};
 	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), ExpectedNumComponents);
 
 	UAGX_RigidBodyComponent* ShovelBody = GetByName<UAGX_RigidBodyComponent>(
@@ -3910,12 +3910,6 @@ bool FClearShovelImportedCommand::Update()
 		TEXT("BP_terrain_build.uasset"),
 			*BaseBlueprintName,
 		TEXT("Blueprint"),
-		TEXT("ContactMaterial"),
-			TEXT("CM_agxTerrainTerrainAggregate_Default.uasset"),
-		TEXT("ShapeMaterial"),
-			TEXT("agxTerrainTerrainAggregate.uasset"),
-			TEXT("agxTerrainTerrainParticle.uasset"),
-			TEXT("agxTerrainTerrainTerrain.uasset"),
 		TEXT("ShovelProperties"),
 			TEXT("AGX_SP_ShovelBody.uasset")
 	};

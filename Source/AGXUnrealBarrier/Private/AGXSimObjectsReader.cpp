@@ -160,6 +160,17 @@ namespace
 			agx::ContactMaterial* ContMat = It.second.get();
 			if (NonFreeContactMaterials.Contains(ContMat))
 				continue;
+			const agx::Material* Material1 = ContMat->getMaterial1();
+			const agx::Material* Material2 = ContMat->getMaterial1();
+			if ((Material1 != nullptr && NonFreeMaterials.Contains(Material1)) ||
+				(Material2 != nullptr && NonFreeMaterials.Contains(Material2)))
+			{
+				// This is a Contact Material that includes a Material that is internal / "hidden"
+				// to some object we won't recreate on the Unreal side. For example a Terrain. Do
+				// not create the Contact Material either since there is no way to set the Shape
+				// Material reference in the Contact Material to that internal / "hidden" material.
+				continue;
+			}
 			OutSimObjects.GetContactMaterials().Add(
 				AGXBarrierFactories::CreateContactMaterialBarrier(ContMat));
 		}
@@ -386,13 +397,16 @@ namespace
 		agxTerrain::TerrainPtrVector Terrains = agxTerrain::Terrain::findAll(&Simulation);
 		for (agxTerrain::Terrain* Terrain : Terrains)
 		{
-			using MaterialType = agxTerrain::Terrain::MaterialType;
+			using EMaterialType = agxTerrain::Terrain::MaterialType;
+			NonFreeMaterials.Add(Terrain->getMaterial(EMaterialType::TERRAIN));
+			NonFreeMaterials.Add(Terrain->getMaterial(EMaterialType::PARTICLE));
+			NonFreeMaterials.Add(Terrain->getMaterial(EMaterialType::AGGREGATE));
 			NonFreeContactMaterials.Add(
-				Terrain->getContactMaterial(MaterialType::TERRAIN, MaterialType::PARTICLE));
+				Terrain->getContactMaterial(EMaterialType::TERRAIN, EMaterialType::PARTICLE));
 			NonFreeContactMaterials.Add(
-				Terrain->getContactMaterial(MaterialType::PARTICLE, MaterialType::PARTICLE));
+				Terrain->getContactMaterial(EMaterialType::PARTICLE, EMaterialType::PARTICLE));
 			NonFreeContactMaterials.Add(
-				Terrain->getContactMaterial(MaterialType::TERRAIN, MaterialType::AGGREGATE));
+				Terrain->getContactMaterial(EMaterialType::TERRAIN, EMaterialType::AGGREGATE));
 
 			const agx::Vector<agxTerrain::ShovelRef>& Shovels = Terrain->getShovels();
 			for (const agxTerrain::ShovelRef& Shovel : Shovels)
@@ -432,6 +446,7 @@ namespace
 				NonFreeBodies.Add(Aggregate->getInnerBody());
 				NonFreeBodies.Add(Aggregate->getWedgeBody());
 				NonFreeConstraints.Add(Aggregate->getLockJoint());
+				NonFreeMaterials.Add(Aggregate->getMaterial());
 
 				// All other excavators are accessed through their respective deform controllers.
 				agxTerrain::DeformController* DeformController = Tools->getDeformController();
@@ -445,6 +460,7 @@ namespace
 					NonFreeBodies.Add(Deformers->getAggregate()->getWedgeBody());
 					NonFreeBodies.Add(Deformers->getAggregate()->getInnerBody());
 					NonFreeConstraints.Add(Deformers->getAggregate()->getLockJoint());
+					NonFreeMaterials.Add(Deformers->getAggregate()->getMaterial());
 
 					// In addition to the soil particle aggregate objects, a deformer also has an
 					// active zone with a geometry.
