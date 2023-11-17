@@ -9,8 +9,10 @@
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Terrain/AGX_ShovelComponent.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
+#include "Engine.h"
 #include "UObject/UObjectGlobals.h"
 
 template <typename StorageT, typename ParameterT>
@@ -228,20 +230,45 @@ UAGX_ShovelProperties* UAGX_ShovelProperties::GetAsset()
 
 void UAGX_ShovelProperties::CommitToAsset()
 {
-	// TODO Figure out how CommitToAsset should work.
-#if 0
 	if (IsInstance())
 	{
-		if (FShapeMaterialBarrier* Barrier = this->GetNative())
+		if (Asset == nullptr)
 		{
-			Asset->CopyFrom(*Barrier);
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Shovel Properties '%s' could not commit to asset because it does not have an "
+					 "associtated asset to commit to."),
+				*GetName());
+			return;
 		}
+
+		UEngine::CopyPropertiesForUnrelatedObjects(this, Asset.Get());
+
+		// We have modified an asset. We must mark it dirty so that it gets the asterisk marker
+		// in the icon in the Content Browser, is saved if the user does Save All, and so that it
+		// is included in the Save? dialog when Unreal Editor is closed.
+		//
+		// We would like to use UPackage::MarkPackageDirty, but that is rejected during Play In
+		// Editor sessions, which is when Commit To Asset is typically called. I hope doing what
+		// we do below doesn't break anything. An alternative is to save the package immediately
+		// with FAGX_ObjectUtilities::SaveAsset(*Asset);.
+		UPackage* Package = Asset->GetPackage();
+		if (Package == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Shovel Properties '%s' could not commit to asset because the associated "
+					 "asset '%s' does not have a package."),
+				*GetName(), *Asset->GetPathName());
+			return;
+		}
+		Package->SetDirtyFlag(true);
+		Package->PackageMarkedDirtyEvent.Broadcast(Package, true);
 	}
 	else if (Instance != nullptr)
 	{
 		Instance->CommitToAsset();
 	}
-#endif
 }
 
 namespace AGX_ShovelProperties_helpers
