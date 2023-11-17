@@ -4,6 +4,7 @@
 
 // Unreal Engine includes.
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Templates/SubclassOf.h"
 
 #include "AGX_ComponentReference.generated.h"
 
