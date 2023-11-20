@@ -137,17 +137,17 @@ void FTerrainPagerBarrier::SetCanCollide(bool bCanCollide)
 	// collision disabled, even when the user might have long since re-enabled collision on the
 	// Terrain pager.
 	check(HasNative());
-	if (!bCanCollide)
-	{
-		NativeRef->Native->setEnable(false);
-		TerrainPagerBarrier_helpers::SetCanCollide(
-			NativeRef->Native->getActiveTileAttachments(), false);
-	}
-	else
+	if (bCanCollide)
 	{
 		TerrainPagerBarrier_helpers::SetCanCollide(
 			NativeRef->Native->getActiveTileAttachments(), true);
 		NativeRef->Native->setEnable(true);
+	}
+	else
+	{
+		NativeRef->Native->setEnable(false);
+		TerrainPagerBarrier_helpers::SetCanCollide(
+			NativeRef->Native->getActiveTileAttachments(), false);
 	}
 }
 
