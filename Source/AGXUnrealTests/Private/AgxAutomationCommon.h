@@ -9,6 +9,8 @@
 #include "Misc/AutomationTest.h"
 #include "Misc/EngineVersionComparison.h"
 
+class UBlueprint;
+class USCS_Node;
 class UWorld;
 
 struct FLinearColor;
@@ -182,6 +184,9 @@ namespace AgxAutomationCommon
 	 * @return Array of (unique) referenced Static Mesh Asset names.
 	 */
 	TArray<FString> GetReferencedStaticMeshAssets(const TArray<UActorComponent*>& Components);
+
+	USCS_Node* GetNodeChecked(const UBlueprint& Blueprint, const FString& Name);
+	USCS_Node* GetOnlyAttachChildChecked(USCS_Node* Node);
 
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)

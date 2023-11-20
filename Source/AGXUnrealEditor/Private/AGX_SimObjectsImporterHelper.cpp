@@ -143,21 +143,35 @@ namespace
 	 * @param Trimesh The Trimesh containing the mesh to store.
 	 * @param FallbackName A name to give the asset in case the Trimesh doesn't have a valid name.
 	 * @param ProcessedMeshes Static Mesh cache.
+	 * @param ProcessedRenderMaterials Render Material cache.
 	 * @param DirectoryPath The path of the folder where all assets for this imported model is
 	 * stored.
 	 * @return
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
-		TMap<FGuid, UStaticMesh*>& ProcessedMeshes, const FString& DirectoryPath)
+		TMap<FGuid, UStaticMesh*>& ProcessedMeshes,
+		const TMap<FGuid, UMaterialInstanceConstant*>& ProcessedRenderMaterials,
+		const FString& DirectoryPath)
 	{
+		UMaterialInstanceConstant* RenderMaterial = [&]() -> UMaterialInstanceConstant*
+		{
+			if (!Trimesh.HasRenderMaterial())
+			{
+				return nullptr;
+			}
+
+			const FGuid RenderMaterialGuid = Trimesh.GetRenderMaterial().Guid;
+			return ProcessedRenderMaterials.FindRef(RenderMaterialGuid);
+		}();
+
 		const FGuid Guid = Trimesh.GetMeshDataGuid();
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
 			// the ProcessedMeshes cache.
 			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-				Trimesh, DirectoryPath, FallbackName);
+				Trimesh, DirectoryPath, FallbackName, RenderMaterial);
 		}
 
 		{
@@ -170,8 +184,8 @@ namespace
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
-		UStaticMesh* Asset =
-			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryPath, FallbackName);
+		UStaticMesh* Asset = FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+			Trimesh, DirectoryPath, FallbackName, RenderMaterial);
 		if (Asset != nullptr)
 		{
 			ProcessedMeshes.Add(Guid, Asset);
@@ -187,20 +201,34 @@ namespace
 	 *
 	 * @param RenderData The Render Data Barrier containing the mesh to store.
 	 * @param ProcessedMeshes Static Mesh cache.
+	 * @param ProcessedRenderMaterials Render Material cache.
 	 * @param DirectoryPath The path of the folder where all assets for the imported model is
 	 * stored.
 	 * @return The Static Mesh asset for the given Render Data.
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FRenderDataBarrier& RenderData, TMap<FGuid, UStaticMesh*>& ProcessedMeshes,
+		const TMap<FGuid, UMaterialInstanceConstant*>& ProcessedRenderMaterials,
 		const FString& DirectoryPath)
 	{
+		UMaterialInstanceConstant* RenderMaterial = [&]() -> UMaterialInstanceConstant*
+		{
+			if (!RenderData.HasMaterial())
+			{
+				return nullptr;
+			}
+
+			const FGuid RenderMaterialGuid = RenderData.GetMaterial().Guid;
+			return ProcessedRenderMaterials.FindRef(RenderMaterialGuid);
+		}();
+
 		const FGuid Guid = RenderData.GetGuid();
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
 			// the ProcessedMeshes cache.
-			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryPath);
+			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+				RenderData, DirectoryPath, RenderMaterial);
 		}
 
 		{
@@ -213,8 +241,8 @@ namespace
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
-		UStaticMesh* Asset =
-			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryPath);
+		UStaticMesh* Asset = FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+			RenderData, DirectoryPath, RenderMaterial);
 		if (Asset != nullptr)
 		{
 			ProcessedMeshes.Add(Guid, Asset);
@@ -662,7 +690,8 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 				? "SM_CollisionMesh"
 				: FString("SM_CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
 		UStaticMesh* Asset = GetOrCreateStaticMeshAsset(
-			ShapeBarrier, FallbackName, ProcessedMeshes, RootDirectoryPath);
+			ShapeBarrier, FallbackName, ProcessedMeshes, ProcessedRenderMaterials,
+			RootDirectoryPath);
 		NewMeshAsset = Asset;
 	}
 
@@ -971,8 +1000,8 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	}
 	else
 	{
-		UStaticMesh* Asset =
-			GetOrCreateStaticMeshAsset(RenderDataBarrier, ProcessedMeshes, RootDirectoryPath);
+		UStaticMesh* Asset = GetOrCreateStaticMeshAsset(
+			RenderDataBarrier, ProcessedMeshes, ProcessedRenderMaterials, RootDirectoryPath);
 		NewMeshAsset = Asset;
 	}
 
