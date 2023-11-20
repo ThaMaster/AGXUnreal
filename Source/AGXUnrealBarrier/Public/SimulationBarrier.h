@@ -94,7 +94,15 @@ public:
 	void SetPointGravity(const FVector& Origin, float Magnitude);
 	FVector GetPointGravity(float& OutMagnitude) const;
 
+	/**
+	 * Returns all Shape Contacts associated with a Shape.
+	 */
 	TArray<FShapeContactBarrier> GetShapeContacts(const FShapeBarrier& Shape) const;
+
+	/**
+	* Returns all Shape Contacts in the current Simulation.
+	*/
+	TArray<FShapeContactBarrier> GetShapeContacts() const;
 
 	/**
 	 * Perform one simulation step, moving the time stamp forward by one time step duration.

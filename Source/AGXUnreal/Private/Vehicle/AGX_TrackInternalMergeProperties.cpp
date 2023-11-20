@@ -322,13 +322,11 @@ UAGX_TrackInternalMergeProperties* UAGX_TrackInternalMergeProperties::CreateInst
 	check(!Source.IsInstance());
 	check(PlayingWorld.IsGameWorld());
 
-	UObject* Outer = UAGX_Simulation::GetFrom(&PlayingWorld);
-	check(Outer);
-
 	const FString InstanceName = Source.GetName() + "_Instance";
 
 	UAGX_TrackInternalMergeProperties* NewInstance = NewObject<UAGX_TrackInternalMergeProperties>(
-		Outer, UAGX_TrackInternalMergeProperties::StaticClass(), *InstanceName, RF_Transient);
+		GetTransientPackage(), UAGX_TrackInternalMergeProperties::StaticClass(), *InstanceName,
+		RF_Transient);
 	NewInstance->Asset = &Source;
 	NewInstance->CopyFrom(Source);
 

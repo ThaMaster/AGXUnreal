@@ -76,6 +76,13 @@ void FAGXUnrealModule::RegisterCoreRedirects()
 		ECoreRedirectFlags::Type_Class, TEXT("AGX_TerrainMaterialInstance"),
 		TEXT("AGX_TerrainMaterial"));
 
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Property, TEXT("AGX_Shovel.BottomContactThreshold"),
+		TEXT("ContactRegionThreshold"));
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Property, TEXT("AGX_Shovel.bOverrideBottomContactThreshold"),
+		TEXT("bOverrideContactRegionThreshold"));
+
 	FCoreRedirects::AddRedirectList(Redirects, TEXT("AGXUnreal"));
 }
 

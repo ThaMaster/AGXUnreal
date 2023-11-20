@@ -48,7 +48,7 @@
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
-#include "Utilities/AGX_TextureUtilities.h"
+#include "Utilities/AGX_RenderUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
@@ -124,7 +124,7 @@ namespace
 			bIsSensor
 				? TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'")
 				: TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'");
-		UMaterial* Material = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
+		UMaterial* Material = FAGX_RenderUtilities::GetMaterialFromAssetPath(AssetPath);
 		if (Material == nullptr)
 		{
 			UE_LOG(
@@ -659,8 +659,8 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	{
 		const FString FallbackName =
 			ShapeBarrier.GetName().IsEmpty()
-				? "CollisionMesh"
-				: FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
+				? "SM_CollisionMesh"
+				: FString("SM_CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
 		UStaticMesh* Asset = GetOrCreateStaticMeshAsset(
 			ShapeBarrier, FallbackName, ProcessedMeshes, RootDirectoryPath);
 		NewMeshAsset = Asset;
@@ -1072,9 +1072,9 @@ UMaterialInterface* FAGX_SimObjectsImporterHelper::InstantiateRenderMaterial(
 	Factory->InitialParent = Base;
 
 	const FGuid Guid = Barrier.Guid;
-	const FString MaterialName = Barrier.Name.IsNone()
-									 ? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
-									 : Barrier.Name.ToString();
+	const FString MaterialName =
+		Barrier.Name.IsNone() ? FString::Printf(TEXT("MI_RenderMaterial_%s"), *Guid.ToString())
+							  : FString::Printf(TEXT("MI_%s"), *Barrier.Name.ToString());
 
 	FString AssetName = FAGX_ImportUtilities::CreateAssetName(
 		MaterialName, TEXT("ImportedAGXDynamicsMaterial"),
