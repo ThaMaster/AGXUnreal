@@ -72,12 +72,12 @@ void FROS2PublisherBarrier::AllocateNative(
 	EAGX_ROS2MessageType InMessageType, const FString& Topic, const FAGX_ROS2Qos& Qos,
 	uint8 DomainID)
 {
-	using namespace agxIO::ROS2::agxMsgs;
-	using namespace agxIO::ROS2::builtinInterfaces;
-	using namespace agxIO::ROS2::rosgraphMsgs;
-	using namespace agxIO::ROS2::stdMsgs;
-	using namespace agxIO::ROS2::geometryMsgs;
-	using namespace agxIO::ROS2::sensorMsgs;
+	using namespace agxROS2::agxMsgs;
+	using namespace agxROS2::builtinInterfaces;
+	using namespace agxROS2::rosgraphMsgs;
+	using namespace agxROS2::stdMsgs;
+	using namespace agxROS2::geometryMsgs;
+	using namespace agxROS2::sensorMsgs;
 
 	MessageType = InMessageType;
 	switch (InMessageType)

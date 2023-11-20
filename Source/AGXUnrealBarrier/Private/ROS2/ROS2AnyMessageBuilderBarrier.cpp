@@ -42,7 +42,7 @@ bool FROS2AnyMessageBuilderBarrier::HasNative() const
 void FROS2AnyMessageBuilderBarrier::AllocateNative()
 {
 	check(!HasNative());
-	Native = std::make_unique<FAnyMessageBuilder>(new agxIO::ROS2::AnyMessageBuilder());
+	Native = std::make_unique<FAnyMessageBuilder>(new agxROS2::AnyMessageBuilder());
 }
 
 FAnyMessageBuilder* FROS2AnyMessageBuilderBarrier::GetNative()

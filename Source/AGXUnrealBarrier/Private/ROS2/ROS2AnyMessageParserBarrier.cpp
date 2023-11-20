@@ -52,7 +52,7 @@ bool FROS2AnyMessageParserBarrier::HasNative() const
 void FROS2AnyMessageParserBarrier::AllocateNative()
 {
 	check(!HasNative());
-	Native = std::make_unique<FAnyMessageParser>(new agxIO::ROS2::AnyMessageParser());
+	Native = std::make_unique<FAnyMessageParser>(new agxROS2::AnyMessageParser());
 }
 
 FAnyMessageParser* FROS2AnyMessageParserBarrier::GetNative()
@@ -84,7 +84,7 @@ void FROS2AnyMessageParserBarrier::BeginParse(const FAGX_AgxMsgsAny& InMessage)
 
 	{
 		// Here we store away a copy (of AGX type) of the message, used for subsequent reads.
-		agxIO::ROS2::agxMsgs::Any* MessageAGX = new agxIO::ROS2::agxMsgs::Any();
+		agxROS2::agxMsgs::Any* MessageAGX = new agxROS2::agxMsgs::Any();
 		*MessageAGX = Convert(InMessage);
 		Message = std::make_unique<FAgxAny>(MessageAGX);
 	}

@@ -11,7 +11,7 @@
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
-#include <agxUtil/agxUtil.h>
+#include <agxROS2/ROS2Util.h>
 #include "EndAGXIncludes.h"
 
 // Helper macros to minimize amount of code needed in large switch-statement.
@@ -24,7 +24,7 @@
 		if (Sub->Native->receiveMessage(MsgAGX))                                                \
 		{                                                                                       \
 			*static_cast<MsgTypeUnreal*>(&OutMsg) = Convert(MsgAGX);                              \
-			agxUtil::freeContainerMemory(MsgAGX);                                                 \
+			agxROS2::freeContainerMemory(MsgAGX);                                                 \
 			return true;                                                                          \
 		}                                                                                       \
 	}                                                                                         \
@@ -79,12 +79,12 @@ void FROS2SubscriberBarrier::AllocateNative(
 	EAGX_ROS2MessageType InMessageType, const FString& Topic, const FAGX_ROS2Qos& Qos,
 	uint8 DomainID)
 {
-	using namespace agxIO::ROS2::agxMsgs;
-	using namespace agxIO::ROS2::builtinInterfaces;
-	using namespace agxIO::ROS2::rosgraphMsgs;
-	using namespace agxIO::ROS2::stdMsgs;
-	using namespace agxIO::ROS2::geometryMsgs;
-	using namespace agxIO::ROS2::sensorMsgs;
+	using namespace agxROS2::agxMsgs;
+	using namespace agxROS2::builtinInterfaces;
+	using namespace agxROS2::rosgraphMsgs;
+	using namespace agxROS2::stdMsgs;
+	using namespace agxROS2::geometryMsgs;
+	using namespace agxROS2::sensorMsgs;
 
 	MessageType = InMessageType;
 	switch (InMessageType)
@@ -304,12 +304,12 @@ void FROS2SubscriberBarrier::ReleaseNative()
 
 bool FROS2SubscriberBarrier::ReceiveMessage(FAGX_ROS2Message& OutMsg) const
 {
-	using namespace agxIO::ROS2::agxMsgs;
-	using namespace agxIO::ROS2::builtinInterfaces;
-	using namespace agxIO::ROS2::rosgraphMsgs;
-	using namespace agxIO::ROS2::stdMsgs;
-	using namespace agxIO::ROS2::geometryMsgs;
-	using namespace agxIO::ROS2::sensorMsgs;
+	using namespace agxROS2::agxMsgs;
+	using namespace agxROS2::builtinInterfaces;
+	using namespace agxROS2::rosgraphMsgs;
+	using namespace agxROS2::stdMsgs;
+	using namespace agxROS2::geometryMsgs;
+	using namespace agxROS2::sensorMsgs;
 	check(HasNative());
 
 	switch (MessageType)
@@ -424,7 +424,8 @@ bool FROS2SubscriberBarrier::ReceiveMessage(FAGX_ROS2Message& OutMsg) const
 			AGX_RECEIVE_ROS2_MSGS(
 				FSubscriberPointStamped, FAGX_GeometryMsgsPointStamped, PointStamped)
 		case EAGX_ROS2MessageType::GeometryMsgsPolygon:
-			AGX_RECEIVE_ROS2_MSGS(FSubscriberPolygon, FAGX_GeometryMsgsPolygon, Polygon)
+			AGX_RECEIVE_ROS2_MSGS(
+				FSubscriberPolygon, FAGX_GeometryMsgsPolygon, agxROS2::geometryMsgs::Polygon)
 		case EAGX_ROS2MessageType::GeometryMsgsPolygonStamped:
 			AGX_RECEIVE_ROS2_MSGS(
 				FSubscriberPolygonStamped, FAGX_GeometryMsgsPolygonStamped, PolygonStamped)

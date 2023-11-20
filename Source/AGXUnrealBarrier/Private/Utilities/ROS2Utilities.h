@@ -29,13 +29,13 @@ namespace AGX_ROS2Utilities
 	//
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::agxMsgs::Any& Msg)
+	inline void FreeContainers(agxROS2::agxMsgs::Any& Msg)
 	{
 		FreeSingleContainer(Msg.data);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::agxMsgs::AnySequence& Msg)
+	inline void FreeContainers(agxROS2::agxMsgs::AnySequence& Msg)
 	{
 		for (auto& D : Msg.data)
 			FreeContainers(D);
@@ -48,13 +48,13 @@ namespace AGX_ROS2Utilities
 	//
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::MultiArrayDimension& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::MultiArrayDimension& Msg)
 	{
 		FreeSingleContainer(Msg.label);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::MultiArrayLayout& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::MultiArrayLayout& Msg)
 	{
 		for (auto& D : Msg.dim)
 			FreeContainers(D);
@@ -63,90 +63,90 @@ namespace AGX_ROS2Utilities
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::ByteMultiArray& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::ByteMultiArray& Msg)
 	{
 		FreeContainers(Msg.layout);
 		FreeSingleContainer(Msg.data);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::Float32MultiArray& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::Float32MultiArray& Msg)
 	{
 		FreeContainers(Msg.layout);
 		FreeSingleContainer(Msg.data);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::Float64MultiArray& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::Float64MultiArray& Msg)
 	{
 		FreeContainers(Msg.layout);
 		FreeSingleContainer(Msg.data);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::Int16MultiArray& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::Int16MultiArray& Msg)
 	{
 		FreeContainers(Msg.layout);
 		FreeSingleContainer(Msg.data);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::Int32MultiArray& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::Int32MultiArray& Msg)
 	{
 		FreeContainers(Msg.layout);
 		FreeSingleContainer(Msg.data);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::Int64MultiArray& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::Int64MultiArray& Msg)
 	{
 		FreeContainers(Msg.layout);
 		FreeSingleContainer(Msg.data);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::Int8MultiArray& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::Int8MultiArray& Msg)
 	{
 		FreeContainers(Msg.layout);
 		FreeSingleContainer(Msg.data);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::String& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::String& Msg)
 	{
 		FreeSingleContainer(Msg.data);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::UInt16MultiArray& Msg)
-	{
-		FreeContainers(Msg.layout);
-		FreeSingleContainer(Msg.data);
-	}
-
-	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::UInt32MultiArray& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::UInt16MultiArray& Msg)
 	{
 		FreeContainers(Msg.layout);
 		FreeSingleContainer(Msg.data);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::UInt64MultiArray& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::UInt32MultiArray& Msg)
 	{
 		FreeContainers(Msg.layout);
 		FreeSingleContainer(Msg.data);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::UInt8MultiArray& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::UInt64MultiArray& Msg)
 	{
 		FreeContainers(Msg.layout);
 		FreeSingleContainer(Msg.data);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::stdMsgs::Header& Msg)
+	inline void FreeContainers(agxROS2::stdMsgs::UInt8MultiArray& Msg)
+	{
+		FreeContainers(Msg.layout);
+		FreeSingleContainer(Msg.data);
+	}
+
+	template <>
+	inline void FreeContainers(agxROS2::stdMsgs::Header& Msg)
 	{
 		FreeSingleContainer(Msg.frame_id);
 	}
@@ -156,101 +156,101 @@ namespace AGX_ROS2Utilities
 	//
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::AccelStamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::AccelStamped& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::AccelWithCovarianceStamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::AccelWithCovarianceStamped& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::InertiaStamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::InertiaStamped& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::PointStamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::PointStamped& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::Polygon& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::Polygon& Msg)
 	{
 		FreeSingleContainer(Msg.points);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::PolygonStamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::PolygonStamped& Msg)
 	{
 		FreeContainers(Msg.header);
 		FreeContainers(Msg.polygon);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::PoseArray& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::PoseArray& Msg)
 	{
 		FreeContainers(Msg.header);
 		FreeSingleContainer(Msg.poses);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::PoseStamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::PoseStamped& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::PoseWithCovarianceStamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::PoseWithCovarianceStamped& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::QuaternionStamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::QuaternionStamped& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::TransformStamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::TransformStamped& Msg)
 	{
 		FreeContainers(Msg.header);
 		FreeSingleContainer(Msg.child_frame_id);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::TwistStamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::TwistStamped& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::TwistWithCovariance& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::TwistWithCovariance& Msg)
 	{
 		FreeContainers(Msg.twist);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::TwistWithCovarianceStamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::TwistWithCovarianceStamped& Msg)
 	{
 		FreeContainers(Msg.header);
 		FreeContainers(Msg.twist);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::Vector3Stamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::Vector3Stamped& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::geometryMsgs::WrenchStamped& Msg)
+	inline void FreeContainers(agxROS2::geometryMsgs::WrenchStamped& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
@@ -260,7 +260,7 @@ namespace AGX_ROS2Utilities
 	//
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::BatteryState& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::BatteryState& Msg)
 	{
 		FreeContainers(Msg.header);
 		FreeSingleContainer(Msg.cell_voltage);
@@ -270,14 +270,14 @@ namespace AGX_ROS2Utilities
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::ChannelFloat32& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::ChannelFloat32& Msg)
 	{
 		FreeSingleContainer(Msg.name);
 		FreeSingleContainer(Msg.values);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::CompressedImage& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::CompressedImage& Msg)
 	{
 		FreeContainers(Msg.header);
 		FreeSingleContainer(Msg.format);
@@ -285,19 +285,19 @@ namespace AGX_ROS2Utilities
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::FluidPressure& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::FluidPressure& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::Illuminance& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::Illuminance& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::Image& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::Image& Msg)
 	{
 		FreeContainers(Msg.header);
 		FreeSingleContainer(Msg.encoding);
@@ -305,13 +305,13 @@ namespace AGX_ROS2Utilities
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::Imu& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::Imu& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::JointState& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::JointState& Msg)
 	{
 		FreeContainers(Msg.header);
 		for (auto& N : Msg.name)
@@ -324,7 +324,7 @@ namespace AGX_ROS2Utilities
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::Joy& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::Joy& Msg)
 	{
 		FreeContainers(Msg.header);
 		FreeSingleContainer(Msg.axes);
@@ -332,19 +332,19 @@ namespace AGX_ROS2Utilities
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::JoyFeedbackArray& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::JoyFeedbackArray& Msg)
 	{
 		FreeSingleContainer(Msg.array);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::LaserEcho& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::LaserEcho& Msg)
 	{
 		FreeSingleContainer(Msg.echoes);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::LaserScan& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::LaserScan& Msg)
 	{
 		FreeContainers(Msg.header);
 		FreeSingleContainer(Msg.ranges);
@@ -352,13 +352,13 @@ namespace AGX_ROS2Utilities
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::MagneticField& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::MagneticField& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::MultiDOFJointState& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::MultiDOFJointState& Msg)
 	{
 		FreeContainers(Msg.header);
 		for (auto& S : Msg.joint_names)
@@ -371,7 +371,7 @@ namespace AGX_ROS2Utilities
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::MultiEchoLaserScan& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::MultiEchoLaserScan& Msg)
 	{
 		FreeContainers(Msg.header);
 		for (auto& R : Msg.ranges)
@@ -385,13 +385,13 @@ namespace AGX_ROS2Utilities
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::NavSatFix& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::NavSatFix& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::PointCloud& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::PointCloud& Msg)
 	{
 		FreeContainers(Msg.header);
 		FreeSingleContainer(Msg.points);
@@ -402,13 +402,13 @@ namespace AGX_ROS2Utilities
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::PointField& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::PointField& Msg)
 	{
 		FreeSingleContainer(Msg.name);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::PointCloud2& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::PointCloud2& Msg)
 	{
 		FreeContainers(Msg.header);
 		for (auto& F : Msg.fields)
@@ -419,13 +419,13 @@ namespace AGX_ROS2Utilities
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::Range& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::Range& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::CameraInfo& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::CameraInfo& Msg)
 	{
 		FreeContainers(Msg.header);
 		FreeSingleContainer(Msg.distortion_model);
@@ -433,19 +433,19 @@ namespace AGX_ROS2Utilities
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::RelativeHumidity& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::RelativeHumidity& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::Temperature& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::Temperature& Msg)
 	{
 		FreeContainers(Msg.header);
 	}
 
 	template <>
-	inline void FreeContainers(agxIO::ROS2::sensorMsgs::TimeReference& Msg)
+	inline void FreeContainers(agxROS2::sensorMsgs::TimeReference& Msg)
 	{
 		FreeContainers(Msg.header);
 		FreeSingleContainer(Msg.source);
