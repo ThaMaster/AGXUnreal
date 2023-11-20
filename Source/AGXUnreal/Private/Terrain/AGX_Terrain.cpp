@@ -527,6 +527,9 @@ namespace AGX_Terrain_helpers
 {
 	void EnsureUseDynamicMaterialInstance(AAGX_Terrain& Terrain)
 	{
+		if (!IsValid(Terrain.SourceLandscape))
+			return;
+
 		TArray<ALandscapeProxy*> StreamingProxies;
 		if (AGX_HeightFieldUtilities::IsOpenWorldLandscape(*Terrain.SourceLandscape))
 		{
@@ -548,8 +551,7 @@ namespace AGX_Terrain_helpers
 			return Res;
 		};
 
-		if (Terrain.SourceLandscape == nullptr ||
-			IsUsingDynamicMaterialInstance(*Terrain.SourceLandscape))
+		if (IsUsingDynamicMaterialInstance(*Terrain.SourceLandscape))
 		{
 			return;
 		}
