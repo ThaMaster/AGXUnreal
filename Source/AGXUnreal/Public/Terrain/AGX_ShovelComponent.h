@@ -105,6 +105,7 @@ public:
 	 *
 	 * It is not necessary to call this if using the Set functions to edit the shovel configuration.
 	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
 	void FinalizeShovelEdit();
 
 	/**
