@@ -600,7 +600,7 @@ namespace FAGX_ConstraintUtilities_helpers
 
 	FTransform GetFrameTransform(
 		FAGX_ConstraintBodyAttachment& Attachment, const FName& ConstraintName,
-		const FName& ActorName)
+		const FString& ActorLabel)
 	{
 		if (Attachment.FrameDefiningSource == EAGX_FrameDefiningSource::Other &&
 			Attachment.FrameDefiningComponent.GetSceneComponent() == nullptr)
@@ -610,7 +610,7 @@ namespace FAGX_ConstraintUtilities_helpers
 					TEXT("Constraint '%s' in Actor '%s' has Frame Defining Source set to Other but "
 						 "Frame Defining Component is not set to a valid Component. Constraint "
 						 "frames may be created incorrectly."),
-					*ConstraintName.ToString(), *ActorName.ToString()),
+					*ConstraintName.ToString(), *ActorLabel),
 				SNotificationItem::CS_Fail);
 		}
 
@@ -631,7 +631,8 @@ namespace FAGX_ConstraintUtilities_helpers
 
 void FAGX_ConstraintUtilities::CreateNative(
 	FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& Attachment1,
-	FAGX_ConstraintBodyAttachment& Attachment2, const FName& ConstraintName, const FName& ActorName)
+	FAGX_ConstraintBodyAttachment& Attachment2, const FName& ConstraintName,
+	const FString& ActorLabel)
 {
 	using namespace FAGX_ConstraintUtilities_helpers;
 
@@ -654,8 +655,8 @@ void FAGX_ConstraintUtilities::CreateNative(
 	FRigidBodyBarrier* Body1 = Attachment1.GetRigidBodyBarrier();
 	FRigidBodyBarrier* Body2 = Attachment2.GetRigidBodyBarrier();
 
-	FTransform Transform1 = GetFrameTransform(Attachment1, ConstraintName, ActorName);
-	FTransform Transform2 = GetFrameTransform(Attachment2, ConstraintName, ActorName);
+	FTransform Transform1 = GetFrameTransform(Attachment1, ConstraintName, ActorLabel);
+	FTransform Transform2 = GetFrameTransform(Attachment2, ConstraintName, ActorLabel);
 	Barrier->AllocateNative(
 		*Body1, Transform1.GetLocation(), Transform1.GetRotation(), Body2, Transform2.GetLocation(),
 		Transform2.GetRotation());

@@ -34,5 +34,5 @@ const FPrismaticBarrier* UAGX_PrismaticConstraintComponent::GetNativePrismatic()
 void UAGX_PrismaticConstraintComponent::AllocateNative()
 {
 	FAGX_ConstraintUtilities::CreateNative(
-		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetLabelSafe(GetOwner()));
 }

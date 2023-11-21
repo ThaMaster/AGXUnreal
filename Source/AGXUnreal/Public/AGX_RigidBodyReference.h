@@ -12,8 +12,7 @@ class UAGX_RigidBodyComponent;
 /**
  * A reference to an UAGX_RigidBodyComponent.
  *
- * Replaces the custom / type-specific FAGX_RigidBodyComponent with this FAGX_ComponentReference
- * based implementation.
+ * See comment in FAGX_ComponentReference for usage instructions and limitations.
  */
 USTRUCT()
 struct AGXUNREAL_API FAGX_RigidBodyReference : public FAGX_ComponentReference

@@ -914,7 +914,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 		{
 			ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 		}
-		if (Property == GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, SceneComponentName))
+		if (Property == GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, Name))
 		{
 			ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 		}
@@ -1130,9 +1130,6 @@ void UAGX_ConstraintComponent::BeginPlay()
 
 	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{
-		BodyAttachment1.FrameDefiningComponent.CacheCurrentSceneComponent();
-		BodyAttachment2.FrameDefiningComponent.CacheCurrentSceneComponent();
-
 		CreateNative();
 		if (HasNative())
 		{
