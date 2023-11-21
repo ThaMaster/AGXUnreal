@@ -136,6 +136,11 @@ void FTerrainPagerBarrier::SetCanCollide(bool bCanCollide)
 	// is tiled-out and serialized to disk, and then that could be read back long in the future with
 	// collision disabled, even when the user might have long since re-enabled collision on the
 	// Terrain pager.
+	//
+	// In the future, we could consider using AGX Terrain Pager's TileLoadEvent to get a callback
+	// here in the Barrier, and then, similarly to how we get data using the HeightFetcher, we
+	// could have a properties fetcher (or something like that) to get properties from the Terrain
+	// Actor that could then be applied to the tile when the TileLoadEvent is called.
 	check(HasNative());
 	if (bCanCollide)
 	{
