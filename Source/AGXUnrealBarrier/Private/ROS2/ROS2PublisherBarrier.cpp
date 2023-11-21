@@ -289,7 +289,7 @@ EAGX_ROS2MessageType FROS2PublisherBarrier::GetMessageType() const
 	return MessageType;
 }
 
-bool FROS2PublisherBarrier::SendMessage(const FAGX_ROS2Message& Msg) const
+bool FROS2PublisherBarrier::SendMsg(const FAGX_ROS2Message& Msg) const
 {
 	check(HasNative());
 

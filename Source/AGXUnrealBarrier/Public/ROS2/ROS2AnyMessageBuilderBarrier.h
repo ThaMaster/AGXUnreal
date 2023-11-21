@@ -56,7 +56,7 @@ public:
 	void WriteStringSequence(const TArray<FString>& d);
 	void WriteBoolSequence(const TArray<bool>& d);
 
-	FAGX_AgxMsgsAny GetMessage() const;
+	FAGX_AgxMsgsAny GetBuiltMessage() const;
 
 private:
 	FROS2AnyMessageBuilderBarrier(const FROS2AnyMessageBuilderBarrier&) = delete;

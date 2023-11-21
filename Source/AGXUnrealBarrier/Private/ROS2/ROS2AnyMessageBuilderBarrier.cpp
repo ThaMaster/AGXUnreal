@@ -210,7 +210,7 @@ void FROS2AnyMessageBuilderBarrier::WriteBoolSequence(const TArray<bool>& d)
 	Native->Native->writeBoolSequence(ToStdArray(d));
 }
 
-FAGX_AgxMsgsAny FROS2AnyMessageBuilderBarrier::GetMessage() const
+FAGX_AgxMsgsAny FROS2AnyMessageBuilderBarrier::GetBuiltMessage() const
 {
 	return Convert(Native->Native->getMessage());
 }

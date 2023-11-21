@@ -32,7 +32,10 @@ public:
 	void ReleaseNative();
 
 	EAGX_ROS2MessageType GetMessageType() const;
-	bool SendMessage(const FAGX_ROS2Message& Msg) const;
+
+	// Shorthand "Msg" in the function name due to strangeness where the SendMessage signature
+	// causes link error on Windows.
+	bool SendMsg(const FAGX_ROS2Message& Msg) const;
 
 private:
 	FROS2PublisherBarrier(const FROS2PublisherBarrier&) = delete;

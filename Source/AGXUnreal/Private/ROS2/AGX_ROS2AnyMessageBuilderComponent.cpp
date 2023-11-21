@@ -416,5 +416,5 @@ FAGX_AgxMsgsAny UAGX_ROS2AnyMessageBuilderComponent::GetMessage() const
 		return FAGX_AgxMsgsAny();
 	}
 
-	return NativeBarrier.GetMessage();
+	return NativeBarrier.GetBuiltMessage();
 }
