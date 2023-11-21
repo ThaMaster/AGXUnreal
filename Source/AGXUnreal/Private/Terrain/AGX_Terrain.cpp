@@ -99,6 +99,35 @@ AAGX_Terrain::AAGX_Terrain()
 			 "RT_TerrainParticleData.RT_TerrainParticleData'"));
 }
 
+void AAGX_Terrain::SetCanCollide(bool bInCanCollide)
+{
+	// CanCollide is set on the Terrain Pager native if using Terrain Paging, otherwise set on the
+	// regular Terrain native. TerrainPager.OnTemplateTerrainChanged has no effect when disabling
+	// collision on a template Terrain.
+	if (HasNativeTerrainPager())
+	{
+		NativeTerrainPagerBarrier.SetCanCollide(bInCanCollide);
+	}
+	else if (HasNative())
+	{
+		NativeBarrier.SetCanCollide(bInCanCollide);
+	}
+
+	bCanCollide = bInCanCollide;
+}
+
+bool AAGX_Terrain::GetCanCollide() const
+{
+	// There is no clean CanCollide check for a Terrain pager, in that case we fall back on
+	// the member in the Terrain actor.
+	if (HasNative() && !bEnableTerrainPaging)
+	{
+		return NativeBarrier.GetCanCollide();
+	}
+
+	return bCanCollide;
+}
+
 bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 {
 	UAGX_TerrainMaterial* TerrainMaterialOrig = TerrainMaterial;
@@ -501,6 +530,10 @@ void AAGX_Terrain::InitPropertyDispatcher()
 	}
 
 	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bCanCollide),
+		[](ThisClass* This) { This->SetCanCollide(This->bCanCollide); });
+
+	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, SourceLandscape),
 		[](ThisClass* This) { AGX_Terrain_helpers::EnsureUseDynamicMaterialInstance(*This); });
 
@@ -860,6 +893,7 @@ void AAGX_Terrain::InitializeNative()
 		}
 	}
 
+	SetCanCollide(bCanCollide);
 	CreateNativeShovels();
 	AddTerrainPagerBodies();
 	InitializeRendering();

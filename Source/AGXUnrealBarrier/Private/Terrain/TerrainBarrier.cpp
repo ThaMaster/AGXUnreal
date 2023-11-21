@@ -75,6 +75,22 @@ void FTerrainBarrier::ReleaseNative()
 	NativeRef->Native = nullptr;
 }
 
+void FTerrainBarrier::SetCanCollide(bool bCanCollide)
+{
+	check(HasNative());
+	if (agxCollide::Geometry* Geom = NativeRef->Native->getGeometry())
+		Geom->setEnableCollisions(bCanCollide);
+}
+
+bool FTerrainBarrier::GetCanCollide() const
+{
+	check(HasNative());
+	if (agxCollide::Geometry* Geom = NativeRef->Native->getGeometry())
+		return Geom->getEnableCollisions();
+
+	return false;
+}
+
 void FTerrainBarrier::SetPosition(const FVector& PositionUnreal)
 {
 	check(HasNative());
