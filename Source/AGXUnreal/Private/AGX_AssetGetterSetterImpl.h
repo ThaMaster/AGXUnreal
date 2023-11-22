@@ -56,9 +56,14 @@
 		} \
 		else \
 		{ \
-			Modify(); \
+			if constexpr (WITH_EDITOR) \
+			{ \
+				Modify(); \
+			} \
 			PropertyName = InVar; \
-			FAGX_ObjectUtilities::MarkAssetDirty(*this); \
+			if constexpr (WITH_EDITOR) { \
+				FAGX_ObjectUtilities::MarkAssetDirty(*this); \
+			} \
 		} \
 	} \
 }
@@ -153,9 +158,15 @@
 { \
 	if (This->IsInstance()) \
 	{ \
-		This->Asset->Modify(); \
+		if constexpr (WITH_EDITOR) \
+		{ \
+			This->Asset->Modify(); \
+		} \
 		This->Asset->PropertyName = This->PropertyName; \
-		FAGX_ObjectUtilities::MarkAssetDirty(*This->Asset); \
+		if constexpr (WITH_EDITOR) \
+		{ \
+			FAGX_ObjectUtilities::MarkAssetDirty(*This->Asset); \
+		} \
 	} \
 	This->SetFunc(This->PropertyName); \
 }
