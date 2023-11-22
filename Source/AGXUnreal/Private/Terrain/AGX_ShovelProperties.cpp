@@ -171,36 +171,28 @@ UAGX_ShovelProperties* UAGX_ShovelProperties::GetOrCreateInstance(UWorld* Playin
 {
 	if (IsInstance())
 	{
-		AGX_CHECK(PlayingWorld == GetWorld());
-		if (PlayingWorld != GetWorld())
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("UAGX_ShovelProperties::GetOrCreateInstance called on an instance in a "
-					 "different world."));
-			return nullptr;
-		}
 		return this;
 	}
 	if (Instance.IsValid())
 	{
-		AGX_CHECK(PlayingWorld == Instance->GetWorld());
-		if (PlayingWorld != Instance->GetWorld())
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("UAGX_ShovelProperties::GetOrCreateInstance called when we already have an "
-					 "instance in a different world."));
-			return nullptr;
-		}
 		return Instance.Get();
+	}
+	if (PlayingWorld == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Could not create runtime instance for Shovel Properties asset '%s' because no "
+				 "world to create it in was given."),
+			*GetPathName());
+		return nullptr;
 	}
 	if (!PlayingWorld->IsGameWorld())
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Could not create Shovel Properties instance because the given world is not a "
-				 "game world."));
+			TEXT("Could not create Shovel Properties runtime instance for asset '%s' because the "
+				 "given world is not a game world."),
+			*GetPathName());
 		return nullptr;
 	}
 
@@ -208,7 +200,7 @@ UAGX_ShovelProperties* UAGX_ShovelProperties::GetOrCreateInstance(UWorld* Playin
 	UAGX_ShovelProperties* NewInstance =
 		NewObject<UAGX_ShovelProperties>(GetTransientPackage(), *InstanceName, RF_Transient, this);
 	NewInstance->Asset = this;
-	this->Instance = NewInstance;
+	Instance = NewInstance;
 	return NewInstance;
 }
 
