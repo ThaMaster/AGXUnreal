@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/Level.h"
@@ -119,6 +120,40 @@ bool FAGX_ObjectUtilities::SaveAsset(UObject& Asset, bool FullyLoad)
 
 	if (FullyLoad)
 		Package->FullyLoad();
+}
+
+bool FAGX_ObjectUtilities::MarkAssetDirty(UObject& Asset)
+{
+	UPackage* Package = Asset.GetPackage();
+	if (Package == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot mark asset '%s' dirty because it does not have a package."),
+			*Asset.GetPathName());
+		return false;
+	}
+
+	if (Package->MarkPackageDirty())
+	{
+		return true;
+	}
+
+	Package->SetDirtyFlag(true);
+	if (Package->IsDirty())
+	{
+		Package->PackageMarkedDirtyEvent.Broadcast(Package, true);
+	}
+	else
+	{
+		const FString Message = FString::Printf(
+			TEXT("Could not mark package '%s' dirty. It should be saved manually."),
+			*Asset.GetPathName());
+		FAGX_NotificationUtilities::ShowNotification(
+			Message, SNotificationItem::ECompletionState::CS_Fail);
+	}
+
+	return Package->IsDirty();
 }
 #endif
 

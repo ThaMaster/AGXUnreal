@@ -544,7 +544,10 @@ void UAGX_ShapeMaterial::CommitToAsset()
 	if (IsInstance())
 	{
 		if (FShapeMaterialBarrier* Barrier = this->GetNative())
+		{
 			Asset->CopyFrom(*Barrier);
+			FAGX_ObjectUtilities::MarkAssetDirty(*Asset);
+		}
 	}
 	else if (Instance != nullptr) // IsAsset
 	{

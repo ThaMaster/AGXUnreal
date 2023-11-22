@@ -103,6 +103,18 @@ public:
 	 * necessary when building cooked build on Linux in some situations.
 	 */
 	static bool SaveAsset(UObject& Asset, bool FullyLoad = false);
+
+	/**
+	 * Mark the package holding the given asset dirty.
+	 *
+	 * Should be called after making changes to the asset that should lead to an asterisk emblem
+	 * being shown on the asset in the Content Browser and a Save? question asked when closing
+	 * Unreal Editor.
+	 *
+	 * First tries to mark the package dirty with UPackage::MarkPackageDirty. If that fails then
+	 * we set the dirty bit explicitly.
+	 */
+	static bool MarkAssetDirty(UObject& Asset);
 #endif
 
 	/**

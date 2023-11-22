@@ -1,7 +1,13 @@
 // Copyright 2023, Algoryx Simulation AB.
 
 #pragma once
+
+// AGX Dynamics includes.
+#include "Utilities/AGX_ObjectUtilities.h"
+
+// Standard library includes.
 #include <type_traits>
+
 
 /*
  * This file contains a number of helper-macros useful for dealing with our asset/instance type
@@ -39,6 +45,7 @@
 		else \
 		{ \
 			PropertyName = InVar; \
+			FAGX_ObjectUtilities::MarkAssetDirty(*this); \
 		} \
 	} \
 }
@@ -115,6 +122,7 @@
 	if (This->IsInstance()) \
 	{ \
 		This->Asset->PropertyName = This->PropertyName; \
+		FAGX_ObjectUtilities::MarkAssetDirty(*This->Asset); \
 	} \
 	This->SetFunc(This->PropertyName); \
 }

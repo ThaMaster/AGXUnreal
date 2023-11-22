@@ -50,6 +50,7 @@ void SetAndPropagateShovelProperty(
 		else
 		{
 			*Storage = NewValue;
+			FAGX_ObjectUtilities::MarkAssetDirty(Properties);
 		}
 	}
 }
