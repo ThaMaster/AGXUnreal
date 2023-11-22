@@ -277,6 +277,7 @@ bool UAGX_ShovelComponent::SwapEdgeDirections()
 	return true;
 }
 
+#if WITH_EDITOR
 void UAGX_ShovelComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
@@ -312,6 +313,7 @@ void UAGX_ShovelComponent::PostEditChangeChainProperty(FPropertyChangedChainEven
 	// apply all our changes before that so that they are carried over to the copy.
 	Super::PostEditChangeChainProperty(Event);
 }
+#endif
 
 void UAGX_ShovelComponent::BeginPlay()
 {

@@ -674,7 +674,13 @@ void UAGX_ContactMaterial::CommitToAsset()
 	{
 		if (HasNative())
 		{
+#if WITH_EDITOR
+			Asset->Modify();
+#endif
 			Asset->CopyFrom(*GetNative());
+#if WITH_EDITOR
+			FAGX_ObjectUtilities::MarkAssetDirty(*Asset);
+#endif
 		}
 	}
 	else if (Instance != nullptr)
