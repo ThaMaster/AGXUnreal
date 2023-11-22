@@ -13,6 +13,27 @@
  * and property updates in general.
  */
 
+namespace AGX_WithEditorWrappers
+{
+#if WITH_EDITOR
+	template<typename T>
+	inline void Modify(T& Object)
+	{
+		Object.Modify();
+	}
+
+	inline void MarkAssetDirty(UObject& Asset)
+	{
+		FAGX_ObjectUtilities::MarkAssetDirty(Asset);
+	}
+#else
+	template<typename T>
+	inline void Modify(T&) {}
+
+	inline void MarkAssetDirty(UObject& Asset) {}
+#endif
+}
+
 // clang-format off
 
 /**
@@ -56,14 +77,9 @@
 		} \
 		else \
 		{ \
-			if constexpr (WITH_EDITOR) \
-			{ \
-				Modify(); \
-			} \
+			AGX_WithEditorWrappers::Modify(*this); \
 			PropertyName = InVar; \
-			if constexpr (WITH_EDITOR) { \
-				FAGX_ObjectUtilities::MarkAssetDirty(*this); \
-			} \
+			AGX_WithEditorWrappers::MarkAssetDirty(*this); \
 		} \
 	} \
 }
@@ -158,15 +174,9 @@
 { \
 	if (This->IsInstance()) \
 	{ \
-		if constexpr (WITH_EDITOR) \
-		{ \
-			This->Asset->Modify(); \
-		} \
+		AGX_WithEditorWrappers::Modify(*This->Asset); \
 		This->Asset->PropertyName = This->PropertyName; \
-		if constexpr (WITH_EDITOR) \
-		{ \
-			FAGX_ObjectUtilities::MarkAssetDirty(*This->Asset); \
-		} \
+		AGX_WithEditorWrappers::MarkAssetDirty(*This->Asset); \
 	} \
 	This->SetFunc(This->PropertyName); \
 }
