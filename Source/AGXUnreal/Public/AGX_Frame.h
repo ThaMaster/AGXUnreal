@@ -40,6 +40,7 @@ struct AGXUNREAL_API FAGX_Frame
 	 * means that the relationship will survive a Blueprint Reconstruction.
 	 */
 	void SetParentComponent(USceneComponent* Component);
+
 	USceneComponent* GetParentComponent() const;
 
 	/**
@@ -54,10 +55,30 @@ struct AGXUNREAL_API FAGX_Frame
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Frame")
 	FRotator LocalRotation {FRotator::ZeroRotator};
 
+	/**
+	 * Get the world location of this Frame.
+	 *
+	 * That is, the result of transforming this Frame's Local Location with the Parent's world
+	 * transform.
+	 */
 	FVector GetWorldLocation() const;
+
+	/**
+	 * Same as Get World Location, but use Fallback Parent if Parent is not set.
+	 */
 	FVector GetWorldLocation(const USceneComponent& FallbackParent) const;
 
+	/**
+	 * Get the world rotation of this Frame.
+	 *
+	 * That is, the result of transforming this Frame's Local Rotation with the Parent's world
+	 * transform.
+	 */
 	FRotator GetWorldRotation() const;
+
+	/**
+	 * Same as Get World Rotation, but use Fallback Parent if Parent is not set.
+	 */
 	FRotator GetWorldRotation(const USceneComponent& FallbackParent) const;
 
 	void GetWorldLocationAndRotation(FVector& OutLocation, FRotator& OutRotation) const;
@@ -67,6 +88,9 @@ struct AGXUNREAL_API FAGX_Frame
 	 */
 	FVector GetLocationRelativeTo(const USceneComponent& Component) const;
 
+	/**
+	 * Same as Get Location Relative To, but use Fallback Parent is Parent is not set.
+	 */
 	FVector GetLocationRelativeTo(
 		const USceneComponent& Component, const USceneComponent& FallbackParent) const;
 
@@ -75,6 +99,9 @@ struct AGXUNREAL_API FAGX_Frame
 	 */
 	FRotator GetRotationRelativeTo(const USceneComponent& Component) const;
 
+	/**
+	 * Same as Get Rotation Relative To, but use Fallback Parent is Parent is not set.
+	 */
 	FRotator GetRotationRelativeTo(
 		const USceneComponent& Component, const USceneComponent& FallbackParent) const;
 

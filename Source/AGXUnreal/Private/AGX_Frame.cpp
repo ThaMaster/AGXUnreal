@@ -43,6 +43,7 @@ FVector FAGX_Frame::GetWorldLocation(const USceneComponent& FallbackParent) cons
 
 	return ActualParent->GetComponentTransform().TransformPosition(LocalLocation);
 }
+
 FRotator FAGX_Frame::GetWorldRotation() const
 {
 	const USceneComponent* ActualParent = GetParentComponent();
