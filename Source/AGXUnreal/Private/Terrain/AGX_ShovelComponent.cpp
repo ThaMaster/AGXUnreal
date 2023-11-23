@@ -340,7 +340,7 @@ void UAGX_ShovelComponent::BeginPlay()
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Shovel %s in %s: Could not create Shovel Properties instance. Default shovel "
+				TEXT("Shovel '%s' in '%s': Could not create Shovel Properties instance. Default shovel "
 					 "settings will be used."),
 				*GetName(), *GetLabelSafe(GetOwner()));
 		}
