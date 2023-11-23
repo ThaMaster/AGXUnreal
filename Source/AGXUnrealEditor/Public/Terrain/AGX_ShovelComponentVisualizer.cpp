@@ -411,7 +411,7 @@ struct FShovelVisualizerOperations
 			WriteFunc(Archetype->GetFrame(FrameSource), NewValue);
 			TriggerChainEvent(Archetype);
 
-			// todo Why not call RerunConstructionScript for ArchetypeOwner?
+			// Why not call RerunConstructionScript for ArchetypeOwner?
 			// We don't because FComponentVisualizer::NotifyPropertyModified doesn't, but why
 			// doesn't it? Should we?
 		}

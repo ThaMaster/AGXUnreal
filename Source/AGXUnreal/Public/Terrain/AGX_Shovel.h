@@ -16,11 +16,12 @@
 
 class FShovelBarrier;
 
+/**
+ * @deprecated Use FAGX_ShovelComponent instead.
+ */
 USTRUCT()
 struct AGXUNREAL_API FAGX_Shovel
 {
-	/// /todo Consider making this a stand-alone Object/ActorComponent?
-
 	GENERATED_BODY()
 
 	/**
