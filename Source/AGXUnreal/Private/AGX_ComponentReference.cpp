@@ -15,24 +15,24 @@ FAGX_ComponentReference::FAGX_ComponentReference(TSubclassOf<UActorComponent> In
 
 namespace FAGX_ComponentReference_helpers
 {
-	void GetCompatibleComponents(
-		TSubclassOf<UActorComponent> ComponentType, AActor* OwningActor, bool bSearchChildActors,
-		TArray<UActorComponent*>& OutComponents)
+	TArray<UActorComponent*> GetCompatibleComponents(
+		TSubclassOf<UActorComponent> ComponentType, AActor* OwningActor, bool bSearchChildActors)
 	{
-		OutComponents.Empty();
+		TArray<UActorComponent*> Components;
 		if (OwningActor == nullptr)
 		{
-			return;
+			return Components;
 		}
-		OwningActor->GetComponents(ComponentType, OutComponents, bSearchChildActors);
+		OwningActor->GetComponents(ComponentType, Components, bSearchChildActors);
+		return Components;
 	}
 
 	UActorComponent* FindComponent(
 		TSubclassOf<UActorComponent> ComponentType, AActor* OwningActor, const FName& Name,
 		bool bSearchChildActors)
 	{
-		TArray<UActorComponent*> Components;
-		GetCompatibleComponents(ComponentType, OwningActor, bSearchChildActors, Components);
+		TArray<UActorComponent*> Components =
+			GetCompatibleComponents(ComponentType, OwningActor, bSearchChildActors);
 		UActorComponent** It = Components.FindByPredicate(
 			[&Name](UActorComponent* Component) { return Component->GetFName() == Name; });
 		return It != nullptr ? *It : nullptr;
@@ -46,10 +46,10 @@ UActorComponent* FAGX_ComponentReference::GetComponent() const
 								: nullptr;
 }
 
-void FAGX_ComponentReference::GetCompatibleComponents(TArray<UActorComponent*>& OutComponents) const
+TArray<UActorComponent*> FAGX_ComponentReference::GetCompatibleComponents() const
 {
-	FAGX_ComponentReference_helpers::GetCompatibleComponents(
-		ComponentType, OwningActor, bSearchChildActors, OutComponents);
+	return FAGX_ComponentReference_helpers::GetCompatibleComponents(
+		ComponentType, OwningActor, bSearchChildActors);
 }
 
 UActorComponent* UAGX_ComponentReference_FL::GetComponent(FAGX_ComponentReference& Reference)

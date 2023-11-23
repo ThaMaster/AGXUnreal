@@ -102,7 +102,7 @@ struct AGXUNREAL_API FAGX_ComponentReference
 	 * based on set the Component Type.
 	 * @param OutComponents The found Components.
 	 */
-	void GetCompatibleComponents(TArray<UActorComponent*>& OutComponents) const;
+	TArray<UActorComponent*> GetCompatibleComponents() const;
 
 	/// The type of Component that this Reference is allowed to reference.
 	TSubclassOf<UActorComponent> ComponentType;

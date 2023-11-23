@@ -35,8 +35,7 @@ namespace AGX_ComponentReferenceCustomization_helpers
 	void GetComponentNamesFromOwner(
 		TArray<TSharedPtr<FName>>& OutNames, const FAGX_ComponentReference& ComponentReference)
 	{
-		TArray<UActorComponent*> CompatibleComponents;
-		ComponentReference.GetCompatibleComponents(CompatibleComponents);
+		TArray<UActorComponent*> CompatibleComponents = ComponentReference.GetCompatibleComponents();
 		OutNames.Empty();
 		for (const UActorComponent* Component : CompatibleComponents)
 		{
