@@ -87,7 +87,15 @@ void UAGX_ShovelComponent::SetShovelProperties(UAGX_ShovelProperties* Properties
 			// however, we want to restore the default values. Where can we find those default
 			// values? Can we new up a template agxTerrain::Shovel in the Shovel Barrier and copy
 			// the values from that?
-#if 0
+#if 1
+			// Printing a log message for now, until we find a long-term solution.
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("'None' Shovel Properties assigned to Shovel '%s' in '%s' at runtime. This is "
+					 "currently not supported. The current Shovel Properties values will remain on "
+					 "the AGX Dynamics representation of the shovel."),
+				*GetName(), *GetLabelSafe(GetOwner()));
+#else
 			NativeBarrier.SetDefaultProperties();
 #endif
 		}
@@ -489,7 +497,6 @@ void UAGX_ShovelComponent::SetbEnable(bool bInEnable)
 {
 	SetEnable(bInEnable);
 }
-
 
 void UAGX_ShovelComponent::InitPropertyDispatcher()
 {
