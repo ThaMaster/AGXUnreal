@@ -21,9 +21,5 @@ struct AGXUNREAL_API FAGX_RigidBodyReference : public FAGX_ComponentReference
 
 	FAGX_RigidBodyReference();
 
-	// TODO Pick a name for the body getter.
-
-	UAGX_RigidBodyComponent* GetBodyComponent() const;
-	UAGX_RigidBodyComponent* GetRigidBodyComponent() const;
 	UAGX_RigidBodyComponent* GetRigidBody() const;
 };

@@ -10,16 +10,6 @@ FAGX_RigidBodyReference::FAGX_RigidBodyReference()
 {
 }
 
-UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetBodyComponent() const
-{
-	return Super::GetComponent<UAGX_RigidBodyComponent>();
-}
-
-UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBodyComponent() const
-{
-	return Super::GetComponent<UAGX_RigidBodyComponent>();
-}
-
 UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
 {
 	return Super::GetComponent<UAGX_RigidBodyComponent>();
