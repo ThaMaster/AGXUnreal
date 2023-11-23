@@ -2,7 +2,7 @@
 
 #include "AGX_Edge.h"
 
-FTwoVectors FAGX_Edge::GetLocationsRelativeTo(const USceneComponent& Component)
+FTwoVectors FAGX_Edge::GetLocationsRelativeTo(const USceneComponent& Component) const
 {
 	FTwoVectors Line;
 	Line.v1 = Start.GetLocationRelativeTo(Component);
@@ -11,7 +11,7 @@ FTwoVectors FAGX_Edge::GetLocationsRelativeTo(const USceneComponent& Component)
 }
 
 FTwoVectors FAGX_Edge::GetLocationsRelativeTo(
-	const USceneComponent& Component, const USceneComponent& FallbackParent)
+	const USceneComponent& Component, const USceneComponent& FallbackParent) const
 {
 	FTwoVectors Line;
 	Line.v1 = Start.GetLocationRelativeTo(Component, FallbackParent);
