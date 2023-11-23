@@ -78,8 +78,6 @@ public:
 	void SetPenetrationDepthThreshold(double PenetrationDepthThreshold);
 	double GetPenetrationDepthThreshold() const;
 
-	// TODO SetSoilPenetrationModel goes here.
-
 	void SetPenetrationForceScaling(double PenetrationForceScaling);
 	double GetPenetrationForceScaling() const;
 

@@ -3811,13 +3811,6 @@ bool FCheckShovelImportedCommand::Update()
 	Test.TestEqual(
 		TEXT("PenetrationDepthThreshold"), Shovel->ShovelProperties->PenetrationDepthThreshold,
 		AgxToUnrealDistance(9.0));
-
-	// Don't know how to set soil penetration model in Python:
-	//   AttributeError: type object 'SoilPenetrationResistance' has no attribute 'PLASTIC'
-	// shovel.setSoilPenetrationModel(
-	//     agxTerrain.SoilPenetrationResistance.PLASTIC, terrain
-	// )
-
 	Test.TestEqual(
 		TEXT("PenetrationForceScaling"), Shovel->ShovelProperties->PenetrationForceScaling, 10.0);
 	Test.TestEqual(
