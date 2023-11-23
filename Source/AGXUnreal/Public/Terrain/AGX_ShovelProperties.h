@@ -184,7 +184,7 @@ public:
 	/**
 	 * The dead-load limit where secondary separation will start to activate where the forward
 	 * direction starts to change according to the virtual separation plate created by the material
-	 * inside the shovel [?].
+	 * inside the shovel [].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
 	FAGX_Real SecondarySeparationDeadloadLimit {0.8};
