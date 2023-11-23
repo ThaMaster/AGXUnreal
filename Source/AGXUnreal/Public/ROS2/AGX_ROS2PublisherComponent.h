@@ -524,11 +524,11 @@ public:
 	bool SendSensorMsgsTimeReference(
 		const FAGX_SensorMsgsTimeReference& Message, const FString& Topic);
 
-private:
-	// Key is the Topic.
-	TMap<FString, FROS2PublisherBarrier> NativeBarriers;
-
 	// ~Begin UActorComponent interface.
 	virtual bool CanEditChange(const FProperty* InProperty) const override;
 	// ~Begin UActorComponent interface.
+
+private:
+	// Key is the Topic.
+	TMap<FString, FROS2PublisherBarrier> NativeBarriers;
 };
