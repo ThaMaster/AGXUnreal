@@ -359,6 +359,10 @@ void UAGX_ShovelComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		ShovelProperties->UnregisterShovel(*this);
 	}
+	if (HasNative())
+	{
+		NativeBarrier.ReleaseNative();
+	}
 }
 
 TStructOnScope<FActorComponentInstanceData> UAGX_ShovelComponent::GetComponentInstanceData() const
