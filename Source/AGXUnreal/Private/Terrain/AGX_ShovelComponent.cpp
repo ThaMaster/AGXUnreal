@@ -525,6 +525,8 @@ bool UAGX_ShovelComponent::WritePropertiesToNative()
 		return false;
 	}
 
+	NativeBarrier.SetEnable(bEnable);
+
 	if (ShovelProperties == nullptr)
 	{
 		// No properties means use the defaults. It is not an error.
@@ -533,9 +535,7 @@ bool UAGX_ShovelComponent::WritePropertiesToNative()
 		// UAGX_ShovelProperties class default object?
 		return true;
 	}
-#if 0
-	NativeBarrier.SetEnable(ShovelProperties->Enable);
-#endif
+
 	NativeBarrier.SetAlwaysRemoveShovelContacts(ShovelProperties->AlwaysRemoveShovelContacts);
 	NativeBarrier.SetEnableInnerShapeCreateDynamicMass(
 		ShovelProperties->EnableInnerShapeCreateDynamicMass);
