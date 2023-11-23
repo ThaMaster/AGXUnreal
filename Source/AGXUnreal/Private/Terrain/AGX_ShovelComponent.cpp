@@ -3,18 +3,18 @@
 #include "Terrain/AGX_ShovelComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "AGX_RigidBodyComponent.h"
 #include "Terrain/AGX_ShovelProperties.h"
+#include "Terrain/AGX_TerrainEnums.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
-#include "AGX_AssetGetterSetterImpl.h"
-#include "AGX_RigidBodyComponent.h"
 #include "CoreGlobals.h"
-#include "Terrain/AGX_TerrainEnums.h"
 
 class FRigidBodyBarrier;
 
