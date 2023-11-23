@@ -132,6 +132,43 @@ public:
 		USceneComponent& Component, const FTransform& Transform,
 		bool ForceOverwriteInstances = false);
 
+
+	/**
+	 * Unreal Engine, at least Unreal Engine 5.0, uses a string-based communication protocol between
+	 * the Details panel and the actual objects. For floating-point values the value-to-string
+	 * conversion is done with printf("%f", Value), which is highly destructive, meaning the value
+	 * that is stored is not the same as the value that is shown in the UI. Worse, if the value is
+	 * set from C++ then it may be set to a value that the UI cannot represent. The effect of this
+	 * is that the value becomes uneditable since during value propagation through the template type
+	 * instance hierarchy only values that compare equal to the old value are updated, but no value
+	 * will compare equal since in the round-trip to the UI the value was changed.
+	 *
+	 * C++ > Value > printf("%f") > UI > Edit > scanf("%f") > Compare with Value, not equal.
+	 *
+	 * To prevent the value from becoming uneditable we must ensure that all writes made to a
+	 * property is Details panel compatible, i.e. does not have more precision than printf("%s")
+	 * provides. That is the purpose of TruncateForDetailsPanel. It does the same Value > String >
+	 * Value round-trip to throw away any excess precision and ensure that future string comparisons
+	 * will compare equal.
+	 *
+	 * It many cases it is not acceptable to destroy information like this. FAGX_Real is a custom
+	 * floating-point type that uses "%g" instead of "%f" for the string conversion which helps a
+	 * bit, but cannot be used with composite types such as FVector, FQuat, and FRotator.
+	 *
+	 * See FPropertyHandleFloat::SetValue in PropertyHandleImpl.cpp.
+	 * See Expose_TFormatSpecifier(double in UnrealTypeTraits.h.
+	 * See
+	 * https://udn.unrealengine.com/s/question/0D54z0000773duUCAQ/data-loss-for-nearzero-values-in-details-panel
+	 * "Data loss for near-zero values in Details Panel"
+	 */
+	static void TruncateForDetailsPanel(double& Value);
+
+	/** See TruncateForDetailsPanel(double& Value)*/
+	static void TruncateForDetailsPanel(FVector& Values);
+
+	/** See TruncateForDetailsPanel(double& Value)*/
+	static void TruncateForDetailsPanel(FRotator& Values);
+
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
 };

@@ -8,6 +8,9 @@
 #include "Terrain/AGX_ShovelComponent.h"
 #include "Terrain/AGX_ShovelHitProxies.h"
 #include "Terrain/AGX_ShovelUtilities.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
+#include "Utilities/AGX_PropertyUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
 #include "ActorEditorUtils.h"
@@ -15,8 +18,6 @@
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Selection.h"
 #include "SSubobjectEditor.h"
-#include "Utilities/AGX_BlueprintUtilities.h"
-#include "Utilities/AGX_ObjectUtilities.h"
 
 #define LOCTEXT_NAMESPACE "AGX_ShovelComponentVisualizer"
 #define MEMBER(Name) GET_MEMBER_NAME_CHECKED(UAGX_ShovelComponent, Name)
@@ -160,7 +161,7 @@ struct FShovelVisualizerOperations
 			Pose.LocalToWorld.TransformPosition(Pose.LocalLocation);
 		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
 		FVector NewLocalLocation = Pose.LocalToWorld.InverseTransformPosition(NewWorldLocation);
-		FAGX_ShovelUtilities::TruncateForDetailsPanel(NewLocalLocation);
+		FAGX_ObjectUtilities::TruncateForDetailsPanel(NewLocalLocation);
 		Shovel.Modify();
 		Shovel.GetFrame(FrameSource)->LocalLocation = NewLocalLocation;
 /*
@@ -204,7 +205,7 @@ struct FShovelVisualizerOperations
 		const FQuat NewLocal = Pose.LocalToWorld.GetRotation().Inverse() * NewWorld;
 		FRotator NewLocalRotation = NewLocal.Rotator();
 
-		FAGX_ShovelUtilities::TruncateForDetailsPanel(NewLocalRotation);
+		FAGX_ObjectUtilities::TruncateForDetailsPanel(NewLocalRotation);
 		Shovel.Modify();
 		Frame->LocalRotation = NewLocalRotation;
 

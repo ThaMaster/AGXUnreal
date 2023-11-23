@@ -190,3 +190,34 @@ void FAGX_ObjectUtilities::SetAnyComponentWorldTransform(
 	Component.SetWorldTransform(Transform);
 #endif
 }
+
+
+void FAGX_ObjectUtilities::TruncateForDetailsPanel(double& Value)
+{
+	// See comment in header file.
+	// At the time of writing the format specifier exposed for double in UnrealTypeTraits.h is %f.
+	// Value = FCString::Atod(*FString::Printf(TEXT("%f"), Value));
+	//
+	// We should keep an eye out for changes to this setup in Unreal Engine. The UDN reply mentioned
+	// improvements made in CL# 14346058 and CL# 15516611, which I believe corresponds to
+	// - https://github.com/EpicGames/UnrealEngine/commit/065d8d227321ca364b7edc3cdfc9539cc01fadcb
+	//   "Widget: Modify SpinBox to support double and int64"
+	// - https://github.com/EpicGames/UnrealEngine/commit/60cd75894a720fa8cc97d3f8424f0dd42742a92c
+	//   "Add support for displaying floats greater than e18 & remove cast losing double precision."
+	// both of which were released with Unreal Engine 5.0.
+	Value = FCString::Atod(*FString::Printf(TFormatSpecifier<double>::GetFormatSpecifier(), Value));
+}
+
+void FAGX_ObjectUtilities::TruncateForDetailsPanel(FVector& Values)
+{
+	TruncateForDetailsPanel(Values.X);
+	TruncateForDetailsPanel(Values.Y);
+	TruncateForDetailsPanel(Values.Z);
+}
+
+void FAGX_ObjectUtilities::TruncateForDetailsPanel(FRotator& Values)
+{
+	TruncateForDetailsPanel(Values.Pitch);
+	TruncateForDetailsPanel(Values.Yaw);
+	TruncateForDetailsPanel(Values.Roll);
+}
