@@ -32,7 +32,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
 	void SetEnable(bool bInEnable);
 
-	/// The Rigid Body that is to be imbued with shovel behavior.
+	/// The Rigid Body associated with this Shovel. There may only be one Shovel per Rigid Body.
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
 	FAGX_RigidBodyReference RigidBody;
 
