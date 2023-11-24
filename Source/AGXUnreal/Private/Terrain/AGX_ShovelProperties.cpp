@@ -50,7 +50,9 @@ void SetAndPropagateShovelProperty(
 		else
 		{
 			*Storage = NewValue;
+#if WITH_EDITOR
 			FAGX_ObjectUtilities::MarkAssetDirty(Properties);
+#endif
 		}
 	}
 }
@@ -151,6 +153,7 @@ void UAGX_ShovelProperties::SetSecondarySeparationDeadloadLimit(
 	AGX_SHOVEL_SETTER_IMPL(SecondarySeparationDeadloadLimit);
 }
 
+#if WITH_EDITOR
 void UAGX_ShovelProperties::PostInitProperties()
 {
 	UObject::PostInitProperties();
@@ -166,6 +169,7 @@ void UAGX_ShovelProperties::PostEditChangeChainProperty(FPropertyChangedChainEve
 	// apply all our changes before that so that they are carried over to the copy.
 	Super::PostEditChangeChainProperty(Event);
 }
+#endif
 
 UAGX_ShovelProperties* UAGX_ShovelProperties::GetOrCreateInstance(UWorld* PlayingWorld)
 {
@@ -315,6 +319,7 @@ void UAGX_ShovelProperties::UnregisterShovel(UAGX_ShovelComponent& Shovel)
 	Shovels.RemoveSwap(&Shovel);
 }
 
+#if WITH_EDITOR
 void UAGX_ShovelProperties::InitPropertyDispatcher()
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
@@ -344,3 +349,4 @@ void UAGX_ShovelProperties::InitPropertyDispatcher()
 	AGX_ASSET_DEFAULT_DISPATCHER(MaximumPenetrationForce);
 	AGX_ASSET_DEFAULT_DISPATCHER(SecondarySeparationDeadloadLimit);
 }
+#endif

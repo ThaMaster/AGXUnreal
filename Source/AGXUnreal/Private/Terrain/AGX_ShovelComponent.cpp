@@ -502,6 +502,7 @@ void UAGX_ShovelComponent::SetbEnable(bool bInEnable)
 	SetEnable(bInEnable);
 }
 
+#if WITH_EDITOR
 void UAGX_ShovelComponent::InitPropertyDispatcher()
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
@@ -517,6 +518,7 @@ void UAGX_ShovelComponent::InitPropertyDispatcher()
 	AGX_COMPONENT_DEFAULT_DISPATCHER(CuttingEdge);
 	AGX_COMPONENT_DEFAULT_DISPATCHER(CuttingDirection);
 }
+#endif
 
 bool UAGX_ShovelComponent::WritePropertiesToNative()
 {
