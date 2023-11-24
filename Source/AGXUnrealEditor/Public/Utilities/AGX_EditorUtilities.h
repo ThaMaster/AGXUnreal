@@ -7,6 +7,7 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
+#include "AssetRegistry/AssetData.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "CoreMinimal.h"
 #include "DetailLayoutBuilder.h"

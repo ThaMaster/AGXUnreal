@@ -10,6 +10,7 @@
 // Unreal Engine includes.
 #include "Engine/Level.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/PackageName.h"
 #include "UObject/SavePackage.h"
 #include "Engine/World.h"
 

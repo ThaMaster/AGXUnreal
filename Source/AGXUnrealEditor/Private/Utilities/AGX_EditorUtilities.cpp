@@ -41,6 +41,7 @@
 #include "Engine/GameEngine.h"
 #include "Engine/Selection.h"
 #include "Engine/StaticMesh.h"
+#include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/FileManager.h"
 #include "Kismet2/KismetEditorUtilities.h"
@@ -55,6 +56,7 @@
 #include "UObject/SavePackage.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectGlobals.h"
+#include "UObject/UObjectIterator.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 

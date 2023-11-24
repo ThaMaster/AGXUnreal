@@ -31,6 +31,7 @@
 #endif
 
 // Unreal Engine includes.
+#include "Framework/Application/SlateApplication.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "GenericPlatform/GenericPlatformProcess.h"
 #include "LevelEditor.h"

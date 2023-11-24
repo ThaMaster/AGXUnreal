@@ -26,6 +26,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "HAL/FileManager.h"
 #include "Misc/AutomationTest.h"
+#include "MaterialTypes.h"
+#include "Materials/MaterialInterface.h"
 #include "Tests/AutomationCommon.h"
 #include "Tests/AutomationEditorCommon.h"
 

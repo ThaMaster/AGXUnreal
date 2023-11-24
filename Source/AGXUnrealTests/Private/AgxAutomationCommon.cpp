@@ -10,6 +10,7 @@
 #include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
 #include "Editor.h"
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"

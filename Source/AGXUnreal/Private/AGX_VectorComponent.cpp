@@ -10,6 +10,7 @@
 #include "Engine/Engine.h"
 #include "LocalVertexFactory.h"
 #include "Materials/Material.h"
+#include "Materials/MaterialRenderProxy.h"
 #include "Misc/EngineVersionComparison.h"
 #include "PrimitiveSceneProxy.h"
 #include "SceneInterface.h"

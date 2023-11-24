@@ -8,6 +8,7 @@
 #include "Components/SceneComponent.h"
 #include "GameFramework/Actor.h"
 #include "Misc/AutomationTest.h"
+#include "UObject/Package.h"
 
 BEGIN_DEFINE_SPEC(FAGX_FrameSpec, "AGXUnreal.Frame", AgxAutomationCommon::DefaultTestFlags)
 END_DEFINE_SPEC(FAGX_FrameSpec)

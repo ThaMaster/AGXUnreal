@@ -14,6 +14,8 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
+#include "Components/SceneComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Engine/SCS_Node.h"

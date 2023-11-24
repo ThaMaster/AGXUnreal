@@ -11,6 +11,7 @@
 
 // Unreal Engine includes.
 #include "Materials/Material.h"
+#include "Engine/World.h"
 
 // Standard library includes.
 #include <algorithm>

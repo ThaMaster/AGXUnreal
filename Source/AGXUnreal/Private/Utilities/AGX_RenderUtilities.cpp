@@ -31,6 +31,7 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
+#include "RenderingThread.h"
 #include "RHI.h"
 #include "RHICommandList.h"
 #include "TextureResource.h"
