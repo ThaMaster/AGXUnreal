@@ -10,7 +10,9 @@
 #include "Engine/Engine.h"
 #include "LocalVertexFactory.h"
 #include "Materials/Material.h"
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
 #include "Materials/MaterialRenderProxy.h"
+#endif
 #include "Misc/EngineVersionComparison.h"
 #include "PrimitiveSceneProxy.h"
 #include "SceneInterface.h"
