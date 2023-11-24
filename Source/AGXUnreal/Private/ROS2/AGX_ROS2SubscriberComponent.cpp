@@ -7,6 +7,9 @@
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_StringUtilities.h"
 
+// Unreal Engine includes.
+#include "Engine/World.h"
+
 UAGX_ROS2SubscriberComponent::UAGX_ROS2SubscriberComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
