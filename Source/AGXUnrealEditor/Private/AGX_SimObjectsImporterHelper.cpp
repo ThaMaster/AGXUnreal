@@ -68,6 +68,7 @@
 #include "IAssetTools.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/Material.h"
 #include "MeshDescription.h"
 #include "Misc/Paths.h"
 #include "UObject/UObjectGlobals.h"
