@@ -15,7 +15,6 @@
 #include "UnrealEdGlobals.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_RigidBodyReference.h"
 #include "AGX_ComponentReference.h"
 #include "AGX_ComponentReferenceCustomization.h"
 #include "AGX_EditorStyle.h"
@@ -25,6 +24,7 @@
 #include "AGX_RigidBodyActor.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_RigidBodyComponentCustomization.h"
+#include "AGX_RigidBodyReference.h"
 #include "AGX_Real.h"
 #include "AGX_RealDetails.h"
 #include "AGX_ModelSourceComponent.h"

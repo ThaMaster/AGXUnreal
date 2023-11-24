@@ -200,7 +200,7 @@ UAGX_ShovelProperties* UAGX_ShovelProperties::GetOrCreateInstance(UWorld* Playin
 		return nullptr;
 	}
 
-	const FString InstanceName = GetName() + "_Instance";
+	const FString InstanceName = GetName() + TEXT("_Instance");
 	UAGX_ShovelProperties* NewInstance =
 		NewObject<UAGX_ShovelProperties>(GetTransientPackage(), *InstanceName, RF_Transient, this);
 	NewInstance->Asset = this;
@@ -295,9 +295,9 @@ void UAGX_ShovelProperties::RegisterShovel(UAGX_ShovelComponent& Shovel)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Shovel Component %s in %s called Register Shovel on non-instance Shovel "
-				 "Properties %s."),
-			*Shovel.GetName(), *GetLabelSafe(Shovel.GetOwner()), *GetName());
+			TEXT("Shovel Component '%s' in '%s' called Register Shovel on non-instance Shovel "
+				 "Properties '%s'."),
+			*Shovel.GetName(), *GetLabelSafe(Shovel.GetOwner()), *GetPathName());
 		return;
 	}
 	AGX_CHECK(AGX_ShovelProperties_helpers::CheckNoNullptr(Shovels));
@@ -310,9 +310,9 @@ void UAGX_ShovelProperties::UnregisterShovel(UAGX_ShovelComponent& Shovel)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Shovel Component %s in %s called Unregister Shovel on non-instance Shovel "
-				 "Properties %s."),
-			*Shovel.GetName(), *GetLabelSafe(Shovel.GetOwner()), *GetName());
+			TEXT("Shovel Component '%s' in '%s' called Unregister Shovel on non-instance Shovel "
+				 "Properties '%s'."),
+			*Shovel.GetName(), *GetLabelSafe(Shovel.GetOwner()), *GetPathName());
 		return;
 	}
 	AGX_CHECK(AGX_ShovelProperties_helpers::CheckNoNullptr(Shovels));

@@ -13,6 +13,12 @@
  * and property updates in general.
  */
 
+
+/**
+ * The C++ preprocessor makes it difficult to embed #if blocks within multi-line macros, so this
+ * namespace defines wrapper for functions that are WITH_EDITOR only, where the non-WITH_EDITOR
+ * versions does nothing.
+ */
 namespace AGX_WithEditorWrappers
 {
 #if WITH_EDITOR

@@ -32,16 +32,9 @@ public class AGXUnrealEditor : ModuleRules
 		/// \todo Copied from the prototype plugin. Not sure if all of these are
 		///       required.
 		PrivateDependencyModuleNames.AddRange(new string[] {
-			"AGXDynamicsLibrary", "AssetTools", "CoreUObject",
-			"DesktopPlatform", "EditorStyle", "Engine", "InputCore", "Json",
-			"LevelEditor", "PlacementMode", "Projects", "PropertyEditor", "PropertyPath",
-			"RenderCore", "RHI", "SceneOutliner", "Slate", "SlateCore",
-
-			// Used to in Component Visualizers to determine if the visualized object is currently
-			// selected or not. Provides FSubobjectEditorTreeNode.
-			"SubobjectEditor",
-
-			"UnrealEd"
+			"AGXDynamicsLibrary", "AssetTools", "CoreUObject", "DesktopPlatform", "EditorStyle", "Engine", "InputCore",
+			"Json", "LevelEditor", "PlacementMode", "Projects", "PropertyEditor", "PropertyPath", "RenderCore", "RHI",
+			"SceneOutliner", "Slate", "SlateCore", "SubobjectEditor", "UnrealEd"
 		});
 
 #if UE_5_0_OR_LATER

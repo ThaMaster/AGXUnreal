@@ -35,7 +35,8 @@ namespace AGX_ComponentReferenceCustomization_helpers
 	void GetComponentNamesFromOwner(
 		TArray<TSharedPtr<FName>>& OutNames, const FAGX_ComponentReference& ComponentReference)
 	{
-		TArray<UActorComponent*> CompatibleComponents = ComponentReference.GetCompatibleComponents();
+		TArray<UActorComponent*> CompatibleComponents =
+			ComponentReference.GetCompatibleComponents();
 		OutNames.Empty();
 		for (const UActorComponent* Component : CompatibleComponents)
 		{
@@ -108,7 +109,8 @@ struct FAGX_ComponentReferenceCustomizationOperations
 	 * @return A combo-box widget displaying the contents of ComponentNames.
 	 */
 	static TSharedRef<SComboBox<TSharedPtr<FName>>> CreateNameComboBox(
-		FAGX_ComponentReferenceCustomization& This, TSharedPtr<SComboBox<TSharedPtr<FName>>>& OutWidget)
+		FAGX_ComponentReferenceCustomization& This,
+		TSharedPtr<SComboBox<TSharedPtr<FName>>>& OutWidget)
 	{
 		// clang-format off
 		return SAssignNew(OutWidget, SComboBox<TSharedPtr<FName>>)
@@ -227,6 +229,9 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 {
 	using namespace AGX_ComponentReferenceCustomization_helpers;
 
+	// Slate callback functions may be called during setup and some of our callbacks manipulate
+	// the Slate state, which we don't want to do during construction. Such code is therefore
+	// guarded behind checks of this flag.
 	bInCustomize = true;
 	FAGX_Finalizer LeaveCustomize([this]() { this->bInCustomize = false; });
 
@@ -262,6 +267,7 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 	];
 	// clang-format on
 
+	// clang-format off
 	NameRow
 	.ValueContent()
 	[
@@ -281,6 +287,7 @@ void FAGX_ComponentReferenceCustomization::CustomizeChildren(
 		]
 	];
 	// clang-format on
+
 	SelectedComponent = GetName();
 	RebuildComboBox();
 
@@ -449,7 +456,11 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 	{
 		if (bInCustomize)
 		{
-			// TODO Add comment here.
+			// We are currently in the process of creating the Details panel, possibly as a
+			// consequence of a Blueprint Reconstruction. We do not want to do this recursively,
+			// only one Blueprint Reconstruction is allowed at a time, so do not call
+			// NameHandle->SetValue. This is not an actual edit, so the value we would set is that
+			// same as the current value anyway.
 		}
 		else
 		{

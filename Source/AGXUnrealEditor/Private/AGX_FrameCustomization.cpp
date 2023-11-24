@@ -3,15 +3,13 @@
 #include "AGX_FrameCustomization.h"
 
 // AGX Dynamics for Unreal includes.
-#include <AGX_Frame.h>
-#include <AGX_LogCategory.h>
+#include "AGX_Frame.h"
+#include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "DetailWidgetRow.h"
 #include "IDetailChildrenBuilder.h"
-#include "Engine/SimpleConstructionScript.h"
-#include "Utilities/AGX_EditorUtilities.h"
-#include "Utilities/AGX_StringUtilities.h"
 
 #define LOCTEXT_NAMESPACE "AGX_FrameCustomization"
 
@@ -42,14 +40,6 @@ void FAGX_FrameCustomization::CustomizeHeader(
 
 		return;
 	}
-
-	// TODO Debug code, remove.
-#if 0
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("FAGX_FrameCustomization %p is customizing header for Frame  %p using handle %p."),
-		this, GetFrame(), FrameHandle.Get());
-#endif
 
 	// clang-format off
 	HeaderRow

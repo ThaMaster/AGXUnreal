@@ -8,16 +8,15 @@
 #include "Terrain/AGX_ShovelComponent.h"
 #include "Terrain/AGX_ShovelHitProxies.h"
 #include "Terrain/AGX_ShovelUtilities.h"
-#include "Utilities/AGX_BlueprintUtilities.h"
-#include "Utilities/AGX_PropertyUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_PropertyUtilities.h"
 
 // Unreal Engine includes.
 #include "ActorEditorUtils.h"
 #include "BlueprintEditorModule.h"
 #include "Kismet2/KismetEditorUtilities.h"
-#include "Selection.h"
 #include "SSubobjectEditor.h"
+#include "Selection.h"
 
 #define LOCTEXT_NAMESPACE "AGX_ShovelComponentVisualizer"
 #define MEMBER(Name) GET_MEMBER_NAME_CHECKED(UAGX_ShovelComponent, Name)

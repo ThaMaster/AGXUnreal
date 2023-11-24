@@ -190,7 +190,7 @@ namespace AGX_Terrain_helpers
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("%s called for a shovel that the AGX Terrain %s doesn't know about."),
+				TEXT("%s called for a shovel that the AGX Terrain '%s' doesn't know about."),
 				FunctionName, TerrainName);
 			return nullptr;
 		}
@@ -926,7 +926,9 @@ void AAGX_Terrain::InitializeNative()
 {
 	if (SourceLandscape == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("No source landscape selected for terrain %s."), *GetName());
+		UE_LOG(
+			LogAGX, Error, TEXT("No source landscape selected for terrain '%s'."),
+			*GetLabelSafe(this));
 		return;
 	}
 
@@ -1164,7 +1166,7 @@ void AAGX_Terrain::CreateNativeShovels()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Deprecation warning: AGX Terrain %s: AAGX_Terrain::Shovels has been deprecated "
+			TEXT("Deprecation warning: AGX Terrain '%s': AAGX_Terrain::Shovels has been deprecated "
 				 "and will be removed in a future release. Use AAGX_Terrain::ShovelComponents "
 				 "instead."),
 			*GetLabelSafe(this));
@@ -1254,8 +1256,8 @@ void AAGX_Terrain::CreateNativeShovels()
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("AGX Terrain %s have a Shovel Component that does not reference a valid "
-					 "shovel."),
+				TEXT("AGX Terrain '%s' have a Shovel reference that does not reference a valid "
+					 "Shovel."),
 				*GetLabelSafe(this));
 			continue;
 		}
@@ -1424,9 +1426,9 @@ void AAGX_Terrain::InitializeDisplacementMap()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Could not allocate resource for Landscape Displacement Map for AGX Terrain %s. "
+			TEXT("Could not allocate resource for Landscape Displacement Map for AGX Terrain '%s'. "
 				 "There may be rendering issues."),
-			*GetName());
+			*GetLabelSafe(this));
 		return;
 	}
 

@@ -1819,8 +1819,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				UE_LOG(
 					LogAGX, Warning,
-					TEXT("While synchronizing shovels, found shovel SCS Node %s that does not have "
-						 "a shovel template."),
+					TEXT("While synchronizing shovels, found shovel SCS Node '%s' that does not "
+						 "have a shovel template."),
 					*ShovelNode->GetName());
 				continue;
 			}
