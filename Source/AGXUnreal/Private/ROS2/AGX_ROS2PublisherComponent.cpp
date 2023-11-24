@@ -801,6 +801,7 @@ FROS2PublisherBarrier* UAGX_ROS2PublisherComponent::GetOrCreateBarrier(
 	return Barrier;
 }
 
+#if WITH_EDITOR
 bool UAGX_ROS2PublisherComponent::CanEditChange(const FProperty* InProperty) const
 {
 	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
@@ -817,3 +818,4 @@ bool UAGX_ROS2PublisherComponent::CanEditChange(const FProperty* InProperty) con
 
 	return SuperCanEditChange;
 }
+#endif

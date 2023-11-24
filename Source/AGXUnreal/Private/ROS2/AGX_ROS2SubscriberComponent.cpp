@@ -808,6 +808,7 @@ FROS2SubscriberBarrier* UAGX_ROS2SubscriberComponent::GetOrCreateBarrier(
 	return Barrier;
 }
 
+#if WITH_EDITOR
 bool UAGX_ROS2SubscriberComponent::CanEditChange(const FProperty* InProperty) const
 {
 	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
@@ -825,3 +826,4 @@ bool UAGX_ROS2SubscriberComponent::CanEditChange(const FProperty* InProperty) co
 
 	return SuperCanEditChange;
 }
+#endif
