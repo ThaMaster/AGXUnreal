@@ -20,7 +20,7 @@ class AGXUNREALBARRIER_API FContactMaterialBarrier
 {
 public:
 	FContactMaterialBarrier();
-	FContactMaterialBarrier(FContactMaterialBarrier&& Other) = default;
+	FContactMaterialBarrier(FContactMaterialBarrier&& Other);
 	FContactMaterialBarrier(std::unique_ptr<FContactMaterialRef> Native);
 	virtual ~FContactMaterialBarrier();
 
