@@ -5,6 +5,8 @@
 // Unreal Engine includes.
 #include "Misc/AutomationTest.h"
 
+class AActor;
+
 namespace AGX_PlayInEditorUtils
 {
 	const FString EmptyMapPath(TEXT("/Game/Tests/Test_EmptyLevel"));

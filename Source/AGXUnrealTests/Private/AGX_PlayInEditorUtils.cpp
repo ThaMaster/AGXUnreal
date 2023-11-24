@@ -6,6 +6,7 @@
 #include "AGX_Simulation.h"
 
 // Unreal Engine includes.
+#include "Editor.h"
 #include "Kismet/GameplayStatics.h"
 
 TMap<FString, AActor*> AGX_PlayInEditorUtils::GetActorsByName(

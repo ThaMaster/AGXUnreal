@@ -4,6 +4,7 @@
 
 // Unreal Engine includes.
 #include "Engine/EngineTypes.h"
+#include "Components/ActorComponent.h"
 #include "Math/Vector.h"
 #include "Math/Rotator.h"
 #include "Misc/AutomationTest.h"

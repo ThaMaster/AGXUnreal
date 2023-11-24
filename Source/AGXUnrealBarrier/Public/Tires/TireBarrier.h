@@ -2,6 +2,10 @@
 
 #pragma once
 
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
+// System includes.
 #include <memory>
 
 class FString;

@@ -3,8 +3,11 @@
 #include "Plot/PlotBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "AGXRefs.h"
 #include "Plot/PlotDataSeriesBarrier.h"
+#include "SimulationBarrier.h"
+#include "TypeConversions.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -12,6 +15,7 @@
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
+#include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 
 FPlotBarrier::FPlotBarrier()
@@ -69,7 +73,7 @@ void FPlotBarrier::AllocateNative(
 	}();
 
 	const FString OutputPath = [&OutputFileNameWExtension]()
-	{ 
+	{
 		if (FPaths::IsRelative(OutputFileNameWExtension))
 		{
 			const FString RelOutputDir = FPaths::GetPath(FPaths::GetProjectFilePath());

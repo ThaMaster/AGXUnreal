@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 
 // Unreal Engine includes.
+#include "IPropertyTypeCustomization.h"
 #include "Fonts/SlateFontInfo.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SWidget.h"

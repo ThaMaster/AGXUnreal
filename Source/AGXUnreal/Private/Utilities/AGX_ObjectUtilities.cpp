@@ -11,6 +11,7 @@
 #include "Engine/Level.h"
 #include "Misc/EngineVersionComparison.h"
 #include "UObject/SavePackage.h"
+#include "Engine/World.h"
 
 void FAGX_ObjectUtilities::GetChildActorsOfActor(AActor* Parent, TArray<AActor*>& ChildActors)
 {

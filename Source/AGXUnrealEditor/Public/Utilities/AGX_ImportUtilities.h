@@ -8,6 +8,8 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Components/SceneComponent.h"
+#include "GameFramework/Actor.h"
 #include "Math/Color.h"
 
 class FTrimeshShapeBarrier;

@@ -21,6 +21,7 @@
 // Unreal Engine includes.
 #include "Components/BillboardComponent.h"
 #include "CoreGlobals.h"
+#include "Engine/Texture2D.h"
 #include "Math/UnrealMathUtility.h"
 
 // Standard library includes.

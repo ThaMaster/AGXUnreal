@@ -1,7 +1,10 @@
+
 // Copyright 2023, Algoryx Simulation AB.
 
 #include "AGX_EditorStyle.h"
 
+// Unreal Engine includes.
+#include "Framework/Application/SlateApplication.h"
 #include "Runtime/Projects/Public/Interfaces/IPluginManager.h"
 #include "Runtime/SlateCore/Public/Styling/SlateStyle.h"
 #include "Runtime/SlateCore/Public/Styling/SlateStyleRegistry.h"

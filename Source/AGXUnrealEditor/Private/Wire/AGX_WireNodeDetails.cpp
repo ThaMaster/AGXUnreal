@@ -30,6 +30,7 @@
 #include "UnrealEdGlobals.h"
 #include "Widgets/Colors/SColorBlock.h"
 #include "Widgets/Input/SVectorInputBox.h"
+#include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "AGX_WireNodeDetails"
 

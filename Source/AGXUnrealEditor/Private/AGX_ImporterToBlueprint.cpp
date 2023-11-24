@@ -76,6 +76,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/ScopedSlowTask.h"
 #include "PackageTools.h"
+#include "Subsystems/AssetEditorSubsystem.h"
 #include "UObject/Package.h"
 #include "UObject/SavePackage.h"
 

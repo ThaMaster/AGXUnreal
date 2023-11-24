@@ -2,12 +2,15 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Wire/AGX_WireWinch.h"
+
 // Unreal Engine includes.
+#include "CoreMinimal.h"
 #include "IDetailCustomNodeBuilder.h"
+#include "UObject/WeakObjectPtrTemplates.h"
 
 class IDetailLayoutBuilder;
-
-struct FAGX_WireWinch;
 
 /**
  * A Wire Winch can be owned by many different types of objects, and any one such object may contain

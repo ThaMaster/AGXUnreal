@@ -9,6 +9,9 @@
 #include "Utilities/AGX_StringUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
 
+// Unreal Engine includes.
+#include "Materials/Material.h"
+
 // Standard library includes.
 #include <algorithm>
 
@@ -50,7 +53,7 @@ namespace AGX_TrackRenderer_helpers
 		{
 			if (MatInterface == nullptr)
 				continue;
-			
+
 			UMaterial* Material = MatInterface->GetMaterial();
 			if (Material == nullptr || Material->bUsedWithInstancedStaticMeshes)
 				return;

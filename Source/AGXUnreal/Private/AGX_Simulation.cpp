@@ -31,6 +31,10 @@
 #include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
+#include "CoreMinimal.h"
+#if WITH_EDITOR
+#include "Editor.h"
+#endif
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "HAL/PlatformTime.h"
@@ -39,6 +43,7 @@
 #if WITH_EDITORONLY_DATA
 #include "Subsystems/AssetEditorSubsystem.h"
 #endif
+#include "UObject/UObjectIterator.h"
 
 #include <algorithm>
 

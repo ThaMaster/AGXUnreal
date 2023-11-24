@@ -14,6 +14,7 @@
 // Unreal Engine includes.
 #include "ActorEditorUtils.h"
 #include "BlueprintEditorModule.h"
+#include "EditorViewportClient.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "SSubobjectEditor.h"
 #include "Selection.h"

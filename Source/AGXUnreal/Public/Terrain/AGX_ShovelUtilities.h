@@ -2,6 +2,9 @@
 
 #pragma once
 
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
 class UAGX_ShovelComponent;
 
 class AGXUNREAL_API FAGX_ShovelUtilities

@@ -3,6 +3,8 @@
 #include "Plot/AGX_PlotComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
+#include "AGX_Simulation.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 UAGX_PlotComponent::UAGX_PlotComponent()

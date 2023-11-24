@@ -5,7 +5,11 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "IPropertyTypeCustomization.h"
-#include "Misc/Optional.h"
+#include "Templates/SharedPointer.h"
+#include "UObject/NameTypes.h"
+#include "Widgets/Input/SComboBox.h"
+
+class SEditableTextBox;
 
 struct FAGX_ComponentReference;
 

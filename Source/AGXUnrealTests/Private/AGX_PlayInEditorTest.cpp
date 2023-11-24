@@ -4,6 +4,7 @@
 #include "AGX_PlayInEditorUtils.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "AgxAutomationCommon.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
@@ -11,8 +12,9 @@
 #include "Terrain/AGX_Terrain.h"
 
 // Unreal Engine includes.
-#include "AgxAutomationCommon.h"
+#include "Editor.h"
 #include "Containers/Map.h"
+#include "HAL/FileManager.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationEditorCommon.h"
 

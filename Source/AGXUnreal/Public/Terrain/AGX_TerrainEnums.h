@@ -2,7 +2,12 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+#include "UObject/Class.h"
 
 /**
  * All frames that a Shovel keeps track of.

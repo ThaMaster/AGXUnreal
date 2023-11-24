@@ -4,6 +4,7 @@
 
 // Unreal Engine includes.
 #include "Math/Transform.h"
+#include "Components/SceneComponent.h"
 
 FAGX_Frame::FAGX_Frame()
 {

@@ -7,6 +7,7 @@
 #include "AGX_Simulation.h"
 
 // Unreal Engine includes.
+#include "Engine/World.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Misc/MessageDialog.h"
 

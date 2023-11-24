@@ -12,6 +12,7 @@
 #include "Terrain/AGX_Terrain.h"
 
 // Unreal Engine includes.
+#include "Editor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationEditorCommon.h"

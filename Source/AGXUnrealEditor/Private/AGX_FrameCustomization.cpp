@@ -10,6 +10,7 @@
 // Unreal Engine includes.
 #include "DetailWidgetRow.h"
 #include "IDetailChildrenBuilder.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "AGX_FrameCustomization"
 

@@ -2,6 +2,9 @@
 
 #include "AGX_ComponentReference.h"
 
+// Unreal Engine includes.
+#include "GameFramework/Actor.h"
+
 FAGX_ComponentReference::FAGX_ComponentReference()
 	: FAGX_ComponentReference(TSubclassOf<UActorComponent>())
 {

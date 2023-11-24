@@ -6,6 +6,7 @@
 #include "AGX_MeshWithTransform.h"
 
 // Unreal Engine includes.
+#include "AssetRegistry/AssetData.h"
 #include "IDetailCustomNodeBuilder.h"
 #include "SceneOutlinerFilters.h"
 #include "Widgets/Input/SComboBox.h"

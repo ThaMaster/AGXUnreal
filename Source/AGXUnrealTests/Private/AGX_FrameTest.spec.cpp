@@ -5,6 +5,8 @@
 #include "AgxAutomationCommon.h"
 
 // Unreal Engine includes.
+#include "Components/SceneComponent.h"
+#include "GameFramework/Actor.h"
 #include "Misc/AutomationTest.h"
 
 BEGIN_DEFINE_SPEC(FAGX_FrameSpec, "AGXUnreal.Frame", AgxAutomationCommon::DefaultTestFlags)
