@@ -10,6 +10,9 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 
+// Standard library includes.
+#include <limits>
+
 #include "AGX_ShovelProperties.generated.h"
 
 class UAGX_ShovelComponent;
