@@ -8,6 +8,26 @@
 
 // Unreal Engine includes.
 #include "DrawDebugHelpers.h"
+#include "Misc/EngineVersionComparison.h"
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+// Possible include loop in Unreal Engine.
+// - Engine/TextureRenderTarget2D.h
+// - RenderUtils.h
+// - RHIShaderPlatform.h
+//     Defines FStaticShaderPlatform, but includes RHIDefinitions.h first.
+// - RHIDefinitions.h
+// - DataDrivenShaderPlatformInfo.h
+//   Needs FStaticShaderPlatform so includes RHIShaderPlatform.h. But that file is already being
+//   included so ignored. So FStaticShaderPlatform will be defined soon, but it isn't yet. So
+//   the compile fails.
+//
+// We work around this by including DataDrivenShaderPlatformInfo.h ourselves before all of the
+// above. Now DataDrivenShaderPlatformInfo.h can include RHIShaderPlatform.h succesfully and
+// FStaticShaderPlatform is defined when DataDrivenShaderPlatformInfo.h needs it. When we include
+// DynamicMeshBuild.h shortly most of the include files are skipped because they have already been
+// included as part of DataDrivenShaderPlatformInfo.h here.
+#include "DataDrivenShaderPlatformInfo.h"
+#endif
 #include "Engine/TextureRenderTarget2D.h"
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
