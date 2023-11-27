@@ -1006,11 +1006,11 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	// It should be updated whenever the test scene is changed.
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
-	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 17);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 20);
 
 // Enable this to see the names of the components that was imported. Useful when adding new stuff
 // to the archive.
-#if 0
+#if 1
 	UE_LOG(LogAGX, Warning, TEXT("Imported the following components:"));
 	for (const UActorComponent* Component : Components)
 	{
@@ -1059,6 +1059,8 @@ bool FCheckRenderMaterialImportedCommand::Update()
 		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("VisibleSphere"));
 	UAGX_SphereShapeComponent* InvisibleSphere =
 		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("InvisibleSphere"));
+	auto Trimesh = GetByName<UAGX_TrimeshShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Trimesh"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -1077,13 +1079,14 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	Test.TestNotNull(TEXT("NameConflictSphere2"), NameConflictSphere2);
 	Test.TestNotNull(TEXT("VisibleSphere"), VisibleSphere);
 	Test.TestNotNull(TEXT("InvisibleSphere"), InvisibleSphere);
+	Test.TestNotNull(TEXT("Trimesh"), Trimesh);
 
 	if (SceneRoot == nullptr || Body == nullptr || Ambient == nullptr || Diffuse == nullptr ||
 		Emissive == nullptr || Shininess == nullptr || AmbientDiffuse == nullptr ||
 		AmbientEmissive == nullptr || DiffuseShininessLow == nullptr ||
 		DiffuseShininessHigh == nullptr || SharedSphere1 == nullptr || SharedSphere2 == nullptr ||
 		NameConflictSphere1 == nullptr || NameConflictSphere2 == nullptr ||
-		VisibleSphere == nullptr || InvisibleSphere == nullptr)
+		VisibleSphere == nullptr || InvisibleSphere == nullptr || Trimesh == nullptr)
 	{
 		Test.AddError(TEXT("At least one required object was nullptr, cannot continue."));
 		return true;
@@ -1167,6 +1170,45 @@ bool FCheckRenderMaterialImportedCommand::Update()
 		Test.TestFalse(TEXT("InvisibleSphere Visible flag"), InvisibleSphere->GetVisibleFlag());
 	}
 
+	// Static mesh assets render materials.
+	USCS_Node* TrimeshNode = GetNodeChecked(*Test.Contents, "Trimesh");
+	USCS_Node* CollisionMeshNode = GetOnlyAttachChildChecked(TrimeshNode);
+	USCS_Node* RenderMeshNode = GetOnlyAttachChildChecked(CollisionMeshNode);
+	if (RenderMeshNode == nullptr)
+	{
+		Test.AddError("Render Mesh SCS Node was nullptr. Cannot continue.");
+		return true;
+	}
+
+	auto CollisionMeshComp = Cast<UStaticMeshComponent>(CollisionMeshNode->ComponentTemplate);
+	auto RenderMeshComp = Cast<UStaticMeshComponent>(RenderMeshNode->ComponentTemplate);
+	if (CollisionMeshComp == nullptr || RenderMeshComp == nullptr)
+	{
+		Test.AddError("Render or Collision Mesh Component was nullptr. Cannot continue.");
+		return true;
+	}
+
+	auto CollisionMeshAsset = Cast<UStaticMesh>(CollisionMeshComp->GetStaticMesh());
+	auto RenderMeshAsset = Cast<UStaticMesh>(RenderMeshComp->GetStaticMesh());
+	if (CollisionMeshAsset == nullptr || RenderMeshAsset == nullptr)
+	{
+		Test.AddError("Render or Collision Mesh Assets was nullptr. Cannot continue.");
+		return true;
+	}
+
+	if (RenderMeshAsset->GetMaterial(0) == nullptr)
+	{
+		Test.AddError("Render Mesh Assets material was nullptr. Cannot continue.");
+		return true;
+	}
+
+	Test.TestTrue(
+		"Render mesh material name",
+		RenderMeshAsset->GetMaterial(0)->GetName().StartsWith("MI_RenderMaterial_"));
+	Test.TestTrue(
+		"Collision and Render mesh material same",
+		CollisionMeshAsset->GetMaterial(0) == RenderMeshAsset->GetMaterial(0));
+
 	return true;
 }
 
@@ -1174,6 +1216,15 @@ bool FClearRenderMaterialImportedCommand::Update()
 {
 	if (Test.Contents == nullptr)
 	{
+		return true;
+	}
+
+	const FString Path =
+		FAGX_ImportUtilities::GetDefaultModelImportDirectory("render_materials_build");
+	if (!FPaths::DirectoryExists(Path))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Unable to delete files directory '%s' because it does not exist."), *Path));
 		return true;
 	}
 
@@ -1185,30 +1236,15 @@ bool FClearRenderMaterialImportedCommand::Update()
 	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
-	// Files that are created by the test and thus safe to remove. The GUID values may make this
-	// test cumbersome to update since they will change every time the AGX Dynamics archive is
-	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
-	// names to the render materials in the source .agxPy file.
-	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("Blueprint"),
-		TEXT("BP_render_materials_build.uasset"),
-		TEXT("RenderMaterial"),
-		TEXT("MI_RenderMaterial_274110F45BCA6D0F728F384964FC8A97.uasset"),
-		TEXT("MI_RenderMaterial_2C49A0878C9DF1A680CF4F43FFA9D8A8.uasset"),
-		TEXT("MI_RenderMaterial_6A442859AF55D4C69B7CFF9FB4A7FEAC.uasset"),
-		TEXT("MI_RenderMaterial_8F431C2CCB192A86C718162E2E3D3FB7.uasset"),
-		TEXT("MI_RenderMaterial_994C5229D2BA24D5EED45ED674E35BA2.uasset"),
-		TEXT("MI_RenderMaterial_9E48710314666BACEFAE4D5EBCB6B4A9.uasset"),
-		TEXT("MI_RenderMaterial_A24D8BD273490D42A47FE975DC5A36B5.uasset"),
-		TEXT("MI_RenderMaterial_A34BAE8D67A33E0D69C00FD35B724092.uasset"),
-		TEXT("MI_RenderMaterial_AD4C1FCF18CF2C3440CCEF63A49B6093.uasset"),
-		TEXT("MI_RenderMaterial_B14E6761F28A56E14C9FED220BB74088.uasset"),
-		TEXT("MI_RenderMaterial_D04C16D4174ACDF77E2BFC06F0E0AC85.uasset")};
-
-	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
-	ExpectedFiles.Add(*BaseBlueprintName);
-
-	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"), ExpectedFiles);
+	// Doing a file system delete of the assets is a bit harsh. Works in this case since we know
+	// nothing will use these assets the next time Unreal Editor is started since we don't use
+	// the imported unit test assets for anything.
+	if (!IFileManager::Get().DeleteDirectory(*Path, true, true))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("IFileManager::DeleteDirectory returned false trying to remove: '%s'"), *Path));
+		return true;
+	}
 
 	return true;
 }

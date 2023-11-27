@@ -90,21 +90,24 @@ public:
 	 * @param DirectoryPath The path of the directory where the assets are collected.
 	 * @param FallbackName Name to give the asset in case the trimesh doesn't have a source
 	 * name.
+	 * @param Material Optional default material to apply to the Mesh Asset.
 	 * @return The created asset.
 	 */
 	static UStaticMesh* SaveImportedStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryPath,
-		const FString& FallbackName);
+		const FString& FallbackName, UMaterialInstanceConstant* Material);
 
 	/**
 	 * Sets up the imported Render Data Mesh as an UStaticMesh asset, but does not write it to disk.
 	 *
 	 * @param RenderData The Render Data holding the render mesh to store.
 	 * @param DirectoryPath The path of the directory where the assets are collected.
+	 * @param Material Optional default material to apply to the Mesh Asset.
 	 * @return The created asset.
 	 */
 	static UStaticMesh* SaveImportedStaticMeshAsset(
-		const FRenderDataBarrier& RenderData, const FString& DirectoryPath);
+		const FRenderDataBarrier& RenderData, const FString& DirectoryPath,
+		UMaterialInstanceConstant* Material);
 
 	/**
 	 * Store an imported AGX Dynamics Track Internal Merge Property as an

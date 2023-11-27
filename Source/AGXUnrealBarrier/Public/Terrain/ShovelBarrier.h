@@ -96,8 +96,8 @@ public:
 	double GetContactRegionThreshold() const;
 #endif
 
-	void SetBottomContactThreshold(double BottomContactThreshold);
-	double GetBottomContactThreshold() const;
+	void SetContactRegionThreshold(double ContactRegionThreshold);
+	double GetContactRegionThreshold() const;
 
 	void SetEnableInnerShapeCreateDynamicMass(bool Enable);
 	bool GetEnableInnerShapeCreateDynamicMass() const;

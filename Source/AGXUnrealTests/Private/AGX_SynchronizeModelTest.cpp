@@ -153,18 +153,6 @@ namespace AGX_SynchronizeModelTest_helpers
 // Functions operating on the SCS node tree.
 //
 
-USCS_Node* GetNodeChecked(const UBlueprint& Blueprint, const FString& Name)
-{
-	USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
-	if (Node == nullptr)
-	{
-		UE_LOG(LogAGX, Error, TEXT("Did not find SCS Node '%s' in the Blueprint."), *Name);
-		return nullptr;
-	}
-
-	return Node;
-}
-
 bool CheckNodeNonExisting(const UBlueprint& Blueprint, const FString& Name)
 {
 	USCS_Node* Node = Blueprint.SimpleConstructionScript->FindSCSNode(FName(Name));
@@ -181,7 +169,7 @@ bool CheckNodeNonExisting(const UBlueprint& Blueprint, const FString& Name)
 
 bool CheckNodeNameAndEnsureNoParent(const UBlueprint& Blueprint, const FString& Name)
 {
-	USCS_Node* Node = GetNodeChecked(Blueprint, Name);
+	USCS_Node* Node = AgxAutomationCommon::GetNodeChecked(Blueprint, Name);
 	if (Node == nullptr)
 		return false;
 
@@ -199,7 +187,7 @@ bool CheckNodeNameAndEnsureNoParent(const UBlueprint& Blueprint, const FString& 
 
 bool CheckNodeNoChild(const UBlueprint& Blueprint, const FString& Name)
 {
-	USCS_Node* Node = GetNodeChecked(Blueprint, Name);
+	USCS_Node* Node = AgxAutomationCommon::GetNodeChecked(Blueprint, Name);
 	if (Node == nullptr)
 		return false; // Logging/error done in GetNodeChecked.
 
@@ -218,7 +206,7 @@ bool CheckNodeNameAndParent(
 	const UBlueprint& Blueprint, const FString& Name, const FString& ParentNodeName,
 	bool EnsureNoChild)
 {
-	USCS_Node* Node = GetNodeChecked(Blueprint, Name);
+	USCS_Node* Node = AgxAutomationCommon::GetNodeChecked(Blueprint, Name);
 	if (Node == nullptr)
 		return false;
 
@@ -244,28 +232,6 @@ bool CheckNodeNameAndParent(
 	}
 
 	return true;
-}
-
-USCS_Node* GetOnlyAttachChildChecked(USCS_Node* Node)
-{
-	if (Node == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("GetOnlyAttachChildChecked failed because the passed Node was nullptr."));
-		return nullptr;
-	}
-
-	const auto& Children = Node->GetChildNodes();
-	if (Children.Num() != 1)
-	{
-		UE_LOG(
-			LogAGX, Error, TEXT("Number of children of node '%s' was expected to be 1 but was %d."),
-			*Node->GetVariableName().ToString(), Children.Num());
-		return nullptr;
-	}
-
-	return Children[0];
 }
 
 //
@@ -528,6 +494,7 @@ DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
 bool FSynchronizeSameCommand::Update()
 {
 	using namespace AGX_SynchronizeModelTest_helpers;
+	using namespace AgxAutomationCommon;
 
 	UBlueprint* Blueprint = Import(ArchiveFileName, false);
 	if (Blueprint == nullptr)
@@ -1116,6 +1083,7 @@ DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
 bool FIgnoreDisabledTrimeshFTCommand::Update()
 {
 	using namespace AGX_SynchronizeModelTest_helpers;
+	using namespace AgxAutomationCommon;
 
 	// Import with IgnoreDisabledTrimesh set to false.
 	UBlueprint* Blueprint = Import(ArchiveFileName, false);
@@ -1226,6 +1194,7 @@ DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
 bool FIgnoreDisabledTrimeshTFCommand::Update()
 {
 	using namespace AGX_SynchronizeModelTest_helpers;
+	using namespace AgxAutomationCommon;
 
 	// Import with IgnoreDisabledTrimesh true.
 	UBlueprint* Blueprint = Import(ArchiveFileName, true);

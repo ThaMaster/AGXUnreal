@@ -20,8 +20,8 @@ void FAGX_Shovel::UpdateNativeShovelProperties(
 	ShovelBarrier.SetMaximumPenetrationForce(Shovel.MaximumPenetrationForce);
 	ShovelBarrier.SetAlwaysRemoveShovelContacts(Shovel.AlwaysRemoveShovelContacts);
 
-	if (Shovel.bOverrideBottomContactThreshold)
-		ShovelBarrier.SetBottomContactThreshold(Shovel.BottomContactThreshold);
+	if (Shovel.bOverrideContactRegionThreshold)
+		ShovelBarrier.SetContactRegionThreshold(Shovel.ContactRegionThreshold);
 
 	auto SetExcavationSettings =
 		[&ShovelBarrier](EAGX_ExcavationMode Mode, const FAGX_ShovelExcavationSettings& Settings)

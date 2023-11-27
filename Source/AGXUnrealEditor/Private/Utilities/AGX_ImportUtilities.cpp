@@ -164,12 +164,16 @@ namespace AGX_ImportUtilities_helpers
 }
 
 UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryPath, const FString& FallbackName)
+	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryPath, const FString& FallbackName,
+	UMaterialInstanceConstant* Material)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
 	{
 		AGX_ImportUtilities_helpers::InitStaticMesh(
 			&FAGX_EditorUtilities::CreateRawMeshFromTrimesh, Trimesh, Asset, true);
+
+		if (Material != nullptr)
+			Asset.SetMaterial(0, Material);
 	};
 
 	FString TrimeshSourceName = Trimesh.GetSourceName();
@@ -188,12 +192,16 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 }
 
 UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-	const FRenderDataBarrier& RenderData, const FString& DirectoryPath)
+	const FRenderDataBarrier& RenderData, const FString& DirectoryPath,
+	UMaterialInstanceConstant* Material)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
 	{
 		AGX_ImportUtilities_helpers::InitStaticMesh(
 			&FAGX_EditorUtilities::CreateRawMeshFromRenderData, RenderData, Asset, true);
+
+		if (Material != nullptr)
+			Asset.SetMaterial(0, Material);
 	};
 
 	return PrepareWriteAssetToDisk<UStaticMesh>(

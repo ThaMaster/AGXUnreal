@@ -84,7 +84,10 @@ public class AGXDynamicsLibrary : ModuleRules
 		TerrainMaterialLibrary,
 
 		/// Points to the AGX Dynamics Contact Material library location.
-		ContactMaterialLibrary
+		ContactMaterialLibrary,
+
+		/// Points to AGX Dynamics external resources.
+		External
   };
 
 	/// A carrier for the paths associated with a LibSource.
@@ -291,6 +294,11 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			AddIncludePath(HeaderPath);
 		}
+
+		// Explicitly add include/external as a public include path. Not part of
+		// IncludePaths above since those are all copied, and we do a more granual
+		// selection of external include files in BundleAGXResources().
+		PublicIncludePaths.Add(BundledAGXResources.IncludePath(LibSource.External));
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
@@ -1341,7 +1349,11 @@ public class AGXDynamicsLibrary : ModuleRules
 				null, null,
 				Path.Combine(SourceDir, "data", "MaterialLibrary", "ContactMaterials")
 			));
-    }
+			LibSources.Add(LibSource.External, new LibSourceInfo(
+				Path.Combine(BuildDir, "include", "external"),
+				null, null
+			));
+		}
 
 
 		private void InitializeLinuxInstalledAGX()
@@ -1391,7 +1403,11 @@ public class AGXDynamicsLibrary : ModuleRules
 				null, null,
 				Path.Combine(BaseDir, "data", "MaterialLibrary", "ContactMaterials")
 			));
-    }
+			LibSources.Add(LibSource.External, new LibSourceInfo(
+				Path.Combine(BaseDir, "include", "external"),
+				null, null
+			));
+		}
 
 		private void InitializeLinuxBundledAGX(string BundledAGXResourcesPath)
 		{
@@ -1439,6 +1455,10 @@ public class AGXDynamicsLibrary : ModuleRules
 			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
 				null, null,
 				Path.Combine(BaseDir, "data", "MaterialLibrary", "ContactMaterials")
+			));
+			LibSources.Add(LibSource.External, new LibSourceInfo(
+				Path.Combine(BaseDir, "include", "external"),
+				null, null
 			));
 		}
 
@@ -1489,6 +1509,10 @@ public class AGXDynamicsLibrary : ModuleRules
 				null, null,
 				Path.Combine(DataDir, "MaterialLibrary", "ContactMaterials")
 			));
+			LibSources.Add(LibSource.External, new LibSourceInfo(
+				Path.Combine(BaseDir, "include", "external"),
+				null, null
+			));
 		}
 
 		private void InitializeWindowsBundledAGX(string BundledAGXResourcesPath)
@@ -1534,6 +1558,10 @@ public class AGXDynamicsLibrary : ModuleRules
 			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
 				null, null,
 				Path.Combine(BaseDir, "data", "MaterialLibrary", "ContactMaterials")
+			));
+			LibSources.Add(LibSource.External, new LibSourceInfo(
+				Path.Combine(BaseDir, "include", "external"),
+				null, null
 			));
 		}
 

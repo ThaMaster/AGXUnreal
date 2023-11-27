@@ -346,16 +346,16 @@ FRigidBodyBarrier FShovelBarrier::GetRigidBody() const
 	return AGXBarrierFactories::CreateRigidBodyBarrier(Body);
 }
 
-void FShovelBarrier::SetBottomContactThreshold(double BottomContactThreshold)
+void FShovelBarrier::SetContactRegionThreshold(double ContactRegionThreshold)
 {
 	check(HasNative());
-	NativeRef->Native->setBottomContactThreshold(ConvertDistanceToAGX(BottomContactThreshold));
+	NativeRef->Native->setContactRegionThreshold(ConvertDistanceToAGX(ContactRegionThreshold));
 }
 
-double FShovelBarrier::GetBottomContactThreshold() const
+double FShovelBarrier::GetContactRegionThreshold() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getBottomContactThreshold());
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getContactRegionThreshold());
 }
 
 void FShovelBarrier::SetEnableInnerShapeCreateDynamicMass(bool Enable)
