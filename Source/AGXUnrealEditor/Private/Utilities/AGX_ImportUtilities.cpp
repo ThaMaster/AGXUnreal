@@ -23,6 +23,7 @@
 #include "AssetToolsModule.h"
 #include "Components/ActorComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Materials/MaterialInstanceConstant.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/Paths.h"
 #include "RawMesh.h"
