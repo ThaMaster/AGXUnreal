@@ -102,30 +102,55 @@ void UAGX_ShovelComponent::SetShovelProperties(UAGX_ShovelProperties* Properties
 	}
 }
 
+namespace AGX_ShovelComponent_helpers
+{
+	template <typename SetterFunc>
+	void PropagateEdgeUpdate(
+		const UAGX_ShovelComponent& Shovel, const FAGX_Edge& Edge, const TCHAR* EdgeName,
+		const SetterFunc& Setter)
+	{
+		if (!Shovel.HasNative())
+			return;
+
+		UAGX_RigidBodyComponent* Body = Shovel.RigidBody.GetRigidBody();
+		if (Body == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Cannot set %s on Shovel '%s' in '%s' because the Shovel does not have a "
+					 "Rigid Body."),
+				EdgeName, *Shovel.GetName(), *GetLabelSafe(Shovel.GetOwner()));
+			return;
+		}
+
+		const FTwoVectors EdgeInBody = Edge.GetLocationsRelativeTo(*Body, Shovel);
+		if (FMath::IsNearlyZero(FVector::Distance(EdgeInBody.v1, EdgeInBody.v2)))
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Invalid %s passed to '%s' in '%s': Length must be non-zero."), EdgeName,
+				*Shovel.GetName(), *GetLabelSafe(Shovel.GetOwner()));
+			return;
+		}
+
+		Setter(EdgeInBody);
+	}
+}
+
 void UAGX_ShovelComponent::SetTopEdge(FAGX_Edge InTopEdge)
 {
 	TopEdge = InTopEdge;
-	if (HasNative())
-	{
-		if (UAGX_RigidBodyComponent* Body = RigidBody.GetRigidBody())
-		{
-			const FTwoVectors TopEdgeInBody = TopEdge.GetLocationsRelativeTo(*Body, *this);
-			NativeBarrier.SetTopEdge(TopEdgeInBody);
-		}
-	}
+	AGX_ShovelComponent_helpers::PropagateEdgeUpdate(
+		*this, TopEdge, TEXT("Top Edge"),
+		[this](const FTwoVectors& EdgeInBody) { NativeBarrier.SetTopEdge(EdgeInBody); });
 }
 
 void UAGX_ShovelComponent::SetCuttingEdge(FAGX_Edge InCuttingEdge)
 {
 	CuttingEdge = InCuttingEdge;
-	if (HasNative())
-	{
-		if (UAGX_RigidBodyComponent* Body = RigidBody.GetRigidBody())
-		{
-			const FTwoVectors CuttingEdgeInBody = CuttingEdge.GetLocationsRelativeTo(*Body, *this);
-			NativeBarrier.SetCuttingEdge(CuttingEdgeInBody);
-		}
-	}
+	AGX_ShovelComponent_helpers::PropagateEdgeUpdate(
+		*this, CuttingEdge, TEXT("Cutting Edge"),
+		[this](const FTwoVectors& EdgeInBody) { NativeBarrier.SetCuttingEdge(EdgeInBody); });
 }
 
 void UAGX_ShovelComponent::SetCuttingDirection(FAGX_Frame InCuttingDirection)
@@ -138,6 +163,14 @@ void UAGX_ShovelComponent::SetCuttingDirection(FAGX_Frame InCuttingDirection)
 			const FRotator CuttingRotation = CuttingDirection.GetRotationRelativeTo(*Body, *this);
 			const FVector DirectionInBody = CuttingRotation.RotateVector(FVector::ForwardVector);
 			NativeBarrier.SetCuttingDirection(DirectionInBody);
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Cannot set Cutting Direction on Shovel '%s' in '%s' because the Shovel does "
+					 "not have a Rigid Body."),
+				*GetName(), *GetLabelSafe(GetOwner()));
 		}
 	}
 }
@@ -340,8 +373,8 @@ void UAGX_ShovelComponent::BeginPlay()
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Shovel '%s' in '%s': Could not create Shovel Properties instance. Default shovel "
-					 "settings will be used."),
+				TEXT("Shovel '%s' in '%s': Could not create Shovel Properties instance. Default "
+					 "shovel settings will be used."),
 				*GetName(), *GetLabelSafe(GetOwner()));
 		}
 	}
