@@ -1273,6 +1273,8 @@ void AAGX_Terrain::CreateNativeShovels()
 				*ShovelComponent->GetName(), *GetLabelSafe(this));
 			continue;
 		}
+		check(ShovelBarrier->HasNative());
+
 		const double RequiredRadius = ShovelRef.RequiredRadius;
 		const double PreloadRadius = ShovelRef.PreloadRadius;
 
