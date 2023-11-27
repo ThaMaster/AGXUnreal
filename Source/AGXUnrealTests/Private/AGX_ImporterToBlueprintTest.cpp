@@ -3756,7 +3756,7 @@ bool FCheckShovelImportedCommand::Update()
 		TEXT("Shovel Import GUID"),
 		Shovel->ImportGuid.ToString(EGuidFormats::DigitsWithHyphensLower),
 		"8c48a356-d44b-1f4a-134c-e7e7a1f4c008");
-	Test.TestEqual(TEXT("bEnable"), Shovel->bEnable, false);
+	Test.TestEqual(TEXT("bEnable"), Shovel->bEnabled, false);
 	Test.TestEqual(
 		TEXT("Top Edge Start Location"), Shovel->TopEdge.Start.LocalLocation,
 		AgxToUnrealDisplacement(0.1, -1.0, 1.0));

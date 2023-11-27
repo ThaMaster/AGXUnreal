@@ -27,10 +27,13 @@ public:
 	UAGX_ShovelComponent();
 
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
-	bool bEnable {true};
+	bool bEnabled {true};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
-	void SetEnable(bool bInEnable);
+	void SetEnabled(bool bInEnable);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
+	bool IsEnabled() const;
 
 	/// The Rigid Body associated with this Shovel. There may only be one Shovel per Rigid Body.
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
@@ -150,7 +153,7 @@ public:
 
 private:
 	// Alias for SetEnable used by Property Dispatcher.
-	void SetbEnable(bool bInEnable);
+	void SetbEnabled(bool bInEnable);
 
 #if WITH_EDITOR
 	// Fill in a bunch of callbacks in PropertyDispatcher so we don't have to manually check each
