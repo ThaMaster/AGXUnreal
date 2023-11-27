@@ -53,9 +53,9 @@ namespace TerrainPagerBarrier_helpers
 		return false;
 	}
 
-	void SetCanCollide(const TerrainPager::TileAttachmentPtrVector& ActiveTiles, bool bCanCollide)
+	void SetCanCollide(const agxTerrain::TerrainPager::TileAttachmentPtrVector& ActiveTiles, bool bCanCollide)
 	{
-		for (TerrainPager::TileAttachments* Tile : ActiveTiles)
+		for (agxTerrain::TerrainPager::TileAttachments* Tile : ActiveTiles)
 		{
 			if (Tile == nullptr || Tile->m_terrainTile == nullptr)
 				continue;
