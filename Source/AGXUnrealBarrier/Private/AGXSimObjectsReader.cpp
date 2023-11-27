@@ -444,8 +444,16 @@ namespace
 				// The primary excavator is accessed through the soil particle aggregate.
 				agxTerrain::SoilParticleAggregate* Aggregate = Tools->getSoilParticleAggregate();
 				NonFreeBodies.Add(Aggregate->getInnerBody());
-				NonFreeBodies.Add(Aggregate->getWedgeBody());
-				NonFreeConstraints.Add(Aggregate->getLockJoint());
+				for (const agx::RigidBody* Body : Aggregate->getWedgeBodies())
+				{
+					NonFreeBodies.Add(Body);
+				}
+				NonFreeConstraints.Add(Aggregate->getInnerWedgeLockJoint());
+				for (const agx::Constraint* Lock : Aggregate->getWedgeLockJoints(false))
+				{
+					NonFreeConstraints.Add(Lock);
+				}
+
 				NonFreeMaterials.Add(Aggregate->getMaterial());
 
 				// All other excavators are accessed through their respective deform controllers.
@@ -457,9 +465,18 @@ namespace
 					const agx::UInt DeformersId = static_cast<agx::UInt>(ExcavationMode) - 1;
 					agxTerrain::DeformerCollection* Deformers =
 						DeformController->getDeformerCollection(DeformersId);
-					NonFreeBodies.Add(Deformers->getAggregate()->getWedgeBody());
+
 					NonFreeBodies.Add(Deformers->getAggregate()->getInnerBody());
-					NonFreeConstraints.Add(Deformers->getAggregate()->getLockJoint());
+					for (const agx::RigidBody* Body : Deformers->getAggregate()->getWedgeBodies())
+					{
+						NonFreeBodies.Add(Body);
+					}
+					NonFreeConstraints.Add(Deformers->getAggregate()->getInnerWedgeLockJoint());
+					for (const agx::Constraint* Lock : Deformers->getAggregate()->getWedgeLockJoints())
+					{
+						NonFreeConstraints.Add(Lock);
+					}
+
 					NonFreeMaterials.Add(Deformers->getAggregate()->getMaterial());
 
 					// In addition to the soil particle aggregate objects, a deformer also has an
