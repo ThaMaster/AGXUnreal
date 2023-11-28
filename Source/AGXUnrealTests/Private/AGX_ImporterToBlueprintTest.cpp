@@ -3598,6 +3598,11 @@ bool FCheckAmorImportedCommand::Update()
 
 	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(
 		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Wire"));
+	Test.TestNotNull(TEXT("Wire Component"), Wire);
+	if (Wire == nullptr)
+	{
+		return true;
+	}
 	Test.TestFalse("Wire Enable Merge", Wire->MergeSplitProperties.bEnableMerge);
 	Test.TestTrue("Wire Enable Merge", Wire->MergeSplitProperties.bEnableSplit);
 	Test.TestNotNull("Wire Thresholds", Wire->MergeSplitProperties.Thresholds);
