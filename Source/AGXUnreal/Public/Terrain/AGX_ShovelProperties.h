@@ -134,11 +134,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
 	void SetToothMinimumRadius(double InMinimumToothRadius);
 
-// Introduced with AGX Dynamics 2.37.
-#if 0
 	/**
 	 * The radius multiplier for extending the inclusion bound with particle radius during
-	 * post-excavation with particles in bucket.
+	 * post-excavation with particles in bucket [unitless].
 	 *
 	 * This will only be active post-excavation and NOT during excavation when we have active soil
 	 * wedges.
@@ -148,7 +146,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
 	void SetParticleInclusionMultiplier(double InParticleInclusionMultiplier);
-#endif
 
 	/**
 	 * Get the vertical penetration depth threshold for when the shovel tooth for penetration

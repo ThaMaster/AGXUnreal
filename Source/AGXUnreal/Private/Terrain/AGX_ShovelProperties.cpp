@@ -125,13 +125,10 @@ void UAGX_ShovelProperties::SetToothMinimumRadius(double InToothMinimumRadius)
 	AGX_SHOVEL_SETTER_IMPL(ToothMinimumRadius);
 }
 
-// Introduced with AGX Dynamics 2.37.
-#if 0
 void UAGX_ShovelProperties::SetParticleInclusionMultiplier(double InParticleInclusionMultiplier)
 {
 	AGX_SHOVEL_SETTER_IMPL(ParticleInclusionMultiplier);
 }
-#endif
 
 void UAGX_ShovelProperties::SetPenetrationDepthThreshold(double InPenetrationDepthThreshold)
 {
@@ -341,10 +338,7 @@ void UAGX_ShovelProperties::InitPropertyDispatcher()
 	AGX_ASSET_DEFAULT_DISPATCHER(ToothLength);
 	AGX_ASSET_DEFAULT_DISPATCHER(ToothMaximumRadius);
 	AGX_ASSET_DEFAULT_DISPATCHER(ToothMinimumRadius);
-// Introduced with AGX Dynamics 2.37.
-#if 0
 	AGX_ASSET_DEFAULT_DISPATCHER(ParticleInclusionMultiplier);
-#endif
 	AGX_ASSET_DEFAULT_DISPATCHER(PenetrationDepthThreshold);
 	AGX_ASSET_DEFAULT_DISPATCHER(PenetrationForceScaling);
 	AGX_ASSET_DEFAULT_DISPATCHER(MaximumPenetrationForce);

@@ -102,7 +102,7 @@ void FAGXUnrealModule::RegisterCoreRedirects()
 		TEXT("/Script/AGXUnreal.AGX_SceneComponentReference.SceneComponentName"),
 		TEXT("/Script/AGXUnreal.AGX_SceneComponentReference.Name"));
 
-	// Properties renamed in AGX Dynamics with the introduction of AGX Dynamics 2.37.0.1.
+	// Properties renamed in AGX Dynamics with the introduction of AGX Dynamics 2.37.
 	Redirects.Emplace(
 		ECoreRedirectFlags::Type_Property, TEXT("AGX_Shovel.BottomContactThreshold"),
 		TEXT("ContactRegionThreshold"));

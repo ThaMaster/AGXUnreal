@@ -3875,17 +3875,14 @@ bool FCheckShovelImportedCommand::Update()
 	// Shovel->ShovelProperties->ContactRegionVerticalLimit, 13.0);
 
 	Test.TestEqual(
+		TEXT("ParicleInclusionMultiplier"), Shovel->ShovelProperties->ParticleInclusionMultiplier,
+		/*14.0*/ 1.0 /* AGX Dynamics 2.37.0.1 does not store/restore this value. */);
+	Test.TestEqual(
 		TEXT("EnableInnerShapeCreateDynamicMass"),
 		Shovel->ShovelProperties->EnableInnerShapeCreateDynamicMass, false);
 	Test.TestEqual(
 		TEXT("EnableParticleForceFeedback"), Shovel->ShovelProperties->EnableParticleForceFeedback,
 		true);
-
-	// Cannot set particle inclusion multiplier from Python:
-	// AttributeError: 'Shovel' object has no attribute 'setContactRegionThreshold'
-	// Not sure why. Added after 2.36.1.3?
-	// Test.TestEqual(TEXT("ParticleInclusionMultiplier"),
-	// Shovel->ShovelProperties->ParticleInclusionMultiplier, 14.0);
 
 	Test.TestEqual(
 		TEXT("Primary enabled"), Shovel->ShovelProperties->PrimaryExcavationSettings.bEnabled,

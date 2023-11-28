@@ -153,8 +153,6 @@ double FShovelBarrier::GetNoMergeExtensionDistance() const
 	return DistanceUnreal;
 }
 
-// Included with AGX Dynamics 2.37.
-#if 0
 void FShovelBarrier::SetParticleInclusionMultiplier(double Multiplier)
 {
 	check(HasNative());
@@ -166,7 +164,6 @@ double FShovelBarrier::GetParticleInclusionMultiplier() const
 	check(HasNative());
 	return NativeRef->Native->getParticleInclusionMultiplier();
 }
-#endif
 
 void FShovelBarrier::SetMinimumSubmergedContactLengthFraction(
 	double MinimumSubmergedContactLengthFraction)
