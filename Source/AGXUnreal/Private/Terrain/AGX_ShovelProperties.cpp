@@ -371,5 +371,16 @@ void UAGX_ShovelProperties::InitPropertyDispatcher()
 	AGX_ASSET_DEFAULT_DISPATCHER(EnableParticleForceFeedback);
 	AGX_ASSET_DEFAULT_DISPATCHER(ParticleInclusionMultiplier);
 
+	// When the user toggles an override flag then call the corresponding Set function. The
+	// associated value will be propagated if it should. Disabling the override does not mean that
+	// the default value is restored, only that new values will not be propagated.
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bOverride_ContactRegionThreshold),
+		[](ThisClass* This) { This->SetContactRegionThreshold(This->ContactRegionThreshold); });
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bOverride_ContactRegionVerticalLimit),
+		[](ThisClass* This)
+		{ This->SetContactRegionVerticalLimit(This->ContactRegionVerticalLimit); });
+
 }
 #endif
