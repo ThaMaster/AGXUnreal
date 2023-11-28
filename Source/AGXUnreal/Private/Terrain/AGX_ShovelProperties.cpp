@@ -16,10 +16,16 @@
 #include "Engine.h"
 #include "UObject/UObjectGlobals.h"
 
+UAGX_ShovelProperties::UAGX_ShovelProperties()
+	: bOverride_ContactRegionThreshold(false)
+	, bOverride_ContactRegionVerticalLimit(false)
+{
+}
+
 template <typename StorageT, typename ParameterT>
 void SetAndPropagateShovelProperty(
 	UAGX_ShovelProperties& Properties, TArray<TWeakObjectPtr<UAGX_ShovelComponent>>& Shovels,
-	StorageT* Storage, ParameterT NewValue,
+	StorageT* Storage, ParameterT NewValue, bool PropagateToNative,
 	void (UAGX_ShovelProperties::*ComponentSetter)(ParameterT),
 	void (FShovelBarrier::*BarrierSetter)(ParameterT))
 {
@@ -34,11 +40,14 @@ void SetAndPropagateShovelProperty(
 	if (Properties.IsInstance())
 	{
 		*Storage = NewValue;
-		for (TWeakObjectPtr<UAGX_ShovelComponent>& Shovel : Shovels)
+		if (PropagateToNative)
 		{
-			if (Shovel.IsValid() && Shovel->HasNative())
+			for (TWeakObjectPtr<UAGX_ShovelComponent>& Shovel : Shovels)
 			{
-				(Shovel->GetNative()->*BarrierSetter)(NewValue);
+				if (Shovel.IsValid() && Shovel->HasNative())
+				{
+					(Shovel->GetNative()->*BarrierSetter)(NewValue);
+				}
 			}
 		}
 	}
@@ -58,16 +67,21 @@ void SetAndPropagateShovelProperty(
 	}
 }
 
-#define AGX_SHOVEL_SETTER_IMPL(PropertyName)             \
-	SetAndPropagateShovelProperty(                       \
-		*this, Shovels, &PropertyName, In##PropertyName, \
+#define AGX_SHOVEL_SETTER_IMPL(PropertyName)                   \
+	SetAndPropagateShovelProperty(                             \
+		*this, Shovels, &PropertyName, In##PropertyName, true, \
+		&UAGX_ShovelProperties::Set##PropertyName, &FShovelBarrier::Set##PropertyName)
+
+#define AGX_SHOVEL_SETTER_OVERRIDE_IMPL(PropertyName, Overriden)    \
+	SetAndPropagateShovelProperty(                                  \
+		*this, Shovels, &PropertyName, In##PropertyName, Overriden, \
 		&UAGX_ShovelProperties::Set##PropertyName, &FShovelBarrier::Set##PropertyName)
 
 void UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts(bool InAlwaysRemoveShovelContacts)
 {
 	// AGX_SHOVEL_SETTER_IMPL(AlwaysRemoveShovelContacts);
 	SetAndPropagateShovelProperty(
-		*this, Shovels, &AlwaysRemoveShovelContacts, InAlwaysRemoveShovelContacts,
+		*this, Shovels, &AlwaysRemoveShovelContacts, InAlwaysRemoveShovelContacts, true,
 		&UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts,
 		&FShovelBarrier::SetAlwaysRemoveShovelContacts);
 }
@@ -143,6 +157,17 @@ void UAGX_ShovelProperties::SetPenetrationForceScaling(double InPenetrationForce
 void UAGX_ShovelProperties::SetMaximumPenetrationForce(double InMaximumPenetrationForce)
 {
 	AGX_SHOVEL_SETTER_IMPL(MaximumPenetrationForce);
+}
+
+void UAGX_ShovelProperties::SetContactRegionThreshold(double InContactRegionThreshold)
+{
+	AGX_SHOVEL_SETTER_OVERRIDE_IMPL(ContactRegionThreshold, bOverride_ContactRegionThreshold);
+}
+
+void UAGX_ShovelProperties::SetContactRegionVerticalLimit(double InContactRegionVerticalLimit)
+{
+	AGX_SHOVEL_SETTER_OVERRIDE_IMPL(
+		ContactRegionVerticalLimit, bOverride_ContactRegionVerticalLimit);
 }
 
 void UAGX_ShovelProperties::SetSecondarySeparationDeadloadLimit(
@@ -338,6 +363,8 @@ void UAGX_ShovelProperties::InitPropertyDispatcher()
 	AGX_ASSET_DEFAULT_DISPATCHER(ToothLength);
 	AGX_ASSET_DEFAULT_DISPATCHER(ToothMaximumRadius);
 	AGX_ASSET_DEFAULT_DISPATCHER(ToothMinimumRadius);
+	AGX_ASSET_DEFAULT_DISPATCHER(ContactRegionThreshold);
+	AGX_ASSET_DEFAULT_DISPATCHER(ContactRegionVerticalLimit);
 	AGX_ASSET_DEFAULT_DISPATCHER(ParticleInclusionMultiplier);
 	AGX_ASSET_DEFAULT_DISPATCHER(PenetrationDepthThreshold);
 	AGX_ASSET_DEFAULT_DISPATCHER(PenetrationForceScaling);

@@ -27,6 +27,19 @@ class AGXUNREAL_API UAGX_ShovelProperties : public UObject
 	GENERATED_BODY()
 
 public:
+	UAGX_ShovelProperties();
+
+	// First all bOverride_... as they get grouped together into bitfields.
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "Shovel Property Overrides",
+		meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	uint8 bOverride_ContactRegionThreshold : 1;
+
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "Shovel Property Overrides",
+		meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	uint8 bOverride_ContactRegionVerticalLimit : 1;
+
 	/**
 	 * Set to true if Shovel <-> Terrain contacts should always be removed.
 	 */
@@ -180,6 +193,55 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
 	void SetMaximumPenetrationForce(double InMaximumPenetrationForce);
+
+	/**
+	 * The starting distance threshold from the shovel planes where regular geometry contacts
+	 * between the shovel underside and the terrain can be created [cm].
+	 *
+	 * Contacts that are not past the distance threshold will be filtered away.
+	 *
+	 * By default this is computed, per Shovel, on Begin Play to be CuttingEdge.length / 10.
+	 *
+	 * Note that the Contact Region Threshold Override flag must be set first for this value to take
+	 * effect.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "Shovel Properties",
+		Meta = (EditCondition = "bOverride_ContactRegionThreshold"))
+	FAGX_Real ContactRegionThreshold {0.0};
+
+	/**
+	 * Set the Contact Region Threshold.
+	 *
+	 * Note that the Contact Region Threshold Override flag must be set first for this value to take
+	 * effect.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetContactRegionThreshold(double InContactRegionThreshold);
+
+	/**
+	 * The maximum vertical distance from the shovel bottom plane where regular geometry contacts
+	 * between the shovel and the terrain are allowed to be created [cm].
+	 *
+	 * Contacts past the distance will be filtered away. By default this is computed, per Shovel, on
+	 * Begin Play to be CuttingEdge.length / 10.
+	 *
+	 * Note that the Contact Region Vertical Limit Override flag must be set first for this value to
+	 * take effect.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "Shovel Properties",
+		Meta = (EditCondition = "bOverride_ContactRegionVerticalLimit"))
+	FAGX_Real ContactRegionVerticalLimit {0.0};
+
+	/**
+	 * Set the Contact Region Vertical Limit.
+	 *
+	 * Note that the Contact Region Vertical Limit Override flag must be set first for this value to
+	 * take effect.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetContactRegionVerticalLimit(double InContactRegionVerticalLimit);
 
 	/**
 	 * The dead-load limit where secondary separation will start to activate where the forward

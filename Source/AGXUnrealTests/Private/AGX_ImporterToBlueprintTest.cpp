@@ -3861,19 +3861,12 @@ bool FCheckShovelImportedCommand::Update()
 		true);
 	Test.TestEqual(
 		TEXT("MaxPenetrationForce"), Shovel->ShovelProperties->MaximumPenetrationForce, 11.0);
-
-	// Cannot set the contact region from Python:
-	// AttributeError: 'Shovel' object has no attribute 'setContactRegionThreshold'
-	// Not sure why. Added after 2.36.1.3?
-	// Test.TestEqual(TEXT("ContactRegionThreshold"),
-	// Shovel->ShovelProperties->ContactRegionThreshold, 12.0);
-
-	// Cannot set contact region vertical limit from Python:
-	// AttributeError: 'Shovel' object has no attribute 'setContactRegionThreshold'
-	// Not sure why. Added after 2.36.1.3?
-	// Test.TestEqual(TEXT("ContactRegionVerticalLimit"),
-	// Shovel->ShovelProperties->ContactRegionVerticalLimit, 13.0);
-
+	Test.TestEqual(
+		TEXT("ContactRegionThreshold"), Shovel->ShovelProperties->ContactRegionThreshold,
+		AgxToUnrealDistance(12.0));
+	Test.TestEqual(
+		TEXT("ContactRegionVerticalLimit"), Shovel->ShovelProperties->ContactRegionVerticalLimit,
+		AgxToUnrealDistance(13.0));
 	Test.TestEqual(
 		TEXT("ParicleInclusionMultiplier"), Shovel->ShovelProperties->ParticleInclusionMultiplier,
 		/*14.0*/ 1.0 /* AGX Dynamics 2.37.0.1 does not store/restore this value. */);

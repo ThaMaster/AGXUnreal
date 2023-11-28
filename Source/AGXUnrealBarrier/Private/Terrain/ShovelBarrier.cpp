@@ -272,21 +272,6 @@ double FShovelBarrier::GetMaximumPenetrationForce() const
 	return NativeRef->Native->getMaxPenetrationForce();
 }
 
-// These are added with AGX Dynamics 2.37, or there about.
-#if 0
-void FShovelBarrier::SetContactRegionThreshold(double Threshold)
-{
-	check(HasNative());
-	NativeRef->Native->setContactRegionThreshold(Threshold);
-}
-
-double FShovelBarrier::GetContactRegionThreshold() const
-{
-	check(HasNative());
-	return NativeRef->Native->getContactRegionThreshold();
-}
-#endif
-
 void FShovelBarrier::SetAlwaysRemoveShovelContacts(bool Enable)
 {
 	check(HasNative());
@@ -353,6 +338,18 @@ double FShovelBarrier::GetContactRegionThreshold() const
 {
 	check(HasNative());
 	return ConvertDistanceToUnreal<double>(NativeRef->Native->getContactRegionThreshold());
+}
+
+void FShovelBarrier::SetContactRegionVerticalLimit(double ContactRegionVerticalLimit)
+{
+	check(HasNative());
+	NativeRef->Native->setContactRegionVerticalLimit(ContactRegionVerticalLimit);
+}
+
+double FShovelBarrier::GetContactRegionVerticalLimit() const
+{
+	check(HasNative());
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getContactRegionVerticalLimit());
 }
 
 void FShovelBarrier::SetEnableInnerShapeCreateDynamicMass(bool Enable)

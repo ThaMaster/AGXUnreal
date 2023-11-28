@@ -90,14 +90,11 @@ public:
 	void SetMaximumPenetrationForce(double MaximumPenetrationForce);
 	double GetMaximumPenetrationForce() const;
 
-	// These are added with AGX Dynamics 2.37. (Or there about.)
-#if 0
-	void SetContactRegionThreshold(double Threshold);
-	double GetContactRegionThreshold() const;
-#endif
-
 	void SetContactRegionThreshold(double ContactRegionThreshold);
 	double GetContactRegionThreshold() const;
+
+	void SetContactRegionVerticalLimit(double ContactRegionVerticalLimit);
+	double GetContactRegionVerticalLimit() const;
 
 	void SetEnableInnerShapeCreateDynamicMass(bool Enable);
 	bool GetEnableInnerShapeCreateDynamicMass() const;

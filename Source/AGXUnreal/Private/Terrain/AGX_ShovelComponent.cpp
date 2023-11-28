@@ -267,6 +267,10 @@ void UAGX_ShovelComponent::CopyFrom(const FShovelBarrier& Barrier, bool ForceOve
 		ShovelProperties->PenetrationForceScaling = Barrier.GetPenetrationForceScaling();
 		ShovelProperties->MaximumPenetrationForce = Barrier.GetMaximumPenetrationForce();
 		ShovelProperties->ParticleInclusionMultiplier = Barrier.GetParticleInclusionMultiplier();
+		ShovelProperties->bOverride_ContactRegionThreshold = true;
+		ShovelProperties->ContactRegionThreshold = Barrier.GetContactRegionThreshold();
+		ShovelProperties->bOverride_ContactRegionVerticalLimit = true;
+		ShovelProperties->ContactRegionVerticalLimit = Barrier.GetContactRegionVerticalLimit();
 		ShovelProperties->SecondarySeparationDeadloadLimit =
 			Barrier.GetSecondarySeparationDeadloadLimit();
 
@@ -587,6 +591,16 @@ bool UAGX_ShovelComponent::WritePropertiesToNative()
 
 	NativeBarrier.SetToothLength(ShovelProperties->ToothLength);
 	NativeBarrier.SetMaximumPenetrationForce(ShovelProperties->MaximumPenetrationForce);
+
+	if (ShovelProperties->bOverride_ContactRegionThreshold)
+	{
+		NativeBarrier.SetContactRegionThreshold(ShovelProperties->ContactRegionThreshold);
+	}
+	if (ShovelProperties->bOverride_ContactRegionVerticalLimit)
+	{
+		NativeBarrier.SetContactRegionVerticalLimit(ShovelProperties->ContactRegionVerticalLimit);
+	}
+
 	NativeBarrier.SetNumberOfTeeth(ShovelProperties->NumberOfTeeth);
 	NativeBarrier.SetToothMaximumRadius(ShovelProperties->ToothMaximumRadius);
 	NativeBarrier.SetToothMinimumRadius(ShovelProperties->ToothMinimumRadius);
