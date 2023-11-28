@@ -77,29 +77,29 @@ void SetAndPropagateShovelProperty(
 		*this, Shovels, &PropertyName, In##PropertyName, Overriden, \
 		&UAGX_ShovelProperties::Set##PropertyName, &FShovelBarrier::Set##PropertyName)
 
-void UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts(bool InAlwaysRemoveShovelContacts)
+void UAGX_ShovelProperties::SetToothLength(double InToothLength)
 {
-	// AGX_SHOVEL_SETTER_IMPL(AlwaysRemoveShovelContacts);
-	SetAndPropagateShovelProperty(
-		*this, Shovels, &AlwaysRemoveShovelContacts, InAlwaysRemoveShovelContacts, true,
-		&UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts,
-		&FShovelBarrier::SetAlwaysRemoveShovelContacts);
+	AGX_SHOVEL_SETTER_IMPL(ToothLength);
 }
 
-void UAGX_ShovelProperties::SetEnableInnerShapeCreateDynamicMass(
-	bool InEnableInnerShapeCreateDynamicMass)
+void UAGX_ShovelProperties::SetToothMinimumRadius(double InToothMinimumRadius)
 {
-	AGX_SHOVEL_SETTER_IMPL(EnableInnerShapeCreateDynamicMass);
+	AGX_SHOVEL_SETTER_IMPL(ToothMinimumRadius);
 }
 
-void UAGX_ShovelProperties::SetEnableParticleForceFeedback(bool InEnableParticleForceFeedback)
+void UAGX_ShovelProperties::SetToothMaximumRadius(double InToothMaximumRadius)
 {
-	AGX_SHOVEL_SETTER_IMPL(EnableParticleForceFeedback);
+	AGX_SHOVEL_SETTER_IMPL(ToothMaximumRadius);
 }
 
-void UAGX_ShovelProperties::SetEnableParticleFreeDeformers(bool InEnableParticleFreeDeformers)
+void UAGX_ShovelProperties::SetNumberOfTeeth(int32 InNumberOfTeeth)
 {
-	AGX_SHOVEL_SETTER_IMPL(EnableParticleFreeDeformers);
+	AGX_SHOVEL_SETTER_IMPL(NumberOfTeeth);
+}
+
+void UAGX_ShovelProperties::SetNoMergeExtensionDistance(double InNoMergeExtensionDistance)
+{
+	AGX_SHOVEL_SETTER_IMPL(NoMergeExtensionDistance);
 }
 
 void UAGX_ShovelProperties::SetMinimumSubmergedContactLengthFraction(
@@ -114,34 +114,10 @@ void UAGX_ShovelProperties::SetVerticalBladeSoilMergeDistance(
 	AGX_SHOVEL_SETTER_IMPL(VerticalBladeSoilMergeDistance);
 }
 
-void UAGX_ShovelProperties::SetNoMergeExtensionDistance(double InNoMergeExtensionDistance)
+void UAGX_ShovelProperties::SetSecondarySeparationDeadloadLimit(
+	double InSecondarySeparationDeadloadLimit)
 {
-	AGX_SHOVEL_SETTER_IMPL(NoMergeExtensionDistance);
-}
-
-void UAGX_ShovelProperties::SetNumberOfTeeth(int32 InNumberOfTeeth)
-{
-	AGX_SHOVEL_SETTER_IMPL(NumberOfTeeth);
-}
-
-void UAGX_ShovelProperties::SetToothLength(double InToothLength)
-{
-	AGX_SHOVEL_SETTER_IMPL(ToothLength);
-}
-
-void UAGX_ShovelProperties::SetToothMaximumRadius(double InToothMaximumRadius)
-{
-	AGX_SHOVEL_SETTER_IMPL(ToothMaximumRadius);
-}
-
-void UAGX_ShovelProperties::SetToothMinimumRadius(double InToothMinimumRadius)
-{
-	AGX_SHOVEL_SETTER_IMPL(ToothMinimumRadius);
-}
-
-void UAGX_ShovelProperties::SetParticleInclusionMultiplier(double InParticleInclusionMultiplier)
-{
-	AGX_SHOVEL_SETTER_IMPL(ParticleInclusionMultiplier);
+	AGX_SHOVEL_SETTER_IMPL(SecondarySeparationDeadloadLimit);
 }
 
 void UAGX_ShovelProperties::SetPenetrationDepthThreshold(double InPenetrationDepthThreshold)
@@ -152,6 +128,20 @@ void UAGX_ShovelProperties::SetPenetrationDepthThreshold(double InPenetrationDep
 void UAGX_ShovelProperties::SetPenetrationForceScaling(double InPenetrationForceScaling)
 {
 	AGX_SHOVEL_SETTER_IMPL(PenetrationForceScaling);
+}
+
+void UAGX_ShovelProperties::SetEnableParticleFreeDeformers(bool InEnableParticleFreeDeformers)
+{
+	AGX_SHOVEL_SETTER_IMPL(EnableParticleFreeDeformers);
+}
+
+void UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts(bool InAlwaysRemoveShovelContacts)
+{
+	// AGX_SHOVEL_SETTER_IMPL(AlwaysRemoveShovelContacts);
+	SetAndPropagateShovelProperty(
+		*this, Shovels, &AlwaysRemoveShovelContacts, InAlwaysRemoveShovelContacts, true,
+		&UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts,
+		&FShovelBarrier::SetAlwaysRemoveShovelContacts);
 }
 
 void UAGX_ShovelProperties::SetMaximumPenetrationForce(double InMaximumPenetrationForce)
@@ -170,10 +160,20 @@ void UAGX_ShovelProperties::SetContactRegionVerticalLimit(double InContactRegion
 		ContactRegionVerticalLimit, bOverride_ContactRegionVerticalLimit);
 }
 
-void UAGX_ShovelProperties::SetSecondarySeparationDeadloadLimit(
-	double InSecondarySeparationDeadloadLimit)
+void UAGX_ShovelProperties::SetEnableInnerShapeCreateDynamicMass(
+	bool InEnableInnerShapeCreateDynamicMass)
 {
-	AGX_SHOVEL_SETTER_IMPL(SecondarySeparationDeadloadLimit);
+	AGX_SHOVEL_SETTER_IMPL(EnableInnerShapeCreateDynamicMass);
+}
+
+void UAGX_ShovelProperties::SetEnableParticleForceFeedback(bool InEnableParticleForceFeedback)
+{
+	AGX_SHOVEL_SETTER_IMPL(EnableParticleForceFeedback);
+}
+
+void UAGX_ShovelProperties::SetParticleInclusionMultiplier(double InParticleInclusionMultiplier)
+{
+	AGX_SHOVEL_SETTER_IMPL(ParticleInclusionMultiplier);
 }
 
 #if WITH_EDITOR
@@ -352,23 +352,24 @@ void UAGX_ShovelProperties::InitPropertyDispatcher()
 		return;
 	}
 
-	AGX_ASSET_DEFAULT_DISPATCHER(AlwaysRemoveShovelContacts);
-	AGX_ASSET_DEFAULT_DISPATCHER(EnableInnerShapeCreateDynamicMass);
-	AGX_ASSET_DEFAULT_DISPATCHER(EnableParticleForceFeedback);
-	AGX_ASSET_DEFAULT_DISPATCHER(EnableParticleFreeDeformers);
+	AGX_ASSET_DEFAULT_DISPATCHER(ToothLength);
+	AGX_ASSET_DEFAULT_DISPATCHER(ToothMinimumRadius);
+	AGX_ASSET_DEFAULT_DISPATCHER(ToothMaximumRadius);
+	AGX_ASSET_DEFAULT_DISPATCHER(NumberOfTeeth);
+	AGX_ASSET_DEFAULT_DISPATCHER(NoMergeExtensionDistance);
 	AGX_ASSET_DEFAULT_DISPATCHER(MinimumSubmergedContactLengthFraction);
 	AGX_ASSET_DEFAULT_DISPATCHER(VerticalBladeSoilMergeDistance);
-	AGX_ASSET_DEFAULT_DISPATCHER(NoMergeExtensionDistance);
-	AGX_ASSET_DEFAULT_DISPATCHER(NumberOfTeeth);
-	AGX_ASSET_DEFAULT_DISPATCHER(ToothLength);
-	AGX_ASSET_DEFAULT_DISPATCHER(ToothMaximumRadius);
-	AGX_ASSET_DEFAULT_DISPATCHER(ToothMinimumRadius);
-	AGX_ASSET_DEFAULT_DISPATCHER(ContactRegionThreshold);
-	AGX_ASSET_DEFAULT_DISPATCHER(ContactRegionVerticalLimit);
-	AGX_ASSET_DEFAULT_DISPATCHER(ParticleInclusionMultiplier);
+	AGX_ASSET_DEFAULT_DISPATCHER(SecondarySeparationDeadloadLimit);
 	AGX_ASSET_DEFAULT_DISPATCHER(PenetrationDepthThreshold);
 	AGX_ASSET_DEFAULT_DISPATCHER(PenetrationForceScaling);
+	AGX_ASSET_DEFAULT_DISPATCHER(EnableParticleFreeDeformers);
+	AGX_ASSET_DEFAULT_DISPATCHER(AlwaysRemoveShovelContacts);
 	AGX_ASSET_DEFAULT_DISPATCHER(MaximumPenetrationForce);
-	AGX_ASSET_DEFAULT_DISPATCHER(SecondarySeparationDeadloadLimit);
+	AGX_ASSET_DEFAULT_DISPATCHER(ContactRegionThreshold);
+	AGX_ASSET_DEFAULT_DISPATCHER(ContactRegionVerticalLimit);
+	AGX_ASSET_DEFAULT_DISPATCHER(EnableInnerShapeCreateDynamicMass);
+	AGX_ASSET_DEFAULT_DISPATCHER(EnableParticleForceFeedback);
+	AGX_ASSET_DEFAULT_DISPATCHER(ParticleInclusionMultiplier);
+
 }
 #endif

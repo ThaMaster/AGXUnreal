@@ -41,45 +41,50 @@ public:
 	uint8 bOverride_ContactRegionVerticalLimit : 1;
 
 	/**
-	 * Set to true if Shovel <-> Terrain contacts should always be removed.
+	 * The length of each tooth [cm].
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, BlueprintReadOnly, Category = "Contacts")
-	bool AlwaysRemoveShovelContacts {false};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Teeth")
+	FAGX_Real ToothLength {15.0};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetAlwaysRemoveShovelContacts(bool InAlwaysRemoveShovelContacts);
+	void SetToothLength(double InToothLength);
 
 	/**
-	 * Set if inner shape alone should always create dynamic mass. The alternative is to only create
-	 * dynamic mass in the inner shape when primary excavation soil wedges create mass.
+	 * Minimum radius of the shovel teeth [cm].
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
-	bool EnableInnerShapeCreateDynamicMass {true};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Teeth")
+	FAGX_Real ToothMinimumRadius {1.5};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetEnableInnerShapeCreateDynamicMass(bool InEnableInnerShapeCreateDynamicMass);
+	void SetToothMinimumRadius(double InMinimumToothRadius);
 
 	/**
-	 * Set whenever the excavation force feedback during PRIMARY excavation should be generated from
-	 * particle contacts instead of aggregate contacts.
+	 * Maximum radius of the shovel teeth [cm].
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
-	bool EnableParticleForceFeedback {false};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Teeth")
+	FAGX_Real ToothMaximumRadius {7.5};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetEnableParticleForceFeedback(bool InSetEnableParticleForceFeedback);
+	void SetToothMaximumRadius(double InMaximumToothRadius);
 
 	/**
-	 * Set to true if the shovel deformers should make particle free deformations.
-	 *
-	 * Note, if this is true all excavation modes will make particle free deformations. Even if
-	 * enableCreateDynamicMass is set to false for one or more excavation modes.
+	 * Number of teeth of the Shovel.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
-	bool EnableParticleFreeDeformers {false};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Teeth")
+	int32 NumberOfTeeth {6};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetEnableParticleFreeDeformers(bool InEnableParticleFreeDeformers);
+	void SetNumberOfTeeth(int32 InNumberOfTeeth);
+
+	/**
+	 * Set the extension outside the shovel bounding box where soil particle merging is forbidden
+	 * [cm].
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel Properties")
+	FAGX_Real NoMergeExtensionDistance {50.0};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetNoMergeExtensionDistance(double InNoMergeExtensionDistance);
 
 	/**
 	 * Set the minimum submerged cutting edge length fraction (0 to 1) that generates submerged
@@ -102,63 +107,15 @@ public:
 	void SetVerticalBladeSoilMergeDistance(double InVerticalBladeSoilMergeDistance);
 
 	/**
-	 * Set the extension outside the shovel bounding box where soil particle merging is forbidden
-	 * [cm].
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel Properties")
-	FAGX_Real NoMergeExtensionDistance {50.0};
-
-	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetNoMergeExtensionDistance(double InNoMergeExtensionDistance);
-
-	/**
-	 * Number of teeth of the Shovel.
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Teeth")
-	int32 NumberOfTeeth {6};
-
-	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetNumberOfTeeth(int32 InNumberOfTeeth);
-
-	/**
-	 * The length of each tooth [cm].
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Teeth")
-	FAGX_Real ToothLength {15.0};
-
-	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetToothLength(double InToothLength);
-
-	/**
-	 * Maximum radius of the shovel teeth [cm].
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Teeth")
-	FAGX_Real ToothMaximumRadius {7.5};
-
-	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetToothMaximumRadius(double InMaximumToothRadius);
-
-	/**
-	 * Minimum radius of the shovel teeth [cm].
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Teeth")
-	FAGX_Real ToothMinimumRadius {1.5};
-
-	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetToothMinimumRadius(double InMinimumToothRadius);
-
-	/**
-	 * The radius multiplier for extending the inclusion bound with particle radius during
-	 * post-excavation with particles in bucket [unitless].
-	 *
-	 * This will only be active post-excavation and NOT during excavation when we have active soil
-	 * wedges.
+	 * The dead-load limit where secondary separation will start to activate where the forward
+	 * direction starts to change according to the virtual separation plate created by the material
+	 * inside the shovel [unitless].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
-	FAGX_Real ParticleInclusionMultiplier {1.0};
+	FAGX_Real SecondarySeparationDeadloadLimit {0.8};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetParticleInclusionMultiplier(double InParticleInclusionMultiplier);
+	void SetSecondarySeparationDeadloadLimit(double InSecondarySeparationDeadloadLimit);
 
 	/**
 	 * Get the vertical penetration depth threshold for when the shovel tooth for penetration
@@ -186,6 +143,27 @@ public:
 	void SetPenetrationForceScaling(double InPenetrationForceScaling);
 
 	/**
+	 * Set to true if the shovel deformers should make particle free deformations.
+	 *
+	 * Note, if this is true all excavation modes will make particle free deformations. Even if
+	 * enableCreateDynamicMass is set to false for one or more excavation modes.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
+	bool EnableParticleFreeDeformers {false};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetEnableParticleFreeDeformers(bool InEnableParticleFreeDeformers);
+
+	/**
+	 * Set to true if Shovel <-> Terrain contacts should always be removed.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, BlueprintReadOnly, Category = "Contacts")
+	bool AlwaysRemoveShovelContacts {false};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetAlwaysRemoveShovelContacts(bool InAlwaysRemoveShovelContacts);
+
+	/**
 	 * The maximum limit on penetration force that the terrain will generate on the shovel [N].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
@@ -203,7 +181,7 @@ public:
 	 * By default this is computed, per Shovel, on Begin Play to be CuttingEdge.length / 10.
 	 *
 	 * Note that the Contact Region Threshold Override flag must be set first for this value to take
-	 * effect.
+	 * effect. Disabling the override flag will not restore the default value.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "Shovel Properties",
@@ -214,7 +192,7 @@ public:
 	 * Set the Contact Region Threshold.
 	 *
 	 * Note that the Contact Region Threshold Override flag must be set first for this value to take
-	 * effect.
+	 * effect. Disabling the override flag will not restore the default value.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
 	void SetContactRegionThreshold(double InContactRegionThreshold);
@@ -227,7 +205,7 @@ public:
 	 * Begin Play to be CuttingEdge.length / 10.
 	 *
 	 * Note that the Contact Region Vertical Limit Override flag must be set first for this value to
-	 * take effect.
+	 * take effect. Disabling the override flag will not restore the default value.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "Shovel Properties",
@@ -238,21 +216,43 @@ public:
 	 * Set the Contact Region Vertical Limit.
 	 *
 	 * Note that the Contact Region Vertical Limit Override flag must be set first for this value to
-	 * take effect.
+	 * take effect. Disabling the override flag will not restore the default value.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
 	void SetContactRegionVerticalLimit(double InContactRegionVerticalLimit);
 
 	/**
-	 * The dead-load limit where secondary separation will start to activate where the forward
-	 * direction starts to change according to the virtual separation plate created by the material
-	 * inside the shovel [unitless].
+	 * Set if inner shape alone should always create dynamic mass. The alternative is to only create
+	 * dynamic mass in the inner shape when primary excavation soil wedges create mass.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
-	FAGX_Real SecondarySeparationDeadloadLimit {0.8};
+	bool EnableInnerShapeCreateDynamicMass {true};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
-	void SetSecondarySeparationDeadloadLimit(double InSecondarySeparationDeadloadLimit);
+	void SetEnableInnerShapeCreateDynamicMass(bool InEnableInnerShapeCreateDynamicMass);
+
+	/**
+	 * Set whenever the excavation force feedback during PRIMARY excavation should be generated from
+	 * particle contacts instead of aggregate contacts.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
+	bool EnableParticleForceFeedback {false};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetEnableParticleForceFeedback(bool InSetEnableParticleForceFeedback);
+
+	/**
+	 * The radius multiplier for extending the inclusion bound with particle radius during
+	 * post-excavation with particles in bucket [unitless].
+	 *
+	 * This will only be active post-excavation and NOT during excavation when we have active soil
+	 * wedges.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
+	FAGX_Real ParticleInclusionMultiplier {1.0};
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	void SetParticleInclusionMultiplier(double InParticleInclusionMultiplier);
 
 	/**
 	 * Excavation settings for the primary excavation mode, when digging along the cutting

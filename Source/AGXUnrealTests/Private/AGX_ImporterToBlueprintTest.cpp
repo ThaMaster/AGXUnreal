@@ -3873,14 +3873,14 @@ bool FCheckShovelImportedCommand::Update()
 		TEXT("ContactRegionVerticalLimit"), Shovel->ShovelProperties->ContactRegionVerticalLimit,
 		AgxToUnrealDistance(13.0));
 	Test.TestEqual(
-		TEXT("ParicleInclusionMultiplier"), Shovel->ShovelProperties->ParticleInclusionMultiplier,
-		/*14.0*/ 1.0 /* AGX Dynamics 2.37.0.1 does not store/restore this value. */);
-	Test.TestEqual(
 		TEXT("EnableInnerShapeCreateDynamicMass"),
 		Shovel->ShovelProperties->EnableInnerShapeCreateDynamicMass, false);
 	Test.TestEqual(
 		TEXT("EnableParticleForceFeedback"), Shovel->ShovelProperties->EnableParticleForceFeedback,
 		true);
+	Test.TestEqual(
+		TEXT("ParicleInclusionMultiplier"), Shovel->ShovelProperties->ParticleInclusionMultiplier,
+		/*14.0*/ 1.0 /* AGX Dynamics 2.37.0.1 does not store/restore this value. */);
 
 	Test.TestEqual(
 		TEXT("Primary enabled"), Shovel->ShovelProperties->PrimaryExcavationSettings.bEnabled,

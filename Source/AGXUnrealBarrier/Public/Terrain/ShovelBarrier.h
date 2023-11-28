@@ -40,8 +40,10 @@ public:
 
 	void SetTopEdge(const FTwoVectors& TopEdge);
 	FTwoVectors GetTopEdge() const;
+
 	void SetCuttingEdge(const FTwoVectors& CuttingEdge);
 	FTwoVectors GetCuttingEdge() const;
+
 	void SetCuttingDirection(const FVector& CuttingDirection);
 	FVector GetCuttingDirection() const;
 
@@ -60,9 +62,6 @@ public:
 	void SetNoMergeExtensionDistance(double NoMergeExtensionDistance);
 	double GetNoMergeExtensionDistance() const;
 
-	void SetParticleInclusionMultiplier(double Multiplier);
-	double GetParticleInclusionMultiplier() const;
-
 	void SetMinimumSubmergedContactLengthFraction(double MinimumSubmergedContactLengthFraction);
 	double GetMinimumSubmergedContactLengthFraction() const;
 
@@ -71,9 +70,6 @@ public:
 
 	void SetSecondarySeparationDeadloadLimit(double SecondarySeparationDeadloadLimit);
 	double GetSecondarySeparationDeadloadLimit() const;
-
-	void SetInnerContactArea(double InnerContactArea);
-	double GetInnerContactArea() const;
 
 	void SetPenetrationDepthThreshold(double PenetrationDepthThreshold);
 	double GetPenetrationDepthThreshold() const;
@@ -105,6 +101,9 @@ public:
 	void SetEnable(bool Enable);
 	bool GetEnable() const;
 
+	void SetParticleInclusionMultiplier(double Multiplier);
+	double GetParticleInclusionMultiplier() const;
+
 	void SetExcavationSettingsEnabled(EAGX_ExcavationMode Mode, bool Enable);
 	bool GetExcavationSettingsEnabled(EAGX_ExcavationMode Mode) const;
 
@@ -113,6 +112,8 @@ public:
 
 	void SetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode, bool Enable);
 	bool GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode) const;
+
+	double GetInnerContactArea() const;
 
 	FRigidBodyBarrier GetRigidBody() const;
 
