@@ -77,6 +77,58 @@ void SetAndPropagateShovelProperty(
 		*this, Shovels, &PropertyName, In##PropertyName, Overriden, \
 		&UAGX_ShovelProperties::Set##PropertyName, &FShovelBarrier::Set##PropertyName)
 
+template <typename StorageT, typename ParameterT>
+void SetAndPropagateShovelExcavationProperty(
+	UAGX_ShovelProperties& Properties, TArray<TWeakObjectPtr<UAGX_ShovelComponent>>& Shovels,
+	EAGX_ExcavationMode ExcavationMode, StorageT* Storage, ParameterT NewValue,
+	bool PropagateToNative,
+	void (UAGX_ShovelProperties::*ComponentSetter)(EAGX_ExcavationMode, ParameterT),
+	void (FShovelBarrier::*BarrierSetter)(EAGX_ExcavationMode, ParameterT))
+{
+	/*
+	This implementation should follow the pattern set by SetAndPropagateShovelProperty, but
+	adapted due to the fact that the setter functions must specify which excavation mode is being
+	modified.
+
+	The general idea is that changes made to an instance should propagate to Barriers, and changes
+	made to an asset should be applied on the instance instead, if there is one.
+	*/
+	if (Properties.IsInstance())
+	{
+		*Storage = NewValue;
+		if (PropagateToNative)
+		{
+			for (TWeakObjectPtr<UAGX_ShovelComponent>& Shovel : Shovels)
+			{
+				if (Shovel.IsValid() && Shovel->HasNative())
+				{
+					(Shovel->GetNative()->*BarrierSetter)(ExcavationMode, NewValue);
+				}
+			}
+		}
+	}
+	else
+	{
+		if (Properties.GetInstance() != nullptr)
+		{
+			(Properties.GetInstance()->*ComponentSetter)(ExcavationMode, NewValue);
+		}
+		else
+		{
+			*Storage = NewValue;
+#if WITH_EDITOR
+			FAGX_ObjectUtilities::MarkAssetDirty(Properties);
+#endif
+		}
+	}
+}
+
+#define AGX_SHOVEL_SETTER_EXCAVATION_IMPL(                                              \
+	PropertyName, MemberName, ExcavationMode, ComponentSetter, BarrierSetter)           \
+	SetAndPropagateShovelExcavationProperty(                                            \
+		*this, Shovels, ExcavationMode, &PropertyName.MemberName, In##MemberName, true, \
+		&UAGX_ShovelProperties::ComponentSetter, &FShovelBarrier::BarrierSetter)
+
 void UAGX_ShovelProperties::SetToothLength(double InToothLength)
 {
 	AGX_SHOVEL_SETTER_IMPL(ToothLength);
@@ -174,6 +226,103 @@ void UAGX_ShovelProperties::SetEnableParticleForceFeedback(bool InbEnableParticl
 void UAGX_ShovelProperties::SetParticleInclusionMultiplier(double InParticleInclusionMultiplier)
 {
 	AGX_SHOVEL_SETTER_IMPL(ParticleInclusionMultiplier);
+}
+
+FAGX_ShovelExcavationSettings* UAGX_ShovelProperties::GetExcavationSettings(
+	EAGX_ExcavationMode InExcavationMode)
+{
+	switch (InExcavationMode)
+	{
+		case EAGX_ExcavationMode::Primary:
+			return &PrimaryExcavationSettings;
+		case EAGX_ExcavationMode::DeformBack:
+			return &DeformBackExcavationSettings;
+		case EAGX_ExcavationMode::DeformRight:
+			return &DeformRightExcavationSettings;
+		case EAGX_ExcavationMode::DeformLeft:
+			return &DeformLeftExcavationSettings;
+	}
+	return nullptr;
+}
+
+void UAGX_ShovelProperties::SetExcavationEnabled(
+	EAGX_ExcavationMode InExcavationMode, bool InbEnabled)
+{
+#define AGX_SHOVEL_SETTER_EXCAVATION_ENABLED(ExcavationSettings)              \
+	AGX_SHOVEL_SETTER_EXCAVATION_IMPL(                                        \
+		ExcavationSettings, bEnabled, InExcavationMode, SetExcavationEnabled, \
+		SetExcavationSettingsEnabled)
+
+	switch (InExcavationMode)
+	{
+		case EAGX_ExcavationMode::Primary:
+			AGX_SHOVEL_SETTER_EXCAVATION_ENABLED(PrimaryExcavationSettings);
+			break;
+		case EAGX_ExcavationMode::DeformBack:
+			AGX_SHOVEL_SETTER_EXCAVATION_ENABLED(DeformBackExcavationSettings);
+			break;
+		case EAGX_ExcavationMode::DeformRight:
+			AGX_SHOVEL_SETTER_EXCAVATION_ENABLED(DeformRightExcavationSettings);
+			break;
+		case EAGX_ExcavationMode::DeformLeft:
+			AGX_SHOVEL_SETTER_EXCAVATION_ENABLED(DeformLeftExcavationSettings);
+			break;
+	}
+#undef AGX_SHOVEL_SETTER_EXCAVATION_ENABLED
+}
+
+void UAGX_ShovelProperties::SetExcavationCreateDynamicMassEnabled(
+	EAGX_ExcavationMode InExcavationMode, bool InbEnableCreateDynamicMass)
+{
+#define AGX_SHOVEL_SETTER_EXCAVATION_DYNAMIC_MASS(ExcavationMode)   \
+	AGX_SHOVEL_SETTER_EXCAVATION_IMPL(                              \
+		ExcavationMode, bEnableCreateDynamicMass, InExcavationMode, \
+		SetExcavationCreateDynamicMassEnabled, SetExcavationSettingsEnableCreateDynamicMass)
+
+	switch (InExcavationMode)
+	{
+		case EAGX_ExcavationMode::Primary:
+			AGX_SHOVEL_SETTER_EXCAVATION_DYNAMIC_MASS(PrimaryExcavationSettings);
+			break;
+		case EAGX_ExcavationMode::DeformBack:
+			AGX_SHOVEL_SETTER_EXCAVATION_DYNAMIC_MASS(DeformBackExcavationSettings);
+			break;
+		case EAGX_ExcavationMode::DeformRight:
+			AGX_SHOVEL_SETTER_EXCAVATION_DYNAMIC_MASS(DeformRightExcavationSettings);
+			break;
+		case EAGX_ExcavationMode::DeformLeft:
+			AGX_SHOVEL_SETTER_EXCAVATION_DYNAMIC_MASS(DeformLeftExcavationSettings);
+			break;
+	}
+
+#undef AGX_SHOVEL_SETTER_EXCAVATION_DYNAMIC_MASS
+}
+
+void UAGX_ShovelProperties::SetExcavationForceFeedbackEnabled(
+	EAGX_ExcavationMode InExcavationMode, bool InbEnableForceFeedback)
+{
+#define AGX_SHOVEL_SETTER_EXCAVATION_FORCE_FEEDBACK(ExcavationMode)                                \
+	AGX_SHOVEL_SETTER_EXCAVATION_IMPL(                                                             \
+		ExcavationMode, bEnableForceFeedback, InExcavationMode, SetExcavationForceFeedbackEnabled, \
+		SetExcavationSettingsEnableForceFeedback)
+
+	switch (InExcavationMode)
+	{
+		case EAGX_ExcavationMode::Primary:
+			AGX_SHOVEL_SETTER_EXCAVATION_FORCE_FEEDBACK(PrimaryExcavationSettings);
+			break;
+		case EAGX_ExcavationMode::DeformBack:
+			AGX_SHOVEL_SETTER_EXCAVATION_FORCE_FEEDBACK(DeformBackExcavationSettings);
+			break;
+		case EAGX_ExcavationMode::DeformRight:
+			AGX_SHOVEL_SETTER_EXCAVATION_FORCE_FEEDBACK(DeformRightExcavationSettings);
+			break;
+		case EAGX_ExcavationMode::DeformLeft:
+			AGX_SHOVEL_SETTER_EXCAVATION_FORCE_FEEDBACK(DeformLeftExcavationSettings);
+			break;
+	}
+
+#undef AGX_SHOVEL_SETTER_EXCAVATION_FORCE_FEEDBACK
 }
 
 #if WITH_EDITOR
@@ -382,6 +531,53 @@ void UAGX_ShovelProperties::InitPropertyDispatcher()
 		[](ThisClass* This)
 		{ This->SetContactRegionVerticalLimit(This->ContactRegionVerticalLimit); });
 
+	// The excavation settings are multiple instances of a struct with multiple members. This lambda
+	// function registers property dispatchers for one instance of the struct.
+	auto RegisterExcavationSettings =
+		[&](const FName& PropertyName, EAGX_ExcavationMode ExcavationMode)
+	{
+		PropertyDispatcher.Add(
+			PropertyName, GET_MEMBER_NAME_CHECKED(FAGX_ShovelExcavationSettings, bEnabled),
+			[ExcavationMode](ThisClass* This)
+			{
+				This->SetExcavationEnabled(
+					ExcavationMode, This->GetExcavationSettings(ExcavationMode)->bEnabled);
+			});
+
+		PropertyDispatcher.Add(
+			PropertyName,
+			GET_MEMBER_NAME_CHECKED(FAGX_ShovelExcavationSettings, bEnableCreateDynamicMass),
+			[ExcavationMode](ThisClass* This)
+			{
+				This->SetExcavationCreateDynamicMassEnabled(
+					ExcavationMode,
+					This->GetExcavationSettings(ExcavationMode)->bEnableCreateDynamicMass);
+			});
+
+		PropertyDispatcher.Add(
+			PropertyName,
+			GET_MEMBER_NAME_CHECKED(FAGX_ShovelExcavationSettings, bEnableForceFeedback),
+			[ExcavationMode](ThisClass* This)
+			{
+				This->SetExcavationForceFeedbackEnabled(
+					ExcavationMode,
+					This->GetExcavationSettings(ExcavationMode)->bEnableForceFeedback);
+			});
+	};
+
+	// Call the register lambda for each of the excavation modes.
+	RegisterExcavationSettings(
+		GET_MEMBER_NAME_CHECKED(ThisClass, PrimaryExcavationSettings),
+		EAGX_ExcavationMode::Primary);
+	RegisterExcavationSettings(
+		GET_MEMBER_NAME_CHECKED(ThisClass, DeformBackExcavationSettings),
+		EAGX_ExcavationMode::DeformBack);
+	RegisterExcavationSettings(
+		GET_MEMBER_NAME_CHECKED(ThisClass, DeformRightExcavationSettings),
+		EAGX_ExcavationMode::DeformRight);
+	RegisterExcavationSettings(
+		GET_MEMBER_NAME_CHECKED(ThisClass, DeformLeftExcavationSettings),
+		EAGX_ExcavationMode::DeformLeft);
 }
 #endif
 

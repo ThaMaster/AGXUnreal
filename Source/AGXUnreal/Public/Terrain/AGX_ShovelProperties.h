@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
 #include "Terrain/AGX_ShovelExcavationSettings.h"
+#include "Terrain/AGX_ShovelEnums.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -284,6 +285,29 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel")
 	FAGX_ShovelExcavationSettings DeformLeftExcavationSettings;
+
+	FAGX_ShovelExcavationSettings* GetExcavationSettings(EAGX_ExcavationMode InExcavationMode);
+
+	/**
+	 * Whether the Shovel excavation mode associated with these settings should be creating dynamic
+	 * mass and generating force feedback or not.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
+	void SetExcavationEnabled(EAGX_ExcavationMode InExcavationMode, bool bInEnabled);
+
+	/**
+	 * Whether the Shovel excavation mode associated with these settings should create dynamic mass
+	 * or not.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
+	void SetExcavationCreateDynamicMassEnabled(EAGX_ExcavationMode InExcavationMode, bool bInEnabled);
+
+	/**
+	 * Whether the Shovel excavation mode associated with these settings should generate force
+	 * feedback from created aggregates or not.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
+	void SetExcavationForceFeedbackEnabled(EAGX_ExcavationMode InExcavationMode, bool bInEnabled);
 
 	/**
 	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.

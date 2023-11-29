@@ -57,6 +57,11 @@ namespace AGX_WithEditorWrappers
  *       - Mark the package dirty.
  *       - Support undo / redo.
  *
+ * In some places it is not possible to use this macro directly, but we still want the logic to be
+ * the same. If we decide to change the logic here then also update the following places:
+ * - SetAndPropagateShovelProperty in AGX_ShovelProperties.cpp.
+ * - SetAndPropagateShovelExcavationProperty in AGX_ShovelProperties.cpp.
+ *
  * @param PropertyName The name of the property to set. May be a StructName.MemberVariableName identifier.
  * @param InVar The new value to assign to the property.
  * @param SetFunc The name of the function to call to set the value, both on an instance and a Barrier.
