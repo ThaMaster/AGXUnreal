@@ -149,7 +149,7 @@ public:
 	 * enableCreateDynamicMass is set to false for one or more excavation modes.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
-	bool EnableParticleFreeDeformers {false};
+	bool bEnableParticleFreeDeformers {false};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
 	void SetEnableParticleFreeDeformers(bool InEnableParticleFreeDeformers);
@@ -158,7 +158,7 @@ public:
 	 * Set to true if Shovel <-> Terrain contacts should always be removed.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, BlueprintReadOnly, Category = "Contacts")
-	bool AlwaysRemoveShovelContacts {false};
+	bool bAlwaysRemoveShovelContacts {false};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
 	void SetAlwaysRemoveShovelContacts(bool InAlwaysRemoveShovelContacts);
@@ -226,7 +226,7 @@ public:
 	 * dynamic mass in the inner shape when primary excavation soil wedges create mass.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
-	bool EnableInnerShapeCreateDynamicMass {true};
+	bool bEnableInnerShapeCreateDynamicMass {true};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
 	void SetEnableInnerShapeCreateDynamicMass(bool InEnableInnerShapeCreateDynamicMass);
@@ -236,7 +236,7 @@ public:
 	 * particle contacts instead of aggregate contacts.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shovel")
-	bool EnableParticleForceFeedback {false};
+	bool bEnableParticleForceFeedback {false};
 
 	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
 	void SetEnableParticleForceFeedback(bool InSetEnableParticleForceFeedback);
@@ -369,6 +369,12 @@ public:
 	 * Should not be called on persistent assets.
 	 */
 	void UnregisterShovel(UAGX_ShovelComponent& Shovel);
+
+	// Set function aliases required by our live update macros.
+	void SetbAlwaysRemoveShovelContacts(bool InbAlwaysRemoveShovelContacts);
+	void SetbEnableParticleFreeDeformers(bool InbEnableParticleFreeDeformers);
+	void SetbEnableInnerShapeCreateDynamicMass(bool InbEnableInnerShapeCreateDynamicMass);
+	void SetbEnableParticleForceFeedback(bool InbEnableParticleForceFeedback);
 
 private:
 #if WITH_EDITOR

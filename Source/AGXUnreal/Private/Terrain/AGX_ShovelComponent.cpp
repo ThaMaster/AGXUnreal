@@ -262,16 +262,16 @@ void UAGX_ShovelComponent::CopyFrom(const FShovelBarrier& Barrier, bool ForceOve
 			Barrier.GetSecondarySeparationDeadloadLimit();
 		ShovelProperties->PenetrationDepthThreshold = Barrier.GetPenetrationDepthThreshold();
 		ShovelProperties->PenetrationForceScaling = Barrier.GetPenetrationForceScaling();
-		ShovelProperties->EnableParticleFreeDeformers = Barrier.GetEnableParticleFreeDeformers();
-		ShovelProperties->AlwaysRemoveShovelContacts = Barrier.GetAlwaysRemoveShovelContacts();
+		ShovelProperties->bEnableParticleFreeDeformers = Barrier.GetEnableParticleFreeDeformers();
+		ShovelProperties->bAlwaysRemoveShovelContacts = Barrier.GetAlwaysRemoveShovelContacts();
 		ShovelProperties->MaximumPenetrationForce = Barrier.GetMaximumPenetrationForce();
 		ShovelProperties->bOverride_ContactRegionThreshold = true;
 		ShovelProperties->ContactRegionThreshold = Barrier.GetContactRegionThreshold();
 		ShovelProperties->bOverride_ContactRegionVerticalLimit = true;
 		ShovelProperties->ContactRegionVerticalLimit = Barrier.GetContactRegionVerticalLimit();
-		ShovelProperties->EnableInnerShapeCreateDynamicMass =
+		ShovelProperties->bEnableInnerShapeCreateDynamicMass =
 			Barrier.GetEnableInnerShapeCreateDynamicMass();
-		ShovelProperties->EnableParticleForceFeedback = Barrier.GetEnableParticleForceFeedback();
+		ShovelProperties->bEnableParticleForceFeedback = Barrier.GetEnableParticleForceFeedback();
 		ShovelProperties->ParticleInclusionMultiplier = Barrier.GetParticleInclusionMultiplier();
 
 		auto CopyExcavationSettings =
@@ -598,8 +598,8 @@ bool UAGX_ShovelComponent::WritePropertiesToNative()
 		ShovelProperties->SecondarySeparationDeadloadLimit);
 	NativeBarrier.SetPenetrationDepthThreshold(ShovelProperties->PenetrationDepthThreshold);
 	NativeBarrier.SetPenetrationForceScaling(ShovelProperties->PenetrationForceScaling);
-	NativeBarrier.SetEnableParticleFreeDeformers(ShovelProperties->EnableParticleFreeDeformers);
-	NativeBarrier.SetAlwaysRemoveShovelContacts(ShovelProperties->AlwaysRemoveShovelContacts);
+	NativeBarrier.SetEnableParticleFreeDeformers(ShovelProperties->bEnableParticleFreeDeformers);
+	NativeBarrier.SetAlwaysRemoveShovelContacts(ShovelProperties->bAlwaysRemoveShovelContacts);
 	NativeBarrier.SetMaximumPenetrationForce(ShovelProperties->MaximumPenetrationForce);
 	if (ShovelProperties->bOverride_ContactRegionThreshold)
 	{
@@ -610,8 +610,8 @@ bool UAGX_ShovelComponent::WritePropertiesToNative()
 		NativeBarrier.SetContactRegionVerticalLimit(ShovelProperties->ContactRegionVerticalLimit);
 	}
 	NativeBarrier.SetEnableInnerShapeCreateDynamicMass(
-		ShovelProperties->EnableInnerShapeCreateDynamicMass);
-	NativeBarrier.SetEnableParticleForceFeedback(ShovelProperties->EnableParticleForceFeedback);
+		ShovelProperties->bEnableInnerShapeCreateDynamicMass);
+	NativeBarrier.SetEnableParticleForceFeedback(ShovelProperties->bEnableParticleForceFeedback);
 	NativeBarrier.SetParticleInclusionMultiplier(ShovelProperties->ParticleInclusionMultiplier);
 
 	auto SetExcavationSettings =

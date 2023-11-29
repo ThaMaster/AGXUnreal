@@ -473,3 +473,24 @@ void FShovelBarrier::DecrementRefCount() const
 	check(HasNative());
 	NativeRef->Native->unreference();
 }
+
+void FShovelBarrier::SetbAlwaysRemoveShovelContacts(bool InbAlwaysRemoveShovelContacts)
+{
+	SetAlwaysRemoveShovelContacts(InbAlwaysRemoveShovelContacts);
+}
+
+void FShovelBarrier::SetbEnableParticleFreeDeformers(bool InbEnableParticleFreeDeformers)
+{
+	SetEnableParticleFreeDeformers(InbEnableParticleFreeDeformers);
+}
+
+void FShovelBarrier::SetbEnableInnerShapeCreateDynamicMass(
+	bool InbEnableInnerShapeCreateDynamicMass)
+{
+	SetEnableInnerShapeCreateDynamicMass(InbEnableInnerShapeCreateDynamicMass);
+}
+
+void FShovelBarrier::SetbEnableParticleForceFeedback(bool InbEnableParticleForceFeedback)
+{
+	SetEnableParticleForceFeedback(InbEnableParticleForceFeedback);
+}

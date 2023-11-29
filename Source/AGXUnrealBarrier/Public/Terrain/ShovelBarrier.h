@@ -148,6 +148,12 @@ public:
 	void IncrementRefCount() const;
 	void DecrementRefCount() const;
 
+	// Aliases required for the live update macros to work.
+	void SetbAlwaysRemoveShovelContacts(bool InbAlwaysRemoveShovelContacts);
+	void SetbEnableParticleFreeDeformers(bool InbEnableParticleFreeDeformers);
+	void SetbEnableInnerShapeCreateDynamicMass(bool InbEnableInnerShapeCreateDynamicMass);
+	void SetbEnableParticleForceFeedback(bool InbEnableParticleForceFeedback);
+
 private:
 	FShovelBarrier(const FShovelBarrier&) = delete;
 	void operator=(const FShovelBarrier&) = delete;

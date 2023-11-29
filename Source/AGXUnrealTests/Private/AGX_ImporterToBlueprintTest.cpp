@@ -3859,10 +3859,10 @@ bool FCheckShovelImportedCommand::Update()
 	Test.TestEqual(
 		TEXT("PenetrationForceScaling"), Shovel->ShovelProperties->PenetrationForceScaling, 10.0);
 	Test.TestEqual(
-		TEXT("EnableParticleFreeDeformers"), Shovel->ShovelProperties->EnableParticleFreeDeformers,
+		TEXT("EnableParticleFreeDeformers"), Shovel->ShovelProperties->bEnableParticleFreeDeformers,
 		true);
 	Test.TestEqual(
-		TEXT("AlwaysRemoveShovelContacts"), Shovel->ShovelProperties->AlwaysRemoveShovelContacts,
+		TEXT("AlwaysRemoveShovelContacts"), Shovel->ShovelProperties->bAlwaysRemoveShovelContacts,
 		true);
 	Test.TestEqual(
 		TEXT("MaxPenetrationForce"), Shovel->ShovelProperties->MaximumPenetrationForce, 11.0);
@@ -3874,9 +3874,9 @@ bool FCheckShovelImportedCommand::Update()
 		AgxToUnrealDistance(13.0));
 	Test.TestEqual(
 		TEXT("EnableInnerShapeCreateDynamicMass"),
-		Shovel->ShovelProperties->EnableInnerShapeCreateDynamicMass, false);
+		Shovel->ShovelProperties->bEnableInnerShapeCreateDynamicMass, false);
 	Test.TestEqual(
-		TEXT("EnableParticleForceFeedback"), Shovel->ShovelProperties->EnableParticleForceFeedback,
+		TEXT("EnableParticleForceFeedback"), Shovel->ShovelProperties->bEnableParticleForceFeedback,
 		true);
 	Test.TestEqual(
 		TEXT("ParicleInclusionMultiplier"), Shovel->ShovelProperties->ParticleInclusionMultiplier,

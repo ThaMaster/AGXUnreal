@@ -130,16 +130,16 @@ void UAGX_ShovelProperties::SetPenetrationForceScaling(double InPenetrationForce
 	AGX_SHOVEL_SETTER_IMPL(PenetrationForceScaling);
 }
 
-void UAGX_ShovelProperties::SetEnableParticleFreeDeformers(bool InEnableParticleFreeDeformers)
+void UAGX_ShovelProperties::SetEnableParticleFreeDeformers(bool InbEnableParticleFreeDeformers)
 {
-	AGX_SHOVEL_SETTER_IMPL(EnableParticleFreeDeformers);
+	AGX_SHOVEL_SETTER_IMPL(bEnableParticleFreeDeformers);
 }
 
-void UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts(bool InAlwaysRemoveShovelContacts)
+void UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts(bool InbAlwaysRemoveShovelContacts)
 {
 	// AGX_SHOVEL_SETTER_IMPL(AlwaysRemoveShovelContacts);
 	SetAndPropagateShovelProperty(
-		*this, Shovels, &AlwaysRemoveShovelContacts, InAlwaysRemoveShovelContacts, true,
+		*this, Shovels, &bAlwaysRemoveShovelContacts, InbAlwaysRemoveShovelContacts, true,
 		&UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts,
 		&FShovelBarrier::SetAlwaysRemoveShovelContacts);
 }
@@ -161,14 +161,14 @@ void UAGX_ShovelProperties::SetContactRegionVerticalLimit(double InContactRegion
 }
 
 void UAGX_ShovelProperties::SetEnableInnerShapeCreateDynamicMass(
-	bool InEnableInnerShapeCreateDynamicMass)
+	bool InbEnableInnerShapeCreateDynamicMass)
 {
-	AGX_SHOVEL_SETTER_IMPL(EnableInnerShapeCreateDynamicMass);
+	AGX_SHOVEL_SETTER_IMPL(bEnableInnerShapeCreateDynamicMass);
 }
 
-void UAGX_ShovelProperties::SetEnableParticleForceFeedback(bool InEnableParticleForceFeedback)
+void UAGX_ShovelProperties::SetEnableParticleForceFeedback(bool InbEnableParticleForceFeedback)
 {
-	AGX_SHOVEL_SETTER_IMPL(EnableParticleForceFeedback);
+	AGX_SHOVEL_SETTER_IMPL(bEnableParticleForceFeedback);
 }
 
 void UAGX_ShovelProperties::SetParticleInclusionMultiplier(double InParticleInclusionMultiplier)
@@ -362,13 +362,13 @@ void UAGX_ShovelProperties::InitPropertyDispatcher()
 	AGX_ASSET_DEFAULT_DISPATCHER(SecondarySeparationDeadloadLimit);
 	AGX_ASSET_DEFAULT_DISPATCHER(PenetrationDepthThreshold);
 	AGX_ASSET_DEFAULT_DISPATCHER(PenetrationForceScaling);
-	AGX_ASSET_DEFAULT_DISPATCHER(EnableParticleFreeDeformers);
-	AGX_ASSET_DEFAULT_DISPATCHER(AlwaysRemoveShovelContacts);
+	AGX_ASSET_DEFAULT_DISPATCHER(bEnableParticleFreeDeformers);
+	AGX_ASSET_DEFAULT_DISPATCHER(bAlwaysRemoveShovelContacts);
 	AGX_ASSET_DEFAULT_DISPATCHER(MaximumPenetrationForce);
 	AGX_ASSET_DEFAULT_DISPATCHER(ContactRegionThreshold);
 	AGX_ASSET_DEFAULT_DISPATCHER(ContactRegionVerticalLimit);
-	AGX_ASSET_DEFAULT_DISPATCHER(EnableInnerShapeCreateDynamicMass);
-	AGX_ASSET_DEFAULT_DISPATCHER(EnableParticleForceFeedback);
+	AGX_ASSET_DEFAULT_DISPATCHER(bEnableInnerShapeCreateDynamicMass);
+	AGX_ASSET_DEFAULT_DISPATCHER(bEnableParticleForceFeedback);
 	AGX_ASSET_DEFAULT_DISPATCHER(ParticleInclusionMultiplier);
 
 	// When the user toggles an override flag then call the corresponding Set function. The
@@ -384,3 +384,21 @@ void UAGX_ShovelProperties::InitPropertyDispatcher()
 
 }
 #endif
+
+void UAGX_ShovelProperties::SetbAlwaysRemoveShovelContacts(bool InbAlwaysRemoveShovelContacts)
+{
+	SetAlwaysRemoveShovelContacts(InbAlwaysRemoveShovelContacts);
+}
+void UAGX_ShovelProperties::SetbEnableParticleFreeDeformers(bool InbEnableParticleFreeDeformers)
+{
+	SetEnableParticleFreeDeformers(InbEnableParticleFreeDeformers);
+}
+void UAGX_ShovelProperties::SetbEnableInnerShapeCreateDynamicMass(
+	bool InbEnableInnerShapeCreateDynamicMass)
+{
+	SetEnableInnerShapeCreateDynamicMass(InbEnableInnerShapeCreateDynamicMass);
+}
+void UAGX_ShovelProperties::SetbEnableParticleForceFeedback(bool InbEnableParticleForceFeedback)
+{
+	SetEnableParticleForceFeedback(InbEnableParticleForceFeedback);
+}
