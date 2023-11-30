@@ -189,11 +189,7 @@ void UAGX_ShovelProperties::SetEnableParticleFreeDeformers(bool InbEnableParticl
 
 void UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts(bool InbAlwaysRemoveShovelContacts)
 {
-	// AGX_SHOVEL_SETTER_IMPL(AlwaysRemoveShovelContacts);
-	SetAndPropagateShovelProperty(
-		*this, Shovels, &bAlwaysRemoveShovelContacts, InbAlwaysRemoveShovelContacts, true,
-		&UAGX_ShovelProperties::SetAlwaysRemoveShovelContacts,
-		&FShovelBarrier::SetAlwaysRemoveShovelContacts);
+	AGX_SHOVEL_SETTER_IMPL(bAlwaysRemoveShovelContacts);
 }
 
 void UAGX_ShovelProperties::SetMaximumPenetrationForce(double InMaximumPenetrationForce)
