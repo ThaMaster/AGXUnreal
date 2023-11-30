@@ -16,6 +16,7 @@
 #include "ActorEditorUtils.h"
 #include "Editor.h"
 #include "EditorViewportClient.h"
+#include "Framework/Application/SlateApplication.h"
 #include "SceneManagement.h"
 #include "ScopedTransaction.h"
 #include "UnrealEngine.h"

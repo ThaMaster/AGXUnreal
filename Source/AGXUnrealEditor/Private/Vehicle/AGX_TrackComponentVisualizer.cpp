@@ -9,11 +9,14 @@
 #include "Vehicle/AGX_TrackComponent.h"
 
 // Unreal Engine includes.
-#include "Misc/EngineVersionComparison.h"
 #include "DrawDebugHelpers.h"
+#include "Engine.h"
+#include "Materials/Material.h"
+#include "Misc/EngineVersionComparison.h"
 #if !UE_VERSION_OLDER_THAN(5, 2, 0)
 #include "Materials/MaterialRenderProxy.h"
 #endif
+#include "SceneManagement.h"
 
 // \note Material proxys are used below for drawing solids. If the material proxy handling causes
 //       any problems you can turn them off by removing this define.

@@ -10,18 +10,34 @@
 
 #include "AGX_ShovelExcavationSettings.generated.h"
 
-
-USTRUCT()
+/**
+ * Shovel settings that apply per excavation mode, i.e. primary, back, left, and right.
+ *
+ * Held by AGX Shovel Properties assets.
+ */
+USTRUCT(BlueprintType)
 struct FAGX_ShovelExcavationSettings
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
+	/**
+	 * Whether the Shovel excavation mode associated with these settings should be creating dynamic
+	 * mass and generating force feedback or not.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel Excavation Settings")
 	bool bEnabled {true};
 
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
+	/**
+	 * Whether the Shovel excavation mode associated with these settings should create dynamic mass
+	 * or not.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel Excavation Settings")
 	bool bEnableCreateDynamicMass {true};
 
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel Excavation Settings")
+	/**
+	 * Whether the Shovel excavation mode associated with these settings should generate force
+	 * feedback from created aggregates or not.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel Excavation Settings")
 	bool bEnableForceFeedback {true};
 };

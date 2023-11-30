@@ -2,6 +2,9 @@
 
 #pragma once
 
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
 namespace agx
 {
 	class BallJoint;

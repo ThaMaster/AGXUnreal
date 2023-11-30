@@ -27,7 +27,7 @@ class FRigidBodyBarrier;
  * Whether the constraint itself, the Rigid Body or some other Actor or Component should be used
  * to define the attachment frame can be selected by changing the Frame Defining Source accordingly.
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 {
 	GENERATED_BODY()
@@ -41,10 +41,10 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	/// reference and also keep some kind of component identifier? Should we use
 	/// FComponentRef here?
 
-	UPROPERTY(EditAnywhere, Category = "Rigid Body")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rigid Body")
 	FAGX_RigidBodyReference RigidBody;
 
-	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Frame Transformation")
 	TEnumAsByte<enum EAGX_FrameDefiningSource> FrameDefiningSource =
 		EAGX_FrameDefiningSource::Constraint;
 
@@ -59,18 +59,19 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * constraints are using that Constraint Frame Component.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "Frame Transformation",
+		EditAnywhere, BlueprintReadWrite, Category = "Frame Transformation",
 		Meta = (EditCondition = "FrameDefiningSource == EAGX_FrameDefiningSource::Other"))
 	FAGX_SceneComponentReference FrameDefiningComponent;
+	// TODO Consider using FAGX_ComponentReference instead of FAGX_SceneComponentReference.
 
 	/** Frame location relative to either the Constraint, the Rigid Body Actor or from the Frame
 	 * Defining Actor. */
-	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Frame Transformation")
 	FVector LocalFrameLocation {FVector::ZeroVector};
 
 	/** Frame rotation relative to to either the Constraint, the Rigid Body Actor or from the Frame
 	 * Defining Actor. */
-	UPROPERTY(EditAnywhere, Category = "Frame Transformation")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Frame Transformation")
 	FRotator LocalFrameRotation {FRotator::ZeroRotator};
 
 	UAGX_RigidBodyComponent* GetRigidBody() const;

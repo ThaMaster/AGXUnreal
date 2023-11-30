@@ -41,10 +41,13 @@
 #include "Engine/GameEngine.h"
 #include "Engine/Selection.h"
 #include "Engine/StaticMesh.h"
+#include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerController.h"
+#include "HAL/FileManager.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/Char.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/MessageDialog.h"
 #include "ObjectTools.h"
 #include "PackageTools.h"
 #include "RawMesh.h"
@@ -53,6 +56,7 @@
 #include "UObject/SavePackage.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectGlobals.h"
+#include "UObject/UObjectIterator.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
@@ -899,16 +903,16 @@ AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	/// being dependent on its name.
 	UAGX_ConstraintComponent* Constraint = NewActor->GetConstraintComponent();
 	Constraint->BodyAttachment1.RigidBody.OwningActor = RigidBody1->GetOwner();
-	Constraint->BodyAttachment1.RigidBody.BodyName = RigidBody1->GetFName();
+	Constraint->BodyAttachment1.RigidBody.Name = RigidBody1->GetFName();
 	if (RigidBody2 != nullptr)
 	{
 		Constraint->BodyAttachment2.RigidBody.OwningActor = RigidBody2->GetOwner();
-		Constraint->BodyAttachment2.RigidBody.BodyName = RigidBody2->GetFName();
+		Constraint->BodyAttachment2.RigidBody.Name = RigidBody2->GetFName();
 	}
 	else
 	{
 		Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
-		Constraint->BodyAttachment2.RigidBody.BodyName = NAME_None;
+		Constraint->BodyAttachment2.RigidBody.Name = NAME_None;
 	}
 
 	NewActor->FinishSpawning(FTransform::Identity, true);

@@ -12,8 +12,12 @@
 #include <agx/MaterialLibrary.h>
 #include <agx/MaterialReaderWriter.h>
 #include <agxTerrain/TerrainMaterial.h>
+#include <agxTerrain/TerrainMaterialLibrary.h>
 #include <agxUtil/agxUtil.h>
 #include <EndAGXIncludes.h>
+
+// Unreal Engine includes.
+#include "Misc/Paths.h"
 
 namespace MaterialLibraryBarrier_helpers
 {

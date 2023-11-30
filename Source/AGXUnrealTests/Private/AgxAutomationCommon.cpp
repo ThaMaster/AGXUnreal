@@ -10,6 +10,7 @@
 #include "Utilities/AGX_ImportUtilities.h"
 
 // Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
 #include "Editor.h"
 #include "Engine/Blueprint.h"
 #include "Engine/Engine.h"
@@ -450,6 +451,15 @@ TArray<FString> AgxAutomationCommon::GetReferencedStaticMeshAssets(
 	}
 
 	return Assets;
+}
+
+void AgxAutomationCommon::AddExpectedError(FAutomationTestBase& Test, const FString& Error)
+{
+	Test.AddExpectedError(
+				Error,
+				EAutomationExpectedErrorFlags::Contains, 0);
+	Test.AddError(Error);
+
 }
 
 bool AgxAutomationCommon::FCheckWorldsCommand::Update()

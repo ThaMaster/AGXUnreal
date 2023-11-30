@@ -23,7 +23,11 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
+#include "HAL/FileManager.h"
 #include "Misc/AutomationTest.h"
+#include "MaterialTypes.h"
+#include "Materials/MaterialInterface.h"
 #include "Tests/AutomationCommon.h"
 #include "Tests/AutomationEditorCommon.h"
 
@@ -716,7 +720,7 @@ bool FSynchronizeLargeModelCommand::Update()
 			"SphereGeometryToChange location", AgxToUnrealDisplacement(0.0, 1.5, 0.0),
 			ShapeToChange->GetRelativeLocation());
 		Test.TestEqual(
-			"SphereGeometryToChange radius", ShapeToChange->GetRadius(), AgxToUnrealDistance(0.25));
+			"SphereGeometryToChange radius", ShapeToChange->GetRadius(), AgxToUnrealDistance(0.25f));
 		Test.TestEqual("SharedMaterial roughness", ShapeMat->GetRoughness(), 0.23);
 		Test.TestEqual(
 			"SphereGeometryToChange num collision groups", ShapeToChange->CollisionGroups.Num(), 3);
@@ -923,7 +927,7 @@ bool FSynchronizeLargeModelCommand::Update()
 			"HingeToChange Compliance", Constraint->GetCompliance(EGenericDofIndex::Translational1),
 			102.0);
 		Test.TestEqual(
-			"HingeToChange Body1", Constraint->BodyAttachment1.RigidBody.BodyName,
+			"HingeToChange Body1", Constraint->BodyAttachment1.RigidBody.Name,
 			FName("BodyWithNewName"));
 	}
 
@@ -965,11 +969,11 @@ bool FSynchronizeLargeModelCommand::Update()
 		}
 
 		Test.TestEqual(
-			"NewHinge Body1", Constraint->BodyAttachment1.RigidBody.BodyName,
+			"NewHinge Body1", Constraint->BodyAttachment1.RigidBody.Name,
 			FName("TrimeshBodyToGainGeom"));
 
 		Test.TestEqual(
-			"NewHinge Body2", Constraint->BodyAttachment2.RigidBody.BodyName,
+			"NewHinge Body2", Constraint->BodyAttachment2.RigidBody.Name,
 			FName("TrimeshBodyToLooseGeom"));
 	}
 

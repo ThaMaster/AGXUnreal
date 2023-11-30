@@ -7,8 +7,9 @@
 #include "AGX_ImportSettings.h"
 
 // Unreal Engine includes.
+#include "Styling/SlateTypes.h"
 #include "Widgets/SCompoundWidget.h"
-
+#include "Widgets/Layout/SBorder.h"
 
 
 class SAGX_ImportDialogBase : public SCompoundWidget
@@ -26,7 +27,7 @@ public:
 
 protected:
 	TSharedRef<SWidget> CreateBrowseFileGui();
-	TSharedRef<SBorder> CreateAGXFileGui();	
+	TSharedRef<SBorder> CreateAGXFileGui();
 	TSharedRef<SWidget> CreateIgnoreDisabledTrimeshGui();
 
 	FReply OnBrowseFileButtonClicked();

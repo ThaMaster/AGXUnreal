@@ -2,11 +2,13 @@
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "UObject/Class.h"
 
 /** Specifies what type of import is being performed. */
 UENUM()
-enum EAGX_ImportType
+enum class EAGX_ImportType : uint8
 {
 	/** Imported type is Invalid. */
 	Invalid,

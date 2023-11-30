@@ -33,8 +33,8 @@ bool FAGX_TrackWheel::GetTransformRelativeToBody(FVector& RelPosition, FQuat& Re
 				TEXT("TrackWheel failed to find the Frame Defining Component '%s' in '%s'. "
 					 "The properties RelativeLocation and RelativeRotation will be interpreted as "
 					 "relative to the Rigid Body Component instead."),
-				*FrameDefiningComponent.SceneComponentName.ToString(),
-				*GetNameSafe(FrameDefiningComponent.GetOwningActor()));
+				*FrameDefiningComponent.Name.ToString(),
+				*GetNameSafe(FrameDefiningComponent.OwningActor));
 		}
 		else
 		{

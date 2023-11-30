@@ -16,6 +16,7 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "Input/Reply.h"
 #include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ModelSourceComponentCustomization"

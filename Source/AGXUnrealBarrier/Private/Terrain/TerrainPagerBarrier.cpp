@@ -1,6 +1,7 @@
 #include "Terrain/TerrainPagerBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
 #include "AGX_Check.h"
 #include "RigidBodyBarrier.h"
@@ -35,9 +36,10 @@ FTerrainPagerBarrier::~FTerrainPagerBarrier()
 
 namespace TerrainPagerBarrier_helpers
 {
-	bool DoesExistModifiedHeights(const TerrainPager::TileAttachmentPtrVector& ActiveTiles)
+	bool DoesExistModifiedHeights(
+		const agxTerrain::TerrainPager::TileAttachmentPtrVector& ActiveTiles)
 	{
-		for (TerrainPager::TileAttachments* Tile : ActiveTiles)
+		for (agxTerrain::TerrainPager::TileAttachments* Tile : ActiveTiles)
 		{
 			if (Tile == nullptr || Tile->m_terrainTile == nullptr)
 				continue;
@@ -51,9 +53,9 @@ namespace TerrainPagerBarrier_helpers
 		return false;
 	}
 
-	void SetCanCollide(const TerrainPager::TileAttachmentPtrVector& ActiveTiles, bool bCanCollide)
+	void SetCanCollide(const agxTerrain::TerrainPager::TileAttachmentPtrVector& ActiveTiles, bool bCanCollide)
 	{
-		for (TerrainPager::TileAttachments* Tile : ActiveTiles)
+		for (agxTerrain::TerrainPager::TileAttachments* Tile : ActiveTiles)
 		{
 			if (Tile == nullptr || Tile->m_terrainTile == nullptr)
 				continue;
@@ -178,6 +180,16 @@ bool FTerrainPagerBarrier::AddRigidBody(
 		ConvertDistanceToAGX(PreloadRadius));
 }
 
+bool FTerrainPagerBarrier::SetTileLoadRadii(
+	FRigidBodyBarrier& Body, double RequiredRadius, double PreloadRadius)
+{
+	check(HasNative());
+	check(Body.HasNative());
+	return NativeRef->Native->setTileLoadRadiuses(
+		Body.GetNative()->Native, ConvertDistanceToAGX(RequiredRadius),
+		ConvertDistanceToAGX(PreloadRadius));
+}
+
 FParticleData FTerrainPagerBarrier::GetParticleData() const
 {
 	using namespace agxTerrain;
@@ -209,7 +221,7 @@ FParticleData FTerrainPagerBarrier::GetParticleData() const
 size_t FTerrainPagerBarrier::GetNumParticles() const
 {
 	check(HasNative());
-	const TerrainPager::TileAttachmentPtrVector ActiveTiles =
+	const agxTerrain::TerrainPager::TileAttachmentPtrVector ActiveTiles =
 		NativeRef->Native->getActiveTileAttachments();
 
 	if (ActiveTiles.size() == 0)
@@ -231,7 +243,7 @@ TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(
 	check(HasNative());
 
 	TArray<std::tuple<int32, int32>> ModifiedVertices;
-	const TerrainPager::TileAttachmentPtrVector ActiveTiles =
+	const agxTerrain::TerrainPager::TileAttachmentPtrVector ActiveTiles =
 		NativeRef->Native->getActiveTileAttachments();
 
 	if (!DoesExistModifiedHeights(ActiveTiles))
@@ -248,7 +260,7 @@ TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(
 	TPFrame->setRotate(NativeRef->Native->getTileSpecification().getReferenceRotation());
 	TPFrame->setTranslate(NativeRef->Native->getTileSpecification().getReferencePoint());
 
-	for (TerrainPager::TileAttachments* Tile : ActiveTiles)
+	for (agxTerrain::TerrainPager::TileAttachments* Tile : ActiveTiles)
 	{
 		if (Tile == nullptr || Tile->m_terrainTile == nullptr)
 			continue;
@@ -300,12 +312,12 @@ TArray<FTransform> FTerrainPagerBarrier::GetActiveTileTransforms() const
 	if (!HasNative())
 		return TileTransforms;
 
-	const TerrainPager::TileAttachmentPtrVector ActiveTiles =
+	const agxTerrain::TerrainPager::TileAttachmentPtrVector ActiveTiles =
 		NativeRef->Native->getActiveTileAttachments();
 
 	TileTransforms.Reserve(ActiveTiles.size());
 
-	for (TerrainPager::TileAttachments* Tile : ActiveTiles)
+	for (agxTerrain::TerrainPager::TileAttachments* Tile : ActiveTiles)
 	{
 		if (Tile == nullptr || Tile->m_terrainTile == nullptr)
 			continue;

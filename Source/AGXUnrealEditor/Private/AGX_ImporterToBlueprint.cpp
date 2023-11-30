@@ -50,6 +50,8 @@
 #include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
 #include "SimulationObjectCollection.h"
+#include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
@@ -65,7 +67,6 @@
 #include "ActorFactories/ActorFactoryEmptyActor.h"
 #include "AssetSelection.h"
 #include "AssetToolsModule.h"
-#include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Editor.h"
 #include "FileHelpers.h"
@@ -75,6 +76,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/ScopedSlowTask.h"
 #include "PackageTools.h"
+#include "Subsystems/AssetEditorSubsystem.h"
 #include "UObject/Package.h"
 #include "UObject/SavePackage.h"
 
@@ -478,6 +480,18 @@ namespace
 		return Success;
 	}
 
+	bool AddShovels(
+		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
+		FAGX_SimObjectsImporterHelper& Helper)
+	{
+		bool bSuccess = true;
+		for (const auto& Shovel : SimObjects.GetShovels())
+		{
+			bSuccess &= Helper.InstantiateShovel(Shovel, ImportedActor) != nullptr;
+		}
+		return bSuccess;
+	}
+
 	bool AddObserverFrames(
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
 		FAGX_SimObjectsImporterHelper& Helper)
@@ -497,7 +511,7 @@ namespace
 		AActor& ImportedActor, const FSimulationObjectCollection& SimObjects,
 		FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FScopedSlowTask ImportTask(105.f, LOCTEXT("ImportModel", "Importing model"), true);
+		FScopedSlowTask ImportTask(110.f, LOCTEXT("ImportModel", "Importing model"), true);
 		ImportTask.MakeDialog();
 		bool Success = true;
 
@@ -534,6 +548,9 @@ namespace
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Reading Observer Frames"));
 		Success &= AddObserverFrames(ImportedActor, SimObjects, Helper);
+
+		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Reading Shovels"));
+		Success &= AddShovels(ImportedActor, SimObjects, Helper);
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Finalizing Import"));
 		Helper.InstantiateModelSourceComponent(ImportedActor);
@@ -992,8 +1009,10 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					else
 					{
 						UE_LOG(
-							LogAGX, Error, TEXT("Found Node: '%s' with unsupported type."),
-							*Node->GetName());
+							LogAGX, Error,
+							TEXT("SCSNodeCollection found constraint node: '%s' with unsupported "
+								 "type %s."),
+							*Node->GetName(), *Component->GetClass()->GetName());
 						AGX_CHECK(false);
 					}
 				}
@@ -1055,6 +1074,12 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					if (Ob->ImportGuid.IsValid())
 						ObserverFrames.Add(Ob->ImportGuid, Node);
 				}
+				else if (auto Shovel = Cast<UAGX_ShovelComponent>(Component))
+				{
+					AGX_CHECK(!Shovels.Contains(Shovel->ImportGuid))
+					if (Shovel->ImportGuid.IsValid())
+						Shovels.Add(Shovel->ImportGuid, Node);
+				}
 				else if (auto Wi = Cast<UAGX_WireComponent>(Component))
 				{
 					// Not supported, will be ignored.
@@ -1068,8 +1093,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 					// We should never encounter a Component type that does not match any of the
 					// above.
 					UE_LOG(
-						LogAGX, Warning, TEXT("Found Node: '%s' with unsupported type."),
-						*Node->GetName());
+						LogAGX, Warning,
+						TEXT("SCSNodeCollection found node '%s' with unsupported type %s."),
+						*Node->GetName(), *Component->GetClass()->GetName());
 					AGX_CHECK(false);
 				}
 			}
@@ -1094,6 +1120,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		TMap<FGuid, USCS_Node*> LockConstraints;
 		TMap<FGuid, USCS_Node*> TwoBodyTires;
 		TMap<FGuid, USCS_Node*> ObserverFrames;
+		TMap<FGuid, USCS_Node*> Shovels;
 
 		// Guid is the AGX Dynamics shape (Trimesh) guid.
 		TMap<FGuid, USCS_Node*> CollisionStaticMeshComponents;
@@ -1770,6 +1797,61 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
+	void AddOrUpdateShovels(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
+		const FAGX_SynchronizeModelSettings& Settings)
+	{
+		for (const FShovelBarrier& ShovelBarrier : SimulationObjects.GetShovels())
+		{
+			const FGuid Guid = ShovelBarrier.GetGuid();
+			USCS_Node* ShovelNode = SCSNodes.Shovels.FindRef(Guid);
+			if (ShovelNode == nullptr)
+			{
+				ShovelNode = BaseBP.SimpleConstructionScript->CreateNode(
+					UAGX_ShovelComponent::StaticClass(),
+					FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+				SCSNodes.Shovels.Add(Guid, ShovelNode);
+			}
+
+			UAGX_ShovelComponent* ShovelComponent =
+				Cast<UAGX_ShovelComponent>(ShovelNode->ComponentTemplate);
+			if (ShovelComponent == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("While synchronizing shovels, found shovel SCS Node '%s' that does not "
+						 "have a shovel template."),
+					*ShovelNode->GetName());
+				continue;
+			}
+
+			FGuid BodyGuid = ShovelBarrier.GetRigidBody().GetGuid();
+			USCS_Node* BodyNode = SCSNodes.RigidBodies.FindRef(BodyGuid);
+			UAGX_RigidBodyComponent* BodyComponent = nullptr;
+			FString BaseName;
+			if (BodyNode != nullptr)
+			{
+				// todo What if the Shovel Node already had a different parent? That will happen
+				// when a shovel is moved from one Rigid Body to another. How do we support that?
+				// Doesn't seem to be a way to find the current parent of the Shovel Node, other
+				// than looping through all children of all nodes in the entire Blueprint.
+				if (!BodyNode->GetChildNodes().Contains(ShovelNode))
+				{
+					BodyNode->AddChildNode(ShovelNode);
+				}
+				BodyComponent = Cast<UAGX_RigidBodyComponent>(BodyNode->ComponentTemplate);
+				BaseName =
+					BodyComponent != nullptr ? BodyComponent->GetName() : FString("Bodiless");
+				BaseName.RemoveFromEnd(UActorComponent::ComponentTemplateNameSuffix);
+			}
+
+			Helper.UpdateShovel(
+				ShovelBarrier, *ShovelComponent, BaseName, BodyComponent,
+				Settings.bForceOverwriteProperties);
+		}
+	}
+
 	void AddOrUpdateModelSourceComponent(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper)
 	{
@@ -1810,7 +1892,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		const FSimulationObjectCollection& SimulationObjects,
 		const FAGX_SynchronizeModelSettings& Settings, FAGX_SimObjectsImporterHelper& Helper)
 	{
-		FScopedSlowTask ImportTask(105.f, LOCTEXT("AddOrUpdateAll", "Adding new data"), true);
+		FScopedSlowTask ImportTask(110.f, LOCTEXT("AddOrUpdateAll", "Adding new data"), true);
 		ImportTask.MakeDialog();
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Adding data"));
@@ -1854,6 +1936,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		ImportTask.EnterProgressFrame(5.f, FText::FromString("Synchronizing Observer Frames"));
 		AddOrUpdateObserverFrames(BaseBP, SCSNodes, SimulationObjects, Helper, Settings);
+
+		ImportTask.EnterProgressFrame(5.0f, FText::FromString("Synchronizing Shovels"));
+		AddOrUpdateShovels(BaseBP, SCSNodes, SimulationObjects, Helper, Settings);
 
 		ImportTask.EnterProgressFrame(
 			5.f, FText::FromString("Synchronizing Model Source Component"));
@@ -2038,6 +2123,21 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		}
 	}
 
+	void DeleteRemovedShovels(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
+		const FSimulationObjectCollection& SimulationObjects)
+	{
+		const TArray<FGuid> BarrierGuids = GetGuidsFromBarriers(SimulationObjects.GetShovels());
+		for (auto It = SCSNodes.Shovels.CreateIterator(); It; ++It)
+		{
+			if (!BarrierGuids.Contains(It->Key))
+			{
+				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
+				It.RemoveCurrent();
+			}
+		}
+	}
+
 	/*
 	 * Here follows a set of functions that deal with removing assets from the model import
 	 * directory. Assets are deleted either because the corresponding AGX Dynamics object no longer
@@ -2214,6 +2314,65 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			if (!InSimulation.Contains(Guid))
 			{
 				// Not part of the current import data, delete the asset.
+				AssetsToDelete.Add(Asset);
+			}
+		}
+	}
+
+	void CollectRemovedShovelProperties(
+		SCSNodeCollection& SCSNodes, const FSimulationObjectCollection& SimulationObjects,
+		FAGX_SimObjectsImporterHelper& Helper, TArray<UObject*>& AssetsToDelete)
+	{
+		// Find the Shovel Properties assets that still exists in the simulation, i.e., that should
+		// not be removed. We find them by first finding Shovel SCS nodes that still have a
+		// corresponding Shovel Barrier.
+		TSet<UAGX_ShovelProperties*> AssetsToKeep;
+		TArray<FGuid> Guids = GetGuidsFromBarriers(SimulationObjects.GetShovels());
+		for (const FGuid& Guid : Guids)
+		{
+			USCS_Node* Node = SCSNodes.Shovels.FindRef(Guid);
+			if (Node == nullptr)
+			{
+				// The in-simulation shovel is brand new, cannot have a Shovel Properties asset yet.
+				continue;
+			}
+
+			UAGX_ShovelComponent* Component = Cast<UAGX_ShovelComponent>(Node->ComponentTemplate);
+			if (Component == nullptr)
+			{
+				// Should never get here.
+				continue;
+			}
+
+			if (Component->ShovelProperties->ImportGuid == Guid)
+			{
+				AssetsToKeep.Add(Component->ShovelProperties);
+			}
+			else
+			{
+				// Imported Shovel Properties have the same Import GUID as the imported Shovel that
+				// the Shovel Properties data was read from. The fact that we end up here means that
+				// a Shovel Component in the base Blueprint has been edited. Changes to the base
+				// Blueprint should be overwritten on synchronize. By clearing the Shovel Properties
+				// pointer here we ensure that the asset is recreated later, in UpdateShovel. If the
+				// asset belongs to another Shovel that still exists then that shovel will mark the
+				// asset for keeping, if that shovel still references it. If it does not then that
+				// shovel will also recreates its Shovel Properties asset in the same way.
+				Component->ShovelProperties = nullptr;
+			}
+		}
+
+		// Find all Shovel Properties assets.
+		const FString ShovelPropertiesDirPath = GetImportDirPath(
+			Helper, FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName());
+		TArray<UAGX_ShovelProperties*> Assets =
+			FAGX_EditorUtilities::FindAssets<UAGX_ShovelProperties>(ShovelPropertiesDirPath);
+
+		// Mark for deletion any asset that exists but shouldn't be kept.
+		for (UAGX_ShovelProperties* Asset : Assets)
+		{
+			if (!AssetsToKeep.Contains(Asset))
+			{
 				AssetsToDelete.Add(Asset);
 			}
 		}
@@ -2484,6 +2643,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		TSet<UMaterialInterface*> RenderMaterialsToDelete =
 			CollectRemovedRenderMaterialAssets(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
 		CollectRemovedShapeMaterialAssets(SimulationObjects, Helper, AssetsToDelete);
+		CollectRemovedShovelProperties(SCSNodes, SimulationObjects, Helper, AssetsToDelete);
 
 		// Currently do not support model synchronization of Terrain, but when we do implement
 		// Terrain Material removed asset deletion here.
@@ -2531,6 +2691,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		DeleteRemovedConstraints(BaseBP, SCSNodes, SimulationObjects);
 		DeleteRemovedTireModels(BaseBP, SCSNodes, SimulationObjects);
 		DeleteRemovedObserverFrames(BaseBP, SCSNodes, SimulationObjects);
+		DeleteRemovedShovels(BaseBP, SCSNodes, SimulationObjects);
 
 		// The fact that we compile the Blueprint here is important, and the reason complicated.
 		// Apparently, when removing SCS Nodes, their Component Template (and archetype instances)
@@ -2579,6 +2740,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		SetUnnamedNameForAll(SCSNodes.LockConstraints);
 		SetUnnamedNameForAll(SCSNodes.TwoBodyTires);
 		SetUnnamedNameForAll(SCSNodes.ObserverFrames);
+		SetUnnamedNameForAll(SCSNodes.Shovels);
 
 		SetUnnamedName(SCSNodes.CollisionGroupDisablerComponent);
 		SetUnnamedName(SCSNodes.ContactMaterialRegistrarComponent);

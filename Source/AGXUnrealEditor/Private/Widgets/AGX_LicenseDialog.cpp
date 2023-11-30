@@ -9,7 +9,11 @@
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
+#include "Misc/MessageDialog.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SComboBox.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "SAGX_LicenseDialog"
 
@@ -82,7 +86,7 @@ void SAGX_LicenseDialog::Construct(const FArguments& InArgs)
 				[
 					CreateLicenseServiceGui()
 				]
-			]	
+			]
 		]
 	];
 	// clang-format on
@@ -352,7 +356,7 @@ TSharedRef<SWidget> SAGX_LicenseDialog::CreateLicenseInfoGui()
 				+ SVerticalBox::Slot()
 				.AutoHeight()
 				[
-					SNew(SComboBox<TSharedPtr<FString>>)							
+					SNew(SComboBox<TSharedPtr<FString>>)
 					.OptionsSource(&LicenseData.EnabledModules)
 					.OnGenerateWidget_Lambda([=](TSharedPtr<FString> Item)
 					{

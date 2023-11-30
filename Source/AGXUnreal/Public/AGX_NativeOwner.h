@@ -26,18 +26,19 @@ class UActorComponent;
  * Instance Data.
  *
  * We use uint64 here since that is big enough for the platforms we support so far. It may be better
- * to use UPTRINT, which is the unreal engine equivalent of the standard library uintptr_t. We
+ * to use UPTRINT, which is the Unreal Engine equivalent of the standard library uintptr_t. We
  * currently don't because first we want to make really sure that these bits won't travel between
- * machines somehow.
+ * machines somehow. Also not sure if UPTRINT is supported by Unreal Engine's serialization, which
+ * I believe is a requirement for use with Component Instance Data.
  *
  * The class implementing this interface may chose to do explicit reference counting of the AGX
- * Dynamics object for the lifetime of the native address integer. This is needed because not all
- * AGX Dynamics objects are guaranteed to be owned by some other AGX Dynamics object unaffected by
- * the Blueprint reconstruction. The semantics is that the integer itself participates in the
- * reference count. So GetNativeAddress may increment the reference count, as the Component Instance
- * Data is in effect keeping the AGX Dynamics object alive, and SetNativeAddress may decrement the
- * reference count, signaling that the Component Instance Data has transferred ownership of the AGX
- * Dynamics object from itself to the Barrier.
+ * Dynamics object for the lifetime of the native address integer. This may be needed because not
+ * all AGX Dynamics objects are guaranteed to be owned by some other AGX Dynamics object unaffected
+ * by the Blueprint reconstruction. The semantics is that the integer itself participates in the
+ * reference counting. So GetNativeAddress may increment the reference count, as the Component
+ * Instance Data is in effect keeping the AGX Dynamics object alive, and SetNativeAddress may
+ * decrement the reference count, signaling that the Component Instance Data has transferred
+ * ownership of the AGX Dynamics object from itself to the new Barrier.
  *
  * An example implementation:
  *
@@ -58,14 +59,14 @@ class UActorComponent;
  *     	   NativeBarrier.DecrementRefCunt(); // This line is optional.
  *     }
  *
- *  We may want to rename Get/SetNativeAddress to something that talks about ownership.
- *  Lend/ReturnOwnership perhaps, or Take/ReturnOwnership. Member function names are often written
+ * We may want to rename Get/SetNativeAddress to something that talks about ownership.
+ * Lend/ReturnOwnership perhaps, or Take/ReturnOwnership. Member function names are often written
  * from the perspective of the object itself, so it should probably not be take.
  */
 class IAGX_NativeOwner
 {
 public:
-	/** \return True if this Native Owner currently owns a native AGX Dynamics object. */
+	/** @return True if this Native Owner currently owns a native AGX Dynamics object. */
 	virtual bool HasNative() const = 0;
 
 	/** \return The address of the currently owned native AGX Dynamics object, or 0. */
@@ -87,7 +88,7 @@ public:
 	virtual ~IAGX_NativeOwner() = default;
 };
 
-// Make sure we can hold an address in an Unreal Engine uint64.
+// Make sure we can hold an address in an uint64.
 static_assert(
 	std::numeric_limits<uint64>::max() >= std::numeric_limits<uintptr_t>::max(),
 	"The Unreal Engine type uint64 isn't large enough to hold a pointer address. We need an Unreal "

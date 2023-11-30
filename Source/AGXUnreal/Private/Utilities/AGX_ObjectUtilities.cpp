@@ -5,11 +5,14 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/Level.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/PackageName.h"
 #include "UObject/SavePackage.h"
+#include "Engine/World.h"
 
 void FAGX_ObjectUtilities::GetChildActorsOfActor(AActor* Parent, TArray<AActor*>& ChildActors)
 {
@@ -120,6 +123,40 @@ bool FAGX_ObjectUtilities::SaveAsset(UObject& Asset, bool FullyLoad)
 	if (FullyLoad)
 		Package->FullyLoad();
 }
+
+bool FAGX_ObjectUtilities::MarkAssetDirty(UObject& Asset)
+{
+	UPackage* Package = Asset.GetPackage();
+	if (Package == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot mark asset '%s' dirty because it does not have a package."),
+			*Asset.GetPathName());
+		return false;
+	}
+
+	if (Package->MarkPackageDirty())
+	{
+		return true;
+	}
+
+	Package->SetDirtyFlag(true);
+	if (Package->IsDirty())
+	{
+		Package->PackageMarkedDirtyEvent.Broadcast(Package, true);
+	}
+	else
+	{
+		const FString Message = FString::Printf(
+			TEXT("Could not mark package '%s' dirty. It should be saved manually."),
+			*Asset.GetPathName());
+		FAGX_NotificationUtilities::ShowNotification(
+			Message, SNotificationItem::ECompletionState::CS_Fail);
+	}
+
+	return Package->IsDirty();
+}
 #endif
 
 FTransform FAGX_ObjectUtilities::GetAnyComponentWorldTransform(const USceneComponent& Component)
@@ -154,4 +191,35 @@ void FAGX_ObjectUtilities::SetAnyComponentWorldTransform(
 #else
 	Component.SetWorldTransform(Transform);
 #endif
+}
+
+
+void FAGX_ObjectUtilities::TruncateForDetailsPanel(double& Value)
+{
+	// See comment in header file.
+	// At the time of writing the format specifier exposed for double in UnrealTypeTraits.h is %f.
+	// Value = FCString::Atod(*FString::Printf(TEXT("%f"), Value));
+	//
+	// We should keep an eye out for changes to this setup in Unreal Engine. The UDN reply mentioned
+	// improvements made in CL# 14346058 and CL# 15516611, which I believe corresponds to
+	// - https://github.com/EpicGames/UnrealEngine/commit/065d8d227321ca364b7edc3cdfc9539cc01fadcb
+	//   "Widget: Modify SpinBox to support double and int64"
+	// - https://github.com/EpicGames/UnrealEngine/commit/60cd75894a720fa8cc97d3f8424f0dd42742a92c
+	//   "Add support for displaying floats greater than e18 & remove cast losing double precision."
+	// both of which were released with Unreal Engine 5.0.
+	Value = FCString::Atod(*FString::Printf(TFormatSpecifier<double>::GetFormatSpecifier(), Value));
+}
+
+void FAGX_ObjectUtilities::TruncateForDetailsPanel(FVector& Values)
+{
+	TruncateForDetailsPanel(Values.X);
+	TruncateForDetailsPanel(Values.Y);
+	TruncateForDetailsPanel(Values.Z);
+}
+
+void FAGX_ObjectUtilities::TruncateForDetailsPanel(FRotator& Values)
+{
+	TruncateForDetailsPanel(Values.Pitch);
+	TruncateForDetailsPanel(Values.Yaw);
+	TruncateForDetailsPanel(Values.Roll);
 }

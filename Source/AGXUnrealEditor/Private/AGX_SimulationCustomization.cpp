@@ -12,6 +12,8 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Misc/Paths.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_SimulationCustomization"
@@ -42,7 +44,7 @@ void FAGX_SimulationCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 
 	// clang-format off
 
-	// Create the widgets for browsing to an output file.	
+	// Create the widgets for browsing to an output file.
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
 	[
 		SNew(SHorizontalBox)

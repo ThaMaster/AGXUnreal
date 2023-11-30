@@ -133,6 +133,8 @@ void UAGX_Constraint1DofComponent::Serialize(FArchive& Archive)
 
 double UAGX_Constraint1DofComponent::GetAngle() const
 {
+	if (!HasNative())
+		return 0.0;
 	return Get1DOFBarrier(*this)->GetAngle();
 }
 
@@ -143,6 +145,8 @@ float UAGX_Constraint1DofComponent::GetAngle_BP() const
 
 double UAGX_Constraint1DofComponent::GetSpeed() const
 {
+	if (!HasNative())
+		return 0.0;
 	return Get1DOFBarrier(*this)->GetSpeed();
 }
 

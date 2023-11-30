@@ -9,6 +9,7 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "Engine/World.h"
 #include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TrackComponentDetails"

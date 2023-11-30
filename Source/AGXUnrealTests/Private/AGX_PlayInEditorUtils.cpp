@@ -6,6 +6,7 @@
 #include "AGX_Simulation.h"
 
 // Unreal Engine includes.
+#include "Editor.h"
 #include "Kismet/GameplayStatics.h"
 
 TMap<FString, AActor*> AGX_PlayInEditorUtils::GetActorsByName(
@@ -48,7 +49,7 @@ bool AGX_PlayInEditorUtils::FTickOnlyCommand::Update()
 
 bool AGX_PlayInEditorUtils::FTickUntilTimeStamp::Update()
 {
-	check(!GEditor->IsPlayingSessionInEditor());
+	check(GEditor->IsPlayingSessionInEditor());
 
 	UWorld* World = GEditor->GetPIEWorldContext()->World();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(World);

@@ -3,9 +3,10 @@
 #include "Constraints/AGX_HingeConstraintComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "Constraints/HingeBarrier.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
-#include "AGX_LogCategory.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 class FRigidBodyBarrier;
 
@@ -36,5 +37,5 @@ const FHingeBarrier* UAGX_HingeConstraintComponent::GetNativeHinge() const
 void UAGX_HingeConstraintComponent::AllocateNative()
 {
 	FAGX_ConstraintUtilities::CreateNative(
-		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetLabelSafe(GetOwner()));
 }

@@ -4,13 +4,17 @@
 #include "AGX_PlayInEditorUtils.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "AgxAutomationCommon.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Terrain/AGX_Terrain.h"
 
 // Unreal Engine includes.
+#include "Editor.h"
 #include "Containers/Map.h"
+#include "HAL/FileManager.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationEditorCommon.h"
 
@@ -389,9 +393,7 @@ void FStepExampleLevelsTest::GetTests(
 {
 	// ComponentGallery ignored because it produces several errors on Play: for example Constraints
 	// without a Body.
-	// SimpleTerrain and AdvancedTerrain are ignored because they will attempt to resize the
-	// Landscape Displacement map texture which is not allowed in this Unit test context apparently.
-	const TArray<FString> IgnoreLevels {"ComponentGallery", "SimpleTerrain", "AdvancedTerrain"};
+	const TArray<FString> IgnoreLevels {"ComponentGallery"};
 
 	const FString LevelsDir = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Levels"));
 	TArray<FString> FoundAssetes;
@@ -410,6 +412,9 @@ void FStepExampleLevelsTest::GetTests(
 
 bool FStepExampleLevelsTest::RunTest(const FString& Parameters)
 {
+	AgxAutomationCommon::AddExpectedError(
+		*this, TEXT("Could not allocate resource for Landscape Displacement Map for AGX Terrain "
+					".*. There may be rendering issues."));
 	using namespace AGX_PlayInEditorTest_helpers;
 	const FString LevelPath = Parameters;
 	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(LevelPath))
@@ -452,12 +457,11 @@ bool FCheckMaterialLibraryStateCommand::Update()
 	auto Box = GetComponentByName<UAGX_BoxShapeComponent>(TestWorld, "Actor", "BoxShape");
 	Test.TestNotNull("Box", Box);
 
-	auto Sphere =
-		GetComponentByName<UAGX_SphereShapeComponent>(TestWorld, "Actor", "SphereShape");
+	auto Sphere = GetComponentByName<UAGX_SphereShapeComponent>(TestWorld, "Actor", "SphereShape");
 	Test.TestNotNull("Sphere", Sphere);
 
-	auto CMRegistrar =
-		GetComponentByName<UAGX_ContactMaterialRegistrarComponent>(TestWorld, "Actor", "CMRegistrar");
+	auto CMRegistrar = GetComponentByName<UAGX_ContactMaterialRegistrarComponent>(
+		TestWorld, "Actor", "CMRegistrar");
 	Test.TestNotNull("CMRegistrar", CMRegistrar);
 
 	if (Box == nullptr || Sphere == nullptr || CMRegistrar == nullptr)
@@ -468,10 +472,9 @@ bool FCheckMaterialLibraryStateCommand::Update()
 	Test.TestTrue("Steel Library Shape Material not null", Sphere->ShapeMaterial != nullptr);
 	Test.TestTrue(
 		"Steel-Aluminium Library Contact Material not null and assigned material pair",
-		CMRegistrar->ContactMaterials.Num() == 1 &&
-		CMRegistrar->ContactMaterials[0] != nullptr &&
-		CMRegistrar->ContactMaterials[0]->Material1 != nullptr &&
-		CMRegistrar->ContactMaterials[0]->Material2 != nullptr);
+		CMRegistrar->ContactMaterials.Num() == 1 && CMRegistrar->ContactMaterials[0] != nullptr &&
+			CMRegistrar->ContactMaterials[0]->Material1 != nullptr &&
+			CMRegistrar->ContactMaterials[0]->Material2 != nullptr);
 
 	return true;
 }
@@ -487,8 +490,7 @@ bool FMaterialLibraryTest::RunTest(const FString& Parameters)
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath));
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
-	ADD_LATENT_AUTOMATION_COMMAND(
-		FCheckMaterialLibraryStateCommand(*this));
+	ADD_LATENT_AUTOMATION_COMMAND(FCheckMaterialLibraryStateCommand(*this));
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 	return true;

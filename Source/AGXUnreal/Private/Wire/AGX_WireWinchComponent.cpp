@@ -12,6 +12,7 @@
 // Unreal Engine includes.
 #include "Components/BillboardComponent.h"
 #include "CoreGlobals.h"
+#include "Engine/Texture2D.h"
 
 UAGX_WireWinchComponent::UAGX_WireWinchComponent()
 {

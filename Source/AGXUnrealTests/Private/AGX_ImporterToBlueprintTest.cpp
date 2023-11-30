@@ -19,6 +19,8 @@
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
@@ -29,11 +31,15 @@
 #include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
 #include "Engine/Engine.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/Actor.h"
 #include "HAL/FileManager.h"
+#include "MaterialTypes.h"
+#include "Materials/MaterialInterface.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
 
@@ -1920,7 +1926,7 @@ bool FCheckWireImportedCommand::Update()
 	RangeHasType(12, 22, EWireNodeType::Free);
 	RangeHasType(22, 23, EWireNodeType::BodyFixed);
 
-	const FString WinchBodyName = Winch.BodyAttachment.BodyName.ToString();
+	const FString WinchBodyName = Winch.BodyAttachment.Name.ToString();
 	Test.TestEqual(TEXT("Winch Body Name"), WinchBodyName, FString("Winch Body"));
 
 	auto RangeHasBody =
@@ -1928,7 +1934,7 @@ bool FCheckWireImportedCommand::Update()
 	{
 		for (int32 I = Begin; I < End; ++I)
 		{
-			const FString NodeBodyName = Nodes[I].RigidBody.BodyName.ToString();
+			const FString NodeBodyName = Nodes[I].RigidBody.Name.ToString();
 			Test.TestEqual(TEXT("NodeBodyName"), NodeBodyName, BodyName);
 		}
 	};
@@ -2587,7 +2593,7 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Num Contact Materials in Registrar", Registrar->ContactMaterials.Num(), 2);
 
 	UAGX_ContactMaterial** Cm1 = Registrar->ContactMaterials.FindByPredicate(
-		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat1Mat2"; });
+		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat1_Mat2"; });
 	Test.TestNotNull("Cm1", Cm1);
 	if (Cm1 == nullptr)
 	{
@@ -2621,11 +2627,10 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Cm1 youngs modulus", (*Cm1)->YoungsModulus, 123451234.0);
 	Test.TestEqual("Cm1 damping", (*Cm1)->SpookDamping, 0.14);
 	Test.TestEqual("Cm1 adhesive force", (*Cm1)->AdhesiveForce, 0.15);
-	Test.TestEqual(
-		"Cm1 adhesive overlap", (float) (*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
+	Test.TestEqual("Cm1 adhesive overlap", (*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
 
 	UAGX_ContactMaterial** Cm2 = Registrar->ContactMaterials.FindByPredicate(
-		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat3Mat4"; });
+		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat3_Mat4"; });
 	Test.TestNotNull("Cm2", Cm2);
 	if (Cm2 == nullptr)
 	{
@@ -2657,8 +2662,7 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Cm2 youngs modulus", (*Cm2)->YoungsModulus, 101010101.0);
 	Test.TestEqual("Cm2 damping", (*Cm2)->SpookDamping, 0.24);
 	Test.TestEqual("Cm2 adhesive force", (*Cm2)->AdhesiveForce, 0.25);
-	Test.TestEqual(
-		"Cm2 adhesive overlap", (float) (*Cm2)->AdhesiveOverlap, AgxToUnrealDistance(0.26));
+	Test.TestEqual("Cm2 adhesive overlap", (*Cm2)->AdhesiveOverlap, AgxToUnrealDistance(0.26));
 
 	return true;
 }
@@ -2683,11 +2687,11 @@ bool FClearContactMaterialsImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("Blueprint"),			TEXT("BP_contact_materials_build.uasset"),
-		TEXT("ContactMaterial"),	TEXT("CM_Mat1Mat2.uasset"),
-		TEXT("CM_Mat3Mat4.uasset"), TEXT("ShapeMaterial"),
-		TEXT("Mat1.uasset"),		TEXT("Mat2.uasset"),
-		TEXT("Mat3.uasset"),		TEXT("Mat4.uasset")};
+		TEXT("Blueprint"),			 TEXT("BP_contact_materials_build.uasset"),
+		TEXT("ContactMaterial"),	 TEXT("CM_Mat1_Mat2.uasset"),
+		TEXT("CM_Mat3_Mat4.uasset"), TEXT("ShapeMaterial"),
+		TEXT("Mat1.uasset"),		 TEXT("Mat2.uasset"),
+		TEXT("Mat3.uasset"),		 TEXT("Mat4.uasset")};
 
 	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
 	ExpectedFiles.Add(*BaseBlueprintName);
@@ -3334,7 +3338,7 @@ bool FCheckTrackImportedCommand::Update()
 		Test.TestEqual("Number of Wheels", Track->Wheels.Num(), 12);
 		for (const FAGX_TrackWheel& Wheel : Track->Wheels)
 		{
-			Test.TestEqual("Rigid Body Name", Wheel.RigidBody.BodyName.IsNone(), false);
+			Test.TestEqual("Rigid Body Name", Wheel.RigidBody.Name.IsNone(), false);
 		}
 
 		Test.TestEqual(
@@ -3446,8 +3450,8 @@ bool FClearTrackImportedCommand::Update()
 		TEXT("Blueprint"),
 		TEXT("BP_track_build.uasset"),
 		TEXT("ContactMaterial"),
-		TEXT("CM_trackground.uasset"),
-		TEXT("CM_trackwheel.uasset"),
+		TEXT("CM_track_ground.uasset"),
+		TEXT("CM_track_wheel.uasset"),
 		TEXT("ShapeMaterial"),
 		TEXT("ground.uasset"),
 		TEXT("track.uasset"),
@@ -3554,19 +3558,17 @@ bool FCheckAmorImportedCommand::Update()
 	}
 
 	Test.TestEqual(
-		"Body Thresholds MaxImpactSpeed",
-		(float) Body->MergeSplitProperties.Thresholds->MaxImpactSpeed, AgxToUnrealDistance(13.0));
+		"Body Thresholds MaxImpactSpeed", Body->MergeSplitProperties.Thresholds->MaxImpactSpeed,
+		AgxToUnrealDistance(13.0));
 	Test.TestEqual(
 		"Body Thresholds MaxRelativeNormalSpeed",
-		(float) Body->MergeSplitProperties.Thresholds->MaxRelativeNormalSpeed,
-		AgxToUnrealDistance(14.0));
+		Body->MergeSplitProperties.Thresholds->MaxRelativeNormalSpeed, AgxToUnrealDistance(14.0));
 	Test.TestEqual(
 		"Body Thresholds MaxRelativeTangentSpeed",
-		(float) Body->MergeSplitProperties.Thresholds->MaxRelativeTangentSpeed,
-		AgxToUnrealDistance(15.0));
+		Body->MergeSplitProperties.Thresholds->MaxRelativeTangentSpeed, AgxToUnrealDistance(15.0));
 	Test.TestEqual(
-		"Body Thresholds MaxRollingSpeed",
-		(float) Body->MergeSplitProperties.Thresholds->MaxRollingSpeed, AgxToUnrealDistance(16.0));
+		"Body Thresholds MaxRollingSpeed", Body->MergeSplitProperties.Thresholds->MaxRollingSpeed,
+		AgxToUnrealDistance(16.0));
 	Test.TestTrue(
 		"Body Thresholds MaySplitInGravityField",
 		Body->MergeSplitProperties.Thresholds->bMaySplitInGravityField);
@@ -3596,6 +3598,11 @@ bool FCheckAmorImportedCommand::Update()
 
 	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(
 		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Wire"));
+	Test.TestNotNull(TEXT("Wire Component"), Wire);
+	if (Wire == nullptr)
+	{
+		return true;
+	}
 	Test.TestFalse("Wire Enable Merge", Wire->MergeSplitProperties.bEnableMerge);
 	Test.TestTrue("Wire Enable Merge", Wire->MergeSplitProperties.bEnableSplit);
 	Test.TestNotNull("Wire Thresholds", Wire->MergeSplitProperties.Thresholds);
@@ -3696,6 +3703,247 @@ bool FClearAmorImportedCommand::Update()
 	ExpectedFiles.Add(*BaseBlueprintName);
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("amor_build"), ExpectedFiles);
+
+	return true;
+}
+
+//
+// Shovel test starts here.
+//
+
+class FImporterToBlueprint_ShovelTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckShovelImportedCommand, FImporterToBlueprint_ShovelTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearShovelImportedCommand, FImporterToBlueprint_ShovelTest&, Test);
+
+class FImporterToBlueprint_ShovelTest final : public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FImporterToBlueprint_ShovelTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FImporterToBlueprint_ShovelTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.Shovel"))
+	{
+	}
+
+	UBlueprint* Contents = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveBlueprintCommand(TEXT("terrain_build.agx"), Contents, *this));
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckShovelImportedCommand(*this));
+		ADD_LATENT_AUTOMATION_COMMAND(FClearShovelImportedCommand(*this));
+		return true;
+	}
+};
+
+namespace
+{
+	FImporterToBlueprint_ShovelTest ImporterToBlueprint_ShovelTest;
+}
+
+bool FCheckShovelImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import Shovel test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported Components.
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
+	// One Rigid Body (1), two Shapes (3), one Shovel (4), one Model Source (5), and one default
+	// scene root (6).
+	const int32 ExpectedNumComponents {6};
+	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), ExpectedNumComponents);
+
+	UAGX_RigidBodyComponent* ShovelBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Shovel Body"));
+	Test.TestNotNull(TEXT("Shovel Body"), ShovelBody);
+	if (ShovelBody == nullptr)
+		return true;
+	Test.TestEqual(
+		TEXT("Body Import GUID"),
+		ShovelBody->ImportGuid.ToString(EGuidFormats::DigitsWithHyphensLower),
+		TEXT("8c48a356-d44b-1f4a-134c-e7e7a1f4c003"));
+	Test.TestEqual(
+		TEXT("Shovel Body Position"), ShovelBody->GetRelativeLocation(), FVector(0.0, 0.0, 100.0));
+
+	UAGX_BoxShapeComponent* VerticalBox = GetByName<UAGX_BoxShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Vertical Box"));
+	Test.TestNotNull(TEXT("Vertical Box"), VerticalBox);
+	if (VerticalBox == nullptr)
+		return true;
+	Test.TestEqual(
+		TEXT("Vertical Box Import GUID"),
+		VerticalBox->ImportGuid.ToString(EGuidFormats::DigitsWithHyphensLower),
+		TEXT("8c48a356-d44b-1f4a-134c-e7e7a1f4c004"));
+	Test.TestEqual(
+		TEXT("Vertical Box Half Extent"), VerticalBox->HalfExtent, FVector(10.0, 100.0, 100.0));
+
+	UAGX_ShovelComponent* Shovel = GetByName<UAGX_ShovelComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(TEXT("Shovel_Shovel Body")));
+	Test.TestNotNull(TEXT("Shovel Component"), Shovel);
+	if (Shovel == nullptr)
+		return true;
+	Test.TestEqual(
+		TEXT("Shovel Import GUID"),
+		Shovel->ImportGuid.ToString(EGuidFormats::DigitsWithHyphensLower),
+		"8c48a356-d44b-1f4a-134c-e7e7a1f4c008");
+	Test.TestEqual(TEXT("bEnable"), Shovel->bEnabled, false);
+	Test.TestEqual(
+		TEXT("Top Edge Start Location"), Shovel->TopEdge.Start.LocalLocation,
+		AgxToUnrealDisplacement(0.1, -1.0, 1.0));
+	Test.TestEqual(
+		TEXT("Top Edge Start Parent Name"), Shovel->TopEdge.Start.Parent.Name,
+		FName(TEXT("Shovel Body")));
+	Test.TestEqual(
+		TEXT("Top Edge End Location"), Shovel->TopEdge.End.LocalLocation,
+		AgxToUnrealDisplacement(0.1, 1.0, 1.0));
+	Test.TestEqual(
+		TEXT("Top Edge End Parent Name"), Shovel->TopEdge.End.Parent.Name,
+		FName(TEXT("Shovel Body")));
+	Test.TestEqual(
+		TEXT("Cutting Edge Start Location"), Shovel->CuttingEdge.Start.LocalLocation,
+		AgxToUnrealDisplacement(1.0, -1.0, 0.1));
+	Test.TestEqual(
+		TEXT("Cutting Edge Start Parent Name"), Shovel->CuttingEdge.Start.Parent.Name,
+		FName(TEXT("Shovel Body")));
+	Test.TestEqual(
+		TEXT("Cutting Edge End Location"), Shovel->CuttingEdge.End.LocalLocation,
+		AgxToUnrealDisplacement(1.0, 1.0, 0.1));
+	Test.TestEqual(
+		TEXT("Cutting Edge End Parent Name"), Shovel->CuttingEdge.End.Parent.Name,
+		FName(TEXT("Shovel Body")));
+	Test.TestEqual(
+		TEXT("Cutting Direction"), Shovel->CuttingDirection.LocalRotation,
+		FRotator(ForceInitToZero));
+
+	Test.TestNotNull(TEXT("Shovel Properties"), Shovel->ShovelProperties);
+	if (Shovel->ShovelProperties == nullptr)
+		return true;
+	Test.TestTrue(TEXT("Shovel Properties is asset"), Shovel->ShovelProperties->IsAsset());
+	Test.TestFalse(TEXT("Shovel Properties is instance"), Shovel->ShovelProperties->IsInstance());
+	Test.TestEqual(
+		TEXT("ToothLength"), Shovel->ShovelProperties->ToothLength, AgxToUnrealDistance(1.0));
+	Test.TestEqual(
+		TEXT("ToothMinimumRadius"), Shovel->ShovelProperties->ToothMinimumRadius,
+		AgxToUnrealDistance(2.0));
+	Test.TestEqual(
+		TEXT("ToothMaximumRadius"), Shovel->ShovelProperties->ToothMaximumRadius,
+		AgxToUnrealDistance(3.0));
+	Test.TestEqual(TEXT("NumberOfTeeth"), Shovel->ShovelProperties->NumberOfTeeth, 4);
+	Test.TestEqual(
+		TEXT("NoMergeExtensionDistance"), Shovel->ShovelProperties->NoMergeExtensionDistance,
+		AgxToUnrealDistance(5.0));
+	Test.TestEqual(
+		TEXT("MinimumSubmergedContactLengthFraction"),
+		Shovel->ShovelProperties->MinimumSubmergedContactLengthFraction, 6.0);
+	Test.TestEqual(
+		TEXT("VerticalBladeSoilMergeDistance"),
+		Shovel->ShovelProperties->VerticalBladeSoilMergeDistance, AgxToUnrealDistance(7.0));
+	Test.TestEqual(
+		TEXT("SecondarySeparationDeadloadLimit"),
+		Shovel->ShovelProperties->SecondarySeparationDeadloadLimit, 8.0);
+	Test.TestEqual(
+		TEXT("PenetrationDepthThreshold"), Shovel->ShovelProperties->PenetrationDepthThreshold,
+		AgxToUnrealDistance(9.0));
+	Test.TestEqual(
+		TEXT("PenetrationForceScaling"), Shovel->ShovelProperties->PenetrationForceScaling, 10.0);
+	Test.TestEqual(
+		TEXT("EnableParticleFreeDeformers"), Shovel->ShovelProperties->bEnableParticleFreeDeformers,
+		true);
+	Test.TestEqual(
+		TEXT("AlwaysRemoveShovelContacts"), Shovel->ShovelProperties->bAlwaysRemoveShovelContacts,
+		true);
+	Test.TestEqual(
+		TEXT("MaxPenetrationForce"), Shovel->ShovelProperties->MaximumPenetrationForce, 11.0);
+	Test.TestEqual(
+		TEXT("ContactRegionThreshold"), Shovel->ShovelProperties->ContactRegionThreshold,
+		AgxToUnrealDistance(12.0));
+	Test.TestEqual(
+		TEXT("ContactRegionVerticalLimit"), Shovel->ShovelProperties->ContactRegionVerticalLimit,
+		AgxToUnrealDistance(13.0));
+	Test.TestEqual(
+		TEXT("EnableInnerShapeCreateDynamicMass"),
+		Shovel->ShovelProperties->bEnableInnerShapeCreateDynamicMass, false);
+	Test.TestEqual(
+		TEXT("EnableParticleForceFeedback"), Shovel->ShovelProperties->bEnableParticleForceFeedback,
+		true);
+	Test.TestEqual(
+		TEXT("ParicleInclusionMultiplier"), Shovel->ShovelProperties->ParticleInclusionMultiplier,
+		/*14.0*/ 1.0 /* AGX Dynamics 2.37.0.1 does not store/restore this value. */);
+
+	Test.TestEqual(
+		TEXT("Primary enabled"), Shovel->ShovelProperties->PrimaryExcavationSettings.bEnabled,
+		false);
+	Test.TestEqual(
+		TEXT("Primary create dynamic mass"),
+		Shovel->ShovelProperties->PrimaryExcavationSettings.bEnableCreateDynamicMass, false);
+	Test.TestEqual(
+		TEXT("Primary force feedback"),
+		Shovel->ShovelProperties->PrimaryExcavationSettings.bEnableForceFeedback, false);
+
+	Test.TestEqual(
+		TEXT("Deform back  enabled"),
+		Shovel->ShovelProperties->DeformBackExcavationSettings.bEnabled, false);
+	Test.TestEqual(
+		TEXT("Deform back create dynamic mass"),
+		Shovel->ShovelProperties->DeformBackExcavationSettings.bEnableCreateDynamicMass, false);
+	Test.TestEqual(
+		TEXT("Deform back force feedback"),
+		Shovel->ShovelProperties->DeformBackExcavationSettings.bEnableForceFeedback, true);
+
+	Test.TestEqual(
+		TEXT("Deform right enabled"),
+		Shovel->ShovelProperties->DeformRightExcavationSettings.bEnabled, false);
+	Test.TestEqual(
+		TEXT("Deform right create dynamic mass"),
+		Shovel->ShovelProperties->DeformRightExcavationSettings.bEnableCreateDynamicMass, true);
+	Test.TestEqual(
+		TEXT("Deform right force feedback"),
+		Shovel->ShovelProperties->DeformRightExcavationSettings.bEnableForceFeedback, false);
+
+	Test.TestEqual(
+		TEXT("Deform left enabled"),
+		Shovel->ShovelProperties->DeformLeftExcavationSettings.bEnabled, true);
+	Test.TestEqual(
+		TEXT("Deform left create dynamic mass"),
+		Shovel->ShovelProperties->DeformLeftExcavationSettings.bEnableCreateDynamicMass, false);
+	Test.TestEqual(
+		TEXT("Deform left force feedback"),
+		Shovel->ShovelProperties->DeformLeftExcavationSettings.bEnableForceFeedback, false);
+
+	return true;
+}
+
+bool FClearShovelImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	// clang-format off
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("BP_terrain_build.uasset"),
+			*BaseBlueprintName,
+		TEXT("Blueprint"),
+		TEXT("ShovelProperties"),
+			TEXT("AGX_SP_ShovelBody.uasset")
+	};
+	// clang-format on
+
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("terrain_build"), ExpectedFiles);
 
 	return true;
 }

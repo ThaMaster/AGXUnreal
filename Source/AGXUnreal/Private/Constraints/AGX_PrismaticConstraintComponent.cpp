@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Constraints/PrismaticBarrier.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 class FRigidBodyBarrier;
 
@@ -34,5 +35,5 @@ const FPrismaticBarrier* UAGX_PrismaticConstraintComponent::GetNativePrismatic()
 void UAGX_PrismaticConstraintComponent::AllocateNative()
 {
 	FAGX_ConstraintUtilities::CreateNative(
-		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetLabelSafe(GetOwner()));
 }

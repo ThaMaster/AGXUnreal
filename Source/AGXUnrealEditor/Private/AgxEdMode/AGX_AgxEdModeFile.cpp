@@ -3,21 +3,24 @@
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ImporterToBlueprint.h"
-#include "AGX_ImportSettings.h"
-#include "AGX_EditorStyle.h"
 #include "AGX_ArchiveExporter.h"
+#include "AGX_EditorStyle.h"
+#include "AGX_ImportSettings.h"
+#include "AGX_ImporterToBlueprint.h"
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Widgets/AGX_ImportDialog.h"
 
+
 // Unreal Engine includes.
-#include "Textures/SlateIcon.h"
 #include "DesktopPlatformModule.h"
+#include "Engine/Blueprint.h"
+#include "Framework/Application/SlateApplication.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Textures/SlateIcon.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_AgxEdModeFile"
 

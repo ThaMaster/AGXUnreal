@@ -10,6 +10,8 @@
 #include "ComponentVisualizer.h"
 #include "Framework/Commands/UICommandList.h"
 
+class FMaterialRenderProxy;
+
 /**
  * The Track Component Visualizer provides debug visualization of collision boxes and center of mass positions of
  * the nodes of a Track Component, as well as the hinge joints connecting the nodes.

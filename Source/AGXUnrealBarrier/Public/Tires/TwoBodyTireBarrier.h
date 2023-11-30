@@ -6,6 +6,9 @@
 #include "Tires/TireBarrier.h"
 #include "RigidBodyBarrier.h"
 
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
 class AGXUNREALBARRIER_API FTwoBodyTireBarrier : public FTireBarrier
 {
 public:

@@ -4,6 +4,7 @@
 
 // Unreal Engine includes.
 #include "Engine/EngineTypes.h"
+#include "Components/ActorComponent.h"
 #include "Math/Vector.h"
 #include "Math/Rotator.h"
 #include "Misc/AutomationTest.h"
@@ -228,6 +229,8 @@ namespace AgxAutomationCommon
 		return Centimeter / T {100};
 	}
 
+	void AddExpectedError(FAutomationTestBase& Test, const FString& Error);
+
 	/**
 	 * Latent Command that tests that TestHelper::GetTestWorld and
 	 * FAGX_EditorUtilities::GetCurrentWorld return the same world.
@@ -327,6 +330,11 @@ namespace AgxAutomationCommon
 	constexpr float UnrealToAgx {0.01f};
 
 	inline float AgxToUnrealDistance(float Agx)
+	{
+		return Agx * AgxToUnreal;
+	}
+
+	inline double AgxToUnrealDistance(double Agx)
 	{
 		return Agx * AgxToUnreal;
 	}

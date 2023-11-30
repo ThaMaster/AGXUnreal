@@ -8,6 +8,8 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Components/SceneComponent.h"
+#include "GameFramework/Actor.h"
 #include "Math/Color.h"
 
 class FTrimeshShapeBarrier;
@@ -166,6 +168,7 @@ public:
 	static FString GetImportMergeSplitThresholdsDirectoryName();
 	static FString GetImportStaticMeshDirectoryName();
 	static FString GetImportRenderMeshDirectoryName();
+	static FString GetImportShovelPropertiesDirectoryName();
 
 	/**
 	 * Template version of the asset directory name getter.

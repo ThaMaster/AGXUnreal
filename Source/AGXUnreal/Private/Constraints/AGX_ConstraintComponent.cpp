@@ -166,13 +166,13 @@ namespace AGX_ConstraintComponent_helpers
 		{
 			// Setting nullptr body, clear the attachment.
 			Attachment.RigidBody.OwningActor = nullptr;
-			Attachment.RigidBody.BodyName = NAME_None;
+			Attachment.RigidBody.Name = NAME_None;
 			return true;
 		}
 
 		// Regular case, setup attachment to point to the given body.
 		Attachment.RigidBody.OwningActor = Body->GetOwner();
-		Attachment.RigidBody.BodyName = Body->GetFName();
+		Attachment.RigidBody.Name = Body->GetFName();
 		return true;
 	}
 
@@ -914,7 +914,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 		{
 			ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 		}
-		if (Property == GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, SceneComponentName))
+		if (Property == GET_MEMBER_NAME_CHECKED(FAGX_SceneComponentReference, Name))
 		{
 			ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 		}
@@ -1130,30 +1130,6 @@ void UAGX_ConstraintComponent::BeginPlay()
 
 	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{
-		// This may be complicated. Normally, all the Components of an Actor exists when the first
-		// BeginPlay is called. Under those conditions it is possible to cache the the Component
-		// pointers.
-		//
-		// However, when editing Properties in the Details Panel during a Play In Editor session
-		// Unreal Engine creates and initializes one component at the time. Which means that this
-		// Constraint may get BeginPlay before the Rigid Body it is attached to even exists. So
-		// caching in BeginPlay is not possible while the GIsReconstructingBlueprintInstances flag
-		// is set.
-		//
-		// Not sure where else to do it. I don't know of any later startup callback. Should we skip
-		// caching all together, and do a search every time we need the Component? Should we use the
-		// OldToNew map passed to Component Instance Data to update the pointers? Set a flag in the
-		// RigidBody/Component Reference to indicate that it is allowed to cache the next time a
-		// look-up is done?
-		//
-		// Things are made even more complicated if the Rigid Body or Component we're referencing
-		// is in another Blueprint and that Blueprint is being recreated. Nothing in that Blueprint
-		// knows that this Constraint needs to be notified about the reconstruction.
-		BodyAttachment1.RigidBody.CacheCurrentRigidBody();
-		BodyAttachment2.RigidBody.CacheCurrentRigidBody();
-		BodyAttachment1.FrameDefiningComponent.CacheCurrentSceneComponent();
-		BodyAttachment2.FrameDefiningComponent.CacheCurrentSceneComponent();
-
 		CreateNative();
 		if (HasNative())
 		{

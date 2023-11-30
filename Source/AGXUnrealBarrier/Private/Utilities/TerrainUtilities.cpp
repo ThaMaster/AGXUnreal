@@ -2,11 +2,14 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
+#include "AGXRefs.h"
 #include "Terrain/TerrainBarrier.h"
+#include "TypeConversions.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/Physics/GranularBodySystem.h>
+#include <agxTerrain/Terrain.h>
 #include "EndAGXIncludes.h"
 
 namespace TerrainUtilities_helpers

@@ -2,6 +2,9 @@
 
 #pragma once
 
+// Unreal Engine includes.
+#include <CoreMinimal.h>
+
 // Standard library includes.
 #include <memory>
 
@@ -34,6 +37,8 @@ public:
 
 	bool AddShovel(FShovelBarrier& Shovel, double RequiredRadius, double PreloadRadius);
 	bool AddRigidBody(FRigidBodyBarrier& Body, double RequiredRadius, double PreloadRadius);
+
+	bool SetTileLoadRadii(FRigidBodyBarrier& Body, double RequiredRadius, double PreloadRadius);
 
 	FParticleData GetParticleData() const;
 

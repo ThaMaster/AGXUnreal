@@ -18,6 +18,7 @@
 #include "Materials/AGX_TerrainMaterial.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/ShapeBarrier.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Tires/AGX_TireComponent.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
@@ -30,6 +31,10 @@
 #include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
+#include "CoreMinimal.h"
+#if WITH_EDITOR
+#include "Editor.h"
+#endif
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "HAL/PlatformTime.h"
@@ -37,7 +42,8 @@
 #include "Misc/Paths.h"
 #if WITH_EDITORONLY_DATA
 #include "Subsystems/AssetEditorSubsystem.h"
-#endif 
+#endif
+#include "UObject/UObjectIterator.h"
 
 #include <algorithm>
 
@@ -643,6 +649,8 @@ void UAGX_Simulation::Deinitialize()
 
 	CloseInstancedAssetEditors<UAGX_TrackInternalMergeProperties>();
 	CloseInstancedAssetEditors<UAGX_TrackProperties>();
+
+	CloseInstancedAssetEditors<UAGX_ShovelProperties>();
 #endif
 
 	Super::Deinitialize();

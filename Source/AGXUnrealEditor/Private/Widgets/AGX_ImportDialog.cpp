@@ -10,8 +10,11 @@
 #include "Utilities/AGX_SlateUtilities.h"
 
 // Unreal Engine includes.
+#include "Framework/Application/SlateApplication.h"
 #include "Misc/FileHelper.h"
-
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "SAGX_ImportDialog"
 
