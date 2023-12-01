@@ -148,8 +148,6 @@ void UAGX_TwoBodyTireComponent::UpdateNativeProperties()
 
 void UAGX_TwoBodyTireComponent::BeginPlay()
 {
-	HubRigidBody.CacheCurrentRigidBody();
-	TireRigidBody.CacheCurrentRigidBody();
 	Super::BeginPlay();
 }
 

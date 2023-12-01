@@ -1,7 +1,10 @@
+
 // Copyright 2023, Algoryx Simulation AB.
 
 #include "AGX_EditorStyle.h"
 
+// Unreal Engine includes.
+#include "Framework/Application/SlateApplication.h"
 #include "Runtime/Projects/Public/Interfaces/IPluginManager.h"
 #include "Runtime/SlateCore/Public/Styling/SlateStyle.h"
 #include "Runtime/SlateCore/Public/Styling/SlateStyleRegistry.h"
@@ -181,6 +184,9 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set(
 		"ClassIcon.AGX_CuttingDirectionComponent",
 		new IMAGE_BRUSH("Icons/cutting_direction_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_ShovelComponent",
+		new IMAGE_BRUSH("Icons/deformable_terrain_shovel_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_CuttingEdgeComponent",
 		new IMAGE_BRUSH("Icons/cutting_edge_32x32", IconSize16));

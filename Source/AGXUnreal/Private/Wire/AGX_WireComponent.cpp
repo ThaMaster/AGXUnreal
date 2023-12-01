@@ -21,6 +21,7 @@
 // Unreal Engine includes.
 #include "Components/BillboardComponent.h"
 #include "CoreGlobals.h"
+#include "Engine/Texture2D.h"
 #include "Math/UnrealMathUtility.h"
 
 // Standard library includes.
@@ -33,12 +34,12 @@ void FWireRoutingNode::SetBody(UAGX_RigidBodyComponent* Body)
 	if (Body == nullptr)
 	{
 		RigidBody.OwningActor = nullptr;
-		RigidBody.BodyName = NAME_None;
+		RigidBody.Name = NAME_None;
 		return;
 	}
 
 	RigidBody.OwningActor = Body->GetOwner();
-	RigidBody.BodyName = Body->GetFName();
+	RigidBody.Name = Body->GetFName();
 }
 
 void UAGX_WireRouteNode_FL::SetBody(

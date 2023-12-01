@@ -7,6 +7,7 @@
 #include "MassPropertiesBarrier.h"
 
 // Unreal Engine includes.
+#include "CoreMinimal.h"
 #include "Containers/UnrealString.h"
 #include "Math/Vector.h"
 #include "Math/Quat.h"

@@ -19,6 +19,8 @@
 #include "Shapes/AGX_CapsuleShapeComponent.h"
 #include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
@@ -29,11 +31,15 @@
 #include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
 #include "Engine/Engine.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/Actor.h"
 #include "HAL/FileManager.h"
+#include "MaterialTypes.h"
+#include "Materials/MaterialInterface.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
 
@@ -1001,11 +1007,11 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	// It should be updated whenever the test scene is changed.
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
-	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 17);
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 20);
 
 // Enable this to see the names of the components that was imported. Useful when adding new stuff
 // to the archive.
-#if 0
+#if 1
 	UE_LOG(LogAGX, Warning, TEXT("Imported the following components:"));
 	for (const UActorComponent* Component : Components)
 	{
@@ -1054,6 +1060,8 @@ bool FCheckRenderMaterialImportedCommand::Update()
 		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("VisibleSphere"));
 	UAGX_SphereShapeComponent* InvisibleSphere =
 		GetSphere(*FAGX_BlueprintUtilities::ToTemplateComponentName("InvisibleSphere"));
+	auto Trimesh = GetByName<UAGX_TrimeshShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Trimesh"));
 
 	// Make sure we got the components we know should be there.
 	Test.TestNotNull(TEXT("DefaultSceneRoot"), SceneRoot);
@@ -1072,13 +1080,14 @@ bool FCheckRenderMaterialImportedCommand::Update()
 	Test.TestNotNull(TEXT("NameConflictSphere2"), NameConflictSphere2);
 	Test.TestNotNull(TEXT("VisibleSphere"), VisibleSphere);
 	Test.TestNotNull(TEXT("InvisibleSphere"), InvisibleSphere);
+	Test.TestNotNull(TEXT("Trimesh"), Trimesh);
 
 	if (SceneRoot == nullptr || Body == nullptr || Ambient == nullptr || Diffuse == nullptr ||
 		Emissive == nullptr || Shininess == nullptr || AmbientDiffuse == nullptr ||
 		AmbientEmissive == nullptr || DiffuseShininessLow == nullptr ||
 		DiffuseShininessHigh == nullptr || SharedSphere1 == nullptr || SharedSphere2 == nullptr ||
 		NameConflictSphere1 == nullptr || NameConflictSphere2 == nullptr ||
-		VisibleSphere == nullptr || InvisibleSphere == nullptr)
+		VisibleSphere == nullptr || InvisibleSphere == nullptr || Trimesh == nullptr)
 	{
 		Test.AddError(TEXT("At least one required object was nullptr, cannot continue."));
 		return true;
@@ -1162,6 +1171,45 @@ bool FCheckRenderMaterialImportedCommand::Update()
 		Test.TestFalse(TEXT("InvisibleSphere Visible flag"), InvisibleSphere->GetVisibleFlag());
 	}
 
+	// Static mesh assets render materials.
+	USCS_Node* TrimeshNode = GetNodeChecked(*Test.Contents, "Trimesh");
+	USCS_Node* CollisionMeshNode = GetOnlyAttachChildChecked(TrimeshNode);
+	USCS_Node* RenderMeshNode = GetOnlyAttachChildChecked(CollisionMeshNode);
+	if (RenderMeshNode == nullptr)
+	{
+		Test.AddError("Render Mesh SCS Node was nullptr. Cannot continue.");
+		return true;
+	}
+
+	auto CollisionMeshComp = Cast<UStaticMeshComponent>(CollisionMeshNode->ComponentTemplate);
+	auto RenderMeshComp = Cast<UStaticMeshComponent>(RenderMeshNode->ComponentTemplate);
+	if (CollisionMeshComp == nullptr || RenderMeshComp == nullptr)
+	{
+		Test.AddError("Render or Collision Mesh Component was nullptr. Cannot continue.");
+		return true;
+	}
+
+	auto CollisionMeshAsset = Cast<UStaticMesh>(CollisionMeshComp->GetStaticMesh());
+	auto RenderMeshAsset = Cast<UStaticMesh>(RenderMeshComp->GetStaticMesh());
+	if (CollisionMeshAsset == nullptr || RenderMeshAsset == nullptr)
+	{
+		Test.AddError("Render or Collision Mesh Assets was nullptr. Cannot continue.");
+		return true;
+	}
+
+	if (RenderMeshAsset->GetMaterial(0) == nullptr)
+	{
+		Test.AddError("Render Mesh Assets material was nullptr. Cannot continue.");
+		return true;
+	}
+
+	Test.TestTrue(
+		"Render mesh material name",
+		RenderMeshAsset->GetMaterial(0)->GetName().StartsWith("MI_RenderMaterial_"));
+	Test.TestTrue(
+		"Collision and Render mesh material same",
+		CollisionMeshAsset->GetMaterial(0) == RenderMeshAsset->GetMaterial(0));
+
 	return true;
 }
 
@@ -1169,6 +1217,15 @@ bool FClearRenderMaterialImportedCommand::Update()
 {
 	if (Test.Contents == nullptr)
 	{
+		return true;
+	}
+
+	const FString Path =
+		FAGX_ImportUtilities::GetDefaultModelImportDirectory("render_materials_build");
+	if (!FPaths::DirectoryExists(Path))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Unable to delete files directory '%s' because it does not exist."), *Path));
 		return true;
 	}
 
@@ -1180,30 +1237,15 @@ bool FClearRenderMaterialImportedCommand::Update()
 	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
 #endif
 
-	// Files that are created by the test and thus safe to remove. The GUID values may make this
-	// test cumbersome to update since they will change every time the AGX Dynamics archive is
-	// regenerated. Consider either adding wildcard support to DeleteImportDirectory or assign
-	// names to the render materials in the source .agxPy file.
-	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("Blueprint"),
-		TEXT("BP_render_materials_build.uasset"),
-		TEXT("RenderMaterial"),
-		TEXT("MI_RenderMaterial_274110F45BCA6D0F728F384964FC8A97.uasset"),
-		TEXT("MI_RenderMaterial_2C49A0878C9DF1A680CF4F43FFA9D8A8.uasset"),
-		TEXT("MI_RenderMaterial_6A442859AF55D4C69B7CFF9FB4A7FEAC.uasset"),
-		TEXT("MI_RenderMaterial_8F431C2CCB192A86C718162E2E3D3FB7.uasset"),
-		TEXT("MI_RenderMaterial_994C5229D2BA24D5EED45ED674E35BA2.uasset"),
-		TEXT("MI_RenderMaterial_9E48710314666BACEFAE4D5EBCB6B4A9.uasset"),
-		TEXT("MI_RenderMaterial_A24D8BD273490D42A47FE975DC5A36B5.uasset"),
-		TEXT("MI_RenderMaterial_A34BAE8D67A33E0D69C00FD35B724092.uasset"),
-		TEXT("MI_RenderMaterial_AD4C1FCF18CF2C3440CCEF63A49B6093.uasset"),
-		TEXT("MI_RenderMaterial_B14E6761F28A56E14C9FED220BB74088.uasset"),
-		TEXT("MI_RenderMaterial_D04C16D4174ACDF77E2BFC06F0E0AC85.uasset")};
-
-	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
-	ExpectedFiles.Add(*BaseBlueprintName);
-
-	AgxAutomationCommon::DeleteImportDirectory(TEXT("render_materials_build"), ExpectedFiles);
+	// Doing a file system delete of the assets is a bit harsh. Works in this case since we know
+	// nothing will use these assets the next time Unreal Editor is started since we don't use
+	// the imported unit test assets for anything.
+	if (!IFileManager::Get().DeleteDirectory(*Path, true, true))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("IFileManager::DeleteDirectory returned false trying to remove: '%s'"), *Path));
+		return true;
+	}
 
 	return true;
 }
@@ -1884,7 +1926,7 @@ bool FCheckWireImportedCommand::Update()
 	RangeHasType(12, 22, EWireNodeType::Free);
 	RangeHasType(22, 23, EWireNodeType::BodyFixed);
 
-	const FString WinchBodyName = Winch.BodyAttachment.BodyName.ToString();
+	const FString WinchBodyName = Winch.BodyAttachment.Name.ToString();
 	Test.TestEqual(TEXT("Winch Body Name"), WinchBodyName, FString("Winch Body"));
 
 	auto RangeHasBody =
@@ -1892,7 +1934,7 @@ bool FCheckWireImportedCommand::Update()
 	{
 		for (int32 I = Begin; I < End; ++I)
 		{
-			const FString NodeBodyName = Nodes[I].RigidBody.BodyName.ToString();
+			const FString NodeBodyName = Nodes[I].RigidBody.Name.ToString();
 			Test.TestEqual(TEXT("NodeBodyName"), NodeBodyName, BodyName);
 		}
 	};
@@ -2551,7 +2593,7 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Num Contact Materials in Registrar", Registrar->ContactMaterials.Num(), 2);
 
 	UAGX_ContactMaterial** Cm1 = Registrar->ContactMaterials.FindByPredicate(
-		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat1Mat2"; });
+		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat1_Mat2"; });
 	Test.TestNotNull("Cm1", Cm1);
 	if (Cm1 == nullptr)
 	{
@@ -2585,11 +2627,10 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Cm1 youngs modulus", (*Cm1)->YoungsModulus, 123451234.0);
 	Test.TestEqual("Cm1 damping", (*Cm1)->SpookDamping, 0.14);
 	Test.TestEqual("Cm1 adhesive force", (*Cm1)->AdhesiveForce, 0.15);
-	Test.TestEqual(
-		"Cm1 adhesive overlap", (float) (*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
+	Test.TestEqual("Cm1 adhesive overlap", (*Cm1)->AdhesiveOverlap, AgxToUnrealDistance(0.16));
 
 	UAGX_ContactMaterial** Cm2 = Registrar->ContactMaterials.FindByPredicate(
-		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat3Mat4"; });
+		[](UAGX_ContactMaterial* Cm) { return Cm->GetName() == "CM_Mat3_Mat4"; });
 	Test.TestNotNull("Cm2", Cm2);
 	if (Cm2 == nullptr)
 	{
@@ -2621,8 +2662,7 @@ bool FCheckContactMaterialsImportedCommand::Update()
 	Test.TestEqual("Cm2 youngs modulus", (*Cm2)->YoungsModulus, 101010101.0);
 	Test.TestEqual("Cm2 damping", (*Cm2)->SpookDamping, 0.24);
 	Test.TestEqual("Cm2 adhesive force", (*Cm2)->AdhesiveForce, 0.25);
-	Test.TestEqual(
-		"Cm2 adhesive overlap", (float) (*Cm2)->AdhesiveOverlap, AgxToUnrealDistance(0.26));
+	Test.TestEqual("Cm2 adhesive overlap", (*Cm2)->AdhesiveOverlap, AgxToUnrealDistance(0.26));
 
 	return true;
 }
@@ -2647,11 +2687,11 @@ bool FClearContactMaterialsImportedCommand::Update()
 #endif
 
 	TArray<const TCHAR*> ExpectedFiles = {
-		TEXT("Blueprint"),			TEXT("BP_contact_materials_build.uasset"),
-		TEXT("ContactMaterial"),	TEXT("CM_Mat1Mat2.uasset"),
-		TEXT("CM_Mat3Mat4.uasset"), TEXT("ShapeMaterial"),
-		TEXT("Mat1.uasset"),		TEXT("Mat2.uasset"),
-		TEXT("Mat3.uasset"),		TEXT("Mat4.uasset")};
+		TEXT("Blueprint"),			 TEXT("BP_contact_materials_build.uasset"),
+		TEXT("ContactMaterial"),	 TEXT("CM_Mat1_Mat2.uasset"),
+		TEXT("CM_Mat3_Mat4.uasset"), TEXT("ShapeMaterial"),
+		TEXT("Mat1.uasset"),		 TEXT("Mat2.uasset"),
+		TEXT("Mat3.uasset"),		 TEXT("Mat4.uasset")};
 
 	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
 	ExpectedFiles.Add(*BaseBlueprintName);
@@ -3298,7 +3338,7 @@ bool FCheckTrackImportedCommand::Update()
 		Test.TestEqual("Number of Wheels", Track->Wheels.Num(), 12);
 		for (const FAGX_TrackWheel& Wheel : Track->Wheels)
 		{
-			Test.TestEqual("Rigid Body Name", Wheel.RigidBody.BodyName.IsNone(), false);
+			Test.TestEqual("Rigid Body Name", Wheel.RigidBody.Name.IsNone(), false);
 		}
 
 		Test.TestEqual(
@@ -3410,8 +3450,8 @@ bool FClearTrackImportedCommand::Update()
 		TEXT("Blueprint"),
 		TEXT("BP_track_build.uasset"),
 		TEXT("ContactMaterial"),
-		TEXT("CM_trackground.uasset"),
-		TEXT("CM_trackwheel.uasset"),
+		TEXT("CM_track_ground.uasset"),
+		TEXT("CM_track_wheel.uasset"),
 		TEXT("ShapeMaterial"),
 		TEXT("ground.uasset"),
 		TEXT("track.uasset"),
@@ -3518,19 +3558,17 @@ bool FCheckAmorImportedCommand::Update()
 	}
 
 	Test.TestEqual(
-		"Body Thresholds MaxImpactSpeed",
-		(float) Body->MergeSplitProperties.Thresholds->MaxImpactSpeed, AgxToUnrealDistance(13.0));
+		"Body Thresholds MaxImpactSpeed", Body->MergeSplitProperties.Thresholds->MaxImpactSpeed,
+		AgxToUnrealDistance(13.0));
 	Test.TestEqual(
 		"Body Thresholds MaxRelativeNormalSpeed",
-		(float) Body->MergeSplitProperties.Thresholds->MaxRelativeNormalSpeed,
-		AgxToUnrealDistance(14.0));
+		Body->MergeSplitProperties.Thresholds->MaxRelativeNormalSpeed, AgxToUnrealDistance(14.0));
 	Test.TestEqual(
 		"Body Thresholds MaxRelativeTangentSpeed",
-		(float) Body->MergeSplitProperties.Thresholds->MaxRelativeTangentSpeed,
-		AgxToUnrealDistance(15.0));
+		Body->MergeSplitProperties.Thresholds->MaxRelativeTangentSpeed, AgxToUnrealDistance(15.0));
 	Test.TestEqual(
-		"Body Thresholds MaxRollingSpeed",
-		(float) Body->MergeSplitProperties.Thresholds->MaxRollingSpeed, AgxToUnrealDistance(16.0));
+		"Body Thresholds MaxRollingSpeed", Body->MergeSplitProperties.Thresholds->MaxRollingSpeed,
+		AgxToUnrealDistance(16.0));
 	Test.TestTrue(
 		"Body Thresholds MaySplitInGravityField",
 		Body->MergeSplitProperties.Thresholds->bMaySplitInGravityField);
@@ -3560,6 +3598,11 @@ bool FCheckAmorImportedCommand::Update()
 
 	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(
 		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Wire"));
+	Test.TestNotNull(TEXT("Wire Component"), Wire);
+	if (Wire == nullptr)
+	{
+		return true;
+	}
 	Test.TestFalse("Wire Enable Merge", Wire->MergeSplitProperties.bEnableMerge);
 	Test.TestTrue("Wire Enable Merge", Wire->MergeSplitProperties.bEnableSplit);
 	Test.TestNotNull("Wire Thresholds", Wire->MergeSplitProperties.Thresholds);
@@ -3660,6 +3703,247 @@ bool FClearAmorImportedCommand::Update()
 	ExpectedFiles.Add(*BaseBlueprintName);
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("amor_build"), ExpectedFiles);
+
+	return true;
+}
+
+//
+// Shovel test starts here.
+//
+
+class FImporterToBlueprint_ShovelTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckShovelImportedCommand, FImporterToBlueprint_ShovelTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearShovelImportedCommand, FImporterToBlueprint_ShovelTest&, Test);
+
+class FImporterToBlueprint_ShovelTest final : public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FImporterToBlueprint_ShovelTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FImporterToBlueprint_ShovelTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.Shovel"))
+	{
+	}
+
+	UBlueprint* Contents = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveBlueprintCommand(TEXT("terrain_build.agx"), Contents, *this));
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckShovelImportedCommand(*this));
+		ADD_LATENT_AUTOMATION_COMMAND(FClearShovelImportedCommand(*this));
+		return true;
+	}
+};
+
+namespace
+{
+	FImporterToBlueprint_ShovelTest ImporterToBlueprint_ShovelTest;
+}
+
+bool FCheckShovelImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import Shovel test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported Components.
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
+	// One Rigid Body (1), two Shapes (3), one Shovel (4), one Model Source (5), and one default
+	// scene root (6).
+	const int32 ExpectedNumComponents {6};
+	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), ExpectedNumComponents);
+
+	UAGX_RigidBodyComponent* ShovelBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Shovel Body"));
+	Test.TestNotNull(TEXT("Shovel Body"), ShovelBody);
+	if (ShovelBody == nullptr)
+		return true;
+	Test.TestEqual(
+		TEXT("Body Import GUID"),
+		ShovelBody->ImportGuid.ToString(EGuidFormats::DigitsWithHyphensLower),
+		TEXT("8c48a356-d44b-1f4a-134c-e7e7a1f4c003"));
+	Test.TestEqual(
+		TEXT("Shovel Body Position"), ShovelBody->GetRelativeLocation(), FVector(0.0, 0.0, 100.0));
+
+	UAGX_BoxShapeComponent* VerticalBox = GetByName<UAGX_BoxShapeComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Vertical Box"));
+	Test.TestNotNull(TEXT("Vertical Box"), VerticalBox);
+	if (VerticalBox == nullptr)
+		return true;
+	Test.TestEqual(
+		TEXT("Vertical Box Import GUID"),
+		VerticalBox->ImportGuid.ToString(EGuidFormats::DigitsWithHyphensLower),
+		TEXT("8c48a356-d44b-1f4a-134c-e7e7a1f4c004"));
+	Test.TestEqual(
+		TEXT("Vertical Box Half Extent"), VerticalBox->HalfExtent, FVector(10.0, 100.0, 100.0));
+
+	UAGX_ShovelComponent* Shovel = GetByName<UAGX_ShovelComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(TEXT("Shovel_Shovel Body")));
+	Test.TestNotNull(TEXT("Shovel Component"), Shovel);
+	if (Shovel == nullptr)
+		return true;
+	Test.TestEqual(
+		TEXT("Shovel Import GUID"),
+		Shovel->ImportGuid.ToString(EGuidFormats::DigitsWithHyphensLower),
+		"8c48a356-d44b-1f4a-134c-e7e7a1f4c008");
+	Test.TestEqual(TEXT("bEnable"), Shovel->bEnabled, false);
+	Test.TestEqual(
+		TEXT("Top Edge Start Location"), Shovel->TopEdge.Start.LocalLocation,
+		AgxToUnrealDisplacement(0.1, -1.0, 1.0));
+	Test.TestEqual(
+		TEXT("Top Edge Start Parent Name"), Shovel->TopEdge.Start.Parent.Name,
+		FName(TEXT("Shovel Body")));
+	Test.TestEqual(
+		TEXT("Top Edge End Location"), Shovel->TopEdge.End.LocalLocation,
+		AgxToUnrealDisplacement(0.1, 1.0, 1.0));
+	Test.TestEqual(
+		TEXT("Top Edge End Parent Name"), Shovel->TopEdge.End.Parent.Name,
+		FName(TEXT("Shovel Body")));
+	Test.TestEqual(
+		TEXT("Cutting Edge Start Location"), Shovel->CuttingEdge.Start.LocalLocation,
+		AgxToUnrealDisplacement(1.0, -1.0, 0.1));
+	Test.TestEqual(
+		TEXT("Cutting Edge Start Parent Name"), Shovel->CuttingEdge.Start.Parent.Name,
+		FName(TEXT("Shovel Body")));
+	Test.TestEqual(
+		TEXT("Cutting Edge End Location"), Shovel->CuttingEdge.End.LocalLocation,
+		AgxToUnrealDisplacement(1.0, 1.0, 0.1));
+	Test.TestEqual(
+		TEXT("Cutting Edge End Parent Name"), Shovel->CuttingEdge.End.Parent.Name,
+		FName(TEXT("Shovel Body")));
+	Test.TestEqual(
+		TEXT("Cutting Direction"), Shovel->CuttingDirection.LocalRotation,
+		FRotator(ForceInitToZero));
+
+	Test.TestNotNull(TEXT("Shovel Properties"), Shovel->ShovelProperties);
+	if (Shovel->ShovelProperties == nullptr)
+		return true;
+	Test.TestTrue(TEXT("Shovel Properties is asset"), Shovel->ShovelProperties->IsAsset());
+	Test.TestFalse(TEXT("Shovel Properties is instance"), Shovel->ShovelProperties->IsInstance());
+	Test.TestEqual(
+		TEXT("ToothLength"), Shovel->ShovelProperties->ToothLength, AgxToUnrealDistance(1.0));
+	Test.TestEqual(
+		TEXT("ToothMinimumRadius"), Shovel->ShovelProperties->ToothMinimumRadius,
+		AgxToUnrealDistance(2.0));
+	Test.TestEqual(
+		TEXT("ToothMaximumRadius"), Shovel->ShovelProperties->ToothMaximumRadius,
+		AgxToUnrealDistance(3.0));
+	Test.TestEqual(TEXT("NumberOfTeeth"), Shovel->ShovelProperties->NumberOfTeeth, 4);
+	Test.TestEqual(
+		TEXT("NoMergeExtensionDistance"), Shovel->ShovelProperties->NoMergeExtensionDistance,
+		AgxToUnrealDistance(5.0));
+	Test.TestEqual(
+		TEXT("MinimumSubmergedContactLengthFraction"),
+		Shovel->ShovelProperties->MinimumSubmergedContactLengthFraction, 6.0);
+	Test.TestEqual(
+		TEXT("VerticalBladeSoilMergeDistance"),
+		Shovel->ShovelProperties->VerticalBladeSoilMergeDistance, AgxToUnrealDistance(7.0));
+	Test.TestEqual(
+		TEXT("SecondarySeparationDeadloadLimit"),
+		Shovel->ShovelProperties->SecondarySeparationDeadloadLimit, 8.0);
+	Test.TestEqual(
+		TEXT("PenetrationDepthThreshold"), Shovel->ShovelProperties->PenetrationDepthThreshold,
+		AgxToUnrealDistance(9.0));
+	Test.TestEqual(
+		TEXT("PenetrationForceScaling"), Shovel->ShovelProperties->PenetrationForceScaling, 10.0);
+	Test.TestEqual(
+		TEXT("EnableParticleFreeDeformers"), Shovel->ShovelProperties->bEnableParticleFreeDeformers,
+		true);
+	Test.TestEqual(
+		TEXT("AlwaysRemoveShovelContacts"), Shovel->ShovelProperties->bAlwaysRemoveShovelContacts,
+		true);
+	Test.TestEqual(
+		TEXT("MaxPenetrationForce"), Shovel->ShovelProperties->MaximumPenetrationForce, 11.0);
+	Test.TestEqual(
+		TEXT("ContactRegionThreshold"), Shovel->ShovelProperties->ContactRegionThreshold,
+		AgxToUnrealDistance(12.0));
+	Test.TestEqual(
+		TEXT("ContactRegionVerticalLimit"), Shovel->ShovelProperties->ContactRegionVerticalLimit,
+		AgxToUnrealDistance(13.0));
+	Test.TestEqual(
+		TEXT("EnableInnerShapeCreateDynamicMass"),
+		Shovel->ShovelProperties->bEnableInnerShapeCreateDynamicMass, false);
+	Test.TestEqual(
+		TEXT("EnableParticleForceFeedback"), Shovel->ShovelProperties->bEnableParticleForceFeedback,
+		true);
+	Test.TestEqual(
+		TEXT("ParicleInclusionMultiplier"), Shovel->ShovelProperties->ParticleInclusionMultiplier,
+		/*14.0*/ 1.0 /* AGX Dynamics 2.37.0.1 does not store/restore this value. */);
+
+	Test.TestEqual(
+		TEXT("Primary enabled"), Shovel->ShovelProperties->PrimaryExcavationSettings.bEnabled,
+		false);
+	Test.TestEqual(
+		TEXT("Primary create dynamic mass"),
+		Shovel->ShovelProperties->PrimaryExcavationSettings.bEnableCreateDynamicMass, false);
+	Test.TestEqual(
+		TEXT("Primary force feedback"),
+		Shovel->ShovelProperties->PrimaryExcavationSettings.bEnableForceFeedback, false);
+
+	Test.TestEqual(
+		TEXT("Deform back  enabled"),
+		Shovel->ShovelProperties->DeformBackExcavationSettings.bEnabled, false);
+	Test.TestEqual(
+		TEXT("Deform back create dynamic mass"),
+		Shovel->ShovelProperties->DeformBackExcavationSettings.bEnableCreateDynamicMass, false);
+	Test.TestEqual(
+		TEXT("Deform back force feedback"),
+		Shovel->ShovelProperties->DeformBackExcavationSettings.bEnableForceFeedback, true);
+
+	Test.TestEqual(
+		TEXT("Deform right enabled"),
+		Shovel->ShovelProperties->DeformRightExcavationSettings.bEnabled, false);
+	Test.TestEqual(
+		TEXT("Deform right create dynamic mass"),
+		Shovel->ShovelProperties->DeformRightExcavationSettings.bEnableCreateDynamicMass, true);
+	Test.TestEqual(
+		TEXT("Deform right force feedback"),
+		Shovel->ShovelProperties->DeformRightExcavationSettings.bEnableForceFeedback, false);
+
+	Test.TestEqual(
+		TEXT("Deform left enabled"),
+		Shovel->ShovelProperties->DeformLeftExcavationSettings.bEnabled, true);
+	Test.TestEqual(
+		TEXT("Deform left create dynamic mass"),
+		Shovel->ShovelProperties->DeformLeftExcavationSettings.bEnableCreateDynamicMass, false);
+	Test.TestEqual(
+		TEXT("Deform left force feedback"),
+		Shovel->ShovelProperties->DeformLeftExcavationSettings.bEnableForceFeedback, false);
+
+	return true;
+}
+
+bool FClearShovelImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+	// clang-format off
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	TArray<const TCHAR*> ExpectedFiles = {
+		TEXT("BP_terrain_build.uasset"),
+			*BaseBlueprintName,
+		TEXT("Blueprint"),
+		TEXT("ShovelProperties"),
+			TEXT("AGX_SP_ShovelBody.uasset")
+	};
+	// clang-format on
+
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("terrain_build"), ExpectedFiles);
 
 	return true;
 }

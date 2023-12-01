@@ -17,6 +17,7 @@
 #include "Terrain/AGX_CuttingDirectionComponent.h"
 #include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "Terrain/AGX_HeightFieldBoundsComponent.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Terrain/AGX_TerrainSpriteComponent.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
 #include "Terrain/ShovelBarrier.h"
@@ -41,6 +42,9 @@
 
 // Standard library includes.
 #include <algorithm>
+
+#include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelProperties.h"
 
 #ifdef LOCTEXT_NAMESPACE
 #error "LOCTEXT_NAMESPACE leakage."
@@ -77,7 +81,8 @@ AAGX_Terrain::AAGX_Terrain()
 		auto AssetFinder = ConstructorHelpers::FObjectFinder<Type>(Path);
 		if (!AssetFinder.Succeeded())
 		{
-			UE_LOG(LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), *Path);
+			UE_LOG(
+				LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), *Path);
 			return;
 		}
 
@@ -97,6 +102,35 @@ AAGX_Terrain::AAGX_Terrain()
 		TerrainParticlesDataMap,
 		TEXT("TextureRenderTarget2D'/AGXUnreal/Terrain/Rendering/Particles/"
 			 "RT_TerrainParticleData.RT_TerrainParticleData'"));
+}
+
+void AAGX_Terrain::SetCanCollide(bool bInCanCollide)
+{
+	// CanCollide is set on the Terrain Pager native if using Terrain Paging, otherwise set on the
+	// regular Terrain native. TerrainPager.OnTemplateTerrainChanged has no effect when disabling
+	// collision on a template Terrain.
+	if (HasNativeTerrainPager())
+	{
+		NativeTerrainPagerBarrier.SetCanCollide(bInCanCollide);
+	}
+	else if (HasNative())
+	{
+		NativeBarrier.SetCanCollide(bInCanCollide);
+	}
+
+	bCanCollide = bInCanCollide;
+}
+
+bool AAGX_Terrain::GetCanCollide() const
+{
+	// There is no clean CanCollide check for a Terrain pager, in that case we fall back on
+	// the member in the Terrain actor.
+	if (HasNative() && !bEnableTerrainPaging)
+	{
+		return NativeBarrier.GetCanCollide();
+	}
+
+	return bCanCollide;
 }
 
 bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
@@ -170,6 +204,92 @@ int32 AAGX_Terrain::GetNumParticles() const
 		check(HasNative());
 		return static_cast<int32>(NativeBarrier.GetNumParticles());
 	}
+}
+
+namespace AGX_Terrain_helpers
+{
+	FShovelReferenceWithSettings* FindShovelSettings(
+		TArray<FShovelReferenceWithSettings>& Shovels, UAGX_ShovelComponent* Shovel,
+		const TCHAR* FunctionName, const TCHAR* TerrainName)
+	{
+		FShovelReferenceWithSettings* Element =
+			Shovels.FindByPredicate([Shovel](const FShovelReferenceWithSettings& Element)
+									{ return Element.Shovel.GetShovelComponent() == Shovel; });
+		if (Element == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("%s called for a shovel that the AGX Terrain '%s' doesn't know about."),
+				FunctionName, TerrainName);
+			return nullptr;
+		}
+
+		return Element;
+	}
+
+	bool WriteBarrierRadii(FTerrainPagerBarrier& Barrier, FShovelReferenceWithSettings& Element)
+	{
+		if (!Barrier.HasNative())
+		{
+			return false;
+		}
+
+		UAGX_ShovelComponent* Shovel = Element.Shovel.GetShovelComponent();
+		if (Shovel == nullptr)
+		{
+			return false;
+		}
+
+		UAGX_RigidBodyComponent* Body = Shovel->RigidBody.GetRigidBody();
+		if (Body == nullptr || !Body->HasNative())
+		{
+			return false;
+		}
+
+		return Barrier.SetTileLoadRadii(
+			*Body->GetNative(), Element.PreloadRadius, Element.RequiredRadius);
+	}
+}
+
+bool AAGX_Terrain::SetPreloadRadius(UAGX_ShovelComponent* Shovel, double InPreloadRadius)
+{
+	FShovelReferenceWithSettings* Element = AGX_Terrain_helpers::FindShovelSettings(
+		ShovelComponents, Shovel, TEXT("Set Preload Radius"), *GetName());
+	if (Element == nullptr)
+	{
+		return false;
+	}
+
+	Element->PreloadRadius = InPreloadRadius;
+	return AGX_Terrain_helpers::WriteBarrierRadii(NativeTerrainPagerBarrier, *Element);
+}
+
+bool AAGX_Terrain::SetRequiredRadius(UAGX_ShovelComponent* Shovel, double InRequiredRadius)
+{
+	FShovelReferenceWithSettings* Element = AGX_Terrain_helpers::FindShovelSettings(
+		ShovelComponents, Shovel, TEXT("Set Required Radius"), *GetName());
+	if (Element == nullptr)
+	{
+		return false;
+	}
+
+	Element->RequiredRadius = InRequiredRadius;
+	return AGX_Terrain_helpers::WriteBarrierRadii(NativeTerrainPagerBarrier, *Element);
+}
+
+bool AAGX_Terrain::SetTerrainPagerRadii(
+	UAGX_ShovelComponent* Shovel, double InPreloadRadius, double InRequiredRadius)
+{
+	FShovelReferenceWithSettings* Element = AGX_Terrain_helpers::FindShovelSettings(
+		ShovelComponents, Shovel, TEXT("Set Required Radius"), *GetName());
+	if (Element == nullptr)
+	{
+		return false;
+	}
+
+	Element->PreloadRadius = InPreloadRadius;
+	Element->RequiredRadius = InRequiredRadius;
+	return AGX_Terrain_helpers::WriteBarrierRadii(NativeTerrainPagerBarrier, *Element);
 }
 
 void AAGX_Terrain::SetCreateParticles(bool CreateParticles)
@@ -436,6 +556,9 @@ namespace AGX_Terrain_helpers
 {
 	void EnsureUseDynamicMaterialInstance(AAGX_Terrain& Terrain)
 	{
+		if (!IsValid(Terrain.SourceLandscape))
+			return;
+
 		TArray<ALandscapeProxy*> StreamingProxies;
 		if (AGX_HeightFieldUtilities::IsOpenWorldLandscape(*Terrain.SourceLandscape))
 		{
@@ -457,8 +580,7 @@ namespace AGX_Terrain_helpers
 			return Res;
 		};
 
-		if (Terrain.SourceLandscape == nullptr ||
-			IsUsingDynamicMaterialInstance(*Terrain.SourceLandscape))
+		if (IsUsingDynamicMaterialInstance(*Terrain.SourceLandscape))
 		{
 			return;
 		}
@@ -499,6 +621,10 @@ void AAGX_Terrain::InitPropertyDispatcher()
 	{
 		return;
 	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bCanCollide),
+		[](ThisClass* This) { This->SetCanCollide(This->bCanCollide); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, SourceLandscape),
@@ -833,7 +959,9 @@ void AAGX_Terrain::InitializeNative()
 {
 	if (SourceLandscape == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("No source landscape selected for terrain %s."), *GetName());
+		UE_LOG(
+			LogAGX, Error, TEXT("No source landscape selected for terrain '%s'."),
+			*GetLabelSafe(this));
 		return;
 	}
 
@@ -860,6 +988,7 @@ void AAGX_Terrain::InitializeNative()
 		}
 	}
 
+	SetCanCollide(bCanCollide);
 	CreateNativeShovels();
 	AddTerrainPagerBodies();
 	InitializeRendering();
@@ -1052,12 +1181,13 @@ void AAGX_Terrain::CreateNativeShovels()
 			*GetName());
 	}
 
-	auto AddShovel = [this](FShovelBarrier& ShovelBarrier, const FAGX_Shovel& Shovel) -> bool
+	auto AddShovel =
+		[this](FShovelBarrier& ShovelBarrier, double RequiredRadius, double PreloadRadius) -> bool
 	{
 		if (bEnableTerrainPaging)
 		{
 			return NativeTerrainPagerBarrier.AddShovel(
-				ShovelBarrier, Shovel.RequiredRadius, Shovel.PreloadRadius);
+				ShovelBarrier, RequiredRadius, PreloadRadius);
 		}
 		else
 		{
@@ -1065,8 +1195,16 @@ void AAGX_Terrain::CreateNativeShovels()
 		}
 	};
 
+	// Create and register legacy shovels.
 	for (FAGX_Shovel& Shovel : Shovels)
 	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Deprecation warning: AGX Terrain '%s': AAGX_Terrain::Shovels has been deprecated "
+				 "and will be removed in a future release. Use AAGX_Terrain::ShovelComponents "
+				 "instead."),
+			*GetLabelSafe(this));
+
 		if (Shovel.RigidBodyActor == nullptr)
 		{
 			UE_LOG(
@@ -1111,7 +1249,7 @@ void AAGX_Terrain::CreateNativeShovels()
 
 		FAGX_Shovel::UpdateNativeShovelProperties(ShovelBarrier, Shovel);
 
-		bool Added = AddShovel(ShovelBarrier, Shovel);
+		bool Added = AddShovel(ShovelBarrier, Shovel.RequiredRadius, Shovel.PreloadRadius);
 		if (!Added)
 		{
 			UE_LOG(
@@ -1123,7 +1261,7 @@ void AAGX_Terrain::CreateNativeShovels()
 			std::swap(CuttingEdgeLine.v1, CuttingEdgeLine.v2);
 			ShovelBarrier.SetTopEdge(TopEdgeLine);
 			ShovelBarrier.SetCuttingEdge(CuttingEdgeLine);
-			Added = AddShovel(ShovelBarrier, Shovel);
+			Added = AddShovel(ShovelBarrier, Shovel.RequiredRadius, Shovel.PreloadRadius);
 			if (!Added)
 			{
 				UE_LOG(
@@ -1142,6 +1280,60 @@ void AAGX_Terrain::CreateNativeShovels()
 		UE_LOG(
 			LogAGX, Log, TEXT("Created shovel '%s' for terrain '%s'."), *Actor->GetName(),
 			*GetName());
+	}
+
+	// Create and register Shovel Components.
+	for (FShovelReferenceWithSettings& ShovelRef : ShovelComponents)
+	{
+		UAGX_ShovelComponent* ShovelComponent = ShovelRef.Shovel.GetShovelComponent();
+		if (ShovelComponent == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("AGX Terrain '%s' have a Shovel reference that does not reference a valid "
+					 "Shovel."),
+				*GetLabelSafe(this));
+			continue;
+		}
+
+		FShovelBarrier* ShovelBarrier = ShovelComponent->GetOrCreateNative();
+		if (ShovelBarrier == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Shovel '%s' in AGX Terrain '%s' could not create AGX Dynamics "
+					 "representation. Ignoring this shovel. It will not be able to deform the "
+					 "Terrain."),
+				*ShovelComponent->GetName(), *GetLabelSafe(this));
+			continue;
+		}
+		check(ShovelBarrier->HasNative());
+
+		const double RequiredRadius = ShovelRef.RequiredRadius;
+		const double PreloadRadius = ShovelRef.PreloadRadius;
+
+		bool Added = AddShovel(*ShovelBarrier, RequiredRadius, PreloadRadius);
+		if (!Added)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Terrain '%s' rejected shovel '%s' in '%s'. Reversing edge directions and "
+					 "trying again."),
+				*GetLabelSafe(this), *ShovelComponent->GetName(),
+				*GetLabelSafe(ShovelComponent->GetOwner()));
+
+			ShovelComponent->SwapEdgeDirections();
+			Added = AddShovel(*ShovelBarrier, RequiredRadius, PreloadRadius);
+			if (!Added)
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Terrain '%s' rejected shovel '%s' in '%s' after edge directions flip. "
+						 "Abandoning shovel."),
+					*GetLabelSafe(this), *GetNameSafe(ShovelComponent),
+					*GetLabelSafe(ShovelComponent->GetOwner()));
+			}
+		}
 	}
 }
 
@@ -1244,7 +1436,7 @@ void AAGX_Terrain::InitializeDisplacementMap()
 			TEXT("The size of the Displacement Map render target (%dx%d) for "
 				 "AGX Terrain '%s' does not match the vertices in the Terrain (%dx%d). "
 				 "Resizing the displacement map."),
-			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetName(),
+			LandscapeDisplacementMap->SizeX, LandscapeDisplacementMap->SizeY, *GetLabelSafe(this),
 			NumVerticesX, NumVerticesY);
 
 		LandscapeDisplacementMap->ResizeTarget(NumVerticesX, NumVerticesY);
@@ -1265,6 +1457,17 @@ void AAGX_Terrain::InitializeDisplacementMap()
 	/// \todo I'm not sure why we need this. Does the texture sampler "fudge the
 	/// values" when using non-linear gamma?
 	LandscapeDisplacementMap->bForceLinearGamma = true;
+
+	if (LandscapeDisplacementMap->GetResource() == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not allocate resource for Landscape Displacement Map for AGX Terrain '%s'. "
+				 "There may be rendering issues."),
+			*GetLabelSafe(this));
+		return;
+	}
+
 	DisplacementMapInitialized = true;
 }
 
@@ -1376,10 +1579,15 @@ bool AAGX_Terrain::InitializeParticleSystemComponent()
 #endif
 	);
 #if WITH_EDITORONLY_DATA
-	ParticleSystemComponent->bVisualizeComponent = true;
+	// Must check for nullptr here because no particle system component is created with running
+	// as a unit test without graphics, i.e. with our run_unit_tests script in GitLab CI.
+	if (ParticleSystemComponent != nullptr)
+	{
+		ParticleSystemComponent->bVisualizeComponent = true;
+	}
 #endif
 
-	return true;
+	return ParticleSystemComponent != nullptr;
 }
 
 bool AAGX_Terrain::InitializeParticlesMap()

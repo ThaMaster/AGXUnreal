@@ -2,6 +2,9 @@
 
 #pragma once
 
+// Unreal Engine includes.
+#include <CoreMinimal.h>
+
 // Standard library includes.
 #include <memory>
 
@@ -30,8 +33,12 @@ public:
 	const FTerrainPagerRef* GetNative() const;
 	void ReleaseNative();
 
+	void SetCanCollide(bool bCanCollide);
+
 	bool AddShovel(FShovelBarrier& Shovel, double RequiredRadius, double PreloadRadius);
 	bool AddRigidBody(FRigidBodyBarrier& Body, double RequiredRadius, double PreloadRadius);
+
+	bool SetTileLoadRadii(FRigidBodyBarrier& Body, double RequiredRadius, double PreloadRadius);
 
 	FParticleData GetParticleData() const;
 

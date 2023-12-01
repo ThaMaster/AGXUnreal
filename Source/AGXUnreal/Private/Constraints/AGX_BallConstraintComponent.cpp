@@ -6,6 +6,7 @@
 #include "Constraints/ConstraintBarrier.h"
 #include "Constraints/BallJointBarrier.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 class FRigidBodyBarrier;
 
@@ -34,5 +35,5 @@ const FBallJointBarrier* UAGX_BallConstraintComponent::GetNativeBallJoint() cons
 void UAGX_BallConstraintComponent::CreateNativeImpl()
 {
 	FAGX_ConstraintUtilities::CreateNative(
-		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetLabelSafe(GetOwner()));
 }

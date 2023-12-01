@@ -10,6 +10,8 @@
 
 // Unreal Engine includes.
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "SAGX_OfflineActivationDialog"
 
@@ -49,7 +51,7 @@ void SAGX_OfflineActivationDialog::Construct(const FArguments& InArgs)
 				[
 					CreateActivationResponseGui()
 				]
-			]	
+			]
 		]
 	];
 	// clang-format on
@@ -78,7 +80,7 @@ TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActivationRequestGui()
 		"will be automatically created and stored on this computer.\n\n"
 		"More information regarding offline license activation can\n"
 		"be found in the AGX Dynamics for Unreal User Manual.\n";
-	
+
 	return SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
 			.Padding(FMargin(50.0f, 10.0f, 10.f, 10.f))

@@ -11,9 +11,6 @@ public class AGXUnreal : ModuleRules
 {
 	public AGXUnreal(ReadOnlyTargetRules Target) : base(Target)
 	{
-		//
-		Console.Write(typeof(string).Assembly.ImageRuntimeVersion);
-
 		// At 4.25 we started getting warnings encouraging us to enable these
 		// settings. At or around 4.26 Unreal Engine makes these settings the
 		// default.

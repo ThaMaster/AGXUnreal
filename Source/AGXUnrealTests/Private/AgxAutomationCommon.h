@@ -4,11 +4,14 @@
 
 // Unreal Engine includes.
 #include "Engine/EngineTypes.h"
+#include "Components/ActorComponent.h"
 #include "Math/Vector.h"
 #include "Math/Rotator.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/EngineVersionComparison.h"
 
+class UBlueprint;
+class USCS_Node;
 class UWorld;
 
 struct FLinearColor;
@@ -183,6 +186,9 @@ namespace AgxAutomationCommon
 	 */
 	TArray<FString> GetReferencedStaticMeshAssets(const TArray<UActorComponent*>& Components);
 
+	USCS_Node* GetNodeChecked(const UBlueprint& Blueprint, const FString& Name);
+	USCS_Node* GetOnlyAttachChildChecked(USCS_Node* Node);
+
 	template <typename T>
 	T* GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name)
 	{
@@ -222,6 +228,8 @@ namespace AgxAutomationCommon
 	{
 		return Centimeter / T {100};
 	}
+
+	void AddExpectedError(FAutomationTestBase& Test, const FString& Error);
 
 	/**
 	 * Latent Command that tests that TestHelper::GetTestWorld and
@@ -322,6 +330,11 @@ namespace AgxAutomationCommon
 	constexpr float UnrealToAgx {0.01f};
 
 	inline float AgxToUnrealDistance(float Agx)
+	{
+		return Agx * AgxToUnreal;
+	}
+
+	inline double AgxToUnrealDistance(double Agx)
 	{
 		return Agx * AgxToUnreal;
 	}

@@ -609,7 +609,7 @@ void AGX_RealDetails_helpers::NewValueSet(
 
 	// We are responsible for setting up ArrayIndices information in the FPropertyChangedChainEvent
 	// and also stepping the seemingly internal ObjectIteratorIndex when calling
-	// PostEditChangeChainProperty below. This ensures we can do e.g. ´Event.GetArrayIndex());´ from
+	// PostEditChangeChainProperty below. This ensures we can do e.g. 'Event.GetArrayIndex());' from
 	// within PostEditChangeChainProperty and get the correct array index if this is party of an array.
 	TArray<TMap<FString, int32>> ArrayIndicesPerObject;
 	TOptional<TMap<FString, int32>> IndicesMapMaybe = GetArrayIndicesFromPropertyPath(ValuePath);

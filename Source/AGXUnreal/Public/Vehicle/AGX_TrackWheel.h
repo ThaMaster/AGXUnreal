@@ -46,6 +46,7 @@ public:
 		EditAnywhere, Category = "AGX Track Wheel",
 		Meta = (EditCondition = "bUseFrameDefiningComponent"))
 	FAGX_SceneComponentReference FrameDefiningComponent;
+	// TODO Consider using FAGX_ComponentReference instead of FAGX_SceneComponentReference.
 
 	UPROPERTY(EditAnywhere, Category = "AGX Track Wheel", Meta = (InlineEditConditionToggle))
 	bool bUseFrameDefiningComponent {false};

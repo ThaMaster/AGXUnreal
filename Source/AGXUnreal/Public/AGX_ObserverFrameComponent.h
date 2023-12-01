@@ -4,6 +4,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Components/SceneComponent.h"
 
 #include "AGX_ObserverFrameComponent.generated.h"
 

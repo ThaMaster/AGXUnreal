@@ -4,6 +4,7 @@
 
 // Unreal Engine includes.
 #include "Components/BillboardComponent.h"
+#include "Engine/Texture2D.h"
 
 UAGX_TerrainSpriteComponent::UAGX_TerrainSpriteComponent()
 {

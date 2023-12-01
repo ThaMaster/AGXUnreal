@@ -10,11 +10,12 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
+#include "Materials/AGX_MaterialBase.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "EngineUtils.h"
 #include "Engine/World.h"
-#include "Materials/AGX_MaterialBase.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_ContactMaterial"
 
@@ -673,7 +674,13 @@ void UAGX_ContactMaterial::CommitToAsset()
 	{
 		if (HasNative())
 		{
+#if WITH_EDITOR
+			Asset->Modify();
+#endif
 			Asset->CopyFrom(*GetNative());
+#if WITH_EDITOR
+			FAGX_ObjectUtilities::MarkAssetDirty(*Asset);
+#endif
 		}
 	}
 	else if (Instance != nullptr)

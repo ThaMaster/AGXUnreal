@@ -8,6 +8,9 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
+// Standard library includes.
+#include <limits>
+
 /**
  * Constants that reflect the initial values used in the native constraint implementations.
  * Therefore, do not change these!

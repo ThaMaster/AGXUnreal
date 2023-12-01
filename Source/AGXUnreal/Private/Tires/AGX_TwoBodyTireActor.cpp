@@ -25,10 +25,8 @@ AAGX_TwoBodyTireActor::AAGX_TwoBodyTireActor()
 	TwoBodyTireComponent = CreateDefaultSubobject<UAGX_TwoBodyTireComponent>(TEXT("TwoBodyTire"));
 
 	TwoBodyTireComponent->TireRigidBody.OwningActor = this;
-	TwoBodyTireComponent->TireRigidBody.BodyName = TireRigidBodyComponent->GetFName();
-	TwoBodyTireComponent->TireRigidBody.CacheCurrentRigidBody();
+	TwoBodyTireComponent->TireRigidBody.Name = TireRigidBodyComponent->GetFName();
 
 	TwoBodyTireComponent->HubRigidBody.OwningActor = this;
-	TwoBodyTireComponent->HubRigidBody.BodyName = HubRigidBodyComponent->GetFName();
-	TwoBodyTireComponent->HubRigidBody.CacheCurrentRigidBody();
+	TwoBodyTireComponent->HubRigidBody.Name = HubRigidBodyComponent->GetFName();
 }

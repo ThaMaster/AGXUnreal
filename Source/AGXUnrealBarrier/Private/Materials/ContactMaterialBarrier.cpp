@@ -125,6 +125,12 @@ FContactMaterialBarrier::FContactMaterialBarrier()
 {
 }
 
+FContactMaterialBarrier::FContactMaterialBarrier(FContactMaterialBarrier&& Other)
+	: NativeRef {std::move(Other.NativeRef)}
+{
+	Other.NativeRef.reset(new FContactMaterialRef);
+}
+
 FContactMaterialBarrier::FContactMaterialBarrier(std::unique_ptr<FContactMaterialRef> Native)
 	: NativeRef(std::move(Native))
 {

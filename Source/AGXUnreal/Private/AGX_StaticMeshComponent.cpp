@@ -12,6 +12,7 @@
 
 // Unreal Engien includes.
 #include "Engine/StaticMesh.h"
+#include "Engine/World.h"
 #include "PhysicsEngine/BodySetup.h"
 #include "PhysicsEngine/AggregateGeom.h"
 

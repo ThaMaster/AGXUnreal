@@ -6,6 +6,7 @@
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGXBarrierFactories.h"
+#include "AGXRefs.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
@@ -40,6 +41,8 @@
 #include <agxModel/TwoBodyTire.h>
 #include <agxModel/UrdfReader.h>
 #include <agxSDK/Simulation.h>
+#include <agxTerrain/Shovel.h>
+#include <agxTerrain/Terrain.h>
 #include <agxWire/Wire.h>
 #include <agxVehicle/Track.h>
 #include "EndAGXIncludes.h"
@@ -132,7 +135,10 @@ namespace
 	/**
 	 * Several agx::Geometries may use the same agx::Material.
 	 */
-	void ReadMaterials(agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
+	void ReadMaterials(
+		agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects,
+		TSet<const agx::Material*>& NonFreeMaterials,
+		TSet<const agx::ContactMaterial*>& NonFreeContactMaterials)
 	{
 		const agxSDK::StringMaterialRefTable& MaterialsTable =
 			Simulation.getMaterialManager()->getMaterials();
@@ -140,6 +146,8 @@ namespace
 		for (auto& It : MaterialsTable)
 		{
 			agx::Material* Mat = It.second.get();
+			if (NonFreeMaterials.Contains(Mat))
+				continue;
 			OutSimObjects.GetShapeMaterials().Add(
 				AGXBarrierFactories::CreateShapeMaterialBarrier(Mat));
 		}
@@ -150,6 +158,19 @@ namespace
 		for (auto& It : ContactMaterialsTable)
 		{
 			agx::ContactMaterial* ContMat = It.second.get();
+			if (NonFreeContactMaterials.Contains(ContMat))
+				continue;
+			const agx::Material* Material1 = ContMat->getMaterial1();
+			const agx::Material* Material2 = ContMat->getMaterial1();
+			if ((Material1 != nullptr && NonFreeMaterials.Contains(Material1)) ||
+				(Material2 != nullptr && NonFreeMaterials.Contains(Material2)))
+			{
+				// This is a Contact Material that includes a Material that is internal / "hidden"
+				// to some object we won't recreate on the Unreal side. For example a Terrain. Do
+				// not create the Contact Material either since there is no way to set the Shape
+				// Material reference in the Contact Material to that internal / "hidden" material.
+				continue;
+			}
 			OutSimObjects.GetContactMaterials().Add(
 				AGXBarrierFactories::CreateContactMaterialBarrier(ContMat));
 		}
@@ -157,7 +178,7 @@ namespace
 
 	void ReadTireModels(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects, TArray<agx::Constraint*>& NonFreeConstraint)
+		FSimulationObjectCollection& OutSimObjects, TSet<const agx::Constraint*>& NonFreeConstraint)
 	{
 		const agxSDK::AssemblyHash& Assemblies = Simulation.getAssemblies();
 
@@ -189,27 +210,27 @@ namespace
 
 	void ReadRigidBodies(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects)
+		FSimulationObjectCollection& OutSimObjects,
+		const TSet<const agx::RigidBody*>& NonFreeBodies)
 	{
 		agx::RigidBodyRefVector& Bodies {Simulation.getRigidBodies()};
 		for (agx::RigidBodyRef& Body : Bodies)
 		{
 			if (Body == nullptr)
-			{
 				continue;
-			}
 			if (!IsRegularBody(*Body))
+				continue;
+			if (NonFreeBodies.Contains(Body))
 			{
 				continue;
 			}
-
 			OutSimObjects.GetRigidBodies().Add(AGXBarrierFactories::CreateRigidBodyBarrier(Body));
 		}
 	}
 
 	void ReadTracks(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects, TArray<agx::Constraint*>& NonFreeConstraint)
+		FSimulationObjectCollection& OutSimObjects, TSet<const agx::Constraint*>& NonFreeConstraint)
 	{
 		agxVehicle::TrackPtrVector Tracks = agxVehicle::Track::findAll(&Simulation);
 
@@ -237,13 +258,14 @@ namespace
 	// Reads and instantiates all Geometries not owned by a RigidBody.
 	void ReadBodilessGeometries(
 		agxSDK::Simulation& Simulation, const FString& Filename,
-		FSimulationObjectCollection& OutSimObjects)
+		FSimulationObjectCollection& OutSimObjects,
+		TSet<const agxCollide::Geometry*>& NonFreeGeometries)
 	{
 		const agxCollide::GeometryRefVector& Geometries = Simulation.getGeometries();
-
 		for (const agxCollide::GeometryRef& Geometry : Geometries)
 		{
-			if (Geometry == nullptr || Geometry->getRigidBody() != nullptr)
+			if (Geometry == nullptr || Geometry->getRigidBody() != nullptr ||
+				NonFreeGeometries.Contains(Geometry))
 			{
 				continue;
 			}
@@ -255,7 +277,7 @@ namespace
 	void ReadConstraints(
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FSimulationObjectCollection& OutSimObjects,
-		const TArray<agx::Constraint*>& NonFreeConstraint)
+		const TSet<const agx::Constraint*>& NonFreeConstraint)
 	{
 		agx::ConstraintRefSetVector& Constraints = Simulation.getConstraints();
 		for (agx::ConstraintRef& Constraint : Constraints)
@@ -358,6 +380,145 @@ namespace
 		}
 	}
 
+	void ReadShovels(
+		agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects,
+		TSet<const agx::RigidBody*>& NonFreeBodies,
+		TSet<const agxCollide::Geometry*>& NonFreeGeometries,
+		TSet<const agx::Constraint*>& NonFreeConstraints,
+		TSet<const agx::Material*>& NonFreeMaterials,
+		TSet<const agx::ContactMaterial*>& NonFreeContactMaterials)
+	{
+		// Shovels are found though Terrains, but a single Shovel may exist in multiple Terrains.
+		// This set tracks unique shovels we find.
+		TSet<agxTerrain::Shovel*> SeenShovels;
+
+		// Loop through the Terrains and extract all Shovels. Also extract any internal Rigid
+		// Bodies, Geometries, and Constraints that should not be turned into Actor Components.
+		agxTerrain::TerrainPtrVector Terrains = agxTerrain::Terrain::findAll(&Simulation);
+		for (agxTerrain::Terrain* Terrain : Terrains)
+		{
+			using EMaterialType = agxTerrain::Terrain::MaterialType;
+			NonFreeMaterials.Add(Terrain->getMaterial(EMaterialType::TERRAIN));
+			NonFreeMaterials.Add(Terrain->getMaterial(EMaterialType::PARTICLE));
+			NonFreeMaterials.Add(Terrain->getMaterial(EMaterialType::AGGREGATE));
+			NonFreeContactMaterials.Add(
+				Terrain->getContactMaterial(EMaterialType::TERRAIN, EMaterialType::PARTICLE));
+			NonFreeContactMaterials.Add(
+				Terrain->getContactMaterial(EMaterialType::PARTICLE, EMaterialType::PARTICLE));
+			NonFreeContactMaterials.Add(
+				Terrain->getContactMaterial(EMaterialType::TERRAIN, EMaterialType::AGGREGATE));
+
+			const agx::Vector<agxTerrain::ShovelRef>& Shovels = Terrain->getShovels();
+			for (const agxTerrain::ShovelRef& Shovel : Shovels)
+			{
+				if (Shovel == nullptr)
+					continue;
+
+				SeenShovels.Add(Shovel);
+
+				// Shovels contains a bunch of rigid bodies, geometries, and constraints that are
+				// internal to the shovel, or rather shovel-terrain pairs, that should not be turned
+				// in Actor Components. Add all such objects are fetched and added to the
+				// non-free sets.
+				//
+				// todo This code has been written for AGX Dynamics 2.36.1. There are changes made
+				// in later 2.36 versions and 2.37.
+
+				// Tools is the entry-point to everything Terrain-Shovel related.
+				agxTerrain::TerrainToolCollection* Tools = Terrain->getToolCollection(Shovel);
+				NonFreeGeometries.Add(Tools->getActiveZone()->getGeometry());
+
+				using EExcavationMode = agxTerrain::Shovel::ExcavationMode;
+
+				agxTerrain::ShovelAggregateContactMaterialContainer* MaterialContainer =
+					Tools->getShovelTerrainContactMaterialContainer();
+				NonFreeContactMaterials.Add(
+					MaterialContainer->getContactMaterial(EExcavationMode::PRIMARY));
+				NonFreeContactMaterials.Add(
+					MaterialContainer->getContactMaterial(EExcavationMode::DEFORM_BACK));
+				NonFreeContactMaterials.Add(
+					MaterialContainer->getContactMaterial(EExcavationMode::DEFORM_RIGHT));
+				NonFreeContactMaterials.Add(
+					MaterialContainer->getContactMaterial(EExcavationMode::DEFORM_LEFT));
+
+				// The primary excavator is accessed through the soil particle aggregate.
+				{
+					agxTerrain::SoilParticleAggregate* Aggregate =
+						Tools->getSoilParticleAggregate();
+					NonFreeBodies.Add(Aggregate->getInnerBody());
+					for (const agx::RigidBody* Body : Aggregate->getWedgeBodies(false))
+					{
+						NonFreeBodies.Add(Body);
+					}
+					NonFreeConstraints.Add(Aggregate->getInnerWedgeLockJoint());
+					for (const agx::Constraint* Lock : Aggregate->getWedgeLockJoints(false))
+					{
+						NonFreeConstraints.Add(Lock);
+					}
+
+					NonFreeMaterials.Add(Aggregate->getMaterial());
+				}
+
+				// All other excavators are accessed through their respective deform controllers.
+				agxTerrain::DeformController* DeformController = Tools->getDeformController();
+				for (EExcavationMode ExcavationMode :
+					 {EExcavationMode::DEFORM_BACK, EExcavationMode::DEFORM_LEFT,
+					  EExcavationMode::DEFORM_RIGHT})
+				{
+					const agx::UInt DeformersId = static_cast<agx::UInt>(ExcavationMode) - 1;
+					agxTerrain::DeformerCollection* Deformers =
+						DeformController->getDeformerCollection(DeformersId);
+					agxTerrain::SoilParticleAggregate* Aggregate = Deformers->getAggregate();
+
+					NonFreeBodies.Add(Aggregate->getInnerBody());
+					for (const agx::RigidBody* Body : Aggregate->getWedgeBodies(false))
+					{
+						NonFreeBodies.Add(Body);
+					}
+					NonFreeConstraints.Add(Aggregate->getInnerWedgeLockJoint());
+					for (const agx::Constraint* Lock : Aggregate->getWedgeLockJoints(false))
+					{
+						NonFreeConstraints.Add(Lock);
+					}
+
+					NonFreeMaterials.Add(Aggregate->getMaterial());
+
+					// In addition to the soil particle aggregate objects, a deformer also has an
+					// active zone with a geometry.
+					NonFreeGeometries.Add(Deformers->getActiveZone()->getGeometry());
+
+					NonFreeContactMaterials.Add(
+						DeformController->getAggregateShovelContactMaterial(DeformersId));
+					NonFreeContactMaterials.Add(
+						DeformController->getAggregateTerrainContactMaterial(DeformersId));
+				}
+
+				// Each shovel holds a bunch of internal convex shapes for each Terrain.
+				const agxCollide::GeometryRefVector& InternalGeometries =
+					Tools->getVoxelCollisionGeometries();
+				for (const agxCollide::GeometryRef& InternalGeometry : InternalGeometries)
+				{
+					NonFreeGeometries.Add(InternalGeometry);
+				}
+
+				// Each shovel holds a prismatic for each terrain.
+				NonFreeConstraints.Add(
+					Tools->getPenetrationResistance()->getPenetrationPrismatic());
+
+				agxTerrain::AggregateContactGenerator* ContactGenerator =
+					Tools->getAggregateContactGenerator();
+				NonFreeContactMaterials.Add(ContactGenerator->getAggregateShovelContactMaterial());
+				NonFreeContactMaterials.Add(ContactGenerator->getAggregateTerrainContactMaterial());
+			}
+		}
+
+		// All shovels found, record them.
+		for (agxTerrain::Shovel* Shovel : SeenShovels)
+		{
+			OutSimObjects.GetShovels().Add(AGXBarrierFactories::CreateShovelBarrier(Shovel));
+		}
+	}
+
 	void ReadObserverFrames(
 		agxSDK::Simulation& Simulation, FSimulationObjectCollection& OutSimObjects)
 	{
@@ -382,12 +543,22 @@ namespace
 		agxSDK::Simulation& Simulation, const FString& Filename,
 		FSimulationObjectCollection& OutSimObjects)
 	{
-		TArray<agx::Constraint*> NonFreeConstraints;
+		// These contain objects that are not free-standing but owned by something else and will
+		// be created by that something else. Should not result in Actor Components in the imported
+		// Actor or Blueprint.
+		TSet<const agx::RigidBody*> NonFreeBodies;
+		TSet<const agxCollide::Geometry*> NonFreeGeometries;
+		TSet<const agx::Constraint*> NonFreeConstraints;
+		TSet<const agx::Material*> NonFreeMaterials;
+		TSet<const agx::ContactMaterial*> NonFreeContactMaterials;
 
-		ReadMaterials(Simulation, OutSimObjects);
 		ReadTireModels(Simulation, Filename, OutSimObjects, NonFreeConstraints);
-		ReadBodilessGeometries(Simulation, Filename, OutSimObjects);
-		ReadRigidBodies(Simulation, Filename, OutSimObjects);
+		ReadShovels(
+			Simulation, OutSimObjects, NonFreeBodies, NonFreeGeometries, NonFreeConstraints,
+			NonFreeMaterials, NonFreeContactMaterials);
+		ReadMaterials(Simulation, OutSimObjects, NonFreeMaterials, NonFreeContactMaterials);
+		ReadBodilessGeometries(Simulation, Filename, OutSimObjects, NonFreeGeometries);
+		ReadRigidBodies(Simulation, Filename, OutSimObjects, NonFreeBodies);
 		ReadTracks(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadConstraints(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadCollisionGroups(Simulation, OutSimObjects);

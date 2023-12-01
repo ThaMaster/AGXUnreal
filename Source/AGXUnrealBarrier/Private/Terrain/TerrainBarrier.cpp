@@ -54,7 +54,6 @@ void FTerrainBarrier::AllocateNative(FHeightFieldShapeBarrier& SourceHeightField
 	agxCollide::HeightField* HeightFieldAGX =
 		SourceHeightField.GetNativeShape<agxCollide::HeightField>();
 	NativeRef->Native = agxTerrain::Terrain::createFromHeightField(HeightFieldAGX, MaxDepthAGX);
-	UE_LOG(LogAGX, Log, TEXT("Native terrain allocated."));
 }
 
 FTerrainRef* FTerrainBarrier::GetNative()
@@ -73,6 +72,22 @@ void FTerrainBarrier::ReleaseNative()
 {
 	check(HasNative());
 	NativeRef->Native = nullptr;
+}
+
+void FTerrainBarrier::SetCanCollide(bool bCanCollide)
+{
+	check(HasNative());
+	if (agxCollide::Geometry* Geom = NativeRef->Native->getGeometry())
+		Geom->setEnableCollisions(bCanCollide);
+}
+
+bool FTerrainBarrier::GetCanCollide() const
+{
+	check(HasNative());
+	if (agxCollide::Geometry* Geom = NativeRef->Native->getGeometry())
+		return Geom->getEnableCollisions();
+
+	return false;
 }
 
 void FTerrainBarrier::SetPosition(const FVector& PositionUnreal)

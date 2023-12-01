@@ -10,6 +10,7 @@
 #include "Shapes/SphereShapeBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "SimulationBarrier.h"
+#include "Terrain/ShovelBarrier.h"
 #include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
@@ -104,6 +105,9 @@ public:
 	TArray<FWireBarrier>& GetWires();
 	const TArray<FWireBarrier>& GetWires() const;
 
+	TArray<FShovelBarrier>& GetShovels();
+	const TArray<FShovelBarrier>& GetShovels() const;
+
 	TArray<FTrackBarrier>& GetTracks();
 	const TArray<FTrackBarrier>& GetTracks() const;
 
@@ -136,5 +140,6 @@ private:
 	TArray<FShapeMaterialBarrier> ShapeMaterials;
 	TArray<FTwoBodyTireBarrier> TwoBodyTires;
 	TArray<FWireBarrier> Wires;
+	TArray<FShovelBarrier> Shovels;
 	TArray<FTrackBarrier> Tracks;
 };

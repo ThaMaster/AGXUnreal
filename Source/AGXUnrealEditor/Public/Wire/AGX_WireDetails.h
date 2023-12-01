@@ -2,10 +2,14 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Wire/AGX_WireComponent.h"
+
 // Unreal Engine includes.
 #include "IDetailCustomization.h"
+#include "UObject/WeakObjectPtrTemplates.h"
 
-class UAGX_WireComponent;
+
 
 class FAGX_WireDetails : public IDetailCustomization
 {

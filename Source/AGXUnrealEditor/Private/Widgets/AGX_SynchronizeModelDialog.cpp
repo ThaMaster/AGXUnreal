@@ -7,6 +7,11 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
 
+// Unreal Engine includes.
+#include "Framework/Application/SlateApplication.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Text/STextBlock.h"
+
 #define LOCTEXT_NAMESPACE "SAGX_SynchronizeModelDialog"
 
 void SAGX_SynchronizeModelDialog::Construct(const FArguments& InArgs)

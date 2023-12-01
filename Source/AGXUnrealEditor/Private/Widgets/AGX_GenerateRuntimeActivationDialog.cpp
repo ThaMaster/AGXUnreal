@@ -10,6 +10,8 @@
 
 // Unreal Engine includes.
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "SAGX_GenerateRuntimeActivationDialog"
 
@@ -36,7 +38,7 @@ void SAGX_GenerateRuntimeActivationDialog::Construct(const FArguments& InArgs)
 				[
 					CreateUserInputGui()
 				]
-			]	
+			]
 		]
 	];
 	// clang-format on

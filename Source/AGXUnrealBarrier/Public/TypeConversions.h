@@ -604,6 +604,25 @@ inline agx::Line ConvertDisplacement(const FTwoVectors& Vs)
 }
 
 //
+// TwoVectors/Line. AGX Dynamics to Unreal Engine.
+//
+
+inline FTwoVectors Convert(const agx::Line& Vs)
+{
+	return {Convert(Vs.p1), Convert(Vs.p2)};
+}
+
+inline FTwoVectors ConvertDistance(const agx::Line& Vs)
+{
+	return {ConvertDistance(Vs.p1), ConvertDistance(Vs.p2)};
+}
+
+inline FTwoVectors ConvertDisplacement(const agx::Line& Vs)
+{
+	return {ConvertDisplacement(Vs.p1), ConvertDisplacement(Vs.p2)};
+}
+
+//
 // Quaternions.
 //
 
@@ -724,14 +743,16 @@ inline agx::Uuid Convert(const FGuid& Guid)
 	// To ensure the same textual representations (i.e. if printed out to a log for example) we go
 	// via string representations when converting the Guid. The underlying data storage of each type
 	// may not be bitwise equal.
-	const FString GuidStr = Guid.ToString().ToLower();
+	const FString GuidStr = Guid.ToString(EGuidFormats::DigitsWithHyphens).ToLower();
 	agx::String GuidStrAGX = Convert(GuidStr);
 
-	// AGX Uuids requires formatting with groupings with '-' separators accordingly.
+#if 0
+	// AGX Dynamics UUIDs require formatting with groupings with '-' separators accordingly.
 	GuidStrAGX.insert(20, "-");
 	GuidStrAGX.insert(16, "-");
 	GuidStrAGX.insert(12, "-");
 	GuidStrAGX.insert(8, "-");
+#endif
 
 	return agx::Uuid(GuidStrAGX);
 }

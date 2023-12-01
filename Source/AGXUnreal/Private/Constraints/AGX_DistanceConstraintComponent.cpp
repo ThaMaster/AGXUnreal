@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Constraints/DistanceJointBarrier.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 class FRigidBodyBarrier;
 
@@ -15,12 +16,6 @@ UAGX_DistanceConstraintComponent::UAGX_DistanceConstraintComponent()
 		  },
 		  /*bIsSecondaryConstraintRotational*/ false)
 {
-	/// \todo Determine if this is needed, or if the FAGX_ConstraintFrameComponent constructor
-	/// does what we want.
-	/// \todo What do we want? And why?
-	BodyAttachment1.FrameDefiningComponent.Clear();
-	BodyAttachment2.FrameDefiningComponent.Clear();
-
 	// The AGX Dynamics distance constraint need the Lock to be enabled to function.
 	LockController.bEnable = true;
 
@@ -44,5 +39,5 @@ const FDistanceJointBarrier* UAGX_DistanceConstraintComponent::GetNativeDistance
 void UAGX_DistanceConstraintComponent::AllocateNative()
 {
 	FAGX_ConstraintUtilities::CreateNative(
-		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetLabelSafe(GetOwner()));
 }

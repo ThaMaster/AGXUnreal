@@ -3,6 +3,7 @@
 #include "Shapes/AGX_ShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_PropertyChangedDispatcher.h"
@@ -21,6 +22,8 @@
 
 // Standard library includes.
 #include <tuple>
+
+
 
 // Sets default values for this component's properties
 UAGX_ShapeComponent::UAGX_ShapeComponent()
@@ -208,6 +211,8 @@ void UAGX_ShapeComponent::PostInitProperties()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, bIsSensor),
 		[](ThisClass* This) { This->SetIsSensor(This->bIsSensor); });
+
+	AGX_COMPONENT_DEFAULT_DISPATCHER(ShapeMaterial);
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, MergeSplitProperties),

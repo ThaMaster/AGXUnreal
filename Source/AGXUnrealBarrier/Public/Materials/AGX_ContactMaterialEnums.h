@@ -2,7 +2,9 @@
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "UObject/Class.h"
 
 /**
  * Specifies in what solvers the normal and friction equations will be calculated.

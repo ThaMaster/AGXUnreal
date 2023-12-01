@@ -2,8 +2,10 @@
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Factories/Factory.h"
+
 #include "AGX_TrackPropertiesAssetFactory.generated.h"
 
 /**

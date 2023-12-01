@@ -39,19 +39,25 @@ public:
 	~FShovelBarrier();
 
 	void SetTopEdge(const FTwoVectors& TopEdge);
-	void SetCuttingEdge(const FTwoVectors& CuttingEdge);
+	FTwoVectors GetTopEdge() const;
 
-	void SetNumberOfTeeth(int32 NumberOfTeeth);
-	int32 GetNumberOfTeeth() const;
+	void SetCuttingEdge(const FTwoVectors& CuttingEdge);
+	FTwoVectors GetCuttingEdge() const;
+
+	void SetCuttingDirection(const FVector& CuttingDirection);
+	FVector GetCuttingDirection() const;
 
 	void SetToothLength(double ToothLength);
 	double GetToothLength() const;
 
-	void SetMinimumToothRadius(double MinimumToothRadius);
-	double GetMinimumToothRadius() const;
+	void SetToothMinimumRadius(double MinimumToothRadius);
+	double GetToothMinimumRadius() const;
 
-	void SetMaximumToothRadius(double MaximumToothRadius);
-	double GetMaximumToothRadius() const;
+	void SetToothMaximumRadius(double MaximumToothRadius);
+	double GetToothMaximumRadius() const;
+
+	void SetNumberOfTeeth(int32 NumberOfTeeth);
+	int32 GetNumberOfTeeth() const;
 
 	void SetNoMergeExtensionDistance(double NoMergeExtensionDistance);
 	double GetNoMergeExtensionDistance() const;
@@ -71,11 +77,32 @@ public:
 	void SetPenetrationForceScaling(double PenetrationForceScaling);
 	double GetPenetrationForceScaling() const;
 
-	void SetMaximumPenetrationForce(double MaximumPenetrationForce);
-	double GetMaximumPenetrationForce() const;
+	void SetEnableParticleFreeDeformers(bool Enable);
+	bool GetEnableParticleFreeDeformers() const;
 
 	void SetAlwaysRemoveShovelContacts(bool Enable);
 	bool GetAlwaysRemoveShovelContacts() const;
+
+	void SetMaximumPenetrationForce(double MaximumPenetrationForce);
+	double GetMaximumPenetrationForce() const;
+
+	void SetContactRegionThreshold(double ContactRegionThreshold);
+	double GetContactRegionThreshold() const;
+
+	void SetContactRegionVerticalLimit(double ContactRegionVerticalLimit);
+	double GetContactRegionVerticalLimit() const;
+
+	void SetEnableInnerShapeCreateDynamicMass(bool Enable);
+	bool GetEnableInnerShapeCreateDynamicMass() const;
+
+	void SetEnableParticleForceFeedback(bool Enable);
+	bool GetEnableParticleForceFeedback() const;
+
+	void SetEnable(bool Enable);
+	bool GetEnable() const;
+
+	void SetParticleInclusionMultiplier(double Multiplier);
+	double GetParticleInclusionMultiplier() const;
 
 	void SetExcavationSettingsEnabled(EAGX_ExcavationMode Mode, bool Enable);
 	bool GetExcavationSettingsEnabled(EAGX_ExcavationMode Mode) const;
@@ -86,8 +113,11 @@ public:
 	void SetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode, bool Enable);
 	bool GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMode Mode) const;
 
-	void SetContactRegionThreshold(double ContactRegionThreshold);
-	double GetContactRegionThreshold() const;	
+	double GetInnerContactArea() const;
+
+	FRigidBodyBarrier GetRigidBody() const;
+
+	FGuid GetGuid() const;
 
 	bool HasNative() const;
 	void AllocateNative(
@@ -95,7 +125,34 @@ public:
 		const FVector& CuttingDirection);
 	FShovelRef* GetNative();
 	const FShovelRef* GetNative() const;
+	uint64 GetNativeAddress() const;
+	void SetNativeAddress(uint64 Address);
 	void ReleaseNative();
+
+	/**
+	 * Increment the reference count of the AGX Dynamics object. This should always be paired with
+	 * a call to DecrementRefCount, and the count should only be artificially incremented for a
+	 * very well specified duration.
+	 *
+	 * One use-case is during a Blueprint Reconstruction, when the Unreal Engine objects are
+	 * destroyed and then recreated. During this time the AGX Dynamics objects are retained and
+	 * handed between the old and the new Unreal Engine objects through a Component Instance Data.
+	 * This Component Instance Data instance is considered the owner of the AGX Dynamics object
+	 * during this transition period and the reference count is therefore increment during its
+	 * lifetime. We're lending out ownership of the AGX Dynamics object to the Component Instance
+	 * Data instance for the duration of the Blueprint Reconstruction.
+	 *
+	 * These functions can be const even though they have observable side effects because the
+	 * reference count is not a salient part of the AGX Dynamics objects, and they are thread-safe.
+	 */
+	void IncrementRefCount() const;
+	void DecrementRefCount() const;
+
+	// Aliases required for the live update macros to work.
+	void SetbAlwaysRemoveShovelContacts(bool InbAlwaysRemoveShovelContacts);
+	void SetbEnableParticleFreeDeformers(bool InbEnableParticleFreeDeformers);
+	void SetbEnableInnerShapeCreateDynamicMass(bool InbEnableInnerShapeCreateDynamicMass);
+	void SetbEnableParticleForceFeedback(bool InbEnableParticleForceFeedback);
 
 private:
 	FShovelBarrier(const FShovelBarrier&) = delete;

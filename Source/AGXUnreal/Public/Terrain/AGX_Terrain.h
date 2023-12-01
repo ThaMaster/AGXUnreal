@@ -9,11 +9,32 @@
 #include "Terrain/AGX_TerrainHeightFetcher.h"
 #include "Terrain/AGX_TerrainPagingSettings.h"
 #include "Terrain/AGX_Shovel.h"
+#include "AGX_ShovelReference.h"
 
 // Unreal Engine includes.
 #include "Misc/EngineVersionComparison.h"
 #include "Containers/Array.h"
 #include "CoreMinimal.h"
+#include "Misc/EngineVersionComparison.h"
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+// Possible include loop in Unreal Engine.
+// - Engine/TextureRenderTarget2D.h
+// - RenderUtils.h
+// - RHIShaderPlatform.h
+//     Defines FStaticShaderPlatform, but includes RHIDefinitions.h first.
+// - RHIDefinitions.h
+// - DataDrivenShaderPlatformInfo.h
+//   Needs FStaticShaderPlatform so includes RHIShaderPlatform.h. But that file is already being
+//   included so ignored. So FStaticShaderPlatform will be defined soon, but it isn't yet. So
+//   the compile fails.
+//
+// We work around this by including DataDrivenShaderPlatformInfo.h ourselves before all of the
+// above. Now DataDrivenShaderPlatformInfo.h can include RHIShaderPlatform.h succesfully and
+// FStaticShaderPlatform is defined when DataDrivenShaderPlatformInfo.h needs it. When we include
+// DynamicMeshBuild.h shortly most of the include files are skipped because they have already been
+// included as part of DataDrivenShaderPlatformInfo.h here.
+#include "DataDrivenShaderPlatformInfo.h"
+#endif
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/Actor.h"
 #if UE_VERSION_OLDER_THAN(5, 2, 0)
@@ -21,7 +42,6 @@
 #else
 #include "RHITypes.h"
 #endif
-
 
 // Standard library includes.
 #include <mutex>
@@ -34,6 +54,29 @@ class UAGX_TerrainSpriteComponent;
 class ALandscape;
 class UNiagaraComponent;
 class UNiagaraSystem;
+
+USTRUCT(BlueprintType)
+struct AGXUNREAL_API FShovelReferenceWithSettings
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category = "Terrain")
+	FAGX_ShovelReference Shovel;
+
+	/**
+	 * The max distance from the Shovel at which new Terrain Tiles will be preloaded [cm].
+	 * Only relevant when using Terrain Paging.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Paging Terrain")
+	FAGX_Real PreloadRadius {1000.f};
+
+	/**
+	 * The max distance from the Shovel at which new Terrain Tiles is guaranteed to be loaded [cm].
+	 * Only relevant when using Terrain Paging.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Paging Terrain")
+	FAGX_Real RequiredRadius {600.f};
+};
 
 UCLASS(ClassGroup = "AGX_Terrain", Blueprintable, Category = "AGX")
 class AGXUNREAL_API AAGX_Terrain : public AActor
@@ -49,6 +92,15 @@ public:
 
 	UPROPERTY(Category = "AGX Terrain", VisibleAnywhere, BlueprintReadOnly)
 	UAGX_HeightFieldBoundsComponent* TerrainBounds;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	bool bCanCollide {true};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	void SetCanCollide(bool bInCanCollide);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	bool GetCanCollide() const;
 
 	/**
 	 * The Landscape that AGX Terrain will use as initialization data, and will also modify
@@ -76,7 +128,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
 	bool GetCreateParticles() const;
 
-	/** Whether the native terrain simulation should auto-delete particles that are out of bounds.
+	/**
+	 * Whether the native terrain simulation should auto-delete particles that are out of bounds.
+	 *
+	 * Cannot be combined with Terrain Paging.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain", Meta = (EditCondition = "!bEnableTerrainPaging"))
@@ -166,6 +221,8 @@ public:
 	int32 GetNumParticles() const;
 
 	/**
+	 * Deprecated. Use Shovel Components instead.
+	 *
 	 * A list of the rigid body actors that should be used as terrain shovels.
 	 *
 	 * Every actor used as shovel MUST have the following components:
@@ -176,8 +233,23 @@ public:
 	 *
 	 * in addition to the usual Rigid Body and Shape components.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain",
+		Meta = (DeprecatedProperty, DeprecationMessage = "Use Shovel Components instead."))
 	TArray<FAGX_Shovel> Shovels;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
+	TArray<FShovelReferenceWithSettings> ShovelComponents;
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	bool SetPreloadRadius(UAGX_ShovelComponent* Shovel, double InPreloadRadius);
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	bool SetRequiredRadius(UAGX_ShovelComponent* Shovel, double InRequiredRadius);
+
+	UFUNCTION(BlueprintCallable, Category = "Shovel Properties")
+	bool SetTerrainPagerRadii(
+		UAGX_ShovelComponent* Shovel, double InPreloadRadius, double InRequiredRadius);
 
 	/** Whether the height field rendering should be updated with deformation data. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering")
@@ -308,6 +380,14 @@ private:
 	friend class FAGX_TerrainHeightFetcher;
 
 private:
+
+	/**
+	* Even if Terrain paging is enabled, and this Terrain has a NativeTerrainPagerBarrier, it will
+	* also have a regular NativeBarrier agx::Terrain that will in that case be used as a template
+	* Terrain for the terrain Pager. Setting properties on this template Terrain and then calling
+	* OnTemplateTerrainChanged on the Terrain pager barrier will update current and future tiles
+	* in it.
+	*/
 	FTerrainBarrier NativeBarrier;
 	FTerrainPagerBarrier NativeTerrainPagerBarrier;
 	FAGX_TerrainHeightFetcher HeightFetcher;

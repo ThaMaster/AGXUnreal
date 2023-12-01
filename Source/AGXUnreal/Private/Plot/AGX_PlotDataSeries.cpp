@@ -2,6 +2,9 @@
 
 #include "Plot/AGX_PlotDataSeries.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
+
 void FAGX_PlotDataSeries::Write(float Data)
 {
 	if (!HasNative())

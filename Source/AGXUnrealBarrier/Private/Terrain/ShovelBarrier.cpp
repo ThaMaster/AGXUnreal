@@ -3,6 +3,8 @@
 #include "Terrain/ShovelBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
+#include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
 #include "agxTerrain/Shovel.h"
 #include "RigidBodyBarrier.h"
@@ -37,15 +39,91 @@ FShovelBarrier::~FShovelBarrier()
 void FShovelBarrier::SetTopEdge(const FTwoVectors& TopEdgeUnreal)
 {
 	check(HasNative());
-	agx::Line TopEdgeAGX = ConvertDisplacement(TopEdgeUnreal);
+	const agx::Line TopEdgeAGX = ConvertDisplacement(TopEdgeUnreal);
 	NativeRef->Native->setTopEdge(TopEdgeAGX);
+}
+
+FTwoVectors FShovelBarrier::GetTopEdge() const
+{
+	check(HasNative());
+	const agx::Line TopEdgeAGX = NativeRef->Native->getTopEdge();
+	const FTwoVectors TopEdgeUnreal = ConvertDisplacement(TopEdgeAGX);
+	return TopEdgeUnreal;
 }
 
 void FShovelBarrier::SetCuttingEdge(const FTwoVectors& CuttingEdge)
 {
 	check(HasNative());
-	agx::Line CuttingEdgeAGX = ConvertDisplacement(CuttingEdge);
+	const agx::Line CuttingEdgeAGX = ConvertDisplacement(CuttingEdge);
 	NativeRef->Native->setCuttingEdge(CuttingEdgeAGX);
+}
+
+FTwoVectors FShovelBarrier::GetCuttingEdge() const
+{
+	check(HasNative());
+	const agx::Line CuttingEdgeAGX = NativeRef->Native->getCuttingEdge();
+	const FTwoVectors CuttingEdgeUnreal = ConvertDisplacement(CuttingEdgeAGX);
+	return CuttingEdgeUnreal;
+}
+
+void FShovelBarrier::SetCuttingDirection(const FVector& CuttingDirection)
+{
+	check(HasNative());
+	const agx::Vec3 DirectionAGX = ConvertVector(CuttingDirection);
+	NativeRef->Native->setCuttingDirection(DirectionAGX);
+}
+
+FVector FShovelBarrier::GetCuttingDirection() const
+{
+	check(HasNative());
+	const agx::Vec3 DirectionAGX = NativeRef->Native->getCuttingDirection();
+	const FVector DirectionUnreal = ConvertVector(DirectionAGX);
+	return DirectionUnreal;
+}
+
+void FShovelBarrier::SetToothLength(double ToothLength)
+{
+	check(HasNative());
+	const agx::Real LengthAGX = ConvertDistanceToAGX(ToothLength);
+	NativeRef->Native->setToothLength(LengthAGX);
+}
+
+double FShovelBarrier::GetToothLength() const
+{
+	check(HasNative());
+	const agx::Real LengthAGX = NativeRef->Native->getToothLength();
+	const double LengthUnreal = ConvertDistanceToUnreal<double>(LengthAGX);
+	return LengthUnreal;
+}
+
+void FShovelBarrier::SetToothMinimumRadius(double MinimumToothRadius)
+{
+	check(HasNative());
+	const agx::Real RadiusAGX = ConvertDistanceToAGX(MinimumToothRadius);
+	NativeRef->Native->setToothMinimumRadius(RadiusAGX);
+}
+
+double FShovelBarrier::GetToothMinimumRadius() const
+{
+	check(HasNative());
+	const agx::Real RadiusAGX = NativeRef->Native->getToothMinimumRadius();
+	const double RadiusUnreal = ConvertDistanceToUnreal<double>(RadiusAGX);
+	return RadiusUnreal;
+}
+
+void FShovelBarrier::SetToothMaximumRadius(double MaximumToothRadius)
+{
+	check(HasNative());
+	const agx::Real RadiusAgx = ConvertDistanceToAGX(MaximumToothRadius);
+	NativeRef->Native->setToothMaximumRadius(RadiusAgx);
+}
+
+double FShovelBarrier::GetToothMaximumRadius() const
+{
+	check(HasNative());
+	const agx::Real RadiusAGX = NativeRef->Native->getToothMaximumRadius();
+	const double RadiusUnreal = ConvertDistanceToUnreal<double>(RadiusAGX);
+	return RadiusUnreal;
 }
 
 void FShovelBarrier::SetNumberOfTeeth(int32 NumberOfTeeth)
@@ -60,52 +138,19 @@ int32 FShovelBarrier::GetNumberOfTeeth() const
 	return NativeRef->Native->getNumberOfTeeth();
 }
 
-void FShovelBarrier::SetToothLength(double ToothLength)
-{
-	check(HasNative());
-	NativeRef->Native->setToothLength(ConvertDistanceToAGX(ToothLength));
-}
-
-double FShovelBarrier::GetToothLength() const
-{
-	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getToothLength());
-}
-
-void FShovelBarrier::SetMinimumToothRadius(double MinimumToothRadius)
-{
-	check(HasNative());
-	NativeRef->Native->setToothMinimumRadius(ConvertDistanceToAGX(MinimumToothRadius));
-}
-
-double FShovelBarrier::GetMinimumToothRadius() const
-{
-	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getToothMinimumRadius());
-}
-
-void FShovelBarrier::SetMaximumToothRadius(double MaximumToothRadius)
-{
-	check(HasNative());
-	NativeRef->Native->setToothMaximumRadius(ConvertDistanceToAGX(MaximumToothRadius));
-}
-
-double FShovelBarrier::GetMaximumToothRadius() const
-{
-	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getToothMaximumRadius());
-}
-
 void FShovelBarrier::SetNoMergeExtensionDistance(double NoMergeExtensionDistance)
 {
 	check(HasNative());
-	NativeRef->Native->setNoMergeExtensionDistance(ConvertDistanceToAGX(NoMergeExtensionDistance));
+	const agx::Real DistanceAGX = ConvertDistanceToAGX(NoMergeExtensionDistance);
+	NativeRef->Native->setNoMergeExtensionDistance(DistanceAGX);
 }
 
 double FShovelBarrier::GetNoMergeExtensionDistance() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getNoMergeExtensionDistance());
+	const agx::Real DistanceAGX = NativeRef->Native->getNoMergeExtensionDistance();
+	const double DistanceUnreal = ConvertDistanceToUnreal<double>(DistanceAGX);
+	return DistanceUnreal;
 }
 
 void FShovelBarrier::SetMinimumSubmergedContactLengthFraction(
@@ -125,14 +170,16 @@ double FShovelBarrier::GetMinimumSubmergedContactLengthFraction() const
 void FShovelBarrier::SetVerticalBladeSoilMergeDistance(double VerticalBladeSoilMergeDistance)
 {
 	check(HasNative());
-	NativeRef->Native->setVerticalBladeSoilMergeDistance(
-		ConvertDistanceToAGX(VerticalBladeSoilMergeDistance));
+	const agx::Real DistanceAGX = ConvertDistanceToAGX(VerticalBladeSoilMergeDistance);
+	NativeRef->Native->setVerticalBladeSoilMergeDistance(DistanceAGX);
 }
 
 double FShovelBarrier::GetVerticalBladeSoilMergeDistance() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getVerticalBladeSoilMergeDistance());
+	const agx::Real DistanceAGX = NativeRef->Native->getVerticalBladeSoilMergeDistance();
+	const double DistanceUnreal = ConvertDistanceToUnreal<double>(DistanceAGX);
+	return DistanceUnreal;
 }
 
 void FShovelBarrier::SetSecondarySeparationDeadloadLimit(double SecondarySeparationDeadloadLimit)
@@ -150,14 +197,16 @@ double FShovelBarrier::GetSecondarySeparationDeadloadLimit() const
 void FShovelBarrier::SetPenetrationDepthThreshold(double PenetrationDepthThreshold)
 {
 	check(HasNative());
-	NativeRef->Native->setPenetrationDepthThreshold(
-		ConvertDistanceToAGX(PenetrationDepthThreshold));
+	const agx::Real DepthAGX = ConvertDistanceToAGX(PenetrationDepthThreshold);
+	NativeRef->Native->setPenetrationDepthThreshold(DepthAGX);
 }
 
 double FShovelBarrier::GetPenetrationDepthThreshold() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getPenetrationDepthThreshold());
+	const agx::Real DepthAGX = NativeRef->Native->getPenetrationDepthThreshold();
+	const double DepthUnreal = ConvertDistanceToUnreal<double>(DepthAGX);
+	return DepthUnreal;
 }
 
 void FShovelBarrier::SetPenetrationForceScaling(double PenetrationForceScaling)
@@ -172,16 +221,16 @@ double FShovelBarrier::GetPenetrationForceScaling() const
 	return NativeRef->Native->getPenetrationForceScaling();
 }
 
-void FShovelBarrier::SetMaximumPenetrationForce(double MaximumPenetrationForce)
+void FShovelBarrier::SetEnableParticleFreeDeformers(bool Enable)
 {
 	check(HasNative());
-	NativeRef->Native->setMaxPenetrationForce(MaximumPenetrationForce);
+	NativeRef->Native->setEnableParticleFreeDeformers(Enable);
 }
 
-double FShovelBarrier::GetMaximumPenetrationForce() const
+bool FShovelBarrier::GetEnableParticleFreeDeformers() const
 {
 	check(HasNative());
-	return NativeRef->Native->getMaxPenetrationForce();
+	return NativeRef->Native->getEnableParticleFreeDeformers();
 }
 
 void FShovelBarrier::SetAlwaysRemoveShovelContacts(bool Enable)
@@ -194,6 +243,90 @@ bool FShovelBarrier::GetAlwaysRemoveShovelContacts() const
 {
 	check(HasNative());
 	return NativeRef->Native->getAlwaysRemoveShovelContacts();
+}
+
+void FShovelBarrier::SetMaximumPenetrationForce(double MaximumPenetrationForce)
+{
+	check(HasNative());
+	NativeRef->Native->setMaxPenetrationForce(MaximumPenetrationForce);
+}
+
+double FShovelBarrier::GetMaximumPenetrationForce() const
+{
+	check(HasNative());
+	return NativeRef->Native->getMaxPenetrationForce();
+}
+
+void FShovelBarrier::SetContactRegionThreshold(double ContactRegionThreshold)
+{
+	check(HasNative());
+	NativeRef->Native->setContactRegionThreshold(ConvertDistanceToAGX(ContactRegionThreshold));
+}
+
+double FShovelBarrier::GetContactRegionThreshold() const
+{
+	check(HasNative());
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getContactRegionThreshold());
+}
+
+void FShovelBarrier::SetContactRegionVerticalLimit(double ContactRegionVerticalLimit)
+{
+	check(HasNative());
+	NativeRef->Native->setContactRegionVerticalLimit(ContactRegionVerticalLimit);
+}
+
+double FShovelBarrier::GetContactRegionVerticalLimit() const
+{
+	check(HasNative());
+	return ConvertDistanceToUnreal<double>(NativeRef->Native->getContactRegionVerticalLimit());
+}
+
+void FShovelBarrier::SetEnableInnerShapeCreateDynamicMass(bool Enable)
+{
+	check(HasNative());
+	NativeRef->Native->setEnableInnerShapeCreateDynamicMass(Enable);
+}
+
+bool FShovelBarrier::GetEnableInnerShapeCreateDynamicMass() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnableInnerShapeCreateDynamicMass();
+}
+
+void FShovelBarrier::SetEnableParticleForceFeedback(bool Enable)
+{
+	check(HasNative());
+	NativeRef->Native->setEnableParticleForceFeedback(Enable);
+}
+
+bool FShovelBarrier::GetEnableParticleForceFeedback() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnableParticleForceFeedback();
+}
+
+void FShovelBarrier::SetEnable(bool Enable)
+{
+	check(HasNative());
+	NativeRef->Native->setEnable(Enable);
+}
+
+bool FShovelBarrier::GetEnable() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnable();
+}
+
+void FShovelBarrier::SetParticleInclusionMultiplier(double Multiplier)
+{
+	check(HasNative());
+	NativeRef->Native->setParticleInclusionMultiplier(Multiplier);
+}
+
+double FShovelBarrier::GetParticleInclusionMultiplier() const
+{
+	check(HasNative());
+	return NativeRef->Native->getParticleInclusionMultiplier();
 }
 
 void FShovelBarrier::SetExcavationSettingsEnabled(EAGX_ExcavationMode Mode, bool Enable)
@@ -233,20 +366,51 @@ bool FShovelBarrier::GetExcavationSettingsEnableForceFeedback(EAGX_ExcavationMod
 	return NativeRef->Native->getExcavationSettings(Convert(Mode)).getEnableForceFeedback();
 }
 
-void FShovelBarrier::SetContactRegionThreshold(double ContactRegionThreshold)
+double FShovelBarrier::GetInnerContactArea() const
 {
 	check(HasNative());
-	NativeRef->Native->setContactRegionThreshold(ConvertDistanceToAGX(ContactRegionThreshold));
+	const agx::Real AreaAGX = NativeRef->Native->getInnerContactArea();
+	const double AreaUnreal = ConvertAreaToUnreal<double>(AreaAGX);
+	return AreaUnreal;
 }
 
-double FShovelBarrier::GetContactRegionThreshold() const
+FRigidBodyBarrier FShovelBarrier::GetRigidBody() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<double>(NativeRef->Native->getContactRegionThreshold());
+	agx::RigidBody* Body = NativeRef->Native->getRigidBody();
+	return AGXBarrierFactories::CreateRigidBodyBarrier(Body);
+}
+
+
+
+FGuid FShovelBarrier::GetGuid() const
+{
+	check(HasNative());
+	return Convert(NativeRef->Native->getUuid());
 }
 
 bool FShovelBarrier::HasNative() const
 {
+	AGX_CHECK(NativeRef.get() != nullptr); // TEXT("Found an FShovelBarrier that does not have a
+										   // NativeRef. This should never happen"));
+	ensureMsgf(
+		NativeRef.get() != nullptr, TEXT("AGXUnreal: Found an FShovelBarrier that does not have a "
+										 "NativeRef. This should never happen."));
+	if (NativeRef.get() == nullptr)
+	{
+		// We somehow ended up in a bad state where there is a Barrier that does not have a
+		// NativeRef. This should never happen and in local builds we will already have aborted
+		// after the failed AGX_CHECK above. In user applications we instead try to fix the
+		// situation so that the application can keep running and not crash. The user will hopefully
+		// see the ensureMsgf message printed above and let us know about the problem.
+		//
+		// HasNative is a const member function in that it never alters the salient value, but
+		// here we need to do some under-the-hood cleanup. We assume that a FShoveBarrier will never
+		// be an actual const value.
+		FShovelBarrier* MutableThis = const_cast<FShovelBarrier*>(this);
+		MutableThis->NativeRef.reset(new FShovelRef());
+	}
+
 	return NativeRef->Native != nullptr;
 }
 
@@ -255,6 +419,7 @@ void FShovelBarrier::AllocateNative(
 	const FVector& CuttingDirection)
 {
 	check(!HasNative());
+	check(Body.HasNative());
 	agx::RigidBody* BodyAGX = Body.GetNative()->Native;
 	const agx::Line TopEdgeAGX = ConvertDisplacement(TopEdge);
 	const agx::Line CuttingEdgeAGX = ConvertDisplacement(CuttingEdge);
@@ -281,8 +446,51 @@ const FShovelRef* FShovelBarrier::GetNative() const
 	return NativeRef.get();
 }
 
+uint64 FShovelBarrier::GetNativeAddress() const
+{
+	return HasNative() ? reinterpret_cast<uint64>(NativeRef->Native.get()) : 0;
+}
+
+void FShovelBarrier::SetNativeAddress(uint64 Address)
+{
+	NativeRef->Native = reinterpret_cast<agxTerrain::Shovel*>(Address);
+}
+
 void FShovelBarrier::ReleaseNative()
 {
 	check(HasNative());
 	NativeRef->Native = nullptr;
+}
+
+void FShovelBarrier::IncrementRefCount() const
+{
+	check(HasNative());
+	NativeRef->Native->reference();
+}
+
+void FShovelBarrier::DecrementRefCount() const
+{
+	check(HasNative());
+	NativeRef->Native->unreference();
+}
+
+void FShovelBarrier::SetbAlwaysRemoveShovelContacts(bool InbAlwaysRemoveShovelContacts)
+{
+	SetAlwaysRemoveShovelContacts(InbAlwaysRemoveShovelContacts);
+}
+
+void FShovelBarrier::SetbEnableParticleFreeDeformers(bool InbEnableParticleFreeDeformers)
+{
+	SetEnableParticleFreeDeformers(InbEnableParticleFreeDeformers);
+}
+
+void FShovelBarrier::SetbEnableInnerShapeCreateDynamicMass(
+	bool InbEnableInnerShapeCreateDynamicMass)
+{
+	SetEnableInnerShapeCreateDynamicMass(InbEnableInnerShapeCreateDynamicMass);
+}
+
+void FShovelBarrier::SetbEnableParticleForceFeedback(bool InbEnableParticleForceFeedback)
+{
+	SetEnableParticleForceFeedback(InbEnableParticleForceFeedback);
 }

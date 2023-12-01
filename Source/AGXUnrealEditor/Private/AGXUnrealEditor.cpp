@@ -15,13 +15,16 @@
 #include "UnrealEdGlobals.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_ComponentReference.h"
+#include "AGX_ComponentReferenceCustomization.h"
 #include "AGX_EditorStyle.h"
 #include "AGX_Environment.h"
+#include "AGX_Frame.h"
+#include "AGX_FrameCustomization.h"
 #include "AGX_RigidBodyActor.h"
-#include "AGX_RigidBodyReference.h"
-#include "AGX_RigidBodyReferenceCustomization.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_RigidBodyComponentCustomization.h"
+#include "AGX_RigidBodyReference.h"
 #include "AGX_Real.h"
 #include "AGX_RealDetails.h"
 #include "AGX_ModelSourceComponent.h"
@@ -77,6 +80,10 @@
 #include "Terrain/AGX_HeightFieldBoundsComponent.h"
 #include "Terrain/AGX_HeightFieldBoundsComponentCustomization.h"
 #include "Terrain/AGX_HeightFieldBoundsComponentVisualizer.h"
+#include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelComponentVisualizer.h"
+#include "Terrain/AGX_ShovelPropertiesActions.h"
+#include "Terrain/AGX_ShovelReference.h"
 #include "Tires/AGX_TireComponentVisualizer.h"
 #include "Tires/AGX_TireComponent.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
@@ -187,8 +194,7 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 		AssetTools,
 		MakeShareable(new FAGX_ConstraintMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
-		AssetTools,
-		MakeShareable(new FAGX_PlayRecordTypeActions(AgxAssetCategoryBit)));
+		AssetTools, MakeShareable(new FAGX_PlayRecordTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_ShapeContactMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
@@ -197,6 +203,8 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 		MakeShareable(new FAGX_WireMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_TrackPropertiesAssetTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_ShovelPropertiesActions(AgxAssetCategoryBit)));
 
 	RegisterAssetTypeAction(
 		AssetTools,
@@ -234,6 +242,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 	 */
 
 	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_Frame::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+			&FAGX_FrameCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FAGX_Real::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FAGX_RealDetails::MakeInstance));
 
@@ -243,9 +256,27 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_ComponentReference::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+			&FAGX_ComponentReferenceCustomization::MakeInstance));
+
+	// Scene Component Reference uses the base class customization.
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_SceneComponentReference::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+			&FAGX_ComponentReferenceCustomization::MakeInstance));
+
+	// Shovel Reference uses the base class customization.
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_ShovelReference::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+			&FAGX_ComponentReferenceCustomization::MakeInstance));
+
+	// Body Reference uses the base class customization.
+	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FAGX_RigidBodyReference::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
-			&FAGX_RigidBodyReferenceCustomization::MakeInstance));
+			&FAGX_ComponentReferenceCustomization::MakeInstance));
 
 	/*
 	 * Class customizations.
@@ -360,10 +391,21 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	 * Property customizations.
 	 */
 
+	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_Frame::StaticStruct()->GetFName());
+
 	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_Real::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		FAGX_ComponentReference::StaticStruct()->GetFName());
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		FAGX_SceneComponentReference::StaticStruct()->GetFName());
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		FAGX_ShovelReference::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_RigidBodyReference::StaticStruct()->GetFName());
@@ -443,6 +485,10 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 	RegisterComponentVisualizer(
 		UAGX_WireComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_WireComponentVisualizer));
+
+	RegisterComponentVisualizer(
+		UAGX_ShovelComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_ShovelComponentVisualizer));
 
 	RegisterComponentVisualizer(
 		UAGX_WireWinchComponent::StaticClass()->GetFName(),

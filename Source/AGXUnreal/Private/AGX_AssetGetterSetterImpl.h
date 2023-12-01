@@ -1,6 +1,11 @@
 // Copyright 2023, Algoryx Simulation AB.
 
 #pragma once
+
+// AGX Dynamics includes.
+#include "Utilities/AGX_ObjectUtilities.h"
+
+// Standard library includes.
 #include <type_traits>
 
 /*
@@ -8,10 +13,55 @@
  * and property updates in general.
  */
 
+
+/**
+ * The C++ preprocessor makes it difficult to embed #if blocks within multi-line macros, so this
+ * namespace defines wrapper for functions that are WITH_EDITOR only, where the non-WITH_EDITOR
+ * versions does nothing.
+ */
+namespace AGX_WithEditorWrappers
+{
+#if WITH_EDITOR
+	template<typename T>
+	inline void Modify(T& Object)
+	{
+		Object.Modify();
+	}
+
+	inline void MarkAssetDirty(UObject& Asset)
+	{
+		FAGX_ObjectUtilities::MarkAssetDirty(Asset);
+	}
+#else
+	template<typename T>
+	inline void Modify(T&) {}
+
+	inline void MarkAssetDirty(UObject& Asset) {}
+#endif
+}
+
 // clang-format off
 
 /**
  * @brief Final expansion of the various AGX_ASSET_SETTER macros.
+ *
+ * The rules are as follows:
+ * - If the object that is modified is a runtime instance:
+ *   - Modify that instance and the native, if there is one.
+ *   - Do not propagate changes from instance to asset when the source is a Set function.
+ * - If the object that is modified is an asset:
+ *   - Prefer to modify that instance instead of the asset.
+ *     - Runtime logic should only affect the runtime state, not the persistent asset.
+ *   - If there is not instance, then modify that asset itself.
+ *     - When modifying the asset behave as-if the change was made by an Unreal Editor user:
+ *       - Mark the package dirty.
+ *       - Support undo / redo.
+ *
+ * In some places it is not possible to use this macro directly, but we still want the logic to be
+ * the same. If we decide to change the logic here then also update the following places:
+ * - SetAndPropagateShovelProperty in AGX_ShovelProperties.cpp.
+ * - SetAndPropagateShovelExcavationProperty in AGX_ShovelProperties.cpp.
+ *
  * @param PropertyName The name of the property to set. May be a StructName.MemberVariableName identifier.
  * @param InVar The new value to assign to the property.
  * @param SetFunc The name of the function to call to set the value, both on an instance and a Barrier.
@@ -38,7 +88,9 @@
 		} \
 		else \
 		{ \
+			AGX_WithEditorWrappers::Modify(*this); \
 			PropertyName = InVar; \
+			AGX_WithEditorWrappers::MarkAssetDirty(*this); \
 		} \
 	} \
 }
@@ -82,7 +134,19 @@
 	AGX_ASSET_SETTER_IMPL_INTERNAL(PropertyName, InVar, SetFunc, HasNativeFunc, NativeName, .)
 
 
-
+/**
+ * @brief Final expansion of the various AGX_ASSET_GETTER macros.
+ *
+ * The rules are as follows:
+ *  - If the object being modified is an asset that has an instance:
+ *    - Let that instance's Get function decide what to do.
+ *    - It will read from the native if there is one, otherwise the instance's property member.
+ * - If the object being modified has a native:
+ *    - Read from the native.
+ *    - This can only happen for runtime instances, assets never have a native.
+ * - If the object don't have an instance and don't have a native:
+ *   - The only thing we can do is return the property member.
+ */
 #define AGX_ASSET_GETTER_IMPL_INTERNAL( \
 	PropertyName, GetFunc, HasNativeFunc, NativeName, BarrierMemberAccess) \
 { \
@@ -110,13 +174,38 @@
 	AGX_ASSET_GETTER_IMPL_INTERNAL(PropertyName, GetFunc, HasNativeFunc, NativeName, .)
 
 
+/**
+ * When modifying a runtime instance from the Details panel, i.e. when the Property Changed
+ * Dispatcher is called from a Post Edit Change Chain Property callback, then any modifications
+ * done to the runtime instance should be propagated to the persistant asset the instance was
+ * created from. The change should appear to the user as-if it was done by the user on the asset,
+ * i.e. with the asset being marked dirty / unsaved and with undo / redo support.
+ */
 #define AGX_ASSET_DISPATCHER_LAMBDA_BODY(PropertyName, SetFunc) \
 { \
 	if (This->IsInstance()) \
 	{ \
+		AGX_WithEditorWrappers::Modify(*This->Asset); \
 		This->Asset->PropertyName = This->PropertyName; \
+		AGX_WithEditorWrappers::MarkAssetDirty(*This->Asset); \
 	} \
 	This->SetFunc(This->PropertyName); \
 }
+
+#define AGX_ASSET_DEFAULT_DISPATCHER(PropertyName) \
+	PropertyDispatcher.Add(GET_MEMBER_NAME_CHECKED(ThisClass, PropertyName), \
+	[](ThisClass* This) { \
+		AGX_ASSET_DISPATCHER_LAMBDA_BODY(PropertyName, Set ## PropertyName) \
+	})
+
+
+/// Default implementation for adding a Property Dispatcher callback to a Component, i.e. not an
+/// asset. Call the corresponding Set member function, passing in that very same property member
+/// variable.
+#define AGX_COMPONENT_DEFAULT_DISPATCHER(PropertyName) \
+	PropertyDispatcher.Add(GET_MEMBER_NAME_CHECKED(ThisClass, PropertyName), \
+		[](ThisClass* This) { \
+			This->Set ## PropertyName(This->PropertyName); \
+		})
 
 // clang-format on

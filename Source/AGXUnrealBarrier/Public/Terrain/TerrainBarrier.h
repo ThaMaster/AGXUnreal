@@ -42,6 +42,9 @@ public:
 	const FTerrainRef* GetNative() const;
 	void ReleaseNative();
 
+	void SetCanCollide(bool bCanCollide);
+	bool GetCanCollide() const;
+
 	void SetPosition(const FVector& Position);
 	FVector GetPosition() const;
 
