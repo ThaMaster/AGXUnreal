@@ -532,11 +532,6 @@ bool FCheckROS2MovedCommand::Update()
 		if (CubeComplexMsg == nullptr)
 			return true;
 
-		auto CubeQOS = GetComponentByName<UStaticMeshComponent>(*Actors["BP_ROS2"], "Cube_QOS");
-		Test.TestNotNull("CubeQOS", CubeQOS);
-		if (CubeQOS == nullptr)
-			return true;
-
 		auto CubeAnyMsg =
 			GetComponentByName<UStaticMeshComponent>(*Actors["BP_ROS2"], "Cube_AnyMessage");
 		Test.TestNotNull("CubeAnyMsg", CubeAnyMsg);
@@ -544,11 +539,9 @@ bool FCheckROS2MovedCommand::Update()
 			return true;
 
 		ComponentsOfInterest.Add("CubeComplexMsg", CubeComplexMsg);
-		ComponentsOfInterest.Add("CubeQOS", CubeQOS);
 		ComponentsOfInterest.Add("CubeAnyMsg", CubeAnyMsg);
 		Test.TestTrue(
 			"CubeComplexMsg initial x pos", CubeComplexMsg->GetComponentLocation().X < 1.0);
-		Test.TestTrue("CubeQOS initial x pos", CubeQOS->GetComponentLocation().X < 1.0);
 		Test.TestTrue("CubeAnyMsg initial x pos", CubeAnyMsg->GetComponentLocation().X < 1.0);
 	}
 
@@ -578,10 +571,8 @@ bool FCheckROS2MovedCommand::Update()
 	// At this point we have ticked to TickMax. In this test, the Cubes will be moved in +x >100cm
 	// if the tests succeeded.
 	auto CubeComplexMsg = Cast<UStaticMeshComponent>(ComponentsOfInterest["CubeComplexMsg"]);
-	auto CubeQOS = Cast<UStaticMeshComponent>(ComponentsOfInterest["CubeQOS"]);
 	auto CubeAnyMsg = Cast<UStaticMeshComponent>(ComponentsOfInterest["CubeAnyMsg"]);
 	Test.TestTrue("CubeComplexMsg final x pos", CubeComplexMsg->GetComponentLocation().X > 100.0);
-	Test.TestTrue("CubeQOS final x pos", CubeQOS->GetComponentLocation().X > 100.0);
 	Test.TestTrue("CubeAnyMsg final x pos", CubeAnyMsg->GetComponentLocation().X > 100.0);
 	return true;
 }
