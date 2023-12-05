@@ -235,7 +235,7 @@ TArray<int32> UAGX_ROS2AnyMessageParserComponent::ReadInt8Sequence()
 		return TArray<int32>();
 	}
 
-	return ToIntArray<int8_t, int32>(NativeBarrier.ReadInt8Sequence());
+	return ToIntArray<int8, int32>(NativeBarrier.ReadInt8Sequence());
 }
 
 TArray<uint8> UAGX_ROS2AnyMessageParserComponent::ReadUInt8Sequence()
@@ -259,7 +259,7 @@ TArray<int32> UAGX_ROS2AnyMessageParserComponent::ReadInt16Sequence()
 		return TArray<int32>();
 	}
 
-	return ToIntArray<int16_t, int32>(NativeBarrier.ReadInt16Sequence());
+	return ToIntArray<int16, int32>(NativeBarrier.ReadInt16Sequence());
 }
 
 TArray<int32> UAGX_ROS2AnyMessageParserComponent::ReadUInt16Sequence()
@@ -271,7 +271,7 @@ TArray<int32> UAGX_ROS2AnyMessageParserComponent::ReadUInt16Sequence()
 		return TArray<int32>();
 	}
 
-	return ToIntArray<uint16_t, int32>(NativeBarrier.ReadUInt16Sequence());
+	return ToIntArray<uint16, int32>(NativeBarrier.ReadUInt16Sequence());
 }
 
 TArray<int32> UAGX_ROS2AnyMessageParserComponent::ReadInt32Sequence()
@@ -295,7 +295,7 @@ TArray<int64> UAGX_ROS2AnyMessageParserComponent::ReadUInt32Sequence()
 		return TArray<int64>();
 	}
 
-	return ToIntArray<uint32_t, int64>(NativeBarrier.ReadUInt32Sequence());
+	return ToIntArray<uint32, int64>(NativeBarrier.ReadUInt32Sequence());
 }
 
 TArray<int64> UAGX_ROS2AnyMessageParserComponent::ReadInt64Sequence()
@@ -319,7 +319,7 @@ TArray<int64> UAGX_ROS2AnyMessageParserComponent::ReadUInt64Sequence()
 		return TArray<int64>();
 	}
 
-	return ToIntArray<uint64_t, int64>(NativeBarrier.ReadUInt64Sequence());
+	return ToIntArray<uint64, int64>(NativeBarrier.ReadUInt64Sequence());
 }
 
 TArray<float> UAGX_ROS2AnyMessageParserComponent::ReadFloat32Sequence()

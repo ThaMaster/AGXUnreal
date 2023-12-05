@@ -30,27 +30,27 @@ public:
 
 	void BeginMessage();
 
-	void WriteInt8(int8_t d);
-	void WriteUInt8(uint8_t d);
-	void WriteInt16(int16_t d);
-	void WriteUInt16(uint16_t d);
-	void WriteInt32(int32_t d);
-	void WriteUInt32(uint32_t d);
-	void WriteInt64(int64_t d);
-	void WriteUInt64(uint64_t d);
+	void WriteInt8(int8 d);
+	void WriteUInt8(uint8 d);
+	void WriteInt16(int16 d);
+	void WriteUInt16(uint16 d);
+	void WriteInt32(int32 d);
+	void WriteUInt32(uint32 d);
+	void WriteInt64(int64 d);
+	void WriteUInt64(uint64 d);
 	void WriteFloat32(float d);
 	void WriteDouble64(double d);
 	void WriteString(const FString& d);
 	void WriteBool(bool d);
 
-	void WriteInt8Sequence(const TArray<int8_t>& d);
-	void WriteUInt8Sequence(const TArray<uint8_t>& d);
-	void WriteInt16Sequence(const TArray<int16_t>& d);
-	void WriteUInt16Sequence(const TArray<uint16_t>& d);
-	void WriteInt32Sequence(const TArray<int32_t>& d);
-	void WriteUInt32Sequence(const TArray<uint32_t>& d);
-	void WriteInt64Sequence(const TArray<int64_t>& d);
-	void WriteUInt64Sequence(const TArray<uint64_t>& d);
+	void WriteInt8Sequence(const TArray<int8>& d);
+	void WriteUInt8Sequence(const TArray<uint8>& d);
+	void WriteInt16Sequence(const TArray<int16>& d);
+	void WriteUInt16Sequence(const TArray<uint16>& d);
+	void WriteInt32Sequence(const TArray<int32>& d);
+	void WriteUInt32Sequence(const TArray<uint32>& d);
+	void WriteInt64Sequence(const TArray<int64>& d);
+	void WriteUInt64Sequence(const TArray<uint64>& d);
 	void WriteFloat32Sequence(const TArray<float>& d);
 	void WriteDouble64Sequence(const TArray<double>& d);
 	void WriteStringSequence(const TArray<FString>& d);

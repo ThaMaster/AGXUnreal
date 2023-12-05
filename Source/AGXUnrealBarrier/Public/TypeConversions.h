@@ -1272,10 +1272,10 @@ inline FString Convert(const std::string& Str)
 	return FString(Str.c_str());
 }
 
-template <typename T>
-inline TArray<T> ToUnrealArray(const std::vector<T>& V)
+template <typename SourceT, typename DestinationT>
+inline TArray<DestinationT> ToUnrealArray(const std::vector<SourceT>& V)
 {
-	TArray<T> Arr;
+	TArray<DestinationT> Arr;
 	Arr.Reserve(V.size());
 	for (const auto& Val : V)
 		Arr.Add(Val);
@@ -1303,10 +1303,10 @@ inline std::string ToStdString(const FString& Str)
 	return std::string(TCHAR_TO_UTF8(*Str));
 }
 
-template <typename T>
-inline std::vector<T> ToStdArray(const TArray<T>& A)
+template <typename SourceT, typename DestinationT>
+inline std::vector<DestinationT> ToStdArray(const TArray<SourceT>& A)
 {
-	std::vector<T> Arr;
+	std::vector<DestinationT> Arr;
 	Arr.reserve(A.Num());
 	for (const auto& Val : A)
 		Arr.push_back(Val);
@@ -1323,4 +1323,3 @@ inline std::vector<std::string> ToStdStringArray(const TArray<FString>& A)
 
 	return Arr;
 }
-

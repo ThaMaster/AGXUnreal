@@ -249,7 +249,7 @@ UAGX_ROS2AnyMessageBuilderComponent* UAGX_ROS2AnyMessageBuilderComponent::WriteI
 		return this;
 	}
 
-	NativeBarrier.WriteInt8Sequence(ToIntArray<int32, int8_t>(Data));
+	NativeBarrier.WriteInt8Sequence(ToIntArray<int32, int8>(Data));
 	return this;
 }
 
@@ -277,7 +277,7 @@ UAGX_ROS2AnyMessageBuilderComponent* UAGX_ROS2AnyMessageBuilderComponent::WriteI
 		return this;
 	}
 
-	NativeBarrier.WriteInt16Sequence(ToIntArray<int32, int16_t>(Data));
+	NativeBarrier.WriteInt16Sequence(ToIntArray<int32, int16>(Data));
 	return this;
 }
 
@@ -291,7 +291,7 @@ UAGX_ROS2AnyMessageBuilderComponent* UAGX_ROS2AnyMessageBuilderComponent::WriteU
 		return this;
 	}
 
-	NativeBarrier.WriteUInt16Sequence(ToIntArray<int32, uint16_t>(Data));
+	NativeBarrier.WriteUInt16Sequence(ToIntArray<int32, uint16>(Data));
 	return this;
 }
 
@@ -319,7 +319,7 @@ UAGX_ROS2AnyMessageBuilderComponent* UAGX_ROS2AnyMessageBuilderComponent::WriteU
 		return this;
 	}
 
-	NativeBarrier.WriteUInt32Sequence(ToIntArray<int64, uint32_t>(Data));
+	NativeBarrier.WriteUInt32Sequence(ToIntArray<int64, uint32>(Data));
 	return this;
 }
 
@@ -347,7 +347,7 @@ UAGX_ROS2AnyMessageBuilderComponent* UAGX_ROS2AnyMessageBuilderComponent::WriteU
 		return this;
 	}
 
-	NativeBarrier.WriteUInt64Sequence(ToIntArray<int64, uint64_t>(Data));
+	NativeBarrier.WriteUInt64Sequence(ToIntArray<int64, uint64>(Data));
 	return this;
 }
 

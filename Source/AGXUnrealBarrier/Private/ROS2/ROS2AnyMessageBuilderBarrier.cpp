@@ -66,49 +66,49 @@ void FROS2AnyMessageBuilderBarrier::BeginMessage()
 	Native->Native->beginMessage();
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteInt8(int8_t d)
+void FROS2AnyMessageBuilderBarrier::WriteInt8(int8 d)
 {
 	check(HasNative());
 	Native->Native->writeInt8(d);
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteUInt8(uint8_t d)
+void FROS2AnyMessageBuilderBarrier::WriteUInt8(uint8 d)
 {
 	check(HasNative());
 	Native->Native->writeUInt8(d);
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteInt16(int16_t d)
+void FROS2AnyMessageBuilderBarrier::WriteInt16(int16 d)
 {
 	check(HasNative());
 	Native->Native->writeInt16(d);
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteUInt16(uint16_t d)
+void FROS2AnyMessageBuilderBarrier::WriteUInt16(uint16 d)
 {
 	check(HasNative());
 	Native->Native->writeUInt16(d);
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteInt32(int32_t d)
+void FROS2AnyMessageBuilderBarrier::WriteInt32(int32 d)
 {
 	check(HasNative());
 	Native->Native->writeInt32(d);
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteUInt32(uint32_t d)
+void FROS2AnyMessageBuilderBarrier::WriteUInt32(uint32 d)
 {
 	check(HasNative());
 	Native->Native->writeUInt32(d);
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteInt64(int64_t d)
+void FROS2AnyMessageBuilderBarrier::WriteInt64(int64 d)
 {
 	check(HasNative());
 	Native->Native->writeInt64(d);
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteUInt64(uint64_t d)
+void FROS2AnyMessageBuilderBarrier::WriteUInt64(uint64 d)
 {
 	check(HasNative());
 	Native->Native->writeUInt64(d);
@@ -138,64 +138,64 @@ void FROS2AnyMessageBuilderBarrier::WriteBool(bool d)
 	Native->Native->writeBool(d);
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteInt8Sequence(const TArray<int8_t>& d)
+void FROS2AnyMessageBuilderBarrier::WriteInt8Sequence(const TArray<int8>& d)
 {
 	check(HasNative());
-	Native->Native->writeInt8Sequence(ToStdArray(d));
+	Native->Native->writeInt8Sequence(ToStdArray<int8, int8_t>(d));
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteUInt8Sequence(const TArray<uint8_t>& d)
+void FROS2AnyMessageBuilderBarrier::WriteUInt8Sequence(const TArray<uint8>& d)
 {
 	check(HasNative());
-	Native->Native->writeUInt8Sequence(ToStdArray(d));
+	Native->Native->writeUInt8Sequence(ToStdArray<uint8, uint8_t>(d));
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteInt16Sequence(const TArray<int16_t>& d)
+void FROS2AnyMessageBuilderBarrier::WriteInt16Sequence(const TArray<int16>& d)
 {
 	check(HasNative());
-	Native->Native->writeInt16Sequence(ToStdArray(d));
+	Native->Native->writeInt16Sequence(ToStdArray<int16, int16_t>(d));
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteUInt16Sequence(const TArray<uint16_t>& d)
+void FROS2AnyMessageBuilderBarrier::WriteUInt16Sequence(const TArray<uint16>& d)
 {
 	check(HasNative());
-	Native->Native->writeUInt16Sequence(ToStdArray(d));
+	Native->Native->writeUInt16Sequence(ToStdArray<uint16, uint16_t>(d));
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteInt32Sequence(const TArray<int32_t>& d)
+void FROS2AnyMessageBuilderBarrier::WriteInt32Sequence(const TArray<int32>& d)
 {
 	check(HasNative());
-	Native->Native->writeInt32Sequence(ToStdArray(d));
+	Native->Native->writeInt32Sequence(ToStdArray<int32, int32_t>(d));
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteUInt32Sequence(const TArray<uint32_t>& d)
+void FROS2AnyMessageBuilderBarrier::WriteUInt32Sequence(const TArray<uint32>& d)
 {
 	check(HasNative());
-	Native->Native->writeUInt32Sequence(ToStdArray(d));
+	Native->Native->writeUInt32Sequence(ToStdArray<uint32, uint32_t>(d));
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteInt64Sequence(const TArray<int64_t>& d)
+void FROS2AnyMessageBuilderBarrier::WriteInt64Sequence(const TArray<int64>& d)
 {
 	check(HasNative());
-	Native->Native->writeInt64Sequence(ToStdArray(d));
+	Native->Native->writeInt64Sequence(ToStdArray<int64, int64_t>(d));
 }
 
-void FROS2AnyMessageBuilderBarrier::WriteUInt64Sequence(const TArray<uint64_t>& d)
+void FROS2AnyMessageBuilderBarrier::WriteUInt64Sequence(const TArray<uint64>& d)
 {
 	check(HasNative());
-	Native->Native->writeUInt64Sequence(ToStdArray(d));
+	Native->Native->writeUInt64Sequence(ToStdArray<uint64, uint64_t>(d));
 }
 
 void FROS2AnyMessageBuilderBarrier::WriteFloat32Sequence(const TArray<float>& d)
 {
 	check(HasNative());
-	Native->Native->writeFloat32Sequence(ToStdArray(d));
+	Native->Native->writeFloat32Sequence(ToStdArray<float, float>(d));
 }
 
 void FROS2AnyMessageBuilderBarrier::WriteDouble64Sequence(const TArray<double>& d)
 {
 	check(HasNative());
-	Native->Native->writeDouble64Sequence(ToStdArray(d));
+	Native->Native->writeDouble64Sequence(ToStdArray<double, double>(d));
 }
 
 void FROS2AnyMessageBuilderBarrier::WriteStringSequence(const TArray<FString>& d)
@@ -207,7 +207,7 @@ void FROS2AnyMessageBuilderBarrier::WriteStringSequence(const TArray<FString>& d
 void FROS2AnyMessageBuilderBarrier::WriteBoolSequence(const TArray<bool>& d)
 {
 	check(HasNative());
-	Native->Native->writeBoolSequence(ToStdArray(d));
+	Native->Native->writeBoolSequence(ToStdArray<bool, bool>(d));
 }
 
 FAGX_AgxMsgsAny FROS2AnyMessageBuilderBarrier::GetBuiltMessage() const
