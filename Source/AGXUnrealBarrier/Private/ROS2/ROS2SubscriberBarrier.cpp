@@ -15,36 +15,36 @@
 #include "EndAGXIncludes.h"
 
 // Helper macros to minimize amount of code needed in large switch-statement.
-// clang-format off
-#define AGX_RECEIVE_ROS2_MSGS(SubType, MsgTypeUnreal, MsgTypeROS2)                          \
-{                                                                                           \
-	if (auto Sub = dynamic_cast<const SubType*>(Native.get()))                                \
-	{                                                                                         \
-		MsgTypeROS2 MsgAGX;                                                                     \
-		if (Sub->Native->receiveMessage(MsgAGX))                                                \
+#define AGX_RECEIVE_ROS2_MSGS(SubType, MsgTypeUnreal, MsgTypeROS2)                              \
+	{                                                                                           \
+		if (auto Sub = dynamic_cast<const SubType*>(Native.get()))                              \
 		{                                                                                       \
-			*static_cast<MsgTypeUnreal*>(&OutMsg) = Convert(MsgAGX);                              \
-			agxROS2::freeContainerMemory(MsgAGX);                                                 \
-			return true;                                                                          \
+			MsgTypeROS2 MsgAGX;                                                                 \
+			if (Sub->Native->receiveMessage(MsgAGX))                                            \
+			{                                                                                   \
+				*static_cast<MsgTypeUnreal*>(&OutMsg) = Convert(MsgAGX);                        \
+				agxROS2::freeContainerMemory(MsgAGX);                                           \
+				return true;                                                                    \
+			}                                                                                   \
 		}                                                                                       \
-	}                                                                                         \
-	else                                                                                      \
-	{                                                                                         \
-		UE_LOG(                                                                                 \
-			LogAGX, Error,                                                                        \
-			TEXT("Unexpected internal error: unable to downcast to the correct Subscriber type "  \
-				 "in FROS2SubscriberBarrier::ReceiveMessage. No message could not be received."));  \
-	}                                                                                         \
-	return false;                                                                             \
-}
+		else                                                                                    \
+		{                                                                                       \
+			UE_LOG(                                                                             \
+				LogAGX, Error,                                                                  \
+				TEXT("Unexpected internal error: unable to downcast to the correct Subscriber " \
+					 "type "                                                                    \
+					 "in FROS2SubscriberBarrier::ReceiveMessage. No message could not be "      \
+					 "received."));                                                             \
+		}                                                                                       \
+		return false;                                                                           \
+	}
 
-#define AGX_ASSIGN_ROS2_NATIVE(SubTypeUnreal, SubTypeROS2)          \
-{                                                                   \
-	Native = std::make_unique<SubTypeUnreal>(                         \
-		new SubTypeROS2(Convert(Topic), Convert(Qos), DomainID));       \
-	return;                                                           \
-}
-// clang-format on
+#define AGX_ASSIGN_ROS2_NATIVE(SubTypeUnreal, SubTypeROS2)            \
+	{                                                                 \
+		Native = std::make_unique<SubTypeUnreal>(                     \
+			new SubTypeROS2(Convert(Topic), Convert(Qos), DomainID)); \
+		return;                                                       \
+	}
 
 FROS2SubscriberBarrier::FROS2SubscriberBarrier()
 {

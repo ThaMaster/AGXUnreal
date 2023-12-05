@@ -10,34 +10,32 @@
 #include "Utilities/ROS2Utilities.h"
 
 // Helper macros to minimize amount of code needed in large switch-statement.
-// clang-format off
-#define AGX_SEND_ROS2_MSGS(PubType, MsgType)                                            \
-{                                                                                       \
-	if (auto Pub = dynamic_cast<const PubType*>(Native.get()))                            \
-	{                                                                                     \
-		auto MsgAGX = Convert(*static_cast<const MsgType*>(&Msg));                          \
-		Pub->Native->sendMessage(MsgAGX);                                                   \
-		AGX_ROS2Utilities::FreeContainers(MsgAGX);                                          \
-		return true;                                                                        \
-	}                                                                                     \
-	else                                                                                  \
-	{                                                                                     \
-		UE_LOG(                                                                             \
-			LogAGX, Error,                                                                    \
-			TEXT(                                                                             \
-				"Unexpected internal error: unable to downcast to the correct Publisher type "  \
-				"in FROS2PublisherBarrier::SendMessage. The message will not be sent."));       \
-		return false;                                                                       \
-	}                                                                                     \
-}
+#define AGX_SEND_ROS2_MSGS(PubType, MsgType)                                                       \
+	{                                                                                              \
+		if (auto Pub = dynamic_cast<const PubType*>(Native.get()))                                 \
+		{                                                                                          \
+			auto MsgAGX = Convert(*static_cast<const MsgType*>(&Msg));                             \
+			Pub->Native->sendMessage(MsgAGX);                                                      \
+			AGX_ROS2Utilities::FreeContainers(MsgAGX);                                             \
+			return true;                                                                           \
+		}                                                                                          \
+		else                                                                                       \
+		{                                                                                          \
+			UE_LOG(                                                                                \
+				LogAGX, Error,                                                                     \
+				TEXT(                                                                              \
+					"Unexpected internal error: unable to downcast to the correct Publisher type " \
+					"in FROS2PublisherBarrier::SendMessage. The message will not be sent."));      \
+			return false;                                                                          \
+		}                                                                                          \
+	}
 
-#define AGX_ASSIGN_ROS2_NATIVE(PubTypeUnreal, PubTypeROS2)                   \
-{                                                                            \
-	Native = std::make_unique<PubTypeUnreal>(                                  \
-		new PubTypeROS2(Convert(Topic), Convert(Qos), DomainID));                \
-	return;                                                                    \
-}
-// clang-format on
+#define AGX_ASSIGN_ROS2_NATIVE(PubTypeUnreal, PubTypeROS2)            \
+	{                                                                 \
+		Native = std::make_unique<PubTypeUnreal>(                     \
+			new PubTypeROS2(Convert(Topic), Convert(Qos), DomainID)); \
+		return;                                                       \
+	}
 
 FROS2PublisherBarrier::FROS2PublisherBarrier()
 {
