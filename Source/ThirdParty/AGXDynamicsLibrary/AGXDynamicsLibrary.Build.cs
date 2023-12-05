@@ -80,7 +80,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		/// Points to the AGX Dynamics Material library location.
 		MaterialLibrary,
 
-		/// Points to the AGX Dynamics Terrain Material library location. 
+		/// Points to the AGX Dynamics Terrain Material library location.
 		TerrainMaterialLibrary,
 
 		/// Points to the AGX Dynamics Contact Material library location.
@@ -209,8 +209,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
 		RuntimeLibFiles.Add("agxROS2", LibSource.AGX);
 		RuntimeLibFiles.Add("agx-nt-ros2", LibSource.AGX);
-		RuntimeLibFiles.Add("fastcdr-*", LibSource.AGX);
-		RuntimeLibFiles.Add("fastrtps-*", LibSource.AGX);
+		RuntimeLibFiles.Add("fastcdr*", LibSource.AGX);
+		RuntimeLibFiles.Add("fastrtps*", LibSource.AGX);
 		if (TargetAGXVersion.IsOlderThan(2, 32, 0, 0))
 		{
 			RuntimeLibFiles.Add("vdbgrid", LibSource.AGX);
