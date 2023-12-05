@@ -3,6 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "ROS2/AGX_ROS2Messages.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 UAGX_ROS2AnyMessageBuilderComponent::UAGX_ROS2AnyMessageBuilderComponent()
 {
