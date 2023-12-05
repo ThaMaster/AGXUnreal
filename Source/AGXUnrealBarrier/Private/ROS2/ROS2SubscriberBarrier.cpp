@@ -281,6 +281,8 @@ void FROS2SubscriberBarrier::AllocateNative(
 		*Topic);
 }
 
+#undef AGX_ASSIGN_ROS2_NATIVE
+
 FROS2Subscriber* FROS2SubscriberBarrier::GetNative()
 {
 	return Native.get();

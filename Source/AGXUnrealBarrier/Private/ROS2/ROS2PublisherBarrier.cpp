@@ -274,6 +274,8 @@ void FROS2PublisherBarrier::AllocateNative(
 		*Topic);
 }
 
+#undef AGX_ASSIGN_ROS2_NATIVE
+
 FROS2Publisher* FROS2PublisherBarrier::GetNative()
 {
 	return Native.get();
