@@ -15,7 +15,7 @@
 // Qos
 //
 
-agxROS2::QOS_RELIABILITY Convert(EAGX_ROS2QosReliability Reliability)
+inline agxROS2::QOS_RELIABILITY Convert(EAGX_ROS2QosReliability Reliability)
 {
 	switch (Reliability)
 	{
@@ -34,7 +34,7 @@ agxROS2::QOS_RELIABILITY Convert(EAGX_ROS2QosReliability Reliability)
 	return agxROS2::QOS_RELIABILITY::DEFAULT;
 }
 
-agxROS2::QOS_DURABILITY Convert(EAGX_ROS2QosDurability Durability)
+inline agxROS2::QOS_DURABILITY Convert(EAGX_ROS2QosDurability Durability)
 {
 	switch (Durability)
 	{
@@ -57,7 +57,7 @@ agxROS2::QOS_DURABILITY Convert(EAGX_ROS2QosDurability Durability)
 	return agxROS2::QOS_DURABILITY::DEFAULT;
 }
 
-agxROS2::QOS_HISTORY Convert(EAGX_ROS2QosHistory History)
+inline agxROS2::QOS_HISTORY Convert(EAGX_ROS2QosHistory History)
 {
 	switch (History)
 	{
@@ -76,7 +76,7 @@ agxROS2::QOS_HISTORY Convert(EAGX_ROS2QosHistory History)
 	return agxROS2::QOS_HISTORY::DEFAULT;
 }
 
-agxROS2::QOS Convert(const FAGX_ROS2Qos& Qos)
+inline agxROS2::QOS Convert(const FAGX_ROS2Qos& Qos)
 {
 	agxROS2::QOS QosROS2;
 	QosROS2.reliability = Convert(Qos.Reliability);
@@ -91,7 +91,7 @@ agxROS2::QOS Convert(const FAGX_ROS2Qos& Qos)
 // AgxMsgs
 //
 
-FAGX_AgxMsgsAny Convert(const agxROS2::agxMsgs::Any& InMsg)
+inline FAGX_AgxMsgsAny Convert(const agxROS2::agxMsgs::Any& InMsg)
 {
 	FAGX_AgxMsgsAny Msg;
 
@@ -104,7 +104,7 @@ FAGX_AgxMsgsAny Convert(const agxROS2::agxMsgs::Any& InMsg)
 	return Msg;
 }
 
-FAGX_AgxMsgsAnySequence Convert(const agxROS2::agxMsgs::AnySequence& InMsg)
+inline FAGX_AgxMsgsAnySequence Convert(const agxROS2::agxMsgs::AnySequence& InMsg)
 {
 	FAGX_AgxMsgsAnySequence Msg;
 
@@ -117,7 +117,7 @@ FAGX_AgxMsgsAnySequence Convert(const agxROS2::agxMsgs::AnySequence& InMsg)
 	return Msg;
 }
 
-agxROS2::agxMsgs::Any Convert(const FAGX_AgxMsgsAny& InMsg)
+inline agxROS2::agxMsgs::Any Convert(const FAGX_AgxMsgsAny& InMsg)
 {
 	agxROS2::agxMsgs::Any Msg;
 
@@ -130,7 +130,7 @@ agxROS2::agxMsgs::Any Convert(const FAGX_AgxMsgsAny& InMsg)
 	return Msg;
 }
 
-agxROS2::agxMsgs::AnySequence Convert(const FAGX_AgxMsgsAnySequence& InMsg)
+inline agxROS2::agxMsgs::AnySequence Convert(const FAGX_AgxMsgsAnySequence& InMsg)
 {
 	agxROS2::agxMsgs::AnySequence Msg;
 
@@ -147,7 +147,7 @@ agxROS2::agxMsgs::AnySequence Convert(const FAGX_AgxMsgsAnySequence& InMsg)
 // BuiltinInterfaces
 //
 
-FAGX_BuiltinInterfacesTime Convert(const agxROS2::builtinInterfaces::Time& InMsg)
+inline FAGX_BuiltinInterfacesTime Convert(const agxROS2::builtinInterfaces::Time& InMsg)
 {
 	FAGX_BuiltinInterfacesTime Msg;
 	Msg.Sec = InMsg.sec;
@@ -155,7 +155,7 @@ FAGX_BuiltinInterfacesTime Convert(const agxROS2::builtinInterfaces::Time& InMsg
 	return Msg;
 }
 
-FAGX_BuiltinInterfacesDuration Convert(const agxROS2::builtinInterfaces::Duration& InMsg)
+inline FAGX_BuiltinInterfacesDuration Convert(const agxROS2::builtinInterfaces::Duration& InMsg)
 {
 	FAGX_BuiltinInterfacesDuration Msg;
 	Msg.Sec = InMsg.sec;
@@ -163,7 +163,7 @@ FAGX_BuiltinInterfacesDuration Convert(const agxROS2::builtinInterfaces::Duratio
 	return Msg;
 }
 
-agxROS2::builtinInterfaces::Time Convert(const FAGX_BuiltinInterfacesTime& InMsg)
+inline agxROS2::builtinInterfaces::Time Convert(const FAGX_BuiltinInterfacesTime& InMsg)
 {
 	agxROS2::builtinInterfaces::Time Msg;
 	Msg.sec = InMsg.Sec;
@@ -171,7 +171,7 @@ agxROS2::builtinInterfaces::Time Convert(const FAGX_BuiltinInterfacesTime& InMsg
 	return Msg;
 }
 
-agxROS2::builtinInterfaces::Duration Convert(const FAGX_BuiltinInterfacesDuration& InMsg)
+inline agxROS2::builtinInterfaces::Duration Convert(const FAGX_BuiltinInterfacesDuration& InMsg)
 {
 	agxROS2::builtinInterfaces::Duration Msg;
 	Msg.sec = InMsg.Sec;
@@ -183,14 +183,14 @@ agxROS2::builtinInterfaces::Duration Convert(const FAGX_BuiltinInterfacesDuratio
 // RosgraphMsgs
 //
 
-FAGX_RosgraphMsgsClock Convert(const agxROS2::rosgraphMsgs::Clock& InMsg)
+inline FAGX_RosgraphMsgsClock Convert(const agxROS2::rosgraphMsgs::Clock& InMsg)
 {
 	FAGX_RosgraphMsgsClock Msg;
 	Msg.Clock = Convert(InMsg.clock);
 	return Msg;
 }
 
-agxROS2::rosgraphMsgs::Clock Convert(const FAGX_RosgraphMsgsClock& InMsg)
+inline agxROS2::rosgraphMsgs::Clock Convert(const FAGX_RosgraphMsgsClock& InMsg)
 {
 	agxROS2::rosgraphMsgs::Clock Msg;
 	Msg.clock = Convert(InMsg.Clock);
@@ -201,7 +201,7 @@ agxROS2::rosgraphMsgs::Clock Convert(const FAGX_RosgraphMsgsClock& InMsg)
 // StdMsgs
 //
 
-FAGX_StdMsgsMultiArrayDimension Convert(const agxROS2::stdMsgs::MultiArrayDimension& InMsg)
+inline FAGX_StdMsgsMultiArrayDimension Convert(const agxROS2::stdMsgs::MultiArrayDimension& InMsg)
 {
 	FAGX_StdMsgsMultiArrayDimension Msg;
 	Msg.Label = FString(InMsg.label.c_str());
@@ -210,7 +210,7 @@ FAGX_StdMsgsMultiArrayDimension Convert(const agxROS2::stdMsgs::MultiArrayDimens
 	return Msg;
 }
 
-FAGX_StdMsgsMultiArrayLayout Convert(const agxROS2::stdMsgs::MultiArrayLayout& InMsg)
+inline FAGX_StdMsgsMultiArrayLayout Convert(const agxROS2::stdMsgs::MultiArrayLayout& InMsg)
 {
 	FAGX_StdMsgsMultiArrayLayout Msg;
 	Msg.DataOffset = static_cast<int64>(InMsg.data_offset);
@@ -223,21 +223,21 @@ FAGX_StdMsgsMultiArrayLayout Convert(const agxROS2::stdMsgs::MultiArrayLayout& I
 	return Msg;
 }
 
-FAGX_StdMsgsBool Convert(const agxROS2::stdMsgs::Bool& InMsg)
+inline FAGX_StdMsgsBool Convert(const agxROS2::stdMsgs::Bool& InMsg)
 {
 	FAGX_StdMsgsBool Msg;
 	Msg.Data = InMsg.data;
 	return Msg;
 }
 
-FAGX_StdMsgsByte Convert(const agxROS2::stdMsgs::Byte& InMsg)
+inline FAGX_StdMsgsByte Convert(const agxROS2::stdMsgs::Byte& InMsg)
 {
 	FAGX_StdMsgsByte Msg;
 	Msg.Data = InMsg.data;
 	return Msg;
 }
 
-FAGX_StdMsgsByteMultiArray Convert(const agxROS2::stdMsgs::ByteMultiArray& InMsg)
+inline FAGX_StdMsgsByteMultiArray Convert(const agxROS2::stdMsgs::ByteMultiArray& InMsg)
 {
 	FAGX_StdMsgsByteMultiArray Msg;
 	Msg.Layout = Convert(InMsg.layout);
@@ -251,14 +251,14 @@ FAGX_StdMsgsByteMultiArray Convert(const agxROS2::stdMsgs::ByteMultiArray& InMsg
 	return Msg;
 }
 
-FAGX_StdMsgsChar Convert(const agxROS2::stdMsgs::Char& InMsg)
+inline FAGX_StdMsgsChar Convert(const agxROS2::stdMsgs::Char& InMsg)
 {
 	FAGX_StdMsgsChar Msg;
 	Msg.Data = InMsg.data;
 	return Msg;
 }
 
-FAGX_StdMsgsColorRGBA Convert(const agxROS2::stdMsgs::ColorRGBA& InMsg)
+inline FAGX_StdMsgsColorRGBA Convert(const agxROS2::stdMsgs::ColorRGBA& InMsg)
 {
 	FAGX_StdMsgsColorRGBA Msg;
 	Msg.R = InMsg.r;
@@ -268,20 +268,20 @@ FAGX_StdMsgsColorRGBA Convert(const agxROS2::stdMsgs::ColorRGBA& InMsg)
 	return Msg;
 }
 
-FAGX_StdMsgsEmpty Convert(const agxROS2::stdMsgs::Empty& InMsg)
+inline FAGX_StdMsgsEmpty Convert(const agxROS2::stdMsgs::Empty& InMsg)
 {
 	FAGX_StdMsgsEmpty Msg;
 	return Msg;
 }
 
-FAGX_StdMsgsFloat32 Convert(const agxROS2::stdMsgs::Float32& InMsg)
+inline FAGX_StdMsgsFloat32 Convert(const agxROS2::stdMsgs::Float32& InMsg)
 {
 	FAGX_StdMsgsFloat32 Msg;
 	Msg.Data = InMsg.data;
 	return Msg;
 }
 
-FAGX_StdMsgsFloat32MultiArray Convert(const agxROS2::stdMsgs::Float32MultiArray& InMsg)
+inline FAGX_StdMsgsFloat32MultiArray Convert(const agxROS2::stdMsgs::Float32MultiArray& InMsg)
 {
 	FAGX_StdMsgsFloat32MultiArray Msg;
 	Msg.Layout = Convert(InMsg.layout);
@@ -295,14 +295,14 @@ FAGX_StdMsgsFloat32MultiArray Convert(const agxROS2::stdMsgs::Float32MultiArray&
 	return Msg;
 }
 
-FAGX_StdMsgsFloat64 Convert(const agxROS2::stdMsgs::Float64& InMsg)
+inline FAGX_StdMsgsFloat64 Convert(const agxROS2::stdMsgs::Float64& InMsg)
 {
 	FAGX_StdMsgsFloat64 Msg;
 	Msg.Data = InMsg.data;
 	return Msg;
 }
 
-FAGX_StdMsgsFloat64MultiArray Convert(const agxROS2::stdMsgs::Float64MultiArray& InMsg)
+inline FAGX_StdMsgsFloat64MultiArray Convert(const agxROS2::stdMsgs::Float64MultiArray& InMsg)
 {
 	FAGX_StdMsgsFloat64MultiArray Msg;
 	Msg.Layout = Convert(InMsg.layout);
@@ -316,14 +316,14 @@ FAGX_StdMsgsFloat64MultiArray Convert(const agxROS2::stdMsgs::Float64MultiArray&
 	return Msg;
 }
 
-FAGX_StdMsgsInt16 Convert(const agxROS2::stdMsgs::Int16& InMsg)
+inline FAGX_StdMsgsInt16 Convert(const agxROS2::stdMsgs::Int16& InMsg)
 {
 	FAGX_StdMsgsInt16 Msg;
 	Msg.Data = static_cast<int32>(InMsg.data);
 	return Msg;
 }
 
-FAGX_StdMsgsInt16MultiArray Convert(const agxROS2::stdMsgs::Int16MultiArray& InMsg)
+inline FAGX_StdMsgsInt16MultiArray Convert(const agxROS2::stdMsgs::Int16MultiArray& InMsg)
 {
 	FAGX_StdMsgsInt16MultiArray Msg;
 	Msg.Layout = Convert(InMsg.layout);
@@ -337,14 +337,14 @@ FAGX_StdMsgsInt16MultiArray Convert(const agxROS2::stdMsgs::Int16MultiArray& InM
 	return Msg;
 }
 
-FAGX_StdMsgsInt32 Convert(const agxROS2::stdMsgs::Int32& InMsg)
+inline FAGX_StdMsgsInt32 Convert(const agxROS2::stdMsgs::Int32& InMsg)
 {
 	FAGX_StdMsgsInt32 Msg;
 	Msg.Data = InMsg.data;
 	return Msg;
 }
 
-FAGX_StdMsgsInt32MultiArray Convert(const agxROS2::stdMsgs::Int32MultiArray& InMsg)
+inline FAGX_StdMsgsInt32MultiArray Convert(const agxROS2::stdMsgs::Int32MultiArray& InMsg)
 {
 	FAGX_StdMsgsInt32MultiArray Msg;
 	Msg.Layout = Convert(InMsg.layout);
@@ -358,14 +358,14 @@ FAGX_StdMsgsInt32MultiArray Convert(const agxROS2::stdMsgs::Int32MultiArray& InM
 	return Msg;
 }
 
-FAGX_StdMsgsInt64 Convert(const agxROS2::stdMsgs::Int64& InMsg)
+inline FAGX_StdMsgsInt64 Convert(const agxROS2::stdMsgs::Int64& InMsg)
 {
 	FAGX_StdMsgsInt64 Msg;
 	Msg.Data = InMsg.data;
 	return Msg;
 }
 
-FAGX_StdMsgsInt64MultiArray Convert(const agxROS2::stdMsgs::Int64MultiArray& InMsg)
+inline FAGX_StdMsgsInt64MultiArray Convert(const agxROS2::stdMsgs::Int64MultiArray& InMsg)
 {
 	FAGX_StdMsgsInt64MultiArray Msg;
 	Msg.Layout = Convert(InMsg.layout);
@@ -379,14 +379,14 @@ FAGX_StdMsgsInt64MultiArray Convert(const agxROS2::stdMsgs::Int64MultiArray& InM
 	return Msg;
 }
 
-FAGX_StdMsgsInt8 Convert(const agxROS2::stdMsgs::Int8& InMsg)
+inline FAGX_StdMsgsInt8 Convert(const agxROS2::stdMsgs::Int8& InMsg)
 {
 	FAGX_StdMsgsInt8 Msg;
 	Msg.Data = static_cast<int32>(InMsg.data);
 	return Msg;
 }
 
-FAGX_StdMsgsInt8MultiArray Convert(const agxROS2::stdMsgs::Int8MultiArray& InMsg)
+inline FAGX_StdMsgsInt8MultiArray Convert(const agxROS2::stdMsgs::Int8MultiArray& InMsg)
 {
 	FAGX_StdMsgsInt8MultiArray Msg;
 	Msg.Layout = Convert(InMsg.layout);
@@ -400,21 +400,21 @@ FAGX_StdMsgsInt8MultiArray Convert(const agxROS2::stdMsgs::Int8MultiArray& InMsg
 	return Msg;
 }
 
-FAGX_StdMsgsString Convert(const agxROS2::stdMsgs::String& InMsg)
+inline FAGX_StdMsgsString Convert(const agxROS2::stdMsgs::String& InMsg)
 {
 	FAGX_StdMsgsString Msg;
 	Msg.Data = FString(InMsg.data.c_str());
 	return Msg;
 }
 
-FAGX_StdMsgsUInt16 Convert(const agxROS2::stdMsgs::UInt16& InMsg)
+inline FAGX_StdMsgsUInt16 Convert(const agxROS2::stdMsgs::UInt16& InMsg)
 {
 	FAGX_StdMsgsUInt16 Msg;
 	Msg.Data = static_cast<int32>(InMsg.data);
 	return Msg;
 }
 
-FAGX_StdMsgsUInt16MultiArray Convert(const agxROS2::stdMsgs::UInt16MultiArray& InMsg)
+inline FAGX_StdMsgsUInt16MultiArray Convert(const agxROS2::stdMsgs::UInt16MultiArray& InMsg)
 {
 	FAGX_StdMsgsUInt16MultiArray Msg;
 	Msg.Layout = Convert(InMsg.layout);
@@ -428,14 +428,14 @@ FAGX_StdMsgsUInt16MultiArray Convert(const agxROS2::stdMsgs::UInt16MultiArray& I
 	return Msg;
 }
 
-FAGX_StdMsgsUInt32 Convert(const agxROS2::stdMsgs::UInt32& InMsg)
+inline FAGX_StdMsgsUInt32 Convert(const agxROS2::stdMsgs::UInt32& InMsg)
 {
 	FAGX_StdMsgsUInt32 Msg;
 	Msg.Data = static_cast<int64>(InMsg.data);
 	return Msg;
 }
 
-FAGX_StdMsgsUInt32MultiArray Convert(const agxROS2::stdMsgs::UInt32MultiArray& InMsg)
+inline FAGX_StdMsgsUInt32MultiArray Convert(const agxROS2::stdMsgs::UInt32MultiArray& InMsg)
 {
 	FAGX_StdMsgsUInt32MultiArray Msg;
 	Msg.Layout = Convert(InMsg.layout);
@@ -449,14 +449,14 @@ FAGX_StdMsgsUInt32MultiArray Convert(const agxROS2::stdMsgs::UInt32MultiArray& I
 	return Msg;
 }
 
-FAGX_StdMsgsUInt64 Convert(const agxROS2::stdMsgs::UInt64& InMsg)
+inline FAGX_StdMsgsUInt64 Convert(const agxROS2::stdMsgs::UInt64& InMsg)
 {
 	FAGX_StdMsgsUInt64 Msg;
 	Msg.Data = static_cast<int64>(InMsg.data);
 	return Msg;
 }
 
-FAGX_StdMsgsUInt64MultiArray Convert(const agxROS2::stdMsgs::UInt64MultiArray& InMsg)
+inline FAGX_StdMsgsUInt64MultiArray Convert(const agxROS2::stdMsgs::UInt64MultiArray& InMsg)
 {
 	FAGX_StdMsgsUInt64MultiArray Msg;
 	Msg.Layout = Convert(InMsg.layout);
@@ -470,14 +470,14 @@ FAGX_StdMsgsUInt64MultiArray Convert(const agxROS2::stdMsgs::UInt64MultiArray& I
 	return Msg;
 }
 
-FAGX_StdMsgsUInt8 Convert(const agxROS2::stdMsgs::UInt8& InMsg)
+inline FAGX_StdMsgsUInt8 Convert(const agxROS2::stdMsgs::UInt8& InMsg)
 {
 	FAGX_StdMsgsUInt8 Msg;
 	Msg.Data = InMsg.data;
 	return Msg;
 }
 
-FAGX_StdMsgsUInt8MultiArray Convert(const agxROS2::stdMsgs::UInt8MultiArray& InMsg)
+inline FAGX_StdMsgsUInt8MultiArray Convert(const agxROS2::stdMsgs::UInt8MultiArray& InMsg)
 {
 	FAGX_StdMsgsUInt8MultiArray Msg;
 	Msg.Layout = Convert(InMsg.layout);
@@ -491,7 +491,7 @@ FAGX_StdMsgsUInt8MultiArray Convert(const agxROS2::stdMsgs::UInt8MultiArray& InM
 	return Msg;
 }
 
-FAGX_StdMsgsHeader Convert(const agxROS2::stdMsgs::Header& InMsg)
+inline FAGX_StdMsgsHeader Convert(const agxROS2::stdMsgs::Header& InMsg)
 {
 	FAGX_StdMsgsHeader Msg;
 	Msg.Stamp = Convert(InMsg.stamp);
@@ -499,7 +499,7 @@ FAGX_StdMsgsHeader Convert(const agxROS2::stdMsgs::Header& InMsg)
 	return Msg;
 }
 
-agxROS2::stdMsgs::MultiArrayDimension Convert(const FAGX_StdMsgsMultiArrayDimension& InMsg)
+inline agxROS2::stdMsgs::MultiArrayDimension Convert(const FAGX_StdMsgsMultiArrayDimension& InMsg)
 {
 	agxROS2::stdMsgs::MultiArrayDimension Msg;
 	Msg.label = TCHAR_TO_UTF8(*InMsg.Label);
@@ -508,7 +508,7 @@ agxROS2::stdMsgs::MultiArrayDimension Convert(const FAGX_StdMsgsMultiArrayDimens
 	return Msg;
 }
 
-agxROS2::stdMsgs::MultiArrayLayout Convert(const FAGX_StdMsgsMultiArrayLayout& InMsg)
+inline agxROS2::stdMsgs::MultiArrayLayout Convert(const FAGX_StdMsgsMultiArrayLayout& InMsg)
 {
 	agxROS2::stdMsgs::MultiArrayLayout Msg;
 	Msg.dim.reserve(InMsg.Dim.Num());
@@ -522,21 +522,21 @@ agxROS2::stdMsgs::MultiArrayLayout Convert(const FAGX_StdMsgsMultiArrayLayout& I
 	return Msg;
 }
 
-agxROS2::stdMsgs::Bool Convert(const FAGX_StdMsgsBool& InMsg)
+inline agxROS2::stdMsgs::Bool Convert(const FAGX_StdMsgsBool& InMsg)
 {
 	agxROS2::stdMsgs::Bool Msg;
 	Msg.data = InMsg.Data;
 	return Msg;
 }
 
-agxROS2::stdMsgs::Byte Convert(const FAGX_StdMsgsByte& InMsg)
+inline agxROS2::stdMsgs::Byte Convert(const FAGX_StdMsgsByte& InMsg)
 {
 	agxROS2::stdMsgs::Byte Msg;
 	Msg.data = InMsg.Data;
 	return Msg;
 }
 
-agxROS2::stdMsgs::ByteMultiArray Convert(const FAGX_StdMsgsByteMultiArray& InMsg)
+inline agxROS2::stdMsgs::ByteMultiArray Convert(const FAGX_StdMsgsByteMultiArray& InMsg)
 {
 	agxROS2::stdMsgs::ByteMultiArray Msg;
 	Msg.layout = Convert(InMsg.Layout);
@@ -550,14 +550,14 @@ agxROS2::stdMsgs::ByteMultiArray Convert(const FAGX_StdMsgsByteMultiArray& InMsg
 	return Msg;
 }
 
-agxROS2::stdMsgs::Char Convert(const FAGX_StdMsgsChar& InMsg)
+inline agxROS2::stdMsgs::Char Convert(const FAGX_StdMsgsChar& InMsg)
 {
 	agxROS2::stdMsgs::Char Msg;
 	Msg.data = InMsg.Data;
 	return Msg;
 }
 
-agxROS2::stdMsgs::ColorRGBA Convert(const FAGX_StdMsgsColorRGBA& InMsg)
+inline agxROS2::stdMsgs::ColorRGBA Convert(const FAGX_StdMsgsColorRGBA& InMsg)
 {
 	agxROS2::stdMsgs::ColorRGBA Msg;
 	Msg.r = InMsg.R;
@@ -567,20 +567,20 @@ agxROS2::stdMsgs::ColorRGBA Convert(const FAGX_StdMsgsColorRGBA& InMsg)
 	return Msg;
 }
 
-agxROS2::stdMsgs::Empty Convert(const FAGX_StdMsgsEmpty& InMsg)
+inline agxROS2::stdMsgs::Empty Convert(const FAGX_StdMsgsEmpty& InMsg)
 {
 	agxROS2::stdMsgs::Empty Msg;
 	return Msg;
 }
 
-agxROS2::stdMsgs::Float32 Convert(const FAGX_StdMsgsFloat32& InMsg)
+inline agxROS2::stdMsgs::Float32 Convert(const FAGX_StdMsgsFloat32& InMsg)
 {
 	agxROS2::stdMsgs::Float32 Msg;
 	Msg.data = InMsg.Data;
 	return Msg;
 }
 
-agxROS2::stdMsgs::Float32MultiArray Convert(const FAGX_StdMsgsFloat32MultiArray& InMsg)
+inline agxROS2::stdMsgs::Float32MultiArray Convert(const FAGX_StdMsgsFloat32MultiArray& InMsg)
 {
 	agxROS2::stdMsgs::Float32MultiArray Msg;
 	Msg.layout = Convert(InMsg.Layout);
@@ -594,14 +594,14 @@ agxROS2::stdMsgs::Float32MultiArray Convert(const FAGX_StdMsgsFloat32MultiArray&
 	return Msg;
 }
 
-agxROS2::stdMsgs::Float64 Convert(const FAGX_StdMsgsFloat64& InMsg)
+inline agxROS2::stdMsgs::Float64 Convert(const FAGX_StdMsgsFloat64& InMsg)
 {
 	agxROS2::stdMsgs::Float64 Msg;
 	Msg.data = InMsg.Data;
 	return Msg;
 }
 
-agxROS2::stdMsgs::Float64MultiArray Convert(const FAGX_StdMsgsFloat64MultiArray& InMsg)
+inline agxROS2::stdMsgs::Float64MultiArray Convert(const FAGX_StdMsgsFloat64MultiArray& InMsg)
 {
 	agxROS2::stdMsgs::Float64MultiArray Msg;
 	Msg.layout = Convert(InMsg.Layout);
@@ -615,14 +615,14 @@ agxROS2::stdMsgs::Float64MultiArray Convert(const FAGX_StdMsgsFloat64MultiArray&
 	return Msg;
 }
 
-agxROS2::stdMsgs::Int16 Convert(const FAGX_StdMsgsInt16& InMsg)
+inline agxROS2::stdMsgs::Int16 Convert(const FAGX_StdMsgsInt16& InMsg)
 {
 	agxROS2::stdMsgs::Int16 Msg;
 	Msg.data = static_cast<int16_t>(InMsg.Data);
 	return Msg;
 }
 
-agxROS2::stdMsgs::Int16MultiArray Convert(const FAGX_StdMsgsInt16MultiArray& InMsg)
+inline agxROS2::stdMsgs::Int16MultiArray Convert(const FAGX_StdMsgsInt16MultiArray& InMsg)
 {
 	agxROS2::stdMsgs::Int16MultiArray Msg;
 	Msg.layout = Convert(InMsg.Layout);
@@ -636,14 +636,14 @@ agxROS2::stdMsgs::Int16MultiArray Convert(const FAGX_StdMsgsInt16MultiArray& InM
 	return Msg;
 }
 
-agxROS2::stdMsgs::Int32 Convert(const FAGX_StdMsgsInt32& InMsg)
+inline agxROS2::stdMsgs::Int32 Convert(const FAGX_StdMsgsInt32& InMsg)
 {
 	agxROS2::stdMsgs::Int32 Msg;
 	Msg.data = InMsg.Data;
 	return Msg;
 }
 
-agxROS2::stdMsgs::Int32MultiArray Convert(const FAGX_StdMsgsInt32MultiArray& InMsg)
+inline agxROS2::stdMsgs::Int32MultiArray Convert(const FAGX_StdMsgsInt32MultiArray& InMsg)
 {
 	agxROS2::stdMsgs::Int32MultiArray Msg;
 	Msg.layout = Convert(InMsg.Layout);
@@ -657,14 +657,14 @@ agxROS2::stdMsgs::Int32MultiArray Convert(const FAGX_StdMsgsInt32MultiArray& InM
 	return Msg;
 }
 
-agxROS2::stdMsgs::Int64 Convert(const FAGX_StdMsgsInt64& InMsg)
+inline agxROS2::stdMsgs::Int64 Convert(const FAGX_StdMsgsInt64& InMsg)
 {
 	agxROS2::stdMsgs::Int64 Msg;
 	Msg.data = InMsg.Data;
 	return Msg;
 }
 
-agxROS2::stdMsgs::Int64MultiArray Convert(const FAGX_StdMsgsInt64MultiArray& InMsg)
+inline agxROS2::stdMsgs::Int64MultiArray Convert(const FAGX_StdMsgsInt64MultiArray& InMsg)
 {
 	agxROS2::stdMsgs::Int64MultiArray Msg;
 	Msg.layout = Convert(InMsg.Layout);
@@ -678,14 +678,14 @@ agxROS2::stdMsgs::Int64MultiArray Convert(const FAGX_StdMsgsInt64MultiArray& InM
 	return Msg;
 }
 
-agxROS2::stdMsgs::Int8 Convert(const FAGX_StdMsgsInt8& InMsg)
+inline agxROS2::stdMsgs::Int8 Convert(const FAGX_StdMsgsInt8& InMsg)
 {
 	agxROS2::stdMsgs::Int8 Msg;
 	Msg.data = static_cast<int8_t>(InMsg.Data);
 	return Msg;
 }
 
-agxROS2::stdMsgs::Int8MultiArray Convert(const FAGX_StdMsgsInt8MultiArray& InMsg)
+inline agxROS2::stdMsgs::Int8MultiArray Convert(const FAGX_StdMsgsInt8MultiArray& InMsg)
 {
 	agxROS2::stdMsgs::Int8MultiArray Msg;
 	Msg.layout = Convert(InMsg.Layout);
@@ -699,21 +699,21 @@ agxROS2::stdMsgs::Int8MultiArray Convert(const FAGX_StdMsgsInt8MultiArray& InMsg
 	return Msg;
 }
 
-agxROS2::stdMsgs::String Convert(const FAGX_StdMsgsString& InMsg)
+inline agxROS2::stdMsgs::String Convert(const FAGX_StdMsgsString& InMsg)
 {
 	agxROS2::stdMsgs::String Msg;
 	Msg.data = TCHAR_TO_UTF8(*InMsg.Data);
 	return Msg;
 }
 
-agxROS2::stdMsgs::UInt16 Convert(const FAGX_StdMsgsUInt16& InMsg)
+inline agxROS2::stdMsgs::UInt16 Convert(const FAGX_StdMsgsUInt16& InMsg)
 {
 	agxROS2::stdMsgs::UInt16 Msg;
 	Msg.data = static_cast<uint16_t>(InMsg.Data);
 	return Msg;
 }
 
-agxROS2::stdMsgs::UInt16MultiArray Convert(const FAGX_StdMsgsUInt16MultiArray& InMsg)
+inline agxROS2::stdMsgs::UInt16MultiArray Convert(const FAGX_StdMsgsUInt16MultiArray& InMsg)
 {
 	agxROS2::stdMsgs::UInt16MultiArray Msg;
 	Msg.layout = Convert(InMsg.Layout);
@@ -727,14 +727,14 @@ agxROS2::stdMsgs::UInt16MultiArray Convert(const FAGX_StdMsgsUInt16MultiArray& I
 	return Msg;
 }
 
-agxROS2::stdMsgs::UInt32 Convert(const FAGX_StdMsgsUInt32& InMsg)
+inline agxROS2::stdMsgs::UInt32 Convert(const FAGX_StdMsgsUInt32& InMsg)
 {
 	agxROS2::stdMsgs::UInt32 Msg;
 	Msg.data = static_cast<uint32_t>(InMsg.Data);
 	return Msg;
 }
 
-agxROS2::stdMsgs::UInt32MultiArray Convert(const FAGX_StdMsgsUInt32MultiArray& InMsg)
+inline agxROS2::stdMsgs::UInt32MultiArray Convert(const FAGX_StdMsgsUInt32MultiArray& InMsg)
 {
 	agxROS2::stdMsgs::UInt32MultiArray Msg;
 	Msg.layout = Convert(InMsg.Layout);
@@ -748,14 +748,14 @@ agxROS2::stdMsgs::UInt32MultiArray Convert(const FAGX_StdMsgsUInt32MultiArray& I
 	return Msg;
 }
 
-agxROS2::stdMsgs::UInt64 Convert(const FAGX_StdMsgsUInt64& InMsg)
+inline agxROS2::stdMsgs::UInt64 Convert(const FAGX_StdMsgsUInt64& InMsg)
 {
 	agxROS2::stdMsgs::UInt64 Msg;
 	Msg.data = static_cast<uint64_t>(InMsg.Data);
 	return Msg;
 }
 
-agxROS2::stdMsgs::UInt64MultiArray Convert(const FAGX_StdMsgsUInt64MultiArray& InMsg)
+inline agxROS2::stdMsgs::UInt64MultiArray Convert(const FAGX_StdMsgsUInt64MultiArray& InMsg)
 {
 	agxROS2::stdMsgs::UInt64MultiArray Msg;
 	Msg.layout = Convert(InMsg.Layout);
@@ -769,14 +769,14 @@ agxROS2::stdMsgs::UInt64MultiArray Convert(const FAGX_StdMsgsUInt64MultiArray& I
 	return Msg;
 }
 
-agxROS2::stdMsgs::UInt8 Convert(const FAGX_StdMsgsUInt8& InMsg)
+inline agxROS2::stdMsgs::UInt8 Convert(const FAGX_StdMsgsUInt8& InMsg)
 {
 	agxROS2::stdMsgs::UInt8 Msg;
 	Msg.data = InMsg.Data;
 	return Msg;
 }
 
-agxROS2::stdMsgs::UInt8MultiArray Convert(const FAGX_StdMsgsUInt8MultiArray& InMsg)
+inline agxROS2::stdMsgs::UInt8MultiArray Convert(const FAGX_StdMsgsUInt8MultiArray& InMsg)
 {
 	agxROS2::stdMsgs::UInt8MultiArray Msg;
 	Msg.layout = Convert(InMsg.Layout);
@@ -790,7 +790,7 @@ agxROS2::stdMsgs::UInt8MultiArray Convert(const FAGX_StdMsgsUInt8MultiArray& InM
 	return Msg;
 }
 
-agxROS2::stdMsgs::Header Convert(const FAGX_StdMsgsHeader& InMsg)
+inline agxROS2::stdMsgs::Header Convert(const FAGX_StdMsgsHeader& InMsg)
 {
 	agxROS2::stdMsgs::Header Msg;
 	Msg.stamp = Convert(InMsg.Stamp);
@@ -802,7 +802,7 @@ agxROS2::stdMsgs::Header Convert(const FAGX_StdMsgsHeader& InMsg)
 // GeometryMsgs
 //
 
-FAGX_GeometryMsgsVector3 Convert(const agxROS2::geometryMsgs::Vector3& InMsg)
+inline FAGX_GeometryMsgsVector3 Convert(const agxROS2::geometryMsgs::Vector3& InMsg)
 {
 	FAGX_GeometryMsgsVector3 Msg;
 	Msg.X = InMsg.x;
@@ -811,7 +811,7 @@ FAGX_GeometryMsgsVector3 Convert(const agxROS2::geometryMsgs::Vector3& InMsg)
 	return Msg;
 }
 
-FAGX_GeometryMsgsQuaternion Convert(const agxROS2::geometryMsgs::Quaternion& InMsg)
+inline FAGX_GeometryMsgsQuaternion Convert(const agxROS2::geometryMsgs::Quaternion& InMsg)
 {
 	FAGX_GeometryMsgsQuaternion Msg;
 	Msg.X = InMsg.x;
@@ -821,7 +821,7 @@ FAGX_GeometryMsgsQuaternion Convert(const agxROS2::geometryMsgs::Quaternion& InM
 	return Msg;
 }
 
-FAGX_GeometryMsgsAccel Convert(const agxROS2::geometryMsgs::Accel& InMsg)
+inline FAGX_GeometryMsgsAccel Convert(const agxROS2::geometryMsgs::Accel& InMsg)
 {
 	FAGX_GeometryMsgsAccel Msg;
 	Msg.Linear = Convert(InMsg.linear);
@@ -829,7 +829,7 @@ FAGX_GeometryMsgsAccel Convert(const agxROS2::geometryMsgs::Accel& InMsg)
 	return Msg;
 }
 
-FAGX_GeometryMsgsAccelStamped Convert(const agxROS2::geometryMsgs::AccelStamped& InMsg)
+inline FAGX_GeometryMsgsAccelStamped Convert(const agxROS2::geometryMsgs::AccelStamped& InMsg)
 {
 	FAGX_GeometryMsgsAccelStamped Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -837,7 +837,7 @@ FAGX_GeometryMsgsAccelStamped Convert(const agxROS2::geometryMsgs::AccelStamped&
 	return Msg;
 }
 
-FAGX_GeometryMsgsAccelWithCovariance Convert(
+inline FAGX_GeometryMsgsAccelWithCovariance Convert(
 	const agxROS2::geometryMsgs::AccelWithCovariance& InMsg)
 {
 	FAGX_GeometryMsgsAccelWithCovariance Msg;
@@ -852,7 +852,7 @@ FAGX_GeometryMsgsAccelWithCovariance Convert(
 	return Msg;
 }
 
-FAGX_GeometryMsgsAccelWithCovarianceStamped Convert(
+inline FAGX_GeometryMsgsAccelWithCovarianceStamped Convert(
 	const agxROS2::geometryMsgs::AccelWithCovarianceStamped& InMsg)
 {
 	FAGX_GeometryMsgsAccelWithCovarianceStamped Msg;
@@ -861,7 +861,7 @@ FAGX_GeometryMsgsAccelWithCovarianceStamped Convert(
 	return Msg;
 }
 
-FAGX_GeometryMsgsInertia Convert(const agxROS2::geometryMsgs::Inertia& InMsg)
+inline FAGX_GeometryMsgsInertia Convert(const agxROS2::geometryMsgs::Inertia& InMsg)
 {
 	FAGX_GeometryMsgsInertia Msg;
 	Msg.M = InMsg.m;
@@ -875,7 +875,7 @@ FAGX_GeometryMsgsInertia Convert(const agxROS2::geometryMsgs::Inertia& InMsg)
 	return Msg;
 }
 
-FAGX_GeometryMsgsInertiaStamped Convert(const agxROS2::geometryMsgs::InertiaStamped& InMsg)
+inline FAGX_GeometryMsgsInertiaStamped Convert(const agxROS2::geometryMsgs::InertiaStamped& InMsg)
 {
 	FAGX_GeometryMsgsInertiaStamped Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -883,7 +883,7 @@ FAGX_GeometryMsgsInertiaStamped Convert(const agxROS2::geometryMsgs::InertiaStam
 	return Msg;
 }
 
-FAGX_GeometryMsgsPoint Convert(const agxROS2::geometryMsgs::Point& InMsg)
+inline FAGX_GeometryMsgsPoint Convert(const agxROS2::geometryMsgs::Point& InMsg)
 {
 	FAGX_GeometryMsgsPoint Msg;
 	Msg.X = InMsg.x;
@@ -892,7 +892,7 @@ FAGX_GeometryMsgsPoint Convert(const agxROS2::geometryMsgs::Point& InMsg)
 	return Msg;
 }
 
-FAGX_GeometryMsgsPoint32 Convert(const agxROS2::geometryMsgs::Point32& InMsg)
+inline FAGX_GeometryMsgsPoint32 Convert(const agxROS2::geometryMsgs::Point32& InMsg)
 {
 	FAGX_GeometryMsgsPoint32 Msg;
 	Msg.X = InMsg.x;
@@ -901,7 +901,7 @@ FAGX_GeometryMsgsPoint32 Convert(const agxROS2::geometryMsgs::Point32& InMsg)
 	return Msg;
 }
 
-FAGX_GeometryMsgsPointStamped Convert(const agxROS2::geometryMsgs::PointStamped& InMsg)
+inline FAGX_GeometryMsgsPointStamped Convert(const agxROS2::geometryMsgs::PointStamped& InMsg)
 {
 	FAGX_GeometryMsgsPointStamped Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -909,7 +909,7 @@ FAGX_GeometryMsgsPointStamped Convert(const agxROS2::geometryMsgs::PointStamped&
 	return Msg;
 }
 
-FAGX_GeometryMsgsPolygon Convert(const agxROS2::geometryMsgs::Polygon& InMsg)
+inline FAGX_GeometryMsgsPolygon Convert(const agxROS2::geometryMsgs::Polygon& InMsg)
 {
 	FAGX_GeometryMsgsPolygon Msg;
 	for (const auto& point : InMsg.points)
@@ -919,7 +919,7 @@ FAGX_GeometryMsgsPolygon Convert(const agxROS2::geometryMsgs::Polygon& InMsg)
 	return Msg;
 }
 
-FAGX_GeometryMsgsPolygonStamped Convert(const agxROS2::geometryMsgs::PolygonStamped& InMsg)
+inline FAGX_GeometryMsgsPolygonStamped Convert(const agxROS2::geometryMsgs::PolygonStamped& InMsg)
 {
 	FAGX_GeometryMsgsPolygonStamped Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -927,7 +927,7 @@ FAGX_GeometryMsgsPolygonStamped Convert(const agxROS2::geometryMsgs::PolygonStam
 	return Msg;
 }
 
-FAGX_GeometryMsgsPose Convert(const agxROS2::geometryMsgs::Pose& InMsg)
+inline FAGX_GeometryMsgsPose Convert(const agxROS2::geometryMsgs::Pose& InMsg)
 {
 	FAGX_GeometryMsgsPose Msg;
 	Msg.Position = Convert(InMsg.position);
@@ -935,7 +935,7 @@ FAGX_GeometryMsgsPose Convert(const agxROS2::geometryMsgs::Pose& InMsg)
 	return Msg;
 }
 
-FAGX_GeometryMsgsPose2D Convert(const agxROS2::geometryMsgs::Pose2D& InMsg)
+inline FAGX_GeometryMsgsPose2D Convert(const agxROS2::geometryMsgs::Pose2D& InMsg)
 {
 	FAGX_GeometryMsgsPose2D Msg;
 	Msg.X = InMsg.x;
@@ -944,7 +944,7 @@ FAGX_GeometryMsgsPose2D Convert(const agxROS2::geometryMsgs::Pose2D& InMsg)
 	return Msg;
 }
 
-FAGX_GeometryMsgsPoseArray Convert(const agxROS2::geometryMsgs::PoseArray& InMsg)
+inline FAGX_GeometryMsgsPoseArray Convert(const agxROS2::geometryMsgs::PoseArray& InMsg)
 {
 	FAGX_GeometryMsgsPoseArray Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -955,7 +955,7 @@ FAGX_GeometryMsgsPoseArray Convert(const agxROS2::geometryMsgs::PoseArray& InMsg
 	return Msg;
 }
 
-FAGX_GeometryMsgsPoseStamped Convert(const agxROS2::geometryMsgs::PoseStamped& InMsg)
+inline FAGX_GeometryMsgsPoseStamped Convert(const agxROS2::geometryMsgs::PoseStamped& InMsg)
 {
 	FAGX_GeometryMsgsPoseStamped Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -963,7 +963,7 @@ FAGX_GeometryMsgsPoseStamped Convert(const agxROS2::geometryMsgs::PoseStamped& I
 	return Msg;
 }
 
-FAGX_GeometryMsgsPoseWithCovariance Convert(
+inline FAGX_GeometryMsgsPoseWithCovariance Convert(
 	const agxROS2::geometryMsgs::PoseWithCovariance& InMsg)
 {
 	FAGX_GeometryMsgsPoseWithCovariance Msg;
@@ -978,7 +978,7 @@ FAGX_GeometryMsgsPoseWithCovariance Convert(
 	return Msg;
 }
 
-FAGX_GeometryMsgsPoseWithCovarianceStamped Convert(
+inline FAGX_GeometryMsgsPoseWithCovarianceStamped Convert(
 	const agxROS2::geometryMsgs::PoseWithCovarianceStamped& InMsg)
 {
 	FAGX_GeometryMsgsPoseWithCovarianceStamped Msg;
@@ -987,7 +987,7 @@ FAGX_GeometryMsgsPoseWithCovarianceStamped Convert(
 	return Msg;
 }
 
-FAGX_GeometryMsgsQuaternionStamped Convert(
+inline FAGX_GeometryMsgsQuaternionStamped Convert(
 	const agxROS2::geometryMsgs::QuaternionStamped& InMsg)
 {
 	FAGX_GeometryMsgsQuaternionStamped Msg;
@@ -996,7 +996,7 @@ FAGX_GeometryMsgsQuaternionStamped Convert(
 	return Msg;
 }
 
-FAGX_GeometryMsgsTransform Convert(const agxROS2::geometryMsgs::Transform& InMsg)
+inline FAGX_GeometryMsgsTransform Convert(const agxROS2::geometryMsgs::Transform& InMsg)
 {
 	FAGX_GeometryMsgsTransform Msg;
 	Msg.Translation = Convert(InMsg.translation);
@@ -1004,7 +1004,7 @@ FAGX_GeometryMsgsTransform Convert(const agxROS2::geometryMsgs::Transform& InMsg
 	return Msg;
 }
 
-FAGX_GeometryMsgsTransformStamped Convert(const agxROS2::geometryMsgs::TransformStamped& InMsg)
+inline FAGX_GeometryMsgsTransformStamped Convert(const agxROS2::geometryMsgs::TransformStamped& InMsg)
 {
 	FAGX_GeometryMsgsTransformStamped Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1013,7 +1013,7 @@ FAGX_GeometryMsgsTransformStamped Convert(const agxROS2::geometryMsgs::Transform
 	return Msg;
 }
 
-FAGX_GeometryMsgsTwist Convert(const agxROS2::geometryMsgs::Twist& InMsg)
+inline FAGX_GeometryMsgsTwist Convert(const agxROS2::geometryMsgs::Twist& InMsg)
 {
 	FAGX_GeometryMsgsTwist Msg;
 	Msg.Linear = Convert(InMsg.linear);
@@ -1021,7 +1021,7 @@ FAGX_GeometryMsgsTwist Convert(const agxROS2::geometryMsgs::Twist& InMsg)
 	return Msg;
 }
 
-FAGX_GeometryMsgsTwistStamped Convert(const agxROS2::geometryMsgs::TwistStamped& InMsg)
+inline FAGX_GeometryMsgsTwistStamped Convert(const agxROS2::geometryMsgs::TwistStamped& InMsg)
 {
 	FAGX_GeometryMsgsTwistStamped Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1029,7 +1029,7 @@ FAGX_GeometryMsgsTwistStamped Convert(const agxROS2::geometryMsgs::TwistStamped&
 	return Msg;
 }
 
-FAGX_GeometryMsgsTwistWithCovariance Convert(
+inline FAGX_GeometryMsgsTwistWithCovariance Convert(
 	const agxROS2::geometryMsgs::TwistWithCovariance& InMsg)
 {
 	FAGX_GeometryMsgsTwistWithCovariance Msg;
@@ -1044,7 +1044,7 @@ FAGX_GeometryMsgsTwistWithCovariance Convert(
 	return Msg;
 }
 
-FAGX_GeometryMsgsTwistWithCovarianceStamped Convert(
+inline FAGX_GeometryMsgsTwistWithCovarianceStamped Convert(
 	const agxROS2::geometryMsgs::TwistWithCovarianceStamped& InMsg)
 {
 	FAGX_GeometryMsgsTwistWithCovarianceStamped Msg;
@@ -1053,7 +1053,7 @@ FAGX_GeometryMsgsTwistWithCovarianceStamped Convert(
 	return Msg;
 }
 
-FAGX_GeometryMsgsVector3Stamped Convert(const agxROS2::geometryMsgs::Vector3Stamped& InMsg)
+inline FAGX_GeometryMsgsVector3Stamped Convert(const agxROS2::geometryMsgs::Vector3Stamped& InMsg)
 {
 	FAGX_GeometryMsgsVector3Stamped Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1061,7 +1061,7 @@ FAGX_GeometryMsgsVector3Stamped Convert(const agxROS2::geometryMsgs::Vector3Stam
 	return Msg;
 }
 
-FAGX_GeometryMsgsWrench Convert(const agxROS2::geometryMsgs::Wrench& InMsg)
+inline FAGX_GeometryMsgsWrench Convert(const agxROS2::geometryMsgs::Wrench& InMsg)
 {
 	FAGX_GeometryMsgsWrench Msg;
 	Msg.Force = Convert(InMsg.force);
@@ -1069,7 +1069,7 @@ FAGX_GeometryMsgsWrench Convert(const agxROS2::geometryMsgs::Wrench& InMsg)
 	return Msg;
 }
 
-FAGX_GeometryMsgsWrenchStamped Convert(const agxROS2::geometryMsgs::WrenchStamped& InMsg)
+inline FAGX_GeometryMsgsWrenchStamped Convert(const agxROS2::geometryMsgs::WrenchStamped& InMsg)
 {
 	FAGX_GeometryMsgsWrenchStamped Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1077,7 +1077,7 @@ FAGX_GeometryMsgsWrenchStamped Convert(const agxROS2::geometryMsgs::WrenchStampe
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Vector3 Convert(const FAGX_GeometryMsgsVector3& InMsg)
+inline agxROS2::geometryMsgs::Vector3 Convert(const FAGX_GeometryMsgsVector3& InMsg)
 {
 	agxROS2::geometryMsgs::Vector3 Msg;
 	Msg.x = InMsg.X;
@@ -1086,7 +1086,7 @@ agxROS2::geometryMsgs::Vector3 Convert(const FAGX_GeometryMsgsVector3& InMsg)
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Quaternion Convert(const FAGX_GeometryMsgsQuaternion& InMsg)
+inline agxROS2::geometryMsgs::Quaternion Convert(const FAGX_GeometryMsgsQuaternion& InMsg)
 {
 	agxROS2::geometryMsgs::Quaternion Msg;
 	Msg.x = InMsg.X;
@@ -1096,7 +1096,7 @@ agxROS2::geometryMsgs::Quaternion Convert(const FAGX_GeometryMsgsQuaternion& InM
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Accel Convert(const FAGX_GeometryMsgsAccel& InMsg)
+inline agxROS2::geometryMsgs::Accel Convert(const FAGX_GeometryMsgsAccel& InMsg)
 {
 	agxROS2::geometryMsgs::Accel Msg;
 	Msg.linear = Convert(InMsg.Linear);
@@ -1104,7 +1104,7 @@ agxROS2::geometryMsgs::Accel Convert(const FAGX_GeometryMsgsAccel& InMsg)
 	return Msg;
 }
 
-agxROS2::geometryMsgs::AccelStamped Convert(const FAGX_GeometryMsgsAccelStamped& InMsg)
+inline agxROS2::geometryMsgs::AccelStamped Convert(const FAGX_GeometryMsgsAccelStamped& InMsg)
 {
 	agxROS2::geometryMsgs::AccelStamped Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1112,7 +1112,7 @@ agxROS2::geometryMsgs::AccelStamped Convert(const FAGX_GeometryMsgsAccelStamped&
 	return Msg;
 }
 
-agxROS2::geometryMsgs::AccelWithCovariance Convert(
+inline agxROS2::geometryMsgs::AccelWithCovariance Convert(
 	const FAGX_GeometryMsgsAccelWithCovariance& InMsg)
 {
 	agxROS2::geometryMsgs::AccelWithCovariance Msg;
@@ -1125,7 +1125,7 @@ agxROS2::geometryMsgs::AccelWithCovariance Convert(
 	return Msg;
 }
 
-agxROS2::geometryMsgs::AccelWithCovarianceStamped Convert(
+inline agxROS2::geometryMsgs::AccelWithCovarianceStamped Convert(
 	const FAGX_GeometryMsgsAccelWithCovarianceStamped& InMsg)
 {
 	agxROS2::geometryMsgs::AccelWithCovarianceStamped Msg;
@@ -1134,7 +1134,7 @@ agxROS2::geometryMsgs::AccelWithCovarianceStamped Convert(
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Inertia Convert(const FAGX_GeometryMsgsInertia& InMsg)
+inline agxROS2::geometryMsgs::Inertia Convert(const FAGX_GeometryMsgsInertia& InMsg)
 {
 	agxROS2::geometryMsgs::Inertia Msg;
 	Msg.m = InMsg.M;
@@ -1148,7 +1148,7 @@ agxROS2::geometryMsgs::Inertia Convert(const FAGX_GeometryMsgsInertia& InMsg)
 	return Msg;
 }
 
-agxROS2::geometryMsgs::InertiaStamped Convert(const FAGX_GeometryMsgsInertiaStamped& InMsg)
+inline agxROS2::geometryMsgs::InertiaStamped Convert(const FAGX_GeometryMsgsInertiaStamped& InMsg)
 {
 	agxROS2::geometryMsgs::InertiaStamped Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1156,7 +1156,7 @@ agxROS2::geometryMsgs::InertiaStamped Convert(const FAGX_GeometryMsgsInertiaStam
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Point Convert(const FAGX_GeometryMsgsPoint& InMsg)
+inline agxROS2::geometryMsgs::Point Convert(const FAGX_GeometryMsgsPoint& InMsg)
 {
 	agxROS2::geometryMsgs::Point Msg;
 	Msg.x = InMsg.X;
@@ -1165,7 +1165,7 @@ agxROS2::geometryMsgs::Point Convert(const FAGX_GeometryMsgsPoint& InMsg)
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Point32 Convert(const FAGX_GeometryMsgsPoint32& InMsg)
+inline agxROS2::geometryMsgs::Point32 Convert(const FAGX_GeometryMsgsPoint32& InMsg)
 {
 	agxROS2::geometryMsgs::Point32 Msg;
 	Msg.x = InMsg.X;
@@ -1174,7 +1174,7 @@ agxROS2::geometryMsgs::Point32 Convert(const FAGX_GeometryMsgsPoint32& InMsg)
 	return Msg;
 }
 
-agxROS2::geometryMsgs::PointStamped Convert(const FAGX_GeometryMsgsPointStamped& InMsg)
+inline agxROS2::geometryMsgs::PointStamped Convert(const FAGX_GeometryMsgsPointStamped& InMsg)
 {
 	agxROS2::geometryMsgs::PointStamped Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1182,7 +1182,7 @@ agxROS2::geometryMsgs::PointStamped Convert(const FAGX_GeometryMsgsPointStamped&
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Polygon Convert(const FAGX_GeometryMsgsPolygon& InMsg)
+inline agxROS2::geometryMsgs::Polygon Convert(const FAGX_GeometryMsgsPolygon& InMsg)
 {
 	agxROS2::geometryMsgs::Polygon Msg;
 	for (const auto& Point32Element : InMsg.Points)
@@ -1192,7 +1192,7 @@ agxROS2::geometryMsgs::Polygon Convert(const FAGX_GeometryMsgsPolygon& InMsg)
 	return Msg;
 }
 
-agxROS2::geometryMsgs::PolygonStamped Convert(const FAGX_GeometryMsgsPolygonStamped& InMsg)
+inline agxROS2::geometryMsgs::PolygonStamped Convert(const FAGX_GeometryMsgsPolygonStamped& InMsg)
 {
 	agxROS2::geometryMsgs::PolygonStamped Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1200,7 +1200,7 @@ agxROS2::geometryMsgs::PolygonStamped Convert(const FAGX_GeometryMsgsPolygonStam
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Pose Convert(const FAGX_GeometryMsgsPose& InMsg)
+inline agxROS2::geometryMsgs::Pose Convert(const FAGX_GeometryMsgsPose& InMsg)
 {
 	agxROS2::geometryMsgs::Pose Msg;
 	Msg.position = Convert(InMsg.Position);
@@ -1208,7 +1208,7 @@ agxROS2::geometryMsgs::Pose Convert(const FAGX_GeometryMsgsPose& InMsg)
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Pose2D Convert(const FAGX_GeometryMsgsPose2D& InMsg)
+inline agxROS2::geometryMsgs::Pose2D Convert(const FAGX_GeometryMsgsPose2D& InMsg)
 {
 	agxROS2::geometryMsgs::Pose2D Msg;
 	Msg.x = InMsg.X;
@@ -1217,7 +1217,7 @@ agxROS2::geometryMsgs::Pose2D Convert(const FAGX_GeometryMsgsPose2D& InMsg)
 	return Msg;
 }
 
-agxROS2::geometryMsgs::PoseArray Convert(const FAGX_GeometryMsgsPoseArray& InMsg)
+inline agxROS2::geometryMsgs::PoseArray Convert(const FAGX_GeometryMsgsPoseArray& InMsg)
 {
 	agxROS2::geometryMsgs::PoseArray Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1228,7 +1228,7 @@ agxROS2::geometryMsgs::PoseArray Convert(const FAGX_GeometryMsgsPoseArray& InMsg
 	return Msg;
 }
 
-agxROS2::geometryMsgs::PoseStamped Convert(const FAGX_GeometryMsgsPoseStamped& InMsg)
+inline agxROS2::geometryMsgs::PoseStamped Convert(const FAGX_GeometryMsgsPoseStamped& InMsg)
 {
 	agxROS2::geometryMsgs::PoseStamped Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1236,7 +1236,7 @@ agxROS2::geometryMsgs::PoseStamped Convert(const FAGX_GeometryMsgsPoseStamped& I
 	return Msg;
 }
 
-agxROS2::geometryMsgs::PoseWithCovariance Convert(
+inline agxROS2::geometryMsgs::PoseWithCovariance Convert(
 	const FAGX_GeometryMsgsPoseWithCovariance& InMsg)
 {
 	agxROS2::geometryMsgs::PoseWithCovariance Msg;
@@ -1249,7 +1249,7 @@ agxROS2::geometryMsgs::PoseWithCovariance Convert(
 	return Msg;
 }
 
-agxROS2::geometryMsgs::PoseWithCovarianceStamped Convert(
+inline agxROS2::geometryMsgs::PoseWithCovarianceStamped Convert(
 	const FAGX_GeometryMsgsPoseWithCovarianceStamped& InMsg)
 {
 	agxROS2::geometryMsgs::PoseWithCovarianceStamped Msg;
@@ -1258,7 +1258,7 @@ agxROS2::geometryMsgs::PoseWithCovarianceStamped Convert(
 	return Msg;
 }
 
-agxROS2::geometryMsgs::QuaternionStamped Convert(
+inline agxROS2::geometryMsgs::QuaternionStamped Convert(
 	const FAGX_GeometryMsgsQuaternionStamped& InMsg)
 {
 	agxROS2::geometryMsgs::QuaternionStamped Msg;
@@ -1267,7 +1267,7 @@ agxROS2::geometryMsgs::QuaternionStamped Convert(
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Transform Convert(const FAGX_GeometryMsgsTransform& InMsg)
+inline agxROS2::geometryMsgs::Transform Convert(const FAGX_GeometryMsgsTransform& InMsg)
 {
 	agxROS2::geometryMsgs::Transform Msg;
 	Msg.translation = Convert(InMsg.Translation);
@@ -1275,7 +1275,7 @@ agxROS2::geometryMsgs::Transform Convert(const FAGX_GeometryMsgsTransform& InMsg
 	return Msg;
 }
 
-agxROS2::geometryMsgs::TransformStamped Convert(const FAGX_GeometryMsgsTransformStamped& InMsg)
+inline agxROS2::geometryMsgs::TransformStamped Convert(const FAGX_GeometryMsgsTransformStamped& InMsg)
 {
 	agxROS2::geometryMsgs::TransformStamped Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1284,7 +1284,7 @@ agxROS2::geometryMsgs::TransformStamped Convert(const FAGX_GeometryMsgsTransform
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Twist Convert(const FAGX_GeometryMsgsTwist& InMsg)
+inline agxROS2::geometryMsgs::Twist Convert(const FAGX_GeometryMsgsTwist& InMsg)
 {
 	agxROS2::geometryMsgs::Twist Msg;
 	Msg.linear = Convert(InMsg.Linear);
@@ -1292,7 +1292,7 @@ agxROS2::geometryMsgs::Twist Convert(const FAGX_GeometryMsgsTwist& InMsg)
 	return Msg;
 }
 
-agxROS2::geometryMsgs::TwistStamped Convert(const FAGX_GeometryMsgsTwistStamped& InMsg)
+inline agxROS2::geometryMsgs::TwistStamped Convert(const FAGX_GeometryMsgsTwistStamped& InMsg)
 {
 	agxROS2::geometryMsgs::TwistStamped Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1300,7 +1300,7 @@ agxROS2::geometryMsgs::TwistStamped Convert(const FAGX_GeometryMsgsTwistStamped&
 	return Msg;
 }
 
-agxROS2::geometryMsgs::TwistWithCovariance Convert(
+inline agxROS2::geometryMsgs::TwistWithCovariance Convert(
 	const FAGX_GeometryMsgsTwistWithCovariance& InMsg)
 {
 	agxROS2::geometryMsgs::TwistWithCovariance Msg;
@@ -1313,7 +1313,7 @@ agxROS2::geometryMsgs::TwistWithCovariance Convert(
 	return Msg;
 }
 
-agxROS2::geometryMsgs::TwistWithCovarianceStamped Convert(
+inline agxROS2::geometryMsgs::TwistWithCovarianceStamped Convert(
 	const FAGX_GeometryMsgsTwistWithCovarianceStamped& InMsg)
 {
 	agxROS2::geometryMsgs::TwistWithCovarianceStamped Msg;
@@ -1322,7 +1322,7 @@ agxROS2::geometryMsgs::TwistWithCovarianceStamped Convert(
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Vector3Stamped Convert(const FAGX_GeometryMsgsVector3Stamped& InMsg)
+inline agxROS2::geometryMsgs::Vector3Stamped Convert(const FAGX_GeometryMsgsVector3Stamped& InMsg)
 {
 	agxROS2::geometryMsgs::Vector3Stamped Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1330,7 +1330,7 @@ agxROS2::geometryMsgs::Vector3Stamped Convert(const FAGX_GeometryMsgsVector3Stam
 	return Msg;
 }
 
-agxROS2::geometryMsgs::Wrench Convert(const FAGX_GeometryMsgsWrench& InMsg)
+inline agxROS2::geometryMsgs::Wrench Convert(const FAGX_GeometryMsgsWrench& InMsg)
 {
 	agxROS2::geometryMsgs::Wrench Msg;
 	Msg.force = Convert(InMsg.Force);
@@ -1338,7 +1338,7 @@ agxROS2::geometryMsgs::Wrench Convert(const FAGX_GeometryMsgsWrench& InMsg)
 	return Msg;
 }
 
-agxROS2::geometryMsgs::WrenchStamped Convert(const FAGX_GeometryMsgsWrenchStamped& InMsg)
+inline agxROS2::geometryMsgs::WrenchStamped Convert(const FAGX_GeometryMsgsWrenchStamped& InMsg)
 {
 	agxROS2::geometryMsgs::WrenchStamped Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1350,7 +1350,7 @@ agxROS2::geometryMsgs::WrenchStamped Convert(const FAGX_GeometryMsgsWrenchStampe
 // SensorMsgs
 //
 
-FAGX_SensorMsgsBatteryState Convert(const agxROS2::sensorMsgs::BatteryState& InMsg)
+inline FAGX_SensorMsgsBatteryState Convert(const agxROS2::sensorMsgs::BatteryState& InMsg)
 {
 	FAGX_SensorMsgsBatteryState Msg;
 
@@ -1386,7 +1386,7 @@ FAGX_SensorMsgsBatteryState Convert(const agxROS2::sensorMsgs::BatteryState& InM
 	return Msg;
 }
 
-FAGX_SensorMsgsChannelFloat32 Convert(const agxROS2::sensorMsgs::ChannelFloat32& InMsg)
+inline FAGX_SensorMsgsChannelFloat32 Convert(const agxROS2::sensorMsgs::ChannelFloat32& InMsg)
 {
 	FAGX_SensorMsgsChannelFloat32 Msg;
 	Msg.Name = FString(InMsg.name.c_str());
@@ -1398,7 +1398,7 @@ FAGX_SensorMsgsChannelFloat32 Convert(const agxROS2::sensorMsgs::ChannelFloat32&
 	return Msg;
 }
 
-FAGX_SensorMsgsCompressedImage Convert(const agxROS2::sensorMsgs::CompressedImage& InMsg)
+inline FAGX_SensorMsgsCompressedImage Convert(const agxROS2::sensorMsgs::CompressedImage& InMsg)
 {
 	FAGX_SensorMsgsCompressedImage Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1411,7 +1411,7 @@ FAGX_SensorMsgsCompressedImage Convert(const agxROS2::sensorMsgs::CompressedImag
 	return Msg;
 }
 
-FAGX_SensorMsgsFluidPressure Convert(const agxROS2::sensorMsgs::FluidPressure& InMsg)
+inline FAGX_SensorMsgsFluidPressure Convert(const agxROS2::sensorMsgs::FluidPressure& InMsg)
 {
 	FAGX_SensorMsgsFluidPressure Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1420,7 +1420,7 @@ FAGX_SensorMsgsFluidPressure Convert(const agxROS2::sensorMsgs::FluidPressure& I
 	return Msg;
 }
 
-FAGX_SensorMsgsIlluminance Convert(const agxROS2::sensorMsgs::Illuminance& InMsg)
+inline FAGX_SensorMsgsIlluminance Convert(const agxROS2::sensorMsgs::Illuminance& InMsg)
 {
 	FAGX_SensorMsgsIlluminance Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1429,7 +1429,7 @@ FAGX_SensorMsgsIlluminance Convert(const agxROS2::sensorMsgs::Illuminance& InMsg
 	return Msg;
 }
 
-FAGX_SensorMsgsImage Convert(const agxROS2::sensorMsgs::Image& InMsg)
+inline FAGX_SensorMsgsImage Convert(const agxROS2::sensorMsgs::Image& InMsg)
 {
 	FAGX_SensorMsgsImage Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1446,7 +1446,7 @@ FAGX_SensorMsgsImage Convert(const agxROS2::sensorMsgs::Image& InMsg)
 	return Msg;
 }
 
-FAGX_SensorMsgsImu Convert(const agxROS2::sensorMsgs::Imu& InMsg)
+inline FAGX_SensorMsgsImu Convert(const agxROS2::sensorMsgs::Imu& InMsg)
 {
 	FAGX_SensorMsgsImu Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1474,7 +1474,7 @@ FAGX_SensorMsgsImu Convert(const agxROS2::sensorMsgs::Imu& InMsg)
 	return Msg;
 }
 
-FAGX_SensorMsgsJointState Convert(const agxROS2::sensorMsgs::JointState& InMsg)
+inline FAGX_SensorMsgsJointState Convert(const agxROS2::sensorMsgs::JointState& InMsg)
 {
 	FAGX_SensorMsgsJointState Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1498,7 +1498,7 @@ FAGX_SensorMsgsJointState Convert(const agxROS2::sensorMsgs::JointState& InMsg)
 	return Msg;
 }
 
-FAGX_SensorMsgsJoy Convert(const agxROS2::sensorMsgs::Joy& InMsg)
+inline FAGX_SensorMsgsJoy Convert(const agxROS2::sensorMsgs::Joy& InMsg)
 {
 	FAGX_SensorMsgsJoy Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1514,7 +1514,7 @@ FAGX_SensorMsgsJoy Convert(const agxROS2::sensorMsgs::Joy& InMsg)
 	return Msg;
 }
 
-FAGX_SensorMsgsJoyFeedback Convert(const agxROS2::sensorMsgs::JoyFeedback& InMsg)
+inline FAGX_SensorMsgsJoyFeedback Convert(const agxROS2::sensorMsgs::JoyFeedback& InMsg)
 {
 	FAGX_SensorMsgsJoyFeedback Msg;
 	Msg.Type = InMsg.type;
@@ -1523,7 +1523,7 @@ FAGX_SensorMsgsJoyFeedback Convert(const agxROS2::sensorMsgs::JoyFeedback& InMsg
 	return Msg;
 }
 
-FAGX_SensorMsgsJoyFeedbackArray Convert(const agxROS2::sensorMsgs::JoyFeedbackArray& InMsg)
+inline FAGX_SensorMsgsJoyFeedbackArray Convert(const agxROS2::sensorMsgs::JoyFeedbackArray& InMsg)
 {
 	FAGX_SensorMsgsJoyFeedbackArray Msg;
 
@@ -1534,7 +1534,7 @@ FAGX_SensorMsgsJoyFeedbackArray Convert(const agxROS2::sensorMsgs::JoyFeedbackAr
 	return Msg;
 }
 
-FAGX_SensorMsgsLaserEcho Convert(const agxROS2::sensorMsgs::LaserEcho& InMsg)
+inline FAGX_SensorMsgsLaserEcho Convert(const agxROS2::sensorMsgs::LaserEcho& InMsg)
 {
 	FAGX_SensorMsgsLaserEcho Msg;
 
@@ -1545,7 +1545,7 @@ FAGX_SensorMsgsLaserEcho Convert(const agxROS2::sensorMsgs::LaserEcho& InMsg)
 	return Msg;
 }
 
-FAGX_SensorMsgsLaserScan Convert(const agxROS2::sensorMsgs::LaserScan& InMsg)
+inline FAGX_SensorMsgsLaserScan Convert(const agxROS2::sensorMsgs::LaserScan& InMsg)
 {
 	FAGX_SensorMsgsLaserScan Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1568,7 +1568,7 @@ FAGX_SensorMsgsLaserScan Convert(const agxROS2::sensorMsgs::LaserScan& InMsg)
 	return Msg;
 }
 
-FAGX_SensorMsgsMagneticField Convert(const agxROS2::sensorMsgs::MagneticField& InMsg)
+inline FAGX_SensorMsgsMagneticField Convert(const agxROS2::sensorMsgs::MagneticField& InMsg)
 {
 	FAGX_SensorMsgsMagneticField Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1582,7 +1582,7 @@ FAGX_SensorMsgsMagneticField Convert(const agxROS2::sensorMsgs::MagneticField& I
 	return Msg;
 }
 
-FAGX_SensorMsgsMultiDOFJointState Convert(const agxROS2::sensorMsgs::MultiDOFJointState& InMsg)
+inline FAGX_SensorMsgsMultiDOFJointState Convert(const agxROS2::sensorMsgs::MultiDOFJointState& InMsg)
 {
 	FAGX_SensorMsgsMultiDOFJointState Msg;
 
@@ -1615,7 +1615,7 @@ FAGX_SensorMsgsMultiDOFJointState Convert(const agxROS2::sensorMsgs::MultiDOFJoi
 	return Msg;
 }
 
-FAGX_SensorMsgsMultiEchoLaserScan Convert(const agxROS2::sensorMsgs::MultiEchoLaserScan& InMsg)
+inline FAGX_SensorMsgsMultiEchoLaserScan Convert(const agxROS2::sensorMsgs::MultiEchoLaserScan& InMsg)
 {
 	FAGX_SensorMsgsMultiEchoLaserScan Msg;
 
@@ -1643,7 +1643,7 @@ FAGX_SensorMsgsMultiEchoLaserScan Convert(const agxROS2::sensorMsgs::MultiEchoLa
 	return Msg;
 }
 
-FAGX_SensorMsgsNavSatStatus Convert(const agxROS2::sensorMsgs::NavSatStatus& InMsg)
+inline FAGX_SensorMsgsNavSatStatus Convert(const agxROS2::sensorMsgs::NavSatStatus& InMsg)
 {
 	FAGX_SensorMsgsNavSatStatus Msg;
 
@@ -1653,7 +1653,7 @@ FAGX_SensorMsgsNavSatStatus Convert(const agxROS2::sensorMsgs::NavSatStatus& InM
 	return Msg;
 }
 
-FAGX_SensorMsgsNavSatFix Convert(const agxROS2::sensorMsgs::NavSatFix& InMsg)
+inline FAGX_SensorMsgsNavSatFix Convert(const agxROS2::sensorMsgs::NavSatFix& InMsg)
 {
 	FAGX_SensorMsgsNavSatFix Msg;
 
@@ -1674,7 +1674,7 @@ FAGX_SensorMsgsNavSatFix Convert(const agxROS2::sensorMsgs::NavSatFix& InMsg)
 	return Msg;
 }
 
-FAGX_SensorMsgsPointCloud Convert(const agxROS2::sensorMsgs::PointCloud& InMsg)
+inline FAGX_SensorMsgsPointCloud Convert(const agxROS2::sensorMsgs::PointCloud& InMsg)
 {
 	FAGX_SensorMsgsPointCloud Msg;
 
@@ -1695,7 +1695,7 @@ FAGX_SensorMsgsPointCloud Convert(const agxROS2::sensorMsgs::PointCloud& InMsg)
 	return Msg;
 }
 
-FAGX_SensorMsgsPointField Convert(const agxROS2::sensorMsgs::PointField& InMsg)
+inline FAGX_SensorMsgsPointField Convert(const agxROS2::sensorMsgs::PointField& InMsg)
 {
 	FAGX_SensorMsgsPointField Msg;
 
@@ -1707,7 +1707,7 @@ FAGX_SensorMsgsPointField Convert(const agxROS2::sensorMsgs::PointField& InMsg)
 	return Msg;
 }
 
-FAGX_SensorMsgsPointCloud2 Convert(const agxROS2::sensorMsgs::PointCloud2& InMsg)
+inline FAGX_SensorMsgsPointCloud2 Convert(const agxROS2::sensorMsgs::PointCloud2& InMsg)
 {
 	FAGX_SensorMsgsPointCloud2 Msg;
 
@@ -1736,7 +1736,7 @@ FAGX_SensorMsgsPointCloud2 Convert(const agxROS2::sensorMsgs::PointCloud2& InMsg
 	return Msg;
 }
 
-FAGX_SensorMsgsRange Convert(const agxROS2::sensorMsgs::Range& InMsg)
+inline FAGX_SensorMsgsRange Convert(const agxROS2::sensorMsgs::Range& InMsg)
 {
 	FAGX_SensorMsgsRange Msg;
 
@@ -1750,7 +1750,7 @@ FAGX_SensorMsgsRange Convert(const agxROS2::sensorMsgs::Range& InMsg)
 	return Msg;
 }
 
-FAGX_SensorMsgsRegionOfInterest Convert(const agxROS2::sensorMsgs::RegionOfInterest& InMsg)
+inline FAGX_SensorMsgsRegionOfInterest Convert(const agxROS2::sensorMsgs::RegionOfInterest& InMsg)
 {
 	FAGX_SensorMsgsRegionOfInterest Msg;
 
@@ -1763,7 +1763,7 @@ FAGX_SensorMsgsRegionOfInterest Convert(const agxROS2::sensorMsgs::RegionOfInter
 	return Msg;
 }
 
-FAGX_SensorMsgsCameraInfo Convert(const agxROS2::sensorMsgs::CameraInfo& InMsg)
+inline FAGX_SensorMsgsCameraInfo Convert(const agxROS2::sensorMsgs::CameraInfo& InMsg)
 {
 	FAGX_SensorMsgsCameraInfo Msg;
 
@@ -1796,7 +1796,7 @@ FAGX_SensorMsgsCameraInfo Convert(const agxROS2::sensorMsgs::CameraInfo& InMsg)
 	return Msg;
 }
 
-FAGX_SensorMsgsRelativeHumidity Convert(const agxROS2::sensorMsgs::RelativeHumidity& InMsg)
+inline FAGX_SensorMsgsRelativeHumidity Convert(const agxROS2::sensorMsgs::RelativeHumidity& InMsg)
 {
 	FAGX_SensorMsgsRelativeHumidity Msg;
 
@@ -1807,7 +1807,7 @@ FAGX_SensorMsgsRelativeHumidity Convert(const agxROS2::sensorMsgs::RelativeHumid
 	return Msg;
 }
 
-FAGX_SensorMsgsTemperature Convert(const agxROS2::sensorMsgs::Temperature& InMsg)
+inline FAGX_SensorMsgsTemperature Convert(const agxROS2::sensorMsgs::Temperature& InMsg)
 {
 	FAGX_SensorMsgsTemperature Msg;
 
@@ -1818,7 +1818,7 @@ FAGX_SensorMsgsTemperature Convert(const agxROS2::sensorMsgs::Temperature& InMsg
 	return Msg;
 }
 
-FAGX_SensorMsgsTimeReference Convert(const agxROS2::sensorMsgs::TimeReference& InMsg)
+inline FAGX_SensorMsgsTimeReference Convert(const agxROS2::sensorMsgs::TimeReference& InMsg)
 {
 	FAGX_SensorMsgsTimeReference Msg;
 
@@ -1829,7 +1829,7 @@ FAGX_SensorMsgsTimeReference Convert(const agxROS2::sensorMsgs::TimeReference& I
 	return Msg;
 }
 
-agxROS2::sensorMsgs::BatteryState Convert(const FAGX_SensorMsgsBatteryState& InMsg)
+inline agxROS2::sensorMsgs::BatteryState Convert(const FAGX_SensorMsgsBatteryState& InMsg)
 {
 	agxROS2::sensorMsgs::BatteryState Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1859,7 +1859,7 @@ agxROS2::sensorMsgs::BatteryState Convert(const FAGX_SensorMsgsBatteryState& InM
 	return Msg;
 }
 
-agxROS2::sensorMsgs::ChannelFloat32 Convert(const FAGX_SensorMsgsChannelFloat32& InMsg)
+inline agxROS2::sensorMsgs::ChannelFloat32 Convert(const FAGX_SensorMsgsChannelFloat32& InMsg)
 {
 	agxROS2::sensorMsgs::ChannelFloat32 Msg;
 	Msg.name = TCHAR_TO_UTF8(*InMsg.Name);
@@ -1873,7 +1873,7 @@ agxROS2::sensorMsgs::ChannelFloat32 Convert(const FAGX_SensorMsgsChannelFloat32&
 	return Msg;
 }
 
-agxROS2::sensorMsgs::CompressedImage Convert(const FAGX_SensorMsgsCompressedImage& InMsg)
+inline agxROS2::sensorMsgs::CompressedImage Convert(const FAGX_SensorMsgsCompressedImage& InMsg)
 {
 	agxROS2::sensorMsgs::CompressedImage Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1888,7 +1888,7 @@ agxROS2::sensorMsgs::CompressedImage Convert(const FAGX_SensorMsgsCompressedImag
 	return Msg;
 }
 
-agxROS2::sensorMsgs::FluidPressure Convert(const FAGX_SensorMsgsFluidPressure& InMsg)
+inline agxROS2::sensorMsgs::FluidPressure Convert(const FAGX_SensorMsgsFluidPressure& InMsg)
 {
 	agxROS2::sensorMsgs::FluidPressure Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1898,7 +1898,7 @@ agxROS2::sensorMsgs::FluidPressure Convert(const FAGX_SensorMsgsFluidPressure& I
 	return Msg;
 }
 
-agxROS2::sensorMsgs::Illuminance Convert(const FAGX_SensorMsgsIlluminance& InMsg)
+inline agxROS2::sensorMsgs::Illuminance Convert(const FAGX_SensorMsgsIlluminance& InMsg)
 {
 	agxROS2::sensorMsgs::Illuminance Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1908,7 +1908,7 @@ agxROS2::sensorMsgs::Illuminance Convert(const FAGX_SensorMsgsIlluminance& InMsg
 	return Msg;
 }
 
-agxROS2::sensorMsgs::Image Convert(const FAGX_SensorMsgsImage& InMsg)
+inline agxROS2::sensorMsgs::Image Convert(const FAGX_SensorMsgsImage& InMsg)
 {
 	agxROS2::sensorMsgs::Image Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1927,7 +1927,7 @@ agxROS2::sensorMsgs::Image Convert(const FAGX_SensorMsgsImage& InMsg)
 	return Msg;
 }
 
-agxROS2::sensorMsgs::Imu Convert(const FAGX_SensorMsgsImu& InMsg)
+inline agxROS2::sensorMsgs::Imu Convert(const FAGX_SensorMsgsImu& InMsg)
 {
 	agxROS2::sensorMsgs::Imu Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1958,7 +1958,7 @@ agxROS2::sensorMsgs::Imu Convert(const FAGX_SensorMsgsImu& InMsg)
 	return Msg;
 }
 
-agxROS2::sensorMsgs::JointState Convert(const FAGX_SensorMsgsJointState& InMsg)
+inline agxROS2::sensorMsgs::JointState Convert(const FAGX_SensorMsgsJointState& InMsg)
 {
 	agxROS2::sensorMsgs::JointState Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1990,7 +1990,7 @@ agxROS2::sensorMsgs::JointState Convert(const FAGX_SensorMsgsJointState& InMsg)
 	return Msg;
 }
 
-agxROS2::sensorMsgs::Joy Convert(const FAGX_SensorMsgsJoy& InMsg)
+inline agxROS2::sensorMsgs::Joy Convert(const FAGX_SensorMsgsJoy& InMsg)
 {
 	agxROS2::sensorMsgs::Joy Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2010,7 +2010,7 @@ agxROS2::sensorMsgs::Joy Convert(const FAGX_SensorMsgsJoy& InMsg)
 	return Msg;
 }
 
-agxROS2::sensorMsgs::JoyFeedback Convert(const FAGX_SensorMsgsJoyFeedback& InMsg)
+inline agxROS2::sensorMsgs::JoyFeedback Convert(const FAGX_SensorMsgsJoyFeedback& InMsg)
 {
 	agxROS2::sensorMsgs::JoyFeedback Msg;
 	Msg.type = InMsg.Type;
@@ -2020,7 +2020,7 @@ agxROS2::sensorMsgs::JoyFeedback Convert(const FAGX_SensorMsgsJoyFeedback& InMsg
 	return Msg;
 }
 
-agxROS2::sensorMsgs::JoyFeedbackArray Convert(const FAGX_SensorMsgsJoyFeedbackArray& InMsg)
+inline agxROS2::sensorMsgs::JoyFeedbackArray Convert(const FAGX_SensorMsgsJoyFeedbackArray& InMsg)
 {
 	agxROS2::sensorMsgs::JoyFeedbackArray Msg;
 
@@ -2033,7 +2033,7 @@ agxROS2::sensorMsgs::JoyFeedbackArray Convert(const FAGX_SensorMsgsJoyFeedbackAr
 	return Msg;
 }
 
-agxROS2::sensorMsgs::LaserEcho Convert(const FAGX_SensorMsgsLaserEcho& InMsg)
+inline agxROS2::sensorMsgs::LaserEcho Convert(const FAGX_SensorMsgsLaserEcho& InMsg)
 {
 	agxROS2::sensorMsgs::LaserEcho Msg;
 
@@ -2046,7 +2046,7 @@ agxROS2::sensorMsgs::LaserEcho Convert(const FAGX_SensorMsgsLaserEcho& InMsg)
 	return Msg;
 }
 
-agxROS2::sensorMsgs::LaserScan Convert(const FAGX_SensorMsgsLaserScan& InMsg)
+inline agxROS2::sensorMsgs::LaserScan Convert(const FAGX_SensorMsgsLaserScan& InMsg)
 {
 	agxROS2::sensorMsgs::LaserScan Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2073,7 +2073,7 @@ agxROS2::sensorMsgs::LaserScan Convert(const FAGX_SensorMsgsLaserScan& InMsg)
 	return Msg;
 }
 
-agxROS2::sensorMsgs::MagneticField Convert(const FAGX_SensorMsgsMagneticField& InMsg)
+inline agxROS2::sensorMsgs::MagneticField Convert(const FAGX_SensorMsgsMagneticField& InMsg)
 {
 	agxROS2::sensorMsgs::MagneticField Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2088,7 +2088,7 @@ agxROS2::sensorMsgs::MagneticField Convert(const FAGX_SensorMsgsMagneticField& I
 	return Msg;
 }
 
-agxROS2::sensorMsgs::MultiDOFJointState Convert(const FAGX_SensorMsgsMultiDOFJointState& InMsg)
+inline agxROS2::sensorMsgs::MultiDOFJointState Convert(const FAGX_SensorMsgsMultiDOFJointState& InMsg)
 {
 	agxROS2::sensorMsgs::MultiDOFJointState Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2120,7 +2120,7 @@ agxROS2::sensorMsgs::MultiDOFJointState Convert(const FAGX_SensorMsgsMultiDOFJoi
 	return Msg;
 }
 
-agxROS2::sensorMsgs::MultiEchoLaserScan Convert(const FAGX_SensorMsgsMultiEchoLaserScan& InMsg)
+inline agxROS2::sensorMsgs::MultiEchoLaserScan Convert(const FAGX_SensorMsgsMultiEchoLaserScan& InMsg)
 {
 	agxROS2::sensorMsgs::MultiEchoLaserScan Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2147,7 +2147,7 @@ agxROS2::sensorMsgs::MultiEchoLaserScan Convert(const FAGX_SensorMsgsMultiEchoLa
 	return Msg;
 }
 
-agxROS2::sensorMsgs::NavSatStatus Convert(const FAGX_SensorMsgsNavSatStatus& InMsg)
+inline agxROS2::sensorMsgs::NavSatStatus Convert(const FAGX_SensorMsgsNavSatStatus& InMsg)
 {
 	agxROS2::sensorMsgs::NavSatStatus Msg;
 	Msg.status = InMsg.Status;
@@ -2156,7 +2156,7 @@ agxROS2::sensorMsgs::NavSatStatus Convert(const FAGX_SensorMsgsNavSatStatus& InM
 	return Msg;
 }
 
-agxROS2::sensorMsgs::NavSatFix Convert(const FAGX_SensorMsgsNavSatFix& InMsg)
+inline agxROS2::sensorMsgs::NavSatFix Convert(const FAGX_SensorMsgsNavSatFix& InMsg)
 {
 	agxROS2::sensorMsgs::NavSatFix Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2176,7 +2176,7 @@ agxROS2::sensorMsgs::NavSatFix Convert(const FAGX_SensorMsgsNavSatFix& InMsg)
 	return Msg;
 }
 
-agxROS2::sensorMsgs::PointCloud Convert(const FAGX_SensorMsgsPointCloud& InMsg)
+inline agxROS2::sensorMsgs::PointCloud Convert(const FAGX_SensorMsgsPointCloud& InMsg)
 {
 	agxROS2::sensorMsgs::PointCloud Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2196,7 +2196,7 @@ agxROS2::sensorMsgs::PointCloud Convert(const FAGX_SensorMsgsPointCloud& InMsg)
 	return Msg;
 }
 
-agxROS2::sensorMsgs::PointField Convert(const FAGX_SensorMsgsPointField& InMsg)
+inline agxROS2::sensorMsgs::PointField Convert(const FAGX_SensorMsgsPointField& InMsg)
 {
 	agxROS2::sensorMsgs::PointField Msg;
 	Msg.name = TCHAR_TO_UTF8(*InMsg.Name);
@@ -2207,7 +2207,7 @@ agxROS2::sensorMsgs::PointField Convert(const FAGX_SensorMsgsPointField& InMsg)
 	return Msg;
 }
 
-agxROS2::sensorMsgs::PointCloud2 Convert(const FAGX_SensorMsgsPointCloud2& InMsg)
+inline agxROS2::sensorMsgs::PointCloud2 Convert(const FAGX_SensorMsgsPointCloud2& InMsg)
 {
 	agxROS2::sensorMsgs::PointCloud2 Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2234,7 +2234,7 @@ agxROS2::sensorMsgs::PointCloud2 Convert(const FAGX_SensorMsgsPointCloud2& InMsg
 	return Msg;
 }
 
-agxROS2::sensorMsgs::Range Convert(const FAGX_SensorMsgsRange& InMsg)
+inline agxROS2::sensorMsgs::Range Convert(const FAGX_SensorMsgsRange& InMsg)
 {
 	agxROS2::sensorMsgs::Range Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2247,7 +2247,7 @@ agxROS2::sensorMsgs::Range Convert(const FAGX_SensorMsgsRange& InMsg)
 	return Msg;
 }
 
-agxROS2::sensorMsgs::RegionOfInterest Convert(const FAGX_SensorMsgsRegionOfInterest& InMsg)
+inline agxROS2::sensorMsgs::RegionOfInterest Convert(const FAGX_SensorMsgsRegionOfInterest& InMsg)
 {
 	agxROS2::sensorMsgs::RegionOfInterest Msg;
 	Msg.x_offset = InMsg.XOffset;
@@ -2259,7 +2259,7 @@ agxROS2::sensorMsgs::RegionOfInterest Convert(const FAGX_SensorMsgsRegionOfInter
 	return Msg;
 }
 
-agxROS2::sensorMsgs::CameraInfo Convert(const FAGX_SensorMsgsCameraInfo& InMsg)
+inline agxROS2::sensorMsgs::CameraInfo Convert(const FAGX_SensorMsgsCameraInfo& InMsg)
 {
 	agxROS2::sensorMsgs::CameraInfo Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2298,7 +2298,7 @@ agxROS2::sensorMsgs::CameraInfo Convert(const FAGX_SensorMsgsCameraInfo& InMsg)
 	return Msg;
 }
 
-agxROS2::sensorMsgs::RelativeHumidity Convert(const FAGX_SensorMsgsRelativeHumidity& InMsg)
+inline agxROS2::sensorMsgs::RelativeHumidity Convert(const FAGX_SensorMsgsRelativeHumidity& InMsg)
 {
 	agxROS2::sensorMsgs::RelativeHumidity Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2308,7 +2308,7 @@ agxROS2::sensorMsgs::RelativeHumidity Convert(const FAGX_SensorMsgsRelativeHumid
 	return Msg;
 }
 
-agxROS2::sensorMsgs::Temperature Convert(const FAGX_SensorMsgsTemperature& InMsg)
+inline agxROS2::sensorMsgs::Temperature Convert(const FAGX_SensorMsgsTemperature& InMsg)
 {
 	agxROS2::sensorMsgs::Temperature Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2318,7 +2318,7 @@ agxROS2::sensorMsgs::Temperature Convert(const FAGX_SensorMsgsTemperature& InMsg
 	return Msg;
 }
 
-agxROS2::sensorMsgs::TimeReference Convert(const FAGX_SensorMsgsTimeReference& InMsg)
+inline agxROS2::sensorMsgs::TimeReference Convert(const FAGX_SensorMsgsTimeReference& InMsg)
 {
 	agxROS2::sensorMsgs::TimeReference Msg;
 	Msg.header = Convert(InMsg.Header);
