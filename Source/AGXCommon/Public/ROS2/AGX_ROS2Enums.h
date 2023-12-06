@@ -2,7 +2,9 @@
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "UObject/ObjectMacros.h"
 
 UENUM()
 enum class EAGX_ROS2MessageType
@@ -124,4 +126,3 @@ enum class EAGX_ROS2QosHistory
 	KeepLastHistoryQos,
 	KeepAllHistoryQos
 };
-

@@ -2,6 +2,10 @@
 
 #pragma once
 
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+#include "UObject/ObjectMacros.h"
+
 #include "AGX_WireEnums.generated.h"
 
 /**

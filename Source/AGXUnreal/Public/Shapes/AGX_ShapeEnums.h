@@ -2,6 +2,10 @@
 
 #pragma once
 
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+#include "UObject/ObjectMacros.h"
+
 /**
  * Enum that specify how much contact data the should be generated for a geometry that has been
  * marked as a sensor.

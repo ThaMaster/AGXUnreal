@@ -2,7 +2,9 @@
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "UObject/ObjectMacros.h"
 
 UENUM(BlueprintType)
 // Unreal Header Tool does not support line breaks in UMETA tags.

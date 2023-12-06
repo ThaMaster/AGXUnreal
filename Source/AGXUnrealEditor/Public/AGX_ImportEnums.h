@@ -4,7 +4,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
-#include "UObject/Class.h"
+#include "UObject/ObjectMacros.h"
 
 /** Specifies what type of import is being performed. */
 UENUM()
