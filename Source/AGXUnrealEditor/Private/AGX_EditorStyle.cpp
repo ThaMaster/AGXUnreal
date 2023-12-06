@@ -148,8 +148,16 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 		"ClassIcon.AGX_ObserverFrameComponent",
 		new IMAGE_BRUSH("Icons/observer_frame_32x32", IconSize16));
 	// Plots.
+	Style->Set("ClassIcon.AGX_PlotComponent", new IMAGE_BRUSH("Icons/plot_32x32", IconSize16));
+	// ROS2.
 	Style->Set(
-		"ClassIcon.AGX_PlotComponent", new IMAGE_BRUSH("Icons/plot_32x32", IconSize16));
+		"ClassIcon.AGX_ROS2AnyMessageBuilderComponent", new IMAGE_BRUSH("Icons/ros2_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_ROS2AnyMessageParserComponent", new IMAGE_BRUSH("Icons/ros2_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_ROS2PublisherComponent", new IMAGE_BRUSH("Icons/ros2_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_ROS2SubscriberComponent", new IMAGE_BRUSH("Icons/ros2_32x32", IconSize16));
 	// Shapes.
 	Style->Set(
 		"ClassIcon.AGX_BoxShapeComponent", new IMAGE_BRUSH("Icons/box_shape_32x32", IconSize16));
@@ -193,7 +201,8 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set(
 		"ClassIcon.AGX_WireWinchComponent", new IMAGE_BRUSH("Icons/wire_winch_32x32", IconSize16));
 	// Others.
-	Style->Set("ClassIcon.AGX_ModelSourceComponent", new IMAGE_BRUSH("Icons/file_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_ModelSourceComponent", new IMAGE_BRUSH("Icons/file_32x32", IconSize16));
 
 	// Actor icons, visible in the Place Actors panel. Currently only works with UE >= 5.0.
 	Style->Set(

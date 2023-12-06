@@ -12,7 +12,7 @@
 #include "Math/Vector.h"
 #include "Math/Quat.h"
 
-// System includes.
+// Standard library includes.
 #include <memory>
 
 struct FRigidBodyRef;

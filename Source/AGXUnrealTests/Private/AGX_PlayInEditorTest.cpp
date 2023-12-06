@@ -12,6 +12,7 @@
 #include "Terrain/AGX_Terrain.h"
 
 // Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
 #include "Editor.h"
 #include "Containers/Map.h"
 #include "HAL/FileManager.h"
@@ -491,6 +492,106 @@ bool FMaterialLibraryTest::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath));
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
 	ADD_LATENT_AUTOMATION_COMMAND(FCheckMaterialLibraryStateCommand(*this));
+
+	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
+	return true;
+}
+
+//
+// ROS2 test starts here.
+//
+
+DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
+	FCheckROS2MovedCommand, float, SimTimeMax, ComponentMap, ComponentsOfInterest,
+	FAutomationTestBase&, Test);
+
+bool FCheckROS2MovedCommand::Update()
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	if (!GEditor->IsPlayingSessionInEditor())
+	{
+		return false;
+	}
+
+	static int32 NumTicks = 0;
+	UWorld* TestWorld = GEditor->GetPIEWorldContext()->World();
+	if (ComponentsOfInterest.Num() == 0)
+	{
+		NumTicks = 0;
+		ActorMap Actors = GetActorsByName(TestWorld, {"BP_ROS2"});
+
+		Test.TestTrue("Found actor of interest", Actors.Contains("BP_ROS2"));
+		if (!Actors.Contains("BP_ROS2"))
+		{
+			return true;
+		}
+
+		auto CubeComplexMsg =
+			GetComponentByName<UStaticMeshComponent>(*Actors["BP_ROS2"], "Cube_ComplexMessage");
+		Test.TestNotNull("CubeComplexMsg", CubeComplexMsg);
+		if (CubeComplexMsg == nullptr)
+			return true;
+
+		auto CubeAnyMsg =
+			GetComponentByName<UStaticMeshComponent>(*Actors["BP_ROS2"], "Cube_AnyMessage");
+		Test.TestNotNull("CubeAnyMsg", CubeAnyMsg);
+		if (CubeAnyMsg == nullptr)
+			return true;
+
+		ComponentsOfInterest.Add("CubeComplexMsg", CubeComplexMsg);
+		ComponentsOfInterest.Add("CubeAnyMsg", CubeAnyMsg);
+		Test.TestTrue(
+			"CubeComplexMsg initial x pos", CubeComplexMsg->GetComponentLocation().X < 1.0);
+		Test.TestTrue("CubeAnyMsg initial x pos", CubeAnyMsg->GetComponentLocation().X < 1.0);
+	}
+
+	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(TestWorld);
+	Test.TestNotNull("Simulation", Sim);
+	if (Sim == nullptr)
+		return true;
+
+	const float SimTime = Sim->GetTimeStamp();
+	{
+		// Sanity check to avoid hanging forever if the Simulation is not ticking.
+		NumTicks++;
+		if (NumTicks > 1000 && FMath::IsNearlyZero(SimTime))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("SimTime too small: %f. The Simulation has not stepped as expected."),
+				SimTime));
+			return true;
+		}
+	}
+
+	if (SimTime < SimTimeMax)
+	{
+		return false; // Continue ticking..
+	}
+
+	// At this point we have ticked to TickMax. In this test, the Cubes will be moved in +x >100cm
+	// if the tests succeeded.
+	auto CubeComplexMsg = Cast<UStaticMeshComponent>(ComponentsOfInterest["CubeComplexMsg"]);
+	auto CubeAnyMsg = Cast<UStaticMeshComponent>(ComponentsOfInterest["CubeAnyMsg"]);
+	Test.TestTrue("CubeComplexMsg final x pos", CubeComplexMsg->GetComponentLocation().X > 100.0);
+	Test.TestTrue("CubeAnyMsg final x pos", CubeAnyMsg->GetComponentLocation().X > 100.0);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FROS2Test, "AGXUnreal.Game.AGX_PlayInEditorTest.ROS2",
+	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+
+bool FROS2Test::RunTest(const FString& Parameters)
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	FString MapPath = FString("/Game/Tests/Test_ROS2");
+
+	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath))
+	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
+
+	ComponentMap ComponentsOfInterest;
+	float SimTimeMax = 5.0f;
+	ADD_LATENT_AUTOMATION_COMMAND(FCheckROS2MovedCommand(SimTimeMax, ComponentsOfInterest, *this));
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 	return true;

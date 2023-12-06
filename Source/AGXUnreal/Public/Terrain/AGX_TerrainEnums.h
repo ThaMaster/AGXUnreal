@@ -7,7 +7,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
-#include "UObject/Class.h"
+#include "UObject/ObjectMacros.h"
 
 /**
  * All frames that a Shovel keeps track of.

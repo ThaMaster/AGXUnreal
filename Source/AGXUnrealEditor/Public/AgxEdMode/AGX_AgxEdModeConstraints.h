@@ -4,10 +4,11 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyReference.h"
+#include "AgxEdMode/AGX_AgxEdModeSubMode.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
-#include "AgxEdMode/AGX_AgxEdModeSubMode.h"
+#include "UObject/ObjectMacros.h"
 
 #include "AGX_AgxEdModeConstraints.generated.h"
 

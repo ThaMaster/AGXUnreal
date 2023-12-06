@@ -12,7 +12,7 @@
 // Unreal Engine includes.
 #include "Containers/UnrealString.h"
 
-// System includes.
+// Standard library includes.
 #include <memory>
 
 struct FSimulationRef;

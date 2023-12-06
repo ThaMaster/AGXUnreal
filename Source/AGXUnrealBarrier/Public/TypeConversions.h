@@ -48,7 +48,10 @@
 #include "EndAGXIncludes.h"
 
 // Standard library includes.
+#include <cstdint>
 #include <limits>
+#include <string>
+#include <vector>
 
 // These functions assume that agx::Real and float are different types.
 // They also assume that agx::Real has higher (or equal) precision than float.
@@ -1258,4 +1261,65 @@ inline ELogVerbosity::Type ConvertLogLevelVerbosity(agx::Notify::NotifyLevel Lev
 		LogAGX, Warning, TEXT("Unknown AGX Dynamics log verbosity %d. Defaulting to Warning."),
 		static_cast<int>(Level));
 	return ELogVerbosity::Warning;
+}
+
+//
+// Standard Library to Unreal.
+//
+
+inline FString Convert(const std::string& Str)
+{
+	return FString(Str.c_str());
+}
+
+template <typename SourceT, typename DestinationT>
+inline TArray<DestinationT> ToUnrealArray(const std::vector<SourceT>& V)
+{
+	TArray<DestinationT> Arr;
+	Arr.Reserve(V.size());
+	for (const auto& Val : V)
+		Arr.Add(Val);
+
+	return Arr;
+}
+
+
+inline TArray<FString> ToUnrealStringArray(const std::vector<std::string>& V)
+{
+	TArray<FString> Arr;
+	Arr.Reserve(V.size());
+	for (const auto& Val : V)
+		Arr.Add(Convert(Val));
+
+	return Arr;
+}
+
+//
+// Unreal to Standard Library.
+//
+
+inline std::string ToStdString(const FString& Str)
+{
+	return std::string(TCHAR_TO_UTF8(*Str));
+}
+
+template <typename SourceT, typename DestinationT>
+inline std::vector<DestinationT> ToStdArray(const TArray<SourceT>& A)
+{
+	std::vector<DestinationT> Arr;
+	Arr.reserve(A.Num());
+	for (const auto& Val : A)
+		Arr.push_back(Val);
+
+	return Arr;
+}
+
+inline std::vector<std::string> ToStdStringArray(const TArray<FString>& A)
+{
+	std::vector<std::string> Arr;
+	Arr.reserve(A.Num());
+	for (const auto& Val : A)
+		Arr.push_back(ToStdString(Val));
+
+	return Arr;
 }

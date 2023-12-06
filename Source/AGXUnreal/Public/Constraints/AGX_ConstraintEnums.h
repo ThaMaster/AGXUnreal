@@ -2,7 +2,9 @@
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "UObject/ObjectMacros.h"
 
 /** Specifies in what solvers the constraint will be solved. */
 UENUM()

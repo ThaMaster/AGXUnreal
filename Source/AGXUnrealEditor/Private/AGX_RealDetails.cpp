@@ -22,7 +22,7 @@
 #include "Widgets/Input/NumericTypeInterface.h"
 #include "Widgets/Input/SSpinBox.h"
 
-// System includes.
+// Standard library includes.
 #include <limits>
 
 #define LOCTEXT_NAMESPACE "FAGX_RealDetails"

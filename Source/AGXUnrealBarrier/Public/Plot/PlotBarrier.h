@@ -5,7 +5,7 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-// System includes.
+// Standard library includes.
 #include <memory>
 
 class FPlotDataSeriesBarrier;
