@@ -13,8 +13,11 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "Engine/Level.h"
+#include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ContactMaterialCustomization"
 
@@ -44,23 +47,22 @@ void FAGX_ContactMaterialCustomization::CustomizeDetails(IDetailLayoutBuilder& I
 	if (EditorWorld == nullptr)
 		return;
 
-	auto PersistentLevel = EditorWorld->PersistentLevel;
-	if (PersistentLevel == nullptr)
-		return;
-
-	for (auto Actor : PersistentLevel->Actors)
+	for (const ULevel* Level : EditorWorld->GetLevels())
 	{
-		if (Actor == nullptr)
-			continue;
-
-		TArray<UAGX_ContactMaterialRegistrarComponent*> Registrars;
-		Actor->GetComponents<UAGX_ContactMaterialRegistrarComponent>(Registrars, false);
-		for (auto Registrar : Registrars)
+		for (auto Actor : Level->Actors)
 		{
-			for (UAGX_ContactMaterial* Cm : Registrar->ContactMaterials)
+			if (Actor == nullptr)
+				continue;
+
+			TArray<UAGX_ContactMaterialRegistrarComponent*> Registrars;
+			Actor->GetComponents<UAGX_ContactMaterialRegistrarComponent>(Registrars, false);
+			for (auto Registrar : Registrars)
 			{
-				if (Cm == ContactMaterial)
-					return; // The ContactMaterial is in a ContactMaterialRegistrar.
+				for (UAGX_ContactMaterial* Cm : Registrar->ContactMaterials)
+				{
+					if (Cm == ContactMaterial)
+						return; // The ContactMaterial is in a ContactMaterialRegistrar.
+				}
 			}
 		}
 	}
