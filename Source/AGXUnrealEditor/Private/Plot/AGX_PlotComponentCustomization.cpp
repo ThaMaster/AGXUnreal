@@ -27,7 +27,7 @@ void FAGX_PlotComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& InD
 
 	const UAGX_PlotComponent* PlotComponent =
 		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_PlotComponent>(InDetailBuilder);
-	if (!PlotComponent)
+	if (PlotComponent == nullptr)
 	{
 		return;
 	}
