@@ -432,10 +432,10 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeTerrain::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
+	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_CollisionGroupAdderComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
+	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_ContactMaterial::StaticClass()->GetFName());
@@ -443,19 +443,16 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(UAGX_MaterialBase::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(UAGX_MaterialBase::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
+	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_ModelSourceComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_PlotComponent::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(UAGX_PlotComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_RigidBodyComponent::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(UAGX_RigidBodyComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_ShapeComponent::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(UAGX_ShapeComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_Simulation::StaticClass()->GetFName());
 
@@ -463,7 +460,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackRenderer::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
+	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_WireComponent::StaticClass()->GetFName());
