@@ -66,6 +66,8 @@
 #include "Constraints/AGX_PrismaticConstraintActor.h"
 #include "Materials/AGX_ContactMaterialAssetTypeActions.h"
 #include "Materials/AGX_MaterialBase.h"
+#include "Materials/AGX_ContactMaterial.h"
+#include "Materials/AGX_ContactMaterialCustomization.h"
 #include "Materials/AGX_ContactMaterialRegistrarActor.h"
 #include "Materials/AGX_ShapeMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
@@ -242,6 +244,16 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 	 */
 
 	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_ComponentReference::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+			&FAGX_ComponentReferenceCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+			&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FAGX_Frame::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_FrameCustomization::MakeInstance));
@@ -250,13 +262,9 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FAGX_Real::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FAGX_RealDetails::MakeInstance));
 
+	// Body Reference uses the base class customization.
 	PropertyModule.RegisterCustomPropertyTypeLayout(
-		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName(),
-		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
-			&FAGX_ConstraintBodyAttachmentCustomization::MakeInstance));
-
-	PropertyModule.RegisterCustomPropertyTypeLayout(
-		FAGX_ComponentReference::StaticStruct()->GetFName(),
+		FAGX_RigidBodyReference::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_ComponentReferenceCustomization::MakeInstance));
 
@@ -269,12 +277,6 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 	// Shovel Reference uses the base class customization.
 	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FAGX_ShovelReference::StaticStruct()->GetFName(),
-		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
-			&FAGX_ComponentReferenceCustomization::MakeInstance));
-
-	// Body Reference uses the base class customization.
-	PropertyModule.RegisterCustomPropertyTypeLayout(
-		FAGX_RigidBodyReference::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_ComponentReferenceCustomization::MakeInstance));
 
@@ -306,14 +308,32 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_AgxEdModeTerrainCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
-		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName(),
+		UAGX_ContactMaterial::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_CollisionGroupDisablerComponentCustomization::MakeInstance));
+			&FAGX_ContactMaterialCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_CollisionGroupAdderComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_CollisionGroupAdderComponentCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_CollisionGroupDisablerComponentCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_HeightFieldBoundsComponentCustomization::MakeInstance));
+
+	// The reason why UAGX_MaterialBase is used here instead of UAGX_TerrainMaterial is that
+	// the former must be used to be able to customize some of the properties inherited by the
+	// UAGX_TerrainMaterial from the UAGX_MaterialBase.
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_MaterialBase::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_TerrainMaterialCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_ModelSourceComponent::StaticClass()->GetFName(),
@@ -331,22 +351,27 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_RigidBodyComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
+		UAGX_ShapeComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_ShapeComponentCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
 		UAGX_StaticMeshComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_StaticMeshComponentCustomization::MakeInstance));
 
-	// The reason why UAGX_MaterialBase is used here instead of UAGX_TerrainMaterial is that
-	// the former must be used to be able to customize some of the properties inherited by the
-	// UAGX_TerrainMaterial from the UAGX_MaterialBase.
 	PropertyModule.RegisterCustomClassLayout(
-		UAGX_MaterialBase::StaticClass()->GetFName(),
+		UAGX_Simulation::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_TerrainMaterialCustomization::MakeInstance));
+			&FAGX_SimulationCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
-		UAGX_ShapeComponent::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_ShapeComponentCustomization::MakeInstance));
+		UAGX_TrackComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_TrackComponentDetails::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_TrackRenderer::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_TrackRendererDetails::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_TwoBodyTireComponent::StaticClass()->GetFName(),
@@ -361,24 +386,6 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		UAGX_WireWinchComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_WireWinchDetails::MakeInstance));
 
-	PropertyModule.RegisterCustomClassLayout(
-		UAGX_TrackComponent::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_TrackComponentDetails::MakeInstance));
-
-	PropertyModule.RegisterCustomClassLayout(
-		UAGX_TrackRenderer::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_TrackRendererDetails::MakeInstance));
-
-	PropertyModule.RegisterCustomClassLayout(
-		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_HeightFieldBoundsComponentCustomization::MakeInstance));
-
-	PropertyModule.RegisterCustomClassLayout(
-		UAGX_Simulation::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_SimulationCustomization::MakeInstance));
-
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -391,24 +398,24 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	 * Property customizations.
 	 */
 
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		FAGX_ComponentReference::StaticStruct()->GetFName());
+
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
+
 	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_Frame::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_Real::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		FAGX_ConstraintBodyAttachment::StaticStruct()->GetFName());
-
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		FAGX_ComponentReference::StaticStruct()->GetFName());
+		FAGX_RigidBodyReference::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_SceneComponentReference::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		FAGX_ShovelReference::StaticStruct()->GetFName());
-
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		FAGX_RigidBodyReference::StaticStruct()->GetFName());
 
 	/*
 	 * Class Customizations.
@@ -425,20 +432,18 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeTerrain::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(UAGX_WireComponent::StaticClass()->GetFName());
-
-	PropertyModule.UnregisterCustomClassLayout(UAGX_WireWinchComponent::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		UAGX_CollisionGroupAdderComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_CollisionGroupAdderComponent::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(UAGX_ContactMaterial::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomClassLayout(
+		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(UAGX_MaterialBase::StaticClass()->GetFName());
-
-	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_RigidBodyComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_ModelSourceComponent::StaticClass()->GetFName());
@@ -447,19 +452,23 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 		UAGX_PlotComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
-		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
+		UAGX_RigidBodyComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
 		UAGX_ShapeComponent::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomClassLayout(UAGX_Simulation::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackRenderer::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(
-		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(UAGX_Simulation::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(UAGX_WireComponent::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomClassLayout(UAGX_WireWinchComponent::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
