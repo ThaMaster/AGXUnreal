@@ -78,9 +78,9 @@ bool FCheckImportedRealIntervals::Update()
 	UAGX_HingeConstraintComponent* Hinge = Hinges[0];
 
 	// Helper function that tests if a Range has the expected minimum and maximum values.
-	auto TestInterval = [this](
-							FAGX_RealInterval Actual, double ExpectedMin, double ExpectedMax,
-							const TCHAR* Name) {
+	auto TestInterval =
+		[this](FAGX_RealInterval Actual, double ExpectedMin, double ExpectedMax, const TCHAR* Name)
+	{
 		AgxAutomationCommon::TestEqual(Test, TEXT("%s Min"), Actual.Min, ExpectedMin);
 		AgxAutomationCommon::TestEqual(Test, TEXT("%s Max"), Actual.Max, ExpectedMax);
 	};
@@ -108,8 +108,6 @@ bool FCheckImportedRealIntervals::Update()
 	return true;
 }
 
-
-
 /**
  * Unit test that ensures that we can open levels saved before we switched force ranges from
  * using FFloatInterval to FAGX_RealInterval.
@@ -124,7 +122,8 @@ bool FRealIntervalBackwardsCompatibilityTest::RunTest(const FString& Parameters)
 
 	// Make sure no one accidentally replaced the map file containing FFloatIntervals with
 	// FAGX_RealIntervals instead.
-	AgxAutomationCommon::CheckMapMD5Checksum(MapPath, TEXT("24ce44e3772c70a604f461a4276a5c74"), *this);
+	AgxAutomationCommon::CheckMapMD5Checksum(
+		MapPath, TEXT("24ce44e3772c70a604f461a4276a5c74"), *this);
 
 	// Queue the latest commands.
 	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath));

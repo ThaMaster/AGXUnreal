@@ -13,8 +13,7 @@ class IDetailCategoryBuilder;
 /**
  * Defines the design of the Model Source Component in the Editor.
  */
-class AGXUNREALEDITOR_API FAGX_ModelSourceComponentCustomization
-	: public IDetailCustomization
+class AGXUNREALEDITOR_API FAGX_ModelSourceComponentCustomization : public IDetailCustomization
 {
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();

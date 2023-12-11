@@ -322,7 +322,7 @@ FReply SAGX_OfflineActivationDialog::OnGenerateLicenseButtonClicked()
 
 	const auto OutputFile =
 		FAGX_Environment::GetInstance().ProcessOfflineActivationResponse(ActivationResponsePath);
-	if(!OutputFile)
+	if (!OutputFile)
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 			"Activating service license failed. The Output Log may contain more information.");
@@ -330,10 +330,9 @@ FReply SAGX_OfflineActivationDialog::OnGenerateLicenseButtonClicked()
 	}
 
 	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(
-		"Activating service license was successful. The service license file is written to: "
-		+ OutputFile.GetValue());
+		"Activating service license was successful. The service license file is written to: " +
+		OutputFile.GetValue());
 	return FReply::Handled();
 }
-
 
 #undef LOCTEXT_NAMESPACE

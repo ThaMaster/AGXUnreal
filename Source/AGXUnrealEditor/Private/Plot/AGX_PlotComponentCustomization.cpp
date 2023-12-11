@@ -52,7 +52,6 @@ void FAGX_PlotComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& InD
 	// clang-format on
 }
 
-
 FReply FAGX_PlotComponentCustomization::OnOpenPlotWindowButtonClicked()
 {
 	AGX_CHECK(DetailBuilder);

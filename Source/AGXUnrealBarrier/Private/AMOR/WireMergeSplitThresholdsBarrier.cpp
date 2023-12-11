@@ -13,7 +13,6 @@
 #include <agxSDK/MergeSplitHandler.h>
 #include "EndAGXIncludes.h"
 
-
 FWireMergeSplitThresholdsBarrier::FWireMergeSplitThresholdsBarrier()
 	: FMergeSplitThresholdsBarrier()
 {
@@ -79,8 +78,7 @@ double FWireMergeSplitThresholdsBarrier::GetForcePropagationDecayScale() const
 	return 0.0;
 }
 
-void FWireMergeSplitThresholdsBarrier::SetMergeTensionScale(
-	double InMergeTensionScale)
+void FWireMergeSplitThresholdsBarrier::SetMergeTensionScale(double InMergeTensionScale)
 {
 	check(HasNative());
 	using namespace WireMergeSplitThresholds_helpers;

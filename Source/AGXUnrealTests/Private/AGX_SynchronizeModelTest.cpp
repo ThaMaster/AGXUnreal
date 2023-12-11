@@ -720,7 +720,8 @@ bool FSynchronizeLargeModelCommand::Update()
 			"SphereGeometryToChange location", AgxToUnrealDisplacement(0.0, 1.5, 0.0),
 			ShapeToChange->GetRelativeLocation());
 		Test.TestEqual(
-			"SphereGeometryToChange radius", ShapeToChange->GetRadius(), AgxToUnrealDistance(0.25f));
+			"SphereGeometryToChange radius", ShapeToChange->GetRadius(),
+			AgxToUnrealDistance(0.25f));
 		Test.TestEqual("SharedMaterial roughness", ShapeMat->GetRoughness(), 0.23);
 		Test.TestEqual(
 			"SphereGeometryToChange num collision groups", ShapeToChange->CollisionGroups.Num(), 3);

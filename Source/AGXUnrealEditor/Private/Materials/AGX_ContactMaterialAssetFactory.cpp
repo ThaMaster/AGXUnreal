@@ -5,8 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Materials/AGX_ContactMaterial.h"
 
-UAGX_ContactMaterialFactory::UAGX_ContactMaterialFactory(
-	const class FObjectInitializer& OBJ)
+UAGX_ContactMaterialFactory::UAGX_ContactMaterialFactory(const class FObjectInitializer& OBJ)
 	: Super(OBJ)
 {
 	SupportedClass = UAGX_ContactMaterial::StaticClass();

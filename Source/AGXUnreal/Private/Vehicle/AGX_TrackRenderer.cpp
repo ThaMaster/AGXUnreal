@@ -84,16 +84,17 @@ namespace AGX_TrackRenderer_helpers
 			}
 			else
 			{
-				// This is a material not part of the UE project itself. It may reside in the installed
-				// Unreal Editor itself, or some plugin. We are not comfortable making permanent changes
-				// to such materials, so we will prompt the user to do it themselves.
+				// This is a material not part of the UE project itself. It may reside in the
+				// installed Unreal Editor itself, or some plugin. We are not comfortable making
+				// permanent changes to such materials, so we will prompt the user to do it
+				// themselves.
 				const FString Message =
 					"The selected Material does not have Use With Instanced Static Meshes enabled, "
 					"meaning that it cannot be used with the Track Renderer. You can enable this "
 					"setting from the Material editor. The Material needs to be saved after these "
 					"changes. It is recommended to make a copy and place the "
-					"material within the project Contents, that way the behavior will be the same on "
-					"any computer opening this project.";
+					"material within the project Contents, that way the behavior will be the same "
+					"on any computer opening this project.";
 				FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(Message);
 
 				// Clear the material selection.

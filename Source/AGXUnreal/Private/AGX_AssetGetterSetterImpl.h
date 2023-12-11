@@ -13,7 +13,6 @@
  * and property updates in general.
  */
 
-
 /**
  * The C++ preprocessor makes it difficult to embed #if blocks within multi-line macros, so this
  * namespace defines wrapper for functions that are WITH_EDITOR only, where the non-WITH_EDITOR
@@ -22,7 +21,7 @@
 namespace AGX_WithEditorWrappers
 {
 #if WITH_EDITOR
-	template<typename T>
+	template <typename T>
 	inline void Modify(T& Object)
 	{
 		Object.Modify();
@@ -33,10 +32,14 @@ namespace AGX_WithEditorWrappers
 		FAGX_ObjectUtilities::MarkAssetDirty(Asset);
 	}
 #else
-	template<typename T>
-	inline void Modify(T&) {}
+	template <typename T>
+	inline void Modify(T&)
+	{
+	}
 
-	inline void MarkAssetDirty(UObject& Asset) {}
+	inline void MarkAssetDirty(UObject& Asset)
+	{
+	}
 #endif
 }
 

@@ -399,7 +399,8 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 
 void FAGX_TopMenu::OnVisitDemoPageClicked()
 {
-	static constexpr auto DemoPageUrl = TEXT("https://us.download.algoryx.se/AGXUnreal/demo_projects/");
+	static constexpr auto DemoPageUrl =
+		TEXT("https://us.download.algoryx.se/AGXUnreal/demo_projects/");
 	FPlatformProcess::LaunchURL(DemoPageUrl, NULL, NULL);
 }
 

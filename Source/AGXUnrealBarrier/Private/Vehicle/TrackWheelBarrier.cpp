@@ -8,7 +8,6 @@
 #include "TypeConversions.h"
 #include "Vehicle/TrackWheelRef.h"
 
-
 FTrackWheelBarrier::FTrackWheelBarrier()
 	: NativeRef {new FTrackWheelRef}
 {

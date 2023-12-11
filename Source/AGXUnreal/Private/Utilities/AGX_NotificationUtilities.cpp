@@ -17,11 +17,12 @@ namespace
 	{
 		const FText Title = InTitle.IsEmpty() ? FText::FromString("AGX Dynamics for Unreal")
 											  : FText::FromString(InTitle);
-		FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(Text),
+		FMessageDialog::Open(
+			EAppMsgType::Ok, FText::FromString(Text),
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
-		&Title
+			&Title
 #else
-		Title
+			Title
 #endif
 		);
 	}
@@ -110,13 +111,14 @@ void FAGX_NotificationUtilities::LogWarningIfAmorDisabled(const FString& OwningT
 bool FAGX_NotificationUtilities::YesNoQuestion(const FText& Question)
 {
 	const FText Title = FText::FromString("AGX Dynamics for Unreal");
-	return FMessageDialog::Open(EAppMsgType::YesNo, Question,
+	return FMessageDialog::Open(
+			   EAppMsgType::YesNo, Question,
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
-	&Title
+			   &Title
 #else
-	Title
+			   Title
 #endif
-	) == EAppReturnType::Yes;
+			   ) == EAppReturnType::Yes;
 }
 
 void FAGX_NotificationUtilities::ShowNotification(

@@ -8,7 +8,6 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-
 #include "AGX_PlayRecordState.generated.h"
 
 USTRUCT(BlueprintType)

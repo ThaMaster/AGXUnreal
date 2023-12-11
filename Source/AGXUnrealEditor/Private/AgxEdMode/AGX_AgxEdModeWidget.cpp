@@ -40,29 +40,46 @@ void SAGX_AgxEdModeWidget::Construct(const FArguments& InArgs, FAGX_AgxEdMode* I
 		return SubMode ? SubMode->GetDisplayName() : FText::GetEmpty();
 	};
 
+	// clang-format off
 	ChildSlot
-		[SNew(SScrollBox) +
-		 SScrollBox::Slot().Padding(0.0f)
-			 [SNew(SVerticalBox)
-
-			  /** Toolbar buttons for switching between sub-modes */
-			  + SVerticalBox::Slot()
-					.AutoHeight()[SNew(SBorder)
-									  .BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
-									  .HAlign(HAlign_Center)[CreateSubModesToolbar()]]
-
-			  /** Header for the current sub-mode */
-			  + SVerticalBox::Slot()
-					.AutoHeight()
-					.Padding(FMargin(5.0f, 10.0f))
-					.HAlign(HAlign_Fill)
-					.VAlign(VAlign_Fill)[SNew(
-						SHeader)[SNew(STextBlock)
-									 .Text_Lambda(GetCurrentSubModeName)
-									 .TextStyle(FAGX_EditorUtilities::GetStyle(), "ContentBrowser.TopBar.Font")]]
-
-			  /** DetailsView for the current sub-mode */
-			  + SVerticalBox::Slot().AutoHeight()[CreateSubModeDetailsView()]]];
+	[
+		SNew(SScrollBox)
+		+ SScrollBox::Slot().Padding(0.0f)
+		[
+			SNew(SVerticalBox)
+			/** Toolbar buttons for switching between sub-modes */
+			+ SVerticalBox::Slot().AutoHeight()
+			[
+				SNew(SBorder)
+				.BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
+				.HAlign(HAlign_Center)
+				[
+					CreateSubModesToolbar()
+				]
+			]
+			/** Header for the current sub-mode */
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(FMargin(5.0f, 10.0f))
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Fill)
+			[
+				SNew(SHeader)
+				[
+					SNew(STextBlock)
+					.Text_Lambda(GetCurrentSubModeName)
+					.TextStyle(FAGX_EditorUtilities::GetStyle(),"ContentBrowser.TopBar.Font")
+				]
+			]
+			/** DetailsView for the current sub-mode */
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			[
+				CreateSubModeDetailsView()
+			]
+		]
+	];
+	// clang-format on
 }
 
 void SAGX_AgxEdModeWidget::OnSubModeChanged()

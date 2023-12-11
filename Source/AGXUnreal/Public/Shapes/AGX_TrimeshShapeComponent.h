@@ -89,7 +89,7 @@ public:
 #else
 		const FProperty* InProperty
 #endif
-		) const override;
+	) const override;
 #endif
 	// ~End UObject interface.
 

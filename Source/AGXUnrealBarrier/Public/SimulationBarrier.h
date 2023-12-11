@@ -100,8 +100,8 @@ public:
 	TArray<FShapeContactBarrier> GetShapeContacts(const FShapeBarrier& Shape) const;
 
 	/**
-	* Returns all Shape Contacts in the current Simulation.
-	*/
+	 * Returns all Shape Contacts in the current Simulation.
+	 */
 	TArray<FShapeContactBarrier> GetShapeContacts() const;
 
 	/**

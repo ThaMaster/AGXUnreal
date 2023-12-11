@@ -5,7 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 
-
 UAGX_ShapeContactMergeSplitThresholdsAssetFactory::
 	UAGX_ShapeContactMergeSplitThresholdsAssetFactory(const class FObjectInitializer& OBJ)
 	: Super(OBJ)

@@ -2,7 +2,6 @@
 
 #include "AGX_InternalDelegateAccessor.h"
 
-
 FOnPreStepForwardInternal& FAGX_InternalDelegateAccessor::GetOnPreStepForwardInternal(
 	UAGX_Simulation& Simulation)
 {

@@ -5,9 +5,8 @@
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
 
-
-UAGX_ConstraintMergeSplitThresholdsAssetFactory::
-	UAGX_ConstraintMergeSplitThresholdsAssetFactory(const class FObjectInitializer& OBJ)
+UAGX_ConstraintMergeSplitThresholdsAssetFactory::UAGX_ConstraintMergeSplitThresholdsAssetFactory(
+	const class FObjectInitializer& OBJ)
 	: Super(OBJ)
 {
 	SupportedClass = UAGX_ConstraintMergeSplitThresholds::StaticClass();

@@ -26,14 +26,13 @@ struct AGXUNREAL_API FAGX_ConstraintMergeSplitProperties : public FAGX_MergeSpli
 	GENERATED_BODY()
 
 public:
-	
 	UPROPERTY(EditAnywhere, Category = "AGX AMOR")
 	UAGX_ConstraintMergeSplitThresholds* Thresholds = nullptr;
 
 	/**
-	* Must be called by the owning object at begin play (after the owning object has allocated a
-	* native AGX Dynamics object).
-	*/
+	 * Must be called by the owning object at begin play (after the owning object has allocated a
+	 * native AGX Dynamics object).
+	 */
 	void OnBeginPlay(UAGX_ConstraintComponent& Owner);
 
 #if WITH_EDITOR
@@ -67,7 +66,8 @@ private:
 };
 
 /**
- * This class acts as an API that exposes functions of FAGX_ConstraintMergeSplitProperties in Blueprints.
+ * This class acts as an API that exposes functions of FAGX_ConstraintMergeSplitProperties in
+ * Blueprints.
  */
 UCLASS()
 class AGXUNREAL_API UAGX_ConstraintMergeSplitProperties_LF : public UBlueprintFunctionLibrary
@@ -75,7 +75,8 @@ class AGXUNREAL_API UAGX_ConstraintMergeSplitProperties_LF : public UBlueprintFu
 	GENERATED_BODY()
 
 	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
-	static void SetEnableMerge(UPARAM(ref) FAGX_ConstraintMergeSplitProperties& Properties, bool bEnable)
+	static void SetEnableMerge(
+		UPARAM(ref) FAGX_ConstraintMergeSplitProperties& Properties, bool bEnable)
 	{
 		Properties.SetEnableMerge(bEnable);
 	}
@@ -87,7 +88,8 @@ class AGXUNREAL_API UAGX_ConstraintMergeSplitProperties_LF : public UBlueprintFu
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
-	static void SetEnableSplit(UPARAM(ref) FAGX_ConstraintMergeSplitProperties& Properties, bool bEnable)
+	static void SetEnableSplit(
+		UPARAM(ref) FAGX_ConstraintMergeSplitProperties& Properties, bool bEnable)
 	{
 		Properties.SetEnableSplit(bEnable);
 	}

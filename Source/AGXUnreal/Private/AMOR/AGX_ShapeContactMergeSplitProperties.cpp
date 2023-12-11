@@ -10,7 +10,6 @@
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 
-
 template <typename T>
 void FAGX_ShapeContactMergeSplitProperties::OnBeginPlayInternal(T& Owner)
 {
@@ -57,7 +56,7 @@ void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangePropertyInternal(T& 
 			CreateNative(Owner);
 			CreateNativeThresholds(Owner.GetWorld());
 		}
-	}	
+	}
 
 	if (HasNative())
 	{
@@ -81,7 +80,7 @@ void FAGX_ShapeContactMergeSplitProperties::CreateNativeInternal(T& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
 	AGX_CHECK(!HasNative());
-	
+
 	NativeBarrier.AllocateNative(*Owner.GetNative());
 }
 

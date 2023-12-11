@@ -35,5 +35,6 @@ const FBallJointBarrier* UAGX_BallConstraintComponent::GetNativeBallJoint() cons
 void UAGX_BallConstraintComponent::CreateNativeImpl()
 {
 	FAGX_ConstraintUtilities::CreateNative(
-		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetLabelSafe(GetOwner()));
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(),
+		GetLabelSafe(GetOwner()));
 }

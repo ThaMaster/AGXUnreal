@@ -9,7 +9,6 @@
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
 
-
 class AGXUNREALEDITOR_API FAGX_HeightFieldBoundsComponentCustomization : public IDetailCustomization
 {
 public:

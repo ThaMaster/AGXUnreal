@@ -12,7 +12,8 @@ void FAGX_Shovel::UpdateNativeShovelProperties(
 	ShovelBarrier.SetToothMinimumRadius(Shovel.MinimumToothRadius);
 	ShovelBarrier.SetToothMaximumRadius(Shovel.MaximumToothRadius);
 	ShovelBarrier.SetNoMergeExtensionDistance(Shovel.NoMergeExtensionDistance);
-	ShovelBarrier.SetMinimumSubmergedContactLengthFraction(Shovel.MinimumSubmergedContactLengthFraction);
+	ShovelBarrier.SetMinimumSubmergedContactLengthFraction(
+		Shovel.MinimumSubmergedContactLengthFraction);
 	ShovelBarrier.SetVerticalBladeSoilMergeDistance(Shovel.VerticalBladeSoilMergeDistance);
 	ShovelBarrier.SetSecondarySeparationDeadloadLimit(Shovel.SecondarySeparationDeadloadLimit);
 	ShovelBarrier.SetPenetrationDepthThreshold(Shovel.PenetrationDepthThreshold);

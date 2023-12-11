@@ -7,7 +7,6 @@
 #include "AssetTypeActions_Base.h"
 #include "AssetTypeCategories.h"
 
-
 /**
  * Asset Type Actions for UAGX_ShovelProperties, customizing its appearance in the Editor menus
  * and browsers.

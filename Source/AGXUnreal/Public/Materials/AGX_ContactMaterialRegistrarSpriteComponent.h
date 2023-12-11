@@ -8,8 +8,7 @@
 
 #include "AGX_ContactMaterialRegistrarSpriteComponent.generated.h"
 
-UCLASS(
-	ClassGroup = "AGX", Category = "AGX", HideCategories = (Cooking, LOD, Replication))
+UCLASS(ClassGroup = "AGX", Category = "AGX", HideCategories = (Cooking, LOD, Replication))
 class AGXUNREAL_API UAGX_ContactMaterialRegistrarSpriteComponent : public USceneComponent
 {
 	GENERATED_BODY()

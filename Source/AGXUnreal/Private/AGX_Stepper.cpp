@@ -1,6 +1,5 @@
 // Copyright 2023, Algoryx Simulation AB.
 
-
 // AGX Dynamics for Unreal includes.
 #include "AGX_Stepper.h"
 #include "AGX_Simulation.h"

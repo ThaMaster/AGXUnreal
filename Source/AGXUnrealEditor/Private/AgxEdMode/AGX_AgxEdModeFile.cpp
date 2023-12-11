@@ -13,7 +13,6 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Widgets/AGX_ImportDialog.h"
 
-
 // Unreal Engine includes.
 #include "DesktopPlatformModule.h"
 #include "Engine/Blueprint.h"

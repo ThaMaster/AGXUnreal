@@ -10,7 +10,6 @@
 
 #include "AGX_PlayRecord.generated.h"
 
-
 /**
  * EXPERIMENTAL
  *
@@ -22,7 +21,6 @@ class AGXUNREAL_API UAGX_PlayRecord : public UObject
 	GENERATED_BODY()
 
 public:
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Play Record")
 	TArray<FAGX_PlayRecordState> States;
 };

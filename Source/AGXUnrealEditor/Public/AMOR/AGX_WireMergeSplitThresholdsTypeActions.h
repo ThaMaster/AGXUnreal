@@ -7,8 +7,7 @@
 #include "AssetTypeCategories.h"
 #include "CoreMinimal.h"
 
-class AGXUNREALEDITOR_API FAGX_WireMergeSplitThresholdsTypeActions
-	: public FAssetTypeActions_Base
+class AGXUNREALEDITOR_API FAGX_WireMergeSplitThresholdsTypeActions : public FAssetTypeActions_Base
 {
 public:
 	FAGX_WireMergeSplitThresholdsTypeActions(EAssetTypeCategories::Type InAssetCategory);

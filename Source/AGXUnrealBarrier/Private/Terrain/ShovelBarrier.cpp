@@ -381,8 +381,6 @@ FRigidBodyBarrier FShovelBarrier::GetRigidBody() const
 	return AGXBarrierFactories::CreateRigidBodyBarrier(Body);
 }
 
-
-
 FGuid FShovelBarrier::GetGuid() const
 {
 	check(HasNative());

@@ -37,5 +37,6 @@ const FHingeBarrier* UAGX_HingeConstraintComponent::GetNativeHinge() const
 void UAGX_HingeConstraintComponent::AllocateNative()
 {
 	FAGX_ConstraintUtilities::CreateNative(
-		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetLabelSafe(GetOwner()));
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(),
+		GetLabelSafe(GetOwner()));
 }

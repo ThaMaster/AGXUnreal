@@ -43,6 +43,7 @@ public:
 
 	static FAGX_RealInterval DefaultForceRange()
 	{
-		return FAGX_RealInterval(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
+		return FAGX_RealInterval(
+			-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
 	}
 };

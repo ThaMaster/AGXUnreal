@@ -223,9 +223,6 @@ void FAGX_FrameSpec::Define()
 		[this]()
 		{
 			It("should return both location and rotation translated and rotated.",
-				[this]()
-				{
-					TestEqual(TEXT("TODO: Implement this test."), 1, 2);
-				});
+			   [this]() { TestEqual(TEXT("TODO: Implement this test."), 1, 2); });
 		});
 }

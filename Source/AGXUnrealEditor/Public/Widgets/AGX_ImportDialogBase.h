@@ -11,7 +11,6 @@
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/Layout/SBorder.h"
 
-
 class SAGX_ImportDialogBase : public SCompoundWidget
 {
 public:

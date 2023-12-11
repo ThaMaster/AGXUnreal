@@ -354,8 +354,7 @@ inline FVector ConvertDistance(const agx::Vec3f& V)
 {
 	using ElementType = decltype(FVector::X);
 	return FVector(
-		ConvertDistanceToUnreal<ElementType>(V.x()),
-		ConvertDistanceToUnreal<ElementType>(V.y()),
+		ConvertDistanceToUnreal<ElementType>(V.x()), ConvertDistanceToUnreal<ElementType>(V.y()),
 		ConvertDistanceToUnreal<ElementType>(V.z()));
 }
 
@@ -1282,7 +1281,6 @@ inline TArray<DestinationT> ToUnrealArray(const std::vector<SourceT>& V)
 
 	return Arr;
 }
-
 
 inline TArray<FString> ToUnrealStringArray(const std::vector<std::string>& V)
 {

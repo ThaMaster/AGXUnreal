@@ -20,9 +20,7 @@ FText FAGX_ShovelPropertiesActions::GetName() const
 
 const TArray<FText>& FAGX_ShovelPropertiesActions::GetSubMenus() const
 {
-	static const TArray<FText> SubMenus {
-		LOCTEXT("TerrainSubMenu", "Terrain")
-	};
+	static const TArray<FText> SubMenus {LOCTEXT("TerrainSubMenu", "Terrain")};
 
 	return SubMenus;
 }

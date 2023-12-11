@@ -14,7 +14,8 @@
 /**
  * @deprecated Use UAGX_ShovelComponent instead.
  */
-UCLASS(ClassGroup = "AGX_Terrain", Category = "AGX",
+UCLASS(
+	ClassGroup = "AGX_Terrain", Category = "AGX",
 	Meta =
 		(BlueprintSpawnableComponent, DeprecationMessage = "Use the AGX Shovel Component instead."))
 class AGXUNREAL_API UAGX_TopEdgeComponent : public UAGX_VectorComponent

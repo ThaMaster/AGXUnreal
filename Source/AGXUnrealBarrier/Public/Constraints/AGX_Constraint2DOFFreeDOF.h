@@ -6,7 +6,6 @@
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
 
-
 /**
  * Enum identifying a free degree of freedom in a 2-DOF constraint.
  */

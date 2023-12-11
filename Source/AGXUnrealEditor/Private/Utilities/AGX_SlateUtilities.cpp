@@ -18,8 +18,6 @@ FSlateFontInfo FAGX_SlateUtilities::CreateFont(int Size)
 	return F;
 }
 
-
-
 bool FAGX_SlateUtilities::RemoveChildWidgetByType(
 	const TSharedPtr<SWidget>& Parent, const FString& TypeNameToRemove, bool Recursive)
 {

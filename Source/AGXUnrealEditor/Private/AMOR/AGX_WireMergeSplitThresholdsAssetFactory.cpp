@@ -5,9 +5,8 @@
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_WireMergeSplitThresholds.h"
 
-
-UAGX_WireMergeSplitThresholdsAssetFactory::
-	UAGX_WireMergeSplitThresholdsAssetFactory(const class FObjectInitializer& OBJ)
+UAGX_WireMergeSplitThresholdsAssetFactory::UAGX_WireMergeSplitThresholdsAssetFactory(
+	const class FObjectInitializer& OBJ)
 	: Super(OBJ)
 {
 	SupportedClass = UAGX_WireMergeSplitThresholds::StaticClass();

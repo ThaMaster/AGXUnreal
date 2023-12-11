@@ -151,7 +151,7 @@ bool UAGX_TrimeshShapeComponent::CanEditChange(
 #else
 	const FProperty* InProperty
 #endif
-	) const
+) const
 {
 	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
 	if (!SuperCanEditChange)

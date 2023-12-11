@@ -5,7 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_WireMergeSplitThresholds.h"
 
-
 #define LOCTEXT_NAMESPACE "FAGX_WireMergeSplitThresholdsTypeActions"
 
 FAGX_WireMergeSplitThresholdsTypeActions::FAGX_WireMergeSplitThresholdsTypeActions(
@@ -38,10 +37,10 @@ FColor FAGX_WireMergeSplitThresholdsTypeActions::GetTypeColor() const
 	return FColor(255, 115, 0);
 }
 
-FText FAGX_WireMergeSplitThresholdsTypeActions::GetAssetDescription(const FAssetData& AssetData) const
+FText FAGX_WireMergeSplitThresholdsTypeActions::GetAssetDescription(
+	const FAssetData& AssetData) const
 {
-	return LOCTEXT(
-		"AssetDescription", "Defines merge split (AMOR) thresholds for Wires.");
+	return LOCTEXT("AssetDescription", "Defines merge split (AMOR) thresholds for Wires.");
 }
 
 UClass* FAGX_WireMergeSplitThresholdsTypeActions::GetSupportedClass() const

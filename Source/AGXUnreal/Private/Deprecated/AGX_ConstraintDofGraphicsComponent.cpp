@@ -167,7 +167,7 @@ public:
 					Geometry->VertexBuffers.ColorVertexBuffer.InitResource(RHICmdList);
 #endif
 
-						FLocalVertexFactory::FDataType Data;
+					FLocalVertexFactory::FDataType Data;
 					Geometry->VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(
 						&Geometry->VertexFactory, Data);
 					Geometry->VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(

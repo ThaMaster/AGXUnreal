@@ -1004,7 +1004,8 @@ inline FAGX_GeometryMsgsTransform Convert(const agxROS2::geometryMsgs::Transform
 	return Msg;
 }
 
-inline FAGX_GeometryMsgsTransformStamped Convert(const agxROS2::geometryMsgs::TransformStamped& InMsg)
+inline FAGX_GeometryMsgsTransformStamped Convert(
+	const agxROS2::geometryMsgs::TransformStamped& InMsg)
 {
 	FAGX_GeometryMsgsTransformStamped Msg;
 	Msg.Header = Convert(InMsg.header);
@@ -1275,7 +1276,8 @@ inline agxROS2::geometryMsgs::Transform Convert(const FAGX_GeometryMsgsTransform
 	return Msg;
 }
 
-inline agxROS2::geometryMsgs::TransformStamped Convert(const FAGX_GeometryMsgsTransformStamped& InMsg)
+inline agxROS2::geometryMsgs::TransformStamped Convert(
+	const FAGX_GeometryMsgsTransformStamped& InMsg)
 {
 	agxROS2::geometryMsgs::TransformStamped Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -1582,7 +1584,8 @@ inline FAGX_SensorMsgsMagneticField Convert(const agxROS2::sensorMsgs::MagneticF
 	return Msg;
 }
 
-inline FAGX_SensorMsgsMultiDOFJointState Convert(const agxROS2::sensorMsgs::MultiDOFJointState& InMsg)
+inline FAGX_SensorMsgsMultiDOFJointState Convert(
+	const agxROS2::sensorMsgs::MultiDOFJointState& InMsg)
 {
 	FAGX_SensorMsgsMultiDOFJointState Msg;
 
@@ -1615,7 +1618,8 @@ inline FAGX_SensorMsgsMultiDOFJointState Convert(const agxROS2::sensorMsgs::Mult
 	return Msg;
 }
 
-inline FAGX_SensorMsgsMultiEchoLaserScan Convert(const agxROS2::sensorMsgs::MultiEchoLaserScan& InMsg)
+inline FAGX_SensorMsgsMultiEchoLaserScan Convert(
+	const agxROS2::sensorMsgs::MultiEchoLaserScan& InMsg)
 {
 	FAGX_SensorMsgsMultiEchoLaserScan Msg;
 
@@ -2088,7 +2092,8 @@ inline agxROS2::sensorMsgs::MagneticField Convert(const FAGX_SensorMsgsMagneticF
 	return Msg;
 }
 
-inline agxROS2::sensorMsgs::MultiDOFJointState Convert(const FAGX_SensorMsgsMultiDOFJointState& InMsg)
+inline agxROS2::sensorMsgs::MultiDOFJointState Convert(
+	const FAGX_SensorMsgsMultiDOFJointState& InMsg)
 {
 	agxROS2::sensorMsgs::MultiDOFJointState Msg;
 	Msg.header = Convert(InMsg.Header);
@@ -2120,7 +2125,8 @@ inline agxROS2::sensorMsgs::MultiDOFJointState Convert(const FAGX_SensorMsgsMult
 	return Msg;
 }
 
-inline agxROS2::sensorMsgs::MultiEchoLaserScan Convert(const FAGX_SensorMsgsMultiEchoLaserScan& InMsg)
+inline agxROS2::sensorMsgs::MultiEchoLaserScan Convert(
+	const FAGX_SensorMsgsMultiEchoLaserScan& InMsg)
 {
 	agxROS2::sensorMsgs::MultiEchoLaserScan Msg;
 	Msg.header = Convert(InMsg.Header);

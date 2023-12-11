@@ -406,7 +406,7 @@ TArray<FShapeContactBarrier> FSimulationBarrier::GetShapeContacts(const FShapeBa
 TArray<FShapeContactBarrier> FSimulationBarrier::GetShapeContacts() const
 {
 	check(HasNative());
-	
+
 	TArray<FShapeContactBarrier> ShapeContactBarriers;
 
 	const agxCollide::GeometryContactPtrVector& ContactVectorAGX =

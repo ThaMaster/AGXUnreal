@@ -18,8 +18,7 @@ TSharedRef<IDetailCustomization> FAGX_TerrainMaterialCustomization::MakeInstance
 void FAGX_TerrainMaterialCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	UAGX_TerrainMaterial* TerrainMaterial =
-		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_TerrainMaterial>(
-			DetailBuilder);
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_TerrainMaterial>(DetailBuilder);
 
 	if (!TerrainMaterial)
 		return;

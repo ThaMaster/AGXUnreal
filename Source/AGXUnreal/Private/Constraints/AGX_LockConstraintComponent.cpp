@@ -35,5 +35,6 @@ const FLockJointBarrier* UAGX_LockConstraintComponent::GetNativeLock() const
 void UAGX_LockConstraintComponent::CreateNativeImpl()
 {
 	FAGX_ConstraintUtilities::CreateNative(
-		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetLabelSafe(GetOwner()));
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(),
+		GetLabelSafe(GetOwner()));
 }

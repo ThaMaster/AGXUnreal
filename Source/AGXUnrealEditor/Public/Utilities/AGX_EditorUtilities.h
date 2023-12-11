@@ -392,7 +392,6 @@ T* FAGX_EditorUtilities::GetSingleObjectBeingCustomized(
 	TArray<TWeakObjectPtr<UObject>> Objects;
 	DetailBuilder.GetObjectsBeingCustomized(Objects);
 
-
 	if (Objects.Num() == 1 || (!FailIfMultiple && Objects.Num() > 1))
 	{
 		if (T* Component = Cast<T>(Objects[0].Get()))

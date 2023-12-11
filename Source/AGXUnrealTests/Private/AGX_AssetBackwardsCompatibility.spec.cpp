@@ -344,7 +344,6 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 
 // clang-format on
 
-
 /**
  * Unit test that ensures that we can load Contact Materials from when Contact Reduction Level was
  * an uint8, and ensure we correctly convert the value to the new enum equivalent.

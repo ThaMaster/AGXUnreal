@@ -230,7 +230,8 @@ void UAGX_StaticMeshComponent::OnCreatePhysicsState()
 void UAGX_StaticMeshComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
@@ -327,8 +328,7 @@ namespace AGX_StaticMeshComponent_helpers
 		}
 
 		FShapeMaterialBarrier* Barrier = nullptr;
-		UAGX_ShapeMaterial* Instance =
-			Cast<UAGX_ShapeMaterial>(Asset->GetOrCreateInstance(&World));
+		UAGX_ShapeMaterial* Instance = Cast<UAGX_ShapeMaterial>(Asset->GetOrCreateInstance(&World));
 		if (Instance == nullptr)
 		{
 			/// \todo Better error message.

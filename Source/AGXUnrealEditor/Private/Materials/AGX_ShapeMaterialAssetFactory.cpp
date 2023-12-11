@@ -18,6 +18,5 @@ UObject* UAGX_ShapeMaterialFactory::FactoryCreateNew(
 	FFeedbackContext* Warn)
 {
 	check(Class->IsChildOf(UAGX_ShapeMaterial::StaticClass()));
-	return NewObject<UAGX_ShapeMaterial>(
-		InParent, Class, Name, Flags | RF_Transactional, Context);
+	return NewObject<UAGX_ShapeMaterial>(InParent, Class, Name, Flags | RF_Transactional, Context);
 }

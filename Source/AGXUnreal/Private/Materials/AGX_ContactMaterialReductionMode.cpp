@@ -7,7 +7,6 @@
 #include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
 
-
 namespace AGX_ContactMaterialReductionMode_helpers
 {
 	EAGX_ContactReductionLevel ConvertFromOldValue(uint8 OldLevel)

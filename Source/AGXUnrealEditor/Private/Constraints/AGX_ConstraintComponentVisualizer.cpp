@@ -231,14 +231,13 @@ namespace
 		// Highlight Body with circle.
 		{
 			static constexpr float CIRCLE_SCALE {0.05f};
-			const float Distance =
-				FVector::Dist(Body->GetComponentLocation(), View->ViewLocation);
+			const float Distance = FVector::Dist(Body->GetComponentLocation(), View->ViewLocation);
 			const float Radius = GetWorldSizeFromScreenFactor(
 				CIRCLE_SCALE, FMath::DegreesToRadians(View->FOV), Distance);
 
 			DrawCircle(
-				PDI, Body->GetComponentLocation(), View->GetViewRight(), View->GetViewUp(),
-				Color, Radius, 32, SDPG_Foreground, Thickness, /*DepthBias*/ 0.0f,
+				PDI, Body->GetComponentLocation(), View->GetViewRight(), View->GetViewUp(), Color,
+				Radius, 32, SDPG_Foreground, Thickness, /*DepthBias*/ 0.0f,
 				/*bScreenSpace*/ true);
 		}
 
@@ -434,10 +433,11 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	// \todo Is there a better way to determine if we are in the BP Actor Editor?
 	bool bIsInBlueprintEditor = Constraint->GetOutermost()->GetName().Equals("/Engine/Transient");
 
-	// By default DrawVisualization is called when the component's Actor is selected in the Level Editor
-	// or when the Component is selected in the BP Actor Editor. If there's many constraints etc in the
-	// same actor the Level Editor's viewport gets very messy. Therefore, with the following boolean we
-	// only draw the visualization if the component is selected in the Level Editor, not the actor.
+	// By default DrawVisualization is called when the component's Actor is selected in the Level
+	// Editor or when the Component is selected in the BP Actor Editor. If there's many constraints
+	// etc in the same actor the Level Editor's viewport gets very messy. Therefore, with the
+	// following boolean we only draw the visualization if the component is selected in the Level
+	// Editor, not the actor.
 	bool bShowConnections = Constraint->IsSelectedInEditor() || bIsInBlueprintEditor;
 
 	if (bShowConnections)
@@ -456,8 +456,8 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 				HighlightColor.R * 0.6f, HighlightColor.G * 0.6f, HighlightColor.B * 0.6f,
 				HighlightColor.A);
 			RenderBodyMarker(
-				Constraint->BodyAttachment2, Body2, CircleScreenFactor, Color, HighlightThickness, View,
-				PDI);
+				Constraint->BodyAttachment2, Body2, CircleScreenFactor, Color, HighlightThickness,
+				View, PDI);
 		}
 	}
 

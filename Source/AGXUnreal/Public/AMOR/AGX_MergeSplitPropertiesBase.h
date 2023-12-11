@@ -19,7 +19,6 @@ struct AGXUNREAL_API FAGX_MergeSplitPropertiesBase
 	GENERATED_BODY()
 
 public:
-
 	virtual ~FAGX_MergeSplitPropertiesBase() = default;
 
 	// We must provide operator = because the Unreal framework will attempt to invoke it.

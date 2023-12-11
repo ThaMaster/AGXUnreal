@@ -455,11 +455,8 @@ TArray<FString> AgxAutomationCommon::GetReferencedStaticMeshAssets(
 
 void AgxAutomationCommon::AddExpectedError(FAutomationTestBase& Test, const FString& Error)
 {
-	Test.AddExpectedError(
-				Error,
-				EAutomationExpectedErrorFlags::Contains, 0);
+	Test.AddExpectedError(Error, EAutomationExpectedErrorFlags::Contains, 0);
 	Test.AddError(Error);
-
 }
 
 bool AgxAutomationCommon::FCheckWorldsCommand::Update()

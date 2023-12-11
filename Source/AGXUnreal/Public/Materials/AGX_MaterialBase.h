@@ -137,7 +137,8 @@ public:
 	virtual void SetSurfaceViscosity(double Viscosity)
 		PURE_VIRTUAL(UAGX_MaterialBase::SetSurfaceViscosity, );
 
-	virtual double GetSurfaceViscosity() const PURE_VIRTUAL(UAGX_MaterialBase::GetSurfaceViscosity, return 0.0;);
+	virtual double GetSurfaceViscosity() const
+		PURE_VIRTUAL(UAGX_MaterialBase::GetSurfaceViscosity, return 0.0;);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Material Surface Properties",
@@ -154,8 +155,10 @@ public:
 	virtual void SetAdhesion(double AdhesiveForce, double AdhesiveOverlap)
 		PURE_VIRTUAL(UAGX_MaterialBase::SetAdhesion, )
 
-	virtual double GetAdhesiveForce() const PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveForce, return 0.0;);
-	virtual double GetAdhesiveOverlap() const PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveOverlap, return 0.0;);
+			virtual double GetAdhesiveForce() const
+		PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveForce, return 0.0;);
+	virtual double GetAdhesiveOverlap() const
+		PURE_VIRTUAL(UAGX_MaterialBase::GetAdhesiveOverlap, return 0.0;);
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Material Surface Properties",

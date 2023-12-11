@@ -7,7 +7,6 @@
 #include "AssetTypeCategories.h"
 #include "AssetTypeActions_Base.h"
 
-
 /**
  * Asset Type Actions for UAGX_TrackProperties, customizing its appearance in the Editor menus
  * and browsers.

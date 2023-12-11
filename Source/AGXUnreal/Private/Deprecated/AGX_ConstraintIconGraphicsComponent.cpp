@@ -189,38 +189,40 @@ public:
 		for (const TSharedPtr<FAGX_ConstraintIconGraphicsGeometry>& Geometry : Geometries)
 		{
 			ENQUEUE_RENDER_COMMAND(FAGX_ConstraintIconGraphicsVertexBuffersInit)
-			([Geometry = Geometry.Get()](FRHICommandListImmediate& RHICmdList) {
+			(
+				[Geometry = Geometry.Get()](FRHICommandListImmediate& RHICmdList)
+				{
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
-				Geometry->VertexBuffers.PositionVertexBuffer.InitResource();
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.InitResource();
-				Geometry->VertexBuffers.ColorVertexBuffer.InitResource();
+					Geometry->VertexBuffers.PositionVertexBuffer.InitResource();
+					Geometry->VertexBuffers.StaticMeshVertexBuffer.InitResource();
+					Geometry->VertexBuffers.ColorVertexBuffer.InitResource();
 #else
-				Geometry->VertexBuffers.PositionVertexBuffer.InitResource(RHICmdList);
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.InitResource(RHICmdList);
-				Geometry->VertexBuffers.ColorVertexBuffer.InitResource(RHICmdList);
+					Geometry->VertexBuffers.PositionVertexBuffer.InitResource(RHICmdList);
+					Geometry->VertexBuffers.StaticMeshVertexBuffer.InitResource(RHICmdList);
+					Geometry->VertexBuffers.ColorVertexBuffer.InitResource(RHICmdList);
 #endif
 
-				FLocalVertexFactory::FDataType Data;
-				Geometry->VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(
-					&Geometry->VertexFactory, Data);
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(
-					&Geometry->VertexFactory, Data);
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
-					&Geometry->VertexFactory, Data);
-				Geometry->VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
-					&Geometry->VertexFactory, Data, /*LightMapIndex*/ 0);
-				Geometry->VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(
-					&Geometry->VertexFactory, Data);
-				Geometry->VertexFactory.SetData(Data);
+					FLocalVertexFactory::FDataType Data;
+					Geometry->VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(
+						&Geometry->VertexFactory, Data);
+					Geometry->VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(
+						&Geometry->VertexFactory, Data);
+					Geometry->VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(
+						&Geometry->VertexFactory, Data);
+					Geometry->VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
+						&Geometry->VertexFactory, Data, /*LightMapIndex*/ 0);
+					Geometry->VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(
+						&Geometry->VertexFactory, Data);
+					Geometry->VertexFactory.SetData(Data);
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
-				Geometry->VertexFactory.InitResource();
-				Geometry->IndexBuffer.InitResource();
+					Geometry->VertexFactory.InitResource();
+					Geometry->IndexBuffer.InitResource();
 #else
-				Geometry->VertexFactory.InitResource(RHICmdList);
-				Geometry->IndexBuffer.InitResource(RHICmdList);
+					Geometry->VertexFactory.InitResource(RHICmdList);
+					Geometry->IndexBuffer.InitResource(RHICmdList);
 #endif
-			});
+				});
 		}
 	}
 
@@ -455,10 +457,12 @@ private:
 
 					const UAGX_Simulation* Simulation = GetDefault<UAGX_Simulation>();
 
-					// Note: the ScaleMax as calculated below is a bit arbitrary, but was chosen to match
-					// default behavior for the default ConstraintVisualizationScalingDistanceMax value.
-					// It will scaled linearly with it which turns out to work nicely.
-					const float ScaleMax = Simulation->ConstraintVisualizationScalingDistanceMax * 0.25f;
+					// Note: the ScaleMax as calculated below is a bit arbitrary, but was chosen to
+					// match default behavior for the default
+					// ConstraintVisualizationScalingDistanceMax value. It will scaled linearly with
+					// it which turns out to work nicely.
+					const float ScaleMax =
+						Simulation->ConstraintVisualizationScalingDistanceMax * 0.25f;
 
 					FMatrix ScreenScale = GetScreenSpaceScale(
 						0.2f, 30.0f, ScaleMax, 200.0f, WorldMatrix.GetOrigin(), View);
@@ -742,9 +746,8 @@ void UAGX_ConstraintIconGraphicsComponent::SendRenderDynamicData_Concurrent()
 		FAGX_ConstraintIconGraphicsProxy* CastProxy =
 			static_cast<FAGX_ConstraintIconGraphicsProxy*>(SceneProxy);
 		ENQUEUE_RENDER_COMMAND(FSendConstraintIconGraphicsDynamicData)
-		([CastProxy, Frame1, Frame2](FRHICommandListImmediate& RHICmdList) {
-			CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2);
-		});
+		([CastProxy, Frame1, Frame2](FRHICommandListImmediate& RHICmdList)
+		 { CastProxy->SetAttachmentFrameTransforms(Frame1, Frame2); });
 	}
 }
 

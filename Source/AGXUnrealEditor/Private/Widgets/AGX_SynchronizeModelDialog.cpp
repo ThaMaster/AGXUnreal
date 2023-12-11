@@ -237,8 +237,7 @@ FReply SAGX_SynchronizeModelDialog::OnSynchronizeButtonClicked()
 	return FReply::Handled();
 }
 
-void SAGX_SynchronizeModelDialog::OnForceOverwritePropertiesClicked(
-	ECheckBoxState NewCheckedState)
+void SAGX_SynchronizeModelDialog::OnForceOverwritePropertiesClicked(ECheckBoxState NewCheckedState)
 {
 	bForceOverwriteProperties = NewCheckedState == ECheckBoxState::Checked;
 }

@@ -272,7 +272,8 @@ struct FSimulateShortDurationState
 	UAGX_RigidBodyComponent* RigidBody = nullptr;
 };
 
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FSpawnRigidBody, FSimulateShortDurationState&, State);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FSpawnRigidBody, FSimulateShortDurationState&, State);
 
 bool FSpawnRigidBody::Update()
 {
@@ -315,11 +316,14 @@ bool FSpawnRigidBody::Update()
 	return true;
 }
 
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FPrintBodyLocation, FSimulateShortDurationState&, State);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FPrintBodyLocation, FSimulateShortDurationState&, State);
 
 bool FPrintBodyLocation::Update()
 {
-	UE_LOG(LogAGX, Warning, TEXT("Body location: %s"), *State.RigidBody->GetComponentLocation().ToString());
+	UE_LOG(
+		LogAGX, Warning, TEXT("Body location: %s"),
+		*State.RigidBody->GetComponentLocation().ToString());
 	return true;
 }
 

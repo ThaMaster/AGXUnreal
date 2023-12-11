@@ -19,7 +19,8 @@
  * Remember to also add the rigid body actor to the list of shovels on the
  * AGX Terrain's details panel!
  */
-UCLASS(ClassGroup = "AGX_Terrain", Category = "AGX",
+UCLASS(
+	ClassGroup = "AGX_Terrain", Category = "AGX",
 	Meta =
 		(BlueprintSpawnableComponent, DeprecationMessage = "Use the AGX Shovel Component instead."))
 class AGXUNREAL_API UAGX_CuttingEdgeComponent : public UAGX_VectorComponent
