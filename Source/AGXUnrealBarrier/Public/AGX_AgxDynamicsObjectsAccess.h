@@ -101,17 +101,14 @@ class FTrackBarrier;
 class FTrackPropertiesBarrier;
 class FTrackWheelBarrier;
 
-
 // Namespace agxWire
 class FWireBarrier;
 class FWireNodeBarrier;
 class FWireWinchBarrier;
 
-
 class AGXUNREALBARRIER_API FAGX_AgxDynamicsObjectsAccess
 {
 public:
-
 	// Namespace agx.
 	static agx::BallJoint* GetFrom(const FBallJointBarrier* Barrier);
 	static agx::Constraint* GetFrom(const FConstraintBarrier* Barrier);
@@ -127,7 +124,6 @@ public:
 	static agx::RigidBody* GetFrom(const FRigidBodyBarrier* Barrier);
 	static agx::RigidBody* TryGetFrom(const FRigidBodyBarrier& Barrier);
 	static agx::RigidBody* TryGetFrom(const FRigidBodyBarrier* Barrier);
-
 
 	// Namespace agxCollide.
 	static agxCollide::ContactPoint* GetFrom(const FContactPointBarrier* Barrier);

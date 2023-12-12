@@ -74,7 +74,6 @@ FRotator FAGX_Frame::GetWorldRotation(const USceneComponent& FallbackParent) con
 	return WorldRotator;
 }
 
-
 void FAGX_Frame::GetWorldLocationAndRotation(FVector& OutLocation, FRotator& OutRotation) const
 {
 	const USceneComponent* ActualParent = GetParentComponent();

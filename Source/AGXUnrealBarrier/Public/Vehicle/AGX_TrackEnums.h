@@ -1,6 +1,5 @@
 // Copyright 2023, Algoryx Simulation AB.
 
-
 #pragma once
 
 // Unreal Engine includes.
@@ -8,7 +7,6 @@
 #include "UObject/ObjectMacros.h"
 
 #include "AGX_TrackEnums.generated.h"
-
 
 // Unreal Header Tool does not support line breaks in UMETA tags.
 // clang-format off

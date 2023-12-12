@@ -13,8 +13,8 @@ void FAGX_PlotDataSeries::Write(float Data)
 			LogAGX, Warning,
 			TEXT("Write was called on PlotDataSeries '%s' but it does not have an AGX Native. Make "
 				 "sure this PlotDataSeries is part of a Plot. It is registered by calling the "
-				 "AGX_PlotComponent::CreatePlot function. Also note that the Write function should only "
-				 "be called during Play."),
+				 "AGX_PlotComponent::CreatePlot function. Also note that the Write function should "
+				 "only be called during Play."),
 			*Label);
 		return;
 	}

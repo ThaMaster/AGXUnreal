@@ -252,7 +252,6 @@ double FTrackPropertiesBarrier::GetHingeSpookDampingRotationalY() const
 	return NativeRef->Native->getHingeDamping(agx::Hinge::ROTATIONAL_2);
 }
 
-
 // Hinge range.
 
 void FTrackPropertiesBarrier::SetHingeRangeEnabled(bool bEnable)
@@ -291,7 +290,6 @@ FAGX_RealInterval FTrackPropertiesBarrier::GetHingeRange() const
 {
 	return GetHingeRangeRange();
 }
-
 
 void FTrackPropertiesBarrier::SetOnInitializeMergeNodesToWheelsEnabled(bool bEnable)
 {

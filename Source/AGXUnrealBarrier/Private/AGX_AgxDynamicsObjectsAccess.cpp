@@ -362,7 +362,8 @@ agxVehicle::Track* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FTrackBarrier* B
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxVehicle::Track>(Barrier);
 }
 
-agxVehicle::TrackProperties* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FTrackPropertiesBarrier* Barrier)
+agxVehicle::TrackProperties* FAGX_AgxDynamicsObjectsAccess::GetFrom(
+	const FTrackPropertiesBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxVehicle::TrackProperties>(Barrier);
 }
@@ -371,7 +372,6 @@ agxVehicle::TrackWheel* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FTrackWheel
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxVehicle::TrackWheel>(Barrier);
 }
-
 
 // Namespace agxWire.
 
@@ -385,7 +385,8 @@ agxWire::Wire* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FWireBarrier* Barrie
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxWire::Wire>(Barrier);
 }
 
-agxWire::WireWinchController* FAGX_AgxDynamicsObjectsAccess::GetFrom(const FWireWinchBarrier* Barrier)
+agxWire::WireWinchController* FAGX_AgxDynamicsObjectsAccess::GetFrom(
+	const FWireWinchBarrier* Barrier)
 {
 	return AgxDynamicsObjectAccess_Helper::GetFrom<agxWire::WireWinchController>(Barrier);
 }

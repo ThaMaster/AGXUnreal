@@ -14,7 +14,7 @@ public:
 
 	TOptional<FAGX_ImportSettings> ToImportSettings();
 
-private:	
+private:
 	TSharedRef<SBorder> CreateSettingsGui();
 	TSharedRef<SBorder> CreateImportButtonGui();
 	TSharedRef<SBorder> CreateURDFFileGui();

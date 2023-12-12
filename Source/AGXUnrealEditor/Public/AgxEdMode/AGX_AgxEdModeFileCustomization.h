@@ -29,14 +29,14 @@ private:
 
 	template <typename Function>
 	void AddCustomButton(
-		IDetailCategoryBuilder& CategoryBuilder, const FText& ButtonText,
-		const FText& ToolTip, Function ButtonClickCallbackFunction);
+		IDetailCategoryBuilder& CategoryBuilder, const FText& ButtonText, const FText& ToolTip,
+		Function ButtonClickCallbackFunction);
 };
 
 template <typename Function>
 void FAGX_AgxEdModeFileCustomization::AddCustomButton(
-	IDetailCategoryBuilder& CategoryBuilder, const FText& ButtonText,
-	const FText& ToolTip, Function ButtonClickCallbackFunction)
+	IDetailCategoryBuilder& CategoryBuilder, const FText& ButtonText, const FText& ToolTip,
+	Function ButtonClickCallbackFunction)
 {
 	/** Create custom button */
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())

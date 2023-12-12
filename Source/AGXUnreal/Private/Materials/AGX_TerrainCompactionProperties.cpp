@@ -5,7 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_CustomVersion.h"
 
-
 void FAGX_TerrainCompactionProperties::Serialize(FArchive& Archive)
 {
 	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);

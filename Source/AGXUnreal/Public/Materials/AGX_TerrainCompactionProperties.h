@@ -30,7 +30,7 @@ public:
 	 * Sets the phi0 value of the bank state soil.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Compaction")
-	FAGX_Real BankStatePhi0 {2.0/3.0};
+	FAGX_Real BankStatePhi0 {2.0 / 3.0};
 
 	/**
 	 * Sets time relaxation for compaction.
@@ -98,7 +98,6 @@ public:
 	void Serialize(FArchive& Archive);
 
 private:
-
 	UPROPERTY()
 	FAGX_Real Phi0_DEPRECATED;
 

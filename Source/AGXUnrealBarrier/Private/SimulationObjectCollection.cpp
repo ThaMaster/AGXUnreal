@@ -126,7 +126,7 @@ const TArray<FTrimeshShapeBarrier>& FSimulationObjectCollection::GetTrimeshShape
 TArray<FAnyConstraintBarrier> FSimulationObjectCollection::CollectAllConstraints() const
 {
 	TArray<FAnyConstraintBarrier> AllConstraints;
-	auto AddConstraints =  [&AllConstraints](const auto& Constraints)
+	auto AddConstraints = [&AllConstraints](const auto& Constraints)
 	{
 		AllConstraints.Reserve(AllConstraints.Num() + Constraints.Num());
 		for (const auto& Constraint : Constraints)

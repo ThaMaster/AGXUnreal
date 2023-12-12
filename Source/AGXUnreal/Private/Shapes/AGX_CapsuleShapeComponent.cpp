@@ -225,7 +225,8 @@ void UAGX_CapsuleShapeComponent::PostInitProperties()
 
 	// Cannot use the UAGX_ShapeComponent Property Dispatcher because there are name collisions for
 	// Shape-specific UProperty names, for example Radius is in both Sphere and Cylinder.
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;

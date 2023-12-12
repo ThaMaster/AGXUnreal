@@ -28,14 +28,13 @@ struct AGXUNREAL_API FAGX_ShapeContactMergeSplitProperties : public FAGX_MergeSp
 	GENERATED_BODY()
 
 public:
-
 	UPROPERTY(EditAnywhere, Category = "AGX AMOR")
 	UAGX_ShapeContactMergeSplitThresholds* Thresholds = nullptr;
 
 	/**
-	* Must be called by the owning object at begin play (after the owning object has allocated a
-	* native AGX Dynamics object).
-	*/
+	 * Must be called by the owning object at begin play (after the owning object has allocated a
+	 * native AGX Dynamics object).
+	 */
 	void OnBeginPlay(UAGX_RigidBodyComponent& Owner);
 	void OnBeginPlay(UAGX_ShapeComponent& Owner);
 
@@ -83,7 +82,8 @@ private:
 };
 
 /**
- * This class acts as an API that exposes functions of FAGX_ShapeContactMergeSplitProperties in Blueprints.
+ * This class acts as an API that exposes functions of FAGX_ShapeContactMergeSplitProperties in
+ * Blueprints.
  */
 UCLASS()
 class AGXUNREAL_API UAGX_ShapeContactMergeSplitProperties_LF : public UBlueprintFunctionLibrary
@@ -91,7 +91,8 @@ class AGXUNREAL_API UAGX_ShapeContactMergeSplitProperties_LF : public UBlueprint
 	GENERATED_BODY()
 
 	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
-	static void SetEnableMerge(UPARAM(ref) FAGX_ShapeContactMergeSplitProperties& Properties, bool bEnable)
+	static void SetEnableMerge(
+		UPARAM(ref) FAGX_ShapeContactMergeSplitProperties& Properties, bool bEnable)
 	{
 		Properties.SetEnableMerge(bEnable);
 	}
@@ -103,7 +104,8 @@ class AGXUNREAL_API UAGX_ShapeContactMergeSplitProperties_LF : public UBlueprint
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
-	static void SetEnableSplit(UPARAM(ref) FAGX_ShapeContactMergeSplitProperties& Properties, bool bEnable)
+	static void SetEnableSplit(
+		UPARAM(ref) FAGX_ShapeContactMergeSplitProperties& Properties, bool bEnable)
 	{
 		Properties.SetEnableSplit(bEnable);
 	}

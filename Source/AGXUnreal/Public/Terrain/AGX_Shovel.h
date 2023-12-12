@@ -148,11 +148,14 @@ struct AGXUNREAL_API FAGX_Shovel
 	bool bOverrideContactRegionThreshold = false;
 
 	/**
-	 * The starting distance threshold from the shovel planes where regular geometry contacts between the
-	 * shovel underside and the terrain are allowed to be created [cm]. Contacts that are not past
-	 * the distance threshold will be filtered away.
-	 * The value of this property will not be used if OverrideContactRegionThreshold is false.
-	 * In that case AGX Dynamics automatically uses the value: CuttingEdgeLength/10.0.
+	 * The starting distance threshold from the shovel planes where regular
+	 * geometry contacts between the shovel underside and the terrain are
+	 * allowed to be created [cm].
+	 *
+	 * Contacts that are not past the distance threshold will be filtered away.
+	 * The value of this property will not be used if
+	 * OverrideContactRegionThreshold is false. In that case AGX Dynamics
+	 * automatically uses the value: CuttingEdgeLength/10.0.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Shovel",

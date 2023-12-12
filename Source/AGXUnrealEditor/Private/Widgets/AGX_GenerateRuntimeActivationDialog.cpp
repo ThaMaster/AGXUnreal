@@ -251,7 +251,7 @@ FReply SAGX_GenerateRuntimeActivationDialog::OnGenerateButtonClicked()
 
 	const int32 Id = FCString::Atoi(*LicenseId);
 	TOptional<FString> OutputFile = FAGX_Environment::GetInstance().GenerateRuntimeActivation(
-			Id, ActivationCode, ReferenceFilePath, LicenseDirPath);
+		Id, ActivationCode, ReferenceFilePath, LicenseDirPath);
 
 	if (!OutputFile.IsSet())
 	{

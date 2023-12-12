@@ -28,8 +28,7 @@ void AAGX_ContactMaterialRegistrarActor::Serialize(FArchive& Archive)
 	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
 
 	if (SpriteComponent == nullptr && RootComponent == nullptr &&
-		ShouldUpgradeTo(
-			Archive, FAGX_CustomVersion::TerrainCGDisablerCMRegistrarViewporIcons))
+		ShouldUpgradeTo(Archive, FAGX_CustomVersion::TerrainCGDisablerCMRegistrarViewporIcons))
 	{
 		SpriteComponent = CreateDefaultSubobject<UAGX_ContactMaterialRegistrarSpriteComponent>(
 			USceneComponent::GetDefaultSceneRootVariableName());

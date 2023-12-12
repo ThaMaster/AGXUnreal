@@ -193,7 +193,6 @@ void FAGX_ObjectUtilities::SetAnyComponentWorldTransform(
 #endif
 }
 
-
 void FAGX_ObjectUtilities::TruncateForDetailsPanel(double& Value)
 {
 	// See comment in header file.

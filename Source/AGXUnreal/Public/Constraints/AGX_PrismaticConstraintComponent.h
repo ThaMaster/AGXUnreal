@@ -15,7 +15,9 @@ class FPrismaticBarrier;
 /**
  * Locks all degrees of freedom except for translation along the Z-axis.
  */
-UCLASS(ClassGroup = "AGX_Constraint", Category = "AGX", Blueprintable, Meta = (BlueprintSpawnableComponent))
+UCLASS(
+	ClassGroup = "AGX_Constraint", Category = "AGX", Blueprintable,
+	Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_PrismaticConstraintComponent : public UAGX_Constraint1DofComponent
 {
 	GENERATED_BODY()

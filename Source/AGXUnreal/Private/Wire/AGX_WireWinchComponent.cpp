@@ -135,7 +135,8 @@ void UAGX_WireWinchComponent::PostInitProperties()
 	WireWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
 
 #if WITH_EDITOR
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;

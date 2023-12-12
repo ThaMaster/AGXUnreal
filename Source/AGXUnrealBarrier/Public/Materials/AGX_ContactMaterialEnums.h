@@ -129,7 +129,6 @@ enum class EAGX_ContactReductionMode : uint8
 	All
 };
 
-
 /**
  * Specifies the level of contact reduction used.
  */

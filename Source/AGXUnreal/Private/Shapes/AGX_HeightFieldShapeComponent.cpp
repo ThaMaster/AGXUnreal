@@ -16,7 +16,8 @@
 UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	HeightFieldBounds = CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("HeightFieldBounds"));
+	HeightFieldBounds =
+		CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("HeightFieldBounds"));
 }
 
 FShapeBarrier* UAGX_HeightFieldShapeComponent::GetNative()

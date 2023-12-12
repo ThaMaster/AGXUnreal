@@ -1,9 +1,8 @@
 // Copyright 2023, Algoryx Simulation AB.
 
 /*
-* Deprecated: see internal issue 739.
-*/
-
+ * Deprecated: see internal issue 739.
+ */
 
 #pragma once
 

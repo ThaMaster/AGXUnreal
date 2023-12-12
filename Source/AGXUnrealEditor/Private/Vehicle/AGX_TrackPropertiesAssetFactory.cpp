@@ -5,8 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Vehicle/AGX_TrackProperties.h"
 
-UAGX_TrackPropertiesFactory::UAGX_TrackPropertiesFactory(
-	const class FObjectInitializer& OBJ)
+UAGX_TrackPropertiesFactory::UAGX_TrackPropertiesFactory(const class FObjectInitializer& OBJ)
 	: Super(OBJ)
 {
 	SupportedClass = UAGX_TrackProperties::StaticClass();

@@ -66,8 +66,9 @@ public:
 	 * bottom when they time out.
 	 * The State parameter can be used to indicate success or failure etc.
 	 * The Duration parameter determines for how many seconds the Notificaion will be visible.
-	 * A Console Log is always printed with the same Text, as 'Error' if the State is set to Failure,
-	 * as 'Log' otherwise.
+	 * A Console Log is always printed with the same Text, as 'Error' if the State is set to
+	 * Failure, as 'Log' otherwise.
 	 */
-	static void ShowNotification(const FString& Text, SNotificationItem::ECompletionState State, float Duration = 5.f);
+	static void ShowNotification(
+		const FString& Text, SNotificationItem::ECompletionState State, float Duration = 5.f);
 };

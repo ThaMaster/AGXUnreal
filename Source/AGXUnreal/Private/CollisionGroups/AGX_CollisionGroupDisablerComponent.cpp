@@ -15,7 +15,6 @@
 #include "Engine/World.h"
 #include "UObject/UObjectIterator.h"
 
-
 namespace AGX_CollisionGroupDisabler_helpers
 {
 	template <typename T>

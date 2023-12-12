@@ -2,7 +2,6 @@
 
 #pragma once
 
-
 // Unreal Engine includes.
 #include "AssetTypeActions_Base.h"
 #include "AssetTypeCategories.h"

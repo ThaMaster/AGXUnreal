@@ -30,7 +30,8 @@ public:
 		const FTerrainBarrier& Terrain, TArray<FQuat>& OutRotations);
 
 	/**
-	 * Writes the position, rotation and radii of all particles known to the passed Terrain to OutParticleData.
+	 * Writes the position, rotation and radii of all particles known to the passed Terrain to
+	 * OutParticleData.
 	 */
 	static void AppendParticleData(const FTerrainBarrier& Terrain, FParticleData& OutParticleData);
 

@@ -8,13 +8,11 @@
 
 #include "AGX_ROS2Messages.generated.h"
 
-
 USTRUCT(BlueprintType)
 struct AGXCOMMON_API FAGX_ROS2Message
 {
 	GENERATED_BODY()
 };
-
 
 //
 // AgxMsgs
@@ -403,7 +401,6 @@ struct AGXCOMMON_API FAGX_StdMsgsHeader : public FAGX_ROS2Message
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX ROS2")
 	FString FrameId;
 };
-
 
 //
 // GeometryMsgs

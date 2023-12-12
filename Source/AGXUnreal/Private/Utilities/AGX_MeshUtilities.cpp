@@ -568,7 +568,8 @@ void AGX_MeshUtilities::MakeCylinder(
 	TArray<FVector3f>& Positions, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
 	TArray<FVector2f>& TexCoords, const CylinderConstructionData& Data)
 {
-	auto LogConstructionError = [](const FString& Msg) {
+	auto LogConstructionError = [](const FString& Msg)
+	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("AGX_MeshUtilities::MakeCylinder(): Invalid CylinderConstructionData: %s."), *Msg);
@@ -897,7 +898,8 @@ void AGX_MeshUtilities::MakeCapsule(
 	TArray<FVector3f>& Positions, TArray<FVector3f>& Normals, TArray<uint32>& Indices,
 	TArray<FVector2f>& TexCoords, const CapsuleConstructionData& Data)
 {
-	auto LogConstructionError = [](const FString& Msg) {
+	auto LogConstructionError = [](const FString& Msg)
+	{
 		UE_LOG(
 			LogAGX, Error,
 			TEXT("AGX_MeshUtilities::MakeCapsule(): Invalid CapsuleConstructionData: %s."), *Msg);
@@ -1808,68 +1810,70 @@ namespace AGX_MeshUtilities_helpers
 		OutPositions.Reserve(NumPositions);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		([&](FRHICommandListImmediate& RHICmdList) {
-			// Copy vertex buffer.
-			auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
-			const uint32 NumPositionBytes = PositionRHI->GetSize();
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-			FVector3f* PositionData = static_cast<FVector3f*>(
-				RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
-#else
-			FVector3f* PositionData = static_cast<FVector3f*>(
-				RHICmdList.LockBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
-#endif
-			for (uint32 I = 0; I < NumPositions; I++)
+		(
+			[&](FRHICommandListImmediate& RHICmdList)
 			{
-				OutPositions.Add(PositionData[I]);
-			}
+				// Copy vertex buffer.
+				auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
+				const uint32 NumPositionBytes = PositionRHI->GetSize();
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-			RHIUnlockVertexBuffer(PositionRHI);
+				FVector3f* PositionData = static_cast<FVector3f*>(
+					RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
 #else
-			RHICmdList.UnlockBuffer(PositionRHI);
+				FVector3f* PositionData = static_cast<FVector3f*>(
+					RHICmdList.LockBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
+#endif
+				for (uint32 I = 0; I < NumPositions; I++)
+				{
+					OutPositions.Add(PositionData[I]);
+				}
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				RHIUnlockVertexBuffer(PositionRHI);
+#else
+				RHICmdList.UnlockBuffer(PositionRHI);
 #endif
 
-			// Copy index buffer.
-			auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
-			if (IndexRHI->GetStride() == 2)
-			{
+				// Copy index buffer.
+				auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
+				if (IndexRHI->GetStride() == 2)
+				{
 				// Two byte index size.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-				uint16* IndexData = static_cast<uint16*>(
-					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+					uint16* IndexData = static_cast<uint16*>(
+						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 #else
-				uint16* IndexData = static_cast<uint16*>(
-					RHICmdList.LockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
+					uint16* IndexData = static_cast<uint16*>(
+						RHICmdList.LockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 #endif
-				for (uint32 i = 0; i < NumIndices; i++)
-				{
-					check(IndexData[i] < NumPositions);
-					OutIndices.Add(static_cast<uint32>(IndexData[i]));
+					for (uint32 i = 0; i < NumIndices; i++)
+					{
+						check(IndexData[i] < NumPositions);
+						OutIndices.Add(static_cast<uint32>(IndexData[i]));
+					}
 				}
-			}
-			else
-			{
-				// Four byte index size (stride must be either 2 or 4).
-				check(IndexRHI->GetStride() == 4);
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-				uint32* IndexData = static_cast<uint32*>(
-					RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-#else
-				uint32* IndexData = static_cast<uint32*>(
-					RHICmdList.LockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-#endif
-				for (uint32 i = 0; i < NumIndices; i++)
+				else
 				{
-					check(IndexData[i] < NumPositions);
-					OutIndices.Add(IndexData[i]);
-				}
-			}
+					// Four byte index size (stride must be either 2 or 4).
+					check(IndexRHI->GetStride() == 4);
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-			RHIUnlockIndexBuffer(IndexRHI);
+					uint32* IndexData = static_cast<uint32*>(
+						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 #else
-			RHICmdList.UnlockBuffer(IndexRHI);
+					uint32* IndexData = static_cast<uint32*>(
+						RHICmdList.LockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
 #endif
-		});
+					for (uint32 i = 0; i < NumIndices; i++)
+					{
+						check(IndexData[i] < NumPositions);
+						OutIndices.Add(IndexData[i]);
+					}
+				}
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				RHIUnlockIndexBuffer(IndexRHI);
+#else
+				RHICmdList.UnlockBuffer(IndexRHI);
+#endif
+			});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();
@@ -1942,63 +1946,65 @@ namespace AGX_MeshUtilities_helpers
 		RenderIndices.Reserve(NumIndices);
 
 		ENQUEUE_RENDER_COMMAND(FCopyMeshBuffers)
-		([&](FRHICommandListImmediate& RHICmdList) {
+		(
+			[&](FRHICommandListImmediate& RHICmdList)
+			{
 		// Copy position buffer.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-			FVector3f* PositionData = static_cast<FVector3f*>(
-				RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+				FVector3f* PositionData = static_cast<FVector3f*>(
+					RHILockVertexBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
 #else
-			FVector3f* PositionData = static_cast<FVector3f*>(
-				RHICmdList.LockBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
+				FVector3f* PositionData = static_cast<FVector3f*>(
+					RHICmdList.LockBuffer(PositionRhi, 0, PositionRhi->GetSize(), RLM_ReadOnly));
 #endif
-			for (uint32 i = 0; i < NumPositions; i++)
-			{
-				RenderPositions.Add(PositionData[i]);
-			}
+				for (uint32 i = 0; i < NumPositions; i++)
+				{
+					RenderPositions.Add(PositionData[i]);
+				}
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-			RHIUnlockVertexBuffer(PositionRhi);
+				RHIUnlockVertexBuffer(PositionRhi);
 #else
-			RHICmdList.UnlockBuffer(PositionRhi);
+				RHICmdList.UnlockBuffer(PositionRhi);
 #endif
 
-			// Copy index buffer.
-			if (IndexRhi->GetStride() == 2)
-			{
+				// Copy index buffer.
+				if (IndexRhi->GetStride() == 2)
+				{
 				// Two byte index size.
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-				uint16* IndexBufferData = static_cast<uint16*>(
-					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+					uint16* IndexBufferData = static_cast<uint16*>(
+						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #else
-				uint16* IndexBufferData = static_cast<uint16*>(
-					RHICmdList.LockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
+					uint16* IndexBufferData = static_cast<uint16*>(
+						RHICmdList.LockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #endif
-				for (int32 i = 0; i < NumIndices; i++)
-				{
-					RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+					for (int32 i = 0; i < NumIndices; i++)
+					{
+						RenderIndices.Add(static_cast<uint32>(IndexBufferData[i]));
+					}
 				}
-			}
-			else
-			{
-				// Four byte index size (stride must be either 2 or 4).
-				check(IndexRhi->GetStride() == 4);
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-				uint32* IndexData = static_cast<uint32*>(
-					RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-#else
-				uint32* IndexData = static_cast<uint32*>(
-					RHICmdList.LockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
-#endif
-				for (int32 i = 0; i < NumIndices; i++)
+				else
 				{
-					RenderIndices.Add(IndexData[i]);
-				}
-			}
+					// Four byte index size (stride must be either 2 or 4).
+					check(IndexRhi->GetStride() == 4);
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-			RHIUnlockIndexBuffer(IndexRhi);
+					uint32* IndexData = static_cast<uint32*>(
+						RHILockIndexBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #else
-			RHICmdList.UnlockBuffer(IndexRhi);
+					uint32* IndexData = static_cast<uint32*>(
+						RHICmdList.LockBuffer(IndexRhi, 0, IndexRhi->GetSize(), RLM_ReadOnly));
 #endif
-		});
+					for (int32 i = 0; i < NumIndices; i++)
+					{
+						RenderIndices.Add(IndexData[i]);
+					}
+				}
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+				RHIUnlockIndexBuffer(IndexRhi);
+#else
+				RHICmdList.UnlockBuffer(IndexRhi);
+#endif
+			});
 
 		// Wait for rendering thread to finish.
 		FlushRenderingCommands();

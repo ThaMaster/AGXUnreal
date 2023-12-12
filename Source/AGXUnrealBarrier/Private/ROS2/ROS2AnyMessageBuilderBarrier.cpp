@@ -8,7 +8,6 @@
 #include "ROS2/ROS2Conversions.h"
 #include "TypeConversions.h"
 
-
 FROS2AnyMessageBuilderBarrier::FROS2AnyMessageBuilderBarrier()
 {
 }

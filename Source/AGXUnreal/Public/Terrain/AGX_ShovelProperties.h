@@ -300,7 +300,8 @@ public:
 	 * or not.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
-	void SetExcavationCreateDynamicMassEnabled(EAGX_ExcavationMode InExcavationMode, bool bInEnabled);
+	void SetExcavationCreateDynamicMassEnabled(
+		EAGX_ExcavationMode InExcavationMode, bool bInEnabled);
 
 	/**
 	 * Whether the Shovel excavation mode associated with these settings should generate force

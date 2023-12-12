@@ -830,8 +830,7 @@ void FAGX_WireNodeDetails::UpdateValues()
 
 	if (bSelectionChanged)
 	{
-		RebuildRigidBodyComboBox_View(
-			Node.RigidBody.Name.ToString(), Node.RigidBody.OwningActor);
+		RebuildRigidBodyComboBox_View(Node.RigidBody.Name.ToString(), Node.RigidBody.OwningActor);
 	}
 
 	RigidBodyNameText = FText::FromName(Node.RigidBody.Name);

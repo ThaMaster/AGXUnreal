@@ -5,11 +5,9 @@
 // AGX Dynamics for Unreal includes.
 #include "PlayRecord/AGX_PlayRecord.h"
 
-
 #define LOCTEXT_NAMESPACE "FAGX_PlayRecordTypeActions"
 
-FAGX_PlayRecordTypeActions::FAGX_PlayRecordTypeActions(
-	EAssetTypeCategories::Type InAssetCategory)
+FAGX_PlayRecordTypeActions::FAGX_PlayRecordTypeActions(EAssetTypeCategories::Type InAssetCategory)
 	: AssetCategory(InAssetCategory)
 {
 }
@@ -31,8 +29,7 @@ FColor FAGX_PlayRecordTypeActions::GetTypeColor() const
 
 FText FAGX_PlayRecordTypeActions::GetAssetDescription(const FAssetData& AssetData) const
 {
-	return LOCTEXT(
-		"PlayRecordAssetDescription", "Can hold state information from a Simulation.");
+	return LOCTEXT("PlayRecordAssetDescription", "Can hold state information from a Simulation.");
 }
 
 UClass* FAGX_PlayRecordTypeActions::GetSupportedClass() const

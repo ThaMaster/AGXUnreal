@@ -8,11 +8,13 @@
 class FRigidBodyBarrier;
 class FShapeBarrier;
 
-class AGXUNREALBARRIER_API FShapeContactMergeSplitThresholdsBarrier : public FMergeSplitThresholdsBarrier
+class AGXUNREALBARRIER_API FShapeContactMergeSplitThresholdsBarrier
+	: public FMergeSplitThresholdsBarrier
 {
 public:
 	FShapeContactMergeSplitThresholdsBarrier();
-	FShapeContactMergeSplitThresholdsBarrier(FShapeContactMergeSplitThresholdsBarrier&& Other) = default;
+	FShapeContactMergeSplitThresholdsBarrier(FShapeContactMergeSplitThresholdsBarrier&& Other) =
+		default;
 	FShapeContactMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef>&& Native);
 	~FShapeContactMergeSplitThresholdsBarrier();
 
@@ -46,6 +48,7 @@ public:
 	static FShapeContactMergeSplitThresholdsBarrier CreateFrom(const FShapeBarrier& Barrier);
 
 private:
-	FShapeContactMergeSplitThresholdsBarrier(const FShapeContactMergeSplitThresholdsBarrier&) = delete;
+	FShapeContactMergeSplitThresholdsBarrier(const FShapeContactMergeSplitThresholdsBarrier&) =
+		delete;
 	void operator=(const FShapeContactMergeSplitThresholdsBarrier&) = delete;
 };

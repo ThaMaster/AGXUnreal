@@ -45,7 +45,7 @@ public:
 
 	void CreateNative(UAGX_WireComponent& Owner);
 
-		/*
+	/*
 	 * This struct is typically a member (UPROPERTY) of its owner, which is a
 	 * UAGX_WireComponent.
 	 * The barrier of this struct has a Native which is a pointer to a AGX

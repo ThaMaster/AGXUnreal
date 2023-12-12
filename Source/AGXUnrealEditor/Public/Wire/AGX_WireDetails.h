@@ -9,8 +9,6 @@
 #include "IDetailCustomization.h"
 #include "UObject/WeakObjectPtrTemplates.h"
 
-
-
 class FAGX_WireDetails : public IDetailCustomization
 {
 public:

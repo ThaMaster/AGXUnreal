@@ -20,7 +20,6 @@
 // Unreal Engine includes.
 #include "Misc/AssertionMacros.h"
 
-
 FShapeBarrier::FShapeBarrier()
 	: NativeRef {new FGeometryAndShapeRef}
 {

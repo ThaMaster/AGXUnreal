@@ -39,5 +39,6 @@ const FDistanceJointBarrier* UAGX_DistanceConstraintComponent::GetNativeDistance
 void UAGX_DistanceConstraintComponent::AllocateNative()
 {
 	FAGX_ConstraintUtilities::CreateNative(
-		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetLabelSafe(GetOwner()));
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(),
+		GetLabelSafe(GetOwner()));
 }

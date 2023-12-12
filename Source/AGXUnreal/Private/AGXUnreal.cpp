@@ -76,7 +76,6 @@ void FAGXUnrealModule::RegisterCoreRedirects()
 		ECoreRedirectFlags::Type_Class, TEXT("AGX_TerrainMaterialInstance"),
 		TEXT("AGX_TerrainMaterial"));
 
-
 	// The Shovel Refactor effort, the addition of Shovel Component, also introduced
 	// FAGX_ComponentReference and replaced the FAGX_RigidBodyComponentReference and
 	// FAGX_SceneComponentReference implementations with ones based on the new reference class. For
@@ -109,7 +108,6 @@ void FAGXUnrealModule::RegisterCoreRedirects()
 	Redirects.Emplace(
 		ECoreRedirectFlags::Type_Property, TEXT("AGX_Shovel.bOverrideBottomContactThreshold"),
 		TEXT("bOverrideContactRegionThreshold"));
-
 
 	FCoreRedirects::AddRedirectList(Redirects, TEXT("AGXUnreal"));
 }

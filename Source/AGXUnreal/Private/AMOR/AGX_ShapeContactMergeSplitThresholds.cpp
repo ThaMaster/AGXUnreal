@@ -153,7 +153,8 @@ bool UAGX_ShapeContactMergeSplitThresholds::GetMaySplitInGravityField() const
 
 void UAGX_ShapeContactMergeSplitThresholds::SetSplitOnLogicalImpact(bool bInSplitOnLogicalImpact)
 {
-	AGX_ASSET_SETTER_IMPL_VALUE(bSplitOnLogicalImpact, bInSplitOnLogicalImpact, SetSplitOnLogicalImpact);
+	AGX_ASSET_SETTER_IMPL_VALUE(
+		bSplitOnLogicalImpact, bInSplitOnLogicalImpact, SetSplitOnLogicalImpact);
 }
 
 bool UAGX_ShapeContactMergeSplitThresholds::GetSplitOnLogicalImpact() const
@@ -387,7 +388,8 @@ bool UAGX_ShapeContactMergeSplitThresholds::IsInstance() const
 
 void UAGX_ShapeContactMergeSplitThresholds::CopyFrom(const FMergeSplitThresholdsBarrier& Barrier)
 {
-	const auto ScMstBarrier = static_cast<const FShapeContactMergeSplitThresholdsBarrier*>(&Barrier);
+	const auto ScMstBarrier =
+		static_cast<const FShapeContactMergeSplitThresholdsBarrier*>(&Barrier);
 	MaxImpactSpeed = ScMstBarrier->GetMaxImpactSpeed();
 	MaxRelativeNormalSpeed = ScMstBarrier->GetMaxRelativeNormalSpeed();
 	MaxRelativeTangentSpeed = ScMstBarrier->GetMaxRelativeTangentSpeed();

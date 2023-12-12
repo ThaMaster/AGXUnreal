@@ -132,7 +132,6 @@ public:
 		USceneComponent& Component, const FTransform& Transform,
 		bool ForceOverwriteInstances = false);
 
-
 	/**
 	 * Unreal Engine, at least Unreal Engine 5.0, uses a string-based communication protocol between
 	 * the Details panel and the actual objects. For floating-point values the value-to-string

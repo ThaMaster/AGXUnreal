@@ -61,7 +61,8 @@ public:
 
 	static void StoreElectricMotorController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintElectricMotorController*>& Instances, bool ForceOverwriteInstances);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintElectricMotorController*>& Instances,
+		bool ForceOverwriteInstances);
 
 	static void StoreFrictionController(
 		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
@@ -69,7 +70,8 @@ public:
 
 	static void StoreFrictionController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintFrictionController*>& Instances, bool ForceOverwriteInstances);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintFrictionController*>& Instances,
+		bool ForceOverwriteInstances);
 
 	static void StoreLockController(
 		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
@@ -77,7 +79,8 @@ public:
 
 	static void StoreLockController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintLockController*>& Instances, bool ForceOverwriteInstances);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintLockController*>& Instances,
+		bool ForceOverwriteInstances);
 
 	static void StoreRangeController(
 		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
@@ -85,7 +88,8 @@ public:
 
 	static void StoreRangeController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintRangeController*>& Instances, bool ForceOverwriteInstances);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintRangeController*>& Instances,
+		bool ForceOverwriteInstances);
 
 	static void StoreTargetSpeedController(
 		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
@@ -93,7 +97,8 @@ public:
 
 	static void StoreTargetSpeedController(
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller,
-		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintTargetSpeedController*>& Instances, bool ForceOverwriteInstances);
+		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintTargetSpeedController*>& Instances,
+		bool ForceOverwriteInstances);
 
 #if WITH_EDITOR
 	template <typename UConstraintClass, typename FControllerClass>

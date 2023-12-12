@@ -50,8 +50,8 @@ namespace
 			const float TotalLength = ArrowSize;
 			const float HeadLength = TotalLength * ARROW_HEAD_FACTOR;
 			const float ShaftRadius = TotalLength * ARROW_RADIUS_FACTOR;
-			const float ShaftLength =
-				(TotalLength - HeadLength * 0.8f); // 0.8 instead of 1.0 for a little overlap with head
+			 // 0.8 instead of 1.0 for a little overlap with head.
+			const float ShaftLength = (TotalLength - HeadLength * 0.8f);
 			const FVector3f ShaftCenter(0.5f * ShaftLength, 0, 0);
 
 			TArray<FDynamicMeshVertex> OutVerts;

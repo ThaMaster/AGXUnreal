@@ -40,7 +40,8 @@ agxTerrain::TerrainDataSource::TerrainHeightType FTerrainDataSource::fetchTerrai
 	return HeightsAGX;
 }
 
-void FTerrainDataSource::SetTerrainHeightFetcher(FTerrainHeightFetcherBase* InHeightFetcher) noexcept
+void FTerrainDataSource::SetTerrainHeightFetcher(
+	FTerrainHeightFetcherBase* InHeightFetcher) noexcept
 {
 	HeightFetcher = InHeightFetcher;
 }

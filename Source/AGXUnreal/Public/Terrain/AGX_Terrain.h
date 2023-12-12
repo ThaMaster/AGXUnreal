@@ -380,14 +380,13 @@ private:
 	friend class FAGX_TerrainHeightFetcher;
 
 private:
-
 	/**
-	* Even if Terrain paging is enabled, and this Terrain has a NativeTerrainPagerBarrier, it will
-	* also have a regular NativeBarrier agx::Terrain that will in that case be used as a template
-	* Terrain for the terrain Pager. Setting properties on this template Terrain and then calling
-	* OnTemplateTerrainChanged on the Terrain pager barrier will update current and future tiles
-	* in it.
-	*/
+	 * Even if Terrain paging is enabled, and this Terrain has a NativeTerrainPagerBarrier, it will
+	 * also have a regular NativeBarrier agx::Terrain that will in that case be used as a template
+	 * Terrain for the terrain Pager. Setting properties on this template Terrain and then calling
+	 * OnTemplateTerrainChanged on the Terrain pager barrier will update current and future tiles
+	 * in it.
+	 */
 	FTerrainBarrier NativeBarrier;
 	FTerrainPagerBarrier NativeTerrainPagerBarrier;
 	FAGX_TerrainHeightFetcher HeightFetcher;

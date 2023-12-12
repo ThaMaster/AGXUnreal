@@ -5,7 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 
-
 #define LOCTEXT_NAMESPACE "FAGX_ShapeContactMergeSplitThresholdsTypeActions"
 
 FAGX_ShapeContactMergeSplitThresholdsTypeActions::FAGX_ShapeContactMergeSplitThresholdsTypeActions(
@@ -29,10 +28,10 @@ FColor FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetTypeColor() const
 	return FColor(255, 115, 0);
 }
 
-FText FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetAssetDescription(const FAssetData& AssetData) const
+FText FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetAssetDescription(
+	const FAssetData& AssetData) const
 {
-	return LOCTEXT(
-		"AssetDescription", "Defines merge split (AMOR) thresholds for shape contacts.");
+	return LOCTEXT("AssetDescription", "Defines merge split (AMOR) thresholds for shape contacts.");
 }
 
 UClass* FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetSupportedClass() const

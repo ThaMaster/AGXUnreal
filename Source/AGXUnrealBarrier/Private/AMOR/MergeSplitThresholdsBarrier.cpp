@@ -2,19 +2,18 @@
 
 #include "AMOR/MergeSplitThresholdsBarrier.h"
 
-
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGXRefs.h"
 #include "TypeConversions.h"
-
 
 FMergeSplitThresholdsBarrier::FMergeSplitThresholdsBarrier()
 	: NativeRef {new FMergeSplitThresholdsRef}
 {
 }
 
-FMergeSplitThresholdsBarrier::FMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef>&& Native)
+FMergeSplitThresholdsBarrier::FMergeSplitThresholdsBarrier(
+	std::unique_ptr<FMergeSplitThresholdsRef>&& Native)
 	: NativeRef(std::move(Native))
 {
 }

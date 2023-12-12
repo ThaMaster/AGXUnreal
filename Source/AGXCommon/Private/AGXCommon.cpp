@@ -4,7 +4,6 @@
 
 #define LOCTEXT_NAMESPACE "FAGXCommonModule"
 
-
 void FAGXCommonModule::StartupModule()
 {
 }

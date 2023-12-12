@@ -136,14 +136,14 @@ public:
 	 */
 	static UActorComponent* GetTemplateComponentAttachParent(UActorComponent* ComponentTemplate);
 
-		/**
-		 * Makes Node a child of NewParent. If PreserveWorldTransform is set to true and the Node's
-		 * TemplateComponent is a USceneComponent, it's world transform will be preserved, i.e. it's
-		 * relative transform may change.
-		 */
-		static void ReParentNode(
-			UBlueprint& Blueprint, USCS_Node& Node, USCS_Node& NewParent,
-			bool PreserveWorldTransform = true);
+	/**
+	 * Makes Node a child of NewParent. If PreserveWorldTransform is set to true and the Node's
+	 * TemplateComponent is a USceneComponent, it's world transform will be preserved, i.e. it's
+	 * relative transform may change.
+	 */
+	static void ReParentNode(
+		UBlueprint& Blueprint, USCS_Node& Node, USCS_Node& NewParent,
+		bool PreserveWorldTransform = true);
 
 	/**
 	 * Searches through the node tree and returns the first Template Component matching the given

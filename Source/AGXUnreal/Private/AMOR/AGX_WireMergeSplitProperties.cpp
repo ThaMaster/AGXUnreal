@@ -9,7 +9,6 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 
-
 void FAGX_WireMergeSplitProperties::OnBeginPlay(UAGX_WireComponent& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
@@ -52,7 +51,7 @@ void FAGX_WireMergeSplitProperties::CreateNative(UAGX_WireComponent& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
 	AGX_CHECK(!HasNative());
-	
+
 	NativeBarrier.AllocateNative(*Owner.GetNative());
 }
 

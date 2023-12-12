@@ -5,7 +5,6 @@
 // Unreal Engine includes.
 #include "Engine/World.h"
 
-
 void UAGX_MaterialBase::CopyShapeMaterialProperties(const UAGX_MaterialBase* Source)
 {
 	if (Source)

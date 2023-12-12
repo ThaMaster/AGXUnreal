@@ -13,7 +13,6 @@
 // Unreal Engine includes.
 #include "Misc/Guid.h"
 
-
 FString FTestUtilities::ConvertToAGXUuidStr(const FGuid& Guid)
 {
 	agx::Uuid UuidAGX = Convert(Guid);

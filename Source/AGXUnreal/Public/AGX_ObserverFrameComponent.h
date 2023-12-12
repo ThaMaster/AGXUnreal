@@ -14,7 +14,6 @@ class AGXUNREAL_API UAGX_ObserverFrameComponent : public USceneComponent
 	GENERATED_BODY()
 
 public:
-
 	/*
 	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
 	 * Should never be assigned manually.

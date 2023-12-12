@@ -67,7 +67,7 @@ namespace AGX_PlayRecordComponent_helpers
 				Cast<UAGX_Constraint2DofComponent>(&Constraint))
 		{
 			Constraint2Dof->LockController1.SetEnable(true);
-			Constraint2Dof->LockController2.SetEnable(true);			
+			Constraint2Dof->LockController2.SetEnable(true);
 			Constraint2Dof->ElectricMotorController1.SetEnable(false);
 			Constraint2Dof->ElectricMotorController2.SetEnable(false);
 			Constraint2Dof->FrictionController1.SetEnable(false);
@@ -189,7 +189,7 @@ void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
 				TEXT("'%s' found nullptr Constraint in PlayBackConstraintPositions. Constraint "
 					 "position playback may not give the wanted result."),
 				*GetName());
-			continue;;
+			continue;
 		}
 
 		if (UAGX_Constraint1DofComponent* Constraint1Dof =

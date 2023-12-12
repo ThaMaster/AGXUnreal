@@ -22,7 +22,7 @@ public:
 	AAGX_ContactMaterialRegistrarActor();
 
 	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)
-	UAGX_ContactMaterialRegistrarSpriteComponent* SpriteComponent;	
+	UAGX_ContactMaterialRegistrarSpriteComponent* SpriteComponent;
 
 	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)
 	UAGX_ContactMaterialRegistrarComponent* ContactMaterialRegistrarComponent;

@@ -17,7 +17,7 @@ bool FTypeConversionGuidTest::RunTest(const FString& Parameters)
 {
 	// Starting from a randomly generated FGuid, convert to a agx Uuid and back to an Unreal FGuid
 	// again. Their string representations should always match.
-	// 
+	//
 	// Unfortunately, we cannot include the TypeConversions.h directly from the AGXUnrealTest module
 	// since it includes AGX Dynamics headers. Instead, we need to use the FTestUtilities which
 	// itself calls into the TypeConversions functions needed.

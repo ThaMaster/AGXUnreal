@@ -59,7 +59,8 @@ public:
 
 	// Let's hope -1 is never used for a valid angle type.
 	// TODO: Find a better way than forcing a made-up enum value into an agx::Angle::Type.
-	static /*constexpr*/ const agx::Angle::Type InvalidAngleType = static_cast<agx::Angle::Type>(-1);
+	static /*constexpr*/ const agx::Angle::Type InvalidAngleType =
+		static_cast<agx::Angle::Type>(-1);
 
 	static agx::Angle::Type GetDofType(const agx::Motor1D* Motor);
 };
