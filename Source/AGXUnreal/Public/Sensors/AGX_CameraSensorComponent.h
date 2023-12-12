@@ -27,8 +27,13 @@ public:
 	/**
 	 * Field of View (FOV) of the Camera Sensor [deg].
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Camera", meta = (ClampMin = "0.0", ClampMax = "120.0"))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Camera",
+		meta = (ClampMin = "0.0", ClampMax = "120.0"))
 	float FOV {90.f};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
+	void SetFOV(float InFOV);
 
 	/**
 	 * Output resolution of the Camera Sensor [pixels].
@@ -55,6 +60,7 @@ public:
 #if WITH_EDITOR
 	virtual bool CanEditChange(const FProperty* InProperty) const override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	virtual void PostInitProperties() override;
 #endif
 	//~ End UObject Interface
 

@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -14,6 +15,14 @@
 UAGX_CameraSensorComponent::UAGX_CameraSensorComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+}
+
+void UAGX_CameraSensorComponent::SetFOV(float InFOV)
+{
+	if (CaptureComponent2D != nullptr)
+		CaptureComponent2D->FOVAngle = InFOV;
+
+	FOV = InFOV;
 }
 
 void UAGX_CameraSensorComponent::BeginPlay()
@@ -69,8 +78,30 @@ bool UAGX_CameraSensorComponent::CanEditChange(const FProperty* InProperty) cons
 
 void UAGX_CameraSensorComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
 	Super::PostEditChangeChainProperty(Event);
 }
+
+void UAGX_CameraSensorComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_CameraSensorComponent, FOV),
+		[](ThisClass* This) { This->SetFOV(This->FOV); });
+}
+
 #endif
 
 void UAGX_CameraSensorComponent::Init()
