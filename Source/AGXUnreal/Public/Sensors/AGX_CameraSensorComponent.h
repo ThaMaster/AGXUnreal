@@ -28,7 +28,7 @@ public:
 	 * Field of View (FOV) of the Camera Sensor [deg].
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Camera", meta = (ClampMin = "0.0", ClampMax = "120.0"))
-	float FOV {90.0};
+	float FOV {90.f};
 
 	/**
 	 * Output resolution of the Camera Sensor [pixels].
@@ -36,7 +36,7 @@ public:
 	 * Note: using a large resolution will come with a performance hit.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Camera", meta = (ClampMin = "0.0"))
-	FVector2D Resolution {256, 256};
+	FVector2D Resolution {256.0, 256.0};
 
 	/**
 	 * Render Target used by the Camera Sensor to write pixel data to.
