@@ -30,7 +30,7 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Camera",
-		meta = (ClampMin = "0.0", ClampMax = "120.0"))
+		meta = (ClampMin = "0.0", ClampMax = "170.0"))
 	float FOV {90.f};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Camera")

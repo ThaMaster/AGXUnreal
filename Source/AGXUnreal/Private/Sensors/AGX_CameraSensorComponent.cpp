@@ -23,6 +23,9 @@ UAGX_CameraSensorComponent::UAGX_CameraSensorComponent()
 
 void UAGX_CameraSensorComponent::SetFOV(float InFOV)
 {
+	if (InFOV < KINDA_SMALL_NUMBER || InFOV > 170.f)
+		return;
+
 	if (CaptureComponent2D != nullptr)
 		CaptureComponent2D->FOVAngle = InFOV;
 
@@ -204,7 +207,7 @@ void UAGX_CameraSensorComponent::InitCaptureComponent()
 
 bool UAGX_CameraSensorComponent::CheckValid() const
 {
-	if (FOV <= KINDA_SMALL_NUMBER)
+	if (FOV <= KINDA_SMALL_NUMBER || FOV > 170.f)
 	{
 		const FString Msg = FString::Printf(
 			TEXT(
