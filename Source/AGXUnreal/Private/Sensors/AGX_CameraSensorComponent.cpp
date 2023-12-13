@@ -92,16 +92,9 @@ TArray<FColor> UAGX_CameraSensorComponent::GetImagePixels() const
 		return TArray<FColor>();
 	}
 
-	const auto startTime = std::chrono::high_resolution_clock::now();
-
 	FTextureRenderTargetResource* RtResource = RenderTarget->GameThread_GetRenderTargetResource();
 	TArray<FColor> PixelData;
 	RtResource->ReadPixels(PixelData);
-
-	const auto stopTime = std::chrono::high_resolution_clock::now();
-	const int mills = static_cast<int>(
-		std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
-	UE_LOG(LogTemp, Warning, TEXT("Milliseconds: %d"), mills);
 	return PixelData;
 }
 
