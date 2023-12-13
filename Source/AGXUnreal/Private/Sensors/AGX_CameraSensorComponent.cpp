@@ -5,12 +5,14 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "AGX_Simulation.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Engine/World.h"
 
 UAGX_CameraSensorComponent::UAGX_CameraSensorComponent()
 {
@@ -23,6 +25,84 @@ void UAGX_CameraSensorComponent::SetFOV(float InFOV)
 		CaptureComponent2D->FOVAngle = InFOV;
 
 	FOV = InFOV;
+}
+
+FAGX_SensorMsgsImage UAGX_CameraSensorComponent::GetImageROS2(bool Grayscale) const
+{
+	const TArray<FColor> Pixels = GetImagePixels();
+	if (Pixels.Num() == 0)
+		return FAGX_SensorMsgsImage();
+
+	const int32 SizeX = RenderTarget->SizeX;
+	const int32 SizeY = RenderTarget->SizeY;
+	FAGX_SensorMsgsImage Image;
+
+	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+	{
+		const float TimeStamp = Sim->GetTimeStamp();
+		Image.Header.Stamp.Sec = static_cast<int32>(TimeStamp);
+		float Unused;
+		Image.Header.Stamp.Nanosec = static_cast<int32>(FMath::Modf(TimeStamp, &Unused) * 1.0E9f);
+	}
+
+	Image.Height = static_cast<int64>(RenderTarget->SizeY);
+	Image.Width = static_cast<int64>(RenderTarget->SizeX);
+
+	if (Grayscale)
+	{
+		Image.Step = SizeY * sizeof(uint8);
+		Image.Encoding = TEXT("mono8");
+		Image.Data.Reserve(Pixels.Num());
+		for (const auto& Color : Pixels)
+		{
+			const uint16 Sum = static_cast<uint16>(Color.R) + static_cast<uint16>(Color.G) +
+							   static_cast<uint16>(Color.B);
+			Image.Data.Add(static_cast<uint8>(Sum / 3));
+		}
+	}
+	else
+	{
+		Image.Step = SizeY * sizeof(uint8) * 3;
+		Image.Encoding = TEXT("rgb8");
+		Image.Data.Reserve(Pixels.Num() * 3);
+		for (const auto& Color : Pixels)
+		{
+			Image.Data.Add(Color.R);
+			Image.Data.Add(Color.G);
+			Image.Data.Add(Color.B);
+		}
+	}
+
+	return Image;
+}
+
+TArray<FColor> UAGX_CameraSensorComponent::GetImagePixels() const
+{
+	if (!bIsValid || RenderTarget == nullptr)
+		return TArray<FColor>();
+
+	if (RenderTarget->GetFormat() != EPixelFormat::PF_B8G8R8A8)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("GetImagePixels on Camera Sensor '%s' in Actor '%s' was called with a "
+				 "RenderTarget of invalid format. The format should be RGBA8. Use the 'Generate "
+				 "Runtime Assets' button in the Details Panel to generate a valid RenderTarget."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return TArray<FColor>();
+	}
+
+	const auto startTime = std::chrono::high_resolution_clock::now();
+
+	FTextureRenderTargetResource* RtResource = RenderTarget->GameThread_GetRenderTargetResource();
+	TArray<FColor> PixelData;
+	RtResource->ReadPixels(PixelData);
+
+	const auto stopTime = std::chrono::high_resolution_clock::now();
+	const int mills = static_cast<int>(
+		std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
+	UE_LOG(LogTemp, Warning, TEXT("Milliseconds: %d"), mills);
+	return PixelData;
 }
 
 void UAGX_CameraSensorComponent::BeginPlay()

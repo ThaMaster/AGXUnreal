@@ -8,6 +8,7 @@
 
 class USceneCaptureComponent2D;
 class UTextureRenderTarget2D;
+struct FAGX_SensorMsgsImage;
 
 #include "AGX_CameraSensorComponent.generated.h"
 
@@ -32,7 +33,7 @@ public:
 		meta = (ClampMin = "0.0", ClampMax = "120.0"))
 	float FOV {90.f};
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
+	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
 	void SetFOV(float InFOV);
 
 	/**
@@ -50,6 +51,20 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Camera")
 	UTextureRenderTarget2D* RenderTarget {nullptr};
+
+	/**
+	 * Returns the current frame as seen by this Camera Sensor as a ROS2 sensor_msgs::Image message.
+	 * If Grayscale is set to true, only a single value (average intensity) for each pixel is
+	 * set.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
+	FAGX_SensorMsgsImage GetImageROS2(bool Grayscale = false) const;
+
+	/**
+	 * Returns the current frame as seen by this Camera Sensor as an array of 8-bit RGB pixels.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
+	TArray<FColor> GetImagePixels() const;
 
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
