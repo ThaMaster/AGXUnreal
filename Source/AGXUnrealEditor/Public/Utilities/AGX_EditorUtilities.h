@@ -328,6 +328,10 @@ public:
 		const FString& DialogTitle, const FString& FileTypes, const FString& DefaultFile = "",
 		const FString& InStartDir = "");
 
+	static FString SelectNewAssetDialog(
+		UClass* SavedClass, const FString& InDefaultPath, const FString& AssetNameSuggestion,
+		const FString& DialogTitle);
+
 	static const ISlateStyle& GetStyle()
 	{
 #if UE_VERSION_OLDER_THAN(5, 1, 0)

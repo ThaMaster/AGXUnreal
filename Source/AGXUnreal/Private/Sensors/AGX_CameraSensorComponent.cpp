@@ -244,6 +244,16 @@ bool UAGX_CameraSensorComponent::CheckValid() const
 		FAGX_NotificationUtilities::ShowNotification(Msg, SNotificationItem::CS_Fail);
 		return false;
 	}
+	else if (RenderTarget->SizeX != Resolution.X || RenderTarget->SizeY != Resolution.Y)
+	{
+		const FString Msg = FString::Printf(
+			TEXT("Camera Sensor '%s' in Actor '%s' expected to have a RenderTarget with the resolution [%s] but it was [%d %d]."
+				 "Use the 'Generate Runtime Assets' button in the Details Panel to generate a valid RenderTarget."),
+			*GetName(), *GetLabelSafe(GetOwner()), *Resolution.ToString(), RenderTarget->SizeX,
+			RenderTarget->SizeY);
+		FAGX_NotificationUtilities::ShowNotification(Msg, SNotificationItem::CS_Fail);
+		return false;
+	}
 
 	if (CaptureComponent2D == nullptr)
 	{
