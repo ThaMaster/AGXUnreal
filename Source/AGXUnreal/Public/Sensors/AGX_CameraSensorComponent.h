@@ -41,8 +41,8 @@ public:
 	 * The first element is the horizontal resolution, and the second vertical resolution.
 	 * Note: using a large resolution will come with a performance hit.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Camera", meta = (ClampMin = "0.0"))
-	FVector2D Resolution {256.0, 256.0};
+	UPROPERTY(EditAnywhere, Category = "AGX Camera", meta = (ClampMin = "1"))
+	FIntPoint Resolution {256, 256};
 
 	/**
 	 * Render Target used by the Camera Sensor to write pixel data to.

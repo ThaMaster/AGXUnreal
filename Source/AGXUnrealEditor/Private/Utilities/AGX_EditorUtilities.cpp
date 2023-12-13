@@ -33,6 +33,7 @@
 #include "AssetDeleteModel.h"
 #include "AssetToolsModule.h"
 #include "Containers/Ticker.h"
+#include "ContentBrowserModule.h"
 #include "DesktopPlatformModule.h"
 #include "Editor.h"
 #include "EditorStyleSet.h"
@@ -44,6 +45,7 @@
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/FileManager.h"
+#include "IContentBrowserSingleton.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/Char.h"
 #include "Misc/EngineVersionComparison.h"
@@ -1269,6 +1271,36 @@ FString FAGX_EditorUtilities::SelectNewFileDialog(
 	}
 
 	return FPaths::ConvertRelativePathToFull(Filename);
+}
+
+FString FAGX_EditorUtilities::SelectNewAssetDialog(
+	UClass* SavedClass, const FString& InDefaultPath, const FString& AssetNameSuggestion,
+	const FString& DialogTitle)
+{
+	if (SavedClass == nullptr)
+		return "";
+
+	const FString DefaultPath =
+		InDefaultPath.IsEmpty() ? FString("/Game/PointCloud") : InDefaultPath;
+
+	FSaveAssetDialogConfig SaveAssetDialogConfig;
+	{
+		SaveAssetDialogConfig.DefaultPath = DefaultPath;
+		SaveAssetDialogConfig.DefaultAssetName = AssetNameSuggestion;
+		SaveAssetDialogConfig.AssetClassNames.Add(SavedClass->GetClassPathName());
+		SaveAssetDialogConfig.ExistingAssetPolicy = ESaveAssetDialogExistingAssetPolicy::Disallow;
+		SaveAssetDialogConfig.DialogTitleOverride = FText::FromString(DialogTitle);
+	}
+
+	FContentBrowserModule& ContentBrowserModule =
+		FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
+	FString SaveObjectPath =
+		ContentBrowserModule.Get().CreateModalSaveAssetDialog(SaveAssetDialogConfig);
+
+	if (SaveObjectPath.IsEmpty())
+		return "";
+
+	return FPackageName::ObjectPathToPackageName(SaveObjectPath);
 }
 
 void FAGX_EditorUtilities::SaveAndCompile(UBlueprint& Blueprint)

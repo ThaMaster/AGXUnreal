@@ -7,6 +7,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
+#include "ROS2/AGX_ROS2Messages.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -213,11 +214,11 @@ bool UAGX_CameraSensorComponent::CheckValid() const
 		return false;
 	}
 
-	if (Resolution.X <= KINDA_SMALL_NUMBER || Resolution.Y <= KINDA_SMALL_NUMBER)
+	if (Resolution.X <= 0 || Resolution.Y <= 0)
 	{
 		const FString Msg = FString::Printf(
 			TEXT("Camera Sensor '%s' in Actor '%s' has an invalid Resolution: [%s]. Please set a "
-				 "valid FOV."),
+				 "valid Resolution."),
 			*GetName(), *GetLabelSafe(GetOwner()), *Resolution.ToString());
 		FAGX_NotificationUtilities::ShowNotification(Msg, SNotificationItem::CS_Fail);
 		return false;
@@ -229,6 +230,16 @@ bool UAGX_CameraSensorComponent::CheckValid() const
 			TEXT("Camera Sensor '%s' in Actor '%s' does not have a RenderTarget assigned to it. "
 				 "Use the 'Generate Runtime Assets' button in the Details Panel to generate a "
 				 "valid RenderTarget."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		FAGX_NotificationUtilities::ShowNotification(Msg, SNotificationItem::CS_Fail);
+		return false;
+	}
+	else if (RenderTarget->GetFormat() != EPixelFormat::PF_B8G8R8A8)
+	{
+		const FString Msg = FString::Printf(
+			TEXT("Camera Sensor '%s' in Actor '%s' has a RenderTarget with an unsupported pixel "
+				 "format. The pixel format should be RGBA8. Use the 'Generate Runtime Assets' "
+				 "button in the Details Panel to generate a valid RenderTarget."),
 			*GetName(), *GetLabelSafe(GetOwner()));
 		FAGX_NotificationUtilities::ShowNotification(Msg, SNotificationItem::CS_Fail);
 		return false;
