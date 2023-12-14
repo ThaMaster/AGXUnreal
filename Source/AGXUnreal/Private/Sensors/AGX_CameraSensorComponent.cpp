@@ -16,6 +16,8 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Engine/World.h"
+#include "TextureResource.h"
+
 
 UAGX_CameraSensorComponent::UAGX_CameraSensorComponent()
 {
