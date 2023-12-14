@@ -261,12 +261,12 @@ public class AGXDynamicsLibrary : ModuleRules
 			{
 				RuntimeLibFiles.Add("agx-assimp-vc*-mt", LibSource.AGX);
 			}
-            if (TargetAGXVersion.IsOlderThan(2, 31, 1, 0))
-            {
+			if (TargetAGXVersion.IsOlderThan(2, 31, 1, 0))
+			{
 				RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
 			}
 
-            RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
+			RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
 			if (TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{

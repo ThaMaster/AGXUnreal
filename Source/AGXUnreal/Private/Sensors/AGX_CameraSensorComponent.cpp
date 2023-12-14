@@ -9,6 +9,7 @@
 #include "AGX_Simulation.h"
 #include "ROS2/AGX_ROS2Messages.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_ROS2Utilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
@@ -18,12 +19,12 @@
 
 UAGX_CameraSensorComponent::UAGX_CameraSensorComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 void UAGX_CameraSensorComponent::SetFOV(float InFOV)
 {
-	if (InFOV < KINDA_SMALL_NUMBER || InFOV > 170.f)
+	if (!IsFovValid(InFOV))
 		return;
 
 	if (CaptureComponent2D != nullptr)
@@ -32,53 +33,77 @@ void UAGX_CameraSensorComponent::SetFOV(float InFOV)
 	FOV = InFOV;
 }
 
-FAGX_SensorMsgsImage UAGX_CameraSensorComponent::GetImageROS2(bool Grayscale) const
+namespace AGX_CameraSensorComponent_helpers
 {
-	const TArray<FColor> Pixels = GetImagePixels();
-	if (Pixels.Num() == 0)
-		return FAGX_SensorMsgsImage();
+	void GetImageAsync(
+		UTextureRenderTarget2D* RenderTarget,
+		TSharedPtr<UAGX_CameraSensorComponent::FAGX_ImageBuffer> OutImg,
+		FOnNewImagePixels& ImagePixelDelegate, FOnNewImageROS2& ImageROS2Delegate,
+		const FIntPoint& Resolution, float TimeStamp, bool AsROS2Msg, bool Grayscale)
+	{
+		if (RenderTarget == nullptr || OutImg == nullptr)
+			return;
 
-	const int32 SizeX = RenderTarget->SizeX;
-	const int32 SizeY = RenderTarget->SizeY;
-	FAGX_SensorMsgsImage Image;
+		const FIntRect Rectangle(0, 0, RenderTarget->SizeX, RenderTarget->SizeY);
 
+		// Read the render target surface data back.
+		struct FReadSurfaceContext
+		{
+			FRenderTarget* SrcRenderTarget;
+			TArray<FColor>* OutData;
+			FIntRect Rect;
+			FReadSurfaceDataFlags Flags;
+		};
+
+		auto Rt = RenderTarget->GameThread_GetRenderTargetResource();
+		FReadSurfaceContext Context = {
+			Rt, &OutImg->Image, Rectangle, FReadSurfaceDataFlags(RCM_UNorm, CubeFace_MAX)};
+
+		ENQUEUE_RENDER_COMMAND(ReadRtCommand)
+		(
+			[Context, OutImg, &ImagePixelDelegate, &ImageROS2Delegate, Resolution, AsROS2Msg,
+			 TimeStamp, Grayscale](FRHICommandListImmediate& RHICmdList)
+			{
+				{
+					std::scoped_lock<std::mutex> sl(OutImg->ImageMutex);
+					RHICmdList.ReadSurfaceData(
+						Context.SrcRenderTarget->GetRenderTargetTexture(), Context.Rect,
+						*Context.OutData, Context.Flags);
+				}
+
+				// clang-format off
+				FFunctionGraphTask::CreateAndDispatchWhenReady(
+					[OutImg, &ImagePixelDelegate, &ImageROS2Delegate, Resolution, AsROS2Msg, TimeStamp, Grayscale]()
+					{
+						std::lock_guard<std::mutex> lg(OutImg->ImageMutex);
+						if (OutImg->EndPlayTriggered)
+							return;
+						if (AsROS2Msg)
+							ImageROS2Delegate.Broadcast(FAGX_ROS2Utilities::Convert(
+								OutImg->Image, TimeStamp, Resolution, Grayscale));
+						else
+							ImagePixelDelegate.Broadcast(OutImg->Image);
+					},
+					TStatId {}, nullptr,
+					ENamedThreads::GameThread);
+				// clang-format on
+			});
+	}
+}
+
+void UAGX_CameraSensorComponent::GetImagePixelsAsync()
+{
+	if (!bIsValid || RenderTarget == nullptr)
+		return;
+
+	float TimeStamp = 0.f;
 	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
 	{
-		const float TimeStamp = Sim->GetTimeStamp();
-		Image.Header.Stamp.Sec = static_cast<int32>(TimeStamp);
-		float Unused;
-		Image.Header.Stamp.Nanosec = static_cast<int32>(FMath::Modf(TimeStamp, &Unused) * 1.0E9f);
+		TimeStamp = Sim->GetTimeStamp();
 	}
 
-	Image.Height = static_cast<int64>(RenderTarget->SizeY);
-	Image.Width = static_cast<int64>(RenderTarget->SizeX);
-
-	if (Grayscale)
-	{
-		Image.Step = SizeY * sizeof(uint8);
-		Image.Encoding = TEXT("mono8");
-		Image.Data.Reserve(Pixels.Num());
-		for (const auto& Color : Pixels)
-		{
-			const uint16 Sum = static_cast<uint16>(Color.R) + static_cast<uint16>(Color.G) +
-							   static_cast<uint16>(Color.B);
-			Image.Data.Add(static_cast<uint8>(Sum / 3));
-		}
-	}
-	else
-	{
-		Image.Step = SizeY * sizeof(uint8) * 3;
-		Image.Encoding = TEXT("rgb8");
-		Image.Data.Reserve(Pixels.Num() * 3);
-		for (const auto& Color : Pixels)
-		{
-			Image.Data.Add(Color.R);
-			Image.Data.Add(Color.G);
-			Image.Data.Add(Color.B);
-		}
-	}
-
-	return Image;
+	AGX_CameraSensorComponent_helpers::GetImageAsync(
+		RenderTarget, LastImage, NewImagePixels, NewImageROS2, Resolution, TimeStamp, false, false);
 }
 
 TArray<FColor> UAGX_CameraSensorComponent::GetImagePixels() const
@@ -103,6 +128,47 @@ TArray<FColor> UAGX_CameraSensorComponent::GetImagePixels() const
 	return PixelData;
 }
 
+void UAGX_CameraSensorComponent::GetImageROS2Async(bool Grayscale)
+{
+	if (!bIsValid || RenderTarget == nullptr)
+		return;
+
+	float TimeStamp = 0.f;
+	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+	{
+		TimeStamp = Sim->GetTimeStamp();
+	}
+
+	AGX_CameraSensorComponent_helpers::GetImageAsync(
+		RenderTarget, LastImage, NewImagePixels, NewImageROS2, Resolution, TimeStamp, true,
+		Grayscale);
+}
+
+FAGX_SensorMsgsImage UAGX_CameraSensorComponent::GetImageROS2(bool Grayscale) const
+{
+	const TArray<FColor> Pixels = GetImagePixels();
+	if (Pixels.Num() == 0)
+		return FAGX_SensorMsgsImage();
+
+	float TimeStamp = 0.f;
+	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+	{
+		TimeStamp = Sim->GetTimeStamp();
+	}
+
+	return FAGX_ROS2Utilities::Convert(Pixels, TimeStamp, Resolution, Grayscale);
+}
+
+bool UAGX_CameraSensorComponent::IsFovValid(float FOV)
+{
+	return FOV > KINDA_SMALL_NUMBER && FOV <= 170.f;
+}
+
+bool UAGX_CameraSensorComponent::IsResolutionValid(const FIntPoint& Resolution)
+{
+	return Resolution.X >= 1 && Resolution.Y >= 1;
+}
+
 void UAGX_CameraSensorComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -111,6 +177,16 @@ void UAGX_CameraSensorComponent::BeginPlay()
 		return;
 
 	Init();
+}
+
+void UAGX_CameraSensorComponent::EndPlay(const EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+
+	NewImagePixels.Clear();
+
+	if (LastImage != nullptr)
+		LastImage->EndPlayTriggered = true;
 }
 
 void UAGX_CameraSensorComponent::PostApplyToComponent()
@@ -186,6 +262,11 @@ void UAGX_CameraSensorComponent::Init()
 {
 	AGX_CHECK(CaptureComponent2D == nullptr);
 
+	if (LastImage == nullptr)
+	{
+		LastImage = MakeShared<FAGX_ImageBuffer>();
+	}
+
 	CaptureComponent2D =
 		NewObject<USceneCaptureComponent2D>(this, FName(TEXT("SceneCaptureComponent2D")));
 	CaptureComponent2D->RegisterComponent();
@@ -207,7 +288,7 @@ void UAGX_CameraSensorComponent::InitCaptureComponent()
 
 bool UAGX_CameraSensorComponent::CheckValid() const
 {
-	if (FOV <= KINDA_SMALL_NUMBER || FOV > 170.f)
+	if (!IsFovValid(FOV))
 	{
 		const FString Msg = FString::Printf(
 			TEXT(
@@ -217,7 +298,7 @@ bool UAGX_CameraSensorComponent::CheckValid() const
 		return false;
 	}
 
-	if (Resolution.X <= 0 || Resolution.Y <= 0)
+	if (!IsResolutionValid(Resolution))
 	{
 		const FString Msg = FString::Printf(
 			TEXT("Camera Sensor '%s' in Actor '%s' has an invalid Resolution: [%s]. Please set a "
@@ -250,8 +331,10 @@ bool UAGX_CameraSensorComponent::CheckValid() const
 	else if (RenderTarget->SizeX != Resolution.X || RenderTarget->SizeY != Resolution.Y)
 	{
 		const FString Msg = FString::Printf(
-			TEXT("Camera Sensor '%s' in Actor '%s' expected to have a RenderTarget with the resolution [%s] but it was [%d %d]."
-				 "Use the 'Generate Runtime Assets' button in the Details Panel to generate a valid RenderTarget."),
+			TEXT("Camera Sensor '%s' in Actor '%s' expected to have a RenderTarget with the "
+				 "resolution [%s] but it was [%d %d]."
+				 "Use the 'Generate Runtime Assets' button in the Details Panel to generate a "
+				 "valid RenderTarget."),
 			*GetName(), *GetLabelSafe(GetOwner()), *Resolution.ToString(), RenderTarget->SizeX,
 			RenderTarget->SizeY);
 		FAGX_NotificationUtilities::ShowNotification(Msg, SNotificationItem::CS_Fail);
