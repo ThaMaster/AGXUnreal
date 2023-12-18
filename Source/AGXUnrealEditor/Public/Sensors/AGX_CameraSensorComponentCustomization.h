@@ -6,6 +6,7 @@
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 
+class FReply;
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
 

@@ -15,6 +15,7 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Engine/World.h"
+#include "RenderingThread.h"
 #include "TextureResource.h"
 
 
