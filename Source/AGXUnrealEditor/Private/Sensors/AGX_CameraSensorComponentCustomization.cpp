@@ -189,6 +189,14 @@ FReply FAGX_CameraSensorComponentCustomization::OnGenerateRuntimeAssetsButtonCli
 	}
 
 	// Finally, assign the created Asset.
+	for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*CameraComponent))
+	{
+		if (Instance->RenderTarget == CameraComponent->RenderTarget)
+		{
+			Instance->RenderTarget = RenderTargetAsset;
+		}
+	}
+
 	CameraComponent->RenderTarget = RenderTargetAsset;
 
 	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(
