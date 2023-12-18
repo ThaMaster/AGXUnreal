@@ -18,7 +18,6 @@
 #include "RenderingThread.h"
 #include "TextureResource.h"
 
-
 UAGX_CameraSensorComponent::UAGX_CameraSensorComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -37,11 +36,28 @@ void UAGX_CameraSensorComponent::SetFOV(float InFOV)
 
 namespace AGX_CameraSensorComponent_helpers
 {
+	struct FAGX_ImageAsyncParams
+	{
+		FAGX_ImageAsyncParams(
+			const FIntPoint& InResolution, float InTimeStamp, bool InAsROS2Msg, bool InGrayscale)
+			: Resolution(InResolution)
+			, TimeStamp(InTimeStamp)
+			, bAsROS2Msg(InAsROS2Msg)
+			, bGrayscale(InGrayscale)
+		{
+		}
+
+		FIntPoint Resolution;
+		float TimeStamp {0.f};
+		bool bAsROS2Msg {false};
+		bool bGrayscale {false};
+	};
+
 	void GetImageAsync(
 		UTextureRenderTarget2D* RenderTarget,
 		TSharedPtr<UAGX_CameraSensorComponent::FAGX_ImageBuffer> OutImg,
 		FOnNewImagePixels& ImagePixelDelegate, FOnNewImageROS2& ImageROS2Delegate,
-		const FIntPoint& Resolution, float TimeStamp, bool AsROS2Msg, bool Grayscale)
+		const FAGX_ImageAsyncParams& Params)
 	{
 		if (RenderTarget == nullptr || OutImg == nullptr)
 			return;
@@ -63,8 +79,8 @@ namespace AGX_CameraSensorComponent_helpers
 
 		ENQUEUE_RENDER_COMMAND(FAGX_ReadRtCommand)
 		(
-			[Context, OutImg, &ImagePixelDelegate, &ImageROS2Delegate, Resolution, AsROS2Msg,
-			 TimeStamp, Grayscale](FRHICommandListImmediate& RHICmdList)
+			[Context, OutImg, &ImagePixelDelegate, &ImageROS2Delegate,
+			 Params](FRHICommandListImmediate& RHICmdList)
 			{
 				{
 					std::scoped_lock<std::mutex> sl(OutImg->ImageMutex);
@@ -75,14 +91,14 @@ namespace AGX_CameraSensorComponent_helpers
 
 				// clang-format off
 				FFunctionGraphTask::CreateAndDispatchWhenReady(
-					[OutImg, &ImagePixelDelegate, &ImageROS2Delegate, Resolution, AsROS2Msg, TimeStamp, Grayscale]()
+					[OutImg, &ImagePixelDelegate, &ImageROS2Delegate, Params]()
 					{
 						std::lock_guard<std::mutex> lg(OutImg->ImageMutex);
 						if (OutImg->EndPlayTriggered)
 							return;
-						if (AsROS2Msg)
+						if (Params.bAsROS2Msg)
 							ImageROS2Delegate.Broadcast(FAGX_ROS2Utilities::Convert(
-								OutImg->Image, TimeStamp, Resolution, Grayscale));
+								OutImg->Image, Params.TimeStamp, Params.Resolution, Params.bGrayscale));
 						else
 							ImagePixelDelegate.Broadcast(OutImg->Image);
 					},
@@ -95,6 +111,8 @@ namespace AGX_CameraSensorComponent_helpers
 
 void UAGX_CameraSensorComponent::GetImagePixelsAsync()
 {
+	using namespace AGX_CameraSensorComponent_helpers;
+
 	if (!bIsValid || RenderTarget == nullptr)
 		return;
 
@@ -104,8 +122,9 @@ void UAGX_CameraSensorComponent::GetImagePixelsAsync()
 		TimeStamp = Sim->GetTimeStamp();
 	}
 
+	const FAGX_ImageAsyncParams Params(Resolution, TimeStamp, false, false);
 	AGX_CameraSensorComponent_helpers::GetImageAsync(
-		RenderTarget, LastImage, NewImagePixels, NewImageROS2, Resolution, TimeStamp, false, false);
+		RenderTarget, LastImage, NewImagePixels, NewImageROS2, Params);
 }
 
 TArray<FColor> UAGX_CameraSensorComponent::GetImagePixels() const
@@ -132,6 +151,8 @@ TArray<FColor> UAGX_CameraSensorComponent::GetImagePixels() const
 
 void UAGX_CameraSensorComponent::GetImageROS2Async(bool Grayscale)
 {
+	using namespace AGX_CameraSensorComponent_helpers;
+
 	if (!bIsValid || RenderTarget == nullptr)
 		return;
 
@@ -141,9 +162,8 @@ void UAGX_CameraSensorComponent::GetImageROS2Async(bool Grayscale)
 		TimeStamp = Sim->GetTimeStamp();
 	}
 
-	AGX_CameraSensorComponent_helpers::GetImageAsync(
-		RenderTarget, LastImage, NewImagePixels, NewImageROS2, Resolution, TimeStamp, true,
-		Grayscale);
+	const FAGX_ImageAsyncParams Params(Resolution, TimeStamp, true, Grayscale);
+	GetImageAsync(RenderTarget, LastImage, NewImagePixels, NewImageROS2, Params);
 }
 
 FAGX_SensorMsgsImage UAGX_CameraSensorComponent::GetImageROS2(bool Grayscale) const
