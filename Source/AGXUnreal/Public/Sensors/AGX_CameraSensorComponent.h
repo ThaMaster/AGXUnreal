@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "ROS2/AGX_ROS2Messages.h"
+
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
@@ -11,7 +14,6 @@
 
 class USceneCaptureComponent2D;
 class UTextureRenderTarget2D;
-struct FAGX_SensorMsgsImage;
 
 #include "AGX_CameraSensorComponent.generated.h"
 

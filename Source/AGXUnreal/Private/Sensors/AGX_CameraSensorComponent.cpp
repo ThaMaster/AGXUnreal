@@ -7,7 +7,6 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
-#include "ROS2/AGX_ROS2Messages.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ROS2Utilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -61,7 +60,7 @@ namespace AGX_CameraSensorComponent_helpers
 		FReadSurfaceContext Context = {
 			Rt, &OutImg->Image, Rectangle, FReadSurfaceDataFlags(RCM_UNorm, CubeFace_MAX)};
 
-		ENQUEUE_RENDER_COMMAND(ReadRtCommand)
+		ENQUEUE_RENDER_COMMAND(FAGX_ReadRtCommand)
 		(
 			[Context, OutImg, &ImagePixelDelegate, &ImageROS2Delegate, Resolution, AsROS2Msg,
 			 TimeStamp, Grayscale](FRHICommandListImmediate& RHICmdList)

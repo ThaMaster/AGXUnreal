@@ -14,6 +14,8 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Engine/World.h"
+#include "Input/Reply.h"
 #include "Misc/Paths.h"
 #include "Widgets/Input/SButton.h"
 
