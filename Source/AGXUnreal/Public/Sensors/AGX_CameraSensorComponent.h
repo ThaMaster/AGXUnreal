@@ -34,7 +34,7 @@ public:
 	UAGX_CameraSensorComponent();
 
 	/**
-	 * Field of View (FOV) of the Camera Sensor [deg].
+	 * Horizontal Field of View (FOV) of the Camera Sensor [deg].
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Camera",
