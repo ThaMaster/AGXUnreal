@@ -163,7 +163,8 @@ FReply FAGX_CameraSensorComponentCustomization::OnGenerateRuntimeAssetsButtonCli
 
 	// Ask the user to specify file name and location for the RenderTarget2D to be created.
 	FString ComponentName = CameraComponent->GetName();
-	ComponentName.RemoveFromEnd("_GEN_VARIABLE"); // In case this is a Component Template.
+	ComponentName.RemoveFromEnd(
+		UActorComponent::ComponentTemplateNameSuffix); // In case this is a Component Template.
 	const FString DefaultAssetName = FString::Printf(TEXT("RT_Camera_%s"), *ComponentName);
 
 	UTextureRenderTarget2D* RenderTargetAsset = CameraComponent->RenderTarget;

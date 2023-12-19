@@ -3242,7 +3242,7 @@ bool FCheckTrackImportedCommand::Update()
 		}
 
 		FString BeautifiedTrackName = Track->GetName();
-		BeautifiedTrackName.RemoveFromEnd("_GEN_VARIABLE");
+		BeautifiedTrackName.RemoveFromEnd(UActorComponent::ComponentTemplateNameSuffix);
 		Test.TestEqual(
 			"Track Properties Name", Track->TrackProperties->GetName(),
 			FString("AGX_TP_") + BeautifiedTrackName);
