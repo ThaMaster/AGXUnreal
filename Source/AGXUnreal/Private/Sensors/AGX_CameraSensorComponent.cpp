@@ -55,7 +55,7 @@ namespace AGX_CameraSensorComponent_helpers
 
 	void GetImageAsync(
 		UTextureRenderTarget2D* RenderTarget,
-		TSharedPtr<UAGX_CameraSensorComponent::FAGX_ImageBuffer> OutImg,
+		TSharedPtr<UAGX_CameraSensorComponent::FAGX_ImageBuffer> OutImg, int32 ImageIndex,
 		FOnNewImagePixels& ImagePixelDelegate, FOnNewImageROS2& ImageROS2Delegate,
 		const FAGX_ImageAsyncParams& Params)
 	{
@@ -75,11 +75,12 @@ namespace AGX_CameraSensorComponent_helpers
 
 		auto Rt = RenderTarget->GameThread_GetRenderTargetResource();
 		FReadSurfaceContext Context = {
-			Rt, &OutImg->Image, Rectangle, FReadSurfaceDataFlags(RCM_UNorm, CubeFace_MAX)};
+			Rt, &OutImg->Image[ImageIndex], Rectangle,
+			FReadSurfaceDataFlags(RCM_UNorm, CubeFace_MAX)};
 
 		ENQUEUE_RENDER_COMMAND(FAGX_ReadRtCommand)
 		(
-			[Context, OutImg, &ImagePixelDelegate, &ImageROS2Delegate,
+			[Context, OutImg, ImageIndex, &ImagePixelDelegate, &ImageROS2Delegate,
 			 Params](FRHICommandListImmediate& RHICmdList)
 			{
 				{
@@ -91,16 +92,16 @@ namespace AGX_CameraSensorComponent_helpers
 
 				// clang-format off
 				FFunctionGraphTask::CreateAndDispatchWhenReady(
-					[OutImg, &ImagePixelDelegate, &ImageROS2Delegate, Params]()
+					[OutImg, ImageIndex, &ImagePixelDelegate, &ImageROS2Delegate, Params]()
 					{
 						std::lock_guard<std::mutex> lg(OutImg->ImageMutex);
 						if (OutImg->EndPlayTriggered)
 							return;
 						if (Params.bAsROS2Msg)
 							ImageROS2Delegate.Broadcast(FAGX_ROS2Utilities::Convert(
-								OutImg->Image, Params.TimeStamp, Params.Resolution, Params.bGrayscale));
+								OutImg->Image[ImageIndex], Params.TimeStamp, Params.Resolution, Params.bGrayscale));
 						else
-							ImagePixelDelegate.Broadcast(OutImg->Image);
+							ImagePixelDelegate.Broadcast(OutImg->Image[ImageIndex]);
 					},
 					TStatId {}, nullptr,
 					ENamedThreads::GameThread);
@@ -123,8 +124,11 @@ void UAGX_CameraSensorComponent::GetImagePixelsAsync()
 	}
 
 	const FAGX_ImageAsyncParams Params(Resolution, TimeStamp, false, false);
+	const int32 ImageIndex = LastImage->BufferHead;
+	OnAsyncImageRequest();
+
 	AGX_CameraSensorComponent_helpers::GetImageAsync(
-		RenderTarget, LastImage, NewImagePixels, NewImageROS2, Params);
+		RenderTarget, LastImage, ImageIndex, NewImagePixels, NewImageROS2, Params);
 }
 
 TArray<FColor> UAGX_CameraSensorComponent::GetImagePixels() const
@@ -152,7 +156,9 @@ void UAGX_CameraSensorComponent::GetImageROS2Async(bool Grayscale)
 	}
 
 	const FAGX_ImageAsyncParams Params(Resolution, TimeStamp, true, Grayscale);
-	GetImageAsync(RenderTarget, LastImage, NewImagePixels, NewImageROS2, Params);
+	const int32 ImageIndex = LastImage->BufferHead;
+	OnAsyncImageRequest();
+	GetImageAsync(RenderTarget, LastImage, ImageIndex, NewImagePixels, NewImageROS2, Params);
 }
 
 FAGX_SensorMsgsImage UAGX_CameraSensorComponent::GetImageROS2(bool Grayscale) const
@@ -363,4 +369,11 @@ bool UAGX_CameraSensorComponent::CheckValid() const
 	}
 
 	return true;
+}
+
+void UAGX_CameraSensorComponent::OnAsyncImageRequest()
+{
+	AGX_CHECK(LastImage->BufferHead < 2);
+
+	myInt = (myInt + 1) % 2;
 }

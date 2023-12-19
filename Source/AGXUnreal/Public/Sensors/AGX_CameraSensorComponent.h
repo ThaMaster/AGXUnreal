@@ -140,7 +140,8 @@ public:
 
 	struct FAGX_ImageBuffer
 	{
-		TArray<FColor> Image;
+		TArray<FColor> Image[2]; // Buffer up to two images.
+		int32 BufferHead {0}; // Points to one index in the Image buffer.
 		std::mutex ImageMutex;
 		bool EndPlayTriggered {false};
 	};
@@ -153,4 +154,5 @@ private:
 	void Init();
 	void InitCaptureComponent();
 	bool CheckValid() const;
+	void OnAsyncImageRequest();
 };
