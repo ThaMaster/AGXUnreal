@@ -195,6 +195,7 @@ void UAGX_CameraSensorComponent::EndPlay(const EEndPlayReason::Type Reason)
 	Super::EndPlay(Reason);
 
 	NewImagePixels.Clear();
+	NewImageROS2.Clear();
 
 	if (LastImage != nullptr)
 		LastImage->EndPlayTriggered = true;
