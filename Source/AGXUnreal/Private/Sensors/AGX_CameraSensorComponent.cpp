@@ -132,17 +132,6 @@ TArray<FColor> UAGX_CameraSensorComponent::GetImagePixels() const
 	if (!bIsValid || RenderTarget == nullptr)
 		return TArray<FColor>();
 
-	if (RenderTarget->GetFormat() != EPixelFormat::PF_B8G8R8A8)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("GetImagePixels on Camera Sensor '%s' in Actor '%s' was called with a "
-				 "RenderTarget of invalid format. The format should be RGBA8. Use the 'Generate "
-				 "Runtime Assets' button in the Details Panel to generate a valid RenderTarget."),
-			*GetName(), *GetLabelSafe(GetOwner()));
-		return TArray<FColor>();
-	}
-
 	FTextureRenderTargetResource* RtResource = RenderTarget->GameThread_GetRenderTargetResource();
 	TArray<FColor> PixelData;
 	RtResource->ReadPixels(PixelData);
