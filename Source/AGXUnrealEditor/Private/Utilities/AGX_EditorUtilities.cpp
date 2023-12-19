@@ -1281,7 +1281,7 @@ FString FAGX_EditorUtilities::SelectNewAssetDialog(
 		return "";
 
 	const FString DefaultPath =
-		InDefaultPath.IsEmpty() ? FString("/Game/PointCloud") : InDefaultPath;
+		InDefaultPath.IsEmpty() ? FString("/Game") : InDefaultPath;
 
 	FSaveAssetDialogConfig SaveAssetDialogConfig;
 	{
