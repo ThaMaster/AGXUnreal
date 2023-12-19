@@ -216,6 +216,10 @@ void UAGX_CameraSensorComponent::PostApplyToComponent()
 		// We are in a Blueprint reconstruction during Play and we need to call Init manually to
 		// ensure we are in a valid state. Otherwise CaptureComponent2D will always be nullptr since
 		// it is not copied over to this new Component.
+		// The reason we do this in PostApplyToComponent is because that's what was found to be called
+		// after the new Component has been created and given all of it's properties from the previous
+		// Component. There might be a better place to do this, but it is currently not know what that
+		// place would be.
 		Init();
 	}
 }
@@ -350,7 +354,7 @@ bool UAGX_CameraSensorComponent::CheckValid() const
 	{
 		const FString Msg = FString::Printf(
 			TEXT("Camera Sensor '%s' in Actor '%s' expected to have a RenderTarget with the "
-				 "resolution [%s] but it was [%d %d]."
+				 "resolution [%s] but it was [%d %d]. "
 				 "Use the 'Generate Runtime Assets' button in the Details Panel to generate a "
 				 "valid RenderTarget."),
 			*GetName(), *GetLabelSafe(GetOwner()), *Resolution.ToString(), RenderTarget->SizeX,
