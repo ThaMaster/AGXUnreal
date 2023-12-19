@@ -179,7 +179,7 @@ FReply FAGX_CameraSensorComponentCustomization::OnGenerateRuntimeAssetsButtonCli
 
 	// Setup Render Target according to the Camera Sensor Component settings.
 	RenderTargetAsset->ResizeTarget(CameraComponent->Resolution.X, CameraComponent->Resolution.Y);
-	RenderTargetAsset->RenderTargetFormat = ETextureRenderTargetFormat::RTF_RGBA8;
+	RenderTargetAsset->RenderTargetFormat = ETextureRenderTargetFormat::RTF_RGBA8_SRGB;
 
 	if (!FAGX_ObjectUtilities::SaveAsset(*RenderTargetAsset))
 	{

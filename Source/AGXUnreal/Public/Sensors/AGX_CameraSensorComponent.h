@@ -24,6 +24,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewImageROS2, const FAGX_SensorMs
  * EXPERIMENTAL
  *
  * Camera Sensor Component, allowing to extract camera pixel information in runtime.
+ * The captured image is encoded in 8-bit RGB wih sRGB gamma curve.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Experimental, Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_CameraSensorComponent : public USceneComponent
