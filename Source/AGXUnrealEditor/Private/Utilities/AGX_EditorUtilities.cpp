@@ -1280,17 +1280,18 @@ FString FAGX_EditorUtilities::SelectNewAssetDialog(
 	if (SavedClass == nullptr)
 		return "";
 
-	const FString DefaultPath =
-		InDefaultPath.IsEmpty() ? FString("/Game") : InDefaultPath;
+	const FString DefaultPath = InDefaultPath.IsEmpty() ? FString("/Game") : InDefaultPath;
 
-	FSaveAssetDialogConfig SaveAssetDialogConfig;
+	const FSaveAssetDialogConfig SaveAssetDialogConfig = [&]()
 	{
-		SaveAssetDialogConfig.DefaultPath = DefaultPath;
-		SaveAssetDialogConfig.DefaultAssetName = AssetNameSuggestion;
-		SaveAssetDialogConfig.AssetClassNames.Add(SavedClass->GetClassPathName());
-		SaveAssetDialogConfig.ExistingAssetPolicy = ESaveAssetDialogExistingAssetPolicy::Disallow;
-		SaveAssetDialogConfig.DialogTitleOverride = FText::FromString(DialogTitle);
-	}
+		FSaveAssetDialogConfig Config;
+		Config.DefaultPath = DefaultPath;
+		Config.DefaultAssetName = AssetNameSuggestion;
+		Config.AssetClassNames.Add(SavedClass->GetClassPathName());
+		Config.ExistingAssetPolicy = ESaveAssetDialogExistingAssetPolicy::Disallow;
+		Config.DialogTitleOverride = FText::FromString(DialogTitle);
+		return Config;
+	}();
 
 	FContentBrowserModule& ContentBrowserModule =
 		FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
