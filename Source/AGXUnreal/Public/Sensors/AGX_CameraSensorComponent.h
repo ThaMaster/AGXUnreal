@@ -12,10 +12,10 @@
 // Standard library includes.
 #include <mutex>
 
+#include "AGX_CameraSensorComponent.generated.h"
+
 class USceneCaptureComponent2D;
 class UTextureRenderTarget2D;
-
-#include "AGX_CameraSensorComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewImagePixels, const TArray<FColor>&, Image);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewImageROS2, const FAGX_SensorMsgsImage&, Image);
@@ -97,14 +97,13 @@ public:
 	 * set.
 	 */
 	UFUNCTION(
-		BlueprintCallable, Category = "AGX Camera",
-		meta = (DisplayName = "Get Image ROS2 Async"))
+		BlueprintCallable, Category = "AGX Camera", meta = (DisplayName = "Get Image ROS2 Async"))
 	void GetImageROS2Async(bool Grayscale);
 
 	/**
-	 * Delegate that is executed whenever a new image as a ROS2 sensor_msgs::Image message is available.
-	 * This delegate is called as the last step of a call to GetImageROS2Async.
-	 * Users may bind to this delegate in order to get a callback.
+	 * Delegate that is executed whenever a new image as a ROS2 sensor_msgs::Image message is
+	 * available. This delegate is called as the last step of a call to GetImageROS2Async. Users may
+	 * bind to this delegate in order to get a callback.
 	 *
 	 * Note: all bound callbacks to this delegate are cleared on Level Transition meaning that
 	 * objects surviving a Level Transition that also are bound to this delegates must bind to it

@@ -14,9 +14,9 @@
 #include "CoreMinimal.h"
 #include "Misc/EngineVersionComparison.h"
 
-class UAGX_ShapeComponent;
-
 #include "AGX_RigidBodyComponent.generated.h"
+
+class UAGX_ShapeComponent;
 
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
