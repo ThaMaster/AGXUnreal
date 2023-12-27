@@ -378,6 +378,5 @@ bool UAGX_CameraSensorComponent::CheckValid() const
 void UAGX_CameraSensorComponent::OnAsyncImageRequest()
 {
 	AGX_CHECK(LastImage->BufferHead < 2);
-
-	myInt = (myInt + 1) % 2;
+	LastImage->BufferHead = (LastImage->BufferHead + 1) % 2;
 }
