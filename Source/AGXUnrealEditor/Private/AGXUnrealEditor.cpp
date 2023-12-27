@@ -76,6 +76,9 @@
 #include "PlayRecord/AGX_PlayRecordTypeActions.h"
 #include "Plot/AGX_PlotComponent.h"
 #include "Plot/AGX_PlotComponentCustomization.h"
+#include "Sensors/AGX_CameraSensorComponent.h"
+#include "Sensors/AGX_CameraSensorComponentCustomization.h"
+#include "Sensors/AGX_CameraSensorComponentVisualizer.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_ShapeComponentCustomization.h"
 #include "Terrain/AGX_Terrain.h"
@@ -308,9 +311,9 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_AgxEdModeTerrainCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
-		UAGX_ContactMaterial::StaticClass()->GetFName(),
+		UAGX_CameraSensorComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_ContactMaterialCustomization::MakeInstance));
+			&FAGX_CameraSensorComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_CollisionGroupAdderComponent::StaticClass()->GetFName(),
@@ -321,6 +324,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_CollisionGroupDisablerComponentCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_ContactMaterial::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_ContactMaterialCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName(),
@@ -432,6 +440,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeTerrain::StaticClass()->GetFName());
 
+	PropertyModule.UnregisterCustomClassLayout(UAGX_CameraSensorComponent::StaticClass()->GetFName());
+
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_CollisionGroupAdderComponent::StaticClass()->GetFName());
 
@@ -473,12 +483,24 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 {
 	RegisterComponentVisualizer(
+		UAGX_CameraSensorComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_CameraSensorComponentVisualizer));
+
+	RegisterComponentVisualizer(
 		UAGX_ConstraintComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_ConstraintComponentVisualizer));
 
 	RegisterComponentVisualizer(
 		UAGX_ConstraintFrameComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_ConstraintFrameComponentVisualizer));
+
+	RegisterComponentVisualizer(
+		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_HeightFieldBoundsComponentVisualizer));
+
+	RegisterComponentVisualizer(
+		UAGX_ShovelComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_ShovelComponentVisualizer));
 
 	RegisterComponentVisualizer(
 		UAGX_TireComponent::StaticClass()->GetFName(),
@@ -493,22 +515,17 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 		MakeShareable(new FAGX_WireComponentVisualizer));
 
 	RegisterComponentVisualizer(
-		UAGX_ShovelComponent::StaticClass()->GetFName(),
-		MakeShareable(new FAGX_ShovelComponentVisualizer));
-
-	RegisterComponentVisualizer(
 		UAGX_WireWinchComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_WireWinchVisualizer));
-
-	RegisterComponentVisualizer(
-		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName(),
-		MakeShareable(new FAGX_HeightFieldBoundsComponentVisualizer));
 }
 
 void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
 {
+	UnregisterComponentVisualizer(UAGX_CameraSensorComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_ShovelComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_TireComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_TrackComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_WireComponent::StaticClass()->GetFName());

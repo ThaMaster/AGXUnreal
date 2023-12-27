@@ -43,7 +43,7 @@ public:
 	 * Configuration properties for the Shovel. If not set then the AGX Dynamics defaults are
 	 * used for all properties.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel")
 	UAGX_ShovelProperties* ShovelProperties;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
@@ -57,7 +57,7 @@ public:
 	 * representation of the shovel
 	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel",
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel",
 		Meta = (SkipUCSModifiedProperties))
 	FAGX_Edge TopEdge;
 
@@ -72,7 +72,7 @@ public:
 	 * representation of the shovel
 	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel",
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel",
 		Meta = (SkipUCSModifiedProperties))
 	FAGX_Edge CuttingEdge;
 
@@ -88,7 +88,7 @@ public:
 	 * Dynamics representation of the shovel
 	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadWrite, Category = "AGX Shovel",
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel",
 		Meta = (SkipUCSModifiedProperties))
 	FAGX_Frame CuttingDirection;
 
