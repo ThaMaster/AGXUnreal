@@ -7,6 +7,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ROS2Utilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -133,13 +134,10 @@ void UAGX_CameraSensorComponent::GetImagePixelsAsync()
 
 TArray<FColor> UAGX_CameraSensorComponent::GetImagePixels() const
 {
-	if (!bIsValid || RenderTarget == nullptr)
+	if (!bIsValid)
 		return TArray<FColor>();
 
-	FTextureRenderTargetResource* RtResource = RenderTarget->GameThread_GetRenderTargetResource();
-	TArray<FColor> PixelData;
-	RtResource->ReadPixels(PixelData);
-	return PixelData;
+	return UAGX_BlueprintUtilities::GetImagePixels(RenderTarget);
 }
 
 void UAGX_CameraSensorComponent::GetImageROS2Async(bool Grayscale)
@@ -163,17 +161,14 @@ void UAGX_CameraSensorComponent::GetImageROS2Async(bool Grayscale)
 
 FAGX_SensorMsgsImage UAGX_CameraSensorComponent::GetImageROS2(bool Grayscale) const
 {
-	const TArray<FColor> Pixels = GetImagePixels();
-	if (Pixels.Num() == 0)
+	if (!bIsValid)
 		return FAGX_SensorMsgsImage();
 
 	float TimeStamp = 0.f;
 	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
-	{
 		TimeStamp = Sim->GetTimeStamp();
-	}
 
-	return FAGX_ROS2Utilities::Convert(Pixels, TimeStamp, Resolution, Grayscale);
+	return UAGX_BlueprintUtilities::GetImageROS2(RenderTarget, TimeStamp, Grayscale);
 }
 
 bool UAGX_CameraSensorComponent::IsFovValid(float FOV)
@@ -216,10 +211,10 @@ void UAGX_CameraSensorComponent::PostApplyToComponent()
 		// We are in a Blueprint reconstruction during Play and we need to call Init manually to
 		// ensure we are in a valid state. Otherwise CaptureComponent2D will always be nullptr since
 		// it is not copied over to this new Component.
-		// The reason we do this in PostApplyToComponent is because that's what was found to be called
-		// after the new Component has been created and given all of it's properties from the previous
-		// Component. There might be a better place to do this, but it is currently not know what that
-		// place would be.
+		// The reason we do this in PostApplyToComponent is because that's what was found to be
+		// called after the new Component has been created and given all of it's properties from the
+		// previous Component. There might be a better place to do this, but it is currently not
+		// know what that place would be.
 		Init();
 	}
 }
