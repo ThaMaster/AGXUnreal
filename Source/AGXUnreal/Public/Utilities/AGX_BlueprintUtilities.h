@@ -6,6 +6,13 @@
 #include "CoreMinimal.h"
 #include "Engine/Blueprint.h"
 #include "Engine/SCS_Node.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
+
+#include "AGX_BlueprintUtilities.generated.h"
+
+class UTextureRenderTarget2D;
+
+struct FAGX_SensorMsgsImage;
 
 #if WITH_EDITOR
 
@@ -182,3 +189,29 @@ T* FAGX_BlueprintUtilities::GetFirstComponentOfType(UBlueprint* Blueprint, bool 
 	return nullptr;
 }
 #endif // WITH_EDITOR
+
+UCLASS(ClassGroup = "AGX Blueprint Utilities")
+class AGXUNREAL_API UAGX_BlueprintUtilities : public UBlueprintFunctionLibrary
+{
+public:
+	GENERATED_BODY()
+
+	/**
+	 * Important: This may be a very slow operation.
+	 * The given RenderTarget must use the format RGBA8.
+	 * Returns the image pixels given a Render Target as an array of 8-bit RGB pixels.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Utilities")
+	static TArray<FColor> GetImagePixels(UTextureRenderTarget2D* RenderTarget);
+
+	/**
+	 * Important: This may be a very slow operation.
+	 * The given RenderTarget must use the format RGBA8.
+	 * Returns the image pixels given a Render Target as a ROS2 sensor_msgs::Image message.
+	 * If Grayscale is set to true, only a single value (average intensity) for each pixel is
+	 * set.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Utilities")
+	static FAGX_SensorMsgsImage GetImageROS2(
+		UTextureRenderTarget2D* RenderTarget, float TimeStamp, bool Grayscale = false);
+};

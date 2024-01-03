@@ -4,10 +4,14 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "ROS2/AGX_ROS2Messages.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_ROS2Utilities.h"
 
 // Unreal Engine includes.
 #include "Components/ActorComponent.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "TextureResource.h"
 
 #if WITH_EDITOR
 namespace AGX_BlueprintUtilities_helpers
@@ -491,3 +495,27 @@ void FAGX_BlueprintUtilities::ReParentNode(
 }
 
 #endif // WITH_EDITOR
+
+TArray<FColor> UAGX_BlueprintUtilities::GetImagePixels(UTextureRenderTarget2D* RenderTarget)
+{
+	if (RenderTarget == nullptr || RenderTarget->GetFormat() != EPixelFormat::PF_B8G8R8A8)
+		return TArray<FColor>();
+
+	FTextureRenderTargetResource* RtResource = RenderTarget->GameThread_GetRenderTargetResource();
+	TArray<FColor> PixelData;
+
+	// ReadPixels will synchronize (wait) for the render thread to finish, making it slow.
+	RtResource->ReadPixels(PixelData);
+	return PixelData;
+}
+
+FAGX_SensorMsgsImage UAGX_BlueprintUtilities::GetImageROS2(
+	UTextureRenderTarget2D* RenderTarget, float TimeStamp, bool Grayscale)
+{
+	const TArray<FColor> Pixels = GetImagePixels(RenderTarget);
+	if (Pixels.Num() == 0)
+		return FAGX_SensorMsgsImage();
+
+	const FIntPoint Resolution(RenderTarget->SizeX, RenderTarget->SizeY);
+	return FAGX_ROS2Utilities::Convert(Pixels, TimeStamp, Resolution, Grayscale);
+}
