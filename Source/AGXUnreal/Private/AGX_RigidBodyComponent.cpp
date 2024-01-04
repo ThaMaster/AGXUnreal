@@ -1171,7 +1171,7 @@ void UAGX_RigidBodyComponent::AddForceAtLocalLocation(const FVector& Force, cons
 void UAGX_RigidBodyComponent::AddLocalForceAtLocalLocation(
 	const FVector& LocalForce, const FVector& Location)
 {
-	const FVector GlobalForce = GetComponentTransform().TransformPositionNoScale(LocalForce);
+	const FVector GlobalForce = GetComponentTransform().TransformVectorNoScale(LocalForce);
 	AddForceAtLocalLocation(GlobalForce, Location);
 }
 
