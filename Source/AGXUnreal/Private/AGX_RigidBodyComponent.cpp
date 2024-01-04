@@ -1168,6 +1168,13 @@ void UAGX_RigidBodyComponent::AddForceAtLocalLocation(const FVector& Force, cons
 	NativeBarrier.AddForceAtLocalLocation(Force, Location);
 }
 
+void UAGX_RigidBodyComponent::AddLocalForceAtLocalLocation(
+	const FVector& LocalForce, const FVector& Location)
+{
+	const FVector GlobalForce = GetComponentTransform().TransformPositionNoScale(LocalForce);
+	AddForceAtLocalLocation(GlobalForce, Location);
+}
+
 FVector UAGX_RigidBodyComponent::GetForce() const
 {
 	if (!HasNative())
