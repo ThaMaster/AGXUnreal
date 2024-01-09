@@ -10,6 +10,7 @@
 
 // Unreal Engine includes.
 #include "Algo/Sort.h"
+#include "HAL/FileManager.h"
 #include "HAL/PlatformFileManager.h"
 #include "Misc/MessageDialog.h"
 #include "Widgets/Input/SButton.h"
