@@ -132,14 +132,15 @@ namespace
 	{
 		return FAGX_PropertyUtilities::GetStructFromHandle<FAGX_ConstraintBodyAttachment>(
 			BodyAttachmentProperty,
-			Cast<UAGX_ConstraintComponent>(
-				FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty)));
+			FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty));
 	}
 }
 
 FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 {
 	FAGX_ConstraintBodyAttachment* Attachment = GetConstraintBodyAttachment(BodyAttachmentProperty);
+	check(Attachment != nullptr);
+
 	USceneComponent* SceneComponent = Attachment->GetRigidBody();
 	if (SceneComponent == nullptr)
 	{
