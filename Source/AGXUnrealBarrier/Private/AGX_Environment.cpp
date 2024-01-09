@@ -17,11 +17,7 @@
 // Unreal Engine includes.
 #include "Misc/EngineVersionComparison.h"
 #include "GenericPlatform/GenericPlatformProcess.h"
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-#include "HAL/PlatformFilemanager.h"
-#else
 #include "HAL/PlatformFileManager.h"
-#endif
 #include "Interfaces/IPluginManager.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/FileHelper.h"

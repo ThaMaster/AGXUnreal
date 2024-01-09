@@ -24,12 +24,18 @@ private:
 	FText GetActivationCodeText() const;
 	void OnActivationCodeCommitted(const FText& NewText, ETextCommit::Type InTextCommit);
 
+	void OnSelectedLicensePathChanged(
+		TSharedPtr<FString> SelectedLicensePath, ESelectInfo::Type InSeletionInfo);
+
 	FReply OnActivateButtonClicked();
+	FReply OnBrowseExistingLicenseButtonClicked();
+	FReply OnCopyExistingLicenseButtonClicked();
 	FReply OnRefreshButtonClicked();
 	FReply OnDeactivateButtonClicked();
 
 	TSharedRef<SWidget> CreateLicenseServiceGui();
 	TSharedRef<SWidget> CreateLicenseInfoGui();
+	TSharedRef<SWidget> CreateCopyExistingLicenseGui();
 	TSharedRef<SWidget> CreateRefreshAndDeactivateWidget();
 
 	TSharedRef<SWidget> CreateLicenseValidityTextBlock() const;
@@ -46,6 +52,8 @@ private:
 		FString ActivationCode;
 		FString LicenseValidity;
 		FString LicenseInfo;
+		TArray<TSharedPtr<FString>> ExistingLicenses;
+		FString SelectedExistingLicense;
 		FSlateColor LicenseValidityTextColor;
 		TArray<TSharedPtr<FString>> EnabledModules;
 		bool UsesServiceLicenseWithoutSetupEnv = false;
