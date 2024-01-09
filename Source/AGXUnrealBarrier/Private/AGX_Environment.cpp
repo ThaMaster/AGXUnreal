@@ -632,7 +632,7 @@ bool FAGX_Environment::EnsureAGXDynamicsLicenseValid(FString* OutStatus) const
 	if (!TryUnlockAGXDynamicsLegacyLicense())
 	{
 #if !WITH_EDITOR
-		// For built executables, try to find and activate runtime activation (.rtflx).
+		// For built executables, try to find and activate runtime activation (.rtlfx).
 		TryActivateEncryptedServiceLicense();
 #endif
 	}

@@ -367,7 +367,7 @@ FReply SAGX_LicenseDialog::OnDeactivateButtonClicked()
 {
 	const static FString Info =
 		"This will deactivate the service license and completely remove "
-		"the license file (agx.flx). Are you sure you want to continue?";
+		"the license file (agx.lfx). Are you sure you want to continue?";
 	if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) != EAppReturnType::Yes)
 	{
 		return FReply::Handled();
@@ -495,7 +495,7 @@ TSharedRef<SWidget> SAGX_LicenseDialog::CreateCopyExistingLicenseGui()
 			.AutoHeight()
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString("Existing license files:"))
+				.Text(FText::FromString("Found license files:"))
 				.Font(CreateFont(10))
 			]
 			+ SVerticalBox::Slot()
