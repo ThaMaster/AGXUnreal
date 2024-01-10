@@ -52,13 +52,7 @@ namespace AGX_LicenseDialog_helpers
 
 	bool Contains(const TArray<TSharedPtr<FString>>& Arr, const FString Elem)
 	{
-		for (TSharedPtr<FString> E : Arr)
-		{
-			if (E != nullptr && *E == Elem)
-				return true;
-		}
-
-		return false;
+		return Arr.ContainsByPredicate([&](auto& E) { return E != nullptr && *E == Elem; });
 	}
 
 	// Returns all License files found in another Engine-version, looking in newer versions
@@ -99,7 +93,8 @@ namespace AGX_LicenseDialog_helpers
 
 			for (const auto& File : LicenseFiles)
 			{
-				const FString ReadablePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(
+				const FString ReadablePath =
+					IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(
 						*FPaths::Combine(LicenseDirPath, File));
 
 				if (!Contains(OutExistingLicenses, ReadablePath))
@@ -303,10 +298,17 @@ FReply SAGX_LicenseDialog::OnBrowseExistingLicenseButtonClicked()
 
 FReply SAGX_LicenseDialog::OnCopyExistingLicenseButtonClicked()
 {
-	if (!FPaths::FileExists(LicenseData.SelectedExistingLicense))
+	if (LicenseData.SelectedExistingLicense.IsEmpty())
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 			"Unable to copy license file since no license file has been selected.");
+		return FReply::Handled();
+	}
+
+	if (!FPaths::FileExists(LicenseData.SelectedExistingLicense))
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Unable to copy license file since the selected file does not exist.");
 		return FReply::Handled();
 	}
 
