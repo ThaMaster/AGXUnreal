@@ -288,10 +288,9 @@ FReply SAGX_LicenseDialog::OnBrowseExistingLicenseButtonClicked()
 	}
 
 	if (!AGX_LicenseDialog_helpers::Contains(LicenseData.ExistingLicenses, BrowsedLicense))
-	{
 		LicenseData.ExistingLicenses.EmplaceAt(0, MakeShareable(new FString(BrowsedLicense)));
-		LicenseData.SelectedExistingLicense = BrowsedLicense;
-	}
+
+	LicenseData.SelectedExistingLicense = BrowsedLicense;
 
 	return FReply::Handled();
 }
