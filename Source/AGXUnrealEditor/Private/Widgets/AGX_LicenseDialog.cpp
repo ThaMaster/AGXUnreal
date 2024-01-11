@@ -63,7 +63,7 @@ namespace AGX_LicenseDialog_helpers
 		// Get known Engine installations via the DekstopPlatformModule interface.
 		{
 			TMap<FString, FString> InstallationsMap;
-			FDesktopPlatformModule::Get()->EnumerateLauncherEngineInstallations(InstallationsMap);
+			FDesktopPlatformModule::Get()->EnumerateEngineInstallations(InstallationsMap);
 
 			InstallationsMap.GenerateValueArray(Installations);
 		}
