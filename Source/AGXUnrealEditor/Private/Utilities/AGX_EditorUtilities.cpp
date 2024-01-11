@@ -27,6 +27,7 @@
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 #include "Widgets/AGX_SynchronizeModelDialog.h"
 
 // Unreal Engine includes.
@@ -44,7 +45,6 @@
 #include "Engine/StaticMesh.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerController.h"
-#include "HAL/FileManager.h"
 #include "IContentBrowserSingleton.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/Char.h"
@@ -1217,7 +1217,7 @@ FString FAGX_EditorUtilities::SelectExistingFileDialog(
 			SNotificationItem::CS_None);
 		return "";
 	}
-	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*Filenames[0]);
+	return ToReadablePath(*Filenames[0]);
 }
 
 FString FAGX_EditorUtilities::SelectExistingDirectoryDialog(
