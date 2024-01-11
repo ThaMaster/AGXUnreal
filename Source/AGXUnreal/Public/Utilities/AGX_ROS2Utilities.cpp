@@ -7,7 +7,9 @@
 
 namespace AGX_ROS2Utilities_helpers
 {
-	template <typename PixelType, typename ChannelType, typename ChannelDoubleSizeType>
+	template <
+		typename PixelType, typename ChannelType, typename ChannelDoubleSizeType,
+		typename OutputChannelType>
 	FAGX_SensorMsgsImage Convert(
 		const TArray<PixelType>& Image, float TimeStamp, const FIntPoint& Resolution,
 		bool Grayscale, const FString& ChannelSize)
@@ -23,7 +25,7 @@ namespace AGX_ROS2Utilities_helpers
 
 		if (Grayscale)
 		{
-			Msg.Step = Resolution.X * sizeof(ChannelType);
+			Msg.Step = Resolution.X * sizeof(OutputChannelType);
 			Msg.Encoding = FString("mono") + ChannelSize;
 			Msg.Data.Reserve(Image.Num());
 			for (const auto& Color : Image)
@@ -31,19 +33,20 @@ namespace AGX_ROS2Utilities_helpers
 				const ChannelDoubleSizeType Sum = static_cast<ChannelDoubleSizeType>(Color.R) +
 												  static_cast<ChannelDoubleSizeType>(Color.G) +
 												  static_cast<ChannelDoubleSizeType>(Color.B);
-				Msg.Data.Add(static_cast<ChannelType>(Sum / 3));
+				Msg.Data.Add(
+					static_cast<OutputChannelType>(Sum / static_cast<ChannelDoubleSizeType>(3)));
 			}
 		}
 		else
 		{
-			Msg.Step = Resolution.X * sizeof(ChannelType) * 3;
+			Msg.Step = Resolution.X * sizeof(OutputChannelType) * 3;
 			Msg.Encoding = FString("rgb") + ChannelSize;
 			Msg.Data.Reserve(Image.Num() * 3);
 			for (const auto& Color : Image)
 			{
-				Msg.Data.Add(Color.R);
-				Msg.Data.Add(Color.G);
-				Msg.Data.Add(Color.B);
+				Msg.Data.Add(static_cast<OutputChannelType>(Color.R));
+				Msg.Data.Add(static_cast<OutputChannelType>(Color.G));
+				Msg.Data.Add(static_cast<OutputChannelType>(Color.B));
 			}
 		}
 
@@ -54,7 +57,7 @@ namespace AGX_ROS2Utilities_helpers
 FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
 	const TArray<FColor>& Image, float TimeStamp, const FIntPoint& Resolution, bool Grayscale)
 {
-	return AGX_ROS2Utilities_helpers::Convert<FColor, uint8, uint16>(
+	return AGX_ROS2Utilities_helpers::Convert<FColor, uint8, uint16, uint8>(
 		Image, TimeStamp, Resolution, Grayscale, "8");
 }
 
@@ -62,6 +65,6 @@ FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
 	const TArray<FFloat16Color>& Image, float TimeStamp, const FIntPoint& Resolution,
 	bool Grayscale)
 {
-	return AGX_ROS2Utilities_helpers::Convert<FFloat16Color, uint16, uint32>(
+	return AGX_ROS2Utilities_helpers::Convert<FFloat16Color, FFloat16, float, uint16>(
 		Image, TimeStamp, Resolution, Grayscale, "16");
 }
