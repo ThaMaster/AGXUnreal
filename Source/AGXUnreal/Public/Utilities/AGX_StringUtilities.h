@@ -5,6 +5,7 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "HAL/FileManager.h"
 #include "Misc/EngineVersionComparison.h"
 
 // Standard library includes.
@@ -55,4 +56,9 @@ FORCEINLINE FString GetLabelSafe(const AActor* Actor)
 FORCEINLINE bool ContainsOnlyIntegers(const FString& str)
 {
 	return std::all_of(str.begin(), str.end(), TChar<TCHAR>::IsDigit);
+}
+
+FORCEINLINE FString ToReadablePath(const FString& Path)
+{
+	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*Path);
 }

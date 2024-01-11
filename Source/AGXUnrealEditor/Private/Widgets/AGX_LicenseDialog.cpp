@@ -9,9 +9,8 @@
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
-#include "Algo/Sort.h"
-#include "HAL/FileManager.h"
 #include "HAL/PlatformFileManager.h"
+#include "IDesktopPlatform.h"
 #include "Misc/MessageDialog.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SComboBox.h"
@@ -59,27 +58,19 @@ namespace AGX_LicenseDialog_helpers
 	// first.
 	void GetExistingLicenseFromOtherInstallation(TArray<TSharedPtr<FString>>& OutExistingLicenses)
 	{
+		TMap<FString, FString> InstallationsMap;
+		FDesktopPlatformModule::Get()->EnumerateLauncherEngineInstallations(InstallationsMap);
+		TArray<FString> Installations;
+		InstallationsMap.GenerateValueArray(Installations);
+
 		const FString CurrentEnginePath = FPaths::Combine(FPaths::EngineDir(), "..");
-
-		const FString EngineParentPath = FPaths::Combine(CurrentEnginePath, "..");
-		TArray<FString> EngineDirNames;
-		IFileManager::Get().FindFiles(
-			EngineDirNames, *FPaths::Combine(EngineParentPath, "*"), false, true);
-
-		// Newer Unreal versions first.
-		Algo::Sort(
-			EngineDirNames, [](const FString& A, const FString& B) { return A.Compare(B) > 0; });
-
-		const FString CurrentEngineDirName = FPaths::GetPathLeaf(
-			IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*CurrentEnginePath));
 		const static FString RelLicenseDirPath = "Engine/Plugins/Marketplace/AGXUnreal/license";
-		for (const auto& EngineDirName : EngineDirNames)
+		for (const auto& Installation : Installations)
 		{
-			if (EngineDirName.Equals(CurrentEngineDirName))
+			if (FPaths::IsSamePath(CurrentEnginePath, Installation))
 				continue;
 
-			const FString LicenseDirPath =
-				FPaths::Combine(EngineParentPath, EngineDirName, RelLicenseDirPath);
+			const FString LicenseDirPath = FPaths::Combine(Installation, RelLicenseDirPath);
 
 			TArray<FString> LicenseFiles;
 
@@ -93,10 +84,7 @@ namespace AGX_LicenseDialog_helpers
 
 			for (const auto& File : LicenseFiles)
 			{
-				const FString ReadablePath =
-					IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(
-						*FPaths::Combine(LicenseDirPath, File));
-
+				const FString ReadablePath = ToReadablePath(*FPaths::Combine(LicenseDirPath, File));
 				if (!Contains(OutExistingLicenses, ReadablePath))
 					OutExistingLicenses.Add(MakeShareable(new FString(ReadablePath)));
 			}
