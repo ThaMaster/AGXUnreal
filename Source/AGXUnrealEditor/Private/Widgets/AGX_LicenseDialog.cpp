@@ -54,24 +54,41 @@ namespace AGX_LicenseDialog_helpers
 		return Arr.ContainsByPredicate([&](auto& E) { return E != nullptr && *E == Elem; });
 	}
 
-	// Returns all License files found in another Engine-version, looking in newer versions
-	// first.
+	// Returns all License files found in another Engine-versions.
 	void GetExistingLicenseFromOtherInstallation(TArray<TSharedPtr<FString>>& OutExistingLicenses)
 	{
-		TMap<FString, FString> InstallationsMap;
-		FDesktopPlatformModule::Get()->EnumerateLauncherEngineInstallations(InstallationsMap);
-		TArray<FString> Installations;
-		InstallationsMap.GenerateValueArray(Installations);
-
+		TArray<FString> Installations; // May end up with duplicates.
 		const FString CurrentEnginePath = FPaths::Combine(FPaths::EngineDir(), "..");
+
+		// Get known Engine installations via the DekstopPlatformModule interface.
+		{
+			TMap<FString, FString> InstallationsMap;
+			FDesktopPlatformModule::Get()->EnumerateLauncherEngineInstallations(InstallationsMap);
+
+			InstallationsMap.GenerateValueArray(Installations);
+		}
+
+		// Manually search Engine installations in sibling directories to the current installation.
+		{
+			const FString EngineParentPath = FPaths::Combine(CurrentEnginePath, "..");
+
+			TArray<FString> EngineDirNames;
+			IFileManager::Get().FindFiles(
+				EngineDirNames, *FPaths::Combine(EngineParentPath, "*"), false, true);
+
+			for (const auto& EngineDirName : EngineDirNames)
+			{
+				Installations.Add(FPaths::Combine(EngineParentPath, EngineDirName));
+			}
+		}
+
 		const static FString RelLicenseDirPath = "Engine/Plugins/Marketplace/AGXUnreal/license";
 		for (const auto& Installation : Installations)
 		{
 			if (FPaths::IsSamePath(CurrentEnginePath, Installation))
-				continue;
+				continue; // Don't return license files from the current installation.
 
 			const FString LicenseDirPath = FPaths::Combine(Installation, RelLicenseDirPath);
-
 			TArray<FString> LicenseFiles;
 
 			// FindFiles appends, does not clear Array first, so it can be called back-to-back.
