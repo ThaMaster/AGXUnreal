@@ -125,7 +125,7 @@ TArray<FColor> UAGX_RenderUtilities::GetImagePixels8(UTextureRenderTarget2D* Ren
 
 TArray<FFloat16Color> UAGX_RenderUtilities::GetImagePixels16(UTextureRenderTarget2D* RenderTarget)
 {
-	if (RenderTarget == nullptr || RenderTarget->GetFormat() != EPixelFormat::PF_A16B16G16R16)
+	if (RenderTarget == nullptr || RenderTarget->GetFormat() != EPixelFormat::PF_FloatRGBA)
 		return TArray<FFloat16Color>();
 
 	FTextureRenderTargetResource* RtResource = RenderTarget->GameThread_GetRenderTargetResource();
@@ -160,7 +160,7 @@ FAGX_SensorMsgsImage UAGX_RenderUtilities::GetImageROS2(
 		return AGX_RenderUtilities_helpers::GetImageROS2(
 			GetImagePixels8(RenderTarget), Resolution, TimeStamp, Grayscale);
 	}
-	else if (RenderTarget->GetFormat() == EPixelFormat::PF_A16B16G16R16)
+	else if (RenderTarget->GetFormat() == EPixelFormat::PF_FloatRGBA)
 	{
 		return AGX_RenderUtilities_helpers::GetImageROS2(
 			GetImagePixels16(RenderTarget), Resolution, TimeStamp, Grayscale);

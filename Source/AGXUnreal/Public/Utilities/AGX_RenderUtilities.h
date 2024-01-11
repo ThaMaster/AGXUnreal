@@ -63,7 +63,7 @@ public:
 	 * The given RenderTarget must use the format RGBA8 or RGBA16f.
 	 * Returns the image pixels given a Render Target as a ROS2 sensor_msgs::Image message.
 	 * If the given Render Target uses RGBA8 the pixel data is stored as 8-bit values, and if the
-	 * Render Target uses RGBA16 the pixel data is stored as 16-bit values.
+	 * Render Target uses RGBA16 the pixel data is stored as 16-bit values, little endian.
 	 * If Grayscale is set to true, only a single value (average intensity) for each pixel is set.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Utilities")
