@@ -54,6 +54,7 @@ public:
 	 * Important: This may be a very slow operation.
 	 * The given RenderTarget must use the format RGBA16f.
 	 * Returns the image pixels given a Render Target as an array of 16-bit RGB pixels.
+	 * FFloat16Color is not supported by Blueprints.
 	 */
 	static TArray<FFloat16Color> GetImagePixels16(UTextureRenderTarget2D* RenderTarget);
 
