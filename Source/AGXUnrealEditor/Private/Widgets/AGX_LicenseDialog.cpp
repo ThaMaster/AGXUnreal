@@ -10,7 +10,7 @@
 
 // Unreal Engine includes.
 #include "HAL/PlatformFileManager.h"
-#include "IDesktopPlatform.h"
+#include "DesktopPlatformModule.h"
 #include "Misc/MessageDialog.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SComboBox.h"
