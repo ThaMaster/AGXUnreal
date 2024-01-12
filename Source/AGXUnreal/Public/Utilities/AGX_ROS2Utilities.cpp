@@ -87,8 +87,8 @@ FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
 			const FLinearColor LColor = Color.GetFloats();
 
 			// Transform from [0..1] to uint16 range.
-			const float Sum = (LColor.R + LColor.G + LColor.B) * MaxUint16f;
-			const uint16 Val = static_cast<uint16>(Sum / 3.f);
+			const float Valf = FMath::Clamp((LColor.R + LColor.G + LColor.B) / 3.f, 0.f, 1.f) * MaxUint16f;
+			const uint16 Val = static_cast<uint16>(Valf);
 
 			Msg.Data.Add(static_cast<uint8>(Val & 0xFF)); // Low bits.
 			Msg.Data.Add(static_cast<uint8>((Val >> 8) & 0xFF)); // High bits.
@@ -103,9 +103,9 @@ FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
 
 			// Transform from [0..1] to uint16 range.
 			const uint16 Rgb[3] = {
-				static_cast<uint16>(LColor.R * MaxUint16f),
-				static_cast<uint16>(LColor.G * MaxUint16f),
-				static_cast<uint16>(LColor.B * MaxUint16f)};
+				static_cast<uint16>(FMath::Clamp(LColor.R, 0.f, 1.f) * MaxUint16f),
+				static_cast<uint16>(FMath::Clamp(LColor.G, 0.f, 1.f) * MaxUint16f),
+				static_cast<uint16>(FMath::Clamp(LColor.B, 0.f, 1.f) * MaxUint16f)};
 
 			for (const uint16 C : Rgb)
 			{
