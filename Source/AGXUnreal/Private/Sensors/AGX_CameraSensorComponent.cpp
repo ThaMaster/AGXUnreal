@@ -7,8 +7,8 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
-#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_RenderUtilities.h"
 #include "Utilities/AGX_ROS2Utilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -137,7 +137,7 @@ TArray<FColor> UAGX_CameraSensorComponent::GetImagePixels() const
 	if (!bIsValid)
 		return TArray<FColor>();
 
-	return UAGX_BlueprintUtilities::GetImagePixels(RenderTarget);
+	return UAGX_RenderUtilities::GetImagePixels8(RenderTarget);
 }
 
 void UAGX_CameraSensorComponent::GetImageROS2Async(bool Grayscale)
@@ -168,7 +168,7 @@ FAGX_SensorMsgsImage UAGX_CameraSensorComponent::GetImageROS2(bool Grayscale) co
 	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
 		TimeStamp = Sim->GetTimeStamp();
 
-	return UAGX_BlueprintUtilities::GetImageROS2(RenderTarget, TimeStamp, Grayscale);
+	return UAGX_RenderUtilities::GetImageROS2(RenderTarget, TimeStamp, Grayscale);
 }
 
 bool UAGX_CameraSensorComponent::IsFovValid(float FOV)

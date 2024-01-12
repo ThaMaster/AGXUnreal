@@ -5,6 +5,8 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Contacts/ShapeContactBarrier.h"
+#include "ROS2/AGX_ROS2Messages.h"
+#include "Utilities/AGX_ROS2Utilities.h"
 
 // Unreal Engine includes.
 #include "DrawDebugHelpers.h"
@@ -106,4 +108,63 @@ void FAGX_RenderUtilities::DrawContactPoints(
 				World, PointLocation, NormalEnd, FColor::Orange, false, LifeTime, 99, 0.35f);
 		}
 	}
+}
+
+TArray<FColor> UAGX_RenderUtilities::GetImagePixels8(UTextureRenderTarget2D* RenderTarget)
+{
+	if (RenderTarget == nullptr || RenderTarget->GetFormat() != EPixelFormat::PF_B8G8R8A8)
+		return TArray<FColor>();
+
+	FTextureRenderTargetResource* RtResource = RenderTarget->GameThread_GetRenderTargetResource();
+	TArray<FColor> PixelData;
+
+	// ReadPixels will synchronize (wait) for the render thread to finish, making it slow.
+	RtResource->ReadPixels(PixelData);
+	return PixelData;
+}
+
+TArray<FFloat16Color> UAGX_RenderUtilities::GetImagePixels16(UTextureRenderTarget2D* RenderTarget)
+{
+	if (RenderTarget == nullptr || RenderTarget->GetFormat() != EPixelFormat::PF_FloatRGBA)
+		return TArray<FFloat16Color>();
+
+	FTextureRenderTargetResource* RtResource = RenderTarget->GameThread_GetRenderTargetResource();
+	TArray<FFloat16Color> PixelData;
+
+	// ReadFloat16Pixels will synchronize (wait) for the render thread to finish, making it slow.
+	RtResource->ReadFloat16Pixels(PixelData);
+	return PixelData;
+}
+
+namespace AGX_RenderUtilities_helpers
+{
+	template <typename PixelType>
+	FAGX_SensorMsgsImage GetImageROS2(
+		const TArray<PixelType>& Pixels, const FIntPoint& Resolution, float TimeStamp,
+		bool Grayscale)
+	{
+		if (Pixels.Num() == 0)
+			return FAGX_SensorMsgsImage();
+
+		return FAGX_ROS2Utilities::Convert(Pixels, TimeStamp, Resolution, Grayscale);
+	}
+}
+
+FAGX_SensorMsgsImage UAGX_RenderUtilities::GetImageROS2(
+	UTextureRenderTarget2D* RenderTarget, float TimeStamp, bool Grayscale)
+{
+	const FIntPoint Resolution(RenderTarget->SizeX, RenderTarget->SizeY);
+	
+	if (RenderTarget->GetFormat() == EPixelFormat::PF_B8G8R8A8)
+	{
+		return AGX_RenderUtilities_helpers::GetImageROS2(
+			GetImagePixels8(RenderTarget), Resolution, TimeStamp, Grayscale);
+	}
+	else if (RenderTarget->GetFormat() == EPixelFormat::PF_FloatRGBA)
+	{
+		return AGX_RenderUtilities_helpers::GetImageROS2(
+			GetImagePixels16(RenderTarget), Resolution, TimeStamp, Grayscale);
+	}
+
+	return FAGX_SensorMsgsImage();
 }
