@@ -1,18 +1,20 @@
 // Copyright 2024, Algoryx Simulation AB.
 
 #include "RigidBodyBarrier.h"
-#include "Shapes/ShapeBarrier.h"
 
+// AGX Dynamics for Unreal includes.
 #include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
 #include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/CylinderShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
+#include "Shapes/ShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "TypeConversions.h"
 
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/Vec3.h>
 #include <agx/Quat.h>
