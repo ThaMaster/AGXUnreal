@@ -115,3 +115,8 @@ bool FWireControllerBarrier::HasNative() const
 	AGX_CHECK(Native != nullptr); // Must always have an FWireControllerPtr.
 	return Native != nullptr && Native->Native != nullptr;
 }
+
+void FWireControllerBarrier::InitializeNative()
+{
+	Native->Native = agxWire::WireController::instance();
+}

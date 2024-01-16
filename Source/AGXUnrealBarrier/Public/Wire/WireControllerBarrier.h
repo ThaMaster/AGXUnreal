@@ -33,6 +33,8 @@ public:
 	bool GetDynamicWireContactsGloballyEnabled() const;
 
 	bool HasNative() const;
+	void InitializeNative();
+
 private:
 	std::unique_ptr<FWireControllerPtr> Native;
 };
