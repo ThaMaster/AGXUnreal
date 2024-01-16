@@ -53,6 +53,8 @@ bool FWireControllerBarrier::SetCollisionsEnabled(
 	FWireBarrier& Wire1, FWireBarrier& Wire2, bool bEnable)
 {
 	check(HasNative());
+	check(Wire1.HasNative());
+	check(Wire2.HasNative());
 	return Native->Native->setEnableCollisions(
 		Wire1.GetNative()->Native, Wire2.GetNative()->Native, bEnable);
 }
