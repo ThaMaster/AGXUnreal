@@ -16,7 +16,7 @@ struct FAGX_LidarScanPoint
 	* The local position of this point [cm].
 	*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
-	FVector Position;
+	FVector Position {FVector::ZeroVector};
 
 	/**
 	 * The moment in game time that this point was measured [s].

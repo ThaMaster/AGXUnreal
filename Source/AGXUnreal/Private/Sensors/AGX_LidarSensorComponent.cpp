@@ -3,7 +3,6 @@
 #include "Sensors/AGX_LidarSensorComponent.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_Simulation.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -19,7 +18,10 @@ namespace AGX_LidarSensorComponent_helpers
 {
 	void PerformPartialScanCPU(double FractionStart, double FractionEnd)
 	{
-		// Todo: implemen.
+		if (FractionEnd <= FractionStart)
+			return;
+
+		UE_LOG(LogTemp, Warning, TEXT("%f %f"), FractionStart, FractionEnd);
 	}
 }
 
@@ -64,7 +66,7 @@ void UAGX_LidarSensorComponent::BeginPlay()
 			Buffer.Reserve(InitSize);
 	}
 
-	LidarState.CycleDuration = 1.0 / ScanFrequency;
+	LidarState.ScanCycleDuration = 1.0 / ScanFrequency;
 }
 
 void UAGX_LidarSensorComponent::TickComponent(
@@ -76,10 +78,12 @@ void UAGX_LidarSensorComponent::TickComponent(
 	if (!bIsValid)
 		return;
 
+	UpdateElapsedTime();
+
 	if (SamplingType == EAGX_LidarSamplingType::CPU)
 		ScanCPU();
 
-	OutputPointCloudData();
+	OutputPointCloudDataIfReady();
 }
 
 void UAGX_LidarSensorComponent::EndPlay(const EEndPlayReason::Type Reason)
@@ -161,33 +165,47 @@ bool UAGX_LidarSensorComponent::CheckValid() const
 	return true;
 }
 
+void UAGX_LidarSensorComponent::UpdateElapsedTime()
+{
+	LidarState.ElapsedTimePrev = LidarState.ElapsedTime;
+	LidarState.ElapsedTime = GetWorld()->GetTimeSeconds();
+}
+
 void UAGX_LidarSensorComponent::ScanCPU()
 {
 	using namespace AGX_LidarSensorComponent_helpers;
 	AGX_CHECK(bIsValid);
 
-	const double CycleTimeElapsedLast = LidarState.ElapsedTime - LidarState.CurrentCycleStartTime;
-	const double CycleFractionLast = CycleTimeElapsedLast / LidarState.CycleDuration;
-	AGX_CHECK(CycleFractionLast < 1.0);
+	const double ScanCycleTimeElapsedPrev =
+		LidarState.ElapsedTimePrev - LidarState.CurrentScanCycleStartTime;
+	const double ScanCycleFractionPrev = ScanCycleTimeElapsedPrev / LidarState.ScanCycleDuration;
+	AGX_CHECK(ScanCycleFractionPrev < 1.0);
 
-	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
-		LidarState.ElapsedTime = static_cast<double>(Sim->GetTimeStamp());
-	else
-		return;
+	const double ScanCycleTimeElapsed =
+		LidarState.ElapsedTime - LidarState.CurrentScanCycleStartTime;
+	const double ScanCycleFraction = ScanCycleTimeElapsed / LidarState.ScanCycleDuration;
 
-	const double CycleTimeElapsed = LidarState.ElapsedTime - LidarState.CurrentCycleStartTime;
-	const double CycleFraction = CycleTimeElapsed / LidarState.CycleDuration;
+	AGX_CHECK(ScanCycleFraction > ScanCycleFractionPrev);
+	PerformPartialScanCPU(ScanCycleFractionPrev, std::min(ScanCycleFraction, 1.0));
 
-	PerformPartialScanCPU(CycleFractionLast, std::min(CycleFraction, 1.0));
-
-	if (CycleFraction >= 1.0)
+	if (ScanCycleFraction >= 1.0)
 	{
 		// Set the state as to prepare the next cycle.
-		LidarState.CurrentCycleStartTime = LidarState.ElapsedTime;
+		LidarState.CurrentScanCycleStartTime = LidarState.ElapsedTime;
 	}
 }
 
-void UAGX_LidarSensorComponent::OutputPointCloudData()
+void UAGX_LidarSensorComponent::OutputPointCloudDataIfReady()
 {
-	// Todo: implement.
+	AGX_CHECK(bIsValid);
+
+	const double OutputCycleTimeElapsed =
+		LidarState.ElapsedTime - LidarState.CurrentOutputCycleStartTime;
+
+	if (OutputCycleTimeElapsed >= LidarState.OutputCycleDuration)
+	{
+		PointCloudDataOutput.Broadcast(Buffer);
+		Buffer.SetNum(0, false);
+		LidarState.CurrentOutputCycleStartTime = LidarState.ElapsedTime;
+	}
 }

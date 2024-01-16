@@ -134,8 +134,11 @@ private:
 	struct FAGX_LidarState
 	{
 		double ElapsedTime {0.0};
-		double CycleDuration {0.0}; // Always 1 / ScanFrequency.
-		double CurrentCycleStartTime {0.0};
+		double ElapsedTimePrev {0.0}; // Elapsed time at last tick.
+		double ScanCycleDuration {0.0}; // Always 1 / ScanFrequency.
+		double OutputCycleDuration {0.0}; // Always 1 / OutputFrequency.
+		double CurrentScanCycleStartTime {0.0};
+		double CurrentOutputCycleStartTime {0.0};
 	};
 
 	FAGX_LidarState LidarState;
@@ -145,6 +148,7 @@ private:
 	TArray<FAGX_LidarScanPoint> Buffer;
 
 	bool CheckValid() const;
+	void UpdateElapsedTime();
 	void ScanCPU();
-	void OutputPointCloudData();
+	void OutputPointCloudDataIfReady();
 };
