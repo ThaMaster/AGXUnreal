@@ -34,12 +34,28 @@ bool UAGX_WireController::SetCollisionsEnabled(
 		UE_LOG(LogAGX, Warning, TEXT("AGX_WireController does not have a Native."));
 		return false;
 	}
+	if (Wire1 == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Wire 1 passed to AGX_WireController::SetCollisionsEnabled is None / nullptr. "
+				 "This is not allowed."));
+		return false;
+	}
 	if (!Wire1->HasNative())
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Wire 1 passed to AGX_WireController::SetCollisionsEnabled does not have a "
 				 "Native"));
+		return false;
+	}
+	if (Wire2 == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Wire 2 passed to AGX_WireController::SetCollisionsEnabled is None / nullptr. "
+				 "This is not allowed."));
 		return false;
 	}
 	if (!Wire2->HasNative())
@@ -61,12 +77,28 @@ bool UAGX_WireController::GetCollisionsEnabled(
 		UE_LOG(LogAGX, Warning, TEXT("AGX_WireController does not have a Native."));
 		return false;
 	}
+	if (Wire1 == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Wire 1 passed to AGX_WireController::SetCollisionsEnabled is None / nullptr. "
+				 "This is not allowed."));
+		return false;
+	}
 	if (!Wire1->HasNative())
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Wire 1 passed to AGX_WireController::GetCollisionsEnabled does not have a "
 				 "Native"));
+		return false;
+	}
+	if (Wire2 == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Wire 2 passed to AGX_WireController::SetCollisionsEnabled is None / nullptr. "
+				 "This is not allowed."));
 		return false;
 	}
 	if (!Wire2->HasNative())

@@ -20,7 +20,6 @@ public:
 	~FWireControllerBarrier();
 
 	bool IsWireWireActive() const;
-
 	bool SetCollisionsEnabled(FWireBarrier& Wire1, FWireBarrier& Wire2, bool bEnable);
 	bool GetCollisionsEnabled(const FWireBarrier& Wire1, const FWireBarrier& Wire2) const;
 
