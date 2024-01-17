@@ -107,19 +107,47 @@ public:
 
 	/**
 	 * Determines whether an intensity value is calculated or not. If set to false, the value zero
-	 * is written instead. Using this functionality may come with a performance cost.
+	 * is written instead. Using this functionality comes with a performance cost.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar")
 	bool bCalculateIntensity {true};
 
+	/**
+	 * Determines whether the scanned points should be drawn on screen or not. Using this
+	 * functionality comes with a performance cost.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Lidar")
 	bool bDebugRenderPoints {true};
 
 	/**
-	 * Todo: Add description.
+	 * Manually start a Lidar scan.
+	 * The scanned point cloud data is broadcasted via the PointCloudDataOutput delegate which users
+	 * of this Lidar Sensor may bind to in order to access the data. This delegate is always
+	 * executed once upon calling this function, as long as some points were measured.
+	 *
+	 * This function should only be called when ExecutionMode is set to Manual, and will do nothing
+	 * if it is not.
+	 *
+	 * (Optional) FractionStart and FractionEnd determines what part of the complete scan cycle
+	 * should be scanned, i.e. how much of the complete scan pattern should be scanned. To complete
+	 * a full scan cycle, the FractionStart should be set to zero and FractionEnd should be set to
+	 * one. These parameters will both be clamped to [0..1].
+	 *
+	 * (Optional) FOVWindowX and FOVWindowY can be used to sample only a sub window of the whole
+	 * Lidar Sensor's FOV [deg].
+	 * In other words, it can be used to specify a sub-section of the
+	 * Lidar Sensor's FOV to be considered during the scan, and any area outside this sub-section
+	 * are not scanned. This can increase the performance.
+	 * The X component in each FOVWindow represents the lower bound and the Y component the upper
+	 * bound.
+	 * If left unchanged, the whole Lidar Sensor FOV will be considered. Using the FOV window
+	 * does not affect the apparent scale of the scan pattern, it can be seen as a mask that simply
+	 * discards points outside this FOV window.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	void RequestManualScan() const;
+	void RequestManualScan(
+		double FractionStart = 0.0, double FractionEnd = 1.0,
+		FVector2D FOVWindowX = FVector2D::ZeroVector, FVector2D FOVWindowY = FVector2D::ZeroVector);
 
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;

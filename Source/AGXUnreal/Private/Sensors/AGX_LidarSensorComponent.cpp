@@ -3,6 +3,7 @@
 #include "Sensors/AGX_LidarSensorComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -69,9 +70,11 @@ namespace AGX_LidarSensorComponent_helpers
 		{
 		}
 
-		const FTransform Origin {FTransform::Identity};
-		const FVector2D FOV {FVector2D::ZeroVector};
-		const FVector2D Resolution {FVector2D::ZeroVector};
+		FTransform Origin {FTransform::Identity};
+		FVector2D FOV {FVector2D::ZeroVector};
+		FVector2D Resolution {FVector2D::ZeroVector};
+		FVector2D FOVWindowX {FVector2D::ZeroVector};
+		FVector2D FOVWindowY {FVector2D::ZeroVector};
 		double TimeStamp {0.0};
 		double FractionStart {0.0};
 		double FractionEnd {0.0};
@@ -84,6 +87,8 @@ namespace AGX_LidarSensorComponent_helpers
 	{
 		if (World == nullptr || Params.FractionEnd <= Params.FractionStart || Params.Range <= 0.0)
 			return {};
+
+		// The scan pattern implemented below is row-wise linear sweep.
 
 		const int32 NumRaysCycleX = static_cast<int32>(Params.FOV.X / Params.Resolution.X);
 		const int32 NumRaysCycleY = static_cast<int32>(Params.FOV.Y / Params.Resolution.Y);
@@ -113,13 +118,14 @@ namespace AGX_LidarSensorComponent_helpers
 		const FCollisionQueryParams CollParams;
 
 		// This number is somewhat arbitrary, but a good starting point.
-		// The cost of starting several threads will at some point make single threaded execution the
-		// better option.
+		// The cost of starting several threads will at some point make single threaded execution
+		// the better option.
 		static constexpr int32 MinRaysForMultithread = 300;
 		const int32 NumRays = LastRay - FirstRay + 1;
 		const bool RunMultithreaded =
 			FPlatformProcess::SupportsMultithreading() && NumRays >= MinRaysForMultithread;
-		const int32 NumThreads = RunMultithreaded ? FPlatformMisc::NumberOfWorkerThreadsToSpawn() : 1;
+		const int32 NumThreads =
+			RunMultithreaded ? FPlatformMisc::NumberOfWorkerThreadsToSpawn() : 1;
 		const int32 NumRaysPerThread = RunMultithreaded ? NumRays / NumThreads : NumRays;
 		std::mutex Mutex;
 		ParallelFor(
@@ -135,11 +141,24 @@ namespace AGX_LidarSensorComponent_helpers
 				for (int32 Ray = ThreadFirstRay; Ray < ThreadLastRayPlusOne; Ray++)
 				{
 					const int32 IndexX = Ray % NumRaysCycleX;
+					const double AngX =
+						-Params.FOV.X / 2.0 + Params.Resolution.X * static_cast<double>(IndexX);
+					if (AngX < Params.FOVWindowX.X || AngX > Params.FOVWindowX.Y)
+						continue; // Outside the FOVWindow, no need to scan this direction.
+
 					const int32 IndexY = Ray / NumRaysCycleX;
-					const double AngRadX = FMath::DegreesToRadians(
-						-Params.FOV.X / 2.0 + Params.Resolution.X * static_cast<double>(IndexX));
-					const double AngRadY = FMath::DegreesToRadians(
-						-Params.FOV.Y / 2.0 + Params.Resolution.Y * static_cast<double>(IndexY));
+					const double AngY =
+						-Params.FOV.Y / 2.0 + Params.Resolution.Y * static_cast<double>(IndexY);
+					if (AngY < Params.FOVWindowY.X || AngY > Params.FOVWindowY.Y)
+					{
+						// Outsude the FOVWindow, no need to scan this direction.
+						// For this scan pattern, we know we can safely jump to the end of this row.
+						Ray += (NumRaysCycleX - IndexX - 1);
+						continue;
+					}
+
+					const double AngRadX = FMath::DegreesToRadians(AngX);
+					const double AngRadY = FMath::DegreesToRadians(AngY);
 
 					// Dir is the normalized vector following the current laser ray. Here X is
 					// horizontal and Y vertical.
@@ -181,8 +200,10 @@ namespace AGX_LidarSensorComponent_helpers
 	}
 }
 
-void UAGX_LidarSensorComponent::RequestManualScan() const
+void UAGX_LidarSensorComponent::RequestManualScan(
+	double FractionStart, double FractionEnd, FVector2D FOVWindowX, FVector2D FOVWindowY)
 {
+	using namespace AGX_LidarSensorComponent_helpers;
 	if (!bIsValid)
 		return;
 
@@ -196,7 +217,45 @@ void UAGX_LidarSensorComponent::RequestManualScan() const
 		return;
 	}
 
-	// Todo: implement.
+	FractionStart = FMath::Clamp(FractionStart, 0.0, 1.0);
+	FractionEnd = FMath::Clamp(FractionEnd, 0.0, 1.0);
+	if (FOVWindowX.IsNearlyZero())
+		FOVWindowX = {-FOV.X / 2.0, FOV.X / 2.0};
+	if (FOVWindowY.IsNearlyZero())
+		FOVWindowY = {-FOV.Y / 2.0, FOV.Y / 2.0};
+
+	if (FractionEnd <= FractionStart)
+		return;
+
+	LidarScanRequestParams Params(GetComponentTransform(), FOV, Resolution);
+	{
+		Params.FOVWindowX = FOVWindowX;
+		Params.FOVWindowY = FOVWindowY;
+		Params.TimeStamp = LidarState.ElapsedTime;
+		Params.FractionStart = FractionStart;
+		Params.FractionEnd = FractionEnd;
+		Params.Range = Range;
+		Params.bCalculateIntensity = bCalculateIntensity;
+	}
+
+	// We use the Buffer here to avoid having to allocate a new TArray for the Points about to be
+	// created. The Buffer will not be used elsewhere since the execution mode is Manual here.
+	AGX_CHECK(Buffer.Num() == 0);
+	{
+		// Reserve Buffer capacity if needed.
+		const double NumPointsPerCycle = (FOV.X / Resolution.X) * (FOV.Y / Resolution.Y);
+		const double Fraction = FractionEnd - FractionStart;
+		const int32 NumPoints = NumPointsPerCycle * Fraction + 1;
+		if (Buffer.GetSlack() < NumPoints)
+			Buffer.Reserve(NumPoints);
+	}
+	auto NewPoints = PerformPartialScanCPU(GetWorld(), Params, Buffer);
+
+	if (bDebugRenderPoints)
+		DrawDebugPoints(GetWorld(), GetComponentTransform(), NewPoints);
+
+	PointCloudDataOutput.Broadcast(Buffer);
+	Buffer.SetNum(0, false);
 }
 
 void UAGX_LidarSensorComponent::BeginPlay()
@@ -215,8 +274,7 @@ void UAGX_LidarSensorComponent::BeginPlay()
 		// first scan cycle.
 		const double StoreFraction = ScanFrequency / OutputFrequency;
 		const double NumPointsPerCycle = (FOV.X / Resolution.X) * (FOV.Y / Resolution.Y);
-		const double SafetyMargin = 1.05;
-		const int32 InitSize = static_cast<int32>(StoreFraction * NumPointsPerCycle * SafetyMargin);
+		const int32 InitSize = static_cast<int32>(StoreFraction * NumPointsPerCycle);
 
 		if (InitSize > 0)
 			Buffer.Reserve(InitSize);
@@ -228,13 +286,13 @@ void UAGX_LidarSensorComponent::BeginPlay()
 void UAGX_LidarSensorComponent::TickComponent(
 	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	if (ExecutionMode != EAGX_LidarExecutonMode::Auto)
-		return;
-
 	if (!bIsValid)
 		return;
 
 	UpdateElapsedTime();
+
+	if (ExecutionMode != EAGX_LidarExecutonMode::Auto)
+		return;
 
 	if (SamplingType == EAGX_LidarSamplingType::CPU)
 		ScanCPU();
@@ -345,6 +403,8 @@ void UAGX_LidarSensorComponent::ScanCPU()
 
 	LidarScanRequestParams Params(GetComponentTransform(), FOV, Resolution);
 	{
+		Params.FOVWindowX = {-FOV.X / 2.0, FOV.X / 2.0};
+		Params.FOVWindowY = {-FOV.Y / 2.0, FOV.Y / 2.0};
 		Params.TimeStamp = LidarState.ElapsedTime;
 		Params.FractionStart = ScanCycleFractionPrev;
 		Params.FractionEnd = std::min(ScanCycleFraction, 1.0);
@@ -353,11 +413,8 @@ void UAGX_LidarSensorComponent::ScanCPU()
 	}
 
 	auto NewPoints = PerformPartialScanCPU(GetWorld(), Params, Buffer);
-
 	if (bDebugRenderPoints)
-	{
 		DrawDebugPoints(GetWorld(), GetComponentTransform(), NewPoints);
-	}
 
 	if (ScanCycleFraction >= 1.0)
 	{
