@@ -113,14 +113,13 @@ namespace AGX_LidarSensorComponent_helpers
 		const FCollisionQueryParams CollParams;
 
 		// This number is somewhat arbitrary, but a good starting point.
-		// The cost of starting several threads will at some point make single threaded run the
-		// better option. Expected performance is on the order of hundreads of thousands of rays /
-		// second on a single thread.
+		// The cost of starting several threads will at some point make single threaded execution the
+		// better option.
 		static constexpr int32 MinRaysForMultithread = 300;
 		const int32 NumRays = LastRay - FirstRay + 1;
 		const bool RunMultithreaded =
 			FPlatformProcess::SupportsMultithreading() && NumRays >= MinRaysForMultithread;
-		const int32 NumThreads = FPlatformMisc::NumberOfWorkerThreadsToSpawn();
+		const int32 NumThreads = RunMultithreaded ? FPlatformMisc::NumberOfWorkerThreadsToSpawn() : 1;
 		const int32 NumRaysPerThread = RunMultithreaded ? NumRays / NumThreads : NumRays;
 		std::mutex Mutex;
 		ParallelFor(
