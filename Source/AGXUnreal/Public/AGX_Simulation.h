@@ -56,7 +56,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostStepForwardInternal, float /*Time*/);
  * specific UAGX_Simulation instance.
  *
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", config = Engine, defaultconfig)
+UCLASS(ClassGroup = "AGX", Category = "AGX", Config = Engine, DefaultConfig)
 class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
@@ -68,7 +68,8 @@ public: // Properties.
 	 * Set to 0 to use all hardware threads.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "AGX Dynamics", Meta = (DisplayName = "Number of Threads"))
+		Config, EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics",
+		Meta = (DisplayName = "Number of Threads"))
 	int32 NumThreads = 4;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
@@ -108,7 +109,7 @@ public: // Properties.
 	 * Iterations.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Solver",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Solver",
 		Meta = (DisplayName = "Override PPGS Iterations"))
 	bool bOverridePPGSIterations = false;
 
@@ -117,14 +118,14 @@ public: // Properties.
 	 * solver. This value influences the accuracy and computation cost of e.g. terrain particles.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Solver",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Solver",
 		Meta =
 			(ClampMin = 1, UIMin = 1, DisplayName = "Num PPGS Iterations",
 			 EditCondition = "bOverridePPGSIterations"))
 	int32 NumPpgsIterations = 25;
 
 	/** Specifies the gravity model used by the simulation. */
-	UPROPERTY(Config, EditAnywhere, Category = "Gravity")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Gravity")
 	TEnumAsByte<enum EAGX_GravityModel> GravityModel = EAGX_GravityModel::Uniform;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Simulation")
@@ -132,7 +133,7 @@ public: // Properties.
 
 	/** Specifies the gravity vector when using Uniform Gravity Field with magnitude [cm/s^2]. */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Gravity",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Gravity",
 		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Uniform"))
 	FVector UniformGravity = FVector(0.0f, 0.0f, -980.665f);
 
@@ -142,13 +143,13 @@ public: // Properties.
 	/** Specifies the world location towards which the gravity field is directed when using Point
 	 * Gravity Field [cm]. */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Gravity",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Gravity",
 		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Point"))
 	FVector PointGravityOrigin = FVector::ZeroVector;
 
 	/** Specifies the gravity magnitude when using Point Gravity Field [cm/s^2]. */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Gravity",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Gravity",
 		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Point"))
 	float PointGravityMagnitude = -980.665f;
 
@@ -163,7 +164,7 @@ public: // Properties.
 	TEnumAsByte<enum EAGX_StepMode> StepMode = SmDropImmediately;
 
 	/** Maximum time lag for the Catch up over time Capped step mode before dropping [s]. */
-	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Simulation Stepping Mode")
 	float TimeLagCap = 1.0;
 
 	/** Set to true to enable statistics gathering in AGX Dynamics. */
@@ -183,7 +184,7 @@ public: // Properties.
 	 * and Shapes that does not specify their own.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "AGX AMOR",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR",
 		Meta = (AllowedClasses = "/Script/AGXUnreal.AGX_ShapeContactMergeSplitThresholds"))
 	FSoftObjectPath GlobalShapeContactMergeSplitThresholds;
 
@@ -192,7 +193,7 @@ public: // Properties.
 	 * that does not specify their own.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "AGX AMOR",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR",
 		Meta = (AllowedClasses = "/Script/AGXUnreal.AGX_ConstraintMergeSplitThresholds"))
 	FSoftObjectPath GlobalConstraintMergeSplitThresholds;
 
@@ -201,7 +202,7 @@ public: // Properties.
 	 * that does not specify their own.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "AGX AMOR",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR",
 		Meta = (AllowedClasses = "/Script/AGXUnreal.AGX_WireMergeSplitThresholds"))
 	FSoftObjectPath GlobalWireMergeSplitThresholds;
 
@@ -210,7 +211,7 @@ public: // Properties.
 	 * Set to true to write an AGX Dynamics for Unreal archive of the initial state.
 	 * The archive is written to the path set in ExportPath on the first game Tick.
 	 */
-	UPROPERTY(Config, EditAnywhere, Category = "Startup")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Startup")
 	bool bExportInitialState = false;
 
 	/**
@@ -218,9 +219,24 @@ public: // Properties.
 	 * set.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Startup", Meta = (EditCondition = "bExportInitialState"))
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Startup",
+		Meta = (EditCondition = "bExportInitialState"))
 	FString ExportPath;
 #endif
+
+	/**
+	 * Set to true to force-enable wire-wire collision detection for all wires.
+	 * By default wire-wire collisions is enabled per wire-pair using Wire Controller.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Startup")
+	bool bEnableWireWireCollisions {false};
+
+	/**
+	 * Set to true to force-enable dynamic wire contacts for all wire-on-shape collisions.
+	 * By default dynamic wire contacts are enabled per Geometry using Wire Controller.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Startup")
+	bool bEnableDynamicWireContacts {false};
 
 	/**
 	 * Remote debugging allows agxViewer, the default scene viewer in AGX
@@ -237,7 +253,9 @@ public: // Properties.
 	uint8 bRemoteDebugging : 1;
 
 	/** Network port to use for remote debugging. */
-	UPROPERTY(Config, EditAnywhere, Category = "Debug", Meta = (EditCondition = "bRemoteDebugging"))
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Debug",
+		Meta = (EditCondition = "bRemoteDebugging"))
 	int16 RemoteDebuggingPort;
 
 	/**
@@ -264,7 +282,8 @@ public: // Properties.
 	 * visualization will start to shrink along with the surrounding geometry.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Rendering", Meta = (ClampMin = "0.0", UIMin = "0.0"))
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Rendering",
+		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float ConstraintVisualizationScalingDistanceMax = 400.f;
 
 public: // Member functions.
