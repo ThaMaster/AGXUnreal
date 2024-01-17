@@ -30,7 +30,9 @@ public:
 	/**
 	 * Get the Wire Controller.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Wire Controller", Meta = (DisplayName = "Get Wire Controller"))
+	UFUNCTION(
+		BlueprintCallable, BlueprintPure, Category = "Wire Controller",
+		Meta = (DisplayName = "Get Wire Controller"))
 	static UPARAM(DisplayName = "Wire Controller") UAGX_WireController* Get();
 
 	/**

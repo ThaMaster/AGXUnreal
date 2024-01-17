@@ -383,6 +383,7 @@ public: // Member functions.
 	static void SetEnableCollision(
 		UAGX_RigidBodyComponent& Body1, UAGX_RigidBodyComponent& Body2, bool Enable);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure = False, Category = "Simulation")
 	bool WriteAGXArchive(const FString& Filename) const;
 
 	bool HasNative() const;
