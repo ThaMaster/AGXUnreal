@@ -13,6 +13,7 @@
 
 // Standard library includes.
 #include <algorithm>
+#include <mutex>
 
 UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 {
@@ -21,7 +22,8 @@ UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 
 namespace AGX_LidarSensorComponent_helpers
 {
-	void DrawDebugPoints(UWorld* World, const FTransform& LocalFrame, TArrayView<FAGX_LidarScanPoint> Points)
+	void DrawDebugPoints(
+		UWorld* World, const FTransform& LocalFrame, TArrayView<FAGX_LidarScanPoint> Points)
 	{
 		if (World == nullptr)
 			return;
@@ -83,7 +85,6 @@ namespace AGX_LidarSensorComponent_helpers
 		if (World == nullptr || Params.FractionEnd <= Params.FractionStart || Params.Range <= 0.0)
 			return {};
 
-		const FVector Start = Params.Origin.GetLocation();
 		const int32 NumRaysCycleX = static_cast<int32>(Params.FOV.X / Params.Resolution.X);
 		const int32 NumRaysCycleY = static_cast<int32>(Params.FOV.Y / Params.Resolution.Y);
 		if (NumRaysCycleX <= 0 || NumRaysCycleY <= 0)
@@ -91,7 +92,7 @@ namespace AGX_LidarSensorComponent_helpers
 
 		const int32 NumRaysCycle = NumRaysCycleX * NumRaysCycleY;
 		const double NumRaysCycled = static_cast<double>(NumRaysCycle);
-		const int32 StartRay = [&Params, NumRaysCycled]()
+		const int32 FirstRay = [&Params, NumRaysCycled]()
 		{
 			int32 Start = std::max(static_cast<int32>(NumRaysCycled * Params.FractionStart), 0);
 
@@ -104,46 +105,74 @@ namespace AGX_LidarSensorComponent_helpers
 			return Start;
 		}();
 
-		const int32 EndRay =
+		const int32 LastRay =
 			std::min(FMath::RoundToInt32(NumRaysCycled * Params.FractionEnd), NumRaysCycle - 1);
 
+		const FVector StartGlobal = Params.Origin.GetLocation();
 		const int32 NumPointsPreAppend = OutData.Num();
 		const FCollisionQueryParams CollParams;
-		FHitResult HitResult;
-		for (int32 Ray = StartRay; Ray <= EndRay; Ray++)
-		{
-			const int32 IndexX = Ray % NumRaysCycleX;
-			const int32 IndexY = Ray / NumRaysCycleX;
-			const double AngRadX = FMath::DegreesToRadians(
-				-Params.FOV.X / 2.0 + Params.Resolution.X * static_cast<double>(IndexX));
-			const double AngRadY = FMath::DegreesToRadians(
-				-Params.FOV.Y / 2.0 + Params.Resolution.Y * static_cast<double>(IndexY));
 
-			// Dir is the normalized vector following the current laser ray. Here X is horizontal
-			// and Y vertical.
-			const FVector Dir(
-				FMath::Sin(AngRadX) * FMath::Cos(AngRadY), FMath::Sin(AngRadY),
-				FMath::Cos(AngRadX) * FMath::Cos(AngRadY));
-
-			// Lidar sensors local coordinate system is x forwards, y to the right and z up.
-			const FVector EndLocal(
-				Dir.Z * Params.Range, Dir.X * Params.Range, -Dir.Y * Params.Range);
-			const FVector End = Params.Origin.TransformPositionNoScale(EndLocal);
-			if (World->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollParams))
+		// This number is somewhat arbitrary, but a good starting point.
+		// The cost of starting several threads will at some point make single threaded run the
+		// better option. Expected performance is on the order of hundreads of thousands of rays /
+		// second on a single thread.
+		static constexpr int32 MinRaysForMultithread = 300;
+		const int32 NumRays = LastRay - FirstRay + 1;
+		const bool RunMultithreaded =
+			FPlatformProcess::SupportsMultithreading() && NumRays >= MinRaysForMultithread;
+		const int32 NumThreads = FPlatformMisc::NumberOfWorkerThreadsToSpawn();
+		const int32 NumRaysPerThread = RunMultithreaded ? NumRays / NumThreads : NumRays;
+		std::mutex Mutex;
+		ParallelFor(
+			NumThreads,
+			[&](int32 Thread)
 			{
-				const FVector LocalPoint =
-					Params.Origin.InverseTransformPositionNoScale(HitResult.Location);
-				double Intensity = 0.0;
-				if (Params.bCalculateIntensity)
+				const int32 ThreadFirstRay = FirstRay + Thread * NumRaysPerThread;
+				int32 ThreadLastRayPlusOne = FirstRay + (Thread + 1) * NumRaysPerThread;
+				if (Thread == NumThreads - 1) // Last thread.
+					ThreadLastRayPlusOne = LastRay + 1;
+
+				FHitResult HitResult;
+				for (int32 Ray = ThreadFirstRay; Ray < ThreadLastRayPlusOne; Ray++)
 				{
-					const FVector_NetQuantizeNormal DirGlobal((End - Start).GetSafeNormal());
-					Intensity = ApproximateIntensity(HitResult, DirGlobal);
+					const int32 IndexX = Ray % NumRaysCycleX;
+					const int32 IndexY = Ray / NumRaysCycleX;
+					const double AngRadX = FMath::DegreesToRadians(
+						-Params.FOV.X / 2.0 + Params.Resolution.X * static_cast<double>(IndexX));
+					const double AngRadY = FMath::DegreesToRadians(
+						-Params.FOV.Y / 2.0 + Params.Resolution.Y * static_cast<double>(IndexY));
+
+					// Dir is the normalized vector following the current laser ray. Here X is
+					// horizontal and Y vertical.
+					const FVector Dir(
+						FMath::Sin(AngRadX) * FMath::Cos(AngRadY), FMath::Sin(AngRadY),
+						FMath::Cos(AngRadX) * FMath::Cos(AngRadY));
+
+					// Lidar sensors local coordinate system is x forwards, y to the right and z up.
+					const FVector EndLocal(
+						Dir.Z * Params.Range, Dir.X * Params.Range, -Dir.Y * Params.Range);
+					const FVector EndGlobal = Params.Origin.TransformPositionNoScale(EndLocal);
+					if (!World->LineTraceSingleByChannel(
+							HitResult, StartGlobal, EndGlobal, ECC_Visibility, CollParams))
+						continue;
+
+					const FVector LocalPoint =
+						Params.Origin.InverseTransformPositionNoScale(HitResult.Location);
+					double Intensity = 0.0;
+					if (Params.bCalculateIntensity)
+					{
+						const FVector_NetQuantizeNormal DirGlobal(
+							(EndGlobal - StartGlobal).GetSafeNormal());
+						Intensity = ApproximateIntensity(HitResult, DirGlobal);
+					}
+
+					std::lock_guard<std::mutex> Lock(Mutex);
+					OutData.Add(FAGX_LidarScanPoint(
+						FVector(LocalPoint.X, LocalPoint.Y, LocalPoint.Z), Params.TimeStamp,
+						Intensity));
 				}
-				OutData.Add(FAGX_LidarScanPoint(
-					FVector(LocalPoint.X, LocalPoint.Y, LocalPoint.Z), Params.TimeStamp,
-					Intensity));
-			}
-		}
+			},
+			!RunMultithreaded);
 
 		const int32 NumNewPoints = OutData.Num() - NumPointsPreAppend;
 		if (NumNewPoints == 0)
