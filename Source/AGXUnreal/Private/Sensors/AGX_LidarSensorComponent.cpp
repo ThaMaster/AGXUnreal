@@ -9,6 +9,7 @@
 // Unreal Engine includes.
 #include "Async/ParallelFor.h"
 #include "CollisionQueryParams.h"
+#include "Containers/ArrayView.h"
 
 // Standard library includes.
 #include <algorithm>
@@ -20,6 +21,18 @@ UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 
 namespace AGX_LidarSensorComponent_helpers
 {
+	void DrawDebugPoints(UWorld* World, const FTransform& LocalFrame, TArrayView<FAGX_LidarScanPoint> Points)
+	{
+		if (World == nullptr)
+			return;
+
+		for (const auto& P : Points)
+		{
+			const FVector PGlobal = LocalFrame.TransformPositionNoScale(P.Position);
+			DrawDebugPoint(World, PGlobal, 5.f, FColor::Red, false, 0.06, 99);
+		}
+	}
+
 	double ApproximateIntensity(
 		const FHitResult& HitResult, const FVector_NetQuantizeNormal& Direction)
 	{
@@ -64,17 +77,17 @@ namespace AGX_LidarSensorComponent_helpers
 		bool bCalculateIntensity {true};
 	};
 
-	void PerformPartialScanCPU(
+	TArrayView<FAGX_LidarScanPoint> PerformPartialScanCPU(
 		UWorld* World, const LidarScanRequestParams& Params, TArray<FAGX_LidarScanPoint>& OutData)
 	{
 		if (World == nullptr || Params.FractionEnd <= Params.FractionStart || Params.Range <= 0.0)
-			return;
+			return {};
 
 		const FVector Start = Params.Origin.GetLocation();
 		const int32 NumRaysCycleX = static_cast<int32>(Params.FOV.X / Params.Resolution.X);
 		const int32 NumRaysCycleY = static_cast<int32>(Params.FOV.Y / Params.Resolution.Y);
 		if (NumRaysCycleX <= 0 || NumRaysCycleY <= 0)
-			return;
+			return {};
 
 		const int32 NumRaysCycle = NumRaysCycleX * NumRaysCycleY;
 		const double NumRaysCycled = static_cast<double>(NumRaysCycle);
@@ -94,6 +107,7 @@ namespace AGX_LidarSensorComponent_helpers
 		const int32 EndRay =
 			std::min(FMath::RoundToInt32(NumRaysCycled * Params.FractionEnd), NumRaysCycle - 1);
 
+		const int32 NumPointsPreAppend = OutData.Num();
 		const FCollisionQueryParams CollParams;
 		FHitResult HitResult;
 		for (int32 Ray = StartRay; Ray <= EndRay; Ray++)
@@ -130,6 +144,12 @@ namespace AGX_LidarSensorComponent_helpers
 					Intensity));
 			}
 		}
+
+		const int32 NumNewPoints = OutData.Num() - NumPointsPreAppend;
+		if (NumNewPoints == 0)
+			return {};
+
+		return MakeArrayView(&OutData[NumPointsPreAppend], NumNewPoints);
 	}
 }
 
@@ -304,7 +324,12 @@ void UAGX_LidarSensorComponent::ScanCPU()
 		Params.bCalculateIntensity = bCalculateIntensity;
 	}
 
-	PerformPartialScanCPU(GetWorld(), Params, Buffer);
+	auto NewPoints = PerformPartialScanCPU(GetWorld(), Params, Buffer);
+
+	if (bDebugRenderPoints)
+	{
+		DrawDebugPoints(GetWorld(), GetComponentTransform(), NewPoints);
+	}
 
 	if (ScanCycleFraction >= 1.0)
 	{
