@@ -12,9 +12,18 @@ struct FAGX_LidarScanPoint
 {
 	GENERATED_BODY()
 
+	FAGX_LidarScanPoint() = default;
+
+	FAGX_LidarScanPoint(const FVector& InPosition, double InTimeStamp, double InIntensity)
+		: Position(InPosition)
+		, TimeStamp(InTimeStamp)
+		, Intensity(InIntensity)
+	{
+	}
+
 	/**
-	* The local position of this point [cm].
-	*/
+	 * The local position of this point [cm].
+	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
 	FVector Position {FVector::ZeroVector};
 
@@ -29,5 +38,4 @@ struct FAGX_LidarScanPoint
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
 	float Intensity {0.0};
-
 };

@@ -66,6 +66,9 @@ public:
 	 * How often this delegate is executed is controlled by the OutputFrequency.
 	 * Users may bind to this delegate in order to get a callback.
 	 *
+	 * Important: The point cloud data passed via this delegate is only valid during the delegate's
+	 * execution. Any attempt to store these values must be from copying them by value.
+	 *
 	 * Note: all bound callbacks to this delegate are cleared on Level Transition meaning that
 	 * objects surviving a Level Transition that also are bound to this delegates must bind to it
 	 * again in the new Level.
@@ -104,10 +107,10 @@ public:
 
 	/**
 	 * Determines whether an intensity value is calculated or not. If set to false, the value zero
-	 * is written instead. Using this functionality may come with a performance hit.
+	 * is written instead. Using this functionality may come with a performance cost.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar")
-	bool bIncludeIntensity {true};
+	bool bCalculateIntensity {true};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Lidar")
 	bool bDebugRenderPoints {true};

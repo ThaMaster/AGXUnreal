@@ -6,6 +6,10 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
+// Unreal Engine includes.
+#include "Async/ParallelFor.h"
+#include "CollisionQueryParams.h"
+
 // Standard library includes.
 #include <algorithm>
 
@@ -16,12 +20,116 @@ UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 
 namespace AGX_LidarSensorComponent_helpers
 {
-	void PerformPartialScanCPU(double FractionStart, double FractionEnd)
+	double ApproximateIntensity(
+		const FHitResult& HitResult, const FVector_NetQuantizeNormal& Direction)
 	{
-		if (FractionEnd <= FractionStart)
+		// Intensity based on angle of incident.
+		double Intensity = std::max(0.0, -Direction.Dot(HitResult.Normal));
+
+		// Take material Roughness into account.
+		if (HitResult.Component != nullptr)
+		{
+			UMaterialInterface* MaterialInterf = HitResult.Component->GetMaterial(0);
+			FMaterialParameterInfo Info;
+			Info.Name = TEXT("Roughness");
+			float Roughness;
+			if (MaterialInterf->GetScalarParameterValue(Info, Roughness))
+			{
+				Intensity *= (1.0 - std::max(static_cast<double>(Roughness), 0.0));
+			}
+		}
+
+		return Intensity;
+	}
+
+	struct LidarScanRequestParams
+	{
+		LidarScanRequestParams() = default;
+
+		LidarScanRequestParams(
+			const FTransform& InOrigin, const FVector2D& InFOV, const FVector2D& InResolution)
+			: Origin(InOrigin)
+			, FOV(InFOV)
+			, Resolution(InResolution)
+		{
+		}
+
+		const FTransform Origin {FTransform::Identity};
+		const FVector2D FOV {FVector2D::ZeroVector};
+		const FVector2D Resolution {FVector2D::ZeroVector};
+		double TimeStamp {0.0};
+		double FractionStart {0.0};
+		double FractionEnd {0.0};
+		double Range {0.0};
+		bool bCalculateIntensity {true};
+	};
+
+	void PerformPartialScanCPU(
+		UWorld* World, const LidarScanRequestParams& Params, TArray<FAGX_LidarScanPoint>& OutData)
+	{
+		if (World == nullptr || Params.FractionEnd <= Params.FractionStart || Params.Range <= 0.0)
 			return;
 
-		UE_LOG(LogTemp, Warning, TEXT("%f %f"), FractionStart, FractionEnd);
+		const FVector Start = Params.Origin.GetLocation();
+		const int32 NumRaysCycleX = static_cast<int32>(Params.FOV.X / Params.Resolution.X);
+		const int32 NumRaysCycleY = static_cast<int32>(Params.FOV.Y / Params.Resolution.Y);
+		if (NumRaysCycleX <= 0 || NumRaysCycleY <= 0)
+			return;
+
+		const int32 NumRaysCycle = NumRaysCycleX * NumRaysCycleY;
+		const double NumRaysCycled = static_cast<double>(NumRaysCycle);
+		const int32 StartRay = [&Params, NumRaysCycled]()
+		{
+			int32 Start = std::max(static_cast<int32>(NumRaysCycled * Params.FractionStart), 0);
+
+			// To avoid sampling the same point twice, we start one after the calculated start index
+			// since it was scanned the previous round. If this is the first partial scan of a
+			// cycle, then we start from the calculated start index (which should be zero).
+			if (!FMath::IsNearlyZero(Params.FractionStart))
+				Start += 1;
+
+			return Start;
+		}();
+
+		const int32 EndRay =
+			std::min(FMath::RoundToInt32(NumRaysCycled * Params.FractionEnd), NumRaysCycle - 1);
+
+		const FCollisionQueryParams CollParams;
+		FHitResult HitResult;
+		for (int32 Ray = StartRay; Ray <= EndRay; Ray++)
+		{
+			const int32 IndexX = Ray % NumRaysCycleX;
+			const int32 IndexY = Ray / NumRaysCycleX;
+			const double AngRadX = FMath::DegreesToRadians(
+				-Params.FOV.X / 2.0 + Params.Resolution.X * static_cast<double>(IndexX));
+			const double AngRadY = FMath::DegreesToRadians(
+				-Params.FOV.Y / 2.0 + Params.Resolution.Y * static_cast<double>(IndexY));
+
+			// Dir is the normalized vector following the current laser ray. Here X is horizontal
+			// and Y vertical.
+			const FVector Dir(
+				FMath::Sin(AngRadX) * FMath::Cos(AngRadY), FMath::Sin(AngRadY),
+				FMath::Cos(AngRadX) * FMath::Cos(AngRadY));
+
+			// Lidar sensors local coordinate system is x forwards, y to the right and z up.
+			const FVector EndLocal(
+				Dir.Z * Params.Range, Dir.X * Params.Range, -Dir.Y * Params.Range);
+			const FVector End = Params.Origin.TransformPositionNoScale(EndLocal);
+			if (World->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollParams))
+			{
+				const FVector LocalPoint =
+					Params.Origin.InverseTransformPositionNoScale(HitResult.Location);
+				double Intensity = 0.0;
+				if (Params.bCalculateIntensity)
+				{
+					const FVector_NetQuantizeNormal DirGlobal((End - Start).GetSafeNormal());
+					Intensity = ApproximateIntensity(HitResult, DirGlobal);
+				}
+				OutData.Add(FAGX_LidarScanPoint(
+					FVector(LocalPoint.X, LocalPoint.Y, LocalPoint.Z), Params.TimeStamp,
+					Intensity));
+			}
+		}
 	}
 }
 
@@ -186,7 +294,17 @@ void UAGX_LidarSensorComponent::ScanCPU()
 	const double ScanCycleFraction = ScanCycleTimeElapsed / LidarState.ScanCycleDuration;
 
 	AGX_CHECK(ScanCycleFraction > ScanCycleFractionPrev);
-	PerformPartialScanCPU(ScanCycleFractionPrev, std::min(ScanCycleFraction, 1.0));
+
+	LidarScanRequestParams Params(GetComponentTransform(), FOV, Resolution);
+	{
+		Params.TimeStamp = LidarState.ElapsedTime;
+		Params.FractionStart = ScanCycleFractionPrev;
+		Params.FractionEnd = std::min(ScanCycleFraction, 1.0);
+		Params.Range = Range;
+		Params.bCalculateIntensity = bCalculateIntensity;
+	}
+
+	PerformPartialScanCPU(GetWorld(), Params, Buffer);
 
 	if (ScanCycleFraction >= 1.0)
 	{
