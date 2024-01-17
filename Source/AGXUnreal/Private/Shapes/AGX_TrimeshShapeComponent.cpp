@@ -128,6 +128,10 @@ void UAGX_TrimeshShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& P
 void UAGX_TrimeshShapeComponent::PreEditChange(FProperty* PropertyThatWillChange)
 {
 	Super::PreEditChange(PropertyThatWillChange);
+	if (PropertyThatWillChange == nullptr)
+	{
+		return;
+	}
 
 	if (PropertyThatWillChange->GetName().Equals(
 			GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceLocation).ToString()))
