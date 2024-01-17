@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 
 FAGX_ComponentReference::FAGX_ComponentReference()
-	: FAGX_ComponentReference(TSubclassOf<UActorComponent>())
+	: FAGX_ComponentReference(UActorComponent::StaticClass())
 {
 }
 
