@@ -763,10 +763,17 @@ void UAGX_Simulation::CreateNative()
 		// The user has requested that we use the default number of PPGS solver iterations. Update
 		// the setting to reflect the actual value set by AGX Dynamics. This will not change the
 		// plugin settings since 'this' is now the in-game instance, not the CDO.
+		//
+		// Q: Is this really necessary? GetNumPpgsIterations will ask the Native for the AGX
+		// Dynamics state so why do we need to update the property as well?
 		NumPpgsIterations = NativeBarrier.GetNumPpgsIterations();
 	}
 
-	NativeBarrier.SetNumThreads(NumThreads);
+	if (bOverrideNumThreads)
+	{
+		NativeBarrier.SetNumThreads(NumThreads);
+	}
+
 	SetGravity();
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
 	NativeBarrier.SetEnableAMOR(bEnableAMOR);
@@ -777,8 +784,6 @@ void UAGX_Simulation::CreateNative()
 	{
 		NativeBarrier.EnableRemoteDebugging(RemoteDebuggingPort);
 	}
-
-	FAGX_Environment::GetInstance().SetNumThreads(std::max(0, NumThreads));
 }
 
 void UAGX_Simulation::OnLevelTransition()

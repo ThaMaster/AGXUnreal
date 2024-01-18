@@ -63,13 +63,24 @@ class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 
 public: // Properties.
 	/**
-	 * The number of threads AGX Dynamics will use during Play.
+	 * Whether or not the number of AGX Dynamics worker threads should be set or be left at the
+	 * AGX Dynamics default.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Overrides",
+		Meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	bool bOverrideNumThreads {true};
+
+	/**
+	 * The number of worker threads that AGX Dynamics will create and use during Play.
 	 *
 	 * Set to 0 to use all hardware threads.
+	 *
+	 * Disable this setting to let AGX Dynamics choose the number of worker threads.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics",
-		Meta = (DisplayName = "Number of Threads"))
+		Meta = (DisplayName = "Number of Threads", EditCondition = "bOverrideNumThreads"))
 	int32 NumThreads = 4;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
@@ -110,12 +121,16 @@ public: // Properties.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, BlueprintReadOnly, Category = "Solver",
-		Meta = (DisplayName = "Override PPGS Iterations"))
+		Meta =
+			(DisplayName = "Override PPGS Iterations", PinHiddenByDefault,
+			 InlineEditConditionToggle))
 	bool bOverridePPGSIterations = false;
 
 	/**
 	 * The number of solver resting iterations to use for the Parallel Projected Gauss-Seidel (PPGS)
 	 * solver. This value influences the accuracy and computation cost of e.g. terrain particles.
+	 *
+	 * Disable this setting to let AGX Dynamics choose the number of PPGS iterations.
 	 */
 	UPROPERTY(
 		Config, EditAnywhere, BlueprintReadOnly, Category = "Solver",
@@ -253,9 +268,7 @@ public: // Properties.
 	uint8 bRemoteDebugging : 1;
 
 	/** Network port to use for remote debugging. */
-	UPROPERTY(
-		Config, EditAnywhere, Category = "Debug",
-		Meta = (EditCondition = "bRemoteDebugging"))
+	UPROPERTY(Config, EditAnywhere, Category = "Debug", Meta = (EditCondition = "bRemoteDebugging"))
 	int16 RemoteDebuggingPort;
 
 	/**
