@@ -225,13 +225,6 @@ public: // Properties.
 #endif
 
 	/**
-	 * Set to true to force-enable wire-wire collision detection for all wires.
-	 * By default wire-wire collisions is enabled per wire-pair using Wire Controller.
-	 */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Startup")
-	bool bEnableWireWireCollisions {false};
-
-	/**
 	 * Set to true to force-enable dynamic wire contacts for all wire-on-shape collisions.
 	 * By default dynamic wire contacts are enabled per Geometry using Wire Controller.
 	 */
