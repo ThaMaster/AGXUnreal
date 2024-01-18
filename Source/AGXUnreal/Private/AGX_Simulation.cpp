@@ -29,6 +29,7 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_Stats.h"
 #include "Wire/AGX_WireComponent.h"
+#include "Wire/AGX_WireController.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -690,6 +691,14 @@ void UAGX_Simulation::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
 
 	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bEnableDynamicWireContacts),
+		[](ThisClass* This)
+		{
+			UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(
+				This->bEnableDynamicWireContacts);
+		});
+
+	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bEnableAMOR),
 		[](ThisClass* This) { This->SetEnableAMOR(This->bEnableAMOR); });
 
@@ -710,6 +719,8 @@ void UAGX_Simulation::CreateNative()
 	NativeBarrier.SetTimeStep(TimeStep);
 
 	NativeBarrier.SetEnableContactWarmstarting(bContactWarmstarting);
+
+	UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(bEnableDynamicWireContacts);
 
 	if (bOverridePPGSIterations)
 	{
