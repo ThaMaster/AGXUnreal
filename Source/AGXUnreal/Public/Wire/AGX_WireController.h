@@ -65,12 +65,16 @@ public:
 	//
 
 	/**
-	 * Enable, or disable, the use of dynamic wire contact model against the given geometry.
+	 * Enable or disable the use of dynamic wire contact model against the given Shape.
+	 *
+	 * Setting the global setting to true overrides a false here.
 	 */
 	bool SetDynamicWireContactsEnabled(UAGX_ShapeComponent* Shape, bool bEnable);
 
 	/**
-	 * Enable, or disable, the use of dynamic wire contact model against the given geometry.
+	 * Enable or disable the use of dynamic wire contact model against the given Shape.
+	 *
+	 * Setting the global setting to true overrides a false here.
 	 */
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Wire Controller",
@@ -81,14 +85,18 @@ public:
 	}
 
 	/**
-	 * Enable, or disable, the use of dynamic wire contact model against geometries currently in
+	 * Enable, or disable, the use of dynamic wire contact model against Shapes currently in
 	 * the given Rigid Body.
+	 *
+	 * Setting the global setting to true overrides a false here.
 	 */
 	bool SetDynamicWireContactsEnabled(UAGX_RigidBodyComponent* RigidBody, bool bEnable);
 
 	/**
-	 * Enable, or disable, the use of dynamic wire contact model against geometries currently in
+	 * Enable or disable the use of dynamic wire contact model against Shapes currently in
 	 * the given Rigid Body.
+	 *
+	 * Setting the global setting to true overrides a false here.
 	 */
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Wire Controller",
@@ -105,12 +113,14 @@ public:
 	bool SetDynamicWireContactsGloballyEnabled(bool bEnable);
 
 	/**
-	 * True if the contact model for the given geometry is 'dynamic', otherwise false.
+	 * True if the dynamic wire contact model is enabled for the given Shape, either globally
+	 * or for that Shape specifically.
 	 */
 	bool GetDynamicWireContactsEnabled(const UAGX_ShapeComponent* Shape) const;
 
 	/**
-	 * True if the contact model for the given geometry is 'dynamic', otherwise false.
+	 * True if the dynamic wire contact model is enabled for the given Shape, either globally
+	 * or for that Shape specifically.
 	 */
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Wire Controller",
@@ -121,15 +131,14 @@ public:
 	}
 
 	/**
-	 * True if the contact model for all geometries in  the the given Rigid Body is 'dynamic',
-	 * otherwise false.
+	 * True if the dynamic wire contact model is enabled for all Shapes in the given Rigid Body,
+	 * either globally or for those Shapes specifically.
 	 */
 	bool GetDynamicWireContactsEnabled(const UAGX_RigidBodyComponent* RigidBody) const;
 
-
 	/**
-	 * True if the contact model for all geometries in  the the given Rigid Body is 'dynamic',
-	 * otherwise false.
+	 * True if the dynamic wire contact model is enabled for all Shapes in the given Rigid Body,
+	 * either globally or for those Shapes specifically.
 	 */
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Wire Controller",
