@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UObject/ObjectMacros.h"
 
 /** Specifies if the Lidar laser sampling is done on CPU or other types. */
 UENUM()
@@ -24,7 +25,7 @@ enum class EAGX_LidarExecutonMode
 	Auto,
 
 	/** The Lidar is passive until an explicit scan command is given. */
-	Manual,
+	Manual
 };
 
 /** Specifies if the Lidar scan pattern used. */
@@ -35,5 +36,5 @@ enum class EAGX_LidarScanPattern
 	VerticalSweep,
 
 	/** Scans one horizontal line, then goes to the next. */
-	HorizontalSweep,
+	HorizontalSweep
 };
