@@ -691,11 +691,25 @@ void UAGX_Simulation::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
 
 	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bOverrideDynamicWireContacts),
+		[](ThisClass* This)
+		{
+			if (This->bOverrideDynamicWireContacts)
+			{
+				UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(
+					This->bEnableDynamicWireContacts);
+			}
+		});
+
+	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, bEnableDynamicWireContacts),
 		[](ThisClass* This)
 		{
-			UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(
-				This->bEnableDynamicWireContacts);
+			if (This->bOverrideDynamicWireContacts)
+			{
+				UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(
+					This->bEnableDynamicWireContacts);
+			}
 		});
 
 	PropertyDispatcher.Add(
@@ -720,7 +734,11 @@ void UAGX_Simulation::CreateNative()
 
 	NativeBarrier.SetEnableContactWarmstarting(bContactWarmstarting);
 
-	UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(bEnableDynamicWireContacts);
+	if (bOverrideDynamicWireContacts)
+	{
+		UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(
+			bEnableDynamicWireContacts);
+	}
 
 	if (bOverridePPGSIterations)
 	{

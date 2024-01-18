@@ -224,11 +224,18 @@ public: // Properties.
 	FString ExportPath;
 #endif
 
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Overrides",
+		Meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	bool bOverrideDynamicWireContacts {false};
+
 	/**
 	 * Set to true to force-enable dynamic wire contacts for all wire-on-shape collisions.
 	 * By default dynamic wire contacts are enabled per Geometry using Wire Controller.
 	 */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Startup")
+	UPROPERTY(
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Startup",
+		Meta = (EditCondition = "bOverrideDynamicWireContacts"))
 	bool bEnableDynamicWireContacts {false};
 
 	/**
