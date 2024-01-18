@@ -82,6 +82,12 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar")
 	TEnumAsByte<enum EAGX_LidarSamplingType> SamplingType {EAGX_LidarSamplingType::CPU};
+	
+	/**
+	 * Determines in what order points are scanned during a scan cycle.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Lidar")
+	TEnumAsByte<enum EAGX_LidarScanPattern> ScanPattern {EAGX_LidarScanPattern::VerticalSweep};
 
 	/**
 	 * Field of View (FOV) of the Lidar Sensor [deg].

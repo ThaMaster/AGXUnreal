@@ -26,3 +26,14 @@ enum EAGX_LidarExecutonMode
 	/** The Lidar is passive until an explicit scan command is given. */
 	Manual,
 };
+
+/** Specifies if the Lidar scan pattern used. */
+UENUM()
+enum EAGX_LidarScanPattern
+{
+	/** Scans one vertical line, then goes to the next. */
+	VerticalSweep,
+
+	/** Scans one horizontal line, then goes to the next. */
+	HorizontalSweep,
+};

@@ -15,6 +15,7 @@
 
 // Standard library includes.
 #include <algorithm>
+#include <tuple>
 
 UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 {
@@ -31,6 +32,9 @@ namespace AGX_LidarSensorComponent_helpers
 
 		for (const auto& P : Points)
 		{
+			if (!P.bIsValid)
+				continue;
+
 			const FVector PGlobal = LocalFrame.TransformPositionNoScale(P.Position);
 			DrawDebugPoint(World, PGlobal, 5.f, FColor::Red, false, 0.06, 99);
 		}
@@ -79,6 +83,7 @@ namespace AGX_LidarSensorComponent_helpers
 		double FractionStart {0.0};
 		double FractionEnd {0.0};
 		double Range {0.0};
+		EAGX_LidarScanPattern ScanPattern {EAGX_LidarScanPattern::VerticalSweep};
 		bool bCalculateIntensity {true};
 	};
 
@@ -97,19 +102,8 @@ namespace AGX_LidarSensorComponent_helpers
 
 		const int32 NumRaysCycle = NumRaysCycleX * NumRaysCycleY;
 		const double NumRaysCycled = static_cast<double>(NumRaysCycle);
-		const int32 FirstRay = [&Params, NumRaysCycled]()
-		{
-			int32 Start = std::max(static_cast<int32>(NumRaysCycled * Params.FractionStart), 0);
-
-			// To avoid sampling the same point twice, we start one after the calculated start index
-			// since it was scanned the previous round. If this is the first partial scan of a
-			// cycle, then we start from the calculated start index (which should be zero).
-			if (!FMath::IsNearlyZero(Params.FractionStart))
-				Start += 1;
-
-			return Start;
-		}();
-
+		const int32 FirstRay =
+			std::max(static_cast<int32>(NumRaysCycled * Params.FractionStart), 0);
 		const int32 LastRay =
 			std::min(FMath::RoundToInt32(NumRaysCycled * Params.FractionEnd), NumRaysCycle - 1);
 
@@ -133,75 +127,89 @@ namespace AGX_LidarSensorComponent_helpers
 		const int32 NumRaysPerThread = RunMultithreaded ? NumRays / NumThreads : NumRays;
 		const FCollisionQueryParams CollParams;
 
-		ParallelFor(
-			NumThreads,
-			[&](int32 Thread)
+		auto RayToAngles = [&](int32 Ray) -> std::tuple<double, double>
+		{
+			switch (Params.ScanPattern)
 			{
-				const int32 ThreadFirstRay = FirstRay + Thread * NumRaysPerThread;
-				int32 ThreadLastRayPlusOne = FirstRay + (Thread + 1) * NumRaysPerThread;
-				if (Thread == NumThreads - 1) // Last thread.
-					ThreadLastRayPlusOne = LastRay + 1;
-
-				FHitResult HitResult;
-				for (int32 Ray = ThreadFirstRay; Ray < ThreadLastRayPlusOne; Ray++)
+				case EAGX_LidarScanPattern::VerticalSweep:
 				{
-					const int32 OutDataIndex = Ray - FirstRay + NumPointsPreAppend;
-					const int32 IndexX = Ray % NumRaysCycleX;
-					const double AngX =
-						-Params.FOV.X / 2.0 + Params.Resolution.X * static_cast<double>(IndexX);
-					if (AngX < Params.FOVWindowX.X || AngX > Params.FOVWindowX.Y)
-					{
-						// Outside the FOVWindow, no need to scan this direction.
-						OutData[OutDataIndex] = FAGX_LidarScanPoint(false);
-						continue;
-					}
-
-					const int32 IndexY = Ray / NumRaysCycleX;
-					const double AngY =
-						-Params.FOV.Y / 2.0 + Params.Resolution.Y * static_cast<double>(IndexY);
-					if (AngY < Params.FOVWindowY.X || AngY > Params.FOVWindowY.Y)
-					{
-						// Outsude the FOVWindow, no need to scan this direction.
-						OutData[OutDataIndex] = FAGX_LidarScanPoint(false);
-						continue;
-					}
-
-					const double AngRadX = FMath::DegreesToRadians(AngX);
-					const double AngRadY = FMath::DegreesToRadians(AngY);
-
-					// Dir is the normalized vector following the current laser ray. Here X is
-					// horizontal and Y vertical.
-					const FVector Dir(
-						FMath::Sin(AngRadX) * FMath::Cos(AngRadY), FMath::Sin(AngRadY),
-						FMath::Cos(AngRadX) * FMath::Cos(AngRadY));
-
-					// Lidar sensors local coordinate system is x forwards, y to the right and z up.
-					const FVector EndLocal(
-						Dir.Z * Params.Range, Dir.X * Params.Range, -Dir.Y * Params.Range);
-					const FVector EndGlobal = Params.Origin.TransformPositionNoScale(EndLocal);
-					if (!World->LineTraceSingleByChannel(
-							HitResult, StartGlobal, EndGlobal, ECC_Visibility, CollParams))
-					{
-						// Line trace miss.
-						OutData[OutDataIndex] = FAGX_LidarScanPoint(false);
-						continue;
-					}
-
-					const FVector LocalPoint =
-						Params.Origin.InverseTransformPositionNoScale(HitResult.Location);
-					double Intensity = 0.0;
-					if (Params.bCalculateIntensity)
-					{
-						const FVector_NetQuantizeNormal DirGlobal(
-							(EndGlobal - StartGlobal).GetSafeNormal());
-						Intensity = ApproximateIntensity(HitResult, DirGlobal);
-					}
-					OutData[OutDataIndex] = FAGX_LidarScanPoint(
-						FVector(LocalPoint.X, LocalPoint.Y, LocalPoint.Z), Params.TimeStamp,
-						Intensity, true);
+					const int32 IndexX = Ray / NumRaysCycleY;
+					const int32 IndexY = Ray % NumRaysCycleY;
+					return {
+						-Params.FOV.X / 2.0 + Params.Resolution.X * static_cast<double>(IndexX),
+						-Params.FOV.Y / 2.0 + Params.Resolution.Y * static_cast<double>(IndexY)};
 				}
-			},
-			!RunMultithreaded);
+				case EAGX_LidarScanPattern::HorizontalSweep:
+				{
+					const int32 IndexX = Ray % NumRaysCycleX;
+					const int32 IndexY = Ray / NumRaysCycleX;
+					return {
+						-Params.FOV.X / 2.0 + Params.Resolution.X * static_cast<double>(IndexX),
+						-Params.FOV.Y / 2.0 + Params.Resolution.Y * static_cast<double>(IndexY)};
+				}
+			}
+
+			UE_LOG(LogAGX, Warning, TEXT("Unknown Scan Pattern used in Lidar Sensor."));
+			return {0.0, 0.0};
+		};
+
+		auto MultiThreadRayCasts = [&](int32 Thread)
+		{
+			const int32 ThreadFirstRay = FirstRay + Thread * NumRaysPerThread;
+			int32 ThreadLastRayPlusOne = FirstRay + (Thread + 1) * NumRaysPerThread;
+			if (Thread == NumThreads - 1) // Last thread.
+				ThreadLastRayPlusOne = LastRay + 1;
+
+			FHitResult HitResult;
+			for (int32 Ray = ThreadFirstRay; Ray < ThreadLastRayPlusOne; Ray++)
+			{
+				const int32 OutDataIndex = Ray - FirstRay + NumPointsPreAppend;
+				const auto [AngX, AngY] = RayToAngles(Ray);
+				if (AngX < Params.FOVWindowX.X || AngX > Params.FOVWindowX.Y ||
+					AngY < Params.FOVWindowY.X || AngY > Params.FOVWindowY.Y)
+				{
+					// Outside the FOVWindow, no need to scan this direction.
+					OutData[OutDataIndex] = FAGX_LidarScanPoint(false);
+					continue;
+				}
+
+				const double AngRadX = FMath::DegreesToRadians(AngX);
+				const double AngRadY = FMath::DegreesToRadians(AngY);
+
+				// Dir is the normalized vector following the current laser ray. Here X is
+				// horizontal and Y vertical.
+				const FVector Dir(
+					FMath::Sin(AngRadX) * FMath::Cos(AngRadY), FMath::Sin(AngRadY),
+					FMath::Cos(AngRadX) * FMath::Cos(AngRadY));
+
+				// Lidar sensors local coordinate system is x forwards, y to the right and z up.
+				const FVector EndLocal(
+					Dir.Z * Params.Range, Dir.X * Params.Range, -Dir.Y * Params.Range);
+				const FVector EndGlobal = Params.Origin.TransformPositionNoScale(EndLocal);
+				if (!World->LineTraceSingleByChannel(
+						HitResult, StartGlobal, EndGlobal, ECC_Visibility, CollParams))
+				{
+					// Line trace miss.
+					OutData[OutDataIndex] = FAGX_LidarScanPoint(false);
+					continue;
+				}
+
+				const FVector LocalPoint =
+					Params.Origin.InverseTransformPositionNoScale(HitResult.Location);
+				double Intensity = 0.0;
+				if (Params.bCalculateIntensity)
+				{
+					const FVector_NetQuantizeNormal DirGlobal(
+						(EndGlobal - StartGlobal).GetSafeNormal());
+					Intensity = ApproximateIntensity(HitResult, DirGlobal);
+				}
+				OutData[OutDataIndex] = FAGX_LidarScanPoint(
+					FVector(LocalPoint.X, LocalPoint.Y, LocalPoint.Z), Params.TimeStamp, Intensity,
+					true);
+			}
+		};
+
+		ParallelFor(NumThreads, MultiThreadRayCasts);
 
 		const int32 NumNewPoints = OutData.Num() - NumPointsPreAppend;
 		if (NumNewPoints == 0)
@@ -246,6 +254,7 @@ void UAGX_LidarSensorComponent::RequestManualScan(
 		Params.FractionStart = FractionStart;
 		Params.FractionEnd = FractionEnd;
 		Params.Range = Range;
+		Params.ScanPattern = ScanPattern;
 		Params.bCalculateIntensity = bCalculateIntensity;
 	}
 
@@ -404,6 +413,7 @@ void UAGX_LidarSensorComponent::ScanAutoCPU()
 		Params.FractionStart = ScanCycleFractionPrev;
 		Params.FractionEnd = std::min(ScanCycleFraction, 1.0);
 		Params.Range = Range;
+		Params.ScanPattern = ScanPattern;
 		Params.bCalculateIntensity = bCalculateIntensity;
 	}
 
