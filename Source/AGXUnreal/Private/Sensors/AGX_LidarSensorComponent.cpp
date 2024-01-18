@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
+#include "AGX_Simulation.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -281,6 +282,7 @@ void UAGX_LidarSensorComponent::BeginPlay()
 	}
 
 	LidarState.ScanCycleDuration = 1.0 / ScanFrequency;
+	LidarState.OutputCycleDuration = 1.0 / OutputFrequency;
 }
 
 void UAGX_LidarSensorComponent::TickComponent(
@@ -382,7 +384,9 @@ bool UAGX_LidarSensorComponent::CheckValid() const
 void UAGX_LidarSensorComponent::UpdateElapsedTime()
 {
 	LidarState.ElapsedTimePrev = LidarState.ElapsedTime;
-	LidarState.ElapsedTime = GetWorld()->GetTimeSeconds();
+
+	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+		LidarState.ElapsedTime = static_cast<double>(Sim->GetTimeStamp());
 }
 
 void UAGX_LidarSensorComponent::ScanCPU()
