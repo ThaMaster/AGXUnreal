@@ -25,7 +25,8 @@ UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 namespace AGX_LidarSensorComponent_helpers
 {
 	void DrawDebugPoints(
-		UWorld* World, const FTransform& LocalFrame, TArrayView<FAGX_LidarScanPoint> Points)
+		TArrayView<FAGX_LidarScanPoint> Points, UWorld* World, const FTransform& LocalFrame,
+		float Size, float Lifetime)
 	{
 		if (World == nullptr)
 			return;
@@ -36,7 +37,7 @@ namespace AGX_LidarSensorComponent_helpers
 				continue;
 
 			const FVector PGlobal = LocalFrame.TransformPositionNoScale(P.Position);
-			DrawDebugPoint(World, PGlobal, 5.f, FColor::Red, false, 0.06, 99);
+			DrawDebugPoint(World, PGlobal, Size, FColor::Red, false, Lifetime, 99);
 		}
 	}
 
@@ -118,13 +119,13 @@ namespace AGX_LidarSensorComponent_helpers
 
 		// This number is somewhat arbitrary, but a good starting point.
 		// The cost of starting several threads will at some point make single threaded execution
-		// the better option.
+		// a better option.
 		static constexpr int32 MinRaysForMultithread = 300;
 		const bool RunMultithreaded =
 			FPlatformProcess::SupportsMultithreading() && NumRays >= MinRaysForMultithread;
 		const int32 NumThreads =
 			RunMultithreaded ? FPlatformMisc::NumberOfWorkerThreadsToSpawn() : 1;
-		const int32 NumRaysPerThread = RunMultithreaded ? NumRays / NumThreads : NumRays;
+		const int32 NumRaysPerThread = NumRays / NumThreads;
 		const FCollisionQueryParams CollParams;
 
 		auto RayToAngles = [&](int32 Ray) -> std::tuple<double, double>
@@ -210,12 +211,7 @@ namespace AGX_LidarSensorComponent_helpers
 		};
 
 		ParallelFor(NumThreads, MultiThreadRayCasts);
-
-		const int32 NumNewPoints = OutData.Num() - NumPointsPreAppend;
-		if (NumNewPoints == 0)
-			return {};
-
-		return MakeArrayView(&OutData[NumPointsPreAppend], NumNewPoints);
+		return MakeArrayView(&OutData[NumPointsPreAppend], NumRays);
 	}
 }
 
@@ -223,7 +219,7 @@ void UAGX_LidarSensorComponent::RequestManualScan(
 	double FractionStart, double FractionEnd, FVector2D FOVWindowX, FVector2D FOVWindowY)
 {
 	using namespace AGX_LidarSensorComponent_helpers;
-	if (!bIsValid)
+	if (!bIsValid || !bEnabled)
 		return;
 
 	if (ExecutionMode != EAGX_LidarExecutonMode::Manual)
@@ -231,20 +227,21 @@ void UAGX_LidarSensorComponent::RequestManualScan(
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("RequestManualScan was called on Lidar Sensor '%s' in Actor '%s' but the "
-				 "ExecutionMode is not set to Manual. Doing nothing."),
+				 "ExecutionMode is not set to Manual. Set ExecutionMode to Manual before calling "
+				 "this function."),
 			*GetName(), *GetLabelSafe(GetOwner()));
 		return;
 	}
 
 	FractionStart = FMath::Clamp(FractionStart, 0.0, 1.0);
 	FractionEnd = FMath::Clamp(FractionEnd, 0.0, 1.0);
+	if (FractionEnd <= FractionStart)
+		return;
+
 	if (FOVWindowX.IsNearlyZero())
 		FOVWindowX = {-FOV.X / 2.0, FOV.X / 2.0};
 	if (FOVWindowY.IsNearlyZero())
 		FOVWindowY = {-FOV.Y / 2.0, FOV.Y / 2.0};
-
-	if (FractionEnd <= FractionStart)
-		return;
 
 	LidarScanRequestParams Params(GetComponentTransform(), FOV, Resolution);
 	{
@@ -262,7 +259,11 @@ void UAGX_LidarSensorComponent::RequestManualScan(
 	auto NewPoints = PerformPartialScanCPU(GetWorld(), Params, Buffer);
 
 	if (bDebugRenderPoints)
-		DrawDebugPoints(GetWorld(), GetComponentTransform(), NewPoints);
+	{
+		DrawDebugPoints(
+			NewPoints, GetWorld(), GetComponentTransform(), DebugDrawPointSize,
+			DebugDrawPointLifetime);
+	}
 
 	PointCloudDataOutput.Broadcast(Buffer);
 	Buffer.SetNum(0, false);
@@ -274,9 +275,7 @@ void UAGX_LidarSensorComponent::BeginPlay()
 	bIsValid = CheckValid();
 
 	if (!bIsValid)
-	{
 		return;
-	}
 
 	LidarState.ScanCycleDuration = 1.0 / ScanFrequency;
 	LidarState.OutputCycleDuration = 1.0 / OutputFrequency;
@@ -285,7 +284,7 @@ void UAGX_LidarSensorComponent::BeginPlay()
 void UAGX_LidarSensorComponent::TickComponent(
 	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	if (!bIsValid)
+	if (!bIsValid || !bEnabled)
 		return;
 
 	UpdateElapsedTime();
@@ -322,10 +321,12 @@ bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
 	{
 		// List of names of properties that does not support editing after initialization.
 		static const TArray<FName> PropertiesNotEditableDuringPlay = {
+			GET_MEMBER_NAME_CHECKED(ThisClass, ExecutionMode),
 			GET_MEMBER_NAME_CHECKED(ThisClass, ScanFrequency),
 			GET_MEMBER_NAME_CHECKED(ThisClass, OutputFrequency),
 			GET_MEMBER_NAME_CHECKED(ThisClass, SamplingType),
 			GET_MEMBER_NAME_CHECKED(ThisClass, FOV /*clang-format padding*/),
+			GET_MEMBER_NAME_CHECKED(ThisClass, ScanPattern),
 			GET_MEMBER_NAME_CHECKED(ThisClass, Resolution)};
 
 		if (PropertiesNotEditableDuringPlay.Contains(InProperty->GetFName()))
@@ -368,8 +369,8 @@ bool UAGX_LidarSensorComponent::CheckValid() const
 	{
 		const FString Msg = FString::Printf(
 			TEXT("Lidar Sensor '%s' in Actor '%s' has a FOV or Resolution outside of the valid "
-				 "range. The x and y component of the FOV must both be between 0 and 360 and for "
-				 "Resolution they must be between 0 and 180."),
+				 "range. The x and y component of the FOV must both be within [0..360] and for "
+				 "Resolution they must be within [0..180]."),
 			*GetName(), *GetLabelSafe(GetOwner()));
 		FAGX_NotificationUtilities::ShowNotification(Msg, SNotificationItem::CS_Fail);
 		return false;
@@ -391,6 +392,9 @@ void UAGX_LidarSensorComponent::ScanAutoCPU()
 	using namespace AGX_LidarSensorComponent_helpers;
 	AGX_CHECK(bIsValid);
 
+	if (LidarState.ElapsedTime == LidarState.ElapsedTimePrev)
+		return;
+
 	const double ScanCycleTimeElapsedPrev =
 		LidarState.ElapsedTimePrev - LidarState.CurrentScanCycleStartTime;
 	const double ScanCycleFractionPrev = ScanCycleTimeElapsedPrev / LidarState.ScanCycleDuration;
@@ -400,9 +404,6 @@ void UAGX_LidarSensorComponent::ScanAutoCPU()
 		LidarState.ElapsedTime - LidarState.CurrentScanCycleStartTime;
 	const double ScanCycleFraction = ScanCycleTimeElapsed / LidarState.ScanCycleDuration;
 
-	if (ScanCycleFraction == ScanCycleFractionPrev)
-		return;
-
 	AGX_CHECK(ScanCycleFraction > ScanCycleFractionPrev);
 
 	LidarScanRequestParams Params(GetComponentTransform(), FOV, Resolution);
@@ -411,6 +412,8 @@ void UAGX_LidarSensorComponent::ScanAutoCPU()
 		Params.FOVWindowY = {-FOV.Y / 2.0, FOV.Y / 2.0};
 		Params.TimeStamp = LidarState.ElapsedTime;
 		Params.FractionStart = ScanCycleFractionPrev;
+
+		// We scan at most up until the end of the cycle.
 		Params.FractionEnd = std::min(ScanCycleFraction, 1.0);
 		Params.Range = Range;
 		Params.ScanPattern = ScanPattern;
@@ -419,7 +422,11 @@ void UAGX_LidarSensorComponent::ScanAutoCPU()
 
 	auto NewPoints = PerformPartialScanCPU(GetWorld(), Params, Buffer);
 	if (bDebugRenderPoints)
-		DrawDebugPoints(GetWorld(), GetComponentTransform(), NewPoints);
+	{
+		DrawDebugPoints(
+			NewPoints, GetWorld(), GetComponentTransform(), DebugDrawPointSize,
+			DebugDrawPointLifetime);
+	}
 
 	if (ScanCycleFraction >= 1.0)
 	{

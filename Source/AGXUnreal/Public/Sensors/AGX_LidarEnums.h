@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 
-/** Specifies if the Lidar laser sampling is done on CPU or GPU. */
+/** Specifies if the Lidar laser sampling is done on CPU or other types. */
 UENUM()
 enum EAGX_LidarSamplingType
 {
 	/**
 	 * The Lidar laser rays are handled on the CPU.
 	 * Important: Terrain particles and deformations as well as primitive AGX Shapes will not be
-	 * sensed when using this mode.
+	 * detected when using this mode.
 	 */
 	CPU
 };
