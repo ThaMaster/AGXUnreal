@@ -14,10 +14,17 @@ struct FAGX_LidarScanPoint
 
 	FAGX_LidarScanPoint() = default;
 
-	FAGX_LidarScanPoint(const FVector& InPosition, double InTimeStamp, double InIntensity)
+	FAGX_LidarScanPoint(
+		const FVector& InPosition, double InTimeStamp, double InIntensity, bool InIsValid)
 		: Position(InPosition)
 		, TimeStamp(InTimeStamp)
 		, Intensity(InIntensity)
+		, bIsValid(InIsValid)
+	{
+	}
+
+	explicit FAGX_LidarScanPoint(bool InIsValid)
+		: bIsValid(InIsValid)
 	{
 	}
 
@@ -38,4 +45,12 @@ struct FAGX_LidarScanPoint
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
 	float Intensity {0.0};
+
+	/**
+	 * Whether this Lidar Scan Point is valid or not.
+	 * If this Lidar Scan Point represents a miss, this value is set to false and is set to true
+	 * otherwise.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
+	bool bIsValid {false};
 };

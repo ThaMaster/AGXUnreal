@@ -180,6 +180,6 @@ private:
 
 	bool CheckValid() const;
 	void UpdateElapsedTime();
-	void ScanCPU();
+	void ScanAutoCPU();
 	void OutputPointCloudDataIfReady();
 };

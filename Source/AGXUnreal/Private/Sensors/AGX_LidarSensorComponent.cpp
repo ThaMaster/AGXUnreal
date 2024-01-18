@@ -15,7 +15,6 @@
 
 // Standard library includes.
 #include <algorithm>
-#include <mutex>
 
 UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 {
@@ -116,19 +115,24 @@ namespace AGX_LidarSensorComponent_helpers
 
 		const FVector StartGlobal = Params.Origin.GetLocation();
 		const int32 NumPointsPreAppend = OutData.Num();
-		const FCollisionQueryParams CollParams;
+		const int32 NumRays = LastRay - FirstRay + 1;
+		if (NumRays <= 0)
+			return {};
+
+		// Make room for the new points.
+		OutData.SetNumUninitialized(NumPointsPreAppend + NumRays, false);
 
 		// This number is somewhat arbitrary, but a good starting point.
 		// The cost of starting several threads will at some point make single threaded execution
 		// the better option.
 		static constexpr int32 MinRaysForMultithread = 300;
-		const int32 NumRays = LastRay - FirstRay + 1;
 		const bool RunMultithreaded =
 			FPlatformProcess::SupportsMultithreading() && NumRays >= MinRaysForMultithread;
 		const int32 NumThreads =
 			RunMultithreaded ? FPlatformMisc::NumberOfWorkerThreadsToSpawn() : 1;
 		const int32 NumRaysPerThread = RunMultithreaded ? NumRays / NumThreads : NumRays;
-		std::mutex Mutex;
+		const FCollisionQueryParams CollParams;
+
 		ParallelFor(
 			NumThreads,
 			[&](int32 Thread)
@@ -141,11 +145,16 @@ namespace AGX_LidarSensorComponent_helpers
 				FHitResult HitResult;
 				for (int32 Ray = ThreadFirstRay; Ray < ThreadLastRayPlusOne; Ray++)
 				{
+					const int32 OutDataIndex = Ray - FirstRay + NumPointsPreAppend;
 					const int32 IndexX = Ray % NumRaysCycleX;
 					const double AngX =
 						-Params.FOV.X / 2.0 + Params.Resolution.X * static_cast<double>(IndexX);
 					if (AngX < Params.FOVWindowX.X || AngX > Params.FOVWindowX.Y)
-						continue; // Outside the FOVWindow, no need to scan this direction.
+					{
+						// Outside the FOVWindow, no need to scan this direction.
+						OutData[OutDataIndex] = FAGX_LidarScanPoint(false);
+						continue;
+					}
 
 					const int32 IndexY = Ray / NumRaysCycleX;
 					const double AngY =
@@ -153,8 +162,7 @@ namespace AGX_LidarSensorComponent_helpers
 					if (AngY < Params.FOVWindowY.X || AngY > Params.FOVWindowY.Y)
 					{
 						// Outsude the FOVWindow, no need to scan this direction.
-						// For this scan pattern, we know we can safely jump to the end of this row.
-						Ray += (NumRaysCycleX - IndexX - 1);
+						OutData[OutDataIndex] = FAGX_LidarScanPoint(false);
 						continue;
 					}
 
@@ -173,7 +181,11 @@ namespace AGX_LidarSensorComponent_helpers
 					const FVector EndGlobal = Params.Origin.TransformPositionNoScale(EndLocal);
 					if (!World->LineTraceSingleByChannel(
 							HitResult, StartGlobal, EndGlobal, ECC_Visibility, CollParams))
+					{
+						// Line trace miss.
+						OutData[OutDataIndex] = FAGX_LidarScanPoint(false);
 						continue;
+					}
 
 					const FVector LocalPoint =
 						Params.Origin.InverseTransformPositionNoScale(HitResult.Location);
@@ -184,11 +196,9 @@ namespace AGX_LidarSensorComponent_helpers
 							(EndGlobal - StartGlobal).GetSafeNormal());
 						Intensity = ApproximateIntensity(HitResult, DirGlobal);
 					}
-
-					std::lock_guard<std::mutex> Lock(Mutex);
-					OutData.Add(FAGX_LidarScanPoint(
+					OutData[OutDataIndex] = FAGX_LidarScanPoint(
 						FVector(LocalPoint.X, LocalPoint.Y, LocalPoint.Z), Params.TimeStamp,
-						Intensity));
+						Intensity, true);
 				}
 			},
 			!RunMultithreaded);
@@ -239,17 +249,7 @@ void UAGX_LidarSensorComponent::RequestManualScan(
 		Params.bCalculateIntensity = bCalculateIntensity;
 	}
 
-	// We use the Buffer here to avoid having to allocate a new TArray for the Points about to be
-	// created. The Buffer will not be used elsewhere since the execution mode is Manual here.
 	AGX_CHECK(Buffer.Num() == 0);
-	{
-		// Reserve Buffer capacity if needed.
-		const double NumPointsPerCycle = (FOV.X / Resolution.X) * (FOV.Y / Resolution.Y);
-		const double Fraction = FractionEnd - FractionStart;
-		const int32 NumPoints = NumPointsPerCycle * Fraction + 1;
-		if (Buffer.GetSlack() < NumPoints)
-			Buffer.Reserve(NumPoints);
-	}
 	auto NewPoints = PerformPartialScanCPU(GetWorld(), Params, Buffer);
 
 	if (bDebugRenderPoints)
@@ -269,18 +269,6 @@ void UAGX_LidarSensorComponent::BeginPlay()
 		return;
 	}
 
-	if (ExecutionMode == EAGX_LidarExecutonMode::Auto)
-	{
-		// The Buffer can grow dynamically during Runtime, but this is a small optimization for the
-		// first scan cycle.
-		const double StoreFraction = ScanFrequency / OutputFrequency;
-		const double NumPointsPerCycle = (FOV.X / Resolution.X) * (FOV.Y / Resolution.Y);
-		const int32 InitSize = static_cast<int32>(StoreFraction * NumPointsPerCycle);
-
-		if (InitSize > 0)
-			Buffer.Reserve(InitSize);
-	}
-
 	LidarState.ScanCycleDuration = 1.0 / ScanFrequency;
 	LidarState.OutputCycleDuration = 1.0 / OutputFrequency;
 }
@@ -297,7 +285,7 @@ void UAGX_LidarSensorComponent::TickComponent(
 		return;
 
 	if (SamplingType == EAGX_LidarSamplingType::CPU)
-		ScanCPU();
+		ScanAutoCPU();
 
 	OutputPointCloudDataIfReady();
 }
@@ -389,7 +377,7 @@ void UAGX_LidarSensorComponent::UpdateElapsedTime()
 		LidarState.ElapsedTime = static_cast<double>(Sim->GetTimeStamp());
 }
 
-void UAGX_LidarSensorComponent::ScanCPU()
+void UAGX_LidarSensorComponent::ScanAutoCPU()
 {
 	using namespace AGX_LidarSensorComponent_helpers;
 	AGX_CHECK(bIsValid);
@@ -402,6 +390,9 @@ void UAGX_LidarSensorComponent::ScanCPU()
 	const double ScanCycleTimeElapsed =
 		LidarState.ElapsedTime - LidarState.CurrentScanCycleStartTime;
 	const double ScanCycleFraction = ScanCycleTimeElapsed / LidarState.ScanCycleDuration;
+
+	if (ScanCycleFraction == ScanCycleFractionPrev)
+		return;
 
 	AGX_CHECK(ScanCycleFraction > ScanCycleFractionPrev);
 
