@@ -45,7 +45,7 @@ public:
 	 * when explicitly asked to, e.g. using the PerformScan function.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	TEnumAsByte<enum EAGX_LidarExecutonMode> ExecutionMode {EAGX_LidarExecutonMode::Auto};
+	EAGX_LidarExecutonMode ExecutionMode {EAGX_LidarExecutonMode::Auto};
 
 	/**
 	 * Determines how often the total scan cycle is run, i.e. how often the total scan pattern of
@@ -96,13 +96,13 @@ public:
 	 * Currently, only CPU rays are supported.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	TEnumAsByte<enum EAGX_LidarSamplingType> SamplingType {EAGX_LidarSamplingType::CPU};
+	EAGX_LidarSamplingType SamplingType {EAGX_LidarSamplingType::CPU};
 
 	/**
 	 * Determines in what order points are scanned during a scan cycle.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	TEnumAsByte<enum EAGX_LidarScanPattern> ScanPattern {EAGX_LidarScanPattern::VerticalSweep};
+	EAGX_LidarScanPattern ScanPattern {EAGX_LidarScanPattern::VerticalSweep};
 
 	/**
 	 * Field of View (FOV) of the Lidar Sensor [deg].

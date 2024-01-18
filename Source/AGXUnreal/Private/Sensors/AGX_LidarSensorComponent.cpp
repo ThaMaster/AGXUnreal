@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
+#include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -11,7 +12,11 @@
 // Unreal Engine includes.
 #include "Async/ParallelFor.h"
 #include "CollisionQueryParams.h"
+#include "Components/PrimitiveComponent.h"
 #include "Containers/ArrayView.h"
+#include "DrawDebugHelpers.h"
+#include "Engine/World.h"
+#include "Materials/MaterialInterface.h"
 
 // Standard library includes.
 #include <algorithm>

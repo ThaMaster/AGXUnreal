@@ -6,7 +6,7 @@
 
 /** Specifies if the Lidar laser sampling is done on CPU or other types. */
 UENUM()
-enum EAGX_LidarSamplingType
+enum class EAGX_LidarSamplingType
 {
 	/**
 	 * The Lidar laser rays are handled on the CPU.
@@ -18,7 +18,7 @@ enum EAGX_LidarSamplingType
 
 /** Specifies if the Lidar is run continuously or waits for a scan command. */
 UENUM()
-enum EAGX_LidarExecutonMode
+enum class EAGX_LidarExecutonMode
 {
 	/** The Lidar runs continously acoording to the specified frequency. */
 	Auto,
@@ -29,7 +29,7 @@ enum EAGX_LidarExecutonMode
 
 /** Specifies if the Lidar scan pattern used. */
 UENUM()
-enum EAGX_LidarScanPattern
+enum class EAGX_LidarScanPattern
 {
 	/** Scans one vertical line, then goes to the next. */
 	VerticalSweep,
