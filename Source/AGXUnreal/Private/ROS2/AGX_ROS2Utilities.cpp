@@ -1,6 +1,6 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-#include "AGX_ROS2Utilities.h"
+#include "Utilities/AGX_ROS2Utilities.h"
 
 // AGX Dynamics for Unreal includes.
 #include "ROS2/AGX_ROS2Messages.h"
