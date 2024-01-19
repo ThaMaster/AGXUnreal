@@ -7,7 +7,9 @@
 #include "AGX_InternalDelegateAccessor.h"
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
+#include "ROS2/AGX_ROS2Messages.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_ROS2Utilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
@@ -273,6 +275,14 @@ void UAGX_LidarSensorComponent::RequestManualScan(
 
 	PointCloudDataOutput.Broadcast(Buffer);
 	Buffer.SetNum(0, false);
+}
+
+FAGX_SensorMsgsPointCloud2 UAGX_LidarSensorComponent::Convert(
+	const TArray<FAGX_LidarScanPoint>& Points) const
+{
+	const int32 Width = FOV.X / Resolution.X;
+	const int32 Height = FOV.Y / Resolution.Y;
+	return FAGX_ROS2Utilities::Convert(Points, Width, Height);
 }
 
 void UAGX_LidarSensorComponent::BeginPlay()

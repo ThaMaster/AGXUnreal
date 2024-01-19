@@ -13,6 +13,8 @@
 
 class UTextureRenderTarget2D;
 
+struct FAGX_SensorMsgsPointCloud2;
+
 #include "AGX_LidarSensorComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
@@ -192,6 +194,23 @@ public:
 	void RequestManualScan(
 		double FractionStart = 0.0, double FractionEnd = 1.0,
 		FVector2D FOVWindowX = FVector2D::ZeroVector, FVector2D FOVWindowY = FVector2D::ZeroVector);
+
+	/**
+	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2
+	 * message.
+	 * Note that all invalid points, such as points representing scan misses, are ignored.
+	 * This means that the sensor_msgs::PointCloud2 message created by this function is always
+	 * dense.
+	 *
+	 * The Time Stamp written to the Header member of the sensor_msgs::PointCloud2 message is set to
+	 * the time stamp of the first valid Point in the given array, even if other points have been
+	 * generated at later time stamps.
+	 *
+	 * The Data member consists of X, Y, Z and Intensity for each point written as double's
+	 * in little endian layout, i.e. 32 bytes per point.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	FAGX_SensorMsgsPointCloud2 Convert(const TArray<FAGX_LidarScanPoint>& Points) const;
 
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;

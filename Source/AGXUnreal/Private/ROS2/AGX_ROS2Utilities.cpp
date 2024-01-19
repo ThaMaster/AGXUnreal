@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "ROS2/AGX_ROS2Messages.h"
+#include "Sensors/AGX_LidarScanPoint.h"
 
 // Standard library includes.
 #include <limits>
@@ -87,7 +88,8 @@ FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
 			const FLinearColor LColor = Color.GetFloats();
 
 			// Transform from [0..1] to uint16 range.
-			const float Valf = FMath::Clamp((LColor.R + LColor.G + LColor.B) / 3.f, 0.f, 1.f) * MaxUint16f;
+			const float Valf =
+				FMath::Clamp((LColor.R + LColor.G + LColor.B) / 3.f, 0.f, 1.f) * MaxUint16f;
 			const uint16 Val = static_cast<uint16>(Valf);
 
 			Msg.Data.Add(static_cast<uint8>(Val & 0xFF)); // Low bits.
@@ -113,6 +115,66 @@ FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
 				Msg.Data.Add(static_cast<uint8>((C >> 8) & 0xFF)); // High bits.
 			}
 		}
+	}
+
+	return Msg;
+}
+
+FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::Convert(
+	const TArray<FAGX_LidarScanPoint>& Points, int32 Width, int32 Height)
+{
+	FAGX_SensorMsgsPointCloud2 Msg;
+
+	const int32 FirstValidIndex =
+		Points.IndexOfByPredicate([](const FAGX_LidarScanPoint& P) { return P.bIsValid; });
+	if (FirstValidIndex == INDEX_NONE)
+		return Msg;
+
+	Msg.Header.Stamp.Sec = static_cast<int32>(Points[FirstValidIndex].TimeStamp);
+	float Unused;
+	Msg.Header.Stamp.Nanosec =
+		static_cast<int32>(FMath::Modf(Points[FirstValidIndex].TimeStamp, &Unused)) * 1000000000;
+
+	auto MakeField = [](const FString& Name, int64 Offset, uint8 Datatype, int64 Count)
+	{
+		FAGX_SensorMsgsPointField Field;
+		Field.Name = Name;
+		Field.Offset = Offset;
+		Field.Datatype = Datatype;
+		Field.Count = Count;
+		return Field;
+	};
+
+	Msg.Fields.Add(MakeField("x", 0, 8, 1));
+	Msg.Fields.Add(MakeField("y", 8, 8, 1));
+	Msg.Fields.Add(MakeField("z", 16, 8, 1));
+	Msg.Fields.Add(MakeField("intensity", 24, 8, 1));
+
+	Msg.IsBigendian = false;
+	Msg.PointStep = 32;
+	Msg.RowStep = Width * Msg.PointStep;
+	Msg.IsDense = true;
+
+	auto AppendDoubleToUint8 = [](double Val, TArray<uint8>& OutData)
+	{
+		uint64 Bits = *reinterpret_cast<uint64*>(&Val);
+		for (int i = 0; i < sizeof(double); i++)
+		{
+			OutData.Add(static_cast<uint8_t>(Bits & 0xFF));
+			Bits >>= 8;
+		}
+	};
+
+	Msg.Data.Reserve(Points.Num() * Msg.PointStep);
+	for (int32 i = FirstValidIndex; i < Points.Num(); i++)
+	{
+		if (!Points[i].bIsValid)
+			continue;
+
+		AppendDoubleToUint8(Points[i].Position.X, Msg.Data);
+		AppendDoubleToUint8(Points[i].Position.Y, Msg.Data);
+		AppendDoubleToUint8(Points[i].Position.Z, Msg.Data);
+		AppendDoubleToUint8(Points[i].Intensity, Msg.Data);
 	}
 
 	return Msg;
