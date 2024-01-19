@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Real.h"
 #include "Sensors/AGX_LidarEnums.h"
 #include "Sensors/AGX_LidarScanPoint.h"
 
@@ -128,7 +129,7 @@ public:
 	 * Objects farther away than this value will not be detected by this Lidar Sensor.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
-	double Range {20000.0};
+	FAGX_Real Range {20000.0};
 
 	/**
 	 * Determines whether an intensity value is calculated or not. If set to false, the value zero

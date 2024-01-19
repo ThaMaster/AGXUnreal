@@ -31,7 +31,7 @@ struct AGXUNREALBARRIER_API FAGX_Real
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	double Value = 0.0;
 	// To follow Unreal Engine convention, we may choose to not initialize Value and instead
 	// provide a constructor taking an EForceInit and only do value initialization in that
