@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
+#include "AGX_InternalDelegateAccessor.h"
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -24,7 +25,7 @@
 
 UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 namespace AGX_LidarSensorComponent_helpers
@@ -284,29 +285,29 @@ void UAGX_LidarSensorComponent::BeginPlay()
 
 	LidarState.ScanCycleDuration = 1.0 / ScanFrequency;
 	LidarState.OutputCycleDuration = 1.0 / OutputFrequency;
-}
 
-void UAGX_LidarSensorComponent::TickComponent(
-	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	if (!bIsValid || !bEnabled)
-		return;
-
-	UpdateElapsedTime();
-
-	if (ExecutionMode != EAGX_LidarExecutonMode::Auto)
-		return;
-
-	if (SamplingType == EAGX_LidarSamplingType::CPU)
-		ScanAutoCPU();
-
-	OutputPointCloudDataIfReady();
+	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
+	{
+		PostStepForwardHandle =
+			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
+				.AddLambda([this](float TimeStamp) { OnStepForward(TimeStamp); });
+	}
 }
 
 void UAGX_LidarSensorComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
 	PointCloudDataOutput.Clear();
+
+	if (Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit &&
+		Reason != EEndPlayReason::LevelTransition)
+	{
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
+		{
+			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
+				.Remove(PostStepForwardHandle);
+		}
+	}
 }
 
 #if WITH_EDITOR
@@ -384,7 +385,23 @@ bool UAGX_LidarSensorComponent::CheckValid() const
 	return true;
 }
 
-void UAGX_LidarSensorComponent::UpdateElapsedTime()
+void UAGX_LidarSensorComponent::OnStepForward(float TimeStamp)
+{
+	if (!bIsValid || !bEnabled)
+		return;
+
+	UpdateElapsedTime(TimeStamp);
+
+	if (ExecutionMode != EAGX_LidarExecutonMode::Auto)
+		return;
+
+	if (SamplingType == EAGX_LidarSamplingType::CPU)
+		ScanAutoCPU();
+
+	OutputPointCloudDataIfReady();
+}
+
+void UAGX_LidarSensorComponent::UpdateElapsedTime(float TimeStamp)
 {
 	LidarState.ElapsedTimePrev = LidarState.ElapsedTime;
 

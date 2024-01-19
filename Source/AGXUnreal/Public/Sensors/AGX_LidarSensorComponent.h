@@ -195,9 +195,6 @@ public:
 
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
-	virtual void TickComponent(
-		float DeltaTime, ELevelTick TickType,
-		FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 
 #if WITH_EDITOR
@@ -218,12 +215,14 @@ private:
 
 	FAGX_LidarState LidarState;
 	bool bIsValid {false};
+	FDelegateHandle PostStepForwardHandle;
 
 	// Buffer for storing scan data until the next data output is run.
 	TArray<FAGX_LidarScanPoint> Buffer;
 
 	bool CheckValid() const;
-	void UpdateElapsedTime();
+	void OnStepForward(float TimeStamp);
+	void UpdateElapsedTime(float TimeStamp);
 	void ScanAutoCPU();
 	void OutputPointCloudDataIfReady();
 };
