@@ -45,7 +45,7 @@ namespace AGX_LidarSensorComponent_helpers
 				continue;
 
 			const FVector PGlobal = LocalFrame.TransformPositionNoScale(P.Position);
-			DrawDebugPoint(World, PGlobal, Size, FColor::Red, false, Lifetime, 99);
+			DrawDebugPoint(World, PGlobal, Size, FColor::Red, false, Lifetime);
 		}
 	}
 
