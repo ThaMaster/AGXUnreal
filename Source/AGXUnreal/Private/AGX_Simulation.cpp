@@ -29,6 +29,7 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_Stats.h"
 #include "Wire/AGX_WireComponent.h"
+#include "Wire/AGX_WireController.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -690,6 +691,28 @@ void UAGX_Simulation::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
 
 	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bOverrideDynamicWireContacts),
+		[](ThisClass* This)
+		{
+			if (This->bOverrideDynamicWireContacts)
+			{
+				UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(
+					This->bEnableDynamicWireContacts);
+			}
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bEnableDynamicWireContacts),
+		[](ThisClass* This)
+		{
+			if (This->bOverrideDynamicWireContacts)
+			{
+				UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(
+					This->bEnableDynamicWireContacts);
+			}
+		});
+
+	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bEnableAMOR),
 		[](ThisClass* This) { This->SetEnableAMOR(This->bEnableAMOR); });
 
@@ -710,6 +733,12 @@ void UAGX_Simulation::CreateNative()
 	NativeBarrier.SetTimeStep(TimeStep);
 
 	NativeBarrier.SetEnableContactWarmstarting(bContactWarmstarting);
+
+	if (bOverrideDynamicWireContacts)
+	{
+		UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(
+			bEnableDynamicWireContacts);
+	}
 
 	if (bOverridePPGSIterations)
 	{
@@ -734,10 +763,17 @@ void UAGX_Simulation::CreateNative()
 		// The user has requested that we use the default number of PPGS solver iterations. Update
 		// the setting to reflect the actual value set by AGX Dynamics. This will not change the
 		// plugin settings since 'this' is now the in-game instance, not the CDO.
+		//
+		// Q: Is this really necessary? GetNumPpgsIterations will ask the Native for the AGX
+		// Dynamics state so why do we need to update the property as well?
 		NumPpgsIterations = NativeBarrier.GetNumPpgsIterations();
 	}
 
-	NativeBarrier.SetNumThreads(NumThreads);
+	if (bOverrideNumThreads)
+	{
+		NativeBarrier.SetNumThreads(NumThreads);
+	}
+
 	SetGravity();
 	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
 	NativeBarrier.SetEnableAMOR(bEnableAMOR);
@@ -748,8 +784,6 @@ void UAGX_Simulation::CreateNative()
 	{
 		NativeBarrier.EnableRemoteDebugging(RemoteDebuggingPort);
 	}
-
-	FAGX_Environment::GetInstance().SetNumThreads(std::max(0, NumThreads));
 }
 
 void UAGX_Simulation::OnLevelTransition()
