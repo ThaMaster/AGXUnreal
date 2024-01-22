@@ -59,12 +59,15 @@ namespace AGX_LidarSensorComponent_helpers
 		if (HitResult.Component != nullptr)
 		{
 			UMaterialInterface* MaterialInterf = HitResult.Component->GetMaterial(0);
-			FMaterialParameterInfo Info;
-			Info.Name = TEXT("Roughness");
-			float Roughness;
-			if (MaterialInterf->GetScalarParameterValue(Info, Roughness))
+			if (MaterialInterf != nullptr)
 			{
-				Intensity *= (1.0 - std::max(static_cast<double>(Roughness), 0.0));
+				FMaterialParameterInfo Info;
+				Info.Name = TEXT("Roughness");
+				float Roughness;
+				if (MaterialInterf->GetScalarParameterValue(Info, Roughness))
+				{
+					Intensity *= (1.0 - std::max(static_cast<double>(Roughness), 0.0));
+				}
 			}
 		}
 
