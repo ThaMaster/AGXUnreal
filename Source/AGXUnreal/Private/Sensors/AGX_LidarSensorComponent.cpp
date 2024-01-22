@@ -137,7 +137,8 @@ namespace AGX_LidarSensorComponent_helpers
 		const int32 NumThreads =
 			RunMultithreaded ? FPlatformMisc::NumberOfWorkerThreadsToSpawn() : 1;
 		const int32 NumRaysPerThread = NumRays / NumThreads;
-		const FCollisionQueryParams CollParams;
+		FCollisionQueryParams CollParams;
+		CollParams.bTraceComplex = true;
 
 		auto RayToAngles = [&](int32 Ray) -> std::tuple<double, double>
 		{

@@ -180,20 +180,20 @@ public:
 	 * a full scan cycle, the FractionStart should be set to zero and FractionEnd should be set to
 	 * one. These parameters will both be clamped to [0..1].
 	 *
-	 * (Optional) FOVWindowX and FOVWindowY can be used to sample only a sub window of the whole
-	 * Lidar Sensor's FOV [deg].
-	 * In other words, it can be used to specify a sub-section of the Lidar Sensor's FOV to be
-	 * considered during the scan, and any area outside this sub-section are not scanned. This can
-	 * increase performance.
-	 * The X component in each FOVWindow represents the lower bound and the Y component the upper
-	 * bound. If left unchanged, the whole Lidar Sensor FOV will be considered. Using the FOV window
-	 * does not affect the apparent scale of the scan pattern, it can be seen as a mask that simply
-	 * discards points outside this FOV window.
+	 * (Optional) FOVWindowHorizontal and FOVWindowVertical can be used to sample only a sub window
+	 * of the whole Lidar Sensor's FOV [deg]. In other words, it can be used to specify a
+	 * sub-section of the Lidar Sensor's FOV to be considered during the scan, and any area outside
+	 * this sub-section are not scanned. This can increase performance. The X component in each
+	 * FOVWindow represents the lower bound and the Y component the upper bound. If left unchanged,
+	 * the whole Lidar Sensor FOV will be considered. Using the FOV window does not affect the
+	 * apparent scale of the scan pattern, it can be seen as a mask that simply discards points
+	 * outside this FOV window.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void RequestManualScan(
 		double FractionStart = 0.0, double FractionEnd = 1.0,
-		FVector2D FOVWindowX = FVector2D::ZeroVector, FVector2D FOVWindowY = FVector2D::ZeroVector);
+		FVector2D FOVWindowHorizontal = FVector2D::ZeroVector,
+		FVector2D FOVWindowVertical = FVector2D::ZeroVector);
 
 	/**
 	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2
