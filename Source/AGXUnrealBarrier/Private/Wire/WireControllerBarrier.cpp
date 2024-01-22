@@ -89,7 +89,7 @@ bool FWireControllerBarrier::SetDynamicWireContactsEnabled(
 void FWireControllerBarrier::SetDynamicWireContactsGloballyEnabled(bool bEnable)
 {
 	check(HasNative());
-	return Native->Native->setEnableDynamicWireContactsGlobally(bEnable);
+	Native->Native->setEnableDynamicWireContactsGlobally(bEnable);
 }
 
 bool FWireControllerBarrier::GetDynamicWireContactsEnabled(const FShapeBarrier& Shape) const
