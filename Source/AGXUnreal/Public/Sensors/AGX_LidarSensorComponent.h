@@ -202,9 +202,9 @@ public:
 	 * This means that the sensor_msgs::PointCloud2 message created by this function is always
 	 * dense.
 	 *
-	 * The Time Stamp written to the Header member of the sensor_msgs::PointCloud2 message is set to
-	 * the time stamp of the first valid Point in the given array, even if other points have been
-	 * generated at later time stamps.
+	 * The timestamp written to the Header member of the sensor_msgs::PointCloud2 message is set to
+	 * the timestamp of the first valid Point in the given array, even if other points have been
+	 * generated at later timestamps.
 	 *
 	 * The Data member consists of X, Y, Z and Intensity for each point written as double's
 	 * in little endian layout, i.e. 32 bytes per point.
