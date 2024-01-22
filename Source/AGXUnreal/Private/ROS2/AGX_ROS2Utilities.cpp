@@ -157,6 +157,7 @@ FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::Convert(
 
 	auto AppendDoubleToUint8 = [](double Val, TArray<uint8>& OutData)
 	{
+		static_assert(sizeof(uint64) == sizeof(double));
 		uint64 Bits = *reinterpret_cast<uint64*>(&Val);
 		for (int i = 0; i < sizeof(double); i++)
 		{
