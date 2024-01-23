@@ -19,6 +19,9 @@ public:
 		const TArray<FFloat16Color>& Image, float TimeStamp, const FIntPoint& Resolution,
 		bool Grayscale);
 
-	static FAGX_SensorMsgsPointCloud2 Convert(
+	static FAGX_SensorMsgsPointCloud2 ConvertXYZ(
 		const TArray<FAGX_LidarScanPoint>& Points, int32 Width, int32 Height);
+
+	static FAGX_SensorMsgsPointCloud2 ConvertAnglesTOF(const TArray<FAGX_LidarScanPoint>& Points);
 };
+

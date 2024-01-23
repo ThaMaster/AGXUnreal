@@ -286,12 +286,18 @@ void UAGX_LidarSensorComponent::RequestManualScan(
 	Buffer.SetNum(0, false);
 }
 
-FAGX_SensorMsgsPointCloud2 UAGX_LidarSensorComponent::Convert(
+FAGX_SensorMsgsPointCloud2 UAGX_LidarSensorComponent::ConvertXYZ(
 	const TArray<FAGX_LidarScanPoint>& Points) const
 {
 	const int32 Width = FOV.X / Resolution.X;
 	const int32 Height = FOV.Y / Resolution.Y;
-	return FAGX_ROS2Utilities::Convert(Points, Width, Height);
+	return FAGX_ROS2Utilities::ConvertXYZ(Points, Width, Height);
+}
+
+FAGX_SensorMsgsPointCloud2 UAGX_LidarSensorComponent::ConvertAnglesTOF(
+	const TArray<FAGX_LidarScanPoint>& Points)
+{
+	return FAGX_ROS2Utilities::ConvertAnglesTOF(Points);
 }
 
 void UAGX_LidarSensorComponent::BeginPlay()

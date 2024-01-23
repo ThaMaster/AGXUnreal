@@ -39,6 +39,37 @@ namespace AGX_ROS2Utilities_helpers
 
 		return Msg;
 	}
+
+	FAGX_SensorMsgsPointField MakePointFieldField(
+		const FString& Name, int64 Offset, uint8 Datatype, int64 Count)
+	{
+		FAGX_SensorMsgsPointField Field;
+		Field.Name = Name;
+		Field.Offset = Offset;
+		Field.Datatype = Datatype;
+		Field.Count = Count;
+		return Field;
+	};
+
+	void AppendDoubleToUint8Array(double Val, TArray<uint8>& OutData)
+	{
+		static_assert(sizeof(uint64) == sizeof(double));
+		uint64 Bits = *reinterpret_cast<uint64*>(&Val);
+		for (int i = 0; i < sizeof(double); i++)
+		{
+			OutData.Add(static_cast<uint8_t>(Bits & 0xFF));
+			Bits >>= 8;
+		}
+	};
+
+	auto AppendUint32ToUint8Array(uint32 Val, TArray<uint8>& OutData)
+	{
+		for (int i = 0; i < sizeof(uint32); i++)
+		{
+			OutData.Add(static_cast<uint8_t>(Val & 0xFF));
+			Val >>= 8;
+		}
+	};
 }
 
 FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
@@ -120,9 +151,10 @@ FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
 	return Msg;
 }
 
-FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::Convert(
+FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::ConvertXYZ(
 	const TArray<FAGX_LidarScanPoint>& Points, int32 Width, int32 Height)
 {
+	using namespace AGX_ROS2Utilities_helpers;
 	FAGX_SensorMsgsPointCloud2 Msg;
 
 	const int32 FirstValidIndex =
@@ -133,38 +165,17 @@ FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::Convert(
 	Msg.Header.Stamp.Sec = static_cast<int32>(Points[FirstValidIndex].TimeStamp);
 	float Unused;
 	Msg.Header.Stamp.Nanosec =
-		static_cast<int32>(FMath::Modf(Points[FirstValidIndex].TimeStamp, &Unused)) * 1000000000;
+		static_cast<int32>(FMath::Modf(Points[FirstValidIndex].TimeStamp, &Unused)) * 1e9;
 
-	auto MakeField = [](const FString& Name, int64 Offset, uint8 Datatype, int64 Count)
-	{
-		FAGX_SensorMsgsPointField Field;
-		Field.Name = Name;
-		Field.Offset = Offset;
-		Field.Datatype = Datatype;
-		Field.Count = Count;
-		return Field;
-	};
-
-	Msg.Fields.Add(MakeField("x", 0, 8, 1));
-	Msg.Fields.Add(MakeField("y", 8, 8, 1));
-	Msg.Fields.Add(MakeField("z", 16, 8, 1));
-	Msg.Fields.Add(MakeField("intensity", 24, 8, 1));
+	Msg.Fields.Add(MakePointFieldField("x", 0, 8, 1));
+	Msg.Fields.Add(MakePointFieldField("y", 8, 8, 1));
+	Msg.Fields.Add(MakePointFieldField("z", 16, 8, 1));
+	Msg.Fields.Add(MakePointFieldField("intensity", 24, 8, 1));
 
 	Msg.IsBigendian = false;
 	Msg.PointStep = 32;
 	Msg.RowStep = Width * Msg.PointStep;
 	Msg.IsDense = true;
-
-	auto AppendDoubleToUint8 = [](double Val, TArray<uint8>& OutData)
-	{
-		static_assert(sizeof(uint64) == sizeof(double));
-		uint64 Bits = *reinterpret_cast<uint64*>(&Val);
-		for (int i = 0; i < sizeof(double); i++)
-		{
-			OutData.Add(static_cast<uint8_t>(Bits & 0xFF));
-			Bits >>= 8;
-		}
-	};
 
 	Msg.Data.Reserve(Points.Num() * Msg.PointStep);
 	for (int32 i = FirstValidIndex; i < Points.Num(); i++)
@@ -172,10 +183,76 @@ FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::Convert(
 		if (!Points[i].bIsValid)
 			continue;
 
-		AppendDoubleToUint8(Points[i].Position.X, Msg.Data);
-		AppendDoubleToUint8(Points[i].Position.Y, Msg.Data);
-		AppendDoubleToUint8(Points[i].Position.Z, Msg.Data);
-		AppendDoubleToUint8(Points[i].Intensity, Msg.Data);
+		AppendDoubleToUint8Array(Points[i].Position.X, Msg.Data);
+		AppendDoubleToUint8Array(Points[i].Position.Y, Msg.Data);
+		AppendDoubleToUint8Array(Points[i].Position.Z, Msg.Data);
+		AppendDoubleToUint8Array(Points[i].Intensity, Msg.Data);
+	}
+
+	return Msg;
+}
+
+FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::ConvertAnglesTOF(
+	const TArray<FAGX_LidarScanPoint>& Points)
+{
+	using namespace AGX_ROS2Utilities_helpers;
+	FAGX_SensorMsgsPointCloud2 Msg;
+
+	const int32 FirstValidIndex =
+		Points.IndexOfByPredicate([](const FAGX_LidarScanPoint& P) { return P.bIsValid; });
+	if (FirstValidIndex == INDEX_NONE)
+		return Msg;
+
+	Msg.Header.Stamp.Sec = static_cast<int32>(Points[FirstValidIndex].TimeStamp);
+	float Unused;
+	Msg.Header.Stamp.Nanosec =
+		static_cast<int32>(FMath::Modf(Points[FirstValidIndex].TimeStamp, &Unused)) * 1e9;
+
+	Msg.Fields.Add(MakePointFieldField("angle_x", 0, 8, 1));
+	Msg.Fields.Add(MakePointFieldField("angle_y", 8, 8, 1));
+	Msg.Fields.Add(MakePointFieldField("tof", 16, 6, 1));
+	Msg.Fields.Add(MakePointFieldField("intensity", 24, 8, 1));
+
+	Msg.IsBigendian = false;
+	Msg.PointStep = 28;
+	Msg.RowStep = Points.Num() * Msg.PointStep;
+	Msg.IsDense = true;
+
+	static constexpr double SpeedOfLight = 299792458.0;
+	Msg.Data.Reserve(Points.Num() * Msg.PointStep);
+	for (int32 i = FirstValidIndex; i < Points.Num(); i++)
+	{
+		if (!Points[i].bIsValid)
+			continue;
+
+		double AngleX = FMath::Atan2(Points[i].Position.Y, Points[i].Position.X);
+		double AngleY = FMath::Atan2(
+			Points[i].Position.Z, FMath::Sqrt(
+									  Points[i].Position.X * Points[i].Position.X +
+									  Points[i].Position.Y * Points[i].Position.Y));
+
+		const double Distance = 0.01 * Points[i].Position.Length(); // In meters.
+		const double TimePikoSecondsd = ((Distance * 2.0) / SpeedOfLight) * 1.0e12;
+		uint32 TimePikoSeconds = static_cast<uint32>(TimePikoSecondsd);
+		if (TimePikoSecondsd > std::numeric_limits<uint32>::max())
+		{
+			// This means we have a measurement that is more than 643799 meters away which is
+			// unlikely for a Lidar Sensor. We could use uint64 here, but that's not part of the
+			// specification for sensor_msgs::PointField, so we stick with the supported uint32
+			// until we need to represent larger values than this.
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("ConvertAnglesTOF got time in pikoseconds: %f which is too large to store in "
+					 "an uint32. std::numeric_limits<uint32>::max() is used instead."),
+				TimePikoSecondsd);
+			TimePikoSeconds = std::numeric_limits<uint32>::max();
+		}
+
+		// Append data to Msg.Data
+		AppendDoubleToUint8Array(AngleX, Msg.Data);
+		AppendDoubleToUint8Array(AngleY, Msg.Data);
+		AppendUint32ToUint8Array(TimePikoSeconds, Msg.Data);
+		AppendDoubleToUint8Array(Points[i].Intensity, Msg.Data);
 	}
 
 	return Msg;
