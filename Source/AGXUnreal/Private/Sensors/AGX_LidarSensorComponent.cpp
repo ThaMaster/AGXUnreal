@@ -71,6 +71,11 @@ namespace AGX_LidarSensorComponent_helpers
 			}
 		}
 
+		// Todo: Intensity drop due to distsance (inverse square law).
+		// The laser beam is not spherical though, so doing just 1/d^2 is not right.
+		// The beam has a certain divergence angle, forming basically a cone, so the wattage per
+		// area goes down over distance. This angle may be lidar-type specific and therefore should
+		// probably be configurable.
 		return Intensity;
 	}
 
