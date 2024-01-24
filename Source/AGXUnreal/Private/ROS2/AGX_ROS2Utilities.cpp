@@ -218,21 +218,25 @@ FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::ConvertAnglesTOF(
 	Msg.RowStep = Points.Num() * Msg.PointStep;
 	Msg.IsDense = true;
 
-	static constexpr double SpeedOfLight = 299792458.0;
+	// TimePiko = DistanceMeters / C * 1.0e12 * 2.
+	// Where C is the speed of light. The factor 2 is because the ray travels to the object and back
+	// again.
+	// We collect the constants and get TimePiko = DistanceMeters * K.
+	static constexpr double K = 2.0 * 1.0e12 / 299792458.0;
+
 	Msg.Data.Reserve(Points.Num() * Msg.PointStep);
 	for (int32 i = FirstValidIndex; i < Points.Num(); i++)
 	{
 		if (!Points[i].bIsValid)
 			continue;
 
-		double AngleX = FMath::Atan2(Points[i].Position.Y, Points[i].Position.X);
-		double AngleY = FMath::Atan2(
-			Points[i].Position.Z, FMath::Sqrt(
-									  Points[i].Position.X * Points[i].Position.X +
-									  Points[i].Position.Y * Points[i].Position.Y));
+		const double AngleX = FMath::Atan2(Points[i].Position.Y, Points[i].Position.X);
+		const double AngleY = FMath::Atan2(
+			Points[i].Position.Z,
+			FMath::Sqrt(FMath::Pow(Points[i].Position.X, 2) + FMath::Pow(Points[i].Position.Y, 2)));
 
 		const double Distance = 0.01 * Points[i].Position.Length(); // In meters.
-		const double TimePikoSecondsd = ((Distance * 2.0) / SpeedOfLight) * 1.0e12;
+		const double TimePikoSecondsd = Distance * K;
 		uint32 TimePikoSeconds = static_cast<uint32>(TimePikoSecondsd);
 		if (TimePikoSecondsd > std::numeric_limits<uint32>::max())
 		{
