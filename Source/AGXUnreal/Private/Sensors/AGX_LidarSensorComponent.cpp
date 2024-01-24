@@ -50,7 +50,8 @@ namespace AGX_LidarSensorComponent_helpers
 	}
 
 	double ApproximateIntensity(
-		const FHitResult& HitResult, const FVector_NetQuantizeNormal& Direction)
+		const FHitResult& HitResult, const FVector_NetQuantizeNormal& Direction,
+		double BeamExitRadius, double BeamDivergenceRad)
 	{
 		// Intensity based on angle of incident.
 		double Intensity = std::max(0.0, -Direction.Dot(HitResult.Normal));
@@ -71,11 +72,20 @@ namespace AGX_LidarSensorComponent_helpers
 			}
 		}
 
-		// Todo: Intensity drop due to distsance (inverse square law).
-		// The laser beam is not spherical though, so doing just 1/d^2 is not right.
-		// The beam has a certain divergence angle, forming basically a cone, so the wattage per
-		// area goes down over distance. This angle may be lidar-type specific and therefore should
-		// probably be configurable.
+		// Take beam divergence (drop off over distance) into account.
+		// The beam is shaped like a cone. Here we simply take the beam area as it exists the Lidar
+		// Sensor in relation to the beam area at the target.
+		// So Fraction = AreaExit / AreaTarget.
+		// AreaExit = pi * ExitRadius^2
+		// AreaTarget = pi * (ExitRadius + 2 * Sin(Divergence / 2) * Distance)^2
+		// We approximate 2 * Sin(Divergence / 2) to Sin(Divergence) since we have really small
+		// angles.
+		// We can rewrite this to:
+		Intensity *= FMath::Pow(
+			1.0 /
+				(1.0 + FMath::Sin(BeamDivergenceRad) * HitResult.Distance / BeamExitRadius),
+			2.0);
+
 		return Intensity;
 	}
 
@@ -100,6 +110,8 @@ namespace AGX_LidarSensorComponent_helpers
 		double FractionStart {0.0};
 		double FractionEnd {0.0};
 		double Range {0.0};
+		double BeamExitRadius {0.0};
+		double BeamDivergenceRad {0.0}; // In radians.
 		EAGX_LidarScanPattern ScanPattern {EAGX_LidarScanPattern::VerticalSweep};
 		bool bCalculateIntensity {true};
 	};
@@ -219,7 +231,8 @@ namespace AGX_LidarSensorComponent_helpers
 				{
 					const FVector_NetQuantizeNormal DirGlobal(
 						(EndGlobal - StartGlobal).GetSafeNormal());
-					Intensity = ApproximateIntensity(HitResult, DirGlobal);
+					Intensity = ApproximateIntensity(
+						HitResult, DirGlobal, Params.BeamExitRadius, Params.BeamDivergenceRad);
 				}
 				OutData[OutDataIndex] = FAGX_LidarScanPoint(
 					FVector(LocalPoint.X, LocalPoint.Y, LocalPoint.Z), Params.TimeStamp, Intensity,
@@ -268,6 +281,8 @@ void UAGX_LidarSensorComponent::RequestManualScan(
 		Params.FractionStart = FractionStart;
 		Params.FractionEnd = FractionEnd;
 		Params.Range = Range;
+		Params.BeamExitRadius = BeamExitDiameter / 2.0;
+		Params.BeamDivergenceRad = FMath::DegreesToRadians(BeamDivergence);
 		Params.ScanPattern = ScanPattern;
 		Params.bCalculateIntensity = bCalculateIntensity;
 	}
@@ -463,6 +478,8 @@ void UAGX_LidarSensorComponent::ScanAutoCPU()
 		// We scan at most up until the end of the cycle.
 		Params.FractionEnd = std::min(ScanCycleFraction, 1.0);
 		Params.Range = Range;
+		Params.BeamExitRadius = BeamExitDiameter / 2.0;
+		Params.BeamDivergenceRad = FMath::DegreesToRadians(BeamDivergence);
 		Params.ScanPattern = ScanPattern;
 		Params.bCalculateIntensity = bCalculateIntensity;
 	}

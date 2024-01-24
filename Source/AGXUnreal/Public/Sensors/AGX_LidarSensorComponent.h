@@ -136,9 +136,32 @@ public:
 	/**
 	 * Determines whether an intensity value is calculated or not. If set to false, the value zero
 	 * is written instead. Using this functionality comes with a performance cost.
+	 * The intensity calculation takes the angle of incident, material roughness and distance into
+	 * account.
+	 * The intensity drop over distance is a function of the specified Beam Exit Diameter and Beam
+	 * Divergence.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Lidar")
 	bool bCalculateIntensity {true};
+
+	/**
+	 * The diameter of the beam as it exits the Lidar Sensor [cm].
+	 * This is only used in intensity calculation.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Lidar",
+		Meta = (EditCondition = "bCalculateIntensity", ExposeOnSpawn, ClampMin = "0.0"))
+	double BeamExitDiameter {1.0};
+
+	/**
+	 * The divergence of the beam [deg].
+	 * Higher beam divergence means a faster intensity drop off.
+	 * This is only used in intensity calculation.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Lidar",
+		Meta = (EditCondition = "bCalculateIntensity", ExposeOnSpawn, ClampMin = "0.0"))
+	FAGX_Real BeamDivergence {0.05};
 
 	/**
 	 * Determines whether the scanned points should be drawn on screen or not. Using this
@@ -200,7 +223,7 @@ public:
 	 * message.
 	 * The Data member consists of position X, Y, Z and Intensity for each point written as double's
 	 * in little endian layout, i.e. 32 bytes per point.
-	 * 
+	 *
 	 * Note that all invalid points, such as points representing scan misses, are ignored.
 	 * This means that the sensor_msgs::PointCloud2 message created by this function is always
 	 * dense.
@@ -211,15 +234,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	FAGX_SensorMsgsPointCloud2 ConvertXYZ(const TArray<FAGX_LidarScanPoint>& Points) const;
-	
-	
+
 	/**
 	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2
 	 * message.
 	 * The Data member consists of AngleX [rad] (double), AngleY [rad] (double), time of flight
 	 * (TOF) [ps] (uint32) and Intensity (double) for each point in little endian layout, i.e. 28
 	 * bytes per point.
-	 * 
+	 *
 	 * Note that all invalid points, such as points representing scan misses, are ignored.
 	 * This means that the sensor_msgs::PointCloud2 message created by this function is always
 	 * dense.
