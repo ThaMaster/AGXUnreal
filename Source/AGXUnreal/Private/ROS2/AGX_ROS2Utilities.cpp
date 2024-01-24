@@ -3,6 +3,7 @@
 #include "Utilities/AGX_ROS2Utilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "ROS2/AGX_ROS2Messages.h"
 #include "Sensors/AGX_LidarScanPoint.h"
 
