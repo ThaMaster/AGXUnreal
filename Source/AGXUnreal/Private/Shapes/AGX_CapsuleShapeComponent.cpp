@@ -11,6 +11,11 @@
 
 // Unreal Engine includes.
 #include "Engine/StaticMeshActor.h"
+#include "PhysicsEngine/AggregateGeom.h"
+#include "PhysicsEngine/BodySetup.h"
+
+// Standard library includes.
+#include <algorithm>
 
 UAGX_CapsuleShapeComponent::UAGX_CapsuleShapeComponent()
 {
@@ -188,6 +193,28 @@ void UAGX_CapsuleShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshDa
 		OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, OutMeshData.TexCoords,
 		AGX_MeshUtilities::CapsuleConstructionData(
 			Radius, Height, NumCircleSegments, NumHeightSegments));
+}
+
+bool UAGX_CapsuleShapeComponent::SupportsShapeBodySetup()
+{
+	return true;
+}
+
+void UAGX_CapsuleShapeComponent::UpdateBodySetup()
+{
+	CreateShapeBodySetupIfNeeded();
+	check(ShapeBodySetup->AggGeom.SphylElems.Num() == 1);
+	ShapeBodySetup->AggGeom.SphylElems[0].Radius = std::max(UE_KINDA_SMALL_NUMBER, Radius);
+	ShapeBodySetup->AggGeom.SphylElems[0].Length = std::max(UE_KINDA_SMALL_NUMBER, Height);
+
+	// AGX and Unreal Capsules have initial orientations that differ 90 degrees.
+	ShapeBodySetup->AggGeom.SphylElems[0].Rotation = FRotator(0.0, 0.0, 90.0);
+}
+
+void UAGX_CapsuleShapeComponent::AddShapeBodySetupGeometry()
+{
+	if (ShapeBodySetup != nullptr)
+		ShapeBodySetup->AggGeom.SphylElems.Add(FKSphylElem());
 }
 
 #if WITH_EDITOR

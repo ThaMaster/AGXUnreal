@@ -41,6 +41,9 @@ class AGXUNREAL_API UAGX_SimpleMeshComponent : public UMeshComponent
 	/** Removes all geometry from this triangle mesh. */
 	void ClearMeshData();
 
+protected:
+	TSharedPtr<FAGX_SimpleMeshData> MeshData;
+
 private:
 	//~ Begin UPrimitiveComponent Interface.
 	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
@@ -53,8 +56,6 @@ private:
 	//~ Begin USceneComponent Interface.
 	virtual FBoxSphereBounds CalcBounds(const FTransform& LocalToWorld) const override;
 	//~ Begin USceneComponent Interface.
-
-	TSharedPtr<FAGX_SimpleMeshData> MeshData;
 
 	friend class FAGX_SimpleMeshSceneProxy;
 };

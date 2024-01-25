@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_AssetGetterSetterImpl.h"
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_PropertyChangedDispatcher.h"
@@ -19,6 +20,8 @@
 // Unreal Engine includes.
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
+#include "PhysicsEngine/AggregateGeom.h"
+#include "PhysicsEngine/BodySetup.h"
 
 // Standard library includes.
 #include <tuple>
@@ -73,6 +76,9 @@ void UAGX_ShapeComponent::UpdateVisualMesh()
 	}
 
 	SetMeshData(Data);
+
+	if (SupportsShapeBodySetup())
+		UpdateBodySetup();
 }
 
 bool UAGX_ShapeComponent::ShouldCreateVisualMesh() const
@@ -630,4 +636,55 @@ void UAGX_ShapeComponent::OnRegister()
 {
 	Super::OnRegister();
 	UpdateVisualMesh();
+}
+
+UBodySetup* UAGX_ShapeComponent::GetBodySetup()
+{
+	if (!ShouldRender())
+		return nullptr;
+
+	return ShapeBodySetup;
+}
+
+void UAGX_ShapeComponent::CreateShapeBodySetupIfNeeded()
+{
+	AGX_CHECK(SupportsShapeBodySetup());
+	if (!IsValid(ShapeBodySetup))
+	{
+		ShapeBodySetup = NewObject<UBodySetup>(this, NAME_None, RF_Transient);
+
+		// If this component is in GC cluster, make sure we add the body setup to it to.
+		ShapeBodySetup->AddToCluster(this);
+
+		// If we got created outside of game thread, but got added to a cluster,
+		// we no longer need the Async flag.
+		if (ShapeBodySetup->HasAnyInternalFlags(EInternalObjectFlags::Async) &&
+			GUObjectClusters.GetObjectCluster(ShapeBodySetup))
+		{
+			ShapeBodySetup->ClearInternalFlags(EInternalObjectFlags::Async);
+		}
+
+		ShapeBodySetup->CollisionTraceFlag = CTF_UseSimpleAsComplex;
+		AddShapeBodySetupGeometry();
+		ShapeBodySetup->bNeverNeedsCookedCollisionData = true;
+		BodyInstance.BodySetup = ShapeBodySetup;
+		BodyInstance.SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	}
+}
+
+void UAGX_ShapeComponent::UpdateBodySetup()
+{
+	// Subclass must implement this to support LineTrace collisions.
+	check(false);
+}
+
+void UAGX_ShapeComponent::AddShapeBodySetupGeometry()
+{
+	// Subclass must implement this to support LineTrace collisions.
+	check(false);
+}
+
+bool UAGX_ShapeComponent::SupportsShapeBodySetup()
+{
+	return false; // Default behavior.
 }

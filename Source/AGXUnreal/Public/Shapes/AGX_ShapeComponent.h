@@ -12,13 +12,14 @@
 
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
-#include "GameFramework/Actor.h"
 #include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
 
 #include "AGX_ShapeComponent.generated.h"
 
-class UMaterial;
 class UAGX_ShapeMaterial;
+class UBodySetup;
+class UMaterial;
 
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Abstract, Meta = (BlueprintSpawnableComponent),
@@ -264,6 +265,21 @@ protected:
 
 	static void ApplySensorMaterial(UMeshComponent& Mesh);
 	static void RemoveSensorMaterial(UMeshComponent& Mesh);
+
+	/** Description of Unreal collision, used by e.g. Line Trace. */
+	UPROPERTY(Transient, Duplicatetransient)
+	TObjectPtr<class UBodySetup> ShapeBodySetup;
+
+	// ~Begin UPrimitiveComponent interface.
+	virtual class UBodySetup* GetBodySetup() override;
+	// ~End UPrimitiveComponent interface.
+
+	void CreateShapeBodySetupIfNeeded();
+
+	/** These must be overriden to support Line Trace collisions. */
+	virtual bool SupportsShapeBodySetup();
+	virtual void UpdateBodySetup();
+	virtual void AddShapeBodySetupGeometry();
 
 private:
 	bool UpdateNativeMaterial();
