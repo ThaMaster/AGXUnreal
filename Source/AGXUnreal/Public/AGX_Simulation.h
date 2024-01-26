@@ -11,6 +11,7 @@
 // Unreal Engine includes.
 #include "Containers/Map.h"
 #include "CoreMinimal.h"
+#include "Engine/EngineTypes.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 

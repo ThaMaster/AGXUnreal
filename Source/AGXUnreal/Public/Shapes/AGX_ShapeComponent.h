@@ -13,6 +13,7 @@
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
+#include "Engine/EngineTypes.h"
 #include "GameFramework/Actor.h"
 
 #include "AGX_ShapeComponent.generated.h"
