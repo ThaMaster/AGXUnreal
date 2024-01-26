@@ -77,8 +77,8 @@ void UAGX_ShapeComponent::UpdateVisualMesh()
 
 	SetMeshData(Data);
 
-	if (SupportsShapeBodySetup())
-		UpdateBodySetup();
+	if (SupportsShapeBodySetup() && GetWorld() && GetWorld()->IsGameWorld())
+		UpdateBodySetup(); // Used only in runtime.
 }
 
 bool UAGX_ShapeComponent::ShouldCreateVisualMesh() const
@@ -652,17 +652,6 @@ void UAGX_ShapeComponent::CreateShapeBodySetupIfNeeded()
 	if (!IsValid(ShapeBodySetup))
 	{
 		ShapeBodySetup = NewObject<UBodySetup>(this, NAME_None, RF_Transient);
-
-		// If this component is in GC cluster, make sure we add the body setup to it to.
-		ShapeBodySetup->AddToCluster(this);
-
-		// If we got created outside of game thread, but got added to a cluster,
-		// we no longer need the Async flag.
-		if (ShapeBodySetup->HasAnyInternalFlags(EInternalObjectFlags::Async) &&
-			GUObjectClusters.GetObjectCluster(ShapeBodySetup))
-		{
-			ShapeBodySetup->ClearInternalFlags(EInternalObjectFlags::Async);
-		}
 
 		ShapeBodySetup->CollisionTraceFlag = CTF_UseSimpleAsComplex;
 		AddShapeBodySetupGeometry();
