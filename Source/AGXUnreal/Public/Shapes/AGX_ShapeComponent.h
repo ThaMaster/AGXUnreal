@@ -185,6 +185,16 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	// ~End UActorComponent interface.
 
+	/**
+	 * Additional Unreal Collision Geometry to use for this Shape.
+	 * Does not affect AGX Dynamics, but can be used to get support for e.g. LineTrace (Query) or
+	 * use as a blocking volume against Chaos physics objects (Physics). Supported for all AGX
+	 * primitive Shapes. Not supported for Trimesh Shapes.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape", AdvancedDisplay)
+	TEnumAsByte<enum ECollisionEnabled::Type> AdditionalUnrealCollision {
+		ECollisionEnabled::QueryOnly};
+
 	/*
 	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
 	 * Should never be assigned manually.
