@@ -657,7 +657,13 @@ void UAGX_ShapeComponent::CreateShapeBodySetupIfNeeded()
 		AddShapeBodySetupGeometry();
 		ShapeBodySetup->bNeverNeedsCookedCollisionData = true;
 		BodyInstance.BodySetup = ShapeBodySetup;
-		BodyInstance.SetCollisionEnabled(AdditionalUnrealCollision);
+
+		ECollisionEnabled::Type UnrealCollision = AdditionalUnrealCollision;
+		const UAGX_Simulation* Simulation = GetDefault<UAGX_Simulation>();
+		if (Simulation->bOverrideAdditionalUnrealCollision)
+			UnrealCollision = Simulation->AdditionalUnrealCollision;
+
+		BodyInstance.SetCollisionEnabled(UnrealCollision);
 	}
 }
 
