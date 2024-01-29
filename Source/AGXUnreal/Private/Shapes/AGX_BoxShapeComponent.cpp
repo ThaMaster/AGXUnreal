@@ -15,6 +15,9 @@
 #include "PhysicsEngine/AggregateGeom.h"
 #include "PhysicsEngine/BodySetup.h"
 
+// Standard library includes.
+#include <algorithm>
+
 UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -170,16 +173,10 @@ void UAGX_BoxShapeComponent::UpdateBodySetup()
 	CreateShapeBodySetupIfNeeded();
 
 	check(ShapeBodySetup->AggGeom.BoxElems.Num() == 1);
-	FVector BoxExtent = HalfExtent;
-
-	if (BoxExtent.X < UE_KINDA_SMALL_NUMBER)
-		BoxExtent.X = 1.0f;
-
-	if (BoxExtent.Y < UE_KINDA_SMALL_NUMBER)
-		BoxExtent.Y = 1.0f;
-
-	if (BoxExtent.Z < UE_KINDA_SMALL_NUMBER)
-		BoxExtent.Z = 1.0f;
+	const FVector BoxExtent(
+		std::max(UE_KINDA_SMALL_NUMBER, HalfExtent.X),
+		std::max(UE_KINDA_SMALL_NUMBER, HalfExtent.Y),
+		std::max(UE_KINDA_SMALL_NUMBER, HalfExtent.Z));
 
 	ShapeBodySetup->AggGeom.BoxElems[0].X = static_cast<float>(BoxExtent.X) * 2.f;
 	ShapeBodySetup->AggGeom.BoxElems[0].Y = static_cast<float>(BoxExtent.Y) * 2.f;
