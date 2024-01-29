@@ -8,6 +8,7 @@
 #include "Sensors/AGX_LidarScanPoint.h"
 
 // Standard library includes.
+#include <cstring>
 #include <limits>
 
 namespace AGX_ROS2Utilities_helpers
@@ -41,7 +42,7 @@ namespace AGX_ROS2Utilities_helpers
 		return Msg;
 	}
 
-	FAGX_SensorMsgsPointField MakePointFieldField(
+	FAGX_SensorMsgsPointField MakePointField(
 		const FString& Name, int64 Offset, uint8 Datatype, int64 Count)
 	{
 		FAGX_SensorMsgsPointField Field;
@@ -55,7 +56,8 @@ namespace AGX_ROS2Utilities_helpers
 	void AppendDoubleToUint8Array(double Val, TArray<uint8>& OutData)
 	{
 		static_assert(sizeof(uint64) == sizeof(double));
-		uint64 Bits = *reinterpret_cast<uint64*>(&Val);
+		uint64 Bits;
+		std::memcpy(&Bits, &Val, sizeof(Bits));
 		for (int i = 0; i < sizeof(double); i++)
 		{
 			OutData.Add(static_cast<uint8_t>(Bits & 0xFF));
@@ -168,10 +170,10 @@ FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::ConvertXYZ(
 	Msg.Header.Stamp.Nanosec =
 		static_cast<int32>(FMath::Modf(Points[FirstValidIndex].TimeStamp, &Unused)) * 1e9;
 
-	Msg.Fields.Add(MakePointFieldField("x", 0, 8, 1));
-	Msg.Fields.Add(MakePointFieldField("y", 8, 8, 1));
-	Msg.Fields.Add(MakePointFieldField("z", 16, 8, 1));
-	Msg.Fields.Add(MakePointFieldField("intensity", 24, 8, 1));
+	Msg.Fields.Add(MakePointField("x", 0, 8, 1));
+	Msg.Fields.Add(MakePointField("y", 8, 8, 1));
+	Msg.Fields.Add(MakePointField("z", 16, 8, 1));
+	Msg.Fields.Add(MakePointField("intensity", 24, 8, 1));
 
 	Msg.IsBigendian = false;
 	Msg.PointStep = 32;
@@ -209,10 +211,10 @@ FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::ConvertAnglesTOF(
 	Msg.Header.Stamp.Nanosec =
 		static_cast<int32>(FMath::Modf(Points[FirstValidIndex].TimeStamp, &Unused)) * 1e9;
 
-	Msg.Fields.Add(MakePointFieldField("angle_x", 0, 8, 1));
-	Msg.Fields.Add(MakePointFieldField("angle_y", 8, 8, 1));
-	Msg.Fields.Add(MakePointFieldField("tof", 16, 6, 1));
-	Msg.Fields.Add(MakePointFieldField("intensity", 24, 8, 1));
+	Msg.Fields.Add(MakePointField("angle_x", 0, 8, 1));
+	Msg.Fields.Add(MakePointField("angle_y", 8, 8, 1));
+	Msg.Fields.Add(MakePointField("tof", 16, 6, 1));
+	Msg.Fields.Add(MakePointField("intensity", 24, 8, 1));
 
 	Msg.IsBigendian = false;
 	Msg.PointStep = 28;
