@@ -279,10 +279,10 @@ protected:
 
 	/** Description of Unreal collision, used by e.g. Line Trace. */
 	UPROPERTY(Transient, Duplicatetransient)
-	TObjectPtr<class UBodySetup> ShapeBodySetup;
+	TObjectPtr<UBodySetup> ShapeBodySetup;
 
 	// ~Begin UPrimitiveComponent interface.
-	virtual class UBodySetup* GetBodySetup() override;
+	virtual UBodySetup* GetBodySetup() override;
 	// ~End UPrimitiveComponent interface.
 
 	void CreateShapeBodySetupIfNeeded();

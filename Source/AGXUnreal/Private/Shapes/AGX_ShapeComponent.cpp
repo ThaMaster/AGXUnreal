@@ -640,9 +640,6 @@ void UAGX_ShapeComponent::OnRegister()
 
 UBodySetup* UAGX_ShapeComponent::GetBodySetup()
 {
-	if (!ShouldRender())
-		return nullptr;
-
 	return ShapeBodySetup;
 }
 
