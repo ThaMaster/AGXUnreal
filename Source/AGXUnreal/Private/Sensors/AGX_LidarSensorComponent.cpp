@@ -112,7 +112,7 @@ namespace AGX_LidarSensorComponent_helpers
 		double Range {0.0};
 		double BeamExitRadius {0.0};
 		double BeamDivergenceRad {0.0}; // In radians.
-		EAGX_LidarScanPattern ScanPattern {EAGX_LidarScanPattern::VerticalSweep};
+		EAGX_LidarScanPattern ScanPattern {EAGX_LidarScanPattern::HorizontalSweep};
 		bool bCalculateIntensity {true};
 	};
 
@@ -161,7 +161,7 @@ namespace AGX_LidarSensorComponent_helpers
 		{
 			switch (Params.ScanPattern)
 			{
-				case EAGX_LidarScanPattern::VerticalSweep:
+				case EAGX_LidarScanPattern::HorizontalSweep:
 				{
 					const int32 IndexX = Ray / NumRaysCycleY;
 					const int32 IndexY = Ray % NumRaysCycleY;
@@ -169,7 +169,7 @@ namespace AGX_LidarSensorComponent_helpers
 						-Params.FOV.X / 2.0 + Params.Resolution.X * static_cast<double>(IndexX),
 						-Params.FOV.Y / 2.0 + Params.Resolution.Y * static_cast<double>(IndexY)};
 				}
-				case EAGX_LidarScanPattern::HorizontalSweep:
+				case EAGX_LidarScanPattern::VerticalSweep:
 				{
 					const int32 IndexX = Ray % NumRaysCycleX;
 					const int32 IndexY = Ray / NumRaysCycleX;

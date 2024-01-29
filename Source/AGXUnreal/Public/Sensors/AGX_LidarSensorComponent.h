@@ -105,7 +105,7 @@ public:
 	 * Determines in what order points are scanned during a scan cycle.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	EAGX_LidarScanPattern ScanPattern {EAGX_LidarScanPattern::VerticalSweep};
+	EAGX_LidarScanPattern ScanPattern {EAGX_LidarScanPattern::HorizontalSweep};
 
 	/**
 	 * Field of View (FOV) of the Lidar Sensor [deg].

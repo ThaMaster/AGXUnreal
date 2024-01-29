@@ -33,8 +33,8 @@ UENUM()
 enum class EAGX_LidarScanPattern
 {
 	/** Scans one vertical line, then goes to the next. */
-	VerticalSweep,
+	HorizontalSweep,
 
 	/** Scans one horizontal line, then goes to the next. */
-	HorizontalSweep
+	VerticalSweep
 };
