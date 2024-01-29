@@ -173,14 +173,12 @@ void UAGX_BoxShapeComponent::UpdateBodySetup()
 	CreateShapeBodySetupIfNeeded();
 
 	check(ShapeBodySetup->AggGeom.BoxElems.Num() == 1);
-	const FVector BoxExtent(
-		std::max(UE_KINDA_SMALL_NUMBER, HalfExtent.X),
-		std::max(UE_KINDA_SMALL_NUMBER, HalfExtent.Y),
-		std::max(UE_KINDA_SMALL_NUMBER, HalfExtent.Z));
-
-	ShapeBodySetup->AggGeom.BoxElems[0].X = static_cast<float>(BoxExtent.X) * 2.f;
-	ShapeBodySetup->AggGeom.BoxElems[0].Y = static_cast<float>(BoxExtent.Y) * 2.f;
-	ShapeBodySetup->AggGeom.BoxElems[0].Z = static_cast<float>(BoxExtent.Z) * 2.f;
+	const float X = std::max(UE_KINDA_SMALL_NUMBER, static_cast<float>(HalfExtent.X));
+	const float Y = std::max(UE_KINDA_SMALL_NUMBER, static_cast<float>(HalfExtent.Y));
+	const float Z = std::max(UE_KINDA_SMALL_NUMBER, static_cast<float>(HalfExtent.Z));
+	ShapeBodySetup->AggGeom.BoxElems[0].X = X * 2.f;
+	ShapeBodySetup->AggGeom.BoxElems[0].Y = Y * 2.f;
+	ShapeBodySetup->AggGeom.BoxElems[0].Z = Z * 2.f;
 }
 
 void UAGX_BoxShapeComponent::AddShapeBodySetupGeometry()
