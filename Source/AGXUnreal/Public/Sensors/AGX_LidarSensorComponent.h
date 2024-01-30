@@ -218,41 +218,6 @@ public:
 		FVector2D FOVWindowHorizontal = FVector2D::ZeroVector,
 		FVector2D FOVWindowVertical = FVector2D::ZeroVector);
 
-	/**
-	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2
-	 * message.
-	 * The Data member consists of position X, Y, Z and Intensity for each point written as double's
-	 * in little endian layout, i.e. 32 bytes per point.
-	 *
-	 * Note that all invalid points, such as points representing scan misses, are ignored.
-	 * This means that the sensor_msgs::PointCloud2 message created by this function is always
-	 * dense.
-	 *
-	 * The timestamp written to the Header member of the sensor_msgs::PointCloud2 message is set to
-	 * the timestamp of the first valid Point in the given array, even if other points have been
-	 * generated at later timestamps.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	FAGX_SensorMsgsPointCloud2 ConvertXYZ(const TArray<FAGX_LidarScanPoint>& Points) const;
-
-	/**
-	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2
-	 * message.
-	 * The Data member consists of AngleX [rad] (double), AngleY [rad] (double), time of flight
-	 * (TOF) [ps] (uint32) and Intensity (double) for each point in little endian layout, i.e. 28
-	 * bytes per point.
-	 *
-	 * Note that all invalid points, such as points representing scan misses, are ignored.
-	 * This means that the sensor_msgs::PointCloud2 message created by this function is always
-	 * dense.
-	 *
-	 * The timestamp written to the Header member of the sensor_msgs::PointCloud2 message is set to
-	 * the timestamp of the first valid Point in the given array, even if other points have been
-	 * generated at later timestamps.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	static FAGX_SensorMsgsPointCloud2 ConvertAnglesTOF(const TArray<FAGX_LidarScanPoint>& Points);
-
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;

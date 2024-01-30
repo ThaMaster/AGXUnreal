@@ -154,8 +154,8 @@ FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
 	return Msg;
 }
 
-FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::ConvertXYZ(
-	const TArray<FAGX_LidarScanPoint>& Points, int32 Width, int32 Height)
+FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertXYZ(
+	const TArray<FAGX_LidarScanPoint>& Points)
 {
 	using namespace AGX_ROS2Utilities_helpers;
 	FAGX_SensorMsgsPointCloud2 Msg;
@@ -176,8 +176,7 @@ FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::ConvertXYZ(
 	Msg.Fields.Add(MakePointField("intensity", 24, 8, 1));
 
 	Msg.IsBigendian = false;
-	Msg.PointStep = 32;
-	Msg.RowStep = Width * Msg.PointStep;
+	Msg.PointStep = 32; // Bytes per point.
 	Msg.IsDense = true;
 
 	Msg.Data.Reserve(Points.Num() * Msg.PointStep);
@@ -192,10 +191,15 @@ FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::ConvertXYZ(
 		AppendDoubleToUint8Array(Points[i].Intensity, Msg.Data);
 	}
 
+	// If the points are unordered, height is 1 and width is the length of the point cloud.
+	Msg.Height = 1;
+	Msg.Width = Msg.Data.Num() / Msg.PointStep; // Num points.
+	Msg.RowStep = Msg.Data.Num(); // Bytes per "row" which is the whole point cloud.
+
 	return Msg;
 }
 
-FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::ConvertAnglesTOF(
+FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertAnglesTOF(
 	const TArray<FAGX_LidarScanPoint>& Points)
 {
 	using namespace AGX_ROS2Utilities_helpers;
@@ -214,11 +218,10 @@ FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::ConvertAnglesTOF(
 	Msg.Fields.Add(MakePointField("angle_x", 0, 8, 1));
 	Msg.Fields.Add(MakePointField("angle_y", 8, 8, 1));
 	Msg.Fields.Add(MakePointField("tof", 16, 6, 1));
-	Msg.Fields.Add(MakePointField("intensity", 24, 8, 1));
+	Msg.Fields.Add(MakePointField("intensity", 20, 8, 1));
 
 	Msg.IsBigendian = false;
-	Msg.PointStep = 28;
-	Msg.RowStep = Points.Num() * Msg.PointStep;
+	Msg.PointStep = 28; // Size of a point.
 	Msg.IsDense = true;
 
 	// TimePiko = DistanceMeters / C * 1.0e12 * 2.
@@ -240,20 +243,24 @@ FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::ConvertAnglesTOF(
 
 		const double Distance = 0.01 * Points[i].Position.Length(); // In meters.
 		const double TimePikoSecondsd = Distance * K;
-		uint32 TimePikoSeconds = static_cast<uint32>(TimePikoSecondsd);
-		if (TimePikoSecondsd > std::numeric_limits<uint32>::max())
+		const uint32 TimePikoSeconds = [TimePikoSecondsd]()
 		{
-			// This means we have a measurement that is more than 643799 meters away which is
-			// unlikely for a Lidar Sensor. We could use uint64 here, but that's not part of the
-			// specification for sensor_msgs::PointField, so we stick with the supported uint32
-			// until we need to represent larger values than this.
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("ConvertAnglesTOF got time in pikoseconds: %f which is too large to store in "
-					 "an uint32. std::numeric_limits<uint32>::max() is used instead."),
-				TimePikoSecondsd);
-			TimePikoSeconds = std::numeric_limits<uint32>::max();
-		}
+			if (TimePikoSecondsd > std::numeric_limits<uint32>::max())
+			{
+				// This means we have a measurement that is more than 643799 meters away which is
+				// unlikely for a Lidar Sensor. We could use uint64 here, but that's not part of the
+				// specification for sensor_msgs::PointField, so we stick with the supported uint32
+				// until we need to represent larger values than this.
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("ConvertAnglesTOF got time in pikoseconds: %f which is too large to store "
+						 "in "
+						 "an uint32. std::numeric_limits<uint32>::max() is used instead."),
+					TimePikoSecondsd);
+				return std::numeric_limits<uint32>::max();
+			}
+			return static_cast<uint32>(TimePikoSecondsd);
+		}();
 
 		// Append data to Msg.Data
 		AppendDoubleToUint8Array(AngleX, Msg.Data);
@@ -261,6 +268,11 @@ FAGX_SensorMsgsPointCloud2 FAGX_ROS2Utilities::ConvertAnglesTOF(
 		AppendUint32ToUint8Array(TimePikoSeconds, Msg.Data);
 		AppendDoubleToUint8Array(Points[i].Intensity, Msg.Data);
 	}
+
+	// If the points are unordered, height is 1 and width is the length of the point cloud.
+	Msg.Height = 1;
+	Msg.Width = Msg.Data.Num() / Msg.PointStep; // Num points.
+	Msg.RowStep = Msg.Data.Num(); // Bytes per "row" which is the whole point cloud.
 
 	return Msg;
 }
