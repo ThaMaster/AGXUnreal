@@ -82,9 +82,7 @@ namespace AGX_LidarSensorComponent_helpers
 		// angles.
 		// We can rewrite this to:
 		Intensity *= FMath::Pow(
-			1.0 /
-				(1.0 + FMath::Sin(BeamDivergenceRad) * HitResult.Distance / BeamExitRadius),
-			2.0);
+			1.0 / (1.0 + FMath::Sin(BeamDivergenceRad) * HitResult.Distance / BeamExitRadius), 2.0);
 
 		return Intensity;
 	}
@@ -187,7 +185,10 @@ namespace AGX_LidarSensorComponent_helpers
 		{
 			const int32 ThreadFirstRay = FirstRay + Thread * NumRaysPerThread;
 			int32 ThreadLastRayPlusOne = FirstRay + (Thread + 1) * NumRaysPerThread;
-			if (Thread == NumThreads - 1) // Last thread.
+
+			// The last thread takes any extra rays that couldn't be evenly distributed over all
+			// thread.
+			if (Thread == NumThreads - 1)
 				ThreadLastRayPlusOne = LastRay + 1;
 
 			FHitResult HitResult;
