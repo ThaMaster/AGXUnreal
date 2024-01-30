@@ -67,7 +67,7 @@ namespace AGX_LidarSensorComponent_helpers
 				float Roughness;
 				if (MaterialInterf->GetScalarParameterValue(Info, Roughness))
 				{
-					Intensity *= (1.0 - std::max(static_cast<double>(Roughness), 0.0));
+					Intensity *= (1.0 - FMath::Clamp(static_cast<double>(Roughness), 0.0, 1.0));
 				}
 			}
 		}
