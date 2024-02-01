@@ -13,6 +13,18 @@
 
 namespace AGX_ROS2Utilities_helpers
 {
+	enum EAGX_PointFieldType : uint8
+	{
+		Int8 = 1,
+		Uint8 = 2,
+		Int16 = 3,
+		Uint16 = 4,
+		Int32 = 5,
+		Uint32 = 6,
+		Float32 = 7,
+		Float64 = 8
+	};
+
 	template <typename PixelType, typename OutputChannelType>
 	FAGX_SensorMsgsImage SetAllExceptData(
 		const TArray<PixelType>& Image, float TimeStamp, const FIntPoint& Resolution,
@@ -43,7 +55,7 @@ namespace AGX_ROS2Utilities_helpers
 	}
 
 	FAGX_SensorMsgsPointField MakePointField(
-		const FString& Name, int64 Offset, uint8 Datatype, int64 Count)
+		const FString& Name, int64 Offset, EAGX_PointFieldType Datatype, int64 Count)
 	{
 		FAGX_SensorMsgsPointField Field;
 		Field.Name = Name;
@@ -154,8 +166,7 @@ FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
 	return Msg;
 }
 
-FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertXYZ(
-	const TArray<FAGX_LidarScanPoint>& Points)
+FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertXYZ(const TArray<FAGX_LidarScanPoint>& Points)
 {
 	using namespace AGX_ROS2Utilities_helpers;
 	FAGX_SensorMsgsPointCloud2 Msg;
@@ -170,10 +181,10 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertXYZ(
 	Msg.Header.Stamp.Nanosec =
 		static_cast<int32>(FMath::Modf(Points[FirstValidIndex].TimeStamp, &Unused)) * 1e9;
 
-	Msg.Fields.Add(MakePointField("x", 0, 8, 1));
-	Msg.Fields.Add(MakePointField("y", 8, 8, 1));
-	Msg.Fields.Add(MakePointField("z", 16, 8, 1));
-	Msg.Fields.Add(MakePointField("intensity", 24, 8, 1));
+	Msg.Fields.Add(MakePointField("x", 0, EAGX_PointFieldType::Float64, 1));
+	Msg.Fields.Add(MakePointField("y", 8, EAGX_PointFieldType::Float64, 1));
+	Msg.Fields.Add(MakePointField("z", 16, EAGX_PointFieldType::Float64, 1));
+	Msg.Fields.Add(MakePointField("intensity", 24, EAGX_PointFieldType::Float64, 1));
 
 	Msg.IsBigendian = false;
 	Msg.PointStep = 32; // Bytes per point.
@@ -215,10 +226,10 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertAnglesTOF(
 	Msg.Header.Stamp.Nanosec =
 		static_cast<int32>(FMath::Modf(Points[FirstValidIndex].TimeStamp, &Unused)) * 1e9;
 
-	Msg.Fields.Add(MakePointField("angle_x", 0, 8, 1));
-	Msg.Fields.Add(MakePointField("angle_y", 8, 8, 1));
-	Msg.Fields.Add(MakePointField("tof", 16, 6, 1));
-	Msg.Fields.Add(MakePointField("intensity", 20, 8, 1));
+	Msg.Fields.Add(MakePointField("angle_x", 0, EAGX_PointFieldType::Float64, 1));
+	Msg.Fields.Add(MakePointField("angle_y", 8, EAGX_PointFieldType::Float64, 1));
+	Msg.Fields.Add(MakePointField("tof", 16, EAGX_PointFieldType::Uint32, 1));
+	Msg.Fields.Add(MakePointField("intensity", 20, EAGX_PointFieldType::Float64, 1));
 
 	Msg.IsBigendian = false;
 	Msg.PointStep = 28; // Size of a point.
