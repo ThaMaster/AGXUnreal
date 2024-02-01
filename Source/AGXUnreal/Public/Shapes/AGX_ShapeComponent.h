@@ -12,13 +12,15 @@
 
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
-#include "GameFramework/Actor.h"
 #include "CoreMinimal.h"
+#include "Engine/EngineTypes.h"
+#include "GameFramework/Actor.h"
 
 #include "AGX_ShapeComponent.generated.h"
 
-class UMaterial;
 class UAGX_ShapeMaterial;
+class UBodySetup;
+class UMaterial;
 
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Abstract, Meta = (BlueprintSpawnableComponent),
@@ -184,6 +186,16 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	// ~End UActorComponent interface.
 
+	/**
+	 * Additional Unreal Collision Geometry to use for this Shape.
+	 * Does not affect AGX Dynamics, but can be used to get support for e.g. LineTrace (Query) or
+	 * use as a blocking volume against Chaos physics objects (Physics). Supported for all AGX
+	 * primitive Shapes. Not supported for Trimesh Shapes.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape", AdvancedDisplay)
+	TEnumAsByte<enum ECollisionEnabled::Type> AdditionalUnrealCollision {
+		ECollisionEnabled::QueryOnly};
+
 	/*
 	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
 	 * Should never be assigned manually.
@@ -264,6 +276,21 @@ protected:
 
 	static void ApplySensorMaterial(UMeshComponent& Mesh);
 	static void RemoveSensorMaterial(UMeshComponent& Mesh);
+
+	/** Description of Unreal collision, used by e.g. Line Trace. */
+	UPROPERTY(Transient, Duplicatetransient)
+	TObjectPtr<UBodySetup> ShapeBodySetup;
+
+	// ~Begin UPrimitiveComponent interface.
+	virtual UBodySetup* GetBodySetup() override;
+	// ~End UPrimitiveComponent interface.
+
+	void CreateShapeBodySetupIfNeeded();
+
+	/** These must be overriden to support Line Trace collisions. */
+	virtual bool SupportsShapeBodySetup();
+	virtual void UpdateBodySetup();
+	virtual void AddShapeBodySetupGeometry();
 
 private:
 	bool UpdateNativeMaterial();

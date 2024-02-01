@@ -7,6 +7,13 @@
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
+// Unreal Engine includes.
+#include "PhysicsEngine/AggregateGeom.h"
+#include "PhysicsEngine/BodySetup.h"
+
+// Standard library includes.
+#include <algorithm>
+
 UAGX_SphereShapeComponent::UAGX_SphereShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -105,6 +112,24 @@ void UAGX_SphereShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshDat
 	AGX_MeshUtilities::MakeSphere(
 		OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, OutMeshData.TexCoords,
 		Radius, 32);
+}
+
+bool UAGX_SphereShapeComponent::SupportsShapeBodySetup()
+{
+	return true;
+}
+
+void UAGX_SphereShapeComponent::UpdateBodySetup()
+{
+	CreateShapeBodySetupIfNeeded();
+	check(ShapeBodySetup->AggGeom.SphereElems.Num() == 1);
+	ShapeBodySetup->AggGeom.SphereElems[0].Radius = std::max(UE_KINDA_SMALL_NUMBER, Radius);
+}
+
+void UAGX_SphereShapeComponent::AddShapeBodySetupGeometry()
+{
+	if (ShapeBodySetup != nullptr)
+		ShapeBodySetup->AggGeom.SphereElems.Add(FKSphereElem());
 }
 
 #if WITH_EDITOR

@@ -12,6 +12,11 @@
 
 // Unreal Engine includes.
 #include "Engine/StaticMeshActor.h"
+#include "PhysicsEngine/AggregateGeom.h"
+#include "PhysicsEngine/BodySetup.h"
+
+// Standard library includes.
+#include <algorithm>
 
 UAGX_BoxShapeComponent::UAGX_BoxShapeComponent()
 {
@@ -156,6 +161,30 @@ void UAGX_BoxShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)
 	AGX_MeshUtilities::MakeCube(
 		OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, OutMeshData.TexCoords,
 		ToMeshVector(HalfExtent));
+}
+
+bool UAGX_BoxShapeComponent::SupportsShapeBodySetup()
+{
+	return true;
+}
+
+void UAGX_BoxShapeComponent::UpdateBodySetup()
+{
+	CreateShapeBodySetupIfNeeded();
+
+	check(ShapeBodySetup->AggGeom.BoxElems.Num() == 1);
+	const float X = std::max(UE_KINDA_SMALL_NUMBER, static_cast<float>(HalfExtent.X));
+	const float Y = std::max(UE_KINDA_SMALL_NUMBER, static_cast<float>(HalfExtent.Y));
+	const float Z = std::max(UE_KINDA_SMALL_NUMBER, static_cast<float>(HalfExtent.Z));
+	ShapeBodySetup->AggGeom.BoxElems[0].X = X * 2.f;
+	ShapeBodySetup->AggGeom.BoxElems[0].Y = Y * 2.f;
+	ShapeBodySetup->AggGeom.BoxElems[0].Z = Z * 2.f;
+}
+
+void UAGX_BoxShapeComponent::AddShapeBodySetupGeometry()
+{
+	if (ShapeBodySetup != nullptr)
+		ShapeBodySetup->AggGeom.BoxElems.Add(FKBoxElem());
 }
 
 #if WITH_EDITOR

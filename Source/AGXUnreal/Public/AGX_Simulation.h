@@ -11,6 +11,7 @@
 // Unreal Engine includes.
 #include "Containers/Map.h"
 #include "CoreMinimal.h"
+#include "Engine/EngineTypes.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 
@@ -311,6 +312,27 @@ public: // Member functions.
 
 	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	bool GetEnableAMOR();
+
+	/**
+	 * Whether or not to override each AGX Shape with the selected AdditionalUnrealCollision
+	 * setting. If this is set to false, the setting on each AGX Shape is used instead.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Other")
+	bool bOverrideAdditionalUnrealCollision {false};
+
+	/**
+	 * Additional Unreal Collision Geometry to use for all AGX Shapes.
+	 * Does not affect AGX Dynamics, but can be used to get support for e.g. LineTrace (Query) or
+	 * use as a blocking volume against Chaos physics objects (Physics). Supported for all AGX
+	 * primitive Shapes. Not supported for Trimesh Shapes.
+	 * This is used for all primitive AGX Shapes if OverrideAdditionalUnrealCollision is set to
+	 * true, otherwise the AdditionalUnrealCollision setting belonging to each AGX Shape is used.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "Other",
+		Meta = (EditCondition = "bOverrideAdditionalUnrealCollision"))
+	TEnumAsByte<enum ECollisionEnabled::Type> AdditionalUnrealCollision {
+		ECollisionEnabled::QueryOnly};
 
 	/**
 	 * Set the number of solver resting iterations to use for the Parallel Projected Gauss-Seidel

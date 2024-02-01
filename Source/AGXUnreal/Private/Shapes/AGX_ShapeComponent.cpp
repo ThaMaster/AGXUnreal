@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_AssetGetterSetterImpl.h"
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_PropertyChangedDispatcher.h"
@@ -19,6 +20,8 @@
 // Unreal Engine includes.
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
+#include "PhysicsEngine/AggregateGeom.h"
+#include "PhysicsEngine/BodySetup.h"
 
 // Standard library includes.
 #include <tuple>
@@ -73,6 +76,9 @@ void UAGX_ShapeComponent::UpdateVisualMesh()
 	}
 
 	SetMeshData(Data);
+
+	if (SupportsShapeBodySetup() && GetWorld() && GetWorld()->IsGameWorld())
+		UpdateBodySetup(); // Used only in runtime.
 }
 
 bool UAGX_ShapeComponent::ShouldCreateVisualMesh() const
@@ -630,4 +636,47 @@ void UAGX_ShapeComponent::OnRegister()
 {
 	Super::OnRegister();
 	UpdateVisualMesh();
+}
+
+UBodySetup* UAGX_ShapeComponent::GetBodySetup()
+{
+	return ShapeBodySetup;
+}
+
+void UAGX_ShapeComponent::CreateShapeBodySetupIfNeeded()
+{
+	AGX_CHECK(SupportsShapeBodySetup());
+	if (!IsValid(ShapeBodySetup))
+	{
+		ShapeBodySetup = NewObject<UBodySetup>(this, NAME_None, RF_Transient);
+
+		ShapeBodySetup->CollisionTraceFlag = CTF_UseSimpleAsComplex;
+		AddShapeBodySetupGeometry();
+		ShapeBodySetup->bNeverNeedsCookedCollisionData = true;
+		BodyInstance.BodySetup = ShapeBodySetup;
+
+		ECollisionEnabled::Type UnrealCollision = AdditionalUnrealCollision;
+		const UAGX_Simulation* Simulation = GetDefault<UAGX_Simulation>();
+		if (Simulation->bOverrideAdditionalUnrealCollision)
+			UnrealCollision = Simulation->AdditionalUnrealCollision;
+
+		BodyInstance.SetCollisionEnabled(UnrealCollision);
+	}
+}
+
+void UAGX_ShapeComponent::UpdateBodySetup()
+{
+	// Subclass must implement this to support LineTrace collisions.
+	check(false);
+}
+
+void UAGX_ShapeComponent::AddShapeBodySetupGeometry()
+{
+	// Subclass must implement this to support LineTrace collisions.
+	check(false);
+}
+
+bool UAGX_ShapeComponent::SupportsShapeBodySetup()
+{
+	return false; // Default behavior.
 }
