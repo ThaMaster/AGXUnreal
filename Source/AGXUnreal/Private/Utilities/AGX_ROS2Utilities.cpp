@@ -13,7 +13,7 @@
 
 namespace AGX_ROS2Utilities_helpers
 {
-	enum EAGX_PointFieldType : uint8
+	enum class EAGX_PointFieldType : uint8
 	{
 		Int8 = 1,
 		Uint8 = 2,
@@ -60,7 +60,7 @@ namespace AGX_ROS2Utilities_helpers
 		FAGX_SensorMsgsPointField Field;
 		Field.Name = Name;
 		Field.Offset = Offset;
-		Field.Datatype = Datatype;
+		Field.Datatype = static_cast<uint8>(Datatype);
 		Field.Count = Count;
 		return Field;
 	};
