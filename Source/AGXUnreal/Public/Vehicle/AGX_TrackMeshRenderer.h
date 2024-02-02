@@ -113,6 +113,7 @@ public:
 
 private:
 	TArray<FTransform> NodeTransformsCache;
+	TArray<FTransform> NodeTransformsCachePrev;
 
 	void SetInstanceCount(int32 Count);
 

@@ -377,17 +377,19 @@ void UAGX_TrackMeshRenderer::SynchronizeVisuals()
 	// Make sure there is one mesh instance per track node.
 	const int32 NumNodes = NodeTransformsCache.Num();
 	SetInstanceCount(NumNodes);
+	PerInstancePrevTransform.SetNum(NumNodes);
+	NodeTransformsCachePrev.SetNum(NumNodes);
 
 	// Because UInstancedStaticMeshComponent::UpdateInstanceTransform() converts instance transforms
 	// from World to Local Transform Space, make sure our local transform space is up-to-date.
 	UpdateComponentToWorld();
 
 	// Update transforms of the track node mesh instances.
-	for (int32 i = 0; i < NumNodes; ++i)
-	{
-		UpdateInstanceTransform(
-			i, NodeTransformsCache[i], /*bWorldSpace*/ true, /*bMarkRenderStateDirty*/ true);
-	}
+	BatchUpdateInstancesTransforms(
+		0, NodeTransformsCache, NodeTransformsCachePrev, /*bWorldSpace*/ true,
+		/*bMarkRenderStateDirty*/ true);
+
+	NodeTransformsCachePrev = NodeTransformsCache;
 }
 
 bool UAGX_TrackMeshRenderer::ComputeNodeTransforms(
