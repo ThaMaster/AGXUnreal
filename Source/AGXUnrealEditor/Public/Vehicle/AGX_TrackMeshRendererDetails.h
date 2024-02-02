@@ -9,9 +9,9 @@
 class IDetailLayoutBuilder;
 
 /**
- * Deprecated, use AGX_TrackMeshRendererDetails instead.
+ *
  */
-class AGXUNREALEDITOR_API FAGX_TrackRendererDetails : public IDetailCustomization
+class AGXUNREALEDITOR_API FAGX_TrackMeshRendererDetails : public IDetailCustomization
 {
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();

@@ -1,6 +1,6 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-#include "Vehicle/AGX_TrackRenderer.h"
+#include "Vehicle/AGX_TrackMeshRenderer.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
@@ -16,11 +16,11 @@
 // Standard library includes.
 #include <algorithm>
 
-// #define TRACK_RENDERER_DETAILED_LOGGING
+// #define TRACK_MESH_RENDERER_DETAILED_LOGGING
 
-#define LOCTEXT_NAMESPACE "AGX_TrackRenderer"
+#define LOCTEXT_NAMESPACE "AGX_TrackMeshRenderer"
 
-namespace AGX_TrackRenderer_helpers
+namespace AGX_TrackMeshRenderer_helpers
 {
 	template <class T>
 	T* FindFirstParentComponentByClass(USceneComponent* CurrentComponent)
@@ -45,12 +45,12 @@ namespace AGX_TrackRenderer_helpers
 	}
 
 #if WITH_EDITOR
-	void EnsureValidRenderMaterial(UDEPRECATED_AGX_TrackRenderer& TrackRenderer)
+	void EnsureValidRenderMaterial(UAGX_TrackMeshRenderer& TrackMeshRenderer)
 	{
-		if (TrackRenderer.OverrideMaterials.Num() == 0)
+		if (TrackMeshRenderer.OverrideMaterials.Num() == 0)
 			return;
 
-		for (auto& MatInterface : TrackRenderer.OverrideMaterials)
+		for (auto& MatInterface : TrackMeshRenderer.OverrideMaterials)
 		{
 			if (MatInterface == nullptr)
 				continue;
@@ -67,7 +67,8 @@ namespace AGX_TrackRenderer_helpers
 				const FText AskEnableUseWithInstancedSM = LOCTEXT(
 					"EnableUseWithInstancedStaticMeshes?",
 					"The selected Material does not have Use With Instanced Static Meshes enabled, "
-					"meaning that it cannot be used with the Track Renderer. Would you like this "
+					"meaning that it cannot be used with the Track Mesh Renderer. Would you like "
+					"this "
 					"setting to be automatically enabled? The Material asset will be re-saved.");
 				if (FAGX_NotificationUtilities::YesNoQuestion(AskEnableUseWithInstancedSM))
 				{
@@ -90,7 +91,8 @@ namespace AGX_TrackRenderer_helpers
 				// themselves.
 				const FString Message =
 					"The selected Material does not have Use With Instanced Static Meshes enabled, "
-					"meaning that it cannot be used with the Track Renderer. You can enable this "
+					"meaning that it cannot be used with the Track Mesh Renderer. You can enable "
+					"this "
 					"setting from the Material editor. The Material needs to be saved after these "
 					"changes. It is recommended to make a copy and place the "
 					"material within the project Contents, that way the behavior will be the same "
@@ -105,7 +107,7 @@ namespace AGX_TrackRenderer_helpers
 #endif
 }
 
-UDEPRECATED_AGX_TrackRenderer::UDEPRECATED_AGX_TrackRenderer()
+UAGX_TrackMeshRenderer::UAGX_TrackMeshRenderer()
 {
 	// Set this component to be ticked every frame so that it can synchronize
 	// the visual track node instance transforms.
@@ -116,11 +118,10 @@ UDEPRECATED_AGX_TrackRenderer::UDEPRECATED_AGX_TrackRenderer()
 
 	// Set default values in inherited classes.
 	// Make sure Unreal's default physics collision is disabled.
-	bDisableCollision = false;
 	BodyInstance.SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void UDEPRECATED_AGX_TrackRenderer::TickComponent(
+void UAGX_TrackMeshRenderer::TickComponent(
 	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -130,27 +131,28 @@ void UDEPRECATED_AGX_TrackRenderer::TickComponent(
 	SynchronizeVisuals();
 }
 
-TStructOnScope<FActorComponentInstanceData> UDEPRECATED_AGX_TrackRenderer::GetComponentInstanceData() const
+TStructOnScope<FActorComponentInstanceData> UAGX_TrackMeshRenderer::GetComponentInstanceData() const
 {
-#ifdef TRACK_RENDERER_DETAILED_LOGGING
+#ifdef TRACK_MESH_RENDERER_DETAILED_LOGGING
 	UE_LOG(
 		LogAGX, Verbose,
-		TEXT("UAGX_TrackRenderer::GetComponentInstanceData() for '%s' (UID: %i) in '%s'."),
+		TEXT("UAGX_TrackMeshRenderer::GetComponentInstanceData() for '%s' (UID: %i) in '%s'."),
 		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
 
 	return Super::GetComponentInstanceData();
 }
 
-void UDEPRECATED_AGX_TrackRenderer::ApplyComponentInstanceData(
+void UAGX_TrackMeshRenderer::ApplyComponentInstanceData(
 	struct FInstancedStaticMeshComponentInstanceData* ComponentInstanceData)
 {
 	Super::ApplyComponentInstanceData(ComponentInstanceData);
 
-#ifdef TRACK_RENDERER_DETAILED_LOGGING
+#ifdef TRACK_MESH_RENDERER_DETAILED_LOGGING
 	UE_LOG(
 		LogAGX, Verbose,
-		TEXT("UAGX_TrackRenderer::ApplyComponentInstanceData() for '%s' (UID: %i) in '%s'. Phase "
+		TEXT("UAGX_TrackMeshRenderer::ApplyComponentInstanceData() for '%s' (UID: %i) in '%s'. "
+			 "Phase "
 			 "unknown."),
 		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
@@ -176,26 +178,26 @@ void UDEPRECATED_AGX_TrackRenderer::ApplyComponentInstanceData(
 	}
 }
 
-void UDEPRECATED_AGX_TrackRenderer::PostInitProperties()
+void UAGX_TrackMeshRenderer::PostInitProperties()
 {
 	Super::PostInitProperties();
 }
 
 #if WITH_EDITOR
 
-void UDEPRECATED_AGX_TrackRenderer::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void UAGX_TrackMeshRenderer::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-#ifdef TRACK_RENDERER_DETAILED_LOGGING
+#ifdef TRACK_MESH_RENDERER_DETAILED_LOGGING
 	UE_LOG(
 		LogAGX, Verbose,
-		TEXT("UAGX_TrackRenderer::PostEditChangeProperty() for '%s' (UID: %i) in '%s'."),
+		TEXT("UAGX_TrackMeshRenderer::PostEditChangeProperty() for '%s' (UID: %i) in '%s'."),
 		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
 
 	const FName Property = GetFNameSafe(PropertyChangedEvent.Property);
-	if (Property == GET_MEMBER_NAME_CHECKED(UDEPRECATED_AGX_TrackRenderer, OverrideMaterials))
+	if (Property == GET_MEMBER_NAME_CHECKED(UAGX_TrackMeshRenderer, OverrideMaterials))
 	{
-		AGX_TrackRenderer_helpers::EnsureValidRenderMaterial(*this);
+		AGX_TrackMeshRenderer_helpers::EnsureValidRenderMaterial(*this);
 	}
 
 	// Update the render data both regardless of playing or not.
@@ -211,7 +213,7 @@ void UDEPRECATED_AGX_TrackRenderer::PostEditChangeProperty(FPropertyChangedEvent
 
 #endif
 
-void UDEPRECATED_AGX_TrackRenderer::PostLoad()
+void UAGX_TrackMeshRenderer::PostLoad()
 {
 	Super::PostLoad();
 
@@ -230,15 +232,15 @@ void UDEPRECATED_AGX_TrackRenderer::PostLoad()
 	}
 }
 
-void UDEPRECATED_AGX_TrackRenderer::OnAttachmentChanged()
+void UAGX_TrackMeshRenderer::OnAttachmentChanged()
 {
 	Super::OnAttachmentChanged();
 
-#ifdef TRACK_RENDERER_DETAILED_LOGGING
+#ifdef TRACK_MESH_RENDERER_DETAILED_LOGGING
 	UE_LOG(
 		LogAGX, Verbose,
-		TEXT("UAGX_TrackRenderer::OnAttachmentChanged() for '%s' (UID: %i) in '%s'."), *GetName(),
-		GetUniqueID(), *GetNameSafe(GetOwner()));
+		TEXT("UAGX_TrackMeshRenderer::OnAttachmentChanged() for '%s' (UID: %i) in '%s'."),
+		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
 #endif
 
 	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
@@ -250,7 +252,7 @@ void UDEPRECATED_AGX_TrackRenderer::OnAttachmentChanged()
 	}
 }
 
-void UDEPRECATED_AGX_TrackRenderer::RebindToTrackPreviewNeedsUpdateEvent(bool bSynchronizeImmediately)
+void UAGX_TrackMeshRenderer::RebindToTrackPreviewNeedsUpdateEvent(bool bSynchronizeImmediately)
 {
 	if (IsBeingDestroyed())
 	{
@@ -264,7 +266,7 @@ void UDEPRECATED_AGX_TrackRenderer::RebindToTrackPreviewNeedsUpdateEvent(bool bS
 		return;
 	}
 
-#ifdef TRACK_RENDERER_DETAILED_LOGGING
+#ifdef TRACK_MESH_RENDERER_DETAILED_LOGGING
 	UE_LOG(
 		LogAGX, Verbose, TEXT("'%s' (UID: %i) in '%s' is rebinding TrackPreviewNeedsUpdateEvent."),
 		*GetName(), GetUniqueID(), *GetNameSafe(GetOwner()));
@@ -284,7 +286,7 @@ void UDEPRECATED_AGX_TrackRenderer::RebindToTrackPreviewNeedsUpdateEvent(bool bS
 
 	if (UAGX_TrackComponent* Track = FindTargetTrack())
 	{
-#ifdef TRACK_RENDERER_DETAILED_LOGGING
+#ifdef TRACK_MESH_RENDERER_DETAILED_LOGGING
 		UE_LOG(
 			LogAGX, Verbose,
 			TEXT("'%s' (UID: %i) in '%s' is registering to TrackPreviewNeedsUpdateEvent "
@@ -322,13 +324,13 @@ void UDEPRECATED_AGX_TrackRenderer::RebindToTrackPreviewNeedsUpdateEvent(bool bS
 	}
 }
 
-UAGX_TrackComponent* UDEPRECATED_AGX_TrackRenderer::FindTargetTrack()
+UAGX_TrackComponent* UAGX_TrackMeshRenderer::FindTargetTrack()
 {
-	using namespace AGX_TrackRenderer_helpers;
+	using namespace AGX_TrackMeshRenderer_helpers;
 	return FindFirstParentComponentByClass<UAGX_TrackComponent>(this); // \todo Cache component!
 }
 
-void UDEPRECATED_AGX_TrackRenderer::SetInstanceCount(int32 Count)
+void UAGX_TrackMeshRenderer::SetInstanceCount(int32 Count)
 {
 	Count = std::max(0, Count);
 
@@ -342,11 +344,11 @@ void UDEPRECATED_AGX_TrackRenderer::SetInstanceCount(int32 Count)
 	}
 }
 
-void UDEPRECATED_AGX_TrackRenderer::SynchronizeVisuals()
+void UAGX_TrackMeshRenderer::SynchronizeVisuals()
 {
 	UAGX_TrackComponent* Track = FindTargetTrack();
 
-#ifdef TRACK_RENDERER_DETAILED_LOGGING
+#ifdef TRACK_MESH_RENDERER_DETAILED_LOGGING
 	if (!IsValid(Track))
 	{
 		// \note This warning can happen during BP instance reconstruction when SynchronizeVisuals
@@ -383,11 +385,12 @@ void UDEPRECATED_AGX_TrackRenderer::SynchronizeVisuals()
 	// Update transforms of the track node mesh instances.
 	for (int32 i = 0; i < NumNodes; ++i)
 	{
-		UpdateInstanceTransform(i, NodeTransformsCache[i], /*bWorldSpace*/ true);
+		UpdateInstanceTransform(
+			i, NodeTransformsCache[i], /*bWorldSpace*/ true, /*bMarkRenderStateDirty*/ true);
 	}
 }
 
-bool UDEPRECATED_AGX_TrackRenderer::ComputeNodeTransforms(
+bool UAGX_TrackMeshRenderer::ComputeNodeTransforms(
 	TArray<FTransform>& OutTransforms, UAGX_TrackComponent* Track)
 {
 	if (!IsValid(Track) || !Track->bEnabled || Track->Wheels.Num() == 0 ||
@@ -459,7 +462,7 @@ bool UDEPRECATED_AGX_TrackRenderer::ComputeNodeTransforms(
 	return true;
 }
 
-bool UDEPRECATED_AGX_TrackRenderer::ComputeVisualScaleAndOffset(
+bool UAGX_TrackMeshRenderer::ComputeVisualScaleAndOffset(
 	FVector& OutVisualScale, FVector& OutVisualOffset, const FVector& PhysicsNodeSize) const
 {
 	const FVector LocalMeshBoundsSize = LocalMeshBoundsMax - LocalMeshBoundsMin;

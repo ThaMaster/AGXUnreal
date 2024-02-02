@@ -7,25 +7,24 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
-#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 
-#include "AGX_TrackRenderer.generated.h"
+#include "AGX_TrackMeshRenderer.generated.h"
 
 class UAGX_TrackComponent;
 
 /**
- * Deprecated, use Track Mesh Renderer instead.
  * Renderers all track nodes as instanced meshes using the same Static Mesh source.
  */
 UCLASS(
-	Deprecated, ClassGroup = "AGX", Category = "AGX", HideCategories = ("Physics", "Collision"),
+	ClassGroup = "AGX", Category = "AGX", HideCategories = ("Physics", "Collision"),
 	Meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UDEPRECATED_AGX_TrackRenderer : public UHierarchicalInstancedStaticMeshComponent
+class AGXUNREAL_API UAGX_TrackMeshRenderer : public UInstancedStaticMeshComponent
 {
 	GENERATED_BODY()
 
 public:
-	UDEPRECATED_AGX_TrackRenderer();
+	UAGX_TrackMeshRenderer();
 
 	/**
 	 * Local Rotation to apply to the Static Mesh before synchronizing its position and

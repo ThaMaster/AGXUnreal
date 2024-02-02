@@ -201,7 +201,7 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	// Track.
 	Style->Set("ClassIcon.AGX_TrackComponent", new IMAGE_BRUSH("Icons/track_32x32", IconSize16));
 	Style->Set(
-		"ClassIcon.AGX_TrackRenderer", new IMAGE_BRUSH("Icons/track_renderer_32x32", IconSize16));
+		"ClassIcon.AGX_TrackMeshRenderer", new IMAGE_BRUSH("Icons/track_renderer_32x32", IconSize16));
 	// Wire.
 	Style->Set("ClassIcon.AGX_WireComponent", new IMAGE_BRUSH("Icons/wire_32x32", IconSize16));
 	Style->Set(

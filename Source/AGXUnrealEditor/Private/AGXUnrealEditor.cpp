@@ -100,6 +100,8 @@
 #include "Vehicle/AGX_TrackComponentDetails.h"
 #include "Vehicle/AGX_TrackComponentVisualizer.h"
 #include "Vehicle/AGX_TrackPropertiesAssetTypeActions.h"
+#include "Vehicle/AGX_TrackMeshRenderer.h"
+#include "Vehicle/AGX_TrackMeshRendererDetails.h"
 #include "Vehicle/AGX_TrackRenderer.h"
 #include "Vehicle/AGX_TrackRendererDetails.h"
 #include "Vehicle/AGX_TrackInternalMergePropertiesAssetTypeActions.h"
@@ -380,7 +382,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_TrackComponentDetails::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
-		UAGX_TrackRenderer::StaticClass()->GetFName(),
+		UAGX_TrackMeshRenderer::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_TrackMeshRendererDetails::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
+		UDEPRECATED_AGX_TrackRenderer::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_TrackRendererDetails::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
@@ -470,7 +476,10 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackRenderer::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackMeshRenderer::StaticClass()->GetFName());
+
+	PropertyModule.UnregisterCustomClassLayout(
+		UDEPRECATED_AGX_TrackRenderer::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
