@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Materials/AGX_TerrainMaterialCustomization.h"
 
@@ -18,8 +18,7 @@ TSharedRef<IDetailCustomization> FAGX_TerrainMaterialCustomization::MakeInstance
 void FAGX_TerrainMaterialCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	UAGX_TerrainMaterial* TerrainMaterial =
-		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_TerrainMaterial>(
-			DetailBuilder);
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_TerrainMaterial>(DetailBuilder);
 
 	if (!TerrainMaterial)
 		return;

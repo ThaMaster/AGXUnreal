@@ -10,6 +10,7 @@
 #include "BeginAGXIncludes.h"
 #include <agxTerrain/Terrain.h>
 #include <agx/Physics/GranularBodySystem.h>
+#include <agxTerrain/Terrain.h>
 #include "EndAGXIncludes.h"
 
 namespace TerrainUtilities_helpers

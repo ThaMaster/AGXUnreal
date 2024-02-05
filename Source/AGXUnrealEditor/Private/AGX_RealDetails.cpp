@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AGX_RealDetails.h"
 
@@ -22,7 +22,7 @@
 #include "Widgets/Input/NumericTypeInterface.h"
 #include "Widgets/Input/SSpinBox.h"
 
-// System includes.
+// Standard library includes.
 #include <limits>
 
 #define LOCTEXT_NAMESPACE "FAGX_RealDetails"
@@ -609,8 +609,9 @@ void AGX_RealDetails_helpers::NewValueSet(
 
 	// We are responsible for setting up ArrayIndices information in the FPropertyChangedChainEvent
 	// and also stepping the seemingly internal ObjectIteratorIndex when calling
-	// PostEditChangeChainProperty below. This ensures we can do e.g. ´Event.GetArrayIndex());´ from
-	// within PostEditChangeChainProperty and get the correct array index if this is party of an array.
+	// PostEditChangeChainProperty below. This ensures we can do e.g. 'Event.GetArrayIndex());' from
+	// within PostEditChangeChainProperty and get the correct array index if this is party of an
+	// array.
 	TArray<TMap<FString, int32>> ArrayIndicesPerObject;
 	TOptional<TMap<FString, int32>> IndicesMapMaybe = GetArrayIndicesFromPropertyPath(ValuePath);
 	if (IndicesMapMaybe)

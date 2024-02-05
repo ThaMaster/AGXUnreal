@@ -1,8 +1,10 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "UObject/ObjectMacros.h"
 
 /**
  * Specifies in what solvers the normal and friction equations will be calculated.
@@ -126,7 +128,6 @@ enum class EAGX_ContactReductionMode : uint8
 	/** Two step reduction: first between geometries, and then between rigid bodies. */
 	All
 };
-
 
 /**
  * Specifies the level of contact reduction used.

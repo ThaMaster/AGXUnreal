@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Utilities/AGX_HeightFieldUtilities.h"
 
@@ -16,7 +16,6 @@
 
 // Standard library includes.
 #include <limits>
-
 
 namespace AGX_HeightFieldUtilities_helpers
 {
@@ -353,7 +352,7 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
 		const int32 VerticesSideY = ResolutionY + 1;
 		Heights.SetNumZeroed(VerticesSideX * VerticesSideY);
 	}
-	
+
 	const auto QuadSideSize = LandscapeScale.X;
 	if (!FMath::IsNearlyEqual(LandscapeScale.X, LandscapeScale.Y))
 	{
@@ -364,8 +363,6 @@ FHeightFieldShapeBarrier AGX_HeightFieldUtilities::CreateHeightField(
 				 "directions when creating the Height Field."),
 			*Landscape.GetName(), LandscapeScale.X, LandscapeScale.Y, QuadSideSize);
 	}
-
-	
 
 	const int32 ResolutionX = FMath::RoundToInt(LengthX / QuadSideSize) + 1;
 	const int32 ResolutionY = FMath::RoundToInt(LengthY / QuadSideSize) + 1;

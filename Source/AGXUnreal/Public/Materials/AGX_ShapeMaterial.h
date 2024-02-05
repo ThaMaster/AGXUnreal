@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -196,7 +196,7 @@ public:
 
 	virtual void CommitToAsset() override;
 
-	void CopyFrom(const FShapeMaterialBarrier* Source);
+	void CopyFrom(const FShapeMaterialBarrier& Source);
 
 	static UAGX_ShapeMaterial* CreateInstanceFromAsset(
 		UWorld* PlayingWorld, UAGX_ShapeMaterial* Source);

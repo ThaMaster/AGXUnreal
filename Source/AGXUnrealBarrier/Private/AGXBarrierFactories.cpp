@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AGXBarrierFactories.h"
 
@@ -24,6 +24,7 @@
 #include <agxCollide/Box.h>
 #include <agxCollide/Trimesh.h>
 #include <agxModel/TwoBodyTire.h>
+#include <agxTerrain/Shovel.h>
 #include <agxTerrain/TerrainMaterial.h>
 #include <agxWire/Wire.h>
 #include <agxWire/Node.h>
@@ -162,6 +163,11 @@ FWireNodeBarrier AGXBarrierFactories::CreateWireNodeBarrier(agxWire::Node* Node)
 FWireWinchBarrier AGXBarrierFactories::CreateWireWinchBarrier(agxWire::WireWinchController* Winch)
 {
 	return {std::make_unique<FWireWinchRef>(Winch)};
+}
+
+FShovelBarrier AGXBarrierFactories::CreateShovelBarrier(agxTerrain::Shovel* Shovel)
+{
+	return {std::make_unique<FShovelRef>(Shovel)};
 }
 
 FTrackBarrier AGXBarrierFactories::CreateTrackBarrier(agxVehicle::Track* Track)

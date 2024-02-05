@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -8,7 +8,6 @@
 
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
-
 
 class AGXUNREALEDITOR_API FAGX_HeightFieldBoundsComponentCustomization : public IDetailCustomization
 {

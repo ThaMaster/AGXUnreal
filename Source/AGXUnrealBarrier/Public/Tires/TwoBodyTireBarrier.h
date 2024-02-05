@@ -1,10 +1,13 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
 // AGX Dynamics for Unreal includes.
 #include "Tires/TireBarrier.h"
 #include "RigidBodyBarrier.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
 
 class AGXUNREALBARRIER_API FTwoBodyTireBarrier : public FTireBarrier
 {

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -9,7 +9,6 @@
 #include "CoreMinimal.h"
 
 #include "AGX_PlayRecord.generated.h"
-
 
 /**
  * EXPERIMENTAL
@@ -22,7 +21,6 @@ class AGXUNREAL_API UAGX_PlayRecord : public UObject
 	GENERATED_BODY()
 
 public:
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Play Record")
 	TArray<FAGX_PlayRecordState> States;
 };

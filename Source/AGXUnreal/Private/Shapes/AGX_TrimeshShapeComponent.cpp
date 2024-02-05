@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 
@@ -128,6 +128,10 @@ void UAGX_TrimeshShapeComponent::PostEditChangeProperty(FPropertyChangedEvent& P
 void UAGX_TrimeshShapeComponent::PreEditChange(FProperty* PropertyThatWillChange)
 {
 	Super::PreEditChange(PropertyThatWillChange);
+	if (PropertyThatWillChange == nullptr)
+	{
+		return;
+	}
 
 	if (PropertyThatWillChange->GetName().Equals(
 			GET_MEMBER_NAME_CHECKED(UAGX_TrimeshShapeComponent, MeshSourceLocation).ToString()))
@@ -151,7 +155,7 @@ bool UAGX_TrimeshShapeComponent::CanEditChange(
 #else
 	const FProperty* InProperty
 #endif
-	) const
+) const
 {
 	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
 	if (!SuperCanEditChange)

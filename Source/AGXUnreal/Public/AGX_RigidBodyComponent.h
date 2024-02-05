@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -14,9 +14,9 @@
 #include "CoreMinimal.h"
 #include "Misc/EngineVersionComparison.h"
 
-class UAGX_ShapeComponent;
-
 #include "AGX_RigidBodyComponent.generated.h"
+
+class UAGX_ShapeComponent;
 
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
@@ -304,6 +304,21 @@ public:
 	void AddForceAtLocalLocation(const FVector& Force, const FVector& Location);
 
 	/**
+	 * Add an external force, given in the local coordinate frame, applied at a point specified in
+	 * the local coordinate frame, that will be affecting this body in the next solve. If the
+	 * location is different from the center of mass then a torque will be calculated and added as
+	 * well.
+	 *
+	 * This member function may only be called when a native AGX Dynamics representation has already
+	 * been created, i.e., HasNative() returns true;
+	 *
+	 * @param LocalForce The force to add, given in local coordinate frame.
+	 * @param Location The location in the local coordinate frame where the force should be applied.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void AddLocalForceAtLocalLocation(const FVector& LocalForce, const FVector& Location);
+
+	/**
 	 * Get the external forces accumulated so far by the AddForce member functions, to be applied
 	 * to this body in the next solve.
 	 * @return The external forces for the next solve accumulated so far.
@@ -372,8 +387,8 @@ public:
 	virtual void SetNativeAddress(uint64 NativeAddress) override;
 	// ~End IAGX_NativeOwner interface.
 
-	// ~Begin UObject interface.
 #if WITH_EDITOR
+	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif

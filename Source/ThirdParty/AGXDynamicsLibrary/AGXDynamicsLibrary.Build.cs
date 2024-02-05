@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 
 using System;
@@ -77,10 +77,18 @@ public class AGXDynamicsLibrary : ModuleRules
 		/// within AGX Dynamics.
 		Cfg,
 
-		/// A non-library dependency which points to the terrain material
-		/// library within AGX Dynamics.
-		TerrainMaterialLibrary
-	};
+		/// Points to the AGX Dynamics Material library location.
+		MaterialLibrary,
+
+		/// Points to the AGX Dynamics Terrain Material library location.
+		TerrainMaterialLibrary,
+
+		/// Points to the AGX Dynamics Contact Material library location.
+		ContactMaterialLibrary,
+
+		/// Points to AGX Dynamics external resources.
+		External
+  };
 
 	/// A carrier for the paths associated with a LibSource.
 	///
@@ -199,6 +207,10 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("agxModel", LibSource.AGX);
 		RuntimeLibFiles.Add("agxVehicle", LibSource.AGX);
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
+		RuntimeLibFiles.Add("agxROS2", LibSource.AGX);
+		RuntimeLibFiles.Add("agx-nt-ros2", LibSource.AGX);
+		RuntimeLibFiles.Add("fastcdr*", LibSource.AGX);
+		RuntimeLibFiles.Add("fastrtps*", LibSource.AGX);
 		if (TargetAGXVersion.IsOlderThan(2, 32, 0, 0))
 		{
 			RuntimeLibFiles.Add("vdbgrid", LibSource.AGX);
@@ -224,6 +236,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		LinkLibFiles.Add("agxCable", LibSource.AGX);
 		LinkLibFiles.Add("agxModel", LibSource.AGX);
 		LinkLibFiles.Add("agxVehicle", LibSource.AGX);
+		LinkLibFiles.Add("agxROS2", LibSource.AGX);
+		LinkLibFiles.Add("agx-nt-ros2", LibSource.AGX);
 
 		// List of the include directories from aGX Dynamics and its
 		// dependenciesthat we need. These will be added to the Unreal Engine
@@ -247,12 +261,12 @@ public class AGXDynamicsLibrary : ModuleRules
 			{
 				RuntimeLibFiles.Add("agx-assimp-vc*-mt", LibSource.AGX);
 			}
-            if (TargetAGXVersion.IsOlderThan(2, 31, 1, 0))
-            {
+			if (TargetAGXVersion.IsOlderThan(2, 31, 1, 0))
+			{
 				RuntimeLibFiles.Add("websockets", LibSource.Dependencies);
 			}
 
-            RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
+			RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
 			if (TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
@@ -287,6 +301,11 @@ public class AGXDynamicsLibrary : ModuleRules
 			AddIncludePath(HeaderPath);
 		}
 
+		// Explicitly add include/external as a public include path. Not part of
+		// IncludePaths above since those are all copied, and we do a more granual
+		// selection of external include files in BundleAGXResources().
+		PublicIncludePaths.Add(BundledAGXResources.IncludePath(LibSource.External));
+
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			Dictionary<string, LibSource> DelayLoadLibraries = new Dictionary<string, LibSource>();
@@ -297,6 +316,8 @@ public class AGXDynamicsLibrary : ModuleRules
 			DelayLoadLibraries.Add("agxCable", LibSource.AGX);
 			DelayLoadLibraries.Add("agxModel", LibSource.AGX);
 			DelayLoadLibraries.Add("agxVehicle", LibSource.AGX);
+			DelayLoadLibraries.Add("agxROS2", LibSource.AGX);
+			DelayLoadLibraries.Add("agx-nt-ros2", LibSource.AGX);
 			AddDelayLoadDependencies(DelayLoadLibraries);
 		}
 
@@ -558,7 +579,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			string Dest = BundledAGXResources.IncludePath(IncludePath);
 
 			// Directories to include containing header files.
-            List<string> HeaderFileDirs = new List<string>
+			List<string> HeaderFileDirs = new List<string>
 			{
 				"agx",
 				"agxCable",
@@ -580,6 +601,8 @@ public class AGXDynamicsLibrary : ModuleRules
 				"agxUtil",
 				"agxVehicle",
 				"agxWire",
+				"agxROS2",
+				"agx-nt-ros2",
 				Path.Combine("external", "hedley"),
 				Path.Combine("external", "json"),
 				Path.Combine("external", "pystring")
@@ -597,22 +620,22 @@ public class AGXDynamicsLibrary : ModuleRules
 			};
 
 			foreach (var Dir in HeaderFileDirs)
-            {
-                if (!CopyDirectoryRecursively(Path.Combine(Source, Dir), Path.Combine(Dest, Dir)))
-                {
-                    CleanBundledAGXDynamicsResources();
-                    return;
-                }
-            }
-
-			foreach (var File in HeaderFiles)
-            {
-                if (!CopyFile(Path.Combine(Source, File), Path.Combine(Dest, File)))
-                {
+			{
+				if (!CopyDirectoryRecursively(Path.Combine(Source, Dir), Path.Combine(Dest, Dir)))
+				{
 					CleanBundledAGXDynamicsResources();
 					return;
-                }
-            }
+				}
+			}
+
+			foreach (var File in HeaderFiles)
+			{
+				if (!CopyFile(Path.Combine(Source, File), Path.Combine(Dest, File)))
+				{
+					CleanBundledAGXDynamicsResources();
+					return;
+				}
+			}
 		}
 
 		// Copy AGX Dynamics cfg directory.
@@ -626,20 +649,44 @@ public class AGXDynamicsLibrary : ModuleRules
 			}
 		}
 
-		// Copy Terrain Material Library.
-		{
-			string Source = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
-			string Dest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
+	// Copy Material Library.
+	{
+		string Source = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.MaterialLibrary, true);
+		string Dest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.MaterialLibrary, true);
 
-			if (!CopyDirectoryRecursively(Source, Dest))
-			{
-				CleanBundledAGXDynamicsResources();
-				return;
-			}
+		if (!CopyDirectoryRecursively(Source, Dest))
+		{
+			CleanBundledAGXDynamicsResources();
+			return;
 		}
+	}
 
-		// Copy needed AGX Dynamics Components/agx/... directories and files.
+	// Copy Terrain Material Library.
+	{
+		string Source = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
+		string Dest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
+
+		if (!CopyDirectoryRecursively(Source, Dest))
 		{
+			CleanBundledAGXDynamicsResources();
+			return;
+		}
+	}
+
+	// Copy Contact Material Library.
+	{
+		string Source = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.ContactMaterialLibrary, true);
+		string Dest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.ContactMaterialLibrary, true);
+
+		if (!CopyDirectoryRecursively(Source, Dest))
+		{
+			CleanBundledAGXDynamicsResources();
+			return;
+		}
+	}
+
+    // Copy needed AGX Dynamics Components/agx/... directories and files.
+    {
 			string ComponentsDirSource = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
 			string ComponentsDirDest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
 			string PhysicsDirSource = Path.Combine(ComponentsDirSource, "agx", "Physics");
@@ -729,6 +776,41 @@ public class AGXDynamicsLibrary : ModuleRules
 			{
 				CleanBundledAGXDynamicsResources();
 				return;
+			}
+		}
+
+		// Copy ue_version.txt, if it exists.
+		{
+			string Source = InstalledAGXResources.UEVersionPath;
+			string Destination = BundledAGXResources.UEVersionPath;
+			if (File.Exists(Source))
+			{
+				// Make sure the file contains the expected version number.
+				string[] Lines = File.ReadAllLines(Source);
+				if (Lines.Length > 0)
+				{
+					string Line = Lines[0];
+					string[] UEVersion = Line.Split(".");
+					if (UEVersion.Length == 2)
+					{
+						if (String.Format("{0}", Target.Version.MajorVersion) != UEVersion[0] ||
+							String.Format("{0}", Target.Version.MinorVersion) != UEVersion[1])
+						{
+							Console.WriteLine(
+								"\n\n  WARNING: The AGX Dynamics packages has not been built for this version of Unreal Engine.");
+							Console.WriteLine(
+								"  WARNING: AGX Dynamics compile-time Unreal Engine version: {0}", Line);
+							Console.WriteLine(
+								"  WARNING: Current Unreal Engine version: {0}.{1}", Target.Version.MajorVersion, Target.Version.MinorVersion);
+							Console.WriteLine("\n\n");
+						}
+					}
+				}
+				if (!CopyFile(Source, Destination))
+				{
+					CleanBundledAGXDynamicsResources();
+					return;
+				}
 			}
 		}
 
@@ -1143,6 +1225,11 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		public string LicenseTextPath;
 
+		// Null on Windows since that AGX Dynamics package support all Unreal
+		// Engine versions. Does not always exists on Linux. If it doesn't then
+		// we assume that it is compatible.
+		public string UEVersionPath = null;
+
 		Dictionary<LibSource, LibSourceInfo> LibSources;
 
 		AGXVersion Version;
@@ -1230,6 +1317,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			string TerrainDependenciesDir = Environment.GetEnvironmentVariable("AGXTERRAIN_DEPENDENCIES_DIR");
 
 			LicenseTextPath = Path.Combine(SourceDir, "LICENSE.TXT");
+			UEVersionPath = null; // ue_version.txt not generated by local builds.
 
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(SourceDir, "include"),
@@ -1259,9 +1347,21 @@ public class AGXDynamicsLibrary : ModuleRules
 				null, null,
 				Path.Combine(SourceDir, "data", "cfg")
 			));
+			LibSources.Add(LibSource.MaterialLibrary, new LibSourceInfo(
+				null, null,
+				Path.Combine(SourceDir, "data", "MaterialLibrary", "Materials")
+			));
 			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
 				null, null,
 				Path.Combine(SourceDir, "data", "MaterialLibrary", "TerrainMaterials")
+			));
+			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
+				null, null,
+				Path.Combine(SourceDir, "data", "MaterialLibrary", "ContactMaterials")
+			));
+			LibSources.Add(LibSource.External, new LibSourceInfo(
+				Path.Combine(BuildDir, "include", "external"),
+				null, null
 			));
 		}
 
@@ -1271,6 +1371,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			string BaseDir = Environment.GetEnvironmentVariable("AGX_DIR");
 
 			LicenseTextPath = Path.Combine(BaseDir, "LICENSE.TXT");
+			UEVersionPath = Path.Combine(BaseDir, "ue_version.txt");
 
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
@@ -1300,9 +1401,21 @@ public class AGXDynamicsLibrary : ModuleRules
 				null, null,
 				Path.Combine(BaseDir, "data", "cfg")
 			));
+			LibSources.Add(LibSource.MaterialLibrary, new LibSourceInfo(
+				null, null,
+				Path.Combine(BaseDir, "data", "MaterialLibrary", "Materials")
+			));
 			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
 				null, null,
 				Path.Combine(BaseDir, "data", "MaterialLibrary", "TerrainMaterials")
+			));
+			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
+				null, null,
+				Path.Combine(BaseDir, "data", "MaterialLibrary", "ContactMaterials")
+			));
+			LibSources.Add(LibSource.External, new LibSourceInfo(
+				Path.Combine(BaseDir, "include", "external"),
+				null, null
 			));
 		}
 
@@ -1311,6 +1424,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			string BaseDir = BundledAGXResourcesPath;
 
 			LicenseTextPath = Path.Combine(BaseDir, "LICENSE.TXT");
+			UEVersionPath = Path.Combine(BaseDir, "ue_version.txt");
 
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
@@ -1340,9 +1454,21 @@ public class AGXDynamicsLibrary : ModuleRules
 				null, null,
 				Path.Combine(BaseDir, "data", "cfg")
 			));
+			LibSources.Add(LibSource.MaterialLibrary, new LibSourceInfo(
+				null, null,
+				Path.Combine(BaseDir, "data", "MaterialLibrary", "Materials")
+			));
 			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
 				null, null,
 				Path.Combine(BaseDir, "data", "MaterialLibrary", "TerrainMaterials")
+			));
+			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
+				null, null,
+				Path.Combine(BaseDir, "data", "MaterialLibrary", "ContactMaterials")
+			));
+			LibSources.Add(LibSource.External, new LibSourceInfo(
+				Path.Combine(BaseDir, "include", "external"),
+				null, null
 			));
 		}
 
@@ -1381,9 +1507,21 @@ public class AGXDynamicsLibrary : ModuleRules
 				null, null,
 				Path.Combine(DataDir, "cfg")
 			));
+			LibSources.Add(LibSource.MaterialLibrary, new LibSourceInfo(
+				null, null,
+				Path.Combine(DataDir, "MaterialLibrary", "Materials")
+			));
 			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
 				null, null,
 				Path.Combine(DataDir, "MaterialLibrary", "TerrainMaterials")
+			));
+			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
+				null, null,
+				Path.Combine(DataDir, "MaterialLibrary", "ContactMaterials")
+			));
+			LibSources.Add(LibSource.External, new LibSourceInfo(
+				Path.Combine(BaseDir, "include", "external"),
+				null, null
 			));
 		}
 
@@ -1419,9 +1557,21 @@ public class AGXDynamicsLibrary : ModuleRules
 				null, null,
 				Path.Combine(BaseDir, "data", "cfg")
 			));
+			LibSources.Add(LibSource.MaterialLibrary, new LibSourceInfo(
+				null, null,
+				Path.Combine(BaseDir, "data", "MaterialLibrary", "Materials")
+			));
 			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
 				null, null,
 				Path.Combine(BaseDir, "data", "MaterialLibrary", "TerrainMaterials")
+			));
+			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
+				null, null,
+				Path.Combine(BaseDir, "data", "MaterialLibrary", "ContactMaterials")
+			));
+			LibSources.Add(LibSource.External, new LibSourceInfo(
+				Path.Combine(BaseDir, "include", "external"),
+				null, null
 			));
 		}
 

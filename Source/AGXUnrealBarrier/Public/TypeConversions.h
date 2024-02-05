@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -48,7 +48,10 @@
 #include "EndAGXIncludes.h"
 
 // Standard library includes.
+#include <cstdint>
 #include <limits>
+#include <string>
+#include <vector>
 
 // These functions assume that agx::Real and float are different types.
 // They also assume that agx::Real has higher (or equal) precision than float.
@@ -351,8 +354,7 @@ inline FVector ConvertDistance(const agx::Vec3f& V)
 {
 	using ElementType = decltype(FVector::X);
 	return FVector(
-		ConvertDistanceToUnreal<ElementType>(V.x()),
-		ConvertDistanceToUnreal<ElementType>(V.y()),
+		ConvertDistanceToUnreal<ElementType>(V.x()), ConvertDistanceToUnreal<ElementType>(V.y()),
 		ConvertDistanceToUnreal<ElementType>(V.z()));
 }
 
@@ -601,6 +603,25 @@ inline agx::Line ConvertDisplacement(const FTwoVectors& Vs)
 }
 
 //
+// TwoVectors/Line. AGX Dynamics to Unreal Engine.
+//
+
+inline FTwoVectors Convert(const agx::Line& Vs)
+{
+	return {Convert(Vs.p1), Convert(Vs.p2)};
+}
+
+inline FTwoVectors ConvertDistance(const agx::Line& Vs)
+{
+	return {ConvertDistance(Vs.p1), ConvertDistance(Vs.p2)};
+}
+
+inline FTwoVectors ConvertDisplacement(const agx::Line& Vs)
+{
+	return {ConvertDisplacement(Vs.p1), ConvertDisplacement(Vs.p2)};
+}
+
+//
 // Quaternions.
 //
 
@@ -721,14 +742,16 @@ inline agx::Uuid Convert(const FGuid& Guid)
 	// To ensure the same textual representations (i.e. if printed out to a log for example) we go
 	// via string representations when converting the Guid. The underlying data storage of each type
 	// may not be bitwise equal.
-	const FString GuidStr = Guid.ToString().ToLower();
+	const FString GuidStr = Guid.ToString(EGuidFormats::DigitsWithHyphens).ToLower();
 	agx::String GuidStrAGX = Convert(GuidStr);
 
-	// AGX Uuids requires formatting with groupings with '-' separators accordingly.
+#if 0
+	// AGX Dynamics UUIDs require formatting with groupings with '-' separators accordingly.
 	GuidStrAGX.insert(20, "-");
 	GuidStrAGX.insert(16, "-");
 	GuidStrAGX.insert(12, "-");
 	GuidStrAGX.insert(8, "-");
+#endif
 
 	return agx::Uuid(GuidStrAGX);
 }
@@ -1237,4 +1260,64 @@ inline ELogVerbosity::Type ConvertLogLevelVerbosity(agx::Notify::NotifyLevel Lev
 		LogAGX, Warning, TEXT("Unknown AGX Dynamics log verbosity %d. Defaulting to Warning."),
 		static_cast<int>(Level));
 	return ELogVerbosity::Warning;
+}
+
+//
+// Standard Library to Unreal.
+//
+
+inline FString Convert(const std::string& Str)
+{
+	return FString(Str.c_str());
+}
+
+template <typename SourceT, typename DestinationT>
+inline TArray<DestinationT> ToUnrealArray(const std::vector<SourceT>& V)
+{
+	TArray<DestinationT> Arr;
+	Arr.Reserve(V.size());
+	for (const auto& Val : V)
+		Arr.Add(Val);
+
+	return Arr;
+}
+
+inline TArray<FString> ToUnrealStringArray(const std::vector<std::string>& V)
+{
+	TArray<FString> Arr;
+	Arr.Reserve(V.size());
+	for (const auto& Val : V)
+		Arr.Add(Convert(Val));
+
+	return Arr;
+}
+
+//
+// Unreal to Standard Library.
+//
+
+inline std::string ToStdString(const FString& Str)
+{
+	return std::string(TCHAR_TO_UTF8(*Str));
+}
+
+template <typename SourceT, typename DestinationT>
+inline std::vector<DestinationT> ToStdArray(const TArray<SourceT>& A)
+{
+	std::vector<DestinationT> Arr;
+	Arr.reserve(A.Num());
+	for (const auto& Val : A)
+		Arr.push_back(Val);
+
+	return Arr;
+}
+
+inline std::vector<std::string> ToStdStringArray(const TArray<FString>& A)
+{
+	std::vector<std::string> Arr;
+	Arr.reserve(A.Num());
+	for (const auto& Val : A)
+		Arr.push_back(ToStdString(Val));
+
+	return Arr;
 }

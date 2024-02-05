@@ -1,8 +1,9 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Shapes/AGX_CylinderShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
@@ -11,6 +12,8 @@
 
 // Unreal Engine includes.
 #include "Engine/StaticMeshActor.h"
+#include "PhysicsEngine/AggregateGeom.h"
+#include "PhysicsEngine/BodySetup.h"
 
 UAGX_CylinderShapeComponent::UAGX_CylinderShapeComponent()
 {
@@ -192,6 +195,18 @@ void UAGX_CylinderShapeComponent::UpdateNativeProperties()
 	NativeBarrier.SetGypsyProperty(bGypsy);
 }
 
+void UAGX_CylinderShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
+{
+	if (ShapeBodySetup != nullptr)
+	{
+		// Because CreatePhysicsMeshes (which is called by this class) states that this must be
+		// called before destroying the BodySetup.
+		ShapeBodySetup->ClearPhysicsMeshes();
+	}
+
+	Super::EndPlay(Reason);
+}
+
 void UAGX_CylinderShapeComponent::CopyFrom(
 	const FCylinderShapeBarrier& Barrier, bool ForceOverwriteInstances)
 {
@@ -211,6 +226,63 @@ void UAGX_CylinderShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshD
 		OutMeshData.Vertices, OutMeshData.Normals, OutMeshData.Indices, OutMeshData.TexCoords,
 		AGX_MeshUtilities::CylinderConstructionData(
 			Radius, Height, NumCircleSegments, NumHeightSegments));
+}
+
+bool UAGX_CylinderShapeComponent::SupportsShapeBodySetup()
+{
+	return true;
+}
+
+namespace AGX_CylinderShapeComponent_helpers
+{
+	template <typename InElemType, typename OutElemType>
+	TArray<OutElemType> ConvertArray(const TArray<InElemType>& In)
+	{
+		TArray<OutElemType> Out;
+		Out.Reserve(In.Num());
+		for (const auto& V : In)
+			Out.Add(OutElemType(V));
+
+		return Out;
+	}
+}
+
+void UAGX_CylinderShapeComponent::UpdateBodySetup()
+{
+	using namespace AGX_CylinderShapeComponent_helpers;
+
+	CreateShapeBodySetupIfNeeded();
+	check(ShapeBodySetup->AggGeom.ConvexElems.Num() == 1);
+
+	AGX_CHECK(MeshData != nullptr);
+	if (MeshData == nullptr)
+		return;
+
+	ShapeBodySetup->AggGeom.ConvexElems[0].VertexData =
+		ConvertArray<FVector3f, FVector>(MeshData->Vertices);
+
+	ShapeBodySetup->AggGeom.ConvexElems[0].IndexData =
+		ConvertArray<uint32, int32>(MeshData->Indices);
+
+	ShapeBodySetup->AggGeom.ConvexElems[0].UpdateElemBox();
+
+	// This may seem contradicting, but by setting these like so, the CreatePhysicsMeshes call
+	// bellow will enter the Runtime mesh creation logic that we need. There are details regarding
+	// this that is not completely understood by us currently, therefore it cannot be explained in a
+	// good way here. It can probably be done in some other way.
+	ShapeBodySetup->bHasCookedCollisionData = false;
+	ShapeBodySetup->bNeverNeedsCookedCollisionData = false;
+
+	// Creates chaos mesh from the ConvexElems data set above.
+	// This is what is used by e.g. LineTrace.
+	ShapeBodySetup->ClearPhysicsMeshes();
+	ShapeBodySetup->CreatePhysicsMeshes();
+}
+
+void UAGX_CylinderShapeComponent::AddShapeBodySetupGeometry()
+{
+	if (ShapeBodySetup != nullptr)
+		ShapeBodySetup->AggGeom.ConvexElems.Add(FKConvexElem());
 }
 
 #if WITH_EDITOR

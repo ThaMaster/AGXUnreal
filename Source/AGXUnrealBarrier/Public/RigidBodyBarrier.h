@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -7,11 +7,12 @@
 #include "MassPropertiesBarrier.h"
 
 // Unreal Engine includes.
+#include "CoreMinimal.h"
 #include "Containers/UnrealString.h"
 #include "Math/Vector.h"
 #include "Math/Quat.h"
 
-// System includes.
+// Standard library includes.
 #include <memory>
 
 struct FRigidBodyRef;

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Utilities/AGX_SlateUtilities.h"
 
@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 
 // Unreal Engine includes.
+#include "IPropertyTypeCustomization.h"
 #include "Fonts/SlateFontInfo.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SWidget.h"
@@ -16,8 +17,6 @@ FSlateFontInfo FAGX_SlateUtilities::CreateFont(int Size)
 	F.Size = Size;
 	return F;
 }
-
-
 
 bool FAGX_SlateUtilities::RemoveChildWidgetByType(
 	const TSharedPtr<SWidget>& Parent, const FString& TypeNameToRemove, bool Recursive)

@@ -1,12 +1,14 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "UObject/ObjectMacros.h"
 
 /** Specifies what type of import is being performed. */
 UENUM()
-enum EAGX_ImportType
+enum class EAGX_ImportType : uint8
 {
 	/** Imported type is Invalid. */
 	Invalid,

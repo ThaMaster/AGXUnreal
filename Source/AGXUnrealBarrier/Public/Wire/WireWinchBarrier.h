@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -31,7 +31,6 @@ extern template class FNativeBarrier<FWireWinchRef>;
 #else
 #pragma error("This platform is currently not supported.");
 #endif
-
 
 class AGXUNREALBARRIER_API FWireWinchBarrier : public FNativeBarrier<FWireWinchRef>
 {
@@ -79,7 +78,6 @@ public:
 	 * This will decrease during routing/initialization if Auto Feed is enabled.
 	 */
 	double GetPulledInWireLength() const;
-
 
 	/**
 	 * Decide if wire should be taken from the winch during routing, or if the routed wire is in

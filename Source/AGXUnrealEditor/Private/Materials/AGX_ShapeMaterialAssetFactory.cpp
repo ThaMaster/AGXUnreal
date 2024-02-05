@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Materials/AGX_ShapeMaterialAssetFactory.h"
 
@@ -18,6 +18,5 @@ UObject* UAGX_ShapeMaterialFactory::FactoryCreateNew(
 	FFeedbackContext* Warn)
 {
 	check(Class->IsChildOf(UAGX_ShapeMaterial::StaticClass()));
-	return NewObject<UAGX_ShapeMaterial>(
-		InParent, Class, Name, Flags | RF_Transactional, Context);
+	return NewObject<UAGX_ShapeMaterial>(InParent, Class, Name, Flags | RF_Transactional, Context);
 }

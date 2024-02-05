@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -75,7 +75,8 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	double GetSpookDamping() const;
 
 	/**
-	 * The minimum and maximum force or torque that the constraint controller can produce [N] or [Nm].
+	 * The minimum and maximum force or torque that the constraint controller can produce [N] or
+	 * [Nm].
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AMOR/AGX_WireMergeSplitProperties.h"
 
@@ -9,7 +9,6 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 
-
 void FAGX_WireMergeSplitProperties::OnBeginPlay(UAGX_WireComponent& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
@@ -19,6 +18,7 @@ void FAGX_WireMergeSplitProperties::OnBeginPlay(UAGX_WireComponent& Owner)
 	// Not having a native is a perfectly valid and regular thing for this class.
 	if (bEnableMerge || bEnableSplit)
 	{
+		FAGX_NotificationUtilities::LogWarningIfAmorDisabled("Wire");
 		CreateNative(Owner);
 		CreateNativeThresholds(Owner.GetWorld());
 		UpdateNativeProperties();
@@ -51,7 +51,7 @@ void FAGX_WireMergeSplitProperties::CreateNative(UAGX_WireComponent& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
 	AGX_CHECK(!HasNative());
-	
+
 	NativeBarrier.AllocateNative(*Owner.GetNative());
 }
 

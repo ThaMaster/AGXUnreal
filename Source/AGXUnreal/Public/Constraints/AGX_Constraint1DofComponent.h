@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -19,7 +19,8 @@
 /**
  *
  */
-UCLASS(ClassGroup = "AGX_Constraint", Category = "AGX", Abstract, Meta = (BlueprintSpawnableComponent))
+UCLASS(
+	ClassGroup = "AGX_Constraint", Category = "AGX", Abstract, Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_Constraint1DofComponent : public UAGX_ConstraintComponent
 {
 	GENERATED_BODY()

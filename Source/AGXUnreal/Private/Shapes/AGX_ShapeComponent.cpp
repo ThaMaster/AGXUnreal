@@ -1,8 +1,10 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Shapes/AGX_ShapeComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_AssetGetterSetterImpl.h"
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_PropertyChangedDispatcher.h"
@@ -13,11 +15,13 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
-#include "Utilities/AGX_TextureUtilities.h"
+#include "Utilities/AGX_RenderUtilities.h"
 
 // Unreal Engine includes.
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
+#include "PhysicsEngine/AggregateGeom.h"
+#include "PhysicsEngine/BodySetup.h"
 
 // Standard library includes.
 #include <tuple>
@@ -72,6 +76,9 @@ void UAGX_ShapeComponent::UpdateVisualMesh()
 	}
 
 	SetMeshData(Data);
+
+	if (SupportsShapeBodySetup() && GetWorld() && GetWorld()->IsGameWorld())
+		UpdateBodySetup(); // Used only in runtime.
 }
 
 bool UAGX_ShapeComponent::ShouldCreateVisualMesh() const
@@ -209,6 +216,8 @@ void UAGX_ShapeComponent::PostInitProperties()
 		GET_MEMBER_NAME_CHECKED(ThisClass, bIsSensor),
 		[](ThisClass* This) { This->SetIsSensor(This->bIsSensor); });
 
+	AGX_COMPONENT_DEFAULT_DISPATCHER(ShapeMaterial);
+
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(ThisClass, MergeSplitProperties),
 		[](ThisClass* This) { This->MergeSplitProperties.OnPostEditChangeProperty(*This); });
@@ -269,7 +278,8 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// necessary.
 	}
 	else if (
-		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition)
 	{
 		// @todo Figure out how to handle removal of Shape Materials from the Simulation. They can
 		// be shared between many Shape Components, so some kind of reference counting might be
@@ -522,7 +532,7 @@ void UAGX_ShapeComponent::ApplySensorMaterial(UMeshComponent& Mesh)
 {
 	static const TCHAR* AssetPath =
 		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
-	static UMaterial* SensorMaterial = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
+	static UMaterial* SensorMaterial = FAGX_RenderUtilities::GetMaterialFromAssetPath(AssetPath);
 	if (SensorMaterial == nullptr)
 	{
 		return;
@@ -626,4 +636,47 @@ void UAGX_ShapeComponent::OnRegister()
 {
 	Super::OnRegister();
 	UpdateVisualMesh();
+}
+
+UBodySetup* UAGX_ShapeComponent::GetBodySetup()
+{
+	return ShapeBodySetup;
+}
+
+void UAGX_ShapeComponent::CreateShapeBodySetupIfNeeded()
+{
+	AGX_CHECK(SupportsShapeBodySetup());
+	if (!IsValid(ShapeBodySetup))
+	{
+		ShapeBodySetup = NewObject<UBodySetup>(this, NAME_None, RF_Transient);
+
+		ShapeBodySetup->CollisionTraceFlag = CTF_UseSimpleAsComplex;
+		AddShapeBodySetupGeometry();
+		ShapeBodySetup->bNeverNeedsCookedCollisionData = true;
+		BodyInstance.BodySetup = ShapeBodySetup;
+
+		ECollisionEnabled::Type UnrealCollision = AdditionalUnrealCollision;
+		const UAGX_Simulation* Simulation = GetDefault<UAGX_Simulation>();
+		if (Simulation->bOverrideAdditionalUnrealCollision)
+			UnrealCollision = Simulation->AdditionalUnrealCollision;
+
+		BodyInstance.SetCollisionEnabled(UnrealCollision);
+	}
+}
+
+void UAGX_ShapeComponent::UpdateBodySetup()
+{
+	// Subclass must implement this to support LineTrace collisions.
+	check(false);
+}
+
+void UAGX_ShapeComponent::AddShapeBodySetupGeometry()
+{
+	// Subclass must implement this to support LineTrace collisions.
+	check(false);
+}
+
+bool UAGX_ShapeComponent::SupportsShapeBodySetup()
+{
+	return false; // Default behavior.
 }

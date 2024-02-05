@@ -1,9 +1,10 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
 // AGX Unreal includes.
 #include "CoreMinimal.h"
+#include "ComponentVisualizer.h"
 #include "IDetailCustomization.h"
 
 class AGXUNREALEDITOR_API FAGX_HeightFieldBoundsComponentVisualizer : public FComponentVisualizer

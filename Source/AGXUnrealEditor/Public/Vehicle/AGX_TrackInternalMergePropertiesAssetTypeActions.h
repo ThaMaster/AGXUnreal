@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -15,7 +15,8 @@ class AGXUNREALEDITOR_API FAGX_TrackInternalMergePropertiesAssetTypeActions
 	: public FAssetTypeActions_Base
 {
 public:
-	explicit FAGX_TrackInternalMergePropertiesAssetTypeActions(EAssetTypeCategories::Type InAssetCategory);
+	explicit FAGX_TrackInternalMergePropertiesAssetTypeActions(
+		EAssetTypeCategories::Type InAssetCategory);
 
 	virtual FText GetName() const override;
 

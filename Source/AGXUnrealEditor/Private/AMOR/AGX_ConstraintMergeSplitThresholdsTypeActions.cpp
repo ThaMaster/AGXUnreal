@@ -1,10 +1,9 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AMOR/AGX_ConstraintMergeSplitThresholdsTypeActions.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
-
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintMergeSplitThresholdsTypeActions"
 
@@ -38,10 +37,10 @@ FColor FAGX_ConstraintMergeSplitThresholdsTypeActions::GetTypeColor() const
 	return FColor(255, 115, 0);
 }
 
-FText FAGX_ConstraintMergeSplitThresholdsTypeActions::GetAssetDescription(const FAssetData& AssetData) const
+FText FAGX_ConstraintMergeSplitThresholdsTypeActions::GetAssetDescription(
+	const FAssetData& AssetData) const
 {
-	return LOCTEXT(
-		"AssetDescription", "Defines merge split (AMOR) thresholds for Constraints.");
+	return LOCTEXT("AssetDescription", "Defines merge split (AMOR) thresholds for Constraints.");
 }
 
 UClass* FAGX_ConstraintMergeSplitThresholdsTypeActions::GetSupportedClass() const

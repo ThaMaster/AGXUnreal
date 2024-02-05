@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Materials/AGX_ContactMaterial.h"
 
@@ -10,11 +10,12 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
+#include "Materials/AGX_MaterialBase.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "EngineUtils.h"
 #include "Engine/World.h"
-#include "Materials/AGX_MaterialBase.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_ContactMaterial"
 
@@ -673,7 +674,13 @@ void UAGX_ContactMaterial::CommitToAsset()
 	{
 		if (HasNative())
 		{
+#if WITH_EDITOR
+			Asset->Modify();
+#endif
 			Asset->CopyFrom(*GetNative());
+#if WITH_EDITOR
+			FAGX_ObjectUtilities::MarkAssetDirty(*Asset);
+#endif
 		}
 	}
 	else if (Instance != nullptr)
@@ -787,13 +794,10 @@ UAGX_ContactMaterial* UAGX_ContactMaterial::CreateInstanceFromAsset(
 	check(World != nullptr);
 	check(World->IsGameWorld());
 
-	UObject* Outer = UAGX_Simulation::GetFrom(World);
-	check(Outer);
-
 	const FString InstanceName = Source->GetName() + "_Instance";
 
 	UAGX_ContactMaterial* NewInstance = NewObject<UAGX_ContactMaterial>(
-		Outer, UAGX_ContactMaterial::StaticClass(), *InstanceName, RF_Transient);
+		GetTransientPackage(), UAGX_ContactMaterial::StaticClass(), *InstanceName, RF_Transient);
 	NewInstance->Asset = Source;
 	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(Registrar);
@@ -1257,17 +1261,16 @@ void UAGX_ContactMaterial::CreateNative(const UAGX_ContactMaterialRegistrarCompo
 	if (IsInstance())
 	{
 		check(!HasNative());
-		check(Registrar.GetWorld() == GetWorld());
-		UWorld* World = GetWorld();
+		UWorld* World = Registrar.GetWorld();
 		check(World != nullptr && World->IsGameWorld());
 
 		Material1 = Material1 != nullptr ? Material1->GetOrCreateInstance(World) : nullptr;
 		Material2 = Material2 != nullptr ? Material2->GetOrCreateInstance(World) : nullptr;
 
 		FShapeMaterialBarrier* MaterialBarrier1 =
-			Material1 != nullptr ? Material1->GetOrCreateShapeMaterialNative(GetWorld()) : nullptr;
+			Material1 != nullptr ? Material1->GetOrCreateShapeMaterialNative(World) : nullptr;
 		FShapeMaterialBarrier* MaterialBarrier2 =
-			Material2 != nullptr ? Material2->GetOrCreateShapeMaterialNative(GetWorld()) : nullptr;
+			Material2 != nullptr ? Material2->GetOrCreateShapeMaterialNative(World) : nullptr;
 
 		NativeBarrier.AllocateNative(MaterialBarrier1, MaterialBarrier2);
 		if (!HasNative())

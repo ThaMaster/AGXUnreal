@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -22,7 +22,7 @@ public:
 	AAGX_ContactMaterialRegistrarActor();
 
 	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)
-	UAGX_ContactMaterialRegistrarSpriteComponent* SpriteComponent;	
+	UAGX_ContactMaterialRegistrarSpriteComponent* SpriteComponent;
 
 	UPROPERTY(Category = "AGX Dynamics", VisibleAnywhere, BlueprintReadOnly)
 	UAGX_ContactMaterialRegistrarComponent* ContactMaterialRegistrarComponent;

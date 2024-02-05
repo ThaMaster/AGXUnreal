@@ -1,10 +1,9 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Materials/AGX_TerrainCompactionProperties.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_CustomVersion.h"
-
 
 void FAGX_TerrainCompactionProperties::Serialize(FArchive& Archive)
 {

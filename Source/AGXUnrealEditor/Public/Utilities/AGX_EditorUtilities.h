@@ -1,11 +1,17 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
+#include "Utilities/AGX_ObjectUtilities.h"
+
 // Unreal Engine includes.
+#include "AssetRegistry/AssetData.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "CoreMinimal.h"
 #include "DetailLayoutBuilder.h"
+#include "GameFramework/Actor.h"
 #include "Misc/EngineVersionComparison.h"
 #include "RawMesh.h"
 
@@ -322,6 +328,10 @@ public:
 		const FString& DialogTitle, const FString& FileTypes, const FString& DefaultFile = "",
 		const FString& InStartDir = "");
 
+	static FString SelectNewAssetDialog(
+		UClass* SavedClass, const FString& InDefaultPath, const FString& AssetNameSuggestion,
+		const FString& DialogTitle);
+
 	static const ISlateStyle& GetStyle()
 	{
 #if UE_VERSION_OLDER_THAN(5, 1, 0)
@@ -387,9 +397,42 @@ T* FAGX_EditorUtilities::GetSingleObjectBeingCustomized(
 	DetailBuilder.GetObjectsBeingCustomized(Objects);
 
 	if (Objects.Num() == 1 || (!FailIfMultiple && Objects.Num() > 1))
-		return Cast<T>(Objects[0].Get());
-	else
-		return nullptr;
+	{
+		if (T* Component = Cast<T>(Objects[0].Get()))
+		{
+			return Component;
+		}
+
+		// This is a special case where the Component we want is a default subobject to an actor,
+		// and the Component's details panel can be seen while the selected Component is actually
+		// the actors root Component, not the Componetn we are after. This happens for our AGXUnreal
+		// Actor classes, which have their corresponding Component type as a default subobject. We
+		// simply look for a Component inside the actor of the correct type and return that. If
+		// multiple Components of type T is a default subobject to the actor, then we currently
+		// don't have a good way to detect that, and return the first found, but log a warning.
+		if (AActor* Actor = Cast<AActor>(Objects[0].Get()))
+		{
+			TArray<UObject*> DefaultSubObjects;
+			Actor->CollectDefaultSubobjects(DefaultSubObjects);
+			TArray<T*> ComponentsOfInterest =
+				FAGX_ObjectUtilities::Filter<T, TArray<UObject*>>(DefaultSubObjects);
+			if (ComponentsOfInterest.Num() == 0)
+				return nullptr;
+			if (ComponentsOfInterest.Num() > 1)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Multiple Component candidates was found when looking for the Component "
+						 "being Customized, likely due to multiple default subobjects of the same "
+						 "type in a single Actor. The first Component will be returned, but the "
+						 "result may not be the expected one."));
+			}
+
+			return ComponentsOfInterest[0];
+		}
+	}
+
+	return nullptr;
 }
 
 template <typename T>

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -14,7 +14,7 @@ public:
 
 	TOptional<FAGX_ImportSettings> ToImportSettings();
 
-private:	
+private:
 	TSharedRef<SBorder> CreateSettingsGui();
 	TSharedRef<SBorder> CreateImportButtonGui();
 	TSharedRef<SBorder> CreateURDFFileGui();

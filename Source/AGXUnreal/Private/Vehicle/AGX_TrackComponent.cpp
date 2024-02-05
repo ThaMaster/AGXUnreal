@@ -1,18 +1,19 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Vehicle/AGX_TrackComponent.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Environment.h"
 #include "AGX_LogCategory.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
-#include "AGX_PropertyChangedDispatcher.h"
 #include "Materials/AGX_ShapeMaterial.h"
-#include "Vehicle/AGX_TrackProperties.h"
-#include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
+#include "Utilities/AGX_StringUtilities.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
+#include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/TrackPropertiesBarrier.h"
 
 // Unreal Engine includes.
@@ -34,12 +35,12 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 	// errors in the log.
 	if (!MayAttemptTrackPreview)
 	{
-		MayAttemptTrackPreview = FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid();
+		MayAttemptTrackPreview = FAGX_Environment::GetInstance().EnsureAGXDynamicsLicenseValid();
 		if (!MayAttemptTrackPreview)
 		{
 			return nullptr;
 		}
-	}	
+	}
 
 	if (IsBeingDestroyed() || !bEnabled)
 	{
@@ -409,7 +410,8 @@ void UAGX_TrackComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// on the Track in GetNativeAddress / SetNativeAddress?
 	}
 	else if (
-		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition)
 	{
 		// This object is being destroyed / removed from a Play session that will continue without
 		// it, so there will be no global cleanup of everything, so we must cleanup after ourself.
@@ -628,8 +630,6 @@ void UAGX_TrackComponent::CreateNative()
 	for (FAGX_TrackWheel& Wheel : Wheels)
 	{
 		// Validate and get the Rigid Body Component.
-		Wheel.RigidBody.CacheCurrentRigidBody();
-		Wheel.FrameDefiningComponent.CacheCurrentSceneComponent();
 		UAGX_RigidBodyComponent* Body = Wheel.RigidBody.GetRigidBody();
 		if (!IsValid(Body) || Body->GetOrCreateNative() == nullptr)
 		{

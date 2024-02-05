@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 /*
  * This file contains unit tests for Rigid Body Component.
@@ -9,9 +9,9 @@
 #include "AGX_PlayInEditorUtils.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "AgxAutomationCommon.h"
 
 // Unreal Engine includes.
-#include "AgxAutomationCommon.h"
 #include "Editor.h"
 #include "GameFramework/Actor.h"
 #include "Misc/AutomationTest.h"

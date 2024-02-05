@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AGX_VectorComponent.h"
 
@@ -10,6 +10,9 @@
 #include "Engine/Engine.h"
 #include "LocalVertexFactory.h"
 #include "Materials/Material.h"
+#if !UE_VERSION_OLDER_THAN(5, 2, 0)
+#include "Materials/MaterialRenderProxy.h"
+#endif
 #include "Misc/EngineVersionComparison.h"
 #include "PrimitiveSceneProxy.h"
 #include "SceneInterface.h"
@@ -47,8 +50,8 @@ namespace
 			const float TotalLength = ArrowSize;
 			const float HeadLength = TotalLength * ARROW_HEAD_FACTOR;
 			const float ShaftRadius = TotalLength * ARROW_RADIUS_FACTOR;
-			const float ShaftLength =
-				(TotalLength - HeadLength * 0.8f); // 0.8 instead of 1.0 for a little overlap with head
+			 // 0.8 instead of 1.0 for a little overlap with head.
+			const float ShaftLength = (TotalLength - HeadLength * 0.8f);
 			const FVector3f ShaftCenter(0.5f * ShaftLength, 0, 0);
 
 			TArray<FDynamicMeshVertex> OutVerts;

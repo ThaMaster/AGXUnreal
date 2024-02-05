@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 /*
  * Deprecated: see internal issue 739.
@@ -157,9 +157,15 @@ public:
 			(
 				[Geometry = Geometry.Get()](FRHICommandListImmediate& RHICmdList)
 				{
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
 					Geometry->VertexBuffers.PositionVertexBuffer.InitResource();
 					Geometry->VertexBuffers.StaticMeshVertexBuffer.InitResource();
 					Geometry->VertexBuffers.ColorVertexBuffer.InitResource();
+#else
+					Geometry->VertexBuffers.PositionVertexBuffer.InitResource(RHICmdList);
+					Geometry->VertexBuffers.StaticMeshVertexBuffer.InitResource(RHICmdList);
+					Geometry->VertexBuffers.ColorVertexBuffer.InitResource(RHICmdList);
+#endif
 
 					FLocalVertexFactory::FDataType Data;
 					Geometry->VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(
@@ -174,8 +180,13 @@ public:
 						&Geometry->VertexFactory, Data);
 					Geometry->VertexFactory.SetData(Data);
 
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
 					Geometry->VertexFactory.InitResource();
 					Geometry->IndexBuffer.InitResource();
+#else
+					Geometry->VertexFactory.InitResource(RHICmdList);
+					Geometry->IndexBuffer.InitResource(RHICmdList);
+#endif
 				});
 		};
 	}

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AGX_Simulation.h"
 
@@ -15,22 +15,36 @@
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
+#include "Materials/AGX_TerrainMaterial.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/ShapeBarrier.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Tires/AGX_TireComponent.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
+#include "Vehicle/AGX_TrackProperties.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Utilities/AGX_RenderUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_Stats.h"
 #include "Wire/AGX_WireComponent.h"
+#include "Wire/AGX_WireController.h"
 
 // Unreal Engine includes.
+#include "CoreMinimal.h"
+#if WITH_EDITOR
+#include "Editor.h"
+#endif
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "HAL/PlatformTime.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/Paths.h"
+#if WITH_EDITORONLY_DATA
+#include "Subsystems/AssetEditorSubsystem.h"
+#endif
+#include "UObject/UObjectIterator.h"
 
 #include <algorithm>
 
@@ -182,6 +196,28 @@ namespace AGX_Simulation_helpers
 
 		return LoadObject<T>(GetTransientPackage(), *Path.GetAssetPathString());
 	}
+
+#if WITH_EDITOR
+	template <typename T>
+	void CloseInstancedAssetEditors()
+	{
+		UPackage* TransientPackage = GetTransientPackage();
+		for (TObjectIterator<T> ObjectIt; ObjectIt; ++ObjectIt)
+		{
+			UPackage* Package = Cast<UPackage>((*ObjectIt)->GetOuter());
+			if (Package != TransientPackage)
+			{
+				continue;
+			}
+
+			if ((*ObjectIt)->IsInstance())
+			{
+				GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllEditorsForAsset(
+					*ObjectIt);
+			}
+		}
+	}
+#endif
 }
 
 void UAGX_Simulation::Add(UAGX_ConstraintComponent& Constraint)
@@ -517,6 +553,21 @@ void UAGX_Simulation::SetEnableCollision(
 	FSimulationBarrier::SetEnableCollision(*Body1.GetNative(), *Body2.GetNative(), Enable);
 }
 
+TArray<FAGX_ShapeContact> UAGX_Simulation::GetShapeContacts() const
+{
+	if (!HasNative())
+		return TArray<FAGX_ShapeContact>();
+
+	TArray<FShapeContactBarrier> Barriers = NativeBarrier.GetShapeContacts();
+	TArray<FAGX_ShapeContact> ShapeContacts;
+	ShapeContacts.Reserve(Barriers.Num());
+	for (FShapeContactBarrier& Barrier : Barriers)
+	{
+		ShapeContacts.Emplace(std::move(Barrier));
+	}
+	return ShapeContacts;
+}
+
 void UAGX_Simulation::SetEnableContactWarmstarting(bool bEnable)
 {
 	bContactWarmstarting = bEnable;
@@ -578,65 +629,38 @@ bool UAGX_Simulation::GetEnableAMOR()
 void UAGX_Simulation::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	EnsureValidLicense();
-
-	NativeBarrier.AllocateNative();
-	check(HasNative()); /// \todo Consider better error handling.
-
-	NativeBarrier.SetTimeStep(TimeStep);
-
-	NativeBarrier.SetEnableContactWarmstarting(bContactWarmstarting);
-
-	if (bOverridePPGSIterations)
-	{
-		if (NumPpgsIterations < 1)
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT(
-					"Clamping the number of PPGS solver iterations from %d to 1. Set the number of "
-					"iterations to a positive value in Project Settings > Plugins > AGX Dynamics > "
-					"Solver."),
-				NumPpgsIterations);
-			NumPpgsIterations = 1;
-		}
-		NativeBarrier.SetNumPpgsIterations(NumPpgsIterations);
-
-		// Note that AGX Dynamics' Terrain can change the number of PPGS iterations. AAGX_Terrain
-		// is responsible for restoring it to the value we set here.
-	}
-	else
-	{
-		// The user has requested that we use the default number of PPGS solver iterations. Update
-		// the setting to reflect the actual value set by AGX Dynamics. This will not change the
-		// plugin settings since 'this' is now the in-game instance, not the CDO.
-		NumPpgsIterations = NativeBarrier.GetNumPpgsIterations();
-	}
-
-	NativeBarrier.SetNumThreads(NumThreads);
-	SetGravity();
-	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
-	NativeBarrier.SetEnableAMOR(bEnableAMOR);
-
-	SetGlobalNativeMergeSplitThresholds();
-
-	if (bRemoteDebugging)
-	{
-		NativeBarrier.EnableRemoteDebugging(RemoteDebuggingPort);
-	}
-
-	FAGX_Environment::GetInstance().SetNumThreads(std::max(0, NumThreads));
+	CreateNative();
 }
 
 void UAGX_Simulation::Deinitialize()
 {
+	using namespace AGX_Simulation_helpers;
+
+	// Explicitly close any asset editors that may be open.
+	// This fixes a crash where if any asset instances have an editor opened for them,
+	// the Unreal Editor would crash on Stop.
+#if WITH_EDITOR
+	CloseInstancedAssetEditors<UAGX_ContactMaterial>();
+	CloseInstancedAssetEditors<UAGX_TerrainMaterial>();
+	CloseInstancedAssetEditors<UAGX_ShapeMaterial>();
+
+	CloseInstancedAssetEditors<UAGX_ConstraintMergeSplitThresholds>();
+	CloseInstancedAssetEditors<UAGX_ShapeContactMergeSplitThresholds>();
+	CloseInstancedAssetEditors<UAGX_WireMergeSplitThresholds>();
+
+	CloseInstancedAssetEditors<UAGX_TrackInternalMergeProperties>();
+	CloseInstancedAssetEditors<UAGX_TrackProperties>();
+
+	CloseInstancedAssetEditors<UAGX_ShovelProperties>();
+#endif
+
 	Super::Deinitialize();
 	if (!HasNative())
 	{
 		return;
 	}
-	NativeBarrier.SetStatisticsEnabled(false);
-	NativeBarrier.ReleaseNative();
+
+	ReleaseNative();
 }
 
 #if WITH_EDITOR
@@ -667,6 +691,28 @@ void UAGX_Simulation::InitPropertyDispatcher()
 		[](ThisClass* This) { This->SetEnableContactWarmstarting(This->bContactWarmstarting); });
 
 	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bOverrideDynamicWireContacts),
+		[](ThisClass* This)
+		{
+			if (This->bOverrideDynamicWireContacts)
+			{
+				UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(
+					This->bEnableDynamicWireContacts);
+			}
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(ThisClass, bEnableDynamicWireContacts),
+		[](ThisClass* This)
+		{
+			if (This->bOverrideDynamicWireContacts)
+			{
+				UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(
+					This->bEnableDynamicWireContacts);
+			}
+		});
+
+	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, bEnableAMOR),
 		[](ThisClass* This) { This->SetEnableAMOR(This->bEnableAMOR); });
 
@@ -674,8 +720,81 @@ void UAGX_Simulation::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(ThisClass, NumThreads),
 		[](ThisClass* This) { This->SetNumThreads(This->NumThreads); });
 }
-
 #endif
+
+void UAGX_Simulation::CreateNative()
+{
+	check(!HasNative());
+	EnsureValidLicense();
+
+	NativeBarrier.AllocateNative();
+	check(HasNative()); /// \todo Consider better error handling.
+
+	NativeBarrier.SetTimeStep(TimeStep);
+
+	NativeBarrier.SetEnableContactWarmstarting(bContactWarmstarting);
+
+	if (bOverrideDynamicWireContacts)
+	{
+		UAGX_WireController::Get()->SetDynamicWireContactsGloballyEnabled(
+			bEnableDynamicWireContacts);
+	}
+
+	if (bOverridePPGSIterations)
+	{
+		if (NumPpgsIterations < 1)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT(
+					"Clamping the number of PPGS solver iterations from %d to 1. Set the number of "
+					"iterations to a positive value in Project Settings > Plugins > AGX Dynamics > "
+					"Solver."),
+				NumPpgsIterations);
+			NumPpgsIterations = 1;
+		}
+		NativeBarrier.SetNumPpgsIterations(NumPpgsIterations);
+
+		// Note that AGX Dynamics' Terrain can change the number of PPGS iterations. AAGX_Terrain
+		// is responsible for restoring it to the value we set here.
+	}
+	else
+	{
+		// The user has requested that we use the default number of PPGS solver iterations. Update
+		// the setting to reflect the actual value set by AGX Dynamics. This will not change the
+		// plugin settings since 'this' is now the in-game instance, not the CDO.
+		//
+		// Q: Is this really necessary? GetNumPpgsIterations will ask the Native for the AGX
+		// Dynamics state so why do we need to update the property as well?
+		NumPpgsIterations = NativeBarrier.GetNumPpgsIterations();
+	}
+
+	if (bOverrideNumThreads)
+	{
+		NativeBarrier.SetNumThreads(NumThreads);
+	}
+
+	SetGravity();
+	NativeBarrier.SetStatisticsEnabled(bEnableStatistics);
+	NativeBarrier.SetEnableAMOR(bEnableAMOR);
+
+	SetGlobalNativeMergeSplitThresholds();
+
+	if (bRemoteDebugging)
+	{
+		NativeBarrier.EnableRemoteDebugging(RemoteDebuggingPort);
+	}
+}
+
+void UAGX_Simulation::OnLevelTransition()
+{
+	// During a level transition, Deinitialize will not be called. Instead we should release our
+	// Native so that a new one can be created and setup during BeginPlay in the next level.
+	if (!HasNative())
+		return;
+
+	ReleaseNative();
+}
 
 bool UAGX_Simulation::WriteAGXArchive(const FString& Filename) const
 {
@@ -882,6 +1001,15 @@ void UAGX_Simulation::Step(float DeltaTime)
 		FAGX_Statistics AGXStatistics = GetStatistics();
 		ReportStepStatistics(AGXStatistics);
 	}
+
+	if (bDrawShapeContacts)
+	{
+		// The LifeTime argument below is set such that the points will be drawn even during pause.
+		// It is somewhat of a hack, but is the best solution known currently without making e.g.
+		// a specialized Primitive Component or similar talking to the GPU more directly.
+		FAGX_RenderUtilities::DrawContactPoints(
+			NativeBarrier.GetShapeContacts(), DeltaTime * 1.5f, GetWorld());
+	}
 }
 
 int32 UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
@@ -1073,7 +1201,14 @@ UAGX_Simulation* UAGX_Simulation::GetFrom(const UGameInstance* GameInstance)
 	if (!GameInstance)
 		return nullptr;
 
-	return GameInstance->GetSubsystem<UAGX_Simulation>();
+	UAGX_Simulation* Sim = GameInstance->GetSubsystem<UAGX_Simulation>();
+	if (Sim == nullptr)
+		return nullptr;
+
+	if (!Sim->HasNative())
+		Sim->CreateNative();
+
+	return Sim;
 }
 
 TArray<FShapeContactBarrier> UAGX_Simulation::GetShapeContacts(const FShapeBarrier& Shape) const
@@ -1156,7 +1291,7 @@ namespace
 void UAGX_Simulation::EnsureValidLicense()
 {
 	FString Status;
-	if (FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&Status) == false)
+	if (FAGX_Environment::GetInstance().EnsureAGXDynamicsLicenseValid(&Status) == false)
 	{
 		InvalidLicenseMessage(Status);
 	}
@@ -1213,6 +1348,17 @@ void UAGX_Simulation::SetGlobalNativeMergeSplitThresholds()
 		FWireMergeSplitThresholdsBarrier Thresholds = NativeBarrier.GetGlobalWireTresholds();
 		SC->CopyTo(Thresholds);
 	}
+}
+
+void UAGX_Simulation::ReleaseNative()
+{
+	NativeBarrier.SetStatisticsEnabled(false);
+	NativeBarrier.ReleaseNative();
+
+	PreStepForward.Clear();
+	PreStepForwardInternal.Clear();
+	PostStepForward.Clear();
+	PostStepForwardInternal.Clear();
 }
 
 void UAGX_Simulation::PreStep()

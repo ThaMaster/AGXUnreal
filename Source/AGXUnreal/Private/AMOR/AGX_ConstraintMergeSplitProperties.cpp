@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AMOR/AGX_ConstraintMergeSplitProperties.h"
 
@@ -17,6 +17,7 @@ void FAGX_ConstraintMergeSplitProperties::OnBeginPlay(UAGX_ConstraintComponent& 
 	// Not having a native is a perfectly valid and regular thing for this class.
 	if (bEnableMerge || bEnableSplit)
 	{
+		FAGX_NotificationUtilities::LogWarningIfAmorDisabled("Constraint");
 		CreateNative(Owner);
 		CreateNativeThresholds(Owner);
 		UpdateNativeProperties();

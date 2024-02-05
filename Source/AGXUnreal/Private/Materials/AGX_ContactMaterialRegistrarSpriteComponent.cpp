@@ -1,9 +1,10 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Materials/AGX_ContactMaterialRegistrarSpriteComponent.h"
 
 // Unreal Engine includes.
 #include "Components/BillboardComponent.h"
+#include "Engine/Texture2D.h"
 
 UAGX_ContactMaterialRegistrarSpriteComponent::UAGX_ContactMaterialRegistrarSpriteComponent()
 {

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -21,7 +21,9 @@ class FDistanceJointBarrier;
  * constraints of which the Lock Controller is enabled by default.
  * This reflects the behavior of the AGX Dynamics' Distance Joint.
  */
-UCLASS(ClassGroup = "AGX_Constraint", Category = "AGX", Blueprintable, Meta = (BlueprintSpawnableComponent))
+UCLASS(
+	ClassGroup = "AGX_Constraint", Category = "AGX", Blueprintable,
+	Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_DistanceConstraintComponent : public UAGX_Constraint1DofComponent
 {
 	GENERATED_BODY()

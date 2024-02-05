@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AMOR/AGX_ShapeContactMergeSplitProperties.h"
 
@@ -9,7 +9,6 @@
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_NotificationUtilities.h"
-
 
 template <typename T>
 void FAGX_ShapeContactMergeSplitProperties::OnBeginPlayInternal(T& Owner)
@@ -25,6 +24,7 @@ void FAGX_ShapeContactMergeSplitProperties::OnBeginPlayInternal(T& Owner)
 	// Not having a native is a perfectly valid and regular thing for this class.
 	if (bEnableMerge || bEnableSplit)
 	{
+		FAGX_NotificationUtilities::LogWarningIfAmorDisabled("Body or Shape");
 		CreateNative(Owner);
 		CreateNativeThresholds(Owner.GetWorld());
 		UpdateNativeProperties();
@@ -56,7 +56,7 @@ void FAGX_ShapeContactMergeSplitProperties::OnPostEditChangePropertyInternal(T& 
 			CreateNative(Owner);
 			CreateNativeThresholds(Owner.GetWorld());
 		}
-	}	
+	}
 
 	if (HasNative())
 	{
@@ -80,7 +80,7 @@ void FAGX_ShapeContactMergeSplitProperties::CreateNativeInternal(T& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
 	AGX_CHECK(!HasNative());
-	
+
 	NativeBarrier.AllocateNative(*Owner.GetNative());
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Wire/AGX_WireComponentVisualizer.h"
 
@@ -16,6 +16,7 @@
 #include "ActorEditorUtils.h"
 #include "Editor.h"
 #include "EditorViewportClient.h"
+#include "Framework/Application/SlateApplication.h"
 #include "SceneManagement.h"
 #include "ScopedTransaction.h"
 #include "UnrealEngine.h"

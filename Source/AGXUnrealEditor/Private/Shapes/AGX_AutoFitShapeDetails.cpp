@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Shapes/AGX_AutoFitShapeDetails.h"
 
@@ -14,6 +14,8 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
+#include "Components/SceneComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Engine/SCS_Node.h"
@@ -22,6 +24,7 @@
 #include "IPropertyUtilities.h"
 #include "PropertyCustomizationHelpers.h"
 #include "ScopedTransaction.h"
+#include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_AutoFitShapeDetails"
 

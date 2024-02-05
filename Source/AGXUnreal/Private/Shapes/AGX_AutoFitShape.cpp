@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Shapes/AGX_AutoFitShape.h"
 
@@ -21,7 +21,8 @@ bool AGX_AutoFitShape::AutoFit(
 			FString::Printf(
 				TEXT("Could not auto-fit '%s' to meshes. Auto-fit requires AGX Dynamics version "
 					 "2.31.0.0. Current version is %s"),
-				*ShapeName, *AGXVersion), SNotificationItem::CS_Fail);
+				*ShapeName, *AGXVersion),
+			SNotificationItem::CS_Fail);
 		return false;
 	}
 

@@ -1,11 +1,13 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Wire/AGX_WireComponent.h"
+
 // Unreal Engine includes.
 #include "IDetailCustomization.h"
-
-class UAGX_WireComponent;
+#include "UObject/WeakObjectPtrTemplates.h"
 
 class FAGX_WireDetails : public IDetailCustomization
 {

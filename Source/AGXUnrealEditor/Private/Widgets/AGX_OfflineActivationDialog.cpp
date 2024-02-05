@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Widgets/AGX_OfflineActivationDialog.h"
 
@@ -10,6 +10,8 @@
 
 // Unreal Engine includes.
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "SAGX_OfflineActivationDialog"
 
@@ -49,7 +51,7 @@ void SAGX_OfflineActivationDialog::Construct(const FArguments& InArgs)
 				[
 					CreateActivationResponseGui()
 				]
-			]	
+			]
 		]
 	];
 	// clang-format on
@@ -78,7 +80,7 @@ TSharedRef<SWidget> SAGX_OfflineActivationDialog::CreateActivationRequestGui()
 		"will be automatically created and stored on this computer.\n\n"
 		"More information regarding offline license activation can\n"
 		"be found in the AGX Dynamics for Unreal User Manual.\n";
-	
+
 	return SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
 			.Padding(FMargin(50.0f, 10.0f, 10.f, 10.f))
@@ -320,7 +322,7 @@ FReply SAGX_OfflineActivationDialog::OnGenerateLicenseButtonClicked()
 
 	const auto OutputFile =
 		FAGX_Environment::GetInstance().ProcessOfflineActivationResponse(ActivationResponsePath);
-	if(!OutputFile)
+	if (!OutputFile)
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 			"Activating service license failed. The Output Log may contain more information.");
@@ -328,10 +330,9 @@ FReply SAGX_OfflineActivationDialog::OnGenerateLicenseButtonClicked()
 	}
 
 	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(
-		"Activating service license was successful. The service license file is written to: "
-		+ OutputFile.GetValue());
+		"Activating service license was successful. The service license file is written to: " +
+		OutputFile.GetValue());
 	return FReply::Handled();
 }
-
 
 #undef LOCTEXT_NAMESPACE

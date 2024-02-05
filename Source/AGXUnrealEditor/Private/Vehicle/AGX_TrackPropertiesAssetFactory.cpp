@@ -1,12 +1,11 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Vehicle/AGX_TrackPropertiesAssetFactory.h"
 
 // AGX Dynamics for Unreal includes.
 #include "Vehicle/AGX_TrackProperties.h"
 
-UAGX_TrackPropertiesFactory::UAGX_TrackPropertiesFactory(
-	const class FObjectInitializer& OBJ)
+UAGX_TrackPropertiesFactory::UAGX_TrackPropertiesFactory(const class FObjectInitializer& OBJ)
 	: Super(OBJ)
 {
 	SupportedClass = UAGX_TrackProperties::StaticClass();

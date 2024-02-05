@@ -1,10 +1,11 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
+#include "Input/Reply.h"
 
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 
@@ -14,7 +14,6 @@
 // Unreal Engine includes.
 #include "Engine/World.h"
 #include "UObject/UObjectIterator.h"
-
 
 namespace AGX_CollisionGroupDisabler_helpers
 {

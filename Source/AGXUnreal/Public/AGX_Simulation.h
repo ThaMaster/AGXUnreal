@@ -1,15 +1,17 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_SimulationEnums.h"
+#include "Contacts/AGX_ShapeContact.h"
 #include "Contacts/ShapeContactBarrier.h"
 #include "SimulationBarrier.h"
 
 // Unreal Engine includes.
 #include "Containers/Map.h"
 #include "CoreMinimal.h"
+#include "Engine/EngineTypes.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 
@@ -55,19 +57,31 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostStepForwardInternal, float /*Time*/);
  * specific UAGX_Simulation instance.
  *
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", config = Engine, defaultconfig)
+UCLASS(ClassGroup = "AGX", Category = "AGX", Config = Engine, DefaultConfig)
 class AGXUNREAL_API UAGX_Simulation : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
 public: // Properties.
 	/**
-	 * The number of threads AGX Dynamics will use during Play.
-	 *
-	 * Set to 0 to use all hardware threads.
+	 * Whether or not the number of AGX Dynamics worker threads should be set or be left at the
+	 * AGX Dynamics default.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "AGX Dynamics", Meta = (DisplayName = "Number of Threads"))
+		Config, EditAnywhere, Category = "Overrides",
+		Meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	bool bOverrideNumThreads {true};
+
+	/**
+	 * The number of worker threads that AGX Dynamics will create and use during Play.
+	 *
+	 * Set to 0 to use all hardware threads.
+	 *
+	 * Disable this setting to let AGX Dynamics choose the number of worker threads.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, BlueprintReadOnly, Category = "AGX Dynamics",
+		Meta = (DisplayName = "Number of Threads", EditCondition = "bOverrideNumThreads"))
 	int32 NumThreads = 4;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
@@ -107,23 +121,27 @@ public: // Properties.
 	 * Iterations.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Solver",
-		Meta = (DisplayName = "Override PPGS Iterations"))
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Solver",
+		Meta =
+			(DisplayName = "Override PPGS Iterations", PinHiddenByDefault,
+			 InlineEditConditionToggle))
 	bool bOverridePPGSIterations = false;
 
 	/**
 	 * The number of solver resting iterations to use for the Parallel Projected Gauss-Seidel (PPGS)
 	 * solver. This value influences the accuracy and computation cost of e.g. terrain particles.
+	 *
+	 * Disable this setting to let AGX Dynamics choose the number of PPGS iterations.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Solver",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Solver",
 		Meta =
 			(ClampMin = 1, UIMin = 1, DisplayName = "Num PPGS Iterations",
 			 EditCondition = "bOverridePPGSIterations"))
 	int32 NumPpgsIterations = 25;
 
 	/** Specifies the gravity model used by the simulation. */
-	UPROPERTY(Config, EditAnywhere, Category = "Gravity")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Gravity")
 	TEnumAsByte<enum EAGX_GravityModel> GravityModel = EAGX_GravityModel::Uniform;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Simulation")
@@ -131,7 +149,7 @@ public: // Properties.
 
 	/** Specifies the gravity vector when using Uniform Gravity Field with magnitude [cm/s^2]. */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Gravity",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Gravity",
 		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Uniform"))
 	FVector UniformGravity = FVector(0.0f, 0.0f, -980.665f);
 
@@ -141,13 +159,13 @@ public: // Properties.
 	/** Specifies the world location towards which the gravity field is directed when using Point
 	 * Gravity Field [cm]. */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Gravity",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Gravity",
 		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Point"))
 	FVector PointGravityOrigin = FVector::ZeroVector;
 
 	/** Specifies the gravity magnitude when using Point Gravity Field [cm/s^2]. */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Gravity",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Gravity",
 		Meta = (EditCondition = "GravityModel == EAGX_GravityModel::Point"))
 	float PointGravityMagnitude = -980.665f;
 
@@ -162,7 +180,7 @@ public: // Properties.
 	TEnumAsByte<enum EAGX_StepMode> StepMode = SmDropImmediately;
 
 	/** Maximum time lag for the Catch up over time Capped step mode before dropping [s]. */
-	UPROPERTY(Config, EditAnywhere, Category = "Simulation Stepping Mode")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Simulation Stepping Mode")
 	float TimeLagCap = 1.0;
 
 	/** Set to true to enable statistics gathering in AGX Dynamics. */
@@ -182,7 +200,7 @@ public: // Properties.
 	 * and Shapes that does not specify their own.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "AGX AMOR",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR",
 		Meta = (AllowedClasses = "/Script/AGXUnreal.AGX_ShapeContactMergeSplitThresholds"))
 	FSoftObjectPath GlobalShapeContactMergeSplitThresholds;
 
@@ -191,7 +209,7 @@ public: // Properties.
 	 * that does not specify their own.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "AGX AMOR",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR",
 		Meta = (AllowedClasses = "/Script/AGXUnreal.AGX_ConstraintMergeSplitThresholds"))
 	FSoftObjectPath GlobalConstraintMergeSplitThresholds;
 
@@ -200,7 +218,7 @@ public: // Properties.
 	 * that does not specify their own.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "AGX AMOR",
+		Config, EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR",
 		Meta = (AllowedClasses = "/Script/AGXUnreal.AGX_WireMergeSplitThresholds"))
 	FSoftObjectPath GlobalWireMergeSplitThresholds;
 
@@ -209,7 +227,7 @@ public: // Properties.
 	 * Set to true to write an AGX Dynamics for Unreal archive of the initial state.
 	 * The archive is written to the path set in ExportPath on the first game Tick.
 	 */
-	UPROPERTY(Config, EditAnywhere, Category = "Startup")
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Startup")
 	bool bExportInitialState = false;
 
 	/**
@@ -217,9 +235,24 @@ public: // Properties.
 	 * set.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Startup", Meta = (EditCondition = "bExportInitialState"))
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Startup",
+		Meta = (EditCondition = "bExportInitialState"))
 	FString ExportPath;
 #endif
+
+	UPROPERTY(
+		Config, EditAnywhere, Category = "Overrides",
+		Meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	bool bOverrideDynamicWireContacts {false};
+
+	/**
+	 * Set to true to force-enable dynamic wire contacts for all wire-on-shape collisions.
+	 * By default dynamic wire contacts are enabled per Geometry using Wire Controller.
+	 */
+	UPROPERTY(
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Startup",
+		Meta = (EditCondition = "bOverrideDynamicWireContacts"))
+	bool bEnableDynamicWireContacts {false};
 
 	/**
 	 * Remote debugging allows agxViewer, the default scene viewer in AGX
@@ -240,6 +273,21 @@ public: // Properties.
 	int16 RemoteDebuggingPort;
 
 	/**
+	 * Draws all Shape Contacts to the screen each Simulation time step.
+	 * This can be helpful for quicly inspecting contact behaviours between objects in a Simulation.
+	 * Note that this operation is computationally intensive, meaning it should be turned off
+	 * whenever performance is important.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool bDrawShapeContacts {false};
+
+	/**
+	 * Returns all Shape Contacts in the currently running Simulation.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	TArray<FAGX_ShapeContact> GetShapeContacts() const;
+
+	/**
 	 * Maximum distance between the active Viewport camera and any AGX Constraint within which
 	 * the AGX Constraint graphical representation is scaled such that it's size is constant as
 	 * drawn on the screen [cm].
@@ -248,7 +296,8 @@ public: // Properties.
 	 * visualization will start to shrink along with the surrounding geometry.
 	 */
 	UPROPERTY(
-		Config, EditAnywhere, Category = "Rendering", Meta = (ClampMin = "0.0", UIMin = "0.0"))
+		Config, EditAnywhere, BlueprintReadOnly, Category = "Rendering",
+		Meta = (ClampMin = "0.0", UIMin = "0.0"))
 	float ConstraintVisualizationScalingDistanceMax = 400.f;
 
 public: // Member functions.
@@ -263,6 +312,27 @@ public: // Member functions.
 
 	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	bool GetEnableAMOR();
+
+	/**
+	 * Whether or not to override each AGX Shape with the selected AdditionalUnrealCollision
+	 * setting. If this is set to false, the setting on each AGX Shape is used instead.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Other")
+	bool bOverrideAdditionalUnrealCollision {false};
+
+	/**
+	 * Additional Unreal Collision Geometry to use for all AGX Shapes.
+	 * Does not affect AGX Dynamics, but can be used to get support for e.g. LineTrace (Query) or
+	 * use as a blocking volume against Chaos physics objects (Physics). Supported for all AGX
+	 * primitive Shapes. Not supported for Trimesh Shapes.
+	 * This is used for all primitive AGX Shapes if OverrideAdditionalUnrealCollision is set to
+	 * true, otherwise the AdditionalUnrealCollision setting belonging to each AGX Shape is used.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "Other",
+		Meta = (EditCondition = "bOverrideAdditionalUnrealCollision"))
+	TEnumAsByte<enum ECollisionEnabled::Type> AdditionalUnrealCollision {
+		ECollisionEnabled::QueryOnly};
 
 	/**
 	 * Set the number of solver resting iterations to use for the Parallel Projected Gauss-Seidel
@@ -315,6 +385,10 @@ public: // Member functions.
 	 * Users may bind to this delegate in order to get a callback before each Simulation step
 	 * forward. This may be executed zero, one or several times per Unreal Engine Tick, depending on
 	 * the Step Mode and Time Step selected in the AGX Dynamics for Unreal settings.
+	 *
+	 * Note: all bound callbacks to this delegate are cleared on Level Transition meaning that
+	 * objects surviving a Level Transition that also are bound to this delegates must bind to it
+	 * again in the new Level.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Simulation")
 	FOnPreStepForward PreStepForward;
@@ -324,6 +398,10 @@ public: // Member functions.
 	 * Users may bind to this delegate in order to get a callback after each Simulation step
 	 * forward. This may be executed zero, one or several times per Unreal Engine Tick, depending on
 	 * the Step Mode and Time Step selected in the AGX Dynamics for Unreal settings.
+	 *
+	 * Note: all bound callbacks to this delegate are cleared on Level Transition meaning that
+	 * objects surviving a Level Transition that also are bound to this delegates must bind to it
+	 * again in the new Level.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Simulation")
 	FOnPostStepForward PostStepForward;
@@ -359,6 +437,7 @@ public: // Member functions.
 	static void SetEnableCollision(
 		UAGX_RigidBodyComponent& Body1, UAGX_RigidBodyComponent& Body2, bool Enable);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure = False, Category = "Simulation")
 	bool WriteAGXArchive(const FString& Filename) const;
 
 	bool HasNative() const;
@@ -406,6 +485,10 @@ public: // Member functions.
 	) const override;
 #endif
 
+	void CreateNative();
+
+	friend class AAGX_Stepper;
+
 private:
 	// ~Begin USubsystem interface.
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -422,6 +505,13 @@ private:
 #endif
 
 private:
+	/**
+	 * Releases the AGX Native object and also clears all bound Pre/Post StepForward delegates.
+	 * Objects surviving this Level Transition that also are bound to any of these delegates must
+	 * bind to it again in the new Level.
+	 */
+	void OnLevelTransition();
+
 	int32 StepCatchUpImmediately(float DeltaTime);
 	int32 StepCatchUpOverTime(float DeltaTime);
 	int32 StepCatchUpOverTimeCapped(float DeltaTime);
@@ -436,6 +526,8 @@ private:
 	void SetGravity();
 
 	void SetGlobalNativeMergeSplitThresholds();
+
+	void ReleaseNative();
 
 private:
 	FSimulationBarrier NativeBarrier;

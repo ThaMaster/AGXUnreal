@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -7,8 +7,7 @@
 #include "AssetTypeCategories.h"
 #include "CoreMinimal.h"
 
-class AGXUNREALEDITOR_API FAGX_PlayRecordTypeActions
-	: public FAssetTypeActions_Base
+class AGXUNREALEDITOR_API FAGX_PlayRecordTypeActions : public FAssetTypeActions_Base
 {
 public:
 	FAGX_PlayRecordTypeActions(EAssetTypeCategories::Type InAssetCategory);

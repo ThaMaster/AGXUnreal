@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Utilities/AGX_BlueprintUtilities.h"
 
@@ -8,6 +8,7 @@
 
 // Unreal Engine includes.
 #include "Components/ActorComponent.h"
+#include "Engine/TextureRenderTarget2D.h"
 
 #if WITH_EDITOR
 namespace AGX_BlueprintUtilities_helpers

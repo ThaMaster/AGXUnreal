@@ -1,13 +1,12 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AMOR/AGX_ConstraintMergeSplitThresholdsAssetFactory.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
 
-
-UAGX_ConstraintMergeSplitThresholdsAssetFactory::
-	UAGX_ConstraintMergeSplitThresholdsAssetFactory(const class FObjectInitializer& OBJ)
+UAGX_ConstraintMergeSplitThresholdsAssetFactory::UAGX_ConstraintMergeSplitThresholdsAssetFactory(
+	const class FObjectInitializer& OBJ)
 	: Super(OBJ)
 {
 	SupportedClass = UAGX_ConstraintMergeSplitThresholds::StaticClass();

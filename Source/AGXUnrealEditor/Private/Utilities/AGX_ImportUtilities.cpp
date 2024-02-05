@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Utilities/AGX_ImportUtilities.h"
 
@@ -11,6 +11,7 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -22,6 +23,7 @@
 #include "AssetToolsModule.h"
 #include "Components/ActorComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Materials/MaterialInstanceConstant.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/Paths.h"
 #include "RawMesh.h"
@@ -163,12 +165,16 @@ namespace AGX_ImportUtilities_helpers
 }
 
 UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryPath, const FString& FallbackName)
+	const FTrimeshShapeBarrier& Trimesh, const FString& DirectoryPath, const FString& FallbackName,
+	UMaterialInstanceConstant* Material)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
 	{
 		AGX_ImportUtilities_helpers::InitStaticMesh(
 			&FAGX_EditorUtilities::CreateRawMeshFromTrimesh, Trimesh, Asset, true);
+
+		if (Material != nullptr)
+			Asset.SetMaterial(0, Material);
 	};
 
 	FString TrimeshSourceName = Trimesh.GetSourceName();
@@ -177,22 +183,31 @@ UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
 		TrimeshSourceName = FPaths::GetBaseFilename(TrimeshSourceName);
 	}
 
+	if (!TrimeshSourceName.StartsWith(TEXT("SM_")) && !TrimeshSourceName.IsEmpty())
+	{
+		TrimeshSourceName = FString::Printf(TEXT("SM_%s"), *TrimeshSourceName);
+	}
+
 	return PrepareWriteAssetToDisk<UStaticMesh>(
 		DirectoryPath, TrimeshSourceName, FallbackName, TEXT("StaticMesh"), InitAsset);
 }
 
 UStaticMesh* FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-	const FRenderDataBarrier& RenderData, const FString& DirectoryPath)
+	const FRenderDataBarrier& RenderData, const FString& DirectoryPath,
+	UMaterialInstanceConstant* Material)
 {
 	auto InitAsset = [&](UStaticMesh& Asset)
 	{
 		AGX_ImportUtilities_helpers::InitStaticMesh(
 			&FAGX_EditorUtilities::CreateRawMeshFromRenderData, RenderData, Asset, true);
+
+		if (Material != nullptr)
+			Asset.SetMaterial(0, Material);
 	};
 
 	return PrepareWriteAssetToDisk<UStaticMesh>(
-		DirectoryPath, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()),
-		TEXT("RenderMesh"), TEXT("RenderMesh"), InitAsset);
+		DirectoryPath, FString::Printf(TEXT("SM_RenderMesh_%s"), *RenderData.GetGuid().ToString()),
+		TEXT("SM_RenderMesh"), TEXT("RenderMesh"), InitAsset);
 }
 
 namespace
@@ -492,6 +507,11 @@ FString FAGX_ImportUtilities::GetImportRenderMeshDirectoryName()
 	return FString("RenderMesh");
 }
 
+FString FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName()
+{
+	return FString("ShovelProperties");
+}
+
 template <>
 AGXUNREALEDITOR_API_TEMPLATE FString
 FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeMaterial>()
@@ -539,6 +559,13 @@ AGXUNREALEDITOR_API_TEMPLATE FString
 FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_WireMergeSplitThresholds>()
 {
 	return GetImportMergeSplitThresholdsDirectoryName();
+}
+
+template <>
+AGXUNREALEDITOR_API_TEMPLATE FString
+FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShovelProperties>()
+{
+	return GetImportShovelPropertiesDirectoryName();
 }
 
 FString FAGX_ImportUtilities::GetContactMaterialRegistrarDefaultName()

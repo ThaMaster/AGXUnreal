@@ -1,10 +1,9 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AMOR/AGX_ShapeContactMergeSplitThresholdsAssetFactory.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
-
 
 UAGX_ShapeContactMergeSplitThresholdsAssetFactory::
 	UAGX_ShapeContactMergeSplitThresholdsAssetFactory(const class FObjectInitializer& OBJ)

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 // AGX Dynamics for Unreal includes.
 #include "AgxAutomationCommon.h"
@@ -343,7 +343,6 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 }
 
 // clang-format on
-
 
 /**
  * Unit test that ensures that we can load Contact Materials from when Contact Reduction Level was

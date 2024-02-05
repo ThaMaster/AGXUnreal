@@ -1,6 +1,10 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+#include "UObject/ObjectMacros.h"
 
 /**
  * Enum that specify how much contact data the should be generated for a geometry that has been

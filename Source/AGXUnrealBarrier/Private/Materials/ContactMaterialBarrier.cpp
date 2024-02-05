@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Materials/ContactMaterialBarrier.h"
 
@@ -123,6 +123,12 @@ namespace
 FContactMaterialBarrier::FContactMaterialBarrier()
 	: NativeRef {new FContactMaterialRef}
 {
+}
+
+FContactMaterialBarrier::FContactMaterialBarrier(FContactMaterialBarrier&& Other)
+	: NativeRef {std::move(Other.NativeRef)}
+{
+	Other.NativeRef.reset(new FContactMaterialRef);
 }
 
 FContactMaterialBarrier::FContactMaterialBarrier(std::unique_ptr<FContactMaterialRef> Native)

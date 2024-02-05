@@ -1,8 +1,10 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Plot/AGX_PlotComponentCustomization.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
+#include "Plot/AGX_PlotComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 
@@ -23,9 +25,9 @@ void FAGX_PlotComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& InD
 {
 	DetailBuilder = &InDetailBuilder;
 
-	UAGX_PlotComponent* PlotComponent =
+	const UAGX_PlotComponent* PlotComponent =
 		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_PlotComponent>(InDetailBuilder);
-	if (!PlotComponent)
+	if (PlotComponent == nullptr)
 	{
 		return;
 	}
@@ -49,7 +51,6 @@ void FAGX_PlotComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& InD
 	];
 	// clang-format on
 }
-
 
 FReply FAGX_PlotComponentCustomization::OnOpenPlotWindowButtonClicked()
 {

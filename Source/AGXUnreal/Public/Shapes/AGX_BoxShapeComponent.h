@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -69,6 +69,9 @@ protected:
 	virtual const FShapeBarrier* GetNativeBarrier() const override;
 	virtual void ReleaseNative() override;
 	void CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData) override;
+	virtual bool SupportsShapeBodySetup() override;
+	virtual void UpdateBodySetup() override;
+	virtual void AddShapeBodySetupGeometry() override;
 #if WITH_EDITOR
 	virtual bool DoesPropertyAffectVisualMesh(
 		const FName& PropertyName, const FName& MemberPropertyName) const override;

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Widgets/AGX_SynchronizeModelDialog.h"
 
@@ -6,6 +6,11 @@
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
+
+// Unreal Engine includes.
+#include "Framework/Application/SlateApplication.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "SAGX_SynchronizeModelDialog"
 
@@ -232,8 +237,7 @@ FReply SAGX_SynchronizeModelDialog::OnSynchronizeButtonClicked()
 	return FReply::Handled();
 }
 
-void SAGX_SynchronizeModelDialog::OnForceOverwritePropertiesClicked(
-	ECheckBoxState NewCheckedState)
+void SAGX_SynchronizeModelDialog::OnForceOverwritePropertiesClicked(ECheckBoxState NewCheckedState)
 {
 	bForceOverwriteProperties = NewCheckedState == ECheckBoxState::Checked;
 }

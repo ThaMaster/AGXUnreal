@@ -1,14 +1,17 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Widgets/ShapeWidget.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-//#include "Utilities/AGX_EditorUtilities.h"
+// #include "Utilities/AGX_EditorUtilities.h"
 #include "AGX_StaticMeshComponent.h"
 
 // Unreal Engine includes.
 #include "PhysicsEngine/AggregateGeom.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/SBoxPanel.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "SShapeWidget"
 

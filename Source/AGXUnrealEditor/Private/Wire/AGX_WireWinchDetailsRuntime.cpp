@@ -1,15 +1,13 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Wire/AGX_WireWinchDetailsRuntime.h"
-
-// AGX Dynamics for Unreal includes.
-#include "Wire/AGX_WireWinch.h"
 
 // Unreal Engine includes.
 #include "DetailWidgetRow.h"
 #include "IDetailChildrenBuilder.h"
 #include "IDetailGroup.h"
 #include "DetailLayoutBuilder.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "AGX_WireWinchDetailsRuntime"
 

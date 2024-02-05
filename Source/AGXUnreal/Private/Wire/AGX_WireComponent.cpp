@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Wire/AGX_WireComponent.h"
 
@@ -21,6 +21,7 @@
 // Unreal Engine includes.
 #include "Components/BillboardComponent.h"
 #include "CoreGlobals.h"
+#include "Engine/Texture2D.h"
 #include "Math/UnrealMathUtility.h"
 
 // Standard library includes.
@@ -33,12 +34,12 @@ void FWireRoutingNode::SetBody(UAGX_RigidBodyComponent* Body)
 	if (Body == nullptr)
 	{
 		RigidBody.OwningActor = nullptr;
-		RigidBody.BodyName = NAME_None;
+		RigidBody.Name = NAME_None;
 		return;
 	}
 
 	RigidBody.OwningActor = Body->GetOwner();
-	RigidBody.BodyName = Body->GetFName();
+	RigidBody.Name = Body->GetFName();
 }
 
 void UAGX_WireRouteNode_FL::SetBody(
@@ -1394,7 +1395,8 @@ void UAGX_WireComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// Another UAGX_WireComponent will inherit this one's Native Barrier, so don't wreck it.
 	}
 	else if (
-		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition)
 	{
 		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 		{

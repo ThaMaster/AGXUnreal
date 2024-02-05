@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Terrain/AGX_Shovel.h"
 
@@ -9,10 +9,11 @@ void FAGX_Shovel::UpdateNativeShovelProperties(
 {
 	ShovelBarrier.SetNumberOfTeeth(Shovel.NumberOfTeeth);
 	ShovelBarrier.SetToothLength(Shovel.ToothLength);
-	ShovelBarrier.SetMinimumToothRadius(Shovel.MinimumToothRadius);
-	ShovelBarrier.SetMaximumToothRadius(Shovel.MaximumToothRadius);
+	ShovelBarrier.SetToothMinimumRadius(Shovel.MinimumToothRadius);
+	ShovelBarrier.SetToothMaximumRadius(Shovel.MaximumToothRadius);
 	ShovelBarrier.SetNoMergeExtensionDistance(Shovel.NoMergeExtensionDistance);
-	ShovelBarrier.SetMinimumSubmergedContactLengthFraction(Shovel.MinimumSubmergedContactLengthFraction);
+	ShovelBarrier.SetMinimumSubmergedContactLengthFraction(
+		Shovel.MinimumSubmergedContactLengthFraction);
 	ShovelBarrier.SetVerticalBladeSoilMergeDistance(Shovel.VerticalBladeSoilMergeDistance);
 	ShovelBarrier.SetSecondarySeparationDeadloadLimit(Shovel.SecondarySeparationDeadloadLimit);
 	ShovelBarrier.SetPenetrationDepthThreshold(Shovel.PenetrationDepthThreshold);
@@ -20,8 +21,8 @@ void FAGX_Shovel::UpdateNativeShovelProperties(
 	ShovelBarrier.SetMaximumPenetrationForce(Shovel.MaximumPenetrationForce);
 	ShovelBarrier.SetAlwaysRemoveShovelContacts(Shovel.AlwaysRemoveShovelContacts);
 
-	if (Shovel.bOverrideBottomContactThreshold)
-		ShovelBarrier.SetBottomContactThreshold(Shovel.BottomContactThreshold);
+	if (Shovel.bOverrideContactRegionThreshold)
+		ShovelBarrier.SetContactRegionThreshold(Shovel.ContactRegionThreshold);
 
 	auto SetExcavationSettings =
 		[&ShovelBarrier](EAGX_ExcavationMode Mode, const FAGX_ShovelExcavationSettings& Settings)

@@ -1,14 +1,21 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_PlayInEditorUtils.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "AgxAutomationCommon.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponent.h"
+#include "Materials/AGX_ContactMaterial.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
+#include "Shapes/AGX_SphereShapeComponent.h"
 #include "Terrain/AGX_Terrain.h"
 
 // Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
+#include "Editor.h"
 #include "Containers/Map.h"
+#include "HAL/FileManager.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationEditorCommon.h"
 
@@ -248,15 +255,6 @@ bool FTerrainPagingTest::RunTest(const FString& Parameters)
 	using namespace AGX_PlayInEditorTest_helpers;
 	FString MapPath = FString("/Game/Tests/Test_TerrainPaging");
 
-	// AGX Dynamics gives us this error due to float to double conversion that we do when creating
-	// the Native Shovel. The tolerance in AGX Dynamics is too small for our conversion to pass that
-	// check. Therefore we add it as an expected error here as a work-around to be able to do this
-	// test.
-	AddExpectedError(
-		TEXT("Shovel cutting direction is not normalized!"),
-		EAutomationExpectedErrorFlags::Contains, 0);
-	AddError(TEXT("Shovel cutting direction is not normalized!"));
-
 	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath))
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
 
@@ -396,9 +394,7 @@ void FStepExampleLevelsTest::GetTests(
 {
 	// ComponentGallery ignored because it produces several errors on Play: for example Constraints
 	// without a Body.
-	// SimpleTerrain and AdvancedTerrain are ignored because they will attempt to resize the
-	// Landscape Displacement map texture which is not allowed in this Unit test context apparently.
-	const TArray<FString> IgnoreLevels {"ComponentGallery", "SimpleTerrain", "AdvancedTerrain"};
+	const TArray<FString> IgnoreLevels {"ComponentGallery"};
 
 	const FString LevelsDir = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Levels"));
 	TArray<FString> FoundAssetes;
@@ -417,6 +413,9 @@ void FStepExampleLevelsTest::GetTests(
 
 bool FStepExampleLevelsTest::RunTest(const FString& Parameters)
 {
+	AgxAutomationCommon::AddExpectedError(
+		*this, TEXT("Could not allocate resource for Landscape Displacement Map for AGX Terrain "
+					".*. There may be rendering issues."));
 	using namespace AGX_PlayInEditorTest_helpers;
 	const FString LevelPath = Parameters;
 	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(LevelPath))
@@ -428,5 +427,172 @@ bool FStepExampleLevelsTest::RunTest(const FString& Parameters)
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 
+	return true;
+}
+
+//
+// Material Library test starts here.
+//
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckMaterialLibraryStateCommand, FAutomationTestBase&, Test);
+
+bool FCheckMaterialLibraryStateCommand::Update()
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+
+	static int32 NumTicks = 0;
+	NumTicks++;
+	if (NumTicks > 1000)
+	{
+		Test.AddError("Level never began play even after many attempts.");
+		return true;
+	}
+
+	if (!GEditor->IsPlayingSessionInEditor())
+	{
+		return false;
+	}
+
+	UWorld* TestWorld = GEditor->GetPIEWorldContext()->World();
+	auto Box = GetComponentByName<UAGX_BoxShapeComponent>(TestWorld, "Actor", "BoxShape");
+	Test.TestNotNull("Box", Box);
+
+	auto Sphere = GetComponentByName<UAGX_SphereShapeComponent>(TestWorld, "Actor", "SphereShape");
+	Test.TestNotNull("Sphere", Sphere);
+
+	auto CMRegistrar = GetComponentByName<UAGX_ContactMaterialRegistrarComponent>(
+		TestWorld, "Actor", "CMRegistrar");
+	Test.TestNotNull("CMRegistrar", CMRegistrar);
+
+	if (Box == nullptr || Sphere == nullptr || CMRegistrar == nullptr)
+		return true;
+
+	// Sanity check: ensure the materials used from the Material Library are still assigned.
+	Test.TestTrue("Aluminium Library Shape Material not null", Box->ShapeMaterial != nullptr);
+	Test.TestTrue("Steel Library Shape Material not null", Sphere->ShapeMaterial != nullptr);
+	Test.TestTrue(
+		"Steel-Aluminium Library Contact Material not null and assigned material pair",
+		CMRegistrar->ContactMaterials.Num() == 1 && CMRegistrar->ContactMaterials[0] != nullptr &&
+			CMRegistrar->ContactMaterials[0]->Material1 != nullptr &&
+			CMRegistrar->ContactMaterials[0]->Material2 != nullptr);
+
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FMaterialLibraryTest, "AGXUnreal.Game.AGX_PlayInEditorTest.MaterialLibrary",
+	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+
+bool FMaterialLibraryTest::RunTest(const FString& Parameters)
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	FString MapPath = FString("/Game/Tests/Test_MaterialLibrary");
+
+	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath));
+	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
+	ADD_LATENT_AUTOMATION_COMMAND(FCheckMaterialLibraryStateCommand(*this));
+
+	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
+	return true;
+}
+
+//
+// ROS2 test starts here.
+//
+
+DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
+	FCheckROS2MovedCommand, float, SimTimeMax, ComponentMap, ComponentsOfInterest,
+	FAutomationTestBase&, Test);
+
+bool FCheckROS2MovedCommand::Update()
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	if (!GEditor->IsPlayingSessionInEditor())
+	{
+		return false;
+	}
+
+	static int32 NumTicks = 0;
+	UWorld* TestWorld = GEditor->GetPIEWorldContext()->World();
+	if (ComponentsOfInterest.Num() == 0)
+	{
+		NumTicks = 0;
+		ActorMap Actors = GetActorsByName(TestWorld, {"BP_ROS2"});
+
+		Test.TestTrue("Found actor of interest", Actors.Contains("BP_ROS2"));
+		if (!Actors.Contains("BP_ROS2"))
+		{
+			return true;
+		}
+
+		auto CubeComplexMsg =
+			GetComponentByName<UStaticMeshComponent>(*Actors["BP_ROS2"], "Cube_ComplexMessage");
+		Test.TestNotNull("CubeComplexMsg", CubeComplexMsg);
+		if (CubeComplexMsg == nullptr)
+			return true;
+
+		auto CubeAnyMsg =
+			GetComponentByName<UStaticMeshComponent>(*Actors["BP_ROS2"], "Cube_AnyMessage");
+		Test.TestNotNull("CubeAnyMsg", CubeAnyMsg);
+		if (CubeAnyMsg == nullptr)
+			return true;
+
+		ComponentsOfInterest.Add("CubeComplexMsg", CubeComplexMsg);
+		ComponentsOfInterest.Add("CubeAnyMsg", CubeAnyMsg);
+		Test.TestTrue(
+			"CubeComplexMsg initial x pos", CubeComplexMsg->GetComponentLocation().X < 1.0);
+		Test.TestTrue("CubeAnyMsg initial x pos", CubeAnyMsg->GetComponentLocation().X < 1.0);
+	}
+
+	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(TestWorld);
+	Test.TestNotNull("Simulation", Sim);
+	if (Sim == nullptr)
+		return true;
+
+	const float SimTime = Sim->GetTimeStamp();
+	{
+		// Sanity check to avoid hanging forever if the Simulation is not ticking.
+		NumTicks++;
+		if (NumTicks > 1000 && FMath::IsNearlyZero(SimTime))
+		{
+			Test.AddError(FString::Printf(
+				TEXT("SimTime too small: %f. The Simulation has not stepped as expected."),
+				SimTime));
+			return true;
+		}
+	}
+
+	if (SimTime < SimTimeMax)
+	{
+		return false; // Continue ticking..
+	}
+
+	// At this point we have ticked to TickMax. In this test, the Cubes will be moved in +x >100cm
+	// if the tests succeeded.
+	auto CubeComplexMsg = Cast<UStaticMeshComponent>(ComponentsOfInterest["CubeComplexMsg"]);
+	auto CubeAnyMsg = Cast<UStaticMeshComponent>(ComponentsOfInterest["CubeAnyMsg"]);
+	Test.TestTrue("CubeComplexMsg final x pos", CubeComplexMsg->GetComponentLocation().X > 100.0);
+	Test.TestTrue("CubeAnyMsg final x pos", CubeAnyMsg->GetComponentLocation().X > 100.0);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FROS2Test, "AGXUnreal.Game.AGX_PlayInEditorTest.ROS2",
+	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+
+bool FROS2Test::RunTest(const FString& Parameters)
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	FString MapPath = FString("/Game/Tests/Test_ROS2");
+
+	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath))
+	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
+
+	ComponentMap ComponentsOfInterest;
+	float SimTimeMax = 5.0f;
+	ADD_LATENT_AUTOMATION_COMMAND(FCheckROS2MovedCommand(SimTimeMax, ComponentsOfInterest, *this));
+
+	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 	return true;
 }

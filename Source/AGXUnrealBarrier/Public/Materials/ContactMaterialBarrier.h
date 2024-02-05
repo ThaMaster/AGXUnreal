@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -20,7 +20,7 @@ class AGXUNREALBARRIER_API FContactMaterialBarrier
 {
 public:
 	FContactMaterialBarrier();
-	FContactMaterialBarrier(FContactMaterialBarrier&& Other) = default;
+	FContactMaterialBarrier(FContactMaterialBarrier&& Other);
 	FContactMaterialBarrier(std::unique_ptr<FContactMaterialRef> Native);
 	virtual ~FContactMaterialBarrier();
 

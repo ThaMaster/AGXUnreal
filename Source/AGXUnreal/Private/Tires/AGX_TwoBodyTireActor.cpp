@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Tires/AGX_TwoBodyTireActor.h"
 
@@ -25,10 +25,8 @@ AAGX_TwoBodyTireActor::AAGX_TwoBodyTireActor()
 	TwoBodyTireComponent = CreateDefaultSubobject<UAGX_TwoBodyTireComponent>(TEXT("TwoBodyTire"));
 
 	TwoBodyTireComponent->TireRigidBody.OwningActor = this;
-	TwoBodyTireComponent->TireRigidBody.BodyName = TireRigidBodyComponent->GetFName();
-	TwoBodyTireComponent->TireRigidBody.CacheCurrentRigidBody();
+	TwoBodyTireComponent->TireRigidBody.Name = TireRigidBodyComponent->GetFName();
 
 	TwoBodyTireComponent->HubRigidBody.OwningActor = this;
-	TwoBodyTireComponent->HubRigidBody.BodyName = HubRigidBodyComponent->GetFName();
-	TwoBodyTireComponent->HubRigidBody.CacheCurrentRigidBody();
+	TwoBodyTireComponent->HubRigidBody.Name = HubRigidBodyComponent->GetFName();
 }

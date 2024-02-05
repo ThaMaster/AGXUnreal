@@ -1,20 +1,19 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AMOR/MergeSplitThresholdsBarrier.h"
-
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 
-
 FMergeSplitThresholdsBarrier::FMergeSplitThresholdsBarrier()
 	: NativeRef {new FMergeSplitThresholdsRef}
 {
 }
 
-FMergeSplitThresholdsBarrier::FMergeSplitThresholdsBarrier(std::unique_ptr<FMergeSplitThresholdsRef>&& Native)
+FMergeSplitThresholdsBarrier::FMergeSplitThresholdsBarrier(
+	std::unique_ptr<FMergeSplitThresholdsRef>&& Native)
 	: NativeRef(std::move(Native))
 {
 }

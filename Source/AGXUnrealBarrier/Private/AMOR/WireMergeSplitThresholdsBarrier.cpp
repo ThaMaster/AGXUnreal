@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AMOR/WireMergeSplitThresholdsBarrier.h"
 
@@ -12,7 +12,6 @@
 #include "BeginAGXIncludes.h"
 #include <agxSDK/MergeSplitHandler.h>
 #include "EndAGXIncludes.h"
-
 
 FWireMergeSplitThresholdsBarrier::FWireMergeSplitThresholdsBarrier()
 	: FMergeSplitThresholdsBarrier()
@@ -79,8 +78,7 @@ double FWireMergeSplitThresholdsBarrier::GetForcePropagationDecayScale() const
 	return 0.0;
 }
 
-void FWireMergeSplitThresholdsBarrier::SetMergeTensionScale(
-	double InMergeTensionScale)
+void FWireMergeSplitThresholdsBarrier::SetMergeTensionScale(double InMergeTensionScale)
 {
 	check(HasNative());
 	using namespace WireMergeSplitThresholds_helpers;

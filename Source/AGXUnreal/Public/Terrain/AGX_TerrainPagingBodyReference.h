@@ -1,10 +1,10 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_Real.h"
 #include "AGX_RigidBodyReference.h"
+#include "AGX_Real.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"

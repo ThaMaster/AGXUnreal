@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "SimulationObjectCollection.h"
 
@@ -126,7 +126,7 @@ const TArray<FTrimeshShapeBarrier>& FSimulationObjectCollection::GetTrimeshShape
 TArray<FAnyConstraintBarrier> FSimulationObjectCollection::CollectAllConstraints() const
 {
 	TArray<FAnyConstraintBarrier> AllConstraints;
-	auto AddConstraints =  [&AllConstraints](const auto& Constraints)
+	auto AddConstraints = [&AllConstraints](const auto& Constraints)
 	{
 		AllConstraints.Reserve(AllConstraints.Num() + Constraints.Num());
 		for (const auto& Constraint : Constraints)
@@ -267,6 +267,16 @@ TArray<FWireBarrier>& FSimulationObjectCollection::GetWires()
 const TArray<FWireBarrier>& FSimulationObjectCollection::GetWires() const
 {
 	return Wires;
+}
+
+TArray<FShovelBarrier>& FSimulationObjectCollection::GetShovels()
+{
+	return Shovels;
+}
+
+const TArray<FShovelBarrier>& FSimulationObjectCollection::GetShovels() const
+{
+	return Shovels;
 }
 
 TArray<FTrackBarrier>& FSimulationObjectCollection::GetTracks()

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Shapes/ShapeBarrier.h"
 
@@ -19,7 +19,6 @@
 
 // Unreal Engine includes.
 #include "Misc/AssertionMacros.h"
-
 
 FShapeBarrier::FShapeBarrier()
 	: NativeRef {new FGeometryAndShapeRef}

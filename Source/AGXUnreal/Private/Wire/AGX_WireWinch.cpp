@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Wire/AGX_WireWinch.h"
 
@@ -23,12 +23,12 @@ bool FAGX_WireWinch::SetBodyAttachment(UAGX_RigidBodyComponent* Body)
 	if (Body == nullptr)
 	{
 		BodyAttachment.OwningActor = nullptr;
-		BodyAttachment.BodyName = NAME_None;
+		BodyAttachment.Name = NAME_None;
 		return true;
 	}
 
 	BodyAttachment.OwningActor = Body->GetOwner();
-	BodyAttachment.BodyName = Body->GetFName();
+	BodyAttachment.Name = Body->GetFName();
 	return true;
 }
 

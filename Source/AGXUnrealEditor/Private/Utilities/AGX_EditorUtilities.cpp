@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Utilities/AGX_EditorUtilities.h"
 
@@ -27,12 +27,14 @@
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 #include "Widgets/AGX_SynchronizeModelDialog.h"
 
 // Unreal Engine includes.
 #include "AssetDeleteModel.h"
 #include "AssetToolsModule.h"
 #include "Containers/Ticker.h"
+#include "ContentBrowserModule.h"
 #include "DesktopPlatformModule.h"
 #include "Editor.h"
 #include "EditorStyleSet.h"
@@ -41,10 +43,13 @@
 #include "Engine/GameEngine.h"
 #include "Engine/Selection.h"
 #include "Engine/StaticMesh.h"
+#include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerController.h"
+#include "IContentBrowserSingleton.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/Char.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/MessageDialog.h"
 #include "ObjectTools.h"
 #include "PackageTools.h"
 #include "RawMesh.h"
@@ -53,6 +58,7 @@
 #include "UObject/SavePackage.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectGlobals.h"
+#include "UObject/UObjectIterator.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
@@ -451,7 +457,7 @@ FString FAGX_EditorUtilities::SanitizeName(const FString& Name)
 	for (TCHAR C : Name)
 	{
 		/// \todo Will this accept non-english characters? Should it?
-		if (TChar<TCHAR>::IsAlnum(C) || C == TCHAR('_'))
+		if (TChar<TCHAR>::IsAlnum(C) || C == TCHAR('_') || C == TCHAR('-'))
 		{
 			Sanitized.AppendChar(C);
 		}
@@ -899,16 +905,16 @@ AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	/// being dependent on its name.
 	UAGX_ConstraintComponent* Constraint = NewActor->GetConstraintComponent();
 	Constraint->BodyAttachment1.RigidBody.OwningActor = RigidBody1->GetOwner();
-	Constraint->BodyAttachment1.RigidBody.BodyName = RigidBody1->GetFName();
+	Constraint->BodyAttachment1.RigidBody.Name = RigidBody1->GetFName();
 	if (RigidBody2 != nullptr)
 	{
 		Constraint->BodyAttachment2.RigidBody.OwningActor = RigidBody2->GetOwner();
-		Constraint->BodyAttachment2.RigidBody.BodyName = RigidBody2->GetFName();
+		Constraint->BodyAttachment2.RigidBody.Name = RigidBody2->GetFName();
 	}
 	else
 	{
 		Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
-		Constraint->BodyAttachment2.RigidBody.BodyName = NAME_None;
+		Constraint->BodyAttachment2.RigidBody.Name = NAME_None;
 	}
 
 	NewActor->FinishSpawning(FTransform::Identity, true);
@@ -1211,7 +1217,7 @@ FString FAGX_EditorUtilities::SelectExistingFileDialog(
 			SNotificationItem::CS_None);
 		return "";
 	}
-	return IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(*Filenames[0]);
+	return ToReadablePath(*Filenames[0]);
 }
 
 FString FAGX_EditorUtilities::SelectExistingDirectoryDialog(
@@ -1265,6 +1271,37 @@ FString FAGX_EditorUtilities::SelectNewFileDialog(
 	}
 
 	return FPaths::ConvertRelativePathToFull(Filename);
+}
+
+FString FAGX_EditorUtilities::SelectNewAssetDialog(
+	UClass* SavedClass, const FString& InDefaultPath, const FString& AssetNameSuggestion,
+	const FString& DialogTitle)
+{
+	if (SavedClass == nullptr)
+		return "";
+
+	const FString DefaultPath = InDefaultPath.IsEmpty() ? FString("/Game") : InDefaultPath;
+
+	const FSaveAssetDialogConfig SaveAssetDialogConfig = [&]()
+	{
+		FSaveAssetDialogConfig Config;
+		Config.DefaultPath = DefaultPath;
+		Config.DefaultAssetName = AssetNameSuggestion;
+		Config.AssetClassNames.Add(SavedClass->GetClassPathName());
+		Config.ExistingAssetPolicy = ESaveAssetDialogExistingAssetPolicy::Disallow;
+		Config.DialogTitleOverride = FText::FromString(DialogTitle);
+		return Config;
+	}();
+
+	FContentBrowserModule& ContentBrowserModule =
+		FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
+	FString SaveObjectPath =
+		ContentBrowserModule.Get().CreateModalSaveAssetDialog(SaveAssetDialogConfig);
+
+	if (SaveObjectPath.IsEmpty())
+		return "";
+
+	return FPackageName::ObjectPathToPackageName(SaveObjectPath);
 }
 
 void FAGX_EditorUtilities::SaveAndCompile(UBlueprint& Blueprint)

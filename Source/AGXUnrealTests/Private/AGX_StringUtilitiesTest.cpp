@@ -1,15 +1,15 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 // AGX Dynamics for Unreal includes.
 #include "Utilities/AGX_StringUtilities.h"
 #include "AGX_LogCategory.h"
 
 // Unreal Engine includes.
+#include "GameFramework/Actor.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Tests/AutomationCommon.h"
-
-#include "GameFramework/Actor.h"
+#include "UObject/Package.h"
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FWaitTicks, int, NumTicks);
 

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -13,7 +13,7 @@
 #include "Math/Quat.h"
 #include "Misc/EngineVersionComparison.h"
 
-// System includes.
+// Standard library includes.
 #include <memory>
 
 struct FConstraintRef;

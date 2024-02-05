@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -6,8 +6,11 @@
 #include "AGX_MeshWithTransform.h"
 
 // Unreal Engine includes.
+#include "CoreMinimal.h"
+#include "AssetRegistry/AssetData.h"
 #include "IDetailCustomNodeBuilder.h"
 #include "SceneOutlinerFilters.h"
+#include "UObject/ObjectMacros.h"
 #include "Widgets/Input/SComboBox.h"
 
 class IDetailLayoutBuilder;

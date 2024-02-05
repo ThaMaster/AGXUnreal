@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Shapes/HeightFieldShapeBarrier.h"
 
@@ -42,7 +42,7 @@ void FHeightFieldShapeBarrier::AllocateNative(
 	const TArray<float>& Heights)
 {
 	FShapeBarrier::AllocateNative(
-		[=, &Heights]()
+		[this, NumVerticesX, NumVerticesY, SizeX, SizeY, &Heights]()
 		{ this->AllocateNativeHeightField(NumVerticesX, NumVerticesY, SizeX, SizeY, Heights); });
 }
 

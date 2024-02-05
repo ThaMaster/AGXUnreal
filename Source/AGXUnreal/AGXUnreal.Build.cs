@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 using System; // For Console, Environment.
 using System.IO; // For Path.
@@ -11,9 +11,6 @@ public class AGXUnreal : ModuleRules
 {
 	public AGXUnreal(ReadOnlyTargetRules Target) : base(Target)
 	{
-		//
-		Console.Write(typeof(string).Assembly.ImageRuntimeVersion);
-
 		// At 4.25 we started getting warnings encouraging us to enable these
 		// settings. At or around 4.26 Unreal Engine makes these settings the
 		// default.
@@ -31,7 +28,8 @@ public class AGXUnreal : ModuleRules
 
 		// TODO: Determine which of these are really need and why.
 		PublicDependencyModuleNames.AddRange(new string[] {
-			"AGXUnrealBarrier", "RHI", "RenderCore", "Core", "CoreUObject", "Engine", "InputCore", "Niagara"});
+			"AGXCommon", "AGXUnrealBarrier", "RHI", "RenderCore", "Core", "CoreUObject", "Engine",
+			"InputCore", "Niagara"});
 
 
 		// TODO: Determine which of these are really needed and why.
@@ -45,6 +43,7 @@ public class AGXUnreal : ModuleRules
 		if (Target.bBuildEditor)
 		{
 			PrivateDependencyModuleNames.Add("EditorStyle");
+			PrivateDependencyModuleNames.Add("UnrealEd");
 		}
 
 		UpdateEngineVersionInUPlugin();

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Widgets/AGX_ImportDialogBase.h"
 
@@ -13,6 +13,8 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "SAGX_ImportDialogBase"
 

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AGX_RigidBodyComponent.h"
 
@@ -332,7 +332,8 @@ void UAGX_RigidBodyComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// on the Rigid Body in GetNativeAddress / SetNativeAddress?
 	}
 	else if (
-		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition)
 	{
 		if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
 		{
@@ -1165,6 +1166,13 @@ void UAGX_RigidBodyComponent::AddForceAtLocalLocation(const FVector& Force, cons
 	}
 
 	NativeBarrier.AddForceAtLocalLocation(Force, Location);
+}
+
+void UAGX_RigidBodyComponent::AddLocalForceAtLocalLocation(
+	const FVector& LocalForce, const FVector& Location)
+{
+	const FVector GlobalForce = GetComponentTransform().TransformVectorNoScale(LocalForce);
+	AddForceAtLocalLocation(GlobalForce, Location);
 }
 
 FVector UAGX_RigidBodyComponent::GetForce() const

@@ -1,10 +1,9 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Materials/AGX_MaterialBase.h"
 
 // Unreal Engine includes.
 #include "Engine/World.h"
-
 
 void UAGX_MaterialBase::CopyShapeMaterialProperties(const UAGX_MaterialBase* Source)
 {

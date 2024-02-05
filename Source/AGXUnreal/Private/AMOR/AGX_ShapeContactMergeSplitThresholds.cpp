@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 
@@ -11,6 +11,7 @@
 
 // Unreal Engine includes.
 #include "Engine/World.h"
+#include "UObject/Package.h"
 
 void UAGX_ShapeContactMergeSplitThresholds::SetMaxImpactSpeed_BP(float InMaxImpactSpeed)
 {
@@ -152,7 +153,8 @@ bool UAGX_ShapeContactMergeSplitThresholds::GetMaySplitInGravityField() const
 
 void UAGX_ShapeContactMergeSplitThresholds::SetSplitOnLogicalImpact(bool bInSplitOnLogicalImpact)
 {
-	AGX_ASSET_SETTER_IMPL_VALUE(bSplitOnLogicalImpact, bInSplitOnLogicalImpact, SetSplitOnLogicalImpact);
+	AGX_ASSET_SETTER_IMPL_VALUE(
+		bSplitOnLogicalImpact, bInSplitOnLogicalImpact, SetSplitOnLogicalImpact);
 }
 
 bool UAGX_ShapeContactMergeSplitThresholds::GetSplitOnLogicalImpact() const
@@ -359,12 +361,10 @@ UAGX_ShapeContactMergeSplitThresholds* UAGX_ShapeContactMergeSplitThresholds::Cr
 	AGX_CHECK(PlayingWorld->IsGameWorld());
 	AGX_CHECK(!Source.IsInstance());
 
-	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
-	AGX_CHECK(Outer);
-
 	const FString InstanceName = Source.GetName() + "_Instance";
 	auto NewInstance = NewObject<UAGX_ShapeContactMergeSplitThresholds>(
-		Outer, UAGX_ShapeContactMergeSplitThresholds::StaticClass(), *InstanceName, RF_Transient);
+		GetTransientPackage(), UAGX_ShapeContactMergeSplitThresholds::StaticClass(), *InstanceName,
+		RF_Transient);
 	NewInstance->Asset = &Source;
 	NewInstance->CopyFrom(Source);
 	NewInstance->CreateNative(PlayingWorld);
@@ -388,7 +388,8 @@ bool UAGX_ShapeContactMergeSplitThresholds::IsInstance() const
 
 void UAGX_ShapeContactMergeSplitThresholds::CopyFrom(const FMergeSplitThresholdsBarrier& Barrier)
 {
-	const auto ScMstBarrier = static_cast<const FShapeContactMergeSplitThresholdsBarrier*>(&Barrier);
+	const auto ScMstBarrier =
+		static_cast<const FShapeContactMergeSplitThresholdsBarrier*>(&Barrier);
 	MaxImpactSpeed = ScMstBarrier->GetMaxImpactSpeed();
 	MaxRelativeNormalSpeed = ScMstBarrier->GetMaxRelativeNormalSpeed();
 	MaxRelativeTangentSpeed = ScMstBarrier->GetMaxRelativeTangentSpeed();

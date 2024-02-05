@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -10,7 +10,6 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_PlotDataSeries.generated.h"
-
 
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_PlotDataSeries
@@ -35,7 +34,6 @@ struct AGXUNREAL_API FAGX_PlotDataSeries
 private:
 	FPlotDataSeriesBarrier NativeBarrier;
 };
-
 
 /**
  * This class acts as an API that exposes functions of FAGX_PlotDataSeries in Blueprints.

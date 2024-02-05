@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AGX_StaticMeshComponent.h"
 
@@ -12,6 +12,7 @@
 
 // Unreal Engien includes.
 #include "Engine/StaticMesh.h"
+#include "Engine/World.h"
 #include "PhysicsEngine/BodySetup.h"
 #include "PhysicsEngine/AggregateGeom.h"
 
@@ -153,7 +154,8 @@ void UAGX_StaticMeshComponent::EndPlay(const EEndPlayReason::Type Reason)
 		// necessary.
 	}
 	else if (
-		HasNative() && Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit)
+		HasNative() && Reason != EEndPlayReason::EndPlayInEditor &&
+		Reason != EEndPlayReason::Quit && Reason != EEndPlayReason::LevelTransition)
 	{
 		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 		{
@@ -228,7 +230,8 @@ void UAGX_StaticMeshComponent::OnCreatePhysicsState()
 void UAGX_StaticMeshComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;
@@ -325,8 +328,7 @@ namespace AGX_StaticMeshComponent_helpers
 		}
 
 		FShapeMaterialBarrier* Barrier = nullptr;
-		UAGX_ShapeMaterial* Instance =
-			Cast<UAGX_ShapeMaterial>(Asset->GetOrCreateInstance(&World));
+		UAGX_ShapeMaterial* Instance = Cast<UAGX_ShapeMaterial>(Asset->GetOrCreateInstance(&World));
 		if (Instance == nullptr)
 		{
 			/// \todo Better error message.

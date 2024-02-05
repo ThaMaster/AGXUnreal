@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -35,7 +35,8 @@ public:
 		const FTerrainBarrier& Terrain, TArray<FQuat>& OutRotations);
 
 	/**
-	 * Writes the position, rotation and radii of all particles known to the passed Terrain to OutParticleData.
+	 * Writes the position, rotation and radii of all particles known to the passed Terrain to
+	 * OutParticleData.
 	 */
 	static void AppendParticleData(const FTerrainBarrier& Terrain, FParticleData& OutParticleData);
 

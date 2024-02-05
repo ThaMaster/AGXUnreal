@@ -1,11 +1,11 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "AssetTypeCategories.h"
 #include "AssetTypeActions_Base.h"
-
 
 /**
  * Asset Type Actions for UAGX_TrackProperties, customizing its appearance in the Editor menus

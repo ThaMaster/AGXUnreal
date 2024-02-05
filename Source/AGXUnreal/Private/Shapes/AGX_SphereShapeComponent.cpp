@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Shapes/AGX_SphereShapeComponent.h"
 
@@ -6,6 +6,13 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+
+// Unreal Engine includes.
+#include "PhysicsEngine/AggregateGeom.h"
+#include "PhysicsEngine/BodySetup.h"
+
+// Standard library includes.
+#include <algorithm>
 
 UAGX_SphereShapeComponent::UAGX_SphereShapeComponent()
 {
@@ -107,6 +114,24 @@ void UAGX_SphereShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshDat
 		Radius, 32);
 }
 
+bool UAGX_SphereShapeComponent::SupportsShapeBodySetup()
+{
+	return true;
+}
+
+void UAGX_SphereShapeComponent::UpdateBodySetup()
+{
+	CreateShapeBodySetupIfNeeded();
+	check(ShapeBodySetup->AggGeom.SphereElems.Num() == 1);
+	ShapeBodySetup->AggGeom.SphereElems[0].Radius = std::max(UE_KINDA_SMALL_NUMBER, Radius);
+}
+
+void UAGX_SphereShapeComponent::AddShapeBodySetupGeometry()
+{
+	if (ShapeBodySetup != nullptr)
+		ShapeBodySetup->AggGeom.SphereElems.Add(FKSphereElem());
+}
+
 #if WITH_EDITOR
 bool UAGX_SphereShapeComponent::DoesPropertyAffectVisualMesh(
 	const FName& PropertyName, const FName& MemberPropertyName) const
@@ -140,7 +165,8 @@ void UAGX_SphereShapeComponent::PostInitProperties()
 
 	// Cannot use the UAGX_ShapeComponent Property Dispatcher because there are name collisions for
 	// Shape-specific UProperty names, for example Radius is in both Sphere and Cylinder.
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;

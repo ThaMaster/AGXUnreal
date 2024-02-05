@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -31,7 +31,9 @@ public:
 	/**
 	 * Create a new AGX Real instance initialized to the given value.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Real", Meta = (DisplayName = "Make AGX Real"))
+	UFUNCTION(
+		BlueprintCallable, BlueprintPure, Category = "AGX Real",
+		Meta = (DisplayName = "Make AGX Real"))
 	static FAGX_Real MakeAGXReal(float Value)
 	{
 		return {Value};

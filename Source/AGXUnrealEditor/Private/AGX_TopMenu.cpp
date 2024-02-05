@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AGX_TopMenu.h"
 
@@ -31,6 +31,7 @@
 #endif
 
 // Unreal Engine includes.
+#include "Framework/Application/SlateApplication.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "GenericPlatform/GenericPlatformProcess.h"
 #include "LevelEditor.h"
@@ -398,7 +399,8 @@ void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
 
 void FAGX_TopMenu::OnVisitDemoPageClicked()
 {
-	static constexpr auto DemoPageUrl = TEXT("https://us.download.algoryx.se/AGXUnreal/demo_projects/");
+	static constexpr auto DemoPageUrl =
+		TEXT("https://us.download.algoryx.se/AGXUnreal/demo_projects/");
 	FPlatformProcess::LaunchURL(DemoPageUrl, NULL, NULL);
 }
 
@@ -416,7 +418,7 @@ void FAGX_TopMenu::OnOpenAboutDialogClicked()
 
 	FString LicenseText;
 	FString LicenseStatus;
-	if (FAGX_Environment::GetInstance().EnsureAgxDynamicsLicenseValid(&LicenseStatus) == false)
+	if (FAGX_Environment::GetInstance().EnsureAGXDynamicsLicenseValid(&LicenseStatus) == false)
 	{
 		LicenseText =
 			"AGX Dynamics license: Invalid\n"

@@ -1,7 +1,6 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AMOR/ConstraintMergeSplitThresholdsBarrier.h"
-
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
@@ -100,7 +99,8 @@ double FConstraintMergeSplitThresholdsBarrier::GetMaxDesiredLockAngleDiff() cons
 	if (auto Native = CastToConstraintThresholds(NativeRef->Native, "GetMaxDesiredLockAngleDiff"))
 	{
 		const agx::Real ValAGX = Native->getMaxDesiredLockAngleDiff();
-		return bIsRotational ? ConvertAngleToUnreal<double>(ValAGX) : ConvertDistanceToUnreal<double>(ValAGX);
+		return bIsRotational ? ConvertAngleToUnreal<double>(ValAGX)
+							 : ConvertDistanceToUnreal<double>(ValAGX);
 	}
 
 	// Error message printed above.
@@ -135,8 +135,7 @@ double FConstraintMergeSplitThresholdsBarrier::GetMaxDesiredRangeAngleDiff() con
 	return 0.0;
 }
 
-void FConstraintMergeSplitThresholdsBarrier::SetMaxDesiredSpeedDiff(
-	double InMaxDesiredSpeedDiff)
+void FConstraintMergeSplitThresholdsBarrier::SetMaxDesiredSpeedDiff(double InMaxDesiredSpeedDiff)
 {
 	check(HasNative());
 	using namespace ConstraintMergeSplitThresholds_helpers;
@@ -163,8 +162,7 @@ double FConstraintMergeSplitThresholdsBarrier::GetMaxDesiredSpeedDiff() const
 	return 0.0;
 }
 
-void FConstraintMergeSplitThresholdsBarrier::SetMaxRelativeSpeed(
-	double InMaxRelativeSpeed)
+void FConstraintMergeSplitThresholdsBarrier::SetMaxRelativeSpeed(double InMaxRelativeSpeed)
 {
 	check(HasNative());
 	using namespace ConstraintMergeSplitThresholds_helpers;
@@ -221,7 +219,8 @@ FConstraintMergeSplitThresholdsBarrier FConstraintMergeSplitThresholdsBarrier::C
 		return FConstraintMergeSplitThresholdsBarrier();
 	}
 
-	FConstraintMergeSplitThresholdsBarrier ThresholdsBarrier(std::make_unique<FMergeSplitThresholdsRef>(Mst));
+	FConstraintMergeSplitThresholdsBarrier ThresholdsBarrier(
+		std::make_unique<FMergeSplitThresholdsRef>(Mst));
 	ThresholdsBarrier.SetIsRotational(Barrier.IsRotational());
 	return ThresholdsBarrier;
 }

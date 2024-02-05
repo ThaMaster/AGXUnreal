@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AGX_SimObjectsImporterHelper.h"
 
@@ -9,52 +9,54 @@
 #include "AGX_ObserverFrameComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_AmorEnums.h"
-#include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
 #include "AMOR/ConstraintMergeSplitThresholdsBarrier.h"
+#include "AMOR/ShapeContactMergeSplitThresholdsBarrier.h"
 #include "AMOR/WireMergeSplitThresholdsBarrier.h"
-#include "RigidBodyBarrier.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
+#include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
-#include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_CylindricalConstraintComponent.h"
 #include "Constraints/AGX_DistanceConstraintComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_LockConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
-#include "Constraints/ConstraintBarrier.h"
+#include "Constraints/BallJointBarrier.h"
 #include "Constraints/Constraint1DOFBarrier.h"
 #include "Constraints/Constraint2DOFBarrier.h"
-#include "Constraints/BallJointBarrier.h"
+#include "Constraints/ConstraintBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Constraints/DistanceJointBarrier.h"
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
-#include "Shapes/AGX_SphereShapeComponent.h"
-#include "Shapes/AGX_BoxShapeComponent.h"
-#include "Shapes/AGX_CylinderShapeComponent.h"
-#include "Shapes/AGX_CapsuleShapeComponent.h"
-#include "Shapes/AGX_TrimeshShapeComponent.h"
-#include "Shapes/RenderDataBarrier.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
-#include "Tires/TwoBodyTireBarrier.h"
+#include "RigidBodyBarrier.h"
+#include "Shapes/AGX_BoxShapeComponent.h"
+#include "Shapes/AGX_CapsuleShapeComponent.h"
+#include "Shapes/AGX_CylinderShapeComponent.h"
+#include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Shapes/RenderDataBarrier.h"
+#include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
-#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
+#include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
-#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
-#include "Utilities/AGX_TextureUtilities.h"
-#include "Wire/AGX_WireComponent.h"
+#include "Utilities/AGX_RenderUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/TrackPropertiesBarrier.h"
 #include "Vehicle/TrackWheelBarrier.h"
+#include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
 #include "AssetToolsModule.h"
@@ -64,8 +66,9 @@
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
 #include "IAssetTools.h"
-#include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceConstant.h"
+#include "Materials/MaterialInterface.h"
+#include "Materials/Material.h"
 #include "MeshDescription.h"
 #include "Misc/Paths.h"
 #include "UObject/UObjectGlobals.h"
@@ -124,7 +127,7 @@ namespace
 			bIsSensor
 				? TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'")
 				: TEXT("Material'/AGXUnreal/Runtime/Materials/M_ImportedBase.M_ImportedBase'");
-		UMaterial* Material = FAGX_TextureUtilities::GetMaterialFromAssetPath(AssetPath);
+		UMaterial* Material = FAGX_RenderUtilities::GetMaterialFromAssetPath(AssetPath);
 		if (Material == nullptr)
 		{
 			UE_LOG(
@@ -143,21 +146,35 @@ namespace
 	 * @param Trimesh The Trimesh containing the mesh to store.
 	 * @param FallbackName A name to give the asset in case the Trimesh doesn't have a valid name.
 	 * @param ProcessedMeshes Static Mesh cache.
+	 * @param ProcessedRenderMaterials Render Material cache.
 	 * @param DirectoryPath The path of the folder where all assets for this imported model is
 	 * stored.
 	 * @return
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FTrimeshShapeBarrier& Trimesh, const FString& FallbackName,
-		TMap<FGuid, UStaticMesh*>& ProcessedMeshes, const FString& DirectoryPath)
+		TMap<FGuid, UStaticMesh*>& ProcessedMeshes,
+		const TMap<FGuid, UMaterialInstanceConstant*>& ProcessedRenderMaterials,
+		const FString& DirectoryPath)
 	{
+		UMaterialInstanceConstant* RenderMaterial = [&]() -> UMaterialInstanceConstant*
+		{
+			if (!Trimesh.HasRenderMaterial())
+			{
+				return nullptr;
+			}
+
+			const FGuid RenderMaterialGuid = Trimesh.GetRenderMaterial().Guid;
+			return ProcessedRenderMaterials.FindRef(RenderMaterialGuid);
+		}();
+
 		const FGuid Guid = Trimesh.GetMeshDataGuid();
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
 			// the ProcessedMeshes cache.
 			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
-				Trimesh, DirectoryPath, FallbackName);
+				Trimesh, DirectoryPath, FallbackName, RenderMaterial);
 		}
 
 		{
@@ -170,8 +187,8 @@ namespace
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
-		UStaticMesh* Asset =
-			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(Trimesh, DirectoryPath, FallbackName);
+		UStaticMesh* Asset = FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+			Trimesh, DirectoryPath, FallbackName, RenderMaterial);
 		if (Asset != nullptr)
 		{
 			ProcessedMeshes.Add(Guid, Asset);
@@ -187,20 +204,34 @@ namespace
 	 *
 	 * @param RenderData The Render Data Barrier containing the mesh to store.
 	 * @param ProcessedMeshes Static Mesh cache.
+	 * @param ProcessedRenderMaterials Render Material cache.
 	 * @param DirectoryPath The path of the folder where all assets for the imported model is
 	 * stored.
 	 * @return The Static Mesh asset for the given Render Data.
 	 */
 	UStaticMesh* GetOrCreateStaticMeshAsset(
 		const FRenderDataBarrier& RenderData, TMap<FGuid, UStaticMesh*>& ProcessedMeshes,
+		const TMap<FGuid, UMaterialInstanceConstant*>& ProcessedRenderMaterials,
 		const FString& DirectoryPath)
 	{
+		UMaterialInstanceConstant* RenderMaterial = [&]() -> UMaterialInstanceConstant*
+		{
+			if (!RenderData.HasMaterial())
+			{
+				return nullptr;
+			}
+
+			const FGuid RenderMaterialGuid = RenderData.GetMaterial().Guid;
+			return ProcessedRenderMaterials.FindRef(RenderMaterialGuid);
+		}();
+
 		const FGuid Guid = RenderData.GetGuid();
 		if (!Guid.IsValid())
 		{
 			// The GUID is invalid, but try to create the mesh asset anyway but without adding it to
 			// the ProcessedMeshes cache.
-			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryPath);
+			return FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+				RenderData, DirectoryPath, RenderMaterial);
 		}
 
 		{
@@ -213,8 +244,8 @@ namespace
 		}
 
 		// This is a new mesh. Create the Static Mesh asset and add to the cache.
-		UStaticMesh* Asset =
-			FAGX_ImportUtilities::SaveImportedStaticMeshAsset(RenderData, DirectoryPath);
+		UStaticMesh* Asset = FAGX_ImportUtilities::SaveImportedStaticMeshAsset(
+			RenderData, DirectoryPath, RenderMaterial);
 		if (Asset != nullptr)
 		{
 			ProcessedMeshes.Add(Guid, Asset);
@@ -659,10 +690,11 @@ void FAGX_SimObjectsImporterHelper::UpdateTrimeshCollisionMeshComponent(
 	{
 		const FString FallbackName =
 			ShapeBarrier.GetName().IsEmpty()
-				? "CollisionMesh"
-				: FString("CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
+				? "SM_CollisionMesh"
+				: FString("SM_CollisionMesh_") + ShapeBarrier.GetShapeGuid().ToString();
 		UStaticMesh* Asset = GetOrCreateStaticMeshAsset(
-			ShapeBarrier, FallbackName, ProcessedMeshes, RootDirectoryPath);
+			ShapeBarrier, FallbackName, ProcessedMeshes, ProcessedRenderMaterials,
+			RootDirectoryPath);
 		NewMeshAsset = Asset;
 	}
 
@@ -971,8 +1003,8 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 	}
 	else
 	{
-		UStaticMesh* Asset =
-			GetOrCreateStaticMeshAsset(RenderDataBarrier, ProcessedMeshes, RootDirectoryPath);
+		UStaticMesh* Asset = GetOrCreateStaticMeshAsset(
+			RenderDataBarrier, ProcessedMeshes, ProcessedRenderMaterials, RootDirectoryPath);
 		NewMeshAsset = Asset;
 	}
 
@@ -1025,7 +1057,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 void FAGX_SimObjectsImporterHelper::UpdateAndSaveShapeMaterialAsset(
 	const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset)
 {
-	Asset.CopyFrom(&Barrier);
+	Asset.CopyFrom(Barrier);
 	FAGX_EditorUtilities::RenameAsset(Asset, Barrier.GetName(), "ShapeMaterial");
 	FAGX_ObjectUtilities::SaveAsset(Asset);
 
@@ -1072,9 +1104,9 @@ UMaterialInterface* FAGX_SimObjectsImporterHelper::InstantiateRenderMaterial(
 	Factory->InitialParent = Base;
 
 	const FGuid Guid = Barrier.Guid;
-	const FString MaterialName = Barrier.Name.IsNone()
-									 ? FString::Printf(TEXT("RenderMaterial_%s"), *Guid.ToString())
-									 : Barrier.Name.ToString();
+	const FString MaterialName =
+		Barrier.Name.IsNone() ? FString::Printf(TEXT("MI_RenderMaterial_%s"), *Guid.ToString())
+							  : FString::Printf(TEXT("MI_%s"), *Barrier.Name.ToString());
 
 	FString AssetName = FAGX_ImportUtilities::CreateAssetName(
 		MaterialName, TEXT("ImportedAGXDynamicsMaterial"),
@@ -1158,7 +1190,8 @@ void FAGX_SimObjectsImporterHelper::UpdateAndSaveContactMaterialAsset(
 	Asset.Material1 = Materials.first;
 	Asset.Material2 = Materials.second;
 
-	const FString Name = TEXT("CM_") + GetName(Materials.first) + GetName(Materials.second);
+	const FString Name =
+		TEXT("CM_") + GetName(Materials.first) + TEXT("_") + GetName(Materials.second);
 	FAGX_EditorUtilities::RenameAsset(Asset, Name, "ContactMaterial");
 	FAGX_ObjectUtilities::SaveAsset(Asset);
 
@@ -1177,7 +1210,8 @@ UAGX_ContactMaterial* FAGX_SimObjectsImporterHelper::InstantiateContactMaterial(
 	const FContactMaterialBarrier& Barrier, UAGX_ContactMaterialRegistrarComponent& CMRegistrar)
 {
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
-	const FString Name = TEXT("CM_") + GetName(Materials.first) + GetName(Materials.second);
+	const FString Name =
+		TEXT("CM_") + GetName(Materials.first) + TEXT("_") + GetName(Materials.second);
 	UAGX_ContactMaterial* Asset = FAGX_ImportUtilities::CreateAsset<UAGX_ContactMaterial>(
 		RootDirectoryPath, Name, FAGX_ImportUtilities::GetImportContactMaterialDirectoryName());
 	if (Asset == nullptr)
@@ -1268,17 +1302,17 @@ namespace
 		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Constraint))
 		{
 			if (BodyName1.IsSet() &&
-				(ForceOverwriteInstances || Instance->BodyAttachment1.RigidBody.BodyName ==
-												Constraint.BodyAttachment1.RigidBody.BodyName))
+				(ForceOverwriteInstances || Instance->BodyAttachment1.RigidBody.Name ==
+												Constraint.BodyAttachment1.RigidBody.Name))
 			{
-				Instance->BodyAttachment1.RigidBody.BodyName = BodyName1.GetValue();
+				Instance->BodyAttachment1.RigidBody.Name = BodyName1.GetValue();
 			}
 
 			if (BodyName2.IsSet() &&
-				(ForceOverwriteInstances || Instance->BodyAttachment2.RigidBody.BodyName ==
-												Constraint.BodyAttachment2.RigidBody.BodyName))
+				(ForceOverwriteInstances || Instance->BodyAttachment2.RigidBody.Name ==
+												Constraint.BodyAttachment2.RigidBody.Name))
 			{
-				Instance->BodyAttachment2.RigidBody.BodyName = BodyName2.GetValue();
+				Instance->BodyAttachment2.RigidBody.Name = BodyName2.GetValue();
 			}
 
 			if (ForceOverwriteInstances || Instance->MergeSplitProperties.Thresholds ==
@@ -1291,11 +1325,11 @@ namespace
 
 		if (BodyName1.IsSet())
 		{
-			Constraint.BodyAttachment1.RigidBody.BodyName = BodyName1.GetValue();
+			Constraint.BodyAttachment1.RigidBody.Name = BodyName1.GetValue();
 		}
 		if (BodyName2.IsSet())
 		{
-			Constraint.BodyAttachment2.RigidBody.BodyName = BodyName2.GetValue();
+			Constraint.BodyAttachment2.RigidBody.Name = BodyName2.GetValue();
 		}
 
 		FAGX_ImportUtilities::Rename(Constraint, Barrier.GetName());
@@ -1471,20 +1505,18 @@ void FAGX_SimObjectsImporterHelper::UpdateTwoBodyTire(
 			return;
 		}
 
-		BodyRef.BodyName = Body->GetFName();
+		BodyRef.Name = Body->GetFName();
 	};
 
-	// Update any archetype isntance.
+	// Update any archetype instance.
 	for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 	{
-		if (ForceOverwriteInstances ||
-			Instance->TireRigidBody.BodyName == Component.TireRigidBody.BodyName)
+		if (ForceOverwriteInstances || Instance->TireRigidBody.Name == Component.TireRigidBody.Name)
 		{
 			SetRigidBody(GetBody(Barrier.GetTireRigidBody()), Instance->TireRigidBody);
 		}
 
-		if (ForceOverwriteInstances ||
-			Instance->HubRigidBody.BodyName == Component.HubRigidBody.BodyName)
+		if (ForceOverwriteInstances || Instance->HubRigidBody.Name == Component.HubRigidBody.Name)
 		{
 			SetRigidBody(GetBody(Barrier.GetHubRigidBody()), Instance->HubRigidBody);
 		}
@@ -1508,7 +1540,6 @@ FAGX_SimObjectsImporterHelper::InstantiateCollisionGroupDisabler(
 	Component->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Component);
 	Component->RegisterComponent();
-
 	return Component;
 }
 
@@ -1758,6 +1789,92 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 	return Component;
 }
 
+UAGX_ShovelComponent* FAGX_SimObjectsImporterHelper::InstantiateShovel(
+	const FShovelBarrier& ShovelBarrier, AActor& Owner)
+{
+	UAGX_RigidBodyComponent* BodyComponent = GetBody(ShovelBarrier.GetRigidBody());
+
+	// Shovels don't have names in AGX Dynamics so borrow the body's name. There can only be one
+	// shovel per body, at least as of AGX Dynamics 2.36, so this is still unique.
+	const FString BaseName =
+		BodyComponent != nullptr ? BodyComponent->GetName() : FString("Bodiless");
+
+	UAGX_ShovelComponent* ShovelComponent = NewObject<UAGX_ShovelComponent>(&Owner);
+	if (ShovelComponent == nullptr)
+	{
+		WriteImportErrorMessage(
+			TEXT("AGX Dynamics Shovel"), BaseName, SourceFilePath,
+			TEXT("Could not create new AGX_ShovelComponent"));
+		return nullptr;
+	}
+
+	UpdateShovel(ShovelBarrier, *ShovelComponent, BaseName, BodyComponent, false);
+
+	ShovelComponent->SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(ShovelComponent);
+	ShovelComponent->RegisterComponent();
+	// Component->PostEditChange(); // Some have PostEditChange here, some don't. What's the rule?
+
+	if (BodyComponent != nullptr)
+	{
+		ShovelComponent->AttachToComponent(
+			BodyComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	}
+
+	return ShovelComponent;
+}
+
+void FAGX_SimObjectsImporterHelper::UpdateShovel(
+	const FShovelBarrier& ShovelBarrier, UAGX_ShovelComponent& ShovelComponent,
+	const FString& BaseName, const UAGX_RigidBodyComponent* BodyComponent,
+	bool ForceOverwriteInstances)
+{
+	if (ShovelComponent.ShovelProperties == nullptr)
+	{
+		// We don't try to share equal Shovel Properties assets, every Shovel gets its own instance.
+		// This matches AGX Dynamics since its Shovels also can't share properties since the
+		// properties are members of the Shove class.
+		const FString AssetName = FString::Printf(TEXT("AGX_SP_%s"), *BaseName);
+		const FString AssetFolder = FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName();
+		UAGX_ShovelProperties* ShovelProperties =
+			FAGX_ImportUtilities::CreateAsset<UAGX_ShovelProperties>(
+				RootDirectoryPath, AssetName, AssetFolder);
+		if (ShovelProperties == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("Unable to create Shovel Properties asset %s."), *AssetName);
+			// No return, must complete as much as we can of the setup without the asset.
+		}
+		else
+		{
+			ShovelProperties->ImportGuid = ShovelBarrier.GetGuid();
+			ShovelComponent.ShovelProperties = ShovelProperties;
+		}
+	}
+
+	// The edges and the direction in AGX Dynamics are relative to the body, so try to make all
+	// frames relative to that. If we don't have a body then the frames will be relative to the
+	// shovel instead, which is not correct but the best we can do.
+	const FName BodyName = BodyComponent != nullptr ? BodyComponent->GetFName() : NAME_None;
+	ShovelComponent.RigidBody.Name = BodyName;
+	ShovelComponent.TopEdge.Start.Parent.Name = BodyName;
+	ShovelComponent.TopEdge.End.Parent.Name = BodyName;
+	ShovelComponent.CuttingEdge.Start.Parent.Name = BodyName;
+	ShovelComponent.CuttingEdge.End.Parent.Name = BodyName;
+	ShovelComponent.CuttingDirection.Parent.Name = BodyName;
+
+	// Copy the values that have a 1:1 mapping from the Barrier to the Component.
+	ShovelComponent.CopyFrom(ShovelBarrier, ForceOverwriteInstances);
+
+	const FString Name = FString::Printf(TEXT("Shovel_%s"), *BaseName);
+	FAGX_ImportUtilities::Rename(ShovelComponent, Name);
+
+	if (ShovelComponent.ShovelProperties != nullptr)
+	{
+		FAGX_ObjectUtilities::SaveAsset(*ShovelComponent.ShovelProperties);
+	}
+}
+
 UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 	const FTrackBarrier& Barrier, AActor& Owner)
 {
@@ -1828,7 +1945,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 			return;
 		}
 
-		BodyRef.BodyName = Body->GetFName();
+		BodyRef.Name = Body->GetFName();
 	};
 
 	// Copy Wheels.

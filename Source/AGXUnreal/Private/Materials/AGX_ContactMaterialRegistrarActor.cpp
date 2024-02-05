@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Materials/AGX_ContactMaterialRegistrarActor.h"
 
@@ -28,8 +28,7 @@ void AAGX_ContactMaterialRegistrarActor::Serialize(FArchive& Archive)
 	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
 
 	if (SpriteComponent == nullptr && RootComponent == nullptr &&
-		ShouldUpgradeTo(
-			Archive, FAGX_CustomVersion::TerrainCGDisablerCMRegistrarViewporIcons))
+		ShouldUpgradeTo(Archive, FAGX_CustomVersion::TerrainCGDisablerCMRegistrarViewporIcons))
 	{
 		SpriteComponent = CreateDefaultSubobject<UAGX_ContactMaterialRegistrarSpriteComponent>(
 			USceneComponent::GetDefaultSceneRootVariableName());

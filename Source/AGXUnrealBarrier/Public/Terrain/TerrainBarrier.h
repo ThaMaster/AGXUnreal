@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -85,6 +85,9 @@ public:
 	FTerrainRef* GetNative();
 	const FTerrainRef* GetNative() const;
 	void ReleaseNative();
+
+	void SetCanCollide(bool bCanCollide);
+	bool GetCanCollide() const;
 
 	void SetPosition(const FVector& Position);
 	FVector GetPosition() const;

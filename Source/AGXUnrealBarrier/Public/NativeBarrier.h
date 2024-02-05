@@ -1,8 +1,8 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
-// System includes.
+// Standard library includes.
 #include <cstdint>
 #include <memory>
 

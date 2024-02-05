@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Wire/AGX_WireWinchComponent.h"
 
@@ -12,6 +12,7 @@
 // Unreal Engine includes.
 #include "Components/BillboardComponent.h"
 #include "CoreGlobals.h"
+#include "Engine/Texture2D.h"
 
 UAGX_WireWinchComponent::UAGX_WireWinchComponent()
 {
@@ -134,7 +135,8 @@ void UAGX_WireWinchComponent::PostInitProperties()
 	WireWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
 
 #if WITH_EDITOR
-	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher = FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
 	if (Dispatcher.IsInitialized())
 	{
 		return;

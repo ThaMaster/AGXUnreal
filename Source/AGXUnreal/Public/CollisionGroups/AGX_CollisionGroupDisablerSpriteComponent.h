@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -8,8 +8,7 @@
 
 #include "AGX_CollisionGroupDisablerSpriteComponent.generated.h"
 
-UCLASS(
-	ClassGroup = "AGX", Category = "AGX", HideCategories = (Cooking, LOD, Replication))
+UCLASS(ClassGroup = "AGX", Category = "AGX", HideCategories = (Cooking, LOD, Replication))
 class AGXUNREAL_API UAGX_CollisionGroupDisablerSpriteComponent : public USceneComponent
 {
 	GENERATED_BODY()

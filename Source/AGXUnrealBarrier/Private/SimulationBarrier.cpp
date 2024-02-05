@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "SimulationBarrier.h"
 
@@ -403,6 +403,29 @@ TArray<FShapeContactBarrier> FSimulationBarrier::GetShapeContacts(const FShapeBa
 	return Contacts;
 }
 
+TArray<FShapeContactBarrier> FSimulationBarrier::GetShapeContacts() const
+{
+	check(HasNative());
+
+	TArray<FShapeContactBarrier> ShapeContactBarriers;
+
+	const agxCollide::GeometryContactPtrVector& ContactVectorAGX =
+		NativeRef->Native->getSpace()->getGeometryContacts();
+	if (ContactVectorAGX.size() == 0)
+		return ShapeContactBarriers;
+
+	ShapeContactBarriers.Reserve(ContactVectorAGX.size());
+	for (agxCollide::GeometryContact* ContactAGX : ContactVectorAGX)
+	{
+		if (ContactAGX == nullptr || !ContactAGX->isValid())
+			continue;
+
+		ShapeContactBarriers.Add(AGXBarrierFactories::CreateShapeContactBarrier(*ContactAGX));
+	}
+
+	return ShapeContactBarriers;
+}
+
 void FSimulationBarrier::Step()
 {
 	check(HasNative());
@@ -521,12 +544,12 @@ FAGX_Statistics FSimulationBarrier::GetStatistics()
 
 bool FSimulationBarrier::HasNative() const
 {
-	return NativeRef->Native != nullptr;
+	return NativeRef != nullptr && NativeRef->Native != nullptr;
 }
 
 void FSimulationBarrier::AllocateNative()
 {
-	NativeRef->Native = new agxSDK::Simulation();
+	NativeRef = std::make_unique<FSimulationRef>(new agxSDK::Simulation());
 }
 
 FSimulationRef* FSimulationBarrier::GetNative()

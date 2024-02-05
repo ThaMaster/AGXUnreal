@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -125,7 +125,7 @@ public:
 	/**
 	 * Provide access to any render data that may be associated with the Shape. This data is
 	 * optional and only exists if HasRenderData returns true.
-	 * 
+	 *
 	 * @return The render data associated with the shape.
 	 */
 	FRenderDataBarrier GetRenderData() const;

@@ -36,7 +36,8 @@ FTerrainPagerBarrier::~FTerrainPagerBarrier()
 
 namespace TerrainPagerBarrier_helpers
 {
-	bool DoesExistModifiedHeights(const agxTerrain::TerrainPager::TileAttachmentPtrVector& ActiveTiles)
+	bool DoesExistModifiedHeights(
+		const agxTerrain::TerrainPager::TileAttachmentPtrVector& ActiveTiles)
 	{
 		for (agxTerrain::TerrainPager::TileAttachments* Tile : ActiveTiles)
 		{
@@ -50,6 +51,19 @@ namespace TerrainPagerBarrier_helpers
 		}
 
 		return false;
+	}
+
+	void SetCanCollide(
+		const agxTerrain::TerrainPager::TileAttachmentPtrVector& ActiveTiles, bool bCanCollide)
+	{
+		for (agxTerrain::TerrainPager::TileAttachments* Tile : ActiveTiles)
+		{
+			if (Tile == nullptr || Tile->m_terrainTile == nullptr)
+				continue;
+
+			if (agxCollide::Geometry* Geom = Tile->m_terrainTile->getGeometry())
+				Geom->setEnableCollisions(bCanCollide);
+		}
 	}
 }
 
@@ -113,6 +127,38 @@ void FTerrainPagerBarrier::ReleaseNative()
 	NativeRef->Native = nullptr;
 }
 
+void FTerrainPagerBarrier::SetCanCollide(bool bCanCollide)
+{
+	// AGX Dynamics does not provide a clean way to disable collisions when using the Terrain pager,
+	// instead we need to do it "manually". The approach here is that if bCanCollide is false, we
+	// first stop the Terrain pager from paging in new Terrain tiles. Then, we loop over any
+	// existing Terrain tile and disable collision on it. And conversely, if bCanCollide is true, we
+	// enable collision on all existing Terrain tile, and then enable the Terrain pager tiling.
+	// The disabling and enabling of the Terrain pager tiling when enabling/disabling collision is
+	// to simplify state handling. If we do not do this, we could disable collision for a tile that
+	// is tiled-out and serialized to disk, and then that could be read back long in the future with
+	// collision disabled, even when the user might have long since re-enabled collision on the
+	// Terrain pager.
+	//
+	// In the future, we could consider using AGX Terrain Pager's TileLoadEvent to get a callback
+	// here in the Barrier, and then, similarly to how we get data using the HeightFetcher, we
+	// could have a properties fetcher (or something like that) to get properties from the Terrain
+	// Actor that could then be applied to the tile when the TileLoadEvent is called.
+	check(HasNative());
+	if (bCanCollide)
+	{
+		TerrainPagerBarrier_helpers::SetCanCollide(
+			NativeRef->Native->getActiveTileAttachments(), true);
+		NativeRef->Native->setEnable(true);
+	}
+	else
+	{
+		NativeRef->Native->setEnable(false);
+		TerrainPagerBarrier_helpers::SetCanCollide(
+			NativeRef->Native->getActiveTileAttachments(), false);
+	}
+}
+
 bool FTerrainPagerBarrier::AddShovel(
 	FShovelBarrier& Shovel, double RequiredRadius, double PreloadRadius)
 {
@@ -131,6 +177,16 @@ bool FTerrainPagerBarrier::AddRigidBody(
 	check(Body.HasNative());
 
 	return NativeRef->Native->add(
+		Body.GetNative()->Native, ConvertDistanceToAGX(RequiredRadius),
+		ConvertDistanceToAGX(PreloadRadius));
+}
+
+bool FTerrainPagerBarrier::SetTileLoadRadii(
+	FRigidBodyBarrier& Body, double RequiredRadius, double PreloadRadius)
+{
+	check(HasNative());
+	check(Body.HasNative());
+	return NativeRef->Native->setTileLoadRadiuses(
 		Body.GetNative()->Native, ConvertDistanceToAGX(RequiredRadius),
 		ConvertDistanceToAGX(PreloadRadius));
 }

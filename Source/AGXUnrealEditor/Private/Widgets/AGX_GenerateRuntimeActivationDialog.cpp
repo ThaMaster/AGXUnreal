@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Widgets/AGX_GenerateRuntimeActivationDialog.h"
 
@@ -10,6 +10,8 @@
 
 // Unreal Engine includes.
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "SAGX_GenerateRuntimeActivationDialog"
 
@@ -36,7 +38,7 @@ void SAGX_GenerateRuntimeActivationDialog::Construct(const FArguments& InArgs)
 				[
 					CreateUserInputGui()
 				]
-			]	
+			]
 		]
 	];
 	// clang-format on
@@ -249,7 +251,7 @@ FReply SAGX_GenerateRuntimeActivationDialog::OnGenerateButtonClicked()
 
 	const int32 Id = FCString::Atoi(*LicenseId);
 	TOptional<FString> OutputFile = FAGX_Environment::GetInstance().GenerateRuntimeActivation(
-			Id, ActivationCode, ReferenceFilePath, LicenseDirPath);
+		Id, ActivationCode, ReferenceFilePath, LicenseDirPath);
 
 	if (!OutputFile.IsSet())
 	{

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Constraints/AGX_ConstraintBodyAttachmentCustomization.h"
 
@@ -132,24 +132,25 @@ namespace
 	{
 		return FAGX_PropertyUtilities::GetStructFromHandle<FAGX_ConstraintBodyAttachment>(
 			BodyAttachmentProperty,
-			Cast<UAGX_ConstraintComponent>(
-				FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty)));
+			FAGX_PropertyUtilities::GetParentObjectOfStruct(BodyAttachmentProperty));
 	}
 }
 
 FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 {
 	FAGX_ConstraintBodyAttachment* Attachment = GetConstraintBodyAttachment(BodyAttachmentProperty);
+	check(Attachment != nullptr);
+
 	USceneComponent* SceneComponent = Attachment->GetRigidBody();
 	if (SceneComponent == nullptr)
 	{
-		if (Attachment->RigidBody.BodyName == NAME_None)
+		if (Attachment->RigidBody.Name == NAME_None)
 		{
 			return FText::FromString(TEXT("<Nothing selected>"));
 		}
 		else
 		{
-			return FText::FromString(Attachment->RigidBody.BodyName.ToString());
+			return FText::FromString(Attachment->RigidBody.Name.ToString());
 		}
 	}
 	UAGX_RigidBodyComponent* Body = Cast<UAGX_RigidBodyComponent>(SceneComponent);

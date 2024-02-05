@@ -1,7 +1,8 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AGX_BarrierConstraintUtilities.h"
 
+// AGX Dynamics for Unreal includes.
 #include "TypeConversions.h"
 #include "AGXRefs.h"
 #include "AGX_AgxDynamicsObjectsAccess.h"

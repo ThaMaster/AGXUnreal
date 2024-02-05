@@ -1,9 +1,10 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Wire/WireWinchBarrier.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGXBarrierFactories.h"
+#include "AGXRefs.h"
 #include "TypeConversions.h"
 #include "Wire/WireWinchRef.h"
 #include "NativeBarrier.impl.h"

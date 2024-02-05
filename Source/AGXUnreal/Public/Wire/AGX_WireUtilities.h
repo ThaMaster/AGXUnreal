@@ -1,9 +1,13 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
 // AGX Dynamics for Unreal includes.
 #include "Wire/AGX_WireEnums.h"
+
+// Unreal Engine includes.
+#include "Math/Vector.h"
+#include "Math/Rotator.h"
 
 struct FAGX_WireWinch;
 class UAGX_WireComponent;

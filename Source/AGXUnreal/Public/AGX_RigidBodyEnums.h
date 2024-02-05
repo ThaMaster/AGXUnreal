@@ -1,8 +1,10 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "UObject/ObjectMacros.h"
 
 UENUM(BlueprintType)
 // Unreal Header Tool does not support line breaks in UMETA tags.

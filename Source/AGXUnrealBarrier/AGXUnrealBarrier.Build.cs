@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 
 using System;
@@ -53,7 +53,7 @@ public class AGXUnrealBarrier : ModuleRules
 
 		// TODO: Determine which of these are really need and why.
 		PublicDependencyModuleNames.AddRange(new string[] {
-			"RHI", "RenderCore", "Core", "CoreUObject", "Engine", "InputCore"});
+			"AGXCommon", "RHI", "RenderCore", "Core", "CoreUObject", "Engine", "InputCore"});
 
 		// TODO: Determine which of these are really needed and why.
 		// TODO: Why are some modules listed both here and in Public... above?

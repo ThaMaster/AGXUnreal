@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -51,11 +51,11 @@ public:
 	 *
 	 * @note It is still unclear how the UProperty -> FProperty change in 4.25 changes this.
 	 */
-	//#if UE_VERSION_OLDER_THAN(2,25,0)
+	// #if UE_VERSION_OLDER_THAN(2,25,0)
 	static FString GetActualDisplayName(const UField* Field, bool bRemoveAgxPrefix);
-	//#else
+	// #else
 	static FString GetActualDisplayName(const FField* Field, bool bRemoveAgxPrefix);
-	//#endif
+	// #endif
 };
 
 template <typename TStruct>

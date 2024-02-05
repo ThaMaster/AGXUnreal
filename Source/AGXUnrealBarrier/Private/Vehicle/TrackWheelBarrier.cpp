@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Vehicle/TrackWheelBarrier.h"
 
@@ -7,7 +7,6 @@
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
 #include "Vehicle/TrackWheelRef.h"
-
 
 FTrackWheelBarrier::FTrackWheelBarrier()
 	: NativeRef {new FTrackWheelRef}

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -16,11 +16,12 @@
 
 class FShovelBarrier;
 
+/**
+ * @deprecated Use FAGX_ShovelComponent instead.
+ */
 USTRUCT()
 struct AGXUNREAL_API FAGX_Shovel
 {
-	/// /todo Consider making this a stand-alone Object/ActorComponent?
-
 	GENERATED_BODY()
 
 	/**
@@ -140,21 +141,26 @@ struct AGXUNREAL_API FAGX_Shovel
 	bool AlwaysRemoveShovelContacts = false;
 
 	/**
-	 * Whether or not to override the default value (CuttingEdgeLength/10.0) for BottomContactThreshold.
+	 * Whether or not to override the default value (CuttingEdgeLength/10.0) for
+	 * ContactRegionThreshold.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
-	bool bOverrideBottomContactThreshold = false;
+	bool bOverrideContactRegionThreshold = false;
 
 	/**
-	 * The distance threshold from the shovel planes where regular geometry contacts between the
-	 * shovel underside and the terrain are allowed to be created [cm].
-	 * The value of this property will not be used if OverrideBottomContactThreshold is false.
-	 * In that case AGX Dynamics automatically uses the value: CuttingEdgeLength/10.0.
+	 * The starting distance threshold from the shovel planes where regular
+	 * geometry contacts between the shovel underside and the terrain are
+	 * allowed to be created [cm].
+	 *
+	 * Contacts that are not past the distance threshold will be filtered away.
+	 * The value of this property will not be used if
+	 * OverrideContactRegionThreshold is false. In that case AGX Dynamics
+	 * automatically uses the value: CuttingEdgeLength/10.0.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Shovel",
-		Meta = (EditCondition = "bOverrideBottomContactThreshold"))
-	FAGX_Real BottomContactThreshold = 10;
+		Meta = (EditCondition = "bOverrideContactRegionThreshold"))
+	FAGX_Real ContactRegionThreshold = 10;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
 	FAGX_ShovelExcavationSettings PrimaryExcavationSettings;

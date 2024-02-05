@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
@@ -7,6 +7,9 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+
+// Standard library includes.
+#include <limits>
 
 /**
  * Constants that reflect the initial values used in the native constraint implementations.
@@ -40,6 +43,7 @@ public:
 
 	static FAGX_RealInterval DefaultForceRange()
 	{
-		return FAGX_RealInterval(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
+		return FAGX_RealInterval(
+			-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
 	}
 };

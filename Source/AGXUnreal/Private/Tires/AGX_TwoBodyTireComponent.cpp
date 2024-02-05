@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Tires/AGX_TwoBodyTireComponent.h"
 
@@ -148,8 +148,6 @@ void UAGX_TwoBodyTireComponent::UpdateNativeProperties()
 
 void UAGX_TwoBodyTireComponent::BeginPlay()
 {
-	HubRigidBody.CacheCurrentRigidBody();
-	TireRigidBody.CacheCurrentRigidBody();
 	Super::BeginPlay();
 }
 

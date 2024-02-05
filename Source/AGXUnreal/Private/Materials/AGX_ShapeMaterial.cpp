@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Materials/AGX_ShapeMaterial.h"
 
@@ -457,29 +457,24 @@ void UAGX_ShapeMaterial::SetSpookDampingBend(double InSpookDamping)
 	AGX_ASSET_SETTER_IMPL_VALUE(Wire.SpookDampingBend, InSpookDamping, SetSpookDampingBend);
 }
 
-void UAGX_ShapeMaterial::CopyFrom(const FShapeMaterialBarrier* Source)
+void UAGX_ShapeMaterial::CopyFrom(const FShapeMaterialBarrier& Source)
 {
-	if (Source == nullptr)
-	{
-		return;
-	}
-
 	// Copy shape material bulk properties.
-	Bulk.Density = Source->GetDensity();
-	Bulk.YoungsModulus = Source->GetYoungsModulus();
-	Bulk.Viscosity = Source->GetBulkViscosity();
-	Bulk.SpookDamping = Source->GetSpookDamping();
-	Bulk.MinElasticRestLength = Source->GetMinElasticRestLength();
-	Bulk.MaxElasticRestLength = Source->GetMaxElasticRestLength();
+	Bulk.Density = Source.GetDensity();
+	Bulk.YoungsModulus = Source.GetYoungsModulus();
+	Bulk.Viscosity = Source.GetBulkViscosity();
+	Bulk.SpookDamping = Source.GetSpookDamping();
+	Bulk.MinElasticRestLength = Source.GetMinElasticRestLength();
+	Bulk.MaxElasticRestLength = Source.GetMaxElasticRestLength();
 
 	// Copy shape material surface properties.
-	Surface.bFrictionEnabled = Source->GetFrictionEnabled();
-	Surface.Roughness = Source->GetRoughness();
-	Surface.Viscosity = Source->GetSurfaceViscosity();
-	Surface.AdhesiveForce = Source->GetAdhesiveForce();
-	Surface.AdhesiveOverlap = Source->GetAdhesiveOverlap();
+	Surface.bFrictionEnabled = Source.GetFrictionEnabled();
+	Surface.Roughness = Source.GetRoughness();
+	Surface.Viscosity = Source.GetSurfaceViscosity();
+	Surface.AdhesiveForce = Source.GetAdhesiveForce();
+	Surface.AdhesiveOverlap = Source.GetAdhesiveOverlap();
 
-	ImportGuid = Source->GetGuid();
+	ImportGuid = Source.GetGuid();
 }
 
 UAGX_MaterialBase* UAGX_ShapeMaterial::GetOrCreateInstance(UWorld* PlayingWorld)
@@ -507,13 +502,10 @@ UAGX_ShapeMaterial* UAGX_ShapeMaterial::CreateInstanceFromAsset(
 	check(PlayingWorld);
 	check(PlayingWorld->IsGameWorld());
 
-	UObject* Outer = UAGX_Simulation::GetFrom(PlayingWorld);
-	check(Outer);
-
 	const FString InstanceName = Source->GetName() + "_Instance";
 
 	UAGX_ShapeMaterial* NewInstance = NewObject<UAGX_ShapeMaterial>(
-		Outer, UAGX_ShapeMaterial::StaticClass(), *InstanceName, RF_Transient);
+		GetTransientPackage(), UAGX_ShapeMaterial::StaticClass(), *InstanceName, RF_Transient);
 	NewInstance->Asset = Source;
 	NewInstance->CopyShapeMaterialProperties(Source);
 	NewInstance->CreateNative(PlayingWorld);
@@ -551,7 +543,16 @@ void UAGX_ShapeMaterial::CommitToAsset()
 {
 	if (IsInstance())
 	{
-		Asset->CopyFrom(this->GetNative());
+		if (FShapeMaterialBarrier* Barrier = this->GetNative())
+		{
+#if WITH_EDITOR
+			Asset->Modify();
+#endif
+			Asset->CopyFrom(*Barrier);
+#if WITH_EDITOR
+			FAGX_ObjectUtilities::MarkAssetDirty(*Asset);
+#endif
+		}
 	}
 	else if (Instance != nullptr) // IsAsset
 	{

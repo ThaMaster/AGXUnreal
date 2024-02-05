@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Shapes/AGX_HeightFieldShapeComponent.h"
 
@@ -16,7 +16,8 @@
 UAGX_HeightFieldShapeComponent::UAGX_HeightFieldShapeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	HeightFieldBounds = CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("HeightFieldBounds"));
+	HeightFieldBounds =
+		CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("HeightFieldBounds"));
 }
 
 FShapeBarrier* UAGX_HeightFieldShapeComponent::GetNative()

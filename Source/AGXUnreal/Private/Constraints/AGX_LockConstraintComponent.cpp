@@ -1,9 +1,11 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Constraints/AGX_LockConstraintComponent.h"
 
+// AGX Dynamics for Unreal includes.
 #include "Constraints/LockJointBarrier.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 class FRigidBodyBarrier;
 
@@ -33,5 +35,6 @@ const FLockJointBarrier* UAGX_LockConstraintComponent::GetNativeLock() const
 void UAGX_LockConstraintComponent::CreateNativeImpl()
 {
 	FAGX_ConstraintUtilities::CreateNative(
-		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(), GetOwner()->GetFName());
+		NativeBarrier.Get(), BodyAttachment1, BodyAttachment2, GetFName(),
+		GetLabelSafe(GetOwner()));
 }

@@ -1,4 +1,4 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "Vehicle/AGX_TrackComponentDetails.h"
 
@@ -9,6 +9,7 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "Engine/World.h"
 #include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TrackComponentDetails"

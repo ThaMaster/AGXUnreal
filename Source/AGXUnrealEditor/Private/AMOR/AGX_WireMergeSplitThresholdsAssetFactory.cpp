@@ -1,13 +1,12 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #include "AMOR/AGX_WireMergeSplitThresholdsAssetFactory.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_WireMergeSplitThresholds.h"
 
-
-UAGX_WireMergeSplitThresholdsAssetFactory::
-	UAGX_WireMergeSplitThresholdsAssetFactory(const class FObjectInitializer& OBJ)
+UAGX_WireMergeSplitThresholdsAssetFactory::UAGX_WireMergeSplitThresholdsAssetFactory(
+	const class FObjectInitializer& OBJ)
 	: Super(OBJ)
 {
 	SupportedClass = UAGX_WireMergeSplitThresholds::StaticClass();

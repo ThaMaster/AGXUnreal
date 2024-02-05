@@ -1,8 +1,10 @@
-// Copyright 2023, Algoryx Simulation AB.
+// Copyright 2024, Algoryx Simulation AB.
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "UObject/ObjectMacros.h"
 
 /** Specifies in what solvers the constraint will be solved. */
 UENUM()
@@ -20,9 +22,11 @@ enum EAGX_SolveType
 
 /** Specifies which Actor or Component is used to define the transform of the attachment frame of
  * the Constraint's Body Attachment. */
-UENUM()
+UENUM(BlueprintType)
 enum EAGX_FrameDefiningSource
 {
+	InvalidSource = 0,
+
 	/** The transformation of the Constraint itself is used to define the transform of the
 	   attachment frame. */
 	Constraint = 1 UMETA(DisplayName = "Constraint"),
