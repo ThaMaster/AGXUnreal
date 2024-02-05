@@ -68,14 +68,12 @@ namespace TerrainUtilities_helpers
 		verify(IdToIndex.size() < std::numeric_limits<int32>::max());
 		const int32 NumIds = static_cast<int32>(IdToIndex.size());
 		OutExists.SetNum(NumIds);
+		const size_t NumParticles = Particles.size();
 
 		for (size_t Id = 0; Id < NumIds; ++Id)
 		{
 			const size_t Index = IdToIndex[Id];
-
-			// This assumes that the IdToIndex array contains InvalidIndex whenever there isn't an
-			// entity with that ID in the storage. Is that always guaranteed?
-			OutExists[Id] = Index != agx::InvalidIndex;
+			OutExists[Id] = Index < NumParticles;
 		}
 	}
 
