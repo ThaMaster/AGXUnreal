@@ -1984,11 +1984,8 @@ void UAGX_WireComponent::RenderSimple_Internal(const TArray<FVector>& Points)
 	const int32 NumSegments = Points.Num() - 1;
 	SetVisualsInstanceCount(NumSegments);
 
-	/* Because UInstancedStaticMeshComponent::UpdateInstanceTransform() converts instance
-	transforms / from World to Local Transform Space, make sure our local transform space is up - to
-	- date.*/
-	VisualCylinders->SetWorldTransform(GetComponentTransform());
-	VisualSpheres->SetWorldTransform(GetComponentTransform());
+	VisualCylinders->UpdateComponentToWorld();
+	VisualSpheres->UpdateComponentToWorld();
 
 	const double ScaleXY = static_cast<double>(Radius) * 0.01 * 2.0;
 	FTransform SphereTransform {FTransform::Identity};
