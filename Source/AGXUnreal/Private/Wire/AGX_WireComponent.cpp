@@ -1923,6 +1923,7 @@ bool UAGX_WireComponent::UpdateNativeMaterial()
 	return true;
 }
 
+#if WITH_EDITOR
 bool UAGX_WireComponent::DoesPropertyAffectVisuals(const FName& MemberPropertyName) const
 {
 	if (MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, VisualCylinders))
@@ -1939,6 +1940,7 @@ bool UAGX_WireComponent::DoesPropertyAffectVisuals(const FName& MemberPropertyNa
 
 	return false;
 }
+#endif
 
 TArray<FVector> UAGX_WireComponent::GetNodesForRendering() const
 {
