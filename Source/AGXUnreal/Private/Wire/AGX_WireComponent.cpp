@@ -65,13 +65,13 @@ UAGX_WireComponent::UAGX_WireComponent()
 	// Setup visuals.
 	VisualCylinders =
 		CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("VisualCylinders"));
-	static constexpr TCHAR* CylinderAssetPath =
+	static const TCHAR* CylinderAssetPath =
 		TEXT("StaticMesh'/AGXUnreal/Wire/SM_WireVisualCylinder.SM_WireVisualCylinder'");
 	VisualCylinders->SetStaticMesh(
 		FAGX_RenderUtilities::GetStaticMeshFromAssetPath(CylinderAssetPath));
 
 	VisualSpheres = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("VisualSpheres"));
-	static constexpr TCHAR* SphereAssetPath =
+	static const TCHAR* SphereAssetPath =
 		TEXT("StaticMesh'/AGXUnreal/Wire/SM_WireVisualSphere.SM_WireVisualSphere'");
 	VisualSpheres->SetStaticMesh(
 		FAGX_RenderUtilities::GetStaticMeshFromAssetPath(SphereAssetPath));
