@@ -23,9 +23,11 @@
 #include "Components/BillboardComponent.h"
 #include "CoreGlobals.h"
 #include "Engine/Texture2D.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Math/UnrealMathUtility.h"
 
 // Standard library includes.
+#include <algorithm>
 #include <tuple>
 
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
@@ -82,6 +84,8 @@ void UAGX_WireComponent::SetRadius(float InRadius)
 		NativeBarrier.SetRadius(InRadius);
 	}
 	Radius = InRadius;
+
+	UpdateVisuals();
 }
 
 void UAGX_WireComponent::SetMinSegmentLength(float InMinSegmentLength)
@@ -1117,6 +1121,11 @@ TArray<FVector> UAGX_WireComponent::GetRenderNodeLocations() const
 	return Result;
 }
 
+void UAGX_WireComponent::MarkVisualsDirty()
+{
+	UpdateVisuals();
+}
+
 void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
 {
 	Radius = Barrier.GetRadius();
@@ -1223,6 +1232,12 @@ void UAGX_WireComponent::PostInitProperties()
 #if WITH_EDITOR
 	InitPropertyDispatcher();
 #endif
+}
+
+void UAGX_WireComponent::PostLoad()
+{
+	Super::PostLoad();
+	UpdateVisuals();
 }
 
 #if WITH_EDITOR
@@ -1346,6 +1361,16 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
+	FEditPropertyChain::TDoubleLinkedListNode* Node = Event.PropertyChain.GetHead();
+	if (Node != nullptr)
+	{
+		const FName Member = Node->GetValue()->GetFName();
+		if (DoesPropertyAffectVisuals(Member))
+		{
+			UpdateVisuals();
+		}
+	}
+
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
@@ -1372,8 +1397,7 @@ void UAGX_WireComponent::TickComponent(
 	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	/// @todo Do we need to do anything here?
+	UpdateVisuals();
 }
 
 void UAGX_WireComponent::CreateMergeSplitProperties()
@@ -1442,6 +1466,7 @@ void UAGX_WireComponent::OnRegister()
 
 	VisualCylinders->SetupAttachment(this);
 	VisualSpheres->SetupAttachment(this);
+	UpdateVisuals();
 }
 
 namespace AGX_WireComponent_helpers
@@ -1896,6 +1921,117 @@ bool UAGX_WireComponent::UpdateNativeMaterial()
 	NativeBarrier.SetMaterial(*MaterialBarrier);
 
 	return true;
+}
+
+bool UAGX_WireComponent::DoesPropertyAffectVisuals(const FName& MemberPropertyName) const
+{
+	if (MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, VisualCylinders))
+		return true;
+
+	if (MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, VisualSpheres))
+		return true;
+
+	if (MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes))
+		return true;
+
+	if (MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, Radius))
+		return true;
+
+	return false;
+}
+
+TArray<FVector> UAGX_WireComponent::GetNodesForRendering() const
+{
+	TArray<FVector> NodeLocations;
+	if (HasRenderNodes())
+	{
+		NodeLocations = GetRenderNodeLocations();
+	}
+	else
+	{
+		NodeLocations.Reserve(RouteNodes.Num());
+		const FTransform& ComponentTransform = GetComponentTransform();
+		for (const auto& Node : RouteNodes)
+		{
+			NodeLocations.Add(ComponentTransform.TransformPositionNoScale(Node.Location));
+		}
+	}
+
+	return NodeLocations;
+}
+
+bool UAGX_WireComponent::ShouldCreateVisuals() const
+{
+	return IsVisible() && VisualCylinders != nullptr && VisualSpheres != nullptr;
+}
+
+void UAGX_WireComponent::UpdateVisuals()
+{
+	if (!ShouldCreateVisuals())
+		return;
+
+	TArray<FVector> NodeLocations = GetNodesForRendering();
+	RenderSimple_Internal(NodeLocations);
+}
+
+void UAGX_WireComponent::RenderSimple_Internal(const TArray<FVector>& Points)
+{
+	if (Points.Num() <= 1)
+		return;
+
+	const int32 NumSegments = Points.Num() - 1;
+	SetVisualsInstanceCount(NumSegments);
+
+	/* Because UInstancedStaticMeshComponent::UpdateInstanceTransform() converts instance
+	transforms / from World to Local Transform Space, make sure our local transform space is up - to
+	- date.*/
+	VisualCylinders->SetWorldTransform(GetComponentTransform());
+	VisualSpheres->SetWorldTransform(GetComponentTransform());
+
+	const double ScaleXY = static_cast<double>(Radius) * 0.01 * 2.0;
+	FTransform SphereTransform {FTransform::Identity};
+	FTransform CylTransform {FTransform::Identity};
+	SphereTransform.SetScale3D(FVector(ScaleXY, ScaleXY, ScaleXY));
+	for (int i = 0; i < NumSegments; i++)
+	{
+		const FVector& StartLocation = Points[i];
+		const FVector& EndLocation = Points[i + 1];
+		const FVector MidPoint = (StartLocation + EndLocation) * 0.5;
+		const FVector DeltaVec = EndLocation - StartLocation;
+		const FRotator Rot = UKismetMathLibrary::MakeRotFromZ(DeltaVec);
+
+		CylTransform.SetLocation(MidPoint);
+		CylTransform.SetRotation(Rot.Quaternion());
+		const auto Distance = (DeltaVec).Length();
+		CylTransform.SetScale3D(FVector(ScaleXY, ScaleXY, Distance * 0.01));
+		VisualCylinders->UpdateInstanceTransform(i, CylTransform, true, true);
+
+		SphereTransform.SetLocation(StartLocation);
+		VisualSpheres->UpdateInstanceTransform(i, SphereTransform, true, true);
+	}
+}
+
+void UAGX_WireComponent::SetVisualsInstanceCount(int32 Num)
+{
+	Num = std::max(0, Num);
+
+	auto SetNum = [](UInstancedStaticMeshComponent& C, int32 N)
+	{
+		while (C.GetInstanceCount() < N)
+		{
+			C.AddInstance(FTransform());
+		}
+		while (C.GetInstanceCount() > N)
+		{
+			C.RemoveInstance(C.GetInstanceCount() - 1);
+		}
+	};
+
+	if (VisualCylinders != nullptr)
+		SetNum(*VisualCylinders, Num);
+
+	if (VisualSpheres != nullptr)
+		SetNum(*VisualSpheres, Num);
 }
 
 #undef LOCTEXT_NAMESPACE

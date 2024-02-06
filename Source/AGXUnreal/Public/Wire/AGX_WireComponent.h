@@ -855,6 +855,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	TArray<FVector> GetRenderNodeLocations() const;
 
+	/**
+	 * Mark visuals for this Wire Component dirty. The Visuals will be updated according to the
+	 * current state.
+	 */
+	void MarkVisualsDirty();
+
 	/*
 	 * Copy configuration from the given Barrier.
 	 * Only the basic properties, such as Radius and MinSegmentLength, are copied. More complicated
@@ -889,6 +895,7 @@ public:
 
 	//~ Begin UObject interface.
 	virtual void PostInitProperties() override;
+	virtual void PostLoad() override;
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
@@ -915,6 +922,16 @@ private:
 
 	void CreateNative();
 	bool UpdateNativeMaterial();
+
+#if WITH_EDITOR
+	bool DoesPropertyAffectVisuals(const FName& MemberPropertyName) const;
+#endif
+
+	TArray<FVector> GetNodesForRendering() const;
+	bool ShouldCreateVisuals() const;
+	void UpdateVisuals();
+	void RenderSimple_Internal(const TArray<FVector>& Points);
+	void SetVisualsInstanceCount(int32 Num);
 
 private:
 	FWireBarrier NativeBarrier;

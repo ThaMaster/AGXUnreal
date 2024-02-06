@@ -153,6 +153,7 @@ public:
 		Wire.RouteNodes.Insert(Clone, NewNodeIndex);
 		Visualizer.SelectedNodeIndex = NewNodeIndex;
 		Visualizer.NotifyPropertyModified(&Wire, Visualizer.RouteNodesProperty);
+		Wire.MarkVisualsDirty();
 	}
 
 	static void MoveNode(
@@ -167,6 +168,7 @@ public:
 		const FVector NewLocalLocation = LocalToWorld.InverseTransformPosition(NewWorldLocation);
 		SelectedNode.Location = NewLocalLocation;
 		Visualizer.NotifyPropertyModified(&Wire, Visualizer.RouteNodesProperty);
+		Wire.MarkVisualsDirty();
 	}
 
 	static void WinchProxyDragged(
@@ -183,6 +185,7 @@ public:
 										? Visualizer.BeginWinchProperty
 										: Visualizer.EndWinchProperty;
 		Visualizer.NotifyPropertyModified(&Wire, EditedProperty);
+		Wire.MarkVisualsDirty();
 	}
 };
 
