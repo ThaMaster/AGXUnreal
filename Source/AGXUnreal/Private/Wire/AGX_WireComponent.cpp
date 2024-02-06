@@ -12,6 +12,7 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_RenderUtilities.h"
 #include "Wire/AGX_WireInstanceData.h"
 #include "Wire/AGX_WireNode.h"
 #include "Wire/AGX_WireUtilities.h"
@@ -58,6 +59,20 @@ UAGX_WireComponent::UAGX_WireComponent()
 	// Add a pair of default nodes to make initial editing easier.
 	AddNodeAtLocation(FVector::ZeroVector);
 	AddNodeAtLocation(FVector(100.0f, 0.0f, 0.0f));
+
+	// Setup visuals.
+	VisualCylinders =
+		CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("VisualCylinders"));
+	static constexpr TCHAR* CylinderAssetPath =
+		TEXT("StaticMesh'/AGXUnreal/Wire/SM_WireVisualCylinder.SM_WireVisualCylinder'");
+	VisualCylinders->SetStaticMesh(
+		FAGX_RenderUtilities::GetStaticMeshFromAssetPath(CylinderAssetPath));
+
+	VisualSpheres = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("VisualSpheres"));
+	static constexpr TCHAR* SphereAssetPath =
+		TEXT("StaticMesh'/AGXUnreal/Wire/SM_WireVisualSphere.SM_WireVisualSphere'");
+	VisualSpheres->SetStaticMesh(
+		FAGX_RenderUtilities::GetStaticMeshFromAssetPath(SphereAssetPath));
 }
 
 void UAGX_WireComponent::SetRadius(float InRadius)
@@ -1424,6 +1439,9 @@ void UAGX_WireComponent::OnRegister()
 		SpriteComponent->SetRelativeScale3D(FVector(2.0, 2.0, 2.0));
 	}
 #endif
+
+	VisualCylinders->SetupAttachment(this);
+	VisualSpheres->SetupAttachment(this);
 }
 
 namespace AGX_WireComponent_helpers

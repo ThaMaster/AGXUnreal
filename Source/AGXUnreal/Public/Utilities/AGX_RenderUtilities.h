@@ -11,6 +11,7 @@
 class FShapeContactBarrier;
 class UTextureRenderTarget2D;
 class UMaterial;
+class UStaticMesh;
 
 struct FAGX_SensorMsgsImage;
 struct FUpdateTextureRegion2D;
@@ -27,6 +28,12 @@ public:
 	 * could not be loaded.
 	 */
 	static UMaterial* GetMaterialFromAssetPath(const TCHAR* AssetPath);
+
+	/**
+	 * Tries to load and returns a UStaticMesh given an asset path. Returns nullptr if the asset
+	 * could not be loaded.
+	 */
+	static UStaticMesh* GetStaticMeshFromAssetPath(const TCHAR* AssetPath);
 
 	/**
 	 * Renders the given ShapeContacts to the screen.

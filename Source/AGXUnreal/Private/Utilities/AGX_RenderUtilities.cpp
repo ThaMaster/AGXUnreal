@@ -30,6 +30,7 @@
 // included as part of DataDrivenShaderPlatformInfo.h here.
 #include "DataDrivenShaderPlatformInfo.h"
 #endif
+#include "Engine/StaticMesh.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
@@ -84,12 +85,27 @@ UMaterial* FAGX_RenderUtilities::GetMaterialFromAssetPath(const TCHAR* AssetPath
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("AGX_TextureUtilities::GetMaterialFromAssetPath: Unable to load material '%s'."),
+			TEXT("FAGX_RenderUtilities::GetMaterialFromAssetPath: Unable to load material '%s'."),
 			AssetPath);
 		return nullptr;
 	}
 
 	return Cast<UMaterial>(LoadResult);
+}
+
+UStaticMesh* FAGX_RenderUtilities::GetStaticMeshFromAssetPath(const TCHAR* AssetPath)
+{
+	UObject* LoadResult = StaticLoadObject(UStaticMesh::StaticClass(), nullptr, AssetPath);
+	if (LoadResult == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("FAGX_RenderUtilities::GetStaticMeshFromAssetPath: Unable to load asset '%s'."),
+			AssetPath);
+		return nullptr;
+	}
+
+	return Cast<UStaticMesh>(LoadResult);
 }
 
 void FAGX_RenderUtilities::DrawContactPoints(

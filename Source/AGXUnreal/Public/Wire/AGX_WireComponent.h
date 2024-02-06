@@ -19,6 +19,7 @@
 
 class UAGX_ShapeMaterial;
 class UAGX_WireWinchComponent;
+class UInstancedStaticMeshComponent;
 
 /// @todo Move FWireRoutingNode to a separate source file pair.
 /**
@@ -180,6 +181,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void RemoveCollisionGroupIfExists(const FName& GroupName);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
+	UInstancedStaticMeshComponent* VisualCylinders;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
+	UInstancedStaticMeshComponent* VisualSpheres;
 
 	/*
 	 * Begin winch.
