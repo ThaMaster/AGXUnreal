@@ -931,9 +931,9 @@ private:
 #endif
 
 	TArray<FVector> GetNodesForRendering() const;
-	bool ShouldCreateVisuals() const;
+	bool ShouldRender() const;
 	void UpdateVisuals();
-	void RenderSimple_Internal(const TArray<FVector>& Points);
+	void RenderSelf(const TArray<FVector>& Points);
 	void SetVisualsInstanceCount(int32 Num);
 
 private:

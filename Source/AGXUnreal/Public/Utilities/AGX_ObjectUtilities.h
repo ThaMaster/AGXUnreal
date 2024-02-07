@@ -268,15 +268,6 @@ template <typename AssetType>
 inline AssetType* FAGX_ObjectUtilities::GetAssetFromPath(const TCHAR* AssetPath)
 {
 	UObject* LoadResult = StaticLoadObject(AssetType::StaticClass(), nullptr, AssetPath);
-	if (LoadResult == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("FAGX_ObjectUtilities::GetAssetFromPath: Unable to load asset '%s'."),
-			AssetPath);
-		return nullptr;
-	}
-
 	return Cast<AssetType>(LoadResult);
 }
 

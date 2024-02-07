@@ -1230,7 +1230,6 @@ void UAGX_WireComponent::PostInitProperties()
 void UAGX_WireComponent::PostLoad()
 {
 	Super::PostLoad();
-
 	UpdateVisuals();
 }
 
@@ -1916,6 +1915,7 @@ void UAGX_WireComponent::CreateVisuals()
 		TEXT("StaticMesh'/AGXUnreal/Wire/SM_WireVisualCylinder.SM_WireVisualCylinder'");
 	VisualCylinders->SetStaticMesh(
 		FAGX_ObjectUtilities::GetAssetFromPath<UStaticMesh>(CylinderAssetPath));
+	VisualCylinders->SetMaterial(0, RenderMaterial);
 
 	VisualSpheres = NewObject<UInstancedStaticMeshComponent>(this, FName(TEXT("VisualSpheres")));
 	VisualSpheres->RegisterComponent();
@@ -1925,6 +1925,7 @@ void UAGX_WireComponent::CreateVisuals()
 		TEXT("StaticMesh'/AGXUnreal/Wire/SM_WireVisualSphere.SM_WireVisualSphere'");
 	VisualSpheres->SetStaticMesh(
 		FAGX_ObjectUtilities::GetAssetFromPath<UStaticMesh>(SphereAssetPath));
+	VisualSpheres->SetMaterial(0, RenderMaterial);
 }
 
 bool UAGX_WireComponent::UpdateNativeMaterial()
@@ -2005,14 +2006,14 @@ TArray<FVector> UAGX_WireComponent::GetNodesForRendering() const
 	return NodeLocations;
 }
 
-bool UAGX_WireComponent::ShouldCreateVisuals() const
+bool UAGX_WireComponent::ShouldRender() const
 {
 	return IsVisible() && VisualCylinders != nullptr && VisualSpheres != nullptr;
 }
 
 void UAGX_WireComponent::UpdateVisuals()
 {
-	if (!ShouldCreateVisuals())
+	if (!ShouldRender())
 		return;
 
 	// Workaround, the RenderMaterial does not propagate properly in SetRenderMaterial() in
@@ -2024,10 +2025,10 @@ void UAGX_WireComponent::UpdateVisuals()
 		VisualSpheres->SetMaterial(0, RenderMaterial);
 
 	TArray<FVector> NodeLocations = GetNodesForRendering();
-	RenderSimple_Internal(NodeLocations);
+	RenderSelf(NodeLocations);
 }
 
-void UAGX_WireComponent::RenderSimple_Internal(const TArray<FVector>& Points)
+void UAGX_WireComponent::RenderSelf(const TArray<FVector>& Points)
 {
 	if (Points.Num() <= 1)
 		return;
