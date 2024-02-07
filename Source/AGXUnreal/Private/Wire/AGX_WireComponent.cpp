@@ -67,7 +67,7 @@ UAGX_WireComponent::UAGX_WireComponent()
 	// Setup default visuals.
 	static const TCHAR* WireMatAssetPath =
 		TEXT("Material'/AGXUnreal/Wire/MI_GrayWire.MI_GrayWire'");
-	RenderMaterial = FAGX_ObjectUtilities::GetAssetFromPath<UMaterialInstance>(WireMatAssetPath);
+	RenderMaterial = FAGX_ObjectUtilities::GetAssetFromPath<UMaterialInterface>(WireMatAssetPath);
 }
 
 void UAGX_WireComponent::SetRadius(float InRadius)
