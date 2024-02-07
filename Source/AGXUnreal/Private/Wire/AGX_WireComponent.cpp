@@ -1751,18 +1751,6 @@ void UAGX_WireComponent::SetRenderMaterial(UMaterialInterface* Material)
 
 	if (VisualSpheres != nullptr)
 		VisualSpheres->SetMaterial(0, RenderMaterial);
-
-	for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))
-	{
-		if (Instance->RenderMaterial == RenderMaterial)
-		{
-			if (Instance->VisualCylinders != nullptr)
-				Instance->VisualCylinders->SetMaterial(0, RenderMaterial);
-
-			if (Instance->VisualSpheres != nullptr)
-				Instance->VisualSpheres->SetMaterial(0, RenderMaterial);
-		}
-	}
 }
 
 void UAGX_WireComponent::CreateNative()
@@ -2026,6 +2014,14 @@ void UAGX_WireComponent::UpdateVisuals()
 {
 	if (!ShouldCreateVisuals())
 		return;
+
+	// Workaround, the RenderMaterial does not propagate properly in SetRenderMaterial() in
+	// Blueprints, so we assign it here.
+	if (VisualCylinders->GetMaterial(0) != RenderMaterial)
+		VisualCylinders->SetMaterial(0, RenderMaterial);
+
+	if (VisualSpheres->GetMaterial(0) != RenderMaterial)
+		VisualSpheres->SetMaterial(0, RenderMaterial);
 
 	TArray<FVector> NodeLocations = GetNodesForRendering();
 	RenderSimple_Internal(NodeLocations);
