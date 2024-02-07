@@ -20,6 +20,7 @@
 class UAGX_ShapeMaterial;
 class UAGX_WireWinchComponent;
 class UInstancedStaticMeshComponent;
+class UMaterialInterface;
 
 /// @todo Move FWireRoutingNode to a separate source file pair.
 /**
@@ -183,10 +184,10 @@ public:
 	void RemoveCollisionGroupIfExists(const FName& GroupName);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
-	UInstancedStaticMeshComponent* VisualCylinders;
+	UMaterialInterface* RenderMaterial {nullptr};
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
-	UInstancedStaticMeshComponent* VisualSpheres;
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	void SetRenderMaterial(UMaterialInterface* Material);
 
 	/*
 	 * Begin winch.
@@ -913,6 +914,7 @@ public:
 protected:
 	// ~Begin UActorComponent interface.
 	virtual void OnRegister() override;
+	virtual void DestroyComponent(bool bPromoteChildren) override;
 	// ~End UActorComponent interface.
 
 private:
@@ -921,6 +923,7 @@ private:
 #endif
 
 	void CreateNative();
+	void CreateVisuals();
 	bool UpdateNativeMaterial();
 
 #if WITH_EDITOR
@@ -935,4 +938,6 @@ private:
 
 private:
 	FWireBarrier NativeBarrier;
+	TObjectPtr<UInstancedStaticMeshComponent> VisualCylinders;
+	TObjectPtr<UInstancedStaticMeshComponent> VisualSpheres;
 };

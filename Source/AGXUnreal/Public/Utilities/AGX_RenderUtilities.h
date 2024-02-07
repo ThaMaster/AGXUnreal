@@ -24,18 +24,6 @@ public:
 		uint32 SourcePitch, uint32 SourceBitsPerPixel, uint8* SourceData, bool bFreeData);
 
 	/**
-	 * Tries to load and returns a UMaterial given an asset path. Returns nullptr if the material
-	 * could not be loaded.
-	 */
-	static UMaterial* GetMaterialFromAssetPath(const TCHAR* AssetPath);
-
-	/**
-	 * Tries to load and returns a UStaticMesh given an asset path. Returns nullptr if the asset
-	 * could not be loaded.
-	 */
-	static UStaticMesh* GetStaticMeshFromAssetPath(const TCHAR* AssetPath);
-
-	/**
 	 * Renders the given ShapeContacts to the screen.
 	 * The rendering is not avaiable in built applications built with Shipping configuration.
 	 */

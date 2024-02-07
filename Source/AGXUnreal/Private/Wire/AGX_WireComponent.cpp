@@ -12,7 +12,6 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
-#include "Utilities/AGX_RenderUtilities.h"
 #include "Wire/AGX_WireInstanceData.h"
 #include "Wire/AGX_WireNode.h"
 #include "Wire/AGX_WireUtilities.h"
@@ -21,9 +20,12 @@
 
 // Unreal Engine includes.
 #include "Components/BillboardComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "CoreGlobals.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Materials/MaterialInterface.h"
 #include "Math/UnrealMathUtility.h"
 
 // Standard library includes.
@@ -62,19 +64,10 @@ UAGX_WireComponent::UAGX_WireComponent()
 	AddNodeAtLocation(FVector::ZeroVector);
 	AddNodeAtLocation(FVector(100.0f, 0.0f, 0.0f));
 
-	// Setup visuals.
-	VisualCylinders =
-		CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("VisualCylinders"));
-	static const TCHAR* CylinderAssetPath =
-		TEXT("StaticMesh'/AGXUnreal/Wire/SM_WireVisualCylinder.SM_WireVisualCylinder'");
-	VisualCylinders->SetStaticMesh(
-		FAGX_RenderUtilities::GetStaticMeshFromAssetPath(CylinderAssetPath));
-
-	VisualSpheres = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("VisualSpheres"));
-	static const TCHAR* SphereAssetPath =
-		TEXT("StaticMesh'/AGXUnreal/Wire/SM_WireVisualSphere.SM_WireVisualSphere'");
-	VisualSpheres->SetStaticMesh(
-		FAGX_RenderUtilities::GetStaticMeshFromAssetPath(SphereAssetPath));
+	// Setup default visuals.
+	static const TCHAR* WireMatAssetPath =
+		TEXT("Material'/AGXUnreal/Wire/MI_GrayWire.MI_GrayWire'");
+	RenderMaterial = FAGX_ObjectUtilities::GetAssetFromPath<UMaterialInstance>(WireMatAssetPath);
 }
 
 void UAGX_WireComponent::SetRadius(float InRadius)
@@ -1237,6 +1230,7 @@ void UAGX_WireComponent::PostInitProperties()
 void UAGX_WireComponent::PostLoad()
 {
 	Super::PostLoad();
+
 	UpdateVisuals();
 }
 
@@ -1266,6 +1260,10 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, bCanCollide),
 		[](ThisClass* Wire) { Wire->SetCanCollide(Wire->bCanCollide); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RenderMaterial),
+		[](ThisClass* Wire) { Wire->SetRenderMaterial(Wire->RenderMaterial); });
 
 	// Begin Winch.
 
@@ -1464,9 +1462,21 @@ void UAGX_WireComponent::OnRegister()
 	}
 #endif
 
-	VisualCylinders->SetupAttachment(this);
-	VisualSpheres->SetupAttachment(this);
+	if (VisualCylinders == nullptr || VisualSpheres == nullptr)
+		CreateVisuals();
+
 	UpdateVisuals();
+}
+
+void UAGX_WireComponent::DestroyComponent(bool bPromoteChildren)
+{
+	if (VisualCylinders != nullptr)
+		VisualCylinders->DestroyComponent();
+
+	if (VisualSpheres != nullptr)
+		VisualSpheres->DestroyComponent();
+
+	Super::DestroyComponent(bPromoteChildren);
 }
 
 namespace AGX_WireComponent_helpers
@@ -1732,6 +1742,29 @@ void UAGX_WireComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 		NativeBarrier.RemoveCollisionGroup(GroupName);
 }
 
+void UAGX_WireComponent::SetRenderMaterial(UMaterialInterface* Material)
+{
+	RenderMaterial = Material;
+
+	if (VisualCylinders != nullptr)
+		VisualCylinders->SetMaterial(0, RenderMaterial);
+
+	if (VisualSpheres != nullptr)
+		VisualSpheres->SetMaterial(0, RenderMaterial);
+
+	for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))
+	{
+		if (Instance->RenderMaterial == RenderMaterial)
+		{
+			if (Instance->VisualCylinders != nullptr)
+				Instance->VisualCylinders->SetMaterial(0, RenderMaterial);
+
+			if (Instance->VisualSpheres != nullptr)
+				Instance->VisualSpheres->SetMaterial(0, RenderMaterial);
+		}
+	}
+}
+
 void UAGX_WireComponent::CreateNative()
 {
 	using namespace AGX_WireComponent_helpers;
@@ -1882,6 +1915,28 @@ void UAGX_WireComponent::CreateNative()
 			FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
 		}
 	}
+}
+
+void UAGX_WireComponent::CreateVisuals()
+{
+	VisualCylinders =
+		NewObject<UInstancedStaticMeshComponent>(this, FName(TEXT("VisualCylinders")));
+	VisualCylinders->RegisterComponent();
+	VisualCylinders->AttachToComponent(
+		this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	static const TCHAR* CylinderAssetPath =
+		TEXT("StaticMesh'/AGXUnreal/Wire/SM_WireVisualCylinder.SM_WireVisualCylinder'");
+	VisualCylinders->SetStaticMesh(
+		FAGX_ObjectUtilities::GetAssetFromPath<UStaticMesh>(CylinderAssetPath));
+
+	VisualSpheres = NewObject<UInstancedStaticMeshComponent>(this, FName(TEXT("VisualSpheres")));
+	VisualSpheres->RegisterComponent();
+	VisualSpheres->AttachToComponent(
+		this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	static const TCHAR* SphereAssetPath =
+		TEXT("StaticMesh'/AGXUnreal/Wire/SM_WireVisualSphere.SM_WireVisualSphere'");
+	VisualSpheres->SetStaticMesh(
+		FAGX_ObjectUtilities::GetAssetFromPath<UStaticMesh>(SphereAssetPath));
 }
 
 bool UAGX_WireComponent::UpdateNativeMaterial()

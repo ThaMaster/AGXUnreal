@@ -79,6 +79,13 @@ public:
 
 	static AActor* GetActorByName(const UWorld& World, const FString Name);
 
+	/**
+	 * Tries to load and returns an asset given an asset path. Returns nullptr if the asset
+	 * could not be loaded.
+	 */
+	template <typename AssetType>
+	static AssetType* GetAssetFromPath(const TCHAR* AssetPath);
+
 	/*
 	 * Returns any Archetype instances of the passed object. If the passed object is not an
 	 * archetype, an empty TArray is returned.
@@ -255,6 +262,22 @@ T* FAGX_ObjectUtilities::Get(const FComponentReference& Reference, const AActor*
 		return nullptr;
 	}
 	return *It;
+}
+
+template <typename AssetType>
+inline AssetType* FAGX_ObjectUtilities::GetAssetFromPath(const TCHAR* AssetPath)
+{
+	UObject* LoadResult = StaticLoadObject(AssetType::StaticClass(), nullptr, AssetPath);
+	if (LoadResult == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("FAGX_ObjectUtilities::GetAssetFromPath: Unable to load asset '%s'."),
+			AssetPath);
+		return nullptr;
+	}
+
+	return Cast<AssetType>(LoadResult);
 }
 
 template <typename T>
