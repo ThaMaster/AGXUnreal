@@ -629,8 +629,10 @@ void FAGX_WireComponentVisualizer::OnDeleteKey()
 
 	const FScopedTransaction Transaction(LOCTEXT("DeleteWireNode", "Delete wire node"));
 
-	GetSelectedWire()->Modify();
-	GetSelectedWire()->RouteNodes.RemoveAt(SelectedNodeIndex);
+	UAGX_WireComponent* Wire = GetSelectedWire();
+	Wire->Modify();
+	Wire->RouteNodes.RemoveAt(SelectedNodeIndex);
+	Wire->MarkVisualsDirty();
 	SelectedNodeIndex = INDEX_NONE;
 	bIsDuplicatingNode = false;
 
