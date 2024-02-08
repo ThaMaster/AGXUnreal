@@ -30,6 +30,7 @@
 // included as part of DataDrivenShaderPlatformInfo.h here.
 #include "DataDrivenShaderPlatformInfo.h"
 #endif
+#include "Engine/StaticMesh.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
@@ -75,21 +76,6 @@ bool FAGX_RenderUtilities::UpdateRenderTextureRegions(
 	ENQUEUE_RENDER_COMMAND(UpdateRenderTextureRegionsData)(std::move(WriteTexture));
 
 	return true;
-}
-
-UMaterial* FAGX_RenderUtilities::GetMaterialFromAssetPath(const TCHAR* AssetPath)
-{
-	UObject* LoadResult = StaticLoadObject(UMaterial::StaticClass(), nullptr, AssetPath);
-	if (LoadResult == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("AGX_TextureUtilities::GetMaterialFromAssetPath: Unable to load material '%s'."),
-			AssetPath);
-		return nullptr;
-	}
-
-	return Cast<UMaterial>(LoadResult);
 }
 
 void FAGX_RenderUtilities::DrawContactPoints(
