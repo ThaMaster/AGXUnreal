@@ -77,11 +77,6 @@ void UAGX_ShapeComponent::UpdateVisualMesh()
 		UpdateBodySetup(); // Used only in runtime.
 }
 
-bool UAGX_ShapeComponent::ShouldCreateVisualMesh() const
-{
-	return ShouldRender();
-}
-
 void UAGX_ShapeComponent::UpdateNativeProperties()
 {
 	if (!HasNative())
