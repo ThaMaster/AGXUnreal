@@ -69,10 +69,7 @@ void UAGX_ShapeComponent::UpdateVisualMesh()
 
 	TSharedPtr<FAGX_SimpleMeshData> Data(new FAGX_SimpleMeshData());
 
-	if (ShouldCreateVisualMesh())
-	{
-		CreateVisualMesh(*Data.Get());
-	}
+	CreateVisualMesh(*Data.Get());
 
 	SetMeshData(Data);
 
