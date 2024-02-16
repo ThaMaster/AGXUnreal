@@ -96,7 +96,7 @@ public: // Properties.
 	UPROPERTY(
 		Config, EditAnywhere, BlueprintReadOnly, Category = "Solver",
 		Meta = (ClampMin = "0.001", UIMin = "0.001", ClampMax = "1.0", UIMax = "1.0"))
-	float TimeStep = 1.0f / 60.0f;
+	double TimeStep = 1.0 / 60.0;
 	// BlueprintReadOnly because will need to make UFunctions for proper Set/GetTimeStep.
 
 	/**
@@ -181,7 +181,7 @@ public: // Properties.
 
 	/** Maximum time lag for the Catch up over time Capped step mode before dropping [s]. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Simulation Stepping Mode")
-	float TimeLagCap = 1.0;
+	double TimeLagCap = 1.0;
 
 	/** Set to true to enable statistics gathering in AGX Dynamics. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Statistics")
@@ -512,10 +512,10 @@ private:
 	 */
 	void OnLevelTransition();
 
-	int32 StepCatchUpImmediately(float DeltaTime);
-	int32 StepCatchUpOverTime(float DeltaTime);
-	int32 StepCatchUpOverTimeCapped(float DeltaTime);
-	int32 StepDropImmediately(float DeltaTime);
+	int32 StepCatchUpImmediately(double DeltaTime);
+	int32 StepCatchUpOverTime(double DeltaTime);
+	int32 StepCatchUpOverTimeCapped(double DeltaTime);
+	int32 StepDropImmediately(double DeltaTime);
 
 	void PreStep();
 	void PostStep();
@@ -535,7 +535,7 @@ private:
 	/// Time that we couldn't step because DeltaTime was not an even multiple
 	/// of the AGX Dynamics step size. That fraction of a time step is carried
 	/// over to the next call to Step.
-	float LeftoverTime;
+	double LeftoverTime;
 
 	// The time it took to do a frame's stepping the last frame we actually took a step.
 	double LastTotalStepTime {0.0};

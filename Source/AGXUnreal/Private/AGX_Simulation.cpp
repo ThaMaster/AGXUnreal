@@ -1012,10 +1012,10 @@ void UAGX_Simulation::Step(float DeltaTime)
 	}
 }
 
-int32 UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
+int32 UAGX_Simulation::StepCatchUpImmediately(double DeltaTime)
 {
 	DeltaTime += LeftoverTime;
-	LeftoverTime = 0.0f;
+	LeftoverTime = 0.0;
 
 	int32 NumSteps = 0;
 	while (DeltaTime >= TimeStep)
@@ -1033,10 +1033,10 @@ int32 UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
 	return NumSteps;
 }
 
-int32 UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
+int32 UAGX_Simulation::StepCatchUpOverTime(double DeltaTime)
 {
 	DeltaTime += LeftoverTime;
-	LeftoverTime = 0.0f;
+	LeftoverTime = 0.0;
 
 	int32 NumSteps = 0;
 	// Step up to two times.
@@ -1059,10 +1059,10 @@ int32 UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
 	return NumSteps;
 }
 
-int32 UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
+int32 UAGX_Simulation::StepCatchUpOverTimeCapped(double DeltaTime)
 {
 	DeltaTime += LeftoverTime;
-	LeftoverTime = 0.0f;
+	LeftoverTime = 0.0;
 
 	int32 NumSteps = 0;
 	// Step up to two times.
@@ -1086,10 +1086,10 @@ int32 UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 	return NumSteps;
 }
 
-int32 UAGX_Simulation::StepDropImmediately(float DeltaTime)
+int32 UAGX_Simulation::StepDropImmediately(double DeltaTime)
 {
 	DeltaTime += LeftoverTime;
-	LeftoverTime = 0.0f;
+	LeftoverTime = 0.0;
 
 	int32 NumSteps = 0;
 	if (DeltaTime >= TimeStep)

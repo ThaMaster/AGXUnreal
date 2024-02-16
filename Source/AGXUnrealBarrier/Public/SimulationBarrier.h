@@ -76,8 +76,8 @@ public:
 	void SetEnableAMOR(bool bEnable);
 	bool GetEnableAMOR();
 
-	void SetTimeStep(float TimeStep);
-	float GetTimeStep() const;
+	void SetTimeStep(double TimeStep);
+	double GetTimeStep() const;
 
 	static void SetNumThreads(uint32 NumThreads);
 	static uint32 GetNumThreads();

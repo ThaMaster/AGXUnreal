@@ -223,16 +223,16 @@ bool FSimulationBarrier::GetEnableAMOR()
 	return NativeRef->Native->getMergeSplitHandler()->getEnable();
 }
 
-void FSimulationBarrier::SetTimeStep(float TimeStep)
+void FSimulationBarrier::SetTimeStep(double TimeStep)
 {
 	check(HasNative());
 	NativeRef->Native->setTimeStep(ConvertToAGX(TimeStep));
 }
 
-float FSimulationBarrier::GetTimeStep() const
+double FSimulationBarrier::GetTimeStep() const
 {
 	check(HasNative());
-	return ConvertToUnreal<float>(NativeRef->Native->getTimeStep());
+	return ConvertToUnreal<double>(NativeRef->Native->getTimeStep());
 }
 
 void FSimulationBarrier::SetEnableContactWarmstarting(bool bEnable)
