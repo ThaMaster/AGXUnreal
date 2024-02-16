@@ -449,13 +449,13 @@ void FSimulationBarrier::Step()
 	}
 }
 
-float FSimulationBarrier::GetTimeStamp() const
+double FSimulationBarrier::GetTimeStamp() const
 {
 	check(HasNative());
-	return ConvertToUnreal<float>(NativeRef->Native->getTimeStamp());
+	return ConvertToUnreal<double>(NativeRef->Native->getTimeStamp());
 }
 
-void FSimulationBarrier::SetTimeStamp(float TimeStamp)
+void FSimulationBarrier::SetTimeStamp(double TimeStamp)
 {
 	check(HasNative());
 	NativeRef->Native->setTimeStamp(ConvertToAGX(TimeStamp));

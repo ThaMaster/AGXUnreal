@@ -34,10 +34,10 @@ class UActorComponent;
 class UWorld;
 class FShapeBarrier;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPreStepForward, float, Time);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPostStepForward, float, Time);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnPreStepForwardInternal, float /*Time*/);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostStepForwardInternal, float /*Time*/);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPreStepForward, double, Time);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPostStepForward, double, Time);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPreStepForwardInternal, double /*Time*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostStepForwardInternal, double /*Time*/);
 
 /**
  * Manages an AGX simulation instance.
@@ -370,7 +370,7 @@ public: // Member functions.
 	 * @return The current simulation time stamp.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Simulation")
-	float GetTimeStamp() const;
+	double GetTimeStamp() const;
 
 	/**
 	 * Set the current simulation time stamp. Does not simulate to that time, just moves the clock
@@ -378,7 +378,7 @@ public: // Member functions.
 	 * @param NewTimeStamp The new time stamp.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Simulation")
-	void SetTimeStamp(float NewTimeStamp);
+	void SetTimeStamp(double NewTimeStamp);
 
 	/**
 	 * Delegate that is executed before each Simulation step forward.

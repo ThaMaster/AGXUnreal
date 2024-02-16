@@ -126,7 +126,7 @@ namespace AGX_RenderUtilities_helpers
 {
 	template <typename PixelType>
 	FAGX_SensorMsgsImage GetImageROS2(
-		const TArray<PixelType>& Pixels, const FIntPoint& Resolution, float TimeStamp,
+		const TArray<PixelType>& Pixels, const FIntPoint& Resolution, double TimeStamp,
 		bool Grayscale)
 	{
 		if (Pixels.Num() == 0)
@@ -137,7 +137,7 @@ namespace AGX_RenderUtilities_helpers
 }
 
 FAGX_SensorMsgsImage UAGX_RenderUtilities::GetImageROS2(
-	UTextureRenderTarget2D* RenderTarget, float TimeStamp, bool Grayscale)
+	UTextureRenderTarget2D* RenderTarget, double TimeStamp, bool Grayscale)
 {
 	const FIntPoint Resolution(RenderTarget->SizeX, RenderTarget->SizeY);
 	

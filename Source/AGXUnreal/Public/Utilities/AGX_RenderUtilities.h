@@ -63,5 +63,5 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Utilities")
 	static FAGX_SensorMsgsImage GetImageROS2(
-		UTextureRenderTarget2D* RenderTarget, float TimeStamp, bool Grayscale = false);
+		UTextureRenderTarget2D* RenderTarget, double TimeStamp, bool Grayscale = false);
 };
