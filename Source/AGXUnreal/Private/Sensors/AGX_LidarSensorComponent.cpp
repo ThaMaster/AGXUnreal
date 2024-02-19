@@ -317,7 +317,7 @@ void UAGX_LidarSensorComponent::BeginPlay()
 	{
 		PostStepForwardHandle =
 			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
-				.AddLambda([this](float TimeStamp) { OnStepForward(TimeStamp); });
+				.AddLambda([this](double TimeStamp) { OnStepForward(TimeStamp); });
 	}
 }
 
@@ -412,7 +412,7 @@ bool UAGX_LidarSensorComponent::CheckValid() const
 	return true;
 }
 
-void UAGX_LidarSensorComponent::OnStepForward(float TimeStamp)
+void UAGX_LidarSensorComponent::OnStepForward(double TimeStamp)
 {
 	if (!bIsValid || !bEnabled)
 		return;
@@ -428,12 +428,12 @@ void UAGX_LidarSensorComponent::OnStepForward(float TimeStamp)
 	OutputPointCloudDataIfReady();
 }
 
-void UAGX_LidarSensorComponent::UpdateElapsedTime(float TimeStamp)
+void UAGX_LidarSensorComponent::UpdateElapsedTime(double TimeStamp)
 {
 	LidarState.ElapsedTimePrev = LidarState.ElapsedTime;
 
 	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
-		LidarState.ElapsedTime = static_cast<double>(Sim->GetTimeStamp());
+		LidarState.ElapsedTime = Sim->GetTimeStamp();
 }
 
 void UAGX_LidarSensorComponent::ScanAutoCPU()

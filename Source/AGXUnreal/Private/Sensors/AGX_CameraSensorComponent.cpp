@@ -40,7 +40,7 @@ namespace AGX_CameraSensorComponent_helpers
 	struct FAGX_ImageAsyncParams
 	{
 		FAGX_ImageAsyncParams(
-			const FIntPoint& InResolution, float InTimeStamp, bool InAsROS2Msg, bool InGrayscale)
+			const FIntPoint& InResolution, double InTimeStamp, bool InAsROS2Msg, bool InGrayscale)
 			: Resolution(InResolution)
 			, TimeStamp(InTimeStamp)
 			, bAsROS2Msg(InAsROS2Msg)
@@ -49,7 +49,7 @@ namespace AGX_CameraSensorComponent_helpers
 		}
 
 		FIntPoint Resolution;
-		float TimeStamp {0.f};
+		double TimeStamp {0.0};
 		bool bAsROS2Msg {false};
 		bool bGrayscale {false};
 	};
@@ -118,7 +118,7 @@ void UAGX_CameraSensorComponent::GetImagePixelsAsync()
 	if (!bIsValid || RenderTarget == nullptr)
 		return;
 
-	float TimeStamp = 0.f;
+	double TimeStamp = 0.0;
 	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
 	{
 		TimeStamp = Sim->GetTimeStamp();
@@ -147,7 +147,7 @@ void UAGX_CameraSensorComponent::GetImageROS2Async(bool Grayscale)
 	if (!bIsValid || RenderTarget == nullptr)
 		return;
 
-	float TimeStamp = 0.f;
+	double TimeStamp = 0.0;
 	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
 	{
 		TimeStamp = Sim->GetTimeStamp();
@@ -164,7 +164,7 @@ FAGX_SensorMsgsImage UAGX_CameraSensorComponent::GetImageROS2(bool Grayscale) co
 	if (!bIsValid)
 		return FAGX_SensorMsgsImage();
 
-	float TimeStamp = 0.f;
+	double TimeStamp = 0.0;
 	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
 		TimeStamp = Sim->GetTimeStamp();
 

@@ -512,7 +512,7 @@ bool AgxAutomationCommon::FWaitUntilSimTime::Update()
 	--MaxTicks;
 	const UWorld* World = GEditor->GetPIEWorldContext()->World();
 	const UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(World);
-	const float CurrentTime = Simulation->GetTimeStamp();
+	const float CurrentTime = static_cast<float>(Simulation->GetTimeStamp());
 	const float UnrealTime = World->GetTimeSeconds();
 	UE_LOG(
 		LogAGX, Warning,

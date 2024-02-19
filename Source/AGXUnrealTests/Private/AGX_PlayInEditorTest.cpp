@@ -67,7 +67,7 @@ using ComponentMap = TMap<FString, UActorComponent*>;
 //
 
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
-	FCheckFallinBoxMovedCommand, float, SimTimeMax, ComponentMap, ComponentsOfInterest,
+	FCheckFallinBoxMovedCommand, double, SimTimeMax, ComponentMap, ComponentsOfInterest,
 	FAutomationTestBase&, Test);
 
 bool FCheckFallinBoxMovedCommand::Update()
@@ -105,7 +105,7 @@ bool FCheckFallinBoxMovedCommand::Update()
 	if (Sim == nullptr)
 		return true;
 
-	const float SimTime = Sim->GetTimeStamp();
+	const auto SimTime = Sim->GetTimeStamp();
 	{
 		// Sanity check to avoid hanging forever if the Simulation is not ticking.
 		NumTicks++;
@@ -142,7 +142,7 @@ bool FFallingBoxTest::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
 
 	ComponentMap ComponentsOfInterest;
-	float SimTimeMax = 0.5f;
+	double SimTimeMax = 0.5;
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FCheckFallinBoxMovedCommand(SimTimeMax, ComponentsOfInterest, *this));
 
@@ -155,7 +155,7 @@ bool FFallingBoxTest::RunTest(const FString& Parameters)
 //
 
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
-	FCheckTerrainPagingStateCommand, float, SimTimeMax, ComponentMap, ComponentsOfInterest,
+	FCheckTerrainPagingStateCommand, double, SimTimeMax, ComponentMap, ComponentsOfInterest,
 	FAutomationTestBase&, Test);
 
 bool FCheckTerrainPagingStateCommand::Update()
@@ -201,7 +201,7 @@ bool FCheckTerrainPagingStateCommand::Update()
 	if (Sim == nullptr)
 		return true;
 
-	const float SimTime = Sim->GetTimeStamp();
+	const auto SimTime = Sim->GetTimeStamp();
 	{
 		// Sanity check to avoid hanging forever if the Simulation is not ticking.
 		NumTicks++;
@@ -259,7 +259,7 @@ bool FTerrainPagingTest::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
 
 	ComponentMap ComponentsOfInterest;
-	float SimTimeMax = 4.f;
+	double SimTimeMax = 4.0;
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FCheckTerrainPagingStateCommand(SimTimeMax, ComponentsOfInterest, *this));
 
@@ -276,7 +276,7 @@ bool FTerrainPagingTest::RunTest(const FString& Parameters)
 //
 
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
-	FCheckPlaygroundStateCommand, float, SimTimeMax, ComponentMap, ComponentsOfInterest,
+	FCheckPlaygroundStateCommand, double, SimTimeMax, ComponentMap, ComponentsOfInterest,
 	FAutomationTestBase&, Test);
 
 bool FCheckPlaygroundStateCommand::Update()
@@ -323,7 +323,7 @@ bool FCheckPlaygroundStateCommand::Update()
 	if (Sim == nullptr)
 		return true;
 
-	const float SimTime = Sim->GetTimeStamp();
+	const auto SimTime = Sim->GetTimeStamp();
 	{
 		// Sanity check to avoid hanging forever if the Simulation is not ticking.
 		NumTicks++;
@@ -366,7 +366,7 @@ bool FPlaygroundTest::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
 
 	ComponentMap ComponentsOfInterest;
-	float SimTimeMax = 5.0f;
+	double SimTimeMax = 5.0;
 	ADD_LATENT_AUTOMATION_COMMAND(
 		FCheckPlaygroundStateCommand(SimTimeMax, ComponentsOfInterest, *this));
 
@@ -502,7 +502,7 @@ bool FMaterialLibraryTest::RunTest(const FString& Parameters)
 //
 
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
-	FCheckROS2MovedCommand, float, SimTimeMax, ComponentMap, ComponentsOfInterest,
+	FCheckROS2MovedCommand, double, SimTimeMax, ComponentMap, ComponentsOfInterest,
 	FAutomationTestBase&, Test);
 
 bool FCheckROS2MovedCommand::Update()
@@ -550,7 +550,7 @@ bool FCheckROS2MovedCommand::Update()
 	if (Sim == nullptr)
 		return true;
 
-	const float SimTime = Sim->GetTimeStamp();
+	const auto SimTime = Sim->GetTimeStamp();
 	{
 		// Sanity check to avoid hanging forever if the Simulation is not ticking.
 		NumTicks++;
@@ -590,7 +590,7 @@ bool FROS2Test::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
 
 	ComponentMap ComponentsOfInterest;
-	float SimTimeMax = 5.0f;
+	double SimTimeMax = 5.0;
 	ADD_LATENT_AUTOMATION_COMMAND(FCheckROS2MovedCommand(SimTimeMax, ComponentsOfInterest, *this));
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);

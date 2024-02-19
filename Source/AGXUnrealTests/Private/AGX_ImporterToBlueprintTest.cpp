@@ -502,7 +502,7 @@ bool FStoreInitialTimes::Update()
 bool FStoreResultingTimes::Update()
 {
 	Test.EndUnrealTime = Test.World->GetTimeSeconds();
-	Test.EndAgxTime = UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp();
+	Test.EndAgxTime = static_cast<float>(UAGX_Simulation::GetFrom(Test.World)->GetTimeStamp());
 	return true;
 }
 
