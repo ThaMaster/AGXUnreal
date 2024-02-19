@@ -25,7 +25,7 @@ namespace AGX_ROS2Utilities_helpers
 		Float64 = 8
 	};
 
-	FAGX_BuiltinInterfacesTime Convert(float TimeStamp)
+	FAGX_BuiltinInterfacesTime Convert(double TimeStamp)
 	{
 		FAGX_BuiltinInterfacesTime t;
 		t.Sec = static_cast<int32>(TimeStamp);
