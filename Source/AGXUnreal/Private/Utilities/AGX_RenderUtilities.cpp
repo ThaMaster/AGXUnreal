@@ -140,7 +140,7 @@ FAGX_SensorMsgsImage UAGX_RenderUtilities::GetImageROS2(
 	UTextureRenderTarget2D* RenderTarget, double TimeStamp, bool Grayscale)
 {
 	const FIntPoint Resolution(RenderTarget->SizeX, RenderTarget->SizeY);
-	
+
 	if (RenderTarget->GetFormat() == EPixelFormat::PF_B8G8R8A8)
 	{
 		return AGX_RenderUtilities_helpers::GetImageROS2(
