@@ -10,7 +10,6 @@ class FPrimitiveDrawInterface;
 class FSceneView;
 class UActorComponent;
 
-
 class AGXUNREALEDITOR_API FAGX_LidarSensorComponentVisualizer : public FComponentVisualizer
 {
 public:

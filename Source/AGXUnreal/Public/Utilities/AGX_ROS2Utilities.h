@@ -44,8 +44,7 @@ public:
 	 * generated at later timestamps.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX ROS2")
-	static FAGX_SensorMsgsPointCloud2 ConvertXYZ(
-		const TArray<FAGX_LidarScanPoint>& Points);
+	static FAGX_SensorMsgsPointCloud2 ConvertXYZ(const TArray<FAGX_LidarScanPoint>& Points);
 
 	/**
 	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2
@@ -64,6 +63,5 @@ public:
 	 * generated at later timestamps.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	static FAGX_SensorMsgsPointCloud2 ConvertAnglesTOF(
-		const TArray<FAGX_LidarScanPoint>& Points);
+	static FAGX_SensorMsgsPointCloud2 ConvertAnglesTOF(const TArray<FAGX_LidarScanPoint>& Points);
 };

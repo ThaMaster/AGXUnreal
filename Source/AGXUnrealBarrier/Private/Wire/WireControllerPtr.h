@@ -7,12 +7,12 @@
 #include "agxWire/WireController.h"
 #include "EndAGXIncludes.h"
 
-
 struct FWireControllerPtr
 {
 	agxWire::WireController* Native = nullptr;
 	FWireControllerPtr() = default;
-	FWireControllerPtr(agxWire::WireController* InNative) : Native(InNative)
+	FWireControllerPtr(agxWire::WireController* InNative)
+		: Native(InNative)
 	{
 	}
 };
