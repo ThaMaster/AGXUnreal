@@ -304,12 +304,12 @@ void UAGX_ShapeComponent::UpdateNativeLocalTransform(TNative& Native)
 	FQuat LocalRotation;
 
 	// Determine if this Shape Component is part of a Rigid Body Component or not. If it is, then
-	// the native should be given a local transform that is relative to that Rigid Body. If it is
-	// not then the native should be given a local transform that is the global transform of the
-	// Shape. We assume that if there is not parent Rigid Body Component then the Shape is
-	// free-floating and the native's frame hierarchy does not have any parent, i.e. the local
-	// transform is the same as the global transform. This assumption will not hold once we start
-	// supporting AGX Dynamics' Assembly.
+	// the native should be given a local transform that is relative to that Rigid Body, including
+	// any intermediate Components. If it is not then the native should be given a local transform
+	// that is the global transform of the Shape. We assume that if there is no parent Rigid Body
+	// Component then the Shape is free-floating and the native's frame hierarchy does not have any
+	// parent, i.e. the local transform is the same as the global transform. This assumption will
+	// not hold once we start supporting AGX Dynamics' Assembly.
 	UAGX_RigidBodyComponent* Body =
 		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*this);
 	if (Body != nullptr)
