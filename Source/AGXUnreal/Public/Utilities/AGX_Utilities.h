@@ -51,5 +51,5 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, Category = "AGX Utilities")
 	static void AddParentVelocityMany(
-		UAGX_RigidBodyComponent* Parent, TArray<UAGX_RigidBodyComponent*>& Bodies);
+		UAGX_RigidBodyComponent* Parent, const TArray<UAGX_RigidBodyComponent*>& Bodies);
 };

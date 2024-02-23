@@ -19,7 +19,7 @@ void UAGX_AGXUtilities::AddParentVelocity(
 }
 
 void UAGX_AGXUtilities::AddParentVelocityMany(
-	UAGX_RigidBodyComponent* Parent, TArray<UAGX_RigidBodyComponent*>& Bodies)
+	UAGX_RigidBodyComponent* Parent, const TArray<UAGX_RigidBodyComponent*>& Bodies)
 {
 	for (UAGX_RigidBodyComponent* Body : Bodies)
 	{
