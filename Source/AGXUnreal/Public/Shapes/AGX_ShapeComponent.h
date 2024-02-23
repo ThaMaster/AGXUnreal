@@ -5,16 +5,17 @@
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_ShapeContactMergeSplitProperties.h"
 #include "AGX_NativeOwner.h"
+#include "AGX_RigidBodyComponent.h"
 #include "AGX_SimpleMeshComponent.h"
 #include "Contacts/AGX_ShapeContact.h"
 #include "Shapes/AGX_ShapeEnums.h"
 #include "Shapes/ShapeBarrier.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
 #include "Engine/EngineTypes.h"
-#include "GameFramework/Actor.h"
 
 #include "AGX_ShapeComponent.generated.h"
 
@@ -299,12 +300,35 @@ private:
 template <typename TNative>
 void UAGX_ShapeComponent::UpdateNativeLocalTransform(TNative& Native)
 {
-	// This assumes that the Shape's parent is the UAGX_RigidBody. If we want
-	// to support other/deeper hierarchies then we need to find the total
-	// transformation from the UAGX_RigidBody to this shape.
-	// GetRelativeTransform may be a useful function.
-	//
-	// See related comment in RigidBodyComponents.cpp:GetShapes.
-	Native.SetLocalPosition(GetRelativeTransform().GetLocation());
-	Native.SetLocalRotation(GetRelativeTransform().GetRotation());
+	FVector LocalLocation;
+	FQuat LocalRotation;
+
+	// Determine if this Shape Component is part of a Rigid Body Component or not. If it is, then
+	// the native should be given a local transform that is relative to that Rigid Body. If it is
+	// not then the native should be given a local transform that is the global transform of the
+	// Shape. We assume that if there is not parent Rigid Body Component then the Shape is
+	// free-floating and the native's frame hierarchy does not have any parent, i.e. the local
+	// transform is the same as the global transform. This assumption will not hold once we start
+	// supporting AGX Dynamics' Assembly.
+	UAGX_RigidBodyComponent* Body =
+		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*this);
+	if (Body != nullptr)
+	{
+		const FTransform& BodyTransform = Body->GetComponentTransform();
+		const FTransform& ShapeTransform = GetComponentTransform();
+		const FTransform RelativeTransform = ShapeTransform.GetRelativeTransform(BodyTransform);
+		LocalLocation = RelativeTransform.GetLocation();
+		LocalRotation = RelativeTransform.GetRotation();
+	}
+	else
+	{
+		// Here we assume that any AGX Dynamics Geometry that is not part of a Rigid Body isn't
+		// part of anything else either, and thus the local and global transforms are the same.
+		// Something else will be required once we should support AGX Dynamics' Assembly.
+		LocalLocation = GetRelativeTransform().GetLocation();
+		LocalRotation = GetRelativeTransform().GetRotation();
+	}
+
+	Native.SetLocalPosition(LocalLocation);
+	Native.SetLocalRotation(LocalRotation);
 }

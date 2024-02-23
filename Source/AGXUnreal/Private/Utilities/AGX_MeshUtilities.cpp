@@ -2110,11 +2110,11 @@ bool AGX_MeshUtilities::GetStaticMeshCollisionData(
 	//
 	// This can probably be done better, but the only reason we check Allow CPU Access here is
 	// that the render thread copying produces garbage on Linux. We should solve that and remove
-	// this check. See internal issue 292. But on the other hand, why copy from GPU when the data
-	// is already next to the CPU? We expect that Allow CPU Access will be false most of the time,
-	// and we don't want to require the end-user to check the checkbox on every mesh they want to
-	// create a Trimesh from. Should the Trimesh set the flag on the Static Mesh asset? Can it?
-	// Doing it here is too late since we're now in Begin Play, we need to set the flag on the
+	// this check. See internal issues 292 and 921. But on the other hand, why copy from GPU when
+	// the data is already next to the CPU? We expect that Allow CPU Access will be false most of
+	// the time, and we don't want to require the end-user to check the checkbox on every mesh they
+	// want to create a Trimesh from. Should the Trimesh set the flag on the Static Mesh asset? Can
+	// it? Doing it here is too late since we're now in Begin Play, we need to set the flag on the
 	// Editor instance, not the Play instance. The state handling of the flag will be complicated
 	// since we don't want to leave them checked on Static Mesh assets that are no longer used by
 	// any Trimesh, and we don't want to disable it on a Static Mesh asset on which the end-user
