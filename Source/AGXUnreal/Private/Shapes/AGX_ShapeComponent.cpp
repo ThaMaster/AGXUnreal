@@ -232,15 +232,6 @@ void UAGX_ShapeComponent::BeginPlay()
 	}
 
 	GetOrCreateNative();
-	UAGX_RigidBodyComponent* RigidBody =
-		FAGX_ObjectUtilities::FindFirstAncestorOfType<UAGX_RigidBodyComponent>(*this);
-	if (RigidBody == nullptr)
-	{
-		// This shape doesn't have a parent body so the native shape's local transform will become
-		// its world transform. Push the entire Unreal world transform down into the native shape.
-		UpdateNativeGlobalTransform();
-	}
-
 	if (HasNative())
 		MergeSplitProperties.OnBeginPlay(*this);
 

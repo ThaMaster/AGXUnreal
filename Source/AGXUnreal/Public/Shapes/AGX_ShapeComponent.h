@@ -323,10 +323,12 @@ void UAGX_ShapeComponent::UpdateNativeLocalTransform(TNative& Native)
 	else
 	{
 		// Here we assume that any AGX Dynamics Geometry that is not part of a Rigid Body isn't
-		// part of anything else either, and thus the local and global transforms are the same.
-		// Something else will be required once we should support AGX Dynamics' Assembly.
-		LocalLocation = GetRelativeTransform().GetLocation();
-		LocalRotation = GetRelativeTransform().GetRotation();
+		// part of anything else either, and thus the local and global transforms are the same,
+		// which means that the Shape Component's world transform can be written to the AGX Dynamics
+		// Geometry's local transform. Something else will be required once we are to support AGX
+		// Dynamics' Assembly.
+		LocalLocation = GetComponentTransform().GetLocation();
+		LocalRotation = GetComponentTransform().GetRotation();
 	}
 
 	Native.SetLocalPosition(LocalLocation);
