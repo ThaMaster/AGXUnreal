@@ -19,7 +19,6 @@ public:
 	static void AppendParticlePositions(
 		const FTerrainBarrier& Terrain, TArray<FVector>& OutPositions);
 
-
 	static void AppendParticleVelocities(
 		const FTerrainBarrier& Terrain, TArray<FVector>& OutVelocities);
 
@@ -51,13 +50,14 @@ public:
 	static void GetParticleRotationsById(
 		const FTerrainBarrier& Terrain, TArray<FQuat>& OutRotation);
 
-	static void GetParticleRadiiById(
-		const FTerrainBarrier& Terrain, TArray<float>& OutRadii);
+	static void GetParticleRadiiById(const FTerrainBarrier& Terrain, TArray<float>& OutRadii);
 
 	/**
-	 * Writes the position, rotation and radii of all particles known to the passed Terrain to OutParticleData.
+	 * Writes the position, rotation and radii of all particles known to the passed Terrain to
+	 * OutParticleData.
 	 */
-	static void GetParticleDataById(const FTerrainBarrier& Terrain, FParticleDataById& OutParticleData);
+	static void GetParticleDataById(
+		const FTerrainBarrier& Terrain, FParticleDataById& OutParticleData);
 
 	/**
 	 * Returns the number of particles known to the passed Terrain.

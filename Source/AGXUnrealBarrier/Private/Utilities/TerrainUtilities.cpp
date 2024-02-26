@@ -63,7 +63,8 @@ namespace TerrainUtilities_helpers
 	}
 
 	void GetParticleExistsById(
-		const agx::Physics::GranularBodyPtrArray& Particles, TArray<bool>& OutExists, agxData::IndexArray& IdToIndex)
+		const agx::Physics::GranularBodyPtrArray& Particles, TArray<bool>& OutExists,
+		agxData::IndexArray& IdToIndex)
 	{
 		verify(IdToIndex.size() < std::numeric_limits<int32>::max());
 		const int32 NumIds = static_cast<int32>(IdToIndex.size());
@@ -255,7 +256,8 @@ void FTerrainUtilities::AppendParticleData(
 	TerrainUtilities_helpers::AppendParticleRotations(GranularParticles, OutParticleData.Rotations);
 }
 
-void FTerrainUtilities::GetParticleExistsById(const FTerrainBarrier& Terrain, TArray<bool>& OutExists)
+void FTerrainUtilities::GetParticleExistsById(
+	const FTerrainBarrier& Terrain, TArray<bool>& OutExists)
 {
 	AGX_CHECK(Terrain.HasNative());
 	if (!Terrain.HasNative())
@@ -296,7 +298,8 @@ void FTerrainUtilities::GetParticlePositionsById(
 	TerrainUtilities_helpers::GetParticlePositionsById(GranularParticles, OutPositions, IdToIndex);
 }
 
-void FTerrainUtilities::GetParticleVelocitiesById(const FTerrainBarrier& Terrain, TArray<FVector>& OutVelocities)
+void FTerrainUtilities::GetParticleVelocitiesById(
+	const FTerrainBarrier& Terrain, TArray<FVector>& OutVelocities)
 {
 	AGX_CHECK(Terrain.HasNative())
 	if (!Terrain.HasNative())
@@ -304,17 +307,20 @@ void FTerrainUtilities::GetParticleVelocitiesById(const FTerrainBarrier& Terrain
 		return;
 	}
 
-	const agx::Physics::GranularBodyPtrArray Particles = TerrainUtilities_helpers::GetGranularParticles(*Terrain.GetNative()->Native);
+	const agx::Physics::GranularBodyPtrArray Particles =
+		TerrainUtilities_helpers::GetGranularParticles(*Terrain.GetNative()->Native);
 
-	agxData::EntityStorage* Storage = Terrain.GetNative()->Native->getSoilSimulationInterface()->getGranularBodySystem()->getParticleStorage();
+	agxData::EntityStorage* Storage = Terrain.GetNative()
+										  ->Native->getSoilSimulationInterface()
+										  ->getGranularBodySystem()
+										  ->getParticleStorage();
 
 	agxData::IndexArray& IdToIndex = Storage->getIdToIndexTable();
 	TerrainUtilities_helpers::GetParticleVelocitiesById(Particles, OutVelocities, IdToIndex);
 }
 
-
-
-void FTerrainUtilities::GetParticleRotationsById(const FTerrainBarrier& Terrain, TArray<FQuat>& OutRotations)
+void FTerrainUtilities::GetParticleRotationsById(
+	const FTerrainBarrier& Terrain, TArray<FQuat>& OutRotations)
 {
 	AGX_CHECK(Terrain.HasNative())
 	if (!Terrain.HasNative())
@@ -322,25 +328,34 @@ void FTerrainUtilities::GetParticleRotationsById(const FTerrainBarrier& Terrain,
 		return;
 	}
 
-	const agx::Physics::GranularBodyPtrArray Particles = TerrainUtilities_helpers::GetGranularParticles(*Terrain.GetNative()->Native);
+	const agx::Physics::GranularBodyPtrArray Particles =
+		TerrainUtilities_helpers::GetGranularParticles(*Terrain.GetNative()->Native);
 
-	agxData::EntityStorage* Storage = Terrain.GetNative()->Native->getSoilSimulationInterface()->getGranularBodySystem()->getParticleStorage();
+	agxData::EntityStorage* Storage = Terrain.GetNative()
+										  ->Native->getSoilSimulationInterface()
+										  ->getGranularBodySystem()
+										  ->getParticleStorage();
 
 	agxData::IndexArray& IdToIndex = Storage->getIdToIndexTable();
 	TerrainUtilities_helpers::GetParticleRotationsById(Particles, OutRotations, IdToIndex);
 }
 
-void FTerrainUtilities::GetParticleRadiiById(const FTerrainBarrier& Terrain, TArray<float>& OutRadii)
+void FTerrainUtilities::GetParticleRadiiById(
+	const FTerrainBarrier& Terrain, TArray<float>& OutRadii)
 {
 	AGX_CHECK(Terrain.HasNative())
-		if (!Terrain.HasNative())
-		{
-			return;
-		}
+	if (!Terrain.HasNative())
+	{
+		return;
+	}
 
-	const agx::Physics::GranularBodyPtrArray Particles = TerrainUtilities_helpers::GetGranularParticles(*Terrain.GetNative()->Native);
+	const agx::Physics::GranularBodyPtrArray Particles =
+		TerrainUtilities_helpers::GetGranularParticles(*Terrain.GetNative()->Native);
 
-	agxData::EntityStorage* Storage = Terrain.GetNative()->Native->getSoilSimulationInterface()->getGranularBodySystem()->getParticleStorage();
+	agxData::EntityStorage* Storage = Terrain.GetNative()
+										  ->Native->getSoilSimulationInterface()
+										  ->getGranularBodySystem()
+										  ->getParticleStorage();
 
 	agxData::IndexArray& IdToIndex = Storage->getIdToIndexTable();
 	TerrainUtilities_helpers::GetParticleRadiiById(Particles, OutRadii, IdToIndex);
