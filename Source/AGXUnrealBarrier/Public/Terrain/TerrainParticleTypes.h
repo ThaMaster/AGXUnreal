@@ -2,6 +2,9 @@
 
 #pragma once
 
+// Unreal Engine includes.
+#include "Math/Vector.h"
+
 struct FParticleData
 {
 	TArray<FVector> Positions;
