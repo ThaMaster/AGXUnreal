@@ -256,6 +256,12 @@ public:
 	static void SelectActor(AActor* Actor, bool DeselectPrevious = true);
 
 	/**
+	 * Check if the given Component is selected anywhere. This includes both in the Level Viewport
+	 * or in the Components panel of any Blueprint Editor.
+	 */
+	static bool IsSelected(const UActorComponent& Component);
+
+	/**
 	 * Return the Editor world, i.e. not the one that is potentially currently playing.
 	 */
 	static UWorld* GetEditorWorld();
