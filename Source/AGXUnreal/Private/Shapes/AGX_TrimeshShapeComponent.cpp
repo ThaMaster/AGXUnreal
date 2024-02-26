@@ -10,6 +10,7 @@
 // Unreal Engine includes.
 #include "Engine/StaticMesh.h"
 #include "Components/StaticMeshComponent.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 UAGX_TrimeshShapeComponent::UAGX_TrimeshShapeComponent()
 {
@@ -186,9 +187,9 @@ void UAGX_TrimeshShapeComponent::CreateNative()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("TrimeshShapeComponent '%s' does not have a StaticMeshComponent to read triangle "
+			TEXT("TrimeshShapeComponent '%s' in '%s' does not have a StaticMeshComponent to read triangle "
 				 "data from. The generated native shape will be invalid."),
-			*GetName());
+			*GetName(), *GetLabelSafe(GetOwner()));
 		NativeBarrier.AllocateNative({}, {}, /*bClockwise*/ false, GetName());
 	}
 
@@ -265,8 +266,8 @@ bool UAGX_TrimeshShapeComponent::GetStaticMeshCollisionData(
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("GetStaticMeshCollisionData failed in '%s'. Unable to find static Mesh."),
-			*GetName());
+			TEXT("GetStaticMeshCollisionData failed for '%s' in '%s'. Unable to find static Mesh."),
+			*GetName(), *GetLabelSafe(GetOwner()));
 		return false;
 	}
 
