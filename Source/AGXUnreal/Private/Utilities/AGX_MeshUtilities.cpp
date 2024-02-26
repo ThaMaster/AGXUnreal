@@ -13,6 +13,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Rendering/PositionVertexBuffer.h"
 #include "RenderingThread.h"
+#include "RHIGPUReadback.h"
 #include "StaticMeshResources.h"
 
 // Standard library includes.
