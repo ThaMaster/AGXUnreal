@@ -1750,17 +1750,15 @@ namespace AGX_MeshUtilities_helpers
 	/**
 	 * Read triangle mesh data directly from the Static Mesh asset.
 	 *
-	 * This only works in Editor builds, and for meshes that has the Allow CPU Access flag set. In
-	 * particular, it does not work for cooked builds.
-	 *
-	 * If neither of the above is true then the mesh data must be read using
-	 * CopyMeshBuffesRenderThread.
+	 * This works for Play In Editor sessions and for meshes that has the Allow CPU Access flag set.
+	 * It does not work for meshes without the Allow CPU Access flag set in cooked builds. In this
+	 * case use CopyMeshBuffersFromGPUMemory instead.
 	 *
 	 * @param Mesh The mesh to read triangles from.
 	 * @param OutPositions Array to which the vertex locations are written.
 	 * @param OutIndices Array to which the vertex indices are written.
 	 */
-	void CopyMeshBuffersGameThread(
+	void CopyMeshBuffersFromCPUMemory(
 		const FStaticMeshLODResources& Mesh, TArray<FVector3f>& OutPositions,
 		TArray<uint32>& OutIndices)
 	{
@@ -1787,19 +1785,16 @@ namespace AGX_MeshUtilities_helpers
 
 	/**
 	 * Enqueue, and wait for the completion of, a render command to copy the triangle mesh data from
-	 * graphics memory to host memory.
+	 * GPU memory to CPU memory.
 	 *
 	 * This approach is required for cooked builds unless the Static Mesh asset has the Allow CPU
 	 * Access flag set.
-	 *
-	 * @todo This doesn't work on Linux. We get indices that point outside of the vertex buffer,
-	 * which should never happen.
 	 *
 	 * @param Mesh The mesh to read triangle mesh data from.
 	 * @param OutPositions Array to which the vertex positions are written.
 	 * @param OutIndices Array to which the vertex indices are written.
 	 */
-	void CopyMeshBuffersRenderThread(
+	void CopyMeshBuffersFromGPUMemory(
 		const FStaticMeshLODResources& Mesh, TArray<FVector3f>& OutPositions,
 		TArray<uint32>& OutIndices)
 	{
@@ -1814,65 +1809,60 @@ namespace AGX_MeshUtilities_helpers
 			[&](FRHICommandListImmediate& RHICmdList)
 			{
 				// Copy vertex buffer.
-				auto& PositionRHI = Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
-				const uint32 NumPositionBytes = PositionRHI->GetSize();
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-				FVector3f* PositionData = static_cast<FVector3f*>(
-					RHILockVertexBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
-#else
-				FVector3f* PositionData = static_cast<FVector3f*>(
-					RHICmdList.LockBuffer(PositionRHI, 0, NumPositionBytes, RLM_ReadOnly));
-#endif
-				for (uint32 I = 0; I < NumPositions; I++)
 				{
-					OutPositions.Add(PositionData[I]);
+					const FBufferRHIRef& Buffer =
+						Mesh.VertexBuffers.PositionVertexBuffer.VertexBufferRHI;
+					const uint32 NumBytes = Buffer->GetSize();
+					FRHIGPUBufferReadback Readback(TEXT("BufferReadback: Positions"));
+					Readback.EnqueueCopy(RHICmdList, Buffer);
+					RHICmdList.BlockUntilGPUIdle();
+					FVector3f* Data = static_cast<FVector3f*>(Readback.Lock(NumBytes));
+					for (uint32 I = 0; I < NumPositions; I++)
+					{
+						OutPositions.Add(Data[I]);
+					}
+					Readback.Unlock();
 				}
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-				RHIUnlockVertexBuffer(PositionRHI);
-#else
-				RHICmdList.UnlockBuffer(PositionRHI);
-#endif
 
 				// Copy index buffer.
-				auto& IndexRHI = Mesh.IndexBuffer.IndexBufferRHI;
-				if (IndexRHI->GetStride() == 2)
 				{
-				// Two byte index size.
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-					uint16* IndexData = static_cast<uint16*>(
-						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-#else
-					uint16* IndexData = static_cast<uint16*>(
-						RHICmdList.LockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-#endif
-					for (uint32 i = 0; i < NumIndices; i++)
+					const FBufferRHIRef& Buffer = Mesh.IndexBuffer.IndexBufferRHI;
+					const uint32 NumBytes = Buffer->GetSize();
+					FRHIGPUBufferReadback Readback(TEXT("BufferReadback: Indices"));
+					Readback.EnqueueCopy(RHICmdList, Buffer);
+					RHICmdList.BlockUntilGPUIdle();
+					void* Data = Readback.Lock(NumBytes);
+					switch (Buffer->GetStride())
 					{
-						check(IndexData[i] < NumPositions);
-						OutIndices.Add(static_cast<uint32>(IndexData[i]));
+						case 2:
+						{
+							const uint16* const IndexData = static_cast<uint16*>(Data);
+							for (uint32 I = 0; I < NumIndices; I++)
+							{
+								check(IndexData[I] < NumPositions);
+								OutIndices.Add(static_cast<uint32>(IndexData[I]));
+							}
+
+							break;
+						}
+						case 4:
+						{
+							const uint32* const IndexData = static_cast<uint32*>(Data);
+							for (uint32 I = 0; I < NumIndices; ++I)
+							{
+								check(IndexData[I] < NumPositions);
+								OutIndices.Add(static_cast<uint32>(IndexData[I]));
+							}
+							break;
+						}
+						default:
+							UE_LOG(
+								LogTemp, Error,
+								TEXT("Unexpected index size %d, cannot read Static Mesh data."),
+								Buffer->GetStride());
 					}
+					Readback.Unlock();
 				}
-				else
-				{
-					// Four byte index size (stride must be either 2 or 4).
-					check(IndexRHI->GetStride() == 4);
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-					uint32* IndexData = static_cast<uint32*>(
-						RHILockIndexBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-#else
-					uint32* IndexData = static_cast<uint32*>(
-						RHICmdList.LockBuffer(IndexRHI, 0, IndexRHI->GetSize(), RLM_ReadOnly));
-#endif
-					for (uint32 i = 0; i < NumIndices; i++)
-					{
-						check(IndexData[i] < NumPositions);
-						OutIndices.Add(IndexData[i]);
-					}
-				}
-#if UE_VERSION_OLDER_THAN(5, 0, 0)
-				RHIUnlockIndexBuffer(IndexRHI);
-#else
-				RHICmdList.UnlockBuffer(IndexRHI);
-#endif
 			});
 
 		// Wait for rendering thread to finish.
@@ -1881,7 +1871,7 @@ namespace AGX_MeshUtilities_helpers
 
 	/**
 	 * Check that CopyMeshBuffersGameThread and CopyMeshBuffersRenderThread produces the same
-	 * result. On Linux it doesn't, which is bad.
+	 * result.
 	 *
 	 * @param Mesh The mesh to read trimesh data from.
 	 */
@@ -1890,7 +1880,7 @@ namespace AGX_MeshUtilities_helpers
 		// We trust the game thread version, so just call it.
 		TArray<FVector3f> GamePositions;
 		TArray<uint32> GameIndices;
-		CopyMeshBuffersGameThread(Mesh, GamePositions, GameIndices);
+		CopyMeshBuffersFromCPUMemory(Mesh, GamePositions, GameIndices);
 
 		const int32 TrueNumIndices = GameIndices.Num();
 		const int32 TrueNumPositions = GamePositions.Num();
@@ -2040,9 +2030,9 @@ namespace AGX_MeshUtilities_helpers
 		TArray<uint32>& OutIndices)
 	{
 #if WITH_EDITOR
-		CopyMeshBuffersGameThread(Mesh, OutPositions, OutIndices);
+		CopyMeshBuffersFromCPUMemory(Mesh, OutPositions, OutIndices);
 #else
-		CopyMeshBuffersRenderThread(Mesh, OutPositions, OutIndices);
+		CopyMeshBuffersFromGPUMemory(Mesh, OutPositions, OutIndices);
 #endif
 	}
 
@@ -2121,7 +2111,7 @@ bool AGX_MeshUtilities::GetStaticMeshCollisionData(
 	// enabled it on themselves.
 	if (StaticMesh.bAllowCPUAccess)
 	{
-		AGX_MeshUtilities_helpers::CopyMeshBuffersGameThread(Mesh, VertexBuffer, IndexBuffer);
+		AGX_MeshUtilities_helpers::CopyMeshBuffersFromCPUMemory(Mesh, VertexBuffer, IndexBuffer);
 	}
 	else
 	{
