@@ -30,6 +30,7 @@
 // included as part of DataDrivenShaderPlatformInfo.h here.
 #include "DataDrivenShaderPlatformInfo.h"
 #endif
+#include "Engine/StaticMesh.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
@@ -75,21 +76,6 @@ bool FAGX_RenderUtilities::UpdateRenderTextureRegions(
 	ENQUEUE_RENDER_COMMAND(UpdateRenderTextureRegionsData)(std::move(WriteTexture));
 
 	return true;
-}
-
-UMaterial* FAGX_RenderUtilities::GetMaterialFromAssetPath(const TCHAR* AssetPath)
-{
-	UObject* LoadResult = StaticLoadObject(UMaterial::StaticClass(), nullptr, AssetPath);
-	if (LoadResult == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("AGX_TextureUtilities::GetMaterialFromAssetPath: Unable to load material '%s'."),
-			AssetPath);
-		return nullptr;
-	}
-
-	return Cast<UMaterial>(LoadResult);
 }
 
 void FAGX_RenderUtilities::DrawContactPoints(
@@ -140,7 +126,7 @@ namespace AGX_RenderUtilities_helpers
 {
 	template <typename PixelType>
 	FAGX_SensorMsgsImage GetImageROS2(
-		const TArray<PixelType>& Pixels, const FIntPoint& Resolution, float TimeStamp,
+		const TArray<PixelType>& Pixels, const FIntPoint& Resolution, double TimeStamp,
 		bool Grayscale)
 	{
 		if (Pixels.Num() == 0)
@@ -151,10 +137,10 @@ namespace AGX_RenderUtilities_helpers
 }
 
 FAGX_SensorMsgsImage UAGX_RenderUtilities::GetImageROS2(
-	UTextureRenderTarget2D* RenderTarget, float TimeStamp, bool Grayscale)
+	UTextureRenderTarget2D* RenderTarget, double TimeStamp, bool Grayscale)
 {
 	const FIntPoint Resolution(RenderTarget->SizeX, RenderTarget->SizeY);
-	
+
 	if (RenderTarget->GetFormat() == EPixelFormat::PF_B8G8R8A8)
 	{
 		return AGX_RenderUtilities_helpers::GetImageROS2(

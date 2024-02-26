@@ -658,7 +658,7 @@ void AAGX_Terrain::BeginPlay()
 		PostStepForwardHandle =
 			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
 				.AddLambda(
-					[this](float)
+					[this](double)
 					{
 						if (bEnableDisplacementRendering)
 						{

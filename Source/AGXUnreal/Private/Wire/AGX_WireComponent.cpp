@@ -20,11 +20,16 @@
 
 // Unreal Engine includes.
 #include "Components/BillboardComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "CoreGlobals.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Materials/MaterialInterface.h"
 #include "Math/UnrealMathUtility.h"
 
 // Standard library includes.
+#include <algorithm>
 #include <tuple>
 
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
@@ -58,6 +63,11 @@ UAGX_WireComponent::UAGX_WireComponent()
 	// Add a pair of default nodes to make initial editing easier.
 	AddNodeAtLocation(FVector::ZeroVector);
 	AddNodeAtLocation(FVector(100.0f, 0.0f, 0.0f));
+
+	// Setup default visuals.
+	static const TCHAR* WireMatAssetPath =
+		TEXT("Material'/AGXUnreal/Wire/MI_GrayWire.MI_GrayWire'");
+	RenderMaterial = FAGX_ObjectUtilities::GetAssetFromPath<UMaterialInterface>(WireMatAssetPath);
 }
 
 void UAGX_WireComponent::SetRadius(float InRadius)
@@ -67,6 +77,8 @@ void UAGX_WireComponent::SetRadius(float InRadius)
 		NativeBarrier.SetRadius(InRadius);
 	}
 	Radius = InRadius;
+
+	UpdateVisuals();
 }
 
 void UAGX_WireComponent::SetMinSegmentLength(float InMinSegmentLength)
@@ -1102,6 +1114,11 @@ TArray<FVector> UAGX_WireComponent::GetRenderNodeLocations() const
 	return Result;
 }
 
+void UAGX_WireComponent::MarkVisualsDirty()
+{
+	UpdateVisuals();
+}
+
 void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
 {
 	Radius = Barrier.GetRadius();
@@ -1210,6 +1227,12 @@ void UAGX_WireComponent::PostInitProperties()
 #endif
 }
 
+void UAGX_WireComponent::PostLoad()
+{
+	Super::PostLoad();
+	UpdateVisuals();
+}
+
 #if WITH_EDITOR
 
 void UAGX_WireComponent::InitPropertyDispatcher()
@@ -1236,6 +1259,10 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, bCanCollide),
 		[](ThisClass* Wire) { Wire->SetCanCollide(Wire->bCanCollide); });
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RenderMaterial),
+		[](ThisClass* Wire) { Wire->SetRenderMaterial(Wire->RenderMaterial); });
 
 	// Begin Winch.
 
@@ -1331,6 +1358,16 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
+	FEditPropertyChain::TDoubleLinkedListNode* Node = Event.PropertyChain.GetHead();
+	if (Node != nullptr)
+	{
+		const FName Member = Node->GetValue()->GetFName();
+		if (DoesPropertyAffectVisuals(Member))
+		{
+			UpdateVisuals();
+		}
+	}
+
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
@@ -1357,8 +1394,7 @@ void UAGX_WireComponent::TickComponent(
 	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	/// @todo Do we need to do anything here?
+	UpdateVisuals();
 }
 
 void UAGX_WireComponent::CreateMergeSplitProperties()
@@ -1424,6 +1460,22 @@ void UAGX_WireComponent::OnRegister()
 		SpriteComponent->SetRelativeScale3D(FVector(2.0, 2.0, 2.0));
 	}
 #endif
+
+	if (VisualCylinders == nullptr || VisualSpheres == nullptr)
+		CreateVisuals();
+
+	UpdateVisuals();
+}
+
+void UAGX_WireComponent::DestroyComponent(bool bPromoteChildren)
+{
+	if (VisualCylinders != nullptr)
+		VisualCylinders->DestroyComponent();
+
+	if (VisualSpheres != nullptr)
+		VisualSpheres->DestroyComponent();
+
+	Super::DestroyComponent(bPromoteChildren);
 }
 
 namespace AGX_WireComponent_helpers
@@ -1689,6 +1741,17 @@ void UAGX_WireComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
 		NativeBarrier.RemoveCollisionGroup(GroupName);
 }
 
+void UAGX_WireComponent::SetRenderMaterial(UMaterialInterface* Material)
+{
+	RenderMaterial = Material;
+
+	if (VisualCylinders != nullptr)
+		VisualCylinders->SetMaterial(0, RenderMaterial);
+
+	if (VisualSpheres != nullptr)
+		VisualSpheres->SetMaterial(0, RenderMaterial);
+}
+
 void UAGX_WireComponent::CreateNative()
 {
 	using namespace AGX_WireComponent_helpers;
@@ -1841,6 +1904,30 @@ void UAGX_WireComponent::CreateNative()
 	}
 }
 
+void UAGX_WireComponent::CreateVisuals()
+{
+	VisualCylinders =
+		NewObject<UInstancedStaticMeshComponent>(this, FName(TEXT("VisualCylinders")));
+	VisualCylinders->RegisterComponent();
+	VisualCylinders->AttachToComponent(
+		this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	static const TCHAR* CylinderAssetPath =
+		TEXT("StaticMesh'/AGXUnreal/Wire/SM_WireVisualCylinder.SM_WireVisualCylinder'");
+	VisualCylinders->SetStaticMesh(
+		FAGX_ObjectUtilities::GetAssetFromPath<UStaticMesh>(CylinderAssetPath));
+	VisualCylinders->SetMaterial(0, RenderMaterial);
+
+	VisualSpheres = NewObject<UInstancedStaticMeshComponent>(this, FName(TEXT("VisualSpheres")));
+	VisualSpheres->RegisterComponent();
+	VisualSpheres->AttachToComponent(
+		this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	static const TCHAR* SphereAssetPath =
+		TEXT("StaticMesh'/AGXUnreal/Wire/SM_WireVisualSphere.SM_WireVisualSphere'");
+	VisualSpheres->SetStaticMesh(
+		FAGX_ObjectUtilities::GetAssetFromPath<UStaticMesh>(SphereAssetPath));
+	VisualSpheres->SetMaterial(0, RenderMaterial);
+}
+
 bool UAGX_WireComponent::UpdateNativeMaterial()
 {
 	if (!HasNative())
@@ -1878,6 +1965,124 @@ bool UAGX_WireComponent::UpdateNativeMaterial()
 	NativeBarrier.SetMaterial(*MaterialBarrier);
 
 	return true;
+}
+
+#if WITH_EDITOR
+bool UAGX_WireComponent::DoesPropertyAffectVisuals(const FName& MemberPropertyName) const
+{
+	if (MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, VisualCylinders))
+		return true;
+
+	if (MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, VisualSpheres))
+		return true;
+
+	if (MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes))
+		return true;
+
+	if (MemberPropertyName == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, Radius))
+		return true;
+
+	return false;
+}
+#endif
+
+TArray<FVector> UAGX_WireComponent::GetNodesForRendering() const
+{
+	TArray<FVector> NodeLocations;
+	if (HasRenderNodes())
+	{
+		NodeLocations = GetRenderNodeLocations();
+	}
+	else
+	{
+		NodeLocations.Reserve(RouteNodes.Num());
+		const FTransform& ComponentTransform = GetComponentTransform();
+		for (const auto& Node : RouteNodes)
+		{
+			NodeLocations.Add(ComponentTransform.TransformPositionNoScale(Node.Location));
+		}
+	}
+
+	return NodeLocations;
+}
+
+bool UAGX_WireComponent::ShouldRender() const
+{
+	return IsVisible() && VisualCylinders != nullptr && VisualSpheres != nullptr;
+}
+
+void UAGX_WireComponent::UpdateVisuals()
+{
+	if (!ShouldRender())
+		return;
+
+	// Workaround, the RenderMaterial does not propagate properly in SetRenderMaterial() in
+	// Blueprints, so we assign it here.
+	if (VisualCylinders->GetMaterial(0) != RenderMaterial)
+		VisualCylinders->SetMaterial(0, RenderMaterial);
+
+	if (VisualSpheres->GetMaterial(0) != RenderMaterial)
+		VisualSpheres->SetMaterial(0, RenderMaterial);
+
+	TArray<FVector> NodeLocations = GetNodesForRendering();
+	RenderSelf(NodeLocations);
+}
+
+void UAGX_WireComponent::RenderSelf(const TArray<FVector>& Points)
+{
+	if (Points.Num() <= 1)
+		return;
+
+	const int32 NumSegments = Points.Num() - 1;
+	SetVisualsInstanceCount(NumSegments);
+
+	VisualCylinders->UpdateComponentToWorld();
+	VisualSpheres->UpdateComponentToWorld();
+
+	const double ScaleXY = static_cast<double>(Radius) * 0.01 * 2.0;
+	FTransform SphereTransform {FTransform::Identity};
+	FTransform CylTransform {FTransform::Identity};
+	SphereTransform.SetScale3D(FVector(ScaleXY, ScaleXY, ScaleXY));
+	for (int i = 0; i < NumSegments; i++)
+	{
+		const FVector& StartLocation = Points[i];
+		const FVector& EndLocation = Points[i + 1];
+		const FVector MidPoint = (StartLocation + EndLocation) * 0.5;
+		const FVector DeltaVec = EndLocation - StartLocation;
+		const FRotator Rot = UKismetMathLibrary::MakeRotFromZ(DeltaVec);
+
+		CylTransform.SetLocation(MidPoint);
+		CylTransform.SetRotation(Rot.Quaternion());
+		const auto Distance = (DeltaVec).Length();
+		CylTransform.SetScale3D(FVector(ScaleXY, ScaleXY, Distance * 0.01));
+		VisualCylinders->UpdateInstanceTransform(i, CylTransform, true, true);
+
+		SphereTransform.SetLocation(StartLocation);
+		VisualSpheres->UpdateInstanceTransform(i, SphereTransform, true, true);
+	}
+}
+
+void UAGX_WireComponent::SetVisualsInstanceCount(int32 Num)
+{
+	Num = std::max(0, Num);
+
+	auto SetNum = [](UInstancedStaticMeshComponent& C, int32 N)
+	{
+		while (C.GetInstanceCount() < N)
+		{
+			C.AddInstance(FTransform());
+		}
+		while (C.GetInstanceCount() > N)
+		{
+			C.RemoveInstance(C.GetInstanceCount() - 1);
+		}
+	};
+
+	if (VisualCylinders != nullptr)
+		SetNum(*VisualCylinders, Num);
+
+	if (VisualSpheres != nullptr)
+		SetNum(*VisualSpheres, Num);
 }
 
 #undef LOCTEXT_NAMESPACE

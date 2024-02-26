@@ -19,6 +19,8 @@
 
 class UAGX_ShapeMaterial;
 class UAGX_WireWinchComponent;
+class UInstancedStaticMeshComponent;
+class UMaterialInterface;
 
 /// @todo Move FWireRoutingNode to a separate source file pair.
 /**
@@ -180,6 +182,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void RemoveCollisionGroupIfExists(const FName& GroupName);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
+	UMaterialInterface* RenderMaterial {nullptr};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	void SetRenderMaterial(UMaterialInterface* Material);
 
 	/*
 	 * Begin winch.
@@ -848,6 +856,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	TArray<FVector> GetRenderNodeLocations() const;
 
+	/**
+	 * Mark visuals for this Wire Component dirty. The Visuals will be updated according to the
+	 * current state.
+	 */
+	void MarkVisualsDirty();
+
 	/*
 	 * Copy configuration from the given Barrier.
 	 * Only the basic properties, such as Radius and MinSegmentLength, are copied. More complicated
@@ -882,6 +896,7 @@ public:
 
 	//~ Begin UObject interface.
 	virtual void PostInitProperties() override;
+	virtual void PostLoad() override;
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
@@ -899,6 +914,7 @@ public:
 protected:
 	// ~Begin UActorComponent interface.
 	virtual void OnRegister() override;
+	virtual void DestroyComponent(bool bPromoteChildren) override;
 	// ~End UActorComponent interface.
 
 private:
@@ -907,8 +923,21 @@ private:
 #endif
 
 	void CreateNative();
+	void CreateVisuals();
 	bool UpdateNativeMaterial();
+
+#if WITH_EDITOR
+	bool DoesPropertyAffectVisuals(const FName& MemberPropertyName) const;
+#endif
+
+	TArray<FVector> GetNodesForRendering() const;
+	bool ShouldRender() const;
+	void UpdateVisuals();
+	void RenderSelf(const TArray<FVector>& Points);
+	void SetVisualsInstanceCount(int32 Num);
 
 private:
 	FWireBarrier NativeBarrier;
+	TObjectPtr<UInstancedStaticMeshComponent> VisualCylinders;
+	TObjectPtr<UInstancedStaticMeshComponent> VisualSpheres;
 };

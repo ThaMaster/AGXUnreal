@@ -15,7 +15,6 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
-#include "Utilities/AGX_RenderUtilities.h"
 
 // Unreal Engine includes.
 #include "Materials/Material.h"
@@ -70,20 +69,12 @@ void UAGX_ShapeComponent::UpdateVisualMesh()
 
 	TSharedPtr<FAGX_SimpleMeshData> Data(new FAGX_SimpleMeshData());
 
-	if (ShouldCreateVisualMesh())
-	{
-		CreateVisualMesh(*Data.Get());
-	}
+	CreateVisualMesh(*Data.Get());
 
 	SetMeshData(Data);
 
 	if (SupportsShapeBodySetup() && GetWorld() && GetWorld()->IsGameWorld())
 		UpdateBodySetup(); // Used only in runtime.
-}
-
-bool UAGX_ShapeComponent::ShouldCreateVisualMesh() const
-{
-	return ShouldRender();
 }
 
 void UAGX_ShapeComponent::UpdateNativeProperties()
@@ -532,7 +523,7 @@ void UAGX_ShapeComponent::ApplySensorMaterial(UMeshComponent& Mesh)
 {
 	static const TCHAR* AssetPath =
 		TEXT("Material'/AGXUnreal/Runtime/Materials/M_SensorMaterial.M_SensorMaterial'");
-	static UMaterial* SensorMaterial = FAGX_RenderUtilities::GetMaterialFromAssetPath(AssetPath);
+	static UMaterial* SensorMaterial = FAGX_ObjectUtilities::GetAssetFromPath<UMaterial>(AssetPath);
 	if (SensorMaterial == nullptr)
 	{
 		return;
