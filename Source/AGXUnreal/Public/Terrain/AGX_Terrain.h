@@ -295,12 +295,6 @@ public:
 		Meta = (EditCondition = "bEnableParticleRendering"))
 	UNiagaraSystem* ParticleSystemAsset;
 
-	// \todo Should try to find or create this automatically!
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Rendering",
-		Meta = (EditCondition = "bEnableParticleRendering"))
-	UTextureRenderTarget2D* TerrainParticlesDataMap;
-
 	/** Whether shovel active zone should be rendered or not. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")
 	bool bEnableActiveZoneRendering = false;
@@ -368,13 +362,9 @@ private:
 	void ClearDisplacementMap();
 	bool InitializeParticleSystem();
 	bool InitializeParticleSystemComponent();
-	bool InitializeParticlesMap();
-	void UpdateParticlesMap();
 	void UpdateParticlesArrays(); /// @todo Experimental code.
-	void ClearParticlesMap();
 #if WITH_EDITOR
 	void InitPropertyDispatcher();
-	void EnsureParticleDataRenderTargetSize();
 #endif
 	virtual void Serialize(FArchive& Archive) override;
 
