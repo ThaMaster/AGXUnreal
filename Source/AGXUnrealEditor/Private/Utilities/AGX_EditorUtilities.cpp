@@ -986,7 +986,8 @@ void FAGX_EditorUtilities::SelectActor(AActor* Actor, bool bDeselectPrevious)
 
 bool FAGX_EditorUtilities::IsSelected(const UActorComponent& Component)
 {
-	if (Component.IsSelected())
+	// No idea why, but IsSelected seems to always be true when in the Blueprint Editor.
+	if (!FActorEditorUtils::IsAPreviewOrInactiveActor(Component.GetOwner()) && Component.IsSelected())
 	{
 		// The shovel is directly selected in the level editor.
 		return true;

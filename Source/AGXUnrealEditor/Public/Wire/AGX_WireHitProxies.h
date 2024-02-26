@@ -79,13 +79,15 @@ class HWinchDirectionProxy : public HComponentVisProxy
 namespace AGX_WireVisualization_helpers
 {
 	FVector DrawWinch(
-		const FAGX_WireWinch& Winch, const FAGX_WireWinchPose& WinchPose,
-		HWinchLocationProxy* LocationProxy, HWinchDirectionProxy* DirectionProxy,
+		const FAGX_WireWinchPose& WinchPose, HWinchLocationProxy* LocationProxy,
+		HWinchDirectionProxy* DirectionProxy, FPrimitiveDrawInterface* PDI);
+
+	FVector DrawWinch(
+		const UAGX_WireComponent& Wire, EWireSide Side, bool bSelected,
 		FPrimitiveDrawInterface* PDI);
 
-	FVector DrawWinch(const UAGX_WireComponent& Wire, EWireSide Side, FPrimitiveDrawInterface* PDI);
-
-	FVector DrawWinch(const UAGX_WireWinchComponent& Winch, FPrimitiveDrawInterface* PDI);
+	FVector DrawWinch(
+		const UAGX_WireWinchComponent& Winch, bool bSelected, FPrimitiveDrawInterface* PDI);
 
 	bool GetWidgetLocation(
 		const FAGX_WireWinchPose& WinchPose, EWinchSide Side, FVector& OutLocation);

@@ -23,38 +23,33 @@ class UAGX_WireComponent;
  */
 class AGXUNREALEDITOR_API FAGX_WireComponentVisualizer : public FComponentVisualizer
 {
+	using Super = FComponentVisualizer;
+
 public:
 	FAGX_WireComponentVisualizer();
 	~FAGX_WireComponentVisualizer();
 
-	//~ Begin FComponentVisualizer Interface
-
+	//~ Begin FComponentVisualizer Interface.
 	virtual void OnRegister() override;
-
 	virtual void DrawVisualization(
 		const UActorComponent* Component, const FSceneView* View,
 		FPrimitiveDrawInterface* PDI) override;
-
 	virtual bool VisProxyHandleClick(
 		FEditorViewportClient* InViewportClient, HComponentVisProxy* VisProxy,
 		const FViewportClick& Click) override;
-
 	virtual bool GetWidgetLocation(
 		const FEditorViewportClient* ViewportClient, FVector& OutLocation) const override;
-
+	virtual bool GetCustomInputCoordinateSystem(
+			const FEditorViewportClient* ViewportClient, FMatrix& OutMatrix) const override;
 	virtual bool HandleInputDelta(
 		FEditorViewportClient* ViewportClient, FViewport* Viewport, FVector& DeltaTranslate,
 		FRotator& DeltaRotate, FVector& DeltaScale) override;
-
 	virtual bool HandleInputKey(
 		FEditorViewportClient* ViewportClient, FViewport* Viewport, FKey Key,
 		EInputEvent Event) override;
-
 	virtual bool IsVisualizingArchetype() const override;
-
 	virtual void EndEditing() override;
-
-	//~ End FComponentVisualizer Interface
+	//~ End FComponentVisualizer Interface.
 
 	bool HasValidNodeSelection() const;
 	bool HasValidWinchSelection() const;
@@ -81,9 +76,9 @@ private:
 	 */
 	FComponentPropertyPath WirePropertyPath;
 
-	FProperty* RouteNodesProperty = nullptr;
-	FProperty* BeginWinchProperty = nullptr;
-	FProperty* EndWinchProperty = nullptr;
+	FProperty* RouteNodesProperty {nullptr};
+	FProperty* BeginWinchProperty {nullptr};
+	FProperty* EndWinchProperty {nullptr};
 
 	/// True while a node duplication move is in progress, so that we don't create a new each frame.
 	bool bIsDuplicatingNode = false;
