@@ -70,47 +70,47 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static UAGX_ShapeComponent* GetFirstShape(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static UAGX_ShapeComponent* GetSecondShape(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
 
 	/**
 	 * Returns nullptr if the Shape does not have a RigidBody as parent.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static UAGX_RigidBodyComponent* GetFirstBody(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
 
 	/**
 	 * Returns nullptr if the Shape does not have a RigidBody as parent.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static UAGX_RigidBodyComponent* GetSecondBody(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static FVector CalculateRelativeVelocity(
 		UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static int GetNumContactPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static float GetPointDepth(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static FVector GetPointLocation(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static FVector GetPointForce(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static FVector GetPointNormalForce(
 		UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static FVector GetPointNormal(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static float GetPointArea(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int PointIndex);
 };

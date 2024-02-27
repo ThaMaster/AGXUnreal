@@ -99,7 +99,7 @@ void UAGX_HeightFieldShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMe
 void UAGX_HeightFieldShapeComponent::UpdateNativeGlobalTransform()
 {
 	// We override this function because the parents class' version of it does not allow HasNative
-	// to be false, which is common for a Hight Field Component.
+	// to be false, which is common for a Height Field Component.
 	if (HasNative())
 	{
 		UAGX_ShapeComponent::UpdateNativeGlobalTransform();
