@@ -76,8 +76,8 @@ public:
 	void SetEnableAMOR(bool bEnable);
 	bool GetEnableAMOR();
 
-	void SetTimeStep(float TimeStep);
-	float GetTimeStep() const;
+	void SetTimeStep(double TimeStep);
+	double GetTimeStep() const;
 
 	static void SetNumThreads(uint32 NumThreads);
 	static uint32 GetNumThreads();
@@ -114,14 +114,14 @@ public:
 	 * may invalidate this assumption.
 	 * @return The current simulation time stamp.
 	 */
-	float GetTimeStamp() const;
+	double GetTimeStamp() const;
 
 	/**
 	 * Set the current simulation time stamp. Does not simulate to that time, just moves the clock
 	 * hands.
 	 * @param TimeStamp The new time stamp.
 	 */
-	void SetTimeStamp(float TimeStamp);
+	void SetTimeStamp(double TimeStamp);
 
 	/// \todo Statistics isn't a per-simulation thing in AGX Dynamics, so having statistics
 	/// management here is a bit misleading.

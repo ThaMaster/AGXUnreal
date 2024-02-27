@@ -1012,10 +1012,10 @@ void UAGX_Simulation::Step(float DeltaTime)
 	}
 }
 
-int32 UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
+int32 UAGX_Simulation::StepCatchUpImmediately(double DeltaTime)
 {
 	DeltaTime += LeftoverTime;
-	LeftoverTime = 0.0f;
+	LeftoverTime = 0.0;
 
 	int32 NumSteps = 0;
 	while (DeltaTime >= TimeStep)
@@ -1033,10 +1033,10 @@ int32 UAGX_Simulation::StepCatchUpImmediately(float DeltaTime)
 	return NumSteps;
 }
 
-int32 UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
+int32 UAGX_Simulation::StepCatchUpOverTime(double DeltaTime)
 {
 	DeltaTime += LeftoverTime;
-	LeftoverTime = 0.0f;
+	LeftoverTime = 0.0;
 
 	int32 NumSteps = 0;
 	// Step up to two times.
@@ -1059,10 +1059,10 @@ int32 UAGX_Simulation::StepCatchUpOverTime(float DeltaTime)
 	return NumSteps;
 }
 
-int32 UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
+int32 UAGX_Simulation::StepCatchUpOverTimeCapped(double DeltaTime)
 {
 	DeltaTime += LeftoverTime;
-	LeftoverTime = 0.0f;
+	LeftoverTime = 0.0;
 
 	int32 NumSteps = 0;
 	// Step up to two times.
@@ -1086,10 +1086,10 @@ int32 UAGX_Simulation::StepCatchUpOverTimeCapped(float DeltaTime)
 	return NumSteps;
 }
 
-int32 UAGX_Simulation::StepDropImmediately(float DeltaTime)
+int32 UAGX_Simulation::StepDropImmediately(double DeltaTime)
 {
 	DeltaTime += LeftoverTime;
-	LeftoverTime = 0.0f;
+	LeftoverTime = 0.0;
 
 	int32 NumSteps = 0;
 	if (DeltaTime >= TimeStep)
@@ -1140,17 +1140,17 @@ void UAGX_Simulation::StepOnce()
 		ReportStepStatistics(Statistics);
 	}
 
-	const float SimTime = NativeBarrier.GetTimeStamp();
+	const auto SimTime = NativeBarrier.GetTimeStamp();
 	PostStepForwardInternal.Broadcast(SimTime);
 	PostStepForward.Broadcast(SimTime);
 }
 
-float UAGX_Simulation::GetTimeStamp() const
+double UAGX_Simulation::GetTimeStamp() const
 {
 	return NativeBarrier.GetTimeStamp();
 }
 
-void UAGX_Simulation::SetTimeStamp(float NewTimeStamp)
+void UAGX_Simulation::SetTimeStamp(double NewTimeStamp)
 {
 	NativeBarrier.SetTimeStamp(NewTimeStamp);
 }
@@ -1366,7 +1366,7 @@ void UAGX_Simulation::PreStep()
 	if (!PreStepForward.IsBound() && !PreStepForwardInternal.IsBound())
 		return;
 
-	const float SimTime = NativeBarrier.GetTimeStamp();
+	const auto SimTime = NativeBarrier.GetTimeStamp();
 	PreStepForward.Broadcast(SimTime);
 	PreStepForwardInternal.Broadcast(SimTime);
 }
@@ -1381,7 +1381,7 @@ void UAGX_Simulation::PostStep()
 	if (!PostStepForwardInternal.IsBound() && !PostStepForward.IsBound())
 		return;
 
-	const float SimTime = NativeBarrier.GetTimeStamp();
+	const auto SimTime = NativeBarrier.GetTimeStamp();
 	PostStepForwardInternal.Broadcast(SimTime);
 	PostStepForward.Broadcast(SimTime);
 }

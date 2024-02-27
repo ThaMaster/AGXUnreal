@@ -448,7 +448,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeTerrain::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(UAGX_CameraSensorComponent::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(
+		UAGX_CameraSensorComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_CollisionGroupAdderComponent::StaticClass()->GetFName());

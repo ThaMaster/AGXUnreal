@@ -246,8 +246,8 @@ private:
 	TArray<FAGX_LidarScanPoint> Buffer;
 
 	bool CheckValid() const;
-	void OnStepForward(float TimeStamp);
-	void UpdateElapsedTime(float TimeStamp);
+	void OnStepForward(double TimeStamp);
+	void UpdateElapsedTime(double TimeStamp);
 	void ScanAutoCPU();
 	void OutputPointCloudDataIfReady();
 };

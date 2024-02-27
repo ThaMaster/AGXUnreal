@@ -16,10 +16,10 @@ class AGXUNREAL_API FAGX_ROS2Utilities
 {
 public:
 	static FAGX_SensorMsgsImage Convert(
-		const TArray<FColor>& Image, float TimeStamp, const FIntPoint& Resolution, bool Grayscale);
+		const TArray<FColor>& Image, double TimeStamp, const FIntPoint& Resolution, bool Grayscale);
 
 	static FAGX_SensorMsgsImage Convert(
-		const TArray<FFloat16Color>& Image, float TimeStamp, const FIntPoint& Resolution,
+		const TArray<FFloat16Color>& Image, double TimeStamp, const FIntPoint& Resolution,
 		bool Grayscale);
 };
 
@@ -44,8 +44,7 @@ public:
 	 * generated at later timestamps.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX ROS2")
-	static FAGX_SensorMsgsPointCloud2 ConvertXYZ(
-		const TArray<FAGX_LidarScanPoint>& Points);
+	static FAGX_SensorMsgsPointCloud2 ConvertXYZ(const TArray<FAGX_LidarScanPoint>& Points);
 
 	/**
 	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2
@@ -64,6 +63,5 @@ public:
 	 * generated at later timestamps.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	static FAGX_SensorMsgsPointCloud2 ConvertAnglesTOF(
-		const TArray<FAGX_LidarScanPoint>& Points);
+	static FAGX_SensorMsgsPointCloud2 ConvertAnglesTOF(const TArray<FAGX_LidarScanPoint>& Points);
 };

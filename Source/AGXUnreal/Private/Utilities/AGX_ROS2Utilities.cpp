@@ -25,18 +25,23 @@ namespace AGX_ROS2Utilities_helpers
 		Float64 = 8
 	};
 
+	FAGX_BuiltinInterfacesTime Convert(double TimeStamp)
+	{
+		FAGX_BuiltinInterfacesTime t;
+		t.Sec = static_cast<int32>(TimeStamp);
+		t.Nanosec = static_cast<int64>(TimeStamp * 1.0E9) % 1000000000;
+		return t;
+	}
+
 	template <typename PixelType, typename OutputChannelType>
 	FAGX_SensorMsgsImage SetAllExceptData(
-		const TArray<PixelType>& Image, float TimeStamp, const FIntPoint& Resolution,
+		const TArray<PixelType>& Image, double TimeStamp, const FIntPoint& Resolution,
 		bool Grayscale, const FString& ChannelSize)
 	{
 		FAGX_SensorMsgsImage Msg;
 
 		Msg.IsBigendian = 0;
-		Msg.Header.Stamp.Sec = static_cast<int32>(TimeStamp);
-		float Unused;
-		Msg.Header.Stamp.Nanosec = static_cast<int32>(FMath::Modf(TimeStamp, &Unused)) * 1000000000;
-
+		Msg.Header.Stamp = Convert(TimeStamp);
 		Msg.Height = static_cast<int64>(Resolution.Y);
 		Msg.Width = static_cast<int64>(Resolution.X);
 
@@ -88,7 +93,7 @@ namespace AGX_ROS2Utilities_helpers
 }
 
 FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
-	const TArray<FColor>& Image, float TimeStamp, const FIntPoint& Resolution, bool Grayscale)
+	const TArray<FColor>& Image, double TimeStamp, const FIntPoint& Resolution, bool Grayscale)
 {
 	static_assert(sizeof(FColor::R) == sizeof(uint8));
 	FAGX_SensorMsgsImage Msg = AGX_ROS2Utilities_helpers::SetAllExceptData<FColor, uint8>(
@@ -119,7 +124,7 @@ FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
 }
 
 FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
-	const TArray<FFloat16Color>& Image, float TimeStamp, const FIntPoint& Resolution,
+	const TArray<FFloat16Color>& Image, double TimeStamp, const FIntPoint& Resolution,
 	bool Grayscale)
 {
 	FAGX_SensorMsgsImage Msg = AGX_ROS2Utilities_helpers::SetAllExceptData<FFloat16Color, uint16>(
@@ -176,11 +181,7 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertXYZ(const TArray<FAGX_Lida
 	if (FirstValidIndex == INDEX_NONE)
 		return Msg;
 
-	Msg.Header.Stamp.Sec = static_cast<int32>(Points[FirstValidIndex].TimeStamp);
-	float Unused;
-	Msg.Header.Stamp.Nanosec =
-		static_cast<int32>(FMath::Modf(Points[FirstValidIndex].TimeStamp, &Unused)) * 1e9;
-
+	Msg.Header.Stamp = Convert(Points[FirstValidIndex].TimeStamp);
 	Msg.Fields.Add(MakePointField("x", 0, EAGX_PointFieldType::Float64, 1));
 	Msg.Fields.Add(MakePointField("y", 8, EAGX_PointFieldType::Float64, 1));
 	Msg.Fields.Add(MakePointField("z", 16, EAGX_PointFieldType::Float64, 1));
@@ -221,11 +222,7 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertAnglesTOF(
 	if (FirstValidIndex == INDEX_NONE)
 		return Msg;
 
-	Msg.Header.Stamp.Sec = static_cast<int32>(Points[FirstValidIndex].TimeStamp);
-	float Unused;
-	Msg.Header.Stamp.Nanosec =
-		static_cast<int32>(FMath::Modf(Points[FirstValidIndex].TimeStamp, &Unused)) * 1e9;
-
+	Msg.Header.Stamp = Convert(Points[FirstValidIndex].TimeStamp);
 	Msg.Fields.Add(MakePointField("angle_x", 0, EAGX_PointFieldType::Float64, 1));
 	Msg.Fields.Add(MakePointField("angle_y", 8, EAGX_PointFieldType::Float64, 1));
 	Msg.Fields.Add(MakePointField("tof", 16, EAGX_PointFieldType::Uint32, 1));
