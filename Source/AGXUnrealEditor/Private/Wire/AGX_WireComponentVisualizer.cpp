@@ -17,9 +17,11 @@
 #include "Editor.h"
 #include "EditorViewportClient.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Kismet2/KismetEditorUtilities.h"
 #include "SceneManagement.h"
 #include "ScopedTransaction.h"
 #include "Selection.h"
+#include "SSubobjectEditor.h"
 #include "UnrealEngine.h"
 
 #define LOCTEXT_NAMESPACE "AGX_WireComponentVisualizer"
@@ -54,35 +56,61 @@ public:
 	static void SetEditNode(
 		FAGX_WireComponentVisualizer& Visualizer, const UAGX_WireComponent& Wire, int32 NodeIndex)
 	{
+		// We must handle editor selection before our wire edit selection because if another wire
+		// was selected then the editor selection change will clear the Wire Component Visualizer
+		// and we want the edit selection we're about to make to persist after the return from this
+		// function.
+
+		// Make sure the Wire Component that the node is part of is selected. Deselect any other
+		// selected Component.
+		if (FActorEditorUtils::IsAPreviewOrInactiveActor(Wire.GetOwner()))
+		{
+			// We are in a Blueprint Editor. Find the Blueprint Editor instance and select the
+			// SCS node for the wire.
+			UE_LOG(LogAGX, Warning, TEXT("Selected a node in preview Wire %p."), &Wire);
+			TSharedPtr<IBlueprintEditor> BlueprintEditor =
+				FKismetEditorUtilities::GetIBlueprintEditorForObject(&Wire, /*Open*/ false);
+			if (BlueprintEditor.IsValid())
+			{
+				TArray<TSharedPtr<FSubobjectEditorTreeNode>> Selection =
+					BlueprintEditor->GetSelectedSubobjectEditorTreeNodes();
+				// Determine if the wire already is the only selected SCS node. If not select it.
+				if (Selection.Num() != 1 || Selection[0]->GetComponentTemplate() == &Wire)
+				{
+					BlueprintEditor->FindAndSelectSubobjectEditorTreeNode(&Wire, false);
+				}
+			}
+		}
+		else
+		{
+			// We are in the Level Editor. Handle selection directly through the GEditor instance.
+			UE_LOG(LogAGX, Warning, TEXT("Selected a node in non-preview Wire %p."), &Wire);
+
+			TArray<UActorComponent*> SelectedComponents;
+			GEditor->GetSelectedComponents()->GetSelectedObjects(SelectedComponents);
+			bool bWireAlreadySelected {false};
+			// Unselect everything not the Wire Component.
+			for (UActorComponent* Component : SelectedComponents)
+			{
+				if (Component == &Wire)
+				{
+					bWireAlreadySelected = true;
+				}
+				else
+				{
+					GEditor->SelectComponent(Component, /*Selected*/ false, /*Notify*/ true);
+				}
+			}
+			if (!bWireAlreadySelected)
+			{
+				GEditor->SelectComponent(const_cast<UAGX_WireComponent*>(&Wire), true, true);
+			}
+		}
+
 		Visualizer.EditWinch = EWireSide::None;
 		Visualizer.EditWinchSide = EWinchSide::None;
 		Visualizer.EditNodeIndex = NodeIndex;
 		Visualizer.EditWirePropertyPath = FComponentPropertyPath(&Wire);
-
-		// TODO Here we want to make Wire the selected Component. If we clicked inside a preview
-		// viewport, i.e. in a Blueprint Editor, then the Wire Component within the Components
-		// panel should be selected. If we clicked inside the Level Viewport then the Wire Component
-		// in the owning Actor's Component list should be selected.
-#if 0
-		TArray<UActorComponent*> SelectedComponents;
-		GEditor->GetSelectedComponents()->GetSelectedObjects(SelectedComponents);
-		bool bWireAlreadySelected {false};
-		for (UActorComponent* Component : SelectedComponents)
-		{
-			if (Component == &Wire)
-			{
-				bWireAlreadySelected = true;
-			}
-			else
-			{
-				GEditor->SelectComponent(Component, /*Selected*/ false, /*Notify*/ true);
-			}
-		}
-		if (!bWireAlreadySelected)
-		{
-			GEditor->SelectComponent(const_cast<UAGX_WireComponent*>(&Wire), true, true);
-		}
-#endif
 	}
 
 	static bool WinchLocationProxyClicked(
@@ -405,9 +433,14 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 		return;
 	}
 
-	UE_LOG(
-		LogAGX, Warning, TEXT("DrawVisualization: Wire=%p, IsPreview=%d"), Wire,
-		FActorEditorUtils::IsAPreviewOrInactiveActor(Wire->GetOwner()));
+	static TArray<const UAGX_WireComponent*> PreviousPrint;
+	if (!PreviousPrint.Contains(Wire))
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("DrawVisualization: Wire=%p, IsPreview=%d"), Wire,
+			FActorEditorUtils::IsAPreviewOrInactiveActor(Wire->GetOwner()));
+		PreviousPrint.AddUnique(Wire);
+	}
 
 	const bool bSelected = FAGX_EditorUtilities::IsSelected(*Wire);
 	const bool bEditing = Wire == GetEditWire();
@@ -670,9 +703,8 @@ void FAGX_WireComponentVisualizer::EndEditing()
 bool FAGX_WireComponentVisualizer::HasValidEditNode() const
 {
 	return GetEditWire() != nullptr &&
-		   !GetEditWire()
-				->IsInitialized() && // Node selection is currently only for route nodes.
-		   GetEditWire()->RouteNodes.IsValidIndex(EditNodeIndex);
+		   // Node selection is currently only for route nodes, i.e. non-initialized wires.
+		   !GetEditWire()->IsInitialized() && GetEditWire()->RouteNodes.IsValidIndex(EditNodeIndex);
 }
 
 bool FAGX_WireComponentVisualizer::HasValidEditWinch() const
