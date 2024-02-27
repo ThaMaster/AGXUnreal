@@ -122,6 +122,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
 	FAGX_SensorMsgsImage GetImageROS2(bool Grayscale = false) const;
 
+	/**
+	 * Access the Scene Capture Component 2D used by the AGX Camera Sensor.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
+	USceneCaptureComponent2D* GetSceneCaptureComponent2D() const;
+
 	static bool IsFovValid(float FOV);
 	static bool IsResolutionValid(const FIntPoint& Resolution);
 
