@@ -32,33 +32,37 @@ public:
 	{
 		if (Wire.IsInitialized())
 		{
-			// Node selection is currently only for route nodes. All node manipulation operations
-			// operate on the route nodes, but when the wire is initialized what we're seeing is
-			// simulation nodes.
-			Visualizer.ClearSelection();
-			UE_LOG(LogAGX, Warning, TEXT("Selection cleared because wire is initialized."));
+			// Node editing is currently only for route nodes. All node manipulation operations
+			// operate on the route nodes, but when the wire is initialized what we're seeing are
+			// the simulation nodes.
+			Visualizer.ClearEdit();
+			UE_LOG(LogAGX, Warning, TEXT("Edit selection cleared because wire is initialized."));
 			return false;
 		}
-		if (Proxy.NodeIndex == Visualizer.SelectedNodeIndex)
+		if (Proxy.NodeIndex == Visualizer.EditNodeIndex)
 		{
 			// Clicking a selected node deselects it.
-			Visualizer.ClearSelection();
+			Visualizer.ClearEdit();
 			UE_LOG(LogAGX, Warning, TEXT("Selection cleared because a selected node was clicked."));
 			return true;
 		}
 		// A new node became selected.
-		SelectNode(Visualizer, Wire, Proxy.NodeIndex);
+		SetEditNode(Visualizer, Wire, Proxy.NodeIndex);
 		return true;
 	}
 
-	static void SelectNode(
+	static void SetEditNode(
 		FAGX_WireComponentVisualizer& Visualizer, const UAGX_WireComponent& Wire, int32 NodeIndex)
 	{
-		Visualizer.SelectedWinch = EWireSide::None;
-		Visualizer.SelectedWinchSide = EWinchSide::None;
-		Visualizer.SelectedNodeIndex = NodeIndex;
-		Visualizer.WirePropertyPath = FComponentPropertyPath(&Wire);
+		Visualizer.EditWinch = EWireSide::None;
+		Visualizer.EditWinchSide = EWinchSide::None;
+		Visualizer.EditNodeIndex = NodeIndex;
+		Visualizer.EditWirePropertyPath = FComponentPropertyPath(&Wire);
 
+		// TODO Here we want to make Wire the selected Component. If we clicked inside a preview
+		// viewport, i.e. in a Blueprint Editor, then the Wire Component within the Components
+		// panel should be selected. If we clicked inside the Level Viewport then the Wire Component
+		// in the owning Actor's Component list should be selected.
 #if 0
 		TArray<UActorComponent*> SelectedComponents;
 		GEditor->GetSelectedComponents()->GetSelectedObjects(SelectedComponents);
@@ -104,30 +108,31 @@ public:
 			/// @todo Figure out how, if possible, one can move/orient an AGX Dynamics Wire Winch
 			/// Controller during runtime. For now we don't allow editing a Wire Winch after the
 			/// simulation has started.
-			Visualizer.ClearSelection();
+			Visualizer.ClearEdit();
 			UE_LOG(LogAGX, Warning, TEXT("Selection cleared because wire is initialized."));
 			return false;
 		}
-		if (Visualizer.SelectedWinch == WireSide && Visualizer.SelectedWinchSide == WinchSide)
+		if (Visualizer.EditWinch == WireSide && Visualizer.EditWinchSide == WinchSide)
 		{
 			// Clicking a selected winch deselects it.
-			Visualizer.ClearSelection();
-			UE_LOG(LogAGX, Warning, TEXT("Selection cleared because a selected winch was clicked."));
+			Visualizer.ClearEdit();
+			UE_LOG(
+				LogAGX, Warning, TEXT("Selection cleared because a selected winch was clicked."));
 			return true;
 		}
 		// A new winch became selected.
-		SelectWinch(Visualizer, Wire, WireSide, WinchSide);
+		SetEditWinch(Visualizer, Wire, WireSide, WinchSide);
 		return true;
 	}
 
-	static void SelectWinch(
+	static void SetEditWinch(
 		FAGX_WireComponentVisualizer& Visualizer, const UAGX_WireComponent& Wire,
 		EWireSide WireSide, EWinchSide WinchSide)
 	{
-		Visualizer.SelectedWinch = WireSide;
-		Visualizer.SelectedWinchSide = WinchSide;
-		Visualizer.SelectedNodeIndex = INDEX_NONE;
-		Visualizer.WirePropertyPath = FComponentPropertyPath(&Wire);
+		Visualizer.EditWinch = WireSide;
+		Visualizer.EditWinchSide = WinchSide;
+		Visualizer.EditNodeIndex = INDEX_NONE;
+		Visualizer.EditWirePropertyPath = FComponentPropertyPath(&Wire);
 	}
 
 	static void NodeProxyDragged(
@@ -143,7 +148,7 @@ public:
 			return;
 		}
 
-		/// @todo Is this Modify necessary? Compare with SplineComponentVisualizer.
+		// TODO Is this Modify necessary? Compare with SplineComponentVisualizer.
 		Wire.Modify();
 
 		if (ViewportClient.IsAltPressed())
@@ -173,10 +178,10 @@ public:
 	static void DuplicateNode(FAGX_WireComponentVisualizer& Visualizer, UAGX_WireComponent& Wire)
 	{
 		Visualizer.bIsDuplicatingNode = true;
-		int32 NewNodeIndex = Visualizer.SelectedNodeIndex + 1;
-		FWireRoutingNode Clone = FWireRoutingNode(Wire.RouteNodes[Visualizer.SelectedNodeIndex]);
+		int32 NewNodeIndex = Visualizer.EditNodeIndex + 1;
+		FWireRoutingNode Clone = FWireRoutingNode(Wire.RouteNodes[Visualizer.EditNodeIndex]);
 		Wire.RouteNodes.Insert(Clone, NewNodeIndex);
-		Visualizer.SelectedNodeIndex = NewNodeIndex;
+		Visualizer.EditNodeIndex = NewNodeIndex;
 		Visualizer.NotifyPropertyModified(&Wire, Visualizer.RouteNodesProperty);
 		Wire.MarkVisualsDirty();
 	}
@@ -186,7 +191,7 @@ public:
 		const FVector& DeltaTranslate)
 	{
 		const FTransform& LocalToWorld = Wire.GetComponentTransform();
-		FWireRoutingNode& SelectedNode = Wire.RouteNodes[Visualizer.SelectedNodeIndex];
+		FWireRoutingNode& SelectedNode = Wire.RouteNodes[Visualizer.EditNodeIndex];
 		const FVector CurrentLocalLocation = SelectedNode.Location;
 		const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
 		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
@@ -200,13 +205,13 @@ public:
 		FAGX_WireComponentVisualizer& Visualizer, UAGX_WireComponent& Wire,
 		const FVector& DeltaTranslate, const FRotator& DeltaRotate)
 	{
-		FAGX_WireWinch& Winch = *Wire.GetWinch(Visualizer.SelectedWinch);
+		FAGX_WireWinch& Winch = *Wire.GetWinch(Visualizer.EditWinch);
 		const FTransform& WinchToWorld =
-			FAGX_WireUtilities::GetWinchLocalToWorld(Wire, Visualizer.SelectedWinch);
+			FAGX_WireUtilities::GetWinchLocalToWorld(Wire, Visualizer.EditWinch);
 		AGX_WireVisualization_helpers::TransformWinch(
-			Winch, WinchToWorld, Visualizer.SelectedWinchSide, DeltaTranslate, DeltaRotate);
+			Winch, WinchToWorld, Visualizer.EditWinchSide, DeltaTranslate, DeltaRotate);
 
-		FProperty* EditedProperty = Visualizer.SelectedWinch == EWireSide::Begin
+		FProperty* EditedProperty = Visualizer.EditWinch == EWireSide::Begin
 										? Visualizer.BeginWinchProperty
 										: Visualizer.EndWinchProperty;
 		Visualizer.NotifyPropertyModified(&Wire, EditedProperty);
@@ -299,7 +304,7 @@ namespace AGX_WireComponentVisualizer_helpers
 	 */
 	template <typename FNodeColorFunc>
 	void DrawRouteNodes(
-		const UAGX_WireComponent& Wire, const bool bSelected, FPrimitiveDrawInterface* PDI,
+		const UAGX_WireComponent& Wire, const bool bEditin, FPrimitiveDrawInterface* PDI,
 		const FLinearColor& LineColor, FNodeColorFunc NodeColorFunc)
 	{
 		const FTransform& LocalToWorld = Wire.GetComponentTransform();
@@ -314,9 +319,9 @@ namespace AGX_WireComponentVisualizer_helpers
 			const FLinearColor NodeColor = NodeColorFunc(I, Node.NodeType);
 			const FVector Location = LocalToWorld.TransformPosition(Node.Location);
 
-			// if (bSelected)
+			// if (bEditing)
 			// {
-				PDI->SetHitProxy(new HNodeProxy(&Wire, I));
+			PDI->SetHitProxy(new HNodeProxy(&Wire, I));
 			// }
 			PDI->DrawPoint(
 				Location, NodeColor, FAGX_WireUtilities::NodeHandleSize, SDPG_Foreground);
@@ -400,7 +405,12 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 		return;
 	}
 
-	const bool bSelected = /*Wire == GetSelectedWire() &&*/ FAGX_EditorUtilities::IsSelected(*Wire);
+	UE_LOG(
+		LogAGX, Warning, TEXT("DrawVisualization: Wire=%p, IsPreview=%d"), Wire,
+		FActorEditorUtils::IsAPreviewOrInactiveActor(Wire->GetOwner()));
+
+	const bool bSelected = FAGX_EditorUtilities::IsSelected(*Wire);
+	const bool bEditing = Wire == GetEditWire();
 
 	if (Wire->HasBeginWinch())
 	{
@@ -425,7 +435,7 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 	{
 		if (bSelected)
 		{
-			DrawRouteNodes(*Wire, SelectedNodeIndex, PDI);
+			DrawRouteNodes(*Wire, EditNodeIndex, PDI);
 		}
 		else
 		{
@@ -448,21 +458,24 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 		}
 	}
 
-// #if 0
+	// #if 0
 	// Don't know where to put this. Don't want to miss a deselection if we don't get any more
 	// calls to DrawVisualization after the deselection.
-	if (HasValidNodeSelection() || HasValidWinchSelection())
+	if (HasValidEditNode() || HasValidEditWinch())
 	{
-		if (!FAGX_EditorUtilities::IsSelected(*GetSelectedWire()))
+		if (!FAGX_EditorUtilities::IsSelected(*GetEditWire()))
 		{
 			// Do not maintain a node or winch selection if the selected Wire isn't selected
 			// anymore. This is so that the transform widget is placed at the newly selected
 			// Component instead of at the now no longer selected node or winch.
-			ClearSelection();
-			UE_LOG(LogAGX, Warning, TEXT("Selection cleared because there was a valid selection but the Wire Component isn't selected."));
+			ClearEdit();
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Selection cleared because there was a valid selection but the Wire Component "
+					 "isn't selected."));
 		}
 	}
-// #endif
+	// #endif
 }
 
 // Called by Unreal Editor when an element with a hit proxy of the visualization is clicked.
@@ -474,18 +487,21 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 	if (Wire == nullptr)
 	{
 		// Clicked something not a wire, deselect whatever we had selected before.
-		ClearSelection();
+		ClearEdit();
 		UE_LOG(LogAGX, Warning, TEXT("Selection cleared because clicking something nota wire."));
 		return false;
 	}
 
-	AActor* OldOwningActor = WirePropertyPath.GetParentOwningActor();
+	AActor* OldOwningActor = EditWirePropertyPath.GetParentOwningActor();
 	AActor* NewOwningActor = Wire->GetOwner();
 	if (NewOwningActor != OldOwningActor)
 	{
 		// Don't reuse selection data between Actors. It's completely different wires.
-		ClearSelection();
-		UE_LOG(LogAGX, Warning, TEXT("Selection cleared because a new Actor got selected. Old=%p. New=%p"), OldOwningActor, NewOwningActor);
+		ClearEdit();
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Selection cleared because a new Actor got selected. Old=%p. New=%p"),
+			OldOwningActor, NewOwningActor);
 	}
 
 	if (HNodeProxy* Proxy = HitProxyCast<HNodeProxy>(VisProxy))
@@ -509,44 +525,46 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 }
 
 // Called by Unreal Editor to decide where the transform widget should be rendered. We place it on
-// the selected node, if there is one, or on the selected winch handle, if there is one.
+// the selected edit node, if there is one, or on the selected edit winch handle, if there is one.
 bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	const FEditorViewportClient* ViewportClient, FVector& OutLocation) const
 {
-	UAGX_WireComponent* Wire = GetSelectedWire();
+	UAGX_WireComponent* Wire = GetEditWire();
 	if (Wire == nullptr)
 	{
 		return false;
 	}
-// #if 0
+	// #if 0
 	if (!FAGX_EditorUtilities::IsSelected(*Wire))
 	{
 		// Is this const-case safe?
-		// If not, how to dwe clear the node selection when the Wire Component becomes unselected?
-		const_cast<FAGX_WireComponentVisualizer*>(this)->ClearSelection();
-		UE_LOG(LogAGX, Warning, TEXT("Selection cleared because GetWidgetLocation found a non-selected wire."));
+		// If not, how do we clear the node selection when the Wire Component becomes unselected?
+		const_cast<FAGX_WireComponentVisualizer*>(this)->ClearEdit();
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Selection cleared because GetWidgetLocation found a non-selected wire."));
 		return false;
 	}
-// #endif
-	if (HasValidNodeSelection())
+	// #endif
+	if (HasValidEditNode())
 	{
 		// Convert the wire-local location to a world location.
 		const FTransform& LocalToWorld = Wire->GetComponentTransform();
 		/// @todo Body Fixed and Eye should be relative to the body, not the wire.
-		const FVector LocalLocation = Wire->RouteNodes[SelectedNodeIndex].Location;
+		const FVector LocalLocation = Wire->RouteNodes[EditNodeIndex].Location;
 		OutLocation = LocalToWorld.TransformPosition(LocalLocation);
 		return true;
 	}
-	else if (HasValidWinchSelection())
+	else if (HasValidEditWinch())
 	{
-		const FAGX_WireWinch* Winch = Wire->GetWinch(SelectedWinch);
+		const FAGX_WireWinch* Winch = Wire->GetWinch(EditWinch);
 		checkf(
 			Winch != nullptr,
 			TEXT("HasValidWinchSelection has been checked but we still didn't get a winch."));
 
-		FAGX_WireWinchPose WinchPose = FAGX_WireUtilities::GetWireWinchPose(*Wire, SelectedWinch);
+		FAGX_WireWinchPose WinchPose = FAGX_WireUtilities::GetWireWinchPose(*Wire, EditWinch);
 		return AGX_WireVisualization_helpers::GetWidgetLocation(
-			WinchPose, SelectedWinchSide, OutLocation);
+			WinchPose, EditWinchSide, OutLocation);
 	}
 	return false;
 }
@@ -555,7 +573,7 @@ bool FAGX_WireComponentVisualizer::GetCustomInputCoordinateSystem(
 	const FEditorViewportClient* ViewportClient, FMatrix& OutMatrix) const
 {
 	// TODO Implement FAGX_WireComponentVisualizer::GetCustomInputCoordinateSystem.
-	// See AGX_ShovelcomponentVisualizer.cpp for an example.
+	// See AGX_ShovelComponentVisualizer.cpp for an example.
 	return Super::GetCustomInputCoordinateSystem(ViewportClient, OutMatrix);
 }
 
@@ -567,7 +585,7 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	using namespace AGX_WireVisualization_helpers;
 	using namespace AGX_WireComponentVisualizer_helpers;
 
-	UAGX_WireComponent* Wire = GetSelectedWire();
+	UAGX_WireComponent* Wire = GetEditWire();
 	if (Wire == nullptr)
 	{
 		return false;
@@ -578,11 +596,11 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		return false;
 	}
 
-	if (HasValidNodeSelection())
+	if (HasValidEditNode())
 	{
 		FWireVisualizerOperations::NodeProxyDragged(*this, *Wire, *ViewportClient, DeltaTranslate);
 	}
-	else if (HasValidWinchSelection())
+	else if (HasValidEditWinch())
 	{
 		FWireVisualizerOperations::WinchProxyDragged(*this, *Wire, DeltaTranslate, DeltaRotate);
 	}
@@ -590,8 +608,10 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 	{
 		// We got a move request but we have no valid selection so don't know what to move.
 		// Something's wrong, so reset the selection state.
-		ClearSelection();
-		UE_LOG(LogAGX, Warning, TEXT("Selection cleared because HandleInputDelta didn't find a valid selection."));
+		ClearEdit();
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Selection cleared because HandleInputDelta didn't find a valid selection."));
 		return false;
 	}
 
@@ -627,7 +647,7 @@ bool FAGX_WireComponentVisualizer::IsVisualizingArchetype() const
 	 * the Blueprint Editor it must be here because otherwise
 	 * FSCSEditorViewportClient::GetWidgetLocation never calls our GetWidgetLocation.
 	 */
-	UAGX_WireComponent* Wire = GetSelectedWire();
+	UAGX_WireComponent* Wire = GetEditWire();
 	if (Wire == nullptr)
 	{
 		return false;
@@ -643,77 +663,77 @@ bool FAGX_WireComponentVisualizer::IsVisualizingArchetype() const
 // I assume this is called by Unreal Editor, but not sure when, or what we should do here.
 void FAGX_WireComponentVisualizer::EndEditing()
 {
-	ClearSelection();
+	ClearEdit();
 	UE_LOG(LogAGX, Warning, TEXT("Selection cleared because EndEditing."));
 }
 
-bool FAGX_WireComponentVisualizer::HasValidNodeSelection() const
+bool FAGX_WireComponentVisualizer::HasValidEditNode() const
 {
-	return GetSelectedWire() != nullptr &&
-		   !GetSelectedWire()
+	return GetEditWire() != nullptr &&
+		   !GetEditWire()
 				->IsInitialized() && // Node selection is currently only for route nodes.
-		   GetSelectedWire()->RouteNodes.IsValidIndex(SelectedNodeIndex);
+		   GetEditWire()->RouteNodes.IsValidIndex(EditNodeIndex);
 }
 
-bool FAGX_WireComponentVisualizer::HasValidWinchSelection() const
+bool FAGX_WireComponentVisualizer::HasValidEditWinch() const
 {
 	/// \note Should we allow any type of winch or only owned winches? This will also accept Wire
 	/// Winch owned winches and freestanding borrowed winches. Can this be handled properly in
 	/// HandleInputDelta?
-	return GetSelectedWire() != nullptr && !GetSelectedWire()->IsInitialized() &&
-		   SelectedWinch != EWireSide::None && SelectedWinchSide != EWinchSide::None &&
-		   GetSelectedWire()->HasWinch(SelectedWinch);
+	return GetEditWire() != nullptr && !GetEditWire()->IsInitialized() &&
+		   EditWinch != EWireSide::None && EditWinchSide != EWinchSide::None &&
+		   GetEditWire()->HasWinch(EditWinch);
 }
 
-UAGX_WireComponent* FAGX_WireComponentVisualizer::GetSelectedWire() const
+UAGX_WireComponent* FAGX_WireComponentVisualizer::GetEditWire() const
 {
-	return Cast<UAGX_WireComponent>(WirePropertyPath.GetComponent());
+	return Cast<UAGX_WireComponent>(EditWirePropertyPath.GetComponent());
 }
 
-int32 FAGX_WireComponentVisualizer::GetSelectedNodeIndex() const
+int32 FAGX_WireComponentVisualizer::GetEditNodeIndex() const
 {
-	return SelectedNodeIndex;
+	return EditNodeIndex;
 }
 
-void FAGX_WireComponentVisualizer::SetSelectedNodeIndex(int32 InIndex)
+void FAGX_WireComponentVisualizer::SetEditNodeIndex(int32 InIndex)
 {
-	SelectedNodeIndex = InIndex;
+	EditNodeIndex = InIndex;
 }
 
-void FAGX_WireComponentVisualizer::ClearSelection()
+void FAGX_WireComponentVisualizer::ClearEdit()
 {
 	bIsDuplicatingNode = false;
-	SelectedNodeIndex = INDEX_NONE;
-	SelectedWinch = EWireSide::None;
-	WirePropertyPath.Reset();
+	EditNodeIndex = INDEX_NONE;
+	EditWinch = EWireSide::None;
+	EditWirePropertyPath.Reset();
 }
 
 void FAGX_WireComponentVisualizer::OnDeleteKey()
 {
-	if (!HasValidNodeSelection())
+	if (!HasValidEditNode())
 	{
-		ClearSelection();
+		ClearEdit();
 		UE_LOG(LogAGX, Warning, TEXT("Selection cleared because the selected node was deleted."));
 		return;
 	}
 
 	const FScopedTransaction Transaction(LOCTEXT("DeleteWireNode", "Delete wire node"));
 
-	UAGX_WireComponent* Wire = GetSelectedWire();
+	UAGX_WireComponent* Wire = GetEditWire();
 	Wire->Modify();
-	Wire->RouteNodes.RemoveAt(SelectedNodeIndex);
+	Wire->RouteNodes.RemoveAt(EditNodeIndex);
 	Wire->MarkVisualsDirty();
-	SelectedNodeIndex = INDEX_NONE;
+	EditNodeIndex = INDEX_NONE;
 	bIsDuplicatingNode = false;
 
-	NotifyPropertyModified(GetSelectedWire(), RouteNodesProperty);
+	NotifyPropertyModified(Wire, RouteNodesProperty);
 
 	GEditor->RedrawLevelEditingViewports(true);
 }
 
 bool FAGX_WireComponentVisualizer::CanDeleteKey() const
 {
-	return HasValidNodeSelection();
+	return HasValidEditNode();
 }
 
 #undef LOCTEXT_NAMESPACE

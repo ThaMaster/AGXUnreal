@@ -16,10 +16,17 @@ class UAGX_WireComponent;
  * both its route nodes, while editing, and the simulation nodes, during a Play In Editor session.
  *
  * While in edit mode the Wire Component Visualizer provides functionality to duplicate, move, and
- * delete nodes.
+ * delete nodes, collectively called editing a wire. Editing mode is enabled for at most one wire at
+ * a time.
  *
- * The Wire Component Visualizer maintains a node selection state which can be used to provide
- * additional manipulation operations on the node, such as from a Details Customization.
+ * The Wire Component Visualizer maintains a node selection state for the currently edited wire,
+ * which can be used to provide additional manipulation operations on the node, such as from a
+ * Details Customization.
+ *
+ * To avoid ambiguity for the word "selected" we use "selected" to refer to something selected
+ * within the Unreal Editor at large, either in the Level Editor or the Blueprint Editor. The wire
+ * and node tracking done by the Wire Component Visualizer is instead called "edited" or "editing",
+ * as in "The currently edited wire must be one of the selected wires.".
  */
 class AGXUNREALEDITOR_API FAGX_WireComponentVisualizer : public FComponentVisualizer
 {
@@ -40,7 +47,7 @@ public:
 	virtual bool GetWidgetLocation(
 		const FEditorViewportClient* ViewportClient, FVector& OutLocation) const override;
 	virtual bool GetCustomInputCoordinateSystem(
-			const FEditorViewportClient* ViewportClient, FMatrix& OutMatrix) const override;
+		const FEditorViewportClient* ViewportClient, FMatrix& OutMatrix) const override;
 	virtual bool HandleInputDelta(
 		FEditorViewportClient* ViewportClient, FViewport* Viewport, FVector& DeltaTranslate,
 		FRotator& DeltaRotate, FVector& DeltaScale) override;
@@ -51,30 +58,30 @@ public:
 	virtual void EndEditing() override;
 	//~ End FComponentVisualizer Interface.
 
-	bool HasValidNodeSelection() const;
-	bool HasValidWinchSelection() const;
-	UAGX_WireComponent* GetSelectedWire() const;
-	int32 GetSelectedNodeIndex() const;
-	void SetSelectedNodeIndex(int32 InIndex);
-	void ClearSelection();
+	bool HasValidEditNode() const;
+	bool HasValidEditWinch() const;
+	UAGX_WireComponent* GetEditWire() const;
+	int32 GetEditNodeIndex() const;
+	void SetEditNodeIndex(int32 InIndex);
+	void ClearEdit();
 
 private:
 	void OnDeleteKey();
 	bool CanDeleteKey() const;
 
 private:
-	/// The index of the currently selected node, if any. INDEX_NONE otherwise.
-	int32 SelectedNodeIndex = INDEX_NONE;
+	/// The index of the node currently selected for editing, if any. INDEX_NONE otherwise.
+	int32 EditNodeIndex = INDEX_NONE;
 
-	EWireSide SelectedWinch = EWireSide::None;
-	EWinchSide SelectedWinchSide = EWinchSide::None;
+	EWireSide EditWinch = EWireSide::None;
+	EWinchSide EditWinchSide = EWinchSide::None;
 
 	/**
-	 * Property path from the owning Actor to the Wire Component of the currently selected wire. We
-	 * must use a path instead of a UAGX_WireComponent* because during Blueprint Reconstruction
-	 * the Wire Component will be replaced by a new instance.
+	 * Property path from the owning Actor to the Wire Component of the wire currently selected for
+	 * editing. We must use a path instead of a pointer because during Blueprint Reconstruction the
+	 * Wire Component will be replaced by a new instance.
 	 */
-	FComponentPropertyPath WirePropertyPath;
+	FComponentPropertyPath EditWirePropertyPath;
 
 	FProperty* RouteNodesProperty {nullptr};
 	FProperty* BeginWinchProperty {nullptr};
