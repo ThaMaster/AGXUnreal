@@ -171,6 +171,11 @@ FAGX_SensorMsgsImage UAGX_CameraSensorComponent::GetImageROS2(bool Grayscale) co
 	return UAGX_RenderUtilities::GetImageROS2(RenderTarget, TimeStamp, Grayscale);
 }
 
+USceneCaptureComponent2D* UAGX_CameraSensorComponent::GetSceneCaptureComponent2D() const
+{
+	return CaptureComponent2D;
+}
+
 bool UAGX_CameraSensorComponent::IsFovValid(float FOV)
 {
 	return FOV > KINDA_SMALL_NUMBER && FOV <= 170.f;
