@@ -124,6 +124,8 @@ public:
 
 	/**
 	 * Access the Scene Capture Component 2D used by the AGX Camera Sensor.
+	 * If the Scene Capture Component 2D has not been created, this function returns nullptr.
+	 * The Scene Capture Component 2D is only available during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
 	USceneCaptureComponent2D* GetSceneCaptureComponent2D() const;
