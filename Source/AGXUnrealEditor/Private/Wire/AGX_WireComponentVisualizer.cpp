@@ -30,7 +30,8 @@ class FWireVisualizerOperations
 {
 public:
 	static bool NodeProxyClicked(
-		FAGX_WireComponentVisualizer& Visualizer, const UAGX_WireComponent& Wire, HNodeProxy& Proxy)
+		FAGX_WireComponentVisualizer& Visualizer, const UAGX_WireComponent& Wire,
+		const bool bNewWire, HNodeProxy& Proxy)
 	{
 		if (Wire.IsInitialized())
 		{
@@ -41,13 +42,14 @@ public:
 			UE_LOG(LogAGX, Warning, TEXT("Edit selection cleared because wire is initialized."));
 			return false;
 		}
-		if (Proxy.NodeIndex == Visualizer.EditNodeIndex)
+		if (!bNewWire && Proxy.NodeIndex == Visualizer.EditNodeIndex)
 		{
 			// Clicking a selected node deselects it.
 			Visualizer.ClearEdit();
 			UE_LOG(LogAGX, Warning, TEXT("Selection cleared because a selected node was clicked."));
 			return true;
 		}
+
 		// A new node became selected.
 		SetEditNode(Visualizer, Wire, Proxy.NodeIndex);
 		return true;
@@ -537,9 +539,11 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 			OldOwningActor, NewOwningActor);
 	}
 
+	const bool bNewWire = Wire != GetEditWire();
+
 	if (HNodeProxy* Proxy = HitProxyCast<HNodeProxy>(VisProxy))
 	{
-		return FWireVisualizerOperations::NodeProxyClicked(*this, *Wire, *Proxy);
+		return FWireVisualizerOperations::NodeProxyClicked(*this, *Wire, bNewWire, *Proxy);
 	}
 	if (HWinchLocationProxy* Proxy = HitProxyCast<HWinchLocationProxy>(VisProxy))
 	{
