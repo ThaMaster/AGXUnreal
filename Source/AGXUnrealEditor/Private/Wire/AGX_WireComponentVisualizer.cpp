@@ -3,7 +3,6 @@
 #include "Wire/AGX_WireComponentVisualizer.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_LogCategory.h"
 #include "AGX_RuntimeStyle.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Wire/AGX_WireComponent.h"
@@ -39,14 +38,12 @@ public:
 			// operate on the route nodes, but when the wire is initialized what we're seeing are
 			// the simulation nodes.
 			Visualizer.ClearEdit();
-			UE_LOG(LogAGX, Warning, TEXT("Edit selection cleared because wire is initialized."));
 			return false;
 		}
 		if (!bNewWire && Proxy.NodeIndex == Visualizer.EditNodeIndex)
 		{
 			// Clicking a selected node deselects it.
 			Visualizer.ClearEdit();
-			UE_LOG(LogAGX, Warning, TEXT("Selection cleared because a selected node was clicked."));
 			return true;
 		}
 
@@ -69,7 +66,6 @@ public:
 		{
 			// We are in a Blueprint Editor. Find the Blueprint Editor instance and select the
 			// SCS node for the wire.
-			UE_LOG(LogAGX, Warning, TEXT("Selected a node in preview Wire %p."), &Wire);
 			TSharedPtr<IBlueprintEditor> BlueprintEditor =
 				FKismetEditorUtilities::GetIBlueprintEditorForObject(&Wire, /*Open*/ false);
 			if (BlueprintEditor.IsValid())
@@ -86,8 +82,6 @@ public:
 		else
 		{
 			// We are in the Level Editor. Handle selection directly through the GEditor instance.
-			UE_LOG(LogAGX, Warning, TEXT("Selected a node in non-preview Wire %p."), &Wire);
-
 			TArray<UActorComponent*> SelectedComponents;
 			GEditor->GetSelectedComponents()->GetSelectedObjects(SelectedComponents);
 			bool bWireAlreadySelected {false};
@@ -139,15 +133,12 @@ public:
 			/// Controller during runtime. For now we don't allow editing a Wire Winch after the
 			/// simulation has started.
 			Visualizer.ClearEdit();
-			UE_LOG(LogAGX, Warning, TEXT("Selection cleared because wire is initialized."));
 			return false;
 		}
 		if (Visualizer.EditWinch == WireSide && Visualizer.EditWinchSide == WinchSide)
 		{
 			// Clicking a selected winch deselects it.
 			Visualizer.ClearEdit();
-			UE_LOG(
-				LogAGX, Warning, TEXT("Selection cleared because a selected winch was clicked."));
 			return true;
 		}
 		// A new winch became selected.
@@ -435,15 +426,6 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 		return;
 	}
 
-	static TArray<const UAGX_WireComponent*> PreviousPrint;
-	if (!PreviousPrint.Contains(Wire))
-	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("DrawVisualization: Wire=%p, IsPreview=%d"), Wire,
-			FActorEditorUtils::IsAPreviewOrInactiveActor(Wire->GetOwner()));
-		PreviousPrint.AddUnique(Wire);
-	}
-
 	const bool bSelected = FAGX_EditorUtilities::IsSelected(*Wire);
 	const bool bEditing = Wire == GetEditWire();
 
@@ -493,9 +475,9 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 		}
 	}
 
-	// #if 0
 	// Don't know where to put this. Don't want to miss a deselection if we don't get any more
-	// calls to DrawVisualization after the deselection.
+	// calls to DrawVisualization after the deselection. Is there a delegate for editor selection
+	// changes?
 	if (HasValidEditNode() || HasValidEditWinch())
 	{
 		if (!FAGX_EditorUtilities::IsSelected(*GetEditWire()))
@@ -504,13 +486,8 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 			// anymore. This is so that the transform widget is placed at the newly selected
 			// Component instead of at the now no longer selected node or winch.
 			ClearEdit();
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Selection cleared because there was a valid selection but the Wire Component "
-					 "isn't selected."));
 		}
 	}
-	// #endif
 }
 
 // Called by Unreal Editor when an element with a hit proxy of the visualization is clicked.
@@ -523,20 +500,15 @@ bool FAGX_WireComponentVisualizer::VisProxyHandleClick(
 	{
 		// Clicked something not a wire, deselect whatever we had selected before.
 		ClearEdit();
-		UE_LOG(LogAGX, Warning, TEXT("Selection cleared because clicking something nota wire."));
 		return false;
 	}
 
-	AActor* OldOwningActor = EditWirePropertyPath.GetParentOwningActor();
-	AActor* NewOwningActor = Wire->GetOwner();
+	const AActor* OldOwningActor = EditWirePropertyPath.GetParentOwningActor();
+	const AActor* NewOwningActor = Wire->GetOwner();
 	if (NewOwningActor != OldOwningActor)
 	{
 		// Don't reuse selection data between Actors. It's completely different wires.
 		ClearEdit();
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Selection cleared because a new Actor got selected. Old=%p. New=%p"),
-			OldOwningActor, NewOwningActor);
 	}
 
 	const bool bNewWire = Wire != GetEditWire();
@@ -571,18 +543,13 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	{
 		return false;
 	}
-	// #if 0
 	if (!FAGX_EditorUtilities::IsSelected(*Wire))
 	{
 		// Is this const-case safe?
 		// If not, how do we clear the node selection when the Wire Component becomes unselected?
 		const_cast<FAGX_WireComponentVisualizer*>(this)->ClearEdit();
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Selection cleared because GetWidgetLocation found a non-selected wire."));
 		return false;
 	}
-	// #endif
 	if (HasValidEditNode())
 	{
 		// Convert the wire-local location to a world location.
@@ -646,9 +613,6 @@ bool FAGX_WireComponentVisualizer::HandleInputDelta(
 		// We got a move request but we have no valid selection so don't know what to move.
 		// Something's wrong, so reset the selection state.
 		ClearEdit();
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Selection cleared because HandleInputDelta didn't find a valid selection."));
 		return false;
 	}
 
@@ -701,7 +665,6 @@ bool FAGX_WireComponentVisualizer::IsVisualizingArchetype() const
 void FAGX_WireComponentVisualizer::EndEditing()
 {
 	ClearEdit();
-	UE_LOG(LogAGX, Warning, TEXT("Selection cleared because EndEditing."));
 }
 
 bool FAGX_WireComponentVisualizer::HasValidEditNode() const
@@ -749,7 +712,6 @@ void FAGX_WireComponentVisualizer::OnDeleteKey()
 	if (!HasValidEditNode())
 	{
 		ClearEdit();
-		UE_LOG(LogAGX, Warning, TEXT("Selection cleared because the selected node was deleted."));
 		return;
 	}
 
