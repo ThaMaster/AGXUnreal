@@ -14,7 +14,7 @@
 class UAGX_TrackComponent;
 
 /**
- * Deprecated, use Track Mesh Renderer instead.
+ * Deprecated.
  * Renderers all track nodes as instanced meshes using the same Static Mesh source.
  */
 UCLASS(

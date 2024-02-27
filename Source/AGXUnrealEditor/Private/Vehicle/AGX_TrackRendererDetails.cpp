@@ -36,8 +36,7 @@ void FAGX_TrackRendererDetails::CustomizeDetails(IDetailLayoutBuilder& InDetailB
 			.AutoWidth()
 			[
 				SNew(STextBlock)
-				.Text(LOCTEXT("DeprecationText", "Track Renderer is deprecated, "
-					"use Track Mesh Renderer instead."))
+				.Text(LOCTEXT("DeprecationText", "Track Renderer is deprecated."))
 				.ColorAndOpacity(FSlateColor(FLinearColor::Red))
 			]
 	];
