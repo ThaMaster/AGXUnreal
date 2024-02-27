@@ -468,7 +468,7 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 	}
 	else
 	{
-		if (bSelected)
+		if (bSelected && bEditing)
 		{
 			DrawRouteNodes(*Wire, EditNodeIndex, PDI);
 		}
