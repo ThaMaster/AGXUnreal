@@ -2014,7 +2014,17 @@ bool UAGX_WireComponent::ShouldRender() const
 void UAGX_WireComponent::UpdateVisuals()
 {
 	if (!ShouldRender())
+	{
+		const bool hasVisualCylinders =
+			VisualCylinders != nullptr && VisualCylinders->GetInstanceCount() > 0;
+		const bool hasVisualSpheres =
+			VisualSpheres != nullptr && VisualSpheres->GetInstanceCount() > 0;
+
+		if (VisualCylinders || hasVisualSpheres)
+			SetVisualsInstanceCount(0);
+
 		return;
+	}
 
 	// Workaround, the RenderMaterial does not propagate properly in SetRenderMaterial() in
 	// Blueprints, so we assign it here.
