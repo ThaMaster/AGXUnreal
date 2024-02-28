@@ -85,6 +85,7 @@ public:
 	FVector LocalMeshBoundsMin {-FVector::OneVector * 50.0f};
 
 	//~ Begin UActorComponent Interface
+	virtual void BeginPlay() override;
 	virtual void TickComponent(
 		float DeltaTime, ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
