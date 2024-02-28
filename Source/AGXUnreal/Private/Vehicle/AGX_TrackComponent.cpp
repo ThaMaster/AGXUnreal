@@ -22,7 +22,6 @@
 // Unreal Engine includes.
 #include "Components/InstancedStaticMeshComponent.h"
 #include "CoreGlobals.h"
-#include "Editor.h"
 #include "Engine/GameInstance.h"
 #include "Engine/StaticMesh.h"
 #include "GameFramework/Actor.h"
