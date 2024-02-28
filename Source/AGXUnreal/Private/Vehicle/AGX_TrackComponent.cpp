@@ -1011,7 +1011,12 @@ void UAGX_TrackComponent::UpdateVisuals()
 
 bool UAGX_TrackComponent::ShouldRender() const
 {
-	return IsVisible() && VisualMeshes != nullptr;
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	if (bIsPlaying)
+		return IsVisible() && VisualMeshes != nullptr;
+
+	// IsVisible for some reason returns false when "Hidden in game" is selected before play.
+	return GetVisibleFlag() && VisualMeshes != nullptr;
 }
 
 void UAGX_TrackComponent::SetVisualsInstanceCount(int32 Num)
