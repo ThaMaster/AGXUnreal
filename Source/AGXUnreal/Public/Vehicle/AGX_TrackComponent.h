@@ -44,7 +44,7 @@ public:
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
-	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
+	Hidecategories = (Cooking, Collision, LOD, Physics, Replication))
 class AGXUNREAL_API UAGX_TrackComponent : public USceneComponent, public IAGX_NativeOwner
 {
 	GENERATED_BODY()
@@ -309,11 +309,13 @@ public:
 	/**
 	 * The render material to apply to the visual Mesh.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Track Visual")
-	UMaterialInterface* RenderMaterial {nullptr};
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Track Visual",
+		Meta = (EditCondition = "RenderMesh != nullptr", FullyExpand = "true"))
+	TArray<TObjectPtr<UMaterialInterface>> RenderMaterials;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Visual")
-	void SetRenderMaterial(UMaterialInterface* Material);
+	void SetRenderMaterial(int32 ElementIndex, UMaterialInterface* Material);
 
 	/**
 	 * Whether to automatically compute the Scale and Offset necessary to fit the visual Static
@@ -466,6 +468,12 @@ private:
 	bool ComputeNodeTransforms(TArray<FTransform>& OutTransforms);
 	bool ComputeVisualScaleAndOffset(
 		FVector& OutVisualScale, FVector& OutVisualOffset, const FVector& PhysicsNodeSize) const;
+	void WriteRenderMaterialsToVisualMeshWithCheck();
+	void WriteRenderMaterialsToVisualMesh();
+
+#if WITH_EDITOR
+	void EnsureValidRenderMaterials();
+#endif
 
 private:
 	// The AGX Dynamics object only exists while simulating.

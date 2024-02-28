@@ -3,6 +3,7 @@
 #include "Vehicle/AGX_TrackComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_Environment.h"
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
@@ -11,6 +12,7 @@
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
@@ -19,11 +21,14 @@
 // Unreal Engine includes.
 #include "Components/InstancedStaticMeshComponent.h"
 #include "CoreGlobals.h"
+#include "Editor.h"
 #include "Engine/GameInstance.h"
 #include "Engine/StaticMesh.h"
 #include "GameFramework/Actor.h"
 #include "Materials/MaterialInterface.h"
 #include "Math/Quat.h"
+
+#define LOCTEXT_NAMESPACE "AGX_TrackRenderer"
 
 UAGX_TrackComponent::UAGX_TrackComponent()
 {
@@ -102,20 +107,35 @@ UInstancedStaticMeshComponent* UAGX_TrackComponent::GetVisualMeshes()
 	return VisualMeshes;
 }
 
-void UAGX_TrackComponent::SetRenderMaterial(UMaterialInterface* Material)
-{
-	RenderMaterial = Material;
-
-	if (VisualMeshes != nullptr)
-		VisualMeshes->SetMaterial(0, RenderMaterial);
-}
-
 void UAGX_TrackComponent::SetRenderMesh(UStaticMesh* Mesh)
 {
+	for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))
+	{
+		if (Instance->RenderMesh == RenderMesh)
+		{
+			Instance->SetRenderMesh(Mesh);
+		}
+	}
+
 	RenderMesh = Mesh;
+	RenderMaterials.Empty();
+	for (const FStaticMaterial& SM : Mesh->GetStaticMaterials())
+		RenderMaterials.Add(SM.MaterialInterface);
 
 	if (VisualMeshes != nullptr)
+	{
 		VisualMeshes->SetStaticMesh(RenderMesh);
+		WriteRenderMaterialsToVisualMesh();
+	}
+}
+
+void UAGX_TrackComponent::SetRenderMaterial(int32 ElementIndex, UMaterialInterface* Material)
+{
+	if (!RenderMaterials.IsValidIndex(ElementIndex))
+		return;
+
+	RenderMaterials[ElementIndex] = Material;
+	WriteRenderMaterialsToVisualMesh();
 }
 
 void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlreadyRaised)
@@ -598,8 +618,8 @@ void UAGX_TrackComponent::InitPropertyDispatcher()
 
 	// Visuals
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_TrackComponent, RenderMaterial),
-		[](ThisClass* Track) { Track->SetRenderMaterial(Track->RenderMaterial); });
+		GET_MEMBER_NAME_CHECKED(UAGX_TrackComponent, RenderMaterials),
+		[](ThisClass* Track) { Track->WriteRenderMaterialsToVisualMeshWithCheck(); });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TrackComponent, RenderMesh),
@@ -951,13 +971,14 @@ void UAGX_TrackComponent::UpdateVisuals()
 		return;
 	}
 
-	// Workaround, the RenderMaterial and Mesh does not propagate properly in SetRenderMaterial()
-	// and SetRenderMesh() in Blueprints, so we assign it here.
-	if (VisualMeshes->GetMaterial(0) != RenderMaterial)
-		VisualMeshes->SetMaterial(0, RenderMaterial);
+	{
+		// Workaround, the RenderMaterial and Mesh does not propagate properly in
+		// SetRenderMaterial() and SetRenderMesh() in Blueprints, so we assign it here.
+		if (VisualMeshes->GetStaticMesh() != RenderMesh)
+			VisualMeshes->SetStaticMesh(RenderMesh);
 
-	if (VisualMeshes->GetStaticMesh() != RenderMesh)
-		VisualMeshes->SetStaticMesh(RenderMesh);
+		WriteRenderMaterialsToVisualMesh();
+	}
 
 	// Get the mesh instance transforms, either from the native if playing or
 	// from the preview data if not playing.
@@ -1101,6 +1122,110 @@ bool UAGX_TrackComponent::ComputeVisualScaleAndOffset(
 	return true;
 }
 
+void UAGX_TrackComponent::WriteRenderMaterialsToVisualMeshWithCheck()
+{
+	EnsureValidRenderMaterials();
+	WriteRenderMaterialsToVisualMesh();
+}
+
+void UAGX_TrackComponent::WriteRenderMaterialsToVisualMesh()
+{
+	if (VisualMeshes == nullptr)
+		return;
+
+	if (RenderMesh != nullptr && RenderMesh->GetStaticMaterials().Num() != RenderMaterials.Num())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("WriteRenderMaterialsToVisualMesh was called for Track '%s' in '%s' but the "
+				 "Render Material slot numbers does not match the Track's Render Mesh slot "
+				 "numbers. Doing nothing."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
+	for (int32 Elem = 0; Elem < RenderMaterials.Num(); Elem++)
+	{
+		if (VisualMeshes->GetMaterial(Elem) != RenderMaterials[Elem])
+			VisualMeshes->SetMaterial(Elem, RenderMaterials[Elem]);
+	}
+}
+
+#if WITH_EDITOR
+void UAGX_TrackComponent::EnsureValidRenderMaterials()
+{
+	for (int32 Elem = 0; Elem < RenderMaterials.Num(); Elem++)
+	{
+		if (RenderMaterials[Elem] == nullptr)
+			continue;
+
+		UMaterial* Material = RenderMaterials[Elem]->GetMaterial();
+		if (Material == nullptr || Material->bUsedWithInstancedStaticMeshes)
+			continue;
+
+		if (Material->GetPathName().StartsWith("/Game/"))
+		{
+			// This is a material part of the UE project itself. We can therefore be a bit more
+			// helpful and offer to fix the material setting and save the asset so that the user
+			// does not have to manually do it.
+			const FText AskEnableUseWithInstancedSM = LOCTEXT(
+				"EnableUseWithInstancedStaticMeshes",
+				"The selected Material does not have Use With Instanced Static Meshes enabled, "
+				"meaning that it cannot be used to visualize the Track. Would you like this "
+				"setting to be automatically enabled? The Material asset will be re-saved.");
+			if (FAGX_NotificationUtilities::YesNoQuestion(AskEnableUseWithInstancedSM))
+			{
+				Material->Modify();
+				Material->bUsedWithInstancedStaticMeshes = true;
+				Material->PostEditChange();
+				FAGX_ObjectUtilities::SaveAsset(*Material);
+			}
+			else
+			{
+				// Clear the material selection.
+				for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))
+				{
+					if (Instance->RenderMaterials.IsValidIndex(Elem) &&
+						Instance->RenderMaterials[Elem] == RenderMaterials[Elem])
+					{
+						Instance->RenderMaterials[Elem] = nullptr;
+					}
+				}
+
+				RenderMaterials[Elem] = nullptr;
+			}
+		}
+		else
+		{
+			// This is a material not part of the UE project itself. It may reside in the
+			// installed Unreal Editor itself, or some plugin. We are not comfortable making
+			// permanent changes to such materials, so we will prompt the user to do it
+			// themselves.
+			const FString Message =
+				"The selected Material does not have Use With Instanced Static Meshes enabled, "
+				"meaning that it cannot be used to visualize the Track. You can enable this "
+				"setting from the Material editor. The Material needs to be saved after these "
+				"changes. It is recommended to make a copy and place the "
+				"material within the project Contents, that way the behavior will be the same "
+				"on any computer opening this project.";
+			FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(Message);
+
+			// Clear the material selection.
+			for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))
+			{
+				if (Instance->RenderMaterials.IsValidIndex(Elem) &&
+					Instance->RenderMaterials[Elem] == RenderMaterials[Elem])
+				{
+					Instance->RenderMaterials[Elem] = nullptr;
+				}
+			}
+
+			RenderMaterials[Elem] = nullptr;
+		}
+	}
+}
+#endif
+
 FAGX_TrackComponentInstanceData::FAGX_TrackComponentInstanceData(
 	const IAGX_NativeOwner* NativeOwner, const USceneComponent* SourceComponent,
 	TFunction<IAGX_NativeOwner*(UActorComponent*)> InDowncaster)
@@ -1115,3 +1240,5 @@ void FAGX_TrackComponentInstanceData::ApplyToComponent(
 
 	CastChecked<UAGX_TrackComponent>(Component)->ApplyComponentInstanceData(this, CacheApplyPhase);
 }
+
+#undef LOCTEXT_NAMESPACE
