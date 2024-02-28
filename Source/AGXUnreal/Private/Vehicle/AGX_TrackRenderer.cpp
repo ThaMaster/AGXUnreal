@@ -120,6 +120,23 @@ UAGX_TrackRenderer::UAGX_TrackRenderer()
 	BodyInstance.SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
+void UAGX_TrackRenderer::BeginPlay()
+{
+	// Deprecation message.
+#if WITH_EDITOR
+	const FString DeprecationMsg =
+		"AGX Track Renderer is deprecated and will be removed in a future release. The AGX Track \n"
+		"Component renders itself. To use the old AGX_TrackRenderer, it is recommended to copy it "
+		"\n"
+		"into your project and remove this deprecation message from it.";
+
+	UE_LOG(LogAGX, Warning, TEXT("%s"), *DeprecationMsg);
+
+	if (GEngine != nullptr)
+		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 15.0f, FColor::Red, DeprecationMsg);
+#endif
+}
+
 void UAGX_TrackRenderer::TickComponent(
 	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -179,19 +196,6 @@ void UAGX_TrackRenderer::ApplyComponentInstanceData(
 void UAGX_TrackRenderer::PostInitProperties()
 {
 	Super::PostInitProperties();
-
-	// Deprecation message.
-#if WITH_EDITOR
-	const FString DeprecationMsg =
-		"AGX Track Renderer is deprecated and will be removed in a future release. The AGX Track \n"
-		"Component renders itself. To use the old AGX_TrackRenderer, it is recommended to copy it \n"
-		"into your project and remove this deprecation message from it.";
-
-	UE_LOG(LogAGX, Warning, TEXT("%s"), *DeprecationMsg);
-
-	if (GEngine != nullptr)
-		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 15.0f, FColor::Red, DeprecationMsg);
-#endif
 }
 
 #if WITH_EDITOR
