@@ -294,7 +294,6 @@ void FTrimeshShapeBarrier::AllocateNativeShape()
 
 	agx::Vec3Vector NativeVertices;
 	NativeVertices.reserve(Params->Vertices->Num());
-
 	for (const FVector& Vertex : *Params->Vertices)
 	{
 		NativeVertices.push_back(ConvertDisplacement(Vertex));
@@ -302,7 +301,6 @@ void FTrimeshShapeBarrier::AllocateNativeShape()
 
 	agx::UInt32Vector NativeIndices;
 	NativeIndices.reserve(Params->TriIndices->Num() * 3);
-
 	for (const FTriIndices& Index : *Params->TriIndices)
 	{
 		check(Index.v0 >= 0);
