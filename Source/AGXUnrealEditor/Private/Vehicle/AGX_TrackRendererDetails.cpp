@@ -53,7 +53,7 @@ void FAGX_TrackRendererDetails::CustomizeDetails(IDetailLayoutBuilder& InDetailB
 			{
 				for (const TWeakObjectPtr<UObject>& Object : Objects)
 				{
-					auto Renderer = Cast<UDEPRECATED_AGX_TrackRenderer>(Object.Get());
+					auto Renderer = Cast<UAGX_TrackRenderer>(Object.Get());
 					if (IsValid(Renderer))
 					{
 						if (UAGX_TrackComponent* Track = Renderer->FindTargetTrack())

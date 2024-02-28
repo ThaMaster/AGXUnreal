@@ -380,7 +380,7 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_TrackComponentDetails::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
-		UDEPRECATED_AGX_TrackRenderer::StaticClass()->GetFName(),
+		UAGX_TrackRenderer::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_TrackRendererDetails::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
@@ -472,7 +472,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
-		UDEPRECATED_AGX_TrackRenderer::StaticClass()->GetFName());
+		UAGX_TrackRenderer::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
