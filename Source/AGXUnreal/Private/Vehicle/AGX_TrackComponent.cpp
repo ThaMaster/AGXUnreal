@@ -25,6 +25,7 @@
 #include "Engine/GameInstance.h"
 #include "Engine/StaticMesh.h"
 #include "GameFramework/Actor.h"
+#include "Materials/Material.h"
 #include "Materials/MaterialInterface.h"
 #include "Math/Quat.h"
 
