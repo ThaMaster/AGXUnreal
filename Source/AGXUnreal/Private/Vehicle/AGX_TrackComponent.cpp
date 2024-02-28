@@ -17,19 +17,21 @@
 #include "Vehicle/TrackPropertiesBarrier.h"
 
 // Unreal Engine includes.
-#include "Engine/GameInstance.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "CoreGlobals.h"
+#include "Engine/GameInstance.h"
+#include "Engine/StaticMesh.h"
 #include "GameFramework/Actor.h"
+#include "Materials/MaterialInterface.h"
 #include "Math/Quat.h"
 
 UAGX_TrackComponent::UAGX_TrackComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 	bWantsOnUpdateTransform = true;
 }
 
-FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
-	bool bUpdateIfNecessary, bool bForceUpdate) const
+FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(bool bForceUpdate) const
 {
 	// Avoid getting Track Preview if no valid license is available since this will spam license
 	// errors in the log.
@@ -95,6 +97,27 @@ FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(
 	return TrackPreview.Get();
 }
 
+UInstancedStaticMeshComponent* UAGX_TrackComponent::GetVisualMeshes()
+{
+	return VisualMeshes;
+}
+
+void UAGX_TrackComponent::SetRenderMaterial(UMaterialInterface* Material)
+{
+	RenderMaterial = Material;
+
+	if (VisualMeshes != nullptr)
+		VisualMeshes->SetMaterial(0, RenderMaterial);
+}
+
+void UAGX_TrackComponent::SetRenderMesh(UStaticMesh* Mesh)
+{
+	RenderMesh = Mesh;
+
+	if (VisualMeshes != nullptr)
+		VisualMeshes->SetStaticMesh(RenderMesh);
+}
+
 void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlreadyRaised)
 {
 	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
@@ -104,8 +127,8 @@ void UAGX_TrackComponent::RaiseTrackPreviewNeedsUpdate(bool bDoNotBroadcastIfAlr
 	}
 
 	bool bShouldBroadcastEvent = !bTrackPreviewNeedsUpdate || !bDoNotBroadcastIfAlreadyRaised;
-
 	bTrackPreviewNeedsUpdate = true;
+	UpdateVisuals();
 
 	if (bShouldBroadcastEvent)
 	{
@@ -378,6 +401,7 @@ void UAGX_TrackComponent::PostLoad()
 	ResolveComponentReferenceOwningActors();
 
 	RaiseTrackPreviewNeedsUpdate();
+	UpdateVisuals();
 }
 
 void UAGX_TrackComponent::BeginPlay()
@@ -475,6 +499,31 @@ void UAGX_TrackComponent::ApplyComponentInstanceData(
 	}
 }
 
+void UAGX_TrackComponent::OnRegister()
+{
+	Super::OnRegister();
+
+	if (VisualMeshes == nullptr)
+		CreateVisuals();
+
+	UpdateVisuals();
+}
+
+void UAGX_TrackComponent::DestroyComponent(bool bPromoteChildren)
+{
+	if (VisualMeshes != nullptr)
+		VisualMeshes->DestroyComponent();
+
+	Super::DestroyComponent(bPromoteChildren);
+}
+
+void UAGX_TrackComponent::TickComponent(
+	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	UpdateVisuals();
+}
+
 #if WITH_EDITOR
 
 void UAGX_TrackComponent::OnUpdateTransform(
@@ -493,8 +542,7 @@ void UAGX_TrackComponent::OnUpdateTransform(
 		//       moved, which usually means that all wheels moved.
 		if (bAutoUpdateTrackPreview)
 		{
-			constexpr bool bDoNotBroadcastIfAlreadyRaised = true;
-			RaiseTrackPreviewNeedsUpdate(bDoNotBroadcastIfAlreadyRaised);
+			RaiseTrackPreviewNeedsUpdate(true);
 		}
 	}
 }
@@ -547,6 +595,15 @@ void UAGX_TrackComponent::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TrackComponent, bAutoGeneratePrincipalInertia),
 		[](ThisClass* Self) { Self->WriteMassPropertiesToNative(); });
+
+	// Visuals
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TrackComponent, RenderMaterial),
+		[](ThisClass* Track) { Track->SetRenderMaterial(Track->RenderMaterial); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TrackComponent, RenderMesh),
+		[](ThisClass* Track) { Track->SetRenderMesh(Track->RenderMesh); });
 }
 
 #endif
@@ -875,6 +932,173 @@ void UAGX_TrackComponent::UpdateNativeProperties()
 
 	//  Set mass, center of mass, inertia tensor, and auto-gen properties on native rigid bodies.
 	WriteMassPropertiesToNative();
+}
+
+void UAGX_TrackComponent::CreateVisuals()
+{
+	VisualMeshes = NewObject<UInstancedStaticMeshComponent>(this, FName(TEXT("VisualMeshes")));
+	VisualMeshes->RegisterComponent();
+	VisualMeshes->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+}
+
+void UAGX_TrackComponent::UpdateVisuals()
+{
+	if (!ShouldRender())
+	{
+		if (VisualMeshes != nullptr && VisualMeshes->GetInstanceCount() > 0)
+			SetVisualsInstanceCount(0);
+
+		return;
+	}
+
+	// Workaround, the RenderMaterial and Mesh does not propagate properly in SetRenderMaterial()
+	// and SetRenderMesh() in Blueprints, so we assign it here.
+	if (VisualMeshes->GetMaterial(0) != RenderMaterial)
+		VisualMeshes->SetMaterial(0, RenderMaterial);
+
+	if (VisualMeshes->GetStaticMesh() != RenderMesh)
+		VisualMeshes->SetStaticMesh(RenderMesh);
+
+	// Get the mesh instance transforms, either from the native if playing or
+	// from the preview data if not playing.
+	if (!ComputeNodeTransforms(NodeTransformsCache))
+	{
+		NodeTransformsCache.Empty(); // if failed, do not render anything.
+	}
+
+	// Make sure there is one mesh instance per track node.
+	const int32 NumNodes = NodeTransformsCache.Num();
+	SetVisualsInstanceCount(NumNodes);
+
+	if (VisualMeshes->PerInstancePrevTransform.Num() != NumNodes)
+		VisualMeshes->PerInstancePrevTransform.SetNum(NumNodes);
+
+	if (NodeTransformsCachePrev.Num() != NumNodes)
+		NodeTransformsCachePrev.SetNum(NumNodes);
+
+	// Because UInstancedStaticMeshComponent::UpdateInstanceTransform() converts instance transforms
+	// from World to Local Transform Space, make sure our local transform space is up-to-date.
+	VisualMeshes->UpdateComponentToWorld();
+
+	// Update transforms of the track node mesh instances.
+	VisualMeshes->BatchUpdateInstancesTransforms(
+		0, NodeTransformsCache, NodeTransformsCachePrev, /*bWorldSpace*/ true,
+		/*bMarkRenderStateDirty*/ true);
+
+	NodeTransformsCachePrev = NodeTransformsCache;
+}
+
+bool UAGX_TrackComponent::ShouldRender() const
+{
+	return IsVisible() && VisualMeshes != nullptr;
+}
+
+void UAGX_TrackComponent::SetVisualsInstanceCount(int32 Num)
+{
+	if (VisualMeshes == nullptr)
+		return;
+
+	Num = std::max(0, Num);
+
+	while (VisualMeshes->GetInstanceCount() < Num)
+	{
+		VisualMeshes->AddInstance(FTransform());
+	}
+
+	while (VisualMeshes->GetInstanceCount() > Num)
+	{
+		VisualMeshes->RemoveInstance(VisualMeshes->GetInstanceCount() - 1);
+	}
+}
+
+bool UAGX_TrackComponent::ComputeNodeTransforms(TArray<FTransform>& OutTransforms)
+{
+	// Get node transforms either from the actual track when playing,
+	// or from a generated preview if not playing.
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	if (bIsPlaying)
+	{
+		// Get mesh instance transforms from the native.
+		if (!HasNative())
+			return false;
+
+		FVector VisualScale, VisualOffset;
+		if (bAutoScaleAndOffset)
+		{
+			ComputeVisualScaleAndOffset(VisualScale, VisualOffset, GetNodeSize(0));
+		}
+		else
+		{
+			VisualScale = Scale;
+			VisualOffset = Offset;
+		}
+
+		GetNodeTransforms(OutTransforms, VisualScale, VisualOffset, Rotation.Quaternion());
+	}
+	else
+	{
+		// Get mesh instance transforms from preview data.
+		FAGX_TrackPreviewData* Preview = GetTrackPreview(/*bForceUpdate*/ false);
+
+		if (!Preview || Preview->NodeTransforms.Num() <= 0)
+		{
+			return false;
+		}
+		check(Preview->NodeTransforms.Num() == Preview->NodeHalfExtents.Num());
+
+		const FVector PhysicsNodeSize = 2 * Preview->NodeHalfExtents[0];
+		const FVector BodyFrameToNodeCenter = FVector(0, 0, 0.5f * PhysicsNodeSize.Z);
+		FVector VisualScale, VisualOffset;
+		if (bAutoScaleAndOffset)
+		{
+			ComputeVisualScaleAndOffset(VisualScale, VisualOffset, PhysicsNodeSize);
+		}
+		else
+		{
+			VisualScale = Scale;
+			VisualOffset = Offset;
+		}
+
+		OutTransforms.SetNum(Preview->NodeTransforms.Num(), /*bAllowShrinking*/ true);
+		for (int i = 0; i < Preview->NodeTransforms.Num(); ++i)
+		{
+			const FVector WorldOffset = Preview->NodeTransforms[i].GetRotation().RotateVector(
+				VisualOffset + BodyFrameToNodeCenter);
+
+			OutTransforms[i].SetScale3D(VisualScale);
+			OutTransforms[i].SetRotation(
+				Preview->NodeTransforms[i].GetRotation() * Rotation.Quaternion());
+			OutTransforms[i].SetLocation(Preview->NodeTransforms[i].GetTranslation() + WorldOffset);
+		}
+	}
+
+	return true;
+}
+
+bool UAGX_TrackComponent::ComputeVisualScaleAndOffset(
+	FVector& OutVisualScale, FVector& OutVisualOffset, const FVector& PhysicsNodeSize) const
+{
+	const FVector LocalMeshBoundsSize = LocalMeshBoundsMax - LocalMeshBoundsMin;
+	const FVector LocalBoundsCenter = LocalMeshBoundsMin + LocalMeshBoundsSize * 0.5f;
+
+	if (FMath::IsNearlyZero(LocalMeshBoundsSize.X) || FMath::IsNearlyZero(LocalMeshBoundsSize.Y) ||
+		FMath::IsNearlyZero(LocalMeshBoundsSize.Z))
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Failed to compute visual Scale and Offset for '%s' in '%s' because "
+				 "LocalMeshBoundsMax is too close too LocalMeshBoundsMin. Render mesh will use "
+				 "identity transformation."),
+			*GetName(), *GetNameSafe(GetOwner()));
+		OutVisualScale = FVector::OneVector;
+		OutVisualOffset = FVector::ZeroVector;
+		return false;
+	}
+
+	OutVisualScale = PhysicsNodeSize / LocalMeshBoundsSize;
+	OutVisualOffset =
+		-LocalBoundsCenter * Scale; // times scale to convert offset to post-scale coordinates
+	return true;
 }
 
 FAGX_TrackComponentInstanceData::FAGX_TrackComponentInstanceData(

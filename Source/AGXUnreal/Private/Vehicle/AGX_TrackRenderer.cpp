@@ -422,8 +422,7 @@ bool UDEPRECATED_AGX_TrackRenderer::ComputeNodeTransforms(
 	else
 	{
 		// Get mesh instance transforms from preview data.
-		FAGX_TrackPreviewData* Preview = Track->GetTrackPreview(
-			/*bUpdateIfNecessary*/ true, /*bForceUpdate*/ false);
+		FAGX_TrackPreviewData* Preview = Track->GetTrackPreview(/*bForceUpdate*/ false);
 
 		if (!Preview || Preview->NodeTransforms.Num() <= 0)
 		{
