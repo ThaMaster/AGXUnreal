@@ -202,13 +202,14 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("agxCore", LibSource.AGX);
 		RuntimeLibFiles.Add("agxHydraulics", LibSource.AGX);
 		RuntimeLibFiles.Add("agxSabre", LibSource.AGX);
+		RuntimeLibFiles.Add("agxSensor", LibSource.AGX);
 		RuntimeLibFiles.Add("agxTerrain", LibSource.AGX);
 		RuntimeLibFiles.Add("agxCable", LibSource.AGX);
 		RuntimeLibFiles.Add("agxModel", LibSource.AGX);
 		RuntimeLibFiles.Add("agxVehicle", LibSource.AGX);
-		RuntimeLibFiles.Add("colamd", LibSource.AGX);
 		RuntimeLibFiles.Add("agxROS2", LibSource.AGX);
 		RuntimeLibFiles.Add("agx-nt-ros2", LibSource.AGX);
+		RuntimeLibFiles.Add("colamd", LibSource.AGX);
 		RuntimeLibFiles.Add("fastcdr*", LibSource.AGX);
 		RuntimeLibFiles.Add("fastrtps*", LibSource.AGX);
 		if (TargetAGXVersion.IsOlderThan(2, 32, 0, 0))
@@ -232,6 +233,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		LinkLibFiles.Add("agxCore", LibSource.AGX);
 		LinkLibFiles.Add("agxHydraulics", LibSource.AGX);
 		LinkLibFiles.Add("agxSabre", LibSource.AGX);
+		LinkLibFiles.Add("agxSensor", LibSource.AGX);
 		LinkLibFiles.Add("agxTerrain", LibSource.AGX);
 		LinkLibFiles.Add("agxCable", LibSource.AGX);
 		LinkLibFiles.Add("agxModel", LibSource.AGX);
@@ -267,7 +269,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			}
 
 			RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
-			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
+			RuntimeLibFiles.Add("libpng16", LibSource.Dependencies);
 			if (TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
 				RuntimeLibFiles.Add("glew", LibSource.Dependencies);
@@ -312,6 +314,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			DelayLoadLibraries.Add("agxPhysics", LibSource.AGX);
 			DelayLoadLibraries.Add("agxCore", LibSource.AGX);
 			DelayLoadLibraries.Add("agxSabre", LibSource.AGX);
+			DelayLoadLibraries.Add("agxSensor", LibSource.AGX);
 			DelayLoadLibraries.Add("agxTerrain", LibSource.AGX);
 			DelayLoadLibraries.Add("agxCable", LibSource.AGX);
 			DelayLoadLibraries.Add("agxModel", LibSource.AGX);
@@ -595,6 +598,7 @@ public class AGXDynamicsLibrary : ModuleRules
 				"agxPowerLine",
 				"agxRender",
 				"agxSabre",
+				"agxSensor",
 				"agxSDK",
 				"agxStream",
 				"agxTerrain",

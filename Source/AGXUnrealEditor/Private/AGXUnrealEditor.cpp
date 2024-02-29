@@ -81,6 +81,7 @@
 #include "Sensors/AGX_CameraSensorComponentVisualizer.h"
 #include "Sensors/AGX_LidarSensorComponent.h"
 #include "Sensors/AGX_LidarSensorComponentVisualizer.h"
+#include "Sensors/AGX_SensorEnvironment.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_ShapeComponentCustomization.h"
 #include "Terrain/AGX_Terrain.h"
@@ -607,6 +608,7 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	RegisterPlaceableItem(AAGX_HingeConstraintActor::StaticClass());
 	RegisterPlaceableItem(AAGX_LockConstraintActor::StaticClass());
 	RegisterPlaceableItem(AAGX_PrismaticConstraintActor::StaticClass());
+	RegisterPlaceableItem(AAGX_SensorEnvironment::StaticClass());
 	RegisterPlaceableItem(AAGX_Terrain::StaticClass());
 	RegisterPlaceableItem(AAGX_CollisionGroupDisablerActor::StaticClass());
 	RegisterPlaceableItem(AAGX_RigidBodyActor::StaticClass());
