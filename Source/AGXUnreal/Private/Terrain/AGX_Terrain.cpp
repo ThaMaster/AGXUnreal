@@ -1524,11 +1524,11 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	}
 
 	// Copy data with holes.
-	EParticleDataFlags Pdf = EParticleDataFlags::Positions | EParticleDataFlags::Rotations |
-							 EParticleDataFlags::Radii | EParticleDataFlags::Velocities;
-	const FParticleDataById ParticleData = bEnableTerrainPaging
-											   ? NativeTerrainPagerBarrier.GetParticleDataById(Pdf)
-											   : NativeBarrier.GetParticleDataById(Pdf);
+	EParticleDataFlags ToInclude = EParticleDataFlags::Positions | EParticleDataFlags::Rotations |
+								   EParticleDataFlags::Radii | EParticleDataFlags::Velocities;
+	const FParticleDataById ParticleData =
+		bEnableTerrainPaging ? NativeTerrainPagerBarrier.GetParticleDataById(ToInclude)
+							 : NativeBarrier.GetParticleDataById(ToInclude);
 
 	const TArray<FVector>& Positions = ParticleData.Positions;
 	const TArray<FQuat>& Rotations = ParticleData.Rotations;

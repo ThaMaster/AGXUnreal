@@ -392,7 +392,7 @@ TArray<FQuat> FTerrainBarrier::GetParticleRotations() const
 	return Rotations;
 }
 
-FParticleData FTerrainBarrier::GetParticleData() const
+FParticleData FTerrainBarrier::GetParticleData(const EParticleDataFlags ToInclude) const
 {
 	const size_t NumParticles = FTerrainUtilities::GetNumParticles(*this);
 	FParticleData ParticleData;
@@ -401,7 +401,7 @@ FParticleData FTerrainBarrier::GetParticleData() const
 	ParticleData.Radii.Reserve(NumParticles);
 	ParticleData.Rotations.Reserve(NumParticles);
 
-	FTerrainUtilities::AppendParticleData(*this, ParticleData);
+	FTerrainUtilities::AppendParticleData(*this, ParticleData, ToInclude);
 
 	return ParticleData;
 }

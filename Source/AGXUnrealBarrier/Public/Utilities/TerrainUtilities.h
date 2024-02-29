@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Terrain/TerrainParticleTypes.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
@@ -19,6 +22,9 @@ public:
 	static void AppendParticlePositions(
 		const FTerrainBarrier& Terrain, TArray<FVector>& OutPositions);
 
+	/**
+	 * Writes the velocities of all particles in the given Terrain to OutVelocities.
+	 */
 	static void AppendParticleVelocities(
 		const FTerrainBarrier& Terrain, TArray<FVector>& OutVelocities);
 
@@ -34,10 +40,12 @@ public:
 		const FTerrainBarrier& Terrain, TArray<FQuat>& OutRotations);
 
 	/**
-	 * Writes the position, rotation and radii of all particles known to the passed Terrain to
-	 * OutParticleData.
+	 * Writes the data indicated by the ToInclude bit set flags of all particles in the given
+	 * Terrain to OutParticleData.
 	 */
-	static void AppendParticleData(const FTerrainBarrier& Terrain, FParticleData& OutParticleData);
+	static void AppendParticleData(
+		const FTerrainBarrier& Terrain, FParticleData& OutParticleData,
+		EParticleDataFlags ToInclude);
 
 	static void GetParticleExistsById(const FTerrainBarrier& Terrain, TArray<bool>& OutExists);
 
@@ -47,17 +55,19 @@ public:
 	static void GetParticleVelocitiesById(
 		const FTerrainBarrier& Terrain, TArray<FVector>& OutVelocities);
 
+	static void GetParticleRadiiById(const FTerrainBarrier& Terrain, TArray<float>& OutRadii);
+
 	static void GetParticleRotationsById(
 		const FTerrainBarrier& Terrain, TArray<FQuat>& OutRotation);
 
-	static void GetParticleRadiiById(const FTerrainBarrier& Terrain, TArray<float>& OutRadii);
-
 	/**
-	 * Writes the position, rotation and radii of all particles known to the passed Terrain to
-	 * OutParticleData.
+	 * Writes the data indicated by the ToInclude bit set flags of all particles known to the passed
+	 * Terrain to OutParticleData. The Exists array is always populated, even when ToInclude is
+	 * empty.
 	 */
 	static void GetParticleDataById(
-		const FTerrainBarrier& Terrain, FParticleDataById& OutParticleData);
+		const FTerrainBarrier& Terrain, FParticleDataById& OutParticleData,
+		EParticleDataFlags ToInclude);
 
 	/**
 	 * Returns the number of particles known to the passed Terrain.

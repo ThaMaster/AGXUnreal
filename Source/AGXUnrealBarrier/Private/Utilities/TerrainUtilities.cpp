@@ -1,3 +1,5 @@
+// Copyright 2024, Algoryx Simulation AB.
+
 #include "Utilities/TerrainUtilities.h"
 
 // AGX Dynamics for Unreal includes.
@@ -43,7 +45,7 @@ namespace TerrainUtilities_helpers
 		return {GetGranularParticles(Terrain), GetGranularStorage(Terrain)->getIdToIndexTable()};
 	}
 
-	void GetParticleExistsById(const FParticlesWithIdToIndex& Particles, TArray<bool>& OutExists)
+	void GetExistsById(const FParticlesWithIdToIndex& Particles, TArray<bool>& OutExists)
 	{
 		verify(Particles.IdToIndex.size() < std::numeric_limits<int32>::max());
 		const int32 NumIds = static_cast<int32>(Particles.IdToIndex.size());
@@ -91,7 +93,7 @@ namespace TerrainUtilities_helpers
 
 	// Position getters.
 
-	void AppendParticlePositions(
+	void AppendPositions(
 		const agx::Physics::GranularBodyPtrArray& GranularParticles, TArray<FVector>& OutPositions)
 	{
 		if (GranularParticles.size() > OutPositions.GetSlack())
@@ -107,8 +109,7 @@ namespace TerrainUtilities_helpers
 		}
 	}
 
-	void GetParticlePositionsById(
-		const FParticlesWithIdToIndex& Particles, TArray<FVector>& OutPositions)
+	void GetPositionsById(const FParticlesWithIdToIndex& Particles, TArray<FVector>& OutPositions)
 	{
 		// Create an invalid marker filled with NaN. Cannot use a constructor to initialize it
 		// because the constructors check for NaN.
@@ -123,7 +124,7 @@ namespace TerrainUtilities_helpers
 
 	// Velocity getters.
 
-	void AppendParticleVelocities(
+	void AppendVelocities(
 		const agx::Physics::GranularBodyPtrArray& Particles, TArray<FVector>& OutVelocities)
 	{
 		if (Particles.size() > OutVelocities.GetSlack())
@@ -139,8 +140,7 @@ namespace TerrainUtilities_helpers
 		}
 	}
 
-	void GetParticleVelocitiesById(
-		const FParticlesWithIdToIndex& Particles, TArray<FVector>& OutVelocities)
+	void GetVelocitiesById(const FParticlesWithIdToIndex& Particles, TArray<FVector>& OutVelocities)
 	{
 		// Create an invalid marker filled with NaN. Cannot use a constructor to initialize it
 		// because the constructors check for NaN.
@@ -155,7 +155,7 @@ namespace TerrainUtilities_helpers
 
 	// Radii getters.
 
-	void AppendParticleRadii(
+	void AppendRadii(
 		const agx::Physics::GranularBodyPtrArray& GranularParticles, TArray<float>& OutRadii)
 	{
 		if (GranularParticles.size() > OutRadii.GetSlack())
@@ -171,7 +171,7 @@ namespace TerrainUtilities_helpers
 		}
 	}
 
-	void GetParticleRadiiById(const FParticlesWithIdToIndex& Particles, TArray<float>& OutRadii)
+	void GetRadiiById(const FParticlesWithIdToIndex& Particles, TArray<float>& OutRadii)
 	{
 		constexpr float InvalidMarker = std::numeric_limits<float>::quiet_NaN();
 		GetParticleDataById(
@@ -182,7 +182,7 @@ namespace TerrainUtilities_helpers
 
 	// Rotations getter.
 
-	void AppendParticleRotations(
+	void AppendRotations(
 		const agx::Physics::GranularBodyPtrArray& GranularParticles, TArray<FQuat>& OutRotations)
 	{
 		if (GranularParticles.size() > OutRotations.GetSlack())
@@ -198,8 +198,7 @@ namespace TerrainUtilities_helpers
 		}
 	}
 
-	void GetParticleRotationsById(
-		const FParticlesWithIdToIndex& Particles, TArray<FQuat>& OutRotations)
+	void GetRotationsById(const FParticlesWithIdToIndex& Particles, TArray<FQuat>& OutRotations)
 	{
 		FQuat InvalidMarker;
 		constexpr FQuat::FReal NaN = std::numeric_limits<FVector::FReal>::quiet_NaN();
@@ -217,11 +216,9 @@ void FTerrainUtilities::AppendParticlePositions(
 	AGX_CHECK(Terrain.HasNative());
 	if (!Terrain.HasNative())
 		return;
-
-	const agx::Physics::GranularBodyPtrArray GranularParticles =
-		TerrainUtilities_helpers::GetGranularParticles(Terrain);
-
-	TerrainUtilities_helpers::AppendParticlePositions(GranularParticles, OutPositions);
+	using namespace TerrainUtilities_helpers;
+	const agx::Physics::GranularBodyPtrArray GranularParticles = GetGranularParticles(Terrain);
+	AppendPositions(GranularParticles, OutPositions);
 }
 
 void FTerrainUtilities::AppendParticleVelocities(
@@ -229,13 +226,10 @@ void FTerrainUtilities::AppendParticleVelocities(
 {
 	AGX_CHECK(Terrain.HasNative());
 	if (!Terrain.HasNative())
-	{
 		return;
-	}
-
-	const agx::Physics::GranularBodyPtrArray Particles =
-		TerrainUtilities_helpers::GetGranularParticles(Terrain);
-	TerrainUtilities_helpers::AppendParticleVelocities(Particles, OutVelocities);
+	using namespace TerrainUtilities_helpers;
+	const agx::Physics::GranularBodyPtrArray Particles = GetGranularParticles(Terrain);
+	AppendVelocities(Particles, OutVelocities);
 }
 
 void FTerrainUtilities::AppendParticleRadii(const FTerrainBarrier& Terrain, TArray<float>& OutRadii)
@@ -243,11 +237,9 @@ void FTerrainUtilities::AppendParticleRadii(const FTerrainBarrier& Terrain, TArr
 	AGX_CHECK(Terrain.HasNative());
 	if (!Terrain.HasNative())
 		return;
-
-	const agx::Physics::GranularBodyPtrArray GranularParticles =
-		TerrainUtilities_helpers::GetGranularParticles(Terrain);
-
-	TerrainUtilities_helpers::AppendParticleRadii(GranularParticles, OutRadii);
+	using namespace TerrainUtilities_helpers;
+	const agx::Physics::GranularBodyPtrArray GranularParticles = GetGranularParticles(Terrain);
+	AppendRadii(GranularParticles, OutRadii);
 }
 
 void FTerrainUtilities::AppendParticleRotations(
@@ -256,28 +248,28 @@ void FTerrainUtilities::AppendParticleRotations(
 	AGX_CHECK(Terrain.HasNative());
 	if (!Terrain.HasNative())
 		return;
-
-	const agx::Physics::GranularBodyPtrArray GranularParticles =
-		TerrainUtilities_helpers::GetGranularParticles(Terrain);
-
-	TerrainUtilities_helpers::AppendParticleRotations(GranularParticles, OutRotations);
+	using namespace TerrainUtilities_helpers;
+	const agx::Physics::GranularBodyPtrArray GranularParticles = GetGranularParticles(Terrain);
+	AppendRotations(GranularParticles, OutRotations);
 }
 
 void FTerrainUtilities::AppendParticleData(
-	const FTerrainBarrier& Terrain, FParticleData& OutParticleData)
+	const FTerrainBarrier& Terrain, FParticleData& OutParticleData, EParticleDataFlags ToInclude)
 {
 	AGX_CHECK(Terrain.HasNative());
 	if (!Terrain.HasNative())
 		return;
 
-	const agx::Physics::GranularBodyPtrArray GranularParticles =
-		TerrainUtilities_helpers::GetGranularParticles(Terrain);
-
-	TerrainUtilities_helpers::AppendParticlePositions(GranularParticles, OutParticleData.Positions);
-	TerrainUtilities_helpers::AppendParticleVelocities(
-		GranularParticles, OutParticleData.Velocities);
-	TerrainUtilities_helpers::AppendParticleRadii(GranularParticles, OutParticleData.Radii);
-	TerrainUtilities_helpers::AppendParticleRotations(GranularParticles, OutParticleData.Rotations);
+	using namespace TerrainUtilities_helpers;
+	const agx::Physics::GranularBodyPtrArray GranularParticles = GetGranularParticles(Terrain);
+	if (ToInclude & EParticleDataFlags::Positions)
+		AppendPositions(GranularParticles, OutParticleData.Positions);
+	if (ToInclude & EParticleDataFlags::Velocities)
+		AppendVelocities(GranularParticles, OutParticleData.Velocities);
+	if (ToInclude & EParticleDataFlags::Radii)
+		AppendRadii(GranularParticles, OutParticleData.Radii);
+	if (ToInclude & EParticleDataFlags::Rotations)
+		AppendRotations(GranularParticles, OutParticleData.Rotations);
 }
 
 void FTerrainUtilities::GetParticleExistsById(
@@ -288,7 +280,7 @@ void FTerrainUtilities::GetParticleExistsById(
 		return;
 	using namespace TerrainUtilities_helpers;
 	const FParticlesWithIdToIndex ParticlesWithIdToIndex = GetParticlesWithIdToIndex(Terrain);
-	TerrainUtilities_helpers::GetParticleExistsById(ParticlesWithIdToIndex, OutExists);
+	GetExistsById(ParticlesWithIdToIndex, OutExists);
 }
 
 void FTerrainUtilities::GetParticlePositionsById(
@@ -299,7 +291,7 @@ void FTerrainUtilities::GetParticlePositionsById(
 		return;
 	using namespace TerrainUtilities_helpers;
 	const FParticlesWithIdToIndex ParticlesWithIdToIndex = GetParticlesWithIdToIndex(Terrain);
-	TerrainUtilities_helpers::GetParticlePositionsById(ParticlesWithIdToIndex, OutPositions);
+	GetPositionsById(ParticlesWithIdToIndex, OutPositions);
 }
 
 void FTerrainUtilities::GetParticleVelocitiesById(
@@ -310,7 +302,7 @@ void FTerrainUtilities::GetParticleVelocitiesById(
 		return;
 	using namespace TerrainUtilities_helpers;
 	const FParticlesWithIdToIndex ParticlesWithIdToIndex = GetParticlesWithIdToIndex(Terrain);
-	TerrainUtilities_helpers::GetParticleVelocitiesById(ParticlesWithIdToIndex, OutVelocities);
+	GetVelocitiesById(ParticlesWithIdToIndex, OutVelocities);
 }
 
 void FTerrainUtilities::GetParticleRotationsById(
@@ -321,7 +313,7 @@ void FTerrainUtilities::GetParticleRotationsById(
 		return;
 	using namespace TerrainUtilities_helpers;
 	const FParticlesWithIdToIndex ParticlesWithIdToIndex = GetParticlesWithIdToIndex(Terrain);
-	TerrainUtilities_helpers::GetParticleRotationsById(ParticlesWithIdToIndex, OutRotations);
+	GetRotationsById(ParticlesWithIdToIndex, OutRotations);
 }
 
 void FTerrainUtilities::GetParticleRadiiById(
@@ -332,11 +324,12 @@ void FTerrainUtilities::GetParticleRadiiById(
 		return;
 	using namespace TerrainUtilities_helpers;
 	const FParticlesWithIdToIndex ParticlesWithIdToIndex = GetParticlesWithIdToIndex(Terrain);
-	TerrainUtilities_helpers::GetParticleRadiiById(ParticlesWithIdToIndex, OutRadii);
+	GetRadiiById(ParticlesWithIdToIndex, OutRadii);
 }
 
 void FTerrainUtilities::GetParticleDataById(
-	const FTerrainBarrier& Terrain, FParticleDataById& OutParticleData)
+	const FTerrainBarrier& Terrain, FParticleDataById& OutParticleData,
+	EParticleDataFlags ToInclude)
 {
 	AGX_CHECK(Terrain.HasNative());
 	if (!Terrain.HasNative())
@@ -344,13 +337,15 @@ void FTerrainUtilities::GetParticleDataById(
 
 	using namespace TerrainUtilities_helpers;
 	const FParticlesWithIdToIndex ParticlesWithIdToIndex = GetParticlesWithIdToIndex(Terrain);
-	TerrainUtilities_helpers::GetParticlePositionsById(
-		ParticlesWithIdToIndex, OutParticleData.Positions);
-	TerrainUtilities_helpers::GetParticleVelocitiesById(
-		ParticlesWithIdToIndex, OutParticleData.Velocities);
-	TerrainUtilities_helpers::GetParticleRadiiById(ParticlesWithIdToIndex, OutParticleData.Radii);
-	TerrainUtilities_helpers::GetParticleRotationsById(
-		ParticlesWithIdToIndex, OutParticleData.Rotations);
+	GetExistsById(ParticlesWithIdToIndex, OutParticleData.Exists);
+	if (ToInclude & EParticleDataFlags::Positions)
+		GetPositionsById(ParticlesWithIdToIndex, OutParticleData.Positions);
+	if (ToInclude & EParticleDataFlags::Velocities)
+		GetVelocitiesById(ParticlesWithIdToIndex, OutParticleData.Velocities);
+	if (ToInclude & EParticleDataFlags::Radii)
+		GetRadiiById(ParticlesWithIdToIndex, OutParticleData.Radii);
+	if (ToInclude & EParticleDataFlags::Rotations)
+		GetRotationsById(ParticlesWithIdToIndex, OutParticleData.Rotations);
 }
 
 size_t FTerrainUtilities::GetNumParticles(const FTerrainBarrier& Terrain)

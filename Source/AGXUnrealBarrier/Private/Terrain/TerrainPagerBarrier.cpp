@@ -220,7 +220,10 @@ FParticleData FTerrainPagerBarrier::GetParticleData() const
 	if (Terrain* Terrain = GetFirstValidTerrainFrom(ActiveTiles))
 	{
 		const FTerrainBarrier TerrainBarrier = AGXBarrierFactories::CreateTerrainBarrier(Terrain);
-		FTerrainUtilities::AppendParticleData(TerrainBarrier, ParticleData);
+		EParticleDataFlags ToInclude = EParticleDataFlags::Positions |
+									   EParticleDataFlags::Rotations | EParticleDataFlags::Radii |
+									   EParticleDataFlags::Velocities;
+		FTerrainUtilities::AppendParticleData(TerrainBarrier, ParticleData, ToInclude);
 	}
 
 	return ParticleData;
