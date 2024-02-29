@@ -362,7 +362,7 @@ private:
 	void ClearDisplacementMap();
 	bool InitializeParticleSystem();
 	bool InitializeParticleSystemComponent();
-	void UpdateParticlesArrays(); /// @todo Experimental code.
+	void UpdateParticlesArrays();
 #if WITH_EDITOR
 	void InitPropertyDispatcher();
 #endif
@@ -393,17 +393,8 @@ private:
 	int32 NumVerticesY = 0;
 	bool DisplacementMapInitialized = false;
 
-/// \todo Cannot use AGX Dynamics types in the AGXUnreal module. Must live in the Barrier.
-#if 0
-	agxCollide::HeightFieldRef InitialTerrainHeights = nullptr;
-#endif
-
 	// Particle related variables.
-	TArray<FFloat32> TerrainParticlesData;
-	TArray<FUpdateTextureRegion2D> ParticlesDataMapRegions; // TODO: Remove!
-	bool ParticleSystemInitialized = false;
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
-	const int32 NumPixelsPerParticle = 2;
 
 	/**
 	 * Thread safe convenience function for reading heights from the source Landscape.

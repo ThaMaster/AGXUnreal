@@ -1287,7 +1287,7 @@ void AAGX_Terrain::InitializeRendering()
 	}
 	if (bEnableParticleRendering)
 	{
-		ParticleSystemInitialized = InitializeParticleSystem();
+		InitializeParticleSystem();
 	}
 
 	UpdateLandscapeMaterialParameters();
@@ -1547,7 +1547,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 
 	for (int32 I = 0; I < NumParticles; ++I)
 	{
-		// The particle size slot in the render target is a scale, not the
+		// The particle size slot in the PositionAndScale buffer is a scale and not the
 		// actual size. The scale is relative to a SI unit cube, meaning that a
 		// scale of 1.0 should render a particle that is 1x1x1 m large, or
 		// 100x100x100 Unreal units. We multiply by 2.0 to convert from radius
