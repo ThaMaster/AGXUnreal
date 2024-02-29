@@ -45,11 +45,11 @@ public:
 	FParticleData GetParticleData() const;
 
 	/**
-	 * Get Positions, Radii, and Rotations of all particles.
+	 * Get the data indicated by the ToInclude bit set flags of all particles.
 	 *
 	 * The resulting buffers are populated by entity ID, not by index, which means that there may be
 	 * gaps in the data. An Exists array of bools indicate whether or not there is particle data at
-	 * a particular index.
+	 * a particular index. The Exists array is always populated, even if ToInclude is all-zero.
 	 */
 	FParticleDataById GetParticleDataById(EParticleDataFlags ToInclude) const;
 
