@@ -236,6 +236,7 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 		"ClassIcon.AGX_CylindricalConstraintActor",
 		new IMAGE_BRUSH("Icons/constraint_cylindrical_32x32", IconSize16));
 
+	Style->Set("ClassIcon.AGX_SensorEnvironment", new IMAGE_BRUSH("Icons/lidar_32x32", IconSize16));
 	Style->Set("ClassIcon.AGX_Terrain", new IMAGE_BRUSH("Icons/terrain_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_CollisionGroupDisablerActor",

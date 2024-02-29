@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Sensors/SensorEnvironmentBarrier.h"
-#include "Sensors/AGX_LidarSensorComponent.h"
+#include "Sensors/AGX_LidarSensorReference.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -22,7 +22,7 @@ public:
 	AAGX_SensorEnvironment();
 
 	UPROPERTY(EditAnywhere, Category = "AGX Sensor Environment")
-	TArray<UAGX_LidarSensorComponent*> Lidars;
+	TArray<FAGX_LidarSensorReference> Lidars;
 
 	bool HasNative() const;
 
