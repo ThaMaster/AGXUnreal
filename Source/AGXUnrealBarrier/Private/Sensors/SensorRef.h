@@ -7,6 +7,7 @@
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agxSensor/Environment.h>
+#include <agxSensor/RaytraceHandles.h>
 #include "EndAGXIncludes.h"
 
 struct FSensorEnvironmentRef
@@ -14,6 +15,26 @@ struct FSensorEnvironmentRef
 	agxSensor::EnvironmentRef Native;
 	FSensorEnvironmentRef() = default;
 	FSensorEnvironmentRef(agxSensor::Environment* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FRtMeshRef
+{
+	agxSensor::RtMeshRef Native;
+	FRtMeshRef() = default;
+	FRtMeshRef(agxSensor::RtMeshRef InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FRtEntityRef
+{
+	agxSensor::RtEntityRef Native;
+	FRtEntityRef() = default;
+	FRtEntityRef(agxSensor::RtEntityRef InNative)
 		: Native(InNative)
 	{
 	}

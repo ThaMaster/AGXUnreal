@@ -757,6 +757,40 @@ inline agx::Uuid Convert(const FGuid& Guid)
 }
 
 //
+// Triangle data.
+//
+
+agx::UInt32Vector ConvertIndices(const TArray<FTriIndices>& Indices)
+{
+	agx::UInt32Vector IndicesAGX;
+	IndicesAGX.reserve(Indices.Num() * 3);
+	for (const FTriIndices& Index : Indices)
+	{
+		AGX_CHECK(Index.v0 >= 0);
+		AGX_CHECK(Index.v1 >= 0);
+		AGX_CHECK(Index.v2 >= 0);
+
+		IndicesAGX.push_back(static_cast<uint32>(Index.v0));
+		IndicesAGX.push_back(static_cast<uint32>(Index.v1));
+		IndicesAGX.push_back(static_cast<uint32>(Index.v2));
+	}
+
+	return IndicesAGX;
+}
+
+agx::Vec3Vector ConvertVertices(const TArray<FVector>& Vertices)
+{
+	agx::Vec3Vector VerticesAGX;
+	VerticesAGX.reserve(Vertices.Num());
+	for (const FVector& Vertex : Vertices)
+	{
+		VerticesAGX.push_back(ConvertDisplacement(Vertex));
+	}
+
+	return VerticesAGX;
+}
+
+//
 // Enumerations, RigidBody.
 //
 
