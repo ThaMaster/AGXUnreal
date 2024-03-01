@@ -3,7 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Sensors/RtMeshBarrier.h"
 #include "Sensors/SensorRef.h"
-
+#include "TypeConversions.h"
 
 FRtEntityBarrier::FRtEntityBarrier()
 	: NativeRef {new FRtEntityRef}
@@ -55,4 +55,11 @@ void FRtEntityBarrier::ReleaseNative()
 {
 	if (HasNative())
 		NativeRef->Native = nullptr;
+}
+
+void FRtEntityBarrier::SetTransform(const FTransform& Transform)
+{
+	check(HasNative());
+	NativeRef->Native->setTransform(
+		ConvertMatrix(Transform.GetLocation(), Transform.GetRotation()));
 }

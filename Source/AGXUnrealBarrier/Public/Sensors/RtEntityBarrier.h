@@ -23,8 +23,9 @@ public:
 	void AllocateNative(FRtMeshBarrier& Mesh);
 	FRtEntityRef* GetNative();
 	const FRtEntityRef* GetNative() const;
-
 	void ReleaseNative();
+
+	void SetTransform(const FTransform& Transform);
 
 private:
 	FRtEntityBarrier(const FRtEntityBarrier&) = delete;
