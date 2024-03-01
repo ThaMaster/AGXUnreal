@@ -25,7 +25,13 @@ public:
 	AAGX_SensorEnvironment();
 
 	UPROPERTY(EditAnywhere, Category = "AGX Sensor Environment")
-	TArray<FAGX_LidarSensorReference> Lidars;
+	TArray<FAGX_LidarSensorReference> LidarSensors;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Sensor Environment")
+	bool bAutoStep {true};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	void Step(double DeltaTime);
 
 	/*
 	 * Add a Static Mesh Component so that it can be detected by sensors handled by this Sensor
@@ -71,4 +77,5 @@ private:
 
 	TMap<UStaticMeshComponent*, FMeshEntityBarrierData> StaticMeshes;
 	FSensorEnvironmentBarrier NativeBarrier;
+	FDelegateHandle PostStepForwardHandle;
 };

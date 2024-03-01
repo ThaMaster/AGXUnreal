@@ -302,6 +302,37 @@ void UAGX_LidarSensorComponent::RequestManualScan(
 	Buffer.SetNum(0, false);
 }
 
+bool UAGX_LidarSensorComponent::HasNative() const
+{
+	return NativeBarrier.HasNative();
+}
+
+FLidarBarrier* UAGX_LidarSensorComponent::GetOrCreateNative()
+{
+	if (HasNative())
+		return GetNative();
+
+	NativeBarrier.AllocateNative();
+	check(NativeBarrier.HasNative());
+	return GetNative();
+}
+
+FLidarBarrier* UAGX_LidarSensorComponent::GetNative()
+{
+	if (!HasNative())
+		return nullptr;
+
+	return &NativeBarrier;
+}
+
+const FLidarBarrier* UAGX_LidarSensorComponent::GetNative() const
+{
+	if (!HasNative())
+		return nullptr;
+
+	return &NativeBarrier;
+}
+
 void UAGX_LidarSensorComponent::BeginPlay()
 {
 	Super::BeginPlay();

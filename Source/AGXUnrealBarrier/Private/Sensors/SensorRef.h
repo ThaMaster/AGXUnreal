@@ -7,6 +7,7 @@
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agxSensor/Environment.h>
+#include <agxSensor/Lidar.h>
 #include <agxSensor/RaytraceHandles.h>
 #include "EndAGXIncludes.h"
 
@@ -35,6 +36,16 @@ struct FRtEntityRef
 	agxSensor::RtEntityRef Native;
 	FRtEntityRef() = default;
 	FRtEntityRef(agxSensor::RtEntityRef InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FLidarRef
+{
+	agxSensor::LidarRef Native;
+	FLidarRef() = default;
+	FLidarRef(agxSensor::Lidar* InNative)
 		: Native(InNative)
 	{
 	}

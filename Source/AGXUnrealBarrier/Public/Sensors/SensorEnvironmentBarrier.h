@@ -8,6 +8,7 @@
 // Standard library includes.
 #include <memory>
 
+class FLidarBarrier;
 struct FSensorEnvironmentRef;
 
 class AGXUNREALBARRIER_API FSensorEnvironmentBarrier
@@ -22,8 +23,11 @@ public:
 	void AllocateNative();
 	FSensorEnvironmentRef* GetNative();
 	const FSensorEnvironmentRef* GetNative() const;
-
 	void ReleaseNative();
+
+	bool Add(FLidarBarrier& Lidar);
+
+	void Step(double DeltaTime);
 
 private:
 	FSensorEnvironmentBarrier(const FSensorEnvironmentBarrier&) = delete;

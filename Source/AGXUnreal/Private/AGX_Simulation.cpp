@@ -936,7 +936,7 @@ namespace AGX_Simulation_helpers
 	}
 }
 
-void UAGX_Simulation::Step(float DeltaTime)
+void UAGX_Simulation::Step(double DeltaTime)
 {
 	using namespace AGX_Simulation_helpers;
 #if WITH_EDITORONLY_DATA

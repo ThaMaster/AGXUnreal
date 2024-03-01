@@ -3,6 +3,8 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_MeshWithTransform.h"
+#include "AGX_Simulation.h"
+#include "Sensors/AGX_LidarSensorComponent.h"
 #include "Sensors/AGX_SensorEnvironmentSpriteComponent.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
@@ -45,6 +47,14 @@ AAGX_SensorEnvironment::AAGX_SensorEnvironment()
 
 	RootComponent = CreateDefaultSubobject<UAGX_SensorEnvironmentSpriteComponent>(
 		USceneComponent::GetDefaultSceneRootVariableName());
+}
+
+void AAGX_SensorEnvironment::Step(double DeltaTime)
+{
+	if (!HasNative())
+		return;
+
+	NativeBarrier.Step(DeltaTime);
 }
 
 bool AAGX_SensorEnvironment::Add(UStaticMeshComponent* Mesh)
@@ -126,7 +136,8 @@ bool AAGX_SensorEnvironment::CanEditChange(const FProperty* InProperty) const
 	{
 		// List of names of properties that does not support editing after initialization.
 		static const TArray<FName> PropertiesNotEditableDuringPlay = {
-			GET_MEMBER_NAME_CHECKED(ThisClass, Lidars)};
+			GET_MEMBER_NAME_CHECKED(ThisClass, LidarSensors),
+			GET_MEMBER_NAME_CHECKED(ThisClass, bAutoStep)};
 
 		if (PropertiesNotEditableDuringPlay.Contains(InProperty->GetFName()))
 		{
@@ -150,9 +161,41 @@ void AAGX_SensorEnvironment::BeginPlay()
 	}
 
 	NativeBarrier.AllocateNative();
+	check(NativeBarrier.HasNative());
+
+	for (FAGX_LidarSensorReference& LidarRef : LidarSensors)
+	{
+		if (UAGX_LidarSensorComponent* Lidar = LidarRef.GetLidarComponent())
+		{
+			if (Lidar->SamplingType != EAGX_LidarSamplingType::GPU)
+				continue;
+
+			NativeBarrier.Add(*Lidar->GetOrCreateNative());
+		}
+	}
+
+	if (bAutoStep)
+	{
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
+		{
+			PostStepForwardHandle =
+				FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
+					.AddLambda([this](double TimeStamp) { Step(TimeStamp); });
+		}
+	}
 }
 
-void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type EndPlayReason)
+void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type Reason)
 {
-	Super::EndPlay(EndPlayReason);
+	Super::EndPlay(Reason);
+
+	if (Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit &&
+		Reason != EEndPlayReason::LevelTransition)
+	{
+		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
+		{
+			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
+				.Remove(PostStepForwardHandle);
+		}
+	}
 }

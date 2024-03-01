@@ -1,6 +1,9 @@
+// Copyright 2024, Algoryx Simulation AB.
+
 #include "Sensors/SensorEnvironmentBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Sensors/LidarBarrier.h"
 #include "Sensors/SensorRef.h"
 
 FSensorEnvironmentBarrier::FSensorEnvironmentBarrier()
@@ -48,4 +51,16 @@ const FSensorEnvironmentRef* FSensorEnvironmentBarrier::GetNative() const
 
 void FSensorEnvironmentBarrier::ReleaseNative()
 {
+}
+
+bool FSensorEnvironmentBarrier::Add(FLidarBarrier& Lidar)
+{
+	check(HasNative());
+	return NativeRef->Native->add(Lidar.GetNative()->Native);
+}
+
+void FSensorEnvironmentBarrier::Step(double DeltaTime)
+{
+	check(HasNative());
+	NativeRef->Native->step(DeltaTime);
 }

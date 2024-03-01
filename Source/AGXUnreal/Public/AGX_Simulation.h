@@ -455,7 +455,7 @@ public: // Member functions.
 	 *
 	 * @param DeltaTime The Unreal Engine time that has passed since the last frame.
 	 */
-	void Step(float DeltaTime);
+	void Step(double DeltaTime);
 
 	/**
 	 * Step the AGX Dynamics simulation once. Typically used with the 'None' Step Mode to have full

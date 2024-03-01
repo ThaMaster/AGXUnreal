@@ -6,6 +6,7 @@
 #include "AGX_Real.h"
 #include "Sensors/AGX_LidarEnums.h"
 #include "Sensors/AGX_LidarScanPoint.h"
+#include "Sensors/LidarBarrier.h"
 
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
@@ -99,7 +100,7 @@ public:
 	 * Currently, only CPU rays are supported.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	EAGX_LidarSamplingType SamplingType {EAGX_LidarSamplingType::CPU};
+	EAGX_LidarSamplingType SamplingType {EAGX_LidarSamplingType::GPU};
 
 	/**
 	 * Determines in what order points are scanned during a scan cycle.
@@ -218,6 +219,14 @@ public:
 		FVector2D FOVWindowHorizontal = FVector2D::ZeroVector,
 		FVector2D FOVWindowVertical = FVector2D::ZeroVector);
 
+	/**
+	* The Lidar Sensor Component only has a Native when using SamplingType GPU.
+	*/
+	bool HasNative() const;
+	FLidarBarrier* GetOrCreateNative(); 
+	FLidarBarrier* GetNative();
+	const FLidarBarrier* GetNative() const;
+
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
@@ -244,6 +253,7 @@ private:
 
 	// Buffer for storing scan data until the next data output is run.
 	TArray<FAGX_LidarScanPoint> Buffer;
+	FLidarBarrier NativeBarrier; // Only used for GPU SamplingType.
 
 	bool CheckValid() const;
 	void OnStepForward(double TimeStamp);
