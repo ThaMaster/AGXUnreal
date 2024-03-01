@@ -419,7 +419,7 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 	FComponentVisualizer::DrawVisualization(Component, View, PDI);
 
 	const UAGX_ShovelComponent* Shovel = Cast<UAGX_ShovelComponent>(Component);
-	if (Component == nullptr)
+	if (Shovel == nullptr)
 	{
 		// Visualizing something not a Shovel, assume we lost the shovel selection.
 		ClearSelection();
