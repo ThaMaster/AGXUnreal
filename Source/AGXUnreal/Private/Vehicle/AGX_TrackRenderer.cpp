@@ -125,13 +125,14 @@ UAGX_TrackRenderer::UAGX_TrackRenderer()
 
 void UAGX_TrackRenderer::BeginPlay()
 {
+	Super::BeginPlay();
+
 	// Deprecation message.
 #if WITH_EDITOR
 	const FString DeprecationMsg =
 		"AGX Track Renderer is deprecated and will be removed in a future release. The AGX Track \n"
 		"Component renders itself. To use the old AGX_TrackRenderer, it is recommended to copy it "
-		"\n"
-		"into your project and remove this deprecation message from it.";
+		"\n into your project and remove this deprecation message from it.";
 
 	UE_LOG(LogAGX, Warning, TEXT("%s"), *DeprecationMsg);
 
