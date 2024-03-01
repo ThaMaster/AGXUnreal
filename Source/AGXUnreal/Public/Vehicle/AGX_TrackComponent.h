@@ -298,7 +298,7 @@ public:
 	UInstancedStaticMeshComponent* GetVisualMeshes();
 
 	/**
-	 * The Static Mesh used to render the Track.
+	 * The Static Mesh used to render each shoe the Track.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Track Visual")
 	UStaticMesh* RenderMesh;
