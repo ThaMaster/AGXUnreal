@@ -9,7 +9,7 @@
 class IDetailLayoutBuilder;
 
 /**
- *
+ * Deprecated, use AGX_TrackMeshRendererDetails instead.
  */
 class AGXUNREALEDITOR_API FAGX_TrackRendererDetails : public IDetailCustomization
 {
