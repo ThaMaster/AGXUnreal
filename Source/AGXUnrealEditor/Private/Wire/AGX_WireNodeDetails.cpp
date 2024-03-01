@@ -298,7 +298,7 @@ FReply FAGX_WireNodeDetails::OnClickedSelectFirstNode()
 	// like to find the currently selected Wire Component in the selected Actor's Component list,
 	// the one above the Details Panel or in the My Components Panel for the Blueprint Editor, but I
 	// don't yet know how to do that.
-	WireVisualizer->SetSelectedNodeIndex(0);
+	WireVisualizer->SetEditNodeIndex(0);
 	UpdateValues();
 	return FReply::Handled();
 }
@@ -708,7 +708,7 @@ UAGX_WireComponent* FAGX_WireNodeDetails::GetWire() const
 		{
 			return nullptr;
 		}
-		return WireVisualizer->GetSelectedWire();
+		return WireVisualizer->GetEditWire();
 	}();
 
 	/// @todo I though I could avoid showing invalid data by requiring that the Details Panel we're
@@ -756,7 +756,7 @@ int32 FAGX_WireNodeDetails::GetNodeIndex() const
 	{
 		return INDEX_NONE;
 	}
-	return WireVisualizer->GetSelectedNodeIndex();
+	return WireVisualizer->GetEditNodeIndex();
 }
 
 UAGX_WireComponent* FAGX_WireNodeDetails::GetPreviousWire() const

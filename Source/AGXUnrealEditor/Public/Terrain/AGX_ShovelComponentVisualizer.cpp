@@ -9,15 +9,11 @@
 #include "Terrain/AGX_ShovelHitProxies.h"
 #include "Terrain/AGX_ShovelUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
-#include "Utilities/AGX_PropertyUtilities.h"
 
 // Unreal Engine includes.
 #include "ActorEditorUtils.h"
-#include "BlueprintEditorModule.h"
 #include "EditorViewportClient.h"
-#include "Kismet2/KismetEditorUtilities.h"
-#include "SSubobjectEditor.h"
-#include "Selection.h"
+#include "Utilities/AGX_EditorUtilities.h"
 
 #define LOCTEXT_NAMESPACE "AGX_ShovelComponentVisualizer"
 #define MEMBER(Name) GET_MEMBER_NAME_CHECKED(UAGX_ShovelComponent, Name)
@@ -29,53 +25,6 @@
  */
 struct FShovelVisualizerOperations
 {
-	static bool IsSelected(const UAGX_ShovelComponent& Shovel)
-	{
-		if (Shovel.IsSelected())
-		{
-			// The shovel is directly selected in the level editor.
-			return true;
-		}
-
-		// Check if the shovel is owned by a Blueprint editor and if so if the shovel is currently
-		// selected in that Blueprint editor.
-		TSharedPtr<IBlueprintEditor> BlueprintEditor =
-			FKismetEditorUtilities::GetIBlueprintEditorForObject(&Shovel, false);
-		if (BlueprintEditor.IsValid())
-		{
-			TArray<TSharedPtr<FSubobjectEditorTreeNode>> Selection =
-				BlueprintEditor->GetSelectedSubobjectEditorTreeNodes();
-			for (TSharedPtr<FSubobjectEditorTreeNode>& Selected : Selection)
-			{
-				const UActorComponent* SelectedComponent = Selected->GetComponentTemplate();
-				if (SelectedComponent == &Shovel)
-				{
-					return true;
-				}
-			}
-		}
-
-		// If the Shovel is part of a preview that we also want to consider it selected if the
-		// Shovel it is a preview of is selected. This happens when we are looking at the Shovel
-		// that exists within the viewport of a Blueprint editor. Then the shovel we see isn't
-		// selected anywhere, but the CSC node template shovel the preview shovel was created from
-		// might be.
-		if (Shovel.GetOwner() != nullptr &&
-			FActorEditorUtils::IsAPreviewOrInactiveActor(Shovel.GetOwner()))
-		{
-			// The archetype of a preview component is the template instance in the Blueprint.
-			// If the template instance is selected then we consider the preview instance to be
-			// selected as well.
-			UAGX_ShovelComponent* Archetype = Cast<UAGX_ShovelComponent>(Shovel.GetArchetype());
-			if (Archetype != nullptr && IsSelected(*Archetype))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	static bool ShovelProxyClicked(
 		FAGX_ShovelComponentVisualizer& Visualizer, const UAGX_ShovelComponent& Shovel,
 		HShovelHitProxy& Proxy, FEditorViewportClient& InViewportClient)
@@ -470,14 +419,14 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 	FComponentVisualizer::DrawVisualization(Component, View, PDI);
 
 	const UAGX_ShovelComponent* Shovel = Cast<UAGX_ShovelComponent>(Component);
-	if (Component == nullptr)
+	if (Shovel == nullptr)
 	{
 		// Visualizing something not a Shovel, assume we lost the shovel selection.
 		ClearSelection();
 		return;
 	}
 
-	const bool bSelected = FShovelVisualizerOperations::IsSelected(*Shovel);
+	const bool bSelected = FAGX_EditorUtilities::IsSelected(*Shovel);
 	const bool bEditable = bSelected;
 
 	const float PointSize {FAGX_ShovelUtilities::HitProxySize};
@@ -539,7 +488,7 @@ void FAGX_ShovelComponentVisualizer::DrawVisualization(
 	// any more calls to DrawVisualization after the deselection.
 	if (HasValidFrameSection())
 	{
-		if (!FShovelVisualizerOperations::IsSelected(*GetSelectedShovel()))
+		if (!FAGX_EditorUtilities::IsSelected(*GetSelectedShovel()))
 		{
 			// Do not maintain a frame selection if the selected shovel isn't selected anymore.
 			// This is so that the transform widget is placed at the newly selected Component
@@ -591,7 +540,7 @@ bool FAGX_ShovelComponentVisualizer::GetWidgetLocation(
 	{
 		return false;
 	}
-	if (!FShovelVisualizerOperations::IsSelected(*Shovel))
+	if (!FAGX_EditorUtilities::IsSelected(*Shovel))
 	{
 		// Is this const-cast safe?
 		// If not, how do we clear the frame selection when the Shovel becomes unselected?

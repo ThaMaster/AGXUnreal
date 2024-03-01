@@ -3,7 +3,7 @@
 #include "Wire/AGX_WireHitProxies.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_RigidBodyComponent.h"
+#include "AGX_Check.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/AGX_WireWinchComponent.h"
 #include "Wire/AGX_WireUtilities.h"
@@ -36,28 +36,38 @@ namespace AGX_WireVisualization_helpers
 }
 
 FVector AGX_WireVisualization_helpers::DrawWinch(
-	const FAGX_WireWinch& Winch, const FAGX_WireWinchPose& WinchPose,
-	HWinchLocationProxy* LocationProxy, HWinchDirectionProxy* DirectionProxy,
-	FPrimitiveDrawInterface* PDI)
+	const FAGX_WireWinchPose& WinchPose, HWinchLocationProxy* LocationProxy,
+	HWinchDirectionProxy* DirectionProxy, FPrimitiveDrawInterface* PDI)
 {
-	FLinearColor Color = FLinearColor::Yellow;
+	const FLinearColor Color = FLinearColor::Yellow;
 
-	// Render winch location marker.
+	// Compute start location in world space.
 	const FTransform& LocalToWorld = WinchPose.LocalToWorld;
 	const FVector LocalLocation = WinchPose.LocalLocation;
 	const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
-	PDI->SetHitProxy(LocationProxy);
-	PDI->DrawPoint(WorldLocation, Color, FAGX_WireUtilities::NodeHandleSize, SDPG_Foreground);
-	PDI->SetHitProxy(nullptr);
 
-	// Render winch direction marker.
+	// Compute end location in world space.
 	const FRotator LocalRotation = WinchPose.LocalRotation;
 	const FVector LocalDirection = LocalRotation.RotateVector(FVector::ForwardVector);
 	const FVector WorldDirection = LocalToWorld.TransformVector(LocalDirection);
 	const FVector WorldEndLocation = WorldLocation + (WorldDirection * 100.0f);
-	PDI->SetHitProxy(DirectionProxy);
-	PDI->DrawPoint(WorldEndLocation, Color, FAGX_WireUtilities::NodeHandleSize, SDPG_Foreground);
-	PDI->SetHitProxy(nullptr);
+
+	if (LocationProxy != nullptr)
+	{
+		// Render winch location marker.
+		PDI->SetHitProxy(LocationProxy);
+		PDI->DrawPoint(WorldLocation, Color, FAGX_WireUtilities::NodeHandleSize, SDPG_Foreground);
+		PDI->SetHitProxy(nullptr);
+	}
+
+	if (DirectionProxy != nullptr)
+	{
+		// Render winch direction marker.
+		PDI->SetHitProxy(DirectionProxy);
+		PDI->DrawPoint(
+			WorldEndLocation, Color, FAGX_WireUtilities::NodeHandleSize, SDPG_Foreground);
+		PDI->SetHitProxy(nullptr);
+	}
 
 	// Draw a line between the two markers.
 	PDI->DrawLine(WorldLocation, WorldEndLocation, Color, SDPG_Foreground);
@@ -66,25 +76,36 @@ FVector AGX_WireVisualization_helpers::DrawWinch(
 }
 
 FVector AGX_WireVisualization_helpers::DrawWinch(
-	const UAGX_WireComponent& Wire, EWireSide Side, FPrimitiveDrawInterface* PDI)
+	const UAGX_WireComponent& Wire, const EWireSide Side, const bool bSelected,
+	FPrimitiveDrawInterface* PDI)
 {
 	const FAGX_WireWinch* Winch = Wire.GetWinch(Side);
-	checkf(
+	AGX_CHECKF(
 		Winch != nullptr,
 		TEXT("DrawWinch called for a Wire Component that doesn't have a winch at the given side."));
+	if (Winch == nullptr)
+	{
+		return FVector::ZeroVector;
+	}
+
 	const FAGX_WireWinchPose WinchPose = FAGX_WireUtilities::GetWireWinchPose(Wire, Side);
-	HWinchLocationProxy* LocationProxy = new HWinchLocationProxy(&Wire, Side);
-	HWinchDirectionProxy* DirectionProxy = new HWinchDirectionProxy(&Wire, Side);
-	return DrawWinch(*Winch, WinchPose, LocationProxy, DirectionProxy, PDI);
+
+	// If the Wire or Winch Component is selected then we add drag handles to the winch
+	// visualization.
+	HWinchLocationProxy* LocationProxy = bSelected ? new HWinchLocationProxy(&Wire, Side) : nullptr;
+	HWinchDirectionProxy* DirectionProxy =
+		bSelected ? new HWinchDirectionProxy(&Wire, Side) : nullptr;
+
+	return DrawWinch(WinchPose, LocationProxy, DirectionProxy, PDI);
 }
 
 FVector AGX_WireVisualization_helpers::DrawWinch(
-	const UAGX_WireWinchComponent& Winch, FPrimitiveDrawInterface* PDI)
+	const UAGX_WireWinchComponent& Winch, const bool bSelected, FPrimitiveDrawInterface* PDI)
 {
 	const FAGX_WireWinchPose WinchPose = FAGX_WireUtilities::GetWireWinchPose(Winch);
-	HWinchLocationProxy* LocationProxy = new HWinchLocationProxy(&Winch);
-	HWinchDirectionProxy* DirectionProxy = new HWinchDirectionProxy(&Winch);
-	return DrawWinch(Winch.WireWinch, WinchPose, LocationProxy, DirectionProxy, PDI);
+	HWinchLocationProxy* LocationProxy = bSelected ?  new HWinchLocationProxy(&Winch) : nullptr;
+	HWinchDirectionProxy* DirectionProxy = bSelected ? new HWinchDirectionProxy(&Winch) : nullptr;
+	return DrawWinch(WinchPose, LocationProxy, DirectionProxy, PDI);
 }
 
 namespace AGX_WireVisualization_helpers
