@@ -964,7 +964,7 @@ void UAGX_TrackComponent::CreateVisuals()
 
 void UAGX_TrackComponent::UpdateVisuals()
 {
-	if (!ShouldRender())
+	if (!ShouldRenderSelf())
 	{
 		if (VisualMeshes != nullptr && VisualMeshes->GetInstanceCount() > 0)
 			SetVisualsInstanceCount(0);
@@ -1010,15 +1010,11 @@ void UAGX_TrackComponent::UpdateVisuals()
 	NodeTransformsCachePrev = NodeTransformsCache;
 }
 
-bool UAGX_TrackComponent::ShouldRender() const
+bool UAGX_TrackComponent::ShouldRenderSelf() const
 {
-	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
-	if (bIsPlaying)
-		return IsVisible() && VisualMeshes != nullptr;
-
-	// IsVisible for some reason returns false when "Hidden in game" is selected before play.
-	return GetVisibleFlag() && VisualMeshes != nullptr;
+	return VisualMeshes != nullptr && ShouldRender();
 }
+
 
 void UAGX_TrackComponent::SetVisualsInstanceCount(int32 Num)
 {

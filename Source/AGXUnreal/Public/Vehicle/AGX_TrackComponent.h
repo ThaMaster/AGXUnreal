@@ -463,7 +463,7 @@ private:
 private:
 	void CreateVisuals();
 	void UpdateVisuals();
-	bool ShouldRender() const;
+	bool ShouldRenderSelf() const;
 	void SetVisualsInstanceCount(int32 Num);
 	bool ComputeNodeTransforms(TArray<FTransform>& OutTransforms);
 	bool ComputeVisualScaleAndOffset(
