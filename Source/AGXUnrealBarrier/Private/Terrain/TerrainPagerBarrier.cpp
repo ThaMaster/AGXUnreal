@@ -53,6 +53,18 @@ namespace TerrainPagerBarrier_helpers
 		return false;
 	}
 
+	agxTerrain::Terrain* GetFirstValidTerrainFrom(
+		const agxTerrain::TerrainPager::TileAttachmentPtrVector& ActiveTiles)
+	{
+		for (agxTerrain::TerrainPager::TileAttachments* Tile : ActiveTiles)
+		{
+			if (Tile != nullptr && Tile->m_terrainTile != nullptr)
+				return Tile->m_terrainTile;
+		}
+
+		return nullptr;
+	}
+
 	void SetCanCollide(
 		const agxTerrain::TerrainPager::TileAttachmentPtrVector& ActiveTiles, bool bCanCollide)
 	{
@@ -194,26 +206,59 @@ bool FTerrainPagerBarrier::SetTileLoadRadii(
 FParticleData FTerrainPagerBarrier::GetParticleData() const
 {
 	using namespace agxTerrain;
+	using namespace TerrainPagerBarrier_helpers;
 	check(HasNative());
 
 	FParticleData ParticleData;
-	const TerrainPager::TileAttachmentPtrVector ActiveTiles =
-		NativeRef->Native->getActiveTileAttachments();
-
 	const size_t NumParticles = GetNumParticles();
 	ParticleData.Positions.Reserve(NumParticles);
 	ParticleData.Radii.Reserve(NumParticles);
 	ParticleData.Rotations.Reserve(NumParticles);
 
-	for (TerrainPager::TileAttachments* Tile : ActiveTiles)
+	const TerrainPager::TileAttachmentPtrVector ActiveTiles =
+		NativeRef->Native->getActiveTileAttachments();
+	if (Terrain* Terrain = GetFirstValidTerrainFrom(ActiveTiles))
 	{
-		if (Tile == nullptr || Tile->m_terrainTile == nullptr)
-			continue;
+		const FTerrainBarrier TerrainBarrier = AGXBarrierFactories::CreateTerrainBarrier(Terrain);
+		EParticleDataFlags ToInclude = EParticleDataFlags::Positions |
+									   EParticleDataFlags::Rotations | EParticleDataFlags::Radii |
+									   EParticleDataFlags::Velocities;
+		FTerrainUtilities::AppendParticleData(TerrainBarrier, ParticleData, ToInclude);
+	}
 
-		const FTerrainBarrier TerrainBarrier =
-			AGXBarrierFactories::CreateTerrainBarrier(Tile->m_terrainTile.get());
+	return ParticleData;
+}
 
-		FTerrainUtilities::AppendParticleData(TerrainBarrier, ParticleData);
+FParticleDataById FTerrainPagerBarrier::GetParticleDataById(EParticleDataFlags ToInclude) const
+{
+	using namespace agxTerrain;
+	using namespace TerrainPagerBarrier_helpers;
+	check(HasNative());
+
+	FParticleDataById ParticleData;
+	const TerrainPager::TileAttachmentPtrVector ActiveTiles =
+		NativeRef->Native->getActiveTileAttachments();
+	if (Terrain* Terrain = GetFirstValidTerrainFrom(ActiveTiles))
+	{
+		const FTerrainBarrier TerrainBarrier = AGXBarrierFactories::CreateTerrainBarrier(Terrain);
+
+		FTerrainUtilities::GetParticleExistsById(TerrainBarrier, ParticleData.Exists);
+		if (ToInclude & EParticleDataFlags::Positions)
+		{
+			FTerrainUtilities::GetParticlePositionsById(TerrainBarrier, ParticleData.Positions);
+		}
+		if (ToInclude & EParticleDataFlags::Velocities)
+		{
+			FTerrainUtilities::GetParticleVelocitiesById(TerrainBarrier, ParticleData.Velocities);
+		}
+		if (ToInclude & EParticleDataFlags::Rotations)
+		{
+			FTerrainUtilities::GetParticleRotationsById(TerrainBarrier, ParticleData.Rotations);
+		}
+		if (ToInclude & EParticleDataFlags::Radii)
+		{
+			FTerrainUtilities::GetParticleRadiiById(TerrainBarrier, ParticleData.Radii);
+		}
 	}
 
 	return ParticleData;
@@ -222,19 +267,15 @@ FParticleData FTerrainPagerBarrier::GetParticleData() const
 size_t FTerrainPagerBarrier::GetNumParticles() const
 {
 	check(HasNative());
+	using namespace TerrainPagerBarrier_helpers;
+
 	const agxTerrain::TerrainPager::TileAttachmentPtrVector ActiveTiles =
 		NativeRef->Native->getActiveTileAttachments();
 
-	if (ActiveTiles.size() == 0)
+	if (agxTerrain::Terrain* Terrain = GetFirstValidTerrainFrom(ActiveTiles))
+		return Terrain->getSoilSimulationInterface()->getNumSoilParticles();
+	else
 		return 0;
-
-	agxTerrain::Terrain* Tile = ActiveTiles[0]->m_terrainTile.get();
-	AGX_CHECK(Tile != nullptr);
-	if (Tile == nullptr)
-		return 0;
-
-	// All particles are known by all active Tiles.
-	return Tile->getSoilSimulationInterface()->getNumSoilParticles();
 }
 
 TArray<std::tuple<int32, int32>> FTerrainPagerBarrier::GetModifiedHeights(

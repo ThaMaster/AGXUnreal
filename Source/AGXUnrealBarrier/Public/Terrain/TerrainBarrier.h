@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Terrain/TerrainParticleTypes.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Math/Vector.h"
@@ -17,13 +20,6 @@ class FHeightFieldShapeBarrier;
 class FShovelBarrier;
 class FTerrainMaterialBarrier;
 class FShapeMaterialBarrier;
-
-struct FParticleData
-{
-	TArray<FVector> Positions;
-	TArray<float> Radii;
-	TArray<FQuat> Rotations;
-};
 
 /**
  *
@@ -124,9 +120,18 @@ public:
 	TArray<FQuat> GetParticleRotations() const;
 
 	/**
-	 * Get Positions, Radii and Rotations of all particles.
+	 * Get the data indicated by ToInclude of all particles.
 	 */
-	FParticleData GetParticleData() const;
+	FParticleData GetParticleData(EParticleDataFlags ToInclude) const;
+
+	/**
+	 * Get the data indicated by the ToInclude bit set flags of all particles.
+	 *
+	 * The resulting buffers are populated by entity ID, not by index, which means that there may be
+	 * gaps in the data. An Exists array of bools indicate whether or not there is particle data at
+	 * a particular index. The Exists array is always populated, even if ToInclude is empty.
+	 */
+	FParticleDataById GetParticleDataById(EParticleDataFlags ToInclude) const;
 
 	/**
 	 * Returns the number of spawned Terrain particles known by the Terrain Native.

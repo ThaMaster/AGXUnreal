@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Terrain/TerrainParticleTypes.h"
+
 // Unreal Engine includes.
 #include <CoreMinimal.h>
 
@@ -13,7 +16,6 @@ class FShovelBarrier;
 class FTerrainBarrier;
 class FTerrainHeightFetcherBase;
 
-struct FParticleData;
 struct FTerrainDataSourceRef;
 struct FTerrainPagerRef;
 
@@ -41,6 +43,15 @@ public:
 	bool SetTileLoadRadii(FRigidBodyBarrier& Body, double RequiredRadius, double PreloadRadius);
 
 	FParticleData GetParticleData() const;
+
+	/**
+	 * Get the data indicated by the ToInclude bit set flags of all particles.
+	 *
+	 * The resulting buffers are populated by entity ID, not by index, which means that there may be
+	 * gaps in the data. An Exists array of bools indicate whether or not there is particle data at
+	 * a particular index. The Exists array is always populated, even if ToInclude is all-zero.
+	 */
+	FParticleDataById GetParticleDataById(EParticleDataFlags ToInclude) const;
 
 	/**
 	 * Returns the total number of spawned Terrain particles.
