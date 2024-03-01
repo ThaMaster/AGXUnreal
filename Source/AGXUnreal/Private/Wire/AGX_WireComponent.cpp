@@ -51,7 +51,6 @@ UAGX_WireComponent::UAGX_WireComponent()
 	RenderMaterial = FAGX_ObjectUtilities::GetAssetFromPath<UMaterialInterface>(WireMatAssetPath);
 }
 
-
 void UAGX_WireComponent::SetRadius(float InRadius)
 {
 	if (HasNative())
@@ -915,6 +914,10 @@ namespace AGX_WireComponent_helpers
 	}
 }
 
+// TODO This code will need to change with the introduction of frame in routing nodes.
+//
+// All FWireRoutingNodes added in these Add-functions must have an Owning Actor. If it doesn't have
+// one already then set GetTypedOuter<AActor>().
 void UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
 {
 	if (HasNative())
@@ -960,6 +963,10 @@ void UAGX_WireComponent::RemoveNode(int32 InIndex)
 	RouteNodes.RemoveAt(InIndex);
 }
 
+// TODO This code will need to change with the introduction of frame in routing nodes.
+//
+// What does "Location" mean in this case? Relative to what? The Route Node's current Parent? The
+// world? The Wire Component? Who calls this function? What does that code expect this code to do?
 void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocation)
 {
 	if (HasNative())
@@ -1001,6 +1008,9 @@ double UAGX_WireComponent::GetRestLength() const
 	double Length = 0.0;
 	for (int32 I = 1; I < RouteNodes.Num(); ++I)
 	{
+		// TODO This code will need to change with the introduction of frame in routing nodes.
+		//
+		// Can no longer assume that all Route Node locations are in the same space.
 		Length += FVector::Distance(RouteNodes[I - 1].Location, RouteNodes[I].Location);
 	}
 	return Length;
@@ -1503,6 +1513,7 @@ namespace AGX_WireComponent_helpers
 		return SourceToTarget.TransformPosition(LocalLocation);
 	}
 
+	// TODO This code will need to change with the introduction of frame in routing nodes.
 	std::tuple<FRigidBodyBarrier*, FVector> GetBodyAndLocalLocation(
 		const FWireRoutingNode& RouteNode, const FTransform& WireTransform)
 	{
@@ -1553,6 +1564,7 @@ namespace AGX_WireComponent_helpers
 //
 // Is there a better solution?
 #if UE_VERSION_OLDER_THAN(5, 2, 0)
+
 		// Message must contain four %s ordered as Wire name, Wire owner name, Winch name, Winch
 		// owner name.
 		auto LogError = [&Wire, Side](auto& Message)
@@ -1564,6 +1576,7 @@ namespace AGX_WireComponent_helpers
 				LogAGX, Error, Message, *Wire.GetName(), *GetLabelSafe(Wire.GetOwner()), *WinchName,
 				*ActorName);
 		};
+
 #else
 
 #define LogError(Message)                                                                    \
@@ -1786,6 +1799,10 @@ void UAGX_WireComponent::CreateNative()
 			RouteNode.RigidBody.OwningActor = GetOwner();
 		}
 
+		// TODO This code will need to change with the introduction of frame in routing nodes.
+		//
+		// Can no longer use the Wire Component's transform, named LocalToWorld here, to go from
+		// the route node's location to a location we can pass to AGX Dynamics.
 		switch (RouteNode.NodeType)
 		{
 			case EWireNodeType::Free:
@@ -1981,6 +1998,10 @@ TArray<FVector> UAGX_WireComponent::GetNodesForRendering() const
 		const FTransform& ComponentTransform = GetComponentTransform();
 		for (const auto& Node : RouteNodes)
 		{
+			// TODO This code will need to change with the introduction of frame in routing nodes.
+			//
+			// Can no longer assume that Node.Location should be transformed local-to-world with
+			// the Wire Component's transform.
 			NodeLocations.Add(ComponentTransform.TransformPositionNoScale(Node.Location));
 		}
 	}
