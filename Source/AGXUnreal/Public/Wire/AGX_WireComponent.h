@@ -4,16 +4,15 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_WireMergeSplitProperties.h"
-#include "AGX_RigidBodyReference.h"
 #include "AGX_WireRenderIterator.h"
 #include "Wire/AGX_WireEnums.h"
+#include "Wire/AGX_WireRoutingNode.h"
 #include "Wire/AGX_WireWinch.h"
 #include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
 #include "Engine/EngineTypes.h"
 #include "Components/SceneComponent.h"
-#include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_WireComponent.generated.h"
 
@@ -21,64 +20,6 @@ class UAGX_ShapeMaterial;
 class UAGX_WireWinchComponent;
 class UInstancedStaticMeshComponent;
 class UMaterialInterface;
-
-/// @todo Move FWireRoutingNode to a separate source file pair.
-/**
- * Route nodes are used to specify the initial route of the wire. Each node has a location but
- * no orientation. Some members are only used for some node types, such as RigidBody which is only
- * used by Eye and BodyFixed nodes.
- */
-USTRUCT(BlueprintType)
-struct AGXUNREAL_API FWireRoutingNode
-{
-	GENERATED_BODY();
-
-	/**
-	 * The type of wire node, e.g., Free, Eye, BodyFixed, etc.
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
-	EWireNodeType NodeType;
-
-	/**
-	 * The location of this node relative to the Wire Component [cm].
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
-	FVector Location;
-
-	/**
-	 * The Rigid Body that an Eye or BodyFixed node should be attached to.
-	 * Ignored for other node types.
-	 */
-	UPROPERTY(EditAnywhere, Category = "Wire")
-	FAGX_RigidBodyReference RigidBody;
-
-	FWireRoutingNode()
-		: NodeType(EWireNodeType::Free)
-		, Location(FVector::ZeroVector)
-	{
-	}
-
-	FWireRoutingNode(const FVector& InLocation)
-		: NodeType(EWireNodeType::Free)
-		, Location(InLocation)
-	{
-	}
-
-	void SetBody(UAGX_RigidBodyComponent* Body);
-};
-
-/// @todo Move UAGX_WireRouteNode_FL with FWireRoutingNode when it's moved.
-/**
- * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints.
- */
-UCLASS()
-class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
-{
-	GENERATED_BODY()
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node")
-	static void SetBody(UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body);
-};
 
 /**
  * A Wire is a lumped element structure with dynamic resolution, the wire will adapt the resolution,

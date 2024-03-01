@@ -34,25 +34,6 @@
 
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
 
-void FWireRoutingNode::SetBody(UAGX_RigidBodyComponent* Body)
-{
-	if (Body == nullptr)
-	{
-		RigidBody.OwningActor = nullptr;
-		RigidBody.Name = NAME_None;
-		return;
-	}
-
-	RigidBody.OwningActor = Body->GetOwner();
-	RigidBody.Name = Body->GetFName();
-}
-
-void UAGX_WireRouteNode_FL::SetBody(
-	UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body)
-{
-	WireNode.SetBody(Body);
-}
-
 UAGX_WireComponent::UAGX_WireComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -69,6 +50,7 @@ UAGX_WireComponent::UAGX_WireComponent()
 		TEXT("Material'/AGXUnreal/Wire/MI_GrayWire.MI_GrayWire'");
 	RenderMaterial = FAGX_ObjectUtilities::GetAssetFromPath<UMaterialInterface>(WireMatAssetPath);
 }
+
 
 void UAGX_WireComponent::SetRadius(float InRadius)
 {
