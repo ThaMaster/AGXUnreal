@@ -1128,12 +1128,6 @@ bool UAGX_TrackComponent::ComputeVisualScaleAndOffset(
 	return true;
 }
 
-void UAGX_TrackComponent::WriteRenderMaterialsToVisualMeshWithCheck()
-{
-	EnsureValidRenderMaterials();
-	WriteRenderMaterialsToVisualMesh();
-}
-
 void UAGX_TrackComponent::WriteRenderMaterialsToVisualMesh()
 {
 	if (VisualMeshes == nullptr)
@@ -1158,6 +1152,12 @@ void UAGX_TrackComponent::WriteRenderMaterialsToVisualMesh()
 }
 
 #if WITH_EDITOR
+void UAGX_TrackComponent::WriteRenderMaterialsToVisualMeshWithCheck()
+{
+	EnsureValidRenderMaterials();
+	WriteRenderMaterialsToVisualMesh();
+}
+
 void UAGX_TrackComponent::EnsureValidRenderMaterials()
 {
 	for (int32 Elem = 0; Elem < RenderMaterials.Num(); Elem++)

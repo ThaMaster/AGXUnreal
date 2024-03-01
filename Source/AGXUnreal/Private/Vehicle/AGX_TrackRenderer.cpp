@@ -11,7 +11,9 @@
 
 // Unreal Engine includes.
 #include "Materials/Material.h"
+#if WITH_EDITOR
 #include "Editor.h"
+#endif
 #include "Engine/World.h"
 
 // Standard library includes.

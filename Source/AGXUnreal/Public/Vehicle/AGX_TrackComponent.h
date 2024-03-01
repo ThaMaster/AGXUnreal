@@ -468,10 +468,10 @@ private:
 	bool ComputeNodeTransforms(TArray<FTransform>& OutTransforms);
 	bool ComputeVisualScaleAndOffset(
 		FVector& OutVisualScale, FVector& OutVisualOffset, const FVector& PhysicsNodeSize) const;
-	void WriteRenderMaterialsToVisualMeshWithCheck();
 	void WriteRenderMaterialsToVisualMesh();
 
 #if WITH_EDITOR
+	void WriteRenderMaterialsToVisualMeshWithCheck();
 	void EnsureValidRenderMaterials();
 #endif
 
