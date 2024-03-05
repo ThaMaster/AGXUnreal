@@ -44,14 +44,6 @@ public:
 	bool bEnabled {true};
 
 	/**
-	 * Determines whether the Lidar Sensor should perform scanning and output data automatically
-	 * (according to frequencies set) or if it should be passive and only perform these operations
-	 * when explicitly asked to, e.g. using the PerformScan function.
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	EAGX_LidarExecutonMode ExecutionMode {EAGX_LidarExecutonMode::Auto};
-
-	/**
 	 * Determines how often the total scan cycle is run, i.e. how often the total scan pattern of
 	 * the Lidar Sensor is covered [Hz].
 	 * This is separate from the OutputFrequency which determines how often the Lidar Sensor outputs
@@ -101,6 +93,16 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
 	EAGX_LidarSamplingType SamplingType {EAGX_LidarSamplingType::GPU};
+
+	/**
+	 * Determines whether the Lidar Sensor should perform scanning and output data automatically
+	 * (according to frequencies set) or if it should be passive and only perform these operations
+	 * when explicitly asked to, e.g. using the PerformScan function.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
+		Meta = (EditCondition = "SamplingType == EAGX_LidarSamplingType::CPU", ExposeOnSpawn))
+	EAGX_LidarExecutonMode ExecutionMode {EAGX_LidarExecutonMode::Auto};
 
 	/**
 	 * Determines in what order points are scanned during a scan cycle.
@@ -220,12 +222,14 @@ public:
 		FVector2D FOVWindowVertical = FVector2D::ZeroVector);
 
 	/**
-	* The Lidar Sensor Component only has a Native when using SamplingType GPU.
-	*/
+	 * The Lidar Sensor Component only has a Native when using SamplingType GPU.
+	 */
 	bool HasNative() const;
-	FLidarBarrier* GetOrCreateNative(); 
+	FLidarBarrier* GetOrCreateNative();
 	FLidarBarrier* GetNative();
 	const FLidarBarrier* GetNative() const;
+
+	void GetResultTest(); // Test function, do not merge!!
 
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
@@ -235,6 +239,8 @@ public:
 	virtual bool CanEditChange(const FProperty* InProperty) const override;
 #endif
 	//~ End UActorComponent Interface
+
+	friend class AAGX_SensorEnvironment;
 
 private:
 	struct FAGX_LidarState
@@ -256,7 +262,8 @@ private:
 	FLidarBarrier NativeBarrier; // Only used for GPU SamplingType.
 
 	bool CheckValid() const;
-	void OnStepForward(double TimeStamp);
+	void StepSamplingTypeCPU(double TimeStamp);
+	void StepSamplingTypeGPU();
 	void UpdateElapsedTime(double TimeStamp);
 	void ScanAutoCPU();
 	void OutputPointCloudDataIfReady();

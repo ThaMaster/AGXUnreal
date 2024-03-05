@@ -335,9 +335,11 @@ public:
 	 */
 	bool HasNative() const;
 
+	FTerrainBarrier* GetOrCreateNative();
 	FTerrainBarrier* GetNative();
 	const FTerrainBarrier* GetNative() const;
 
+	FTerrainPagerBarrier* GetOrCreateNativeTerrainPager();
 	FTerrainPagerBarrier* GetNativeTerrainPager();
 	const FTerrainPagerBarrier* GetNativeTerrainPager() const;
 

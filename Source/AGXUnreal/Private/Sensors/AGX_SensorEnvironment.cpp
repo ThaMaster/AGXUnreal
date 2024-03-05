@@ -6,9 +6,11 @@
 #include "AGX_Simulation.h"
 #include "Sensors/AGX_LidarSensorComponent.h"
 #include "Sensors/AGX_SensorEnvironmentSpriteComponent.h"
+#include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 // Unreal Engine includes.
+#include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 
 namespace AGX_SensorEnvironment_helpers
@@ -54,7 +56,17 @@ void AAGX_SensorEnvironment::Step(double DeltaTime)
 	if (!HasNative())
 		return;
 
+	if (bAutoAddObjects)
+		StepAutoAddObjects(DeltaTime);
+	else
+		StepNoAutoAddObjects(DeltaTime);
+
 	NativeBarrier.Step(DeltaTime);
+
+	for (auto It = ActiveLidars.CreateIterator(); It; ++It)
+	{
+		It->Key->GetResultTest(); // Todo: dummy test, remove this.
+	}
 }
 
 bool AAGX_SensorEnvironment::Add(UStaticMeshComponent* Mesh)
@@ -137,7 +149,8 @@ bool AAGX_SensorEnvironment::CanEditChange(const FProperty* InProperty) const
 		// List of names of properties that does not support editing after initialization.
 		static const TArray<FName> PropertiesNotEditableDuringPlay = {
 			GET_MEMBER_NAME_CHECKED(ThisClass, LidarSensors),
-			GET_MEMBER_NAME_CHECKED(ThisClass, bAutoStep)};
+			GET_MEMBER_NAME_CHECKED(ThisClass, bAutoStep),
+			GET_MEMBER_NAME_CHECKED(ThisClass, bAutoAddObjects)};
 
 		if (PropertiesNotEditableDuringPlay.Contains(InProperty->GetFName()))
 		{
@@ -163,16 +176,7 @@ void AAGX_SensorEnvironment::BeginPlay()
 	NativeBarrier.AllocateNative();
 	check(NativeBarrier.HasNative());
 
-	for (FAGX_LidarSensorReference& LidarRef : LidarSensors)
-	{
-		if (UAGX_LidarSensorComponent* Lidar = LidarRef.GetLidarComponent())
-		{
-			if (Lidar->SamplingType != EAGX_LidarSamplingType::GPU)
-				continue;
-
-			NativeBarrier.Add(*Lidar->GetOrCreateNative());
-		}
-	}
+	RegisterLidars();
 
 	if (bAutoStep)
 	{
@@ -180,7 +184,7 @@ void AAGX_SensorEnvironment::BeginPlay()
 		{
 			PostStepForwardHandle =
 				FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
-					.AddLambda([this](double TimeStamp) { Step(TimeStamp); });
+					.AddLambda([this](double TimeStamp) { AutoStep(TimeStamp); });
 		}
 	}
 }
@@ -197,5 +201,92 @@ void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type Reason)
 			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
 				.Remove(PostStepForwardHandle);
 		}
+	}
+}
+
+void AAGX_SensorEnvironment::RegisterLidars()
+{
+	check(HasNative());
+	TSet<UPrimitiveComponent*> OverlappingComponents;
+
+	for (FAGX_LidarSensorReference& LidarRef : LidarSensors)
+	{
+		if (UAGX_LidarSensorComponent* Lidar = LidarRef.GetLidarComponent())
+		{
+			if (Lidar->SamplingType != EAGX_LidarSamplingType::GPU)
+				continue;
+
+			NativeBarrier.Add(*Lidar->GetOrCreateNative());
+
+			// Associate each Lidar with a USphereComponent used to detect objects in the world to
+			// give to AGX Dynamics during Play.
+			USphereComponent* CollSph = nullptr;
+			if (bAutoAddObjects)
+			{
+				CollSph = NewObject<USphereComponent>(this);
+				CollSph->RegisterComponent();
+				CollSph->SetWorldTransform(Lidar->GetComponentTransform());
+				CollSph->SetSphereRadius(Lidar->Range, /*bUpdateOverlaps*/ true);
+
+				// Fetch all currently overlapping Components.
+				TSet<UPrimitiveComponent*> OverlComp;
+				CollSph->GetOverlappingComponents(OverlComp);
+				OverlappingComponents.Append(OverlComp);
+			}
+
+			ActiveLidars.Add(Lidar, CollSph);
+		}
+	}
+
+	if (bAutoAddObjects)
+	{
+		// Add overlapping Components so they become visible to the sensors handled by this
+		// Environment.
+		for (UPrimitiveComponent* Overlapping : OverlappingComponents)
+		{
+			if (UStaticMeshComponent* Sm = Cast<UStaticMeshComponent>(Overlapping))
+				Add(Sm);
+		}
+
+		// Add Terrains.
+		const ULevel* Level = GetWorld()->GetCurrentLevel();
+
+		// Unsafe to use range based loop here since Actors array may grow if for example the
+		// AGX_Stepper is added during this.
+		for (int32 i = 0; i < Level->Actors.Num(); i++)
+		{
+			if (AAGX_Terrain* Terrain = Cast<AAGX_Terrain>(Level->Actors[i]))
+			{
+				if (Terrain->bEnableTerrainPaging)
+					NativeBarrier.Add(*Terrain->GetOrCreateNativeTerrainPager());
+				else
+					NativeBarrier.Add(*Terrain->GetOrCreateNative());
+			}
+		}
+	}
+}
+
+void AAGX_SensorEnvironment::AutoStep(double)
+{
+	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
+	{
+		Step(Simulation->TimeStep);
+	}
+}
+
+void AAGX_SensorEnvironment::StepNoAutoAddObjects(double DeltaTime)
+{
+	for (auto It = ActiveLidars.CreateIterator(); It; ++It)
+	{
+		It->Key->StepSamplingTypeGPU();
+	}
+}
+
+void AAGX_SensorEnvironment::StepAutoAddObjects(double DeltaTime)
+{
+	// Todo: update collision spheres and add/remove objects.
+	for (auto It = ActiveLidars.CreateIterator(); It; ++It)
+	{
+		It->Key->StepSamplingTypeGPU();
 	}
 }

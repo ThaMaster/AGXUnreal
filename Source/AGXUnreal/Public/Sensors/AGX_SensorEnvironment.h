@@ -14,6 +14,7 @@
 
 #include "AGX_SensorEnvironment.generated.h"
 
+class USphereComponent;
 class UStaticMeshComponent;
 
 UCLASS(ClassGroup = "AGX", Blueprintable, Category = "AGX")
@@ -27,8 +28,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Sensor Environment")
 	TArray<FAGX_LidarSensorReference> LidarSensors;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Sensor Environment")
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Sensor Environment",
+		Meta = (ExposeOnSpawn))
 	bool bAutoStep {true};
+
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Sensor Environment",
+		Meta = (ExposeOnSpawn))
+	bool bAutoAddObjects {true};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	void Step(double DeltaTime);
@@ -68,6 +76,12 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
+	void RegisterLidars();
+	void AutoStep(double);
+	void StepNoAutoAddObjects(double DeltaTime);
+	void StepAutoAddObjects(double DeltaTime);
+
+private:
 	struct FMeshEntityBarrierData
 	{
 		FRtMeshBarrier Mesh;
@@ -75,6 +89,7 @@ private:
 		FTransform Transform;
 	};
 
+	TMap<UAGX_LidarSensorComponent*, USphereComponent*> ActiveLidars;
 	TMap<UStaticMeshComponent*, FMeshEntityBarrierData> StaticMeshes;
 	FSensorEnvironmentBarrier NativeBarrier;
 	FDelegateHandle PostStepForwardHandle;

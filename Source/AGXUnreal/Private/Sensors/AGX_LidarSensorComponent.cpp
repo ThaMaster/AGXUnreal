@@ -333,6 +333,11 @@ const FLidarBarrier* UAGX_LidarSensorComponent::GetNative() const
 	return &NativeBarrier;
 }
 
+void UAGX_LidarSensorComponent::GetResultTest()
+{
+	NativeBarrier.GetResultTest(GetWorld());
+}
+
 void UAGX_LidarSensorComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -344,11 +349,14 @@ void UAGX_LidarSensorComponent::BeginPlay()
 	LidarState.ScanCycleDuration = 1.0 / ScanFrequency;
 	LidarState.OutputCycleDuration = 1.0 / OutputFrequency;
 
+	if (SamplingType == EAGX_LidarSamplingType::GPU)
+		return; // No auto-stepping in GPU mode. The SensorEnvironment does the stepping.
+
 	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 	{
 		PostStepForwardHandle =
 			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
-				.AddLambda([this](double TimeStamp) { OnStepForward(TimeStamp); });
+				.AddLambda([this](double TimeStamp) { StepSamplingTypeCPU(TimeStamp); });
 	}
 }
 
@@ -443,20 +451,29 @@ bool UAGX_LidarSensorComponent::CheckValid() const
 	return true;
 }
 
-void UAGX_LidarSensorComponent::OnStepForward(double TimeStamp)
+void UAGX_LidarSensorComponent::StepSamplingTypeCPU(double TimeStamp)
 {
 	if (!bIsValid || !bEnabled)
 		return;
 
-	UpdateElapsedTime(TimeStamp);
+	AGX_CHECK(!HasNative());
+	AGX_CHECK(SamplingType == EAGX_LidarSamplingType::CPU);
 
+	UpdateElapsedTime(TimeStamp);
 	if (ExecutionMode != EAGX_LidarExecutonMode::Auto)
 		return;
 
-	if (SamplingType == EAGX_LidarSamplingType::CPU)
-		ScanAutoCPU();
-
+	ScanAutoCPU();
 	OutputPointCloudDataIfReady();
+}
+
+void UAGX_LidarSensorComponent::StepSamplingTypeGPU()
+{
+	if (!bIsValid || !bEnabled || !HasNative())
+		return;
+
+	AGX_CHECK(SamplingType == EAGX_LidarSamplingType::GPU);
+	NativeBarrier.SetTransform(GetComponentTransform());
 }
 
 void UAGX_LidarSensorComponent::UpdateElapsedTime(double TimeStamp)

@@ -5,6 +5,8 @@
 // AGX Dynamics for Unreal includes.
 #include "Sensors/LidarBarrier.h"
 #include "Sensors/SensorRef.h"
+#include "Terrain/TerrainBarrier.h"
+#include "Terrain/TerrainPagerBarrier.h"
 
 FSensorEnvironmentBarrier::FSensorEnvironmentBarrier()
 	: NativeRef {new FSensorEnvironmentRef}
@@ -56,7 +58,22 @@ void FSensorEnvironmentBarrier::ReleaseNative()
 bool FSensorEnvironmentBarrier::Add(FLidarBarrier& Lidar)
 {
 	check(HasNative());
+	check(Lidar.HasNative());
 	return NativeRef->Native->add(Lidar.GetNative()->Native);
+}
+
+bool FSensorEnvironmentBarrier::Add(FTerrainBarrier& Terrain)
+{
+	check(HasNative());
+	check(Terrain.HasNative());
+	return NativeRef->Native->add(Terrain.GetNative()->Native);
+}
+
+bool FSensorEnvironmentBarrier::Add(FTerrainPagerBarrier& Pager)
+{
+	check(HasNative());
+	check(Pager.HasNative());
+	return NativeRef->Native->add(Pager.GetNative()->Native);
 }
 
 void FSensorEnvironmentBarrier::Step(double DeltaTime)

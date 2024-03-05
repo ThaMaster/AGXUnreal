@@ -8,7 +8,11 @@
 // Standard library includes.
 #include <memory>
 
+
+class FTerrainBarrier;
+class FTerrainPagerBarrier;
 class FLidarBarrier;
+
 struct FSensorEnvironmentRef;
 
 class AGXUNREALBARRIER_API FSensorEnvironmentBarrier
@@ -26,6 +30,8 @@ public:
 	void ReleaseNative();
 
 	bool Add(FLidarBarrier& Lidar);
+	bool Add(FTerrainBarrier& Terrain);
+	bool Add(FTerrainPagerBarrier& Pager);
 
 	void Step(double DeltaTime);
 
