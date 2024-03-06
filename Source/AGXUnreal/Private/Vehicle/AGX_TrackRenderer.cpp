@@ -11,6 +11,9 @@
 
 // Unreal Engine includes.
 #include "Materials/Material.h"
+#if WITH_EDITOR
+#include "Editor.h"
+#endif
 #include "Engine/World.h"
 
 // Standard library includes.
@@ -118,6 +121,24 @@ UAGX_TrackRenderer::UAGX_TrackRenderer()
 	// Make sure Unreal's default physics collision is disabled.
 	bDisableCollision = false;
 	BodyInstance.SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void UAGX_TrackRenderer::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Deprecation message.
+#if WITH_EDITOR
+	const FString DeprecationMsg =
+		"AGX Track Renderer is deprecated and will be removed in a future release. The AGX Track \n"
+		"Component renders itself. To use the old AGX_TrackRenderer, it is recommended to copy it "
+		"\n into your project and remove this deprecation message from it.";
+
+	UE_LOG(LogAGX, Warning, TEXT("%s"), *DeprecationMsg);
+
+	if (GEngine != nullptr)
+		GEngine->AddOnScreenDebugMessage(INDEX_NONE, 15.0f, FColor::Red, DeprecationMsg);
+#endif
 }
 
 void UAGX_TrackRenderer::TickComponent(
@@ -422,8 +443,7 @@ bool UAGX_TrackRenderer::ComputeNodeTransforms(
 	else
 	{
 		// Get mesh instance transforms from preview data.
-		FAGX_TrackPreviewData* Preview = Track->GetTrackPreview(
-			/*bUpdateIfNecessary*/ true, /*bForceUpdate*/ false);
+		FAGX_TrackPreviewData* Preview = Track->GetTrackPreview(/*bForceUpdate*/ false);
 
 		if (!Preview || Preview->NodeTransforms.Num() <= 0)
 		{

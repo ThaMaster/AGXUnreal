@@ -3,6 +3,7 @@
 #include "Wire/AGX_WireWinchVisualizer.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Wire/AGX_WireWinchComponent.h"
 #include "Wire/AGX_WireHitProxies.h"
 
@@ -33,7 +34,9 @@ void FAGX_WireWinchVisualizer::DrawVisualization(
 	{
 		return;
 	}
-	AGX_WireVisualization_helpers::DrawWinch(*WinchComponent, PDI);
+
+	const bool bSelected = FAGX_EditorUtilities::IsSelected(*WinchComponent);
+	AGX_WireVisualization_helpers::DrawWinch(*WinchComponent, bSelected, PDI);
 }
 
 bool FAGX_WireWinchVisualizer::VisProxyHandleClick(

@@ -306,6 +306,7 @@ void UAGX_CameraSensorComponent::InitCaptureComponent()
 
 	CaptureComponent2D->TextureTarget = RenderTarget;
 	CaptureComponent2D->FOVAngle = FOV;
+	CaptureComponent2D->CaptureSource = ESceneCaptureSource::SCS_FinalToneCurveHDR;
 }
 
 bool UAGX_CameraSensorComponent::CheckValid() const

@@ -17,12 +17,6 @@
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
-#include "Constraints/AGX_HingeConstraintComponent.h"
-#include "Constraints/AGX_PrismaticConstraintComponent.h"
-#include "Materials/ShapeMaterialBarrier.h"
-#include "Materials/AGX_ShapeMaterial.h"
-#include "Materials/ContactMaterialBarrier.h"
-#include "Materials/AGX_ContactMaterial.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -31,16 +25,15 @@
 #include "Widgets/AGX_SynchronizeModelDialog.h"
 
 // Unreal Engine includes.
+#include "ActorEditorUtils.h"
 #include "AssetDeleteModel.h"
 #include "AssetToolsModule.h"
 #include "Containers/Ticker.h"
 #include "ContentBrowserModule.h"
 #include "DesktopPlatformModule.h"
 #include "Editor.h"
-#include "EditorStyleSet.h"
 #include "Editor/EditorEngine.h"
 #include "Engine/EngineTypes.h"
-#include "Engine/GameEngine.h"
 #include "Engine/Selection.h"
 #include "Engine/StaticMesh.h"
 #include "Framework/Application/SlateApplication.h"
@@ -50,13 +43,10 @@
 #include "Misc/Char.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/MessageDialog.h"
-#include "ObjectTools.h"
 #include "PackageTools.h"
 #include "RawMesh.h"
-#include "Serialization/ArchiveReplaceObjectRef.h"
-#include "Serialization/FindReferencersArchive.h"
+#include "SSubobjectEditor.h"
 #include "UObject/SavePackage.h"
-#include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectGlobals.h"
 #include "UObject/UObjectIterator.h"
 
@@ -993,6 +983,57 @@ void FAGX_EditorUtilities::SelectActor(AActor* Actor, bool bDeselectPrevious)
 
 	GEditor->NoteSelectionChange();
 }
+
+bool FAGX_EditorUtilities::IsSelected(const UActorComponent& Component)
+{
+	// No idea why, but IsSelected seems to always be true when in the Blueprint Editor, regardless
+	// of if the Component actually is selected in the Components panel or not.
+	if (!FActorEditorUtils::IsAPreviewOrInactiveActor(Component.GetOwner()) && Component.IsSelected())
+	{
+		// The shovel is directly selected in the level editor.
+		return true;
+	}
+
+	// Check if the shovel is owned by a Blueprint editor and if so if the shovel is currently
+	// selected in that Blueprint editor.
+	TSharedPtr<IBlueprintEditor> BlueprintEditor =
+		FKismetEditorUtilities::GetIBlueprintEditorForObject(&Component, false);
+	if (BlueprintEditor.IsValid())
+	{
+		TArray<TSharedPtr<FSubobjectEditorTreeNode>> Selection =
+			BlueprintEditor->GetSelectedSubobjectEditorTreeNodes();
+		for (TSharedPtr<FSubobjectEditorTreeNode>& Selected : Selection)
+		{
+			const UActorComponent* SelectedComponent = Selected->GetComponentTemplate();
+			if (SelectedComponent == &Component)
+			{
+				return true;
+			}
+		}
+	}
+
+	// If the Shovel is part of a preview that we also want to consider it selected if the
+	// Shovel it is a preview of is selected. This happens when we are looking at the Shovel
+	// that exists within the viewport of a Blueprint editor. Then the shovel we see isn't
+	// selected anywhere, but the CSC node template shovel the preview shovel was created from
+	// might be.
+	if (Component.GetOwner() != nullptr &&
+		FActorEditorUtils::IsAPreviewOrInactiveActor(Component.GetOwner()))
+	{
+		// The archetype of a preview component is the template instance in the Blueprint.
+		// If the template instance is selected then we consider the preview instance to be
+		// selected as well.
+		UActorComponent* Archetype = Cast<UActorComponent>(Component.GetArchetype());
+		if (Archetype != nullptr && IsSelected(*Archetype))
+		{
+			return true;
+		}
+	}
+
+	// Did not find anything that has selected the Component. Did we check everything? Who knows.
+	return false;
+}
+
 
 UWorld* FAGX_EditorUtilities::GetEditorWorld()
 {

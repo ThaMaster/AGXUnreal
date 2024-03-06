@@ -1,6 +1,6 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-#include "Sensors/AGX_LidarSensorComponent.h"
+#include "Sensors/AGX_LidarSensorLineTraceComponent.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
@@ -25,12 +25,12 @@
 #include <algorithm>
 #include <tuple>
 
-UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
+UAGX_LidarSensorLineTraceComponent::UAGX_LidarSensorLineTraceComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-namespace AGX_LidarSensorComponent_helpers
+namespace AGX_LidarSensorLineTraceComponent_helpers
 {
 	void DrawDebugPoints(
 		TArrayView<FAGX_LidarScanPoint> Points, UWorld* World, const FTransform& LocalFrame,
@@ -246,10 +246,10 @@ namespace AGX_LidarSensorComponent_helpers
 	}
 }
 
-void UAGX_LidarSensorComponent::RequestManualScan(
+void UAGX_LidarSensorLineTraceComponent::RequestManualScan(
 	double FractionStart, double FractionEnd, FVector2D FOVWindowX, FVector2D FOVWindowY)
 {
-	using namespace AGX_LidarSensorComponent_helpers;
+	using namespace AGX_LidarSensorLineTraceComponent_helpers;
 	if (!bIsValid || !bEnabled)
 		return;
 
@@ -302,43 +302,7 @@ void UAGX_LidarSensorComponent::RequestManualScan(
 	Buffer.SetNum(0, false);
 }
 
-bool UAGX_LidarSensorComponent::HasNative() const
-{
-	return NativeBarrier.HasNative();
-}
-
-FLidarBarrier* UAGX_LidarSensorComponent::GetOrCreateNative()
-{
-	if (HasNative())
-		return GetNative();
-
-	NativeBarrier.AllocateNative();
-	check(NativeBarrier.HasNative());
-	return GetNative();
-}
-
-FLidarBarrier* UAGX_LidarSensorComponent::GetNative()
-{
-	if (!HasNative())
-		return nullptr;
-
-	return &NativeBarrier;
-}
-
-const FLidarBarrier* UAGX_LidarSensorComponent::GetNative() const
-{
-	if (!HasNative())
-		return nullptr;
-
-	return &NativeBarrier;
-}
-
-void UAGX_LidarSensorComponent::GetResultTest()
-{
-	NativeBarrier.GetResultTest(GetWorld());
-}
-
-void UAGX_LidarSensorComponent::BeginPlay()
+void UAGX_LidarSensorLineTraceComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	bIsValid = CheckValid();
@@ -360,7 +324,7 @@ void UAGX_LidarSensorComponent::BeginPlay()
 	}
 }
 
-void UAGX_LidarSensorComponent::EndPlay(const EEndPlayReason::Type Reason)
+void UAGX_LidarSensorLineTraceComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
 	PointCloudDataOutput.Clear();
@@ -377,7 +341,7 @@ void UAGX_LidarSensorComponent::EndPlay(const EEndPlayReason::Type Reason)
 }
 
 #if WITH_EDITOR
-bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
+bool UAGX_LidarSensorLineTraceComponent::CanEditChange(const FProperty* InProperty) const
 {
 	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
 	if (!SuperCanEditChange)
@@ -411,7 +375,7 @@ bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
 }
 #endif
 
-bool UAGX_LidarSensorComponent::CheckValid() const
+bool UAGX_LidarSensorLineTraceComponent::CheckValid() const
 {
 	if (ScanFrequency <= 0.0 || OutputFrequency <= 0.0)
 	{
@@ -451,7 +415,7 @@ bool UAGX_LidarSensorComponent::CheckValid() const
 	return true;
 }
 
-void UAGX_LidarSensorComponent::StepSamplingTypeCPU(double TimeStamp)
+void UAGX_LidarSensorLineTraceComponent::OnStepForward(double TimeStamp)
 {
 	if (!bIsValid || !bEnabled)
 		return;
@@ -467,16 +431,7 @@ void UAGX_LidarSensorComponent::StepSamplingTypeCPU(double TimeStamp)
 	OutputPointCloudDataIfReady();
 }
 
-void UAGX_LidarSensorComponent::StepSamplingTypeGPU()
-{
-	if (!bIsValid || !bEnabled || !HasNative())
-		return;
-
-	AGX_CHECK(SamplingType == EAGX_LidarSamplingType::GPU);
-	NativeBarrier.SetTransform(GetComponentTransform());
-}
-
-void UAGX_LidarSensorComponent::UpdateElapsedTime(double TimeStamp)
+void UAGX_LidarSensorLineTraceComponent::UpdateElapsedTime(double TimeStamp)
 {
 	LidarState.ElapsedTimePrev = LidarState.ElapsedTime;
 
@@ -484,9 +439,9 @@ void UAGX_LidarSensorComponent::UpdateElapsedTime(double TimeStamp)
 		LidarState.ElapsedTime = Sim->GetTimeStamp();
 }
 
-void UAGX_LidarSensorComponent::ScanAutoCPU()
+void UAGX_LidarSensorLineTraceComponent::ScanAutoCPU()
 {
-	using namespace AGX_LidarSensorComponent_helpers;
+	using namespace AGX_LidarSensorLineTraceComponent_helpers;
 	AGX_CHECK(bIsValid);
 
 	if (LidarState.ElapsedTime == LidarState.ElapsedTimePrev)
@@ -534,7 +489,7 @@ void UAGX_LidarSensorComponent::ScanAutoCPU()
 	}
 }
 
-void UAGX_LidarSensorComponent::OutputPointCloudDataIfReady()
+void UAGX_LidarSensorLineTraceComponent::OutputPointCloudDataIfReady()
 {
 	AGX_CHECK(bIsValid);
 

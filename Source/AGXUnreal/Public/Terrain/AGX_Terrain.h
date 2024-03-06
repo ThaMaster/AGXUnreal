@@ -295,12 +295,6 @@ public:
 		Meta = (EditCondition = "bEnableParticleRendering"))
 	UNiagaraSystem* ParticleSystemAsset;
 
-	// \todo Should try to find or create this automatically!
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Rendering",
-		Meta = (EditCondition = "bEnableParticleRendering"))
-	UTextureRenderTarget2D* TerrainParticlesDataMap;
-
 	/** Whether shovel active zone should be rendered or not. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")
 	bool bEnableActiveZoneRendering = false;
@@ -370,12 +364,9 @@ private:
 	void ClearDisplacementMap();
 	bool InitializeParticleSystem();
 	bool InitializeParticleSystemComponent();
-	bool InitializeParticlesMap();
-	void UpdateParticlesMap();
-	void ClearParticlesMap();
+	void UpdateParticlesArrays();
 #if WITH_EDITOR
 	void InitPropertyDispatcher();
-	void EnsureParticleDataRenderTargetSize();
 #endif
 	virtual void Serialize(FArchive& Archive) override;
 
@@ -404,17 +395,8 @@ private:
 	int32 NumVerticesY = 0;
 	bool DisplacementMapInitialized = false;
 
-/// \todo Cannot use AGX Dynamics types in the AGXUnreal module. Must live in the Barrier.
-#if 0
-	agxCollide::HeightFieldRef InitialTerrainHeights = nullptr;
-#endif
-
 	// Particle related variables.
-	TArray<FFloat32> TerrainParticlesData;
-	TArray<FUpdateTextureRegion2D> ParticlesDataMapRegions; // TODO: Remove!
-	bool ParticleSystemInitialized = false;
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
-	const int32 NumPixelsPerParticle = 2;
 
 	/**
 	 * Thread safe convenience function for reading heights from the source Landscape.
