@@ -15,7 +15,7 @@ class UTextureRenderTarget2D;
 
 struct FAGX_SensorMsgsPointCloud2;
 
-#include "AGX_LidarSensorComponent.generated.h"
+#include "AGX_LidarSensorLineTraceComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
 	FOnPointCloudDataOutput, const TArray<FAGX_LidarScanPoint>&, Points);
@@ -23,17 +23,17 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
 /**
  * EXPERIMENTAL
  *
- * Lidar Sensor Component, allowing to create point cluds at runtime.
+ * Lidar Sensor Line Trace Component, allowing to create point cluds at runtime.
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Experimental, Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
-class AGXUNREAL_API UAGX_LidarSensorComponent : public USceneComponent
+class AGXUNREAL_API UAGX_LidarSensorLineTraceComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
 public:
-	UAGX_LidarSensorComponent();
+	UAGX_LidarSensorLineTraceComponent();
 
 	/**
 	 * Whether or not this Lidar Sensor is enabled or not.
