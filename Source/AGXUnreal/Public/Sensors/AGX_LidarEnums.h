@@ -11,7 +11,7 @@ enum class EAGX_LidarSamplingType
 {
 	/**
 	 * The Lidar laser rays are handled on the CPU.
-	 * Important: Terrain particles and deformations as well as primitive AGX Shapes will not be
+	 * Important: Terrain particles and deformations will not be
 	 * detected when using this mode.
 	 */
 	CPU
