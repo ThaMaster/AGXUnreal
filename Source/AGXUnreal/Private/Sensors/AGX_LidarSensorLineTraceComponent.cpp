@@ -313,14 +313,11 @@ void UAGX_LidarSensorLineTraceComponent::BeginPlay()
 	LidarState.ScanCycleDuration = 1.0 / ScanFrequency;
 	LidarState.OutputCycleDuration = 1.0 / OutputFrequency;
 
-	if (SamplingType == EAGX_LidarSamplingType::GPU)
-		return; // No auto-stepping in GPU mode. The SensorEnvironment does the stepping.
-
 	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 	{
 		PostStepForwardHandle =
 			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
-				.AddLambda([this](double TimeStamp) { StepSamplingTypeCPU(TimeStamp); });
+				.AddLambda([this](double TimeStamp) { OnStepForward(TimeStamp); });
 	}
 }
 
@@ -420,14 +417,14 @@ void UAGX_LidarSensorLineTraceComponent::OnStepForward(double TimeStamp)
 	if (!bIsValid || !bEnabled)
 		return;
 
-	AGX_CHECK(!HasNative());
-	AGX_CHECK(SamplingType == EAGX_LidarSamplingType::CPU);
-
 	UpdateElapsedTime(TimeStamp);
+
 	if (ExecutionMode != EAGX_LidarExecutonMode::Auto)
 		return;
 
-	ScanAutoCPU();
+	if (SamplingType == EAGX_LidarSamplingType::CPU)
+		ScanAutoCPU();
+
 	OutputPointCloudDataIfReady();
 }
 

@@ -69,9 +69,22 @@ void AAGX_SensorEnvironment::Step(double DeltaTime)
 	}
 }
 
-bool AAGX_SensorEnvironment::Add(UStaticMeshComponent* Mesh)
+bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh)
 {
 	return AGX_SensorEnvironment_helpers::Add(*this, Mesh);
+}
+
+bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
+{
+	if (!HasNative() || Terrain == nullptr)
+		return false;
+
+	if (Terrain->bEnableTerrainPaging)
+		NativeBarrier.Add(*Terrain->GetOrCreateNativeTerrainPager());
+	else
+		NativeBarrier.Add(*Terrain->GetOrCreateNative());
+
+	return true;
 }
 
 bool AAGX_SensorEnvironment::Add(
@@ -184,7 +197,7 @@ void AAGX_SensorEnvironment::BeginPlay()
 		{
 			PostStepForwardHandle =
 				FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
-					.AddLambda([this](double TimeStamp) { AutoStep(TimeStamp); });
+					.AddLambda([this](double) { AutoStep(); });
 		}
 	}
 }
@@ -213,9 +226,6 @@ void AAGX_SensorEnvironment::RegisterLidars()
 	{
 		if (UAGX_LidarSensorComponent* Lidar = LidarRef.GetLidarComponent())
 		{
-			if (Lidar->SamplingType != EAGX_LidarSamplingType::GPU)
-				continue;
-
 			NativeBarrier.Add(*Lidar->GetOrCreateNative());
 
 			// Associate each Lidar with a USphereComponent used to detect objects in the world to
@@ -245,7 +255,7 @@ void AAGX_SensorEnvironment::RegisterLidars()
 		for (UPrimitiveComponent* Overlapping : OverlappingComponents)
 		{
 			if (UStaticMeshComponent* Sm = Cast<UStaticMeshComponent>(Overlapping))
-				Add(Sm);
+				AddMesh(Sm);
 		}
 
 		// Add Terrains.
@@ -257,16 +267,13 @@ void AAGX_SensorEnvironment::RegisterLidars()
 		{
 			if (AAGX_Terrain* Terrain = Cast<AAGX_Terrain>(Level->Actors[i]))
 			{
-				if (Terrain->bEnableTerrainPaging)
-					NativeBarrier.Add(*Terrain->GetOrCreateNativeTerrainPager());
-				else
-					NativeBarrier.Add(*Terrain->GetOrCreateNative());
+				AddTerrain(Terrain);
 			}
 		}
 	}
 }
 
-void AAGX_SensorEnvironment::AutoStep(double)
+void AAGX_SensorEnvironment::AutoStep()
 {
 	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
 	{
@@ -278,7 +285,7 @@ void AAGX_SensorEnvironment::StepNoAutoAddObjects(double DeltaTime)
 {
 	for (auto It = ActiveLidars.CreateIterator(); It; ++It)
 	{
-		It->Key->StepSamplingTypeGPU();
+		It->Key->Step();
 	}
 }
 
@@ -287,6 +294,6 @@ void AAGX_SensorEnvironment::StepAutoAddObjects(double DeltaTime)
 	// Todo: update collision spheres and add/remove objects.
 	for (auto It = ActiveLidars.CreateIterator(); It; ++It)
 	{
-		It->Key->StepSamplingTypeGPU();
+		It->Key->Step();
 	}
 }

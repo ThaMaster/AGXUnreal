@@ -14,6 +14,7 @@
 
 #include "AGX_SensorEnvironment.generated.h"
 
+class AAGX_Terrain;
 class USphereComponent;
 class UStaticMeshComponent;
 
@@ -47,7 +48,15 @@ public:
 	 * Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
-	bool Add(UStaticMeshComponent* Mesh);
+	bool AddMesh(UStaticMeshComponent* Mesh);
+
+	/*
+	 * Add a Terrain so that it can be detected by sensors handled by this Sensor
+	 * Environment.
+	 * Only valid to call during Play.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	bool AddTerrain(AAGX_Terrain* Terrain);
 
 	bool Add(
 		UStaticMeshComponent* Mesh, const TArray<FVector>& Vertices,
@@ -77,7 +86,7 @@ protected:
 
 private:
 	void RegisterLidars();
-	void AutoStep(double);
+	void AutoStep();
 	void StepNoAutoAddObjects(double DeltaTime);
 	void StepAutoAddObjects(double DeltaTime);
 
