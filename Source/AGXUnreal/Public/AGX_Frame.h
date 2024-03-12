@@ -74,6 +74,14 @@ struct AGXUNREAL_API FAGX_Frame
 	FVector GetWorldLocation(const USceneComponent& FallbackParent) const;
 
 	/**
+	 * Set LocalLocation so that this Frame becomes located at the given world location.
+	 *
+	 * The world-to-local computation is done using the Fallback Parent's transform if Parent is not
+	 * set.
+	 */
+	void SetWorldLocation(const FVector& InLocation, const USceneComponent& FallbackParent);
+
+	/**
 	 * Get the world rotation of this Frame.
 	 *
 	 * That is, the result of transforming this Frame's Local Rotation with the Parent's world
@@ -94,10 +102,18 @@ struct AGXUNREAL_API FAGX_Frame
 	FVector GetLocationRelativeTo(const USceneComponent& Component) const;
 
 	/**
-	 * Same as Get Location Relative To, but use Fallback Parent is Parent is not set.
+	 * Same as Get Location Relative To, but use Fallback Parent if Parent is not set.
 	 */
 	FVector GetLocationRelativeTo(
 		const USceneComponent& Component, const USceneComponent& FallbackParent) const;
+
+	/**
+	 * Get the location of this Frame relative to the given Scene Component.
+	 *
+	 * If Parent is not set then FallbackTransform is used as the parent transform instead.
+	 */
+	FVector GetLocationRelativeTo(
+		const USceneComponent& Component, const FTransform& FallbackTransform) const;
 
 	/**
 	 * Get the rotation of this Frame relative to the given Scene Component.
@@ -116,6 +132,9 @@ struct AGXUNREAL_API FAGX_Frame
 	void GetRelativeTo(
 		const USceneComponent& Component, FVector& OutLocation, FRotator& OutRotation,
 		const USceneComponent& FallbackParent) const;
+
+	const FTransform& GetParentTransform(const USceneComponent& FallbackParent) const;
+	const FTransform& GetParentTransform(const FTransform& FallbackTransform) const;
 };
 
 UCLASS()

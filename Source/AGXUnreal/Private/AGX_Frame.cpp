@@ -13,6 +13,13 @@ FAGX_Frame::FAGX_Frame()
 
 void FAGX_Frame::SetParentComponent(USceneComponent* Component)
 {
+	if (Component == nullptr)
+	{
+		Parent.OwningActor = nullptr;
+		Parent.Name = NAME_None;
+		return;
+	}
+
 	Parent.OwningActor = Component->GetOwner();
 	Parent.Name = Component->GetFName();
 }
@@ -43,6 +50,12 @@ FVector FAGX_Frame::GetWorldLocation(const USceneComponent& FallbackParent) cons
 	}
 
 	return ActualParent->GetComponentTransform().TransformPosition(LocalLocation);
+}
+
+void FAGX_Frame::SetWorldLocation(const FVector& InLocation, const USceneComponent& FallbackParent)
+{
+	const FTransform& ParentToWorld = GetParentTransform(FallbackParent);
+	LocalLocation = ParentToWorld.InverseTransformPosition(InLocation);
 }
 
 FRotator FAGX_Frame::GetWorldRotation() const
@@ -125,6 +138,15 @@ FVector FAGX_Frame::GetLocationRelativeTo(
 	return Transform.TransformPosition(LocalLocation);
 }
 
+FVector FAGX_Frame::GetLocationRelativeTo(
+	const USceneComponent& Component, const FTransform& FallbackTransform) const
+{
+	const FTransform& ParentTransform = GetParentTransform(FallbackTransform);
+	const FTransform TargetTransform = Component.GetComponentTransform();
+	const FTransform ParentToTarget = ParentTransform.GetRelativeTransform(TargetTransform);
+	return ParentToTarget.TransformPosition(LocalLocation);
+}
+
 FRotator FAGX_Frame::GetRotationRelativeTo(const USceneComponent& Component) const
 {
 	const USceneComponent* ActualParent = GetParentComponent();
@@ -203,4 +225,19 @@ void FAGX_Frame::GetRelativeTo(
 	const FQuat LocalQuat = LocalRotation.Quaternion();
 	const FQuat RelativeQuat = Transform.TransformRotation(LocalQuat);
 	OutRotation = RelativeQuat.Rotator();
+}
+
+const FTransform& FAGX_Frame::GetParentTransform(const USceneComponent& FallbackParent) const
+{
+	return GetParentTransform(FallbackParent.GetComponentTransform());
+}
+
+const FTransform& FAGX_Frame::GetParentTransform(const FTransform& FallbackTransform) const
+{
+	const USceneComponent* ActualParent = GetParentComponent();
+	if (ActualParent == nullptr)
+	{
+		return FallbackTransform;
+	}
+	return ActualParent->GetComponentTransform();
 }
