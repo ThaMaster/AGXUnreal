@@ -10,7 +10,7 @@
 #include "Misc/AutomationTest.h"
 #include "UObject/Package.h"
 
-BEGIN_DEFINE_SPEC(FAGX_FrameSpec, "AGXUnreal.Frame", AgxAutomationCommon::DefaultTestFlags)
+BEGIN_DEFINE_SPEC(FAGX_FrameSpec, "AGXUnreal.Spec.Frame", AgxAutomationCommon::DefaultTestFlags)
 END_DEFINE_SPEC(FAGX_FrameSpec)
 
 void FAGX_FrameSpec::Define()
