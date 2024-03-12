@@ -973,7 +973,11 @@ void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocatio
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+	RouteNodes[InIndex].Frame.LocalLocation = InLocation;
+#else
 	RouteNodes[InIndex].Location = InLocation;
+#endif
 }
 
 bool UAGX_WireComponent::IsLumpedNode(const FAGX_WireNode& Node)
@@ -1011,7 +1015,12 @@ double UAGX_WireComponent::GetRestLength() const
 		// TODO This code will need to change with the introduction of frame in routing nodes.
 		//
 		// Can no longer assume that all Route Node locations are in the same space.
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+		Length += FVector::Distance(
+			RouteNodes[I - 1].Frame.LocalLocation, RouteNodes[I].Frame.LocalLocation);
+#else
 		Length += FVector::Distance(RouteNodes[I - 1].Location, RouteNodes[I].Location);
+#endif
 	}
 	return Length;
 }
@@ -1530,7 +1539,13 @@ namespace AGX_WireComponent_helpers
 		FRigidBodyBarrier* NativeBody = BodyComponent->GetOrCreateNative();
 		check(NativeBody);
 		const FVector LocalLocation = MoveLocationBetweenLocalTransforms(
-			WireTransform, BodyComponent->GetComponentTransform(), RouteNode.Location);
+			WireTransform, BodyComponent->GetComponentTransform(),
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+			RouteNode.Frame.LocalLocation
+#else
+			RouteNode.Location
+#endif
+		);
 		return {NativeBody, LocalLocation};
 	}
 }
@@ -1812,7 +1827,13 @@ void UAGX_WireComponent::CreateNative()
 		{
 			case EWireNodeType::Free:
 			{
-				const FVector WorldLocation = LocalToWorld.TransformPosition(RouteNode.Location);
+				const FVector WorldLocation = LocalToWorld.TransformPosition(
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+					RouteNode.Frame.LocalLocation
+#else
+					RouteNode.Location
+#endif
+				);
 				NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 				break;
 			}
@@ -1825,8 +1846,13 @@ void UAGX_WireComponent::CreateNative()
 				{
 					ErrorMessages.Add(
 						FString::Printf(TEXT("Wire node at index %d has invalid body."), I));
-					const FVector WorldLocation =
-						LocalToWorld.TransformPosition(RouteNode.Location);
+					const FVector WorldLocation = LocalToWorld.TransformPosition(
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+						RouteNode.Frame.LocalLocation
+#else
+						RouteNode.Location
+#endif
+					);
 					NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 					break;
 				}
@@ -1842,8 +1868,13 @@ void UAGX_WireComponent::CreateNative()
 				{
 					ErrorMessages.Add(
 						FString::Printf(TEXT("Wire node at index %d has invalid body."), I));
-					const FVector WorldLocation =
-						LocalToWorld.TransformPosition(RouteNode.Location);
+					const FVector WorldLocation = LocalToWorld.TransformPosition(
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+						RouteNode.Frame.LocalLocation
+#else
+						RouteNode.Location
+#endif
+					);
 					NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 					break;
 				}
@@ -2007,7 +2038,13 @@ TArray<FVector> UAGX_WireComponent::GetNodesForRendering() const
 			//
 			// Can no longer assume that Node.Location should be transformed local-to-world with
 			// the Wire Component's transform.
-			NodeLocations.Add(ComponentTransform.TransformPositionNoScale(Node.Location));
+			NodeLocations.Add(ComponentTransform.TransformPositionNoScale(
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+				Node.Frame.LocalLocation
+#else
+				Node.Location
+#endif
+				));
 		}
 	}
 

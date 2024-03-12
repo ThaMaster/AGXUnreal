@@ -1692,7 +1692,12 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 		RouteNode.NodeType = EWireNodeType::BodyFixed;
 		/// @todo This should be changed to GetLocation once route nodes with a body have their
 		/// location relative to the body instead of the wire.
-		RouteNode.Location = NodeBarrier.GetWorldLocation();
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+		RouteNode.Frame.LocalLocation =
+#else
+		RouteNode.Location =
+#endif
+			NodeBarrier.GetWorldLocation();
 		RouteNode.SetBody(Body);
 		Route.Add(RouteNode);
 	};
@@ -1750,7 +1755,12 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 		RouteNode.NodeType = NodeType;
 		/// @todo This should be changed to GetLocation for nodes with a body once route nodes with
 		/// a body have their location relative to the body instead of the wire.
-		RouteNode.Location = NodeAGX.GetWorldLocation();
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+		RouteNode.Frame.LocalLocation =
+#else
+		RouteNode.Location =
+#endif
+			NodeAGX.GetWorldLocation();
 
 		if (NodeType == EWireNodeType::Eye)
 		{

@@ -13,8 +13,11 @@
 
 #include "AGX_WireRoutingNode.generated.h"
 
+
+#define AGX_WIRE_ROUTE_NODE_USE_FRAME 1
+
 /**
-* Route nodes are used to specify the initial route of the wire. Each node has a location but
+ * Route nodes are used to specify the initial route of the wire. Each node has a location but
  * no orientation. Some members are only used for some node types, such as RigidBody which is only
  * used by Eye and BodyFixed nodes.
  */
@@ -29,15 +32,17 @@ struct AGXUNREAL_API FWireRoutingNode
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
 	EWireNodeType NodeType;
 
+
+	/**
+	 * The location of the wire node.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wire",
 		Meta = (SkipUCSModifiedProperties))
 	FAGX_Frame Frame;
 
-	/**
-	 * The location of this node relative to the Wire Component [cm].
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
-	FVector Location;
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
+	// FVector Location;
+
 
 	/**
 	 * The Rigid Body that an Eye or BodyFixed node should be attached to.
@@ -48,17 +53,32 @@ struct AGXUNREAL_API FWireRoutingNode
 
 	FWireRoutingNode()
 		: NodeType(EWireNodeType::Free)
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+#else
 		, Location(FVector::ZeroVector)
+#endif
 	{
 	}
 
 	FWireRoutingNode(const FVector& InLocation)
 		: NodeType(EWireNodeType::Free)
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+#else
 		, Location(InLocation)
+#endif
 	{
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+		Frame.LocalLocation = InLocation;
+#endif
 	}
 
 	void SetBody(UAGX_RigidBodyComponent* Body);
+private:
+	/**
+	 * The location of this node relative to the Wire Component [cm].
+	 */
+	UPROPERTY(Meta=(DeprecatedProperty, DeprecationMessage="Use Frame instead."))
+	FVector Location_DEPRECATED {FVector::ZeroVector};
 };
 
 /**

@@ -428,7 +428,11 @@ void FAGX_WireNodeDetails::OnSetLocation(float NewValue, ETextCommit::Type Commi
 
 	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeLocation", "Set wire node location"));
 	Wire->Modify();
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+	Wire->RouteNodes[NodeIndex].Frame.LocalLocation.Component(Axis) = NewValue;
+#else
 	Wire->RouteNodes[NodeIndex].Location.Component(Axis) = NewValue;
+#endif
 	FComponentVisualizer::NotifyPropertyModified(Wire, RouteNodesProperty);
 	UpdateValues();
 }
@@ -812,9 +816,15 @@ void FAGX_WireNodeDetails::UpdateValues()
 	const FWireRoutingNode& Node = Wire->RouteNodes[NodeIndex];
 
 	// Read node location.
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+	LocationX = Node.Frame.LocalLocation.X;
+	LocationY = Node.Frame.LocalLocation.Y;
+	LocationZ = Node.Frame.LocalLocation.Z;
+#else
 	LocationX = Node.Location.X;
 	LocationY = Node.Location.Y;
 	LocationZ = Node.Location.Z;
+#endif
 
 	// Read node type.
 	NodeType = Node.NodeType;

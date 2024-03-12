@@ -213,11 +213,20 @@ public:
 	{
 		const FTransform& LocalToWorld = Wire.GetComponentTransform();
 		FWireRoutingNode& SelectedNode = Wire.RouteNodes[Visualizer.EditNodeIndex];
-		const FVector CurrentLocalLocation = SelectedNode.Location;
+		const FVector CurrentLocalLocation =
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+			SelectedNode.Frame.LocalLocation;
+#else
+			SelectedNode.Location;
+#endif
 		const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
 		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
 		const FVector NewLocalLocation = LocalToWorld.InverseTransformPosition(NewWorldLocation);
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+		SelectedNode.Frame.LocalLocation = NewLocalLocation;
+#else
 		SelectedNode.Location = NewLocalLocation;
+#endif
 		Visualizer.NotifyPropertyModified(&Wire, Visualizer.RouteNodesProperty);
 		Wire.MarkVisualsDirty();
 	}
@@ -338,7 +347,13 @@ namespace AGX_WireComponentVisualizer_helpers
 		{
 			const FWireRoutingNode& Node = Nodes[I];
 			const FLinearColor NodeColor = NodeColorFunc(I, Node.NodeType);
-			const FVector Location = LocalToWorld.TransformPosition(Node.Location);
+			const FVector Location = LocalToWorld.TransformPosition(
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+				Node.Frame.LocalLocation
+#else
+				Node.Location
+#endif
+			);
 
 			// if (bEditing)
 			// {
@@ -438,7 +453,12 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 			// does provide that line along with all the other lines. The route nodes does not.
 			/// @todo For nodes attached to a body, use the body's transformation instead.
 			const FTransform& LocalToWorld = Wire->GetComponentTransform();
-			const FVector LocalLocation = Wire->RouteNodes[0].Location;
+			const FVector LocalLocation =
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+				Wire->RouteNodes[0].Frame.LocalLocation;
+#else
+				Wire->RouteNodes[0].Location;
+#endif
 			const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
 			PDI->DrawLine(WinchLocation, WorldLocation, FLinearColor::White, SDPG_Foreground);
 		}
@@ -469,7 +489,12 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 			// does provide that line along with all the other lines. The route nodes does not.
 			/// @todo For nodes attached to a body, use the body's transformation instead.
 			const FTransform& LocalToWorld = Wire->GetComponentTransform();
-			const FVector LocalLocation = Wire->RouteNodes.Last().Location;
+			const FVector LocalLocation =
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+				Wire->RouteNodes.Last().Frame.LocalLocation;
+#else
+				Wire->RouteNodes.Last().Location;
+#endif
 			const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
 			PDI->DrawLine(WorldLocation, WinchLocation, FLinearColor::White, SDPG_Foreground);
 		}
@@ -555,7 +580,12 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 		// Convert the wire-local location to a world location.
 		const FTransform& LocalToWorld = Wire->GetComponentTransform();
 		/// @todo Body Fixed and Eye should be relative to the body, not the wire.
-		const FVector LocalLocation = Wire->RouteNodes[EditNodeIndex].Location;
+		const FVector LocalLocation =
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+			Wire->RouteNodes[EditNodeIndex].Frame.LocalLocation;
+#else
+			Wire->RouteNodes[EditNodeIndex].Location;
+#endif
 		OutLocation = LocalToWorld.TransformPosition(LocalLocation);
 		return true;
 	}
