@@ -963,11 +963,7 @@ void UAGX_WireComponent::RemoveNode(int32 InIndex)
 	RouteNodes.RemoveAt(InIndex);
 }
 
-// TODO This code will need to change with the introduction of frame in routing nodes.
-//
-// What does "Location" mean in this case? Relative to what? The Route Node's current Parent? The
-// world? The Wire Component? Who calls this function? What does that code expect this code to do?
-void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocation)
+void UAGX_WireComponent::SetNodeLocalLocation(int32 InIndex, const FVector& InLocation)
 {
 	if (HasNative())
 	{
@@ -975,6 +971,34 @@ void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocatio
 	}
 #if AGX_WIRE_ROUTE_NODE_USE_FRAME
 	RouteNodes[InIndex].Frame.LocalLocation = InLocation;
+#else
+	RouteNodes[InIndex].Location = InLocation;
+#endif
+}
+
+void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocation)
+{
+	if (HasNative())
+	{
+		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
+	}
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+	USceneComponent* Parent = RouteNodes[InIndex].Frame.GetParentComponent();
+	if (Parent == nullptr)
+	{
+		// No parent means the LocalLocation is relative to the Wire Component and thus InComponent
+		// can be used as-is.
+		RouteNodes[InIndex].Frame.LocalLocation = InLocation;
+		return;
+	}
+
+	// Compute a local location relative to the parent that as the same world location as
+	// InLocation in the Wire Component.
+	const FTransform& ParentTransform = Parent->GetComponentTransform();
+	const FTransform& WireTransform = GetComponentTransform();
+	const FTransform& WireToParent = WireTransform.GetRelativeTransform(ParentTransform);
+	const FVector LocationInParent = WireToParent.TransformPosition(InLocation);
+	RouteNodes[InIndex].Frame.LocalLocation = LocationInParent;
 #else
 	RouteNodes[InIndex].Location = InLocation;
 #endif
@@ -1222,7 +1246,6 @@ void UAGX_WireComponent::PostInitProperties()
 	Super::PostInitProperties();
 	OwnedBeginWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
 	OwnedEndWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
-
 	for (FWireRoutingNode& Node : RouteNodes)
 	{
 		Node.Frame.Parent.OwningActor = GetTypedOuter<AActor>();
@@ -1279,38 +1302,32 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength),
-		[](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength), [](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetPulledInLength(Wire->OwnedBeginWinch.PulledInLength); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bMotorEnabled),
-		[](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bMotorEnabled), [](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetMotorEnabled(Wire->OwnedBeginWinch.bMotorEnabled); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, TargetSpeed),
-		[](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, TargetSpeed), [](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetTargetSpeed(Wire->OwnedBeginWinch.TargetSpeed); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, MotorForceRange),
-		[](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, MotorForceRange), [](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetMotorForceRange(Wire->OwnedBeginWinch.MotorForceRange); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bBrakeEnabled),
-		[](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bBrakeEnabled), [](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetBrakeEnabled(Wire->OwnedBeginWinch.bBrakeEnabled); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, BrakeForceRange),
-		[](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, BrakeForceRange), [](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetBrakeForceRange(Wire->OwnedBeginWinch.BrakeForceRange); });
 
 	/// @todo Find ways to do attach/detach during runtime from the Details Panel.
@@ -1323,38 +1340,32 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 	// End Winch.
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength),
-		[](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength), [](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetPulledInLength(Wire->OwnedEndWinch.PulledInLength); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bMotorEnabled),
-		[](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bMotorEnabled), [](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetMotorEnabled(Wire->OwnedEndWinch.bMotorEnabled); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, TargetSpeed),
-		[](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, TargetSpeed), [](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetTargetSpeed(Wire->OwnedEndWinch.TargetSpeed); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, MotorForceRange),
-		[](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, MotorForceRange), [](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetMotorForceRange(Wire->OwnedEndWinch.MotorForceRange); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bBrakeEnabled),
-		[](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bBrakeEnabled), [](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetBrakeEnabled(Wire->OwnedEndWinch.bBrakeEnabled); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, BrakeForceRange),
-		[](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, BrakeForceRange), [](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetBrakeForceRange(Wire->OwnedEndWinch.BrakeForceRange); });
 
 	/// @todo Find ways to do attach/detach during runtime from the Details Panel.

@@ -730,11 +730,28 @@ public:
 	void RemoveNode(int32 InIndex);
 
 	/**
-	 * Set the locaion of the node at the given index. The location is relative to the wire
-	 * component.
+	 * Set the local location of a routing node.
+	 *
+	 * The local location is relative to the parent set on the node's Frame. If no parent has been
+	 * set then the parent is assumed to be the Wire Component.
+	 *
+	 * @param InIndex The index of the node to modify.
+	 * @param InLocation The new local location of the node
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
+	void SetNodeLocalLocation(int32 InIndex, const FVector& InLocation);
+
+	/**
+	 * Set the location of the node at the given index. The location is relative to the Wire
+	 * Component. If the routing node has a parent then a local location relative to that parent is
+	 * computed that places the routing node at the requested location relative to the Wire
+	 * Component.
+	 *
+	 * Use SetNodeLocalLocation to position the node relative to its Frame parent.
 	 *
 	 * @param InIndex The index of the node to remove.
 	 * @param InLocation The new local location for the node.
+	 * @see SetNodeLocalLocation
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	void SetNodeLocation(int32 InIndex, const FVector& InLocation);
