@@ -174,6 +174,7 @@ void FAGX_Frame::GetRelativeTo(
 		const FQuat LocalQuat = LocalRotation.Quaternion();
 		const FQuat RelativeQuat = Transform.InverseTransformRotation(LocalQuat);
 		OutRotation = RelativeQuat.Rotator();
+		return;
 	}
 
 	const FTransform ParentTransform = ActualParent->GetComponentTransform();
