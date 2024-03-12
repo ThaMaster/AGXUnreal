@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Frame.h"
 #include "AGX_RigidBodyReference.h"
 #include "Wire/AGX_WireEnums.h"
 
@@ -27,6 +28,10 @@ struct AGXUNREAL_API FWireRoutingNode
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
 	EWireNodeType NodeType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wire",
+		Meta = (SkipUCSModifiedProperties))
+	FAGX_Frame Frame;
 
 	/**
 	 * The location of this node relative to the Wire Component [cm].

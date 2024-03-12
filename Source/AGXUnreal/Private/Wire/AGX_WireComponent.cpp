@@ -1214,6 +1214,11 @@ void UAGX_WireComponent::PostInitProperties()
 	OwnedBeginWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
 	OwnedEndWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
 
+	for (FWireRoutingNode& Node : RouteNodes)
+	{
+		Node.Frame.Parent.OwningActor = GetTypedOuter<AActor>();
+	}
+
 #if WITH_EDITOR
 	InitPropertyDispatcher();
 #endif
