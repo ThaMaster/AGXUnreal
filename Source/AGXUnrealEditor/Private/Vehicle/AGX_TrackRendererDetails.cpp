@@ -11,6 +11,7 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TrackRendererDetails"
 
@@ -32,6 +33,18 @@ void FAGX_TrackRendererDetails::CustomizeDetails(IDetailLayoutBuilder& InDetailB
 	[
 		SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
+			.AutoWidth()
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("DeprecationText", "Track Renderer is deprecated."))
+				.ColorAndOpacity(FSlateColor(FLinearColor::Red))
+			]
+	];
+
+	CategoryBuilder.AddCustomRow(FText()).WholeRowContent()
+	[
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
 		.AutoWidth()
 		[
 			SNew(SButton)
@@ -40,7 +53,7 @@ void FAGX_TrackRendererDetails::CustomizeDetails(IDetailLayoutBuilder& InDetailB
 			{
 				for (const TWeakObjectPtr<UObject>& Object : Objects)
 				{
-					UAGX_TrackRenderer* Renderer = Cast<UAGX_TrackRenderer>(Object.Get());
+					auto Renderer = Cast<UAGX_TrackRenderer>(Object.Get());
 					if (IsValid(Renderer))
 					{
 						if (UAGX_TrackComponent* Track = Renderer->FindTargetTrack())

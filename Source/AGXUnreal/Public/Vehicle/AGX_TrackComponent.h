@@ -17,6 +17,9 @@
 class UAGX_ShapeMaterial;
 class UAGX_TrackProperties;
 class UAGX_TrackInternalMergeProperties;
+class UInstancedStaticMeshComponent;
+class UMaterialInterface;
+class UStaticMesh;
 
 /**
  * Object holding track node transforms and sizes generated before the actual simulation
@@ -41,7 +44,7 @@ public:
  */
 UCLASS(
 	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
-	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
+	Hidecategories = (Cooking, Collision, LOD, Physics, Replication))
 class AGXUNREAL_API UAGX_TrackComponent : public USceneComponent, public IAGX_NativeOwner
 {
 	GENERATED_BODY()
@@ -285,11 +288,91 @@ public:
 	/**
 	 * Returns a preview of the track node transforms and sizes. Should only be used when not
 	 * playing.
-	 * @param bUpdateIfNecessary Update preview data if it has been flagged as dirty.
 	 * @param bForceUpdate Update preview data regardless of dirty flag.
 	 */
-	FAGX_TrackPreviewData* GetTrackPreview(
-		bool bUpdateIfNecessary = true, bool bForceUpdate = false) const;
+	FAGX_TrackPreviewData* GetTrackPreview(bool bForceUpdate = false) const;
+
+	///////////////////
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Track Visual")
+	UInstancedStaticMeshComponent* GetVisualMeshes();
+
+	/**
+	 * The Static Mesh used to render each shoe the Track.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Track Visual")
+	UStaticMesh* RenderMesh;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Track Visual")
+	void SetRenderMesh(UStaticMesh* Mesh);
+
+	/**
+	 * The render material to apply to the visual Mesh.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Track Visual",
+		Meta = (EditCondition = "RenderMesh != nullptr", FullyExpand = "true"))
+	TArray<TObjectPtr<UMaterialInterface>> RenderMaterials;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Track Visual")
+	void SetRenderMaterial(int32 ElementIndex, UMaterialInterface* Material);
+
+	/**
+	 * Whether to automatically compute the Scale and Offset necessary to fit the visual Static
+	 * Mesh's local bounds (defined by Local Mesh Bounds Min/Max) to the physical track node box.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Track Visual")
+	bool bAutoScaleAndOffset {true};
+
+	/**
+	 * Local Rotation to apply to the visual Static Mesh before synchronizing its position and
+	 * rotation with a track node [deg].
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Track Visual")
+	FRotator Rotation;
+
+	/**
+	 * Local Scale to apply to the visual Static Mesh before synchronizing its position and rotation
+	 * with a track node. Scale is relative to the original mesh size, not to the track node.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Track Visual",
+		Meta = (EditCondition = "!bAutoScaleAndOffset"))
+	FVector Scale {FVector::OneVector};
+
+	/**
+	 * Local Translation to apply to the visual Static Mesh before synchronizing its position and
+	 * rotation with a track node [cm].
+	 *
+	 * Applied after Scale.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Track Visual",
+		Meta = (EditCondition = "!bAutoScaleAndOffset"))
+	FVector Offset {FVector::ZeroVector};
+
+	/**
+	 * The max-point of the axis-aligned local box volume which should be fitted to the
+	 * physical track node box when  auto-computing mesh scale and offset.
+	 *
+	 * Set this to the maximum local coordinate that the physical track node should cover.
+	 * If it is desired that visual parts (e.g. teeth or the part overlapping the neighboring shoe)
+	 * appear outside of the physical track node, then set this value to not cover those parts,
+	 * i.e. a bit smaller than the local bounding box (spanning all vertices).
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Track Visual",
+		Meta = (EditCondition = "bAutoScaleAndOffset"))
+	FVector LocalMeshBoundsMax {FVector::OneVector * 50.0f};
+
+	/**
+	 * The min-point of the axis-aligned local box volume which should be fitted to the
+	 * physical track node box when auto-computing mesh scale and offset.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Track Visual",
+		Meta = (EditCondition = "bAutoScaleAndOffset"))
+	FVector LocalMeshBoundsMin {-FVector::OneVector * 50.0f};
 
 public:
 	/**
@@ -331,6 +414,11 @@ public:
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	void ApplyComponentInstanceData(
 		const FActorComponentInstanceData* Data, ECacheApplyPhase CacheApplyPhase);
+	virtual void OnRegister() override;
+	virtual void DestroyComponent(bool bPromoteChildren) override;
+	virtual void TickComponent(
+		float DeltaTime, ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction) override;
 	//~ End UActorComponent Interface
 
 	// ~Begin USceneComponent interface.
@@ -373,9 +461,28 @@ private:
 	void UpdateNativeProperties();
 
 private:
+	void CreateVisuals();
+	void UpdateVisuals();
+	bool ShouldRenderSelf() const;
+	void SetVisualsInstanceCount(int32 Num);
+	bool ComputeNodeTransforms(TArray<FTransform>& OutTransforms);
+	bool ComputeVisualScaleAndOffset(
+		FVector& OutVisualScale, FVector& OutVisualOffset, const FVector& PhysicsNodeSize) const;
+	void WriteRenderMaterialsToVisualMesh();
+
+#if WITH_EDITOR
+	void WriteRenderMaterialsToVisualMeshWithCheck();
+	void EnsureValidRenderMaterials();
+#endif
+
+private:
 	// The AGX Dynamics object only exists while simulating.
 	// Initialized in BeginPlay and released in EndPlay.
 	FTrackBarrier NativeBarrier;
+
+	TObjectPtr<UInstancedStaticMeshComponent> VisualMeshes;
+	TArray<FTransform> NodeTransformsCache;
+	TArray<FTransform> NodeTransformsCachePrev;
 
 	mutable bool MayAttemptTrackPreview = false;
 
