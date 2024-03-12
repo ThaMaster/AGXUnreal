@@ -47,6 +47,10 @@ struct AGXUNREAL_API FAGX_CustomVersion
 		// components (viewport icons).
 		TerrainCGDisablerCMRegistrarViewporIcons,
 
+		// Use FAGX_Frame for wire route nodes so that they, Body Fixed and Eye, in particular, can
+		// be placed relative to a Rigid Body instead of the Wire.
+		WireRouteNodeFrame,
+
 		// <----- New versions can be added above this line. ----->
 		VersionPlusOne,
 

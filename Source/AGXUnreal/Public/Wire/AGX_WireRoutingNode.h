@@ -73,6 +73,9 @@ struct AGXUNREAL_API FWireRoutingNode
 	}
 
 	void SetBody(UAGX_RigidBodyComponent* Body);
+
+	bool Serialize(FArchive& Ar);
+
 private:
 	/**
 	 * The location of this node relative to the Wire Component [cm].
@@ -80,6 +83,18 @@ private:
 	UPROPERTY(Meta=(DeprecatedProperty, DeprecationMessage="Use Frame instead."))
 	FVector Location_DEPRECATED {FVector::ZeroVector};
 };
+
+
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+template <>
+struct TStructOpsTypeTraits<FWireRoutingNode> : public TStructOpsTypeTraitsBase2<FWireRoutingNode>
+{
+	enum
+	{
+		WithSerializer = true
+	};
+};
+#endif
 
 /**
  * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints.
