@@ -90,6 +90,11 @@ private:
 	void StepNoAutoAddObjects(double DeltaTime);
 	void StepAutoAddObjects(double DeltaTime);
 
+	UFUNCTION()
+	void OnLidarBeginOverlapComponent(
+		UPrimitiveComponent* OverlappedComp, AActor* Actor, UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 private:
 	struct FMeshEntityBarrierData
 	{
@@ -98,7 +103,7 @@ private:
 		FTransform Transform;
 	};
 
-	TMap<UAGX_LidarSensorComponent*, USphereComponent*> ActiveLidars;
+	TMap<UAGX_LidarSensorComponent*, USphereComponent*> TrackedLidars;
 	TMap<UStaticMeshComponent*, FMeshEntityBarrierData> StaticMeshes;
 	FSensorEnvironmentBarrier NativeBarrier;
 	FDelegateHandle PostStepForwardHandle;

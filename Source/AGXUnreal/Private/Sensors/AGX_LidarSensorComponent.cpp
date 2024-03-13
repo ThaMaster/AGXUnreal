@@ -49,7 +49,7 @@ const FLidarBarrier* UAGX_LidarSensorComponent::GetNative() const
 
 void UAGX_LidarSensorComponent::GetResultTest()
 {
-	NativeBarrier.GetResultTest(GetWorld());
+	NativeBarrier.GetResultTest(GetWorld(), GetComponentTransform());
 }
 
 #if WITH_EDITOR

@@ -25,7 +25,7 @@ public:
 	void ReleaseNative();
 
 	void SetTransform(const FTransform& Transform);
-	void GetResultTest(UWorld* World); // Temp test function, do not merge!
+	void GetResultTest(UWorld* World, const FTransform& Transform); // Temp test function, do not merge!
 
 private:
 	FLidarBarrier(const FLidarBarrier&) = delete;

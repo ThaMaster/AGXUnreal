@@ -77,7 +77,7 @@ void FLidarBarrier::SetTransform(const FTransform& Transform)
 
 #include "DrawDebugHelpers.h"
 
-void FLidarBarrier::GetResultTest(UWorld* World)
+void FLidarBarrier::GetResultTest(UWorld* World, const FTransform& Transform)
 {
 	const auto dataView = NativeRef->Native->getResultHandler()->view<agx::Vec4f>();
 	
@@ -85,8 +85,12 @@ void FLidarBarrier::GetResultTest(UWorld* World)
 	{
 		for (const agx::Vec4f& ResultAGX : dataView)
 		{
-			agx::Vec3f PAGX(ResultAGX.x(), ResultAGX.y(), ResultAGX.z());
-			DrawDebugPoint(World, ConvertDisplacement(PAGX), 6.f, FColor::Red, false, 0.12f);
+			const FVector PointLocal =
+				ConvertDisplacement(agx::Vec3(ResultAGX.x(), ResultAGX.y(), ResultAGX.z()));
+			const FVector Point = Transform.TransformPositionNoScale(PointLocal);
+			if (Point.GetMax() > 10000)
+				continue;
+			DrawDebugPoint(World, Point, 6.f, FColor::Red, false, 0.12f);
 		}
 	}
 }

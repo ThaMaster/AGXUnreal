@@ -63,7 +63,7 @@ void AAGX_SensorEnvironment::Step(double DeltaTime)
 
 	NativeBarrier.Step(DeltaTime);
 
-	for (auto It = ActiveLidars.CreateIterator(); It; ++It)
+	for (auto It = TrackedLidars.CreateIterator(); It; ++It)
 	{
 		It->Key->GetResultTest(); // Todo: dummy test, remove this.
 	}
@@ -241,10 +241,12 @@ void AAGX_SensorEnvironment::RegisterLidars()
 				// Fetch all currently overlapping Components.
 				TSet<UPrimitiveComponent*> OverlComp;
 				CollSph->GetOverlappingComponents(OverlComp);
+				CollSph->OnComponentBeginOverlap.AddDynamic(
+					this, &AAGX_SensorEnvironment::OnLidarBeginOverlapComponent);
 				OverlappingComponents.Append(OverlComp);
 			}
 
-			ActiveLidars.Add(Lidar, CollSph);
+			TrackedLidars.Add(Lidar, CollSph);
 		}
 	}
 
@@ -283,7 +285,8 @@ void AAGX_SensorEnvironment::AutoStep()
 
 void AAGX_SensorEnvironment::StepNoAutoAddObjects(double DeltaTime)
 {
-	for (auto It = ActiveLidars.CreateIterator(); It; ++It)
+	check(!bAutoAddObjects);
+	for (auto It = TrackedLidars.CreateIterator(); It; ++It)
 	{
 		It->Key->Step();
 	}
@@ -291,9 +294,30 @@ void AAGX_SensorEnvironment::StepNoAutoAddObjects(double DeltaTime)
 
 void AAGX_SensorEnvironment::StepAutoAddObjects(double DeltaTime)
 {
-	// Todo: update collision spheres and add/remove objects.
-	for (auto It = ActiveLidars.CreateIterator(); It; ++It)
+	check(bAutoAddObjects);
+
+	// Update Collision Spheres locations and remove any destroyed Lidars.
+	for (auto It = TrackedLidars.CreateIterator(); It; ++It)
+	{
+		if (!IsValid(It->Key))
+		{
+			It.RemoveCurrent();
+			continue;
+		}
+
+		It->Value->SetWorldLocation(It->Key->GetComponentLocation());
+	}
+
+	for (auto It = TrackedLidars.CreateIterator(); It; ++It)
 	{
 		It->Key->Step();
 	}
+}
+
+void AAGX_SensorEnvironment::OnLidarBeginOverlapComponent(
+	UPrimitiveComponent* OverlappedComp, AActor* Actor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	//Todo: impl.
+	UE_LOG(LogTemp, Warning, TEXT("Overlap! Component: %s"), *OtherComp->GetName());
 }
