@@ -73,7 +73,8 @@ namespace AGX_MaterialLibrary_helpers
 
 	template <typename MaterialType, typename BarrierType, typename MaterialLoadFunc>
 	MaterialType* EnsureMaterialImported(
-		const FString& NameAGX, LibraryMaterialType Type, MaterialLoadFunc LoadFunc)
+		const FString& NameAGX, LibraryMaterialType Type, MaterialLoadFunc LoadFunc,
+		bool ForceOverwrite)
 	{
 		// Create a package for our asset.
 		const FString Name = UPackageTools::SanitizePackageName(NameAGX);
@@ -99,6 +100,8 @@ namespace AGX_MaterialLibrary_helpers
 		if (OldAssetExists)
 		{
 			Asset = LoadObject<MaterialType>(nullptr, *AssetPath);
+			if (!ForceOverwrite)
+				return Asset;
 		}
 		else
 		{
@@ -162,7 +165,7 @@ namespace AGX_MaterialLibrary_helpers
 	}
 }
 
-bool AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary()
+bool AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary(bool ForceOverwrite)
 {
 	using namespace AGX_MaterialLibrary_helpers;
 	using namespace AGX_MaterialLibraryBarrier;
@@ -173,7 +176,8 @@ bool AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary()
 	{
 		UAGX_ContactMaterial* Cm =
 			EnsureMaterialImported<UAGX_ContactMaterial, FContactMaterialBarrier>(
-				NameAGX, LibraryMaterialType::ContactMaterial, LoadContactMaterialProfile);
+				NameAGX, LibraryMaterialType::ContactMaterial, LoadContactMaterialProfile,
+				ForceOverwrite);
 		if (Cm == nullptr)
 		{
 			IssuesEncountered = true;
@@ -196,7 +200,7 @@ bool AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary()
 	return !IssuesEncountered;
 }
 
-bool AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary()
+bool AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary(bool ForceOverwrite)
 {
 	using namespace AGX_MaterialLibrary_helpers;
 	using namespace AGX_MaterialLibraryBarrier;
@@ -206,7 +210,7 @@ bool AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary()
 	for (const FString& NameAGX : Names)
 	{
 		auto mat = EnsureMaterialImported<UAGX_ShapeMaterial, FShapeMaterialBarrier>(
-			NameAGX, LibraryMaterialType::ShapeMaterial, LoadShapeMaterialProfile);
+			NameAGX, LibraryMaterialType::ShapeMaterial, LoadShapeMaterialProfile, ForceOverwrite);
 		if (mat == nullptr)
 			IssuesEncountered = true;
 	}
@@ -214,7 +218,7 @@ bool AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary()
 	return !IssuesEncountered;
 }
 
-bool AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary()
+bool AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary(bool ForceOverwrite)
 {
 	using namespace AGX_MaterialLibrary_helpers;
 	using namespace AGX_MaterialLibraryBarrier;
@@ -224,7 +228,8 @@ bool AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary()
 	for (const FString& NameAGX : Names)
 	{
 		auto mat = EnsureMaterialImported<UAGX_TerrainMaterial, FTerrainMaterialBarrier>(
-			NameAGX, LibraryMaterialType::TerrainMaterial, LoadTerrainMaterialProfile);
+			NameAGX, LibraryMaterialType::TerrainMaterial, LoadTerrainMaterialProfile,
+			ForceOverwrite);
 		if (mat == nullptr)
 			IssuesEncountered = true;
 	}

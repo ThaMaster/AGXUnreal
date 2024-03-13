@@ -25,7 +25,7 @@ namespace FAGX_AgxEdModeTerrainCustomization_helpers
 {
 	bool RefreshTerrainMaterialLibrary()
 	{
-		return AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary();
+		return AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary(true);
 	}
 }
 
