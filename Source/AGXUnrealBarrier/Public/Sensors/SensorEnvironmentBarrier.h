@@ -33,6 +33,9 @@ public:
 	bool Add(FTerrainBarrier& Terrain);
 	bool Add(FTerrainPagerBarrier& Pager);
 
+	bool Remove(FTerrainBarrier& Terrain);
+	bool Remove(FTerrainPagerBarrier& Pager);
+
 	void Step(double DeltaTime);
 
 private:

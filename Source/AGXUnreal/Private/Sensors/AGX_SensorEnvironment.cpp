@@ -93,11 +93,9 @@ bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 		return false;
 
 	if (Terrain->bEnableTerrainPaging)
-		NativeBarrier.Add(*Terrain->GetOrCreateNativeTerrainPager());
+		return NativeBarrier.Add(*Terrain->GetOrCreateNativeTerrainPager());
 	else
-		NativeBarrier.Add(*Terrain->GetOrCreateNative());
-
-	return true;
+		return NativeBarrier.Add(*Terrain->GetOrCreateNative());
 }
 
 bool AAGX_SensorEnvironment::Add(
@@ -129,13 +127,24 @@ bool AAGX_SensorEnvironment::Add(
 	return true;
 }
 
-bool AAGX_SensorEnvironment::Remove(UStaticMeshComponent* Mesh)
+bool AAGX_SensorEnvironment::RemoveMesh(UStaticMeshComponent* Mesh)
 {
 	if (Mesh == nullptr || !TrackedStaticMeshes.Contains(Mesh))
 		return false;
 
 	TrackedStaticMeshes.Remove(Mesh);
 	return true;
+}
+
+bool AAGX_SensorEnvironment::RemoveTerrain(AAGX_Terrain* Terrain)
+{
+	if (!HasNative() || Terrain == nullptr || !Terrain->HasNative())
+		return false;
+
+	if (Terrain->bEnableTerrainPaging)
+		return NativeBarrier.Remove(*Terrain->GetNativeTerrainPager());
+	else
+		return NativeBarrier.Remove(*Terrain->GetOrCreateNative());
 }
 
 bool AAGX_SensorEnvironment::HasNative() const

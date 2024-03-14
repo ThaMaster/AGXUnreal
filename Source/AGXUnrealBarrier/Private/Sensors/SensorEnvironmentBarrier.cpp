@@ -76,6 +76,20 @@ bool FSensorEnvironmentBarrier::Add(FTerrainPagerBarrier& Pager)
 	return NativeRef->Native->add(Pager.GetNative()->Native);
 }
 
+bool FSensorEnvironmentBarrier::Remove(FTerrainBarrier& Terrain)
+{
+	check(HasNative());
+	check(Terrain.HasNative());
+	return NativeRef->Native->remove(Terrain.GetNative()->Native);
+}
+
+bool FSensorEnvironmentBarrier::Remove(FTerrainPagerBarrier& Pager)
+{
+	check(HasNative());
+	check(Pager.HasNative());
+	return NativeRef->Native->remove(Pager.GetNative()->Native);
+}
+
 void FSensorEnvironmentBarrier::Step(double DeltaTime)
 {
 	check(HasNative());

@@ -57,19 +57,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool AddTerrain(AAGX_Terrain* Terrain);
 
-	bool Add(
-		UStaticMeshComponent* Mesh, const TArray<FVector>& Vertices,
-		const TArray<FTriIndices>& Indices);
-
 	/*
 	 * Remove a Static Mesh Component from this Sensor Environment.
 	 * Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
-	bool Remove(UStaticMeshComponent* Mesh);
+	bool RemoveMesh(UStaticMeshComponent* Mesh);
+
+	/*
+	 * Remove a Terrain from this Sensor Environment.
+	 * Only valid to call during Play.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	bool RemoveTerrain(AAGX_Terrain* Terrain);
+
+	bool Add(
+		UStaticMeshComponent* Mesh, const TArray<FVector>& Vertices,
+		const TArray<FTriIndices>& Indices);
 
 	bool HasNative() const;
-
 	FSensorEnvironmentBarrier* GetNative();
 	const FSensorEnvironmentBarrier* GetNative() const;
 
