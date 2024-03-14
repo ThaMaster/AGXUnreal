@@ -3,11 +3,9 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_Check.h"
-#include "Sensors/RtEntityBarrier.h"
-#include "Sensors/RtMeshBarrier.h"
 #include "Sensors/SensorEnvironmentBarrier.h"
 #include "Sensors/AGX_LidarSensorReference.h"
+#include "Sensors/AGX_MeshEntityData.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -91,7 +89,6 @@ private:
 	void StepNoAutoAddObjects(double DeltaTime);
 	void StepAutoAddObjects(double DeltaTime);
 	void UpdateTrackedLidars();
-	void HandleAddedAndRemovedObjects();
 	void UpdateTrackedStaticMeshes();
 	void StepTrackedLidars() const;
 
@@ -106,40 +103,10 @@ private:
 		int32 OtherBodyIndex);
 
 private:
-	struct FMeshEntityData
-	{
-		FRtMeshBarrier Mesh;
-		FRtEntityBarrier Entity;
-		FTransform Transform;
-		size_t RefCount {0};
-
-		void SetTransform(const FTransform& InTransform)
-		{
-			Transform = InTransform;
-
-			if (Entity.HasNative())
-				Entity.SetTransform(InTransform);
-		}
-
-		void IncRefCount()
-		{
-			RefCount++;
-		}
-
-		void DecRefCount()
-		{
-			AGX_CHECK(RefCount > 0);
-			if (RefCount > 0)
-				RefCount--;
-		}
-	};
 
 	// Todo: weak object ptr instead of raw ptrs?
 	TMap<UAGX_LidarSensorComponent*, USphereComponent*> TrackedLidars;
-	TMap<UStaticMeshComponent*, FMeshEntityData> TrackedStaticMeshes;
-
-	TSet<UPrimitiveComponent*> ComponentsToRemove;
-	TSet<UPrimitiveComponent*> ComponentsToAdd;
+	TMap<UStaticMeshComponent*, FAGX_MeshEntityData> TrackedStaticMeshes;
 
 	FSensorEnvironmentBarrier NativeBarrier;
 	FDelegateHandle PostStepForwardHandle;
