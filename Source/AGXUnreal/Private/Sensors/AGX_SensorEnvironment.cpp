@@ -41,6 +41,19 @@ namespace AGX_SensorEnvironment_helpers
 		return Env.Add(Mesh, OutVertices, OutIndices);
 	}
 
+	void UpdateCollisionSphere(const UAGX_LidarSensorComponent* Lidar, USphereComponent* Sphere)
+	{
+		if (Lidar == nullptr || Sphere == nullptr)
+			return;
+
+		if (!FMath::IsNearlyEqual(
+				Sphere->GetUnscaledSphereRadius(), static_cast<float>(Lidar->Range)))
+		{
+			Sphere->SetSphereRadius(Lidar->Range, /*bUpdateOverlaps*/ true);
+		}
+
+		Sphere->SetWorldLocation(Lidar->GetComponentLocation());
+	}
 }
 
 AAGX_SensorEnvironment::AAGX_SensorEnvironment()
@@ -106,23 +119,23 @@ bool AAGX_SensorEnvironment::Add(
 	if (Vertices.Num() <= 0 || Indices.Num() <= 0)
 		return false;
 
-	if (StaticMeshes.Contains(Mesh))
+	if (TrackedStaticMeshes.Contains(Mesh))
 		return false;
 
-	FMeshEntityBarrierData& MeshEntity = StaticMeshes.Add(Mesh, FMeshEntityBarrierData());
-	MeshEntity.Transform = Mesh->GetComponentTransform();
+	FMeshEntityData& MeshEntity = TrackedStaticMeshes.Add(Mesh, FMeshEntityData());
 	MeshEntity.Mesh.AllocateNative(Vertices, Indices);
 	MeshEntity.Entity.AllocateNative(MeshEntity.Mesh);
-	MeshEntity.Entity.SetTransform(MeshEntity.Transform);
+	MeshEntity.SetTransform(Mesh->GetComponentTransform());
+	MeshEntity.IncRefCount();
 	return true;
 }
 
 bool AAGX_SensorEnvironment::Remove(UStaticMeshComponent* Mesh)
 {
-	if (Mesh == nullptr || !StaticMeshes.Contains(Mesh))
+	if (Mesh == nullptr || !TrackedStaticMeshes.Contains(Mesh))
 		return false;
 
-	StaticMeshes.Remove(Mesh);
+	TrackedStaticMeshes.Remove(Mesh);
 	return true;
 }
 
@@ -235,14 +248,15 @@ void AAGX_SensorEnvironment::RegisterLidars()
 			{
 				CollSph = NewObject<USphereComponent>(this);
 				CollSph->RegisterComponent();
-				CollSph->SetWorldTransform(Lidar->GetComponentTransform());
-				CollSph->SetSphereRadius(Lidar->Range, /*bUpdateOverlaps*/ true);
+				AGX_SensorEnvironment_helpers::UpdateCollisionSphere(Lidar, CollSph);
 
 				// Fetch all currently overlapping Components.
 				TSet<UPrimitiveComponent*> OverlComp;
 				CollSph->GetOverlappingComponents(OverlComp);
 				CollSph->OnComponentBeginOverlap.AddDynamic(
 					this, &AAGX_SensorEnvironment::OnLidarBeginOverlapComponent);
+				CollSph->OnComponentEndOverlap.AddDynamic(
+					this, &AAGX_SensorEnvironment::OnLidarEndOverlapComponent);
 				OverlappingComponents.Append(OverlComp);
 			}
 
@@ -286,17 +300,24 @@ void AAGX_SensorEnvironment::AutoStep()
 void AAGX_SensorEnvironment::StepNoAutoAddObjects(double DeltaTime)
 {
 	check(!bAutoAddObjects);
-	for (auto It = TrackedLidars.CreateIterator(); It; ++It)
-	{
-		It->Key->Step();
-	}
+	UpdateTrackedLidars();
+	StepTrackedLidars();
 }
 
 void AAGX_SensorEnvironment::StepAutoAddObjects(double DeltaTime)
 {
 	check(bAutoAddObjects);
+	UpdateTrackedLidars(); // Will likely trigger Component overlap events.
+	HandleAddedAndRemovedObjects();
+	UpdateTrackedStaticMeshes();
+	StepTrackedLidars();
+}
 
-	// Update Collision Spheres locations and remove any destroyed Lidars.
+void AAGX_SensorEnvironment::UpdateTrackedLidars()
+{
+	// Update Collision Spheres and remove any destroyed Lidars.
+	// Notice that overlap events will likely be triggered when updating the collision spheres radii
+	// and transform.
 	for (auto It = TrackedLidars.CreateIterator(); It; ++It)
 	{
 		if (!IsValid(It->Key))
@@ -305,19 +326,96 @@ void AAGX_SensorEnvironment::StepAutoAddObjects(double DeltaTime)
 			continue;
 		}
 
-		It->Value->SetWorldLocation(It->Key->GetComponentLocation());
+		if (bAutoAddObjects)
+			AGX_SensorEnvironment_helpers::UpdateCollisionSphere(It->Key, It->Value);
+	}
+}
+
+void AAGX_SensorEnvironment::HandleAddedAndRemovedObjects()
+{
+	check(bAutoAddObjects);
+	for (UPrimitiveComponent* Comp : ComponentsToRemove)
+	{
+		UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Comp);
+		if (Mesh == nullptr)
+			continue;
+
+		FMeshEntityData* MeshEntityData = TrackedStaticMeshes.Find(Mesh);
+		if (MeshEntityData == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("AGX_SensorEnvironment '%s' failed to track Static Mesh Component '%s'"),
+				*Mesh->GetName());
+			continue;
+		}
+
+		MeshEntityData->DecRefCount();
+		if (MeshEntityData->RefCount == 0)
+			TrackedStaticMeshes.Remove(Mesh);
 	}
 
-	for (auto It = TrackedLidars.CreateIterator(); It; ++It)
+	for (UPrimitiveComponent* Comp : ComponentsToAdd)
+	{
+		UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Comp);
+		if (Mesh == nullptr)
+			continue;
+
+		FMeshEntityData* MeshEntityData = TrackedStaticMeshes.Find(Mesh);
+		if (MeshEntityData != nullptr)
+		{
+			MeshEntityData->IncRefCount();
+			continue;
+		}
+
+		AddMesh(Mesh);
+	}
+
+	ComponentsToRemove.Empty();
+	ComponentsToAdd.Empty();
+}
+
+void AAGX_SensorEnvironment::UpdateTrackedStaticMeshes()
+{
+	check(bAutoAddObjects);
+
+	// Update tracked static meshes and remove any invalid ones.
+	for (auto It = TrackedStaticMeshes.CreateIterator(); It; ++It)
+	{
+		if (!IsValid(It->Key))
+		{
+			It.RemoveCurrent();
+			continue;
+		}
+
+		const FTransform& CompTransform = It->Key->GetComponentTransform();
+		if (CompTransform.Equals(It->Value.Transform))
+			continue;
+
+		It->Value.SetTransform(CompTransform);
+	}
+}
+
+void AAGX_SensorEnvironment::StepTrackedLidars() const
+{
+	for (auto It = TrackedLidars.CreateConstIterator(); It; ++It)
 	{
 		It->Key->Step();
 	}
 }
 
 void AAGX_SensorEnvironment::OnLidarBeginOverlapComponent(
-	UPrimitiveComponent* OverlappedComp, AActor* Actor, UPrimitiveComponent* OtherComp,
+	UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	//Todo: impl.
-	UE_LOG(LogTemp, Warning, TEXT("Overlap! Component: %s"), *OtherComp->GetName());
+	if (IsValid(OtherComp))
+		ComponentsToAdd.Add(OtherComp);
+}
+
+void AAGX_SensorEnvironment::OnLidarEndOverlapComponent(
+	UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex)
+{
+	if (IsValid(OtherComp))
+		ComponentsToRemove.Add(OtherComp);
 }

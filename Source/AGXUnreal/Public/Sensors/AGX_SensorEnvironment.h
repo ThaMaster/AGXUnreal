@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "Sensors/RtEntityBarrier.h"
 #include "Sensors/RtMeshBarrier.h"
 #include "Sensors/SensorEnvironmentBarrier.h"
@@ -89,22 +90,57 @@ private:
 	void AutoStep();
 	void StepNoAutoAddObjects(double DeltaTime);
 	void StepAutoAddObjects(double DeltaTime);
+	void UpdateTrackedLidars();
+	void HandleAddedAndRemovedObjects();
+	void UpdateTrackedStaticMeshes();
+	void StepTrackedLidars() const;
 
 	UFUNCTION()
 	void OnLidarBeginOverlapComponent(
-		UPrimitiveComponent* OverlappedComp, AActor* Actor, UPrimitiveComponent* OtherComp,
+		UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+	void OnLidarEndOverlapComponent(
+		UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex);
+
 private:
-	struct FMeshEntityBarrierData
+	struct FMeshEntityData
 	{
 		FRtMeshBarrier Mesh;
 		FRtEntityBarrier Entity;
 		FTransform Transform;
+		size_t RefCount {0};
+
+		void SetTransform(const FTransform& InTransform)
+		{
+			Transform = InTransform;
+
+			if (Entity.HasNative())
+				Entity.SetTransform(InTransform);
+		}
+
+		void IncRefCount()
+		{
+			RefCount++;
+		}
+
+		void DecRefCount()
+		{
+			AGX_CHECK(RefCount > 0);
+			if (RefCount > 0)
+				RefCount--;
+		}
 	};
 
+	// Todo: weak object ptr instead of raw ptrs?
 	TMap<UAGX_LidarSensorComponent*, USphereComponent*> TrackedLidars;
-	TMap<UStaticMeshComponent*, FMeshEntityBarrierData> StaticMeshes;
+	TMap<UStaticMeshComponent*, FMeshEntityData> TrackedStaticMeshes;
+
+	TSet<UPrimitiveComponent*> ComponentsToRemove;
+	TSet<UPrimitiveComponent*> ComponentsToAdd;
+
 	FSensorEnvironmentBarrier NativeBarrier;
 	FDelegateHandle PostStepForwardHandle;
 };
