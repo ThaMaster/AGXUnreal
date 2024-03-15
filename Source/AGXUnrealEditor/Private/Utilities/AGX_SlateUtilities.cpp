@@ -6,8 +6,9 @@
 #include "AGX_LogCategory.h"
 
 // Unreal Engine includes.
-#include "IPropertyTypeCustomization.h"
 #include "Fonts/SlateFontInfo.h"
+#include "IPropertyTypeCustomization.h"
+#include "Math/Color.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SWidget.h"
 
@@ -16,6 +17,36 @@ FSlateFontInfo FAGX_SlateUtilities::CreateFont(int Size)
 	FSlateFontInfo F = IPropertyTypeCustomizationUtils::GetRegularFont();
 	F.Size = Size;
 	return F;
+}
+
+FColor FAGX_SlateUtilities::GetAGXColorOrange()
+{
+	return FColor(243, 139, 0); // From Algoryx Graphics Guidelines 2020.
+}
+
+FLinearColor FAGX_SlateUtilities::GetAGXLinearColorOrange()
+{
+	return FLinearColor::FromSRGBColor(GetAGXColorOrange());
+}
+
+FColor FAGX_SlateUtilities::GetAGXColorBlack()
+{
+	return FColor(49, 49, 48); // From Algoryx Graphics Guidelines 2020.
+}
+
+FLinearColor FAGX_SlateUtilities::GetAGXLinearColorBlack()
+{
+	return FLinearColor::FromSRGBColor(GetAGXColorBlack());
+}
+
+FColor FAGX_SlateUtilities::GetAGXColorGray()
+{
+	return FColor(208, 208, 208); // From Algoryx Graphics Guidelines 2020.
+}
+
+FLinearColor FAGX_SlateUtilities::GetAGXLinearColorGray()
+{
+	return FLinearColor::FromSRGBColor(GetAGXColorGray());
 }
 
 bool FAGX_SlateUtilities::RemoveChildWidgetByType(
