@@ -18,6 +18,15 @@ FText FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetName() const
 	return LOCTEXT("AssetName", "AGX Shape Contact Merge Split Thresholds");
 }
 
+const TArray<FText>& FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetSubMenus() const
+{
+	static const TArray<FText> SubMenus {
+		LOCTEXT("ShapeSubMenu", "Shape"),
+	};
+
+	return SubMenus;
+}
+
 uint32 FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetCategories()
 {
 	return AssetCategory;
