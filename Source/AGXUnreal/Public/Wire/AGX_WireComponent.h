@@ -13,6 +13,7 @@
 // Unreal Engine includes.
 #include "Engine/EngineTypes.h"
 #include "Components/SceneComponent.h"
+#include "UObject/UObjectGlobals.h"
 
 #include "AGX_WireComponent.generated.h"
 
@@ -814,6 +815,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	TArray<FVector> GetRenderNodeLocations() const;
 
+	void OnRouteNodeParentMoved(
+		USceneComponent* Component, EUpdateTransformFlags UpdateTransformFlags,
+		ETeleportType Teleport);
+	void OnRouteNodeParentReplaced(const FCoreUObjectDelegates::FReplacementObjectMap& OldToNew);
+
 	/**
 	 * Mark visuals for this Wire Component dirty. The Visuals will be updated according to the
 	 * current state.
@@ -856,6 +862,8 @@ public:
 	virtual void PostInitProperties() override;
 	virtual void PostLoad() override;
 #if WITH_EDITOR
+	using UActorComponent::PreEditChange;
+	virtual void PreEditChange(FEditPropertyChain& PropertyAboutToChange) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
 	// ~End UObject interface.
@@ -894,8 +902,14 @@ private:
 	void RenderSelf(const TArray<FVector>& Points);
 	void SetVisualsInstanceCount(int32 Num);
 
+	void SynchronizeParentMovedCallbacks();
+
 private:
 	FWireBarrier NativeBarrier;
 	TObjectPtr<UInstancedStaticMeshComponent> VisualCylinders;
 	TObjectPtr<UInstancedStaticMeshComponent> VisualSpheres;
+
+	/// Keep track which node frame parents we have registered a callback with. Note that a single
+	/// entry here may correspond to multiple routing nodes.
+	TMap<TWeakObjectPtr<USceneComponent>, FDelegateHandle> DelegateHandles;
 };

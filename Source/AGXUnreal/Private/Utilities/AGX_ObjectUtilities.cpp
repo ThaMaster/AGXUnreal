@@ -222,3 +222,20 @@ void FAGX_ObjectUtilities::TruncateForDetailsPanel(FRotator& Values)
 	TruncateForDetailsPanel(Values.Yaw);
 	TruncateForDetailsPanel(Values.Roll);
 }
+
+
+bool FAGX_ObjectUtilities::HasChainPrefixPath(
+		FEditPropertyChain::TDoubleLinkedListNode* Node, const TArray<const TCHAR*>& Path)
+{
+	// Walk the two lists in parallel, i.e. do a zip, and bail as soon as we fiund a name mismatch.
+	FString ActualName;
+	for (int32 I = 0; I < Path.Num() && Node != nullptr; ++I, Node = Node->GetNextNode())
+	{
+		Node->GetValue()->GetName(ActualName);
+		if (ActualName != Path[I])
+		{
+			return false;
+		}
+	}
+	return true;
+}

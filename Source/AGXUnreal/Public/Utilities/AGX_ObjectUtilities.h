@@ -175,6 +175,9 @@ public:
 	/** See TruncateForDetailsPanel(double& Value)*/
 	static void TruncateForDetailsPanel(FRotator& Values);
 
+	static bool HasChainPrefixPath(
+		FEditPropertyChain::TDoubleLinkedListNode* Node, const TArray<const TCHAR*>& Path);
+
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
 };

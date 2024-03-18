@@ -19,8 +19,10 @@
 #include "Wire/WireNodeBarrier.h"
 
 // Unreal Engine includes.
+#include "Components/ActorComponent.h"
 #include "Components/BillboardComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Components/SceneComponent.h"
 #include "CoreGlobals.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
@@ -31,6 +33,8 @@
 // Standard library includes.
 #include <algorithm>
 #include <tuple>
+
+#include "Kismet/KismetSystemLibrary.h"
 
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
 
@@ -1143,6 +1147,114 @@ TArray<FVector> UAGX_WireComponent::GetRenderNodeLocations() const
 	return Result;
 }
 
+void UAGX_WireComponent::OnRouteNodeParentMoved(
+	USceneComponent* Component, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
+{
+	UE_LOG(
+		LogAGX, Warning,
+		TEXT("Wire Component '%s' (%p) in '%s' (%p) got parent moved callback from '%s' (%p) in "
+			 "'%s' (%p)."),
+		*GetName(), this, *GetLabelSafe(GetOwner()), GetOwner(), *Component->GetName(), Component,
+		*GetLabelSafe(Component->GetOwner()), Component->GetOwner());
+
+	// If this is a callback from a parent we are no longer a child of, then unsubscribe.
+	// TODO Is there a better way to avoid keeping callbacks laying around in the parents?
+	// I would like to do this in PreEditChange.
+	FWireRoutingNode* Node =
+		RouteNodes.FindByPredicate([Component](const FWireRoutingNode& Node)
+								   { return Node.Frame.GetParentComponent() == Component; });
+	if (Node == nullptr)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("  The Component is not any node's parent. Removing."));
+		// Component is not the parent of any node, unsubscribe.
+		const FDelegateHandle* Handle = DelegateHandles.Find(Component);
+		if (Handle != nullptr)
+		{
+			Component->TransformUpdated.Remove(*Handle);
+			DelegateHandles.Remove(Component);
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("  The Component wasn't in the Delegate Handles list. Why did we get a "
+					 "callback? Can we remove us from the delegate without a handle?"));
+		}
+		return;
+	}
+
+	// At least one Routing Node has the moved Component as its parent.
+	UE_LOG(LogAGX, Warning, TEXT("	Parent moved callback is updating wire visuals."));
+	UpdateVisuals();
+}
+
+void UAGX_WireComponent::OnRouteNodeParentReplaced(
+	const FCoreUObjectDelegates::FReplacementObjectMap& OldToNew)
+{
+	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::OnRouteNodeParentReplaced for %p"), this);
+	UE_LOG(LogAGX, Warning, TEXT("  Old-to-New:"));
+	for (const TTuple<UObject*, UObject*>& Entry : OldToNew)
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("    Old = %p -> New = %p  Type = %s"), Entry.Key, Entry.Value,
+			*Entry.Key->GetClass()->GetName());
+	}
+
+	// Build reverse look-up table. By the time we get here the replacement has already happened
+	// in the owning Actor so the call to Parent.GetComponent below will find the new object, not
+	// the old. In order to quickly determine if the object is replaced or untouched by the
+	// Blueprint Reconstruction we need to be able to determine if it is in the OldToNew map on the
+	// value side.
+	FCoreUObjectDelegates::FReplacementObjectMap NewToOld;
+	NewToOld.Reserve(OldToNew.Num());
+	for (const TTuple<UObject*, UObject*>& Entry : OldToNew)
+	{
+		// Not all Components are replaced, we sometimes get nullptr in the value-part of the entry
+		// Not sure what that means. Did the object disappear? Was the object not replaced so the
+		// old pointer is still relevant? In any case, don't want to map nullptr to some random
+		// Component, so skipping those entries.
+		if (Entry.Value != nullptr)
+		{
+			NewToOld.Add(Entry.Value, Entry.Key);
+		}
+	}
+
+	for (FWireRoutingNode& Node : RouteNodes)
+	{
+		USceneComponent* NewParent = Node.Frame.Parent.GetComponent<USceneComponent>();
+		USceneComponent* OldParent = Cast<USceneComponent>(NewToOld.FindRef(NewParent));
+		if (!IsValid(NewParent) && !IsValid(OldParent))
+		{
+			continue;
+		}
+
+		UE_LOG(
+			LogAGX, Warning, TEXT("  Wire route node parent replaced. Old = %p New %p "), OldParent,
+			NewParent);
+
+		if (OldParent != nullptr)
+		{
+			UE_LOG(LogAGX, Warning, TEXT("    Removing callbacks from %p"), OldParent);
+			OldParent->TransformUpdated.RemoveAll(this);
+		}
+
+		if (IsValid(NewParent))
+		{
+			if (!DelegateHandles.Contains(NewParent))
+			{
+				UE_LOG(LogAGX, Warning, TEXT("    Adding callback to %p"), NewParent);
+				DelegateHandles.Add(
+					NewParent, NewParent->TransformUpdated.AddUObject(
+								   this, &UAGX_WireComponent::OnRouteNodeParentMoved));
+			}
+			else
+			{
+				UE_LOG(LogAGX, Warning, TEXT("    Already have a callback in %p"), NewParent);
+			}
+		}
+	}
+}
+
 void UAGX_WireComponent::MarkVisualsDirty()
 {
 	UpdateVisuals();
@@ -1248,6 +1360,7 @@ const FWireBarrier* UAGX_WireComponent::GetNative() const
 void UAGX_WireComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
+	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::PostInitProperties"));
 	OwnedBeginWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
 	OwnedEndWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
 	for (FWireRoutingNode& Node : RouteNodes)
@@ -1263,7 +1376,35 @@ void UAGX_WireComponent::PostInitProperties()
 void UAGX_WireComponent::PostLoad()
 {
 	Super::PostLoad();
-	UpdateVisuals();
+	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::PostLoad"));
+
+#if WITH_EDITOR
+	if (!GetWorld()->IsGameWorld() && !HasAnyFlags(RF_ClassDefaultObject))
+	{
+		// While in the editor we don't update the wire rendering every tick and instead rely on
+		// Transform Updated callbacks from the wire routing node frame parents. These callbacks
+		// must be registered with each parent on start-up. We can't do that here because some of
+		// the parents may not have been loaded yet. So we set up a callback to happen next tick,
+		// and hope that everything has been loaded by then. Is there a better way to do this?
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("This is not a game world and we're not the Class Default Object, setting up "
+				 "parent callbacks for Wire Component %p."),
+			this);
+		GEditor->GetTimerManager()->SetTimerForNextTick(
+			this, &UAGX_WireComponent::SynchronizeParentMovedCallbacks);
+		GEditor->GetTimerManager()->SetTimerForNextTick(this, &UAGX_WireComponent::UpdateVisuals);
+
+		// If the wire routing node frame parent's owner is a Blueprint instance then any
+		// modification of that instance will cause a Blueprint Reconstruction. During
+		// reconstruction all the Components will be destroyed and recreated. Unfortunately, Scene
+		// Component does not use Actor Component Instance Data to transfer the callback from the
+		// old object to the new one. Fortunately, the engine provides the On Object Replaced event
+		// that we can use to do the transfer ourselves.
+		FCoreUObjectDelegates::OnObjectsReplaced.AddUObject(
+			this, &UAGX_WireComponent::OnRouteNodeParentReplaced);
+	}
+#endif
 }
 
 #if WITH_EDITOR
@@ -1306,32 +1447,38 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength), [](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength),
+		[](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetPulledInLength(Wire->OwnedBeginWinch.PulledInLength); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bMotorEnabled), [](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bMotorEnabled),
+		[](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetMotorEnabled(Wire->OwnedBeginWinch.bMotorEnabled); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, TargetSpeed), [](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, TargetSpeed),
+		[](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetTargetSpeed(Wire->OwnedBeginWinch.TargetSpeed); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, MotorForceRange), [](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, MotorForceRange),
+		[](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetMotorForceRange(Wire->OwnedBeginWinch.MotorForceRange); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bBrakeEnabled), [](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bBrakeEnabled),
+		[](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetBrakeEnabled(Wire->OwnedBeginWinch.bBrakeEnabled); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedBeginWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, BrakeForceRange), [](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, BrakeForceRange),
+		[](ThisClass* Wire)
 		{ Wire->OwnedBeginWinch.SetBrakeForceRange(Wire->OwnedBeginWinch.BrakeForceRange); });
 
 	/// @todo Find ways to do attach/detach during runtime from the Details Panel.
@@ -1344,48 +1491,140 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 	// End Winch.
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength), [](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength),
+		[](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetPulledInLength(Wire->OwnedEndWinch.PulledInLength); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bMotorEnabled), [](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bMotorEnabled),
+		[](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetMotorEnabled(Wire->OwnedEndWinch.bMotorEnabled); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, TargetSpeed), [](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, TargetSpeed),
+		[](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetTargetSpeed(Wire->OwnedEndWinch.TargetSpeed); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, MotorForceRange), [](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, MotorForceRange),
+		[](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetMotorForceRange(Wire->OwnedEndWinch.MotorForceRange); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bBrakeEnabled), [](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, bBrakeEnabled),
+		[](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetBrakeEnabled(Wire->OwnedEndWinch.bBrakeEnabled); });
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, BrakeForceRange), [](ThisClass* Wire)
+		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, BrakeForceRange),
+		[](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetBrakeForceRange(Wire->OwnedEndWinch.BrakeForceRange); });
 
-	/// @todo Find ways to do attach/detach during runtime from the Details Panel.
+	/// @todo Find ways to do attach/detach from winch during runtime from the Details Panel.
+}
+
+void UAGX_WireComponent::PreEditChange(FEditPropertyChain& PropertyAboutToChange)
+{
+	UObject::PreEditChange(PropertyAboutToChange);
+
+	UE_LOG(LogAGX, Warning, TEXT("PreEditChange on Wire Component %p."), this);
+
+	// Here I would like to unsubscribe from the TransformUpdated event on the parent, but I don't
+	// know how the find the index in the Route Nodes list of the routing node that is about to be
+	// given a new parent. In the PostEditChangeChainProperty callback we get a
+	// FPropertyChangedChainEvent instead of a FEditPropertyChain and the event knows the array
+	// index because it has been created from an FPropertyHandle, which has access to FPropertyNode,
+	// instead of from an FProperty. The FProperty doesn't seem to know the array index.
+#if 0
+	for (FEditPropertyChain::TDoubleLinkedListNode* NodeIt = PropertyAboutToChange.GetHead();
+		 NodeIt != nullptr; NodeIt = NodeIt->GetNextNode())
+	{
+		FProperty* Property = NodeIt->GetValue();
+		UE_LOG(LogAGX, Warning, TEXT("%s > "), *Property->GetName());
+	}
+
+	for (FProperty* Property : PropertyAboutToChange)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("%s >"), *Property->GetFullName());
+	}
+
+	for (FProperty* Property : PropertyAboutToChange)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("%s >"), *Property->GetPathName());
+	}
+#endif
 }
 
 void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
-	FEditPropertyChain::TDoubleLinkedListNode* Node = Event.PropertyChain.GetHead();
+	UE_LOG(LogAGX, Warning, TEXT("PostEditChangeChainProperty on Wire Component %p."), this);
+
+	FEditPropertyChain::TDoubleLinkedListNode* const Node = Event.PropertyChain.GetHead();
 	if (Node != nullptr)
 	{
 		const FName Member = Node->GetValue()->GetFName();
 		if (DoesPropertyAffectVisuals(Member))
 		{
 			UpdateVisuals();
+		}
+
+		if (Member == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes))
+		{
+			// Experimentation code.
+			UE_LOG(LogAGX, Warning, TEXT("Route nodes changed."));
+			UE_LOG(LogAGX, Warning, TEXT("Chain:"));
+			FEditPropertyChain::TDoubleLinkedListNode* It = Node;
+			while (It != nullptr)
+			{
+				FProperty* Property = It->GetValue();
+				UE_LOG(
+					LogAGX, Warning, TEXT("  %s %s"), *Property->GetName(),
+					*Property->GetClass()->GetName());
+
+				It = It->GetNextNode();
+			}
+
+			// Did a node get a new parent, meaning we must set up a new parent-moved callback?
+			TArray<const TCHAR*> Path {TEXT("RouteNodes"), TEXT("Frame"), TEXT("Parent")};
+			if (FAGX_ObjectUtilities::HasChainPrefixPath(Node, Path))
+			{
+				const int32 NodeIndex = Event.GetArrayIndex("RouteNodes");
+				UE_LOG(LogAGX, Warning, TEXT("  Edited index %d in RouteNodes."), NodeIndex);
+				if (RouteNodes.IsValidIndex(NodeIndex))
+				{
+					USceneComponent* const Parent =
+						RouteNodes[NodeIndex].Frame.GetParentComponent();
+					if (Parent != nullptr)
+					{
+						FDelegateHandle* Handle = DelegateHandles.Find(Parent);
+						if (Handle == nullptr)
+						{
+							// Don't currently have a callback for this Parent, add one.
+							DelegateHandles.Add(
+								Parent, Parent->TransformUpdated.AddUObject(
+											this, &UAGX_WireComponent::OnRouteNodeParentMoved));
+
+							UE_LOG(
+								LogAGX, Warning, TEXT("    Adding callback to parent %p."), Parent);
+						}
+						else
+						{
+							UE_LOG(
+								LogAGX, Warning, TEXT("    Parent %p already has a callback."),
+								Parent);
+						}
+					}
+				}
+			}
+
+			SynchronizeParentMovedCallbacks();
 		}
 	}
 
@@ -2050,13 +2289,13 @@ TArray<FVector> UAGX_WireComponent::GetNodesForRendering() const
 		const FTransform& ComponentTransform = GetComponentTransform();
 		for (const auto& Node : RouteNodes)
 		{
+#if AGX_WIRE_ROUTE_NODE_USE_FRAME
+			const FVector WorldLocation = Node.Frame.GetWorldLocation(*this);
+#else
 			// TODO This code will need to change with the introduction of frame in routing nodes.
 			//
 			// Can no longer assume that Node.Location should be transformed local-to-world with
 			// the Wire Component's transform.
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
-			const FVector WorldLocation = Node.Frame.GetWorldLocation(*this);
-#else
 			const FVector WorldLocation =
 				ComponentTransform.TransformPositionNoScale(Node.Location);
 #endif
@@ -2154,6 +2393,89 @@ void UAGX_WireComponent::SetVisualsInstanceCount(int32 Num)
 
 	if (VisualSpheres != nullptr)
 		SetNum(*VisualSpheres, Num);
+}
+
+void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
+{
+	// We currently have no reliable way to detect when we should no longer be tracking
+	// a parent. This is a cleanup-pass that should not be necessary but is until we figure
+	// out how to reliably remove our callback from the parent's TransformUpdated event, and
+	// remove an entry from the Delegate Handles list when the parent no longer exists.
+
+	// Find the parents currently used by a routing node.
+	UE_LOG(LogAGX, Warning, TEXT("  Parent check-up:"));
+	TSet<USceneComponent*> ActualParents;
+	for (FWireRoutingNode& RoutingNode : RouteNodes)
+	{
+		if (USceneComponent* Parent = RoutingNode.Frame.Parent.GetComponent<USceneComponent>())
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("    Found a node with parent %p %s."), Parent,
+				*Parent->GetName());
+			ActualParents.Add(Parent);
+			if (!Parent->TransformUpdated.IsBoundToObject(this))
+			{
+				if (DelegateHandles.Contains(Parent))
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("Wire Component '%s' in '%s' found a routing node parent that "
+							 "don't contain our callback but we do have a delegate handle "
+							 "registered for it. That should never happen."),
+						*GetName(), *GetLabelSafe(GetOwner()));
+				}
+				DelegateHandles.Add(
+					Parent, Parent->TransformUpdated.AddUObject(
+								this, &UAGX_WireComponent::OnRouteNodeParentMoved));
+				UE_LOG(LogAGX, Warning, TEXT("      Adding callback to parent %p."), Parent);
+			}
+			else
+			{
+				UE_LOG(LogAGX, Warning, TEXT("      Already has a callback."))
+			}
+
+			if (DelegateHandles.Contains(Parent))
+			{
+				if (!Parent->TransformUpdated.IsBoundToObject(this))
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("Wire Component '%s' in '%s' found a delegate handle for a "
+							 "routing node parent that don't have a callback registered "
+							 "for. That shouldn never happen."));
+				}
+			}
+		}
+	}
+	TSet<USceneComponent*> ToRemove;
+	for (TTuple<TWeakObjectPtr<USceneComponent>, FDelegateHandle>& Entry : DelegateHandles)
+	{
+		USceneComponent* Parent = Entry.Key.Get();
+		if (!IsValid(Parent))
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("    Found handle to invalid parent %p. Removing"), Parent);
+			ToRemove.Add(Parent);
+		}
+
+		if (!ActualParents.Contains(Parent))
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("    Found handle to parent %p that isn't a parent anymore."),
+				Parent);
+			ToRemove.Add(Parent);
+		}
+	}
+
+	// Remove all parents that no routing node use.
+	for (USceneComponent* NoLongerParent : ToRemove)
+	{
+		if (IsValid(NoLongerParent))
+		{
+			NoLongerParent->TransformUpdated.RemoveAll(this);
+		}
+		DelegateHandles.Remove(NoLongerParent);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE
