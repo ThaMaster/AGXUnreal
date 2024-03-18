@@ -32,5 +32,5 @@ struct FAGX_MeshEntityData
 struct FAGX_InstancedMeshEntityData
 {
 	FRtMeshBarrier Mesh;
-	TMap<int32, FAGX_MeshEntityData> EntitiesData;
+	TMap<int32, FAGX_EntityData> EntitiesData;
 };

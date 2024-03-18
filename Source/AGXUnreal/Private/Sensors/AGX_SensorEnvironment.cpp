@@ -199,6 +199,7 @@ bool AAGX_SensorEnvironment::AddInstancedMesh(
 
 	auto& InstancedMeshEntity = TrackedInstancedMeshes.Add(Mesh, FAGX_InstancedMeshEntityData());
 	InstancedMeshEntity.Mesh.AllocateNative(Vertices, Indices);
+	AGX_CHECK(InstancedMeshEntity.Mesh.HasNative());
 	return true;
 }
 
@@ -216,15 +217,15 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance_Internal(
 	if (InstancedMeshEntity == nullptr)
 		return false;
 
-	FAGX_MeshEntityData* MeshEntityData = InstancedMeshEntity->EntitiesData.Find(Index);
-	if (MeshEntityData != nullptr)
+	if (InstancedMeshEntity->EntitiesData.Contains(Index))
 		return false; // We already track this instance.
 
-	MeshEntityData = &InstancedMeshEntity->EntitiesData.Add(Index, FAGX_MeshEntityData());
-	MeshEntityData->EntityData.Entity.AllocateNative(MeshEntityData->Mesh);
+	FAGX_EntityData& EntityData = InstancedMeshEntity->EntitiesData.Add(Index, FAGX_EntityData());
+	EntityData.Entity.AllocateNative(InstancedMeshEntity->Mesh);
+	AGX_CHECK(EntityData.Entity.HasNative());
 	FTransform InstanceTrans;
 	Mesh->GetInstanceTransform(Index, InstanceTrans, true);
-	MeshEntityData->EntityData.SetTransform(InstanceTrans);
+	EntityData.SetTransform(InstanceTrans);
 	return true;
 }
 
@@ -393,13 +394,16 @@ void AAGX_SensorEnvironment::RegisterLidars()
 			if (bAutoAddObjects)
 			{
 				CollSph = NewObject<USphereComponent>(this);
-				CollSph->SetSphereRadius(0.f, false);
-				CollSph->RegisterComponent();
-
 				CollSph->OnComponentBeginOverlap.AddDynamic(
 					this, &AAGX_SensorEnvironment::OnLidarBeginOverlapComponent);
 				CollSph->OnComponentEndOverlap.AddDynamic(
 					this, &AAGX_SensorEnvironment::OnLidarEndOverlapComponent);
+
+				// Ensure we don't miss overlap events by setting radius zero now. All collision
+				// Collision spheres are updated in Step(), and the overlap events will be triggered
+				// for any object within that radius.
+				CollSph->SetSphereRadius(0.f, false);
+				CollSph->RegisterComponent();
 			}
 
 			TrackedLidars.Add(Lidar, CollSph);
@@ -538,7 +542,7 @@ void AAGX_SensorEnvironment::OnLidarBeginOverlapInstancedStaticMeshComponent(
 	if (InstancedEntityData == nullptr)
 		AddInstancedMeshInstance(&Mesh, Index);
 	else
-		InstancedEntityData->EntityData.RefCount++;
+		InstancedEntityData->RefCount++;
 }
 
 void AAGX_SensorEnvironment::OnLidarEndOverlapComponent(
@@ -603,9 +607,9 @@ void AAGX_SensorEnvironment::OnLidarEndOverlapInstancedStaticMeshComponent(
 		return;
 	}
 
-	AGX_CHECK(InstancedEntityData->EntityData.RefCount > 0);
-	InstancedEntityData->EntityData.RefCount--;
-	if (InstancedEntityData->EntityData.RefCount == 0)
+	AGX_CHECK(InstancedEntityData->RefCount > 0);
+	InstancedEntityData->RefCount--;
+	if (InstancedEntityData->RefCount == 0)
 		InstancedMesh->EntitiesData.Remove(Index);
 
 	// Finally, we should remove the Instanced Static Mesh Component completely if no instances are
