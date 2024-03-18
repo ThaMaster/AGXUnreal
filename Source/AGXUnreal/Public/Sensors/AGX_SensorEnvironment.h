@@ -14,6 +14,7 @@
 #include "AGX_SensorEnvironment.generated.h"
 
 class AAGX_Terrain;
+class UInstancedStaticMeshComponent;
 class USphereComponent;
 class UStaticMeshComponent;
 
@@ -50,6 +51,21 @@ public:
 	bool AddMesh(UStaticMeshComponent* Mesh);
 
 	/*
+	 * Add all instances of an Instanced Static Mesh Component so that they can be detected by
+	 * sensors handled by this Sensor Environment. Only valid to call during Play.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	bool AddInstancedMesh(UInstancedStaticMeshComponent* Mesh);
+
+	/*
+	 * Add a single instance of an Instanced Static Mesh Component so that it can be detected by
+	 * sensors handled by this Sensor Environment. The Index corresponds to the Mesh Instance to
+	 * add. Only valid to call during Play.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	bool AddInstancedMeshInstance(UInstancedStaticMeshComponent* Mesh, int32 Index);
+
+	/*
 	 * Add a Terrain so that it can be detected by sensors handled by this Sensor
 	 * Environment.
 	 * Only valid to call during Play.
@@ -65,15 +81,25 @@ public:
 	bool RemoveMesh(UStaticMeshComponent* Mesh);
 
 	/*
+	 * Remove an Instanced Static Mesh Component and all its instances from this Sensor Environment.
+	 * Only valid to call during Play.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	bool RemoveInstancedMesh(UInstancedStaticMeshComponent* Mesh);
+
+	/*
+	 * Remove a single Instanced Static Mesh Instace from this Sensor Environment.
+	 * Only valid to call during Play.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	bool RemoveInstancedMeshInstance(UInstancedStaticMeshComponent* Mesh, int32 Index);
+
+	/*
 	 * Remove a Terrain from this Sensor Environment.
 	 * Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool RemoveTerrain(AAGX_Terrain* Terrain);
-
-	bool Add(
-		UStaticMeshComponent* Mesh, const TArray<FVector>& Vertices,
-		const TArray<FTriIndices>& Indices);
 
 	bool HasNative() const;
 	FSensorEnvironmentBarrier* GetNative();
@@ -95,8 +121,18 @@ private:
 	void StepNoAutoAddObjects(double DeltaTime);
 	void StepAutoAddObjects(double DeltaTime);
 	void UpdateTrackedLidars();
-	void UpdateTrackedStaticMeshes();
+	void UpdateTrackedMeshes();
 	void StepTrackedLidars() const;
+
+	bool AddMesh(
+		UStaticMeshComponent* Mesh, const TArray<FVector>& Vertices,
+		const TArray<FTriIndices>& Indices);
+
+	bool AddInstancedMesh(
+		UInstancedStaticMeshComponent* Mesh, const TArray<FVector>& Vertices,
+		const TArray<FTriIndices>& Indices);
+
+	bool AddInstancedMeshInstance_Internal(UInstancedStaticMeshComponent* Mesh, int32 Index);
 
 	UFUNCTION()
 	void OnLidarBeginOverlapComponent(
@@ -108,11 +144,20 @@ private:
 		UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex);
 
-private:
+	void OnLidarBeginOverlapStaticMeshComponent(UStaticMeshComponent& Mesh);
+	void OnLidarBeginOverlapInstancedStaticMeshComponent(
+		UInstancedStaticMeshComponent& Mesh, int32 Index);
 
-	// Todo: weak object ptr instead of raw ptrs?
-	TMap<UAGX_LidarSensorComponent*, USphereComponent*> TrackedLidars;
-	TMap<UStaticMeshComponent*, FAGX_MeshEntityData> TrackedStaticMeshes;
+	void OnLidarEndOverlapStaticMeshComponent(UStaticMeshComponent& Mesh);
+	void OnLidarEndOverlapInstancedStaticMeshComponent(
+		UInstancedStaticMeshComponent& Mesh, int32 Index);
+
+private:
+	// Todo: weak object ptr instead of raw ptrs!
+	TMap<TWeakObjectPtr<UAGX_LidarSensorComponent>, TObjectPtr<USphereComponent>> TrackedLidars;
+	TMap<TWeakObjectPtr<UStaticMeshComponent>, FAGX_MeshEntityData> TrackedMeshes;
+	TMap<TWeakObjectPtr<UInstancedStaticMeshComponent>, FAGX_InstancedMeshEntityData>
+		TrackedInstancedMeshes;
 
 	FSensorEnvironmentBarrier NativeBarrier;
 	FDelegateHandle PostStepForwardHandle;

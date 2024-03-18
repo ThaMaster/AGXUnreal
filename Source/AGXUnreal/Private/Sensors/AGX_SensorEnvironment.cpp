@@ -10,12 +10,14 @@
 #include "Utilities/AGX_MeshUtilities.h"
 
 // Unreal Engine includes.
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 
 namespace AGX_SensorEnvironment_helpers
 {
-	bool Add(AAGX_SensorEnvironment& Env, UStaticMeshComponent* Mesh)
+	bool GetVerticesIndices(
+		UStaticMeshComponent* Mesh, TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices)
 	{
 		if (Mesh == nullptr)
 			return false;
@@ -28,17 +30,9 @@ namespace AGX_SensorEnvironment_helpers
 		if (!StaticMesh->HasValidRenderData(/*bCheckLODForVerts*/ true, LodIndex))
 			return false;
 
-		TArray<FVector> OutVertices;
-		TArray<FTriIndices> OutIndices;
-
 		FAGX_MeshWithTransform MeshWTransform(StaticMesh, Mesh->GetComponentTransform());
-		const bool Result = AGX_MeshUtilities::GetStaticMeshCollisionData(
+		return AGX_MeshUtilities::GetStaticMeshCollisionData(
 			MeshWTransform, Mesh->GetComponentTransform(), OutVertices, OutIndices, &LodIndex);
-
-		if (!Result)
-			return false;
-
-		return Env.Add(Mesh, OutVertices, OutIndices);
 	}
 
 	void UpdateCollisionSphere(const UAGX_LidarSensorComponent* Lidar, USphereComponent* Sphere)
@@ -46,13 +40,13 @@ namespace AGX_SensorEnvironment_helpers
 		if (Lidar == nullptr || Sphere == nullptr)
 			return;
 
+		Sphere->SetWorldLocation(Lidar->GetComponentLocation());
+
 		if (!FMath::IsNearlyEqual(
 				Sphere->GetUnscaledSphereRadius(), static_cast<float>(Lidar->Range)))
 		{
 			Sphere->SetSphereRadius(Lidar->Range, /*bUpdateOverlaps*/ true);
 		}
-
-		Sphere->SetWorldLocation(Lidar->GetComponentLocation());
 	}
 }
 
@@ -84,7 +78,154 @@ void AAGX_SensorEnvironment::Step(double DeltaTime)
 
 bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh)
 {
-	return AGX_SensorEnvironment_helpers::Add(*this, Mesh);
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Sensor Environment AddMesh was called on '%s' that does not have a Native. "
+				 "This function is only valid to call during Play."),
+			*GetName());
+		return false;
+	}
+
+	TArray<FVector> OutVerts;
+	TArray<FTriIndices> OutInds;
+	const bool Res = AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVerts, OutInds);
+	if (Res)
+		AddMesh(Mesh, OutVerts, OutInds);
+
+	return Res;
+}
+
+bool AAGX_SensorEnvironment::AddInstancedMesh(UInstancedStaticMeshComponent* Mesh)
+{
+	if (Mesh == nullptr)
+		return false;
+
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Sensor Environment AddInstancedMesh was called on '%s' that does not have "
+				 "a Native. This function is only valid to call during Play."),
+			*GetName());
+		return false;
+	}
+
+	if (!TrackedInstancedMeshes.Contains(Mesh))
+	{
+		TArray<FVector> OutVertices;
+		TArray<FTriIndices> OutIndices;
+		if (AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVertices, OutIndices))
+		{
+			AddInstancedMesh(Mesh, OutVertices, OutIndices);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	const int32 InstanceCnt = Mesh->GetInstanceCount();
+	for (int32 i = 0; i < InstanceCnt; i++)
+	{
+		AddInstancedMeshInstance_Internal(Mesh, i);
+	}
+
+	return true;
+}
+
+bool AAGX_SensorEnvironment::AddInstancedMeshInstance(
+	UInstancedStaticMeshComponent* Mesh, int32 Index)
+{
+	if (Mesh == nullptr || !Mesh->IsValidInstance(Index))
+		return false;
+
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT(
+				"Sensor Environment AddInstancedMeshInstance was called on '%s' that does not have "
+				"a Native. This function is only valid to call during Play."),
+			*GetName());
+		return false;
+	}
+
+	if (!TrackedInstancedMeshes.Contains(Mesh))
+	{
+		TArray<FVector> OutVertices;
+		TArray<FTriIndices> OutIndices;
+		if (AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVertices, OutIndices))
+			AddInstancedMesh(Mesh, OutVertices, OutIndices);
+		else
+			return false;
+	}
+
+	return AddInstancedMeshInstance_Internal(Mesh, Index);
+}
+
+bool AAGX_SensorEnvironment::AddMesh(
+	UStaticMeshComponent* Mesh, const TArray<FVector>& Vertices, const TArray<FTriIndices>& Indices)
+{
+	AGX_CHECK(HasNative());
+
+	if (Mesh == nullptr)
+		return false;
+
+	if (Vertices.Num() <= 0 || Indices.Num() <= 0)
+		return false;
+
+	if (TrackedMeshes.Contains(Mesh))
+		return false;
+
+	FAGX_MeshEntityData& MeshEntity = TrackedMeshes.Add(Mesh, FAGX_MeshEntityData());
+	MeshEntity.Mesh.AllocateNative(Vertices, Indices);
+	MeshEntity.EntityData.Entity.AllocateNative(MeshEntity.Mesh);
+	MeshEntity.EntityData.SetTransform(Mesh->GetComponentTransform());
+	return true;
+}
+
+bool AAGX_SensorEnvironment::AddInstancedMesh(
+	UInstancedStaticMeshComponent* Mesh, const TArray<FVector>& Vertices,
+	const TArray<FTriIndices>& Indices)
+{
+	AGX_CHECK(HasNative());
+	if (Mesh == nullptr || Vertices.Num() <= 0 || Indices.Num() <= 0)
+		return false;
+
+	if (TrackedInstancedMeshes.Contains(Mesh))
+		return false;
+
+	auto& InstancedMeshEntity = TrackedInstancedMeshes.Add(Mesh, FAGX_InstancedMeshEntityData());
+	InstancedMeshEntity.Mesh.AllocateNative(Vertices, Indices);
+	return true;
+}
+
+bool AAGX_SensorEnvironment::AddInstancedMeshInstance_Internal(
+	UInstancedStaticMeshComponent* Mesh, int32 Index)
+{
+	AGX_CHECK(HasNative());
+	AGX_CHECK(Mesh != nullptr);
+	AGX_CHECK(Mesh->IsValidInstance(Index));
+
+	FAGX_InstancedMeshEntityData* InstancedMeshEntity = TrackedInstancedMeshes.Find(Mesh);
+
+	// This function should only be called for known Instanced Static Mesh Components.
+	AGX_CHECK(InstancedMeshEntity != nullptr);
+	if (InstancedMeshEntity == nullptr)
+		return false;
+
+	FAGX_MeshEntityData* MeshEntityData = InstancedMeshEntity->EntitiesData.Find(Index);
+	if (MeshEntityData != nullptr)
+		return false; // We already track this instance.
+
+	MeshEntityData = &InstancedMeshEntity->EntitiesData.Add(Index, FAGX_MeshEntityData());
+	MeshEntityData->EntityData.Entity.AllocateNative(MeshEntityData->Mesh);
+	FTransform InstanceTrans;
+	Mesh->GetInstanceTransform(Index, InstanceTrans, true);
+	MeshEntityData->EntityData.SetTransform(InstanceTrans);
+	return true;
 }
 
 bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
@@ -98,41 +239,38 @@ bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 		return NativeBarrier.Add(*Terrain->GetOrCreateNative());
 }
 
-bool AAGX_SensorEnvironment::Add(
-	UStaticMeshComponent* Mesh, const TArray<FVector>& Vertices, const TArray<FTriIndices>& Indices)
+bool AAGX_SensorEnvironment::RemoveMesh(UStaticMeshComponent* Mesh)
+{
+	if (Mesh == nullptr || !TrackedMeshes.Contains(Mesh))
+		return false;
+
+	TrackedMeshes.Remove(Mesh);
+	return true;
+}
+
+bool AAGX_SensorEnvironment::RemoveInstancedMesh(UInstancedStaticMeshComponent* Mesh)
+{
+	if (Mesh == nullptr || !TrackedInstancedMeshes.Contains(Mesh))
+		return false;
+
+	TrackedInstancedMeshes.Remove(Mesh);
+	return true;
+}
+
+bool AAGX_SensorEnvironment::RemoveInstancedMeshInstance(
+	UInstancedStaticMeshComponent* Mesh, int32 Index)
 {
 	if (Mesh == nullptr)
 		return false;
 
-	if (!HasNative())
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Sensor Environment Add was called on '%s' that does not have a Native. "
-				 "This function is only valid to call during Play."),
-			*GetName());
-		return false;
-	}
-
-	if (Vertices.Num() <= 0 || Indices.Num() <= 0)
+	auto InstancedMeshData = TrackedInstancedMeshes.Find(Mesh);
+	if (InstancedMeshData == nullptr)
 		return false;
 
-	if (TrackedStaticMeshes.Contains(Mesh))
+	if (!InstancedMeshData->EntitiesData.Contains(Index))
 		return false;
 
-	FAGX_MeshEntityData& MeshEntity = TrackedStaticMeshes.Add(Mesh, FAGX_MeshEntityData());
-	MeshEntity.Mesh.AllocateNative(Vertices, Indices);
-	MeshEntity.Entity.AllocateNative(MeshEntity.Mesh);
-	MeshEntity.SetTransform(Mesh->GetComponentTransform());
-	return true;
-}
-
-bool AAGX_SensorEnvironment::RemoveMesh(UStaticMeshComponent* Mesh)
-{
-	if (Mesh == nullptr || !TrackedStaticMeshes.Contains(Mesh))
-		return false;
-
-	TrackedStaticMeshes.Remove(Mesh);
+	InstancedMeshData->EntitiesData.Remove(Index);
 	return true;
 }
 
@@ -240,7 +378,7 @@ void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type Reason)
 
 void AAGX_SensorEnvironment::RegisterLidars()
 {
-	check(HasNative());
+	AGX_CHECK(HasNative());
 	TSet<UPrimitiveComponent*> OverlappingComponents;
 
 	for (FAGX_LidarSensorReference& LidarRef : LidarSensors)
@@ -255,17 +393,13 @@ void AAGX_SensorEnvironment::RegisterLidars()
 			if (bAutoAddObjects)
 			{
 				CollSph = NewObject<USphereComponent>(this);
+				CollSph->SetSphereRadius(0.f, false);
 				CollSph->RegisterComponent();
-				AGX_SensorEnvironment_helpers::UpdateCollisionSphere(Lidar, CollSph);
 
-				// Fetch all currently overlapping Components.
-				TSet<UPrimitiveComponent*> OverlComp;
-				CollSph->GetOverlappingComponents(OverlComp);
 				CollSph->OnComponentBeginOverlap.AddDynamic(
 					this, &AAGX_SensorEnvironment::OnLidarBeginOverlapComponent);
 				CollSph->OnComponentEndOverlap.AddDynamic(
 					this, &AAGX_SensorEnvironment::OnLidarEndOverlapComponent);
-				OverlappingComponents.Append(OverlComp);
 			}
 
 			TrackedLidars.Add(Lidar, CollSph);
@@ -274,14 +408,6 @@ void AAGX_SensorEnvironment::RegisterLidars()
 
 	if (bAutoAddObjects)
 	{
-		// Add overlapping Components so they become visible to the sensors handled by this
-		// Environment.
-		for (UPrimitiveComponent* Overlapping : OverlappingComponents)
-		{
-			if (UStaticMeshComponent* Sm = Cast<UStaticMeshComponent>(Overlapping))
-				AddMesh(Sm);
-		}
-
 		// Add Terrains.
 		const ULevel* Level = GetWorld()->GetCurrentLevel();
 
@@ -316,7 +442,7 @@ void AAGX_SensorEnvironment::StepAutoAddObjects(double DeltaTime)
 {
 	check(bAutoAddObjects);
 	UpdateTrackedLidars(); // Will likely trigger Component overlap events.
-	UpdateTrackedStaticMeshes();
+	UpdateTrackedMeshes();
 	StepTrackedLidars();
 }
 
@@ -327,35 +453,35 @@ void AAGX_SensorEnvironment::UpdateTrackedLidars()
 	// and transform.
 	for (auto It = TrackedLidars.CreateIterator(); It; ++It)
 	{
-		if (!IsValid(It->Key))
+		if (!IsValid(It->Key.Get()))
 		{
 			It.RemoveCurrent();
 			continue;
 		}
 
 		if (bAutoAddObjects)
-			AGX_SensorEnvironment_helpers::UpdateCollisionSphere(It->Key, It->Value);
+			AGX_SensorEnvironment_helpers::UpdateCollisionSphere(It->Key.Get(), It->Value.Get());
 	}
 }
 
-void AAGX_SensorEnvironment::UpdateTrackedStaticMeshes()
+void AAGX_SensorEnvironment::UpdateTrackedMeshes()
 {
 	check(bAutoAddObjects);
 
 	// Update tracked static meshes and remove any invalid ones.
-	for (auto It = TrackedStaticMeshes.CreateIterator(); It; ++It)
+	for (auto It = TrackedMeshes.CreateIterator(); It; ++It)
 	{
-		if (!IsValid(It->Key))
+		if (!IsValid(It->Key.Get()))
 		{
 			It.RemoveCurrent();
 			continue;
 		}
 
 		const FTransform& CompTransform = It->Key->GetComponentTransform();
-		if (CompTransform.Equals(It->Value.Transform))
+		if (CompTransform.Equals(It->Value.EntityData.Transform))
 			continue;
 
-		It->Value.SetTransform(CompTransform);
+		It->Value.EntityData.SetTransform(CompTransform);
 	}
 }
 
@@ -374,43 +500,116 @@ void AAGX_SensorEnvironment::OnLidarBeginOverlapComponent(
 	if (!IsValid(OtherComp))
 		return;
 
-	UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(OtherComp);
-	if (Mesh == nullptr)
-		return;
-
-	FAGX_MeshEntityData* MeshEntityData = TrackedStaticMeshes.Find(Mesh);
-	if (MeshEntityData != nullptr)
+	auto InstancedMesh = Cast<UInstancedStaticMeshComponent>(OtherComp);
+	if (InstancedMesh != nullptr)
 	{
-		MeshEntityData->RefCount++;
+		OnLidarBeginOverlapInstancedStaticMeshComponent(*InstancedMesh, OtherBodyIndex);
 		return;
 	}
 
-	AddMesh(Mesh);
+	auto Mesh = Cast<UStaticMeshComponent>(OtherComp);
+	if (Mesh != nullptr)
+	{
+		OnLidarBeginOverlapStaticMeshComponent(*Mesh);
+		return;
+	}
+}
+
+void AAGX_SensorEnvironment::OnLidarBeginOverlapStaticMeshComponent(UStaticMeshComponent& Mesh)
+{
+	FAGX_MeshEntityData* MeshEntityData = TrackedMeshes.Find(&Mesh);
+	if (MeshEntityData == nullptr)
+		AddMesh(&Mesh);
+	else
+		MeshEntityData->EntityData.RefCount++;
+}
+
+void AAGX_SensorEnvironment::OnLidarBeginOverlapInstancedStaticMeshComponent(
+	UInstancedStaticMeshComponent& Mesh, int32 Index)
+{
+	auto InstancedMeshData = TrackedInstancedMeshes.Find(&Mesh);
+	if (InstancedMeshData == nullptr)
+	{
+		AddInstancedMeshInstance(&Mesh, Index);
+		return;
+	}
+
+	auto InstancedEntityData = InstancedMeshData->EntitiesData.Find(Index);
+	if (InstancedEntityData == nullptr)
+		AddInstancedMeshInstance(&Mesh, Index);
+	else
+		InstancedEntityData->EntityData.RefCount++;
 }
 
 void AAGX_SensorEnvironment::OnLidarEndOverlapComponent(
 	UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex)
 {
-	if (!IsValid(OtherComp))
+	auto InstancedMesh = Cast<UInstancedStaticMeshComponent>(OtherComp);
+	if (InstancedMesh != nullptr)
+	{
+		OnLidarEndOverlapInstancedStaticMeshComponent(*InstancedMesh, OtherBodyIndex);
 		return;
+	}
 
 	UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(OtherComp);
-	if (Mesh == nullptr)
+	if (Mesh != nullptr)
+	{
+		OnLidarEndOverlapStaticMeshComponent(*Mesh);
 		return;
+	}
+}
 
-	FAGX_MeshEntityData* MeshEntityData = TrackedStaticMeshes.Find(Mesh);
+void AAGX_SensorEnvironment::OnLidarEndOverlapStaticMeshComponent(UStaticMeshComponent& Mesh)
+{
+	FAGX_MeshEntityData* MeshEntityData = TrackedMeshes.Find(&Mesh);
 	if (MeshEntityData == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("AGX_SensorEnvironment '%s' failed to track Static Mesh Component '%s'"),
-			*Mesh->GetName());
+			TEXT("AGX_SensorEnvironment '%s' failed to track Static Mesh Component '%s'."),
+			*GetName(), *Mesh.GetName());
 		return;
 	}
 
-	AGX_CHECK(MeshEntityData->RefCount > 0);
-	MeshEntityData->RefCount--;
-	if (MeshEntityData->RefCount == 0)
-		TrackedStaticMeshes.Remove(Mesh);
+	AGX_CHECK(MeshEntityData->EntityData.RefCount > 0);
+	MeshEntityData->EntityData.RefCount--;
+	if (MeshEntityData->EntityData.RefCount == 0)
+		TrackedMeshes.Remove(&Mesh);
+}
+
+void AAGX_SensorEnvironment::OnLidarEndOverlapInstancedStaticMeshComponent(
+	UInstancedStaticMeshComponent& Mesh, int32 Index)
+{
+	auto InstancedMesh = TrackedInstancedMeshes.Find(&Mesh);
+	if (InstancedMesh == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT(
+				"AGX_SensorEnvironment '%s' failed to track Instanced Static Mesh Component '%s'."),
+			*GetName(), *Mesh.GetName());
+		return;
+	}
+
+	auto InstancedEntityData = InstancedMesh->EntitiesData.Find(Index);
+	if (InstancedEntityData == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("AGX_SensorEnvironment '%s' failed to track Instance %d of Static Mesh Component "
+				 "'%s'."),
+			*GetName(), Index, *Mesh.GetName());
+		return;
+	}
+
+	AGX_CHECK(InstancedEntityData->EntityData.RefCount > 0);
+	InstancedEntityData->EntityData.RefCount--;
+	if (InstancedEntityData->EntityData.RefCount == 0)
+		InstancedMesh->EntitiesData.Remove(Index);
+
+	// Finally, we should remove the Instanced Static Mesh Component completely if no instances are
+	// tracked.
+	if (InstancedMesh->EntitiesData.Num() == 0)
+		RemoveInstancedMesh(&Mesh);
 }

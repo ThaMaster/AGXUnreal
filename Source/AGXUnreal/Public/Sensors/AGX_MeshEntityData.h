@@ -8,9 +8,8 @@
 #include "Sensors/RtMeshBarrier.h"
 
 
-struct FAGX_MeshEntityData
+struct FAGX_EntityData
 {
-	FRtMeshBarrier Mesh;
 	FRtEntityBarrier Entity;
 	FTransform Transform;
 	size_t RefCount {1};
@@ -22,4 +21,16 @@ struct FAGX_MeshEntityData
 		if (Entity.HasNative())
 			Entity.SetTransform(InTransform);
 	}
+};
+
+struct FAGX_MeshEntityData
+{
+	FRtMeshBarrier Mesh;
+	FAGX_EntityData EntityData;
+};
+
+struct FAGX_InstancedMeshEntityData
+{
+	FRtMeshBarrier Mesh;
+	TMap<int32, FAGX_MeshEntityData> EntitiesData;
 };
