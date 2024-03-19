@@ -150,19 +150,22 @@ FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 	if (BodyAttachmentProperty->GetProperty()->GetOwner<UClass>() == nullptr)
 	{
 		FField* Owner = BodyAttachmentProperty->GetProperty()->GetOwner<FField>();
+#if 0
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("When getting Rigid Body label in Constraint Body Attachment Customisation: "
 				 "Expected a root property, but the owner is %s."),
 			*Owner->GetFullName());
-
-		FArrayProperty* OwningArray = Cast<FArrayProperty>(Owner);
+#endif
+		FArrayProperty* OwningArray = CastField<FArrayProperty>(Owner);
 		if (OwningArray == nullptr)
 		{
+#if 0
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("When getting Rigid Body label in Constraint Body Attachment Customisation: "
 					 "Expected a owning property to be an array, but it is not."));
+#endif
 			return LOCTEXT(
 				"NotRootPropertyAndNotInArray",
 				"Expected Body Attachment Property to be in an array, but it is not.");
@@ -171,9 +174,11 @@ FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 		const int32 ArrayIndex = BodyAttachmentProperty->GetIndexInArray();
 
 		UObject* OwningObject = FAGX_PropertyUtilities::GetParentObjectOfStruct(ArrayHandle);
+#if 0
 		UE_LOG(
 			LogAGX, Warning, TEXT("Found owning object %s, we're at index %d."),
 			*OwningObject->GetFullName(), ArrayIndex);
+#endif
 		Attachment =
 			ArrayHandle->GetProperty()->ContainerPtrToValuePtr<FAGX_ConstraintBodyAttachment>(
 				OwningObject, ArrayIndex);
