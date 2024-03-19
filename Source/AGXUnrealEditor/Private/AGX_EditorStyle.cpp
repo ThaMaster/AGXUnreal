@@ -79,7 +79,6 @@ namespace
 	const FVector2D IconSize40(40.0f, 40.0f);
 	const FVector2D IconSize64(64.0f, 64.0f);
 	const FVector2D IconSize128(128.0f, 128.0f);
-	const FVector2D IconSize256(256.0f, 256.0f);
 }
 
 TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
@@ -181,6 +180,9 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 		new IMAGE_BRUSH("Icons/trimesh_shape_32x32", IconSize16));
 	// Sensors.
 	Style->Set(
+		"ClassIcon.AGX_CameraSensorComponent",
+		new IMAGE_BRUSH("Icons/camera_sensor_32x32", IconSize16));
+	Style->Set(
 		"ClassIcon.AGX_LidarSensorLineTraceComponent",
 		new IMAGE_BRUSH("Icons/lidar_32x32", IconSize16));
 	// Tire.
@@ -257,25 +259,34 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	// Thumbnails (assets etc).
 	Style->Set(
 		"ClassThumbnail.AGX_ContactMaterial",
-		new IMAGE_BRUSH("Thumbnails/contact_material_256x256", IconSize256));
+		new IMAGE_BRUSH("Thumbnails/contact_material_128x128", IconSize128));
 	Style->Set(
 		"ClassThumbnail.AGX_ShapeMaterial",
-		new IMAGE_BRUSH("Thumbnails/shape_material_256x256", IconSize256));
+		new IMAGE_BRUSH("Thumbnails/shape_material_128x128", IconSize128));
 	Style->Set(
 		"ClassThumbnail.AGX_TerrainMaterial",
-		new IMAGE_BRUSH("Thumbnails/terrain_material_256x256", IconSize256));
+		new IMAGE_BRUSH("Thumbnails/terrain_material_128x128", IconSize128));
 	Style->Set(
 		"ClassThumbnail.AGX_TrackInternalMergeProperties",
-		new IMAGE_BRUSH("Thumbnails/track_internal_merge_properties_256x256", IconSize256));
+		new IMAGE_BRUSH("Thumbnails/track_internal_merge_properties_128x128", IconSize128));
 	Style->Set(
 		"ClassThumbnail.AGX_TrackProperties",
-		new IMAGE_BRUSH("Thumbnails/track_properties_256x256", IconSize256));
+		new IMAGE_BRUSH("Thumbnails/track_properties_128x128", IconSize128));
 	Style->Set(
 		"ClassThumbnail.AGX_ShovelProperties",
-		new IMAGE_BRUSH("Thumbnails/shovel_properties_256x256", IconSize256));
+		new IMAGE_BRUSH("Thumbnails/shovel_properties_128x128", IconSize128));
 	Style->Set(
 		"ClassThumbnail.AGX_PlayRecord",
-		new IMAGE_BRUSH("Thumbnails/play_record_256x256", IconSize256));
+		new IMAGE_BRUSH("Thumbnails/play_record_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_ConstraintMergeSplitThresholds",
+		new IMAGE_BRUSH("Thumbnails/constraint_mergesplit_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_ShapeContactMergeSplitThresholds",
+		new IMAGE_BRUSH("Thumbnails/shape_contact_mergesplit_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_WireMergeSplitThresholds",
+		new IMAGE_BRUSH("Thumbnails/wire_mergesplit_128x128", IconSize128));
 
 	return Style;
 };
