@@ -110,7 +110,8 @@ namespace AGX_LidarSensorLineTraceComponent_helpers
 		double Range {0.0};
 		double BeamExitRadius {0.0};
 		double BeamDivergenceRad {0.0}; // In radians.
-		EAGX_LidarScanPattern ScanPattern {EAGX_LidarScanPattern::HorizontalSweep};
+		EAGX_LidarLineTraceScanPattern ScanPattern {
+			EAGX_LidarLineTraceScanPattern::HorizontalSweep};
 		bool bCalculateIntensity {true};
 	};
 
@@ -159,7 +160,7 @@ namespace AGX_LidarSensorLineTraceComponent_helpers
 		{
 			switch (Params.ScanPattern)
 			{
-				case EAGX_LidarScanPattern::HorizontalSweep:
+				case EAGX_LidarLineTraceScanPattern::HorizontalSweep:
 				{
 					const int32 IndexX = Ray / NumRaysCycleY;
 					const int32 IndexY = Ray % NumRaysCycleY;
@@ -167,7 +168,7 @@ namespace AGX_LidarSensorLineTraceComponent_helpers
 						-Params.FOV.X / 2.0 + Params.Resolution.X * static_cast<double>(IndexX),
 						-Params.FOV.Y / 2.0 + Params.Resolution.Y * static_cast<double>(IndexY)};
 				}
-				case EAGX_LidarScanPattern::VerticalSweep:
+				case EAGX_LidarLineTraceScanPattern::VerticalSweep:
 				{
 					const int32 IndexX = Ray % NumRaysCycleX;
 					const int32 IndexY = Ray / NumRaysCycleX;
@@ -422,8 +423,7 @@ void UAGX_LidarSensorLineTraceComponent::OnStepForward(double TimeStamp)
 	if (ExecutionMode != EAGX_LidarExecutonMode::Auto)
 		return;
 
-	if (SamplingType == EAGX_LidarSamplingType::CPU)
-		ScanAutoCPU();
+	ScanAutoCPU();
 
 	OutputPointCloudDataIfReady();
 }

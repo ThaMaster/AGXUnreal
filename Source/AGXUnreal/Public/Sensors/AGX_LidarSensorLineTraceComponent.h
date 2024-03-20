@@ -95,17 +95,10 @@ public:
 	FOnPointCloudDataOutput PointCloudDataOutput;
 
 	/**
-	 * Sampling type, i.e. how the laser rays are generated.
-	 * Currently, only CPU rays are supported.
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	EAGX_LidarSamplingType SamplingType {EAGX_LidarSamplingType::CPU};
-
-	/**
 	 * Determines in what order points are scanned during a scan cycle.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	EAGX_LidarScanPattern ScanPattern {EAGX_LidarScanPattern::HorizontalSweep};
+	EAGX_LidarLineTraceScanPattern ScanPattern {EAGX_LidarLineTraceScanPattern::HorizontalSweep};
 
 	/**
 	 * Field of View (FOV) of the Lidar Sensor [deg].
