@@ -75,12 +75,29 @@ void FLidarBarrier::SetTransform(const FTransform& Transform)
 		*ConvertFrame(Transform.GetLocation(), Transform.GetRotation());
 }
 
+void FLidarBarrier::SetRange(FAGX_RealInterval Range)
+{
+	check(HasNative());
+	NativeRef->Native->getRayRangeNode()->setRange(
+		{static_cast<float>(ConvertDistanceToAGX(Range.Min)),
+		 static_cast<float>(ConvertDistanceToAGX(Range.Max))});
+}
+
+FAGX_RealInterval FLidarBarrier::GetRange() const
+{
+	check(HasNative());
+	const agx::RangeReal32 RangeAGX = NativeRef->Native->getRayRangeNode()->getRange();
+	return FAGX_RealInterval(
+		ConvertDistanceToUnreal<double>(RangeAGX.lower()),
+		ConvertDistanceToUnreal<double>(RangeAGX.upper()));
+}
+
 #include "DrawDebugHelpers.h"
 
 void FLidarBarrier::GetResultTest(UWorld* World, const FTransform& Transform)
 {
 	const auto dataView = NativeRef->Native->getResultHandler()->view<agx::Vec4f>();
-	
+
 	if (World != nullptr)
 	{
 		for (const agx::Vec4f& ResultAGX : dataView)

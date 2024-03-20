@@ -3,7 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_Real.h"
+#include "AGX_RealInterval.h"
 #include "Sensors/LidarBarrier.h"
 
 // Unreal Engine includes.
@@ -31,11 +31,17 @@ public:
 	UAGX_LidarSensorComponent();
 
 	/**
-	 * The maximum range of the Lidar Sensor [cm].
-	 * Objects farther away than this value will not be detected by this Lidar Sensor.
+	 * The minimum and maximum range of the Lidar Sensor [cm].
+	 * Objects outside this range will not be detected by this Lidar Sensor.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
-	FAGX_Real Range {20000.0};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
+	FAGX_RealInterval Range {0.0, 20000.0};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	void SetRange(FAGX_RealInterval InRange);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	FAGX_RealInterval GetRange() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	void Step();
@@ -48,10 +54,22 @@ public:
 	void GetResultTest(); // Test function, do not merge!!
 
 #if WITH_EDITOR
+	//~ Begin UActorComponent Interface
 	virtual bool CanEditChange(const FProperty* InProperty) const override;
-#endif
 	//~ End UActorComponent Interface
 
+	// ~Begin UObject interface.
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	virtual void PostInitProperties() override;
+	// ~End UObject interface.
+#endif
+
 private:
+#if WITH_EDITOR
+	void InitPropertyDispatcher();
+#endif
+
+	void UpdateNativeProperties();
+
 	FLidarBarrier NativeBarrier;
 };

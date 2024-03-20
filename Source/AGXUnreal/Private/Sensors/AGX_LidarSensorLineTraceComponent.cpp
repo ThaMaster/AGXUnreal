@@ -358,7 +358,6 @@ bool UAGX_LidarSensorLineTraceComponent::CanEditChange(const FProperty* InProper
 			GET_MEMBER_NAME_CHECKED(ThisClass, ExecutionMode),
 			GET_MEMBER_NAME_CHECKED(ThisClass, ScanFrequency),
 			GET_MEMBER_NAME_CHECKED(ThisClass, OutputFrequency),
-			GET_MEMBER_NAME_CHECKED(ThisClass, SamplingType),
 			GET_MEMBER_NAME_CHECKED(ThisClass, FOV /*clang-format padding*/),
 			GET_MEMBER_NAME_CHECKED(ThisClass, ScanPattern),
 			GET_MEMBER_NAME_CHECKED(ThisClass, Resolution)};
