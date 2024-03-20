@@ -186,6 +186,14 @@ FVector FRigidBodyBarrier::GetCenterOfMassOffset() const
 	return Offset;
 }
 
+FVector FRigidBodyBarrier::GetCenterOfMassPosition() const
+{
+	check(HasNative());
+	const agx::Vec3 PosAGX = NativeRef->Native->getCmPosition();
+	const FVector Pos = ConvertDisplacement(PosAGX);
+	return Pos;
+}
+
 void FRigidBodyBarrier::SetName(const FString& NameUnreal)
 {
 	check(HasNative());
