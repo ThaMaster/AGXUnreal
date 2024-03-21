@@ -74,7 +74,7 @@ struct AGXUNREAL_API FWireRoutingNode
 
 	void SetBody(UAGX_RigidBodyComponent* Body);
 
-	bool Serialize(FArchive& Ar);
+	bool Serialize(FArchive& Archive);
 
 private:
 	/**

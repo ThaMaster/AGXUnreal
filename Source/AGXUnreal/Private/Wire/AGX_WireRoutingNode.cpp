@@ -31,7 +31,7 @@ bool FWireRoutingNode::Serialize(FArchive& Archive)
 	// FWireRoutingNode, causing the default serialization to not happen at all, as opposed to
 	// FAGX_TerrainCompactionProperties which have the Serialize function called manually by
 	// UAGX_TerrainMaterial after the default serialization has completed?
-	if (Archive.IsLoading() || Archive.IsSaving())
+	if (Archive.IsLoading() || Archive.IsSaving() || Archive.IsModifyingWeakAndStrongReferences())
 	{
 		UScriptStruct* Struct = FWireRoutingNode::StaticStruct();
 		Struct->SerializeTaggedProperties(Archive, reinterpret_cast<uint8*>(this), Struct, nullptr);
