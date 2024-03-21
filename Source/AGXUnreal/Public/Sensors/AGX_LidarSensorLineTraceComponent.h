@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
-#include "Sensors/AGX_LidarEnums.h"
+#include "Sensors/AGX_LidarLineTraceEnums.h"
 #include "Sensors/AGX_LidarScanPoint.h"
 
 // Unreal Engine includes.
@@ -48,7 +48,7 @@ public:
 	 * when explicitly asked to, e.g. using the PerformScan function.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	EAGX_LidarExecutonMode ExecutionMode {EAGX_LidarExecutonMode::Auto};
+	EAGX_LidarLineTraceExecutonMode ExecutionMode {EAGX_LidarLineTraceExecutonMode::Auto};
 
 	/**
 	 * Determines how often the total scan cycle is run, i.e. how often the total scan pattern of
@@ -60,7 +60,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
 		Meta =
-			(EditCondition = "ExecutionMode == EAGX_LidarExecutonMode::Auto", ClampMin = "0.0",
+			(EditCondition = "ExecutionMode == EAGX_LidarLineTraceExecutonMode::Auto", ClampMin = "0.0",
 			 ExposeOnSpawn))
 	double ScanFrequency {10};
 
@@ -73,7 +73,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
 		Meta =
-			(EditCondition = "ExecutionMode == EAGX_LidarExecutonMode::Auto", ClampMin = "0.0",
+			(EditCondition = "ExecutionMode == EAGX_LidarLineTraceExecutonMode::Auto", ClampMin = "0.0",
 			 ExposeOnSpawn))
 	double OutputFrequency {20};
 

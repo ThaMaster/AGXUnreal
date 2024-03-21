@@ -13,6 +13,7 @@
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
 #include "Materials/AGX_ContactMaterialEnums.h"
 #include "RigidBodyBarrier.h"
+#include "Sensors/AGX_CustomPatternInterval.h"
 #include "Terrain/AGX_ShovelEnums.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/DoubleInterval.h"
@@ -40,6 +41,7 @@
 #include <agx/Vec2.h>
 #include <agx/Vec3.h>
 #include <agxModel/TwoBodyTire.h>
+#include <agxSensor/RayPatternGenerator.h>
 #include "agxTerrain/Shovel.h"
 #include <agxUtil/agxUtil.h>
 #include <agxVehicle/TrackInternalMergeProperties.h>
@@ -562,6 +564,11 @@ inline FAGX_RealInterval ConvertAngle(const agx::RangeReal& R)
 		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper())};
 }
 
+inline FAGX_CustomPatternInterval Convert(const agxSensor::RayPatternInterval& I)
+{
+	return FAGX_CustomPatternInterval(I.first, I.numRays);
+}
+
 //
 // Interval/Range. Unreal Engine to AGX Dynamics.
 //
@@ -579,6 +586,11 @@ inline agx::RangeReal ConvertDistance(const FAGX_RealInterval& I)
 inline agx::RangeReal ConvertAngle(const FAGX_RealInterval& I)
 {
 	return agx::RangeReal(ConvertAngleToAGX(I.Min), ConvertAngleToAGX(I.Max));
+}
+
+inline agxSensor::RayPatternInterval Convert(const FAGX_CustomPatternInterval& I)
+{
+	return agxSensor::RayPatternInterval(I.First, I.NumRays);
 }
 
 //
@@ -665,6 +677,21 @@ inline FTransform ConvertLocalFrame(const agx::Frame* Frame)
 inline agx::AffineMatrix4x4 ConvertMatrix(const FVector& FramePosition, const FQuat& FrameRotation)
 {
 	return agx::AffineMatrix4x4(Convert(FrameRotation), ConvertDisplacement(FramePosition));
+}
+
+inline agx::AffineMatrix4x4 Convert(const FTransform& Transform)
+{
+	return ConvertMatrix(Transform.GetLocation(), Transform.GetRotation());
+}
+
+inline agx::AffineMatrix4x4Vector Convert(const TArray<FTransform>& Transforms)
+{
+	agx::AffineMatrix4x4Vector V;
+	V.reserve(Transforms.Num());
+	for (const auto& Transform : Transforms)
+		V.push_back(Convert(Transform));
+
+	return V;
 }
 
 //

@@ -6,6 +6,7 @@
 #include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_Check.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/World.h"
@@ -47,7 +48,8 @@ FLidarBarrier* UAGX_LidarSensorComponent::GetOrCreateNative()
 	if (HasNative())
 		return GetNative();
 
-	NativeBarrier.AllocateNative();
+	PatternFetcher.SetLidar(this);
+	NativeBarrier.AllocateNative(ScanPattern, &PatternFetcher);
 	AGX_CHECK(NativeBarrier.HasNative());
 	UpdateNativeProperties();
 	return GetNative();
@@ -91,7 +93,7 @@ bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
 	{
 		// List of names of properties that does not support editing after initialization.
 		static const TArray<FName> PropertiesNotEditableDuringPlay = {
-			GET_MEMBER_NAME_CHECKED(ThisClass, Range)};
+			GET_MEMBER_NAME_CHECKED(ThisClass, ScanPattern)};
 
 		if (PropertiesNotEditableDuringPlay.Contains(InProperty->GetFName()))
 		{
@@ -135,4 +137,42 @@ void UAGX_LidarSensorComponent::UpdateNativeProperties()
 {
 	AGX_CHECK(HasNative());
 	NativeBarrier.SetRange(Range);
+}
+
+TArray<FTransform> UAGX_LidarSensorComponent::FetchRayTransforms()
+{
+	AGX_CHECK(ScanPattern == EAGX_LidarScanPattern::Custom);
+	if (!OnFetchRayTransforms.IsBound())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Lidar Sensor '%s' in '%s' uses Custom Scan Pattern but the "
+				 "OnFetchRayTransforms delegate has not been assinged. Assign the "
+				 "OnFetchRayTransforms delegate in order to use a Custom scan pattern."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return TArray<FTransform>();
+	}
+
+	return OnFetchRayTransforms.Execute();
+}
+
+FAGX_CustomPatternInterval UAGX_LidarSensorComponent::FetchNextInterval()
+{
+	AGX_CHECK(ScanPattern == EAGX_LidarScanPattern::Custom);
+	if (!OnFetchNextPatternInterval.IsBound())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Lidar Sensor '%s' in '%s' uses Custom Scan Pattern but the "
+				 "FOnFetchNextPatternInterval delegate has not been assinged. Assign the "
+				 "FOnFetchNextPatternInterval delegate in order to use a Custom scan pattern."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return FAGX_CustomPatternInterval();
+	}
+
+	double TimeStamp = 0.0;
+	if (UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this))
+		TimeStamp = Sim->GetTimeStamp();
+
+	return OnFetchNextPatternInterval.Execute(TimeStamp);
 }

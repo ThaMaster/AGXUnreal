@@ -2,11 +2,16 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Sensors/AGX_LidarEnums.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
 // Standard library includes.
 #include <memory>
+
+class FCustomPatternFetcherBase;
 
 struct FLidarRef;
 
@@ -19,7 +24,7 @@ public:
 	~FLidarBarrier();
 
 	bool HasNative() const;
-	void AllocateNative();
+	void AllocateNative(EAGX_LidarScanPattern Pattern, FCustomPatternFetcherBase* PatternFetcher);
 	FLidarRef* GetNative();
 	const FLidarRef* GetNative() const;
 	void ReleaseNative();

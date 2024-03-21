@@ -43,9 +43,9 @@ namespace AGX_SensorEnvironment_helpers
 		Sphere->SetWorldLocation(Lidar->GetComponentLocation());
 
 		if (!FMath::IsNearlyEqual(
-				Sphere->GetUnscaledSphereRadius(), static_cast<float>(Lidar->Range)))
+				Sphere->GetUnscaledSphereRadius(), static_cast<float>(Lidar->Range.Max)))
 		{
-			Sphere->SetSphereRadius(Lidar->Range, /*bUpdateOverlaps*/ true);
+			Sphere->SetSphereRadius(Lidar->Range.Max, /*bUpdateOverlaps*/ true);
 		}
 	}
 }
@@ -235,9 +235,21 @@ bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 		return false;
 
 	if (Terrain->bEnableTerrainPaging)
-		return NativeBarrier.Add(*Terrain->GetOrCreateNativeTerrainPager());
+	{
+		FTerrainPagerBarrier* PagerBarrier = Terrain->GetOrCreateNativeTerrainPager();
+		if (PagerBarrier == nullptr)
+			return false;
+
+		return NativeBarrier.Add(*PagerBarrier);
+	}
 	else
-		return NativeBarrier.Add(*Terrain->GetOrCreateNative());
+	{
+		FTerrainBarrier* TerrainBarrier = Terrain->GetOrCreateNative();
+		if (TerrainBarrier == nullptr)
+			return false;
+
+		return NativeBarrier.Add(*TerrainBarrier);
+	}
 }
 
 bool AAGX_SensorEnvironment::RemoveMesh(UStaticMeshComponent* Mesh)
@@ -386,7 +398,11 @@ void AAGX_SensorEnvironment::RegisterLidars()
 	{
 		if (UAGX_LidarSensorComponent* Lidar = LidarRef.GetLidarComponent())
 		{
-			NativeBarrier.Add(*Lidar->GetOrCreateNative());
+			FLidarBarrier* Barrier = Lidar->GetOrCreateNative();
+			if (Barrier == nullptr)
+				continue;
+
+			NativeBarrier.Add(*Barrier);
 
 			// Associate each Lidar with a USphereComponent used to detect objects in the world to
 			// give to AGX Dynamics during Play.

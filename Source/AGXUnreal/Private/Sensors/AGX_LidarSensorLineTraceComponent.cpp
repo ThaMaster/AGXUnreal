@@ -254,7 +254,7 @@ void UAGX_LidarSensorLineTraceComponent::RequestManualScan(
 	if (!bIsValid || !bEnabled)
 		return;
 
-	if (ExecutionMode != EAGX_LidarExecutonMode::Manual)
+	if (ExecutionMode != EAGX_LidarLineTraceExecutonMode::Manual)
 	{
 		UE_LOG(
 			LogAGX, Warning,
@@ -419,7 +419,7 @@ void UAGX_LidarSensorLineTraceComponent::OnStepForward(double TimeStamp)
 
 	UpdateElapsedTime(TimeStamp);
 
-	if (ExecutionMode != EAGX_LidarExecutonMode::Auto)
+	if (ExecutionMode != EAGX_LidarLineTraceExecutonMode::Auto)
 		return;
 
 	ScanAutoCPU();
