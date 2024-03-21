@@ -37,13 +37,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
 	FAGX_RealInterval Range {0.0, 20000.0};
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetRange(FAGX_RealInterval InRange);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	FAGX_RealInterval GetRange() const;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void Step();
 
 	bool HasNative() const;
