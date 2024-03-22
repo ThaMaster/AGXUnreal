@@ -1274,17 +1274,7 @@ namespace
 					   LicensePath;
 		}
 
-#if defined(__linux__) && !WITH_EDITOR
-		// On Linux, the message box sometimes end up behind the full-screen view in cooked builds.
-		// Therefore we print the message directly to the screen for that case.
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(INDEX_NONE, 100.f, FColor::Red, Message);
-		}
-		UE_LOG(LogAGX, Error, TEXT("%s"), *Message);
-#else
 		FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail, 8.f);
-#endif
 	}
 }
 
