@@ -217,47 +217,47 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateURDFFileGui()
 				.Content()
 				[
 					SNew(SVerticalBox)
-						+ SVerticalBox::Slot()
-						.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
-						.AutoHeight()
+					+ SVerticalBox::Slot()
+					.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
+					.AutoHeight()
+					[
+						SNew(STextBlock)
+						.Text(LOCTEXT("BrowseUrdfPackagePathText", "Select URDF package path"))
+						.Font(FAGX_SlateUtilities::CreateFont(12))
+					]
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					.Padding(FMargin(5.f, 5.f))
+					[
+						SNew(SHorizontalBox)
+						+ SHorizontalBox::Slot()
+						.AutoWidth()
+						.Padding(FMargin(0.f, 0.f, 33.f, 0.f))
 						[
 							SNew(STextBlock)
-							.Text(LOCTEXT("BrowseUrdfPackagePathText", "Select URDF package path"))
-							.Font(FAGX_SlateUtilities::CreateFont(12))
+							.Text(LOCTEXT("UrdfPackagePathText", "URDF Package:"))
+							.Font(FAGX_SlateUtilities::CreateFont(10))
 						]
-						+ SVerticalBox::Slot()
-						.AutoHeight()
-						.Padding(FMargin(5.f, 5.f))
+						+ SHorizontalBox::Slot()
+						.Padding(FMargin(0.f, 0.f, 5.f, 0.f))
+						.AutoWidth()
 						[
-							SNew(SHorizontalBox)
-							+ SHorizontalBox::Slot()
-							.AutoWidth()
-							.Padding(FMargin(0.f, 0.f, 33.f, 0.f))
-							[
-								SNew(STextBlock)
-								.Text(LOCTEXT("UrdfPackagePathText", "URDF Package:"))
-								.Font(FAGX_SlateUtilities::CreateFont(10))
-							]
-							+ SHorizontalBox::Slot()
-							.Padding(FMargin(0.f, 0.f, 5.f, 0.f))
-							.AutoWidth()
-							[
-								SNew(SEditableTextBox)
-								.MinDesiredWidth(150.0f)
-								.Text(this, &SAGX_ImportDialog::GetUrdfPackagePathText)
-								.OnTextCommitted(this, &SAGX_ImportDialog::OnUrdfPackagePathTextCommitted)
-							]
-							+ SHorizontalBox::Slot()
-							.AutoWidth()
-							[
-								SNew(SButton)
-								.Text(LOCTEXT("BrowseUrdfPackageButtonText", "Browse..."))
-								.ToolTipText(LOCTEXT("BrowseUrdfPackageButtonTooltip",
-									"Browse to the URDF package directory. This directory corresponds to the "
-									"package:// part of any filename path used in the URDF (.urdf) file"))
-								.OnClicked(this, &SAGX_ImportDialog::OnBrowseUrdfPackageButtonClicked)
-							]
+							SNew(SEditableTextBox)
+							.MinDesiredWidth(150.0f)
+							.Text(this, &SAGX_ImportDialog::GetUrdfPackagePathText)
+							.OnTextCommitted(this, &SAGX_ImportDialog::OnUrdfPackagePathTextCommitted)
 						]
+						+ SHorizontalBox::Slot()
+						.AutoWidth()
+						[
+							SNew(SButton)
+							.Text(LOCTEXT("BrowseUrdfPackageButtonText", "Browse..."))
+							.ToolTipText(LOCTEXT("BrowseUrdfPackageButtonTooltip",
+								"Browse to the URDF package directory. This directory corresponds to the "
+								"package:// part of any filename path used in the URDF (.urdf) file"))
+							.OnClicked(this, &SAGX_ImportDialog::OnBrowseUrdfPackageButtonClicked)
+						]
+					]
 				];
 	// clang-format on
 }
