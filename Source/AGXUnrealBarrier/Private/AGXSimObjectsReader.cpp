@@ -601,7 +601,7 @@ AGXUNREALBARRIER_API bool FAGXSimObjectsReader::ReadUrdf(
 	{
 		InitJointsPtr = &InitJoints;
 		for (const auto V : InInitJoints)
-			InitJoints.push_back(V);
+			InitJoints.push_back(ConvertAngleToAGX(V));
 	}
 
 	agxModel::UrdfReader::Settings UrdfSettings(

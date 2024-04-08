@@ -291,7 +291,7 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateURDFInitJointsGui()
 						[
 							SNew(STextBlock)
 							.Text(LOCTEXT("InitJointsDetailsText", 
-								"Enter a space separated list of initial joint positions (radians), for example: 0.3 1.1 0.1\n"
+								"Enter a space separated list of initial joint positions (degrees), for example: 30 0 5.5 -14.4\n"
 								"Note that only revolute, continuous and prismatic joints are counted so the number of joint\n"
 								"elements should match the total number of those joint types in the URDF model."))
 							.Font(FAGX_SlateUtilities::CreateFont(10))
