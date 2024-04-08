@@ -18,10 +18,14 @@ private:
 	TSharedRef<SBorder> CreateSettingsGui();
 	TSharedRef<SBorder> CreateImportButtonGui();
 	TSharedRef<SBorder> CreateURDFFileGui();
+	TSharedRef<SBorder> CreateURDFInitJointsGui();
 	FText GetUrdfPackagePathText() const;
+	FText GetUrdfInitJointsText() const;
 	FReply OnBrowseUrdfPackageButtonClicked();
 	FReply OnImportButtonClicked();
 	void OnUrdfPackagePathTextCommitted(const FText& InNewText, ETextCommit::Type InCommitType);
+	void OnUrdfInitJointsTextCommitted(const FText& InNewText, ETextCommit::Type InCommitType);
 
 	FString UrdfPackagePath;
+	FString UrdfInitJoints;
 };

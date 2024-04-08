@@ -33,5 +33,5 @@ namespace FAGXSimObjectsReader
 	 */
 	AGXUNREALBARRIER_API bool ReadUrdf(
 		const FString& UrdfFilePath, const FString& UrdfPackagePath,
-		FSimulationObjectCollection& OutSimObjects);
+		const TArray<double>& InitJoints, FSimulationObjectCollection& OutSimObjects);
 };

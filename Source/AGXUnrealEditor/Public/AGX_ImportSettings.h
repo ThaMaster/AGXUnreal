@@ -16,6 +16,8 @@ struct FAGX_ImportSettings
 	// in the .urdf file, typically used for pointing at mesh files. Can be left empty if the URDF
 	// file does not have any file paths in it, or obviously, if ImportType is not Urdf.
 	FString UrdfPackagePath;
+
+	TArray<double> UrdfInitialJoints;
 };
 
 struct FAGX_SynchronizeModelSettings

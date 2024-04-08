@@ -31,6 +31,22 @@ namespace AGX_ImportDialog_helpers
 
 		return Content.Contains("filename", ESearchCase::IgnoreCase);
 	}
+
+	TArray<double> JointsStrToArray(const FString& JointsStr)
+	{
+		TArray<double> Result;
+		if (JointsStr.IsEmpty())
+			return Result;
+
+		TArray<FString> JointValsStr;
+		JointsStr.ParseIntoArray(JointValsStr, TEXT(" "));
+		for (const auto& S : JointValsStr)
+		{
+			Result.Add(FCString::Atod(*S));
+		}
+
+		return Result;
+	}
 }
 
 void SAGX_ImportDialog::Construct(const FArguments& InArgs)
@@ -72,6 +88,12 @@ void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 				CreateURDFFileGui()
 			]
 			+ SVerticalBox::Slot()
+			.Padding(FMargin(5.0f, 0.0f))
+			.AutoHeight()
+			[
+				CreateURDFInitJointsGui()
+			]
+			+ SVerticalBox::Slot()
 			.AutoHeight()
 			.Padding(FMargin(5.0f, 5.0f))
 			[
@@ -109,6 +131,7 @@ TOptional<FAGX_ImportSettings> SAGX_ImportDialog::ToImportSettings()
 	Settings.ImportType = ImportType;
 	Settings.bOpenBlueprintEditorAfterImport = true;
 	Settings.UrdfPackagePath = UrdfPackagePath;
+	Settings.UrdfInitialJoints = AGX_ImportDialog_helpers::JointsStrToArray(UrdfInitJoints);
 	return Settings;
 }
 
@@ -239,9 +262,67 @@ TSharedRef<SBorder> SAGX_ImportDialog::CreateURDFFileGui()
 	// clang-format on
 }
 
+TSharedRef<SBorder> SAGX_ImportDialog::CreateURDFInitJointsGui()
+{
+	if (ImportType != EAGX_ImportType::Urdf)
+	{
+		return MakeShared<SBorder>();
+	}
+
+	// clang-format off
+	return SNew(SBorder)
+				.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
+				.BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
+				.Padding(FMargin(5.0f, 5.0f))
+				.Content()
+				[
+					SNew(SVerticalBox)
+						+ SVerticalBox::Slot()
+						.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
+						.AutoHeight()
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("InitJointsText", "(Optional) initial joint positions"))
+							.Font(FAGX_SlateUtilities::CreateFont(12))
+						]
+						+ SVerticalBox::Slot()
+						.Padding(FMargin(10.0f, 10.0f, 10.f, 10.f))
+						.AutoHeight()
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("InitJointsDetailsText", 
+								"Enter a space separated list of initial joint positions (radians), for example: 0.3 1.1 0.1\n"
+								"Note that only revolute, continuous and prismatic joints are counted so the number of joint\n"
+								"elements should match the total number of those joint types in the URDF model."))
+							.Font(FAGX_SlateUtilities::CreateFont(10))
+						]
+						+ SVerticalBox::Slot()
+						.AutoHeight()
+						.Padding(FMargin(5.f, 5.f))
+						[
+							SNew(SHorizontalBox)
+							+ SHorizontalBox::Slot()
+							.Padding(FMargin(0.f, 0.f, 5.f, 0.f))
+							.AutoWidth()
+							[
+								SNew(SEditableTextBox)
+								.MinDesiredWidth(150.0f)
+								.Text(this, &SAGX_ImportDialog::GetUrdfInitJointsText)
+								.OnTextCommitted(this, &SAGX_ImportDialog::OnUrdfInitJointsTextCommitted)
+							]
+						]
+				];
+	// clang-format on
+}
+
 FText SAGX_ImportDialog::GetUrdfPackagePathText() const
 {
 	return FText::FromString(UrdfPackagePath);
+}
+
+FText SAGX_ImportDialog::GetUrdfInitJointsText() const
+{
+	return FText::FromString(UrdfInitJoints);
 }
 
 FReply SAGX_ImportDialog::OnImportButtonClicked()
@@ -270,6 +351,12 @@ void SAGX_ImportDialog::OnUrdfPackagePathTextCommitted(
 	const FText& InNewText, ETextCommit::Type InCommitType)
 {
 	UrdfPackagePath = InNewText.ToString();
+}
+
+void SAGX_ImportDialog::OnUrdfInitJointsTextCommitted(
+	const FText& InNewText, ETextCommit::Type InCommitType)
+{
+	UrdfInitJoints = InNewText.ToString();
 }
 
 #undef LOCTEXT_NAMESPACE
