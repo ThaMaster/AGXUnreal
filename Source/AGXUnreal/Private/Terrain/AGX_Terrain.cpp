@@ -140,12 +140,35 @@ bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 		return true;
 	}
 
-	// UpdateNativeMaterial is responsible to create an instance if none exists and do the
+	// UpdateNativeTerrainMaterial is responsible to create an instance if none exists and do the
 	// asset/instance swap.
-	if (!UpdateNativeMaterial())
+	if (!UpdateNativeTerrainMaterial())
 	{
 		// Something went wrong, restore original TerrainMaterial.
 		TerrainMaterial = TerrainMaterialOrig;
+		return false;
+	}
+
+	return true;
+}
+
+bool AAGX_Terrain::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
+{
+	UAGX_ShapeMaterial* ShapeMaterialOrig = ShapeMaterial;
+	ShapeMaterial = InShapeMaterial;
+
+	if (!HasNative())
+	{
+		// Not in play, we are done.
+		return true;
+	}
+
+	// UpdateNativeShapeMaterial is responsible to create an instance if none exists and do the
+	// asset/instance swap.
+	if (!UpdateNativeShapeMaterial())
+	{
+		// Something went wrong, restore original ShapeMaterial.
+		ShapeMaterial = ShapeMaterialOrig;
 		return false;
 	}
 
@@ -915,12 +938,20 @@ void AAGX_Terrain::InitializeNative()
 	AddTerrainPagerBodies();
 	InitializeRendering();
 
-	if (!UpdateNativeMaterial())
+	if (!UpdateNativeTerrainMaterial())
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("UpdateNativeMaterial returned false in AGX_Terrain. "
-				 "Ensure the selected Terrain Material is valid."));
+			TEXT("UpdateNativeTerrainMaterial returned false in AGX_Terrain '%s'. "
+				 "Ensure the selected Terrain Material is valid."), *GetName());
+	}
+
+	if (!UpdateNativeShapeMaterial())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UpdateNativeShapeMaterial returned false in AGX_Terrain '%s'. "
+				 "Ensure the selected Shape Material is valid."), *GetName());
 	}
 }
 
@@ -1293,36 +1324,52 @@ void AAGX_Terrain::InitializeRendering()
 	UpdateLandscapeMaterialParameters();
 }
 
-bool AAGX_Terrain::UpdateNativeMaterial()
+bool AAGX_Terrain::UpdateNativeTerrainMaterial()
 {
 	if (!HasNative())
 		return false;
 
 	if (TerrainMaterial == nullptr)
 	{
-		GetNative()->ClearMaterial();
+		GetNative()->ClearMaterials();
 		return true;
 	}
 
-	// Set TerrainMaterial
-	UAGX_TerrainMaterial* TerrainMaterialInstance =
+	UAGX_TerrainMaterial* Instance =
 		static_cast<UAGX_TerrainMaterial*>(TerrainMaterial->GetOrCreateInstance(GetWorld()));
-	check(TerrainMaterialInstance);
+	check(Instance);
 
-	if (TerrainMaterial != TerrainMaterialInstance)
-	{
-		TerrainMaterial = TerrainMaterialInstance;
-	}
+	if (TerrainMaterial != Instance)
+		TerrainMaterial = Instance;
 
 	FTerrainMaterialBarrier* TerrainMaterialBarrier =
-		TerrainMaterialInstance->GetOrCreateTerrainMaterialNative(GetWorld());
+		Instance->GetOrCreateTerrainMaterialNative(GetWorld());
 	check(TerrainMaterialBarrier);
 
 	GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
 
-	// Set ShapeMaterial
-	FShapeMaterialBarrier* MaterialBarrier =
-		TerrainMaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+	return true;
+}
+
+bool AAGX_Terrain::UpdateNativeShapeMaterial()
+{
+	if (!HasNative())
+		return false;
+
+	if (ShapeMaterial == nullptr)
+	{
+		GetNative()->ClearMaterials();
+		return true;
+	}
+
+	UAGX_ShapeMaterial* Instance =
+		static_cast<UAGX_ShapeMaterial*>(ShapeMaterial->GetOrCreateInstance(GetWorld()));
+	check(Instance);
+
+	if (ShapeMaterial != Instance)
+		ShapeMaterial = Instance;
+
+	FShapeMaterialBarrier* MaterialBarrier = Instance->GetOrCreateShapeMaterialNative(GetWorld());
 	check(MaterialBarrier);
 
 	GetNative()->SetShapeMaterial(*MaterialBarrier);

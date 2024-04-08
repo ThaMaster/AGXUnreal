@@ -71,7 +71,7 @@ public:
 	/**
 	 * Clears both the internal shape and terrain materials.
 	 */
-	void ClearMaterial();
+	void ClearMaterials();
 
 	int32 GetGridSizeX() const;
 	int32 GetGridSizeY() const;

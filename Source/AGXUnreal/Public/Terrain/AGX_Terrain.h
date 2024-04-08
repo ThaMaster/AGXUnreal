@@ -51,6 +51,7 @@
 class UAGX_HeightFieldBoundsComponent;
 class UAGX_TerrainMaterial;
 class UAGX_TerrainSpriteComponent;
+class UAGX_ShapeMaterial;
 class ALandscape;
 class UNiagaraComponent;
 class UNiagaraSystem;
@@ -193,6 +194,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
 	bool SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial);
+
+	/** Defines physical properties of the surface of the Terrain. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Terrain")
+	UAGX_ShapeMaterial* ShapeMaterial;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	bool SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial);
 
 	/**
 	 * List of collision groups that this Terrain is part of.
@@ -353,7 +361,8 @@ private:
 	bool CreateNativeTerrainPager();
 	void CreateNativeShovels();
 	void AddTerrainPagerBodies();
-	bool UpdateNativeMaterial();
+	bool UpdateNativeTerrainMaterial();
+	bool UpdateNativeShapeMaterial();
 
 	void InitializeRendering();
 	void InitializeDisplacementMap();
