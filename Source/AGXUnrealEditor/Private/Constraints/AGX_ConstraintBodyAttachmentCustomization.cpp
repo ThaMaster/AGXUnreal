@@ -156,7 +156,7 @@ FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 				 "Expected a root property, but the owner is %s."),
 			*Owner->GetFullName());
 
-		FArrayProperty* OwningArray = Cast<FArrayProperty>(Owner);
+		FArrayProperty* OwningArray = CastField<FArrayProperty>(Owner);
 		if (OwningArray == nullptr)
 		{
 			UE_LOG(
