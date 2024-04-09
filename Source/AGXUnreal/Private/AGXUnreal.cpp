@@ -6,6 +6,7 @@
 #include "AGX_Environment.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RuntimeStyle.h"
+#include "Materials/AGX_ShapeMaterial.h"
 
 // Unreal Engine includes.
 #include "UObject/CoreRedirects.h"
@@ -108,6 +109,15 @@ void FAGXUnrealModule::RegisterCoreRedirects()
 	Redirects.Emplace(
 		ECoreRedirectFlags::Type_Property, TEXT("AGX_Shovel.bOverrideBottomContactThreshold"),
 		TEXT("bOverrideContactRegionThreshold"));
+
+	// ShapeMaterial UFUNCTIONs with _BP postfix removed.
+	// This can safely be removed in AGXUnreal 1.14 or later.
+	for (TFieldIterator<UFunction> FuncIt(UAGX_ShapeMaterial::StaticClass()); FuncIt; ++FuncIt)
+	{
+		UFunction* Function = *FuncIt;
+		const FString BpName = FString::Printf(TEXT("AGX_ShapeMaterial.%s_BP"), *Function->GetName());
+		Redirects.Emplace(ECoreRedirectFlags::Type_Function, *BpName, *Function->GetName());
+	}
 
 	FCoreRedirects::AddRedirectList(Redirects, TEXT("AGXUnreal"));
 }

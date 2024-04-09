@@ -157,19 +157,9 @@ bool UAGX_ShapeMaterial::GetFrictionEnabled() const
 	AGX_ASSET_GETTER_IMPL_VALUE(Surface.bFrictionEnabled, GetFrictionEnabled);
 }
 
-void UAGX_ShapeMaterial::SetRoughness_BP(float InRoughness)
-{
-	SetRoughness(static_cast<double>(InRoughness));
-}
-
 void UAGX_ShapeMaterial::SetRoughness(double InRoughness)
 {
 	AGX_ASSET_SETTER_IMPL_VALUE(Surface.Roughness, InRoughness, SetRoughness);
-}
-
-float UAGX_ShapeMaterial::GetRoughness_BP() const
-{
-	return static_cast<float>(GetRoughness());
 }
 
 double UAGX_ShapeMaterial::GetRoughness() const
@@ -177,29 +167,14 @@ double UAGX_ShapeMaterial::GetRoughness() const
 	AGX_ASSET_GETTER_IMPL_VALUE(Surface.Roughness, GetRoughness);
 }
 
-void UAGX_ShapeMaterial::SetSurfaceViscosity_BP(float Viscosity)
-{
-	SetSurfaceViscosity(static_cast<double>(Viscosity));
-}
-
 void UAGX_ShapeMaterial::SetSurfaceViscosity(double Viscosity)
 {
 	AGX_ASSET_SETTER_IMPL_VALUE(Surface.Viscosity, Viscosity, SetSurfaceViscosity);
 }
 
-float UAGX_ShapeMaterial::GetSurfaceViscosity_BP() const
-{
-	return static_cast<float>(GetSurfaceViscosity());
-}
-
 double UAGX_ShapeMaterial::GetSurfaceViscosity() const
 {
 	AGX_ASSET_GETTER_IMPL_VALUE(Surface.Viscosity, GetSurfaceViscosity);
-}
-
-void UAGX_ShapeMaterial::SetAdhesion_BP(float AdhesiveForce, float AdhesiveOverlap)
-{
-	SetAdhesion(static_cast<double>(AdhesiveForce), static_cast<double>(AdhesiveOverlap));
 }
 
 void UAGX_ShapeMaterial::SetAdhesion(double AdhesiveForce, double AdhesiveOverlap)
@@ -225,19 +200,9 @@ void UAGX_ShapeMaterial::SetAdhesion(double AdhesiveForce, double AdhesiveOverla
 	}
 }
 
-float UAGX_ShapeMaterial::GetAdhesiveForce_BP() const
-{
-	return static_cast<float>(GetAdhesiveForce());
-}
-
 double UAGX_ShapeMaterial::GetAdhesiveForce() const
 {
 	AGX_ASSET_GETTER_IMPL_VALUE(Surface.AdhesiveForce, GetAdhesiveForce);
-}
-
-float UAGX_ShapeMaterial::GetAdhesiveOverlap_BP() const
-{
-	return static_cast<float>(GetAdhesiveOverlap());
 }
 
 double UAGX_ShapeMaterial::GetAdhesiveOverlap() const
@@ -246,10 +211,6 @@ double UAGX_ShapeMaterial::GetAdhesiveOverlap() const
 }
 
 // Bulk properties.
-void UAGX_ShapeMaterial::SetDensity_BP(float InDensity)
-{
-	SetDensity(static_cast<double>(InDensity));
-}
 
 void UAGX_ShapeMaterial::SetDensity(double InDensity)
 {
@@ -261,19 +222,9 @@ double UAGX_ShapeMaterial::GetDensity() const
 	AGX_ASSET_GETTER_IMPL_VALUE(Bulk.Density, GetDensity);
 }
 
-float UAGX_ShapeMaterial::GetDensity_BP() const
-{
-	return static_cast<float>(GetDensity());
-}
-
 void UAGX_ShapeMaterial::SetYoungsModulus(double InYoungsModulus)
 {
 	AGX_ASSET_SETTER_IMPL_VALUE(Bulk.YoungsModulus, InYoungsModulus, SetYoungsModulus);
-}
-
-void UAGX_ShapeMaterial::SetYoungsModulus_BP(float InYoungsModulus)
-{
-	SetYoungsModulus(static_cast<double>(InYoungsModulus));
 }
 
 double UAGX_ShapeMaterial::GetYoungsModulus() const
@@ -281,24 +232,9 @@ double UAGX_ShapeMaterial::GetYoungsModulus() const
 	AGX_ASSET_GETTER_IMPL_VALUE(Bulk.YoungsModulus, GetYoungsModulus);
 }
 
-float UAGX_ShapeMaterial::GetYoungsModulus_BP() const
-{
-	return static_cast<float>(GetYoungsModulus());
-}
-
-void UAGX_ShapeMaterial::SetBulkViscosity_BP(float InBulkViscosity)
-{
-	SetBulkViscosity(InBulkViscosity);
-}
-
 void UAGX_ShapeMaterial::SetBulkViscosity(double InBulkViscosity)
 {
 	AGX_ASSET_SETTER_IMPL_VALUE(Bulk.Viscosity, InBulkViscosity, SetBulkViscosity);
-}
-
-float UAGX_ShapeMaterial::GetBulkViscosity_BP() const
-{
-	return static_cast<float>(GetBulkViscosity());
 }
 
 double UAGX_ShapeMaterial::GetBulkViscosity() const
@@ -306,29 +242,14 @@ double UAGX_ShapeMaterial::GetBulkViscosity() const
 	AGX_ASSET_GETTER_IMPL_VALUE(Bulk.Viscosity, GetBulkViscosity);
 }
 
-void UAGX_ShapeMaterial::SetSpookDamping_BP(float InSpookDamping)
-{
-	SetSpookDamping(static_cast<double>(InSpookDamping));
-}
-
 void UAGX_ShapeMaterial::SetSpookDamping(double InSpookDamping)
 {
 	AGX_ASSET_SETTER_IMPL_VALUE(Bulk.SpookDamping, InSpookDamping, SetSpookDamping);
 }
 
-float UAGX_ShapeMaterial::GetSpookDamping_BP() const
-{
-	return static_cast<float>(GetSpookDamping());
-}
-
 double UAGX_ShapeMaterial::GetSpookDamping() const
 {
 	AGX_ASSET_GETTER_IMPL_VALUE(Bulk.SpookDamping, GetSpookDamping);
-}
-
-void UAGX_ShapeMaterial::SetMinMaxElasticRestLength_BP(float InMin, float InMax)
-{
-	SetMinMaxElasticRestLength(static_cast<double>(InMin), static_cast<double>(InMax));
 }
 
 void UAGX_ShapeMaterial::SetMinMaxElasticRestLength(double InMin, double InMax)
@@ -355,19 +276,9 @@ void UAGX_ShapeMaterial::SetMinMaxElasticRestLength(double InMin, double InMax)
 	}
 }
 
-float UAGX_ShapeMaterial::GetMinElasticRestLength_BP() const
-{
-	return static_cast<float>(GetMinElasticRestLength());
-}
-
 double UAGX_ShapeMaterial::GetMinElasticRestLength() const
 {
 	AGX_ASSET_GETTER_IMPL_VALUE(Bulk.MinElasticRestLength, GetMinElasticRestLength);
-}
-
-float UAGX_ShapeMaterial::GetMaxElasticRestLength_BP() const
-{
-	return static_cast<float>(GetMaxElasticRestLength());
 }
 
 double UAGX_ShapeMaterial::GetMaxElasticRestLength() const
@@ -376,19 +287,10 @@ double UAGX_ShapeMaterial::GetMaxElasticRestLength() const
 }
 
 // Wire properties.
-float UAGX_ShapeMaterial::GetYoungsModulusStretch_BP() const
-{
-	return static_cast<float>(GetYoungsModulusStretch());
-}
 
 double UAGX_ShapeMaterial::GetYoungsModulusStretch() const
 {
 	AGX_ASSET_GETTER_IMPL_VALUE(Wire.YoungsModulusStretch, GetYoungsModulusStretch);
-}
-
-void UAGX_ShapeMaterial::SetYoungsModulusStretch_BP(float InYoungsModulus)
-{
-	SetYoungsModulusStretch(static_cast<double>(InYoungsModulus));
 }
 
 void UAGX_ShapeMaterial::SetYoungsModulusStretch(double InYoungsModulus)
@@ -397,19 +299,9 @@ void UAGX_ShapeMaterial::SetYoungsModulusStretch(double InYoungsModulus)
 		Wire.YoungsModulusStretch, InYoungsModulus, SetYoungsModulusStretch);
 }
 
-float UAGX_ShapeMaterial::GetYoungsModulusBend_BP() const
-{
-	return static_cast<float>(GetYoungsModulusBend());
-}
-
 double UAGX_ShapeMaterial::GetYoungsModulusBend() const
 {
 	AGX_ASSET_GETTER_IMPL_VALUE(Wire.YoungsModulusBend, GetYoungsModulusBend);
-}
-
-void UAGX_ShapeMaterial::SetYoungsModulusBend_BP(float InYoungsModulus)
-{
-	SetYoungsModulusBend(static_cast<double>(InYoungsModulus));
 }
 
 void UAGX_ShapeMaterial::SetYoungsModulusBend(double InYoungsModulus)
@@ -417,19 +309,9 @@ void UAGX_ShapeMaterial::SetYoungsModulusBend(double InYoungsModulus)
 	AGX_ASSET_SETTER_IMPL_VALUE(Wire.YoungsModulusBend, InYoungsModulus, SetYoungsModulusBend);
 }
 
-float UAGX_ShapeMaterial::GetSpookDampingStretch_BP() const
-{
-	return static_cast<float>(GetSpookDampingStretch());
-}
-
 double UAGX_ShapeMaterial::GetSpookDampingStretch() const
 {
 	AGX_ASSET_GETTER_IMPL_VALUE(Wire.SpookDampingStretch, GetSpookDampingStretch);
-}
-
-void UAGX_ShapeMaterial::SetSpookDampingStretch_BP(float InSpookDamping)
-{
-	SetSpookDampingStretch(static_cast<double>(InSpookDamping));
 }
 
 void UAGX_ShapeMaterial::SetSpookDampingStretch(double InSpookDamping)
@@ -437,19 +319,9 @@ void UAGX_ShapeMaterial::SetSpookDampingStretch(double InSpookDamping)
 	AGX_ASSET_SETTER_IMPL_VALUE(Wire.SpookDampingStretch, InSpookDamping, SetSpookDampingStretch);
 }
 
-float UAGX_ShapeMaterial::GetSpookDampingBend_BP() const
-{
-	return static_cast<float>(GetSpookDampingBend());
-}
-
 double UAGX_ShapeMaterial::GetSpookDampingBend() const
 {
 	AGX_ASSET_GETTER_IMPL_VALUE(Wire.SpookDampingBend, GetSpookDampingBend);
-}
-
-void UAGX_ShapeMaterial::SetSpookDampingBend_BP(float InSpookDamping)
-{
-	SetSpookDampingBend(static_cast<double>(InSpookDamping));
 }
 
 void UAGX_ShapeMaterial::SetSpookDampingBend(double InSpookDamping)
@@ -477,7 +349,7 @@ void UAGX_ShapeMaterial::CopyFrom(const FShapeMaterialBarrier& Source)
 	ImportGuid = Source.GetGuid();
 }
 
-UAGX_MaterialBase* UAGX_ShapeMaterial::GetOrCreateInstance(UWorld* PlayingWorld)
+UAGX_ShapeMaterial* UAGX_ShapeMaterial::GetOrCreateInstance(UWorld* PlayingWorld)
 {
 	if (IsInstance())
 	{
@@ -674,4 +546,14 @@ bool UAGX_ShapeMaterial::IsInstance() const
 	AGX_CHECK(bIsInstance != IsAsset());
 
 	return bIsInstance;
+}
+
+void UAGX_ShapeMaterial::CopyShapeMaterialProperties(const UAGX_ShapeMaterial* Source)
+{
+	if (Source)
+	{
+		Bulk = Source->Bulk;
+		Surface = Source->Surface;
+		Wire = Source->Wire;
+	}
 }
