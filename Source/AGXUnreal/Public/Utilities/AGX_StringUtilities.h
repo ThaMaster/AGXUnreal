@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "HAL/FileManager.h"
 #include "Misc/EngineVersionComparison.h"
+#include "UObject/Field.h"
 
 // Standard library includes.
 #include <algorithm>
@@ -26,7 +27,7 @@ FORCEINLINE FName GetFNameSafe(const UObjectBase* Object)
 	}
 }
 
-#if !UE_VERSION_OLDER_THAN(4, 25, 0)
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
 FORCEINLINE FName GetFNameSafe(const FField* Field)
 {
 	if (Field == nullptr)
@@ -38,6 +39,8 @@ FORCEINLINE FName GetFNameSafe(const FField* Field)
 		return Field->GetFName();
 	}
 }
+#else
+// GetFNameSafe for FField provided by UObject/Field.h since Unreal Engine 5.4.
 #endif
 
 FORCEINLINE FString GetLabelSafe(const AActor* Actor)

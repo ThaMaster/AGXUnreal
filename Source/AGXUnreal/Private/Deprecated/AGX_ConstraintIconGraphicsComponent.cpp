@@ -213,7 +213,11 @@ public:
 						&Geometry->VertexFactory, Data, /*LightMapIndex*/ 0);
 					Geometry->VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(
 						&Geometry->VertexFactory, Data);
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
 					Geometry->VertexFactory.SetData(Data);
+#else
+					Geometry->VertexFactory.SetData(RHICmdList, Data);
+#endif
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 					Geometry->VertexFactory.InitResource();
@@ -487,11 +491,19 @@ private:
 					DynamicPrimitiveUniformBuffer.Set(
 						EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(), GetLocalBounds(),
 						true, false, DrawsVelocity(), Unknown);
+#elif UE_VERSION_OLDER_THAN(5, 4, 0)
+					/// \todo Replace Unknown with proper name or use some getter function to get a
+					/// proper value.
+					bool Unknown = false;
+					DynamicPrimitiveUniformBuffer.Set(
+						EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(), GetLocalBounds(),
+						true, false, Unknown);
 #else
 					/// \todo Replace Unknown with proper name or use some getter function to get a
 					/// proper value.
 					bool Unknown = false;
 					DynamicPrimitiveUniformBuffer.Set(
+						Collector.GetRHICommandList(),
 						EffectiveLocalToWorld, EffectiveLocalToWorld, GetBounds(), GetLocalBounds(),
 						true, false, Unknown);
 #endif

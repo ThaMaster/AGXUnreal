@@ -583,7 +583,7 @@ bool FAGXSimObjectsReader::ReadAGXArchive(
 	catch (const std::runtime_error& Error)
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Could not read .agx file '%s':\n\n%s"), *Filename, *Error.what());
+			LogAGX, Error, TEXT("Could not read .agx file '%s':\n\n%hs"), *Filename, Error.what());
 		return false;
 	}
 
