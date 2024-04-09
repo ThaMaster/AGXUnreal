@@ -162,6 +162,12 @@ FReply FAGX_TerrainMaterialCustomization::OnCreateShapeMaterialButtonClicked() c
 			FString::Printf(TEXT("Unable to create asset given Asset Path: '%s'"), *AssetPath),
 			SNotificationItem::ECompletionState::CS_Fail);
 	}
+	else
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(TEXT("Succesfully created asset: '%s'"), *AssetPath),
+			SNotificationItem::ECompletionState::CS_Success);
+	}
 
 	return FReply::Handled();
 }
