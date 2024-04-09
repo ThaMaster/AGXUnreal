@@ -113,15 +113,17 @@ bool FAGX_ObjectUtilities::SaveAsset(UObject& Asset, bool FullyLoad)
 	Package->GetMetaData();
 
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
-	return UPackage::SavePackage(Package, &Asset, RF_NoFlags, *PackageFilename);
+	const bool Result = UPackage::SavePackage(Package, &Asset, RF_NoFlags, *PackageFilename);
 #else
 	FSavePackageArgs SaveArgs;
 	SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-	return UPackage::SavePackage(Package, &Asset, *PackageFilename, SaveArgs);
+	const bool Result = UPackage::SavePackage(Package, &Asset, *PackageFilename, SaveArgs);
 #endif
 
-	if (FullyLoad)
+	if (Result && FullyLoad)
 		Package->FullyLoad();
+
+	return Result;
 }
 
 bool FAGX_ObjectUtilities::MarkAssetDirty(UObject& Asset)
