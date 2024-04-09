@@ -942,7 +942,8 @@ void AAGX_Terrain::InitializeNative()
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("UpdateNativeTerrainMaterial returned false in AGX_Terrain '%s'. "
-				 "Ensure the selected Terrain Material is valid."), *GetName());
+				 "Ensure the selected Terrain Material is valid."),
+			*GetName());
 	}
 
 	if (!UpdateNativeShapeMaterial())
@@ -950,7 +951,8 @@ void AAGX_Terrain::InitializeNative()
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("UpdateNativeShapeMaterial returned false in AGX_Terrain '%s'. "
-				 "Ensure the selected Shape Material is valid."), *GetName());
+				 "Ensure the selected Shape Material is valid."),
+			*GetName());
 	}
 }
 
@@ -1691,6 +1693,26 @@ void AAGX_Terrain::Serialize(FArchive& Archive)
 		SpriteComponent = CreateDefaultSubobject<UAGX_TerrainSpriteComponent>(
 			USceneComponent::GetDefaultSceneRootVariableName());
 		RootComponent = SpriteComponent;
+	}
+
+	if (ShouldUpgradeTo(Archive, FAGX_CustomVersion::TerrainMaterialShapeMaterialSplit) &&
+		TerrainMaterial != nullptr && ShapeMaterial == nullptr)
+	{
+		const FString Msg = FString::Printf(
+			TEXT("Important!\n\nIt was detected that the AGX Terrain Actor '%s' references an "
+				 "AGX Terrain Material but no Shape Material. The surface properties of a "
+				 "Terrain is no longer described by the Terrain Material, but instead is "
+				 "described by a separate Shape Material that can be assigned from the Terrain "
+				 "Actor's Details Panel.\n\nIt is recommended to open the Terrain Material and use "
+				 "the 'Create Shape Material' button to generate a Shape Material containing the "
+				 "Terrain surface properties of the Terrain Material and then assign it to the "
+				 "Terrain Actor. Note that this also affects all Contact Materials referencing a "
+				 "Terrain Material; these should be updated to point to a Shape Material generated "
+				 "from the previously pointed to Terrain Material.\n\nThis information is also "
+				 "available in the Changelog in the User Manual.\n\nTo disable this warning, simply "
+				 "re-save the Level that contains this Terrain Actor."),
+			*GetName());
+		FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(Msg);
 	}
 }
 
