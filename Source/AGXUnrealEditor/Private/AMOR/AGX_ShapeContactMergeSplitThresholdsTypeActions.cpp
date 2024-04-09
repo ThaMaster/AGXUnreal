@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
+#include "Utilities/AGX_SlateUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ShapeContactMergeSplitThresholdsTypeActions"
 
@@ -18,6 +19,15 @@ FText FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetName() const
 	return LOCTEXT("AssetName", "AGX Shape Contact Merge Split Thresholds");
 }
 
+const TArray<FText>& FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetSubMenus() const
+{
+	static const TArray<FText> SubMenus {
+		LOCTEXT("ShapeSubMenu", "Shape"),
+	};
+
+	return SubMenus;
+}
+
 uint32 FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetCategories()
 {
 	return AssetCategory;
@@ -25,7 +35,7 @@ uint32 FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetCategories()
 
 FColor FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetTypeColor() const
 {
-	return FColor(255, 115, 0);
+	return FAGX_SlateUtilities::GetAGXColorOrange();
 }
 
 FText FAGX_ShapeContactMergeSplitThresholdsTypeActions::GetAssetDescription(

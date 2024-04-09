@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Sensors/AGX_CameraSensorComponent.h"
+#include "Utilities/AGX_SlateUtilities.h"
 
 // Unreal Engine includes.
 #include "SceneView.h"
@@ -46,7 +47,7 @@ void FAGX_CameraSensorComponentVisualizer::DrawVisualization(
 	const FVector Corner3 =
 		Transform.TransformPositionNoScale(FVector(PlaneDistance, -HalfWidth, -HalfHeight));
 
-	static constexpr FColor Color {243, 139, 0};
+	const static FColor Color = FAGX_SlateUtilities::GetAGXColorOrange();
 
 	// Rectangle.
 	PDI->DrawLine(Corner0, Corner1, Color, SDPG_World);

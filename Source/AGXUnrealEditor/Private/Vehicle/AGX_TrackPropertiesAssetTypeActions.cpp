@@ -3,6 +3,7 @@
 #include "Vehicle/AGX_TrackPropertiesAssetTypeActions.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Utilities/AGX_SlateUtilities.h"
 #include "Vehicle/AGX_TrackProperties.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TrackPropertiesAssetTypeActions"
@@ -34,7 +35,7 @@ uint32 FAGX_TrackPropertiesAssetTypeActions::GetCategories()
 
 FColor FAGX_TrackPropertiesAssetTypeActions::GetTypeColor() const
 {
-	return FColor(255, 115, 0);
+	return FAGX_SlateUtilities::GetAGXColorOrange();
 }
 
 FText FAGX_TrackPropertiesAssetTypeActions::GetAssetDescription(const FAssetData& AssetData) const

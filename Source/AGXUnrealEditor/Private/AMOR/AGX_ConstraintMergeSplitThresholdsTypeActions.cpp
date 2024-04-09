@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_ConstraintMergeSplitThresholds.h"
+#include "Utilities/AGX_SlateUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintMergeSplitThresholdsTypeActions"
 
@@ -34,7 +35,7 @@ uint32 FAGX_ConstraintMergeSplitThresholdsTypeActions::GetCategories()
 
 FColor FAGX_ConstraintMergeSplitThresholdsTypeActions::GetTypeColor() const
 {
-	return FColor(255, 115, 0);
+	return FAGX_SlateUtilities::GetAGXColorOrange();
 }
 
 FText FAGX_ConstraintMergeSplitThresholdsTypeActions::GetAssetDescription(

@@ -928,6 +928,14 @@ FVector UAGX_RigidBodyComponent::GetCenterOfMassOffset() const
 	}
 }
 
+FVector UAGX_RigidBodyComponent::GetCenterOfMassPosition() const
+{
+	if (!HasNative())
+		return FVector::ZeroVector;
+
+	return NativeBarrier.GetCenterOfMassPosition();
+}
+
 void UAGX_RigidBodyComponent::SetAutoGenerateCenterOfMassOffset(bool bInAuto)
 {
 	if (HasNative())

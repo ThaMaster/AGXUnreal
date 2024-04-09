@@ -67,9 +67,9 @@ namespace AGX_AgxEdModeFileCustomization_helpers
 	bool RefreshMaterialLibraries()
 	{
 		bool Success = true;
-		Success &= AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary();
-		Success &= AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary();
-		Success &= AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary();
+		Success &= AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary(true);
+		Success &= AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary(true);
+		Success &= AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary(true);
 		return Success;
 	}
 }
