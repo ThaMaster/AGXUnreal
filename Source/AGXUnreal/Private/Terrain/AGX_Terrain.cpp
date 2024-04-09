@@ -10,7 +10,6 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
-#include "Materials/AGX_MaterialBase.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
 #include "Shapes/HeightFieldShapeBarrier.h"

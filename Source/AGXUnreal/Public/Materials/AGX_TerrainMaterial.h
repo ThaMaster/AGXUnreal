@@ -4,7 +4,9 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
-#include "Materials/AGX_MaterialBase.h"
+#include "Materials/AGX_ShapeMaterialBulkProperties.h"
+#include "Materials/AGX_ShapeMaterialSurfaceProperties.h"
+#include "Materials/AGX_ShapeMaterialWireProperties.h"
 #include "Materials/AGX_TerrainBulkProperties.h"
 #include "Materials/AGX_TerrainCompactionProperties.h"
 #include "Materials/AGX_TerrainExcavationContactProperties.h"

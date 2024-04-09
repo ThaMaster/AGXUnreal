@@ -36,24 +36,24 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 
 	// Surface properties.
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, bFrictionEnabled),
 		[](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Surface.bFrictionEnabled, SetFrictionEnabled) });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, Roughness),
 		[](ThisClass* This) { AGX_ASSET_DISPATCHER_LAMBDA_BODY(Surface.Roughness, SetRoughness) });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, Viscosity),
 		[](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Surface.Viscosity, SetSurfaceViscosity) });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, AdhesiveForce),
 		[](ThisClass* This)
 		{
@@ -65,7 +65,7 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 		});
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Surface),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Surface),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialSurfaceProperties, AdhesiveOverlap),
 		[](ThisClass* This)
 		{
@@ -78,23 +78,23 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 
 	// Bulk properties.
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Bulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, Density),
 		[](ThisClass* This) { AGX_ASSET_DISPATCHER_LAMBDA_BODY(Bulk.Density, SetDensity) });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Bulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, Viscosity),
 		[](ThisClass* This) { AGX_ASSET_DISPATCHER_LAMBDA_BODY(Bulk.Viscosity, SetBulkViscosity) });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Bulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, SpookDamping),
 		[](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Bulk.SpookDamping, SetSpookDamping) });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Bulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, MinElasticRestLength),
 		[](ThisClass* This)
 		{
@@ -107,7 +107,7 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 		});
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Bulk),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Bulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialBulkProperties, MaxElasticRestLength),
 		[](ThisClass* This)
 		{
@@ -121,25 +121,25 @@ void UAGX_ShapeMaterial::InitPropertyDispatcher()
 
 	// Wire properties.
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Wire),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialWireProperties, YoungsModulusStretch),
 		[](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Wire.YoungsModulusStretch, SetYoungsModulusStretch) });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Wire),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialWireProperties, YoungsModulusBend),
 		[](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Wire.YoungsModulusBend, SetYoungsModulusBend) });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Wire),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialWireProperties, SpookDampingStretch),
 		[](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Wire.SpookDampingStretch, SetSpookDampingStretch) });
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_MaterialBase, Wire),
+		GET_MEMBER_NAME_CHECKED(UAGX_ShapeMaterial, Wire),
 		GET_MEMBER_NAME_CHECKED(FAGX_ShapeMaterialWireProperties, SpookDampingBend),
 		[](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(Wire.SpookDampingBend, SetSpookDampingBend) });
