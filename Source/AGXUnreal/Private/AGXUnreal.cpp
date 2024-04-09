@@ -77,6 +77,9 @@ void FAGXUnrealModule::RegisterCoreRedirects()
 	Redirects.Emplace(
 		ECoreRedirectFlags::Type_Class, TEXT("AGX_TerrainMaterialInstance"),
 		TEXT("AGX_TerrainMaterial"));
+	Redirects.Emplace(
+		ECoreRedirectFlags::Type_Class, TEXT("AGX_MaterialBase"),
+		TEXT("AGX_ShapeMaterial"));
 
 	// The Shovel Refactor effort, the addition of Shovel Component, also introduced
 	// FAGX_ComponentReference and replaced the FAGX_RigidBodyComponentReference and
