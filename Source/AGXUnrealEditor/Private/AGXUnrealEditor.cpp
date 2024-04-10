@@ -69,6 +69,8 @@
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialCustomization.h"
 #include "Materials/AGX_ContactMaterialRegistrarActor.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponent.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponentCustomization.h"
 #include "Materials/AGX_ShapeMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialCustomization.h"
@@ -331,6 +333,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		UAGX_ContactMaterial::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_ContactMaterialCustomization::MakeInstance));
+	
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_ContactMaterialRegistrarComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_ContactMaterialRegistrarComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName(),
@@ -452,6 +459,9 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_ContactMaterial::StaticClass()->GetFName());
+	
+	PropertyModule.UnregisterCustomClassLayout(
+		UAGX_ContactMaterialRegistrarComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());
