@@ -13,7 +13,9 @@
 // Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
+#include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TerrainMaterialCustomization"
 
