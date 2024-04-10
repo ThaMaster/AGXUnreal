@@ -18,6 +18,8 @@
 
 #include "AGX_TerrainMaterial.generated.h"
 
+class UAGX_ShapeMaterial;
+
 /**
  * Defines the material for a terrain.
  *
@@ -288,18 +290,9 @@ public:
 
 	bool IsInstance() const;
 
-	// These Shape Material properties are here because in older versions of AGXUnreal, the Terrain
-	// Material contained these. We can still retrieve this data and put it into a new Shape
-	// Material using the helper button in the Details Panel. These can be removed once that
-	// helper-button is removed in a future release. See TerrainMaterialShapeMaterialSplit.
-	UPROPERTY()
-	FAGX_ShapeMaterialBulkProperties Bulk;
-
-	UPROPERTY()
-	FAGX_ShapeMaterialSurfaceProperties Surface;
-
-	UPROPERTY()
-	FAGX_ShapeMaterialWireProperties Wire;
+	const FAGX_ShapeMaterialBulkProperties& GetShapeMaterialBulkProperties();
+	const FAGX_ShapeMaterialSurfaceProperties& GetShapeMaterialSurfaceProperties();
+	const FAGX_ShapeMaterialWireProperties& GetShapeMaterialWireProperties();
 
 private:
 #if WITH_EDITOR
@@ -316,4 +309,17 @@ private:
 	TWeakObjectPtr<UAGX_TerrainMaterial> Asset;
 	TWeakObjectPtr<UAGX_TerrainMaterial> Instance;
 	FTerrainMaterialBarrier TerrainMaterialNativeBarrier;
+
+	// These Shape Material properties are here because in older versions of AGXUnreal, the Terrain
+	// Material contained these. We can still retrieve this data and put it into a new Shape
+	// Material using the helper button in the Details Panel. These can be removed once that
+	// helper-button is removed in a future release. See TerrainMaterialShapeMaterialSplit.
+	UPROPERTY()
+	FAGX_ShapeMaterialBulkProperties Bulk;
+
+	UPROPERTY()
+	FAGX_ShapeMaterialSurfaceProperties Surface;
+
+	UPROPERTY()
+	FAGX_ShapeMaterialWireProperties Wire;
 };

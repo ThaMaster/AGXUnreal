@@ -316,28 +316,28 @@ void FFAGX_RealInMaterialsBackwardsCompatibilitySpec::Define()
 				TerrainMaterial->TerrainCompaction.StressCutOffFraction == 0.000018);
 			TestTrue(
 				TEXT("The shape material should have restored Roughness"),
-				TerrainMaterial->Surface.Roughness == 0.000019);
+				TerrainMaterial->GetShapeMaterialSurfaceProperties().Roughness == 0.000019);
 			TestTrue(
 				TEXT("The shape material should have restored viscosity"),
-				TerrainMaterial->Surface.Viscosity == 0.000021);
+				TerrainMaterial->GetShapeMaterialSurfaceProperties().Viscosity == 0.000021);
 			TestTrue(
 				TEXT("The shape material should have restored adhesive force"),
-				TerrainMaterial->Surface.AdhesiveForce == 0.000022);
+				TerrainMaterial->GetShapeMaterialSurfaceProperties().AdhesiveForce == 0.000022);
 			TestTrue(
 				TEXT("The shape material should have restored adhesive overlap"),
-				TerrainMaterial->Surface.AdhesiveOverlap == 0.000023);
+				TerrainMaterial->GetShapeMaterialSurfaceProperties().AdhesiveOverlap == 0.000023);
 			TestTrue(
 				TEXT("The shape material should have restored Young's modulus stretch"),
-				TerrainMaterial->Wire.YoungsModulusStretch == 0.000024);
+				TerrainMaterial->GetShapeMaterialWireProperties().YoungsModulusStretch == 0.000024);
 			TestTrue(
 				TEXT("The shape material should have restored Spook damping stretch"),
-				TerrainMaterial->Wire.SpookDampingStretch == 0.000025);
+				TerrainMaterial->GetShapeMaterialWireProperties().SpookDampingStretch == 0.000025);
 			TestTrue(
 				TEXT("The shape material should have restored Young's modulus bend"),
-				TerrainMaterial->Wire.YoungsModulusBend == 0.000026);
+				TerrainMaterial->GetShapeMaterialWireProperties().YoungsModulusBend == 0.000026);
 			TestTrue(
 				TEXT("The shape material should have restored Spook damping bend"),
-				TerrainMaterial->Wire.SpookDampingBend == 0.000027);
+				TerrainMaterial->GetShapeMaterialWireProperties().SpookDampingBend == 0.000027);
 		});
 	});
 }

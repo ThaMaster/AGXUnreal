@@ -193,10 +193,15 @@ void FTerrainBarrier::SetTerrainMaterial(const FTerrainMaterialBarrier& TerrainM
 	NativeRef->Native->setTerrainMaterial(TerrainMaterial.GetNative()->Native);
 }
 
-void FTerrainBarrier::ClearMaterials()
+void FTerrainBarrier::ClearTerrainMaterial()
 {
 	check(HasNative());
 	NativeRef->Native->setTerrainMaterial(nullptr);
+}
+
+void FTerrainBarrier::ClearShapeMaterial()
+{
+	check(HasNative());
 	NativeRef->Native->setMaterial(nullptr);
 }
 

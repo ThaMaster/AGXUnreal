@@ -18,7 +18,7 @@ class UAGX_ContactMaterialRegistrarComponent;
 class UAGX_ShapeMaterial;
 
 /**
- * Defines material properties for contacts between AGX Shapes with specific AGX Materials. This
+ * Defines material properties for contacts between Shapes with specific Shape Materials. This
  * will override many of their individual material properties (does for example not override ones
  * affecting mass, such as density).
  *

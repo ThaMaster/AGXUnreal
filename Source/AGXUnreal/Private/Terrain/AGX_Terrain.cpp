@@ -1332,7 +1332,7 @@ bool AAGX_Terrain::UpdateNativeTerrainMaterial()
 
 	if (TerrainMaterial == nullptr)
 	{
-		GetNative()->ClearMaterials();
+		GetNative()->ClearTerrainMaterial();
 		return true;
 	}
 
@@ -1359,7 +1359,7 @@ bool AAGX_Terrain::UpdateNativeShapeMaterial()
 
 	if (ShapeMaterial == nullptr)
 	{
-		GetNative()->ClearMaterials();
+		GetNative()->ClearShapeMaterial();
 		return true;
 	}
 

@@ -49,11 +49,6 @@ void FAGX_TerrainMaterialCustomization::CustomizeDetails(IDetailLayoutBuilder& I
 	// TerrainMaterialShapeMaterialSplit to the new setup where Terrain and Shape Materials are
 	// separated. Remove this once this has been available in a few major releases.
 	AddShapeMaterialCreateGui(*TerrainMaterial);
-
-	// Hide 'Bulk' properties from the terrain material view. The 'Bulk' properties of the terrain
-	// material is specified in FAGX_TerrainMaterialProperties
-	InDetailBuilder.HideProperty(
-		InDetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, Bulk)));
 }
 
 void FAGX_TerrainMaterialCustomization::AddShapeMaterialCreateGui(
@@ -157,9 +152,9 @@ FReply FAGX_TerrainMaterialCustomization::OnCreateShapeMaterialButtonClicked() c
 		NewObject<UAGX_ShapeMaterial>(Package, FName(*AssetName), RF_Public | RF_Standalone);
 
 	// Copy over the data.
-	Asset->Bulk = TerrainMaterial->Bulk;
-	Asset->Surface = TerrainMaterial->Surface;
-	Asset->Wire = TerrainMaterial->Wire;
+	Asset->Bulk = TerrainMaterial->GetShapeMaterialBulkProperties();
+	Asset->Surface = TerrainMaterial->GetShapeMaterialSurfaceProperties();
+	Asset->Wire = TerrainMaterial->GetShapeMaterialWireProperties();
 
 	if (Asset == nullptr)
 	{

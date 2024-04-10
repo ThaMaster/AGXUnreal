@@ -15,10 +15,10 @@
 #include "AGX_ShapeMaterial.generated.h"
 
 /**
- * Defines contacts properties between AGX Shapes as well as properties affecting the mass
+ * Defines contacts properties between Shapes as well as properties affecting the mass
  * distribution of AGX Rigid Bodies.
  *
- * Since a contact involves two AGX Shapes, the final parameters used as input to the force
+ * Since a contact involves two Shapes, the final parameters used as input to the force
  * equations are a fusion of the two shape's AGX Materials. Though, the way the two material's
  * properties are combined might not be desirable in all scenarios. Therefore, there is another AGX
  * asset called AGX Contact Material that provides a well-defined and more detailed definition over

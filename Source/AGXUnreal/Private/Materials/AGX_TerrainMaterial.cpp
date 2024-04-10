@@ -1103,3 +1103,18 @@ bool UAGX_TerrainMaterial::IsInstance() const
 
 	return bIsInstance;
 }
+
+const FAGX_ShapeMaterialBulkProperties& UAGX_TerrainMaterial::GetShapeMaterialBulkProperties()
+{
+	return Bulk;
+}
+
+const FAGX_ShapeMaterialSurfaceProperties& UAGX_TerrainMaterial::GetShapeMaterialSurfaceProperties()
+{
+	return Surface;
+}
+
+const FAGX_ShapeMaterialWireProperties& UAGX_TerrainMaterial::GetShapeMaterialWireProperties()
+{
+	return Wire;
+}
