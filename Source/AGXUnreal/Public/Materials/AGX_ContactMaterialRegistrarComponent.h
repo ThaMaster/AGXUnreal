@@ -36,6 +36,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material Registrar")
 	void AddContactMaterial(UAGX_ContactMaterial* ContactMaterial);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material Registrar")
+	const TArray<UAGX_ContactMaterial*>& GetContactMaterials() const;
+
 	// ~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
