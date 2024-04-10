@@ -12,10 +12,11 @@ TSharedRef<IDetailCustomization> FAGX_ContactMaterialRegistrarComponentCustomiza
 	return MakeShareable(new FAGX_ContactMaterialRegistrarComponentCustomization);
 }
 
-void FAGX_ContactMaterialRegistrarComponentCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
+void FAGX_ContactMaterialRegistrarComponentCustomization::CustomizeDetails(
+	IDetailLayoutBuilder& DetailBuilder)
 {
-	DetailBuilder.HideCategory(FName("Sockets"));
-	DetailBuilder.HideCategory(FName("Variable"));
+	DetailBuilder.EditCategory(
+		"AGX Contact Material Registrar", FText::GetEmpty(), ECategoryPriority::Variable);
 }
 
 #undef LOCTEXT_NAMESPACE
