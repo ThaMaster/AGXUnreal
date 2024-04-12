@@ -60,8 +60,9 @@ class UActorComponent;
  * A struct that both contains an FAGX_ComponentReference and has custom serialization code must
  * ensure that the garbage collector is made aware of the possible change in referencing the Owning
  * Actor. This is done by calling SerializeTaggedProperties also when
- * IsModifyingWeakAndStrongReferences is true, See FAGX_WireRoutingNode for an example or below
- * for the basics.
+ * IsModifyingWeakAndStrongReferences is true. See FAGX_WireRoutingNode for an example or below
+ * for the basics, and this Unreal Developer Network question:
+ * https://udn.unrealengine.com/s/question/0D5QP000008jPSZ0A2/uproperty-aactor-target-set-to-nullptr-by-garbage-collector-after-compile-of-targets-blueprint-class
  *
  * bool FMyStruct::Serialize(FArchive& Archive)
  * {
