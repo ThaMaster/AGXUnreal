@@ -31,6 +31,12 @@ bool FWireRoutingNode::Serialize(FArchive& Archive)
 	// FWireRoutingNode, causing the default serialization to not happen at all, as opposed to
 	// FAGX_TerrainCompactionProperties which have the Serialize function called manually by
 	// UAGX_TerrainMaterial after the default serialization has completed?
+	//
+	// We must serialize also during IsModifyingWeakAndStrongReferences because this struct
+	// contains a pointer to a garbage collected object, the Owning Actor in the Rigid Body
+	// Reference, so deserializing an instance may cause a new strong reference to the pointed-to
+	// Actor to appear. See Unreal Developer Network question at
+	// https://udn.unrealengine.com/s/question/0D5QP000008jPSZ0A2/uproperty-aactor-target-set-to-nullptr-by-garbage-collector-after-compile-of-targets-blueprint-class
 	if (Archive.IsLoading() || Archive.IsSaving() || Archive.IsModifyingWeakAndStrongReferences())
 	{
 		UScriptStruct* Struct = FWireRoutingNode::StaticStruct();
