@@ -1219,6 +1219,11 @@ void UAGX_WireComponent::OnRouteNodeParentReplaced(
 		}
 	}
 
+	// Any changes made to the callback setup is a sign that we may need to update the wire
+	// rendering positions. For example if a Scene Component was renamed to either become of stop
+	// being a frame parent to any routing node.
+	bool bNeedUpdateVisuals {false};
+
 	for (FWireRoutingNode& Node : RouteNodes)
 	{
 		USceneComponent* NewParent = Node.Frame.Parent.GetComponent<USceneComponent>();
@@ -1236,6 +1241,7 @@ void UAGX_WireComponent::OnRouteNodeParentReplaced(
 		{
 			UE_LOG(LogAGX, Warning, TEXT("    Removing callbacks from %p"), OldParent);
 			OldParent->TransformUpdated.RemoveAll(this);
+			bNeedUpdateVisuals = true;
 		}
 
 		if (IsValid(NewParent))
@@ -1246,12 +1252,18 @@ void UAGX_WireComponent::OnRouteNodeParentReplaced(
 				DelegateHandles.Add(
 					NewParent, NewParent->TransformUpdated.AddUObject(
 								   this, &UAGX_WireComponent::OnRouteNodeParentMoved));
+				bNeedUpdateVisuals = true;
 			}
 			else
 			{
 				UE_LOG(LogAGX, Warning, TEXT("    Already have a callback in %p"), NewParent);
 			}
 		}
+	}
+
+	if (bNeedUpdateVisuals)
+	{
+		UpdateVisuals();
 	}
 }
 
