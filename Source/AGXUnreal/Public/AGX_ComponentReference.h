@@ -18,6 +18,9 @@ class UActorComponent;
  * is specified using a UClass, specifically TSubclassOf<UActorComponent>. Instances are meant to be
  * created as members of C++ classes, but is usable also from Blueprint Visual Scripts.
  *
+ * There are multiple sub-classes of FAGX_ComponentReference that specify the more specific
+ * Component type, for example FAGX_RigidBodyReference and FAGX_ShovelReference.
+ *
  * The intention is that it should be used much like Actor pointers can be, but limitations in the
  * Unreal Editor with Components forces us to do some tricks and workarounds. There is no Component
  * picker, so the user must first pick an Actor that owns the Component and then select the wanted
@@ -36,7 +39,7 @@ class UActorComponent;
  *
  * This establishes the so-called local scope for the reference. Unless another OwningActor is
  * specified, the reference will search within the Actor that the reference is contained within. The
- * OwningActor set in PostInitProperties will we overwritten by deserialization if the object is
+ * OwningActor set in PostInitProperties may we overwritten by deserialization if the object is
  * created from something else, such as part of a Play-in-Editor session start-up or loaded from
  * disk as part of a cooked build start-up.
  *
@@ -53,8 +56,27 @@ class UActorComponent;
  *   UPROPERTY(EditAnywhere, Category = "My Category", Meta = (SkipUCSModifiedProperties))
  *   FStructContainingComponentReference MyNestedComponentReference;
  *
- * There are multiple sub-classes of FAGX_ComponentReference that specify the more specific
- * Component type, for example FAGX_RigidBodyReference and FAGX_ShovelReference.
+ *
+ * A struct that both contains an FAGX_ComponentReference and has custom serialization code must
+ * ensure that the garbage collector is made aware of the possible change in referencing the Owning
+ * Actor. This is done by calling SerializeTaggedProperties also when
+ * IsModifyingWeakAndStrongReferences is true, See FAGX_WireRoutingNode for an example or below
+ * for the basics.
+ *
+ * bool FMyStruct::Serialize(FArchive& Archive)
+ * {
+ *     // Serialize the normal UPROPERTY data.
+ *     if (Archive.IsLoading()
+ *	       || Archive.IsSaving()
+ *	       || Archive.IsModifyingWeakAndStrongReferences())
+ *     {
+ *         UScriptStruct* Struct = FMyStruct::StaticStruct();
+ *         Struct->SerializeTaggedProperties(
+ *             Archive, reinterpret_cast<uint8*>(this), Struct, nullptr);
+ *     }
+ *
+ *     // Struct-specific serialization code goes here.
+ * }
  */
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ComponentReference
