@@ -1386,14 +1386,54 @@ void UAGX_WireComponent::PostLoad()
 		// must be registered with each parent on start-up. We can't do that here because some of
 		// the parents may not have been loaded yet. So we set up a callback to happen next tick,
 		// and hope that everything has been loaded by then. Is there a better way to do this?
+		//
+		// A drawback of the delayed call to UpdateVisuals is that the Instanced Static Mesh
+		// Components that are used for rendering the wire are marked dirty by the call to Update
+		// Instance Transform, they call UObject::Modify. This means that any Level that contains
+		// a Wire Component becomes dirty / unsaved on the first tick after opening. That is
+		// annoying, but I'm not sure what to do about it. What happens if we remove the Update
+		// Visuals call in the next-tick callback is that some Wire Routing Nodes that has a frame
+		// that has an Owning Actor that is not the same as the Actor that the Wire Component is
+		// part of with either not be found or have an all-zero transform. This means that parts
+		// of the wire will render near the world origin instead of near the actual position of the
+		// parent Scene Component until something else triggers a visual update. Also annoying.
+		//
+		// A workaround is to set the RF_NeedInitialization flag on the Instanced Static Mesh
+		// Components before writing to them. UObject::Modify checks this flag and doesn't mark
+		// the object dirty if set. Not sure if this has any undesirable side-effects. Here,
+		// specifically in the next-tick callback queued from PostLoad, we want to behave
+
+		// Make UPROPERTY? Actor callback after all Components loaded?
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("This is not a game world and we're not the Class Default Object, setting up "
 				 "parent callbacks for Wire Component %p."),
 			this);
-		GEditor->GetTimerManager()->SetTimerForNextTick(
-			this, &UAGX_WireComponent::SynchronizeParentMovedCallbacks);
-		GEditor->GetTimerManager()->SetTimerForNextTick(this, &UAGX_WireComponent::UpdateVisuals);
+		FTimerHandle CallbacksHandle = GEditor->GetTimerManager()->SetTimerForNextTick(
+			[this]()
+			{
+				SynchronizeParentMovedCallbacks();
+
+				bool bCylindersHasNeedInitializationFlag =
+					VisualCylinders->HasAnyFlags(RF_NeedInitialization);
+				VisualCylinders->SetFlags(RF_NeedInitialization);
+				bool bSpheresHasNeedInitializationFlag =
+					VisualSpheres->HasAnyFlags(RF_NeedInitialization);
+				VisualSpheres->SetFlags(RF_NeedInitialization);
+
+				UpdateVisuals();
+
+				if (!bCylindersHasNeedInitializationFlag)
+				{
+					VisualCylinders->ClearFlags(RF_NeedInitialization);
+				}
+				if (!bSpheresHasNeedInitializationFlag)
+				{
+					VisualSpheres->ClearFlags(RF_NeedInitialization);
+				}
+			});
+
+		// In addition to setting up the callbacks.
 
 		// If the wire routing node frame parent's owner is a Blueprint instance then any
 		// modification of that instance will cause a Blueprint Reconstruction. During
