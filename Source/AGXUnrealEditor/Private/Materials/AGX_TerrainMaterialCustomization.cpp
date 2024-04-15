@@ -129,8 +129,12 @@ FReply FAGX_TerrainMaterialCustomization::OnCreateShapeMaterialButtonClicked() c
 	const FString SmNameSuggestion = [TerrainMaterial]()
 	{
 		FString Name = TerrainMaterial->GetName();
-		Name.RemoveFromStart("TM_");
-		Name.InsertAt(0, "SM_");
+		if (Name.StartsWith("TM_"))
+			Name.RemoveFromStart("TM_");
+		else if (Name.StartsWith("AGX_TM_"))
+			Name.RemoveFromStart("AGX_TM_");
+
+		Name.InsertAt(0, "AGX_SM_");
 		return Name;
 	}();
 
