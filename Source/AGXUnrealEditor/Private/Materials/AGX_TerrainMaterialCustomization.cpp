@@ -8,6 +8,7 @@
 #include "Materials/AGX_TerrainMaterial.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
 
 // Unreal Engine includes.
@@ -161,6 +162,8 @@ FReply FAGX_TerrainMaterialCustomization::OnCreateShapeMaterialButtonClicked() c
 	Asset->Bulk = TerrainMaterial->GetShapeMaterialBulkProperties();
 	Asset->Surface = TerrainMaterial->GetShapeMaterialSurfaceProperties();
 	Asset->Wire = TerrainMaterial->GetShapeMaterialWireProperties();
+
+	FAGX_ObjectUtilities::SaveAsset(*Asset);
 
 	FAGX_NotificationUtilities::ShowNotification(
 		FString::Printf(TEXT("Succesfully created asset: '%s'"), *AssetPath),
