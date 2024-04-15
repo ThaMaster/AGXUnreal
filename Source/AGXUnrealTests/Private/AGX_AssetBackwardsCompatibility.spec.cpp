@@ -408,3 +408,94 @@ void FAGX_ContactReductionLevelBackwardsCompatibilitySpec::Define()
 			   });
 		});
 }
+
+/**
+ * Unit test that ensures that we can Terrain Material assets created before the Shape Material <->
+ * Terrain Material split (see TerrainMaterialShapeMaterialSplit in AGX_CustomVersion.h).
+ * Also, we check that we can extract the Shape Material properties from the Terrain Material and
+ * add it to a new Shape Material. This functionality can be reached by the user in the Details
+ * Panel of the Terrain Material asset editor.
+ */
+BEGIN_DEFINE_SPEC(
+	FAGX_TerrainMaterialSplitBackwardsCompatibilitySpec,
+	"AGXUnreal.Editor.BackwardsCompatibility.TerrainMaterialSplit",
+	AgxAutomationCommon::DefaultTestFlags)
+END_DEFINE_SPEC(FAGX_TerrainMaterialSplitBackwardsCompatibilitySpec)
+
+void FAGX_TerrainMaterialSplitBackwardsCompatibilitySpec::Define()
+{
+	using namespace AGX_AssetBackwardsCompatibilitySpec_helpers;
+
+	Describe(
+		"Loading Terrain Material and copying Shape Material properties from it",
+		[this]()
+		{
+			It("should preserve SM properties in a new Shape Material",
+			   [this]()
+			   {
+				   const FString ObjectName {TEXT("AGX_TM_PreShapeMaterialSplit")};
+				   const FString PackagePath =
+					   FString::Printf(TEXT("/Game/Tests/BackwardsCompatibility/%s"), *ObjectName);
+
+				   AgxAutomationCommon::CheckAssetMD5Checksum(
+					   PackagePath, TEXT("5be13120acb158ef6d98272bbfb18b3a"), *this);
+
+				   UAGX_TerrainMaterial* TerrainMaterial =
+					   LoadAsset<UAGX_TerrainMaterial>(PackagePath, ObjectName);
+
+				   UAGX_ShapeMaterial* TempShapeMaterial = NewObject<UAGX_ShapeMaterial>();
+				   TempShapeMaterial->Bulk = TerrainMaterial->GetShapeMaterialBulkProperties();
+				   TempShapeMaterial->Surface =
+					   TerrainMaterial->GetShapeMaterialSurfaceProperties();
+				   TempShapeMaterial->Wire = TerrainMaterial->GetShapeMaterialWireProperties();
+
+				   TestTrue(
+					   TEXT("ShapeMaterial Bulk Density"),
+					   TempShapeMaterial->Bulk.Density == 1000.0);
+				   TestTrue(
+					   TEXT("ShapeMaterial Bulk YoungsModulus"),
+					   TempShapeMaterial->Bulk.YoungsModulus == 4.0e8);
+				   TestTrue(
+					   TEXT("ShapeMaterial Bulk Viscosity"),
+					   TempShapeMaterial->Bulk.Viscosity == 0.5);
+				   TestTrue(
+					   TEXT("ShapeMaterial Bulk SpookDamping"),
+					   TempShapeMaterial->Bulk.SpookDamping == 0.075);
+				   TestTrue(
+					   TEXT("ShapeMaterial Bulk MinElasticRestLength"),
+					   TempShapeMaterial->Bulk.MinElasticRestLength == 0.05);
+				   TestTrue(
+					   TEXT("ShapeMaterial Bulk MaxElasticRestLength"),
+					   TempShapeMaterial->Bulk.MaxElasticRestLength == 5.0);
+
+				   TestTrue(
+					   TEXT("ShapeMaterial Surface Friction Enabled"),
+					   TempShapeMaterial->Surface.bFrictionEnabled);
+				   TestTrue(
+					   TEXT("ShapeMaterial Surface Roughness"),
+					   TempShapeMaterial->Surface.Roughness == 0.314);
+				   TestTrue(
+					   TEXT("ShapeMaterial Surface Viscosity"),
+					   TempShapeMaterial->Surface.Viscosity == 1.0);
+				   TestTrue(
+					   TEXT("ShapeMaterial Surface AdhesiveForce"),
+					   TempShapeMaterial->Surface.AdhesiveForce == 2.0);
+				   TestTrue(
+					   TEXT("ShapeMaterial Surface AdhesiveOverlap"),
+					   TempShapeMaterial->Surface.AdhesiveOverlap == 3.0);
+
+				   TestTrue(
+					   TEXT("ShapeMaterial Wire YoungsModulusStretch"),
+					   TempShapeMaterial->Wire.YoungsModulusStretch == 4.0);
+				   TestTrue(
+					   TEXT("ShapeMaterial Wire SpookDampingStretch"),
+					   TempShapeMaterial->Wire.SpookDampingStretch == 5.0);
+				   TestTrue(
+					   TEXT("ShapeMaterial Wire YoungsModulusBend"),
+					   TempShapeMaterial->Wire.YoungsModulusBend == 6.0);
+				   TestTrue(
+					   TEXT("ShapeMaterial Wire SpookDampingBend"),
+					   TempShapeMaterial->Wire.SpookDampingBend == 7.0);
+			   });
+		});
+}
