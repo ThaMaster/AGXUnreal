@@ -410,8 +410,8 @@ void FAGX_ContactReductionLevelBackwardsCompatibilitySpec::Define()
 }
 
 /**
- * Unit test that ensures that we can Terrain Material assets created before the Shape Material <->
- * Terrain Material split (see TerrainMaterialShapeMaterialSplit in AGX_CustomVersion.h).
+ * Unit test that ensures that we can read Terrain Material assets created before the Shape Material
+ * <-> Terrain Material split (see TerrainMaterialShapeMaterialSplit in AGX_CustomVersion.h).
  * Also, we check that we can extract the Shape Material properties from the Terrain Material and
  * add it to a new Shape Material. This functionality can be reached by the user in the Details
  * Panel of the Terrain Material asset editor.
