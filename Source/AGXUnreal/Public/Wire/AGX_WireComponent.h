@@ -815,10 +815,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	TArray<FVector> GetRenderNodeLocations() const;
 
+#if WITH_EDITOR
 	void OnRouteNodeParentMoved(
 		USceneComponent* Component, EUpdateTransformFlags UpdateTransformFlags,
 		ETeleportType Teleport);
 	void OnRouteNodeParentReplaced(const FCoreUObjectDelegates::FReplacementObjectMap& OldToNew);
+#endif
 
 	/**
 	 * Mark visuals for this Wire Component dirty. The Visuals will be updated according to the
@@ -902,7 +904,9 @@ private:
 	void RenderSelf(const TArray<FVector>& Points);
 	void SetVisualsInstanceCount(int32 Num);
 
+#if WITH_EDITOR
 	void SynchronizeParentMovedCallbacks();
+#endif
 
 private:
 	FWireBarrier NativeBarrier;
@@ -913,7 +917,9 @@ private:
 	/// entry here may correspond to multiple routing nodes.
 	TMap<TWeakObjectPtr<USceneComponent>, FDelegateHandle> DelegateHandles;
 
+#if WITH_EDITOR
 	// Handle to the delegate registered with the engine Map Changed event to update visuals
 	// after load.
 	FDelegateHandle MapLoadDelegateHandle;
+#endif
 };

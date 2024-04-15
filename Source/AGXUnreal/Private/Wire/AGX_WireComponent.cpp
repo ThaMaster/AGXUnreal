@@ -1147,6 +1147,8 @@ TArray<FVector> UAGX_WireComponent::GetRenderNodeLocations() const
 	return Result;
 }
 
+#if WITH_EDITOR
+
 void UAGX_WireComponent::OnRouteNodeParentMoved(
 	USceneComponent* Component, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
 {
@@ -1266,6 +1268,8 @@ void UAGX_WireComponent::OnRouteNodeParentReplaced(
 		UpdateVisuals();
 	}
 }
+
+#endif
 
 void UAGX_WireComponent::MarkVisualsDirty()
 {
@@ -1775,10 +1779,13 @@ void UAGX_WireComponent::DestroyComponent(bool bPromoteChildren)
 	if (VisualSpheres != nullptr)
 		VisualSpheres->DestroyComponent();
 
+#if WITH_EDITOR
 	if (MapLoadDelegateHandle.IsValid())
 	{
 		FEditorDelegates::MapChange.Remove(MapLoadDelegateHandle);
 	}
+#endif
+
 	Super::DestroyComponent(bPromoteChildren);
 }
 
@@ -2439,6 +2446,8 @@ void UAGX_WireComponent::SetVisualsInstanceCount(int32 Num)
 		SetNum(*VisualSpheres, Num);
 }
 
+
+#if WITH_EDITOR
 void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
 {
 	// We currently have no reliable way to detect when we should no longer be tracking
@@ -2521,5 +2530,6 @@ void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
 		DelegateHandles.Remove(NoLongerParent);
 	}
 }
+#endif
 
 #undef LOCTEXT_NAMESPACE
