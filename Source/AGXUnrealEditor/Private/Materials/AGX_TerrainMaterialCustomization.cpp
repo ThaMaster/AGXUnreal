@@ -76,44 +76,38 @@ void FAGX_TerrainMaterialCustomization::AddShapeMaterialCreateGui(
 		.Padding(FMargin(5.0f, 5.0f))
 		.Content()
 		[
-			SNew(SVerticalBox)
-			+ SVerticalBox::Slot()
+			SNew(SBorder)
+			.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
+			.BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
 			.Padding(FMargin(5.0f, 5.0f))
-			.AutoHeight()
+			.Content()
 			[
-				SNew(SBorder)
-				.BorderBackgroundColor(FLinearColor(1.0f, 1.0f, 1.0f))
-				.BorderImage(FAGX_EditorUtilities::GetBrush("ToolPanel.GroupBorder"))
-				.Padding(FMargin(5.0f, 5.0f))
-				.Content()
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot()
 				[
-					SNew(SVerticalBox)
-					+ SVerticalBox::Slot()
+					SNew(STextBlock)
+						.Text(this, &FAGX_TerrainMaterialCustomization::GetShapeMaterialPropertiesMigrationText)
+						.Font(FAGX_SlateUtilities::CreateFont(10))
+						.ColorAndOpacity(FSlateColor(FLinearColor::Red))
+				]
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				[
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot()
+					.AutoWidth()
+					.Padding(FMargin(0.f, 5.f, 5.f, 5.f))
 					[
-						SNew(STextBlock)
-							.Text(this, &FAGX_TerrainMaterialCustomization::GetShapeMaterialPropertiesMigrationText)
-							.Font(FAGX_SlateUtilities::CreateFont(10))
-							.ColorAndOpacity(FSlateColor(FLinearColor::Red))
-					]
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					[
-						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot()
-						.AutoWidth()
-						.Padding(FMargin(0.f, 5.f, 5.f, 5.f))
-						[
-							SNew(SButton)
-							.Text(LOCTEXT("CreateShapeMaterialButtonText", "Create Shape Material"))
-							.ToolTipText(LOCTEXT(
-								"CreateShapeMaterialTooltip",
-								"Takes the Shape Material (surface) properties stored with this Terrain Material "
-								"and saves it to a separate Shape Material asset. Note that the created Shape "
-								"Material asset must be assigned to a Terrain to take effect. This action is only "
-								"necessary for old Terrain Material assets created before the separation of Shape"
-								"Material properties from the Terrain Material."))
-							.OnClicked(this, &FAGX_TerrainMaterialCustomization::OnCreateShapeMaterialButtonClicked)
-						]
+						SNew(SButton)
+						.Text(LOCTEXT("CreateShapeMaterialButtonText", "Create Shape Material"))
+						.ToolTipText(LOCTEXT(
+							"CreateShapeMaterialTooltip",
+							"Takes the Shape Material (surface) properties stored with this Terrain Material "
+							"and saves it to a separate Shape Material asset. Note that the created Shape "
+							"Material asset must be assigned to a Terrain to take effect. This action is only "
+							"necessary for old Terrain Material assets created before the separation of Shape"
+							"Material properties from the Terrain Material."))
+						.OnClicked(this, &FAGX_TerrainMaterialCustomization::OnCreateShapeMaterialButtonClicked)
 					]
 				]
 			]
