@@ -1695,6 +1695,7 @@ void AAGX_Terrain::Serialize(FArchive& Archive)
 		RootComponent = SpriteComponent;
 	}
 
+#if WITH_EDITOR
 	if (ShouldUpgradeTo(Archive, FAGX_CustomVersion::TerrainMaterialShapeMaterialSplit) &&
 		TerrainMaterial != nullptr && ShapeMaterial == nullptr)
 	{
@@ -1714,6 +1715,7 @@ void AAGX_Terrain::Serialize(FArchive& Archive)
 			*GetName());
 		FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(Msg);
 	}
+#endif // WITH_EDITOR
 }
 
 #undef LOCTEXT_NAMESPACE
