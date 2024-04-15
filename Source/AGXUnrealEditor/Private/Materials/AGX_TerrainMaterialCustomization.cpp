@@ -149,23 +149,22 @@ FReply FAGX_TerrainMaterialCustomization::OnCreateShapeMaterialButtonClicked() c
 	auto Asset =
 		NewObject<UAGX_ShapeMaterial>(Package, FName(*AssetName), RF_Public | RF_Standalone);
 
-	// Copy over the data.
-	Asset->Bulk = TerrainMaterial->GetShapeMaterialBulkProperties();
-	Asset->Surface = TerrainMaterial->GetShapeMaterialSurfaceProperties();
-	Asset->Wire = TerrainMaterial->GetShapeMaterialWireProperties();
-
 	if (Asset == nullptr)
 	{
 		FAGX_NotificationUtilities::ShowNotification(
 			FString::Printf(TEXT("Unable to create asset given Asset Path: '%s'"), *AssetPath),
 			SNotificationItem::ECompletionState::CS_Fail);
+		FReply::Handled(); 
 	}
-	else
-	{
-		FAGX_NotificationUtilities::ShowNotification(
-			FString::Printf(TEXT("Succesfully created asset: '%s'"), *AssetPath),
-			SNotificationItem::ECompletionState::CS_Success);
-	}
+
+	// Copy over the data.
+	Asset->Bulk = TerrainMaterial->GetShapeMaterialBulkProperties();
+	Asset->Surface = TerrainMaterial->GetShapeMaterialSurfaceProperties();
+	Asset->Wire = TerrainMaterial->GetShapeMaterialWireProperties();
+
+	FAGX_NotificationUtilities::ShowNotification(
+		FString::Printf(TEXT("Succesfully created asset: '%s'"), *AssetPath),
+		SNotificationItem::ECompletionState::CS_Success);
 
 	return FReply::Handled();
 }
