@@ -912,4 +912,8 @@ private:
 	/// Keep track which node frame parents we have registered a callback with. Note that a single
 	/// entry here may correspond to multiple routing nodes.
 	TMap<TWeakObjectPtr<USceneComponent>, FDelegateHandle> DelegateHandles;
+
+	// Handle to the delegate registered with the engine Map Changed event to update visuals
+	// after load.
+	FDelegateHandle MapLoadDelegateHandle;
 };

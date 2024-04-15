@@ -1421,28 +1421,16 @@ void UAGX_WireComponent::PostLoad()
 			TEXT("This is not a game world and we're not the Class Default Object, setting up "
 				 "parent callbacks for Wire Component %p."),
 			this);
-		FTimerHandle CallbacksHandle = GEditor->GetTimerManager()->SetTimerForNextTick(
-			[this]()
+		if (MapLoadDelegateHandle.IsValid())
+		{
+			FEditorDelegates::MapChange.Remove(MapLoadDelegateHandle);
+		}
+		MapLoadDelegateHandle = FEditorDelegates::MapChange.AddWeakLambda(this,
+			[this](uint32)
 			{
+				FEditorDelegates::MapChange.RemoveAll(this);
 				SynchronizeParentMovedCallbacks();
-
-				bool bCylindersHasNeedInitializationFlag =
-					VisualCylinders->HasAnyFlags(RF_NeedInitialization);
-				VisualCylinders->SetFlags(RF_NeedInitialization);
-				bool bSpheresHasNeedInitializationFlag =
-					VisualSpheres->HasAnyFlags(RF_NeedInitialization);
-				VisualSpheres->SetFlags(RF_NeedInitialization);
-
 				UpdateVisuals();
-
-				if (!bCylindersHasNeedInitializationFlag)
-				{
-					VisualCylinders->ClearFlags(RF_NeedInitialization);
-				}
-				if (!bSpheresHasNeedInitializationFlag)
-				{
-					VisualSpheres->ClearFlags(RF_NeedInitialization);
-				}
 			});
 
 		// In addition to setting up the callbacks.
@@ -1787,6 +1775,10 @@ void UAGX_WireComponent::DestroyComponent(bool bPromoteChildren)
 	if (VisualSpheres != nullptr)
 		VisualSpheres->DestroyComponent();
 
+	if (MapLoadDelegateHandle.IsValid())
+	{
+		FEditorDelegates::MapChange.Remove(MapLoadDelegateHandle);
+	}
 	Super::DestroyComponent(bPromoteChildren);
 }
 
