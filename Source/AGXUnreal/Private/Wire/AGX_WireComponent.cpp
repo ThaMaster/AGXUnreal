@@ -1395,7 +1395,9 @@ void UAGX_WireComponent::PostLoad()
 	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::PostLoad"));
 
 #if WITH_EDITOR
-	if (!GetWorld()->IsGameWorld() && !HasAnyFlags(RF_ClassDefaultObject))
+	// Condition on not Game World instead of is Editor World because we do not want this
+	// block to run in Play In Editor sessions.
+	if (GetWorld() != nullptr && !GetWorld()->IsGameWorld() && !HasAnyFlags(RF_ClassDefaultObject))
 	{
 		// While in the editor we don't update the wire rendering every tick and instead rely on
 		// Transform Updated callbacks from the wire routing node frame parents. These callbacks
@@ -1429,7 +1431,8 @@ void UAGX_WireComponent::PostLoad()
 		{
 			FEditorDelegates::MapChange.Remove(MapLoadDelegateHandle);
 		}
-		MapLoadDelegateHandle = FEditorDelegates::MapChange.AddWeakLambda(this,
+		MapLoadDelegateHandle = FEditorDelegates::MapChange.AddWeakLambda(
+			this,
 			[this](uint32)
 			{
 				FEditorDelegates::MapChange.RemoveAll(this);
@@ -1442,10 +1445,15 @@ void UAGX_WireComponent::PostLoad()
 		// If the wire routing node frame parent's owner is a Blueprint instance then any
 		// modification of that instance will cause a Blueprint Reconstruction. During
 		// reconstruction all the Components will be destroyed and recreated. Unfortunately, Scene
-		// Component does not use Actor Component Instance Data to transfer the callback from the
-		// old object to the new one. Fortunately, the engine provides the On Object Replaced event
-		// that we can use to do the transfer ourselves.
-		FCoreUObjectDelegates::OnObjectsReplaced.AddUObject(
+		// Component does not use Actor Component Instance Data to transfer delegate callback, such
+		// as Transform Updated, from the old object to the new one, so we need to do that
+		// ourselves. Fortunately, the engine provides the On Object Replaced event that we can use
+		// to do the transfer.
+		if (ObjectsReplacedDelegateHandle.IsValid())
+		{
+			FCoreUObjectDelegates::OnObjectsReinstanced.Remove(ObjectsReplacedDelegateHandle);
+		}
+		ObjectsReplacedDelegateHandle = FCoreUObjectDelegates::OnObjectsReplaced.AddUObject(
 			this, &UAGX_WireComponent::OnRouteNodeParentReplaced);
 	}
 #endif
@@ -1783,6 +1791,10 @@ void UAGX_WireComponent::DestroyComponent(bool bPromoteChildren)
 	if (MapLoadDelegateHandle.IsValid())
 	{
 		FEditorDelegates::MapChange.Remove(MapLoadDelegateHandle);
+	}
+	if (ObjectsReplacedDelegateHandle.IsValid())
+	{
+		FCoreUObjectDelegates::OnObjectsReinstanced.Remove(ObjectsReplacedDelegateHandle);
 	}
 #endif
 
@@ -2445,7 +2457,6 @@ void UAGX_WireComponent::SetVisualsInstanceCount(int32 Num)
 	if (VisualSpheres != nullptr)
 		SetNum(*VisualSpheres, Num);
 }
-
 
 #if WITH_EDITOR
 void UAGX_WireComponent::SynchronizeParentMovedCallbacks()

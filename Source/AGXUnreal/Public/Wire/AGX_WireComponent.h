@@ -921,5 +921,9 @@ private:
 	// Handle to the delegate registered with the engine Map Changed event to update visuals
 	// after load.
 	FDelegateHandle MapLoadDelegateHandle;
+
+	// Handle to the delegate registered with the Objects Replaced event, used to update Transform
+	// Updated callbacks on Scene Components that are a parent of any routing node.
+	FDelegateHandle ObjectsReplacedDelegateHandle;
 #endif
 };
