@@ -52,4 +52,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Utilities")
 	static void AddParentVelocityMany(
 		UAGX_RigidBodyComponent* Parent, const TArray<UAGX_RigidBodyComponent*>& Bodies);
+
+	/**
+	 * Calculates the center of mass of the given Rigid Bodies [cm].
+	 * This function is only valid during Play and returns zero vector if not.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Utilities")
+	static FVector CalculateCenterOfMass(const TArray<UAGX_RigidBodyComponent*>& Bodies);
 };

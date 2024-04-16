@@ -5,6 +5,8 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
+struct FColor;
+struct FLinearColor;
 struct FSlateFontInfo;
 
 class AGXUNREALEDITOR_API FAGX_SlateUtilities
@@ -28,4 +30,13 @@ public:
 		const TSharedPtr<class SWidget>& Parent, bool Recursive = true, const FString& Prefix = "");
 
 	static FSlateFontInfo CreateFont(int Size);
+
+	static FColor GetAGXColorOrange();
+	static FLinearColor GetAGXLinearColorOrange();
+
+	static FColor GetAGXColorBlack();
+	static FLinearColor GetAGXLinearColorBlack();
+
+	static FColor GetAGXColorGray();
+	static FLinearColor GetAGXLinearColorGray();
 };

@@ -30,6 +30,12 @@ public:
 	GENERATED_BODY()
 
 	/**
+	 * Takes a TimeStamp in seconds and converts it into a ROS2 builtin_interfaces::Time message.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2")
+	static FAGX_BuiltinInterfacesTime ConvertTime(double TimeStamp);
+
+	/**
 	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2
 	 * message.
 	 * The Data member consists of position X, Y, Z and Intensity for each point written as double's

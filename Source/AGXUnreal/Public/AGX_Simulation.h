@@ -21,7 +21,6 @@ class AAGX_Stepper;
 class AAGX_Terrain;
 class UAGX_ConstraintComponent;
 class UAGX_ContactMaterial;
-class UAGX_MaterialBase;
 class UAGX_RigidBodyComponent;
 class UAGX_ShapeMaterial;
 class UAGX_StaticMeshComponent;

@@ -583,7 +583,8 @@ namespace
 	{
 		FSimulationObjectCollection SimObjects;
 		if (!FAGXSimObjectsReader::ReadUrdf(
-				ImportSettings.FilePath, ImportSettings.UrdfPackagePath, SimObjects))
+				ImportSettings.FilePath, ImportSettings.UrdfPackagePath,
+				ImportSettings.UrdfInitialJoints, SimObjects))
 		{
 			return EImportResult::ErrorReadingSourceFile;
 		}

@@ -2,7 +2,9 @@
 
 #include "Materials/AGX_ShapeMaterialAssetTypeActions.h"
 
+// AGX Dynamics for Unreal includes.
 #include "Materials/AGX_ShapeMaterial.h"
+#include "Utilities/AGX_SlateUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ShapeMaterialTypeActions"
 
@@ -33,7 +35,7 @@ uint32 FAGX_ShapeMaterialTypeActions::GetCategories()
 
 FColor FAGX_ShapeMaterialTypeActions::GetTypeColor() const
 {
-	return FColor(255, 115, 0);
+	return FAGX_SlateUtilities::GetAGXColorOrange();
 }
 
 FText FAGX_ShapeMaterialTypeActions::GetAssetDescription(const FAssetData& AssetData) const

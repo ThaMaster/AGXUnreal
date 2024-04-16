@@ -3,6 +3,7 @@
 #include "Vehicle/AGX_TrackInternalMergePropertiesAssetTypeActions.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Utilities/AGX_SlateUtilities.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TrackInternalMergePropertiesAssetTypeActions"
@@ -34,7 +35,7 @@ uint32 FAGX_TrackInternalMergePropertiesAssetTypeActions::GetCategories()
 
 FColor FAGX_TrackInternalMergePropertiesAssetTypeActions::GetTypeColor() const
 {
-	return FColor(255, 115, 0);
+	return FAGX_SlateUtilities::GetAGXColorOrange();
 }
 
 FText FAGX_TrackInternalMergePropertiesAssetTypeActions::GetAssetDescription(

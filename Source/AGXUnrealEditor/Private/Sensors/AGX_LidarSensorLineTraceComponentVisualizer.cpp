@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Sensors/AGX_LidarSensorLineTraceComponent.h"
+#include "Utilities/AGX_SlateUtilities.h"
 
 // Unreal Engine includes.
 #include "SceneView.h"
@@ -18,7 +19,7 @@ void FAGX_LidarSensorLineTraceComponentVisualizer::DrawVisualization(
 	if (Lidar == nullptr || !Lidar->ShouldRender())
 		return;
 
-	static constexpr FColor Color {243, 139, 0};
+	const static FColor Color = FAGX_SlateUtilities::GetAGXColorOrange();
 	static constexpr float Radius {10.f};
 
 	DrawWireCylinder(

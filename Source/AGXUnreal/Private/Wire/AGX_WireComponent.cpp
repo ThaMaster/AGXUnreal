@@ -2006,14 +2006,14 @@ TArray<FVector> UAGX_WireComponent::GetNodesForRendering() const
 	return NodeLocations;
 }
 
-bool UAGX_WireComponent::ShouldRender() const
+bool UAGX_WireComponent::ShouldRenderSelf() const
 {
-	return IsVisible() && VisualCylinders != nullptr && VisualSpheres != nullptr;
+	return VisualCylinders != nullptr && VisualSpheres != nullptr && ShouldRender();
 }
 
 void UAGX_WireComponent::UpdateVisuals()
 {
-	if (!ShouldRender())
+	if (!ShouldRenderSelf())
 	{
 		const bool hasVisualCylinders =
 			VisualCylinders != nullptr && VisualCylinders->GetInstanceCount() > 0;

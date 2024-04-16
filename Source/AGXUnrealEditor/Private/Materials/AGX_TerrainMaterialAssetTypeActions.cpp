@@ -2,7 +2,9 @@
 
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 
+// AGX Dynamics for Unreal includes.
 #include "Materials/AGX_TerrainMaterial.h"
+#include "Utilities/AGX_SlateUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_TerrainMaterialAssetTypeActions"
 
@@ -31,7 +33,7 @@ uint32 FAGX_TerrainMaterialAssetTypeActions::GetCategories()
 
 FColor FAGX_TerrainMaterialAssetTypeActions::GetTypeColor() const
 {
-	return FColor(255, 115, 0);
+	return FAGX_SlateUtilities::GetAGXColorOrange();
 }
 
 FText FAGX_TerrainMaterialAssetTypeActions::GetAssetDescription(const FAssetData& AssetData) const

@@ -171,6 +171,11 @@ FAGX_SensorMsgsImage FAGX_ROS2Utilities::Convert(
 	return Msg;
 }
 
+FAGX_BuiltinInterfacesTime UAGX_ROS2Utilities::ConvertTime(double TimeStamp)
+{
+	return AGX_ROS2Utilities_helpers::Convert(TimeStamp);
+}
+
 FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertXYZ(const TArray<FAGX_LidarScanPoint>& Points)
 {
 	using namespace AGX_ROS2Utilities_helpers;
@@ -181,7 +186,7 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertXYZ(const TArray<FAGX_Lida
 	if (FirstValidIndex == INDEX_NONE)
 		return Msg;
 
-	Msg.Header.Stamp = Convert(Points[FirstValidIndex].TimeStamp);
+	Msg.Header.Stamp = ConvertTime(Points[FirstValidIndex].TimeStamp);
 	Msg.Fields.Add(MakePointField("x", 0, EAGX_PointFieldType::Float64, 1));
 	Msg.Fields.Add(MakePointField("y", 8, EAGX_PointFieldType::Float64, 1));
 	Msg.Fields.Add(MakePointField("z", 16, EAGX_PointFieldType::Float64, 1));
@@ -222,7 +227,7 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertAnglesTOF(
 	if (FirstValidIndex == INDEX_NONE)
 		return Msg;
 
-	Msg.Header.Stamp = Convert(Points[FirstValidIndex].TimeStamp);
+	Msg.Header.Stamp = ConvertTime(Points[FirstValidIndex].TimeStamp);
 	Msg.Fields.Add(MakePointField("angle_x", 0, EAGX_PointFieldType::Float64, 1));
 	Msg.Fields.Add(MakePointField("angle_y", 8, EAGX_PointFieldType::Float64, 1));
 	Msg.Fields.Add(MakePointField("tof", 16, EAGX_PointFieldType::Uint32, 1));

@@ -10,7 +10,6 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
-#include "Materials/AGX_MaterialBase.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
 #include "Shapes/HeightFieldShapeBarrier.h"
@@ -140,12 +139,35 @@ bool AAGX_Terrain::SetTerrainMaterial(UAGX_TerrainMaterial* InTerrainMaterial)
 		return true;
 	}
 
-	// UpdateNativeMaterial is responsible to create an instance if none exists and do the
+	// UpdateNativeTerrainMaterial is responsible to create an instance if none exists and do the
 	// asset/instance swap.
-	if (!UpdateNativeMaterial())
+	if (!UpdateNativeTerrainMaterial())
 	{
 		// Something went wrong, restore original TerrainMaterial.
 		TerrainMaterial = TerrainMaterialOrig;
+		return false;
+	}
+
+	return true;
+}
+
+bool AAGX_Terrain::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
+{
+	UAGX_ShapeMaterial* ShapeMaterialOrig = ShapeMaterial;
+	ShapeMaterial = InShapeMaterial;
+
+	if (!HasNative())
+	{
+		// Not in play, we are done.
+		return true;
+	}
+
+	// UpdateNativeShapeMaterial is responsible to create an instance if none exists and do the
+	// asset/instance swap.
+	if (!UpdateNativeShapeMaterial())
+	{
+		// Something went wrong, restore original ShapeMaterial.
+		ShapeMaterial = ShapeMaterialOrig;
 		return false;
 	}
 
@@ -931,12 +953,22 @@ void AAGX_Terrain::InitializeNative()
 	AddTerrainPagerBodies();
 	InitializeRendering();
 
-	if (!UpdateNativeMaterial())
+	if (!UpdateNativeTerrainMaterial())
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("UpdateNativeMaterial returned false in AGX_Terrain. "
-				 "Ensure the selected Terrain Material is valid."));
+			TEXT("UpdateNativeTerrainMaterial returned false in AGX_Terrain '%s'. "
+				 "Ensure the selected Terrain Material is valid."),
+			*GetName());
+	}
+
+	if (!UpdateNativeShapeMaterial())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UpdateNativeShapeMaterial returned false in AGX_Terrain '%s'. "
+				 "Ensure the selected Shape Material is valid."),
+			*GetName());
 	}
 }
 
@@ -1309,36 +1341,52 @@ void AAGX_Terrain::InitializeRendering()
 	UpdateLandscapeMaterialParameters();
 }
 
-bool AAGX_Terrain::UpdateNativeMaterial()
+bool AAGX_Terrain::UpdateNativeTerrainMaterial()
 {
 	if (!HasNative())
 		return false;
 
 	if (TerrainMaterial == nullptr)
 	{
-		GetNative()->ClearMaterial();
+		GetNative()->ClearTerrainMaterial();
 		return true;
 	}
 
-	// Set TerrainMaterial
-	UAGX_TerrainMaterial* TerrainMaterialInstance =
+	UAGX_TerrainMaterial* Instance =
 		static_cast<UAGX_TerrainMaterial*>(TerrainMaterial->GetOrCreateInstance(GetWorld()));
-	check(TerrainMaterialInstance);
+	check(Instance);
 
-	if (TerrainMaterial != TerrainMaterialInstance)
-	{
-		TerrainMaterial = TerrainMaterialInstance;
-	}
+	if (TerrainMaterial != Instance)
+		TerrainMaterial = Instance;
 
 	FTerrainMaterialBarrier* TerrainMaterialBarrier =
-		TerrainMaterialInstance->GetOrCreateTerrainMaterialNative(GetWorld());
+		Instance->GetOrCreateTerrainMaterialNative(GetWorld());
 	check(TerrainMaterialBarrier);
 
 	GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
 
-	// Set ShapeMaterial
-	FShapeMaterialBarrier* MaterialBarrier =
-		TerrainMaterialInstance->GetOrCreateShapeMaterialNative(GetWorld());
+	return true;
+}
+
+bool AAGX_Terrain::UpdateNativeShapeMaterial()
+{
+	if (!HasNative())
+		return false;
+
+	if (ShapeMaterial == nullptr)
+	{
+		GetNative()->ClearShapeMaterial();
+		return true;
+	}
+
+	UAGX_ShapeMaterial* Instance =
+		static_cast<UAGX_ShapeMaterial*>(ShapeMaterial->GetOrCreateInstance(GetWorld()));
+	check(Instance);
+
+	if (ShapeMaterial != Instance)
+		ShapeMaterial = Instance;
+
+	FShapeMaterialBarrier* MaterialBarrier = Instance->GetOrCreateShapeMaterialNative(GetWorld());
 	check(MaterialBarrier);
 
 	GetNative()->SetShapeMaterial(*MaterialBarrier);
@@ -1662,6 +1710,28 @@ void AAGX_Terrain::Serialize(FArchive& Archive)
 			USceneComponent::GetDefaultSceneRootVariableName());
 		RootComponent = SpriteComponent;
 	}
+
+#if WITH_EDITOR
+	if (ShouldUpgradeTo(Archive, FAGX_CustomVersion::TerrainMaterialShapeMaterialSplit) &&
+		TerrainMaterial != nullptr && ShapeMaterial == nullptr)
+	{
+		const FString Msg = FString::Printf(
+			TEXT("Important!\n\nIt was detected that the AGX Terrain Actor '%s' references an "
+				 "AGX Terrain Material but no Shape Material. The surface properties of a "
+				 "Terrain is no longer described by the Terrain Material, but instead is "
+				 "described by a separate Shape Material that can be assigned from the Terrain "
+				 "Actor's Details Panel.\n\nIt is recommended to open the Terrain Material and use "
+				 "the 'Create Shape Material' button to generate a Shape Material containing the "
+				 "Terrain surface properties of the Terrain Material and then assign it to the "
+				 "Terrain Actor. Note that this also affects all Contact Materials referencing a "
+				 "Terrain Material; these should be updated to point to a Shape Material generated "
+				 "from the previously pointed to Terrain Material.\n\nThis information is also "
+				 "available in the Changelog in the User Manual.\n\nTo disable this warning, simply "
+				 "re-save the Level that contains this Terrain Actor."),
+			*GetName());
+		FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(Msg);
+	}
+#endif // WITH_EDITOR
 }
 
 #undef LOCTEXT_NAMESPACE

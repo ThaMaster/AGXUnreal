@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Terrain/AGX_ShovelProperties.h"
+#include "Utilities/AGX_SlateUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ShovelPropertiesActions"
 
@@ -32,7 +33,7 @@ uint32 FAGX_ShovelPropertiesActions::GetCategories()
 
 FColor FAGX_ShovelPropertiesActions::GetTypeColor() const
 {
-	return FColor(255, 115, 0);
+	return FAGX_SlateUtilities::GetAGXColorOrange();
 }
 
 FText FAGX_ShovelPropertiesActions::GetAssetDescription(const FAssetData& AssetData) const

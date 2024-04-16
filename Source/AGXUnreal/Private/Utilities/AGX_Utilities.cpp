@@ -29,3 +29,24 @@ void UAGX_AGXUtilities::AddParentVelocityMany(
 		AddParentVelocity(Parent, Body);
 	}
 }
+
+FVector UAGX_AGXUtilities::CalculateCenterOfMass(const TArray<UAGX_RigidBodyComponent*>& Bodies)
+{
+	FVector Com = FVector::ZeroVector;
+	float TotalMass = 0.f;
+	for (UAGX_RigidBodyComponent* Body : Bodies)
+	{
+		if (Body == nullptr || Body->GetWorld() == nullptr || !Body->GetWorld()->IsGameWorld())
+			continue;
+
+		const auto Mass = Body->GetMass();
+		const auto Cm = Body->GetCenterOfMassPosition();
+		Com += Cm * Mass;
+		TotalMass += Mass;
+	}
+
+	if (!FMath::IsNearlyZero(TotalMass))
+		Com /= TotalMass;
+
+	return Com;
+}

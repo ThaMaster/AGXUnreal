@@ -15,8 +15,8 @@ class UAGX_ContactMaterial;
  * Defines which AGX Contact Materials should be used by the owning level.
  */
 UCLASS(
-	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
-	HideCategories = (Cooking, LOD, Replication))
+	ClassGroup = "AGX", Category = "AGX", AutoExpandCategories = ("AGX Contact Material Registrar"),
+	Meta = (BlueprintSpawnableComponent), HideCategories = (Cooking, LOD, Replication))
 class AGXUNREAL_API UAGX_ContactMaterialRegistrarComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -35,6 +35,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material Registrar")
 	void AddContactMaterial(UAGX_ContactMaterial* ContactMaterial);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material Registrar")
+	const TArray<UAGX_ContactMaterial*>& GetContactMaterials() const;
 
 	// ~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
