@@ -15,10 +15,10 @@
 #include "AGX_ContactMaterial.generated.h"
 
 class UAGX_ContactMaterialRegistrarComponent;
-class UAGX_MaterialBase;
+class UAGX_ShapeMaterial;
 
 /**
- * Defines material properties for contacts between AGX Shapes with specific AGX Materials. This
+ * Defines material properties for contacts between Shapes with specific Shape Materials. This
  * will override many of their individual material properties (does for example not override ones
  * affecting mass, such as density).
  *
@@ -51,13 +51,13 @@ public:
 	 * First material.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Materials")
-	UAGX_MaterialBase* Material1 {nullptr};
+	UAGX_ShapeMaterial* Material1 {nullptr};
 
 	/**
 	 * Second material. Can be same as first material.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Materials")
-	UAGX_MaterialBase* Material2 {nullptr};
+	UAGX_ShapeMaterial* Material2 {nullptr};
 
 	/**
 	 * Solvers to use to calculate the normal and friction equations when objects with this contact

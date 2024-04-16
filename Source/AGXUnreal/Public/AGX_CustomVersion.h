@@ -47,6 +47,10 @@ struct AGXUNREAL_API FAGX_CustomVersion
 		// components (viewport icons).
 		TerrainCGDisablerCMRegistrarViewporIcons,
 
+		// TerrainMaterial no longer shares a common base class with ShapeMaterial. The Terrain has
+		// both a TerrainMaterial and a ShapeMaterial.
+		TerrainMaterialShapeMaterialSplit,
+
 		// <----- New versions can be added above this line. ----->
 		VersionPlusOne,
 
