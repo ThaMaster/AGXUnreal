@@ -6,7 +6,6 @@
 #include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_Check.h"
 #include "AGX_PropertyChangedDispatcher.h"
-#include "Sensors/AGX_LidarEnums.h"
 #include "Sensors/AGX_RayPatternCustom.h"
 #include "Sensors/AGX_RayPatternHorizontalSweep.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -79,45 +78,44 @@ bool UAGX_LidarSensorComponent::HasNative() const
 	return NativeBarrier.HasNative();
 }
 
-namespace AGX_LidarSensorComponent_helpers
-{
-	EAGX_LidarRayPattern GetTypeFrom(UAGX_RayPatternBase* Pattern)
-	{
-		if (Pattern == nullptr)
-			return EAGX_LidarRayPattern::Invalid;
-
-		if (Cast<UAGX_RayPatternHorizontalSweep>(Pattern) != nullptr)
-			return EAGX_LidarRayPattern::HorizontalSweep;
-
-		if (Cast<UAGX_RayPatternCustom>(Pattern) != nullptr)
-			return EAGX_LidarRayPattern::Custom;
-
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Unknown RayPattern type given to LidarSensorComponent::GetTypeFrom."));
-		return EAGX_LidarRayPattern::Invalid;
-	}
-}
-
 FLidarBarrier* UAGX_LidarSensorComponent::GetOrCreateNative()
 {
 	if (HasNative())
 		return GetNative();
 
-	EAGX_LidarRayPattern Pattern = AGX_LidarSensorComponent_helpers::GetTypeFrom(RayPattern);
-	if (Pattern == EAGX_LidarRayPattern::Invalid)
+	if (RayPattern == nullptr)
 	{
 		FAGX_NotificationUtilities::ShowNotification(
-			"Invalid Ray Pattern selected in Lidar Sensor '%s' in '%s'. Make sure a valid Ray "
-			"Pattern has been selected.",
+			FString::Printf(
+				TEXT("No Ray Pattern selected for Lidar Sensor '%s' in '%s'. Make sure a valid "
+					 "Ray Pattern has been selected."),
+				*GetName(), *GetLabelSafe(GetOwner())),
 			SNotificationItem::CS_Fail);
 		return nullptr;
 	}
 
-	if (Pattern == EAGX_LidarRayPattern::Custom)
+	if (Cast<UAGX_RayPatternCustom>(RayPattern) != nullptr)
+	{
 		PatternFetcher.SetLidar(this);
+		NativeBarrier.AllocateNativeRayPatternCustom(&PatternFetcher);
+	}
+	else if (auto Pattern = Cast<UAGX_RayPatternHorizontalSweep>(RayPattern))
+	{
+		NativeBarrier.AllocateNativeRayPatternHorizontalSweep(
+			Pattern->FOV, Pattern->Resolution, Pattern->Frequency);
+	}
+	else
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT(
+					"Unknown Ray Pattern selected for Lidar Sensor '%s' in '%s'. Make sure a valid "
+					"Ray Pattern has been selected."),
+				*GetName(), *GetLabelSafe(GetOwner())),
+			SNotificationItem::CS_Fail);
+		return nullptr;
+	}
 
-	NativeBarrier.AllocateNative(Pattern, &PatternFetcher);
 	AGX_CHECK(NativeBarrier.HasNative());
 	UpdateNativeProperties();
 	return GetNative();
@@ -213,8 +211,7 @@ void UAGX_LidarSensorComponent::UpdateNativeProperties()
 
 TArray<FTransform> UAGX_LidarSensorComponent::FetchRayTransforms()
 {
-	AGX_CHECK(
-		AGX_LidarSensorComponent_helpers::GetTypeFrom(RayPattern) == EAGX_LidarRayPattern::Custom);
+	AGX_CHECK(Cast<UAGX_RayPatternCustom>(RayPattern) != nullptr);
 	if (!OnFetchRayTransforms.IsBound())
 	{
 		UE_LOG(
@@ -231,8 +228,7 @@ TArray<FTransform> UAGX_LidarSensorComponent::FetchRayTransforms()
 
 FAGX_CustomPatternInterval UAGX_LidarSensorComponent::FetchNextInterval()
 {
-	AGX_CHECK(
-		AGX_LidarSensorComponent_helpers::GetTypeFrom(RayPattern) == EAGX_LidarRayPattern::Custom);
+	AGX_CHECK(Cast<UAGX_RayPatternCustom>(RayPattern) != nullptr);
 	if (!OnFetchNextPatternInterval.IsBound())
 	{
 		UE_LOG(

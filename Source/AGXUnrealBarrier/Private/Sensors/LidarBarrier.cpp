@@ -12,32 +12,6 @@
 #include <agxSensor/RayPatternHorizontalSweep.h>
 #include <agxSensor/RaytraceResult.h>
 
-namespace FLidarBarrier_helpers
-{
-	agxSensor::RayPatternGeneratorRef CreatePatternGenerator(
-		EAGX_LidarRayPattern Pattern, FCustomPatternFetcherBase* PatternFetcher)
-	{
-		if (Pattern == EAGX_LidarRayPattern::HorizontalSweep)
-		{
-			// Todo: make these configurable in the Lidar Sensor.
-			const agx::Vec2 fov {agx::degreesToRadians(360.0), agx::degreesToRadians(50.0)};
-			const agx::Vec2 resolution {agx::degreesToRadians(1.0)};
-			const agx::Real frequency = 2.0;
-			return new agxSensor::RayPatternHorizontalSweep(fov, resolution, frequency);
-		}
-
-		if (Pattern == EAGX_LidarRayPattern::Custom)
-		{
-			return new FCustomPatternGenerator(PatternFetcher);
-		}
-
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Unknown Lidar Scan Pattern given to "
-				 "FLidarBarrier_helpers::CreatePatternGenerator()."));
-		return nullptr;
-	}
-}
 
 FLidarBarrier::FLidarBarrier()
 	: NativeRef {new FLidarRef}
@@ -65,14 +39,27 @@ bool FLidarBarrier::HasNative() const
 	return NativeRef->Native != nullptr;
 }
 
-void FLidarBarrier::AllocateNative(
-	EAGX_LidarRayPattern Pattern, FCustomPatternFetcherBase* PatternFetcher)
+void FLidarBarrier::AllocateNativeRayPatternHorizontalSweep(
+	const FVector2D& FOV, const FVector2D& Resolution, double Frequency)
 {
-	using namespace FLidarBarrier_helpers;
 	check(!HasNative());
 
-	NativeRef->Native =
-		new agxSensor::Lidar(nullptr, CreatePatternGenerator(Pattern, PatternFetcher));
+	const agx::Vec2 FovAGX {ConvertAngleToAGX(FOV.X), ConvertAngleToAGX(FOV.Y)};
+	const agx::Vec2 ResolutionAGX {ConvertAngleToAGX(Resolution.X), ConvertAngleToAGX(Resolution.Y)};
+
+	NativeRef->Native = new agxSensor::Lidar(
+		nullptr, new agxSensor::RayPatternHorizontalSweep(FovAGX, ResolutionAGX, Frequency));
+
+	// Todo: make this configurable in the Lidar sensor!
+	NativeRef->Native->getResultHandler()
+		->add<agx::Vec4f, agxSensor::RtResult::XYZ_VEC3_F32, agxSensor::RtResult::INTENSITY_F32>();
+}
+
+void FLidarBarrier::AllocateNativeRayPatternCustom(FCustomPatternFetcherBase* PatternFetcher)
+{
+	check(!HasNative());
+
+	NativeRef->Native = new agxSensor::Lidar(nullptr, new FCustomPatternGenerator(PatternFetcher));
 
 	// Todo: make this configurable in the Lidar sensor!
 	NativeRef->Native->getResultHandler()
