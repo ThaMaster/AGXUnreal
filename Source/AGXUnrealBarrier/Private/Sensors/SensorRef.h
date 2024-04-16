@@ -31,14 +31,9 @@ struct FRtMeshRef
 	}
 };
 
-struct FRtEntityRef
+struct FRtMeshEntity
 {
-	agxSensor::RtEntityRef Native;
-	FRtEntityRef() = default;
-	FRtEntityRef(agxSensor::RtEntityRef InNative)
-		: Native(InNative)
-	{
-	}
+	agxSensor::RtMeshEntity Native;
 };
 
 struct FLidarRef

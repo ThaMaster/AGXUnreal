@@ -4,13 +4,13 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
-#include "Sensors/RtEntityBarrier.h"
+#include "Sensors/RtMeshEntityBarrier.h"
 #include "Sensors/RtMeshBarrier.h"
 
 
 struct FAGX_EntityData
 {
-	FRtEntityBarrier Entity;
+	FRtMeshEntityBarrier Entity;
 	FTransform Transform;
 	size_t RefCount {1};
 

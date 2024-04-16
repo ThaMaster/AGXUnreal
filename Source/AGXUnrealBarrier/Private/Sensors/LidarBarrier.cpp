@@ -76,7 +76,7 @@ void FLidarBarrier::AllocateNative(
 
 	// Todo: make this configurable in the Lidar sensor!
 	NativeRef->Native->getResultHandler()
-		->add<agx::Vec4f, agxSensor::RtResult::XYZ_VEC3_F32, agxSensor::RtResult::DISTANCE_F32>();
+		->add<agx::Vec4f, agxSensor::RtResult::XYZ_VEC3_F32, agxSensor::RtResult::INTENSITY_F32>();
 }
 
 FLidarRef* FLidarBarrier::GetNative()
