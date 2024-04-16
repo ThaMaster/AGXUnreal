@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_RealInterval.h"
 #include "Sensors/AGX_CustomPatternFetcher.h"
-#include "Sensors/AGX_LidarEnums.h"
+#include "Sensors/AGX_RayPatternBase.h"
 #include "Sensors/LidarBarrier.h"
 
 // Unreal Engine includes.
@@ -76,8 +76,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	double GetBeamExitDiameter() const;
 
+	// Todo: add comment.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
-	EAGX_LidarScanPattern ScanPattern {EAGX_LidarScanPattern::HorizontalSweep};
+	UAGX_RayPatternBase* RayPattern {nullptr};
 
 	/**
 	 * Delegate that has to be assigned (bound to) by the user to support custom scan pattern.
@@ -91,7 +92,7 @@ public:
 	 */
 	UPROPERTY(
 		BlueprintReadWrite, Category = "AGX Lidar",
-		Meta = (EditCondition = "ScanPattern == EAGX_LidarScanPattern::Custom"))
+		Meta = (EditCondition = "ScanPattern == EAGX_LidarRayPattern::Custom"))
 	FOnFetchRayTransforms OnFetchRayTransforms;
 
 	/**
@@ -105,7 +106,7 @@ public:
 	 */
 	UPROPERTY(
 		BlueprintReadWrite, Category = "AGX Lidar",
-		Meta = (EditCondition = "ScanPattern == EAGX_LidarScanPattern::Custom"))
+		Meta = (EditCondition = "ScanPattern == EAGX_LidarRayPattern::Custom"))
 	FOnFetchNextPatternInterval OnFetchNextPatternInterval;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")

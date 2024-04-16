@@ -15,9 +15,9 @@
 namespace FLidarBarrier_helpers
 {
 	agxSensor::RayPatternGeneratorRef CreatePatternGenerator(
-		EAGX_LidarScanPattern Pattern, FCustomPatternFetcherBase* PatternFetcher)
+		EAGX_LidarRayPattern Pattern, FCustomPatternFetcherBase* PatternFetcher)
 	{
-		if (Pattern == EAGX_LidarScanPattern::HorizontalSweep)
+		if (Pattern == EAGX_LidarRayPattern::HorizontalSweep)
 		{
 			// Todo: make these configurable in the Lidar Sensor.
 			const agx::Vec2 fov {agx::degreesToRadians(360.0), agx::degreesToRadians(50.0)};
@@ -26,7 +26,7 @@ namespace FLidarBarrier_helpers
 			return new agxSensor::RayPatternHorizontalSweep(fov, resolution, frequency);
 		}
 
-		if (Pattern == EAGX_LidarScanPattern::Custom)
+		if (Pattern == EAGX_LidarRayPattern::Custom)
 		{
 			return new FCustomPatternGenerator(PatternFetcher);
 		}
@@ -66,7 +66,7 @@ bool FLidarBarrier::HasNative() const
 }
 
 void FLidarBarrier::AllocateNative(
-	EAGX_LidarScanPattern Pattern, FCustomPatternFetcherBase* PatternFetcher)
+	EAGX_LidarRayPattern Pattern, FCustomPatternFetcherBase* PatternFetcher)
 {
 	using namespace FLidarBarrier_helpers;
 	check(!HasNative());

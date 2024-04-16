@@ -9,8 +9,10 @@
 
 /** Specifies if the Lidar scan pattern used. */
 UENUM()
-enum class EAGX_LidarScanPattern
+enum class EAGX_LidarRayPattern
 {
+	Invalid,
+
 	/** Scans one vertical line, then goes to the next. */
 	HorizontalSweep,
 

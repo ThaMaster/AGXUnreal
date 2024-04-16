@@ -24,7 +24,7 @@ public:
 	~FLidarBarrier();
 
 	bool HasNative() const;
-	void AllocateNative(EAGX_LidarScanPattern Pattern, FCustomPatternFetcherBase* PatternFetcher);
+	void AllocateNative(EAGX_LidarRayPattern Pattern, FCustomPatternFetcherBase* PatternFetcher);
 	FLidarRef* GetNative();
 	const FLidarRef* GetNative() const;
 	void ReleaseNative();

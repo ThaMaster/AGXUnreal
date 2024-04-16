@@ -6,6 +6,10 @@
 #include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_Check.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "Sensors/AGX_LidarEnums.h"
+#include "Sensors/AGX_RayPatternCustom.h"
+#include "Sensors/AGX_RayPatternHorizontalSweep.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
@@ -75,13 +79,45 @@ bool UAGX_LidarSensorComponent::HasNative() const
 	return NativeBarrier.HasNative();
 }
 
+namespace AGX_LidarSensorComponent_helpers
+{
+	EAGX_LidarRayPattern GetTypeFrom(UAGX_RayPatternBase* Pattern)
+	{
+		if (Pattern == nullptr)
+			return EAGX_LidarRayPattern::Invalid;
+
+		if (Cast<UAGX_RayPatternHorizontalSweep>(Pattern) != nullptr)
+			return EAGX_LidarRayPattern::HorizontalSweep;
+
+		if (Cast<UAGX_RayPatternCustom>(Pattern) != nullptr)
+			return EAGX_LidarRayPattern::Custom;
+
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unknown RayPattern type given to LidarSensorComponent::GetTypeFrom."));
+		return EAGX_LidarRayPattern::Invalid;
+	}
+}
+
 FLidarBarrier* UAGX_LidarSensorComponent::GetOrCreateNative()
 {
 	if (HasNative())
 		return GetNative();
 
-	PatternFetcher.SetLidar(this);
-	NativeBarrier.AllocateNative(ScanPattern, &PatternFetcher);
+	EAGX_LidarRayPattern Pattern = AGX_LidarSensorComponent_helpers::GetTypeFrom(RayPattern);
+	if (Pattern == EAGX_LidarRayPattern::Invalid)
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			"Invalid Ray Pattern selected in Lidar Sensor '%s' in '%s'. Make sure a valid Ray "
+			"Pattern has been selected.",
+			SNotificationItem::CS_Fail);
+		return nullptr;
+	}
+
+	if (Pattern == EAGX_LidarRayPattern::Custom)
+		PatternFetcher.SetLidar(this);
+
+	NativeBarrier.AllocateNative(Pattern, &PatternFetcher);
 	AGX_CHECK(NativeBarrier.HasNative());
 	UpdateNativeProperties();
 	return GetNative();
@@ -125,7 +161,7 @@ bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
 	{
 		// List of names of properties that does not support editing after initialization.
 		static const TArray<FName> PropertiesNotEditableDuringPlay = {
-			GET_MEMBER_NAME_CHECKED(ThisClass, ScanPattern)};
+			GET_MEMBER_NAME_CHECKED(ThisClass, RayPattern)};
 
 		if (PropertiesNotEditableDuringPlay.Contains(InProperty->GetFName()))
 		{
@@ -177,7 +213,8 @@ void UAGX_LidarSensorComponent::UpdateNativeProperties()
 
 TArray<FTransform> UAGX_LidarSensorComponent::FetchRayTransforms()
 {
-	AGX_CHECK(ScanPattern == EAGX_LidarScanPattern::Custom);
+	AGX_CHECK(
+		AGX_LidarSensorComponent_helpers::GetTypeFrom(RayPattern) == EAGX_LidarRayPattern::Custom);
 	if (!OnFetchRayTransforms.IsBound())
 	{
 		UE_LOG(
@@ -194,7 +231,8 @@ TArray<FTransform> UAGX_LidarSensorComponent::FetchRayTransforms()
 
 FAGX_CustomPatternInterval UAGX_LidarSensorComponent::FetchNextInterval()
 {
-	AGX_CHECK(ScanPattern == EAGX_LidarScanPattern::Custom);
+	AGX_CHECK(
+		AGX_LidarSensorComponent_helpers::GetTypeFrom(RayPattern) == EAGX_LidarRayPattern::Custom);
 	if (!OnFetchNextPatternInterval.IsBound())
 	{
 		UE_LOG(

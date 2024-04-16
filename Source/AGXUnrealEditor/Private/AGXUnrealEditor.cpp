@@ -84,6 +84,8 @@
 #include "Sensors/AGX_LidarSensorLineTraceComponent.h"
 #include "Sensors/AGX_LidarSensorLineTraceComponentVisualizer.h"
 #include "Sensors/AGX_LidarSensorReference.h"
+#include "Sensors/AGX_RayPatternCustomTypeActions.h"
+#include "Sensors/AGX_RayPatternHorizontalSweepTypeActions.h"
 #include "Sensors/AGX_SensorEnvironment.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_ShapeComponentCustomization.h"
@@ -206,6 +208,10 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 		MakeShareable(new FAGX_ConstraintMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_PlayRecordTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_RayPatternCustomTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_RayPatternHorizontalSweepTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_ShapeContactMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
