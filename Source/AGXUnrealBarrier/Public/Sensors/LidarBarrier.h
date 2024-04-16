@@ -34,6 +34,12 @@ public:
 	void SetRange(FAGX_RealInterval Range);
 	FAGX_RealInterval GetRange() const;
 
+	void SetBeamDivergence(double BeamDivergence);
+	double GetBeamDivergence() const;
+	
+	void SetBeamExitDiameter(double BeamExitDiameter);
+	double GetBeamExitDiameter() const;
+
 	void GetResultTest(UWorld* World, const FTransform& Transform); // Temp test function, do not merge!
 
 private:

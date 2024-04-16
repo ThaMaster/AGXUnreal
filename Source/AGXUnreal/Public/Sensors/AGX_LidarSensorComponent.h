@@ -11,6 +11,7 @@
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
+#include "Math/UnrealMathUtility.h"
 
 #include "AGX_LidarSensorComponent.generated.h"
 
@@ -46,6 +47,34 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	FAGX_RealInterval GetRange() const;
+
+	/**
+	 * Divergence of the lidar laser light beam [deg].
+	 * This the total "cone angle", i.e. the angle between a perfectly parallel beam of the same
+	 * exit dimater to the cone surface is half this angle.
+	 * This property affects the calculated intensity.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
+	FAGX_Real BeamDivergence {0.001 * PI / 180.0};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetBeamDivergence(double InBeamDivergence);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	double GetBeamDivergence() const;
+
+	/**
+	 * The diameter of the lidar laser light beam as it exits the lidar [cm].
+	 * This property affects the calculated intensity.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
+	FAGX_Real BeamExitDiameter { 1.0 };
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetBeamExitDiameter(double InBeamExitDiameter);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	double GetBeamExitDiameter() const;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
 	EAGX_LidarScanPattern ScanPattern {EAGX_LidarScanPattern::HorizontalSweep};

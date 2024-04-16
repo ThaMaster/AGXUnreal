@@ -121,6 +121,36 @@ FAGX_RealInterval FLidarBarrier::GetRange() const
 		ConvertDistanceToUnreal<double>(RangeAGX.upper()));
 }
 
+void FLidarBarrier::SetBeamDivergence(double BeamDivergence)
+{
+	check(HasNative());
+	agxSensor::LidarSettings Settings = NativeRef->Native->getLidarSettings();
+	Settings.beamDivergence = ConvertAngleToAGX(BeamDivergence);
+	NativeRef->Native->setLidarSettings(Settings);
+}
+
+double FLidarBarrier::GetBeamDivergence() const
+{
+	check(HasNative());
+	const agxSensor::LidarSettings& Settings = NativeRef->Native->getLidarSettings();
+	return ConvertAngleToUnreal<double>(Settings.beamDivergence);
+}
+
+void FLidarBarrier::SetBeamExitDiameter(double BeamExitDiameter)
+{
+	check(HasNative());
+	agxSensor::LidarSettings Settings = NativeRef->Native->getLidarSettings();
+	Settings.beamExitDiameter = ConvertDistanceToAGX(BeamExitDiameter);
+	NativeRef->Native->setLidarSettings(Settings);
+}
+
+double FLidarBarrier::GetBeamExitDiameter() const
+{
+	check(HasNative());
+	const agxSensor::LidarSettings& Settings = NativeRef->Native->getLidarSettings();
+	return ConvertDistanceToUnreal<double>(Settings.beamExitDiameter);
+}
+
 #include "DrawDebugHelpers.h"
 
 void FLidarBarrier::GetResultTest(UWorld* World, const FTransform& Transform)

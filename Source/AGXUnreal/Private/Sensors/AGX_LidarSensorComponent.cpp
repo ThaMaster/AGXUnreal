@@ -32,6 +32,38 @@ FAGX_RealInterval UAGX_LidarSensorComponent::GetRange() const
 	return Range;
 }
 
+void UAGX_LidarSensorComponent::SetBeamDivergence(double InBeamDivergence)
+{
+	BeamDivergence = InBeamDivergence;
+
+	if (HasNative())
+		NativeBarrier.SetBeamDivergence(InBeamDivergence);
+}
+
+double UAGX_LidarSensorComponent::GetBeamDivergence() const
+{
+	if (HasNative())
+		return NativeBarrier.GetBeamDivergence();
+
+	return BeamDivergence;
+}
+
+void UAGX_LidarSensorComponent::SetBeamExitDiameter(double InBeamExitDiameter)
+{
+	BeamExitDiameter = InBeamExitDiameter;
+
+	if (HasNative())
+		NativeBarrier.SetBeamExitDiameter(InBeamExitDiameter);
+}
+
+double UAGX_LidarSensorComponent::GetBeamExitDiameter() const
+{
+	if (HasNative())
+		return NativeBarrier.GetBeamExitDiameter();
+
+	return BeamExitDiameter;
+}
+
 void UAGX_LidarSensorComponent::Step()
 {
 	if (HasNative())
@@ -130,6 +162,8 @@ void UAGX_LidarSensorComponent::InitPropertyDispatcher()
 	}
 
 	AGX_COMPONENT_DEFAULT_DISPATCHER(Range);
+	AGX_COMPONENT_DEFAULT_DISPATCHER(BeamDivergence);
+	AGX_COMPONENT_DEFAULT_DISPATCHER(BeamExitDiameter);
 }
 #endif
 
@@ -137,6 +171,8 @@ void UAGX_LidarSensorComponent::UpdateNativeProperties()
 {
 	AGX_CHECK(HasNative());
 	NativeBarrier.SetRange(Range);
+	NativeBarrier.SetBeamDivergence(BeamDivergence);
+	NativeBarrier.SetBeamExitDiameter(BeamExitDiameter);
 }
 
 TArray<FTransform> UAGX_LidarSensorComponent::FetchRayTransforms()
