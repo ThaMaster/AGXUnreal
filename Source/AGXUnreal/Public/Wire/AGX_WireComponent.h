@@ -727,6 +727,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	UPARAM(Ref) FWireRoutingNode& AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
+	void SetNode(int32 InIndex, UPARAM(Ref) const FWireRoutingNode InNode);
+
 	/**
 	 * Remove the route node at the given index.
 	 * @param InIndex The index of the node to remove.

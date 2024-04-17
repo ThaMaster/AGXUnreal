@@ -990,6 +990,23 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(
 	return NewNode;
 }
 
+void UAGX_WireComponent::SetNode(const int32 InIndex, const FWireRoutingNode InNode)
+{
+	UE_LOG(
+		LogAGX, Warning, TEXT("Setting node at address %p at location %s"), &InNode,
+		*InNode.Frame.LocalLocation.ToString());
+	if (!RouteNodes.IsValidIndex(InIndex))
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Out-of-bounds index %d for route nodes array was passed to Set Node in Wire Component "
+				 "'%s' in Actor '%s'"),
+			InIndex, *GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+	RouteNodes[InIndex] = InNode;
+}
+
 void UAGX_WireComponent::RemoveNode(int32 InIndex)
 {
 	if (HasNative())
