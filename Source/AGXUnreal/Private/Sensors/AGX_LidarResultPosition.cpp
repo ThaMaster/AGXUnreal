@@ -17,7 +17,8 @@ bool FAGX_LidarResultPosition::AssociateWith(UAGX_LidarSensorComponent* Lidar)
 	return Lidar->AddResult(*this);
 }
 
-void FAGX_LidarResultPosition::DebugDrawResult(UAGX_LidarSensorComponent* Lidar)
+void FAGX_LidarResultPosition::DebugDrawResult(
+	UAGX_LidarSensorComponent* Lidar, float LifeTime, float Size, FColor Color)
 {
 	if (Lidar == nullptr)
 		return;
@@ -26,7 +27,7 @@ void FAGX_LidarResultPosition::DebugDrawResult(UAGX_LidarSensorComponent* Lidar)
 	for (const auto& Datum : Data)
 	{
 		const FVector Point = Transform.TransformPositionNoScale(Datum.Position);
-		DrawDebugPoint(Lidar->GetWorld(), Point, 6.f, FColor::Red, false, 0.12f);
+		DrawDebugPoint(Lidar->GetWorld(), Point, Size, Color, false, LifeTime);
 	}
 }
 

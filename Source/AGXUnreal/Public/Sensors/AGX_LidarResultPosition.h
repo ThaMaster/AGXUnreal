@@ -28,7 +28,9 @@ public:
 	// input argument.
 	virtual bool AssociateWith(UAGX_LidarSensorComponent* Lidar) override;
 
-	void DebugDrawResult(UAGX_LidarSensorComponent* Lidar);
+	void DebugDrawResult(
+		UAGX_LidarSensorComponent* Lidar, float LifeTime = 0.12f, float Size = 6.f,
+		FColor Color = FColor::Red);
 
 	virtual bool HasNative() const override;
 	virtual FLidarResultBarrier* GetOrCreateNative() override;
@@ -71,9 +73,9 @@ class AGXUNREAL_API UAGX_LidarResultPosition_LF : public UBlueprintFunctionLibra
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	static void DebugDrawResult(
-		UPARAM(ref) FAGX_LidarResultPosition& Result,
-		UAGX_LidarSensorComponent* Lidar)
+		UPARAM(ref) FAGX_LidarResultPosition& Result, UAGX_LidarSensorComponent* Lidar,
+		float LifeTime = 0.12f, float Size = 6.f, FLinearColor Color = FLinearColor::Red)
 	{
-		Result.DebugDrawResult(Lidar);
+		Result.DebugDrawResult(Lidar, LifeTime, Size, Color.ToFColor(false));
 	}
 };
