@@ -51,9 +51,3 @@ bool FWireRoutingNode::Serialize(FArchive& Archive)
 
 	return true;
 }
-
-void UAGX_WireRouteNode_FL::SetBody(
-	UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body)
-{
-	WireNode.SetBody(Body);
-}
