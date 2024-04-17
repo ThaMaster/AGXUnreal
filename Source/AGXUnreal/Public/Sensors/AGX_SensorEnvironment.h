@@ -32,15 +32,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Sensor Environment",
 		Meta = (ExposeOnSpawn))
-	bool bAutoStep {true};
-
-	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "AGX Sensor Environment",
-		Meta = (ExposeOnSpawn))
-	bool bAutoAddObjects {true};
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
-	void Step(double DeltaTime);
+	bool bAutoAddObjects {true};	
 
 	/*
 	 * Add a Static Mesh Component so that it can be detected by sensors handled by this Sensor
@@ -118,6 +110,7 @@ protected:
 private:
 	void RegisterLidars();
 	void AutoStep();
+	void Step(double DeltaTime);
 	void StepNoAutoAddObjects(double DeltaTime);
 	void StepAutoAddObjects(double DeltaTime);
 	void UpdateTrackedLidars();

@@ -67,8 +67,6 @@ void AAGX_SensorEnvironment::Step(double DeltaTime)
 		StepAutoAddObjects(DeltaTime);
 	else
 		StepNoAutoAddObjects(DeltaTime);
-
-	NativeBarrier.Step(DeltaTime);
 }
 
 bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh)
@@ -329,7 +327,6 @@ bool AAGX_SensorEnvironment::CanEditChange(const FProperty* InProperty) const
 		// List of names of properties that does not support editing after initialization.
 		static const TArray<FName> PropertiesNotEditableDuringPlay = {
 			GET_MEMBER_NAME_CHECKED(ThisClass, LidarSensors),
-			GET_MEMBER_NAME_CHECKED(ThisClass, bAutoStep),
 			GET_MEMBER_NAME_CHECKED(ThisClass, bAutoAddObjects)};
 
 		if (PropertiesNotEditableDuringPlay.Contains(InProperty->GetFName()))
@@ -369,12 +366,9 @@ void AAGX_SensorEnvironment::BeginPlay()
 
 	RegisterLidars();
 
-	if (bAutoStep)
-	{
-		PostStepForwardHandle =
-			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Sim).AddLambda(
-				[this](double) { AutoStep(); });
-	}
+	PostStepForwardHandle =
+		FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Sim).AddLambda(
+			[this](double) { AutoStep(); });
 }
 
 void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type Reason)

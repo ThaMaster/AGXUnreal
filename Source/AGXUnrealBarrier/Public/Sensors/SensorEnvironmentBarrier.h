@@ -37,8 +37,6 @@ public:
 	bool Remove(FTerrainBarrier& Terrain);
 	bool Remove(FTerrainPagerBarrier& Pager);
 
-	void Step(double DeltaTime);
-
 private:
 	FSensorEnvironmentBarrier(const FSensorEnvironmentBarrier&) = delete;
 	void operator=(const FSensorEnvironmentBarrier&) = delete;

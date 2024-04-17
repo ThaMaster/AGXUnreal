@@ -91,9 +91,3 @@ bool FSensorEnvironmentBarrier::Remove(FTerrainPagerBarrier& Pager)
 	check(Pager.HasNative());
 	return NativeRef->Native->remove(Pager.GetNative()->Native);
 }
-
-void FSensorEnvironmentBarrier::Step(double DeltaTime)
-{
-	check(HasNative());
-	NativeRef->Native->step(DeltaTime);
-}
