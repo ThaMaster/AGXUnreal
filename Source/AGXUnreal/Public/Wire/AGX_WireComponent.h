@@ -692,7 +692,7 @@ public:
 	 * @param InNode The node to add.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNode(const FWireRoutingNode& InNode);
+	FWireRoutingNode& AddNode(const FWireRoutingNode& InNode);
 
 	/**
 	 * Add a default-constructed route node at the designated local location to the end of the node
@@ -701,7 +701,7 @@ public:
 	 * @param InLocation The location of the node, relative to the Wire Component.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNodeAtLocation(FVector InLocation);
+	FWireRoutingNode& AddNodeAtLocation(FVector InLocation);
 
 	/**
 	 * Add a default-constructed route node at the designated index in the route array, pushing all
@@ -711,7 +711,7 @@ public:
 	 * @param InIndex The place in the route node array to add the node at.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex);
+	FWireRoutingNode& AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex);
 
 	/**
 	 * Add a default-constructed route node, placed at the given local location, at the designated
@@ -721,7 +721,7 @@ public:
 	 * @param InIndex The place in the route node array to add the new node at.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
+	FWireRoutingNode& AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
 
 	/**
 	 * Remove the route node at the given index.

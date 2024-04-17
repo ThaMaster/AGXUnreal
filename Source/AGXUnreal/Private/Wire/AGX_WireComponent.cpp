@@ -922,40 +922,47 @@ namespace AGX_WireComponent_helpers
 //
 // All FWireRoutingNodes added in these Add-functions must have an Owning Actor. If it doesn't have
 // one already then set GetTypedOuter<AActor>().
-void UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
+FWireRoutingNode& UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
 {
 	if (HasNative())
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
 	RouteNodes.Add(InNode);
+	return RouteNodes.Last();
 }
 
-void UAGX_WireComponent::AddNodeAtLocation(const FVector& InLocation)
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation)
 {
 	if (HasNative())
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
 	RouteNodes.Add(FWireRoutingNode(InLocation));
+	FWireRoutingNode& NewNode = RouteNodes.Last();
+	return NewNode;
 }
 
-void UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex)
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex)
 {
 	if (HasNative())
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
 	RouteNodes.Insert(InNode, InIndex);
+	FWireRoutingNode& NewNode = RouteNodes[InIndex];
+	return NewNode;
 }
 
-void UAGX_WireComponent::AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex)
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex)
 {
 	if (HasNative())
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
 	RouteNodes.Insert(FWireRoutingNode(InLocation), InIndex);
+	FWireRoutingNode& NewNode = RouteNodes[InIndex];
+	return NewNode;
 }
 
 void UAGX_WireComponent::RemoveNode(int32 InIndex)
