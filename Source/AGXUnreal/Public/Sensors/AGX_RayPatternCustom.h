@@ -10,7 +10,7 @@
 /**
  * Use a custom scan pattern. Ray transforms are set by the user.
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract)
+UCLASS(ClassGroup = "AGX", Category = "AGX")
 class AGXUNREAL_API UAGX_RayPatternCustom : public UAGX_RayPatternBase
 {
 	GENERATED_BODY()

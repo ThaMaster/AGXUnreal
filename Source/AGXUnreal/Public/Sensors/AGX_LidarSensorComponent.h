@@ -15,7 +15,9 @@
 
 #include "AGX_LidarSensorComponent.generated.h"
 
+
 class UTextureRenderTarget2D;
+struct FAGX_LidarResultBase;
 struct FAGX_SensorMsgsPointCloud2;
 
 DECLARE_DYNAMIC_DELEGATE_RetVal(TArray<FTransform>, FOnFetchRayTransforms);
@@ -112,12 +114,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void Step();
 
+	bool AddResult(FAGX_LidarResultBase& InResult);
+
 	bool HasNative() const;
 	FLidarBarrier* GetOrCreateNative();
 	FLidarBarrier* GetNative();
 	const FLidarBarrier* GetNative() const;
-
-	void GetResultTest(); // Test function, do not merge!!
 
 #if WITH_EDITOR
 	//~ Begin UActorComponent Interface

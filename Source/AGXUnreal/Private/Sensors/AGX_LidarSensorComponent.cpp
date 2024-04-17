@@ -6,6 +6,7 @@
 #include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_Check.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "Sensors/AGX_LidarResultBase.h"
 #include "Sensors/AGX_RayPatternCustom.h"
 #include "Sensors/AGX_RayPatternHorizontalSweep.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -73,6 +74,16 @@ void UAGX_LidarSensorComponent::Step()
 		NativeBarrier.SetTransform(GetComponentTransform());
 }
 
+bool UAGX_LidarSensorComponent::AddResult(FAGX_LidarResultBase& InResult)
+{
+	auto Native = GetOrCreateNative();
+	if (Native == nullptr)
+		return false;
+
+	Native->AddResult(*InResult.GetOrCreateNative());
+	return true;
+}
+
 bool UAGX_LidarSensorComponent::HasNative() const
 {
 	return NativeBarrier.HasNative();
@@ -135,11 +146,6 @@ const FLidarBarrier* UAGX_LidarSensorComponent::GetNative() const
 		return nullptr;
 
 	return &NativeBarrier;
-}
-
-void UAGX_LidarSensorComponent::GetResultTest()
-{
-	NativeBarrier.GetResultTest(GetWorld(), GetComponentTransform());
 }
 
 #if WITH_EDITOR

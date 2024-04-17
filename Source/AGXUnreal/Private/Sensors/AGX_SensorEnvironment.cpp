@@ -69,11 +69,6 @@ void AAGX_SensorEnvironment::Step(double DeltaTime)
 		StepNoAutoAddObjects(DeltaTime);
 
 	NativeBarrier.Step(DeltaTime);
-
-	for (auto It = TrackedLidars.CreateIterator(); It; ++It)
-	{
-		It->Key->GetResultTest(); // Todo: dummy test, remove this.
-	}
 }
 
 bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh)
