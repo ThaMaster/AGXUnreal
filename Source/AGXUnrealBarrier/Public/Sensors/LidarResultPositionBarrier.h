@@ -3,9 +3,9 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "Sensors/AGX_LidarResultTypes.h"
 #include "Sensors/LidarResultBarrier.h"
 
+struct FAGX_LidarResultPositionData;
 
 class AGXUNREALBARRIER_API FLidarResultPositionBarrier : public FLidarResultBarrier
 {

@@ -23,11 +23,6 @@ struct AGXUNREAL_API FAGX_LidarResultPosition : public FAGX_LidarResultBase
 public:
 	virtual ~FAGX_LidarResultPosition() = default;
 
-	// Making UAGX_LidarSensorComponent::AddResult Blueprint friendly was not so easy since
-	// non-const references becomes out-variables, and pointers to structs are not permitted as
-	// input argument.
-	virtual bool AssociateWith(UAGX_LidarSensorComponent* Lidar) override;
-
 	void DebugDrawResult(
 		UAGX_LidarSensorComponent* Lidar, float LifeTime = 0.12f, float Size = 6.f,
 		FColor Color = FColor::Red);

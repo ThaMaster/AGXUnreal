@@ -18,8 +18,10 @@ struct AGXUNREAL_API FAGX_LidarResultBase
 public:
 	virtual ~FAGX_LidarResultBase() = default;
 
-	virtual bool AssociateWith(UAGX_LidarSensorComponent* Lidar)
-		PURE_VIRTUAL(FAGX_LidarResultBase::AssociateWith, return false;);
+	// Making UAGX_LidarSensorComponent::AddResult Blueprint friendly was not so easy since
+	// non-const references becomes out-variables, and pointers to structs are not permitted as
+	// input argument.
+	bool AssociateWith(UAGX_LidarSensorComponent* Lidar);
 
 	virtual bool HasNative() const PURE_VIRTUAL(FAGX_LidarResultBase::HasNative, return false;);
 

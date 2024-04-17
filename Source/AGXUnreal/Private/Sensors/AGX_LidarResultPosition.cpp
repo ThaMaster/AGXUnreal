@@ -9,14 +9,6 @@
 #include "DrawDebugHelpers.h"
 
 
-bool FAGX_LidarResultPosition::AssociateWith(UAGX_LidarSensorComponent* Lidar)
-{
-	if (Lidar == nullptr)
-		return false;
-
-	return Lidar->AddResult(*this);
-}
-
 void FAGX_LidarResultPosition::DebugDrawResult(
 	UAGX_LidarSensorComponent* Lidar, float LifeTime, float Size, FColor Color)
 {

@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
+#include "Sensors/AGX_LidarResultTypes.h"
 #include "TypeConversions.h"
 
 // AGX Dynamics includes.
@@ -15,9 +16,9 @@ namespace LidarResultPositionBarrier_helpers
 {
 	struct LidarPositionData
 	{
-		float x;
-		float y;
-		float z;
+		float X;
+		float Y;
+		float Z;
 	};
 }
 
@@ -42,6 +43,6 @@ void FLidarResultPositionBarrier::GetResult(TArray<FAGX_LidarResultPositionData>
 	OutResult.SetNumUninitialized(ViewAGX.size(), false);
 	for (int32 I = 0; I < ViewAGX.size(); I++)
 	{
-		OutResult[I] = {ConvertDisplacement(ViewAGX[I].x, ViewAGX[I].y, ViewAGX[I].z)};
+		OutResult[I] = {ConvertDisplacement(ViewAGX[I].X, ViewAGX[I].Y, ViewAGX[I].Z)};
 	}
 }
