@@ -105,5 +105,30 @@ class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node")
-	static void SetBody(UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body);
+	static void SetBody(UPARAM(Ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node")
+	static void SetFrame(UPARAM(Ref) FWireRoutingNode& WireNode, UPARAM(Ref) FAGX_Frame& Frame)
+	{
+		WireNode.Frame = Frame;
+	}
+
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Node")
+	static UPARAM(Ref) FAGX_Frame& GetFrame(UPARAM(ref) FWireRoutingNode& WireNode)
+	{
+		return WireNode.Frame;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node|Frame")
+	static void SetParentName(UPARAM(Ref) FWireRoutingNode& WireNode, FName ParentName)
+	{
+		WireNode.Frame.Parent.Name = ParentName;
+	}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Node|Frame")
+	static FName GetParentName(UPARAM(Ref) FWireRoutingNode& WireNode)
+	{
+		return WireNode.Frame.Parent.Name;
+	}
 };
