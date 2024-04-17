@@ -134,6 +134,19 @@ class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node|Frame")
+	static UPARAM(Ref) FWireRoutingNode& SetParentOwningActor(UPARAM(Ref) FWireRoutingNode& WireNode, AActor* OwningActor)
+	{
+		WireNode.Frame.Parent.OwningActor = OwningActor;
+		return WireNode;
+	}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Node|Frame")
+	static AActor* GetParentOwningActor(UPARAM(Ref) FWireRoutingNode& WireNode)
+	{
+		return WireNode.Frame.Parent.OwningActor;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node|Frame")
 	static UPARAM(Ref) FWireRoutingNode& SetLocalLocation(UPARAM(Ref) FWireRoutingNode& WireNode, FVector LocalLocation)
 	{
 		WireNode.Frame.LocalLocation = LocalLocation;
