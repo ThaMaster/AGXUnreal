@@ -87,6 +87,12 @@ void UAGX_ContactMaterialRegistrarComponent::AddContactMaterial(
 	}
 }
 
+const TArray<UAGX_ContactMaterial*>& UAGX_ContactMaterialRegistrarComponent::GetContactMaterials()
+	const
+{
+	return ContactMaterials;
+}
+
 void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
 {
 	Super::BeginPlay();

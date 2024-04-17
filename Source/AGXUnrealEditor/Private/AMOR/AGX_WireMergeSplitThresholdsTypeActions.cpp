@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AMOR/AGX_WireMergeSplitThresholds.h"
+#include "Utilities/AGX_SlateUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_WireMergeSplitThresholdsTypeActions"
 
@@ -34,7 +35,7 @@ uint32 FAGX_WireMergeSplitThresholdsTypeActions::GetCategories()
 
 FColor FAGX_WireMergeSplitThresholdsTypeActions::GetTypeColor() const
 {
-	return FColor(255, 115, 0);
+	return FAGX_SlateUtilities::GetAGXColorOrange();
 }
 
 FText FAGX_WireMergeSplitThresholdsTypeActions::GetAssetDescription(

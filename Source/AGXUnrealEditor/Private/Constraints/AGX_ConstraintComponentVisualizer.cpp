@@ -8,6 +8,7 @@
 #include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
+#include "Utilities/AGX_SlateUtilities.h"
 
 // Unreal Engine includes.
 #include "CanvasItem.h"
@@ -280,7 +281,7 @@ namespace
 	{
 		constexpr float TRANSLATIONAL_PRIMITIVE_SCALE {0.06f};
 		constexpr float ROTATIONAL_PRIMITIVE_SCALE {0.07f};
-		constexpr FColor ROT_COLOR_DEFAULT {243, 139, 0};
+		const static FColor ROT_COLOR_DEFAULT = FAGX_SlateUtilities::GetAGXColorOrange();
 		constexpr FColor TRANS_COLOR_DEFAULT {243, 200, 0};
 
 		const FTransform AttachmentTransform(Attachment.GetGlobalFrameMatrix());
@@ -427,7 +428,7 @@ void FAGX_ConstraintComponentVisualizer::DrawConstraint(
 	UAGX_RigidBodyComponent* Body1 = Constraint->BodyAttachment1.GetRigidBody();
 	UAGX_RigidBodyComponent* Body2 = Constraint->BodyAttachment2.GetRigidBody();
 
-	const FColor HighlightColor(243, 139, 0);
+	const static FColor HighlightColor = FAGX_SlateUtilities::GetAGXColorOrange();
 	const float HighlightThickness(1.0f);
 
 	// \todo Is there a better way to determine if we are in the BP Actor Editor?

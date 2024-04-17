@@ -76,6 +76,8 @@ public:
 	void SetCenterOfMassOffset(const FVector& Offset);
 	FVector GetCenterOfMassOffset() const;
 
+	FVector GetCenterOfMassPosition() const;
+
 	void SetName(const FString& NewName);
 	FString GetName() const;
 

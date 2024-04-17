@@ -593,17 +593,21 @@ bool FAGXSimObjectsReader::ReadAGXArchive(
 
 AGXUNREALBARRIER_API bool FAGXSimObjectsReader::ReadUrdf(
 	const FString& UrdfFilePath, const FString& UrdfPackagePath,
-	FSimulationObjectCollection& OutSimObjects)
+	const TArray<double>& InInitJoints,	FSimulationObjectCollection& OutSimObjects)
 {
-#if AGX_VERSION_GREATER_OR_EQUAL(2, 33, 0, 0)
+	agx::RealVector* InitJointsPtr = nullptr;
+	agx::RealVector InitJoints;
+	if (InInitJoints.Num() > 0)
+	{
+		InitJointsPtr = &InitJoints;
+		for (const auto V : InInitJoints)
+			InitJoints.push_back(ConvertAngleToAGX(V));
+	}
+
 	agxModel::UrdfReader::Settings UrdfSettings(
 		/*fixToWorld*/ false, /*disableLinkedBodies*/ false, /*mergeKinematicLinks*/ false);
 	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
-		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, UrdfSettings);
-#else
-	agxSDK::AssemblyRef Model = agxModel::UrdfReader::read(
-		Convert(UrdfFilePath), Convert(UrdfPackagePath), nullptr, /*fixToWorld*/ false);
-#endif
+		Convert(UrdfFilePath), Convert(UrdfPackagePath), InitJointsPtr, UrdfSettings);
 
 	if (Model == nullptr)
 	{

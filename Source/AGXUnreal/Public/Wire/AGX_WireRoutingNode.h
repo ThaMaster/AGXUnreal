@@ -13,7 +13,6 @@
 
 #include "AGX_WireRoutingNode.generated.h"
 
-
 #define AGX_WIRE_ROUTE_NODE_USE_FRAME 1
 
 /**
@@ -32,17 +31,15 @@ struct AGXUNREAL_API FWireRoutingNode
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
 	EWireNodeType NodeType;
 
-
 	/**
 	 * The location of the wire node.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wire",
-		Meta = (SkipUCSModifiedProperties))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "Wire", Meta = (SkipUCSModifiedProperties))
 	FAGX_Frame Frame;
 
 	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
 	// FVector Location;
-
 
 	/**
 	 * The Rigid Body that an Eye or BodyFixed node should be attached to.
@@ -74,16 +71,15 @@ struct AGXUNREAL_API FWireRoutingNode
 
 	void SetBody(UAGX_RigidBodyComponent* Body);
 
-	bool Serialize(FArchive& Ar);
+	bool Serialize(FArchive& Archive);
 
 private:
 	/**
 	 * The location of this node relative to the Wire Component [cm].
 	 */
-	UPROPERTY(Meta=(DeprecatedProperty, DeprecationMessage="Use Frame instead."))
+	UPROPERTY(Meta = (DeprecatedProperty, DeprecationMessage = "Use Frame instead."))
 	FVector Location_DEPRECATED {FVector::ZeroVector};
 };
-
 
 #if AGX_WIRE_ROUTE_NODE_USE_FRAME
 template <>
@@ -105,5 +101,53 @@ class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node")
-	static void SetBody(UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body);
+	static void SetBody(UPARAM(Ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node")
+	static void SetFrame(UPARAM(Ref) FWireRoutingNode& WireNode, UPARAM(Ref) FAGX_Frame& Frame)
+	{
+		WireNode.Frame = Frame;
+	}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Node")
+	static UPARAM(Ref) FAGX_Frame& GetFrame(UPARAM(ref) FWireRoutingNode& WireNode)
+	{
+		return WireNode.Frame;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node|Frame")
+	static void SetParentName(UPARAM(Ref) FWireRoutingNode& WireNode, FName ParentName)
+	{
+		WireNode.Frame.Parent.Name = ParentName;
+	}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Node|Frame")
+	static FName GetParentName(UPARAM(Ref) FWireRoutingNode& WireNode)
+	{
+		return WireNode.Frame.Parent.Name;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node|Frame")
+	static void SetLocalLocation(UPARAM(Ref) FWireRoutingNode& WireNode, FVector LocalLocation)
+	{
+		WireNode.Frame.LocalLocation = LocalLocation;
+	}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Node|Frame")
+	static FVector GetLocalLocation(UPARAM(Ref) FWireRoutingNode& WireNode)
+	{
+		return WireNode.Frame.LocalLocation;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node|Frame")
+	static void SetLocalRotation(UPARAM(Ref) FWireRoutingNode& WireNode, FRotator LocalRotation)
+	{
+		WireNode.Frame.LocalRotation = LocalRotation;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node|Frame")
+	static FRotator GetLocalRotation(UPARAM(Ref) FWireRoutingNode& WireNode)
+	{
+		return WireNode.Frame.LocalRotation;
+	}
 };

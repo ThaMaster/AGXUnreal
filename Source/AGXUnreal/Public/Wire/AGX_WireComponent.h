@@ -692,7 +692,7 @@ public:
 	 * @param InNode The node to add.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNode(const FWireRoutingNode& InNode);
+	FWireRoutingNode& AddNode(const FWireRoutingNode& InNode);
 
 	/**
 	 * Add a default-constructed route node at the designated local location to the end of the node
@@ -701,7 +701,7 @@ public:
 	 * @param InLocation The location of the node, relative to the Wire Component.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNodeAtLocation(const FVector& InLocation);
+	FWireRoutingNode& AddNodeAtLocation(FVector InLocation);
 
 	/**
 	 * Add a default-constructed route node at the designated index in the route array, pushing all
@@ -711,7 +711,7 @@ public:
 	 * @param InIndex The place in the route node array to add the node at.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex);
+	FWireRoutingNode& AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex);
 
 	/**
 	 * Add a default-constructed route node, placed at the given local location, at the designated
@@ -721,7 +721,7 @@ public:
 	 * @param InIndex The place in the route node array to add the new node at.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
+	FWireRoutingNode& AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
 
 	/**
 	 * Remove the route node at the given index.
@@ -815,10 +815,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	TArray<FVector> GetRenderNodeLocations() const;
 
+#if WITH_EDITOR
 	void OnRouteNodeParentMoved(
 		USceneComponent* Component, EUpdateTransformFlags UpdateTransformFlags,
 		ETeleportType Teleport);
 	void OnRouteNodeParentReplaced(const FCoreUObjectDelegates::FReplacementObjectMap& OldToNew);
+#endif
 
 	/**
 	 * Mark visuals for this Wire Component dirty. The Visuals will be updated according to the
@@ -897,12 +899,14 @@ private:
 #endif
 
 	TArray<FVector> GetNodesForRendering() const;
-	bool ShouldRender() const;
+	bool ShouldRenderSelf() const;
 	void UpdateVisuals();
 	void RenderSelf(const TArray<FVector>& Points);
 	void SetVisualsInstanceCount(int32 Num);
 
+#if WITH_EDITOR
 	void SynchronizeParentMovedCallbacks();
+#endif
 
 private:
 	FWireBarrier NativeBarrier;
@@ -912,4 +916,14 @@ private:
 	/// Keep track which node frame parents we have registered a callback with. Note that a single
 	/// entry here may correspond to multiple routing nodes.
 	TMap<TWeakObjectPtr<USceneComponent>, FDelegateHandle> DelegateHandles;
+
+#if WITH_EDITOR
+	// Handle to the delegate registered with the engine Map Changed event to update visuals
+	// after load.
+	FDelegateHandle MapLoadDelegateHandle;
+
+	// Handle to the delegate registered with the Objects Replaced event, used to update Transform
+	// Updated callbacks on Scene Components that are a parent of any routing node.
+	FDelegateHandle ObjectsReplacedDelegateHandle;
+#endif
 };

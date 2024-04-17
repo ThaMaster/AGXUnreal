@@ -922,40 +922,53 @@ namespace AGX_WireComponent_helpers
 //
 // All FWireRoutingNodes added in these Add-functions must have an Owning Actor. If it doesn't have
 // one already then set GetTypedOuter<AActor>().
-void UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
+FWireRoutingNode& UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
 {
 	if (HasNative())
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
 	RouteNodes.Add(InNode);
+	FWireRoutingNode& NewNode = RouteNodes.Last();
+	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
+	return NewNode;
 }
 
-void UAGX_WireComponent::AddNodeAtLocation(const FVector& InLocation)
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation)
 {
 	if (HasNative())
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
 	RouteNodes.Add(FWireRoutingNode(InLocation));
+	FWireRoutingNode& NewNode = RouteNodes.Last();
+	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
+	return NewNode;
 }
 
-void UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex)
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex)
 {
 	if (HasNative())
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
 	RouteNodes.Insert(InNode, InIndex);
+	FWireRoutingNode& NewNode = RouteNodes[InIndex];
+	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
+	return NewNode;
 }
 
-void UAGX_WireComponent::AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex)
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(
+	const FVector& InLocation, int32 InIndex)
 {
 	if (HasNative())
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
 	RouteNodes.Insert(FWireRoutingNode(InLocation), InIndex);
+	FWireRoutingNode& NewNode = RouteNodes[InIndex];
+	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
+	return NewNode;
 }
 
 void UAGX_WireComponent::RemoveNode(int32 InIndex)
@@ -1147,6 +1160,8 @@ TArray<FVector> UAGX_WireComponent::GetRenderNodeLocations() const
 	return Result;
 }
 
+#if WITH_EDITOR
+
 void UAGX_WireComponent::OnRouteNodeParentMoved(
 	USceneComponent* Component, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
 {
@@ -1219,6 +1234,11 @@ void UAGX_WireComponent::OnRouteNodeParentReplaced(
 		}
 	}
 
+	// Any changes made to the callback setup is a sign that we may need to update the wire
+	// rendering positions. For example if a Scene Component was renamed to either become of stop
+	// being a frame parent to any routing node.
+	bool bNeedUpdateVisuals {false};
+
 	for (FWireRoutingNode& Node : RouteNodes)
 	{
 		USceneComponent* NewParent = Node.Frame.Parent.GetComponent<USceneComponent>();
@@ -1236,6 +1256,7 @@ void UAGX_WireComponent::OnRouteNodeParentReplaced(
 		{
 			UE_LOG(LogAGX, Warning, TEXT("    Removing callbacks from %p"), OldParent);
 			OldParent->TransformUpdated.RemoveAll(this);
+			bNeedUpdateVisuals = true;
 		}
 
 		if (IsValid(NewParent))
@@ -1246,6 +1267,7 @@ void UAGX_WireComponent::OnRouteNodeParentReplaced(
 				DelegateHandles.Add(
 					NewParent, NewParent->TransformUpdated.AddUObject(
 								   this, &UAGX_WireComponent::OnRouteNodeParentMoved));
+				bNeedUpdateVisuals = true;
 			}
 			else
 			{
@@ -1253,7 +1275,14 @@ void UAGX_WireComponent::OnRouteNodeParentReplaced(
 			}
 		}
 	}
+
+	if (bNeedUpdateVisuals)
+	{
+		UpdateVisuals();
+	}
 }
+
+#endif
 
 void UAGX_WireComponent::MarkVisualsDirty()
 {
@@ -1361,11 +1390,12 @@ void UAGX_WireComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
 	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::PostInitProperties"));
-	OwnedBeginWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
-	OwnedEndWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
+	AActor* OwningActor = GetTypedOuter<AActor>();
+	OwnedBeginWinch.BodyAttachment.OwningActor = OwningActor;
+	OwnedEndWinch.BodyAttachment.OwningActor = OwningActor;
 	for (FWireRoutingNode& Node : RouteNodes)
 	{
-		Node.Frame.Parent.OwningActor = GetTypedOuter<AActor>();
+		Node.Frame.Parent.OwningActor = OwningActor;
 	}
 
 #if WITH_EDITOR
@@ -1378,30 +1408,76 @@ void UAGX_WireComponent::PostLoad()
 	Super::PostLoad();
 	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::PostLoad"));
 
+	AActor* OwningActor = GetTypedOuter<AActor>();
+
+	FAGX_ObjectUtilities::SetIfNullptr(OwnedBeginWinch.BodyAttachment.OwningActor, OwningActor);
+	FAGX_ObjectUtilities::SetIfNullptr(OwnedBeginWinch.BodyAttachment.OwningActor, OwningActor);
+	FAGX_ObjectUtilities::SetIfNullptr(OwnedEndWinch.BodyAttachment.OwningActor, OwningActor);
+	for (FWireRoutingNode& Node : RouteNodes)
+	{
+		FAGX_ObjectUtilities::SetIfNullptr(Node.Frame.Parent.OwningActor, OwningActor);
+	}
+
 #if WITH_EDITOR
-	if (!GetWorld()->IsGameWorld() && !HasAnyFlags(RF_ClassDefaultObject))
+	// Condition on not Game World instead of is Editor World because we do not want this
+	// block to run in Play In Editor sessions.
+	if (GetWorld() != nullptr && !GetWorld()->IsGameWorld() && !HasAnyFlags(RF_ClassDefaultObject))
 	{
 		// While in the editor we don't update the wire rendering every tick and instead rely on
 		// Transform Updated callbacks from the wire routing node frame parents. These callbacks
 		// must be registered with each parent on start-up. We can't do that here because some of
 		// the parents may not have been loaded yet. So we set up a callback to happen next tick,
 		// and hope that everything has been loaded by then. Is there a better way to do this?
+		//
+		// A drawback of the delayed call to UpdateVisuals is that the Instanced Static Mesh
+		// Components that are used for rendering the wire are marked dirty by the call to Update
+		// Instance Transform, they call UObject::Modify. This means that any Level that contains
+		// a Wire Component becomes dirty / unsaved on the first tick after opening. That is
+		// annoying, but I'm not sure what to do about it. What happens if we remove the Update
+		// Visuals call in the next-tick callback is that some Wire Routing Nodes that has a frame
+		// that has an Owning Actor that is not the same as the Actor that the Wire Component is
+		// part of with either not be found or have an all-zero transform. This means that parts
+		// of the wire will render near the world origin instead of near the actual position of the
+		// parent Scene Component until something else triggers a visual update. Also annoying.
+		//
+		// A workaround is to set the RF_NeedInitialization flag on the Instanced Static Mesh
+		// Components before writing to them. UObject::Modify checks this flag and doesn't mark
+		// the object dirty if set. Not sure if this has any undesirable side-effects. Here,
+		// specifically in the next-tick callback queued from PostLoad, we want to behave
+
+		// Make UPROPERTY? Actor callback after all Components loaded?
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("This is not a game world and we're not the Class Default Object, setting up "
 				 "parent callbacks for Wire Component %p."),
 			this);
-		GEditor->GetTimerManager()->SetTimerForNextTick(
-			this, &UAGX_WireComponent::SynchronizeParentMovedCallbacks);
-		GEditor->GetTimerManager()->SetTimerForNextTick(this, &UAGX_WireComponent::UpdateVisuals);
+		if (MapLoadDelegateHandle.IsValid())
+		{
+			FEditorDelegates::MapChange.Remove(MapLoadDelegateHandle);
+		}
+		MapLoadDelegateHandle = FEditorDelegates::MapChange.AddWeakLambda(
+			this,
+			[this](uint32)
+			{
+				FEditorDelegates::MapChange.RemoveAll(this);
+				SynchronizeParentMovedCallbacks();
+				UpdateVisuals();
+			});
+
+		// In addition to setting up the callbacks.
 
 		// If the wire routing node frame parent's owner is a Blueprint instance then any
 		// modification of that instance will cause a Blueprint Reconstruction. During
 		// reconstruction all the Components will be destroyed and recreated. Unfortunately, Scene
-		// Component does not use Actor Component Instance Data to transfer the callback from the
-		// old object to the new one. Fortunately, the engine provides the On Object Replaced event
-		// that we can use to do the transfer ourselves.
-		FCoreUObjectDelegates::OnObjectsReplaced.AddUObject(
+		// Component does not use Actor Component Instance Data to transfer delegate callback, such
+		// as Transform Updated, from the old object to the new one, so we need to do that
+		// ourselves. Fortunately, the engine provides the On Object Replaced event that we can use
+		// to do the transfer.
+		if (ObjectsReplacedDelegateHandle.IsValid())
+		{
+			FCoreUObjectDelegates::OnObjectsReinstanced.Remove(ObjectsReplacedDelegateHandle);
+		}
+		ObjectsReplacedDelegateHandle = FCoreUObjectDelegates::OnObjectsReplaced.AddUObject(
 			this, &UAGX_WireComponent::OnRouteNodeParentReplaced);
 	}
 #endif
@@ -1734,6 +1810,17 @@ void UAGX_WireComponent::DestroyComponent(bool bPromoteChildren)
 
 	if (VisualSpheres != nullptr)
 		VisualSpheres->DestroyComponent();
+
+#if WITH_EDITOR
+	if (MapLoadDelegateHandle.IsValid())
+	{
+		FEditorDelegates::MapChange.Remove(MapLoadDelegateHandle);
+	}
+	if (ObjectsReplacedDelegateHandle.IsValid())
+	{
+		FCoreUObjectDelegates::OnObjectsReinstanced.Remove(ObjectsReplacedDelegateHandle);
+	}
+#endif
 
 	Super::DestroyComponent(bPromoteChildren);
 }
@@ -2306,14 +2393,14 @@ TArray<FVector> UAGX_WireComponent::GetNodesForRendering() const
 	return NodeLocations;
 }
 
-bool UAGX_WireComponent::ShouldRender() const
+bool UAGX_WireComponent::ShouldRenderSelf() const
 {
-	return IsVisible() && VisualCylinders != nullptr && VisualSpheres != nullptr;
+	return VisualCylinders != nullptr && VisualSpheres != nullptr && ShouldRender();
 }
 
 void UAGX_WireComponent::UpdateVisuals()
 {
-	if (!ShouldRender())
+	if (!ShouldRenderSelf())
 	{
 		const bool hasVisualCylinders =
 			VisualCylinders != nullptr && VisualCylinders->GetInstanceCount() > 0;
@@ -2395,6 +2482,7 @@ void UAGX_WireComponent::SetVisualsInstanceCount(int32 Num)
 		SetNum(*VisualSpheres, Num);
 }
 
+#if WITH_EDITOR
 void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
 {
 	// We currently have no reliable way to detect when we should no longer be tracking
@@ -2477,5 +2565,6 @@ void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
 		DelegateHandles.Remove(NoLongerParent);
 	}
 }
+#endif
 
 #undef LOCTEXT_NAMESPACE

@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "PlayRecord/AGX_PlayRecord.h"
+#include "Utilities/AGX_SlateUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_PlayRecordTypeActions"
 
@@ -24,7 +25,7 @@ uint32 FAGX_PlayRecordTypeActions::GetCategories()
 
 FColor FAGX_PlayRecordTypeActions::GetTypeColor() const
 {
-	return FColor(255, 115, 0);
+	return FAGX_SlateUtilities::GetAGXColorOrange();
 }
 
 FText FAGX_PlayRecordTypeActions::GetAssetDescription(const FAssetData& AssetData) const

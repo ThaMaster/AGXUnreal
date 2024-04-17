@@ -107,6 +107,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	bool GetAutoGenerateCenterOfMassOffset() const;
 
+	/**
+	 * Returns the position of the center of mass in world coordinates [cm].
+	 * This function is only valid if the Rigid Body has a Native object, which usually is true only
+	 * during Play. Returns zero vector if not.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	FVector GetCenterOfMassPosition() const;
+
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	TArray<UAGX_ShapeComponent*> GetShapes() const;
 

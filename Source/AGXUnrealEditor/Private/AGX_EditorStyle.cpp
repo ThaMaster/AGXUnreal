@@ -180,7 +180,11 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 		new IMAGE_BRUSH("Icons/trimesh_shape_32x32", IconSize16));
 	// Sensors.
 	Style->Set(
-		"ClassIcon.AGX_LidarSensorLineTraceComponent", new IMAGE_BRUSH("Icons/lidar_32x32", IconSize16));
+		"ClassIcon.AGX_CameraSensorComponent",
+		new IMAGE_BRUSH("Icons/camera_sensor_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_LidarSensorLineTraceComponent",
+		new IMAGE_BRUSH("Icons/lidar_32x32", IconSize16));
 	// Tire.
 	Style->Set(
 		"ClassIcon.AGX_TwoBodyTireComponent",
@@ -208,6 +212,9 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	// Others.
 	Style->Set(
 		"ClassIcon.AGX_ModelSourceComponent", new IMAGE_BRUSH("Icons/file_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_PlayRecordComponent",
+		new IMAGE_BRUSH("Icons/play_record_32x32", IconSize16));
 
 	// Actor icons, visible in the Place Actors panel. Currently only works with UE >= 5.0.
 	Style->Set(
@@ -246,6 +253,40 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set("ClassIcon.AGX_WireActor", new IMAGE_BRUSH("Icons/wire_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_WireWinchActor", new IMAGE_BRUSH("Icons/wire_winch_32x32", IconSize16));
+
+	////////////////////////
+
+	// Thumbnails (assets etc).
+	Style->Set(
+		"ClassThumbnail.AGX_ContactMaterial",
+		new IMAGE_BRUSH("Thumbnails/contact_material_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_ShapeMaterial",
+		new IMAGE_BRUSH("Thumbnails/shape_material_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_TerrainMaterial",
+		new IMAGE_BRUSH("Thumbnails/terrain_material_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_TrackInternalMergeProperties",
+		new IMAGE_BRUSH("Thumbnails/track_internal_merge_properties_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_TrackProperties",
+		new IMAGE_BRUSH("Thumbnails/track_properties_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_ShovelProperties",
+		new IMAGE_BRUSH("Thumbnails/shovel_properties_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_PlayRecord",
+		new IMAGE_BRUSH("Thumbnails/play_record_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_ConstraintMergeSplitThresholds",
+		new IMAGE_BRUSH("Thumbnails/constraint_mergesplit_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_ShapeContactMergeSplitThresholds",
+		new IMAGE_BRUSH("Thumbnails/shape_contact_mergesplit_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_WireMergeSplitThresholds",
+		new IMAGE_BRUSH("Thumbnails/wire_mergesplit_128x128", IconSize128));
 
 	return Style;
 };

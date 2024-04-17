@@ -2,7 +2,9 @@
 
 #include "Materials/AGX_ContactMaterialAssetTypeActions.h"
 
+// AGX Dynamics for Unreal includes.
 #include "Materials/AGX_ContactMaterial.h"
+#include "Utilities/AGX_SlateUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ContactMaterialAssetTypeActions"
 
@@ -33,7 +35,7 @@ uint32 FAGX_ContactMaterialAssetTypeActions::GetCategories()
 
 FColor FAGX_ContactMaterialAssetTypeActions::GetTypeColor() const
 {
-	return FColor(255, 115, 0);
+	return FAGX_SlateUtilities::GetAGXColorOrange();
 }
 
 FText FAGX_ContactMaterialAssetTypeActions::GetAssetDescription(const FAssetData& AssetData) const
