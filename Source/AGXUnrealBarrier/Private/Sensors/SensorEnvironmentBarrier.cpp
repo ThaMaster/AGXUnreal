@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Sensors/LidarBarrier.h"
 #include "Sensors/SensorRef.h"
+#include "SimulationBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/TerrainPagerBarrier.h"
 
@@ -33,10 +34,11 @@ bool FSensorEnvironmentBarrier::HasNative() const
 	return NativeRef->Native != nullptr;
 }
 
-void FSensorEnvironmentBarrier::AllocateNative()
+void FSensorEnvironmentBarrier::AllocateNative(FSimulationBarrier& Simulation)
 {
 	check(!HasNative());
-	NativeRef->Native = new agxSensor::Environment();
+	check(Simulation.HasNative());
+	NativeRef->Native = agxSensor::Environment::getOrCreate(Simulation.GetNative()->Native);
 }
 
 FSensorEnvironmentRef* FSensorEnvironmentBarrier::GetNative()

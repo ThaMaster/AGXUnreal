@@ -9,9 +9,10 @@
 #include <memory>
 
 
+class FLidarBarrier;
+class FSimulationBarrier;
 class FTerrainBarrier;
 class FTerrainPagerBarrier;
-class FLidarBarrier;
 
 struct FSensorEnvironmentRef;
 
@@ -24,7 +25,7 @@ public:
 	~FSensorEnvironmentBarrier();
 
 	bool HasNative() const;
-	void AllocateNative();
+	void AllocateNative(FSimulationBarrier& Simulation);
 	FSensorEnvironmentRef* GetNative();
 	const FSensorEnvironmentRef* GetNative() const;
 	void ReleaseNative();

@@ -28,6 +28,8 @@ public:
 	// input argument.
 	virtual bool AssociateWith(UAGX_LidarSensorComponent* Lidar) override;
 
+	void DebugDrawResult(UAGX_LidarSensorComponent* Lidar);
+
 	virtual bool HasNative() const override;
 	virtual FLidarResultBarrier* GetOrCreateNative() override;
 	virtual const FLidarResultBarrier* GetNative() const override;
@@ -65,5 +67,13 @@ class AGXUNREAL_API UAGX_LidarResultPosition_LF : public UBlueprintFunctionLibra
 		TArray<FAGX_LidarResultPositionData>& OutResult)
 	{
 		Result.GetResult(OutResult);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	static void DebugDrawResult(
+		UPARAM(ref) FAGX_LidarResultPosition& Result,
+		UAGX_LidarSensorComponent* Lidar)
+	{
+		Result.DebugDrawResult(Lidar);
 	}
 };

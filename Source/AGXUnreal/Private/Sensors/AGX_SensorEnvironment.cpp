@@ -353,19 +353,27 @@ void AAGX_SensorEnvironment::BeginPlay()
 		return;
 	}
 
-	NativeBarrier.AllocateNative();
+	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this);
+	if (Sim == nullptr || !Sim->HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("AGX_SensorEnvironment '%s' was unable to get a UAGX_Simulation with Native "
+				 "in begin play. Correct behavior of the SensorEnvironment cannot be guaranteed."),
+			*GetName());
+		return;
+	}
+
+	NativeBarrier.AllocateNative(*Sim->GetNative());
 	check(NativeBarrier.HasNative());
 
 	RegisterLidars();
 
 	if (bAutoStep)
 	{
-		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
-		{
-			PostStepForwardHandle =
-				FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
-					.AddLambda([this](double) { AutoStep(); });
-		}
+		PostStepForwardHandle =
+			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Sim).AddLambda(
+				[this](double) { AutoStep(); });
 	}
 }
 
