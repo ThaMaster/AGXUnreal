@@ -701,7 +701,7 @@ public:
 	 * @param InLocation The location of the node, relative to the Wire Component.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNodeAtLocation(const FVector& InLocation);
+	void AddNodeAtLocation(FVector InLocation);
 
 	/**
 	 * Add a default-constructed route node at the designated index in the route array, pushing all
