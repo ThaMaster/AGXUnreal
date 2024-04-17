@@ -918,11 +918,17 @@ namespace AGX_WireComponent_helpers
 	}
 }
 
+FWireRoutingNode& UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
+{
+	int32 _;
+	return AddNode(InNode, _);
+}
+
 // TODO This code will need to change with the introduction of frame in routing nodes.
 //
 // All FWireRoutingNodes added in these Add-functions must have an Owning Actor. If it doesn't have
 // one already then set GetTypedOuter<AActor>().
-FWireRoutingNode& UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
+FWireRoutingNode& UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode, int32& OutIndex)
 {
 	if (HasNative())
 	{
@@ -931,10 +937,17 @@ FWireRoutingNode& UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
 	RouteNodes.Add(InNode);
 	FWireRoutingNode& NewNode = RouteNodes.Last();
 	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
+	OutIndex = RouteNodes.Num() - 1;
 	return NewNode;
 }
 
 FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation)
+{
+	int32 _;
+	return AddNodeAtLocation(InLocation, _);
+}
+
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation, int32& OutIndex)
 {
 	if (HasNative())
 	{
@@ -943,6 +956,12 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation)
 	RouteNodes.Add(FWireRoutingNode(InLocation));
 	FWireRoutingNode& NewNode = RouteNodes.Last();
 	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
+
+	UE_LOG(
+		LogAGX, Warning, TEXT("Created node at address %p at location %s"), &NewNode,
+		*InLocation.ToString());
+
+	OutIndex = RouteNodes.Num() - 1;
 	return NewNode;
 }
 

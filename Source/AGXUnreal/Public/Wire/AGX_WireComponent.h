@@ -684,6 +684,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Route")
 	TArray<FWireRoutingNode> RouteNodes;
 
+	FWireRoutingNode& AddNode(const FWireRoutingNode& InNode);
+
 	/**
 	 * Add a new route node to the wire.
 	 *
@@ -692,7 +694,9 @@ public:
 	 * @param InNode The node to add.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	FWireRoutingNode& AddNode(const FWireRoutingNode& InNode);
+	UPARAM(Ref) FWireRoutingNode& AddNode(const FWireRoutingNode& InNode, int32& OutIndex);
+
+	FWireRoutingNode& AddNodeAtLocation(FVector InLocation);
 
 	/**
 	 * Add a default-constructed route node at the designated local location to the end of the node
@@ -701,7 +705,7 @@ public:
 	 * @param InLocation The location of the node, relative to the Wire Component.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	FWireRoutingNode& AddNodeAtLocation(FVector InLocation);
+	UPARAM(Ref) FWireRoutingNode& AddNodeAtLocation(FVector InLocation, int32& OutIndex);
 
 	/**
 	 * Add a default-constructed route node at the designated index in the route array, pushing all
@@ -711,7 +715,7 @@ public:
 	 * @param InIndex The place in the route node array to add the node at.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	FWireRoutingNode& AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex);
+	UPARAM(Ref) FWireRoutingNode& AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex);
 
 	/**
 	 * Add a default-constructed route node, placed at the given local location, at the designated
@@ -721,7 +725,7 @@ public:
 	 * @param InIndex The place in the route node array to add the new node at.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	FWireRoutingNode& AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
+	UPARAM(Ref) FWireRoutingNode& AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
 
 	/**
 	 * Remove the route node at the given index.
