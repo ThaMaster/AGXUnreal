@@ -138,16 +138,4 @@ class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
 	{
 		return WireNode.Frame.LocalLocation;
 	}
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node|Frame")
-	static void SetLocalRotation(UPARAM(Ref) FWireRoutingNode& WireNode, FRotator LocalRotation)
-	{
-		WireNode.Frame.LocalRotation = LocalRotation;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node|Frame")
-	static FRotator GetLocalRotation(UPARAM(Ref) FWireRoutingNode& WireNode)
-	{
-		return WireNode.Frame.LocalRotation;
-	}
 };
