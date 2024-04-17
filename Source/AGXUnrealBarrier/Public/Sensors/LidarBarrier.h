@@ -9,6 +9,7 @@
 #include <memory>
 
 class FCustomPatternFetcherBase;
+class FLidarResultBarrier;
 
 struct FLidarRef;
 
@@ -39,7 +40,7 @@ public:
 	void SetBeamExitDiameter(double BeamExitDiameter);
 	double GetBeamExitDiameter() const;
 
-	void GetResultTest(UWorld* World, const FTransform& Transform); // Temp test function, do not merge!
+	void AddResult(FLidarResultBarrier& Result);
 
 private:
 	FLidarBarrier(const FLidarBarrier&) = delete;

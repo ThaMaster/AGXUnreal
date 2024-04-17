@@ -5,12 +5,15 @@
 // AGX Dynamics for Unreal includes.
 #include "Sensors/CustomPatternGenerator.h"
 #include "Sensors/CustomPatternFetcherBase.h"
+#include "Sensors/LidarResultBarrier.h"
 #include "Sensors/SensorRef.h"
 #include "TypeConversions.h"
 
 // AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
 #include <agxSensor/RayPatternHorizontalSweep.h>
 #include <agxSensor/RaytraceResult.h>
+#include "EndAGXIncludes.h"
 
 
 FLidarBarrier::FLidarBarrier()
@@ -138,22 +141,20 @@ double FLidarBarrier::GetBeamExitDiameter() const
 	return ConvertDistanceToUnreal<double>(Settings.beamExitDiameter);
 }
 
-#include "DrawDebugHelpers.h"
-
-void FLidarBarrier::GetResultTest(UWorld* World, const FTransform& Transform)
+namespace LidarBarrier_helpers
 {
-	const auto dataView = NativeRef->Native->getResultHandler()->view<agx::Vec4f>();
-
-	if (World != nullptr)
+	size_t GenerateUniqueResultId()
 	{
-		for (const agx::Vec4f& ResultAGX : dataView)
-		{
-			const FVector PointLocal =
-				ConvertDisplacement(agx::Vec3(ResultAGX.x(), ResultAGX.y(), ResultAGX.z()));
-			const FVector Point = Transform.TransformPositionNoScale(PointLocal);
-			if (Point.GetMax() > 10000)
-				continue;
-			DrawDebugPoint(World, Point, 6.f, FColor::Red, false, 0.12f);
-		}
+		static size_t Id = 1;
+		return Id++;
 	}
+}
+
+void FLidarBarrier::AddResult(FLidarResultBarrier& Result)
+{
+	check(HasNative());
+	check(Result.HasNative());
+
+	NativeRef->Native->getResultHandler()->add(
+		LidarBarrier_helpers::GenerateUniqueResultId(), Result.GetNative()->Native);
 }
