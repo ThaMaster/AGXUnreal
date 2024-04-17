@@ -929,7 +929,9 @@ FWireRoutingNode& UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
 	RouteNodes.Add(InNode);
-	return RouteNodes.Last();
+	FWireRoutingNode& NewNode = RouteNodes.Last();
+	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
+	return NewNode;
 }
 
 FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation)
@@ -940,6 +942,7 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation)
 	}
 	RouteNodes.Add(FWireRoutingNode(InLocation));
 	FWireRoutingNode& NewNode = RouteNodes.Last();
+	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
 	return NewNode;
 }
 
@@ -951,10 +954,12 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InN
 	}
 	RouteNodes.Insert(InNode, InIndex);
 	FWireRoutingNode& NewNode = RouteNodes[InIndex];
+	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
 	return NewNode;
 }
 
-FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex)
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(
+	const FVector& InLocation, int32 InIndex)
 {
 	if (HasNative())
 	{
@@ -962,6 +967,7 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(const FVector& In
 	}
 	RouteNodes.Insert(FWireRoutingNode(InLocation), InIndex);
 	FWireRoutingNode& NewNode = RouteNodes[InIndex];
+	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
 	return NewNode;
 }
 
@@ -1384,11 +1390,12 @@ void UAGX_WireComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
 	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::PostInitProperties"));
-	OwnedBeginWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
-	OwnedEndWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
+	AActor* OwningActor = GetTypedOuter<AActor>();
+	OwnedBeginWinch.BodyAttachment.OwningActor = OwningActor;
+	OwnedEndWinch.BodyAttachment.OwningActor = OwningActor;
 	for (FWireRoutingNode& Node : RouteNodes)
 	{
-		Node.Frame.Parent.OwningActor = GetTypedOuter<AActor>();
+		Node.Frame.Parent.OwningActor = OwningActor;
 	}
 
 #if WITH_EDITOR
@@ -1400,6 +1407,16 @@ void UAGX_WireComponent::PostLoad()
 {
 	Super::PostLoad();
 	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::PostLoad"));
+
+	AActor* OwningActor = GetTypedOuter<AActor>();
+
+	FAGX_ObjectUtilities::SetIfNullptr(OwnedBeginWinch.BodyAttachment.OwningActor, OwningActor);
+	FAGX_ObjectUtilities::SetIfNullptr(OwnedBeginWinch.BodyAttachment.OwningActor, OwningActor);
+	FAGX_ObjectUtilities::SetIfNullptr(OwnedEndWinch.BodyAttachment.OwningActor, OwningActor);
+	for (FWireRoutingNode& Node : RouteNodes)
+	{
+		FAGX_ObjectUtilities::SetIfNullptr(Node.Frame.Parent.OwningActor, OwningActor);
+	}
 
 #if WITH_EDITOR
 	// Condition on not Game World instead of is Editor World because we do not want this
