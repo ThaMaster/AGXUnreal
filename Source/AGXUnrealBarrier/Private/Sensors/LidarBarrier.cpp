@@ -114,30 +114,30 @@ FAGX_RealInterval FLidarBarrier::GetRange() const
 void FLidarBarrier::SetBeamDivergence(double BeamDivergence)
 {
 	check(HasNative());
-	agxSensor::LidarSettings Settings = NativeRef->Native->getLidarSettings();
+	agxSensor::LidarSettings Settings = NativeRef->Native->getSettings();
 	Settings.beamDivergence = ConvertAngleToAGX(BeamDivergence);
-	NativeRef->Native->setLidarSettings(Settings);
+	NativeRef->Native->setSettings(Settings);
 }
 
 double FLidarBarrier::GetBeamDivergence() const
 {
 	check(HasNative());
-	const agxSensor::LidarSettings& Settings = NativeRef->Native->getLidarSettings();
+	const agxSensor::LidarSettings& Settings = NativeRef->Native->getSettings();
 	return ConvertAngleToUnreal<double>(Settings.beamDivergence);
 }
 
 void FLidarBarrier::SetBeamExitDiameter(double BeamExitDiameter)
 {
 	check(HasNative());
-	agxSensor::LidarSettings Settings = NativeRef->Native->getLidarSettings();
+	agxSensor::LidarSettings Settings = NativeRef->Native->getSettings();
 	Settings.beamExitDiameter = ConvertDistanceToAGX(BeamExitDiameter);
-	NativeRef->Native->setLidarSettings(Settings);
+	NativeRef->Native->setSettings(Settings);
 }
 
 double FLidarBarrier::GetBeamExitDiameter() const
 {
 	check(HasNative());
-	const agxSensor::LidarSettings& Settings = NativeRef->Native->getLidarSettings();
+	const agxSensor::LidarSettings& Settings = NativeRef->Native->getSettings();
 	return ConvertDistanceToUnreal<double>(Settings.beamExitDiameter);
 }
 
