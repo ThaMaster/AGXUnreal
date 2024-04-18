@@ -15,8 +15,7 @@ struct AGXUNREAL_API FAGX_DistanceGaussianNoiseSettings
 	/**
 	 * Mean of the distance gaussian noise [cm].
 	 */
-	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
 	FAGX_Real Mean {0.0};
 
 	/**
@@ -24,8 +23,7 @@ struct AGXUNREAL_API FAGX_DistanceGaussianNoiseSettings
 	 * The standard deviation is calculated as
 	 * s = stdDev + d * stdDevSlope where d is the distance in centimeters.
 	 */
-	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
 	FAGX_Real StandardDeviation {2.0};
 
 	/**
@@ -33,8 +31,7 @@ struct AGXUNREAL_API FAGX_DistanceGaussianNoiseSettings
 	 * The standard deviation is calculated as
 	 * s = stdDev + d * stdDevSlope where d is the distance in centimeters.
 	 */
-	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
 	FAGX_Real StandardDeviationSlope {0.0005};
 
 	bool operator==(const FAGX_DistanceGaussianNoiseSettings& Other) const;
