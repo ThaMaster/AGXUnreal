@@ -3,16 +3,16 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AMOR/AGX_WireMergeSplitProperties.h"
 #include "AGX_WireRenderIterator.h"
+#include "AMOR/AGX_WireMergeSplitProperties.h"
 #include "Wire/AGX_WireEnums.h"
 #include "Wire/AGX_WireRoutingNode.h"
 #include "Wire/AGX_WireWinch.h"
 #include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
-#include "Engine/EngineTypes.h"
 #include "Components/SceneComponent.h"
+#include "Engine/EngineTypes.h"
 #include "UObject/UObjectGlobals.h"
 
 #include "AGX_WireComponent.generated.h"
@@ -24,11 +24,12 @@ class UMaterialInterface;
 
 /**
  * A Wire is a lumped element structure with dynamic resolution, the wire will adapt the resolution,
- * i.e., lumped element segment lengths, so that no unwanted vibrations will occur. The Wire is
- * initialized from a set of routing nodes that the user places but during runtime nodes will be
- * created and removed as necessary so the routing nodes cannot be used to inspect the current wire
- * path. Instead use the render iterator to iterate over the wire, which will give access to
- * FAGX_WireNode instances, which wrap the underlying AGX Dynamics wire nodes.
+ * i.e., lumped element segment lengths, so that no unwanted vibrations will occur. The Wire
+ * simulation state is initialized from a set of routing nodes that the user places but during
+ * runtime simulation nodes will be created and removed as necessary so the routing nodes cannot be
+ * used to inspect the current wire path. Instead use the render iterator to iterate over the wire,
+ * which will give access to FAGX_WireNode instances, which wrap the underlying AGX Dynamics wire
+ * simulation nodes.
  */
 UCLASS(ClassGroup = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_WireComponent : public USceneComponent, public IAGX_NativeOwner
@@ -725,7 +726,8 @@ public:
 	 * @param InIndex The place in the route node array to add the new node at.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	UPARAM(Ref) FWireRoutingNode& AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
+	UPARAM(Ref)
+	FWireRoutingNode& AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	void SetNode(int32 InIndex, UPARAM(Ref) const FWireRoutingNode InNode);
