@@ -29,6 +29,9 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Materials/MaterialInterface.h"
 #include "Math/UnrealMathUtility.h"
+#if WITH_EDITOR
+#include "Editor.h"
+#endif
 
 // Standard library includes.
 #include <algorithm>
