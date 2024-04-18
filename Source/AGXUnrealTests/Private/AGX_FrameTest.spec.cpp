@@ -89,7 +89,7 @@ void FAGX_FrameSpec::Define()
 			   [this]()
 			   {
 				   AActor* Actor = NewObject<AActor>(
-					   GetTransientPackage(), TEXT("Test.Frame.ParentAtOrigin.Rotatoin.Actor"));
+					   GetTransientPackage(), TEXT("Test.Frame.ParentAtOrigin.Rotation.Actor"));
 				   USceneComponent* Parent = NewObject<USceneComponent>(
 					   Actor, TEXT("Test.Frame.ParentAtOrigin.Rotation.Parent"));
 				   Actor->AddInstanceComponent(Parent);
@@ -223,6 +223,49 @@ void FAGX_FrameSpec::Define()
 		[this]()
 		{
 			It("should return both location and rotation translated and rotated.",
-			   [this]() { TestEqual(TEXT("TODO: Implement this test."), 1, 2); });
+			   [this]()
+			   {
+				   /*
+													Y
+													^
+													|
+							  frame                 |
+						   Y <----           X <---- parent
+								  |
+								  |
+								  v
+								  X
+													X
+													^
+													|
+													| world
+													----------> Y
+					*/
+				   const FVector ParentLocation {100.0, 0.0, 0.0};
+				   const FRotator ParentRotation {0.0, -90.0, 0.0};
+				   const FVector LocalLocation {100.0, 0.0, 0.0};
+				   const FRotator LocalRotation {0.0, -90.0, 0.0};
+				   AActor* Actor = NewObject<AActor>(
+					   GetTransientPackage(), TEXT("Test.Frame.ParentTranslatedRotated.Actor"));
+				   USceneComponent* Parent = NewObject<USceneComponent>(
+					   Actor, TEXT("Test.Frame.ParentTranslatedRotated.Parent"));
+				   Actor->AddInstanceComponent(Parent);
+				   Parent->SetWorldLocation(ParentLocation);
+				   Parent->SetWorldRotation(ParentRotation);
+				   FAGX_Frame Frame;
+				   Frame.SetParentComponent(Parent);
+				   Frame.LocalLocation = LocalLocation;
+				   Frame.LocalRotation = LocalRotation;
+				   const FVector ExpectedLocation {100.0, -100.0, 0.0};
+				   const FRotator ExpectedRotation {0.0, -180.0, 0.0};
+				   TestNotNull(TEXT("Frame should have a parent."), Frame.GetParentComponent());
+				   TestEqual(
+					   TEXT("Location should be translated and rotated twice."),
+					   Frame.GetWorldLocation(), ExpectedLocation);
+				   TestEqual(
+					   TEXT("Rotation should be rotated twice."), Frame.GetWorldRotation(),
+					   ExpectedRotation);
+				   Actor->Destroy();
+			   });
 		});
 }
