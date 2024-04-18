@@ -52,10 +52,10 @@ class AGXUNREAL_API UAGX_LidarResultPosition_LF : public UBlueprintFunctionLibra
 	GENERATED_BODY()
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	static void AssociateWith(
+	static void AddTo(
 		UPARAM(ref) FAGX_LidarResultPosition& Result, UAGX_LidarSensorComponent* Lidar)
 	{
-		Result.AssociateWith(Lidar);
+		Result.AddTo(Lidar);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")

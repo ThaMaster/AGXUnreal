@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Sensors/SensorRef.h"
+#include "TypeConversions.h"
 
 
 FLidarResultBarrier::FLidarResultBarrier()
@@ -47,4 +48,38 @@ void FLidarResultBarrier::ReleaseNative()
 {
 	if (HasNative())
 		NativeRef->Native = nullptr;
+}
+
+bool FLidarResultBarrier::EnableDistanceGaussianNoise(
+	double Mean, double StdDev, double StdDevSlope)
+{
+	check(HasNative());
+	const agx::Real MeanAGX = ConvertDistanceToAGX(Mean);
+	const agx::Real StdDevAGX = ConvertDistanceToAGX(StdDev);
+	const agx::Real StdDevSlopeAGX = StdDevSlope; // Unitless.
+	return NativeRef->Native->enableDistanceGaussianNoise(MeanAGX, StdDevAGX, StdDevSlopeAGX);
+}
+
+bool FLidarResultBarrier::DisableDistanceGaussianNoise()
+{
+	check(HasNative());
+	return NativeRef->Native->disableDistanceGaussianNoise();
+}
+
+bool FLidarResultBarrier::IsDistanceGaussianNoiseEnabled() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnableDistanceGaussianNoise();
+}
+
+bool FLidarResultBarrier::EnableRemovePointsMisses(bool bEnable)
+{
+	check(HasNative());
+	return NativeRef->Native->enableRemovePointMisses();
+}
+
+bool FLidarResultBarrier::IsRemovePointsMissesEnabled() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnableRemovePointMisses();
 }

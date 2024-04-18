@@ -36,7 +36,10 @@ bool FAGX_LidarResultPositionIntensity::HasNative() const
 FLidarResultBarrier* FAGX_LidarResultPositionIntensity::GetOrCreateNative()
 {
 	if (!HasNative())
+	{
 		NativeBarrier.AllocateNative();
+		PostAllocateNative(&NativeBarrier);
+	}
 
 	return &NativeBarrier;
 }

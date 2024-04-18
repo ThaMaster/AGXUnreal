@@ -26,6 +26,13 @@ public:
 	const FLidarResultRef* GetNative() const;
 	void ReleaseNative();
 
+	bool EnableDistanceGaussianNoise(double Mean, double StdDev, double StdDevSlope);
+	bool DisableDistanceGaussianNoise();
+	bool IsDistanceGaussianNoiseEnabled() const;
+
+	bool EnableRemovePointsMisses(bool bEnable);
+	bool IsRemovePointsMissesEnabled() const;
+
 private:
 	FLidarResultBarrier(const FLidarResultBarrier&) = delete;
 	void operator=(const FLidarResultBarrier&) = delete;

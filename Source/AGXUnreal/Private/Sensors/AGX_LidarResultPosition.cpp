@@ -8,7 +8,6 @@
 // Unreal Engine includes.
 #include "DrawDebugHelpers.h"
 
-
 void FAGX_LidarResultPosition::DebugDrawResult(
 	UAGX_LidarSensorComponent* Lidar, float LifeTime, float Size, FColor Color)
 {
@@ -31,7 +30,10 @@ bool FAGX_LidarResultPosition::HasNative() const
 FLidarResultBarrier* FAGX_LidarResultPosition::GetOrCreateNative()
 {
 	if (!HasNative())
+	{
 		NativeBarrier.AllocateNative();
+		PostAllocateNative(&NativeBarrier);
+	}
 
 	return &NativeBarrier;
 }
