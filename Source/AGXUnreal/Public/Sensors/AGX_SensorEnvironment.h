@@ -124,6 +124,7 @@ private:
 	void StepAutoAddObjects(double DeltaTime);
 	void UpdateTrackedLidars();
 	void UpdateTrackedMeshes();
+	void UpdateTrackedAGXMeshes();
 	void StepTrackedLidars() const;
 
 	bool AddMesh(

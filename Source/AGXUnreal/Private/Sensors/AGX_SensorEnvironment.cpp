@@ -80,6 +80,26 @@ namespace AGX_SensorEnvironment_helpers
 			Sphere->SetSphereRadius(Lidar->Range.Max, /*bUpdateOverlaps*/ true);
 		}
 	}
+
+	template <typename MeshesType>
+	void UpdateTrackedMeshes(MeshesType& MeshesMap)
+	{
+		// Update tracked static meshes and remove any invalid ones.
+		for (auto It = MeshesMap.CreateIterator(); It; ++It)
+		{
+			if (!IsValid(It->Key.Get()))
+			{
+				It.RemoveCurrent();
+				continue;
+			}
+
+			const FTransform& CompTransform = It->Key->GetComponentTransform();
+			if (CompTransform.Equals(It->Value.EntityData.Transform))
+				continue;
+
+			It->Value.EntityData.SetTransform(CompTransform);
+		}
+	}
 }
 
 AAGX_SensorEnvironment::AAGX_SensorEnvironment()
@@ -535,6 +555,7 @@ void AAGX_SensorEnvironment::StepAutoAddObjects(double DeltaTime)
 	check(bAutoAddObjects);
 	UpdateTrackedLidars(); // Will likely trigger Component overlap events.
 	UpdateTrackedMeshes();
+	UpdateTrackedAGXMeshes();
 	StepTrackedLidars();
 }
 
@@ -559,22 +580,13 @@ void AAGX_SensorEnvironment::UpdateTrackedLidars()
 void AAGX_SensorEnvironment::UpdateTrackedMeshes()
 {
 	check(bAutoAddObjects);
+	AGX_SensorEnvironment_helpers::UpdateTrackedMeshes(TrackedMeshes);
+}
 
-	// Update tracked static meshes and remove any invalid ones.
-	for (auto It = TrackedMeshes.CreateIterator(); It; ++It)
-	{
-		if (!IsValid(It->Key.Get()))
-		{
-			It.RemoveCurrent();
-			continue;
-		}
-
-		const FTransform& CompTransform = It->Key->GetComponentTransform();
-		if (CompTransform.Equals(It->Value.EntityData.Transform))
-			continue;
-
-		It->Value.EntityData.SetTransform(CompTransform);
-	}
+void AAGX_SensorEnvironment::UpdateTrackedAGXMeshes()
+{
+	check(bAutoAddObjects);
+	AGX_SensorEnvironment_helpers::UpdateTrackedMeshes(TrackedAGXMeshes);
 }
 
 void AAGX_SensorEnvironment::StepTrackedLidars() const
