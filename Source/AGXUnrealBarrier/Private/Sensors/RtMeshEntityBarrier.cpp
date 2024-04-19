@@ -57,5 +57,5 @@ void FRtMeshEntityBarrier::SetTransform(const FTransform& Transform)
 	check(HasNative());
 	NativeRef->Native.setTransform(
 		ConvertMatrix(Transform.GetLocation(), Transform.GetRotation()),
-		ConvertVector(Transform.GetScale3D()));
+		Convert(Transform.GetScale3D()));
 }
