@@ -56,6 +56,10 @@ class UActorComponent;
  *   UPROPERTY(EditAnywhere, Category = "My Category", Meta = (SkipUCSModifiedProperties))
  *   FStructContainingComponentReference MyNestedComponentReference;
  *
+ * For for information see the following Unreal Developer Network questions:
+ * - https://udn.unrealengine.com/s/question/0D52L00005KLF5ZSAX/how-can-i-provide-default-values-for-a-uproperty-outside-of-the-constructor
+ * - https://udn.unrealengine.com/s/question/0D52L00004luoN5SAI/setting-a-value-on-a-component-property-when-actor-placed-in-the-level-editor
+ * - https://udn.unrealengine.com/s/question/0D54z00009itP8yCAE/postprocess-volume-corrupted-in-53
  *
  * A struct that both contains an FAGX_ComponentReference and has custom serialization code must
  * ensure that the garbage collector is made aware of the possible change in referencing the Owning

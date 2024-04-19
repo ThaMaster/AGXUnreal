@@ -682,8 +682,21 @@ public:
 	 * At BeginPlay these nodes are used to create simulation nodes and after that the route nodes
 	 * aren't used anymore. Use the render iterator to track the motion of the wire over time.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Route")
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Route",
+		Meta = (SkipUCSModifiedProperties))
 	TArray<FWireRoutingNode> RouteNodes;
+	/*
+	Skip UCS Modified Properties is require on Route Nodes because its elements contains a
+	Component Reference that has its Owning Actor set to this Component's Outer on Post Init
+	Properties. This makes Unreal Editor believe that the property should be read-only and not
+	persisted through Blueprint Reconstruction. This is not what we want. We want to provide a
+	per-instance default value but we want users to still be able to modify the Owning Actor just
+	like a normal property. This is communicated to Unreal Engine with the Skip UCS Modified
+	Properties meta flag on the Property. I'm not sure what other side effects this may have.
+
+	See also the comment in AGX_ComponentReference.h.
+	*/
 
 	FWireRoutingNode& AddNode(const FWireRoutingNode& InNode);
 
