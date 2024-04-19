@@ -385,6 +385,11 @@ bool UAGX_SimpleMeshComponent::SetMeshData(const TSharedPtr<FAGX_SimpleMeshData>
 	return true;
 }
 
+const FAGX_SimpleMeshData* UAGX_SimpleMeshComponent::GetMeshData() const
+{
+	return MeshData.Get();
+}
+
 void UAGX_SimpleMeshComponent::ClearMeshData()
 {
 	MeshData.Reset();

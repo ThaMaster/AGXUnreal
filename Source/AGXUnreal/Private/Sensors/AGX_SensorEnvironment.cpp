@@ -6,6 +6,7 @@
 #include "AGX_Simulation.h"
 #include "Sensors/AGX_LidarSensorComponent.h"
 #include "Sensors/AGX_SensorEnvironmentSpriteComponent.h"
+#include "AGX_SimpleMeshComponent.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
@@ -33,6 +34,37 @@ namespace AGX_SensorEnvironment_helpers
 		FAGX_MeshWithTransform MeshWTransform(StaticMesh, Mesh->GetComponentTransform());
 		return AGX_MeshUtilities::GetStaticMeshCollisionData(
 			MeshWTransform, Mesh->GetComponentTransform(), OutVertices, OutIndices, &LodIndex);
+	}
+
+	bool GetVerticesIndices(
+		UAGX_SimpleMeshComponent* Mesh, TArray<FVector>& OutVertices,
+		TArray<FTriIndices>& OutIndices)
+	{
+		if (Mesh == nullptr)
+			return false;
+
+		const FAGX_SimpleMeshData* MeshData = Mesh->GetMeshData();
+		if (MeshData == nullptr)
+			return false;
+
+		OutVertices.Reserve(MeshData->Vertices.Num());
+		for (const FVector3f& V : MeshData->Vertices)
+		{
+			OutVertices.Add(
+				{static_cast<double>(V.X), static_cast<double>(V.Y), static_cast<double>(V.Z)});
+		}
+
+		OutIndices.Reserve(MeshData->Indices.Num() / 3);
+		for (int32 I = 3; I < MeshData->Indices.Num(); I += 3)
+		{
+			FTriIndices TriInd;
+			TriInd.v0 = static_cast<int32>(MeshData->Indices[I - 2]);
+			TriInd.v1 = static_cast<int32>(MeshData->Indices[I - 1]);
+			TriInd.v2 = static_cast<int32>(MeshData->Indices[I]);
+			OutIndices.Add(TriInd);
+		}
+
+		return true;
 	}
 
 	void UpdateCollisionSphere(const UAGX_LidarSensorComponent* Lidar, USphereComponent* Sphere)
@@ -76,6 +108,27 @@ bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh)
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Sensor Environment AddMesh was called on '%s' that does not have a Native. "
+				 "This function is only valid to call during Play."),
+			*GetName());
+		return false;
+	}
+
+	TArray<FVector> OutVerts;
+	TArray<FTriIndices> OutInds;
+	const bool Res = AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVerts, OutInds);
+	if (Res)
+		AddMesh(Mesh, OutVerts, OutInds);
+
+	return Res;
+}
+
+bool AAGX_SensorEnvironment::AddAGXMesh(UAGX_SimpleMeshComponent* Mesh)
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Sensor Environment AddAGXMesh was called on '%s' that does not have a Native. "
 				 "This function is only valid to call during Play."),
 			*GetName());
 		return false;
@@ -173,6 +226,28 @@ bool AAGX_SensorEnvironment::AddMesh(
 		return false;
 
 	FAGX_MeshEntityData& MeshEntity = TrackedMeshes.Add(Mesh, FAGX_MeshEntityData());
+	MeshEntity.Mesh.AllocateNative(Vertices, Indices);
+	MeshEntity.EntityData.Entity.AllocateNative(MeshEntity.Mesh);
+	MeshEntity.EntityData.SetTransform(Mesh->GetComponentTransform());
+	return true;
+}
+
+bool AAGX_SensorEnvironment::AddMesh(
+	UAGX_SimpleMeshComponent* Mesh, const TArray<FVector>& Vertices,
+	const TArray<FTriIndices>& Indices)
+{
+	AGX_CHECK(HasNative());
+
+	if (Mesh == nullptr)
+		return false;
+
+	if (Vertices.Num() <= 0 || Indices.Num() <= 0)
+		return false;
+
+	if (TrackedAGXMeshes.Contains(Mesh))
+		return false;
+
+	FAGX_MeshEntityData& MeshEntity = TrackedAGXMeshes.Add(Mesh, FAGX_MeshEntityData());
 	MeshEntity.Mesh.AllocateNative(Vertices, Indices);
 	MeshEntity.EntityData.Entity.AllocateNative(MeshEntity.Mesh);
 	MeshEntity.EntityData.SetTransform(Mesh->GetComponentTransform());
@@ -530,6 +605,13 @@ void AAGX_SensorEnvironment::OnLidarBeginOverlapComponent(
 		OnLidarBeginOverlapStaticMeshComponent(*Mesh);
 		return;
 	}
+
+	auto SimpleMesh = Cast<UAGX_SimpleMeshComponent>(OtherComp);
+	if (SimpleMesh != nullptr)
+	{
+		OnLidarBeginOverlapAGXMeshComponent(*SimpleMesh);
+		return;
+	}
 }
 
 void AAGX_SensorEnvironment::OnLidarBeginOverlapStaticMeshComponent(UStaticMeshComponent& Mesh)
@@ -558,6 +640,15 @@ void AAGX_SensorEnvironment::OnLidarBeginOverlapInstancedStaticMeshComponent(
 		InstancedEntityData->RefCount++;
 }
 
+void AAGX_SensorEnvironment::OnLidarBeginOverlapAGXMeshComponent(UAGX_SimpleMeshComponent& Mesh)
+{
+	FAGX_MeshEntityData* MeshEntityData = TrackedAGXMeshes.Find(&Mesh);
+	if (MeshEntityData == nullptr)
+		AddAGXMesh(&Mesh);
+	else
+		MeshEntityData->EntityData.RefCount++;
+}
+
 void AAGX_SensorEnvironment::OnLidarEndOverlapComponent(
 	UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex)
@@ -573,6 +664,13 @@ void AAGX_SensorEnvironment::OnLidarEndOverlapComponent(
 	if (Mesh != nullptr)
 	{
 		OnLidarEndOverlapStaticMeshComponent(*Mesh);
+		return;
+	}
+
+	auto SimpleMesh = Cast<UAGX_SimpleMeshComponent>(OtherComp);
+	if (SimpleMesh != nullptr)
+	{
+		OnLidarEndOverlapAGXMeshComponent(*SimpleMesh);
 		return;
 	}
 }
@@ -629,4 +727,22 @@ void AAGX_SensorEnvironment::OnLidarEndOverlapInstancedStaticMeshComponent(
 	// tracked.
 	if (InstancedMesh->EntitiesData.Num() == 0)
 		RemoveInstancedMesh(&Mesh);
+}
+
+void AAGX_SensorEnvironment::OnLidarEndOverlapAGXMeshComponent(UAGX_SimpleMeshComponent& Mesh)
+{
+	FAGX_MeshEntityData* MeshEntityData = TrackedAGXMeshes.Find(&Mesh);
+	if (MeshEntityData == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("AGX_SensorEnvironment '%s' failed to track AGX Mesh Component '%s'."),
+			*GetName(), *Mesh.GetName());
+		return;
+	}
+
+	AGX_CHECK(MeshEntityData->EntityData.RefCount > 0);
+	MeshEntityData->EntityData.RefCount--;
+	if (MeshEntityData->EntityData.RefCount == 0)
+		TrackedAGXMeshes.Remove(&Mesh);
 }

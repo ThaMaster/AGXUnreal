@@ -14,6 +14,7 @@
 #include "AGX_SensorEnvironment.generated.h"
 
 class AAGX_Terrain;
+class UAGX_SimpleMeshComponent;
 class UInstancedStaticMeshComponent;
 class USphereComponent;
 class UStaticMeshComponent;
@@ -41,6 +42,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool AddMesh(UStaticMeshComponent* Mesh);
+
+	/*
+	 * Add an AGX Simple Mesh Component so that it can be detected by sensors handled by this Sensor
+	 * Environment.
+	 * Only valid to call during Play.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	bool AddAGXMesh(UAGX_SimpleMeshComponent* Mesh);
 
 	/*
 	 * Add all instances of an Instanced Static Mesh Component so that they can be detected by
@@ -121,6 +130,10 @@ private:
 		UStaticMeshComponent* Mesh, const TArray<FVector>& Vertices,
 		const TArray<FTriIndices>& Indices);
 
+	bool AddMesh(
+		UAGX_SimpleMeshComponent* Mesh, const TArray<FVector>& Vertices,
+		const TArray<FTriIndices>& Indices);
+
 	bool AddInstancedMesh(
 		UInstancedStaticMeshComponent* Mesh, const TArray<FVector>& Vertices,
 		const TArray<FTriIndices>& Indices);
@@ -140,10 +153,12 @@ private:
 	void OnLidarBeginOverlapStaticMeshComponent(UStaticMeshComponent& Mesh);
 	void OnLidarBeginOverlapInstancedStaticMeshComponent(
 		UInstancedStaticMeshComponent& Mesh, int32 Index);
+	void OnLidarBeginOverlapAGXMeshComponent(UAGX_SimpleMeshComponent& Mesh);
 
 	void OnLidarEndOverlapStaticMeshComponent(UStaticMeshComponent& Mesh);
 	void OnLidarEndOverlapInstancedStaticMeshComponent(
 		UInstancedStaticMeshComponent& Mesh, int32 Index);
+	void OnLidarEndOverlapAGXMeshComponent(UAGX_SimpleMeshComponent& Mesh);
 
 private:
 	// Todo: weak object ptr instead of raw ptrs!
@@ -151,6 +166,7 @@ private:
 	TMap<TWeakObjectPtr<UStaticMeshComponent>, FAGX_MeshEntityData> TrackedMeshes;
 	TMap<TWeakObjectPtr<UInstancedStaticMeshComponent>, FAGX_InstancedMeshEntityData>
 		TrackedInstancedMeshes;
+	TMap<TWeakObjectPtr<UAGX_SimpleMeshComponent>, FAGX_MeshEntityData> TrackedAGXMeshes;
 
 	FSensorEnvironmentBarrier NativeBarrier;
 	FDelegateHandle PostStepForwardHandle;
