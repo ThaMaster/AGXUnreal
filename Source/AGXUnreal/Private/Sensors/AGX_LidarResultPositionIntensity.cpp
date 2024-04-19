@@ -54,19 +54,13 @@ const FLidarResultBarrier* FAGX_LidarResultPositionIntensity::GetNative() const
 
 FAGX_LidarResultPositionIntensity& FAGX_LidarResultPositionIntensity::operator=(const FAGX_LidarResultPositionIntensity& Other)
 {
-	bEnableRemovePointsMisses = Other.bEnableRemovePointsMisses;
-	bEnableDistanceGaussianNoise = Other.bEnableDistanceGaussianNoise;
-	DistanceNoiseSettings = Other.DistanceNoiseSettings;
-	
+	FAGX_LidarResultBase::operator=(Other);
 	return *this;
 }
 
 bool FAGX_LidarResultPositionIntensity::operator==(const FAGX_LidarResultPositionIntensity& Other) const
 {
-	return bEnableRemovePointsMisses == Other.bEnableRemovePointsMisses &&
-	bEnableDistanceGaussianNoise == Other.bEnableDistanceGaussianNoise &&
-	DistanceNoiseSettings == Other.DistanceNoiseSettings &&
-	HasNative() && Other.HasNative();
+	return FAGX_LidarResultBase::operator==(Other);
 }
 
 void FAGX_LidarResultPositionIntensity::GetResult(TArray<FAGX_LidarResultPositionIntensityData>& OutResult)

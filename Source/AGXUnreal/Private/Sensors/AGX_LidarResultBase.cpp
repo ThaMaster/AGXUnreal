@@ -32,3 +32,18 @@ void FAGX_LidarResultBase::PostAllocateNative(FLidarResultBarrier* Native)
 
 	Native->EnableRemovePointsMisses(bEnableRemovePointsMisses);
 }
+
+FAGX_LidarResultBase& FAGX_LidarResultBase::operator=(const FAGX_LidarResultBase& Other)
+{
+	bEnableRemovePointsMisses = Other.bEnableRemovePointsMisses;
+	bEnableDistanceGaussianNoise = Other.bEnableDistanceGaussianNoise;
+	DistanceNoiseSettings = Other.DistanceNoiseSettings;
+	return *this;
+}
+
+bool FAGX_LidarResultBase::operator==(const FAGX_LidarResultBase& Other) const
+{
+	return bEnableRemovePointsMisses == Other.bEnableRemovePointsMisses &&
+		   bEnableDistanceGaussianNoise == Other.bEnableDistanceGaussianNoise &&
+		   DistanceNoiseSettings == Other.DistanceNoiseSettings && HasNative() && Other.HasNative();
+}

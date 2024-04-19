@@ -33,7 +33,6 @@ public:
 
 	void GetResult(TArray<FAGX_LidarResultPositionData>& OutResult);
 
-	// We must provide operator = because the Unreal framework will attempt to invoke it.
 	FAGX_LidarResultPosition& operator=(const FAGX_LidarResultPosition& Other);
 	bool operator==(const FAGX_LidarResultPosition& Other) const;
 
