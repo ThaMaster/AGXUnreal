@@ -971,9 +971,24 @@ bool AAGX_Terrain::CreateNative()
 
 	const FVector StartPos = Bounds->Transform.TransformPositionNoScale(-Bounds->HalfExtent);
 
-	FHeightFieldShapeBarrier HeightField = AGX_HeightFieldUtilities::CreateHeightField(
-		*SourceLandscape, StartPos, Bounds->HalfExtent.X * 2.0, Bounds->HalfExtent.Y * 2.0,
-		!bEnableTerrainPaging);
+	FHeightFieldShapeBarrier HeightField = [this, &StartPos, &Bounds]()
+	{
+		if (bEnableTerrainPaging)
+		{
+			// For the TerrainPaging case, this Terrain is the "Template Terrain" used by the
+			// Terrain Pager. In this case, we can set small "dummy" values for resolution, size and
+			// heights which will save memory usage.
+			// See AGX Dynamics example 'basic_paging_example.agxPy' for reference.
+			FHeightFieldShapeBarrier HeightField;
+			HeightField.AllocateNative(4, 4, 1.0, 1.0);
+			return HeightField;
+		}
+		else
+		{
+			return AGX_HeightFieldUtilities::CreateHeightField(
+				*SourceLandscape, StartPos, Bounds->HalfExtent.X * 2.0, Bounds->HalfExtent.Y * 2.0);
+		}
+	}();
 
 	NativeBarrier.AllocateNative(HeightField, MaxDepth);
 
@@ -1700,18 +1715,19 @@ void AAGX_Terrain::Serialize(FArchive& Archive)
 		TerrainMaterial != nullptr && ShapeMaterial == nullptr)
 	{
 		const FString Msg = FString::Printf(
-			TEXT("Important!\n\nIt was detected that the AGX Terrain Actor '%s' references an "
-				 "AGX Terrain Material but no Shape Material. The surface properties of a "
-				 "Terrain is no longer described by the Terrain Material, but instead is "
-				 "described by a separate Shape Material that can be assigned from the Terrain "
-				 "Actor's Details Panel.\n\nIt is recommended to open the Terrain Material and use "
-				 "the 'Create Shape Material' button to generate a Shape Material containing the "
-				 "Terrain surface properties of the Terrain Material and then assign it to the "
-				 "Terrain Actor. Note that this also affects all Contact Materials referencing a "
-				 "Terrain Material; these should be updated to point to a Shape Material generated "
-				 "from the previously pointed to Terrain Material.\n\nThis information is also "
-				 "available in the Changelog in the User Manual.\n\nTo disable this warning, simply "
-				 "re-save the Level that contains this Terrain Actor."),
+			TEXT(
+				"Important!\n\nIt was detected that the AGX Terrain Actor '%s' references an "
+				"AGX Terrain Material but no Shape Material. The surface properties of a "
+				"Terrain is no longer described by the Terrain Material, but instead is "
+				"described by a separate Shape Material that can be assigned from the Terrain "
+				"Actor's Details Panel.\n\nIt is recommended to open the Terrain Material and use "
+				"the 'Create Shape Material' button to generate a Shape Material containing the "
+				"Terrain surface properties of the Terrain Material and then assign it to the "
+				"Terrain Actor. Note that this also affects all Contact Materials referencing a "
+				"Terrain Material; these should be updated to point to a Shape Material generated "
+				"from the previously pointed to Terrain Material.\n\nThis information is also "
+				"available in the Changelog in the User Manual.\n\nTo disable this warning, simply "
+				"re-save the Level that contains this Terrain Actor."),
 			*GetName());
 		FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(Msg);
 	}
