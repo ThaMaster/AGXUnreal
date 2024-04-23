@@ -24,7 +24,7 @@
  * details panel.
  */
 UCLASS(
-	ClassGroup = "AGX_Terrain", Category = "AGX",
+	ClassGroup = "Deprecated", Category = "AGX",
 	Meta =
 		(BlueprintSpawnableComponent, DeprecationMessage = "Use the AGX Shovel Component instead."))
 class AGXUNREAL_API UAGX_CuttingDirectionComponent : public UAGX_VectorComponent
