@@ -35,6 +35,17 @@ UAGX_TrackComponent::UAGX_TrackComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	bWantsOnUpdateTransform = true;
+
+	static const TCHAR* DefaultMeshPath =
+		TEXT("StaticMesh'/AGXUnreal/Track/StaticMeshes/SM_TrackShoeCube.SM_TrackShoeCube'");
+	if (RenderMesh == nullptr)
+		RenderMesh = FAGX_ObjectUtilities::GetAssetFromPath<UStaticMesh>(DefaultMeshPath);
+
+	static const TCHAR* DefaultMatPath =
+		TEXT("Material'/AGXUnreal/Track/Materials/MI_TrackDefault.MI_TrackDefault'");
+	if (RenderMaterials.Num() == 0)
+		RenderMaterials.Add(
+			FAGX_ObjectUtilities::GetAssetFromPath<UMaterialInterface>(DefaultMatPath));
 }
 
 FAGX_TrackPreviewData* UAGX_TrackComponent::GetTrackPreview(bool bForceUpdate) const
@@ -960,6 +971,10 @@ void UAGX_TrackComponent::CreateVisuals()
 	VisualMeshes = NewObject<UInstancedStaticMeshComponent>(this, FName(TEXT("VisualMeshes")));
 	VisualMeshes->RegisterComponent();
 	VisualMeshes->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+	VisualMeshes->SetStaticMesh(RenderMesh);
+	for (int32 I = 0; I < RenderMaterials.Num(); I++)
+		VisualMeshes->SetMaterial(I, RenderMaterials[I]);
 }
 
 void UAGX_TrackComponent::UpdateVisuals()
@@ -1014,7 +1029,6 @@ bool UAGX_TrackComponent::ShouldRenderSelf() const
 {
 	return VisualMeshes != nullptr && ShouldRender();
 }
-
 
 void UAGX_TrackComponent::SetVisualsInstanceCount(int32 Num)
 {
