@@ -901,6 +901,9 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	//~ End ActorComponent interface.
 
+	//~ Begin Scene Component interface.
+	virtual void PostEditComponentMove(bool bFinished) override;
+	//~ End Scene Component interface.
 protected:
 	// ~Begin UActorComponent interface.
 	virtual void OnRegister() override;
