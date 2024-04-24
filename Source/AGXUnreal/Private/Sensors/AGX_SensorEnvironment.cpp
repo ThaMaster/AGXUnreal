@@ -479,6 +479,13 @@ void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type Reason)
 				.Remove(PostStepForwardHandle);
 		}
 	}
+
+	TrackedLidars.Empty();
+	TrackedMeshes.Empty();
+	TrackedInstancedMeshes.Empty();
+	TrackedAGXMeshes.Empty();
+	if (HasNative())
+		NativeBarrier.ReleaseNative();
 }
 
 void AAGX_SensorEnvironment::RegisterLidars()
