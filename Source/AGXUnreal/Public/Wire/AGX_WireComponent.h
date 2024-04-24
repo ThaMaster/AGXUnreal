@@ -848,7 +848,18 @@ public:
 	 * Mark visuals for this Wire Component dirty. The Visuals will be updated according to the
 	 * current state.
 	 */
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "AGX Wire")
 	void MarkVisualsDirty();
+
+#if WITH_EDITOR
+	/**
+	 * Find all route node parents and setup a Transform Updated callback on each so that the wire
+	 * rendering is updated automatically when the parent is moved in the editor.
+	 */
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "AGX Wire")
+	void SynchronizeParentMovedCallbacks();
+#endif
+
 
 	/*
 	 * Copy configuration from the given Barrier.
@@ -930,10 +941,6 @@ private:
 	void UpdateVisuals();
 	void RenderSelf(const TArray<FVector>& Points);
 	void SetVisualsInstanceCount(int32 Num);
-
-#if WITH_EDITOR
-	void SynchronizeParentMovedCallbacks();
-#endif
 
 private:
 	FWireBarrier NativeBarrier;
