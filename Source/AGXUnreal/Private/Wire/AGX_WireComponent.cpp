@@ -1002,7 +1002,8 @@ void UAGX_WireComponent::SetNode(const int32 InIndex, const FWireRoutingNode InN
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Out-of-bounds index %d for route nodes array was passed to Set Node in Wire Component "
+			TEXT("Out-of-bounds index %d for route nodes array was passed to Set Node in Wire "
+				 "Component "
 				 "'%s' in Actor '%s'"),
 			InIndex, *GetName(), *GetLabelSafe(GetOwner()));
 		return;
@@ -1221,10 +1222,10 @@ void UAGX_WireComponent::OnRouteNodeParentMoved(
 	{
 		UE_LOG(LogAGX, Warning, TEXT("  The Component is not any node's parent. Removing."));
 		// Component is not the parent of any node, unsubscribe.
-		const FDelegateHandle* Handle = DelegateHandles.Find(Component);
-		if (Handle != nullptr)
+		const FParentDelegate* Handle = DelegateHandles.Find(Component);
+		if (Handle != nullptr && Handle->Parent.IsValid())
 		{
-			Component->TransformUpdated.Remove(*Handle);
+			Component->TransformUpdated.Remove(Handle->DelegateHandle);
 			DelegateHandles.Remove(Component);
 		}
 		else
@@ -1246,6 +1247,7 @@ void UAGX_WireComponent::OnRouteNodeParentReplaced(
 	const FCoreUObjectDelegates::FReplacementObjectMap& OldToNew)
 {
 	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::OnRouteNodeParentReplaced for %p"), this);
+
 	UE_LOG(LogAGX, Warning, TEXT("  Old-to-New:"));
 	for (const TTuple<UObject*, UObject*>& Entry : OldToNew)
 	{
@@ -1274,14 +1276,20 @@ void UAGX_WireComponent::OnRouteNodeParentReplaced(
 	}
 
 	// Any changes made to the callback setup is a sign that we may need to update the wire
-	// rendering positions. For example if a Scene Component was renamed to either become of stop
+	// rendering positions. For example if a Scene Component was renamed to either become or stop
 	// being a frame parent to any routing node.
 	bool bNeedUpdateVisuals {false};
 
 	for (FWireRoutingNode& Node : RouteNodes)
 	{
+		// Find our current (new) parent and the old parent that the new parent replaces.
+		// If the parent wasn't replaced at all then OldParent will be nullptr and NewParent will
+		// point to an old object.
 		USceneComponent* NewParent = Node.Frame.Parent.GetComponent<USceneComponent>();
 		USceneComponent* OldParent = Cast<USceneComponent>(NewToOld.FindRef(NewParent));
+		UE_LOG(
+			LogAGX, Warning, TEXT("Node is updating parent %p (isValid %d) to %p (isValid %d)."),
+			OldParent, IsValid(OldParent), NewParent, IsValid(NewParent));
 		if (!IsValid(NewParent) && !IsValid(OldParent))
 		{
 			continue;
@@ -1291,21 +1299,25 @@ void UAGX_WireComponent::OnRouteNodeParentReplaced(
 			LogAGX, Warning, TEXT("  Wire route node parent replaced. Old = %p New %p "), OldParent,
 			NewParent);
 
+		// Remove ourselves from the old parent.
 		if (OldParent != nullptr)
 		{
 			UE_LOG(LogAGX, Warning, TEXT("    Removing callbacks from %p"), OldParent);
 			OldParent->TransformUpdated.RemoveAll(this);
+			DelegateHandles.Remove(OldParent);
 			bNeedUpdateVisuals = true;
 		}
 
-		if (IsValid(NewParent))
+		// Add ourselves to the new parent, unless the new parent is actually an old object, i.e.
+		// wasn't replaced, in which case we already have an entry for it in Delegate Handles.
+		if (IsValid(NewParent) /* && !DelegateHandles.Contains(NewParent) */)
 		{
 			if (!DelegateHandles.Contains(NewParent))
 			{
 				UE_LOG(LogAGX, Warning, TEXT("    Adding callback to %p"), NewParent);
 				DelegateHandles.Add(
-					NewParent, NewParent->TransformUpdated.AddUObject(
-								   this, &UAGX_WireComponent::OnRouteNodeParentMoved));
+					NewParent, {NewParent, NewParent->TransformUpdated.AddUObject(
+											   this, &UAGX_WireComponent::OnRouteNodeParentMoved)});
 				bNeedUpdateVisuals = true;
 			}
 			else
@@ -1681,10 +1693,10 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 
 	UE_LOG(LogAGX, Warning, TEXT("PostEditChangeChainProperty on Wire Component %p."), this);
 
-	FEditPropertyChain::TDoubleLinkedListNode* const Node = Event.PropertyChain.GetHead();
-	if (Node != nullptr)
+	FEditPropertyChain::TDoubleLinkedListNode* const PropertyNode = Event.PropertyChain.GetHead();
+	if (PropertyNode != nullptr)
 	{
-		const FName Member = Node->GetValue()->GetFName();
+		const FName Member = PropertyNode->GetValue()->GetFName();
 		if (DoesPropertyAffectVisuals(Member))
 		{
 			UpdateVisuals();
@@ -1692,10 +1704,10 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 
 		if (Member == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes))
 		{
-			// Experimentation code.
+			// TODO Debug output, remove.
 			UE_LOG(LogAGX, Warning, TEXT("Route nodes changed."));
 			UE_LOG(LogAGX, Warning, TEXT("Chain:"));
-			FEditPropertyChain::TDoubleLinkedListNode* It = Node;
+			FEditPropertyChain::TDoubleLinkedListNode* It = PropertyNode;
 			while (It != nullptr)
 			{
 				FProperty* Property = It->GetValue();
@@ -1707,8 +1719,9 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 			}
 
 			// Did a node get a new parent, meaning we must set up a new parent-moved callback?
-			TArray<const TCHAR*> Path {TEXT("RouteNodes"), TEXT("Frame"), TEXT("Parent")};
-			if (FAGX_ObjectUtilities::HasChainPrefixPath(Node, Path))
+			static const TArray<const TCHAR*> Path {
+				TEXT("RouteNodes"), TEXT("Frame"), TEXT("Parent")};
+			if (FAGX_ObjectUtilities::HasChainPrefixPath(PropertyNode, Path))
 			{
 				const int32 NodeIndex = Event.GetArrayIndex("RouteNodes");
 				UE_LOG(LogAGX, Warning, TEXT("  Edited index %d in RouteNodes."), NodeIndex);
@@ -1718,13 +1731,14 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 						RouteNodes[NodeIndex].Frame.GetParentComponent();
 					if (Parent != nullptr)
 					{
-						FDelegateHandle* Handle = DelegateHandles.Find(Parent);
-						if (Handle == nullptr)
+						FParentDelegate* ParentDelegate = DelegateHandles.Find(Parent);
+						if (ParentDelegate == nullptr)
 						{
 							// Don't currently have a callback for this Parent, add one.
 							DelegateHandles.Add(
-								Parent, Parent->TransformUpdated.AddUObject(
-											this, &UAGX_WireComponent::OnRouteNodeParentMoved));
+								Parent,
+								{Parent, Parent->TransformUpdated.AddUObject(
+											 this, &UAGX_WireComponent::OnRouteNodeParentMoved)});
 
 							UE_LOG(
 								LogAGX, Warning, TEXT("    Adding callback to parent %p."), Parent);
@@ -1739,6 +1753,9 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 				}
 			}
 
+			// We have no way of knowing what the old parent was, or if the changed node was the
+			// last to have it has its parent, so the best we can do is to synchronize all node
+			// parents.
 			SynchronizeParentMovedCallbacks();
 		}
 	}
@@ -2535,8 +2552,9 @@ void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
 	// out how to reliably remove our callback from the parent's TransformUpdated event, and
 	// remove an entry from the Delegate Handles list when the parent no longer exists.
 
-	// Find the parents currently used by a routing node.
 	UE_LOG(LogAGX, Warning, TEXT("  Parent check-up:"));
+
+	// Find the parents currently used by a routing node.
 	TSet<USceneComponent*> ActualParents;
 	for (FWireRoutingNode& RoutingNode : RouteNodes)
 	{
@@ -2556,47 +2574,91 @@ void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
 							 "don't contain our callback but we do have a delegate handle "
 							 "registered for it. That should never happen."),
 						*GetName(), *GetLabelSafe(GetOwner()));
+					// Not sure what happened. Reset the state so that we are sure the dual-Add
+					// below result in the expected state.
+					DelegateHandles.Remove(Parent);
 				}
 				DelegateHandles.Add(
-					Parent, Parent->TransformUpdated.AddUObject(
-								this, &UAGX_WireComponent::OnRouteNodeParentMoved));
+					Parent, {Parent, Parent->TransformUpdated.AddUObject(
+										 this, &UAGX_WireComponent::OnRouteNodeParentMoved)});
 				UE_LOG(LogAGX, Warning, TEXT("      Adding callback to parent %p."), Parent);
 			}
 			else
 			{
 				UE_LOG(LogAGX, Warning, TEXT("      Already has a callback."))
-			}
-
-			if (DelegateHandles.Contains(Parent))
-			{
-				if (!Parent->TransformUpdated.IsBoundToObject(this))
+				if (!DelegateHandles.Contains(Parent))
 				{
 					UE_LOG(
 						LogAGX, Warning,
-						TEXT("Wire Component '%s' in '%s' found a delegate handle for a "
-							 "routing node parent that don't have a callback registered "
-							 "for. That shouldn never happen."));
+						TEXT("Wire Component '%s' in '%s' found a routing node parent that do "
+							 "contain our callback but we don't have a delegate handle for it. "
+							 "That should never happen"),
+						*GetName(), *GetLabelSafe(GetOwner()));
+
+					// We have a weird state. Try to fix it.
+					Parent->TransformUpdated.RemoveAll(this);
+					DelegateHandles.Add(
+						Parent, {Parent, Parent->TransformUpdated.AddUObject(
+											 this, &UAGX_WireComponent::OnRouteNodeParentMoved)});
 				}
+			}
+
+			// Sanity check.
+			if (DelegateHandles.Contains(Parent) && !Parent->TransformUpdated.IsBoundToObject(this))
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Wire Component '%s' in '%s' found a delegate handle for a "
+						 "routing node parent that don't have a callback registered "
+						 "for. That should never happen."),
+					*GetName(), *GetLabelSafe(GetOwner()));
+			}
+			else if (
+				!DelegateHandles.Contains(Parent) && Parent->TransformUpdated.IsBoundToObject(this))
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Wire Component '%s' in '%s' did not find a delegate handle for a "
+						 "routing node parent that do have a callback registered. That should "
+						 "never happen."),
+					*GetName(), *GetLabelSafe(GetOwner()));
 			}
 		}
 	}
+
+	// Find parents that aren't a parent to any routing node anymore, and parents that has
+	// been destroyed.
 	TSet<USceneComponent*> ToRemove;
-	for (TTuple<TWeakObjectPtr<USceneComponent>, FDelegateHandle>& Entry : DelegateHandles)
+	UE_LOG(LogAGX, Warning, TEXT("Tracked parents:"));
+	for (TTuple<USceneComponent*, FParentDelegate>& Entry : DelegateHandles)
 	{
-		USceneComponent* Parent = Entry.Key.Get();
-		if (!IsValid(Parent))
+		// Parent may have been destroyed. In this case the key-part of the entry will retain its
+		// old value, i.e. it will be a dangling pointer, while the TWeakObjectPtr in the value-part
+		// of the entry will have been set to null.
+		//
+		// DO NOT USE ParentKey as an actual USceneComponent! Only use it to erase from
+		// DelegateHandles.
+		USceneComponent* ParentKey = Entry.Key;
+		TWeakObjectPtr ParentValue = Entry.Value.Parent;
+
+		UE_LOG(
+			LogAGX, Warning, TEXT("  %p -> %p (IsValid %d)"), ParentKey, ParentValue.Get(),
+			ParentValue.IsValid());
+
+		if (!ParentValue.IsValid())
 		{
 			UE_LOG(
-				LogAGX, Warning, TEXT("    Found handle to invalid parent %p. Removing"), Parent);
-			ToRemove.Add(Parent);
+				LogAGX, Warning, TEXT("    Found handle to invalid parent %p. Removing"),
+				ParentKey);
+			ToRemove.Add(ParentKey);
 		}
 
-		if (!ActualParents.Contains(Parent))
+		if (!ActualParents.Contains(ParentKey))
 		{
 			UE_LOG(
 				LogAGX, Warning, TEXT("    Found handle to parent %p that isn't a parent anymore."),
-				Parent);
-			ToRemove.Add(Parent);
+				ParentKey);
+			ToRemove.Add(ParentKey);
 		}
 	}
 

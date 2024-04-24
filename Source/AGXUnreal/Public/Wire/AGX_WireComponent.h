@@ -938,9 +938,18 @@ private:
 	TObjectPtr<UInstancedStaticMeshComponent> VisualCylinders;
 	TObjectPtr<UInstancedStaticMeshComponent> VisualSpheres;
 
-	/// Keep track which node frame parents we have registered a callback with. Note that a single
-	/// entry here may correspond to multiple routing nodes.
-	TMap<TWeakObjectPtr<USceneComponent>, FDelegateHandle> DelegateHandles;
+	/**
+	 * Keep track which node frame parents we have registered a callback with. Note that a single
+	 * entry here may correspond to multiple routing nodes. Must use a raw-pointer key to a
+	 * weak-pointer values since TMap require that keys don't change arbitrarily, which a
+	 * weak-pointer can. We keep the weak pointer because the parent may be destroyed at any time.
+	 */
+	struct FParentDelegate
+	{
+		TWeakObjectPtr<USceneComponent> Parent;
+		FDelegateHandle DelegateHandle;
+	};
+	TMap<USceneComponent*, FParentDelegate> DelegateHandles;
 
 #if WITH_EDITOR
 	// Handle to the delegate registered with the engine Map Changed event to update visuals
