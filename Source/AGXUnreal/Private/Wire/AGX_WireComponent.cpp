@@ -1244,93 +1244,17 @@ void UAGX_WireComponent::OnRouteNodeParentMoved(
 }
 
 void UAGX_WireComponent::OnRouteNodeParentReplaced(
-	const FCoreUObjectDelegates::FReplacementObjectMap& OldToNew)
+	const FCoreUObjectDelegates::FReplacementObjectMap& /*OldToNew*/)
 {
 	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::OnRouteNodeParentReplaced for %p"), this);
 
-	UE_LOG(LogAGX, Warning, TEXT("  Old-to-New:"));
-	for (const TTuple<UObject*, UObject*>& Entry : OldToNew)
-	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("    Old = %p -> New = %p  Type = %s"), Entry.Key, Entry.Value,
-			*Entry.Key->GetClass()->GetName());
-	}
-
-	// Build reverse look-up table. By the time we get here the replacement has already happened
-	// in the owning Actor so the call to Parent.GetComponent below will find the new object, not
-	// the old. In order to quickly determine if the object is replaced or untouched by the
-	// Blueprint Reconstruction we need to be able to determine if it is in the OldToNew map on the
-	// value side.
-	FCoreUObjectDelegates::FReplacementObjectMap NewToOld;
-	NewToOld.Reserve(OldToNew.Num());
-	for (const TTuple<UObject*, UObject*>& Entry : OldToNew)
-	{
-		// Not all Components are replaced, we sometimes get nullptr in the value-part of the entry
-		// Not sure what that means. Did the object disappear? Was the object not replaced so the
-		// old pointer is still relevant? In any case, don't want to map nullptr to some random
-		// Component, so skipping those entries.
-		if (Entry.Value != nullptr)
-		{
-			NewToOld.Add(Entry.Value, Entry.Key);
-		}
-	}
-
-	// Any changes made to the callback setup is a sign that we may need to update the wire
-	// rendering positions. For example if a Scene Component was renamed to either become or stop
-	// being a frame parent to any routing node.
-	bool bNeedUpdateVisuals {false};
-
-	for (FWireRoutingNode& Node : RouteNodes)
-	{
-		// Find our current (new) parent and the old parent that the new parent replaces.
-		// If the parent wasn't replaced at all then OldParent will be nullptr and NewParent will
-		// point to an old object.
-		USceneComponent* NewParent = Node.Frame.Parent.GetComponent<USceneComponent>();
-		USceneComponent* OldParent = Cast<USceneComponent>(NewToOld.FindRef(NewParent));
-		UE_LOG(
-			LogAGX, Warning, TEXT("Node is updating parent %p (isValid %d) to %p (isValid %d)."),
-			OldParent, IsValid(OldParent), NewParent, IsValid(NewParent));
-		if (!IsValid(NewParent) && !IsValid(OldParent))
-		{
-			continue;
-		}
-
-		UE_LOG(
-			LogAGX, Warning, TEXT("  Wire route node parent replaced. Old = %p New %p "), OldParent,
-			NewParent);
-
-		// Remove ourselves from the old parent.
-		if (OldParent != nullptr)
-		{
-			UE_LOG(LogAGX, Warning, TEXT("    Removing callbacks from %p"), OldParent);
-			OldParent->TransformUpdated.RemoveAll(this);
-			DelegateHandles.Remove(OldParent);
-			bNeedUpdateVisuals = true;
-		}
-
-		// Add ourselves to the new parent, unless the new parent is actually an old object, i.e.
-		// wasn't replaced, in which case we already have an entry for it in Delegate Handles.
-		if (IsValid(NewParent) /* && !DelegateHandles.Contains(NewParent) */)
-		{
-			if (!DelegateHandles.Contains(NewParent))
-			{
-				UE_LOG(LogAGX, Warning, TEXT("    Adding callback to %p"), NewParent);
-				DelegateHandles.Add(
-					NewParent, {NewParent, NewParent->TransformUpdated.AddUObject(
-											   this, &UAGX_WireComponent::OnRouteNodeParentMoved)});
-				bNeedUpdateVisuals = true;
-			}
-			else
-			{
-				UE_LOG(LogAGX, Warning, TEXT("    Already have a callback in %p"), NewParent);
-			}
-		}
-	}
-
-	if (bNeedUpdateVisuals)
-	{
-		UpdateVisuals();
-	}
+	// Here we used to do incremental updates of the Delegate Handles table, but that doesn't work
+	// for the rename case, i.e. when the a Blueprint Reconstruction happens due to the parent
+	// Component being renamed in the Blueprint. In that case we can no longer find the old parent
+	// anymore since there is no way of finding the supposedly new parent. So we are forced to do
+	// a full synchronization.
+	SynchronizeParentMovedCallbacks();
+	UpdateVisuals();
 }
 
 #endif
