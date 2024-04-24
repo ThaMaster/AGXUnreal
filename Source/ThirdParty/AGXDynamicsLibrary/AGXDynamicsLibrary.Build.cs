@@ -211,6 +211,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("agx-nt-ros2", LibSource.AGX);
 		RuntimeLibFiles.Add("RobotecGPULidar", LibSource.AGX);
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
+		RuntimeLibFiles.Add("ois", LibSource.AGX);
 		RuntimeLibFiles.Add("fastcdr*", LibSource.AGX);
 		RuntimeLibFiles.Add("fastrtps*", LibSource.AGX);
 		if (TargetAGXVersion.IsOlderThan(2, 32, 0, 0))
