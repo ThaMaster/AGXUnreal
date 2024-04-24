@@ -3,7 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ComponentReference.h"
+#include "AGX_SceneComponentReference.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -35,7 +35,7 @@ struct AGXUNREAL_API FAGX_Frame
 	 * The Component that this Frame is relative to.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Frame")
-	FAGX_ComponentReference Parent;
+	FAGX_SceneComponentReference Parent;
 
 	/*
 	 * Set the given Component to be the parent of this frame.
