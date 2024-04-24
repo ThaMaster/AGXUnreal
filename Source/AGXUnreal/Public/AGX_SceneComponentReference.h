@@ -14,7 +14,7 @@ class AActor;
  *
  * See comment on FAGX_ComponentReference for usage instructions and limitations.
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_SceneComponentReference : public FAGX_ComponentReference
 {
 	GENERATED_BODY()
@@ -46,4 +46,17 @@ struct TStructOpsTypeTraits<FAGX_SceneComponentReference>
 		WithStructuredSerializeFromMismatchedTag = true, // struct has an FStructuredArchive-based SerializeFromMismatchedTag function for converting from other property tags.
 	};
 	// clang-format on
+};
+
+UCLASS()
+class AGXUNREAL_API UAGX_SceneComponentReference_FL : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Scene Component Reference")
+	static USceneComponent* GetSceneComponent(UPARAM(Ref) FAGX_SceneComponentReference& Reference)
+	{
+		return Reference.GetSceneComponent();
+	}
 };
