@@ -192,19 +192,19 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	// Terrain.
 	Style->Set(
 		"ClassIcon.AGX_CuttingDirectionComponent",
-		new IMAGE_BRUSH("Icons/cutting_direction_32x32", IconSize16));
+		new IMAGE_BRUSH("Icons/deprecated_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_ShovelComponent",
 		new IMAGE_BRUSH("Icons/deformable_terrain_shovel_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_CuttingEdgeComponent",
-		new IMAGE_BRUSH("Icons/cutting_edge_32x32", IconSize16));
+		new IMAGE_BRUSH("Icons/deprecated_32x32", IconSize16));
 	Style->Set(
-		"ClassIcon.AGX_TopEdgeComponent", new IMAGE_BRUSH("Icons/cutting_top_32x32", IconSize16));
+		"ClassIcon.AGX_TopEdgeComponent", new IMAGE_BRUSH("Icons/deprecated_32x32", IconSize16));
 	// Track.
 	Style->Set("ClassIcon.AGX_TrackComponent", new IMAGE_BRUSH("Icons/track_32x32", IconSize16));
 	Style->Set(
-		"ClassIcon.AGX_TrackRenderer", new IMAGE_BRUSH("Icons/track_renderer_32x32", IconSize16));
+		"ClassIcon.AGX_TrackRenderer", new IMAGE_BRUSH("Icons/deprecated_32x32", IconSize16));
 	// Wire.
 	Style->Set("ClassIcon.AGX_WireComponent", new IMAGE_BRUSH("Icons/wire_32x32", IconSize16));
 	Style->Set(
