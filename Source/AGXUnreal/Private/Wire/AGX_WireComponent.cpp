@@ -960,10 +960,6 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation, int3
 	FWireRoutingNode& NewNode = RouteNodes.Last();
 	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
 
-	UE_LOG(
-		LogAGX, Warning, TEXT("Created node at address %p at location %s"), &NewNode,
-		*InLocation.ToString());
-
 	OutIndex = RouteNodes.Num() - 1;
 	return NewNode;
 }
@@ -1205,22 +1201,12 @@ TArray<FVector> UAGX_WireComponent::GetRenderNodeLocations() const
 void UAGX_WireComponent::OnRouteNodeParentMoved(
 	USceneComponent* Component, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
 {
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("Wire Component '%s' (%p) in '%s' (%p) got parent moved callback from '%s' (%p) in "
-			 "'%s' (%p)."),
-		*GetName(), this, *GetLabelSafe(GetOwner()), GetOwner(), *Component->GetName(), Component,
-		*GetLabelSafe(Component->GetOwner()), Component->GetOwner());
-
 	// If this is a callback from a parent we are no longer a child of, then unsubscribe.
-	// TODO Is there a better way to avoid keeping callbacks laying around in the parents?
-	// I would like to do this in PreEditChange.
 	FWireRoutingNode* Node =
 		RouteNodes.FindByPredicate([Component](const FWireRoutingNode& Node)
 								   { return Node.Frame.GetParentComponent() == Component; });
 	if (Node == nullptr)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("  The Component is not any node's parent. Removing."));
 		// Component is not the parent of any node, unsubscribe.
 		const FParentDelegate* Handle = DelegateHandles.Find(Component);
 		if (Handle != nullptr && Handle->Parent.IsValid())
@@ -1228,26 +1214,16 @@ void UAGX_WireComponent::OnRouteNodeParentMoved(
 			Component->TransformUpdated.Remove(Handle->DelegateHandle);
 			DelegateHandles.Remove(Component);
 		}
-		else
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("  The Component wasn't in the Delegate Handles list. Why did we get a "
-					 "callback? Can we remove us from the delegate without a handle?"));
-		}
 		return;
 	}
 
 	// At least one Routing Node has the moved Component as its parent.
-	UE_LOG(LogAGX, Warning, TEXT("	Parent moved callback is updating wire visuals."));
 	UpdateVisuals();
 }
 
 void UAGX_WireComponent::OnRouteNodeParentReplaced(
 	const FCoreUObjectDelegates::FReplacementObjectMap& /*OldToNew*/)
 {
-	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::OnRouteNodeParentReplaced for %p"), this);
-
 	// Here we used to do incremental updates of the Delegate Handles table, but that doesn't work
 	// for the rename case, i.e. when the a Blueprint Reconstruction happens due to the parent
 	// Component being renamed in the Blueprint. In that case we can no longer find the old parent
@@ -1372,7 +1348,6 @@ const FWireBarrier* UAGX_WireComponent::GetNative() const
 void UAGX_WireComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::PostInitProperties"));
 	AActor* OwningActor = GetTypedOuter<AActor>();
 	OwnedBeginWinch.BodyAttachment.OwningActor = OwningActor;
 	OwnedEndWinch.BodyAttachment.OwningActor = OwningActor;
@@ -1389,10 +1364,8 @@ void UAGX_WireComponent::PostInitProperties()
 void UAGX_WireComponent::PostLoad()
 {
 	Super::PostLoad();
-	UE_LOG(LogAGX, Warning, TEXT("UAGX_WireComponent::PostLoad"));
 
 	AActor* OwningActor = GetTypedOuter<AActor>();
-
 	FAGX_ObjectUtilities::SetIfNullptr(OwnedBeginWinch.BodyAttachment.OwningActor, OwningActor);
 	FAGX_ObjectUtilities::SetIfNullptr(OwnedBeginWinch.BodyAttachment.OwningActor, OwningActor);
 	FAGX_ObjectUtilities::SetIfNullptr(OwnedEndWinch.BodyAttachment.OwningActor, OwningActor);
@@ -1429,11 +1402,6 @@ void UAGX_WireComponent::PostLoad()
 		// specifically in the next-tick callback queued from PostLoad, we want to behave
 
 		// Make UPROPERTY? Actor callback after all Components loaded?
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("This is not a game world and we're not the Class Default Object, setting up "
-				 "parent callbacks for Wire Component %p."),
-			this);
 		if (MapLoadDelegateHandle.IsValid())
 		{
 			FEditorDelegates::MapChange.Remove(MapLoadDelegateHandle);
@@ -1591,39 +1559,17 @@ void UAGX_WireComponent::PreEditChange(FEditPropertyChain& PropertyAboutToChange
 {
 	UObject::PreEditChange(PropertyAboutToChange);
 
-	UE_LOG(LogAGX, Warning, TEXT("PreEditChange on Wire Component %p."), this);
-
 	// Here I would like to unsubscribe from the TransformUpdated event on the parent, but I don't
 	// know how the find the index in the Route Nodes list of the routing node that is about to be
 	// given a new parent. In the PostEditChangeChainProperty callback we get a
 	// FPropertyChangedChainEvent instead of a FEditPropertyChain and the event knows the array
 	// index because it has been created from an FPropertyHandle, which has access to FPropertyNode,
 	// instead of from an FProperty. The FProperty doesn't seem to know the array index.
-#if 0
-	for (FEditPropertyChain::TDoubleLinkedListNode* NodeIt = PropertyAboutToChange.GetHead();
-		 NodeIt != nullptr; NodeIt = NodeIt->GetNextNode())
-	{
-		FProperty* Property = NodeIt->GetValue();
-		UE_LOG(LogAGX, Warning, TEXT("%s > "), *Property->GetName());
-	}
-
-	for (FProperty* Property : PropertyAboutToChange)
-	{
-		UE_LOG(LogAGX, Warning, TEXT("%s >"), *Property->GetFullName());
-	}
-
-	for (FProperty* Property : PropertyAboutToChange)
-	{
-		UE_LOG(LogAGX, Warning, TEXT("%s >"), *Property->GetPathName());
-	}
-#endif
 }
 
 void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
-
-	UE_LOG(LogAGX, Warning, TEXT("PostEditChangeChainProperty on Wire Component %p."), this);
 
 	FEditPropertyChain::TDoubleLinkedListNode* const PropertyNode = Event.PropertyChain.GetHead();
 	if (PropertyNode != nullptr)
@@ -1636,27 +1582,12 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 
 		if (Member == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes))
 		{
-			// TODO Debug output, remove.
-			UE_LOG(LogAGX, Warning, TEXT("Route nodes changed."));
-			UE_LOG(LogAGX, Warning, TEXT("Chain:"));
-			FEditPropertyChain::TDoubleLinkedListNode* It = PropertyNode;
-			while (It != nullptr)
-			{
-				FProperty* Property = It->GetValue();
-				UE_LOG(
-					LogAGX, Warning, TEXT("  %s %s"), *Property->GetName(),
-					*Property->GetClass()->GetName());
-
-				It = It->GetNextNode();
-			}
-
 			// Did a node get a new parent, meaning we must set up a new parent-moved callback?
 			static const TArray<const TCHAR*> Path {
 				TEXT("RouteNodes"), TEXT("Frame"), TEXT("Parent")};
 			if (FAGX_ObjectUtilities::HasChainPrefixPath(PropertyNode, Path))
 			{
 				const int32 NodeIndex = Event.GetArrayIndex("RouteNodes");
-				UE_LOG(LogAGX, Warning, TEXT("  Edited index %d in RouteNodes."), NodeIndex);
 				if (RouteNodes.IsValidIndex(NodeIndex))
 				{
 					USceneComponent* const Parent =
@@ -1671,15 +1602,6 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 								Parent,
 								{Parent, Parent->TransformUpdated.AddUObject(
 											 this, &UAGX_WireComponent::OnRouteNodeParentMoved)});
-
-							UE_LOG(
-								LogAGX, Warning, TEXT("    Adding callback to parent %p."), Parent);
-						}
-						else
-						{
-							UE_LOG(
-								LogAGX, Warning, TEXT("    Parent %p already has a callback."),
-								Parent);
 						}
 					}
 				}
@@ -2239,8 +2161,8 @@ void UAGX_WireComponent::CreateNative()
 	if (ErrorMessages.Num() > 0)
 	{
 		FString Message = FString::Printf(
-			TEXT("Errors detected during initialization of wire %s in %s:\n"), *GetName(),
-			*GetNameSafe(GetOwner()));
+			TEXT("Errors detected during initialization of wire '%s' in '%s':\n"), *GetName(),
+			*GetLabelSafe(GetOwner()));
 		for (const FString& Line : ErrorMessages)
 		{
 			Message += Line + '\n';
