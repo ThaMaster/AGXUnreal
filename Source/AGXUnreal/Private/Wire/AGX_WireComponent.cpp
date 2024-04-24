@@ -1762,11 +1762,13 @@ void UAGX_WireComponent::EndPlay(const EEndPlayReason::Type Reason)
 	}
 }
 
+#if WITH_EDITOR
 void UAGX_WireComponent::PostEditComponentMove(bool bFinished)
 {
 	Super::PostEditComponentMove(bFinished);
 	UpdateVisuals();
 }
+#endif
 
 void UAGX_WireComponent::OnRegister()
 {

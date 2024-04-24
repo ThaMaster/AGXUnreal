@@ -902,7 +902,9 @@ public:
 	//~ End ActorComponent interface.
 
 	//~ Begin Scene Component interface.
+#if WITH_EDITOR
 	virtual void PostEditComponentMove(bool bFinished) override;
+#endif
 	//~ End Scene Component interface.
 protected:
 	// ~Begin UActorComponent interface.
