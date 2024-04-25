@@ -6,6 +6,8 @@
 #include "AGX_CustomVersion.h"
 #include "AGX_RigidBodyComponent.h"
 
+FWireRoutingNode InvalidRoutingNode(EWireNodeType::NUM_NODE_TYPES);
+
 void FWireRoutingNode::SetBody(UAGX_RigidBodyComponent* Body)
 {
 	if (Body == nullptr)
@@ -17,6 +19,11 @@ void FWireRoutingNode::SetBody(UAGX_RigidBodyComponent* Body)
 
 	RigidBody.OwningActor = Body->GetOwner();
 	RigidBody.Name = Body->GetFName();
+}
+
+bool FWireRoutingNode::IsValid() const
+{
+	return NodeType < EWireNodeType::NUM_NODE_TYPES;
 }
 
 bool FWireRoutingNode::Serialize(FArchive& Archive)

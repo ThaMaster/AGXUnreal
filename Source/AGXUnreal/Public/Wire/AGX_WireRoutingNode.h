@@ -48,6 +48,11 @@ struct AGXUNREAL_API FWireRoutingNode
 	{
 	}
 
+	FWireRoutingNode(EWireNodeType InNodeType)
+		: NodeType(InNodeType)
+	{
+	}
+
 	FWireRoutingNode(const FVector& InLocation)
 		: NodeType(EWireNodeType::Free)
 	{
@@ -55,6 +60,8 @@ struct AGXUNREAL_API FWireRoutingNode
 	}
 
 	void SetBody(UAGX_RigidBodyComponent* Body);
+
+	bool IsValid() const;
 
 	bool Serialize(FArchive& Archive);
 
@@ -65,6 +72,8 @@ private:
 	UPROPERTY(Meta = (DeprecatedProperty, DeprecationMessage = "Use Frame instead."))
 	FVector Location_DEPRECATED {FVector::ZeroVector};
 };
+
+extern FWireRoutingNode InvalidRoutingNode;
 
 template <>
 struct TStructOpsTypeTraits<FWireRoutingNode> : public TStructOpsTypeTraitsBase2<FWireRoutingNode>
