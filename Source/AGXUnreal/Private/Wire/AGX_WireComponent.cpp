@@ -955,7 +955,6 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation, int3
 	RouteNodes.Add(FWireRoutingNode(InLocation));
 	FWireRoutingNode& NewNode = RouteNodes.Last();
 	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
-
 	OutIndex = RouteNodes.Num() - 1;
 	return NewNode;
 }
@@ -995,9 +994,10 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(
 
 void UAGX_WireComponent::SetNode(const int32 InIndex, const FWireRoutingNode InNode)
 {
-	UE_LOG(
-		LogAGX, Warning, TEXT("Setting node at address %p at location %s"), &InNode,
-		*InNode.Frame.LocalLocation.ToString());
+	if (HasNative())
+	{
+		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
+	}
 	if (!RouteNodes.IsValidIndex(InIndex))
 	{
 		UE_LOG(
@@ -1038,13 +1038,13 @@ void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocatio
 	USceneComponent* Parent = RouteNodes[InIndex].Frame.GetParentComponent();
 	if (Parent == nullptr)
 	{
-		// No parent means the LocalLocation is relative to the Wire Component and thus InComponent
+		// No parent means the LocalLocation is relative to the Wire Component and thus InLocation
 		// can be used as-is.
 		RouteNodes[InIndex].Frame.LocalLocation = InLocation;
 		return;
 	}
 
-	// Compute a local location relative to the parent that as the same world location as
+	// Compute a local location relative to the parent that has the same world location as
 	// InLocation in the Wire Component.
 	const FTransform& ParentTransform = Parent->GetComponentTransform();
 	const FTransform& WireTransform = GetComponentTransform();
@@ -1371,26 +1371,9 @@ void UAGX_WireComponent::PostLoad()
 		// While in the editor we don't update the wire rendering every tick and instead rely on
 		// Transform Updated callbacks from the wire routing node frame parents. These callbacks
 		// must be registered with each parent on start-up. We can't do that here because some of
-		// the parents may not have been loaded yet. So we set up a callback to happen next tick,
-		// and hope that everything has been loaded by then. Is there a better way to do this?
-		//
-		// A drawback of the delayed call to UpdateVisuals is that the Instanced Static Mesh
-		// Components that are used for rendering the wire are marked dirty by the call to Update
-		// Instance Transform, they call UObject::Modify. This means that any Level that contains
-		// a Wire Component becomes dirty / unsaved on the first tick after opening. That is
-		// annoying, but I'm not sure what to do about it. What happens if we remove the Update
-		// Visuals call in the next-tick callback is that some Wire Routing Nodes that has a frame
-		// that has an Owning Actor that is not the same as the Actor that the Wire Component is
-		// part of with either not be found or have an all-zero transform. This means that parts
-		// of the wire will render near the world origin instead of near the actual position of the
-		// parent Scene Component until something else triggers a visual update. Also annoying.
-		//
-		// A workaround is to set the RF_NeedInitialization flag on the Instanced Static Mesh
-		// Components before writing to them. UObject::Modify checks this flag and doesn't mark
-		// the object dirty if set. Not sure if this has any undesirable side-effects. Here,
-		// specifically in the next-tick callback queued from PostLoad, we want to behave
-
-		// Make UPROPERTY? Actor callback after all Components loaded?
+		// the parents may not have been loaded yet. So we set up a callback to happen when the
+		// level has finished loading, and hope that everything has been loaded by then. Is there a
+		// better way to do this?
 		if (MapLoadDelegateHandle.IsValid())
 		{
 			FEditorDelegates::MapChange.Remove(MapLoadDelegateHandle);
@@ -1403,8 +1386,6 @@ void UAGX_WireComponent::PostLoad()
 				SynchronizeParentMovedCallbacks();
 				UpdateVisuals();
 			});
-
-		// In addition to setting up the callbacks.
 
 		// If the wire routing node frame parent's owner is a Blueprint instance then any
 		// modification of that instance will cause a Blueprint Reconstruction. During
@@ -1548,12 +1529,13 @@ void UAGX_WireComponent::PreEditChange(FEditPropertyChain& PropertyAboutToChange
 {
 	UObject::PreEditChange(PropertyAboutToChange);
 
-	// Here I would like to unsubscribe from the TransformUpdated event on the parent, but I don't
-	// know how the find the index in the Route Nodes list of the routing node that is about to be
-	// given a new parent. In the PostEditChangeChainProperty callback we get a
-	// FPropertyChangedChainEvent instead of a FEditPropertyChain and the event knows the array
-	// index because it has been created from an FPropertyHandle, which has access to FPropertyNode,
-	// instead of from an FProperty. The FProperty doesn't seem to know the array index.
+	// Here I would like to detect if the change is about to give a routing node a new parent and if
+	// so unsubscribe from the Transform Updated event on the old parent, but I don't know how to
+	// find the index in the Route Nodes list of the routing node that is about to be given a new
+	// parent. In the PostEditChangeChainProperty callback we get a FPropertyChangedChainEvent
+	// instead of a FEditPropertyChain and the event knows the array index because it has been
+	// created from an FPropertyHandle, which has access to FPropertyNode, instead of from an
+	// FProperty. The FProperty doesn't seem to know the array index.
 }
 
 void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
@@ -2372,7 +2354,7 @@ void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
 	// out how to reliably remove our callback from the parent's TransformUpdated event, and
 	// remove an entry from the Delegate Handles list when the parent no longer exists.
 	//
-	// This implementation takes a nuke-all rebuilt-all approach. We used to have an incremental
+	// This implementation takes a nuke-all rebuild-all approach. We used to have an incremental
 	// implementation that was a bit more complicated. If this synchronization becomes a performance
 	// problem then the old incremental implementation can be found by searching the Git patch
 	// history for the string
