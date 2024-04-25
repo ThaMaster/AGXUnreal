@@ -1727,6 +1727,16 @@ void UAGX_WireComponent::DestroyComponent(bool bPromoteChildren)
 	{
 		FCoreUObjectDelegates::OnObjectsReinstanced.Remove(ObjectsReplacedDelegateHandle);
 	}
+
+	for (TTuple<USceneComponent*, FParentDelegate>& Entry : DelegateHandles)
+	{
+		if (!Entry.Value.Parent.IsValid())
+		{
+			continue;
+		}
+
+		Entry.Value.Parent->TransformUpdated.Remove(Entry.Value.DelegateHandle);
+	}
 #endif
 
 	Super::DestroyComponent(bPromoteChildren);
