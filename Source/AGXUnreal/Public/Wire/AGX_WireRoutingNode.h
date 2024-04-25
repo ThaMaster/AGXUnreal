@@ -13,8 +13,6 @@
 
 #include "AGX_WireRoutingNode.generated.h"
 
-#define AGX_WIRE_ROUTE_NODE_USE_FRAME 1
-
 /**
  * Route nodes are used to specify the initial route of the wire. Each node has a location but
  * no orientation. Some members are only used for some node types, such as RigidBody which is only
@@ -50,23 +48,13 @@ struct AGXUNREAL_API FWireRoutingNode
 
 	FWireRoutingNode()
 		: NodeType(EWireNodeType::Free)
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
-#else
-		, Location(FVector::ZeroVector)
-#endif
 	{
 	}
 
 	FWireRoutingNode(const FVector& InLocation)
 		: NodeType(EWireNodeType::Free)
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
-#else
-		, Location(InLocation)
-#endif
 	{
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
 		Frame.LocalLocation = InLocation;
-#endif
 	}
 
 	void SetBody(UAGX_RigidBodyComponent* Body);
@@ -81,7 +69,6 @@ private:
 	FVector Location_DEPRECATED {FVector::ZeroVector};
 };
 
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
 template <>
 struct TStructOpsTypeTraits<FWireRoutingNode> : public TStructOpsTypeTraitsBase2<FWireRoutingNode>
 {
@@ -90,7 +77,6 @@ struct TStructOpsTypeTraits<FWireRoutingNode> : public TStructOpsTypeTraitsBase2
 		WithSerializer = true
 	};
 };
-#endif
 
 /**
  * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints.

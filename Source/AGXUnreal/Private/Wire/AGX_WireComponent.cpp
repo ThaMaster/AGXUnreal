@@ -927,10 +927,6 @@ FWireRoutingNode& UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
 	return AddNode(InNode, _);
 }
 
-// TODO This code will need to change with the introduction of frame in routing nodes.
-//
-// All FWireRoutingNodes added in these Add-functions must have an Owning Actor. If it doesn't have
-// one already then set GetTypedOuter<AActor>().
 FWireRoutingNode& UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode, int32& OutIndex)
 {
 	if (HasNative())
@@ -1022,11 +1018,7 @@ void UAGX_WireComponent::SetNodeLocalLocation(int32 InIndex, const FVector& InLo
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
 	RouteNodes[InIndex].Frame.LocalLocation = InLocation;
-#else
-	RouteNodes[InIndex].Location = InLocation;
-#endif
 }
 
 void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocation)
@@ -1035,7 +1027,6 @@ void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocatio
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
 	USceneComponent* Parent = RouteNodes[InIndex].Frame.GetParentComponent();
 	if (Parent == nullptr)
 	{
@@ -1052,9 +1043,6 @@ void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocatio
 	const FTransform& WireToParent = WireTransform.GetRelativeTransform(ParentTransform);
 	const FVector LocationInParent = WireToParent.TransformPosition(InLocation);
 	RouteNodes[InIndex].Frame.LocalLocation = LocationInParent;
-#else
-	RouteNodes[InIndex].Location = InLocation;
-#endif
 }
 
 bool UAGX_WireComponent::IsLumpedNode(const FAGX_WireNode& Node)
@@ -1087,7 +1075,6 @@ double UAGX_WireComponent::GetRestLength() const
 		return 0.0;
 	}
 
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
 	double Length {0.0};
 	FVector PreviousLocation = RouteNodes[0].Frame.GetWorldLocation(*this);
 	for (int32 I = 1; I < RouteNodes.Num(); ++I)
@@ -1096,13 +1083,7 @@ double UAGX_WireComponent::GetRestLength() const
 		Length += FVector::Distance(PreviousLocation, Location);
 		PreviousLocation = Location;
 	}
-#else
-	double Length = 0.0;
-	for (int32 I = 1; I < RouteNodes.Num(); ++I)
-	{
-		Length += FVector::Distance(RouteNodes[I - 1].Location, RouteNodes[I].Location);
-	}
-#endif
+
 	return Length;
 }
 
@@ -1786,7 +1767,6 @@ namespace AGX_WireComponent_helpers
 		return SourceToTarget.TransformPosition(LocalLocation);
 	}
 
-	// TODO This code will need to change with the introduction of frame in routing nodes.
 	std::tuple<FRigidBodyBarrier*, FVector> GetBodyAndLocalLocation(
 		const FWireRoutingNode& RouteNode, const FTransform& WireTransform)
 	{
@@ -1797,14 +1777,8 @@ namespace AGX_WireComponent_helpers
 		}
 		FRigidBodyBarrier* NativeBody = BodyComponent->GetOrCreateNative();
 		check(NativeBody);
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
 		const FVector LocalLocation =
 			RouteNode.Frame.GetLocationRelativeTo(*BodyComponent, WireTransform);
-#else
-		const FVector LocalLocation = MoveLocationBetweenLocalTransforms(
-			WireTransform, BodyComponent->GetComponentTransform(), RouteNode.Location);
-#endif
-
 		return {NativeBody, LocalLocation};
 	}
 }
@@ -2082,16 +2056,7 @@ void UAGX_WireComponent::CreateNative()
 		{
 			case EWireNodeType::Free:
 			{
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
 				const FVector WorldLocation = RouteNode.Frame.GetWorldLocation(*this);
-#else
-				// TODO This code will need to change with the introduction of frame in routing
-				// nodes.
-				//
-				// Can no longer use the Wire Component's transform, named LocalToWorld here, to go
-				// from the route node's location to a location we can pass to AGX Dynamics.
-				const FVector WorldLocation = LocalToWorld.TransformPosition(RouteNode.Location);
-#endif
 				NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 				break;
 			}
@@ -2106,12 +2071,7 @@ void UAGX_WireComponent::CreateNative()
 						TEXT("Wire node at index %d has invalid body. Creating Free Node instead "
 							 "of Eye Node."),
 						I));
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
 					const FVector WorldLocation = RouteNode.Frame.GetWorldLocation(*this);
-#else
-					const FVector WorldLocation =
-						LocalToWorld.TransformPosition(RouteNode.Location);
-#endif
 					NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 					break;
 				}
@@ -2129,12 +2089,7 @@ void UAGX_WireComponent::CreateNative()
 						TEXT("Wire node at index %d has invalid body. Creating Free Node instead "
 							 "for Body Fixed Node."),
 						I));
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
 					const FVector WorldLocation = RouteNode.Frame.GetWorldLocation(*this);
-#else
-					const FVector WorldLocation =
-						LocalToWorld.TransformPosition(RouteNode.Location);
-#endif
 					NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 					break;
 				}
@@ -2294,16 +2249,7 @@ TArray<FVector> UAGX_WireComponent::GetNodesForRendering() const
 		const FTransform& ComponentTransform = GetComponentTransform();
 		for (const auto& Node : RouteNodes)
 		{
-#if AGX_WIRE_ROUTE_NODE_USE_FRAME
 			const FVector WorldLocation = Node.Frame.GetWorldLocation(*this);
-#else
-			// TODO This code will need to change with the introduction of frame in routing nodes.
-			//
-			// Can no longer assume that Node.Location should be transformed local-to-world with
-			// the Wire Component's transform.
-			const FVector WorldLocation =
-				ComponentTransform.TransformPositionNoScale(Node.Location);
-#endif
 			NodeLocations.Add(WorldLocation);
 		}
 	}
