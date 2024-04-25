@@ -139,61 +139,7 @@ namespace
 
 FText FAGX_ConstraintBodyAttachmentCustomization::GetRigidBodyLabel() const
 {
-	if (BodyAttachmentProperty == nullptr)
-	{
-		return LOCTEXT(
-			"NoBodyAttachmentProperty",
-			"<Cannot create Rigid Body label because there is no Body Attachment Property.>");
-	}
-
-	FAGX_ConstraintBodyAttachment* Attachment = nullptr;
-	if (BodyAttachmentProperty->GetProperty()->GetOwner<UClass>() == nullptr)
-	{
-		FField* Owner = BodyAttachmentProperty->GetProperty()->GetOwner<FField>();
-#if 0
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("When getting Rigid Body label in Constraint Body Attachment Customisation: "
-				 "Expected a root property, but the owner is %s."),
-			*Owner->GetFullName());
-#endif
-
-		FArrayProperty* OwningArray = CastField<FArrayProperty>(Owner);
-		if (OwningArray == nullptr)
-		{
-#if 0
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("When getting Rigid Body label in Constraint Body Attachment Customisation: "
-					 "Expected a owning property to be an array, but it is not."));
-#endif
-			return LOCTEXT(
-				"NotRootPropertyAndNotInArray",
-				"Expected Body Attachment Property to be in an array, but it is not.");
-		}
-		TSharedPtr<IPropertyHandle> ArrayHandle = BodyAttachmentProperty->GetParentHandle();
-		const int32 ArrayIndex = BodyAttachmentProperty->GetIndexInArray();
-
-		UObject* OwningObject = FAGX_PropertyUtilities::GetParentObjectOfStruct(ArrayHandle);
-#if 0
-		UE_LOG(
-			LogAGX, Warning, TEXT("Found owning object %s, we're at index %d."),
-			*OwningObject->GetFullName(), ArrayIndex);
-#endif
-		Attachment =
-			ArrayHandle->GetProperty()->ContainerPtrToValuePtr<FAGX_ConstraintBodyAttachment>(
-				OwningObject, ArrayIndex);
-		// if (Attachment == nullptr) // Attachment points to garbage. Don't know why.
-		{
-			return LOCTEXT(
-				"NotRootProperty",
-				"Expected Body Attachment Property to be a root property, but it is not.");
-		}
-	}
-	else
-	{
-		Attachment = GetConstraintBodyAttachment(BodyAttachmentProperty);
-	}
+	FAGX_ConstraintBodyAttachment* Attachment = GetConstraintBodyAttachment(BodyAttachmentProperty);
 	check(Attachment != nullptr);
 
 	USceneComponent* SceneComponent = Attachment->GetRigidBody();
