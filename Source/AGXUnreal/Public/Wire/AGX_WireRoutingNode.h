@@ -36,9 +36,6 @@ struct AGXUNREAL_API FWireRoutingNode
 		EditAnywhere, BlueprintReadOnly, Category = "Wire", Meta = (SkipUCSModifiedProperties))
 	FAGX_Frame Frame;
 
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
-	// FVector Location;
-
 	/**
 	 * The Rigid Body that an Eye or BodyFixed node should be attached to.
 	 * Ignored for other node types.
