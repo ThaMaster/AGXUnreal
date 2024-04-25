@@ -323,7 +323,7 @@ namespace AGX_WireComponentVisualizer_helpers
 	 */
 	template <typename FNodeColorFunc>
 	void DrawRouteNodes(
-		const UAGX_WireComponent& Wire, const bool bEditin, FPrimitiveDrawInterface* PDI,
+		const UAGX_WireComponent& Wire, FPrimitiveDrawInterface* PDI,
 		const FLinearColor& LineColor, FNodeColorFunc NodeColorFunc)
 	{
 		const FTransform& LocalToWorld = Wire.GetComponentTransform();
@@ -338,10 +338,7 @@ namespace AGX_WireComponentVisualizer_helpers
 			const FLinearColor NodeColor = NodeColorFunc(I, Node.NodeType);
 			const FVector Location = Node.Frame.GetWorldLocation(Wire);
 
-			// if (bEditing)
-			// {
 			PDI->SetHitProxy(new HNodeProxy(&Wire, I));
-			// }
 			PDI->DrawPoint(
 				Location, NodeColor, FAGX_WireUtilities::NodeHandleSize, SDPG_Foreground);
 			PDI->SetHitProxy(nullptr);
@@ -363,7 +360,7 @@ namespace AGX_WireComponentVisualizer_helpers
 		FLinearColor LineColor = FLinearColor::White;
 		auto NodeColorFunc = [](int32 I, EWireNodeType NodeType)
 		{ return WireNodeTypeToColor(NodeType); };
-		DrawRouteNodes(Wire, false, PDI, LineColor, NodeColorFunc);
+		DrawRouteNodes(Wire, PDI, LineColor, NodeColorFunc);
 	}
 
 	/**
@@ -378,7 +375,7 @@ namespace AGX_WireComponentVisualizer_helpers
 			return I == SelectedNodeIndex ? GEditor->GetSelectionOutlineColor()
 										  : WireNodeTypeToColor(NodeType);
 		};
-		DrawRouteNodes(Wire, true, PDI, LineColor, NodeColorFunc);
+		DrawRouteNodes(Wire, PDI, LineColor, NodeColorFunc);
 	}
 
 	/**
