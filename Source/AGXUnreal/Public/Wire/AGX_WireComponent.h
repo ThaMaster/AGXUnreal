@@ -710,13 +710,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	UPARAM(Ref) FWireRoutingNode& AddNode(const FWireRoutingNode& InNode, int32& OutIndex);
 
+	/**
+	 * Add a new route node at the end of the wire at the given location relative to the Wire
+	 * Component.
+	 *
+	 * @param InLocation Location of the new route node relative to the Wire Component.
+	 */
 	FWireRoutingNode& AddNodeAtLocation(FVector InLocation);
 
 	/**
-	 * Add a default-constructed route node at the designated local location to the end of the node
-	 * array.
+	 * Add a new route node at the end of the wire at the given location relative to the Wire
+	 * Component.
 	 *
 	 * @param InLocation The location of the node, relative to the Wire Component.
+	 * @param OutIndex Index in Route Nodes where the new node is stored.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	UPARAM(Ref) FWireRoutingNode& AddNodeAtLocation(FVector InLocation, int32& OutIndex);
@@ -859,7 +866,6 @@ public:
 	UFUNCTION(BlueprintCallable, CallInEditor, Category = "AGX Wire")
 	void SynchronizeParentMovedCallbacks();
 #endif
-
 
 	/*
 	 * Copy configuration from the given Barrier.

@@ -26,12 +26,12 @@
 #include "CoreGlobals.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Materials/MaterialInterface.h"
-#include "Math/UnrealMathUtility.h"
 #if WITH_EDITOR
 #include "Editor.h"
 #endif
+#include "Kismet/KismetMathLibrary.h"
+#include "Materials/MaterialInterface.h"
+#include "Math/UnrealMathUtility.h"
 
 // Standard library includes.
 #include <algorithm>
@@ -966,6 +966,10 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InN
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
+	if (!RouteNodes.IsValidIndex(InIndex) && InIndex != RouteNodes.Num())
+	{
+		return InvalidRoutingNode;
+	}
 	RouteNodes.Insert(InNode, InIndex);
 	FWireRoutingNode& NewNode = RouteNodes[InIndex];
 	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
@@ -978,6 +982,10 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(
 	if (HasNative())
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
+	}
+	if (!RouteNodes.IsValidIndex(InIndex) && InIndex != RouteNodes.Num())
+	{
+		return InvalidRoutingNode;
 	}
 	RouteNodes.Insert(FWireRoutingNode(InLocation), InIndex);
 	FWireRoutingNode& NewNode = RouteNodes[InIndex];
