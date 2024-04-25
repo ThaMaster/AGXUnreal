@@ -14,7 +14,7 @@
 #include "AGX_WireRoutingNode.generated.h"
 
 /**
- * Route nodes are used to specify the initial route of the wire. Each node has a location but
+ * Routing nodes are used to specify the initial route of a wire. Each node has a location but
  * no orientation. Some members are only used for some node types, such as RigidBody which is only
  * used by Eye and BodyFixed nodes.
  */
@@ -24,20 +24,21 @@ struct AGXUNREAL_API FWireRoutingNode
 	GENERATED_BODY();
 
 	/**
-	 * The type of wire node, e.g., Free, Eye, BodyFixed, etc.
+	 * The type of wire node, e.g., Free, Eye, Body Fixed, etc.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
 	EWireNodeType NodeType;
 
 	/**
-	 * The location of the wire node.
+	 * The location of the wire node. Relative to the wire by default but any parent Scene Component
+	 * may be set.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "Wire", Meta = (SkipUCSModifiedProperties))
 	FAGX_Frame Frame;
 
 	/**
-	 * The Rigid Body that an Eye or BodyFixed node should be attached to.
+	 * The Rigid Body that an Eye or Body Fixed node should be attached to.
 	 * Ignored for other node types.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire")
@@ -73,6 +74,8 @@ private:
 	FVector Location_DEPRECATED {FVector::ZeroVector};
 };
 
+/// A globally accessible Routing Node that is used when a function with a node reference return
+/// type need to signal a failure.
 extern FWireRoutingNode InvalidRoutingNode;
 
 template <>
@@ -85,7 +88,8 @@ struct TStructOpsTypeTraits<FWireRoutingNode> : public TStructOpsTypeTraitsBase2
 };
 
 /**
- * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints.
+ * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprint
+ * Visual Scripts.
  */
 UCLASS()
 class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
@@ -93,14 +97,16 @@ class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node")
-	static UPARAM(Ref) FWireRoutingNode& SetBody(UPARAM(Ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body)
+	static UPARAM(Ref) FWireRoutingNode& SetBody(
+		UPARAM(Ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body)
 	{
 		WireNode.SetBody(Body);
 		return WireNode;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node")
-	static UPARAM(Ref) FWireRoutingNode& SetFrame(UPARAM(Ref) FWireRoutingNode& WireNode, UPARAM(Ref) FAGX_Frame& Frame)
+	static UPARAM(Ref) FWireRoutingNode& SetFrame(
+		UPARAM(Ref) FWireRoutingNode& WireNode, UPARAM(Ref) FAGX_Frame& Frame)
 	{
 		WireNode.Frame = Frame;
 		return WireNode;
@@ -113,7 +119,8 @@ class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node|Frame")
-	static UPARAM(Ref) FWireRoutingNode& SetParentName(UPARAM(Ref) FWireRoutingNode& WireNode, FName ParentName)
+	static UPARAM(Ref)
+		FWireRoutingNode& SetParentName(UPARAM(Ref) FWireRoutingNode& WireNode, FName ParentName)
 	{
 		WireNode.Frame.Parent.Name = ParentName;
 		return WireNode;
@@ -126,7 +133,8 @@ class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node|Frame")
-	static UPARAM(Ref) FWireRoutingNode& SetParentOwningActor(UPARAM(Ref) FWireRoutingNode& WireNode, AActor* OwningActor)
+	static UPARAM(Ref) FWireRoutingNode& SetParentOwningActor(
+		UPARAM(Ref) FWireRoutingNode& WireNode, AActor* OwningActor)
 	{
 		WireNode.Frame.Parent.OwningActor = OwningActor;
 		return WireNode;
@@ -139,7 +147,8 @@ class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node|Frame")
-	static UPARAM(Ref) FWireRoutingNode& SetLocalLocation(UPARAM(Ref) FWireRoutingNode& WireNode, FVector LocalLocation)
+	static UPARAM(Ref) FWireRoutingNode& SetLocalLocation(
+		UPARAM(Ref) FWireRoutingNode& WireNode, FVector LocalLocation)
 	{
 		WireNode.Frame.LocalLocation = LocalLocation;
 		return WireNode;

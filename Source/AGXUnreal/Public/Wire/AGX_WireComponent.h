@@ -698,6 +698,13 @@ public:
 	See also the comment in AGX_ComponentReference.h.
 	*/
 
+	/**
+	 * Add a new route node to the wire.
+	 *
+	 * This should be called before BeginPlay since route nodes are only used during initialization.
+	 *
+	 * @param InNode The node to add.
+	 */
 	FWireRoutingNode& AddNode(const FWireRoutingNode& InNode);
 
 	/**
@@ -706,6 +713,7 @@ public:
 	 * This should be called before BeginPlay since route nodes are only used during initialization.
 	 *
 	 * @param InNode The node to add.
+	 * @param OutIndex The index in the Route Nodes array at which the new node was placed.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	UPARAM(Ref) FWireRoutingNode& AddNode(const FWireRoutingNode& InNode, int32& OutIndex);
@@ -749,6 +757,9 @@ public:
 	UPARAM(Ref)
 	FWireRoutingNode& AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
 
+	/**
+	 * Overwrite the node at the given index with the new node.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	void SetNode(int32 InIndex, UPARAM(Ref) const FWireRoutingNode InNode);
 
@@ -852,8 +863,8 @@ public:
 #endif
 
 	/**
-	 * Mark visuals for this Wire Component dirty. The Visuals will be updated according to the
-	 * current state.
+	 * Mark visuals for this Wire Component dirty. The Visuals will be updated to match to the
+	 * current wire state.
 	 */
 	UFUNCTION(BlueprintCallable, CallInEditor, Category = "AGX Wire")
 	void MarkVisualsDirty();
@@ -956,8 +967,9 @@ private:
 	/**
 	 * Keep track which node frame parents we have registered a callback with. Note that a single
 	 * entry here may correspond to multiple routing nodes. Must use a raw-pointer key to a
-	 * weak-pointer values since TMap require that keys don't change arbitrarily, which a
-	 * weak-pointer can. We keep the weak pointer because the parent may be destroyed at any time.
+	 * weak-pointer values since TMap require that keys don't change, which a weak-pointer may do
+	 * during garbage collection. We keep the weak pointer because the parent may be destroyed at
+	 * any time and we need to be able to detect that.
 	 */
 	struct FParentDelegate
 	{
@@ -967,12 +979,12 @@ private:
 	TMap<USceneComponent*, FParentDelegate> DelegateHandles;
 
 #if WITH_EDITOR
-	// Handle to the delegate registered with the engine Map Changed event to update visuals
-	// after load.
+	/// Handle to the delegate registered with the engine Map Changed event to update visuals
+	/// after load.
 	FDelegateHandle MapLoadDelegateHandle;
 
-	// Handle to the delegate registered with the Objects Replaced event, used to update Transform
-	// Updated callbacks on Scene Components that are a parent of any routing node.
+	/// Handle to the delegate registered with the engine Objects Replaced event. Used to update
+	/// Transform Updated callbacks on Scene Components that are a parent of a routing node.
 	FDelegateHandle ObjectsReplacedDelegateHandle;
 #endif
 };
