@@ -2370,7 +2370,7 @@ void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
 		{
 			continue;
 		}
-		ParentHandle.Value.Parent->TransformUpdated.RemoveAll(this);
+		ParentHandle.Value.Parent->TransformUpdated.Remove(ParentHandle.Value.DelegateHandle);
 	}
 	DelegateHandles.Empty(RouteNodes.Num());
 
