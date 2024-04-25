@@ -3,7 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_SceneComponentReference.h"
+#include "AGX_ComponentReference.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
