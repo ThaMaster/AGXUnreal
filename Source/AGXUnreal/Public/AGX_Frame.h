@@ -34,8 +34,9 @@ struct AGXUNREAL_API FAGX_Frame
 	/**
 	 * The Component that this Frame is relative to.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Frame")
-	FAGX_SceneComponentReference Parent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Frame",
+		Meta = (SkipUCSModifiedProperties))
+	FAGX_ComponentReference Parent;
 
 	/*
 	 * Set the given Component to be the parent of this frame.

@@ -17,10 +17,12 @@ struct AGXUNREAL_API FAGX_Edge
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Edge")
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Edge", Meta = (SkipUCSModifiedProperties))
 	FAGX_Frame Start;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Edge")
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Edge", Meta = (SkipUCSModifiedProperties))
 	FAGX_Frame End;
 
 	FTwoVectors GetLocationsRelativeTo(const USceneComponent& Component) const;

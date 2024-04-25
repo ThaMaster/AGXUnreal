@@ -2431,7 +2431,7 @@ void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
 	// Add callbacks for the current parents.
 	for (FWireRoutingNode& RouteNode : RouteNodes)
 	{
-		USceneComponent* Parent = RouteNode.Frame.Parent.GetSceneComponent();
+		USceneComponent* Parent = RouteNode.Frame.Parent.GetComponent<USceneComponent>();
 		if (!IsValid(Parent) || DelegateHandles.Contains(Parent))
 		{
 			continue;
