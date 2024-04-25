@@ -69,9 +69,14 @@ public:
 	void RemoveCollisionGroup(const FName& GroupName);
 
 	/**
-	 * Clears both the internal shape and terrain materials.
+	 * Clears the internal terrain material.
 	 */
-	void ClearMaterial();
+	void ClearTerrainMaterial();
+
+	/**
+	 * Clears the internal Shape material.
+	 */
+	void ClearShapeMaterial();
 
 	int32 GetGridSizeX() const;
 	int32 GetGridSizeY() const;

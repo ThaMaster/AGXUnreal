@@ -13,7 +13,7 @@
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
-#include "Materials/AGX_MaterialBase.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_CapsuleShapeComponent.h"

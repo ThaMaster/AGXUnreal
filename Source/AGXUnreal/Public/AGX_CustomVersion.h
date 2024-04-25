@@ -47,6 +47,10 @@ struct AGXUNREAL_API FAGX_CustomVersion
 		// components (viewport icons).
 		TerrainCGDisablerCMRegistrarViewporIcons,
 
+		// TerrainMaterial no longer shares a common base class with ShapeMaterial. The Terrain has
+		// both a TerrainMaterial and a ShapeMaterial.
+		TerrainMaterialShapeMaterialSplit,
+
 		// Use FAGX_Frame for wire route nodes so that they, Body Fixed and Eye, in particular, can
 		// be placed relative to a Rigid Body instead of the Wire.
 		WireRouteNodeFrame,
