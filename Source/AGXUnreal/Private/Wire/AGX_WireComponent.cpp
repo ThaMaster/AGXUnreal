@@ -1667,16 +1667,14 @@ void UAGX_WireComponent::DestroyComponent(bool bPromoteChildren)
 	}
 	if (ObjectsReplacedDelegateHandle.IsValid())
 	{
-		FCoreUObjectDelegates::OnObjectsReinstanced.Remove(ObjectsReplacedDelegateHandle);
+		FCoreUObjectDelegates::OnObjectsReplaced.Remove(ObjectsReplacedDelegateHandle);
 	}
-
 	for (TTuple<USceneComponent*, FParentDelegate>& Entry : DelegateHandles)
 	{
 		if (!Entry.Value.Parent.IsValid())
 		{
 			continue;
 		}
-
 		Entry.Value.Parent->TransformUpdated.Remove(Entry.Value.DelegateHandle);
 	}
 #endif
