@@ -1356,8 +1356,7 @@ void UAGX_WireComponent::PostLoad()
 		// Transform Updated callbacks from the wire routing node frame parents. These callbacks
 		// must be registered with each parent on start-up. We can't do that here because some of
 		// the parents may not have been loaded yet. So we set up a callback to happen when the
-		// level has finished loading, and hope that everything has been loaded by then. Is there a
-		// better way to do this?
+		// level has finished loading, and hope that everything has been loaded by then.
 		if (!MapLoadDelegateHandle.IsValid())
 		{
 			MapLoadDelegateHandle = FEditorDelegates::MapChange.AddWeakLambda(
@@ -1535,34 +1534,13 @@ void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent&
 
 		if (Member == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes))
 		{
-			// Did a node get a new parent, meaning we must set up a new parent-moved callback?
-			static const TArray<const TCHAR*> Path {
-				TEXT("RouteNodes"), TEXT("Frame"), TEXT("Parent")};
-			if (FAGX_ObjectUtilities::HasChainPrefixPath(PropertyNode, Path))
-			{
-				const int32 NodeIndex = Event.GetArrayIndex("RouteNodes");
-				if (RouteNodes.IsValidIndex(NodeIndex))
-				{
-					USceneComponent* const Parent =
-						RouteNodes[NodeIndex].Frame.GetParentComponent();
-					if (Parent != nullptr)
-					{
-						FParentDelegate* ParentDelegate = DelegateHandles.Find(Parent);
-						if (ParentDelegate == nullptr)
-						{
-							// Don't currently have a callback for this Parent, add one.
-							DelegateHandles.Add(
-								Parent,
-								{Parent, Parent->TransformUpdated.AddUObject(
-											 this, &UAGX_WireComponent::OnRouteNodeParentMoved)});
-						}
-					}
-				}
-			}
-
 			// We have no way of knowing what the old parent was, or if the changed node was the
 			// last to have it has its parent, so the best we can do is to synchronize all node
-			// parents.
+			// parents. We used to have an attempt at a more incremental approach here but that
+			// didn't work out because of this. To find the old implementation search the Git patch
+			// history for
+			//
+			//    Did a node get a new parent, meaning we must set up a new parent-moved callback?
 			SynchronizeParentMovedCallbacks();
 		}
 	}
