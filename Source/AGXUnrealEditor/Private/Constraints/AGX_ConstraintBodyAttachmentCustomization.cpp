@@ -3,20 +3,15 @@
 #include "Constraints/AGX_ConstraintBodyAttachmentCustomization.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Constraints/AGX_ConstraintComponent.h"
-#include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
 #include "Utilities/AGX_PropertyUtilities.h"
-#include "Utilities/AGX_SlateUtilities.h"
 
 // Unreal Engine includes
 #include "DetailCategoryBuilder.h"
 #include "DetailWidgetRow.h"
-#include "DetailLayoutBuilder.h"
 #include "IDetailChildrenBuilder.h"
-#include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ConstraintBodyAttachmentCustomization"
