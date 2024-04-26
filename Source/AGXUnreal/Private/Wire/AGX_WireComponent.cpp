@@ -945,6 +945,12 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation, int3
 	return AddNode(FWireRoutingNode(InLocation), OutIndex);
 }
 
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(
+	const FVector& InLocation, int32 InIndex)
+{
+	return AddNodeAtIndex(FWireRoutingNode(InLocation), InIndex);
+}
+
 FWireRoutingNode& UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex)
 {
 	if (HasNative())
@@ -959,12 +965,6 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InN
 	FWireRoutingNode& NewNode = RouteNodes[InIndex];
 	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
 	return NewNode;
-}
-
-FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(
-	const FVector& InLocation, int32 InIndex)
-{
-	return AddNodeAtIndex(FWireRoutingNode(InLocation), InIndex);
 }
 
 void UAGX_WireComponent::SetNode(const int32 InIndex, const FWireRoutingNode InNode)
