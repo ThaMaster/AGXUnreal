@@ -1373,16 +1373,15 @@ void UAGX_WireComponent::PostLoad()
 		// If the wire routing node frame parent's owner is a Blueprint instance then any
 		// modification of that instance will cause a Blueprint Reconstruction. During
 		// reconstruction all the Components will be destroyed and recreated. Unfortunately, Scene
-		// Component does not use Actor Component Instance Data to transfer delegate callback, such
+		// Component does not use Actor Component Instance Data to transfer delegate callbacks, such
 		// as Transform Updated, from the old object to the new one, so we need to do that
 		// ourselves. Fortunately, the engine provides the On Object Replaced event that we can use
 		// to do the transfer.
-		if (ObjectsReplacedDelegateHandle.IsValid())
+		if (!ObjectsReplacedDelegateHandle.IsValid())
 		{
-			FCoreUObjectDelegates::OnObjectsReinstanced.Remove(ObjectsReplacedDelegateHandle);
+			ObjectsReplacedDelegateHandle = FCoreUObjectDelegates::OnObjectsReplaced.AddUObject(
+				this, &UAGX_WireComponent::OnRouteNodeParentReplaced);
 		}
-		ObjectsReplacedDelegateHandle = FCoreUObjectDelegates::OnObjectsReplaced.AddUObject(
-			this, &UAGX_WireComponent::OnRouteNodeParentReplaced);
 	}
 #endif
 }
