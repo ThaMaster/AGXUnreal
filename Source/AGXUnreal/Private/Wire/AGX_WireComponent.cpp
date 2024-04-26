@@ -948,15 +948,7 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation)
 
 FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation, int32& OutIndex)
 {
-	if (HasNative())
-	{
-		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
-	}
-	RouteNodes.Add(FWireRoutingNode(InLocation));
-	FWireRoutingNode& NewNode = RouteNodes.Last();
-	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
-	OutIndex = RouteNodes.Num() - 1;
-	return NewNode;
+	return AddNode(FWireRoutingNode(InLocation), OutIndex);
 }
 
 FWireRoutingNode& UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex)
