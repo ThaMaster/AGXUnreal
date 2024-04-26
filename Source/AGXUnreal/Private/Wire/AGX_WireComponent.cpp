@@ -1314,12 +1314,16 @@ const FWireBarrier* UAGX_WireComponent::GetNative() const
 void UAGX_WireComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
+
+	// Establish the local scope for all Component References this Component owns. For more
+	// information see comments in AGX_ComponentReference.h.
 	AActor* OwningActor = GetTypedOuter<AActor>();
 	OwnedBeginWinch.BodyAttachment.OwningActor = OwningActor;
 	OwnedEndWinch.BodyAttachment.OwningActor = OwningActor;
 	for (FWireRoutingNode& Node : RouteNodes)
 	{
 		Node.Frame.Parent.OwningActor = OwningActor;
+		Node.RigidBody.OwningActor = OwningActor;
 	}
 
 #if WITH_EDITOR
@@ -1331,13 +1335,17 @@ void UAGX_WireComponent::PostLoad()
 {
 	Super::PostLoad();
 
+	// A Wire Component may contain Component References that don't yet exist when Post Init
+	// Properties is run. For example, they may be part of the state that is read from drive on
+	// level load, or cloned from a template. If those Component References don't specify an Owning
+	// Actor explicitly then the implicit one, i.e. our outer Actor, should be used. The Begin- and
+	// EndWinch don't need to do this because they always exists and is always set in Post Init
+	// Properties.
 	AActor* OwningActor = GetTypedOuter<AActor>();
-	FAGX_ObjectUtilities::SetIfNullptr(OwnedBeginWinch.BodyAttachment.OwningActor, OwningActor);
-	FAGX_ObjectUtilities::SetIfNullptr(OwnedBeginWinch.BodyAttachment.OwningActor, OwningActor);
-	FAGX_ObjectUtilities::SetIfNullptr(OwnedEndWinch.BodyAttachment.OwningActor, OwningActor);
 	for (FWireRoutingNode& Node : RouteNodes)
 	{
 		FAGX_ObjectUtilities::SetIfNullptr(Node.Frame.Parent.OwningActor, OwningActor);
+		FAGX_ObjectUtilities::SetIfNullptr(Node.RigidBody.OwningActor, OwningActor);
 	}
 
 #if WITH_EDITOR
