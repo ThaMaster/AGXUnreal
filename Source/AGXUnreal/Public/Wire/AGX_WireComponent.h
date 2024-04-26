@@ -860,6 +860,7 @@ public:
 	TArray<FVector> GetRenderNodeLocations() const;
 
 #if WITH_EDITOR
+	// Callback functions related to route node parents.
 	void OnRouteNodeParentMoved(
 		USceneComponent* Component, EUpdateTransformFlags UpdateTransformFlags,
 		ETeleportType Teleport);
