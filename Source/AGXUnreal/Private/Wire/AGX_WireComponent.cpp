@@ -984,6 +984,8 @@ void UAGX_WireComponent::SetNode(const int32 InIndex, const FWireRoutingNode InN
 		return;
 	}
 	RouteNodes[InIndex] = InNode;
+	FAGX_ObjectUtilities::SetIfNullptr(
+		RouteNodes[InIndex].Frame.Parent.OwningActor, GetTypedOuter<AActor>());
 }
 
 void UAGX_WireComponent::RemoveNode(int32 InIndex)
