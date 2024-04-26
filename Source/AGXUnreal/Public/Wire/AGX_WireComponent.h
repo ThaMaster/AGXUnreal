@@ -740,6 +740,8 @@ public:
 	 * Add a default-constructed route node at the designated index in the route array, pushing all
 	 * subsequent nodes one index.
 	 *
+	 * The index must be either within the current Route Nodes array, or one-past end.
+	 *
 	 * @param InNode The route node to add.
 	 * @param InIndex The place in the route node array to add the node at.
 	 */
@@ -748,7 +750,9 @@ public:
 
 	/**
 	 * Add a default-constructed route node, placed at the given local location, at the designated
-	 * index in the route array, pushing all subsequent nodes one index..
+	 * index in the route array, pushing all subsequent nodes one index.
+	 *
+	 * The index must be either within the current Route Nodes array, or one-past end.
 	 *
 	 * @param InLocation The location of the new node relative to the Wire Component.
 	 * @param InIndex The place in the route node array to add the new node at.
