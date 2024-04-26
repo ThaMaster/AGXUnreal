@@ -978,8 +978,7 @@ void UAGX_WireComponent::SetNode(const int32 InIndex, const FWireRoutingNode InN
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Out-of-bounds index %d for route nodes array was passed to Set Node in Wire "
-				 "Component "
-				 "'%s' in Actor '%s'"),
+				 "Component '%s' in Actor '%s'"),
 			InIndex, *GetName(), *GetLabelSafe(GetOwner()));
 		return;
 	}
@@ -1359,18 +1358,17 @@ void UAGX_WireComponent::PostLoad()
 		// the parents may not have been loaded yet. So we set up a callback to happen when the
 		// level has finished loading, and hope that everything has been loaded by then. Is there a
 		// better way to do this?
-		if (MapLoadDelegateHandle.IsValid())
+		if (!MapLoadDelegateHandle.IsValid())
 		{
-			FEditorDelegates::MapChange.Remove(MapLoadDelegateHandle);
+			MapLoadDelegateHandle = FEditorDelegates::MapChange.AddWeakLambda(
+				this,
+				[this](uint32)
+				{
+					FEditorDelegates::MapChange.RemoveAll(this);
+					SynchronizeParentMovedCallbacks();
+					UpdateVisuals();
+				});
 		}
-		MapLoadDelegateHandle = FEditorDelegates::MapChange.AddWeakLambda(
-			this,
-			[this](uint32)
-			{
-				FEditorDelegates::MapChange.RemoveAll(this);
-				SynchronizeParentMovedCallbacks();
-				UpdateVisuals();
-			});
 
 		// If the wire routing node frame parent's owner is a Blueprint instance then any
 		// modification of that instance will cause a Blueprint Reconstruction. During
