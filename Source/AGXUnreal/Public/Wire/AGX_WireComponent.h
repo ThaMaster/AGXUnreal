@@ -698,6 +698,23 @@ public:
 	See also the comment in AGX_ComponentReference.h.
 	*/
 
+
+	/**
+	 * Create a new default-constructed routing node at the end of the wire.
+	 */
+	FWireRoutingNode& AddNode();
+
+	/**
+	 * Create a new default-constructed routing node at the end of the wire.
+	 */
+	FWireRoutingNode& AddNode(int32& OutIndex);
+
+	/**
+	 * Create a new default-constructed routing node at the end of the wire.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route", Meta = (DisplayName = "Add Node"))
+	UPARAM(Ref) FWireRoutingNode& CreateNode(int32& OutIndex);
+
 	/**
 	 * Add a new route node to the wire.
 	 *
@@ -799,7 +816,7 @@ public:
 	 * @see SetNodeLocalLocation
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void SetNodeLocation(int32 InIndex, const FVector& InLocation);
+	void SetNodeLocation(int32 InIndex, FVector InLocation);
 
 	/*
 	 * State inspection.

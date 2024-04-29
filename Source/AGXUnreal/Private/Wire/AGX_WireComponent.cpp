@@ -921,6 +921,22 @@ namespace AGX_WireComponent_helpers
 	}
 }
 
+FWireRoutingNode& UAGX_WireComponent::AddNode()
+{
+	int32 _;
+	return AddNode(_);
+}
+
+FWireRoutingNode& UAGX_WireComponent::AddNode(int32& OutIndex)
+{
+	return AddNode(FWireRoutingNode(), OutIndex);
+}
+
+FWireRoutingNode& UAGX_WireComponent::CreateNode(int32& OutIndex)
+{
+	return AddNode(OutIndex);
+}
+
 FWireRoutingNode& UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
 {
 	int32 _;
@@ -1005,7 +1021,7 @@ void UAGX_WireComponent::SetNodeLocalLocation(int32 InIndex, const FVector& InLo
 	RouteNodes[InIndex].Frame.LocalLocation = InLocation;
 }
 
-void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocation)
+void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector InLocation)
 {
 	if (HasNative())
 	{
