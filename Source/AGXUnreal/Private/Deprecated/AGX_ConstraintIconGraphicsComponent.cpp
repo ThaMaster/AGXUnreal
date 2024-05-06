@@ -153,8 +153,10 @@ public:
 		, Constraint(Component->Constraint)
 		, LockedDofs(Component->Constraint->GetLockedDofsBitmask())
 	{
-		FrameTransform1 = Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix();
-		FrameTransform2 = Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix();
+		FrameTransform1 = Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix(
+			Component->Constraint->GetOwner());
+		FrameTransform2 = Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix(
+			Component->Constraint->GetOwner());
 		/// \todo Use inheritance instead of this branching below.
 		/// \todo IsA() should probably not be used if future constraints will derive these
 		/// spawnable constraints.
@@ -740,8 +742,8 @@ void UAGX_ConstraintIconGraphicsComponent::SendRenderDynamicData_Concurrent()
 	// Update transform of the proxy to match the constraint attachment frame, if out-of-date!
 	if (SceneProxy && Constraint && IsOwnerSelected())
 	{
-		FMatrix Frame1 = Constraint->BodyAttachment1.GetGlobalFrameMatrix();
-		FMatrix Frame2 = Constraint->BodyAttachment2.GetGlobalFrameMatrix();
+		FMatrix Frame1 = Constraint->BodyAttachment1.GetGlobalFrameMatrix(Constraint->GetOwner());
+		FMatrix Frame2 = Constraint->BodyAttachment2.GetGlobalFrameMatrix(Constraint->GetOwner());
 
 		FAGX_ConstraintIconGraphicsProxy* CastProxy =
 			static_cast<FAGX_ConstraintIconGraphicsProxy*>(SceneProxy);
@@ -755,7 +757,7 @@ FMatrix UAGX_ConstraintIconGraphicsComponent::GetRenderMatrix() const
 {
 	if (Constraint)
 	{
-		return Constraint->BodyAttachment1.GetGlobalFrameMatrix();
+		return Constraint->BodyAttachment1.GetGlobalFrameMatrix(Constraint->GetOwner());
 	}
 	else
 	{

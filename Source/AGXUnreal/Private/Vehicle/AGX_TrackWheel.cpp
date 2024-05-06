@@ -6,9 +6,9 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 
-bool FAGX_TrackWheel::GetTransformRelativeToBody(FVector& RelPosition, FQuat& RelRotation) const
+bool FAGX_TrackWheel::GetTransformRelativeToBody(const AActor* LocalScope, FVector& RelPosition, FQuat& RelRotation) const
 {
-	UAGX_RigidBodyComponent* Body = RigidBody.GetRigidBody();
+	UAGX_RigidBodyComponent* Body = RigidBody.GetRigidBody(LocalScope);
 	if (!IsValid(Body))
 	{
 		UE_LOG(
@@ -25,7 +25,7 @@ bool FAGX_TrackWheel::GetTransformRelativeToBody(FVector& RelPosition, FQuat& Re
 
 	if (bUseFrameDefiningComponent)
 	{
-		USceneComponent* FrameComponent = FrameDefiningComponent.GetSceneComponent();
+		USceneComponent* FrameComponent = FrameDefiningComponent.GetSceneComponent(LocalScope);
 		if (!FrameComponent)
 		{
 			UE_LOG(

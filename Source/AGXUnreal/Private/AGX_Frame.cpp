@@ -11,7 +11,7 @@ FAGX_Frame::FAGX_Frame()
 	Parent.ComponentType = USceneComponent::StaticClass();
 }
 
-void FAGX_Frame::SetParentComponent(USceneComponent* Component)
+void FAGX_Frame::SetParentComponent(const USceneComponent* Component)
 {
 	if (Component == nullptr)
 	{
@@ -24,14 +24,14 @@ void FAGX_Frame::SetParentComponent(USceneComponent* Component)
 	Parent.Name = Component->GetFName();
 }
 
-USceneComponent* FAGX_Frame::GetParentComponent() const
+USceneComponent* FAGX_Frame::GetParentComponent(const AActor* LocalScope) const
 {
-	return Parent.GetComponent<USceneComponent>();
+	return Parent.GetComponent<USceneComponent>(LocalScope);
 }
 
-FVector FAGX_Frame::GetWorldLocation() const
+FVector FAGX_Frame::GetWorldLocation(const AActor* LocalScope) const
 {
-	const USceneComponent* ActualParent = GetParentComponent();
+	const USceneComponent* ActualParent = GetParentComponent(LocalScope);
 	if (ActualParent == nullptr)
 	{
 		// If there is no parent then the frame origin is the world origin.
@@ -41,9 +41,10 @@ FVector FAGX_Frame::GetWorldLocation() const
 	return ActualParent->GetComponentTransform().TransformPosition(LocalLocation);
 }
 
-FVector FAGX_Frame::GetWorldLocation(const USceneComponent& FallbackParent) const
+FVector FAGX_Frame::GetWorldLocation(
+	const USceneComponent& FallbackParent, const AActor* LocalScope) const
 {
-	const USceneComponent* ActualParent = GetParentComponent();
+	const USceneComponent* ActualParent = GetParentComponent(LocalScope);
 	if (ActualParent == nullptr)
 	{
 		ActualParent = &FallbackParent;
@@ -52,15 +53,15 @@ FVector FAGX_Frame::GetWorldLocation(const USceneComponent& FallbackParent) cons
 	return ActualParent->GetComponentTransform().TransformPosition(LocalLocation);
 }
 
-void FAGX_Frame::SetWorldLocation(const FVector& InLocation, const USceneComponent& FallbackParent)
+void FAGX_Frame::SetWorldLocation(const FVector& InLocation, const USceneComponent& FallbackParent, const AActor* LocalScope)
 {
-	const FTransform& ParentToWorld = GetParentTransform(FallbackParent);
+	const FTransform& ParentToWorld = GetParentTransform(FallbackParent, LocalScope);
 	LocalLocation = ParentToWorld.InverseTransformPosition(InLocation);
 }
 
-FRotator FAGX_Frame::GetWorldRotation() const
+FRotator FAGX_Frame::GetWorldRotation(const AActor* LocalScope) const
 {
-	const USceneComponent* ActualParent = GetParentComponent();
+	const USceneComponent* ActualParent = GetParentComponent(LocalScope);
 	if (ActualParent == nullptr)
 	{
 		// If there is no parent then the frame origin is the world origin.
@@ -73,9 +74,9 @@ FRotator FAGX_Frame::GetWorldRotation() const
 	return WorldRotator;
 }
 
-FRotator FAGX_Frame::GetWorldRotation(const USceneComponent& FallbackParent) const
+FRotator FAGX_Frame::GetWorldRotation(const USceneComponent& FallbackParent, const AActor* LocalScope) const
 {
-	const USceneComponent* ActualParent = GetParentComponent();
+	const USceneComponent* ActualParent = GetParentComponent(LocalScope);
 	if (ActualParent == nullptr)
 	{
 		ActualParent = &FallbackParent;
@@ -87,9 +88,9 @@ FRotator FAGX_Frame::GetWorldRotation(const USceneComponent& FallbackParent) con
 	return WorldRotator;
 }
 
-void FAGX_Frame::GetWorldLocationAndRotation(FVector& OutLocation, FRotator& OutRotation) const
+void FAGX_Frame::GetWorldLocationAndRotation(FVector& OutLocation, FRotator& OutRotation, const AActor* LocalScope) const
 {
-	const USceneComponent* ActualParent = GetParentComponent();
+	const USceneComponent* ActualParent = GetParentComponent(LocalScope);
 	if (ActualParent == nullptr)
 	{
 		OutLocation = LocalLocation;
@@ -104,9 +105,9 @@ void FAGX_Frame::GetWorldLocationAndRotation(FVector& OutLocation, FRotator& Out
 	OutRotation = WorldQuat.Rotator();
 }
 
-FVector FAGX_Frame::GetLocationRelativeTo(const USceneComponent& Component) const
+FVector FAGX_Frame::GetLocationRelativeTo(const USceneComponent& Component, const AActor* LocalScope) const
 {
-	const USceneComponent* ActualParent = GetParentComponent();
+	const USceneComponent* ActualParent = GetParentComponent(LocalScope);
 	if (ActualParent == nullptr)
 	{
 		// If there is no parent then the frame origin is the world origin.
@@ -122,9 +123,9 @@ FVector FAGX_Frame::GetLocationRelativeTo(const USceneComponent& Component) cons
 }
 
 FVector FAGX_Frame::GetLocationRelativeTo(
-	const USceneComponent& Component, const USceneComponent& FallbackParent) const
+	const USceneComponent& Component, const USceneComponent& FallbackParent, const AActor* LocalScope) const
 {
-	const USceneComponent* ActualParent = GetParentComponent();
+	const USceneComponent* ActualParent = GetParentComponent(LocalScope);
 	if (ActualParent == nullptr)
 	{
 		ActualParent = &FallbackParent;
@@ -139,17 +140,17 @@ FVector FAGX_Frame::GetLocationRelativeTo(
 }
 
 FVector FAGX_Frame::GetLocationRelativeTo(
-	const USceneComponent& Component, const FTransform& FallbackTransform) const
+	const USceneComponent& Component, const FTransform& FallbackTransform, const AActor* LocalScope) const
 {
-	const FTransform& ParentTransform = GetParentTransform(FallbackTransform);
+	const FTransform& ParentTransform = GetParentTransform(FallbackTransform, LocalScope);
 	const FTransform& TargetTransform = Component.GetComponentTransform();
 	const FTransform ParentToTarget = ParentTransform.GetRelativeTransform(TargetTransform);
 	return ParentToTarget.TransformPosition(LocalLocation);
 }
 
-FRotator FAGX_Frame::GetRotationRelativeTo(const USceneComponent& Component) const
+FRotator FAGX_Frame::GetRotationRelativeTo(const USceneComponent& Component, const AActor* LocalScope) const
 {
-	const USceneComponent* ActualParent = GetParentComponent();
+	const USceneComponent* ActualParent = GetParentComponent(LocalScope);
 	if (ActualParent == nullptr)
 	{
 		// If there is no parent then the frame origin is the world origin.
@@ -168,9 +169,9 @@ FRotator FAGX_Frame::GetRotationRelativeTo(const USceneComponent& Component) con
 }
 
 FRotator FAGX_Frame::GetRotationRelativeTo(
-	const USceneComponent& Component, const USceneComponent& FallbackParent) const
+	const USceneComponent& Component, const USceneComponent& FallbackParent, const AActor* LocalScope) const
 {
-	const USceneComponent* ActualParent = GetParentComponent();
+	const USceneComponent* ActualParent = GetParentComponent(LocalScope);
 	if (ActualParent == nullptr)
 	{
 		ActualParent = &FallbackParent;
@@ -185,9 +186,9 @@ FRotator FAGX_Frame::GetRotationRelativeTo(
 }
 
 void FAGX_Frame::GetRelativeTo(
-	const USceneComponent& Component, FVector& OutLocation, FRotator& OutRotation) const
+	const USceneComponent& Component, FVector& OutLocation, FRotator& OutRotation, const AActor* LocalScope) const
 {
-	const USceneComponent* ActualParent = GetParentComponent();
+	const USceneComponent* ActualParent = GetParentComponent(LocalScope);
 	if (ActualParent == nullptr)
 	{
 		// If there is no parent then the frame origin is the world origin.
@@ -210,9 +211,9 @@ void FAGX_Frame::GetRelativeTo(
 
 void FAGX_Frame::GetRelativeTo(
 	const USceneComponent& Component, FVector& OutLocation, FRotator& OutRotation,
-	const USceneComponent& FallbackParent) const
+	const USceneComponent& FallbackParent, const AActor* LocalScope) const
 {
-	const USceneComponent* ActualParent = GetParentComponent();
+	const USceneComponent* ActualParent = GetParentComponent(LocalScope);
 	if (ActualParent == nullptr)
 	{
 		ActualParent = &FallbackParent;
@@ -227,14 +228,16 @@ void FAGX_Frame::GetRelativeTo(
 	OutRotation = RelativeQuat.Rotator();
 }
 
-const FTransform& FAGX_Frame::GetParentTransform(const USceneComponent& FallbackParent) const
+const FTransform& FAGX_Frame::GetParentTransform(
+	const USceneComponent& FallbackParent, const AActor* LocalScope) const
 {
-	return GetParentTransform(FallbackParent.GetComponentTransform());
+	return GetParentTransform(FallbackParent.GetComponentTransform(), LocalScope);
 }
 
-const FTransform& FAGX_Frame::GetParentTransform(const FTransform& FallbackTransform) const
+const FTransform& FAGX_Frame::GetParentTransform(
+	const FTransform& FallbackTransform, const AActor* LocalScope) const
 {
-	const USceneComponent* ActualParent = GetParentComponent();
+	const USceneComponent* ActualParent = GetParentComponent(LocalScope);
 	if (ActualParent == nullptr)
 	{
 		return FallbackTransform;

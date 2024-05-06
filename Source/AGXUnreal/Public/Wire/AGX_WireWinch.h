@@ -10,8 +10,8 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
-#include "Engine/EngineTypes.h"
-#include "Engine/EngineBaseTypes.h"
+//#include "Engine/EngineTypes.h"
+//#include "Engine/EngineBaseTypes.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "AGX_WireWinch.generated.h"
@@ -191,7 +191,7 @@ public:
 	FAGX_WireWinch& operator=(const FAGX_WireWinch& Other);
 
 	bool SetBodyAttachment(UAGX_RigidBodyComponent* Body);
-	UAGX_RigidBodyComponent* GetBodyAttachment() const;
+	UAGX_RigidBodyComponent* GetBodyAttachment(const AActor* LocalScope) const;
 
 	void SetPulledInLength(double InPulledInLength);
 	double GetPulledInLength() const;
@@ -247,10 +247,10 @@ public:
 	void SetNativeAddress(uint64 NativeAddress);
 	//~ End AGX_NativeOwner interface.
 
-	void CreateNative();
+	void CreateNative(const AActor* LocalScope);
 	FWireWinchBarrier* GetNative();
 	const FWireWinchBarrier* GetNative() const;
-	FWireWinchBarrier* GetOrCreateNative();
+	FWireWinchBarrier* GetOrCreateNative(const AActor* LocalScope);
 	void WritePropertiesToNative();
 	void ReadPropertiesFromNative();
 
@@ -342,7 +342,7 @@ public:
 	static bool SetBodyAttachment(FAGX_WireWinchRef Winch, UAGX_RigidBodyComponent* Body);
 
 	UFUNCTION(BlueprintPure, Category = "Wire Winch")
-	static UAGX_RigidBodyComponent* GetBodyAttachment(FAGX_WireWinchRef Winch);
+	static UAGX_RigidBodyComponent* GetBodyAttachment(FAGX_WireWinchRef Winch, const AActor* LocalScope);
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Winch")
 	static void SetPulledInLength(FAGX_WireWinchRef Winch, float InPulledInLength);

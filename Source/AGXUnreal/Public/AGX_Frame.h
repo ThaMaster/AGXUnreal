@@ -34,7 +34,8 @@ struct AGXUNREAL_API FAGX_Frame
 	/**
 	 * The Component that this Frame is relative to.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Frame",
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Frame",
 		Meta = (SkipUCSModifiedProperties))
 	FAGX_ComponentReference Parent;
 
@@ -45,9 +46,9 @@ struct AGXUNREAL_API FAGX_Frame
 	 * is stored which means that if the Component is renamed then the relationship is lost. It also
 	 * means that the relationship will survive a Blueprint Reconstruction.
 	 */
-	void SetParentComponent(USceneComponent* Component);
+	void SetParentComponent(const USceneComponent* Component);
 
-	USceneComponent* GetParentComponent() const;
+	USceneComponent* GetParentComponent(const AActor* LocalScope) const;
 
 	/**
 	 * The location of the origin of this Frame, specified in the Parent's local coordinate system.
@@ -67,12 +68,12 @@ struct AGXUNREAL_API FAGX_Frame
 	 * That is, the result of transforming this Frame's Local Location with the Parent's world
 	 * transform.
 	 */
-	FVector GetWorldLocation() const;
+	FVector GetWorldLocation(const AActor* LocalScope) const;
 
 	/**
 	 * Same as Get World Location, but use Fallback Parent if Parent is not set.
 	 */
-	FVector GetWorldLocation(const USceneComponent& FallbackParent) const;
+	FVector GetWorldLocation(const USceneComponent& FallbackParent, const AActor* LocalScope) const;
 
 	/**
 	 * Set LocalLocation so that this Frame becomes located at the given world location.
@@ -80,7 +81,8 @@ struct AGXUNREAL_API FAGX_Frame
 	 * The world-to-local computation is done using the Fallback Parent's transform if Parent is not
 	 * set.
 	 */
-	void SetWorldLocation(const FVector& InLocation, const USceneComponent& FallbackParent);
+	void SetWorldLocation(
+		const FVector& InLocation, const USceneComponent& FallbackParent, const AActor* LocalScope);
 
 	/**
 	 * Get the world rotation of this Frame.
@@ -88,25 +90,28 @@ struct AGXUNREAL_API FAGX_Frame
 	 * That is, the result of transforming this Frame's Local Rotation with the Parent's world
 	 * transform.
 	 */
-	FRotator GetWorldRotation() const;
+	FRotator GetWorldRotation(const AActor* LocalScope) const;
 
 	/**
 	 * Same as Get World Rotation, but use Fallback Parent if Parent is not set.
 	 */
-	FRotator GetWorldRotation(const USceneComponent& FallbackParent) const;
+	FRotator GetWorldRotation(
+		const USceneComponent& FallbackParent, const AActor* LocalScope) const;
 
-	void GetWorldLocationAndRotation(FVector& OutLocation, FRotator& OutRotation) const;
+	void GetWorldLocationAndRotation(
+		FVector& OutLocation, FRotator& OutRotation, const AActor* LocalScope) const;
 
 	/**
 	 * Get the location of this Frame relative to the given Scene Component.
 	 */
-	FVector GetLocationRelativeTo(const USceneComponent& Component) const;
+	FVector GetLocationRelativeTo(const USceneComponent& Component, const AActor* LocalScope) const;
 
 	/**
 	 * Same as Get Location Relative To, but use Fallback Parent if Parent is not set.
 	 */
 	FVector GetLocationRelativeTo(
-		const USceneComponent& Component, const USceneComponent& FallbackParent) const;
+		const USceneComponent& Component, const USceneComponent& FallbackParent,
+		const AActor* LocalScope) const;
 
 	/**
 	 * Get the location of this Frame relative to the given Scene Component.
@@ -114,28 +119,35 @@ struct AGXUNREAL_API FAGX_Frame
 	 * If Parent is not set then FallbackTransform is used as the parent transform instead.
 	 */
 	FVector GetLocationRelativeTo(
-		const USceneComponent& Component, const FTransform& FallbackTransform) const;
+		const USceneComponent& Component, const FTransform& FallbackTransform,
+		const AActor* LocalScope) const;
 
 	/**
 	 * Get the rotation of this Frame relative to the given Scene Component.
 	 */
-	FRotator GetRotationRelativeTo(const USceneComponent& Component) const;
+	FRotator GetRotationRelativeTo(
+		const USceneComponent& Component, const AActor* LocalScope) const;
 
 	/**
 	 * Same as Get Rotation Relative To, but use Fallback Parent is Parent is not set.
 	 */
 	FRotator GetRotationRelativeTo(
-		const USceneComponent& Component, const USceneComponent& FallbackParent) const;
-
-	void GetRelativeTo(
-		const USceneComponent& Component, FVector& OutLocation, FRotator& OutRotation) const;
+		const USceneComponent& Component, const USceneComponent& FallbackParent,
+		const AActor* LocalScope) const;
 
 	void GetRelativeTo(
 		const USceneComponent& Component, FVector& OutLocation, FRotator& OutRotation,
-		const USceneComponent& FallbackParent) const;
+		const AActor* LocalScope) const;
 
-	const FTransform& GetParentTransform(const USceneComponent& FallbackParent) const;
-	const FTransform& GetParentTransform(const FTransform& FallbackTransform) const;
+	void GetRelativeTo(
+		const USceneComponent& Component, FVector& OutLocation, FRotator& OutRotation,
+		const USceneComponent& FallbackParent, const AActor* LocalScope) const;
+
+	const FTransform& GetParentTransform(
+		const USceneComponent& FallbackParent, const AActor* LocalScope) const;
+
+	const FTransform& GetParentTransform(
+		const FTransform& FallbackTransform, const AActor* LocalScope) const;
 };
 
 UCLASS()
@@ -158,61 +170,64 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
-	static USceneComponent* GetParentComponent(const FAGX_Frame& Frame)
+	static USceneComponent* GetParentComponent(const FAGX_Frame& Frame, const AActor* LocalScope)
 	{
-		return Frame.GetParentComponent();
+		return Frame.GetParentComponent(LocalScope);
 	}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
-	static FVector GetWorldLocation(const FAGX_Frame& Frame)
+	static FVector GetWorldLocation(const FAGX_Frame& Frame, const AActor* LocalScope)
 	{
-		return Frame.GetWorldLocation();
+		return Frame.GetWorldLocation(LocalScope);
 	}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
-	static FRotator GetWorldRotation(const FAGX_Frame& Frame)
+	static FRotator GetWorldRotation(const FAGX_Frame& Frame, const AActor* LocalScope)
 	{
-		return Frame.GetWorldRotation();
+		return Frame.GetWorldRotation(LocalScope);
 	}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
 	void GetWorldLocationAndRotation(
-		const FAGX_Frame& Frame, FVector& OutLocation, FRotator& OutRotation)
+		const FAGX_Frame& Frame, FVector& OutLocation, FRotator& OutRotation,
+		const AActor* LocalScope)
 	{
-		Frame.GetWorldLocationAndRotation(OutLocation, OutRotation);
+		Frame.GetWorldLocationAndRotation(OutLocation, OutRotation, LocalScope);
 	}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
-	FVector GetLocationRelativeTo(const FAGX_Frame& Frame, USceneComponent* Component)
+	FVector GetLocationRelativeTo(
+		const FAGX_Frame& Frame, USceneComponent* Component, const AActor* LocalScope)
 	{
 		if (Component == nullptr)
 		{
-			return Frame.GetWorldLocation();
+			return Frame.GetWorldLocation(LocalScope);
 		}
-		return Frame.GetLocationRelativeTo(*Component);
+		return Frame.GetLocationRelativeTo(*Component, LocalScope);
 	}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
-	FRotator GetRotationRelativeTo(const FAGX_Frame& Frame, USceneComponent* Component)
+	FRotator GetRotationRelativeTo(
+		const FAGX_Frame& Frame, USceneComponent* Component, const AActor* LocalScope)
 	{
 		if (Component == nullptr)
 		{
-			return Frame.GetWorldRotation();
+			return Frame.GetWorldRotation(LocalScope);
 		}
-		return Frame.GetRotationRelativeTo(*Component);
+		return Frame.GetRotationRelativeTo(*Component, LocalScope);
 	}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
 	void GetRelativeTo(
 		const FAGX_Frame& Frame, USceneComponent* Component, FVector& OutLocation,
-		FRotator& OutRotation)
+		FRotator& OutRotation, const AActor* LocalScope)
 	{
 		if (Component == nullptr)
 		{
-			OutLocation = Frame.GetWorldLocation();
-			OutRotation = Frame.GetWorldRotation();
+			OutLocation = Frame.GetWorldLocation(LocalScope);
+			OutRotation = Frame.GetWorldRotation(LocalScope);
 			return;
 		}
-		Frame.GetRelativeTo(*Component, OutLocation, OutRotation);
+		Frame.GetRelativeTo(*Component, OutLocation, OutRotation, LocalScope);
 	}
 };

@@ -12,8 +12,8 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "AGX_LogCategory.h"
-#include "Constraints/AGX_ConstraintComponent.h"
-#include "Constraints/AGX_ConstraintConstants.h"
+//#include "Constraints/AGX_ConstraintComponent.h"
+//#include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -256,8 +256,8 @@ void UAGX_ConstraintComponent::SetEnableSelfCollision(bool InEnabled)
 	if (!HasNative())
 		return;
 
-	UAGX_RigidBodyComponent* Body1 = BodyAttachment1.GetRigidBody();
-	UAGX_RigidBodyComponent* Body2 = BodyAttachment2.GetRigidBody();
+	UAGX_RigidBodyComponent* Body1 = BodyAttachment1.GetRigidBody(GetOwner());
+	UAGX_RigidBodyComponent* Body2 = BodyAttachment2.GetRigidBody(GetOwner());
 	if (Body1 == nullptr || Body2 == nullptr || !Body1->HasNative() || !Body2->HasNative())
 		return;
 
@@ -699,11 +699,11 @@ bool UAGX_ConstraintComponent::AreFramesInViolatedState(float Tolerance, FString
 		*OutMessage += FString::Printf(TEXT("%s has violation %f."), *DofString, Error);
 	};
 
-	FVector Location1 = BodyAttachment1.GetGlobalFrameLocation();
-	FQuat Rotation1 = BodyAttachment1.GetGlobalFrameRotation();
+	FVector Location1 = BodyAttachment1.GetGlobalFrameLocation(GetOwner());
+	FQuat Rotation1 = BodyAttachment1.GetGlobalFrameRotation(GetOwner());
 
-	FVector Location2 = BodyAttachment2.GetGlobalFrameLocation();
-	FQuat Rotation2 = BodyAttachment2.GetGlobalFrameRotation();
+	FVector Location2 = BodyAttachment2.GetGlobalFrameLocation(GetOwner());
+	FQuat Rotation2 = BodyAttachment2.GetGlobalFrameRotation(GetOwner());
 
 	FVector Location2InLocal1 = Rotation1.Inverse().RotateVector(Location2 - Location1);
 	FQuat Rotation2InLocal1 = Rotation1.Inverse() * Rotation2;

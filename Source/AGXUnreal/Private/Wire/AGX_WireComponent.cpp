@@ -586,7 +586,7 @@ bool UAGX_WireComponent::AttachOwnedWinch(EWireSide Side)
 	if (HasNative())
 	{
 		FAGX_WireUtilities::ComputeSimulationPlacement(*this, Winch);
-		FWireWinchBarrier* Barrier = Winch.GetOrCreateNative();
+		FWireWinchBarrier* Barrier = Winch.GetOrCreateNative(GetOwner());
 		if (Barrier == nullptr)
 		{
 			UE_LOG(
@@ -696,7 +696,7 @@ bool UAGX_WireComponent::AttachWinch(FAGX_WireWinchRef Winch, EWireSide Side)
 	if (HasNative())
 	{
 		FAGX_WireUtilities::ComputeSimulationPlacement(*Winch.Winch);
-		FWireWinchBarrier* Barrier = Winch.Winch->GetOrCreateNative();
+		FWireWinchBarrier* Barrier = Winch.Winch->GetOrCreateNative(GetOwner());
 		if (Barrier == nullptr)
 		{
 			UE_LOG(
@@ -1027,7 +1027,7 @@ void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector InLocation
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
-	USceneComponent* Parent = RouteNodes[InIndex].Frame.GetParentComponent();
+	USceneComponent* Parent = RouteNodes[InIndex].Frame.GetParentComponent(GetOwner());
 	if (Parent == nullptr)
 	{
 		// No parent means the LocalLocation is relative to the Wire Component and thus InLocation
@@ -1076,10 +1076,10 @@ double UAGX_WireComponent::GetRestLength() const
 	}
 
 	double Length {0.0};
-	FVector PreviousLocation = RouteNodes[0].Frame.GetWorldLocation(*this);
+	FVector PreviousLocation = RouteNodes[0].Frame.GetWorldLocation(*this, GetOwner());
 	for (int32 I = 1; I < RouteNodes.Num(); ++I)
 	{
-		const FVector Location = RouteNodes[I].Frame.GetWorldLocation(*this);
+		const FVector Location = RouteNodes[I].Frame.GetWorldLocation(*this, GetOwner());
 		Length += FVector::Distance(PreviousLocation, Location);
 		PreviousLocation = Location;
 	}
@@ -1183,9 +1183,10 @@ void UAGX_WireComponent::OnRouteNodeParentMoved(
 	USceneComponent* Component, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
 {
 	// If this is a callback from a parent we are no longer a child of, then unsubscribe.
+	const AActor* Owner = GetOwner();
 	FWireRoutingNode* Node =
-		RouteNodes.FindByPredicate([Component](const FWireRoutingNode& Node)
-								   { return Node.Frame.GetParentComponent() == Component; });
+		RouteNodes.FindByPredicate([Owner, Component](const FWireRoutingNode& Node)
+								   { return Node.Frame.GetParentComponent(Owner) == Component; });
 	if (Node == nullptr)
 	{
 		// Component is not the parent of any node, unsubscribe.
@@ -1742,9 +1743,9 @@ namespace AGX_WireComponent_helpers
 	}
 
 	std::tuple<FRigidBodyBarrier*, FVector> GetBodyAndLocalLocation(
-		const FWireRoutingNode& RouteNode, const FTransform& WireTransform)
+		const AActor* LocalScope, const FWireRoutingNode& RouteNode, const FTransform& WireTransform)
 	{
-		UAGX_RigidBodyComponent* BodyComponent = RouteNode.RigidBody.GetRigidBody();
+		UAGX_RigidBodyComponent* BodyComponent = RouteNode.RigidBody.GetRigidBody(LocalScope);
 		if (BodyComponent == nullptr)
 		{
 			return {nullptr, FVector::ZeroVector};
@@ -1752,7 +1753,7 @@ namespace AGX_WireComponent_helpers
 		FRigidBodyBarrier* NativeBody = BodyComponent->GetOrCreateNative();
 		check(NativeBody);
 		const FVector LocalLocation =
-			RouteNode.Frame.GetLocationRelativeTo(*BodyComponent, WireTransform);
+			RouteNode.Frame.GetLocationRelativeTo(*BodyComponent, WireTransform, LocalScope);
 		return {NativeBody, LocalLocation};
 	}
 }
@@ -1764,7 +1765,7 @@ namespace AGX_WireComponent_helpers
 		check(Wire.GetOwnedWinch(Side) != nullptr);
 		FAGX_WireWinch& Winch = *Wire.GetOwnedWinch(Side);
 		FAGX_WireUtilities::ComputeSimulationPlacement(Wire, Winch);
-		FWireWinchBarrier* Barrier = Winch.GetOrCreateNative();
+		FWireWinchBarrier* Barrier = Winch.GetOrCreateNative(Wire.GetOwner());
 		if (Barrier == nullptr)
 		{
 			UE_LOG(
@@ -1856,7 +1857,7 @@ namespace AGX_WireComponent_helpers
 			return;
 		}
 
-		FWireWinchBarrier* Barrier = Winch->GetOrCreateNative();
+		FWireWinchBarrier* Barrier = Winch->GetOrCreateNative(Wire.GetOwner());
 		if (Barrier == nullptr)
 		{
 			UE_LOG(
@@ -2023,14 +2024,16 @@ void UAGX_WireComponent::CreateNative()
 		{
 			// Default route nodes to search for Rigid Bodies in the same Actor as the Wire is in,
 			// unless another owner has already been specified.
-			RouteNode.RigidBody.OwningActor = GetOwner();
+
+			// TODO Remove explicit local scope init.
+			// RouteNode.RigidBody.OwningActor = GetOwner();
 		}
 
 		switch (RouteNode.NodeType)
 		{
 			case EWireNodeType::Free:
 			{
-				const FVector WorldLocation = RouteNode.Frame.GetWorldLocation(*this);
+				const FVector WorldLocation = RouteNode.Frame.GetWorldLocation(*this, GetOwner());
 				NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 				break;
 			}
@@ -2038,14 +2041,14 @@ void UAGX_WireComponent::CreateNative()
 			{
 				FRigidBodyBarrier* Body;
 				FVector Location;
-				std::tie(Body, Location) = GetBodyAndLocalLocation(RouteNode, LocalToWorld);
+				std::tie(Body, Location) = GetBodyAndLocalLocation(GetOwner(), RouteNode, LocalToWorld);
 				if (Body == nullptr)
 				{
 					ErrorMessages.Add(FString::Printf(
 						TEXT("Wire node at index %d has invalid body. Creating Free Node instead "
 							 "of Eye Node."),
 						I));
-					const FVector WorldLocation = RouteNode.Frame.GetWorldLocation(*this);
+					const FVector WorldLocation = RouteNode.Frame.GetWorldLocation(*this, GetOwner());
 					NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 					break;
 				}
@@ -2056,14 +2059,14 @@ void UAGX_WireComponent::CreateNative()
 			{
 				FRigidBodyBarrier* Body;
 				FVector Location;
-				std::tie(Body, Location) = GetBodyAndLocalLocation(RouteNode, LocalToWorld);
+				std::tie(Body, Location) = GetBodyAndLocalLocation(GetOwner(), RouteNode, LocalToWorld);
 				if (Body == nullptr)
 				{
 					ErrorMessages.Add(FString::Printf(
 						TEXT("Wire node at index %d has invalid body. Creating Free Node instead "
 							 "for Body Fixed Node."),
 						I));
-					const FVector WorldLocation = RouteNode.Frame.GetWorldLocation(*this);
+					const FVector WorldLocation = RouteNode.Frame.GetWorldLocation(*this, GetOwner());
 					NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 					break;
 				}
@@ -2223,7 +2226,7 @@ TArray<FVector> UAGX_WireComponent::GetNodesForRendering() const
 		const FTransform& ComponentTransform = GetComponentTransform();
 		for (const auto& Node : RouteNodes)
 		{
-			const FVector WorldLocation = Node.Frame.GetWorldLocation(*this);
+			const FVector WorldLocation = Node.Frame.GetWorldLocation(*this, GetOwner());
 			NodeLocations.Add(WorldLocation);
 		}
 	}
@@ -2351,7 +2354,7 @@ void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
 	// Add callbacks for the current parents.
 	for (FWireRoutingNode& RouteNode : RouteNodes)
 	{
-		USceneComponent* Parent = RouteNode.Frame.Parent.GetComponent<USceneComponent>();
+		USceneComponent* Parent = RouteNode.Frame.Parent.GetComponent<USceneComponent>(GetTypedOuter<AActor>());
 		if (!IsValid(Parent) || DelegateHandles.Contains(Parent))
 		{
 			continue;

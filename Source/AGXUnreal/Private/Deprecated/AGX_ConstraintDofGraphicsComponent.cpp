@@ -143,8 +143,10 @@ public:
 		, bDrawOnlyIfSelected(true)
 		, Constraint(Component->Constraint)
 		, LockedDofs(Component->Constraint->GetLockedDofsBitmask())
-		, FrameTransform1(Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix())
-		, FrameTransform2(Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix())
+		, FrameTransform1(Component->Constraint->BodyAttachment1.GetGlobalFrameMatrix(
+			  Component->Constraint->GetOwner()))
+		, FrameTransform2(Component->Constraint->BodyAttachment2.GetGlobalFrameMatrix(
+			  Component->Constraint->GetOwner()))
 		, AttachmentId(Component->AttachmentId)
 	{
 		CreateTranslationalArrows(Component);
@@ -835,8 +837,8 @@ void UAGX_ConstraintDofGraphicsComponent::SendRenderDynamicData_Concurrent()
 	// Update transform of the proxy to match the constraint attachment frame, if out-of-date!
 	if (SceneProxy && Constraint && IsOwnerSelected())
 	{
-		FMatrix Frame1 = Constraint->BodyAttachment1.GetGlobalFrameMatrix();
-		FMatrix Frame2 = Constraint->BodyAttachment2.GetGlobalFrameMatrix();
+		FMatrix Frame1 = Constraint->BodyAttachment1.GetGlobalFrameMatrix(Constraint->GetOwner());
+		FMatrix Frame2 = Constraint->BodyAttachment2.GetGlobalFrameMatrix(Constraint->GetOwner());
 
 		FAGX_ConstraintDofGraphicsProxy* CastProxy =
 			static_cast<FAGX_ConstraintDofGraphicsProxy*>(SceneProxy);
@@ -853,9 +855,9 @@ FMatrix UAGX_ConstraintDofGraphicsComponent::GetRenderMatrix() const
 		switch (AttachmentId)
 		{
 			case 1:
-				return Constraint->BodyAttachment1.GetGlobalFrameMatrix();
+				return Constraint->BodyAttachment1.GetGlobalFrameMatrix(Constraint->GetOwner());
 			case 2:
-				return Constraint->BodyAttachment2.GetGlobalFrameMatrix();
+				return Constraint->BodyAttachment2.GetGlobalFrameMatrix(Constraint->GetOwner());
 			default:
 				checkNoEntry();
 				return FMatrix::Identity;

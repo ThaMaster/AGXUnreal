@@ -10,7 +10,7 @@ FAGX_RigidBodyReference::FAGX_RigidBodyReference()
 {
 }
 
-UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody() const
+UAGX_RigidBodyComponent* FAGX_RigidBodyReference::GetRigidBody(const AActor* LocalScope) const
 {
-	return Super::GetComponent<UAGX_RigidBodyComponent>();
+	return Super::GetComponent<UAGX_RigidBodyComponent>(LocalScope);
 }

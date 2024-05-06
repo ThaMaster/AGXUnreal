@@ -26,7 +26,7 @@ void FAGX_FrameSpec::Define()
 				   FAGX_Frame Frame;
 				   Frame.LocalLocation = LocalLocation;
 				   TestEqual(
-					   TEXT("Location should be LocalLocation"), Frame.GetWorldLocation(),
+					   TEXT("Location should be LocalLocation"), Frame.GetWorldLocation(nullptr),
 					   LocalLocation);
 			   });
 
@@ -37,7 +37,7 @@ void FAGX_FrameSpec::Define()
 				   FAGX_Frame Frame;
 				   Frame.LocalRotation = LocalRotation;
 				   TestEqual(
-					   TEXT("Rotation should be LocalRotation"), Frame.GetWorldRotation(),
+					   TEXT("Rotation should be LocalRotation"), Frame.GetWorldRotation(nullptr),
 					   LocalRotation);
 			   });
 
@@ -51,12 +51,12 @@ void FAGX_FrameSpec::Define()
 				   Frame.LocalRotation = LocalRotation;
 				   FVector WorldLocation;
 				   FRotator WorldRotation;
-				   Frame.GetWorldLocationAndRotation(WorldLocation, WorldRotation);
+				   Frame.GetWorldLocationAndRotation(WorldLocation, WorldRotation, nullptr);
 				   TestEqual(
-					   TEXT("Location should be LocalLocation"), Frame.GetWorldLocation(),
+					   TEXT("Location should be LocalLocation"), Frame.GetWorldLocation(nullptr),
 					   LocalLocation);
 				   TestEqual(
-					   TEXT("Rotation should be LocalRotation"), Frame.GetWorldRotation(),
+					   TEXT("Rotation should be LocalRotation"), Frame.GetWorldRotation(nullptr),
 					   LocalRotation);
 			   });
 		});
@@ -78,9 +78,9 @@ void FAGX_FrameSpec::Define()
 				   FAGX_Frame Frame;
 				   Frame.SetParentComponent(Parent);
 				   Frame.LocalLocation = LocalLocation;
-				   TestNotNull(TEXT("Frame should have a parent."), Frame.GetParentComponent());
+				   TestNotNull(TEXT("Frame should have a parent."), Frame.GetParentComponent(nullptr));
 				   TestEqual(
-					   TEXT("Location should be LocalLocation"), Frame.GetWorldLocation(),
+					   TEXT("Location should be LocalLocation"), Frame.GetWorldLocation(nullptr),
 					   LocalLocation);
 				   Actor->Destroy();
 			   });
@@ -98,9 +98,9 @@ void FAGX_FrameSpec::Define()
 				   FAGX_Frame Frame;
 				   Frame.SetParentComponent(Parent);
 				   Frame.LocalRotation = LocalRotation;
-				   TestNotNull(TEXT("Frame should have a parent."), Frame.GetParentComponent());
+				   TestNotNull(TEXT("Frame should have a parent."), Frame.GetParentComponent(nullptr));
 				   TestEqual(
-					   TEXT("Rotation should be LocalRotation"), Frame.GetWorldRotation(),
+					   TEXT("Rotation should be LocalRotation"), Frame.GetWorldRotation(nullptr),
 					   LocalRotation);
 				   Parent->DestroyComponent();
 			   });
@@ -123,12 +123,12 @@ void FAGX_FrameSpec::Define()
 				   Frame.LocalRotation = LocalRotation;
 				   FVector WorldLocation;
 				   FRotator WorldRotation;
-				   Frame.GetWorldLocationAndRotation(WorldLocation, WorldRotation);
+				   Frame.GetWorldLocationAndRotation(WorldLocation, WorldRotation, nullptr);
 				   TestEqual(
-					   TEXT("Location should be LocalLocation"), Frame.GetWorldLocation(),
+					   TEXT("Location should be LocalLocation"), Frame.GetWorldLocation(nullptr),
 					   LocalLocation);
 				   TestEqual(
-					   TEXT("Rotation should be LocalRotation"), Frame.GetWorldRotation(),
+					   TEXT("Rotation should be LocalRotation"), Frame.GetWorldRotation(nullptr),
 					   LocalRotation);
 			   });
 		});
@@ -154,14 +154,14 @@ void FAGX_FrameSpec::Define()
 				   Frame.LocalLocation = LocalLocation;
 				   Frame.LocalRotation = LocalRotation;
 				   TestEqual(
-					   TEXT("Location should be translated."), Frame.GetWorldLocation(),
+					   TEXT("Location should be translated."), Frame.GetWorldLocation(nullptr),
 					   LocalLocation + ParentLocation);
 				   TestEqual(
-					   TEXT("Rotation should be unchanged."), Frame.GetWorldRotation(),
+					   TEXT("Rotation should be unchanged."), Frame.GetWorldRotation(nullptr),
 					   LocalRotation);
 				   FVector WorldLocation;
 				   FRotator WorldRotation;
-				   Frame.GetWorldLocationAndRotation(WorldLocation, WorldRotation);
+				   Frame.GetWorldLocationAndRotation(WorldLocation, WorldRotation, nullptr);
 				   TestEqual(
 					   TEXT("Location should be translated."), WorldLocation,
 					   LocalLocation + ParentLocation);
@@ -201,17 +201,17 @@ void FAGX_FrameSpec::Define()
 				   const FVector ExpectedLocation {
 					   -LocalLocation.Z, LocalLocation.Y, LocalLocation.X};
 				   TestEqual(
-					   TEXT("Location should be rotated."), Frame.GetWorldLocation(),
+					   TEXT("Location should be rotated."), Frame.GetWorldLocation(nullptr),
 					   ExpectedLocation);
 				   // I found the expected rotations by setting up the same system in the editor
 				   // and reading the Details panel.
 				   const FRotator ExpectedRotation {67.731224, 117.273140, 145.505524};
 				   TestEqual(
-					   TEXT("Rotation should be rotated"), Frame.GetWorldRotation(),
+					   TEXT("Rotation should be rotated"), Frame.GetWorldRotation(nullptr),
 					   ExpectedRotation);
 				   FVector WorldLocation;
 				   FRotator WorldRotation;
-				   Frame.GetWorldLocationAndRotation(WorldLocation, WorldRotation);
+				   Frame.GetWorldLocationAndRotation(WorldLocation, WorldRotation, nullptr);
 				   TestEqual(TEXT("Location should be rotated."), WorldLocation, ExpectedLocation);
 				   TestEqual(TEXT("Rotation should be identity"), WorldRotation, ExpectedRotation);
 				   Parent->DestroyComponent();
@@ -258,12 +258,12 @@ void FAGX_FrameSpec::Define()
 				   Frame.LocalRotation = LocalRotation;
 				   const FVector ExpectedLocation {100.0, -100.0, 0.0};
 				   const FRotator ExpectedRotation {0.0, -180.0, 0.0};
-				   TestNotNull(TEXT("Frame should have a parent."), Frame.GetParentComponent());
+				   TestNotNull(TEXT("Frame should have a parent."), Frame.GetParentComponent(nullptr));
 				   TestEqual(
 					   TEXT("Location should be translated and rotated twice."),
-					   Frame.GetWorldLocation(), ExpectedLocation);
+					   Frame.GetWorldLocation(nullptr), ExpectedLocation);
 				   TestEqual(
-					   TEXT("Rotation should be rotated twice."), Frame.GetWorldRotation(),
+					   TEXT("Rotation should be rotated twice."), Frame.GetWorldRotation(nullptr),
 					   ExpectedRotation);
 				   Actor->Destroy();
 			   });

@@ -114,5 +114,5 @@ public:
 	static EAGX_TrackWheelModel ToModel(uint8 Model);
 
 public:
-	bool GetTransformRelativeToBody(FVector& RelPosition, FQuat& RelRotation) const;
+	bool GetTransformRelativeToBody(const AActor* LocalScope, FVector& RelPosition, FQuat& RelRotation) const;
 };

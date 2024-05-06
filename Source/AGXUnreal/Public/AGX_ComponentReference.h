@@ -3,6 +3,7 @@
 #pragma once
 
 // Unreal Engine includes.
+#include "AGX_LogCategory.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Templates/SubclassOf.h"
 
@@ -57,8 +58,10 @@ class UActorComponent;
  *   FStructContainingComponentReference MyNestedComponentReference;
  *
  * For more information see the following Unreal Developer Network questions:
- * - https://udn.unrealengine.com/s/question/0D52L00005KLF5ZSAX/how-can-i-provide-default-values-for-a-uproperty-outside-of-the-constructor
- * - https://udn.unrealengine.com/s/question/0D52L00004luoN5SAI/setting-a-value-on-a-component-property-when-actor-placed-in-the-level-editor
+ * -
+ *https://udn.unrealengine.com/s/question/0D52L00005KLF5ZSAX/how-can-i-provide-default-values-for-a-uproperty-outside-of-the-constructor
+ * -
+ *https://udn.unrealengine.com/s/question/0D52L00004luoN5SAI/setting-a-value-on-a-component-property-when-actor-placed-in-the-level-editor
  * - https://udn.unrealengine.com/s/question/0D54z00009itP8yCAE/postprocess-volume-corrupted-in-53
  *
  * A struct that both contains an FAGX_ComponentReference and has custom serialization code must
@@ -91,16 +94,26 @@ struct AGXUNREAL_API FAGX_ComponentReference
 	FAGX_ComponentReference();
 	FAGX_ComponentReference(TSubclassOf<UActorComponent> InComponentType);
 
+	/**
+	 * The Actor that owns the Component being referenced. If this is None / nullptr then the Local
+	 * Scope Actor pointer passed to Get Component is used instead.
+	 */
 	UPROPERTY(
 		EditInstanceOnly, BlueprintReadWrite, Category = "AGX Component Reference",
 		Meta = (Tooltip = "The Actor that owns the Component."))
 	AActor* OwningActor {nullptr};
 
+	/**
+	 * The name of the Component being referenced.
+	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Component Reference",
 		Meta = (Tooltip = "The name of the Component."))
 	FName Name {NAME_None};
 
+	/**
+	 * Whether the search for the Component should descend into Child Actor Components.
+	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Component Reference",
 		Meta =
@@ -112,9 +125,10 @@ struct AGXUNREAL_API FAGX_ComponentReference
 	 * Does a search in Owning Actor for a Component named Name. Will return nullptr if no matching
 	 * Component is found.
 	 *
+	 * @param LocalScope Actor to search within if the Owning Actor property has not been set.
 	 * @return The Component that the Reference currently references. Can be nullptr.
 	 */
-	UActorComponent* GetComponent() const;
+	UActorComponent* GetComponent(const AActor* LocalScope) const;
 
 	/**
 	 * @see GetComponent()
@@ -122,14 +136,14 @@ struct AGXUNREAL_API FAGX_ComponentReference
 	 * @return The Component that the Reference currently references. Can be nullptr.
 	 */
 	template <typename T>
-	T* GetComponent() const;
+	T* GetComponent(const AActor* LocalScope) const;
 
 	/**
 	 * Get a list of all Components in OwningActor that this reference is allowed to point to,
 	 * based on set the Component Type.
 	 * @param OutComponents The found Components.
 	 */
-	TArray<UActorComponent*> GetCompatibleComponents() const;
+	TArray<UActorComponent*> GetCompatibleComponents(const AActor* LocalScope) const;
 
 	/// The type of Component that this Reference is allowed to reference.
 	TSubclassOf<UActorComponent> ComponentType;
@@ -179,9 +193,9 @@ struct AGXUNREAL_API FAGX_ComponentReference
 };
 
 template <typename T>
-T* FAGX_ComponentReference::GetComponent() const
+T* FAGX_ComponentReference::GetComponent(const AActor* LocalScope) const
 {
-	return Cast<T>(GetComponent());
+	return Cast<T>(GetComponent(LocalScope));
 }
 
 UCLASS()
@@ -191,5 +205,6 @@ class AGXUNREAL_API UAGX_ComponentReference_FL : public UBlueprintFunctionLibrar
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Component Reference")
-	static UActorComponent* GetComponent(UPARAM(Ref) FAGX_ComponentReference& Reference);
+	static UActorComponent* GetComponent(
+		UPARAM(Ref) FAGX_ComponentReference& Reference, const AActor* LocalScope);
 };

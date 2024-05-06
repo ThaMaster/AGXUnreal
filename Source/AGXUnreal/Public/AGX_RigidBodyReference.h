@@ -24,7 +24,7 @@ struct AGXUNREAL_API FAGX_RigidBodyReference : public FAGX_ComponentReference
 
 	FAGX_RigidBodyReference();
 
-	UAGX_RigidBodyComponent* GetRigidBody() const;
+	UAGX_RigidBodyComponent* GetRigidBody(const AActor* LocalScope) const;
 };
 
 UCLASS()
@@ -34,9 +34,9 @@ class AGXUNREAL_API UAGX_RigidBodyReference_FL : public UBlueprintFunctionLibrar
 
 public:
 	UFUNCTION(BlueprintPure, Category = "AGX Rigid Body Reference")
-	static UAGX_RigidBodyComponent* GetRigidBody(UPARAM(Ref) FAGX_RigidBodyReference& Reference)
+	static UAGX_RigidBodyComponent* GetRigidBody(UPARAM(Ref) FAGX_RigidBodyReference& Reference, const AActor* LocalScope)
 	{
-		return Reference.GetRigidBody();
+		return Reference.GetRigidBody(LocalScope);
 	}
 
 	UFUNCTION(
@@ -44,8 +44,8 @@ public:
 		Meta = (DisplayName = "Get Rigid Body", BlueprintAutocast))
 	static UPARAM(DisplayName = "Rigid Body")
 		UAGX_RigidBodyComponent* CastRigidBodyReferenceToRigidBody(
-			UPARAM(Ref) const FAGX_RigidBodyReference& Reference)
+			UPARAM(Ref) const FAGX_RigidBodyReference& Reference, const AActor* LocalScope)
 	{
-		return Reference.GetRigidBody();
+		return Reference.GetRigidBody(LocalScope);
 	}
 };

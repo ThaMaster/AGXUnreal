@@ -29,7 +29,7 @@ FAGX_WireWinchRef UAGX_WireWinchComponent::GetWinch_BP()
 FVector UAGX_WireWinchComponent::ComputeBodyRelativeLocation()
 {
 	FVector WorldLocation = GetComponentTransform().TransformPosition(WireWinch.Location);
-	if (UAGX_RigidBodyComponent* Body = WireWinch.GetBodyAttachment())
+	if (UAGX_RigidBodyComponent* Body = WireWinch.GetBodyAttachment(GetOwner()))
 	{
 		return Body->GetComponentTransform().InverseTransformPosition(WorldLocation);
 	}
@@ -44,7 +44,7 @@ FRotator UAGX_WireWinchComponent::ComputeBodyRelativeRotation()
 	FQuat WorldRotation =
 		GetComponentTransform().TransformRotation(WireWinch.Rotation.Quaternion());
 
-	if (UAGX_RigidBodyComponent* Body = WireWinch.GetBodyAttachment())
+	if (UAGX_RigidBodyComponent* Body = WireWinch.GetBodyAttachment(GetOwner()))
 	{
 		return Body->GetComponentTransform().InverseTransformRotation(WorldRotation).Rotator();
 	}
@@ -226,7 +226,7 @@ void UAGX_WireWinchComponent::CreateNative()
 			 "in progress, the instances should be inherited via a Actor Component Instance Data"));
 
 	FAGX_WireUtilities::ComputeSimulationPlacement(*this, WireWinch);
-	WireWinch.CreateNative();
+	WireWinch.CreateNative(GetOwner());
 }
 
 void UAGX_WireWinchComponent::OnRegister()
