@@ -54,6 +54,13 @@ public:
 	FIntPoint Resolution {256, 256};
 
 	/**
+	 * Sets the resolution of the Camera Sensor.
+	 * Also updates the RenderTarget if available.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
+	void SetResolution(const FIntPoint& InResolution);
+
+	/**
 	 * Render Target used by the Camera Sensor to write pixel data to.
 	 * It is recommended to use the 'Generate Runtime Assets' button in the Details Panel to
 	 * generate it.
