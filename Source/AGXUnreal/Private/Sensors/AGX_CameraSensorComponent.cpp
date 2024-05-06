@@ -35,6 +35,23 @@ void UAGX_CameraSensorComponent::SetFOV(float InFOV)
 	FOV = InFOV;
 }
 
+void UAGX_CameraSensorComponent::SetResolution(FIntPoint InResolution)
+{
+	if (!IsResolutionValid(InResolution))
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Camera Sensor '%s' in Actor '%s', invalid Resolution passed to SetResolution: "
+				 "%s. Doing nothing."),
+			*GetName(), *GetLabelSafe(GetOwner()), *InResolution.ToString());
+		return;
+	}
+
+	Resolution = InResolution;
+	if (RenderTarget != nullptr)
+		RenderTarget->ResizeTarget(InResolution.X, InResolution.Y);
+}
+
 namespace AGX_CameraSensorComponent_helpers
 {
 	struct FAGX_ImageAsyncParams
