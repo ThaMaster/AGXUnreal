@@ -59,8 +59,7 @@ public:
 	 * If the Wire Winch does not have a body then the world coordinate system is used.
 	 * If the Wire Winch does have a body then the body's coordinate system is used.
 	 */
-	static void ComputeSimulationPlacement(
-		const UAGX_WireComponent& Owner, FAGX_WireWinch& Winch);
+	static void ComputeSimulationPlacement(const UAGX_WireComponent& Owner, FAGX_WireWinch& Winch);
 
 	/**
 	 * Compute the simulation time location and rotation on the given Wire Winch owned Wire Winch,

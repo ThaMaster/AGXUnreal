@@ -10,7 +10,7 @@ FAGX_SceneComponentReference::FAGX_SceneComponentReference()
 {
 }
 
-USceneComponent* FAGX_SceneComponentReference::GetSceneComponent(const AActor* LocalScope) const
+USceneComponent* FAGX_SceneComponentReference::GetSceneComponent() const
 {
-	return Super::GetComponent<USceneComponent>(LocalScope);
+	return Super::GetComponent<USceneComponent>();
 }

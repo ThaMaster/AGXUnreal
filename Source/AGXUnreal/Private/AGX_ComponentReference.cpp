@@ -19,7 +19,7 @@ FAGX_ComponentReference::FAGX_ComponentReference(TSubclassOf<UActorComponent> In
 namespace FAGX_ComponentReference_helpers
 {
 	TArray<UActorComponent*> GetCompatibleComponents(
-		TSubclassOf<UActorComponent> ComponentType, const AActor* OwningActor, bool bSearchChildActors)
+		TSubclassOf<UActorComponent> ComponentType, AActor* OwningActor, bool bSearchChildActors)
 	{
 		TArray<UActorComponent*> Components;
 		if (OwningActor == nullptr)
@@ -31,7 +31,7 @@ namespace FAGX_ComponentReference_helpers
 	}
 
 	UActorComponent* FindComponent(
-		TSubclassOf<UActorComponent> ComponentType, const AActor* OwningActor, const FName& Name,
+		TSubclassOf<UActorComponent> ComponentType, AActor* OwningActor, const FName& Name,
 		bool bSearchChildActors)
 	{
 		TArray<UActorComponent*> Components =
@@ -42,25 +42,20 @@ namespace FAGX_ComponentReference_helpers
 	}
 }
 
-UActorComponent* FAGX_ComponentReference::GetComponent(const AActor* LocalScope) const
+UActorComponent* FAGX_ComponentReference::GetComponent() const
 {
-	const AActor* Scope = IsValid(OwningActor) ? OwningActor : LocalScope;
-	if (!IsValid(Scope))
-	{
-		return nullptr;
-	}
-	return FAGX_ComponentReference_helpers::FindComponent(
-		ComponentType, Scope, Name, bSearchChildActors);
+	return IsValid(OwningActor) ? FAGX_ComponentReference_helpers::FindComponent(
+									  ComponentType, OwningActor, Name, bSearchChildActors)
+								: nullptr;
 }
 
-TArray<UActorComponent*> FAGX_ComponentReference::GetCompatibleComponents(const AActor* LocalScope) const
+TArray<UActorComponent*> FAGX_ComponentReference::GetCompatibleComponents() const
 {
 	return FAGX_ComponentReference_helpers::GetCompatibleComponents(
-		ComponentType, LocalScope, bSearchChildActors);
+		ComponentType, OwningActor, bSearchChildActors);
 }
 
-UActorComponent* UAGX_ComponentReference_FL::GetComponent(
-	FAGX_ComponentReference& Reference, const AActor* LocalScope)
+UActorComponent* UAGX_ComponentReference_FL::GetComponent(FAGX_ComponentReference& Reference)
 {
-	return Reference.GetComponent(LocalScope);
+	return Reference.GetComponent();
 }

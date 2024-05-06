@@ -26,55 +26,18 @@ TSharedRef<IPropertyTypeCustomization> FAGX_ComponentReferenceCustomization::Mak
 
 namespace AGX_ComponentReferenceCustomization_helpers
 {
-	const AActor* GetLocalScope(const IPropertyHandle& ComponentReferenceHandle)
-	{
-		TArray<UObject*> Objects;
-		ComponentReferenceHandle.GetOuterObjects(Objects);
-		if (Objects.Num() < 1)
-		{
-			// No way of finding the local scope for Component Reference lookups, will depend on
-			// Owning Actor being set in the Component Reference.
-			return nullptr;
-		}
-		else if (Objects.Num() == 1)
-		{
-			const UObject* Object = Objects[0];
-			if (const AActor* Actor = Cast<AActor>(Object))
-			{
-				return Actor;
-			}
-			else if (const UActorComponent* Component = Cast<UActorComponent>(Object))
-			{
-				return Component->GetOwner();
-			}
-			// Any other types we know how to get the Local Scope from?
-		}
-		else if (Objects.Num() > 1)
-		{
-			// Not sure what to do here. There are potentially many separate sets of allowed
-			// Components, so no safe way to populate the combo box.
-			return nullptr;
-		}
-
-		// Should never get here.
-		return nullptr;
-	}
-
 	/**
 	 * Get a combo-box compatible list of Component names of the compatible Components found in the
 	 * Owner in the given Component Reference. That is, find out what options the user currently
 	 * have to chose between.
 	 * @param OutNames Combo-box compatible list of Component names.
 	 * @param ComponentReference Get Components from this reference's Owner.
-	 * @param LocalScope The Actor that owns either the Component Reference of the Component that
-	 * owns the Component Reference.
 	 */
 	void GetComponentNamesFromOwner(
-		TArray<TSharedPtr<FName>>& OutNames, const FAGX_ComponentReference& ComponentReference,
-		const AActor* LocalScope)
+		TArray<TSharedPtr<FName>>& OutNames, const FAGX_ComponentReference& ComponentReference)
 	{
 		TArray<UActorComponent*> CompatibleComponents =
-			ComponentReference.GetCompatibleComponents(LocalScope);
+			ComponentReference.GetCompatibleComponents();
 		OutNames.Empty();
 		for (const UActorComponent* Component : CompatibleComponents)
 		{
@@ -144,7 +107,6 @@ struct FAGX_ComponentReferenceCustomizationOperations
 	 * Create a combo-box displaying the contents of the ComponentNames array, which holds the
 	 * Components of appropriate type that was found in the Owner or Blueprint.
 	 * @param This The FAGX_ComponentReferenceCustomization instance calling the function.
-	 * @param OutWidget Will be populated with the created combo box.
 	 * @return A combo-box widget displaying the contents of ComponentNames.
 	 */
 	static TSharedRef<SComboBox<TSharedPtr<FName>>> CreateNameComboBox(
@@ -375,13 +337,11 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 		return;
 	}
 
-	const AActor* LocalScope = GetLocalScope(*ComponentReferenceHandle);
-
 	// Populate Component Names either from the owning Actor or from the Blueprint.
 	const AActor* OwningActor = GetOwningActor();
-	if (OwningActor != nullptr || LocalScope != nullptr)
+	if (OwningActor != nullptr)
 	{
-		GetComponentNamesFromOwner(ComponentNames, *ComponentReference, LocalScope);
+		GetComponentNamesFromOwner(ComponentNames, *ComponentReference);
 	}
 	else
 	{
@@ -484,7 +444,7 @@ void FAGX_ComponentReferenceCustomization::OnComboBoxChanged(
 	TSharedPtr<FName> NewSelection, ESelectInfo::Type SelectionInfo)
 {
 	FName CurrentValue;
-	const FPropertyAccess::Result Result = NameHandle->GetValue(CurrentValue);
+	FPropertyAccess::Result Result = NameHandle->GetValue(CurrentValue);
 
 	SelectedComponent = NewSelection.IsValid() ? *NewSelection : NAME_None;
 
@@ -542,7 +502,7 @@ void FAGX_ComponentReferenceCustomization::OnComponentNameCommitted(
 		NameHandle->SetValue(SelectedComponent);
 	}
 
-	const FAGX_ComponentReference* ComponentReference = GetComponentReference();
+	FAGX_ComponentReference* ComponentReference = GetComponentReference();
 	if (ComponentReference != nullptr)
 	{
 		// If/when we do caching in the Component Reference, then the cache needs to be invalidated
@@ -695,7 +655,7 @@ AActor* FAGX_ComponentReferenceCustomization::GetOwningActor() const
 	AActor* OwningActor = *static_cast<AActor**>(UntypedPointer);
 
 	// Sanity check against reading through the Component Reference. Should produce the same result.
-	const FAGX_ComponentReference* ComponentReference = GetComponentReference();
+	FAGX_ComponentReference* ComponentReference = GetComponentReference();
 	if (ComponentReference == nullptr)
 	{
 		UE_LOG(
@@ -752,7 +712,7 @@ FName FAGX_ComponentReferenceCustomization::GetName() const
 				 "handle."));
 		return NAME_None;
 	}
-	const FName Name = *static_cast<FName*>(UntypedPointer);
+	FName Name = *static_cast<FName*>(UntypedPointer);
 
 	// Sanity check against reading through the Component Reference.
 	const FAGX_ComponentReference* ComponentReference = GetComponentReference();

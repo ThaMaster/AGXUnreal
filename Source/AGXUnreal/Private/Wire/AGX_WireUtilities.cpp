@@ -50,7 +50,7 @@ namespace AGX_WireUtilities_helpers
 	 */
 	FAGX_WireWinchPose GetWireWinchPose(const UAGX_WireComponent& Wire, const FAGX_WireWinch& Winch)
 	{
-		const UAGX_RigidBodyComponent* Body = Winch.GetBodyAttachment(Wire.GetOwner());
+		const UAGX_RigidBodyComponent* Body = Winch.GetBodyAttachment();
 		const bool bNative = Winch.HasNative();
 		const bool bBody = Body != nullptr;
 		if (!bNative && !bBody)
@@ -85,7 +85,7 @@ namespace AGX_WireUtilities_helpers
 	FAGX_WireWinchPose GetWireWinchPose(const UAGX_WireWinchComponent& WireWinch)
 	{
 		const FAGX_WireWinch& Winch = WireWinch.WireWinch;
-		const UAGX_RigidBodyComponent* Body = WireWinch.WireWinch.GetBodyAttachment(WireWinch.GetOwner());
+		const UAGX_RigidBodyComponent* Body = WireWinch.WireWinch.GetBodyAttachment();
 		const bool bNative = Winch.HasNative();
 		const bool bBody = Body != nullptr;
 		if (!bNative && !bBody)
@@ -181,7 +181,7 @@ const FTransform& FAGX_WireUtilities::GetWinchLocalToWorld(const UAGX_WireWinchC
 void FAGX_WireUtilities::ComputeSimulationPlacement(
 	const UAGX_WireComponent& Owner, FAGX_WireWinch& Winch)
 {
-	if (Winch.GetBodyAttachment(Owner.GetOwner()) == nullptr)
+	if (Winch.GetBodyAttachment() == nullptr)
 	{
 		// Owner=Wire, Body=false: Use Wire transform to convert rel. to Wire to rel. to World.
 		Winch.LocationSim = Owner.GetComponentTransform().TransformPosition(Winch.Location);
@@ -200,7 +200,7 @@ void FAGX_WireUtilities::ComputeSimulationPlacement(
 {
 	const FTransform& WinchTransform = Owner.GetComponentTransform();
 	const FRotator& WinchRotation = Owner.GetComponentRotation();
-	if (const UAGX_RigidBodyComponent* Body = Winch.GetBodyAttachment(Owner.GetOwner()))
+	if (const UAGX_RigidBodyComponent* Body = Winch.GetBodyAttachment())
 	{
 		// Owner=Winch, Body=true: Move from relative to Winch to relative to Body.
 		const FTransform& BodyTransform = Body->GetComponentTransform();

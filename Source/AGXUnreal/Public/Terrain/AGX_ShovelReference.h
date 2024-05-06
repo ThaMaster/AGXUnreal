@@ -16,5 +16,5 @@ struct AGXUNREAL_API FAGX_ShovelReference : public FAGX_ComponentReference
 
 	FAGX_ShovelReference();
 
-	UAGX_ShovelComponent* GetShovelComponent(const AActor* LocalScope) const;
+	UAGX_ShovelComponent* GetShovelComponent() const;
 };

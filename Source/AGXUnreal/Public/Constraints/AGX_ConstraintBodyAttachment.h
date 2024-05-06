@@ -36,6 +36,11 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	FAGX_ConstraintBodyAttachment(USceneComponent* InOuter);
 	FAGX_ConstraintBodyAttachment& operator=(const FAGX_ConstraintBodyAttachment& Other);
 
+	/// \todo Cannot assume a single body per actor. Should we change the UPROPERTY
+	/// to be a UAGX_RigidBodyComponent instead, or should we keep the Actor
+	/// reference and also keep some kind of component identifier? Should we use
+	/// FComponentRef here?
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rigid Body")
 	FAGX_RigidBodyReference RigidBody;
 
@@ -69,31 +74,31 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Frame Transformation")
 	FRotator LocalFrameRotation {FRotator::ZeroRotator};
 
-	UAGX_RigidBodyComponent* GetRigidBody(const AActor* LocalScope) const;
+	UAGX_RigidBodyComponent* GetRigidBody() const;
 
 	/**
 	 * Calculates and returns the frame location given in the RigidBody's frame.
 	 * Returns zero vector if RigidBody has not been set.
 	 */
-	FVector GetLocalFrameLocationFromBody(const AActor* LocalScope) const;
+	FVector GetLocalFrameLocationFromBody() const;
 
 	/**
 	 * Calculates and returns the frame rotation given in the RigidBody's frame.
 	 * Returns identity quaternion of RigidBody has not been set.
 	 */
-	FQuat GetLocalFrameRotationFromBody(const AActor* LocalScope) const;
+	FQuat GetLocalFrameRotationFromBody() const;
 
 	/**
 	 * Calculates and returns the frame location in world space.
 	 */
-	FVector GetGlobalFrameLocation(const AActor* LocalScope) const;
+	FVector GetGlobalFrameLocation() const;
 
 	/**
 	 * Calculates and returns the frame rotation in world space.
 	 */
-	FQuat GetGlobalFrameRotation(const AActor* LocalScope) const;
+	FQuat GetGlobalFrameRotation() const;
 
-	FMatrix GetGlobalFrameMatrix(const AActor* LocalScope) const;
+	FMatrix GetGlobalFrameMatrix() const;
 
 	/**
 	 * Get the RigidBodyBarrier owned by the RigidBodyComponent this Attachment points to.
@@ -104,7 +109,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * @see GetOrCreateRigidBodyBarrier
 	 * @return The Barrier object for the RigidBody that this Attachment references, or nullptr.
 	 */
-	FRigidBodyBarrier* GetRigidBodyBarrier(const AActor* LocalScope);
+	FRigidBodyBarrier* GetRigidBodyBarrier();
 
 	/**
 	 * Get the RigidBodyBarrier owned by the RigidBodyComponent this Attachment points to.
@@ -117,7 +122,7 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 	 * @see GetRigidBodyBarrier
 	 * @return The Barrier object for the RigidBody that this Attachment references.
 	 */
-	FRigidBodyBarrier* GetOrCreateRigidBodyBarrier(const AActor* LocalScope);
+	FRigidBodyBarrier* GetOrCreateRigidBodyBarrier();
 
 	/**
 	 * The USceneComponent, often a subclass of UAGX_ConstraintComponent, that this Attachment is
@@ -163,8 +168,8 @@ private:
 	 */
 	UPROPERTY(Transient)
 	mutable AActor* RecentFrameDefiningActor = nullptr;
-	USceneComponent* PreviousFrameDefiningComponent = nullptr;
+	USceneComponent* PreviousFrameDefiningComponent;
 
 	// Returns the currently active FrameDefiningComponent given the FrameDefiningSource selected.
-	USceneComponent* GetFinalFrameDefiningComponent(const AActor* LocalScope) const;
+	USceneComponent* GetFinalFrameDefiningComponent() const;
 };

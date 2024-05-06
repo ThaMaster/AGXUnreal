@@ -21,7 +21,7 @@ struct AGXUNREAL_API FAGX_SceneComponentReference : public FAGX_ComponentReferen
 
 	FAGX_SceneComponentReference();
 
-	USceneComponent* GetSceneComponent(const AActor* LocalScope) const;
+	USceneComponent* GetSceneComponent() const;
 };
 
 UCLASS()
@@ -31,8 +31,8 @@ class AGXUNREAL_API UAGX_SceneComponentReference_FL : public UBlueprintFunctionL
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Scene Component Reference")
-	static USceneComponent* GetSceneComponent(UPARAM(Ref) FAGX_SceneComponentReference& Reference, const AActor* LocalScope)
+	static USceneComponent* GetSceneComponent(UPARAM(Ref) FAGX_SceneComponentReference& Reference)
 	{
-		return Reference.GetSceneComponent(LocalScope);
+		return Reference.GetSceneComponent();
 	}
 };

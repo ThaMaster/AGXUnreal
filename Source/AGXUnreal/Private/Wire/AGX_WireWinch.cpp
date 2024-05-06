@@ -32,9 +32,9 @@ bool FAGX_WireWinch::SetBodyAttachment(UAGX_RigidBodyComponent* Body)
 	return true;
 }
 
-UAGX_RigidBodyComponent* FAGX_WireWinch::GetBodyAttachment(const AActor* LocalScope) const
+UAGX_RigidBodyComponent* FAGX_WireWinch::GetBodyAttachment() const
 {
-	return BodyAttachment.GetRigidBody(LocalScope);
+	return BodyAttachment.GetRigidBody();
 }
 
 void FAGX_WireWinch::SetPulledInLength(double InPulledInLength)
@@ -307,13 +307,13 @@ void FAGX_WireWinch::SetNativeAddress(uint64 NativeAddress)
 	NativeBarrier.DecrementRefCount();
 }
 
-void FAGX_WireWinch::CreateNative(const AActor* LocalScope)
+void FAGX_WireWinch::CreateNative()
 {
 	check(!GIsReconstructingBlueprintInstances);
 	check(!HasNative());
-	FRigidBodyBarrier* Body = [this, LocalScope]() -> FRigidBodyBarrier*
+	FRigidBodyBarrier* Body = [this]() -> FRigidBodyBarrier*
 	{
-		UAGX_RigidBodyComponent* Body = BodyAttachment.GetRigidBody(LocalScope);
+		UAGX_RigidBodyComponent* Body = BodyAttachment.GetRigidBody();
 		if (Body == nullptr)
 		{
 			return nullptr;
@@ -343,11 +343,11 @@ const FWireWinchBarrier* FAGX_WireWinch::GetNative() const
 	return &NativeBarrier;
 }
 
-FWireWinchBarrier* FAGX_WireWinch::GetOrCreateNative(const AActor* LocalScope)
+FWireWinchBarrier* FAGX_WireWinch::GetOrCreateNative()
 {
 	if (!HasNative())
 	{
-		CreateNative(LocalScope);
+		CreateNative();
 	}
 	return GetNative();
 }
@@ -484,15 +484,14 @@ bool UAGX_WireWinch_FL::SetBodyAttachment(FAGX_WireWinchRef Winch, UAGX_RigidBod
 	}
 	return Winch.Winch->SetBodyAttachment(Body);
 }
-
-UAGX_RigidBodyComponent* UAGX_WireWinch_FL::GetBodyAttachment(FAGX_WireWinchRef Winch, const AActor* LocalScope)
+UAGX_RigidBodyComponent* UAGX_WireWinch_FL::GetBodyAttachment(FAGX_WireWinchRef Winch)
 {
 	if (!Winch.IsValid())
 	{
 		UE_LOG(LogAGX, Error, TEXT("Invalid Wire Winch Ref passed to GetBodyAttachment."));
 		return nullptr;
 	}
-	return Winch.Winch->GetBodyAttachment(LocalScope);
+	return Winch.Winch->GetBodyAttachment();
 }
 
 void UAGX_WireWinch_FL::SetPulledInLength(FAGX_WireWinchRef Winch, float InPulledInLength)

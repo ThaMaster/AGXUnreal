@@ -10,7 +10,7 @@ FAGX_ShovelReference::FAGX_ShovelReference()
 {
 }
 
-UAGX_ShovelComponent* FAGX_ShovelReference::GetShovelComponent(const AActor* LocalScope) const
+UAGX_ShovelComponent* FAGX_ShovelReference::GetShovelComponent() const
 {
-	return Super::GetComponent<UAGX_ShovelComponent>(LocalScope);
+	return Super::GetComponent<UAGX_ShovelComponent>();
 }

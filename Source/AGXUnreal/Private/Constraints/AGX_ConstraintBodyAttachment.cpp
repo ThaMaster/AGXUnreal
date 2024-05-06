@@ -10,8 +10,7 @@
 
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
-#include "Constraints/AGX_ConstraintComponent.h"
-//#include "UObject/UObjectGlobals.h"
+#include "UObject/UObjectGlobals.h"
 
 FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment(USceneComponent* InOuter)
 	: Outer {InOuter}
@@ -43,14 +42,14 @@ FAGX_ConstraintBodyAttachment& FAGX_ConstraintBodyAttachment::operator=(
 	return *this;
 }
 
-UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody(const AActor* LocalScope) const
+UAGX_RigidBodyComponent* FAGX_ConstraintBodyAttachment::GetRigidBody() const
 {
-	return RigidBody.GetRigidBody(LocalScope);
+	return RigidBody.GetRigidBody();
 }
 
-FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocationFromBody(const AActor* LocalScope) const
+FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocationFromBody() const
 {
-	UAGX_RigidBodyComponent* Body = GetRigidBody(LocalScope);
+	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
 	{
 		UE_LOG(
@@ -67,12 +66,12 @@ FVector FAGX_ConstraintBodyAttachment::GetLocalFrameLocationFromBody(const AActo
 		return LocalFrameLocation;
 	}
 
-	return Body->GetComponentTransform().InverseTransformPositionNoScale(GetGlobalFrameLocation(LocalScope));
+	return Body->GetComponentTransform().InverseTransformPositionNoScale(GetGlobalFrameLocation());
 }
 
-FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotationFromBody(const AActor* LocalScope) const
+FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotationFromBody() const
 {
-	UAGX_RigidBodyComponent* Body = GetRigidBody(LocalScope);
+	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
 	{
 		UE_LOG(
@@ -89,12 +88,12 @@ FQuat FAGX_ConstraintBodyAttachment::GetLocalFrameRotationFromBody(const AActor*
 		return LocalFrameRotation.Quaternion();
 	}
 
-	return Body->GetComponentTransform().InverseTransformRotation(GetGlobalFrameRotation(LocalScope));
+	return Body->GetComponentTransform().InverseTransformRotation(GetGlobalFrameRotation());
 }
 
-FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation(const AActor* LocalScope) const
+FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation() const
 {
-	if (USceneComponent* FrameDefiningComp = GetFinalFrameDefiningComponent(LocalScope))
+	if (USceneComponent* FrameDefiningComp = GetFinalFrameDefiningComponent())
 	{
 		return FrameDefiningComp->GetComponentTransform().TransformPositionNoScale(
 			LocalFrameLocation);
@@ -103,9 +102,9 @@ FVector FAGX_ConstraintBodyAttachment::GetGlobalFrameLocation(const AActor* Loca
 	return LocalFrameLocation;
 }
 
-FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation(const AActor* LocalScope) const
+FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation() const
 {
-	if (USceneComponent* FrameDefiningComp = GetFinalFrameDefiningComponent(LocalScope))
+	if (USceneComponent* FrameDefiningComp = GetFinalFrameDefiningComponent())
 	{
 		return FrameDefiningComp->GetComponentTransform().TransformRotation(
 			LocalFrameRotation.Quaternion());
@@ -114,16 +113,16 @@ FQuat FAGX_ConstraintBodyAttachment::GetGlobalFrameRotation(const AActor* LocalS
 	return LocalFrameRotation.Quaternion();
 }
 
-FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix(const AActor* LocalScope) const
+FMatrix FAGX_ConstraintBodyAttachment::GetGlobalFrameMatrix() const
 {
-	FQuat Rotation = GetGlobalFrameRotation(LocalScope);
-	FVector Location = GetGlobalFrameLocation(LocalScope);
+	FQuat Rotation = GetGlobalFrameRotation();
+	FVector Location = GetGlobalFrameLocation();
 	return FMatrix(Rotation.GetAxisX(), Rotation.GetAxisY(), Rotation.GetAxisZ(), Location);
 }
 
-FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(const AActor* LocalScope)
+FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier()
 {
-	UAGX_RigidBodyComponent* Body = GetRigidBody(LocalScope);
+	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
 	{
 		return nullptr;
@@ -132,9 +131,9 @@ FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetRigidBodyBarrier(const AAct
 	return Body->GetNative();
 }
 
-FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetOrCreateRigidBodyBarrier(const AActor* LocalScope)
+FRigidBodyBarrier* FAGX_ConstraintBodyAttachment::GetOrCreateRigidBodyBarrier()
 {
-	UAGX_RigidBodyComponent* Body = GetRigidBody(LocalScope);
+	UAGX_RigidBodyComponent* Body = GetRigidBody();
 	if (Body == nullptr)
 	{
 		return nullptr;
@@ -151,9 +150,9 @@ void FAGX_ConstraintBodyAttachment::OnFrameDefiningComponentChanged(
 	UAGX_ConstraintFrameComponent* Previous =
 		Cast<UAGX_ConstraintFrameComponent>(PreviousFrameDefiningComponent);
 	UAGX_ConstraintFrameComponent* Next =
-		Cast<UAGX_ConstraintFrameComponent>(FrameDefiningComponent.GetSceneComponent(Parent->GetOwner()));
+		Cast<UAGX_ConstraintFrameComponent>(FrameDefiningComponent.GetSceneComponent());
 
-	PreviousFrameDefiningComponent = FrameDefiningComponent.GetSceneComponent(Parent->GetOwner());
+	PreviousFrameDefiningComponent = FrameDefiningComponent.GetSceneComponent();
 
 	if (Previous)
 	{
@@ -169,7 +168,7 @@ void FAGX_ConstraintBodyAttachment::UnregisterFromConstraintFrameComponent(
 	UAGX_ConstraintComponent* Parent)
 {
 	UAGX_ConstraintFrameComponent* ConstraintFrame =
-		Cast<UAGX_ConstraintFrameComponent>(FrameDefiningComponent.GetSceneComponent(Parent->GetOwner()));
+		Cast<UAGX_ConstraintFrameComponent>(FrameDefiningComponent.GetSceneComponent());
 
 	if (ConstraintFrame)
 	{
@@ -178,16 +177,16 @@ void FAGX_ConstraintBodyAttachment::UnregisterFromConstraintFrameComponent(
 }
 #endif
 
-USceneComponent* FAGX_ConstraintBodyAttachment::GetFinalFrameDefiningComponent(const AActor* LocalScope) const
+USceneComponent* FAGX_ConstraintBodyAttachment::GetFinalFrameDefiningComponent() const
 {
 	switch (FrameDefiningSource)
 	{
 		case EAGX_FrameDefiningSource::Constraint:
 			return Outer;
 		case EAGX_FrameDefiningSource::RigidBody:
-			return GetRigidBody(LocalScope);
+			return GetRigidBody();
 		case EAGX_FrameDefiningSource::Other:
-			return FrameDefiningComponent.GetSceneComponent(LocalScope);
+			return FrameDefiningComponent.GetSceneComponent();
 	}
 
 	return nullptr;

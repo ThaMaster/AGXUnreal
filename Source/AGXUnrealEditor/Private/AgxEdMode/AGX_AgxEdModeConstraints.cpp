@@ -49,15 +49,15 @@ FSlateIcon UAGX_AgxEdModeConstraints::GetIcon() const
 
 AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 {
-	if (RigidBody1.GetRigidBody(nullptr) == nullptr)
+	if (RigidBody1.GetRigidBody() == nullptr)
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 			"Cannot create constraints. At least the first Rigid Body must be chosen!");
 		return nullptr;
 	}
 
-	UAGX_RigidBodyComponent* Body1 = RigidBody1.GetRigidBody(nullptr);
-	UAGX_RigidBodyComponent* Body2 = RigidBody2.GetRigidBody(nullptr);
+	UAGX_RigidBodyComponent* Body1 = RigidBody1.GetRigidBody();
+	UAGX_RigidBodyComponent* Body2 = RigidBody2.GetRigidBody();
 	AAGX_ConstraintActor* Constraint = FAGX_EditorUtilities::CreateConstraintActor(
 		ConstraintType, Body1, Body2, false, true, true);
 
@@ -79,7 +79,7 @@ AAGX_ConstraintActor* UAGX_AgxEdModeConstraints::CreateConstraint() const
 			}
 			case EAGX_ConstraintActorParent::RigidBodyActor2:
 			{
-				if (RigidBody2.GetRigidBody(nullptr) != nullptr)
+				if (RigidBody2.GetRigidBody() != nullptr)
 				{
 					Constraint->AttachToActor(
 						RigidBody2.OwningActor, FAttachmentTransformRules::KeepRelativeTransform);
