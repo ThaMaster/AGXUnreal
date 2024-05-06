@@ -58,7 +58,7 @@ public:
 	 * Also updates the RenderTarget if available.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
-	void SetResolution(const FIntPoint& InResolution);
+	void SetResolution(FIntPoint InResolution);
 
 	/**
 	 * Render Target used by the Camera Sensor to write pixel data to.

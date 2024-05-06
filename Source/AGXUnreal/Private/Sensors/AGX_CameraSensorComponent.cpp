@@ -35,7 +35,7 @@ void UAGX_CameraSensorComponent::SetFOV(float InFOV)
 	FOV = InFOV;
 }
 
-void UAGX_CameraSensorComponent::SetResolution(const FIntPoint& InResolution)
+void UAGX_CameraSensorComponent::SetResolution(FIntPoint InResolution)
 {
 	if (!IsResolutionValid(InResolution))
 		return;
