@@ -515,7 +515,7 @@ void UAGX_TrackComponent::ApplyComponentInstanceData(
 		// In the case of BP Actor Instances, there can be wheels added to the instance
 		// in the level in addition to the wheels on the CDO. During BP instance reconstruction,
 		// those additional wheels are not added until instance has been fully deserialized.
-		// Therefore, we here make sure that the resolving of OwningActor in RigidBodyRefernce
+		// Therefore, we here make sure that the resolving of OwningActor in RigidBodyReference
 		// and SceneComponentReference is done for those additional wheels.
 		ResolveComponentReferenceOwningActors();
 
@@ -648,8 +648,16 @@ void UAGX_TrackComponent::ResolveComponentReferenceOwningActors()
 	// because which their OwningActor properties needs to be null during editing of the default
 	// actor, and cannot be resolved to an the actual actor until the Blueprint Actor is actually
 	// added to a level.
+
+	AActor* OwningActor = GetTypedOuter<AActor>();
 	for (FAGX_TrackWheel& Wheel : Wheels)
 	{
+// TODO Changes for Local Scope. Remove the disabled branch once done.
+#if 1
+		Wheel.RigidBody.LocalScope = OwningActor;
+		Wheel.FrameDefiningComponent.LocalScope = OwningActor;
+#else
+
 		if (Wheel.RigidBody.OwningActor == nullptr)
 		{
 			Wheel.RigidBody.OwningActor = GetTypedOuter<AActor>();
@@ -658,6 +666,7 @@ void UAGX_TrackComponent::ResolveComponentReferenceOwningActors()
 		{
 			Wheel.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 		}
+#endif
 	}
 }
 

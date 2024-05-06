@@ -111,6 +111,13 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	// but there will always be an outer chain. This worry may be unfounded.
 
 	AActor* Owner = GetTypedOuter<AActor>();
+// TODO Changes for Local Scope. Remove the disabled branch once done.
+#if 1
+	check(BodyAttachment1.RigidBody.LocalScope == Owner);
+	check(BodyAttachment1.FrameDefiningComponent.LocalScope == Owner);
+	check(BodyAttachment2.RigidBody.LocalScope == Owner);
+	check(BodyAttachment2.FrameDefiningComponent.LocalScope == Owner);
+#else
 	if (Owner != nullptr && Owner->IsChildActor())
 	{
 		// This is a workaround for the case where we are part of a Child Actor and a Blueprint
@@ -135,8 +142,9 @@ void UAGX_ConstraintComponent::PostInitProperties()
 		BodyAttachment2.RigidBody.OwningActor = Owner;
 	}
 
-	BodyAttachment1.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
-	BodyAttachment2.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
+	BodyAttachment1.FrameDefiningComponent.OwningActor = Owner;
+	BodyAttachment2.FrameDefiningComponent.OwningActor = Owner;
+#endif
 
 #if WITH_EDITOR
 	InitPropertyDispatcher();
@@ -919,6 +927,17 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 		}
 
+// TODO Changes for Local Scope. Remove the disabled branch once done.
+#if 1
+		// When using Local Scope instead of piggy-backing on Owning Actor we dont' need to do
+		// anything special here. We can let Owning Actor become None / nullptr, Component Reference
+		// will do the correct things as long as Local Scope hasn't been accidentally changed.
+		AActor* Owner = GetOwner();
+		check(BodyAttachment1.RigidBody.LocalScope == Owner);
+		check(BodyAttachment1.FrameDefiningComponent.LocalScope == Owner);
+		check(BodyAttachment2.RigidBody.LocalScope == Owner);
+		check(BodyAttachment2.FrameDefiningComponent.LocalScope == Owner);
+#else
 		// We must always have an OwningActor. The user clearing/setting OwningActor to
 		// None/nullptr really means "search the local scope", which we achieve by setting
 		// OwningActor to the closest AActor outer.
@@ -942,6 +961,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 		{
 			ModifiedBodyAttachment->FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
 		}
+#endif
 	}
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning

@@ -638,7 +638,7 @@ void FAGX_WireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
 	UAGX_WireComponent* Wire;
 	int32 NodeIndex;
 	const TCHAR* Error;
-	bool bValidSelection = GetValidatedSelection(*this, Wire, NodeIndex, Error);
+	const bool bValidSelection = GetValidatedSelection(*this, Wire, NodeIndex, Error);
 	if (!bValidSelection)
 	{
 		UE_LOG(

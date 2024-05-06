@@ -15,6 +15,9 @@
 FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment(USceneComponent* InOuter)
 	: Outer {InOuter}
 {
+	AActor* Owner = Outer->GetOwner();
+	RigidBody.LocalScope = Owner;
+	FrameDefiningComponent.LocalScope = Owner;
 }
 
 FAGX_ConstraintBodyAttachment& FAGX_ConstraintBodyAttachment::operator=(

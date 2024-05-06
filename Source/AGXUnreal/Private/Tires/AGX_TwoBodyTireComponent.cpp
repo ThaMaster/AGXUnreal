@@ -11,6 +11,9 @@
 
 UAGX_TwoBodyTireComponent::UAGX_TwoBodyTireComponent()
 {
+	AActor* Owner = GetTypedOuter<AActor>();
+	HubRigidBody.LocalScope = Owner;
+	TireRigidBody.LocalScope = Owner;
 }
 
 UAGX_RigidBodyComponent* UAGX_TwoBodyTireComponent::GetHubRigidBody() const
@@ -149,6 +152,12 @@ void UAGX_TwoBodyTireComponent::UpdateNativeProperties()
 void UAGX_TwoBodyTireComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// TODO Changes for Local Scope. Remove the disabled branch once done.
+	// Just to make sure Local Scope isn't overwritten by anything. It should be safe to remove this.
+	AActor* Owner = GetOwner();
+	check(HubRigidBody.LocalScope == Owner);
+	check(TireRigidBody.LocalScope == Owner);
 }
 
 void UAGX_TwoBodyTireComponent::PostInitProperties()
@@ -166,8 +175,15 @@ void UAGX_TwoBodyTireComponent::PostInitProperties()
 	//
 	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
 	// but there will always be an outer chain. This worry may be unfounded.
+// TODO Changes for Local Scope. Remove the disabled branch once done.
+#if 1
+	AActor* Owner = GetTypedOuter<AActor>();
+	check(HubRigidBody.LocalScope == Owner);
+	check(TireRigidBody.LocalScope == Owner);
+#else
 	TireRigidBody.OwningActor = GetTypedOuter<AActor>();
 	HubRigidBody.OwningActor = GetTypedOuter<AActor>();
+#endif
 }
 
 FTwoBodyTireBarrier* UAGX_TwoBodyTireComponent::CreateTwoBodyTireBarrier()

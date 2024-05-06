@@ -2,6 +2,9 @@
 
 #include "AGX_ComponentReference.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
+
 // Unreal Engine includes.
 #include "GameFramework/Actor.h"
 
@@ -16,26 +19,41 @@ FAGX_ComponentReference::FAGX_ComponentReference(TSubclassOf<UActorComponent> In
 {
 }
 
+FAGX_ComponentReference& FAGX_ComponentReference::operator=(const FAGX_ComponentReference& Other)
+{
+	OwningActor = Other.OwningActor;
+	// Intentionally not copying Local Scope.
+	Name = Other.Name;
+	bSearchChildActors = Other.bSearchChildActors;
+	return *this;
+}
+
+AActor* FAGX_ComponentReference::GetScope() const
+{
+	return IsValid(OwningActor) ? OwningActor : LocalScope;
+}
+
 namespace FAGX_ComponentReference_helpers
 {
 	TArray<UActorComponent*> GetCompatibleComponents(
-		TSubclassOf<UActorComponent> ComponentType, AActor* OwningActor, bool bSearchChildActors)
+		TSubclassOf<UActorComponent> ComponentType, const AActor* const Scope,
+		bool bSearchChildActors)
 	{
 		TArray<UActorComponent*> Components;
-		if (OwningActor == nullptr)
+		if (Scope == nullptr)
 		{
 			return Components;
 		}
-		OwningActor->GetComponents(ComponentType, Components, bSearchChildActors);
+		Scope->GetComponents(ComponentType, Components, bSearchChildActors);
 		return Components;
 	}
 
 	UActorComponent* FindComponent(
-		TSubclassOf<UActorComponent> ComponentType, AActor* OwningActor, const FName& Name,
+		TSubclassOf<UActorComponent> ComponentType, const AActor* const Scope, const FName& Name,
 		bool bSearchChildActors)
 	{
 		TArray<UActorComponent*> Components =
-			GetCompatibleComponents(ComponentType, OwningActor, bSearchChildActors);
+			GetCompatibleComponents(ComponentType, Scope, bSearchChildActors);
 		UActorComponent** It = Components.FindByPredicate(
 			[&Name](UActorComponent* Component) { return Component->GetFName() == Name; });
 		return It != nullptr ? *It : nullptr;
@@ -44,15 +62,21 @@ namespace FAGX_ComponentReference_helpers
 
 UActorComponent* FAGX_ComponentReference::GetComponent() const
 {
-	return IsValid(OwningActor) ? FAGX_ComponentReference_helpers::FindComponent(
-									  ComponentType, OwningActor, Name, bSearchChildActors)
-								: nullptr;
+	const AActor* const Scope = IsValid(OwningActor) ? OwningActor : LocalScope;
+	return FAGX_ComponentReference_helpers::FindComponent(
+		ComponentType, Scope, Name, bSearchChildActors);
 }
 
 TArray<UActorComponent*> FAGX_ComponentReference::GetCompatibleComponents() const
 {
+	UE_LOG(
+		LogAGX, Warning,
+		TEXT("ComponentReference %p getting compatible components from Owning Actor %p, Local "
+			 "Scope %p."),
+		this, OwningActor, LocalScope);
+	const AActor* const Scope = IsValid(OwningActor) ? OwningActor : LocalScope;
 	return FAGX_ComponentReference_helpers::GetCompatibleComponents(
-		ComponentType, OwningActor, bSearchChildActors);
+		ComponentType, Scope, bSearchChildActors);
 }
 
 UActorComponent* UAGX_ComponentReference_FL::GetComponent(FAGX_ComponentReference& Reference)

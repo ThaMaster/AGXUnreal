@@ -16,6 +16,7 @@
 
 UAGX_WireWinchComponent::UAGX_WireWinchComponent()
 {
+	WireWinch.BodyAttachment.LocalScope = GetTypedOuter<AActor>();
 #if WITH_EDITORONLY_DATA
 	bVisualizeComponent = true;
 #endif
@@ -73,6 +74,11 @@ void UAGX_WireWinchComponent::SetNativeAddress(uint64 NativeAddress)
 void UAGX_WireWinchComponent::BeginPlay()
 {
 	Super::BeginPlay();
+// TODO Changes for Local Scope. Remove the disabled branch once done.
+#if 1
+	check(WireWinch.BodyAttachment.LocalScope == GetTypedOuter<AActor>());
+#endif
+
 	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{
 		// Do not create a native AGX Dynamics object if GIsReconstructingBlueprintInstances is set.
@@ -132,7 +138,12 @@ TStructOnScope<FActorComponentInstanceData> UAGX_WireWinchComponent::GetComponen
 void UAGX_WireWinchComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
+// TODO Changes for Local Scope. Remove the disabled branch once done.
+#if 1
+	check(WireWinch.BodyAttachment.LocalScope == GetTypedOuter<AActor>());
+#else
 	WireWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
+#endif
 
 #if WITH_EDITOR
 	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =

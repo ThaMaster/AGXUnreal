@@ -91,10 +91,28 @@ struct AGXUNREAL_API FAGX_ComponentReference
 	FAGX_ComponentReference();
 	FAGX_ComponentReference(TSubclassOf<UActorComponent> InComponentType);
 
+	FAGX_ComponentReference& operator=(const FAGX_ComponentReference& Other);
+
 	UPROPERTY(
 		EditInstanceOnly, BlueprintReadWrite, Category = "AGX Component Reference",
 		Meta = (Tooltip = "The Actor that owns the Component."))
 	AActor* OwningActor {nullptr};
+
+	/**
+	 * Actor searched if Owning Actor is nullptr or points to an invalid Actor. Should always
+	 * be set in the constructor of the Component that contains this Component Reference.
+	 *
+	 * Intentionally not a UProperty because we do not want this to be serialized or used in equals
+	 * comparisons. We want the Component that contains this Component Reference to always be in
+	 * control of this pointer.
+	 */
+	AActor* LocalScope {nullptr};
+
+	/**
+	 * Get the Actor that should be searched for the referenced Component. Is Owning Actor if that
+	 * is valid, if not then Local Scope is returned.
+	 */
+	AActor* GetScope() const;
 
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Component Reference",
@@ -177,6 +195,16 @@ struct AGXUNREAL_API FAGX_ComponentReference
 	 * knows that this Constraint needs to be notified about the reconstruction.
 	 */
 };
+
+
+inline bool operator==(const FAGX_ComponentReference& Lhs, const FAGX_ComponentReference& Rhs)
+{
+	return
+	Lhs.OwningActor == Rhs.OwningActor
+	// Intentionally not comparing Local Scope.
+	&& Lhs.Name == Rhs.Name
+	&& Lhs.bSearchChildActors == Rhs.bSearchChildActors;
+}
 
 template <typename T>
 T* FAGX_ComponentReference::GetComponent() const

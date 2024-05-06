@@ -3,6 +3,7 @@
 #include "Wire/AGX_WireDetailsRuntime.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
@@ -154,6 +155,15 @@ void FAGX_WireDetailsRuntime::UpdateValues()
 		SetAll(NoObject);
 		return;
 	}
+
+	// UE_LOG(LogAGX, Warning, TEXT("Creating details panel for wire %p."), Wire);
+	// UE_LOG(LogAGX, Warning, TEXT(" Routing node frame parent:"));
+	// for (const FWireRoutingNode& Node : Wire->RouteNodes)
+	// {
+		// UE_LOG(
+			// LogAGX, Warning, TEXT("  %p: Local Scope: %p, Owning Actor: %p"), &Node.Frame.Parent,
+			// Node.Frame.Parent.LocalScope, Node.Frame.Parent.OwningActor);
+	// }
 
 	if (!Wire->HasNative())
 	{
