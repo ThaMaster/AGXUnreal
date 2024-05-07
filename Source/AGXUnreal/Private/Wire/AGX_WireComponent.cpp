@@ -1371,6 +1371,23 @@ void UAGX_WireComponent::PostInitProperties()
 
 #if WITH_EDITOR
 	InitPropertyDispatcher();
+
+	// If the wire routing node frame parent's owner is a Blueprint instance then any
+	// modification of that instance will cause a Blueprint Reconstruction. During
+	// reconstruction all the Components will be destroyed and recreated. Unfortunately, Scene
+	// Component does not use Actor Component Instance Data to transfer delegate callbacks, such
+	// as Transform Updated, from the old object to the new one, so we need to do that
+	// ourselves. Fortunately, the engine provides the On Object Replaced event that we can use
+	// to do the transfer.
+	//
+	// Must be in Post Init Properties, not Post Load, because not all Components get the Post Load
+	// callback. In particular, adding a new Component to an already existing Actor in a level will
+	// not call Post Load.
+	if (!ObjectsReplacedDelegateHandle.IsValid())
+	{
+		ObjectsReplacedDelegateHandle = FCoreUObjectDelegates::OnObjectsReplaced.AddUObject(
+			this, &UAGX_WireComponent::OnRouteNodeParentReplaced);
+	}
 #endif
 }
 
@@ -1421,19 +1438,6 @@ void UAGX_WireComponent::PostLoad()
 					SynchronizeParentMovedCallbacks();
 					UpdateVisuals();
 				});
-		}
-
-		// If the wire routing node frame parent's owner is a Blueprint instance then any
-		// modification of that instance will cause a Blueprint Reconstruction. During
-		// reconstruction all the Components will be destroyed and recreated. Unfortunately, Scene
-		// Component does not use Actor Component Instance Data to transfer delegate callbacks, such
-		// as Transform Updated, from the old object to the new one, so we need to do that
-		// ourselves. Fortunately, the engine provides the On Object Replaced event that we can use
-		// to do the transfer.
-		if (!ObjectsReplacedDelegateHandle.IsValid())
-		{
-			ObjectsReplacedDelegateHandle = FCoreUObjectDelegates::OnObjectsReplaced.AddUObject(
-				this, &UAGX_WireComponent::OnRouteNodeParentReplaced);
 		}
 	}
 #endif
