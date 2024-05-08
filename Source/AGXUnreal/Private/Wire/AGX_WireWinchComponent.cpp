@@ -6,6 +6,7 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_NativeOwnerInstanceData.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Wire/AGX_WireUtilities.h"
 #include "Wire/WireBarrier.h"
 
@@ -16,7 +17,7 @@
 
 UAGX_WireWinchComponent::UAGX_WireWinchComponent()
 {
-	WireWinch.BodyAttachment.LocalScope = GetTypedOuter<AActor>();
+	WireWinch.BodyAttachment.SetLocalScope(GetTypedOuter<AActor>());
 #if WITH_EDITORONLY_DATA
 	bVisualizeComponent = true;
 #endif
@@ -76,7 +77,7 @@ void UAGX_WireWinchComponent::BeginPlay()
 	Super::BeginPlay();
 // TODO Changes for Local Scope. Remove the disabled branch once done.
 #if 1
-	check(WireWinch.BodyAttachment.LocalScope == GetTypedOuter<AActor>());
+	check(WireWinch.BodyAttachment.LocalScope == FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>()));
 #endif
 
 	if (!HasNative() && !GIsReconstructingBlueprintInstances)
@@ -140,7 +141,7 @@ void UAGX_WireWinchComponent::PostInitProperties()
 	Super::PostInitProperties();
 // TODO Changes for Local Scope. Remove the disabled branch once done.
 #if 1
-	check(WireWinch.BodyAttachment.LocalScope == GetTypedOuter<AActor>());
+	check(WireWinch.BodyAttachment.LocalScope == FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>()));
 #else
 	WireWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
 #endif

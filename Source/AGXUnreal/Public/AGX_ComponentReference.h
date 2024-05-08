@@ -109,6 +109,12 @@ struct AGXUNREAL_API FAGX_ComponentReference
 	AActor* LocalScope {nullptr};
 
 	/**
+	 * Let the Component Reference know which Actor is the local scope. If the given Actor is a
+	 * Child Actor then the parent actor chain will be traversed until a non-Child-Actor is found.
+	 */
+	void SetLocalScope(AActor* InLocalScope);
+
+	/**
 	 * Get the Actor that should be searched for the referenced Component. Is Owning Actor if that
 	 * is valid, if not then Local Scope is returned.
 	 */

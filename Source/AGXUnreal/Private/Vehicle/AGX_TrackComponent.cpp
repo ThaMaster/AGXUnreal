@@ -649,7 +649,7 @@ void UAGX_TrackComponent::ResolveComponentReferenceOwningActors()
 	// actor, and cannot be resolved to an the actual actor until the Blueprint Actor is actually
 	// added to a level.
 
-	AActor* OwningActor = GetTypedOuter<AActor>();
+	AActor* OwningActor = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
 	for (FAGX_TrackWheel& Wheel : Wheels)
 	{
 // TODO Changes for Local Scope. Remove the disabled branch once done.

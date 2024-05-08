@@ -52,8 +52,10 @@ UAGX_WireComponent::UAGX_WireComponent()
 	AddNodeAtLocation(FVector::ZeroVector);
 	AddNodeAtLocation(FVector(100.0f, 0.0f, 0.0f));
 
-	AActor* Owner = GetTypedOuter<AActor>();
-	UE_LOG(LogAGX, Warning, TEXT("Constructor on Wire Component %p setting Local Scope to %p."), this, Owner);
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
+	UE_LOG(
+		LogAGX, Warning, TEXT("Constructor on Wire Component %p setting Local Scope to %p."), this,
+		Owner);
 	OwnedBeginWinch.BodyAttachment.LocalScope = Owner;
 	OwnedEndWinch.BodyAttachment.LocalScope = Owner;
 
@@ -987,7 +989,7 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InN
 	FWireRoutingNode& NewNode = RouteNodes[InIndex];
 // TODO Changes for Local Scope. Remove the disabled branch once done.
 #if 1
-	NewNode.Frame.Parent.LocalScope = GetTypedOuter<AActor>();
+	NewNode.Frame.Parent.SetLocalScope(GetTypedOuter<AActor>());
 #else
 	FAGX_ObjectUtilities::SetIfNullptr(NewNode.Frame.Parent.OwningActor, GetTypedOuter<AActor>());
 #endif
@@ -1012,7 +1014,7 @@ void UAGX_WireComponent::SetNode(const int32 InIndex, const FWireRoutingNode InN
 	RouteNodes[InIndex] = InNode;
 // TODO Changes for Local Scope. Remove the disabled branch once done.
 #if 1
-	RouteNodes[InIndex].Frame.Parent.LocalScope = GetOwner();
+	RouteNodes[InIndex].Frame.Parent.SetLocalScope(GetOwner());
 #else
 	FAGX_ObjectUtilities::SetIfNullptr(
 		RouteNodes[InIndex].Frame.Parent.OwningActor, GetTypedOuter<AActor>());
@@ -1348,10 +1350,12 @@ void UAGX_WireComponent::PostInitProperties()
 
 	// Establish the local scope for all Component References this Component owns. For more
 	// information see comments in AGX_ComponentReference.h.
-	AActor* Owner = GetTypedOuter<AActor>();
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
 // TODO Changes for Local Scope. Remove the disabled branch once done.
 #if 1
-	UE_LOG(LogAGX, Warning, TEXT("Post Init Properties on Wire Component %p setting Local Scope to %p."), this, Owner);
+	UE_LOG(
+		LogAGX, Warning,
+		TEXT("Post Init Properties on Wire Component %p setting Local Scope to %p."), this, Owner);
 	OwnedBeginWinch.BodyAttachment.LocalScope = Owner;
 	OwnedEndWinch.BodyAttachment.LocalScope = Owner;
 	for (FWireRoutingNode& Node : RouteNodes)
@@ -1401,8 +1405,10 @@ void UAGX_WireComponent::PostLoad()
 	// Actor explicitly then the implicit one, i.e. our outer Actor, should be used. The Begin- and
 	// EndWinch don't need to do this because they always exists and is always set in Post Init
 	// Properties.
-	AActor* Owner = GetTypedOuter<AActor>();
-	UE_LOG(LogAGX, Warning, TEXT("Post Load on Wire Component %p setting Local Scope to %p."), this, Owner);
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
+	UE_LOG(
+		LogAGX, Warning, TEXT("Post Load on Wire Component %p setting Local Scope to %p."), this,
+		Owner);
 	for (FWireRoutingNode& Node : RouteNodes)
 	{
 // TODO Changes for Local Scope. Remove the disabled branch once done.
@@ -1696,8 +1702,10 @@ void UAGX_WireComponent::OnRegister()
 	// During level load any Blueprint Instances will be created by running the Construction Script.
 	// Any routing nodes created by that script will not be seen by Post Init Properties and Post
 	// Load, so their Local Scope must be set here.
-	AActor* Owner = GetOwner();
-	UE_LOG(LogAGX, Warning, TEXT("On Register on Wire Component %p setting Local Scope to %p."), this, Owner);
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
+	UE_LOG(
+		LogAGX, Warning, TEXT("On Register on Wire Component %p setting Local Scope to %p."), this,
+		Owner);
 	for (FWireRoutingNode& Node : RouteNodes)
 	{
 		Node.Frame.Parent.LocalScope = Owner;
@@ -2067,6 +2075,7 @@ void UAGX_WireComponent::CreateNative()
 		AGX_WireComponent_helpers::CreateNativeWinch(*this, EWireSide::Begin);
 	}
 
+	AActor* const Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
 	// Create AGX Dynamics simulation nodes and initialize the wire.
 	for (int32 I = 0; I < RouteNodes.Num(); ++I)
 	{
@@ -2075,8 +2084,8 @@ void UAGX_WireComponent::CreateNative()
 
 // TODO Changes for Local Scope. Remove the disabled branch once done.
 #if 1
-		check(RouteNode.Frame.Parent.LocalScope == GetOwner());
-		check(RouteNode.RigidBody.LocalScope == GetOwner());
+		check(RouteNode.Frame.Parent.LocalScope == Owner);
+		check(RouteNode.RigidBody.LocalScope == Owner);
 #else
 		if (RouteNode.RigidBody.OwningActor == nullptr)
 		{

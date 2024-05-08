@@ -7,6 +7,7 @@
 #include "AGX_SceneComponentReference.h"
 #include "AGX_LogCategory.h"
 #include "Constraints/AGX_ConstraintFrameComponent.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
@@ -15,7 +16,7 @@
 FAGX_ConstraintBodyAttachment::FAGX_ConstraintBodyAttachment(USceneComponent* InOuter)
 	: Outer {InOuter}
 {
-	AActor* Owner = Outer->GetOwner();
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(Outer->GetOwner());
 	RigidBody.LocalScope = Owner;
 	FrameDefiningComponent.LocalScope = Owner;
 }

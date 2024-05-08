@@ -27,6 +27,12 @@ public:
 	 */
 	static void GetChildActorsOfActor(AActor* Parent, TArray<AActor*>& ChildActors);
 
+	/**
+	 * Walk the Parent Actor chain until a non-Child-Actor is found and return that. If the given
+	 * Actor is not a Child Actor then it is returned.
+	 */
+	static AActor* GetRootParentActor(AActor* Actor);
+
 	/*
 	 * Checks whether the component is a template Component, i.e. it may have archetype instances.
 	 */

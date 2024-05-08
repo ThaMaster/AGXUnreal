@@ -110,9 +110,9 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
 	// but there will always be an outer chain. This worry may be unfounded.
 
-	AActor* Owner = GetTypedOuter<AActor>();
 // TODO Changes for Local Scope. Remove the disabled branch once done.
 #if 1
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
 	check(BodyAttachment1.RigidBody.LocalScope == Owner);
 	check(BodyAttachment1.FrameDefiningComponent.LocalScope == Owner);
 	check(BodyAttachment2.RigidBody.LocalScope == Owner);
@@ -932,7 +932,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 		// When using Local Scope instead of piggy-backing on Owning Actor we dont' need to do
 		// anything special here. We can let Owning Actor become None / nullptr, Component Reference
 		// will do the correct things as long as Local Scope hasn't been accidentally changed.
-		AActor* Owner = GetOwner();
+		AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
 		check(BodyAttachment1.RigidBody.LocalScope == Owner);
 		check(BodyAttachment1.FrameDefiningComponent.LocalScope == Owner);
 		check(BodyAttachment2.RigidBody.LocalScope == Owner);

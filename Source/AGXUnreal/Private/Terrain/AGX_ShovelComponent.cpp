@@ -26,7 +26,7 @@ UAGX_ShovelComponent::UAGX_ShovelComponent()
 	// Keep ticking off until we have a reason to turn it on.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	AActor* Owner = GetTypedOuter<AActor>();
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
 // TODO Changes for Local Scope. Remove the disabled branch once done.
 #if 1
 	RigidBody.LocalScope = Owner;
@@ -366,7 +366,7 @@ void UAGX_ShovelComponent::PostInitProperties()
 	//
 	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
 	// but there will always be an outer chain. This worry may be unfounded.
-	AActor* Owner = GetTypedOuter<AActor>();
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
 // TODO Changes for Local Scope. Remove the disabled branch once done.
 #if 1
 	check(RigidBody.LocalScope == Owner);
@@ -394,7 +394,7 @@ void UAGX_ShovelComponent::PostEditChangeChainProperty(FPropertyChangedChainEven
 	// TODO Changes for Local Scope. Remove the disabled branch once done.
 	// Just to make sure Local Scope isn't overwritten by anything. It should be safe to remove
 	// this.
-	AActor* Owner = GetOwner();
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
 	check(RigidBody.LocalScope == Owner);
 	check(TopEdge.Start.Parent.LocalScope == Owner);
 	check(TopEdge.End.Parent.LocalScope == Owner);
@@ -416,7 +416,7 @@ void UAGX_ShovelComponent::BeginPlay()
 	// TODO Changes for Local Scope. Remove the disabled branch once done.
 	// Just to make sure Local Scope isn't overwritten by anything. It should be safe to remove
 	// this.s
-	AActor* Owner = GetOwner();
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
 	check(RigidBody.LocalScope == Owner);
 	check(TopEdge.Start.Parent.LocalScope == Owner);
 	check(TopEdge.End.Parent.LocalScope == Owner);
