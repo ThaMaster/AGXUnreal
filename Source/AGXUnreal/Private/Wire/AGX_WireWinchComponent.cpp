@@ -136,7 +136,7 @@ TStructOnScope<FActorComponentInstanceData> UAGX_WireWinchComponent::GetComponen
 void UAGX_WireWinchComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-	check(WireWinch.BodyAttachment.LocalScope == FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>()));
+	WireWinch.BodyAttachment.SetLocalScope(GetTypedOuter<AActor>());
 
 #if WITH_EDITOR
 	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =

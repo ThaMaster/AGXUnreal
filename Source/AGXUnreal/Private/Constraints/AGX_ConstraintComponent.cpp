@@ -102,19 +102,11 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	// copied from the Class Default Object, but before deserialization in cases where this object
 	// is created from another, such as at the start of a Play-in-Editor session or when loading
 	// a map in a cooked build (I hope).
-	//
-	// The intention is to provide by default a local scope that is the Actor outer that this
-	// Component is part of. If the OwningActor is set anywhere else, such as in the Details Panel,
-	// then that "else" should overwrite the value set here shortly.
-	//
-	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
-	// but there will always be an outer chain. This worry may be unfounded.
-
 	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	check(BodyAttachment1.RigidBody.LocalScope == Owner);
-	check(BodyAttachment1.FrameDefiningComponent.LocalScope == Owner);
-	check(BodyAttachment2.RigidBody.LocalScope == Owner);
-	check(BodyAttachment2.FrameDefiningComponent.LocalScope == Owner);
+	BodyAttachment1.RigidBody.LocalScope = Owner;
+	BodyAttachment1.FrameDefiningComponent.LocalScope = Owner;
+	BodyAttachment2.RigidBody.LocalScope = Owner;
+	BodyAttachment2.FrameDefiningComponent.LocalScope = Owner;
 
 #if WITH_EDITOR
 	InitPropertyDispatcher();
@@ -1076,6 +1068,22 @@ void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
 }
 
 #endif
+
+
+void UAGX_ConstraintComponent::OnRegister()
+{
+	Super::OnRegister();
+
+	// On Register is called after all object initialization has completed, i.e. Unreal Engine
+	// will not be messing with this object anymore. It is now safe to set the Local Scope on our
+	// Component References.
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
+	BodyAttachment1.RigidBody.LocalScope = Owner;
+	BodyAttachment1.FrameDefiningComponent.LocalScope = Owner;
+	BodyAttachment2.RigidBody.LocalScope = Owner;
+	BodyAttachment2.FrameDefiningComponent.LocalScope = Owner;
+}
+
 
 void UAGX_ConstraintComponent::OnUnregister()
 {

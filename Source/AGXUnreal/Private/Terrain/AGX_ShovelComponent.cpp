@@ -349,20 +349,13 @@ void UAGX_ShovelComponent::PostInitProperties()
 	// copied from the Class Default Object, but before deserialization in cases where this object
 	// is created from another, such as at the start of a Play-in-Editor session or when loading
 	// a map in a cooked build (I hope).
-	//
-	// The intention is to provide by default a local scope that is the Actor outer that this
-	// component is part of. If the OwningActor is set anywhere else, such as in the Details Panel,
-	// then that "else" should overwrite this value shortly.
-	//
-	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
-	// but there will always be an outer chain. This worry may be unfounded.
-	const AActor* const Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	check(RigidBody.LocalScope == Owner);
-	check(TopEdge.Start.Parent.LocalScope == Owner);
-	check(TopEdge.End.Parent.LocalScope == Owner);
-	check(CuttingEdge.Start.Parent.LocalScope == Owner);
-	check(CuttingEdge.End.Parent.LocalScope == Owner);
-	check(CuttingDirection.Parent.LocalScope == Owner);
+	AActor* const Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
+	RigidBody.LocalScope = Owner;
+	TopEdge.Start.Parent.LocalScope = Owner;
+	TopEdge.End.Parent.LocalScope = Owner;
+	CuttingEdge.Start.Parent.LocalScope = Owner;
+	CuttingEdge.End.Parent.LocalScope = Owner;
+	CuttingDirection.Parent.LocalScope = Owner;
 
 	InitPropertyDispatcher();
 }

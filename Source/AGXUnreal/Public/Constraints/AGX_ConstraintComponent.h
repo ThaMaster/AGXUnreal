@@ -404,6 +404,7 @@ public:
 		struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
 
+	virtual void OnRegister() override;
 	// Called when deleted in editor, in game, if owning actor is deleted or when switching level.
 	virtual void OnUnregister() override;
 
