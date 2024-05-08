@@ -332,19 +332,7 @@ void UAGX_TrackComponent::SetNativeAddress(uint64 NativeAddress)
 void UAGX_TrackComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-
-	// This code is run after the constructor and after InitProperties, where property values are
-	// copied from the Class Default Object, but before deserialization in cases where this object
-	// is created from another, such as at the start of a Play-in-Editor session or when loading
-	// a map in a cooked build (I hope).
-	//
-	// The intention is to provide by default a local scope that is the Actor outer that this
-	// Component is part of. If the OwningActor is set anywhere else, such as in the Details Panel,
-	// then that "else" should overwrite the value set here shortly.
-	//
-	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
-	// but there will always be an outer chain. This worry may be unfounded.
-	ResolveComponentReferenceOwningActors();
+	SetComponentReferencesLocalScope();
 
 #if WITH_EDITOR
 	InitPropertyDispatcher();
@@ -419,7 +407,7 @@ void UAGX_TrackComponent::PostDuplicate(bool bDuplicateForPIE)
 {
 	Super::PostDuplicate(bDuplicateForPIE);
 
-	ResolveComponentReferenceOwningActors();
+	SetComponentReferencesLocalScope();
 }
 
 void UAGX_TrackComponent::PostLoad()
@@ -430,7 +418,7 @@ void UAGX_TrackComponent::PostLoad()
 	// not yet populated in PostInitProperties(), which means we cannot resolve the owning actors at
 	// that time. Therefore, we try to resolve the owning actors from here too, when the wheels
 	// should be populated and ready.
-	ResolveComponentReferenceOwningActors();
+	SetComponentReferencesLocalScope();
 
 	RaiseTrackPreviewNeedsUpdate();
 	UpdateVisuals();
@@ -517,7 +505,7 @@ void UAGX_TrackComponent::ApplyComponentInstanceData(
 		// those additional wheels are not added until instance has been fully deserialized.
 		// Therefore, we here make sure that the resolving of OwningActor in RigidBodyReference
 		// and SceneComponentReference is done for those additional wheels.
-		ResolveComponentReferenceOwningActors();
+		SetComponentReferencesLocalScope();
 
 		// Call this to re-register this reconstructed track component to
 		// UAGX_TrackInternalMergeProperties.
@@ -534,10 +522,9 @@ void UAGX_TrackComponent::ApplyComponentInstanceData(
 void UAGX_TrackComponent::OnRegister()
 {
 	Super::OnRegister();
-
+	SetComponentReferencesLocalScope();
 	if (VisualMeshes == nullptr)
 		CreateVisuals();
-
 	UpdateVisuals();
 }
 
@@ -640,20 +627,13 @@ void UAGX_TrackComponent::InitPropertyDispatcher()
 
 #endif
 
-void UAGX_TrackComponent::ResolveComponentReferenceOwningActors()
+void UAGX_TrackComponent::SetComponentReferencesLocalScope()
 {
-	// Make Track Wheels search for Rigid Body Components and Frame Defining Components
-	// in the same Actor as this Track Component is in, unless another owner has already
-	// been specified. This resolving of owning actors is typically necessary for Blueprint Actors
-	// because which their OwningActor properties needs to be null during editing of the default
-	// actor, and cannot be resolved to an the actual actor until the Blueprint Actor is actually
-	// added to a level.
-
-	AActor* OwningActor = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
 	for (FAGX_TrackWheel& Wheel : Wheels)
 	{
-		Wheel.RigidBody.LocalScope = OwningActor;
-		Wheel.FrameDefiningComponent.LocalScope = OwningActor;
+		Wheel.RigidBody.LocalScope = Owner;
+		Wheel.FrameDefiningComponent.LocalScope = Owner;
 	}
 }
 
@@ -711,7 +691,7 @@ void UAGX_TrackComponent::CreateNative()
 		return;
 	}
 
-	ResolveComponentReferenceOwningActors();
+	SetComponentReferencesLocalScope();
 	for (FAGX_TrackWheel& Wheel : Wheels)
 	{
 		// Validate and get the Rigid Body Component.
