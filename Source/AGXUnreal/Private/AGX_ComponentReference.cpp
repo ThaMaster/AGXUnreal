@@ -20,15 +20,6 @@ FAGX_ComponentReference::FAGX_ComponentReference(TSubclassOf<UActorComponent> In
 {
 }
 
-FAGX_ComponentReference& FAGX_ComponentReference::operator=(const FAGX_ComponentReference& Other)
-{
-	OwningActor = Other.OwningActor;
-	// Intentionally not copying Local Scope.
-	Name = Other.Name;
-	bSearchChildActors = Other.bSearchChildActors;
-	return *this;
-}
-
 void FAGX_ComponentReference::SetLocalScope(AActor* InLocalScope)
 {
 	// This is a workaround for the case where the Component that owns this Component Reference

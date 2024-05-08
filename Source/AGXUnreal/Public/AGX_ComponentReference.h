@@ -79,7 +79,12 @@ struct AGXUNREAL_API FAGX_ComponentReference
 	FAGX_ComponentReference();
 	FAGX_ComponentReference(TSubclassOf<UActorComponent> InComponentType);
 
-	FAGX_ComponentReference& operator=(const FAGX_ComponentReference& Other);
+	// It would be safer to implement the copy constructor and assignment operator to not copy Local
+	// Scope, so that we can be sure we don't ever copy a Component Reference from one Component
+	// into another without updating Local Scope. Unfortunately, Blueprint Visual Script doesn't
+	// support references to structs, it will always copy from C++ to Visual Script, which means
+	// that if we do not copy Local Scope then there is no way of getting a Component that is
+	// referenced within the local scope. So we must copy.
 
 	UPROPERTY(
 		EditInstanceOnly, BlueprintReadWrite, Category = "AGX Component Reference",
