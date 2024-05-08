@@ -53,9 +53,6 @@ UAGX_WireComponent::UAGX_WireComponent()
 	AddNodeAtLocation(FVector(100.0f, 0.0f, 0.0f));
 
 	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	UE_LOG(
-		LogAGX, Warning, TEXT("Constructor on Wire Component %p setting Local Scope to %p."), this,
-		Owner);
 	OwnedBeginWinch.BodyAttachment.LocalScope = Owner;
 	OwnedEndWinch.BodyAttachment.LocalScope = Owner;
 
@@ -1340,9 +1337,6 @@ void UAGX_WireComponent::PostInitProperties()
 	// Establish the local scope for all Component References this Component owns. For more
 	// information see comments in AGX_ComponentReference.h.
 	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("Post Init Properties on Wire Component %p setting Local Scope to %p."), this, Owner);
 	OwnedBeginWinch.BodyAttachment.LocalScope = Owner;
 	OwnedEndWinch.BodyAttachment.LocalScope = Owner;
 	for (FWireRoutingNode& Node : RouteNodes)
@@ -1384,14 +1378,8 @@ void UAGX_WireComponent::PostLoad()
 	// EndWinch don't need to do this because they always exists and is always set in Post Init
 	// Properties.
 	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	UE_LOG(
-		LogAGX, Warning, TEXT("Post Load on Wire Component %p setting Local Scope to %p."), this,
-		Owner);
 	for (FWireRoutingNode& Node : RouteNodes)
 	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("  Setting on node frame parent %p and Node Rigid Body %p."),
-			&Node.Frame.Parent, &Node.RigidBody);
 		Node.Frame.Parent.LocalScope = Owner;
 		Node.RigidBody.LocalScope = Owner;
 	}
@@ -1675,9 +1663,6 @@ void UAGX_WireComponent::OnRegister()
 	// Any routing nodes created by that script will not be seen by Post Init Properties and Post
 	// Load, so their Local Scope must be set here.
 	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
-	UE_LOG(
-		LogAGX, Warning, TEXT("On Register on Wire Component %p setting Local Scope to %p."), this,
-		Owner);
 	for (FWireRoutingNode& Node : RouteNodes)
 	{
 		Node.Frame.Parent.LocalScope = Owner;
