@@ -337,8 +337,7 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 		return;
 	}
 
-// TODO Changes for Local Scope. Remove the disabled branch once done.
-#if 1
+	// Populate Component Names either from the Blueprint or from the owning Actor.
 	const UBlueprintGeneratedClass* Blueprint = GetBlueprint(*ComponentReferenceHandle.Get());
 	if (Blueprint != nullptr)
 	{
@@ -349,20 +348,6 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 	{
 		GetComponentNamesFromOwner(ComponentNames, *ComponentReference);
 	}
-#else
-	// Populate Component Names either from the owning Actor or from the Blueprint.
-	const AActor* OwningActor = GetOwningActor();
-	if (OwningActor != nullptr)
-	{
-		GetComponentNamesFromOwner(ComponentNames, *ComponentReference);
-	}
-	else
-	{
-		// It is OK to call this even when we aren't part of a Blueprint, will result in empty list.
-		GetComponentNamesFromBlueprint(
-			ComponentNames, *ComponentReferenceHandle.Get(), ComponentReference->ComponentType);
-	}
-#endif
 
 	bFoundComponents = ComponentNames.Num() > 0;
 

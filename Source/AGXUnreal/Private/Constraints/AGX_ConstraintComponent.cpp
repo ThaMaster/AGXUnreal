@@ -110,41 +110,11 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
 	// but there will always be an outer chain. This worry may be unfounded.
 
-// TODO Changes for Local Scope. Remove the disabled branch once done.
-#if 1
 	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
 	check(BodyAttachment1.RigidBody.LocalScope == Owner);
 	check(BodyAttachment1.FrameDefiningComponent.LocalScope == Owner);
 	check(BodyAttachment2.RigidBody.LocalScope == Owner);
 	check(BodyAttachment2.FrameDefiningComponent.LocalScope == Owner);
-#else
-	if (Owner != nullptr && Owner->IsChildActor())
-	{
-		// This is a workaround for the case where we are part of a Child Actor and a Blueprint
-		// instance. If so, then the Child Actor does not behave the same as a regular
-		// Blueprint Actor instance; it will be destroyed shortly after this code runs.
-		// This means that the RigidBodyReference's OwningActor will be invalid or nullptr at
-		// the time of visualizing this component, or even at the time when creating a native AGX
-		// Constraint in some cases. Therefore, we set the OwningActor to the owner of the child
-		// Actor containing us, and combine this with 'bSearchChildActors' so that the
-		// RigidBodyReference will search among child Actors from the child Actor owner. This is a
-		// workaround, and better solutions may exists, though I have not found any.
-		// Limitations: name collisions for Rigid Bodies in the Child Actor and the owning Actor
-		// is not handled. Also, Child Actor hierarchical chains are not handled.
-		BodyAttachment1.RigidBody.OwningActor = Owner->GetParentActor();
-		BodyAttachment2.RigidBody.OwningActor = Owner->GetParentActor();
-		BodyAttachment1.RigidBody.bSearchChildActors = true;
-		BodyAttachment2.RigidBody.bSearchChildActors = true;
-	}
-	else
-	{
-		BodyAttachment1.RigidBody.OwningActor = Owner;
-		BodyAttachment2.RigidBody.OwningActor = Owner;
-	}
-
-	BodyAttachment1.FrameDefiningComponent.OwningActor = Owner;
-	BodyAttachment2.FrameDefiningComponent.OwningActor = Owner;
-#endif
 
 #if WITH_EDITOR
 	InitPropertyDispatcher();
@@ -927,8 +897,6 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 		}
 
-// TODO Changes for Local Scope. Remove the disabled branch once done.
-#if 1
 		// When using Local Scope instead of piggy-backing on Owning Actor we dont' need to do
 		// anything special here. We can let Owning Actor become None / nullptr, Component Reference
 		// will do the correct things as long as Local Scope hasn't been accidentally changed.
@@ -937,31 +905,6 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 		check(BodyAttachment1.FrameDefiningComponent.LocalScope == Owner);
 		check(BodyAttachment2.RigidBody.LocalScope == Owner);
 		check(BodyAttachment2.FrameDefiningComponent.LocalScope == Owner);
-#else
-		// We must always have an OwningActor. The user clearing/setting OwningActor to
-		// None/nullptr really means "search the local scope", which we achieve by setting
-		// OwningActor to the closest AActor outer.
-		//
-		// This does not work when we are in the Blueprint Editor. In this case we don't have
-		// an AActor outer at all, and no Owner. The outer chain contains something like the
-		// following:
-		// - Hinge_GEN_VARIABLE of type AGX_HingeConstraintComponent
-		// - BP_Blueprint_C of type BlueprintGeneratedClass
-		// - /Game/BP_Blueprint of type Package
-		//
-		// The interesting piece here is BlueprintGeneratedClass, from which it may be possible
-		// to get a list of names of RigidBodyComponents. Possibly via the
-		// SimpleConstructionScript member and then GetAllNodes. Experimentation needed.
-		if (ModifiedBodyAttachment->RigidBody.OwningActor == nullptr)
-		{
-			ModifiedBodyAttachment->RigidBody.OwningActor = GetTypedOuter<AActor>();
-		}
-
-		if (ModifiedBodyAttachment->FrameDefiningComponent.OwningActor == nullptr)
-		{
-			ModifiedBodyAttachment->FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
-		}
-#endif
 	}
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning

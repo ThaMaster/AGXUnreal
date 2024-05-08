@@ -652,21 +652,8 @@ void UAGX_TrackComponent::ResolveComponentReferenceOwningActors()
 	AActor* OwningActor = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
 	for (FAGX_TrackWheel& Wheel : Wheels)
 	{
-// TODO Changes for Local Scope. Remove the disabled branch once done.
-#if 1
 		Wheel.RigidBody.LocalScope = OwningActor;
 		Wheel.FrameDefiningComponent.LocalScope = OwningActor;
-#else
-
-		if (Wheel.RigidBody.OwningActor == nullptr)
-		{
-			Wheel.RigidBody.OwningActor = GetTypedOuter<AActor>();
-		}
-		if (Wheel.FrameDefiningComponent.OwningActor == nullptr)
-		{
-			Wheel.FrameDefiningComponent.OwningActor = GetTypedOuter<AActor>();
-		}
-#endif
 	}
 }
 
