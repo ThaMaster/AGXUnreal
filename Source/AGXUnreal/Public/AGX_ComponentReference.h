@@ -12,39 +12,45 @@ class UActor;
 class UActorComponent;
 
 /**
- * A reference to a typed Component by name.
+ * A reference to a typed Component by name and owning Actor.
  *
  * The Component is identified by an Owning Actor pointer and the name of the Component. The type
  * is specified using a UClass, specifically TSubclassOf<UActorComponent>. Instances are meant to be
- * created as members of C++ classes, but is usable also from Blueprint Visual Scripts.
+ * created as members of C++ classes, but the type is usable also from Blueprint Visual Scripts.
  *
  * There are multiple sub-classes of FAGX_ComponentReference that specify the more specific
  * Component type, for example FAGX_RigidBodyReference and FAGX_ShovelReference.
  *
- * The intention is that it should be used much like Actor pointers can be, but limitations in the
- * Unreal Editor with Components forces us to do some tricks and workarounds. There is no Component
- * picker, so the user must first pick an Actor that owns the Component and then select the wanted
- * component from a combo box of available names. There is no actual pointer to the Component stored
- * in the FAGX_ComponentReference, only the name, so renaming the component will break the
- * reference. This is a serious limitation. Also, while building a Blueprint Actor in the Blueprint
- * editor there is no actual Actor yet, so the Actor picker cannot be used to select the Actor that
- * will be created when the Blueprint is instantiated. For this reason all Components that include a
- * Component Reference should set OwningActor to GetTypedOuter<AActor>() in PostInitProperties.
+ * The intention is that the Component Reference should be used much like Actor pointers are, but
+ * limitations in the Unreal Editor with Components forces us to do some tricks and workarounds.
+ * There is no Component picker UI, so the user must first pick an Actor that owns the Component and
+ * then select the wanted component from a combo box of available names. There is no actual pointer
+ * to the Component stored in the FAGX_ComponentReference, only the name, so renaming the component
+ * will break the reference. This is a serious limitation. Also, while building a Blueprint Actor in
+ * the Blueprint editor there is no actual Actor yet, so the Actor picker cannot be used to select
+ * the Actor that will be created when the Blueprint is instantiated. In fact it cannot reference
+ * any Actor. For this reason the Component Reference contains a Local Scope non-Property member
+ * that is used as a fallback search Actor when Owning Actor is None / nullptr. All Components that
+ * contains a Component Reference member variable should set Local Scope to the Actor that it is
+ * part of in the constructor:
  *
- * void UMyComponent::PostInitProperties()
+ * void UMyComponent::UMyComponent()
  * {
- *  	Super::PostInitProperties();
- *  	MyRigidBodyReference.OwningActor = GetTypedOuter<AActor>();
+ *  	MyRigidBodyReference.SetLocalScope(GetTypedOuter<AActor>());
  * }
  *
- * This establishes the so-called local scope for the reference. Unless another OwningActor is
- * specified, the reference will search within the Actor that the reference is contained within. The
- * OwningActor set in PostInitProperties may we overwritten by deserialization if the object is
- * created from something else, such as part of a Play-in-Editor session start-up or loaded from
- * disk as part of a cooked build start-up.
+ * This establishes the so-called local scope for the reference. Unless an Owning Actor is
+ * specified, the reference will search within the Actor that the reference is contained within. If
+ * the Component contains Component References that are created dynamically, such as in an array,
+ * then the Local Scope should be set on those in Post Load since at that point any array elements
+ * found in serialized data has been restored. If a Blueprint creates elements in the array in its
+ * Construction Script then the Local Scope on those must be set in On Register. On Register is also
+ * called after elements has been added to an array from the Details panel. If the Component
+ * provide member functions that adds or sets elements in the array then those functions should set
+ * the Local Scope on the added or set element.
  *
- * Unreal Editor detects changes made during construction, PostInitProperties is considered part of
- * the construction phase, and will disable editing of UProperties with such changes. This can be
+ * Unreal Editor detects changes made during construction, Post Init Properties is considered part
+ * of the construction phase, and will disable editing of UProperties with such changes. This can be
  * disabled by adding the SkipUCSModifiedProperties Meta Specifier to the UProperty. That should be
  * done for FAGX_ComponentReferences on which OwningActor is set during PostInitProperties, and
  * recursively up any struct holding the FAGX_ComponentReference until a UObject UProperty is
@@ -202,14 +208,11 @@ struct AGXUNREAL_API FAGX_ComponentReference
 	 */
 };
 
-
 inline bool operator==(const FAGX_ComponentReference& Lhs, const FAGX_ComponentReference& Rhs)
 {
-	return
-	Lhs.OwningActor == Rhs.OwningActor
-	// Intentionally not comparing Local Scope.
-	&& Lhs.Name == Rhs.Name
-	&& Lhs.bSearchChildActors == Rhs.bSearchChildActors;
+	return Lhs.OwningActor == Rhs.OwningActor
+		   // Intentionally not comparing Local Scope.
+		   && Lhs.Name == Rhs.Name && Lhs.bSearchChildActors == Rhs.bSearchChildActors;
 }
 
 template <typename T>
