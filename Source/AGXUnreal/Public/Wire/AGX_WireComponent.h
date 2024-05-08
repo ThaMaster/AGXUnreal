@@ -169,9 +169,7 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire Begin Winch",
-		Meta =
-			(EditConditionHides, EditCondition = "BeginWinchType == EWireWinchOwnerType::Wire",
-			 SkipUCSModifiedProperties))
+		Meta = (EditConditionHides, EditCondition = "BeginWinchType == EWireWinchOwnerType::Wire"))
 	FAGX_WireWinch OwnedBeginWinch;
 
 	UFUNCTION(
@@ -384,8 +382,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire End Winch",
 		Meta =
-			(EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::Wire",
-			 SkipUCSModifiedProperties))
+			(EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::Wire"))
 	FAGX_WireWinch OwnedEndWinch;
 
 	UFUNCTION(
@@ -683,8 +680,7 @@ public:
 	 * aren't used anymore. Use the render iterator to track the motion of the wire over time.
 	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Route",
-		Meta = (SkipUCSModifiedProperties))
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Wire Route")
 	TArray<FWireRoutingNode> RouteNodes;
 	/*
 	Skip UCS Modified Properties is require on Route Nodes because its elements contains a

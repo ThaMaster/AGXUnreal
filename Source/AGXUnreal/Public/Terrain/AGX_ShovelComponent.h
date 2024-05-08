@@ -36,7 +36,7 @@ public:
 	bool IsEnabled() const;
 
 	/// The Rigid Body associated with this Shovel. There may only be one Shovel per Rigid Body.
-	UPROPERTY(EditAnywhere, Category = "AGX Shovel", Meta = (SkipUCSModifiedProperties))
+	UPROPERTY(EditAnywhere, Category = "AGX Shovel")
 	FAGX_RigidBodyReference RigidBody;
 
 	/**
@@ -57,8 +57,7 @@ public:
 	 * representation of the shovel
 	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel",
-		Meta = (SkipUCSModifiedProperties))
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel")
 	FAGX_Edge TopEdge;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
@@ -72,8 +71,7 @@ public:
 	 * representation of the shovel
 	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel",
-		Meta = (SkipUCSModifiedProperties))
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel")
 	FAGX_Edge CuttingEdge;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")
@@ -88,8 +86,7 @@ public:
 	 * Dynamics representation of the shovel
 	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel",
-		Meta = (SkipUCSModifiedProperties))
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Shovel")
 	FAGX_Frame CuttingDirection;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shovel")

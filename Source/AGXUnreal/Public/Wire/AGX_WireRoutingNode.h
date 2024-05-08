@@ -34,7 +34,7 @@ struct AGXUNREAL_API FWireRoutingNode
 	 * may be set.
 	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "Wire", Meta = (SkipUCSModifiedProperties))
+		EditAnywhere, BlueprintReadOnly, Category = "Wire")
 	FAGX_Frame Frame;
 
 	/**

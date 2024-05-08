@@ -36,7 +36,7 @@ class UActorComponent;
  *
  * void UMyComponent::UMyComponent()
  * {
- *  	MyRigidBodyReference.SetLocalScope(GetTypedOuter<AActor>());
+ *  	MyComponentReference.SetLocalScope(GetTypedOuter<AActor>());
  * }
  *
  * This establishes the so-called local scope for the reference. Unless an Owning Actor is
@@ -48,24 +48,6 @@ class UActorComponent;
  * called after elements has been added to an array from the Details panel. If the Component
  * provide member functions that adds or sets elements in the array then those functions should set
  * the Local Scope on the added or set element.
- *
- * Unreal Editor detects changes made during construction, Post Init Properties is considered part
- * of the construction phase, and will disable editing of UProperties with such changes. This can be
- * disabled by adding the SkipUCSModifiedProperties Meta Specifier to the UProperty. That should be
- * done for FAGX_ComponentReferences on which OwningActor is set during PostInitProperties, and
- * recursively up any struct holding the FAGX_ComponentReference until a UObject UProperty is
- * reached.
- *
- *   UPROPERTY(EditAnywhere, Category = "My Category", Meta = (SkipUCSModifiedProperties))
- *   FAGX_ComponentReference MyComponentReference;
- *
- *   UPROPERTY(EditAnywhere, Category = "My Category", Meta = (SkipUCSModifiedProperties))
- *   FStructContainingComponentReference MyNestedComponentReference;
- *
- * For more information see the following Unreal Developer Network questions:
- * - https://udn.unrealengine.com/s/question/0D52L00005KLF5ZSAX/how-can-i-provide-default-values-for-a-uproperty-outside-of-the-constructor
- * - https://udn.unrealengine.com/s/question/0D52L00004luoN5SAI/setting-a-value-on-a-component-property-when-actor-placed-in-the-level-editor
- * - https://udn.unrealengine.com/s/question/0D54z00009itP8yCAE/postprocess-volume-corrupted-in-53
  *
  * A struct that both contains an FAGX_ComponentReference and has custom serialization code must
  * ensure that the garbage collector is made aware of the possible change in referencing the Owning

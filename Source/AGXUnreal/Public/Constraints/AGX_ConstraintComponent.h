@@ -46,12 +46,8 @@ public:
 	 * Rigid Body Actor must be set.
 	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "AGX Constraint Bodies",
-		Meta = (SkipUCSModifiedProperties, ExposeOnSpawn))
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Constraint Bodies", Meta = (ExposeOnSpawn))
 	FAGX_ConstraintBodyAttachment BodyAttachment1;
-	// SkipUCSModifiedProperties because we set OwningActor during creation but we still want to
-	// allow the user to override that default from the Details Panel. Normally, Properties set
-	// during creation become read-only.
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint Attachment")
 	bool SetBody1(UAGX_RigidBodyComponent* Body);
@@ -64,12 +60,8 @@ public:
 	 * If second Rigid Body is null, the first Rigid Body will be constrained to the World.
 	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "AGX Constraint Bodies",
-		Meta = (SkipUCSModifiedProperties, ExposeOnSpawn))
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Constraint Bodies", Meta = (ExposeOnSpawn))
 	FAGX_ConstraintBodyAttachment BodyAttachment2;
-	// SkipUCSModifiedProperties because we set OwningActor during creation but we still want to
-	// allow the user to override that default from the Details Panel. Normally, Properties set
-	// during creation become read-only.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX AMOR")
 	FAGX_ConstraintMergeSplitProperties MergeSplitProperties;
