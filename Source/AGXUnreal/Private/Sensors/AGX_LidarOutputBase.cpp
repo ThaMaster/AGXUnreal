@@ -13,14 +13,6 @@ bool FAGX_LidarOutputBase::AddTo(UAGX_LidarSensorComponent* Lidar)
 	return Lidar->AddResult(*this);
 }
 
-void FAGX_LidarOutputBase::PostAllocateNative(FLidarOutputBarrier* Native)
-{
-	if (Native == nullptr || !Native->HasNative())
-		return;
-
-	// TODO: is this needed now?
-}
-
 FAGX_LidarOutputBase& FAGX_LidarOutputBase::operator=(const FAGX_LidarOutputBase& Other)
 {
 	return *this;

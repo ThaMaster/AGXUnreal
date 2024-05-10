@@ -32,7 +32,6 @@ FLidarOutputBarrier* FAGX_LidarOutputPosition::GetOrCreateNative()
 	if (!HasNative())
 	{
 		NativeBarrier.AllocateNative();
-		PostAllocateNative(&NativeBarrier);
 	}
 
 	return &NativeBarrier;

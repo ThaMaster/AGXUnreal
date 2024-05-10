@@ -8,6 +8,7 @@
 #include "BeginAGXIncludes.h"
 #include <agxSensor/Environment.h>
 #include <agxSensor/Lidar.h>
+#include <agxSensor/RaytraceDistanceGaussianNoise.h>
 #include <agxSensor/RaytraceHandles.h>
 #include <agxSensor/RaytraceOutput.h>
 #include "EndAGXIncludes.h"
@@ -52,6 +53,16 @@ struct FLidarOutputRef
 	agxSensor::RtOutputRef Native;
 	FLidarOutputRef() = default;
 	FLidarOutputRef(agxSensor::RtOutput* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FDistanceGaussianNoiseRef
+{
+	agxSensor::RtDistanceGaussianNoiseRef Native;
+	FDistanceGaussianNoiseRef() = default;
+	FDistanceGaussianNoiseRef(agxSensor::RtDistanceGaussianNoise* InNative)
 		: Native(InNative)
 	{
 	}

@@ -11,7 +11,9 @@
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
+#include <agxSensor/LidarModel.h>
 #include <agxSensor/LidarRayPatternHorizontalSweep.h>
+#include <agxSensor/RaytraceDistanceGaussianNoise.h>
 #include <agxSensor/RaytraceOutput.h>
 #include "EndAGXIncludes.h"
 
@@ -54,13 +56,26 @@ void FLidarBarrier::AllocateNativeLidarRayPatternHorizontalSweep(
 		nullptr, new agxSensor::HorizontalSweepLidarModel(FovAGX, ResolutionAGX, Frequency));
 }
 
+namespace LidarBarrier_helpers
+{
+	class CustomLidarModel : public agxSensor::LidarModel
+	{
+	public:
+		CustomLidarModel(agxSensor::LidarRayPatternGenerator* PatternGenerator)
+			: LidarModel(PatternGenerator, new agxSensor::LidarRayRange())
+		{
+		}
+	};
+}
+
 void FLidarBarrier::AllocateNativeRayPatternCustom(FCustomPatternFetcherBase* PatternFetcher)
 {
 	check(!HasNative());
 
-	// TODO!!
-	// NativeRef->Native = new agxSensor::Lidar(nullptr, new
-	// FCustomPatternGenerator(PatternFetcher));
+	using namespace agxSensor;
+	NativeRef->Native = new Lidar(
+		nullptr,
+		new LidarBarrier_helpers::CustomLidarModel(new FCustomPatternGenerator(PatternFetcher)));
 }
 
 FLidarRef* FLidarBarrier::GetNative()
@@ -144,32 +159,6 @@ namespace LidarBarrier_helpers
 	}
 }
 
-bool FLidarBarrier::EnableDistanceGaussianNoise(double Mean, double StdDev, double StdDevSlope)
-{
-	// check(HasNative());
-	// const agx::Real MeanAGX = ConvertDistanceToAGX(Mean);
-	// const agx::Real StdDevAGX = ConvertDistanceToAGX(StdDev);
-	// const agx::Real StdDevSlopeAGX = StdDevSlope; // Unitless.
-	// return NativeRef->Native->enableDistanceGaussianNoise(
-	//	MeanAGX, StdDevAGX,
-	//	StdDevSlopeAGX);
-	return false; // TODO
-}
-
-bool FLidarBarrier::DisableDistanceGaussianNoise()
-{
-	/*check(HasNative());
-	return NativeRef->Native->disableDistanceGaussianNoise();*/
-	return false; // TODO
-}
-
-bool FLidarBarrier::IsDistanceGaussianNoiseEnabled() const
-{
-	/*check(HasNative());
-	return NativeRef->Native->getEnableDistanceGaussianNoise();*/
-	return false; // TODO
-}
-
 void FLidarBarrier::SetEnableRemoveRayMisses(bool bEnable)
 {
 	check(HasNative());
@@ -180,6 +169,41 @@ bool FLidarBarrier::GetEnableRemoveRayMisses() const
 {
 	check(HasNative());
 	return NativeRef->Native->getOutputHandler()->getEnableRemoveRayMisses();
+}
+
+void FLidarBarrier::EnableDistanceGaussianNoise(double Mean, double StdDev, double StdDevSlope)
+{
+	check(HasNative());
+	if (DistanceNoiseNativeRef == nullptr)
+	{
+		DistanceNoiseNativeRef = std::make_unique<FDistanceGaussianNoiseRef>();
+		NativeRef->Native->getOutputHandler()->add(DistanceNoiseNativeRef->Native);
+	}
+
+	const agx::Real MeanAGX = ConvertDistanceToAGX(Mean);
+	const agx::Real StdDevAGX = ConvertDistanceToAGX(StdDev);
+	const agx::Real StdDevSlopeAGX = StdDevSlope; // Unitless.
+
+	DistanceNoiseNativeRef->Native->setMean(MeanAGX);
+	DistanceNoiseNativeRef->Native->setStdDevBase(StdDevAGX);
+	DistanceNoiseNativeRef->Native->setStdDevSlope(StdDevSlopeAGX);
+	DistanceNoiseNativeRef->Native->setDirty(true);
+}
+
+void FLidarBarrier::DisableDistanceGaussianNoise()
+{
+	check(HasNative());
+	if (DistanceNoiseNativeRef == nullptr)
+		return;
+
+	NativeRef->Native->getOutputHandler()->remove(DistanceNoiseNativeRef->Native);
+	DistanceNoiseNativeRef = nullptr;
+}
+
+bool FLidarBarrier::IsDistanceGaussianNoiseEnabled() const
+{
+	check(HasNative());
+	return DistanceNoiseNativeRef != nullptr;
 }
 
 void FLidarBarrier::AddResult(FLidarOutputBarrier& Result)

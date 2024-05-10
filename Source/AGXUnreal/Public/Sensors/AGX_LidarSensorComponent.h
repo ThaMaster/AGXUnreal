@@ -89,12 +89,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
 	bool bEnableRemovePointsMisses {true};
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetEnableRemovePointsMisses(bool bEnable);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	bool GetEnableRemovePointsMisses() const;
+
 	/**
 	 * Enables distance gaussian noise, adding an individual distance error to each measurements
 	 * of Position.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
 	bool bEnableDistanceGaussianNoise {false};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetEnableDistanceGaussianNoise(bool bEnable);
 
 	/**
 	 * Determines the distance noise characteristics. The standard deviation is calculated as

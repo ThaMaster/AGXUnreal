@@ -11,6 +11,7 @@
 class FCustomPatternFetcherBase;
 class FLidarOutputBarrier;
 
+struct FDistanceGaussianNoiseRef;
 struct FLidarRef;
 
 class AGXUNREALBARRIER_API FLidarBarrier
@@ -36,16 +37,16 @@ public:
 
 	void SetBeamDivergence(double BeamDivergence);
 	double GetBeamDivergence() const;
-	
+
 	void SetBeamExitRadius(double BeamExitRadius);
 	double GetBeamExitRadius() const;
 
-	bool EnableDistanceGaussianNoise(double Mean, double StdDev, double StdDevSlope);
-	bool DisableDistanceGaussianNoise();
-	bool IsDistanceGaussianNoiseEnabled() const;
-
 	void SetEnableRemoveRayMisses(bool bEnable);
 	bool GetEnableRemoveRayMisses() const;
+
+	void EnableDistanceGaussianNoise(double Mean, double StdDev, double StdDevSlope);
+	void DisableDistanceGaussianNoise();
+	bool IsDistanceGaussianNoiseEnabled() const;
 
 	void AddResult(FLidarOutputBarrier& Result);
 
@@ -55,4 +56,5 @@ private:
 
 private:
 	std::unique_ptr<FLidarRef> NativeRef;
+	std::unique_ptr<FDistanceGaussianNoiseRef> DistanceNoiseNativeRef;
 };

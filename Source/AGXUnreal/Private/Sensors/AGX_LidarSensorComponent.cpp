@@ -68,6 +68,41 @@ double UAGX_LidarSensorComponent::GetBeamExitRadius() const
 	return BeamExitRadius;
 }
 
+void UAGX_LidarSensorComponent::SetEnableRemovePointsMisses(bool bEnable)
+{
+	bEnableRemovePointsMisses = bEnable;
+
+	if (HasNative())
+		NativeBarrier.SetEnableRemoveRayMisses(bEnable);
+}
+
+bool UAGX_LidarSensorComponent::GetEnableRemovePointsMisses() const
+{
+	if (HasNative())
+		return NativeBarrier.GetEnableRemoveRayMisses();
+
+	return bEnableRemovePointsMisses;
+}
+
+void UAGX_LidarSensorComponent::SetEnableDistanceGaussianNoise(bool bEnable)
+{
+	bEnableDistanceGaussianNoise = bEnable;
+
+	if (HasNative())
+	{
+		if (bEnable)
+		{
+			NativeBarrier.EnableDistanceGaussianNoise(
+				DistanceNoiseSettings.Mean, DistanceNoiseSettings.StandardDeviation,
+				DistanceNoiseSettings.StandardDeviationSlope);
+		}
+		else
+		{
+			NativeBarrier.DisableDistanceGaussianNoise();
+		}
+	}
+}
+
 void UAGX_LidarSensorComponent::Step()
 {
 	if (HasNative())
@@ -165,7 +200,8 @@ bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
 	{
 		// List of names of properties that does not support editing after initialization.
 		static const TArray<FName> PropertiesNotEditableDuringPlay = {
-			GET_MEMBER_NAME_CHECKED(ThisClass, RayPattern)};
+			GET_MEMBER_NAME_CHECKED(ThisClass, RayPattern)
+		};
 
 		if (PropertiesNotEditableDuringPlay.Contains(InProperty->GetFName()))
 		{
@@ -204,6 +240,16 @@ void UAGX_LidarSensorComponent::InitPropertyDispatcher()
 	AGX_COMPONENT_DEFAULT_DISPATCHER(Range);
 	AGX_COMPONENT_DEFAULT_DISPATCHER(BeamDivergence);
 	AGX_COMPONENT_DEFAULT_DISPATCHER(BeamExitRadius);
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, bEnableRemovePointsMisses),
+		[](ThisClass* This)
+		{ This->SetEnableRemovePointsMisses(This->bEnableRemovePointsMisses); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, bEnableDistanceGaussianNoise),
+		[](ThisClass* This)
+		{ This->SetEnableDistanceGaussianNoise(This->bEnableDistanceGaussianNoise); });
 }
 #endif
 
@@ -213,6 +259,9 @@ void UAGX_LidarSensorComponent::UpdateNativeProperties()
 	NativeBarrier.SetRange(Range);
 	NativeBarrier.SetBeamDivergence(BeamDivergence);
 	NativeBarrier.SetBeamExitRadius(BeamExitRadius);
+	NativeBarrier.SetEnableRemoveRayMisses(bEnableRemovePointsMisses);
+
+	SetEnableDistanceGaussianNoise(bEnableDistanceGaussianNoise);
 }
 
 TArray<FTransform> UAGX_LidarSensorComponent::FetchRayTransforms()

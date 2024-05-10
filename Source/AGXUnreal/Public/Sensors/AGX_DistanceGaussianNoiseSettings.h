@@ -33,6 +33,4 @@ struct AGXUNREAL_API FAGX_DistanceGaussianNoiseSettings
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
 	FAGX_Real StandardDeviationSlope {0.0005};
-
-	bool operator==(const FAGX_DistanceGaussianNoiseSettings& Other) const;
 };

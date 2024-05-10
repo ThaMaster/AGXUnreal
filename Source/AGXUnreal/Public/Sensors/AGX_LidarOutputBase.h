@@ -34,8 +34,6 @@ public:
 	// input argument.
 	bool AddTo(UAGX_LidarSensorComponent* Lidar);
 
-	void PostAllocateNative(FLidarOutputBarrier* Native);
-
 	FAGX_LidarOutputBase& operator=(const FAGX_LidarOutputBase& Other);
 	bool operator==(const FAGX_LidarOutputBase& Other) const;
 };
