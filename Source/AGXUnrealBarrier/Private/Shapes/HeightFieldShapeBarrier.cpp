@@ -38,26 +38,16 @@ FHeightFieldShapeBarrier::~FHeightFieldShapeBarrier()
 }
 
 void FHeightFieldShapeBarrier::AllocateNative(
-	int32 NumVerticesX, int32 NumVerticesY, double SizeX, double SizeY,
-	const TArray<float>& Heights)
+	int32 NumVerticesX, int32 NumVerticesY, double SizeX, double SizeY)
 {
 	FShapeBarrier::AllocateNative(
-		[this, NumVerticesX, NumVerticesY, SizeX, SizeY, &Heights]()
-		{ this->AllocateNativeHeightField(NumVerticesX, NumVerticesY, SizeX, SizeY, Heights); });
+		[this, NumVerticesX, NumVerticesY, SizeX, SizeY]()
+		{ this->AllocateNativeHeightField(NumVerticesX, NumVerticesY, SizeX, SizeY); });
 }
 
-void FHeightFieldShapeBarrier::AllocateNativeHeightField(
-	int32 NumVerticesX, int32 NumVerticesY, double SizeX, double SizeY,
-	const TArray<float>& Heights)
+void FHeightFieldShapeBarrier::SetHeights(const TArray<float>& Heights)
 {
-	check(!HasNative());
-	check(Heights.Num() >= 0);
-
-	agx::Real SizeXAGX = ConvertDistanceToAGX(SizeX);
-	agx::Real SizeYAGX = ConvertDistanceToAGX(SizeY);
-
-	NativeRef->NativeShape = new agxCollide::HeightField(
-		static_cast<size_t>(NumVerticesX), static_cast<size_t>(NumVerticesY), SizeXAGX, SizeYAGX);
+	check(HasNative());
 
 	agx::VectorPOD<agx::Real> HeightsAGX;
 	HeightsAGX.reserve(static_cast<size_t>(Heights.Num()));
@@ -68,6 +58,18 @@ void FHeightFieldShapeBarrier::AllocateNativeHeightField(
 	}
 
 	NativeHeightField(this)->setHeights(HeightsAGX);
+}
+
+void FHeightFieldShapeBarrier::AllocateNativeHeightField(
+	int32 NumVerticesX, int32 NumVerticesY, double SizeX, double SizeY)
+{
+	check(!HasNative());
+
+	agx::Real SizeXAGX = ConvertDistanceToAGX(SizeX);
+	agx::Real SizeYAGX = ConvertDistanceToAGX(SizeY);
+
+	NativeRef->NativeShape = new agxCollide::HeightField(
+		static_cast<size_t>(NumVerticesX), static_cast<size_t>(NumVerticesY), SizeXAGX, SizeYAGX);
 }
 
 void FHeightFieldShapeBarrier::AllocateNativeShape()

@@ -16,17 +16,16 @@ public:
 
 	FHeightFieldShapeBarrier& operator=(FHeightFieldShapeBarrier&& Other) = default;
 
-	void AllocateNative(
-		int32 NumVerticesX, int32 NumVerticesY, double SizeX, double SizeY,
-		const TArray<float>& Heights);
+	void AllocateNative(int32 NumVerticesX, int32 NumVerticesY, double SizeX, double SizeY);
+
+	void SetHeights(const TArray<float>& Heights);
 
 private:
 	virtual void AllocateNativeShape() override;
 	virtual void ReleaseNativeShape() override;
 
 	void AllocateNativeHeightField(
-		int32 NumVerticesX, int32 NumVerticesY, double SizeX, double SizeY,
-		const TArray<float>& Heights);
+		int32 NumVerticesX, int32 NumVerticesY, double SizeX, double SizeY);
 
 private:
 	FHeightFieldShapeBarrier(const FHeightFieldShapeBarrier&) = delete;

@@ -18,7 +18,7 @@ class UAGX_TrackComponent;
  * Renderers all track nodes as instanced meshes using the same Static Mesh source.
  */
 UCLASS(
-	ClassGroup = "AGX", Category = "AGX", HideCategories = ("Physics", "Collision"),
+	ClassGroup = "Deprecated", Category = "AGX", HideCategories = ("Physics", "Collision"),
 	Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_TrackRenderer : public UHierarchicalInstancedStaticMeshComponent
 {
