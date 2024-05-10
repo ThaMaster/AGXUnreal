@@ -7,7 +7,7 @@
 #include "Sensors/CustomPatternFetcherBase.h"
 #include "TypeConversions.h"
 
-agxSensor::RayPatternInterval FCustomPatternGenerator::getNextInterval(agx::Real /*dt*/)
+agxSensor::LidarRayPatternInterval FCustomPatternGenerator::getNextInterval(agx::Real /*dt*/)
 {
 	if (PatternFetcher == nullptr)
 	{
@@ -15,7 +15,7 @@ agxSensor::RayPatternInterval FCustomPatternGenerator::getNextInterval(agx::Real
 			LogAGX, Error,
 			TEXT("getNextInterval called on Custom Pattern Generator without a PatternFetcher. "
 				 "Lidar Custom pattern cannot be generated."));
-		return agxSensor::RayPatternInterval();
+		return agxSensor::LidarRayPatternInterval();
 	}
 
 	if (getNumRays() == 0)

@@ -1,6 +1,6 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-#include "Sensors/AGX_LidarResultPosition.h"
+#include "Sensors/AGX_LidarOutputPosition.h"
 
 // AGX Dynamics for Unreal includes.
 #include "Sensors/AGX_LidarSensorComponent.h"
@@ -8,7 +8,7 @@
 // Unreal Engine includes.
 #include "DrawDebugHelpers.h"
 
-void FAGX_LidarResultPosition::DebugDrawResult(
+void FAGX_LidarOutputPosition::DebugDrawResult(
 	UAGX_LidarSensorComponent* Lidar, float LifeTime, float Size, FColor Color)
 {
 	if (Lidar == nullptr)
@@ -22,12 +22,12 @@ void FAGX_LidarResultPosition::DebugDrawResult(
 	}
 }
 
-bool FAGX_LidarResultPosition::HasNative() const
+bool FAGX_LidarOutputPosition::HasNative() const
 {
 	return NativeBarrier.HasNative();
 }
 
-FLidarResultBarrier* FAGX_LidarResultPosition::GetOrCreateNative()
+FLidarOutputBarrier* FAGX_LidarOutputPosition::GetOrCreateNative()
 {
 	if (!HasNative())
 	{
@@ -38,7 +38,7 @@ FLidarResultBarrier* FAGX_LidarResultPosition::GetOrCreateNative()
 	return &NativeBarrier;
 }
 
-const FLidarResultBarrier* FAGX_LidarResultPosition::GetNative() const
+const FLidarOutputBarrier* FAGX_LidarOutputPosition::GetNative() const
 {
 	if (!HasNative())
 		return nullptr;
@@ -46,18 +46,18 @@ const FLidarResultBarrier* FAGX_LidarResultPosition::GetNative() const
 	return &NativeBarrier;
 }
 
-FAGX_LidarResultPosition& FAGX_LidarResultPosition::operator=(const FAGX_LidarResultPosition& Other)
+FAGX_LidarOutputPosition& FAGX_LidarOutputPosition::operator=(const FAGX_LidarOutputPosition& Other)
 {
-	FAGX_LidarResultBase::operator=(Other);
+	FAGX_LidarOutputBase::operator=(Other);
 	return *this;
 }
 
-bool FAGX_LidarResultPosition::operator==(const FAGX_LidarResultPosition& Other) const
+bool FAGX_LidarOutputPosition::operator==(const FAGX_LidarOutputPosition& Other) const
 {
-	return FAGX_LidarResultBase::operator==(Other);
+	return FAGX_LidarOutputBase::operator==(Other);
 }
 
-void FAGX_LidarResultPosition::GetResult(TArray<FAGX_LidarResultPositionData>& OutResult)
+void FAGX_LidarOutputPosition::GetResult(TArray<FAGX_LidarOutputPositionData>& OutResult)
 {
 	if (HasNative())
 		NativeBarrier.GetResult(Data);

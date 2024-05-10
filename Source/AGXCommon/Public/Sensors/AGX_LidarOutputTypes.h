@@ -6,11 +6,11 @@
 #include "CoreMinimal.h"
 #include "UObject/Class.h"
 
-#include "AGX_LidarResultTypes.generated.h"
+#include "AGX_LidarOutputTypes.generated.h"
 
 
 USTRUCT(BlueprintType)
-struct AGXCOMMON_API FAGX_LidarResultPositionData
+struct AGXCOMMON_API FAGX_LidarOutputPositionData
 {
 	GENERATED_BODY()
 
@@ -19,7 +19,7 @@ struct AGXCOMMON_API FAGX_LidarResultPositionData
 };
 
 USTRUCT(BlueprintType)
-struct AGXCOMMON_API FAGX_LidarResultPositionIntensityData
+struct AGXCOMMON_API FAGX_LidarOutputPositionIntensityData
 {
 	GENERATED_BODY()
 

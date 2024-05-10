@@ -9,7 +9,7 @@
 #include <memory>
 
 class FCustomPatternFetcherBase;
-class FLidarResultBarrier;
+class FLidarOutputBarrier;
 
 struct FLidarRef;
 
@@ -22,7 +22,7 @@ public:
 	~FLidarBarrier();
 
 	bool HasNative() const;
-	void AllocateNativeRayPatternHorizontalSweep(
+	void AllocateNativeLidarRayPatternHorizontalSweep(
 		const FVector2D& FOV, const FVector2D& Resolution, double Frequency);
 	void AllocateNativeRayPatternCustom(FCustomPatternFetcherBase* PatternFetcher);
 	FLidarRef* GetNative();
@@ -37,10 +37,17 @@ public:
 	void SetBeamDivergence(double BeamDivergence);
 	double GetBeamDivergence() const;
 	
-	void SetBeamExitDiameter(double BeamExitDiameter);
-	double GetBeamExitDiameter() const;
+	void SetBeamExitRadius(double BeamExitRadius);
+	double GetBeamExitRadius() const;
 
-	void AddResult(FLidarResultBarrier& Result);
+	bool EnableDistanceGaussianNoise(double Mean, double StdDev, double StdDevSlope);
+	bool DisableDistanceGaussianNoise();
+	bool IsDistanceGaussianNoiseEnabled() const;
+
+	void SetEnableRemoveRayMisses(bool bEnable);
+	bool GetEnableRemoveRayMisses() const;
+
+	void AddResult(FLidarOutputBarrier& Result);
 
 private:
 	FLidarBarrier(const FLidarBarrier&) = delete;

@@ -1,18 +1,18 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-#include "Sensors/LidarResultPositionIntensityBarrier.h"
+#include "Sensors/LidarOutputPositionIntensityBarrier.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
-#include "Sensors/AGX_LidarResultTypes.h"
+#include "Sensors/AGX_LidarOutputTypes.h"
 #include "TypeConversions.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
-#include <agxSensor/RaytraceResult.h>
+#include <agxSensor/RaytraceOutput.h>
 #include "EndAGXIncludes.h"
 
-namespace LidarResultPositionIntensityBarrier_helpers
+namespace LidarOutputPositionIntensityBarrier_helpers
 {
 	struct LidarPositionIntensityData
 	{
@@ -23,24 +23,24 @@ namespace LidarResultPositionIntensityBarrier_helpers
 	};
 }
 
-void FLidarResultPositionIntensityBarrier::AllocateNative()
+void FLidarOutputPositionIntensityBarrier::AllocateNative()
 {
 	check(!HasNative());
 
-	NativeRef->Native = new agxSensor::RtResult();
-	NativeRef->Native->add(agxSensor::RtResult::XYZ_VEC3_F32);
-	NativeRef->Native->add(agxSensor::RtResult::INTENSITY_F32);
+	NativeRef->Native = new agxSensor::RtOutput();
+	NativeRef->Native->add(agxSensor::RtOutput::XYZ_VEC3_F32);
+	NativeRef->Native->add(agxSensor::RtOutput::INTENSITY_F32);
 }
 
-void FLidarResultPositionIntensityBarrier::GetResult(
-	TArray<FAGX_LidarResultPositionIntensityData>& OutResult) const
+void FLidarOutputPositionIntensityBarrier::GetResult(
+	TArray<FAGX_LidarOutputPositionIntensityData>& OutResult) const
 {
-	using namespace LidarResultPositionIntensityBarrier_helpers;
+	using namespace LidarOutputPositionIntensityBarrier_helpers;
 
 	check(HasNative());
 	AGX_CHECK(sizeof(LidarPositionIntensityData) == GetNative()->Native->getElementSize());
 
-	agxSensor::BinaryResultView<LidarPositionIntensityData> ViewAGX =
+	agxSensor::BinaryOutputView<LidarPositionIntensityData> ViewAGX =
 		GetNative()->Native->view<LidarPositionIntensityData>();
 
 	OutResult.SetNumUninitialized(ViewAGX.size(), false);

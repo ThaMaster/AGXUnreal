@@ -41,7 +41,7 @@
 #include <agx/Vec2.h>
 #include <agx/Vec3.h>
 #include <agxModel/TwoBodyTire.h>
-#include <agxSensor/RayPatternGenerator.h>
+#include <agxSensor/LidarRayPatternGenerator.h>
 #include "agxTerrain/Shovel.h"
 #include <agxUtil/agxUtil.h>
 #include <agxVehicle/TrackInternalMergeProperties.h>
@@ -573,7 +573,7 @@ inline FAGX_RealInterval ConvertAngle(const agx::RangeReal& R)
 		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper())};
 }
 
-inline FAGX_CustomPatternInterval Convert(const agxSensor::RayPatternInterval& I)
+inline FAGX_CustomPatternInterval Convert(const agxSensor::LidarRayPatternInterval& I)
 {
 	return FAGX_CustomPatternInterval(I.first, I.numRays);
 }
@@ -597,9 +597,9 @@ inline agx::RangeReal ConvertAngle(const FAGX_RealInterval& I)
 	return agx::RangeReal(ConvertAngleToAGX(I.Min), ConvertAngleToAGX(I.Max));
 }
 
-inline agxSensor::RayPatternInterval Convert(const FAGX_CustomPatternInterval& I)
+inline agxSensor::LidarRayPatternInterval Convert(const FAGX_CustomPatternInterval& I)
 {
-	return agxSensor::RayPatternInterval(I.First, I.NumRays);
+	return agxSensor::LidarRayPatternInterval(I.First, I.NumRays);
 }
 
 //

@@ -29,7 +29,7 @@ FRtMeshEntityBarrier::~FRtMeshEntityBarrier()
 
 bool FRtMeshEntityBarrier::HasNative() const
 {
-	return NativeRef->Native.entity != nullptr;
+	return NativeRef->Native.instanceHandle != nullptr;
 }
 
 void FRtMeshEntityBarrier::AllocateNative(FRtMeshBarrier& Mesh)
@@ -37,7 +37,7 @@ void FRtMeshEntityBarrier::AllocateNative(FRtMeshBarrier& Mesh)
 	check(!HasNative());
 	check(Mesh.HasNative());
 
-	NativeRef->Native = agxSensor::RtMeshEntity::create(Mesh.GetNative()->Native);
+	NativeRef->Native = agxSensor::RtMeshEntity::create(Mesh.GetNative()->Native, {}); // TODO: EntityID!
 }
 
 FRtMeshEntity* FRtMeshEntityBarrier::GetNative()

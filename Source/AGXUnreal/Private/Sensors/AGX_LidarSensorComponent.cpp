@@ -6,7 +6,7 @@
 #include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_Check.h"
 #include "AGX_PropertyChangedDispatcher.h"
-#include "Sensors/AGX_LidarResultBase.h"
+#include "Sensors/AGX_LidarOutputBase.h"
 #include "Sensors/AGX_RayPatternCustom.h"
 #include "Sensors/AGX_RayPatternHorizontalSweep.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -52,20 +52,20 @@ double UAGX_LidarSensorComponent::GetBeamDivergence() const
 	return BeamDivergence;
 }
 
-void UAGX_LidarSensorComponent::SetBeamExitDiameter(double InBeamExitDiameter)
+void UAGX_LidarSensorComponent::SetBeamExitRadius(double InBeamExitRadius)
 {
-	BeamExitDiameter = InBeamExitDiameter;
+	BeamExitRadius = InBeamExitRadius;
 
 	if (HasNative())
-		NativeBarrier.SetBeamExitDiameter(InBeamExitDiameter);
+		NativeBarrier.SetBeamExitRadius(InBeamExitRadius);
 }
 
-double UAGX_LidarSensorComponent::GetBeamExitDiameter() const
+double UAGX_LidarSensorComponent::GetBeamExitRadius() const
 {
 	if (HasNative())
-		return NativeBarrier.GetBeamExitDiameter();
+		return NativeBarrier.GetBeamExitRadius();
 
-	return BeamExitDiameter;
+	return BeamExitRadius;
 }
 
 void UAGX_LidarSensorComponent::Step()
@@ -74,7 +74,7 @@ void UAGX_LidarSensorComponent::Step()
 		NativeBarrier.SetTransform(GetComponentTransform());
 }
 
-bool UAGX_LidarSensorComponent::AddResult(FAGX_LidarResultBase& InResult)
+bool UAGX_LidarSensorComponent::AddResult(FAGX_LidarOutputBase& InResult)
 {
 	auto Native = GetOrCreateNative();
 	if (Native == nullptr)
@@ -112,7 +112,7 @@ FLidarBarrier* UAGX_LidarSensorComponent::GetOrCreateNative()
 	}
 	else if (auto Pattern = Cast<UAGX_RayPatternHorizontalSweep>(RayPattern))
 	{
-		NativeBarrier.AllocateNativeRayPatternHorizontalSweep(
+		NativeBarrier.AllocateNativeLidarRayPatternHorizontalSweep(
 			Pattern->FOV, Pattern->Resolution, Pattern->Frequency);
 	}
 	else
@@ -203,7 +203,7 @@ void UAGX_LidarSensorComponent::InitPropertyDispatcher()
 
 	AGX_COMPONENT_DEFAULT_DISPATCHER(Range);
 	AGX_COMPONENT_DEFAULT_DISPATCHER(BeamDivergence);
-	AGX_COMPONENT_DEFAULT_DISPATCHER(BeamExitDiameter);
+	AGX_COMPONENT_DEFAULT_DISPATCHER(BeamExitRadius);
 }
 #endif
 
@@ -212,7 +212,7 @@ void UAGX_LidarSensorComponent::UpdateNativeProperties()
 	AGX_CHECK(HasNative());
 	NativeBarrier.SetRange(Range);
 	NativeBarrier.SetBeamDivergence(BeamDivergence);
-	NativeBarrier.SetBeamExitDiameter(BeamExitDiameter);
+	NativeBarrier.SetBeamExitRadius(BeamExitRadius);
 }
 
 TArray<FTransform> UAGX_LidarSensorComponent::FetchRayTransforms()

@@ -1,6 +1,6 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-#include "Sensors/AGX_LidarResultPositionIntensity.h"
+#include "Sensors/AGX_LidarOutputPositionIntensity.h"
 
 // AGX Dynamics for Unreal includes.
 #include "Sensors/AGX_LidarSensorComponent.h"
@@ -10,7 +10,7 @@
 
 
 
-void FAGX_LidarResultPositionIntensity::DebugDrawResult(
+void FAGX_LidarOutputPositionIntensity::DebugDrawResult(
 	UAGX_LidarSensorComponent* Lidar, float LifeTime, float Size)
 {
 	if (Lidar == nullptr)
@@ -28,12 +28,12 @@ void FAGX_LidarResultPositionIntensity::DebugDrawResult(
 	}
 }
 
-bool FAGX_LidarResultPositionIntensity::HasNative() const
+bool FAGX_LidarOutputPositionIntensity::HasNative() const
 {
 	return NativeBarrier.HasNative();
 }
 
-FLidarResultBarrier* FAGX_LidarResultPositionIntensity::GetOrCreateNative()
+FLidarOutputBarrier* FAGX_LidarOutputPositionIntensity::GetOrCreateNative()
 {
 	if (!HasNative())
 	{
@@ -44,7 +44,7 @@ FLidarResultBarrier* FAGX_LidarResultPositionIntensity::GetOrCreateNative()
 	return &NativeBarrier;
 }
 
-const FLidarResultBarrier* FAGX_LidarResultPositionIntensity::GetNative() const
+const FLidarOutputBarrier* FAGX_LidarOutputPositionIntensity::GetNative() const
 {
 	if (!HasNative())
 		return nullptr;
@@ -52,18 +52,18 @@ const FLidarResultBarrier* FAGX_LidarResultPositionIntensity::GetNative() const
 	return &NativeBarrier;
 }
 
-FAGX_LidarResultPositionIntensity& FAGX_LidarResultPositionIntensity::operator=(const FAGX_LidarResultPositionIntensity& Other)
+FAGX_LidarOutputPositionIntensity& FAGX_LidarOutputPositionIntensity::operator=(const FAGX_LidarOutputPositionIntensity& Other)
 {
-	FAGX_LidarResultBase::operator=(Other);
+	FAGX_LidarOutputBase::operator=(Other);
 	return *this;
 }
 
-bool FAGX_LidarResultPositionIntensity::operator==(const FAGX_LidarResultPositionIntensity& Other) const
+bool FAGX_LidarOutputPositionIntensity::operator==(const FAGX_LidarOutputPositionIntensity& Other) const
 {
-	return FAGX_LidarResultBase::operator==(Other);
+	return FAGX_LidarOutputBase::operator==(Other);
 }
 
-void FAGX_LidarResultPositionIntensity::GetResult(TArray<FAGX_LidarResultPositionIntensityData>& OutResult)
+void FAGX_LidarOutputPositionIntensity::GetResult(TArray<FAGX_LidarOutputPositionIntensityData>& OutResult)
 {
 	if (HasNative())
 		NativeBarrier.GetResult(Data);

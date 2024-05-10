@@ -9,7 +9,7 @@
 #include <agxSensor/Environment.h>
 #include <agxSensor/Lidar.h>
 #include <agxSensor/RaytraceHandles.h>
-#include <agxSensor/RaytraceResult.h>
+#include <agxSensor/RaytraceOutput.h>
 #include "EndAGXIncludes.h"
 
 struct FSensorEnvironmentRef
@@ -47,11 +47,11 @@ struct FLidarRef
 	}
 };
 
-struct FLidarResultRef
+struct FLidarOutputRef
 {
-	agxSensor::RtResultRef Native;
-	FLidarResultRef() = default;
-	FLidarResultRef(agxSensor::RtResult* InNative)
+	agxSensor::RtOutputRef Native;
+	FLidarOutputRef() = default;
+	FLidarOutputRef(agxSensor::RtOutput* InNative)
 		: Native(InNative)
 	{
 	}

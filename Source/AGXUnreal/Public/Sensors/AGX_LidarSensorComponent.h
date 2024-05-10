@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_RealInterval.h"
 #include "Sensors/AGX_CustomPatternFetcher.h"
+#include "Sensors/AGX_DistanceGaussianNoiseSettings.h"
 #include "Sensors/AGX_RayPatternBase.h"
 #include "Sensors/LidarBarrier.h"
 
@@ -17,7 +18,7 @@
 
 
 class UTextureRenderTarget2D;
-struct FAGX_LidarResultBase;
+struct FAGX_LidarOutputBase;
 struct FAGX_SensorMsgsPointCloud2;
 
 DECLARE_DYNAMIC_DELEGATE_RetVal(TArray<FTransform>, FOnFetchRayTransforms);
@@ -57,7 +58,7 @@ public:
 	 * This property affects the calculated intensity.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
-	FAGX_Real BeamDivergence {0.001 * PI / 180.0};
+	FAGX_Real BeamDivergence {0.001 * 180.0 / PI};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetBeamDivergence(double InBeamDivergence);
@@ -70,17 +71,39 @@ public:
 	 * This property affects the calculated intensity.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
-	FAGX_Real BeamExitDiameter { 1.0 };
+	FAGX_Real BeamExitRadius { 0.5 };
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	void SetBeamExitDiameter(double InBeamExitDiameter);
+	void SetBeamExitRadius(double InBeamExitRadius);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	double GetBeamExitDiameter() const;
+	double GetBeamExitRadius() const;
 
 	// Todo: add comment.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
 	UAGX_RayPatternBase* RayPattern {nullptr};
+
+	/**
+	 * Enables or disables removal of point misses, i.e. makes the result dense if set to true.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
+	bool bEnableRemovePointsMisses {true};
+
+	/**
+	 * Enables distance gaussian noise, adding an individual distance error to each measurements
+	 * of Position.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
+	bool bEnableDistanceGaussianNoise {false};
+
+	/**
+	 * Determines the distance noise characteristics. The standard deviation is calculated as
+	 * s = stdDev + d * stdDevSlope where d is the distance in centimeters.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
+		Meta = (ClampMin = "0.0", EditCondition = "bEnableDistanceGaussianNoise"))
+	FAGX_DistanceGaussianNoiseSettings DistanceNoiseSettings;
 
 	/**
 	 * Delegate that has to be assigned (bound to) by the user to support custom scan pattern.
@@ -114,7 +137,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void Step();
 
-	bool AddResult(FAGX_LidarResultBase& InResult);
+	bool AddResult(FAGX_LidarOutputBase& InResult);
 
 	bool HasNative() const;
 	FLidarBarrier* GetOrCreateNative();

@@ -4,12 +4,12 @@
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
-#include <agxSensor/RayPatternGenerator.h>
+#include <agxSensor/LidarRayPatternGenerator.h>
 #include "EndAGXIncludes.h"
 
 class FCustomPatternFetcherBase;
 
-class FCustomPatternGenerator : public agxSensor::RayPatternGenerator
+class FCustomPatternGenerator : public agxSensor::LidarRayPatternGenerator
 {
 public:
 	FCustomPatternGenerator() = default;
@@ -18,7 +18,7 @@ public:
 	void SetCustomPatternFetcher(FCustomPatternFetcherBase* InFetcher);
 	FCustomPatternFetcherBase* GetCustomPatternFetcher() const;
 
-	virtual agxSensor::RayPatternInterval getNextInterval(agx::Real dt) override;
+	virtual agxSensor::LidarRayPatternInterval getNextInterval(agx::Real dt) override;
 
 private:
 	FCustomPatternFetcherBase* PatternFetcher {nullptr};
