@@ -10,7 +10,7 @@
 
 
 
-void FAGX_LidarOutputPositionIntensity::DebugDrawResult(
+void FAGX_LidarOutputPositionIntensity::DebugDrawData(
 	UAGX_LidarSensorComponent* Lidar, float LifeTime, float Size)
 {
 	if (Lidar == nullptr)
@@ -62,10 +62,10 @@ bool FAGX_LidarOutputPositionIntensity::operator==(const FAGX_LidarOutputPositio
 	return FAGX_LidarOutputBase::operator==(Other);
 }
 
-void FAGX_LidarOutputPositionIntensity::GetResult(TArray<FAGX_LidarOutputPositionIntensityData>& OutResult)
+void FAGX_LidarOutputPositionIntensity::GetData(TArray<FAGX_LidarOutputPositionIntensityData>& OutData)
 {
 	if (HasNative())
-		NativeBarrier.GetResult(Data);
+		NativeBarrier.GetData(Data);
 
-	OutResult = Data;
+	OutData = Data;
 }

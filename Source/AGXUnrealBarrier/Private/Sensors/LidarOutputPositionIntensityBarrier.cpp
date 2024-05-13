@@ -32,8 +32,8 @@ void FLidarOutputPositionIntensityBarrier::AllocateNative()
 	NativeRef->Native->add(agxSensor::RtOutput::INTENSITY_F32);
 }
 
-void FLidarOutputPositionIntensityBarrier::GetResult(
-	TArray<FAGX_LidarOutputPositionIntensityData>& OutResult) const
+void FLidarOutputPositionIntensityBarrier::GetData(
+	TArray<FAGX_LidarOutputPositionIntensityData>& OutData) const
 {
 	using namespace LidarOutputPositionIntensityBarrier_helpers;
 
@@ -43,10 +43,10 @@ void FLidarOutputPositionIntensityBarrier::GetResult(
 	agxSensor::BinaryOutputView<LidarPositionIntensityData> ViewAGX =
 		GetNative()->Native->view<LidarPositionIntensityData>();
 
-	OutResult.SetNumUninitialized(ViewAGX.size(), false);
+	OutData.SetNumUninitialized(ViewAGX.size(), false);
 	for (int32 I = 0; I < ViewAGX.size(); I++)
 	{
-		OutResult[I] = {
+		OutData[I] = {
 			ConvertDisplacement(ViewAGX[I].X, ViewAGX[I].Y, ViewAGX[I].Z), ViewAGX[I].Intensity};
 	}
 }

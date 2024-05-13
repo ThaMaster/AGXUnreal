@@ -13,5 +13,5 @@ public:
 
 	virtual void AllocateNative() override;
 
-	void GetResult(TArray<FAGX_LidarOutputPositionIntensityData>& OutResult) const;
+	void GetData(TArray<FAGX_LidarOutputPositionIntensityData>& OutData) const;
 };

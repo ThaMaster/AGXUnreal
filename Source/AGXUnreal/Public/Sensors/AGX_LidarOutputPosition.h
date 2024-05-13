@@ -23,7 +23,7 @@ struct AGXUNREAL_API FAGX_LidarOutputPosition : public FAGX_LidarOutputBase
 public:
 	virtual ~FAGX_LidarOutputPosition() = default;
 
-	void DebugDrawResult(
+	void DebugDrawData(
 		UAGX_LidarSensorComponent* Lidar, float LifeTime = 0.12f, float Size = 6.f,
 		FColor Color = FColor::Red);
 
@@ -31,7 +31,7 @@ public:
 	virtual FLidarOutputBarrier* GetOrCreateNative() override;
 	virtual const FLidarOutputBarrier* GetNative() const override;
 
-	void GetResult(TArray<FAGX_LidarOutputPositionData>& OutResult);
+	void GetData(TArray<FAGX_LidarOutputPositionData>& OutData);
 
 	FAGX_LidarOutputPosition& operator=(const FAGX_LidarOutputPosition& Other);
 	bool operator==(const FAGX_LidarOutputPosition& Other) const;
@@ -52,24 +52,24 @@ class AGXUNREAL_API UAGX_LidarOutputPosition_LF : public UBlueprintFunctionLibra
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	static void AddTo(
-		UPARAM(ref) FAGX_LidarOutputPosition& Result, UAGX_LidarSensorComponent* Lidar)
+		UPARAM(ref) FAGX_LidarOutputPosition& Output, UAGX_LidarSensorComponent* Lidar)
 	{
-		Result.AddTo(Lidar);
+		Output.AddTo(Lidar);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	static void GetResult(
-		UPARAM(ref) FAGX_LidarOutputPosition& Result,
-		TArray<FAGX_LidarOutputPositionData>& OutResult)
+	static void GetData(
+		UPARAM(ref) FAGX_LidarOutputPosition& Output,
+		TArray<FAGX_LidarOutputPositionData>& OutData)
 	{
-		Result.GetResult(OutResult);
+		Output.GetData(OutData);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	static void DebugDrawResult(
-		UPARAM(ref) FAGX_LidarOutputPosition& Result, UAGX_LidarSensorComponent* Lidar,
+	static void DebugDrawData(
+		UPARAM(ref) FAGX_LidarOutputPosition& Output, UAGX_LidarSensorComponent* Lidar,
 		float LifeTime = 0.12f, float Size = 6.f, FLinearColor Color = FLinearColor::Red)
 	{
-		Result.DebugDrawResult(Lidar, LifeTime, Size, Color.ToFColor(false));
+		Output.DebugDrawData(Lidar, LifeTime, Size, Color.ToFColor(false));
 	}
 };

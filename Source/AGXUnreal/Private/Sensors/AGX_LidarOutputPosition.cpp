@@ -8,7 +8,7 @@
 // Unreal Engine includes.
 #include "DrawDebugHelpers.h"
 
-void FAGX_LidarOutputPosition::DebugDrawResult(
+void FAGX_LidarOutputPosition::DebugDrawData(
 	UAGX_LidarSensorComponent* Lidar, float LifeTime, float Size, FColor Color)
 {
 	if (Lidar == nullptr)
@@ -56,10 +56,10 @@ bool FAGX_LidarOutputPosition::operator==(const FAGX_LidarOutputPosition& Other)
 	return FAGX_LidarOutputBase::operator==(Other);
 }
 
-void FAGX_LidarOutputPosition::GetResult(TArray<FAGX_LidarOutputPositionData>& OutResult)
+void FAGX_LidarOutputPosition::GetData(TArray<FAGX_LidarOutputPositionData>& OutData)
 {
 	if (HasNative())
-		NativeBarrier.GetResult(Data);
+		NativeBarrier.GetData(Data);
 
-	OutResult = Data;
+	OutData = Data;
 }

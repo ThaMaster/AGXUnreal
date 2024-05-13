@@ -23,14 +23,14 @@ struct AGXUNREAL_API FAGX_LidarOutputPositionIntensity : public FAGX_LidarOutput
 public:
 	virtual ~FAGX_LidarOutputPositionIntensity() = default;
 
-	void DebugDrawResult(
+	void DebugDrawData(
 		UAGX_LidarSensorComponent* Lidar, float LifeTime = 0.12f, float Size = 6.f);
 
 	virtual bool HasNative() const override;
 	virtual FLidarOutputBarrier* GetOrCreateNative() override;
 	virtual const FLidarOutputBarrier* GetNative() const override;
 
-	void GetResult(TArray<FAGX_LidarOutputPositionIntensityData>& OutResult);
+	void GetData(TArray<FAGX_LidarOutputPositionIntensityData>& OutData);
 
 	FAGX_LidarOutputPositionIntensity& operator=(const FAGX_LidarOutputPositionIntensity& Other);
 	bool operator==(const FAGX_LidarOutputPositionIntensity& Other) const;
@@ -51,24 +51,24 @@ class AGXUNREAL_API UAGX_LidarOutputPositionIntensity_LF : public UBlueprintFunc
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	static void AddTo(
-		UPARAM(ref) FAGX_LidarOutputPositionIntensity& Result, UAGX_LidarSensorComponent* Lidar)
+		UPARAM(ref) FAGX_LidarOutputPositionIntensity& Output, UAGX_LidarSensorComponent* Lidar)
 	{
-		Result.AddTo(Lidar);
+		Output.AddTo(Lidar);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	static void GetResult(
-		UPARAM(ref) FAGX_LidarOutputPositionIntensity& Result,
-		TArray<FAGX_LidarOutputPositionIntensityData>& OutResult)
+	static void GetData(
+		UPARAM(ref) FAGX_LidarOutputPositionIntensity& Output,
+		TArray<FAGX_LidarOutputPositionIntensityData>& OutData)
 	{
-		Result.GetResult(OutResult);
+		Output.GetData(OutData);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	static void DebugDrawResult(
-		UPARAM(ref) FAGX_LidarOutputPositionIntensity& Result, UAGX_LidarSensorComponent* Lidar,
+	static void DebugDrawData(
+		UPARAM(ref) FAGX_LidarOutputPositionIntensity& Output, UAGX_LidarSensorComponent* Lidar,
 		float LifeTime = 0.12f, float Size = 6.f)
 	{
-		Result.DebugDrawResult(Lidar, LifeTime, Size);
+		Output.DebugDrawData(Lidar, LifeTime, Size);
 	}
 };
