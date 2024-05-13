@@ -10,14 +10,50 @@
 #include "Sensors/AGX_RayPatternCustom.h"
 #include "Sensors/AGX_RayPatternHorizontalSweep.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_SensorUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/World.h"
 
+#define LOCTEXT_NAMESPACE "AGX_LidarSensor"
+
 UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+
+	static const TCHAR* DefaultRayPattern =
+		TEXT("StaticMesh'/AGXUnreal/Sensor/Lidar/AGX_RP_HorizontalSweep.AGX_RP_HorizontalSweep'");
+	RayPattern =
+		FAGX_ObjectUtilities::GetAssetFromPath<UAGX_RayPatternHorizontalSweep>(DefaultRayPattern);
+}
+
+void UAGX_LidarSensorComponent::SetModel(EAGX_LidarModel InModel)
+{
+	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	if (bIsPlaying)
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("Set Model was called during Play on Lidar Sensor '%s' in '%s'. This function "
+					 "may only be called before Play."),
+				*GetName(), *GetLabelSafe(GetOwner())),
+			SNotificationItem::CS_Fail);
+		return;
+	}
+
+	Range = FAGX_SensorUtilities::GetRangeFrom(InModel);
+	BeamDivergence = FAGX_SensorUtilities::GetBeamDivergenceFrom(InModel);
+	BeamExitRadius = FAGX_SensorUtilities::GetBeamExitRadiusFrom(InModel);
+	RayPattern = FAGX_SensorUtilities::GetRayPatternFrom(InModel);
+	bEnableDistanceGaussianNoise =
+		FAGX_SensorUtilities::GetEnableDistanceGaussianNoiseFrom(InModel);
+	DistanceNoiseSettings = FAGX_SensorUtilities::GetDistanceGaussianNoiseFrom(InModel);
+}
+
+EAGX_LidarModel UAGX_LidarSensorComponent::GetModel() const
+{
+	return Model;
 }
 
 void UAGX_LidarSensorComponent::SetRange(FAGX_RealInterval InRange)
@@ -183,6 +219,16 @@ const FLidarBarrier* UAGX_LidarSensorComponent::GetNative() const
 	return &NativeBarrier;
 }
 
+void UAGX_LidarSensorComponent::CopyFrom(const UAGX_LidarSensorComponent& Source)
+{
+	Range = Source.Range;
+	BeamDivergence = Source.BeamDivergence;
+	BeamExitRadius = Source.BeamExitRadius;
+	RayPattern = Source.RayPattern;
+	bEnableDistanceGaussianNoise = Source.bEnableDistanceGaussianNoise;
+	DistanceNoiseSettings = Source.DistanceNoiseSettings;
+}
+
 #if WITH_EDITOR
 bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
 {
@@ -200,8 +246,8 @@ bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
 	{
 		// List of names of properties that does not support editing after initialization.
 		static const TArray<FName> PropertiesNotEditableDuringPlay = {
-			GET_MEMBER_NAME_CHECKED(ThisClass, RayPattern)
-		};
+			GET_MEMBER_NAME_CHECKED(ThisClass, Model),
+			GET_MEMBER_NAME_CHECKED(ThisClass, RayPattern)};
 
 		if (PropertiesNotEditableDuringPlay.Contains(InProperty->GetFName()))
 		{
@@ -251,7 +297,7 @@ void UAGX_LidarSensorComponent::InitPropertyDispatcher()
 		[](ThisClass* This)
 		{ This->SetEnableDistanceGaussianNoise(This->bEnableDistanceGaussianNoise); });
 }
-#endif
+#endif // WITH_EDITOR
 
 void UAGX_LidarSensorComponent::UpdateNativeProperties()
 {
@@ -301,3 +347,5 @@ FAGX_CustomPatternInterval UAGX_LidarSensorComponent::FetchNextInterval()
 
 	return OnFetchNextPatternInterval.Execute(TimeStamp);
 }
+
+#undef LOCTEXT_NAMESPACE

@@ -9,13 +9,14 @@
 #include "DrawDebugHelpers.h"
 
 void FAGX_LidarOutputPosition::DebugDrawData(
-	UAGX_LidarSensorComponent* Lidar, float LifeTime, float Size, FColor Color)
+	const TArray<FAGX_LidarOutputPositionData>& InData, UAGX_LidarSensorComponent* Lidar,
+	float LifeTime, float Size, FColor Color)
 {
 	if (Lidar == nullptr)
 		return;
 
 	const FTransform& Transform = Lidar->GetComponentTransform();
-	for (const auto& Datum : Data)
+	for (const auto& Datum : InData)
 	{
 		const FVector Point = Transform.TransformPositionNoScale(Datum.Position);
 		DrawDebugPoint(Lidar->GetWorld(), Point, Size, Color, false, LifeTime);

@@ -6,6 +6,7 @@
 #include "AGX_RealInterval.h"
 #include "Sensors/AGX_CustomPatternFetcher.h"
 #include "Sensors/AGX_DistanceGaussianNoiseSettings.h"
+#include "Sensors/AGX_LidarEnums.h"
 #include "Sensors/AGX_RayPatternBase.h"
 #include "Sensors/LidarBarrier.h"
 
@@ -15,7 +16,6 @@
 #include "Math/UnrealMathUtility.h"
 
 #include "AGX_LidarSensorComponent.generated.h"
-
 
 class UTextureRenderTarget2D;
 struct FAGX_LidarOutputBase;
@@ -37,6 +37,19 @@ class AGXUNREAL_API UAGX_LidarSensorComponent : public USceneComponent
 
 public:
 	UAGX_LidarSensorComponent();
+
+	/**
+	 * The Model, or preset, of this Lidar.
+	 * Changing this will assign Model specific properties to this Lidar.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
+	EAGX_LidarModel Model {EAGX_LidarModel::GenericHorizontalSweep};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetModel(EAGX_LidarModel InModel);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	EAGX_LidarModel GetModel() const;
 
 	/**
 	 * The minimum and maximum range of the Lidar Sensor [cm].
@@ -71,7 +84,7 @@ public:
 	 * This property affects the calculated intensity.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
-	FAGX_Real BeamExitRadius { 0.5 };
+	FAGX_Real BeamExitRadius {0.5};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetBeamExitRadius(double InBeamExitRadius);
@@ -152,6 +165,8 @@ public:
 	FLidarBarrier* GetOrCreateNative();
 	FLidarBarrier* GetNative();
 	const FLidarBarrier* GetNative() const;
+
+	void CopyFrom(const UAGX_LidarSensorComponent& Source);
 
 #if WITH_EDITOR
 	//~ Begin UActorComponent Interface

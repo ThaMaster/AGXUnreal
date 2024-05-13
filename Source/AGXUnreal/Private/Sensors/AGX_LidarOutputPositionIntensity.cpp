@@ -11,13 +11,14 @@
 
 
 void FAGX_LidarOutputPositionIntensity::DebugDrawData(
+	const TArray<FAGX_LidarOutputPositionIntensityData>& InData,
 	UAGX_LidarSensorComponent* Lidar, float LifeTime, float Size)
 {
 	if (Lidar == nullptr)
 		return;
 
 	const FTransform& Transform = Lidar->GetComponentTransform();
-	for (const auto& Datum : Data)
+	for (const auto& Datum : InData)
 	{
 		const FVector Point = Transform.TransformPositionNoScale(Datum.Position);
 		const uint8 Intensity = static_cast<uint8>(

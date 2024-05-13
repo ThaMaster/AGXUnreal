@@ -24,7 +24,8 @@ public:
 	virtual ~FAGX_LidarOutputPosition() = default;
 
 	void DebugDrawData(
-		UAGX_LidarSensorComponent* Lidar, float LifeTime = 0.12f, float Size = 6.f,
+		const TArray<FAGX_LidarOutputPositionData>& InData, UAGX_LidarSensorComponent* Lidar,
+		float LifeTime = 0.12f, float Size = 6.f,
 		FColor Color = FColor::Red);
 
 	virtual bool HasNative() const override;
@@ -67,9 +68,10 @@ class AGXUNREAL_API UAGX_LidarOutputPosition_LF : public UBlueprintFunctionLibra
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	static void DebugDrawData(
-		UPARAM(ref) FAGX_LidarOutputPosition& Output, UAGX_LidarSensorComponent* Lidar,
+		UPARAM(ref) FAGX_LidarOutputPosition& Output,
+		const TArray<FAGX_LidarOutputPositionData>& Data, UAGX_LidarSensorComponent* Lidar,
 		float LifeTime = 0.12f, float Size = 6.f, FLinearColor Color = FLinearColor::Red)
 	{
-		Output.DebugDrawData(Lidar, LifeTime, Size, Color.ToFColor(false));
+		Output.DebugDrawData(Data, Lidar, LifeTime, Size, Color.ToFColor(false));
 	}
 };

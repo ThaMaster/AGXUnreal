@@ -24,7 +24,8 @@ public:
 	virtual ~FAGX_LidarOutputPositionIntensity() = default;
 
 	void DebugDrawData(
-		UAGX_LidarSensorComponent* Lidar, float LifeTime = 0.12f, float Size = 6.f);
+		const TArray<FAGX_LidarOutputPositionIntensityData>& Data, UAGX_LidarSensorComponent* Lidar,
+		float LifeTime = 0.12f, float Size = 6.f);
 
 	virtual bool HasNative() const override;
 	virtual FLidarOutputBarrier* GetOrCreateNative() override;
@@ -66,9 +67,10 @@ class AGXUNREAL_API UAGX_LidarOutputPositionIntensity_LF : public UBlueprintFunc
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	static void DebugDrawData(
-		UPARAM(ref) FAGX_LidarOutputPositionIntensity& Output, UAGX_LidarSensorComponent* Lidar,
+		UPARAM(ref) FAGX_LidarOutputPositionIntensity& Output,
+		const TArray<FAGX_LidarOutputPositionIntensityData>& Data, UAGX_LidarSensorComponent* Lidar,
 		float LifeTime = 0.12f, float Size = 6.f)
 	{
-		Output.DebugDrawData(Lidar, LifeTime, Size);
+		Output.DebugDrawData(Data, Lidar, LifeTime, Size);
 	}
 };
