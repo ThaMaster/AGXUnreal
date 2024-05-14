@@ -512,7 +512,7 @@ void FAGX_WireNodeDetails::OnSetNodeType(TSharedPtr<FString> NewValue, ESelectIn
 	{
 		// The RigidBody selector is about to be shown. Prepare it's backing storage.
 		NewBodyName = RebuildRigidBodyComboBox_Edit(
-			Node.RigidBody.Name.ToString(), Node.RigidBody.OwningActor);
+			Node.RigidBody.Name.ToString(), Node.RigidBody.GetScope());
 	}
 
 	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeType", "Set wire node type"));
@@ -830,11 +830,11 @@ void FAGX_WireNodeDetails::UpdateValues()
 
 	if (bSelectionChanged)
 	{
-		RebuildRigidBodyComboBox_View(Node.RigidBody.Name.ToString(), Node.RigidBody.OwningActor);
+		RebuildRigidBodyComboBox_View(Node.RigidBody.Name.ToString(), Node.RigidBody.GetScope());
 	}
 
 	RigidBodyNameText = FText::FromName(Node.RigidBody.Name);
-	RigidBodyOwnerLabelText = FText::FromString(GetLabelSafe(Node.RigidBody.OwningActor));
+	RigidBodyOwnerLabelText = FText::FromString(GetLabelSafe(Node.RigidBody.GetScope()));
 }
 
 EVisibility FAGX_WireNodeDetails::WithSelection() const
