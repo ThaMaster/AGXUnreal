@@ -20,8 +20,7 @@ class USceneComponent;
  * Used, for example, to specify where something attaches to something else, or where something is.
  *
  * Contains an FAGX_ComponentReference named Parent used to identify the Scene Component that this
- * frame is relative to. The Component Reference has a member named Owning Actor that Components
- * containing an FAGX_Frame should set to GetTypedOuter<AActor>() in PostInitProperties. See
+ * frame is relative to. The Component Reference require some setup to function properly. See
  * AGX_ComponentReference for details.
  */
 USTRUCT(BlueprintType)

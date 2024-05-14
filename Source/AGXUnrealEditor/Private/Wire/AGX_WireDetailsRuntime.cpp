@@ -156,15 +156,6 @@ void FAGX_WireDetailsRuntime::UpdateValues()
 		return;
 	}
 
-	// UE_LOG(LogAGX, Warning, TEXT("Creating details panel for wire %p."), Wire);
-	// UE_LOG(LogAGX, Warning, TEXT(" Routing node frame parent:"));
-	// for (const FWireRoutingNode& Node : Wire->RouteNodes)
-	// {
-		// UE_LOG(
-			// LogAGX, Warning, TEXT("  %p: Local Scope: %p, Owning Actor: %p"), &Node.Frame.Parent,
-			// Node.Frame.Parent.LocalScope, Node.Frame.Parent.OwningActor);
-	// }
-
 	if (!Wire->HasNative())
 	{
 		SetAll(NoNative);

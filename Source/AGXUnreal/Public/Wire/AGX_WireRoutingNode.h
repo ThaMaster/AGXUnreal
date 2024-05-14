@@ -33,8 +33,7 @@ struct AGXUNREAL_API FWireRoutingNode
 	 * The location of the wire node. Relative to the wire by default but any parent Scene Component
 	 * may be set.
 	 */
-	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "Wire")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wire")
 	FAGX_Frame Frame;
 
 	/**
@@ -88,8 +87,8 @@ struct TStructOpsTypeTraits<FWireRoutingNode> : public TStructOpsTypeTraitsBase2
 };
 
 /**
- * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprint
- * Visual Scripts.
+ * This class acts as an API that exposes functions of FAGX_WireRouteNode in Blueprint Visual
+ * Scripts.
  */
 UCLASS()
 class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
