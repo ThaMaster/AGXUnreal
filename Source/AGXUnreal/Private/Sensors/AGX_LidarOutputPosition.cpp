@@ -21,7 +21,7 @@ void FAGX_LidarOutputPosition::DebugDrawData(
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("FAGX_LidarOutputPositionIntensity::DebugDrawData called but the given Lidar does "
+			TEXT("FAGX_LidarOutputPosition::DebugDrawData called but the given Lidar does "
 				 "not have bEnableRendering set to true. Doing nothing."));
 		return;
 	}
@@ -31,7 +31,7 @@ void FAGX_LidarOutputPosition::DebugDrawData(
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("FAGX_LidarOutputPositionIntensity::DebugDrawData called but the given Lidar does "
+			TEXT("FAGX_LidarOutputPosition::DebugDrawData called but the given Lidar does "
 				 "not have a spawned Niagara Component. Doing nothing."));
 		return;
 	}
