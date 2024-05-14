@@ -6,21 +6,50 @@
 #include "Sensors/AGX_LidarSensorComponent.h"
 
 // Unreal Engine includes.
-#include "DrawDebugHelpers.h"
+#include "NiagaraComponent.h"
+#include "NiagaraDataInterfaceArrayFunctionLibrary.h"
+
 
 void FAGX_LidarOutputPosition::DebugDrawData(
 	const TArray<FAGX_LidarOutputPositionData>& InData, UAGX_LidarSensorComponent* Lidar,
-	float LifeTime, float Size, FColor Color)
+	float LifeTime, float BaseSize)
 {
 	if (Lidar == nullptr)
 		return;
 
+	if (!Lidar->bEnableRendering)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_LidarOutputPositionIntensity::DebugDrawData called but the given Lidar does "
+				 "not have bEnableRendering set to true. Doing nothing."));
+		return;
+	}
+
+	UNiagaraComponent* Nc = Lidar->GetSpawnedNiagaraSystemComponent();
+	if (Nc == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_LidarOutputPositionIntensity::DebugDrawData called but the given Lidar does "
+				 "not have a spawned Niagara Component. Doing nothing."));
+		return;
+	}
+
+	RenderPositions.SetNum(0, false);
+
 	const FTransform& Transform = Lidar->GetComponentTransform();
 	for (const auto& Datum : InData)
 	{
-		const FVector Point = Transform.TransformPositionNoScale(Datum.Position);
-		DrawDebugPoint(Lidar->GetWorld(), Point, Size, Color, false, LifeTime);
+		RenderPositions.Add(Transform.TransformPositionNoScale(Datum.Position));
 	}
+
+	Nc->SetNiagaraVariableInt("User.NumPoints", InData.Num());
+	Nc->SetNiagaraVariableFloat("User.Lifetime", LifeTime);
+	Nc->SetNiagaraVariableFloat("User.ZeroDistanceSize", BaseSize);
+
+	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayPosition(
+		Nc, "Positions", RenderPositions);
 }
 
 bool FAGX_LidarOutputPosition::HasNative() const
@@ -48,7 +77,6 @@ const FLidarOutputBarrier* FAGX_LidarOutputPosition::GetNative() const
 
 FAGX_LidarOutputPosition& FAGX_LidarOutputPosition::operator=(const FAGX_LidarOutputPosition& Other)
 {
-	FAGX_LidarOutputBase::operator=(Other);
 	return *this;
 }
 

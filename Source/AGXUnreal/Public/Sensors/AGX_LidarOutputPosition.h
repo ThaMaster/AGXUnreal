@@ -25,8 +25,7 @@ public:
 
 	void DebugDrawData(
 		const TArray<FAGX_LidarOutputPositionData>& InData, UAGX_LidarSensorComponent* Lidar,
-		float LifeTime = 0.12f, float Size = 6.f,
-		FColor Color = FColor::Red);
+		float LifeTime, float BaseSize);
 
 	virtual bool HasNative() const override;
 	virtual FLidarOutputBarrier* GetOrCreateNative() override;
@@ -40,6 +39,7 @@ public:
 private:
 	FLidarOutputPositionBarrier NativeBarrier;
 	TArray<FAGX_LidarOutputPositionData> Data;
+	TArray<FVector> RenderPositions;
 };
 
 /**
@@ -70,8 +70,8 @@ class AGXUNREAL_API UAGX_LidarOutputPosition_LF : public UBlueprintFunctionLibra
 	static void DebugDrawData(
 		UPARAM(ref) FAGX_LidarOutputPosition& Output,
 		const TArray<FAGX_LidarOutputPositionData>& Data, UAGX_LidarSensorComponent* Lidar,
-		float LifeTime = 0.12f, float Size = 6.f, FLinearColor Color = FLinearColor::Red)
+		float LifeTime = 0.12f, float BaseSize = 5.f)
 	{
-		Output.DebugDrawData(Data, Lidar, LifeTime, Size, Color.ToFColor(false));
+		Output.DebugDrawData(Data, Lidar, LifeTime, BaseSize);
 	}
 };

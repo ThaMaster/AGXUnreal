@@ -13,11 +13,6 @@ bool FAGX_LidarOutputBase::AddTo(UAGX_LidarSensorComponent* Lidar)
 	return Lidar->AddResult(*this);
 }
 
-FAGX_LidarOutputBase& FAGX_LidarOutputBase::operator=(const FAGX_LidarOutputBase& Other)
-{
-	return *this;
-}
-
 bool FAGX_LidarOutputBase::operator==(const FAGX_LidarOutputBase& Other) const
 {
 	return HasNative() && Other.HasNative();

@@ -6,14 +6,13 @@
 #include "Sensors/AGX_LidarSensorComponent.h"
 
 // Unreal Engine includes.
-#include "DrawDebugHelpers.h"
 #include "NiagaraComponent.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 
 
 void FAGX_LidarOutputPositionIntensity::DebugDrawData(
 	const TArray<FAGX_LidarOutputPositionIntensityData>& InData, UAGX_LidarSensorComponent* Lidar,
-	float LifeTime, float Size)
+	float LifeTime, float BaseSize)
 {
 	if (Lidar == nullptr)
 		return;
@@ -55,6 +54,8 @@ void FAGX_LidarOutputPositionIntensity::DebugDrawData(
 	}
 
 	Nc->SetNiagaraVariableInt("User.NumPoints", InData.Num());
+	Nc->SetNiagaraVariableFloat("User.Lifetime", LifeTime);
+	Nc->SetNiagaraVariableFloat("User.ZeroDistanceSize", BaseSize);
 
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayPosition(
 		Nc, "Positions", RenderPositions);
@@ -88,7 +89,6 @@ const FLidarOutputBarrier* FAGX_LidarOutputPositionIntensity::GetNative() const
 FAGX_LidarOutputPositionIntensity& FAGX_LidarOutputPositionIntensity::operator=(
 	const FAGX_LidarOutputPositionIntensity& Other)
 {
-	FAGX_LidarOutputBase::operator=(Other);
 	return *this;
 }
 
