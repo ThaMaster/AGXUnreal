@@ -158,7 +158,6 @@ void UAGX_TwoBodyTireComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
 
-	// Just to make sure Local Scope isn't overwritten by anything. It should be safe to remove this.
 	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
 	check(HubRigidBody.LocalScope == Owner);
 	check(TireRigidBody.LocalScope == Owner);

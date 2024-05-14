@@ -10,15 +10,7 @@ FWireRoutingNode InvalidRoutingNode(EWireNodeType::NUM_NODE_TYPES);
 
 void FWireRoutingNode::SetBody(UAGX_RigidBodyComponent* Body)
 {
-	if (Body == nullptr)
-	{
-		RigidBody.OwningActor = nullptr;
-		RigidBody.Name = NAME_None;
-		return;
-	}
-
-	RigidBody.OwningActor = Body->GetOwner();
-	RigidBody.Name = Body->GetFName();
+	RigidBody.SetComponent(Body);
 }
 
 bool FWireRoutingNode::IsValid() const

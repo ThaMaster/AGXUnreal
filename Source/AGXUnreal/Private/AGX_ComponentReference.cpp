@@ -80,6 +80,19 @@ namespace FAGX_ComponentReference_helpers
 	}
 }
 
+void FAGX_ComponentReference::SetComponent(UActorComponent* Component)
+{
+	if (Component == nullptr)
+	{
+		OwningActor = nullptr;
+		Name = NAME_None;
+		return;
+	}
+
+	OwningActor = Component->GetOwner();
+	Name = Component->GetFName();
+}
+
 UActorComponent* FAGX_ComponentReference::GetComponent() const
 {
 	const AActor* const Scope = GetScope();
@@ -92,6 +105,12 @@ TArray<UActorComponent*> FAGX_ComponentReference::GetCompatibleComponents() cons
 	const AActor* const Scope = GetScope();
 	return FAGX_ComponentReference_helpers::GetCompatibleComponents(
 		ComponentType, Scope, bSearchChildActors);
+}
+
+void UAGX_ComponentReference_FL::SetComponent(
+	FAGX_ComponentReference& Reference, UActorComponent* Component)
+{
+	Reference.SetComponent(Component);
 }
 
 UActorComponent* UAGX_ComponentReference_FL::GetComponent(FAGX_ComponentReference& Reference)

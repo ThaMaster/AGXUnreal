@@ -132,17 +132,7 @@ namespace AGX_ConstraintComponent_helpers
 			return false;
 		}
 
-		if (Body == nullptr)
-		{
-			// Setting nullptr body, clear the attachment.
-			Attachment.RigidBody.OwningActor = nullptr;
-			Attachment.RigidBody.Name = NAME_None;
-			return true;
-		}
-
-		// Regular case, setup attachment to point to the given body.
-		Attachment.RigidBody.OwningActor = Body->GetOwner();
-		Attachment.RigidBody.Name = Body->GetFName();
+		Attachment.RigidBody.SetComponent(Body);
 		return true;
 	}
 

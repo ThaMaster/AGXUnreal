@@ -13,15 +13,7 @@ FAGX_Frame::FAGX_Frame()
 
 void FAGX_Frame::SetParentComponent(USceneComponent* Component)
 {
-	if (Component == nullptr)
-	{
-		Parent.OwningActor = nullptr;
-		Parent.Name = NAME_None;
-		return;
-	}
-
-	Parent.OwningActor = Component->GetOwner();
-	Parent.Name = Component->GetFName();
+	Parent.SetComponent(Component);
 }
 
 USceneComponent* FAGX_Frame::GetParentComponent() const

@@ -52,7 +52,8 @@ class UActorComponent;
  * So in short, set Local Scope in the Component's:
  * - Constructor
  * - Post Load, if the Component contains an array containing Component References.
- * - On Register, if Component References may be created in Blueprint Construction Script or Details panel.
+ * - On Register, if Component References may be created in Blueprint Construction Script or Details
+ *   panel.
  * - Any member function that adds or creates Component References.
  *
  * A struct that both contains an FAGX_ComponentReference and has custom serialization code must
@@ -130,6 +131,16 @@ struct AGXUNREAL_API FAGX_ComponentReference
 			(Tooltip =
 				 "Whether the search for the Component should decend into Child Actor Components."))
 	uint8 bSearchChildActors : 1;
+
+	/**
+	 * Set the Component that this Component Reference references.
+	 *
+	 * Beware that the Component is identified by name, so if it is renamed then this Component
+	 * Reference will no longer be able to find it.
+	 *
+	 * Passing None / nullptr will clear both Owning Actor and Name.
+	 */
+	void SetComponent(UActorComponent* Component);
 
 	/**
 	 * Does a search in Owning Actor for a Component named Name. Will return nullptr if no matching
@@ -220,6 +231,10 @@ class AGXUNREAL_API UAGX_ComponentReference_FL : public UBlueprintFunctionLibrar
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "AGX Component Reference")
+	static void SetComponent(
+		UPARAM(Ref) FAGX_ComponentReference& Reference, UActorComponent* Component);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Component Reference")
 	static UActorComponent* GetComponent(UPARAM(Ref) FAGX_ComponentReference& Reference);
 };
