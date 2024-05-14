@@ -2337,6 +2337,7 @@ void UAGX_WireComponent::SetVisualsInstanceCount(int32 Num)
 }
 
 #if WITH_EDITOR
+
 void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
 {
 	// We currently have no reliable way to detect when we should no longer be tracking
@@ -2377,6 +2378,13 @@ void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
 								 this, &UAGX_WireComponent::OnRouteNodeParentMoved)});
 	}
 }
+
+void UAGX_WireComponent::SynchronizeRendering()
+{
+	MarkVisualsDirty();
+	SynchronizeParentMovedCallbacks();
+}
+
 #endif
 
 #undef LOCTEXT_NAMESPACE

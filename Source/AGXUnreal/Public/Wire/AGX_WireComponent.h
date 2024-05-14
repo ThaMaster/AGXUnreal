@@ -872,7 +872,7 @@ public:
 	 * Mark visuals for this Wire Component dirty. The Visuals will be updated to match to the
 	 * current wire state.
 	 */
-	UFUNCTION(BlueprintCallable, CallInEditor, Category = "AGX Wire")
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void MarkVisualsDirty();
 
 #if WITH_EDITOR
@@ -880,8 +880,16 @@ public:
 	 * Find all route node parents and setup a Transform Updated callback on each so that the wire
 	 * rendering is updated automatically when the parent is moved in the editor.
 	 */
-	UFUNCTION(BlueprintCallable, CallInEditor, Category = "AGX Wire")
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void SynchronizeParentMovedCallbacks();
+
+	/**
+	 * In case a wire's in-editor mesh rendering doesn't match the route nodes, i.e. the
+	 * lines-and-points rendering, then click this button to reset the render state and render
+	 * update callbacks.
+	 */
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "AGX Wire Rendering")
+	void SynchronizeRendering();
 #endif
 
 	/*
