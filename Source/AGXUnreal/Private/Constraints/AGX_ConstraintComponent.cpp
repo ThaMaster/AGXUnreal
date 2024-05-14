@@ -889,7 +889,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 			ModifiedBodyAttachment->OnFrameDefiningComponentChanged(this);
 		}
 
-		// When using Local Scope instead of piggy-backing on Owning Actor we dont' need to do
+		// When using Local Scope instead of piggy-backing on Owning Actor we don't need to do
 		// anything special here. We can let Owning Actor become None / nullptr, Component Reference
 		// will do the correct things as long as Local Scope hasn't been accidentally changed.
 		AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
