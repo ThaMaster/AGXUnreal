@@ -3,7 +3,6 @@
 #include "AGX_ComponentReference.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_LogCategory.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
@@ -90,11 +89,6 @@ UActorComponent* FAGX_ComponentReference::GetComponent() const
 
 TArray<UActorComponent*> FAGX_ComponentReference::GetCompatibleComponents() const
 {
-	UE_LOG(
-		LogAGX, Warning,
-		TEXT("ComponentReference %p getting compatible components from Owning Actor %p, Local "
-			 "Scope %p."),
-		this, OwningActor, LocalScope);
 	const AActor* const Scope = GetScope();
 	return FAGX_ComponentReference_helpers::GetCompatibleComponents(
 		ComponentType, Scope, bSearchChildActors);
