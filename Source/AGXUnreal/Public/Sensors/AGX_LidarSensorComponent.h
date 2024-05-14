@@ -17,7 +17,10 @@
 
 #include "AGX_LidarSensorComponent.generated.h"
 
+class UNiagaraComponent;
+class UNiagaraSystem;
 class UTextureRenderTarget2D;
+
 struct FAGX_LidarOutputBase;
 struct FAGX_SensorMsgsPointCloud2;
 
@@ -156,7 +159,21 @@ public:
 		Meta = (EditCondition = "ScanPattern == EAGX_LidarRayPattern::Custom"))
 	FOnFetchNextPatternInterval OnFetchNextPatternInterval;
 
+	/** Whether lidar data rendering should be enabled or not. */
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Lidar")
+	bool bEnableRendering {true};
+
+	UPROPERTY(EditAnywhere, Category = "AGX Lidar", Meta = (EditCondition = "bEnableRendering"))
+	UNiagaraSystem* NiagaraSystemAsset {nullptr};
+
+	/**
+	 * If a Niagara System Component has been spawned by the Lidar, this function will return it.
+	 * Returns nullptr otherwise.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UNiagaraComponent* GetSpawnedNiagaraSystemComponent();
+
 	void Step();
 
 	bool AddResult(FAGX_LidarOutputBase& InResult);
@@ -170,6 +187,7 @@ public:
 
 #if WITH_EDITOR
 	//~ Begin UActorComponent Interface
+	virtual void BeginPlay() override;
 	virtual bool CanEditChange(const FProperty* InProperty) const override;
 	//~ End UActorComponent Interface
 
@@ -191,6 +209,7 @@ private:
 	TArray<FTransform> FetchRayTransforms();
 	FAGX_CustomPatternInterval FetchNextInterval();
 
+	UNiagaraComponent* NiagaraSystemComponent = nullptr;
 	FAGX_CustomPatternFetcher PatternFetcher;
 	FLidarBarrier NativeBarrier;
 };

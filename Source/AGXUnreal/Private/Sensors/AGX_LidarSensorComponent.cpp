@@ -15,6 +15,10 @@
 
 // Unreal Engine includes.
 #include "Engine/World.h"
+#include "NiagaraComponent.h"
+#include "NiagaraDataInterfaceArrayFunctionLibrary.h"
+#include "NiagaraFunctionLibrary.h"
+
 
 #define LOCTEXT_NAMESPACE "AGX_LidarSensor"
 
@@ -26,6 +30,11 @@ UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 		TEXT("StaticMesh'/AGXUnreal/Sensor/Lidar/AGX_RP_HorizontalSweep.AGX_RP_HorizontalSweep'");
 	RayPattern =
 		FAGX_ObjectUtilities::GetAssetFromPath<UAGX_RayPatternHorizontalSweep>(DefaultRayPattern);
+
+	static const TCHAR* DefaultNiagaraSystem =
+		TEXT("StaticMesh'/AGXUnreal/Sensor/Lidar/NS_LidarNiagaraSystem.NS_LidarNiagaraSystem'");
+	NiagaraSystemAsset =
+		FAGX_ObjectUtilities::GetAssetFromPath<UNiagaraSystem>(DefaultNiagaraSystem);
 }
 
 void UAGX_LidarSensorComponent::SetModel(EAGX_LidarModel InModel)
@@ -139,6 +148,11 @@ void UAGX_LidarSensorComponent::SetEnableDistanceGaussianNoise(bool bEnable)
 	}
 }
 
+UNiagaraComponent* UAGX_LidarSensorComponent::GetSpawnedNiagaraSystemComponent()
+{
+	return NiagaraSystemComponent;
+}
+
 void UAGX_LidarSensorComponent::Step()
 {
 	if (HasNative())
@@ -180,11 +194,13 @@ FLidarBarrier* UAGX_LidarSensorComponent::GetOrCreateNative()
 	{
 		PatternFetcher.SetLidar(this);
 		NativeBarrier.AllocateNativeRayPatternCustom(&PatternFetcher);
+		AGX_CHECK(NativeBarrier.HasNative());
 	}
 	else if (auto Pattern = Cast<UAGX_RayPatternHorizontalSweep>(RayPattern))
 	{
 		NativeBarrier.AllocateNativeLidarRayPatternHorizontalSweep(
 			Pattern->FOV, Pattern->Resolution, Pattern->Frequency);
+		AGX_CHECK(NativeBarrier.HasNative());
 	}
 	else
 	{
@@ -230,6 +246,19 @@ void UAGX_LidarSensorComponent::CopyFrom(const UAGX_LidarSensorComponent& Source
 }
 
 #if WITH_EDITOR
+void UAGX_LidarSensorComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (bEnableRendering && NiagaraSystemAsset != nullptr)
+	{
+		NiagaraSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			NiagaraSystemAsset, this, NAME_None, FVector::ZeroVector,
+			FRotator::ZeroRotator, FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset,
+			false, ENCPoolMethod::None);
+	}
+}
+
 bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
 {
 	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
@@ -247,7 +276,10 @@ bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
 		// List of names of properties that does not support editing after initialization.
 		static const TArray<FName> PropertiesNotEditableDuringPlay = {
 			GET_MEMBER_NAME_CHECKED(ThisClass, Model),
-			GET_MEMBER_NAME_CHECKED(ThisClass, RayPattern)};
+			GET_MEMBER_NAME_CHECKED(ThisClass, RayPattern),
+			GET_MEMBER_NAME_CHECKED(ThisClass, bEnableRendering),
+			GET_MEMBER_NAME_CHECKED(ThisClass, NiagaraSystemAsset)
+		};
 
 		if (PropertiesNotEditableDuringPlay.Contains(InProperty->GetFName()))
 		{
