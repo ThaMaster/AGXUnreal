@@ -49,6 +49,12 @@ class UActorComponent;
  * provide member functions that adds or sets elements in the array then those functions should set
  * the Local Scope on the added or set element.
  *
+ * So in short, set Local Scope in the Component's:
+ * - Constructor
+ * - Post Load, if the Component contains an array containing Component References.
+ * - On Register, if Component References may be created in Blueprint Construction Script or Details panel.
+ * - Any member function that adds or creates Component References.
+ *
  * A struct that both contains an FAGX_ComponentReference and has custom serialization code must
  * ensure that the garbage collector is made aware of the possible change in referencing the Owning
  * Actor. This is done by calling SerializeTaggedProperties also when
