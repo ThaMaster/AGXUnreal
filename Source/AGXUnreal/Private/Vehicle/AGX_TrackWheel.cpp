@@ -34,7 +34,7 @@ bool FAGX_TrackWheel::GetTransformRelativeToBody(FVector& RelPosition, FQuat& Re
 					 "The properties RelativeLocation and RelativeRotation will be interpreted as "
 					 "relative to the Rigid Body Component instead."),
 				*FrameDefiningComponent.Name.ToString(),
-				*GetNameSafe(FrameDefiningComponent.OwningActor));
+				*GetNameSafe(FrameDefiningComponent.GetScope()));
 		}
 		else
 		{
