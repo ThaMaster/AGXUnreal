@@ -3,7 +3,6 @@
 #include "Wire/AGX_WireDetailsRuntime.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_LogCategory.h"
 #include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
