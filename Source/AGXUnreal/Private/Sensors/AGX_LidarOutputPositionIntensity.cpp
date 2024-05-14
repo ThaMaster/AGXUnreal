@@ -40,16 +40,18 @@ void FAGX_LidarOutputPositionIntensity::DebugDrawData(
 	RenderColors.SetNum(0, false);
 
 	const FTransform& Transform = Lidar->GetComponentTransform();
+	
+	static constexpr double IntensityScaleFactor = 20.0; // Non-physical, just for visuals.
 	for (const auto& Datum : InData)
 	{
-		const FVector Point = Transform.TransformPositionNoScale(Datum.Position);
 		const uint8 Intensity = static_cast<uint8>(
-			FMath::Clamp(Datum.Intensity, 0.0, 1.0) * (double) std::numeric_limits<uint8>::max());
+			FMath::Clamp(Datum.Intensity * IntensityScaleFactor, 0.0, 1.0) *
+			(double) std::numeric_limits<uint8>::max());
 
 		const FLinearColor Color = FLinearColor::FromSRGBColor(
 			FColor(Intensity, 0.0, std::numeric_limits<uint8>::max() - Intensity));
 
-		RenderPositions.Add(Point);
+		RenderPositions.Add(Transform.TransformPositionNoScale(Datum.Position));
 		RenderColors.Add(Color);
 	}
 
