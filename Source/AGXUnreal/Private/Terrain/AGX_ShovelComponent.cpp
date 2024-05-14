@@ -364,16 +364,6 @@ void UAGX_ShovelComponent::PostEditChangeChainProperty(FPropertyChangedChainEven
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
-	// Just to make sure Local Scope isn't overwritten by anything. It should be safe to remove
-	// this.
-	const AActor* const Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
-	check(RigidBody.LocalScope == Owner);
-	check(TopEdge.Start.Parent.LocalScope == Owner);
-	check(TopEdge.End.Parent.LocalScope == Owner);
-	check(CuttingEdge.Start.Parent.LocalScope == Owner);
-	check(CuttingEdge.End.Parent.LocalScope == Owner);
-	check(CuttingDirection.Parent.LocalScope == Owner);
-
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
 	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
 	// apply all our changes before that so that they are carried over to the copy.
@@ -384,16 +374,6 @@ void UAGX_ShovelComponent::PostEditChangeChainProperty(FPropertyChangedChainEven
 void UAGX_ShovelComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Just to make sure Local Scope isn't overwritten by anything. It should be safe to remove
-	// this.
-	const AActor* const Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
-	check(RigidBody.LocalScope == Owner);
-	check(TopEdge.Start.Parent.LocalScope == Owner);
-	check(TopEdge.End.Parent.LocalScope == Owner);
-	check(CuttingEdge.Start.Parent.LocalScope == Owner);
-	check(CuttingEdge.End.Parent.LocalScope == Owner);
-	check(CuttingDirection.Parent.LocalScope == Owner);
 
 	// We are now in a game world. Make sure we use an instance of the Shovel Properties and that
 	// we are registered with that instance.
