@@ -18,7 +18,7 @@
 namespace AGX_SensorEnvironment_helpers
 {
 	bool GetVerticesIndices(
-		UStaticMeshComponent* Mesh, TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices)
+		UStaticMeshComponent* Mesh, TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices, int32 Lod)
 	{
 		if (Mesh == nullptr)
 			return false;
@@ -27,7 +27,9 @@ namespace AGX_SensorEnvironment_helpers
 		if (StaticMesh == nullptr)
 			return false;
 
-		const uint32 LodIndex = StaticMesh->GetNumLODs() - 1; // Use highest LOD (low res) for now.
+		// Default LOD is LodMax, if not set explicitly.
+		const uint32 LodMax = StaticMesh->GetNumLODs() - 1;
+		const uint32 LodIndex = Lod < 0 ? LodMax : std::min(static_cast<uint32>(Lod), LodMax);
 		if (!StaticMesh->HasValidRenderData(/*bCheckLODForVerts*/ true, LodIndex))
 			return false;
 
@@ -121,7 +123,7 @@ void AAGX_SensorEnvironment::Step(double DeltaTime)
 		StepNoAutoAddObjects(DeltaTime);
 }
 
-bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh)
+bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh, int32 InLod)
 {
 	if (!HasNative())
 	{
@@ -135,7 +137,8 @@ bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh)
 
 	TArray<FVector> OutVerts;
 	TArray<FTriIndices> OutInds;
-	const bool Res = AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVerts, OutInds);
+	const int32 Lod = InLod < 0 ? DefaultLODIndex : InLod;
+	const bool Res = AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVerts, OutInds, Lod);
 	if (Res)
 		AddMesh(Mesh, OutVerts, OutInds);
 
@@ -163,7 +166,7 @@ bool AAGX_SensorEnvironment::AddAGXMesh(UAGX_SimpleMeshComponent* Mesh)
 	return Res;
 }
 
-bool AAGX_SensorEnvironment::AddInstancedMesh(UInstancedStaticMeshComponent* Mesh)
+bool AAGX_SensorEnvironment::AddInstancedMesh(UInstancedStaticMeshComponent* Mesh, int32 InLod)
 {
 	if (Mesh == nullptr)
 		return false;
@@ -182,7 +185,8 @@ bool AAGX_SensorEnvironment::AddInstancedMesh(UInstancedStaticMeshComponent* Mes
 	{
 		TArray<FVector> OutVertices;
 		TArray<FTriIndices> OutIndices;
-		if (AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVertices, OutIndices))
+		const int32 Lod = InLod < 0 ? DefaultLODIndex : InLod;
+		if (AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVertices, OutIndices, Lod))
 		{
 			AddInstancedMesh(Mesh, OutVertices, OutIndices);
 		}
@@ -202,7 +206,7 @@ bool AAGX_SensorEnvironment::AddInstancedMesh(UInstancedStaticMeshComponent* Mes
 }
 
 bool AAGX_SensorEnvironment::AddInstancedMeshInstance(
-	UInstancedStaticMeshComponent* Mesh, int32 Index)
+	UInstancedStaticMeshComponent* Mesh, int32 Index, int32 InLod)
 {
 	if (Mesh == nullptr || !Mesh->IsValidInstance(Index))
 		return false;
@@ -222,7 +226,8 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance(
 	{
 		TArray<FVector> OutVertices;
 		TArray<FTriIndices> OutIndices;
-		if (AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVertices, OutIndices))
+		const int32 Lod = InLod < 0 ? DefaultLODIndex : InLod;
+		if (AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVertices, OutIndices, Lod))
 			AddInstancedMesh(Mesh, OutVertices, OutIndices);
 		else
 			return false;
@@ -637,7 +642,7 @@ void AAGX_SensorEnvironment::OnLidarBeginOverlapStaticMeshComponent(UStaticMeshC
 {
 	FAGX_MeshEntityData* MeshEntityData = TrackedMeshes.Find(&Mesh);
 	if (MeshEntityData == nullptr)
-		AddMesh(&Mesh);
+		AddMesh(&Mesh, DefaultLODIndex);
 	else
 		MeshEntityData->EntityData.RefCount++;
 }
@@ -648,13 +653,13 @@ void AAGX_SensorEnvironment::OnLidarBeginOverlapInstancedStaticMeshComponent(
 	auto InstancedMeshData = TrackedInstancedMeshes.Find(&Mesh);
 	if (InstancedMeshData == nullptr)
 	{
-		AddInstancedMeshInstance(&Mesh, Index);
+		AddInstancedMeshInstance(&Mesh, Index, DefaultLODIndex);
 		return;
 	}
 
 	auto InstancedEntityData = InstancedMeshData->EntitiesData.Find(Index);
 	if (InstancedEntityData == nullptr)
-		AddInstancedMeshInstance(&Mesh, Index);
+		AddInstancedMeshInstance(&Mesh, Index, DefaultLODIndex);
 	else
 		InstancedEntityData->RefCount++;
 }

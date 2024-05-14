@@ -30,18 +30,36 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Sensor Environment")
 	TArray<FAGX_LidarSensorReference> LidarSensors;
 
+	/*
+	 * Objects in the Level that gets within the range of any added Lidar will automatically be
+	 * added to this Environment if they can be detected.
+	 * Objects will be detected if they have a Static Mesh Component using "Generate Overlap Events"
+	 * and it has a Static Mesh with "Simple Collision" active.
+	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Sensor Environment",
 		Meta = (ExposeOnSpawn))
-	bool bAutoAddObjects {true};	
+	bool bAutoAddObjects {true};
+
+	/*
+	 * Default LOD index used when reading Meshes that are added to this Environment.
+	 * If set to a negative value, the highest valid LOD index is used (lowest resolution).
+	 * If this LOD index does not exist for a Mesh that is added, the closest valid (and lower) LOD
+	 * index is selected.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Sensor Environment")
+	int32 DefaultLODIndex {-1};
 
 	/*
 	 * Add a Static Mesh Component so that it can be detected by sensors handled by this Sensor
 	 * Environment.
+	 * (Optional) LOD determines the LOD index used when reading the given Mesh. If left to -1,
+	 * the DefaultLODIndex is used. See property DefaultLODIndex.
+	 *
 	 * Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
-	bool AddMesh(UStaticMeshComponent* Mesh);
+	bool AddMesh(UStaticMeshComponent* Mesh, int32 LOD = -1);
 
 	/*
 	 * Add an AGX Simple Mesh Component so that it can be detected by sensors handled by this Sensor
@@ -53,18 +71,26 @@ public:
 
 	/*
 	 * Add all instances of an Instanced Static Mesh Component so that they can be detected by
-	 * sensors handled by this Sensor Environment. Only valid to call during Play.
+	 * sensors handled by this Sensor Environment.
+	 * (Optional) LOD determines the LOD index used when reading the given Mesh. If left to -1,
+	 * the DefaultLODIndex is used. See property DefaultLODIndex.
+	 *
+	 * Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
-	bool AddInstancedMesh(UInstancedStaticMeshComponent* Mesh);
+	bool AddInstancedMesh(UInstancedStaticMeshComponent* Mesh, int32 LOD = -1);
 
 	/*
 	 * Add a single instance of an Instanced Static Mesh Component so that it can be detected by
 	 * sensors handled by this Sensor Environment. The Index corresponds to the Mesh Instance to
-	 * add. Only valid to call during Play.
+	 * add.
+	 * (Optional) LOD determines the LOD index used when reading the given Mesh. If left to -1,
+	 * the DefaultLODIndex is used. See property DefaultLODIndex.
+	 *
+	 * Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
-	bool AddInstancedMeshInstance(UInstancedStaticMeshComponent* Mesh, int32 Index);
+	bool AddInstancedMeshInstance(UInstancedStaticMeshComponent* Mesh, int32 Index, int32 LOD = -1);
 
 	/*
 	 * Add a Terrain so that it can be detected by sensors handled by this Sensor
