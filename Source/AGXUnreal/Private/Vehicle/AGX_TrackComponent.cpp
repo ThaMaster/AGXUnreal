@@ -414,10 +414,9 @@ void UAGX_TrackComponent::PostLoad()
 {
 	Super::PostLoad();
 
-	// It seems that because the wheels array, that the component references lives in, are sometimes
-	// not yet populated in PostInitProperties(), which means we cannot resolve the owning actors at
-	// that time. Therefore, we try to resolve the owning actors from here too, when the wheels
-	// should be populated and ready.
+	// During load the Wheels array may be been modified with data restored from serialization or an
+	// archetype. Make sure all Component References in those array elements have the correct Local
+	// Scope.
 	SetComponentReferencesLocalScope();
 
 	RaiseTrackPreviewNeedsUpdate();
@@ -522,7 +521,12 @@ void UAGX_TrackComponent::ApplyComponentInstanceData(
 void UAGX_TrackComponent::OnRegister()
 {
 	Super::OnRegister();
+
+	// If a Blueprint Construction Script modifies the Wheels array then this is the first chance
+	// we have to catch any new elements and set the correct Local Scope on the Component
+	// References.
 	SetComponentReferencesLocalScope();
+
 	if (VisualMeshes == nullptr)
 		CreateVisuals();
 	UpdateVisuals();
