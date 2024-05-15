@@ -10,7 +10,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
-#include "Materials/AGX_MaterialBase.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.

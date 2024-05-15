@@ -65,11 +65,13 @@
 #include "Constraints/AGX_LockConstraintActor.h"
 #include "Constraints/AGX_PrismaticConstraintActor.h"
 #include "Materials/AGX_ContactMaterialAssetTypeActions.h"
-#include "Materials/AGX_MaterialBase.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialCustomization.h"
 #include "Materials/AGX_ContactMaterialRegistrarActor.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponent.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponentCustomization.h"
 #include "Materials/AGX_ShapeMaterialAssetTypeActions.h"
+#include "Materials/AGX_TerrainMaterial.h"
 #include "Materials/AGX_TerrainMaterialAssetTypeActions.h"
 #include "Materials/AGX_TerrainMaterialCustomization.h"
 #include "Materials/AGX_MaterialLibrary.h"
@@ -331,17 +333,19 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		UAGX_ContactMaterial::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_ContactMaterialCustomization::MakeInstance));
+	
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_ContactMaterialRegistrarComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_ContactMaterialRegistrarComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_HeightFieldBoundsComponentCustomization::MakeInstance));
 
-	// The reason why UAGX_MaterialBase is used here instead of UAGX_TerrainMaterial is that
-	// the former must be used to be able to customize some of the properties inherited by the
-	// UAGX_TerrainMaterial from the UAGX_MaterialBase.
 	PropertyModule.RegisterCustomClassLayout(
-		UAGX_MaterialBase::StaticClass()->GetFName(),
+		UAGX_TerrainMaterial::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_TerrainMaterialCustomization::MakeInstance));
 
@@ -452,11 +456,14 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_ContactMaterial::StaticClass()->GetFName());
+	
+	PropertyModule.UnregisterCustomClassLayout(
+		UAGX_ContactMaterialRegistrarComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(UAGX_MaterialBase::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(UAGX_TerrainMaterial::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_ModelSourceComponent::StaticClass()->GetFName());

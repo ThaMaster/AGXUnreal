@@ -14,8 +14,7 @@ namespace AGX_HeightFieldUtilities
 {
 	// StartPos is in world coordinate system.
 	AGXUNREAL_API FHeightFieldShapeBarrier CreateHeightField(
-		ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY,
-		bool ReadInitialHeights = true);
+		ALandscape& Landscape, const FVector& StartPos, double LengthX, double LengthY);
 
 	// Overall resolution using outer bounds (i.e. holes does not affect this value unless a
 	// complete part if a side has been removed using the Landscape tool.

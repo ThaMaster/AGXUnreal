@@ -27,6 +27,31 @@ void FAGX_ObjectUtilities::GetChildActorsOfActor(AActor* Parent, TArray<AActor*>
 	ChildActors.Remove(Parent);
 }
 
+AActor* FAGX_ObjectUtilities::GetRootParentActor(AActor* Actor)
+{
+	if (!IsValid(Actor))
+	{
+		return nullptr;
+	}
+
+	while (Actor->IsChildActor())
+	{
+		AActor* Parent = Actor->GetParentActor();
+		if (IsValid(Parent))
+		{
+			Actor = Parent;
+		}
+		else
+		{
+			// Needed to avoid infinite loop when Actor is a Child Actor but the Parent Actor is
+			// invalid.
+			break;
+		}
+	}
+
+	return Actor;
+}
+
 bool FAGX_ObjectUtilities::IsTemplateComponent(const UActorComponent& Component)
 {
 	return Component.HasAnyFlags(RF_ArchetypeObject);
@@ -223,4 +248,21 @@ void FAGX_ObjectUtilities::TruncateForDetailsPanel(FRotator& Values)
 	TruncateForDetailsPanel(Values.Pitch);
 	TruncateForDetailsPanel(Values.Yaw);
 	TruncateForDetailsPanel(Values.Roll);
+}
+
+bool FAGX_ObjectUtilities::HasChainPrefixPath(
+	FEditPropertyChain::TDoubleLinkedListNode* Node, const TArray<const TCHAR*>& Path)
+{
+	// Walk the two lists in parallel, i.e. do a zip, and bail as soon as we find a name mismatch.
+	FString NodeName;
+	int32 I = 0;
+	for (; I < Path.Num() && Node != nullptr; ++I, Node = Node->GetNextNode())
+	{
+		Node->GetValue()->GetName(NodeName);
+		if (NodeName != Path[I])
+		{
+			return false;
+		}
+	}
+	return I == Path.Num();
 }

@@ -211,13 +211,11 @@ public:
 		FAGX_WireComponentVisualizer& Visualizer, UAGX_WireComponent& Wire,
 		const FVector& DeltaTranslate)
 	{
-		const FTransform& LocalToWorld = Wire.GetComponentTransform();
 		FWireRoutingNode& SelectedNode = Wire.RouteNodes[Visualizer.EditNodeIndex];
-		const FVector CurrentLocalLocation = SelectedNode.Location;
-		const FVector CurrentWorldLocation = LocalToWorld.TransformPosition(CurrentLocalLocation);
+		const FVector CurrentWorldLocation = SelectedNode.Frame.GetWorldLocation(Wire);
 		const FVector NewWorldLocation = CurrentWorldLocation + DeltaTranslate;
-		const FVector NewLocalLocation = LocalToWorld.InverseTransformPosition(NewWorldLocation);
-		SelectedNode.Location = NewLocalLocation;
+		SelectedNode.Frame.SetWorldLocation(NewWorldLocation, Wire);
+
 		Visualizer.NotifyPropertyModified(&Wire, Visualizer.RouteNodesProperty);
 		Wire.MarkVisualsDirty();
 	}
@@ -325,7 +323,7 @@ namespace AGX_WireComponentVisualizer_helpers
 	 */
 	template <typename FNodeColorFunc>
 	void DrawRouteNodes(
-		const UAGX_WireComponent& Wire, const bool bEditin, FPrimitiveDrawInterface* PDI,
+		const UAGX_WireComponent& Wire, FPrimitiveDrawInterface* PDI,
 		const FLinearColor& LineColor, FNodeColorFunc NodeColorFunc)
 	{
 		const FTransform& LocalToWorld = Wire.GetComponentTransform();
@@ -338,12 +336,9 @@ namespace AGX_WireComponentVisualizer_helpers
 		{
 			const FWireRoutingNode& Node = Nodes[I];
 			const FLinearColor NodeColor = NodeColorFunc(I, Node.NodeType);
-			const FVector Location = LocalToWorld.TransformPosition(Node.Location);
+			const FVector Location = Node.Frame.GetWorldLocation(Wire);
 
-			// if (bEditing)
-			// {
 			PDI->SetHitProxy(new HNodeProxy(&Wire, I));
-			// }
 			PDI->DrawPoint(
 				Location, NodeColor, FAGX_WireUtilities::NodeHandleSize, SDPG_Foreground);
 			PDI->SetHitProxy(nullptr);
@@ -365,7 +360,7 @@ namespace AGX_WireComponentVisualizer_helpers
 		FLinearColor LineColor = FLinearColor::White;
 		auto NodeColorFunc = [](int32 I, EWireNodeType NodeType)
 		{ return WireNodeTypeToColor(NodeType); };
-		DrawRouteNodes(Wire, false, PDI, LineColor, NodeColorFunc);
+		DrawRouteNodes(Wire, PDI, LineColor, NodeColorFunc);
 	}
 
 	/**
@@ -380,7 +375,7 @@ namespace AGX_WireComponentVisualizer_helpers
 			return I == SelectedNodeIndex ? GEditor->GetSelectionOutlineColor()
 										  : WireNodeTypeToColor(NodeType);
 		};
-		DrawRouteNodes(Wire, true, PDI, LineColor, NodeColorFunc);
+		DrawRouteNodes(Wire, PDI, LineColor, NodeColorFunc);
 	}
 
 	/**
@@ -436,10 +431,7 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 		{
 			// Do not render the implicit begin-winch-to-first-node line because the render iterator
 			// does provide that line along with all the other lines. The route nodes does not.
-			/// @todo For nodes attached to a body, use the body's transformation instead.
-			const FTransform& LocalToWorld = Wire->GetComponentTransform();
-			const FVector LocalLocation = Wire->RouteNodes[0].Location;
-			const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
+			const FVector WorldLocation = Wire->RouteNodes[0].Frame.GetWorldLocation(*Wire);
 			PDI->DrawLine(WinchLocation, WorldLocation, FLinearColor::White, SDPG_Foreground);
 		}
 	}
@@ -467,10 +459,7 @@ void FAGX_WireComponentVisualizer::DrawVisualization(
 		{
 			// Do not render the implicit end-winch-to-first-node line because the render iterator
 			// does provide that line along with all the other lines. The route nodes does not.
-			/// @todo For nodes attached to a body, use the body's transformation instead.
-			const FTransform& LocalToWorld = Wire->GetComponentTransform();
-			const FVector LocalLocation = Wire->RouteNodes.Last().Location;
-			const FVector WorldLocation = LocalToWorld.TransformPosition(LocalLocation);
+			const FVector WorldLocation = Wire->RouteNodes.Last().Frame.GetWorldLocation(*Wire);
 			PDI->DrawLine(WorldLocation, WinchLocation, FLinearColor::White, SDPG_Foreground);
 		}
 	}
@@ -552,11 +541,7 @@ bool FAGX_WireComponentVisualizer::GetWidgetLocation(
 	}
 	if (HasValidEditNode())
 	{
-		// Convert the wire-local location to a world location.
-		const FTransform& LocalToWorld = Wire->GetComponentTransform();
-		/// @todo Body Fixed and Eye should be relative to the body, not the wire.
-		const FVector LocalLocation = Wire->RouteNodes[EditNodeIndex].Location;
-		OutLocation = LocalToWorld.TransformPosition(LocalLocation);
+		OutLocation = Wire->RouteNodes[EditNodeIndex].Frame.GetWorldLocation(*Wire);
 		return true;
 	}
 	else if (HasValidEditWinch())

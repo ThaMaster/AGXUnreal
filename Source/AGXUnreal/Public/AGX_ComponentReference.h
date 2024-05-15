@@ -12,49 +12,71 @@ class UActor;
 class UActorComponent;
 
 /**
- * A reference to a typed Component by name.
+ * A reference to a typed Component by name and owning Actor.
  *
  * The Component is identified by an Owning Actor pointer and the name of the Component. The type
  * is specified using a UClass, specifically TSubclassOf<UActorComponent>. Instances are meant to be
- * created as members of C++ classes, but is usable also from Blueprint Visual Scripts.
- *
- * The intention is that it should be used much like Actor pointers can be, but limitations in the
- * Unreal Editor with Components forces us to do some tricks and workarounds. There is no Component
- * picker, so the user must first pick an Actor that owns the Component and then select the wanted
- * component from a combo box of available names. There is no actual pointer to the Component stored
- * in the FAGX_ComponentReference, only the name, so renaming the component will break the
- * reference. This is a serious limitation. Also, while building a Blueprint Actor in the Blueprint
- * editor there is no actual Actor yet, so the Actor picker cannot be used to select the Actor that
- * will be created when the Blueprint is instantiated. For this reason all Components that include a
- * Component Reference should set OwningActor to GetTypedOuter<AActor>() in PostInitProperties.
- *
- * void UMyComponent::PostInitProperties()
- * {
- *  	Super::PostInitProperties();
- *  	MyRigidBodyReference.OwningActor = GetTypedOuter<AActor>();
- * }
- *
- * This establishes the so-called local scope for the reference. Unless another OwningActor is
- * specified, the reference will search within the Actor that the reference is contained within. The
- * OwningActor set in PostInitProperties will we overwritten by deserialization if the object is
- * created from something else, such as part of a Play-in-Editor session start-up or loaded from
- * disk as part of a cooked build start-up.
- *
- * Unreal Editor detects changes made during construction, PostInitProperties is considered part of
- * the construction phase, and will disable editing of UProperties with such changes. This can be
- * disabled by adding the SkipUCSModifiedProperties Meta Specifier to the UProperty. That should be
- * done for FAGX_ComponentReferences on which OwningActor is set during PostInitProperties, and
- * recursively up any struct holding the FAGX_ComponentReference until a UObject UProperty is
- * reached.
- *
- *   UPROPERTY(EditAnywhere, Category = "My Category", Meta = (SkipUCSModifiedProperties))
- *   FAGX_ComponentReference MyComponentReference;
- *
- *   UPROPERTY(EditAnywhere, Category = "My Category", Meta = (SkipUCSModifiedProperties))
- *   FStructContainingComponentReference MyNestedComponentReference;
+ * created as members of C++ classes, but the type is usable also from Blueprint Visual Scripts.
  *
  * There are multiple sub-classes of FAGX_ComponentReference that specify the more specific
  * Component type, for example FAGX_RigidBodyReference and FAGX_ShovelReference.
+ *
+ * The intention is that the Component Reference should be used much like Actor pointers are, but
+ * limitations in the Unreal Editor with Components forces us to do some tricks and workarounds.
+ * There is no Component picker UI, so the user must first pick an Actor that owns the Component and
+ * then select the wanted component from a combo box of available names. There is no actual pointer
+ * to the Component stored in the FAGX_ComponentReference, only the name, so renaming the component
+ * will break the reference. This is a serious limitation. Also, while building a Blueprint Actor in
+ * the Blueprint editor there is no actual Actor yet, so the Actor picker cannot be used to select
+ * the Actor that will be created when the Blueprint is instantiated. In fact it cannot reference
+ * any Actor. For this reason the Component Reference contains a Local Scope non-Property member
+ * that is used as a fallback search Actor when Owning Actor is None / nullptr. All Components that
+ * contains a Component Reference member variable should set Local Scope to the Actor that it is
+ * part of in the constructor:
+ *
+ * void UMyComponent::UMyComponent()
+ * {
+ *  	MyComponentReference.SetLocalScope(GetTypedOuter<AActor>());
+ * }
+ *
+ * This establishes the so-called local scope for the reference. Unless an Owning Actor is
+ * specified, the reference will search within the Actor that the reference is contained within. If
+ * the Component contains Component References that are created dynamically, such as in an array,
+ * then the Local Scope should be set on those in Post Load since at that point any array elements
+ * found in serialized data has been restored. If a Blueprint creates elements in the array in its
+ * Construction Script then the Local Scope on those must be set in On Register. On Register is also
+ * called after elements has been added to an array from the Details panel. If the Component
+ * provide member functions that adds or sets elements in the array then those functions should set
+ * the Local Scope on the added or set element.
+ *
+ * So in short, set Local Scope in the Component's:
+ * - Constructor
+ * - Post Load, if the Component contains an array containing Component References.
+ * - On Register, if Component References may be created in Blueprint Construction Script or Details
+ *   panel.
+ * - Any member function that adds or creates Component References.
+ *
+ * A struct that both contains an FAGX_ComponentReference and has custom serialization code must
+ * ensure that the garbage collector is made aware of the possible change in referencing the Owning
+ * Actor. This is done by calling SerializeTaggedProperties also when
+ * IsModifyingWeakAndStrongReferences is true. See FAGX_WireRoutingNode for an example or below
+ * for the basics, and this Unreal Developer Network question:
+ * https://udn.unrealengine.com/s/question/0D5QP000008jPSZ0A2/uproperty-aactor-target-set-to-nullptr-by-garbage-collector-after-compile-of-targets-blueprint-class
+ *
+ * bool FMyStruct::Serialize(FArchive& Archive)
+ * {
+ *     // Serialize the normal UPROPERTY data.
+ *     if (Archive.IsLoading()
+ *	       || Archive.IsSaving()
+ *	       || Archive.IsModifyingWeakAndStrongReferences())
+ *     {
+ *         UScriptStruct* Struct = FMyStruct::StaticStruct();
+ *         Struct->SerializeTaggedProperties(
+ *             Archive, reinterpret_cast<uint8*>(this), Struct, nullptr);
+ *     }
+ *
+ *     // Struct-specific serialization code goes here.
+ * }
  */
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_ComponentReference
@@ -64,10 +86,39 @@ struct AGXUNREAL_API FAGX_ComponentReference
 	FAGX_ComponentReference();
 	FAGX_ComponentReference(TSubclassOf<UActorComponent> InComponentType);
 
+	// It would be safer to implement the copy constructor and assignment operator to not copy Local
+	// Scope, so that we can be sure we don't ever copy a Component Reference from one Component
+	// into another without updating Local Scope. Unfortunately, Blueprint Visual Script doesn't
+	// support references to structs, it will always copy from C++ to Visual Script, which means
+	// that if we do not copy Local Scope then there is no way of getting a Component that is
+	// referenced within the local scope. So we must copy.
+
 	UPROPERTY(
 		EditInstanceOnly, BlueprintReadWrite, Category = "AGX Component Reference",
-		Meta = (Tooltip = "The Actor that owns the RigidBodyComponent."))
+		Meta = (Tooltip = "The Actor that owns the Component."))
 	AActor* OwningActor {nullptr};
+
+	/**
+	 * Actor searched if Owning Actor is nullptr or points to an invalid Actor. Should always
+	 * be set in the constructor of the Component that contains this Component Reference.
+	 *
+	 * Intentionally not a UProperty because we do not want this to be serialized or used in equals
+	 * comparisons. We want the Component that contains this Component Reference to always be in
+	 * control of this pointer.
+	 */
+	AActor* LocalScope {nullptr};
+
+	/**
+	 * Let the Component Reference know which Actor is the local scope. If the given Actor is a
+	 * Child Actor then the parent actor chain will be traversed until a non-Child-Actor is found.
+	 */
+	void SetLocalScope(AActor* InLocalScope);
+
+	/**
+	 * Get the Actor that should be searched for the referenced Component. Is Owning Actor if that
+	 * is valid, if not then Local Scope is returned.
+	 */
+	AActor* GetScope() const;
 
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Component Reference",
@@ -80,6 +131,16 @@ struct AGXUNREAL_API FAGX_ComponentReference
 			(Tooltip =
 				 "Whether the search for the Component should decend into Child Actor Components."))
 	uint8 bSearchChildActors : 1;
+
+	/**
+	 * Set the Component that this Component Reference references.
+	 *
+	 * Beware that the Component is identified by name, so if it is renamed then this Component
+	 * Reference will no longer be able to find it.
+	 *
+	 * Passing None / nullptr will clear both Owning Actor and Name.
+	 */
+	void SetComponent(UActorComponent* Component);
 
 	/**
 	 * Does a search in Owning Actor for a Component named Name. Will return nullptr if no matching
@@ -151,6 +212,13 @@ struct AGXUNREAL_API FAGX_ComponentReference
 	 */
 };
 
+inline bool operator==(const FAGX_ComponentReference& Lhs, const FAGX_ComponentReference& Rhs)
+{
+	return Lhs.OwningActor == Rhs.OwningActor
+		   // Intentionally not comparing Local Scope.
+		   && Lhs.Name == Rhs.Name && Lhs.bSearchChildActors == Rhs.bSearchChildActors;
+}
+
 template <typename T>
 T* FAGX_ComponentReference::GetComponent() const
 {
@@ -163,6 +231,10 @@ class AGXUNREAL_API UAGX_ComponentReference_FL : public UBlueprintFunctionLibrar
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "AGX Component Reference")
+	static void SetComponent(
+		UPARAM(Ref) FAGX_ComponentReference& Reference, UActorComponent* Component);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Component Reference")
 	static UActorComponent* GetComponent(UPARAM(Ref) FAGX_ComponentReference& Reference);
 };

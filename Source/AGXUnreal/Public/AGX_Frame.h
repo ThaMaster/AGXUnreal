@@ -18,6 +18,10 @@ class USceneComponent;
  * Specifies a transformation relative to a Scene Component.
  *
  * Used, for example, to specify where something attaches to something else, or where something is.
+ *
+ * Contains an FAGX_ComponentReference named Parent used to identify the Scene Component that this
+ * frame is relative to. The Component Reference require some setup to function properly. See
+ * AGX_ComponentReference for details.
  */
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_Frame
@@ -69,6 +73,14 @@ struct AGXUNREAL_API FAGX_Frame
 	FVector GetWorldLocation(const USceneComponent& FallbackParent) const;
 
 	/**
+	 * Set LocalLocation so that this Frame becomes located at the given world location.
+	 *
+	 * The world-to-local computation is done using the Fallback Parent's transform if Parent is not
+	 * set.
+	 */
+	void SetWorldLocation(const FVector& InLocation, const USceneComponent& FallbackParent);
+
+	/**
 	 * Get the world rotation of this Frame.
 	 *
 	 * That is, the result of transforming this Frame's Local Rotation with the Parent's world
@@ -89,10 +101,18 @@ struct AGXUNREAL_API FAGX_Frame
 	FVector GetLocationRelativeTo(const USceneComponent& Component) const;
 
 	/**
-	 * Same as Get Location Relative To, but use Fallback Parent is Parent is not set.
+	 * Same as Get Location Relative To, but use Fallback Parent if Parent is not set.
 	 */
 	FVector GetLocationRelativeTo(
 		const USceneComponent& Component, const USceneComponent& FallbackParent) const;
+
+	/**
+	 * Get the location of this Frame relative to the given Scene Component.
+	 *
+	 * If Parent is not set then FallbackTransform is used as the parent transform instead.
+	 */
+	FVector GetLocationRelativeTo(
+		const USceneComponent& Component, const FTransform& FallbackTransform) const;
 
 	/**
 	 * Get the rotation of this Frame relative to the given Scene Component.
@@ -111,6 +131,9 @@ struct AGXUNREAL_API FAGX_Frame
 	void GetRelativeTo(
 		const USceneComponent& Component, FVector& OutLocation, FRotator& OutRotation,
 		const USceneComponent& FallbackParent) const;
+
+	const FTransform& GetParentTransform(const USceneComponent& FallbackParent) const;
+	const FTransform& GetParentTransform(const FTransform& FallbackTransform) const;
 };
 
 UCLASS()
@@ -119,32 +142,45 @@ class AGXUNREAL_API UAGX_Frame_FL : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "AGX Frame")
+	UFUNCTION(BlueprintCallable, Category = "AGX Frame|Parent")
+	static UPARAM(Ref) FAGX_Frame& SetName(UPARAM(Ref) FAGX_Frame& Frame, FName Name)
+	{
+		Frame.Parent.Name = Name;
+		return Frame;
+	}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame|Parent")
+	static FName GetName(UPARAM(Ref) FAGX_Frame& Frame)
+	{
+		return Frame.Parent.Name;
+	}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
 	static USceneComponent* GetParentComponent(const FAGX_Frame& Frame)
 	{
 		return Frame.GetParentComponent();
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Frame")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
 	static FVector GetWorldLocation(const FAGX_Frame& Frame)
 	{
 		return Frame.GetWorldLocation();
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Frame")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
 	static FRotator GetWorldRotation(const FAGX_Frame& Frame)
 	{
 		return Frame.GetWorldRotation();
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Frame")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
 	void GetWorldLocationAndRotation(
 		const FAGX_Frame& Frame, FVector& OutLocation, FRotator& OutRotation)
 	{
 		Frame.GetWorldLocationAndRotation(OutLocation, OutRotation);
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Frame")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
 	FVector GetLocationRelativeTo(const FAGX_Frame& Frame, USceneComponent* Component)
 	{
 		if (Component == nullptr)
@@ -154,7 +190,7 @@ public:
 		return Frame.GetLocationRelativeTo(*Component);
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Frame")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
 	FRotator GetRotationRelativeTo(const FAGX_Frame& Frame, USceneComponent* Component)
 	{
 		if (Component == nullptr)
@@ -164,7 +200,7 @@ public:
 		return Frame.GetRotationRelativeTo(*Component);
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Frame")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Frame")
 	void GetRelativeTo(
 		const FAGX_Frame& Frame, USceneComponent* Component, FVector& OutLocation,
 		FRotator& OutRotation)

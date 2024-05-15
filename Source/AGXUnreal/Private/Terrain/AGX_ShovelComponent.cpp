@@ -25,6 +25,14 @@ UAGX_ShovelComponent::UAGX_ShovelComponent()
 {
 	// Keep ticking off until we have a reason to turn it on.
 	PrimaryComponentTick.bCanEverTick = false;
+
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
+	RigidBody.LocalScope = Owner;
+	TopEdge.Start.Parent.LocalScope = Owner;
+	TopEdge.End.Parent.LocalScope = Owner;
+	CuttingEdge.Start.Parent.LocalScope = Owner;
+	CuttingEdge.End.Parent.LocalScope = Owner;
+	CuttingDirection.Parent.LocalScope = Owner;
 }
 
 void UAGX_ShovelComponent::SetEnabled(bool bInEnabled)
@@ -341,20 +349,13 @@ void UAGX_ShovelComponent::PostInitProperties()
 	// copied from the Class Default Object, but before deserialization in cases where this object
 	// is created from another, such as at the start of a Play-in-Editor session or when loading
 	// a map in a cooked build (I hope).
-	//
-	// The intention is to provide by default a local scope that is the Actor outer that this
-	// component is part of. If the OwningActor is set anywhere else, such as in the Details Panel,
-	// then that "else" should overwrite this value shortly.
-	//
-	// We use GetTypedOuter because we worry that in some cases the Owner may not yet have been set
-	// but there will always be an outer chain. This worry may be unfounded.
-	AActor* Owner = GetTypedOuter<AActor>();
-	RigidBody.OwningActor = Owner;
-	TopEdge.Start.Parent.OwningActor = Owner;
-	TopEdge.End.Parent.OwningActor = Owner;
-	CuttingEdge.Start.Parent.OwningActor = Owner;
-	CuttingEdge.End.Parent.OwningActor = Owner;
-	CuttingDirection.Parent.OwningActor = Owner;
+	AActor* const Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
+	RigidBody.LocalScope = Owner;
+	TopEdge.Start.Parent.LocalScope = Owner;
+	TopEdge.End.Parent.LocalScope = Owner;
+	CuttingEdge.Start.Parent.LocalScope = Owner;
+	CuttingEdge.End.Parent.LocalScope = Owner;
+	CuttingDirection.Parent.LocalScope = Owner;
 
 	InitPropertyDispatcher();
 }

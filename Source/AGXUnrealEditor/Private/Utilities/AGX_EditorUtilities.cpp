@@ -888,25 +888,10 @@ AAGX_ConstraintActor* FAGX_EditorUtilities::CreateConstraintActor(
 	// Create the new Constraint Actor.
 	AAGX_ConstraintActor* NewActor =
 		World->SpawnActorDeferred<AAGX_ConstraintActor>(ConstraintType, FTransform::Identity);
-
 	check(NewActor);
-
-	/// \todo We have the Component we want. There should be a way to specify it directly, without
-	/// being dependent on its name.
 	UAGX_ConstraintComponent* Constraint = NewActor->GetConstraintComponent();
-	Constraint->BodyAttachment1.RigidBody.OwningActor = RigidBody1->GetOwner();
-	Constraint->BodyAttachment1.RigidBody.Name = RigidBody1->GetFName();
-	if (RigidBody2 != nullptr)
-	{
-		Constraint->BodyAttachment2.RigidBody.OwningActor = RigidBody2->GetOwner();
-		Constraint->BodyAttachment2.RigidBody.Name = RigidBody2->GetFName();
-	}
-	else
-	{
-		Constraint->BodyAttachment2.RigidBody.OwningActor = nullptr;
-		Constraint->BodyAttachment2.RigidBody.Name = NAME_None;
-	}
-
+	Constraint->BodyAttachment1.RigidBody.SetComponent(RigidBody1);
+	Constraint->BodyAttachment2.RigidBody.SetComponent(RigidBody2);
 	NewActor->FinishSpawning(FTransform::Identity, true);
 
 	if (bSelect)

@@ -13,8 +13,7 @@ FAGX_Frame::FAGX_Frame()
 
 void FAGX_Frame::SetParentComponent(USceneComponent* Component)
 {
-	Parent.OwningActor = Component->GetOwner();
-	Parent.Name = Component->GetFName();
+	Parent.SetComponent(Component);
 }
 
 USceneComponent* FAGX_Frame::GetParentComponent() const
@@ -43,6 +42,12 @@ FVector FAGX_Frame::GetWorldLocation(const USceneComponent& FallbackParent) cons
 	}
 
 	return ActualParent->GetComponentTransform().TransformPosition(LocalLocation);
+}
+
+void FAGX_Frame::SetWorldLocation(const FVector& InLocation, const USceneComponent& FallbackParent)
+{
+	const FTransform& ParentToWorld = GetParentTransform(FallbackParent);
+	LocalLocation = ParentToWorld.InverseTransformPosition(InLocation);
 }
 
 FRotator FAGX_Frame::GetWorldRotation() const
@@ -84,7 +89,7 @@ void FAGX_Frame::GetWorldLocationAndRotation(FVector& OutLocation, FRotator& Out
 		return;
 	}
 
-	const FTransform Transform = ActualParent->GetComponentTransform();
+	const FTransform& Transform = ActualParent->GetComponentTransform();
 	OutLocation = Transform.TransformPosition(LocalLocation);
 	const FQuat LocalQuat = LocalRotation.Quaternion();
 	const FQuat WorldQuat = Transform.TransformRotation(LocalQuat);
@@ -102,8 +107,8 @@ FVector FAGX_Frame::GetLocationRelativeTo(const USceneComponent& Component) cons
 
 	// Construct the transformation that takes us from our Component's coordinate system to the
 	// given Component's.
-	const FTransform ParentTransform = ActualParent->GetComponentTransform();
-	const FTransform TargetTransform = Component.GetComponentTransform();
+	const FTransform& ParentTransform = ActualParent->GetComponentTransform();
+	const FTransform& TargetTransform = Component.GetComponentTransform();
 	const FTransform Transform = ParentTransform.GetRelativeTransform(TargetTransform);
 	return Transform.TransformPosition(LocalLocation);
 }
@@ -119,10 +124,19 @@ FVector FAGX_Frame::GetLocationRelativeTo(
 
 	// Construct the transformation that takes us from the parent's coordinate system to the
 	// given Component's.
-	const FTransform ParentTransform = ActualParent->GetComponentTransform();
-	const FTransform TargetTransform = Component.GetComponentTransform();
+	const FTransform& ParentTransform = ActualParent->GetComponentTransform();
+	const FTransform& TargetTransform = Component.GetComponentTransform();
 	const FTransform Transform = ParentTransform.GetRelativeTransform(TargetTransform);
 	return Transform.TransformPosition(LocalLocation);
+}
+
+FVector FAGX_Frame::GetLocationRelativeTo(
+	const USceneComponent& Component, const FTransform& FallbackTransform) const
+{
+	const FTransform& ParentTransform = GetParentTransform(FallbackTransform);
+	const FTransform& TargetTransform = Component.GetComponentTransform();
+	const FTransform ParentToTarget = ParentTransform.GetRelativeTransform(TargetTransform);
+	return ParentToTarget.TransformPosition(LocalLocation);
 }
 
 FRotator FAGX_Frame::GetRotationRelativeTo(const USceneComponent& Component) const
@@ -137,8 +151,8 @@ FRotator FAGX_Frame::GetRotationRelativeTo(const USceneComponent& Component) con
 		return RelativeQuat.Rotator();
 	}
 
-	const FTransform ParentTransform = ActualParent->GetComponentTransform();
-	const FTransform TargetTransform = Component.GetComponentTransform();
+	const FTransform& ParentTransform = ActualParent->GetComponentTransform();
+	const FTransform& TargetTransform = Component.GetComponentTransform();
 	const FTransform Transform = ParentTransform.GetRelativeTransform(TargetTransform);
 	const FQuat LocalQuat = LocalRotation.Quaternion();
 	const FQuat RelativeQuat = Transform.TransformRotation(LocalQuat);
@@ -154,8 +168,8 @@ FRotator FAGX_Frame::GetRotationRelativeTo(
 		ActualParent = &FallbackParent;
 	}
 
-	const FTransform ParentTransform = ActualParent->GetComponentTransform();
-	const FTransform TargetTransform = Component.GetComponentTransform();
+	const FTransform& ParentTransform = ActualParent->GetComponentTransform();
+	const FTransform& TargetTransform = Component.GetComponentTransform();
 	const FTransform Transform = ParentTransform.GetRelativeTransform(TargetTransform);
 	const FQuat LocalQuat = LocalRotation.Quaternion();
 	const FQuat RelativeQuat = Transform.TransformRotation(LocalQuat);
@@ -174,10 +188,11 @@ void FAGX_Frame::GetRelativeTo(
 		const FQuat LocalQuat = LocalRotation.Quaternion();
 		const FQuat RelativeQuat = Transform.InverseTransformRotation(LocalQuat);
 		OutRotation = RelativeQuat.Rotator();
+		return;
 	}
 
-	const FTransform ParentTransform = ActualParent->GetComponentTransform();
-	const FTransform TargetTransform = Component.GetComponentTransform();
+	const FTransform& ParentTransform = ActualParent->GetComponentTransform();
+	const FTransform& TargetTransform = Component.GetComponentTransform();
 	const FTransform Transform = ParentTransform.GetRelativeTransform(TargetTransform);
 	OutLocation = Transform.TransformPosition(LocalLocation);
 	const FQuat LocalQuat = LocalRotation.Quaternion();
@@ -195,11 +210,26 @@ void FAGX_Frame::GetRelativeTo(
 		ActualParent = &FallbackParent;
 	}
 
-	const FTransform ParentTransform = ActualParent->GetComponentTransform();
-	const FTransform TargetTransform = Component.GetComponentTransform();
+	const FTransform& ParentTransform = ActualParent->GetComponentTransform();
+	const FTransform& TargetTransform = Component.GetComponentTransform();
 	const FTransform Transform = ParentTransform.GetRelativeTransform(TargetTransform);
 	OutLocation = Transform.TransformPosition(LocalLocation);
 	const FQuat LocalQuat = LocalRotation.Quaternion();
 	const FQuat RelativeQuat = Transform.TransformRotation(LocalQuat);
 	OutRotation = RelativeQuat.Rotator();
+}
+
+const FTransform& FAGX_Frame::GetParentTransform(const USceneComponent& FallbackParent) const
+{
+	return GetParentTransform(FallbackParent.GetComponentTransform());
+}
+
+const FTransform& FAGX_Frame::GetParentTransform(const FTransform& FallbackTransform) const
+{
+	const USceneComponent* ActualParent = GetParentComponent();
+	if (ActualParent == nullptr)
+	{
+		return FallbackTransform;
+	}
+	return ActualParent->GetComponentTransform();
 }
