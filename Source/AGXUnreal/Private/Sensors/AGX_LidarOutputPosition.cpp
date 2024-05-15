@@ -10,7 +10,7 @@
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 
 
-void FAGX_LidarOutputPosition::DebugDrawData(
+void FAGX_LidarOutputPosition::Render(
 	const TArray<FAGX_LidarOutputPositionData>& InData, UAGX_LidarSensorComponent* Lidar,
 	float LifeTime, float BaseSize)
 {
@@ -21,7 +21,7 @@ void FAGX_LidarOutputPosition::DebugDrawData(
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("FAGX_LidarOutputPosition::DebugDrawData called but the given Lidar does "
+			TEXT("FAGX_LidarOutputPosition::Render called but the given Lidar does "
 				 "not have bEnableRendering set to true. Doing nothing."));
 		return;
 	}
@@ -31,7 +31,7 @@ void FAGX_LidarOutputPosition::DebugDrawData(
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("FAGX_LidarOutputPosition::DebugDrawData called but the given Lidar does "
+			TEXT("FAGX_LidarOutputPosition::Render called but the given Lidar does "
 				 "not have a spawned Niagara Component. Doing nothing."));
 		return;
 	}

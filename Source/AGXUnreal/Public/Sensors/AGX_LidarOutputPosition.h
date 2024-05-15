@@ -23,7 +23,7 @@ struct AGXUNREAL_API FAGX_LidarOutputPosition : public FAGX_LidarOutputBase
 public:
 	virtual ~FAGX_LidarOutputPosition() = default;
 
-	void DebugDrawData(
+	void Render(
 		const TArray<FAGX_LidarOutputPositionData>& InData, UAGX_LidarSensorComponent* Lidar,
 		float LifeTime, float BaseSize);
 
@@ -67,11 +67,11 @@ class AGXUNREAL_API UAGX_LidarOutputPosition_LF : public UBlueprintFunctionLibra
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	static void DebugDrawData(
+	static void Render(
 		UPARAM(ref) FAGX_LidarOutputPosition& Output,
 		const TArray<FAGX_LidarOutputPositionData>& Data, UAGX_LidarSensorComponent* Lidar,
 		float LifeTime = 0.12f, float BaseSize = 5.f)
 	{
-		Output.DebugDrawData(Data, Lidar, LifeTime, BaseSize);
+		Output.Render(Data, Lidar, LifeTime, BaseSize);
 	}
 };
