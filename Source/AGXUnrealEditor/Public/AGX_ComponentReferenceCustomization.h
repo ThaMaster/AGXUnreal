@@ -107,6 +107,12 @@ private:
 	/// Read the Owning Actor through the Owning Actor handle.
 	AActor* GetOwningActor() const;
 
+	/**
+	 *  Get the Actor that is searched for the referenced Component. Is the Owning Actor if one
+	 *  has been set, otherwise the fallback Local Scope is used.
+	 */
+	AActor* GetScope() const;
+
 	/// Read the Component name through the Name Handle.
 	FName GetName() const;
 

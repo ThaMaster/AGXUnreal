@@ -19,7 +19,7 @@ class AGXUNREAL_API UAGX_WireWinchComponent : public USceneComponent, public IAG
 public:
 	UAGX_WireWinchComponent();
 
-	UPROPERTY(EditAnywhere, Category = "AGX Wire Winch", Meta = (SkipUCSModifiedProperties))
+	UPROPERTY(EditAnywhere, Category = "AGX Wire Winch")
 	FAGX_WireWinch WireWinch;
 
 	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch", Meta = (DisplayName = "Get Winch"))

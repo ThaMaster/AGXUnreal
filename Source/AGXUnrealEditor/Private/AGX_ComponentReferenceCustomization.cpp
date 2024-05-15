@@ -45,6 +45,20 @@ namespace AGX_ComponentReferenceCustomization_helpers
 		}
 	}
 
+	const UBlueprintGeneratedClass* GetBlueprint(IPropertyHandle& ComponentReferenceHandle)
+	{
+		// This assumes that the Component Reference is owned by an Actor Component.
+		const UActorComponent* OwningComponent = Cast<UActorComponent>(
+			FAGX_PropertyUtilities::GetParentObjectOfStruct(ComponentReferenceHandle));
+		if (OwningComponent == nullptr)
+		{
+			return nullptr;
+		}
+		const UBlueprintGeneratedClass* Blueprint =
+			Cast<UBlueprintGeneratedClass>(OwningComponent->GetOuter());
+		return Blueprint;
+	}
+
 	/**
 	 * Get a combo-box compatible list of Component names of the compatible Components found in the
 	 * Blueprint that the given Property Handle is part of. That is, find out what options the user
@@ -54,28 +68,14 @@ namespace AGX_ComponentReferenceCustomization_helpers
 	 * @param Type The UActorComponent subclass that the Component Reference can point to.
 	 */
 	void GetComponentNamesFromBlueprint(
-		TArray<TSharedPtr<FName>>& OutNames, IPropertyHandle& ComponentReferenceHandle,
+		TArray<TSharedPtr<FName>>& OutNames, const UBlueprintGeneratedClass& Blueprint,
 		TSubclassOf<UActorComponent> Type)
 	{
 		OutNames.Empty();
 
-		// Get the Blueprint, if there is one.
-		const UActorComponent* OwningComponent = Cast<UActorComponent>(
-			FAGX_PropertyUtilities::GetParentObjectOfStruct(ComponentReferenceHandle));
-		if (OwningComponent == nullptr)
-		{
-			return;
-		}
-		const UBlueprintGeneratedClass* Blueprint =
-			Cast<UBlueprintGeneratedClass>(OwningComponent->GetOuter());
-		if (Blueprint == nullptr)
-		{
-			return;
-		}
-
 		// Search the Blueprint inheritance chain for SCS nodes of the wanted type.
 		TArray<UBlueprint*> BlueprintChain;
-		UBlueprint::GetBlueprintHierarchyFromClass(Blueprint, BlueprintChain);
+		UBlueprint::GetBlueprintHierarchyFromClass(&Blueprint, BlueprintChain);
 		for (const UBlueprint* BP : BlueprintChain)
 		{
 			for (const USCS_Node* Node : BP->SimpleConstructionScript->GetAllNodes())
@@ -337,17 +337,16 @@ void FAGX_ComponentReferenceCustomization::RebuildComboBox()
 		return;
 	}
 
-	// Populate Component Names either from the owning Actor or from the Blueprint.
-	const AActor* OwningActor = GetOwningActor();
-	if (OwningActor != nullptr)
+	// Populate Component Names either from the Blueprint or from the owning Actor.
+	const UBlueprintGeneratedClass* Blueprint = GetBlueprint(*ComponentReferenceHandle.Get());
+	if (Blueprint != nullptr)
 	{
-		GetComponentNamesFromOwner(ComponentNames, *ComponentReference);
+		GetComponentNamesFromBlueprint(
+			ComponentNames, *Blueprint, ComponentReference->ComponentType);
 	}
 	else
 	{
-		// It is OK to call this even when we aren't part of a Blueprint.
-		GetComponentNamesFromBlueprint(
-			ComponentNames, *ComponentReferenceHandle.Get(), ComponentReference->ComponentType);
+		GetComponentNamesFromOwner(ComponentNames, *ComponentReference);
 	}
 
 	bFoundComponents = ComponentNames.Num() > 0;
@@ -673,6 +672,16 @@ AActor* FAGX_ComponentReferenceCustomization::GetOwningActor() const
 	}
 
 	return OwningActor;
+}
+
+AActor* FAGX_ComponentReferenceCustomization::GetScope() const
+{
+	FAGX_ComponentReference* ComponentReference = GetComponentReference();
+	if (ComponentReference == nullptr)
+	{
+		return nullptr;
+	}
+	return ComponentReference->GetScope();
 }
 
 FName FAGX_ComponentReferenceCustomization::GetName() const

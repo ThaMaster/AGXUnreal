@@ -428,7 +428,7 @@ void FAGX_WireNodeDetails::OnSetLocation(float NewValue, ETextCommit::Type Commi
 
 	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeLocation", "Set wire node location"));
 	Wire->Modify();
-	Wire->RouteNodes[NodeIndex].Location.Component(Axis) = NewValue;
+	Wire->RouteNodes[NodeIndex].Frame.LocalLocation.Component(Axis) = NewValue;
 	FComponentVisualizer::NotifyPropertyModified(Wire, RouteNodesProperty);
 	UpdateValues();
 }
@@ -512,7 +512,7 @@ void FAGX_WireNodeDetails::OnSetNodeType(TSharedPtr<FString> NewValue, ESelectIn
 	{
 		// The RigidBody selector is about to be shown. Prepare it's backing storage.
 		NewBodyName = RebuildRigidBodyComboBox_Edit(
-			Node.RigidBody.Name.ToString(), Node.RigidBody.OwningActor);
+			Node.RigidBody.Name.ToString(), Node.RigidBody.GetScope());
 	}
 
 	const FScopedTransaction Transaction(LOCTEXT("SetWireNodeType", "Set wire node type"));
@@ -638,7 +638,7 @@ void FAGX_WireNodeDetails::OnSetRigidBodyOwner(AActor* Actor)
 	UAGX_WireComponent* Wire;
 	int32 NodeIndex;
 	const TCHAR* Error;
-	bool bValidSelection = GetValidatedSelection(*this, Wire, NodeIndex, Error);
+	const bool bValidSelection = GetValidatedSelection(*this, Wire, NodeIndex, Error);
 	if (!bValidSelection)
 	{
 		UE_LOG(
@@ -812,9 +812,9 @@ void FAGX_WireNodeDetails::UpdateValues()
 	const FWireRoutingNode& Node = Wire->RouteNodes[NodeIndex];
 
 	// Read node location.
-	LocationX = Node.Location.X;
-	LocationY = Node.Location.Y;
-	LocationZ = Node.Location.Z;
+	LocationX = Node.Frame.LocalLocation.X;
+	LocationY = Node.Frame.LocalLocation.Y;
+	LocationZ = Node.Frame.LocalLocation.Z;
 
 	// Read node type.
 	NodeType = Node.NodeType;
@@ -830,11 +830,11 @@ void FAGX_WireNodeDetails::UpdateValues()
 
 	if (bSelectionChanged)
 	{
-		RebuildRigidBodyComboBox_View(Node.RigidBody.Name.ToString(), Node.RigidBody.OwningActor);
+		RebuildRigidBodyComboBox_View(Node.RigidBody.Name.ToString(), Node.RigidBody.GetScope());
 	}
 
 	RigidBodyNameText = FText::FromName(Node.RigidBody.Name);
-	RigidBodyOwnerLabelText = FText::FromString(GetLabelSafe(Node.RigidBody.OwningActor));
+	RigidBodyOwnerLabelText = FText::FromString(GetLabelSafe(Node.RigidBody.GetScope()));
 }
 
 EVisibility FAGX_WireNodeDetails::WithSelection() const

@@ -20,15 +20,8 @@ bool FAGX_WireWinch::SetBodyAttachment(UAGX_RigidBodyComponent* Body)
 				 "Cannot move initialized winches between bodies."));
 		return false;
 	}
-	if (Body == nullptr)
-	{
-		BodyAttachment.OwningActor = nullptr;
-		BodyAttachment.Name = NAME_None;
-		return true;
-	}
 
-	BodyAttachment.OwningActor = Body->GetOwner();
-	BodyAttachment.Name = Body->GetFName();
+	BodyAttachment.SetComponent(Body);
 	return true;
 }
 

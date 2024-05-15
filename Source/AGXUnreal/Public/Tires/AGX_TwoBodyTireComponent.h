@@ -44,13 +44,13 @@ public:
 	/**
 	 * Reference to the Tire Rigid Body.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire", Meta = (SkipUCSModifiedProperties))
+	UPROPERTY(EditAnywhere, Category = "AGX Tire")
 	FAGX_RigidBodyReference TireRigidBody;
 
 	/**
 	 * Reference to the Hub Rigid Body.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Tire", Meta = (SkipUCSModifiedProperties))
+	UPROPERTY(EditAnywhere, Category = "AGX Tire")
 	FAGX_RigidBodyReference HubRigidBody;
 
 	/**
