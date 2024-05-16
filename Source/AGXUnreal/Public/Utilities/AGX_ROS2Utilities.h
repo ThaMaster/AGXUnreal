@@ -40,8 +40,8 @@ public:
 	/**
 	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2
 	 * message.
-	 * The Data member consists of position X, Y, Z and Intensity for each point written as double's
-	 * in little endian layout, i.e. 32 bytes per point.
+	 * The Data member consists of position z, y, z [cm] and intensity for each point written as
+	 * double's in little endian layout, i.e. 32 bytes per point.
 	 *
 	 * Note that all invalid points, such as points representing scan misses, are ignored.
 	 * This means that the sensor_msgs::PointCloud2 message created by this function is always
@@ -76,8 +76,8 @@ public:
 	/**
 	 * Takes an array of Lidar Output Position Intensity Data and converts it into a ROS2
 	 * sensor_msgs::PointCloud2 message. The Data member of the ROS2 message consists of position x,
-	 * y, z and Intensity for each point written as double's in little endian layout, i.e. 32 bytes
-	 * per point.
+	 * y, z [cm] and Intensity for each point written as double's in little endian layout, i.e. 32
+	 * bytes per point.
 	 *
 	 * It is assumed that the given Output Data is dense, i.e. that no point misses are included.
 	 *
@@ -91,7 +91,7 @@ public:
 	/**
 	 * Takes an array of Lidar Output Position Intensity Data and converts it into a ROS2
 	 * sensor_msgs::PointCloud2 message. The Data member of the ROS2 message consists of position x,
-	 * y, z for each point written as double's in little endian layout, i.e. 32 bytes
+	 * y, z [cm] for each point written as double's in little endian layout, i.e. 32 bytes
 	 * per point.
 	 *
 	 * It is assumed that the given Output Data is dense, i.e. that no point misses are included.
