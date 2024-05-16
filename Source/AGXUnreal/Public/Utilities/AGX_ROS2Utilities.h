@@ -8,6 +8,8 @@
 
 #include "AGX_ROS2Utilities.generated.h"
 
+struct FAGX_LidarOutputPositionData;
+struct FAGX_LidarOutputPositionIntensityData;
 struct FAGX_LidarScanPoint;
 struct FAGX_SensorMsgsImage;
 struct FAGX_SensorMsgsPointCloud2;
@@ -68,6 +70,36 @@ public:
 	 * the timestamp of the first valid Point in the given array, even if other points have been
 	 * generated at later timestamps.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2")
 	static FAGX_SensorMsgsPointCloud2 ConvertAnglesTOF(const TArray<FAGX_LidarScanPoint>& Points);
+
+	/**
+	 * Takes an array of Lidar Output Position Intensity Data and converts it into a ROS2
+	 * sensor_msgs::PointCloud2 message. The Data member of the ROS2 message consists of position x,
+	 * y, z and Intensity for each point written as double's in little endian layout, i.e. 32 bytes
+	 * per point.
+	 *
+	 * It is assumed that the given Output Data is dense, i.e. that no point misses are included.
+	 *
+	 * The timestamp written to the Header member of the sensor_msgs::PointCloud2 message is set
+	 * according to the given timestamp.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2")
+	static FAGX_SensorMsgsPointCloud2 ConvertPositionData(
+		const TArray<FAGX_LidarOutputPositionData>& Data, double TimeStamp);
+
+	/**
+	 * Takes an array of Lidar Output Position Intensity Data and converts it into a ROS2
+	 * sensor_msgs::PointCloud2 message. The Data member of the ROS2 message consists of position x,
+	 * y, z for each point written as double's in little endian layout, i.e. 32 bytes
+	 * per point.
+	 *
+	 * It is assumed that the given Output Data is dense, i.e. that no point misses are included.
+	 *
+	 * The timestamp written to the Header member of the sensor_msgs::PointCloud2 message is set
+	 * according to the given timestamp.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX ROS2")
+	static FAGX_SensorMsgsPointCloud2 ConvertPositionIntensityData(
+		const TArray<FAGX_LidarOutputPositionIntensityData>& Data, double TimeStamp);
 };

@@ -5,6 +5,8 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "ROS2/AGX_ROS2Messages.h"
+#include "Sensors/AGX_LidarOutputPosition.h"
+#include "Sensors/AGX_LidarOutputPositionIntensity.h"
 #include "Sensors/AGX_LidarScanPoint.h"
 
 // Standard library includes.
@@ -280,6 +282,70 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertAnglesTOF(
 		AppendDoubleToUint8Array(AngleY, Msg.Data);
 		AppendUint32ToUint8Array(TimePikoSeconds, Msg.Data);
 		AppendDoubleToUint8Array(Points[i].Intensity, Msg.Data);
+	}
+
+	// If the points are unordered, height is 1 and width is the length of the point cloud.
+	Msg.Height = 1;
+	Msg.Width = Msg.Data.Num() / Msg.PointStep; // Num points.
+	Msg.RowStep = Msg.Data.Num(); // Bytes per "row" which is the whole point cloud.
+
+	return Msg;
+}
+
+FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertPositionData(
+	const TArray<FAGX_LidarOutputPositionData>& Data, double TimeStamp)
+{
+	using namespace AGX_ROS2Utilities_helpers;
+	FAGX_SensorMsgsPointCloud2 Msg;
+
+	Msg.Header.Stamp = ConvertTime(TimeStamp);
+	Msg.Fields.Add(MakePointField("x", 0, EAGX_PointFieldType::Float64, 1));
+	Msg.Fields.Add(MakePointField("y", 8, EAGX_PointFieldType::Float64, 1));
+	Msg.Fields.Add(MakePointField("z", 16, EAGX_PointFieldType::Float64, 1));
+
+	Msg.IsBigendian = false;
+	Msg.PointStep = 24; // Bytes per point.
+	Msg.IsDense = true;
+
+	Msg.Data.Reserve(Data.Num() * Msg.PointStep);
+	for (const auto& D : Data)
+	{
+		AppendDoubleToUint8Array(D.Position.X, Msg.Data);
+		AppendDoubleToUint8Array(D.Position.Y, Msg.Data);
+		AppendDoubleToUint8Array(D.Position.Z, Msg.Data);
+	}
+
+	// If the points are unordered, height is 1 and width is the length of the point cloud.
+	Msg.Height = 1;
+	Msg.Width = Msg.Data.Num() / Msg.PointStep; // Num points.
+	Msg.RowStep = Msg.Data.Num(); // Bytes per "row" which is the whole point cloud.
+
+	return Msg;
+}
+
+FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertPositionIntensityData(
+	const TArray<FAGX_LidarOutputPositionIntensityData>& Data, double TimeStamp)
+{
+	using namespace AGX_ROS2Utilities_helpers;
+	FAGX_SensorMsgsPointCloud2 Msg;
+
+	Msg.Header.Stamp = ConvertTime(TimeStamp);
+	Msg.Fields.Add(MakePointField("x", 0, EAGX_PointFieldType::Float64, 1));
+	Msg.Fields.Add(MakePointField("y", 8, EAGX_PointFieldType::Float64, 1));
+	Msg.Fields.Add(MakePointField("z", 16, EAGX_PointFieldType::Float64, 1));
+	Msg.Fields.Add(MakePointField("intensity", 24, EAGX_PointFieldType::Float64, 1));
+
+	Msg.IsBigendian = false;
+	Msg.PointStep = 32; // Bytes per point.
+	Msg.IsDense = true;
+
+	Msg.Data.Reserve(Data.Num() * Msg.PointStep);
+	for (const auto& D : Data)
+	{
+		AppendDoubleToUint8Array(D.Position.X, Msg.Data);
+		AppendDoubleToUint8Array(D.Position.Y, Msg.Data);
+		AppendDoubleToUint8Array(D.Position.Z, Msg.Data);
+		AppendDoubleToUint8Array(D.Intensity, Msg.Data);
 	}
 
 	// If the points are unordered, height is 1 and width is the length of the point cloud.
