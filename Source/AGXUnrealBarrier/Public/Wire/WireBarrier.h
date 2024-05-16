@@ -3,7 +3,6 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "NativeBarrier.h"
 #include "Wire/WireRenderIteratorBarrier.h"
 
 // Standard library includes.
@@ -14,40 +13,13 @@ struct FWireRef;
 class FWireNodeBarrier;
 class FWireWinchBarrier;
 
-/*
- * The goal here is to tell the compiler that there is a template instantiation of
- * FNativeBarrier<FWireRef> somewhere, without actually triggering an instantiation here and now.
- * The instantiation is instead done explicitly in the .cpp file. We do this because FWireRef is
- * only declared, not defined, here in the header file since the type contains AGX Dynamics types
- * that can't be named outside of the AGXUnrealBarrier module, and this header file is included in
- * other modules.
- *
- * We need to separate the Linux and Windows declarations because Linux must have the visibility
- * decorator here for the inherited member functions to be visible to users of FWireBarrier, while
- * Visual Studio explicitly forbids it and instead require that the visibility decorator is on the
- * instantiation in the .cpp file instead.
- */
-#if PLATFORM_LINUX
-extern template class AGXUNREALBARRIER_API FNativeBarrier<FWireRef>;
-#elif PLATFORM_WINDOWS
-extern template class FNativeBarrier<FWireRef>;
-#else
-#pragma error("This platform is currently not supported.");
-#endif
-
-class AGXUNREALBARRIER_API FWireBarrier : public FNativeBarrier<FWireRef>
+class AGXUNREALBARRIER_API FWireBarrier
 {
 public:
-	using Super = FNativeBarrier<FWireRef>;
-
 	FWireBarrier();
-	FWireBarrier(std::unique_ptr<FWireRef>&& Native);
+	FWireBarrier(std::unique_ptr<FWireRef> Native);
 	FWireBarrier(FWireBarrier&& Other);
-	virtual ~FWireBarrier();
-
-	/** Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
-	 * with Wire Material shortly. */
-	void AllocateNative(float Radius, float ResolutionPerUnitLength);
+	~FWireBarrier();
 
 	/** Set the radius of the wire [cm]. */
 	void SetRadius(float Radius);
@@ -147,12 +119,22 @@ public:
 
 	FGuid GetGuid() const;
 
-protected:
-	//~ Begin FNativeBarrier interface.
-/// @todo Determine if we need to override these
-#if 0
-	virtual void PreNativeChanged() override;
-	virtual void PostNativeChanged() override;
-#endif
-	//~ End FNativeBarrier interface.
+	void AllocateNative(float Radius, float ResolutionPerUnitLength);
+	bool HasNative() const;
+	FWireRef* GetNative();
+	const FWireRef* GetNative() const;
+
+	uintptr_t GetNativeAddress() const;
+
+	void SetNativeAddress(uintptr_t NativeAddress);
+
+	void ReleaseNative();
+
+
+private:
+	FWireBarrier(const FWireBarrier&) = delete;
+	void operator=(const FWireBarrier&) = delete;
+
+private:
+	std::unique_ptr<FWireRef> NativeRef;
 };
