@@ -198,7 +198,11 @@ public:
 				VertexBuffers.StaticMeshVertexBuffer.BindLightMapVertexBuffer(
 					&VertexFactory, Data, LightMapIndex);
 				VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&VertexFactory, Data);
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
 				VertexFactory.SetData(Data);
+#else
+				VertexFactory.SetData(RHICmdList, Data);
+#endif
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 				VertexFactory.InitResource();
 				IndexBuffer.InitResource();
@@ -288,8 +292,13 @@ public:
 				DynamicPrimitiveUniformBuffer.Set(
 					GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), GetLocalBounds(), true,
 					bHasPrecomputedVolumetricLightmap, DrawsVelocity(), Unknown);
+#elif UE_VERSION_OLDER_THAN(5, 4, 0)
+				DynamicPrimitiveUniformBuffer.Set(
+					GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), GetLocalBounds(), true,
+					bHasPrecomputedVolumetricLightmap, Unknown);
 #else
 				DynamicPrimitiveUniformBuffer.Set(
+					Collector.GetRHICommandList(),
 					GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), GetLocalBounds(), true,
 					bHasPrecomputedVolumetricLightmap, Unknown);
 #endif

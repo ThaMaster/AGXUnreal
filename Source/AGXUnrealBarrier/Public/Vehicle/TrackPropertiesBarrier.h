@@ -3,7 +3,6 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "NativeBarrier.h"
 #include "AGX_RealInterval.h"
 
 // Unreal Engine includes.

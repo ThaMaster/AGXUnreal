@@ -419,7 +419,13 @@ T* FAGX_EditorUtilities::GetSingleObjectBeingCustomized(
 		if (AActor* Actor = Cast<AActor>(Objects[0].Get()))
 		{
 			TArray<UObject*> DefaultSubObjects;
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
 			Actor->CollectDefaultSubobjects(DefaultSubObjects);
+#else
+			// Is this sufficient, or do we need to use ForEachObjectWithOuter?
+			// See CollectDefaultSubobjects deprecation message in UObject/Object.h.
+			Actor->GetDefaultSubobjects(DefaultSubObjects);
+#endif
 			TArray<T*> ComponentsOfInterest =
 				FAGX_ObjectUtilities::Filter<T, TArray<UObject*>>(DefaultSubObjects);
 			if (ComponentsOfInterest.Num() == 0)

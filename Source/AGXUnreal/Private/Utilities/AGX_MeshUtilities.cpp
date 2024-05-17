@@ -1246,12 +1246,12 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 							FMath::Cos(ColumnAngle) * ConeFlankLengthOverHeight,
 							FMath::Sin(ColumnAngle) * ConeFlankLengthOverHeight,
 							ConeRadiusOverFlankLength);
-					break;
 					TangentZ.Normalize(); /// \todo Should not be needed. But normal is a bit too
 										  /// long without it. Investigate!
 					// TangentZ = FVector3f(Position.X * ConeRadiusInv * ConeHeightOverRadius,
 					// Position.Y * ConeRadiusInv
 					// * ConeHeightOverRadius, ConeRadiusOverHeight); break;
+					break;
 				default:
 					check(!"AGX_MeshUtilities::MakeCylindricalArrow reached invalid NormalIndex");
 					break;

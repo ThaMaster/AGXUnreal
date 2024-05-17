@@ -57,7 +57,9 @@ AGX_MaterialLibraryBarrier::LoadContactMaterialProfile(const FString& MaterialNa
 	const FString FullPathJson = FAGX_Environment::FindAGXEnvironmentResourcePath(RelFilePathJson);
 	if (!FPaths::FileExists(FullPathJson))
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Could not find Contact Material '%s' in path '%s'."));
+		UE_LOG(
+			LogAGX, Warning, TEXT("Could not find Contact Material '%s' in path '%s'."),
+			*MaterialName, *FullPathJson);
 		return {};
 	}
 

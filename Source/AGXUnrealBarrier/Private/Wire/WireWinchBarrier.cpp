@@ -7,52 +7,30 @@
 #include "AGXRefs.h"
 #include "TypeConversions.h"
 #include "Wire/WireWinchRef.h"
-#include "NativeBarrier.impl.h"
-
-#if PLATFORM_LINUX
-template class FNativeBarrier<FWireWinchRef>;
-#elif PLATFORM_WINDOWS
-template class AGXUNREALBARRIER_API FNativeBarrier<FWireWinchRef>;
-#endif
 
 FWireWinchBarrier::FWireWinchBarrier()
-	: Super()
+	: NativeRef {new FWireWinchRef()}
 {
 }
 
 FWireWinchBarrier::FWireWinchBarrier(std::unique_ptr<FWireWinchRef> Native)
-	: Super(std::move(Native))
+	:  NativeRef {std::move(Native)}
 {
+	check(NativeRef);
 }
 
 FWireWinchBarrier::FWireWinchBarrier(FWireWinchBarrier&& Other)
-	: Super(std::move(Other))
+	: NativeRef {std::move(Other.NativeRef)}
 {
+	check(NativeRef);
+	Other.NativeRef.reset(new FWireWinchRef);
 }
 
 FWireWinchBarrier::~FWireWinchBarrier()
 {
-}
-
-void FWireWinchBarrier::AllocateNative(
-	const FRigidBodyBarrier* Body, const FVector& LocalLocation, const FVector& LocalNormal,
-	double PulledInLength)
-{
-	PreNativeChanged();
-	agx::RigidBody* NativeBody;
-	if (Body != nullptr && Body->HasNative())
-	{
-		NativeBody = Body->GetNative()->Native;
-	}
-	else
-	{
-		NativeBody = nullptr;
-	}
-
-	NativeRef->Native = new agxWire::WireWinchController(
-		NativeBody, ConvertDisplacement(LocalLocation), ConvertVector(LocalNormal),
-		ConvertDistanceToAGX(PulledInLength));
-	PostNativeChanged();
+	// Must provide a destructor implementation in the implementation file because the
+	// std::unique_ptr NativeRef's destructor must be able to see the definition, not just the
+	// forward declaration, of FWireWinchRef.
 }
 
 /// The body that the winch is attached to. Will be empty when attached to the world.
@@ -217,13 +195,87 @@ FGuid FWireWinchBarrier::GetGuid() const
 	return Convert(NativeRef->Native->getUuid());
 }
 
-// See comment on declarations in header file. Remove these if the declarations has been removed.
-#if 0
-void FWireWinchBarrier::PreNativeChanged()
+void FWireWinchBarrier::AllocateNative(
+	const FRigidBodyBarrier* Body, const FVector& LocalLocation, const FVector& LocalNormal,
+	double PulledInLength)
 {
+	agx::RigidBody* NativeBody;
+	if (Body != nullptr && Body->HasNative())
+	{
+		NativeBody = Body->GetNative()->Native;
+	}
+	else
+	{
+		NativeBody = nullptr;
+	}
+
+	NativeRef->Native = new agxWire::WireWinchController(
+		NativeBody, ConvertDisplacement(LocalLocation), ConvertVector(LocalNormal),
+		ConvertDistanceToAGX(PulledInLength));
 }
 
-void FWireWinchBarrier::PostNativeChanged()
+bool FWireWinchBarrier::HasNative() const
 {
+	return NativeRef->Native != nullptr;
 }
-#endif
+
+FWireWinchRef* FWireWinchBarrier::GetNative()
+{
+	check(HasNative());
+	return NativeRef.get();
+}
+
+const FWireWinchRef* FWireWinchBarrier::GetNative() const
+{
+	check(HasNative());
+	return NativeRef.get();
+}
+
+uintptr_t FWireWinchBarrier::GetNativeAddress() const
+{
+	if (!HasNative())
+	{
+		return 0;
+	}
+	return reinterpret_cast<uintptr_t>(NativeRef->Native.get());
+}
+
+void FWireWinchBarrier::SetNativeAddress(uintptr_t NativeAddress)
+{
+	if (NativeAddress == GetNativeAddress())
+	{
+		return;
+	}
+
+	if (HasNative())
+	{
+		ReleaseNative();
+	}
+
+	if (NativeAddress == 0)
+	{
+		NativeRef->Native = nullptr;
+	}
+	else
+	{
+		NativeRef->Native = reinterpret_cast<agxWire::WireWinchController*>(NativeAddress);
+	}
+}
+
+void FWireWinchBarrier::IncrementRefCount() const
+{
+	check(HasNative());
+	NativeRef->Native->reference();
+}
+
+void FWireWinchBarrier::DecrementRefCount() const
+{
+	check(HasNative());
+	NativeRef->Native->unreference();
+}
+
+
+void FWireWinchBarrier::ReleaseNative()
+{
+	NativeRef->Native = nullptr;
+}

@@ -82,7 +82,7 @@ AAGX_Terrain::AAGX_Terrain()
 		if (!AssetFinder.Succeeded())
 		{
 			UE_LOG(
-				LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), *Path);
+				LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), Path);
 			return;
 		}
 
@@ -1599,7 +1599,11 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	const TArray<bool>& Exists = ParticleData.Exists;
 	const TArray<FVector>& Velocities = ParticleData.Velocities;
 
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());
+#else
+	ParticleSystemComponent->SetVariableInt(FName("User.Target Particle Count"), Exists.Num());
+#endif
 
 	const int32 NumParticles = Positions.Num();
 

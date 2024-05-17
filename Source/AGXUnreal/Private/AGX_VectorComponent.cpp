@@ -127,8 +127,14 @@ namespace
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(),
 						GetLocalBounds(), true, false, DrawsVelocity(), false);
+#elif UE_VERSION_OLDER_THAN(5, 4, 0)
+					DynamicPrimitiveUniformBuffer.Set(
+						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
+						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(),
+						GetLocalBounds(), true, false, false);
 #else
 					DynamicPrimitiveUniformBuffer.Set(
+						Collector.GetRHICommandList(),
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld,
 						FScaleMatrix(ViewScale) * EffectiveLocalToWorld, GetBounds(),
 						GetLocalBounds(), true, false, false);
@@ -173,7 +179,11 @@ namespace
 			return Result;
 		}
 
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
 		virtual void OnTransformChanged() override
+#else
+		virtual void OnTransformChanged(FRHICommandListBase& /*RHICmdList*/) override
+#endif
 		{
 			Origin = GetLocalToWorld().GetOrigin();
 		}
