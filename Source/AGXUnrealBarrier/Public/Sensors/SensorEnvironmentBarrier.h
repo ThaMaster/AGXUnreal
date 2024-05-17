@@ -31,8 +31,8 @@ public:
 	void ReleaseNative();
 
 	bool Add(FLidarBarrier& Lidar);
-	bool Add(FTerrainBarrier& Terrain);
-	bool Add(FTerrainPagerBarrier& Pager);
+	bool Add(FTerrainBarrier& Terrain, float Reflectivity);
+	bool Add(FTerrainPagerBarrier& Pager, float Reflectivity);
 
 	bool Remove(FTerrainBarrier& Terrain);
 	bool Remove(FTerrainPagerBarrier& Pager);

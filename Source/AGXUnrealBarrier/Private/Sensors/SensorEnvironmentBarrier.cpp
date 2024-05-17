@@ -9,6 +9,11 @@
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/TerrainPagerBarrier.h"
 
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agxSensor/RaytraceSurfaceMaterial.h>
+#include "EndAGXIncludes.h"
+
 FSensorEnvironmentBarrier::FSensorEnvironmentBarrier()
 	: NativeRef {new FSensorEnvironmentRef}
 {
@@ -64,18 +69,27 @@ bool FSensorEnvironmentBarrier::Add(FLidarBarrier& Lidar)
 	return NativeRef->Native->add(Lidar.GetNative()->Native);
 }
 
-bool FSensorEnvironmentBarrier::Add(FTerrainBarrier& Terrain)
+bool FSensorEnvironmentBarrier::Add(FTerrainBarrier& Terrain, float Reflectivity)
 {
 	check(HasNative());
 	check(Terrain.HasNative());
-	return NativeRef->Native->add(Terrain.GetNative()->Native);
+	agxTerrain::TerrainRef TerrainNative = Terrain.GetNative()->Native;
+	const bool Result = NativeRef->Native->add(TerrainNative);
+	agxSensor::RtSurfaceMaterial::getOrCreate(TerrainNative.get())
+		.setReflectivity(Reflectivity);
+	return Result;
 }
 
-bool FSensorEnvironmentBarrier::Add(FTerrainPagerBarrier& Pager)
+bool FSensorEnvironmentBarrier::Add(FTerrainPagerBarrier& Pager, float Reflectivity)
 {
 	check(HasNative());
 	check(Pager.HasNative());
-	return NativeRef->Native->add(Pager.GetNative()->Native);
+	const bool Result = NativeRef->Native->add(Pager.GetNative()->Native);
+#if 0 // TODO: Enable once supported in AGX.
+	agxSensor::RtSurfaceMaterial::getOrCreate(Pager.GetNative()->Native.get())
+		.setReflectivity(Reflectivity);
+#endif
+	return Result;
 }
 
 bool FSensorEnvironmentBarrier::Remove(FTerrainBarrier& Terrain)

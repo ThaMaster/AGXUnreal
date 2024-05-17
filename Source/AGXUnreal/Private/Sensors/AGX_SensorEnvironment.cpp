@@ -3,10 +3,11 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_MeshWithTransform.h"
+#include "AGX_SimpleMeshComponent.h"
 #include "AGX_Simulation.h"
+#include "Materials/AGX_TerrainMaterial.h"
 #include "Sensors/AGX_LidarSensorComponent.h"
 #include "Sensors/AGX_SensorEnvironmentSpriteComponent.h"
-#include "AGX_SimpleMeshComponent.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
@@ -17,8 +18,43 @@
 
 namespace AGX_SensorEnvironment_helpers
 {
+	float GetReflectivityOrDefault(UMaterialInterface* MaterialInterface, float DefaultReflectivity)
+	{
+		if (MaterialInterface == nullptr)
+			return DefaultReflectivity;
+
+		FMaterialParameterInfo Info;
+		Info.Name = TEXT("AGXLidarReflectivity");
+		float Reflectivity;
+		if (!MaterialInterface->GetScalarParameterValue(Info, Reflectivity))
+			return DefaultReflectivity;
+
+		return Reflectivity;
+	}
+
+	float GetReflectivityOrDefault(UMeshComponent* Mesh, float DefaultReflectivity)
+	{
+		if (Mesh == nullptr)
+			return DefaultReflectivity;
+
+		return GetReflectivityOrDefault(Mesh->GetMaterial(0), DefaultReflectivity);
+	}
+
+	float GetReflectivityOrDefault(AAGX_Terrain* Terrain, float DefaultReflectivity)
+	{
+		if (Terrain == nullptr)
+			return DefaultReflectivity;
+
+		const auto TerrainMat = Terrain->TerrainMaterial;
+		if (TerrainMat == nullptr)
+			return DefaultReflectivity;
+
+		return TerrainMat->LidarReflectivity;
+	}
+
 	bool GetVerticesIndices(
-		UStaticMeshComponent* Mesh, TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices, int32 Lod)
+		UStaticMeshComponent* Mesh, TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices,
+		int32 Lod)
 	{
 		if (Mesh == nullptr)
 			return false;
@@ -138,7 +174,8 @@ bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh, int32 InLod)
 	TArray<FVector> OutVerts;
 	TArray<FTriIndices> OutInds;
 	const int32 Lod = InLod < 0 ? DefaultLODIndex : InLod;
-	const bool Res = AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVerts, OutInds, Lod);
+	const bool Res =
+		AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVerts, OutInds, Lod);
 	if (Res)
 		AddMesh(Mesh, OutVerts, OutInds);
 
@@ -239,6 +276,7 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance(
 bool AAGX_SensorEnvironment::AddMesh(
 	UStaticMeshComponent* Mesh, const TArray<FVector>& Vertices, const TArray<FTriIndices>& Indices)
 {
+	using namespace AGX_SensorEnvironment_helpers;
 	AGX_CHECK(HasNative());
 
 	if (Mesh == nullptr)
@@ -252,7 +290,8 @@ bool AAGX_SensorEnvironment::AddMesh(
 
 	FAGX_MeshEntityData& MeshEntity = TrackedMeshes.Add(Mesh, FAGX_MeshEntityData());
 	MeshEntity.Mesh.AllocateNative(Vertices, Indices);
-	MeshEntity.EntityData.Entity.AllocateNative(MeshEntity.Mesh);
+	MeshEntity.EntityData.Entity.AllocateNative(
+		MeshEntity.Mesh, GetReflectivityOrDefault(Mesh, DefaultReflectivity));
 	MeshEntity.EntityData.SetTransform(Mesh->GetComponentTransform());
 	return true;
 }
@@ -261,6 +300,7 @@ bool AAGX_SensorEnvironment::AddMesh(
 	UAGX_SimpleMeshComponent* Mesh, const TArray<FVector>& Vertices,
 	const TArray<FTriIndices>& Indices)
 {
+	using namespace AGX_SensorEnvironment_helpers;
 	AGX_CHECK(HasNative());
 
 	if (Mesh == nullptr)
@@ -274,7 +314,8 @@ bool AAGX_SensorEnvironment::AddMesh(
 
 	FAGX_MeshEntityData& MeshEntity = TrackedAGXMeshes.Add(Mesh, FAGX_MeshEntityData());
 	MeshEntity.Mesh.AllocateNative(Vertices, Indices);
-	MeshEntity.EntityData.Entity.AllocateNative(MeshEntity.Mesh);
+	MeshEntity.EntityData.Entity.AllocateNative(
+		MeshEntity.Mesh, GetReflectivityOrDefault(Mesh, DefaultReflectivity));
 	MeshEntity.EntityData.SetTransform(Mesh->GetComponentTransform());
 	return true;
 }
@@ -299,6 +340,7 @@ bool AAGX_SensorEnvironment::AddInstancedMesh(
 bool AAGX_SensorEnvironment::AddInstancedMeshInstance_Internal(
 	UInstancedStaticMeshComponent* Mesh, int32 Index)
 {
+	using namespace AGX_SensorEnvironment_helpers;
 	AGX_CHECK(HasNative());
 	AGX_CHECK(Mesh != nullptr);
 	AGX_CHECK(Mesh->IsValidInstance(Index));
@@ -314,7 +356,8 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance_Internal(
 		return false; // We already track this instance.
 
 	FAGX_EntityData& EntityData = InstancedMeshEntity->EntitiesData.Add(Index, FAGX_EntityData());
-	EntityData.Entity.AllocateNative(InstancedMeshEntity->Mesh);
+	EntityData.Entity.AllocateNative(
+		InstancedMeshEntity->Mesh, GetReflectivityOrDefault(Mesh, DefaultReflectivity));
 	AGX_CHECK(EntityData.Entity.HasNative());
 	FTransform InstanceTrans;
 	Mesh->GetInstanceTransform(Index, InstanceTrans, true);
@@ -324,6 +367,7 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance_Internal(
 
 bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 {
+	using namespace AGX_SensorEnvironment_helpers;
 	if (!HasNative() || Terrain == nullptr)
 		return false;
 
@@ -333,7 +377,8 @@ bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 		if (PagerBarrier == nullptr)
 			return false;
 
-		return NativeBarrier.Add(*PagerBarrier);
+		return NativeBarrier.Add(
+			*PagerBarrier, GetReflectivityOrDefault(Terrain, DefaultReflectivity));
 	}
 	else
 	{
@@ -341,7 +386,8 @@ bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 		if (TerrainBarrier == nullptr)
 			return false;
 
-		return NativeBarrier.Add(*TerrainBarrier);
+		return NativeBarrier.Add(
+			*TerrainBarrier, GetReflectivityOrDefault(Terrain, DefaultReflectivity));
 	}
 }
 
@@ -761,8 +807,8 @@ void AAGX_SensorEnvironment::OnLidarEndOverlapAGXMeshComponent(UAGX_SimpleMeshCo
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("AGX_SensorEnvironment '%s' failed to track AGX Mesh Component '%s'."),
-			*GetName(), *Mesh.GetName());
+			TEXT("AGX_SensorEnvironment '%s' failed to track AGX Mesh Component '%s'."), *GetName(),
+			*Mesh.GetName());
 		return;
 	}
 

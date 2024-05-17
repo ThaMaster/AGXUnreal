@@ -20,7 +20,7 @@ public:
 	~FRtMeshEntityBarrier();
 
 	bool HasNative() const;
-	void AllocateNative(FRtMeshBarrier& Mesh);
+	void AllocateNative(FRtMeshBarrier& Mesh, float Reflectivity);
 	FRtMeshEntity* GetNative();
 	const FRtMeshEntity* GetNative() const;
 

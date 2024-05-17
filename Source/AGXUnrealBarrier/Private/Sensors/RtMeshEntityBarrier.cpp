@@ -7,6 +7,11 @@
 #include "Sensors/SensorRef.h"
 #include "TypeConversions.h"
 
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agxSensor/RaytraceSurfaceMaterial.h>
+#include "EndAGXIncludes.h"
+
 FRtMeshEntityBarrier::FRtMeshEntityBarrier()
 	: NativeRef {new FRtMeshEntity}
 {
@@ -32,12 +37,13 @@ bool FRtMeshEntityBarrier::HasNative() const
 	return NativeRef->Native.instanceHandle != nullptr;
 }
 
-void FRtMeshEntityBarrier::AllocateNative(FRtMeshBarrier& Mesh)
+void FRtMeshEntityBarrier::AllocateNative(FRtMeshBarrier& Mesh, float Reflectivity)
 {
 	check(!HasNative());
 	check(Mesh.HasNative());
 
 	NativeRef->Native = agxSensor::RtMeshEntity::create(Mesh.GetNative()->Native);
+	agxSensor::RtSurfaceMaterial(NativeRef->Native.id).setReflectivity(Reflectivity);
 }
 
 FRtMeshEntity* FRtMeshEntityBarrier::GetNative()

@@ -51,6 +51,20 @@ public:
 	int32 DefaultLODIndex {-1};
 
 	/*
+	 * Default Reflectivity set on objects that does not have a "AGXLidarReflectivity" parameter
+	 * associated with it. Used for calculating Lidar intensity data.
+	 *
+	 * For Static Mesh Components and Instanced Static Mesh Components, if the
+	 * Render Material in the first slot has a parameter "AGXLidarReflectivity", that value will be
+	 * used, otherwise this DefaultReflectivity is used.
+	 *
+	 * For Terrains, the LidarReflectivity property of the Terrain Material will be
+	 * used.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Sensor Environment")
+	float DefaultReflectivity {0.6f};
+
+	/*
 	 * Add a Static Mesh Component so that it can be detected by sensors handled by this Sensor
 	 * Environment.
 	 * (Optional) LOD determines the LOD index used when reading the given Mesh. If left to -1,
