@@ -476,7 +476,10 @@ void AAGX_SensorEnvironment::Tick(float DeltaSeconds)
 {
 	UpdateTrackedLidars();
 	UpdateTrackedMeshes();
-	UpdateTrackedInstancedMeshes();
+
+	if (UpdateAddedInstancedMeshesTransforms)
+		UpdateTrackedInstancedMeshes();
+
 	UpdateTrackedAGXMeshes();
 	StepTrackedLidars();
 }

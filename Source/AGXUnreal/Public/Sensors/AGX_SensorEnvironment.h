@@ -65,6 +65,18 @@ public:
 	float DefaultReflectivity {0.6f};
 
 	/*
+	 * Whether or not the transform of added Instanced Static Meshes should be updated each Tick.
+	 * Updating Instanced Static Mesh transforms comes with some perfomance cost, especially if
+	 * a large number of instances are present.
+	 * As an optimization, this can be disabled by setting this property to false. Note that any
+	 * transformation change of an Instanced Static Mesh Instance during Play will not be reflected
+	 * in the Lidar simulation.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Sensor Environment", AdvancedDisplay)
+	bool UpdateAddedInstancedMeshesTransforms {true};
+
+	/*
 	 * Add a Static Mesh Component so that it can be detected by sensors handled by this Sensor
 	 * Environment.
 	 * (Optional) LOD determines the LOD index used when reading the given Mesh. If left to -1,
