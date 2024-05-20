@@ -55,9 +55,15 @@ void FAGX_LidarOutputPositionIntensity::Render(
 		RenderColors.Add(Color);
 	}
 
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
 	Nc->SetNiagaraVariableInt("User.NumPoints", InData.Num());
 	Nc->SetNiagaraVariableFloat("User.Lifetime", LifeTime);
 	Nc->SetNiagaraVariableFloat("User.ZeroDistanceSize", BaseSize);
+#else
+	Nc->SetVariableInt(FName("User.NumPoints"), InData.Num());
+	Nc->SetVariableFloat(FName("User.Lifetime"), LifeTime);
+	Nc->SetVariableFloat(FName("User.ZeroDistanceSize"), BaseSize);
+#endif
 
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayPosition(
 		Nc, "Positions", RenderPositions);

@@ -142,21 +142,10 @@ namespace AGX_SensorEnvironment_helpers
 
 AAGX_SensorEnvironment::AAGX_SensorEnvironment()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	RootComponent = CreateDefaultSubobject<UAGX_SensorEnvironmentSpriteComponent>(
 		USceneComponent::GetDefaultSceneRootVariableName());
-}
-
-void AAGX_SensorEnvironment::Step(double DeltaTime)
-{
-	if (!HasNative())
-		return;
-
-	if (bAutoAddObjects)
-		StepAutoAddObjects(DeltaTime);
-	else
-		StepNoAutoAddObjects(DeltaTime);
 }
 
 bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh, int32 InLod)
@@ -483,6 +472,15 @@ bool AAGX_SensorEnvironment::CanEditChange(const FProperty* InProperty) const
 	return SuperCanEditChange;
 }
 
+void AAGX_SensorEnvironment::Tick(float DeltaSeconds)
+{
+	UpdateTrackedLidars();
+	UpdateTrackedMeshes();
+	UpdateTrackedInstancedMeshes();
+	UpdateTrackedAGXMeshes();
+	StepTrackedLidars();
+}
+
 void AAGX_SensorEnvironment::BeginPlay()
 {
 	Super::BeginPlay();
@@ -511,10 +509,6 @@ void AAGX_SensorEnvironment::BeginPlay()
 	check(NativeBarrier.HasNative());
 
 	RegisterLidars();
-
-	PostStepForwardHandle =
-		FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Sim).AddLambda(
-			[this](double) { AutoStep(); });
 }
 
 void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type Reason)
@@ -594,30 +588,6 @@ void AAGX_SensorEnvironment::RegisterLidars()
 	}
 }
 
-void AAGX_SensorEnvironment::AutoStep()
-{
-	if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
-	{
-		Step(Simulation->TimeStep);
-	}
-}
-
-void AAGX_SensorEnvironment::StepNoAutoAddObjects(double DeltaTime)
-{
-	check(!bAutoAddObjects);
-	UpdateTrackedLidars();
-	StepTrackedLidars();
-}
-
-void AAGX_SensorEnvironment::StepAutoAddObjects(double DeltaTime)
-{
-	check(bAutoAddObjects);
-	UpdateTrackedLidars(); // Will likely trigger Component overlap events.
-	UpdateTrackedMeshes();
-	UpdateTrackedAGXMeshes();
-	StepTrackedLidars();
-}
-
 void AAGX_SensorEnvironment::UpdateTrackedLidars()
 {
 	// Update Collision Spheres and remove any destroyed Lidars.
@@ -638,8 +608,36 @@ void AAGX_SensorEnvironment::UpdateTrackedLidars()
 
 void AAGX_SensorEnvironment::UpdateTrackedMeshes()
 {
-	check(bAutoAddObjects);
 	AGX_SensorEnvironment_helpers::UpdateTrackedMeshes(TrackedMeshes);
+}
+
+void AAGX_SensorEnvironment::UpdateTrackedInstancedMeshes()
+{
+	for (auto It = TrackedInstancedMeshes.CreateIterator(); It; ++It)
+	{
+		if (!IsValid(It->Key.Get()))
+		{
+			It.RemoveCurrent();
+			continue;
+		}
+
+		// Instance.
+		for (auto Ite = It->Value.EntitiesData.CreateIterator(); Ite; ++Ite)
+		{
+			if (!It->Key->IsValidInstance(Ite->Key))
+			{
+				Ite.RemoveCurrent();
+				continue;
+			}
+
+			FTransform InstanceTransform;
+			It->Key->GetInstanceTransform(Ite->Key, InstanceTransform, true);
+			if (InstanceTransform.Equals(Ite->Value.Transform))
+				continue;
+
+			Ite->Value.SetTransform(InstanceTransform);
+		}
+	}
 }
 
 void AAGX_SensorEnvironment::UpdateTrackedAGXMeshes()
@@ -767,6 +765,9 @@ void AAGX_SensorEnvironment::OnLidarEndOverlapStaticMeshComponent(UStaticMeshCom
 void AAGX_SensorEnvironment::OnLidarEndOverlapInstancedStaticMeshComponent(
 	UInstancedStaticMeshComponent& Mesh, int32 Index)
 {
+	if (!Mesh.IsValidInstance(Index))
+		return;
+
 	auto InstancedMesh = TrackedInstancedMeshes.Find(&Mesh);
 	if (InstancedMesh == nullptr)
 	{

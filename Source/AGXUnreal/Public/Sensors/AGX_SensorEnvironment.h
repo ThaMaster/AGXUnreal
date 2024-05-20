@@ -152,18 +152,19 @@ public:
 #endif
 	// ~End UObject interface.
 
+	// ~Begin AActor interface.
+	virtual void Tick(float DeltaSeconds) override;
+	// ~End AActor interface.
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
 	void RegisterLidars();
-	void AutoStep();
-	void Step(double DeltaTime);
-	void StepNoAutoAddObjects(double DeltaTime);
-	void StepAutoAddObjects(double DeltaTime);
 	void UpdateTrackedLidars();
 	void UpdateTrackedMeshes();
+	void UpdateTrackedInstancedMeshes();
 	void UpdateTrackedAGXMeshes();
 	void StepTrackedLidars() const;
 
