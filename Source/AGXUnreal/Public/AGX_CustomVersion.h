@@ -51,6 +51,10 @@ struct AGXUNREAL_API FAGX_CustomVersion
 		// both a TerrainMaterial and a ShapeMaterial.
 		TerrainMaterialShapeMaterialSplit,
 
+		// Use FAGX_Frame for wire route nodes so that they, Body Fixed and Eye, in particular, can
+		// be placed relative to a Rigid Body instead of the Wire.
+		WireRouteNodeFrame,
+
 		// <----- New versions can be added above this line. ----->
 		VersionPlusOne,
 

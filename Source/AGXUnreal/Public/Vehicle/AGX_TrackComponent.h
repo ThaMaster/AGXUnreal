@@ -436,7 +436,7 @@ private:
 
 	// Find and set OwningActor of RigidBodyReferences and SceneComponentReferences which
 	// in case this component is part of a Blueprint Actor.
-	void ResolveComponentReferenceOwningActors();
+	void SetComponentReferencesLocalScope();
 
 	// Create the native AGX Dynamics object.
 	void CreateNative();

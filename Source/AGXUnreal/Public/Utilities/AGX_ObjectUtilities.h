@@ -27,6 +27,12 @@ public:
 	 */
 	static void GetChildActorsOfActor(AActor* Parent, TArray<AActor*>& ChildActors);
 
+	/**
+	 * Walk the Parent Actor chain until a non-Child-Actor is found and return that. If the given
+	 * Actor is not a Child Actor then it is returned.
+	 */
+	static AActor* GetRootParentActor(AActor* Actor);
+
 	/*
 	 * Checks whether the component is a template Component, i.e. it may have archetype instances.
 	 */
@@ -174,6 +180,12 @@ public:
 
 	/** See TruncateForDetailsPanel(double& Value)*/
 	static void TruncateForDetailsPanel(FRotator& Values);
+
+	static bool HasChainPrefixPath(
+		FEditPropertyChain::TDoubleLinkedListNode* Node, const TArray<const TCHAR*>& Path);
+
+	template <typename T>
+	static T* SetIfNullptr(T*& Storage, T* Value);
 
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
@@ -349,3 +361,13 @@ T* FAGX_ObjectUtilities::GetMatchedInstance(T* TemplateComponent, UObject* Outer
 		}                                                                                     \
 		(Component).AssetName->PropertyName = GetterExpression;                               \
 	}
+
+template <typename T>
+T* FAGX_ObjectUtilities::SetIfNullptr(T*& Storage, T* const Value)
+{
+	if (Storage == nullptr)
+	{
+		Storage = Value;
+	}
+	return Storage;
+}

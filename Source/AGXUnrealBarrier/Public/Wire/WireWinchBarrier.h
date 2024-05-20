@@ -4,47 +4,21 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_RealInterval.h"
-#include "NativeBarrier.h"
-#include "Utilities/DoubleInterval.h" /// @todo Use Unreal Engine double interval once they have it.
+
+// Standard library includes.
+#include <memory>
 
 class FRigidBodyBarrier;
 class FWireBarrier;
 struct FWireWinchRef;
 
-/*
- * The goal here is to tell the compiler that there is a template instantiation of
- * FNativeBarrier<FWireWinchRef> somewhere, without actually triggering an instantiation here and
- * now. The instantiation is instead done explicitly in the .cpp file. We do this because
- * FWireWinchRef is only declared, not defined, here in the header file since the type contains
- * AGX Dynamics types that can't be named outside the AGXUnrealBarrier module, and this header file
- * is included in other modules.
- *
- * We need to separate the Linux and Windows declarations because Linux must have the visibility
- * decorator here for the inherited member functions to be visible to users of FWireWinchBarrier,
- * while Visual Studio explicitly forbids it and instead require that the visibility decorator is on
- * the instantiation in the .cpp file instead.
- */
-#if PLATFORM_LINUX
-extern template class AGXUNREALBARRIER_API FNativeBarrier<FWireWinchRef>;
-#elif PLATFORM_WINDOWS
-extern template class FNativeBarrier<FWireWinchRef>;
-#else
-#pragma error("This platform is currently not supported.");
-#endif
-
-class AGXUNREALBARRIER_API FWireWinchBarrier : public FNativeBarrier<FWireWinchRef>
+class AGXUNREALBARRIER_API FWireWinchBarrier
 {
 public:
-	using Super = FNativeBarrier<FWireWinchRef>;
-
 	FWireWinchBarrier();
 	FWireWinchBarrier(std::unique_ptr<FWireWinchRef> Native);
 	FWireWinchBarrier(FWireWinchBarrier&& Other);
 	virtual ~FWireWinchBarrier();
-
-	void AllocateNative(
-		const FRigidBodyBarrier* Body, const FVector& LocalLocation, const FVector& LocalNormal,
-		double PulledInLength);
 
 	/// The body that the winch is attached to. Will be empty when attached to the world.
 	FRigidBodyBarrier GetRigidBody() const;
@@ -143,10 +117,29 @@ public:
 
 	FGuid GetGuid() const;
 
-protected:
-/// @todo Determine if we need to override these.
-#if 0
-	virtual void PreNativeChanged() override;
-	virtual void PostNativeChanged() override;
-#endif
+	void AllocateNative(
+		const FRigidBodyBarrier* Body, const FVector& LocalLocation, const FVector& LocalNormal,
+		double PulledInLength);
+
+	void AllocateNative(float Radius, float ResolutionPerUnitLength);
+	bool HasNative() const;
+	FWireWinchRef* GetNative();
+	const FWireWinchRef* GetNative() const;
+
+	uintptr_t GetNativeAddress() const;
+
+	void SetNativeAddress(uintptr_t NativeAddress);
+
+	void IncrementRefCount() const;
+	void DecrementRefCount() const;
+
+	void ReleaseNative();
+
+
+private:
+	FWireWinchBarrier(const FWireBarrier&) = delete;
+	void operator=(const FWireWinchBarrier&) = delete;
+
+private:
+	std::unique_ptr<FWireWinchRef> NativeRef;
 };

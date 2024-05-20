@@ -22,6 +22,12 @@ FConstraintBarrier::FConstraintBarrier()
 {
 }
 
+FConstraintBarrier::FConstraintBarrier(FConstraintBarrier&& Other)
+	: NativeRef {std::move(Other.NativeRef)}
+{
+	Other.NativeRef.reset(new FConstraintRef());
+}
+
 FConstraintBarrier::FConstraintBarrier(std::unique_ptr<FConstraintRef> Native)
 	: NativeRef(std::move(Native))
 {

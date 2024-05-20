@@ -29,7 +29,7 @@ public:
 	 * Given a PropertyHandle that identifies a UObject* Property, return that UObject* if only a
 	 * single object is selected. Return nullptr if multiple objects are selected.
 	 *
-	 * There is no way to distingquish between a nullptr UObject* Property and the multiple selected
+	 * There is no way to distinguish between a nullptr UObject* Property and the multiple selected
 	 * objects case.
 	 */
 	static UObject* GetObjectFromHandle(const TSharedPtr<IPropertyHandle>& PropertyHandle);
@@ -57,6 +57,7 @@ public:
 	static FString GetActualDisplayName(const FField* Field, bool bRemoveAgxPrefix);
 	// #endif
 };
+
 
 template <typename TStruct>
 TStruct* FAGX_PropertyUtilities::GetStructFromHandle(

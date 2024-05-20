@@ -44,7 +44,8 @@ namespace
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Cannot %s Trimesh barrier whose native shape is not a Trimesh."));
+				TEXT("Cannot %s Trimesh barrier whose native shape is not a Trimesh."),
+				Operation);
 		}
 
 		return Native;

@@ -62,7 +62,6 @@ struct AGXUNREAL_API FAGX_ConstraintBodyAttachment
 		EditAnywhere, BlueprintReadWrite, Category = "Frame Transformation",
 		Meta = (EditCondition = "FrameDefiningSource == EAGX_FrameDefiningSource::Other"))
 	FAGX_SceneComponentReference FrameDefiningComponent;
-	// TODO Consider using FAGX_ComponentReference instead of FAGX_SceneComponentReference.
 
 	/** Frame location relative to either the Constraint, the Rigid Body Actor or from the Frame
 	 * Defining Actor. */

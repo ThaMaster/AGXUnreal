@@ -6,6 +6,7 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_NativeOwnerInstanceData.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Wire/AGX_WireUtilities.h"
 #include "Wire/WireBarrier.h"
 
@@ -16,6 +17,7 @@
 
 UAGX_WireWinchComponent::UAGX_WireWinchComponent()
 {
+	WireWinch.BodyAttachment.SetLocalScope(GetTypedOuter<AActor>());
 #if WITH_EDITORONLY_DATA
 	bVisualizeComponent = true;
 #endif
@@ -73,6 +75,8 @@ void UAGX_WireWinchComponent::SetNativeAddress(uint64 NativeAddress)
 void UAGX_WireWinchComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	check(WireWinch.BodyAttachment.LocalScope == FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>()));
+
 	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{
 		// Do not create a native AGX Dynamics object if GIsReconstructingBlueprintInstances is set.
@@ -132,7 +136,7 @@ TStructOnScope<FActorComponentInstanceData> UAGX_WireWinchComponent::GetComponen
 void UAGX_WireWinchComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-	WireWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
+	WireWinch.BodyAttachment.SetLocalScope(GetTypedOuter<AActor>());
 
 #if WITH_EDITOR
 	FAGX_PropertyChangedDispatcher<ThisClass>& Dispatcher =

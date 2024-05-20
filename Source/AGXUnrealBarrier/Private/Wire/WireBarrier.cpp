@@ -6,7 +6,6 @@
 #include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
 #include "Materials/ShapeMaterialBarrier.h"
-#include "NativeBarrier.impl.h"
 #include "TypeConversions.h"
 #include "Wire/WireNodeBarrier.h"
 #include "Wire/WireNodeRef.h"
@@ -19,43 +18,26 @@
 #include <agx/Material.h>
 #include "EndAGXIncludes.h"
 
-// Linux and Windows treat symbol visibility differently and require the _API macro to be in
-// different places for explicit template specializations.
-#if PLATFORM_LINUX
-template class FNativeBarrier<FWireRef>;
-#elif PLATFORM_WINDOWS
-template class AGXUNREALBARRIER_API FNativeBarrier<FWireRef>;
-#endif
-
 FWireBarrier::FWireBarrier()
-	: Super()
+	: NativeRef {new FWireRef()}
 {
 }
 
-FWireBarrier::FWireBarrier(std::unique_ptr<FWireRef>&& Native)
-	: Super(std::move(Native))
+FWireBarrier::FWireBarrier(std::unique_ptr<FWireRef> Native)
+	: NativeRef {std::move(Native)}
 {
 }
 
 FWireBarrier::FWireBarrier(FWireBarrier&& Other)
-	: Super(std::move(Other))
+	: NativeRef {std::move(Other.NativeRef)}
 {
 }
 
 FWireBarrier::~FWireBarrier()
 {
-}
-
-/** Damping and Young's modulus for demonstration/experimentation purposes. Will be replaced
- * with Wire Material shortly. */
-void FWireBarrier::AllocateNative(float Radius, float ResolutionPerUnitLength)
-{
-	check(!HasNative());
-	PreNativeChanged();
-	agx::Real RadiusAGX = ConvertDistanceToAGX(Radius);
-	agx::Real ResolutionPerUnitLengthAGX = ConvertDistanceInvToAGX(ResolutionPerUnitLength);
-	NativeRef->Native = new agxWire::Wire(RadiusAGX, ResolutionPerUnitLengthAGX);
-	PostNativeChanged();
+	// Must provide a destructor implementation in the implementation file because the
+	// std::unique_ptr NativeRef's destructor must be able to see the definition, not just the
+	// forward declaration, of FWireRef.
 }
 
 void FWireBarrier::SetRadius(float Radius)
@@ -359,4 +341,65 @@ FGuid FWireBarrier::GetGuid() const
 	const agx::Uuid UuidAGX = NativeRef->Native->getUuid();
 	FGuid Guid = Convert(UuidAGX);
 	return Guid;
+}
+
+void FWireBarrier::AllocateNative(float Radius, float ResolutionPerUnitLength)
+{
+	check(!HasNative());
+	agx::Real RadiusAGX = ConvertDistanceToAGX(Radius);
+	agx::Real ResolutionPerUnitLengthAGX = ConvertDistanceInvToAGX(ResolutionPerUnitLength);
+	NativeRef->Native = new agxWire::Wire(RadiusAGX, ResolutionPerUnitLengthAGX);
+}
+
+bool FWireBarrier::HasNative() const
+{
+	return NativeRef->Native != nullptr;
+}
+
+FWireRef* FWireBarrier::GetNative()
+{
+	check(HasNative());
+	return NativeRef.get();
+}
+
+const FWireRef* FWireBarrier::GetNative() const
+{
+	check(HasNative());
+	return NativeRef.get();
+}
+
+uintptr_t FWireBarrier::GetNativeAddress() const
+{
+	if (!HasNative())
+	{
+		return 0;
+	}
+	return reinterpret_cast<uintptr_t>(NativeRef->Native.get());
+}
+
+void FWireBarrier::SetNativeAddress(uintptr_t NativeAddress)
+{
+	if (NativeAddress == GetNativeAddress())
+	{
+		return;
+	}
+
+	if (HasNative())
+	{
+		ReleaseNative();
+	}
+
+	if (NativeAddress == 0)
+	{
+		NativeRef->Native = nullptr;
+	}
+	else
+	{
+		NativeRef->Native = reinterpret_cast<agxWire::Wire*>(NativeAddress);
+	}
+}
+
+void FWireBarrier::ReleaseNative()
+{
+	NativeRef->Native = nullptr;
 }

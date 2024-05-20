@@ -3,17 +3,17 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AMOR/AGX_WireMergeSplitProperties.h"
-#include "AGX_RigidBodyReference.h"
 #include "AGX_WireRenderIterator.h"
+#include "AMOR/AGX_WireMergeSplitProperties.h"
 #include "Wire/AGX_WireEnums.h"
+#include "Wire/AGX_WireRoutingNode.h"
 #include "Wire/AGX_WireWinch.h"
 #include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
-#include "Engine/EngineTypes.h"
 #include "Components/SceneComponent.h"
-#include "Kismet/BlueprintFunctionLibrary.h"
+#include "Engine/EngineTypes.h"
+#include "UObject/UObjectGlobals.h"
 
 #include "AGX_WireComponent.generated.h"
 
@@ -22,71 +22,14 @@ class UAGX_WireWinchComponent;
 class UInstancedStaticMeshComponent;
 class UMaterialInterface;
 
-/// @todo Move FWireRoutingNode to a separate source file pair.
-/**
- * Route nodes are used to specify the initial route of the wire. Each node has a location but
- * no orientation. Some members are only used for some node types, such as RigidBody which is only
- * used by Eye and BodyFixed nodes.
- */
-USTRUCT(BlueprintType)
-struct AGXUNREAL_API FWireRoutingNode
-{
-	GENERATED_BODY();
-
-	/**
-	 * The type of wire node, e.g., Free, Eye, BodyFixed, etc.
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
-	EWireNodeType NodeType;
-
-	/**
-	 * The location of this node relative to the Wire Component [cm].
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wire")
-	FVector Location;
-
-	/**
-	 * The Rigid Body that an Eye or BodyFixed node should be attached to.
-	 * Ignored for other node types.
-	 */
-	UPROPERTY(EditAnywhere, Category = "Wire")
-	FAGX_RigidBodyReference RigidBody;
-
-	FWireRoutingNode()
-		: NodeType(EWireNodeType::Free)
-		, Location(FVector::ZeroVector)
-	{
-	}
-
-	FWireRoutingNode(const FVector& InLocation)
-		: NodeType(EWireNodeType::Free)
-		, Location(InLocation)
-	{
-	}
-
-	void SetBody(UAGX_RigidBodyComponent* Body);
-};
-
-/// @todo Move UAGX_WireRouteNode_FL with FWireRoutingNode when it's moved.
-/**
- * This class acts as an API that exposes functions of FAGX_TargetSpeedController in Blueprints.
- */
-UCLASS()
-class AGXUNREAL_API UAGX_WireRouteNode_FL : public UBlueprintFunctionLibrary
-{
-	GENERATED_BODY()
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire Node")
-	static void SetBody(UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body);
-};
-
 /**
  * A Wire is a lumped element structure with dynamic resolution, the wire will adapt the resolution,
- * i.e., lumped element segment lengths, so that no unwanted vibrations will occur. The Wire is
- * initialized from a set of routing nodes that the user places but during runtime nodes will be
- * created and removed as necessary so the routing nodes cannot be used to inspect the current wire
- * path. Instead use the render iterator to iterate over the wire, which will give access to
- * FAGX_WireNode instances, which wrap the underlying AGX Dynamics wire nodes.
+ * i.e., lumped element segment lengths, so that no unwanted vibrations will occur. The Wire
+ * simulation state is initialized from a set of routing nodes that the user places but during
+ * runtime simulation nodes will be created and removed as necessary so the routing nodes cannot be
+ * used to inspect the current wire path. Instead use the render iterator to iterate over the wire,
+ * which will give access to FAGX_WireNode instances, which wrap the underlying AGX Dynamics wire
+ * simulation nodes.
  */
 UCLASS(ClassGroup = "AGX", Meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_WireComponent : public USceneComponent, public IAGX_NativeOwner
@@ -226,9 +169,7 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire Begin Winch",
-		Meta =
-			(EditConditionHides, EditCondition = "BeginWinchType == EWireWinchOwnerType::Wire",
-			 SkipUCSModifiedProperties))
+		Meta = (EditConditionHides, EditCondition = "BeginWinchType == EWireWinchOwnerType::Wire"))
 	FAGX_WireWinch OwnedBeginWinch;
 
 	UFUNCTION(
@@ -440,9 +381,7 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Wire End Winch",
-		Meta =
-			(EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::Wire",
-			 SkipUCSModifiedProperties))
+		Meta = (EditConditionHides, EditCondition = "EndWinchType == EWireWinchOwnerType::Wire"))
 	FAGX_WireWinch OwnedEndWinch;
 
 	UFUNCTION(
@@ -743,43 +682,91 @@ public:
 	TArray<FWireRoutingNode> RouteNodes;
 
 	/**
+	 * Create a new default-constructed routing node at the end of the wire.
+	 */
+	FWireRoutingNode& AddNode();
+
+	/**
+	 * Create a new default-constructed routing node at the end of the wire.
+	 */
+	FWireRoutingNode& AddNode(int32& OutIndex);
+
+	/**
+	 * Create a new default-constructed routing node at the end of the wire.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route", Meta = (DisplayName = "Add Node"))
+	UPARAM(Ref) FWireRoutingNode& CreateNode(int32& OutIndex);
+	// Extra Blueprint Callable function with different name because Blueprint does not support
+	// function overloading.
+
+	/**
 	 * Add a new route node to the wire.
 	 *
 	 * This should be called before BeginPlay since route nodes are only used during initialization.
 	 *
 	 * @param InNode The node to add.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNode(const FWireRoutingNode& InNode);
+	FWireRoutingNode& AddNode(const FWireRoutingNode& InNode);
 
 	/**
-	 * Add a default-constructed route node at the designated local location to the end of the node
-	 * array.
+	 * Add a new route node to the wire.
 	 *
-	 * @param InLocation The location of the node, relative to the Wire Component.
+	 * This should be called before BeginPlay since route nodes are only used during initialization.
+	 *
+	 * @param InNode The node to add.
+	 * @param OutIndex The index in the Route Nodes array at which the new node was placed.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNodeAtLocation(const FVector& InLocation);
+	UPARAM(Ref) FWireRoutingNode& AddNode(const FWireRoutingNode& InNode, int32& OutIndex);
+
+	/**
+	 * Add a new route node at the end of the wire at the given location relative to the Wire
+	 * Component.
+	 *
+	 * @param InLocation Location of the new route node relative to the Wire Component.
+	 */
+	FWireRoutingNode& AddNodeAtLocation(FVector InLocation);
+
+	/**
+	 * Add a new route node at the end of the wire at the given location relative to the Wire
+	 * Component.
+	 *
+	 * @param InLocation The location of the node, relative to the Wire Component.
+	 * @param OutIndex Index in Route Nodes where the new node is stored.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
+	UPARAM(Ref) FWireRoutingNode& AddNodeAtLocation(FVector InLocation, int32& OutIndex);
 
 	/**
 	 * Add a default-constructed route node at the designated index in the route array, pushing all
 	 * subsequent nodes one index.
 	 *
+	 * The index must be either within the current Route Nodes array, or one-past end.
+	 *
 	 * @param InNode The route node to add.
 	 * @param InIndex The place in the route node array to add the node at.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex);
+	UPARAM(Ref) FWireRoutingNode& AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex);
 
 	/**
 	 * Add a default-constructed route node, placed at the given local location, at the designated
-	 * index in the route array, pushing all subsequent nodes one index..
+	 * index in the route array, pushing all subsequent nodes one index.
+	 *
+	 * The index must be either within the current Route Nodes array, or one-past end.
 	 *
 	 * @param InLocation The location of the new node relative to the Wire Component.
 	 * @param InIndex The place in the route node array to add the new node at.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
+	UPARAM(Ref)
+	FWireRoutingNode& AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
+
+	/**
+	 * Overwrite the node at the given index with the new node.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
+	void SetNode(int32 InIndex, UPARAM(Ref) const FWireRoutingNode InNode);
 
 	/**
 	 * Remove the route node at the given index.
@@ -789,14 +776,31 @@ public:
 	void RemoveNode(int32 InIndex);
 
 	/**
-	 * Set the locaion of the node at the given index. The location is relative to the wire
-	 * component.
+	 * Set the local location of a routing node.
+	 *
+	 * The local location is relative to the parent set on the node's Frame. If no parent has been
+	 * set then the parent is assumed to be the Wire Component.
+	 *
+	 * @param InIndex The index of the node to modify.
+	 * @param InLocation The new local location of the node
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
+	void SetNodeLocalLocation(int32 InIndex, const FVector& InLocation);
+
+	/**
+	 * Set the location of the node at the given index. The location is relative to the Wire
+	 * Component. If the routing node has a parent then a local location relative to that parent is
+	 * computed that places the routing node at the requested location relative to the Wire
+	 * Component.
+	 *
+	 * Use SetNodeLocalLocation to position the node relative to its Frame parent.
 	 *
 	 * @param InIndex The index of the node to remove.
 	 * @param InLocation The new local location for the node.
+	 * @see SetNodeLocalLocation
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void SetNodeLocation(int32 InIndex, const FVector& InLocation);
+	void SetNodeLocation(int32 InIndex, FVector InLocation);
 
 	/*
 	 * State inspection.
@@ -856,11 +860,37 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	TArray<FVector> GetRenderNodeLocations() const;
 
+#if WITH_EDITOR
+	// Callback functions related to route node parents.
+	void OnRouteNodeParentMoved(
+		USceneComponent* Component, EUpdateTransformFlags UpdateTransformFlags,
+		ETeleportType Teleport);
+	void OnRouteNodeParentReplaced(const FCoreUObjectDelegates::FReplacementObjectMap& OldToNew);
+#endif
+
 	/**
-	 * Mark visuals for this Wire Component dirty. The Visuals will be updated according to the
-	 * current state.
+	 * Mark visuals for this Wire Component dirty. The Visuals will be updated to match to the
+	 * current wire state.
 	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	void MarkVisualsDirty();
+
+#if WITH_EDITOR
+	/**
+	 * Find all route node parents and setup a Transform Updated callback on each so that the wire
+	 * rendering is updated automatically when the parent is moved in the editor.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
+	void SynchronizeParentMovedCallbacks();
+
+	/**
+	 * In case a wire's in-editor mesh rendering doesn't match the route nodes, i.e. the
+	 * lines-and-points rendering, then click this button to reset the render state and render
+	 * update callbacks.
+	 */
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "AGX Wire Rendering")
+	void SynchronizeRendering();
+#endif
 
 	/*
 	 * Copy configuration from the given Barrier.
@@ -898,6 +928,8 @@ public:
 	virtual void PostInitProperties() override;
 	virtual void PostLoad() override;
 #if WITH_EDITOR
+	using UActorComponent::PreEditChange;
+	virtual void PreEditChange(FEditPropertyChain& PropertyAboutToChange) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
 	// ~End UObject interface.
@@ -911,6 +943,11 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	//~ End ActorComponent interface.
 
+	//~ Begin Scene Component interface.
+#if WITH_EDITOR
+	virtual void PostEditComponentMove(bool bFinished) override;
+#endif
+	//~ End Scene Component interface.
 protected:
 	// ~Begin UActorComponent interface.
 	virtual void OnRegister() override;
@@ -940,4 +977,28 @@ private:
 	FWireBarrier NativeBarrier;
 	TObjectPtr<UInstancedStaticMeshComponent> VisualCylinders;
 	TObjectPtr<UInstancedStaticMeshComponent> VisualSpheres;
+
+	/**
+	 * Keep track which node frame parents we have registered a callback with. Note that a single
+	 * entry here may correspond to multiple routing nodes. Must use a raw-pointer key to a
+	 * weak-pointer values since TMap require that keys don't change, which a weak-pointer may do
+	 * during garbage collection. We keep the weak pointer because the parent may be destroyed at
+	 * any time and we need to be able to detect that.
+	 */
+	struct FParentDelegate
+	{
+		TWeakObjectPtr<USceneComponent> Parent;
+		FDelegateHandle DelegateHandle;
+	};
+	TMap<USceneComponent*, FParentDelegate> DelegateHandles;
+
+#if WITH_EDITOR
+	/// Handle to the delegate registered with the engine Map Changed event to update visuals
+	/// after load.
+	FDelegateHandle MapLoadDelegateHandle;
+
+	/// Handle to the delegate registered with the engine Objects Replaced event. Used to update
+	/// Transform Updated callbacks on Scene Components that are a parent of a routing node.
+	FDelegateHandle ObjectsReplacedDelegateHandle;
+#endif
 };

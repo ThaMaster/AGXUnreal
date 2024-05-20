@@ -19,11 +19,16 @@
 #include "Wire/WireNodeBarrier.h"
 
 // Unreal Engine includes.
+#include "Components/ActorComponent.h"
 #include "Components/BillboardComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Components/SceneComponent.h"
 #include "CoreGlobals.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
+#if WITH_EDITOR
+#include "Editor.h"
+#endif
 #include "Kismet/KismetMathLibrary.h"
 #include "Materials/MaterialInterface.h"
 #include "Math/UnrealMathUtility.h"
@@ -32,26 +37,9 @@
 #include <algorithm>
 #include <tuple>
 
+#include "Kismet/KismetSystemLibrary.h"
+
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
-
-void FWireRoutingNode::SetBody(UAGX_RigidBodyComponent* Body)
-{
-	if (Body == nullptr)
-	{
-		RigidBody.OwningActor = nullptr;
-		RigidBody.Name = NAME_None;
-		return;
-	}
-
-	RigidBody.OwningActor = Body->GetOwner();
-	RigidBody.Name = Body->GetFName();
-}
-
-void UAGX_WireRouteNode_FL::SetBody(
-	UPARAM(ref) FWireRoutingNode& WireNode, UAGX_RigidBodyComponent* Body)
-{
-	WireNode.SetBody(Body);
-}
 
 UAGX_WireComponent::UAGX_WireComponent()
 {
@@ -63,6 +51,10 @@ UAGX_WireComponent::UAGX_WireComponent()
 	// Add a pair of default nodes to make initial editing easier.
 	AddNodeAtLocation(FVector::ZeroVector);
 	AddNodeAtLocation(FVector(100.0f, 0.0f, 0.0f));
+
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
+	OwnedBeginWinch.BodyAttachment.LocalScope = Owner;
+	OwnedEndWinch.BodyAttachment.LocalScope = Owner;
 
 	// Setup default visuals.
 	static const TCHAR* WireMatAssetPath =
@@ -933,40 +925,86 @@ namespace AGX_WireComponent_helpers
 	}
 }
 
-void UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
+FWireRoutingNode& UAGX_WireComponent::AddNode()
+{
+	int32 _;
+	return AddNode(_);
+}
+
+FWireRoutingNode& UAGX_WireComponent::AddNode(int32& OutIndex)
+{
+	return AddNode(FWireRoutingNode(), OutIndex);
+}
+
+FWireRoutingNode& UAGX_WireComponent::CreateNode(int32& OutIndex)
+{
+	return AddNode(OutIndex);
+}
+
+FWireRoutingNode& UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode)
+{
+	int32 _;
+	return AddNode(InNode, _);
+}
+
+FWireRoutingNode& UAGX_WireComponent::AddNode(const FWireRoutingNode& InNode, int32& OutIndex)
+{
+	const int32 Index = RouteNodes.Num();
+	OutIndex = Index;
+	return AddNodeAtIndex(InNode, Index);
+}
+
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation)
+{
+	int32 _;
+	return AddNodeAtLocation(InLocation, _);
+}
+
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation, int32& OutIndex)
+{
+	return AddNode(FWireRoutingNode(InLocation), OutIndex);
+}
+
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(
+	const FVector& InLocation, int32 InIndex)
+{
+	return AddNodeAtIndex(FWireRoutingNode(InLocation), InIndex);
+}
+
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex)
 {
 	if (HasNative())
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
-	RouteNodes.Add(InNode);
-}
-
-void UAGX_WireComponent::AddNodeAtLocation(const FVector& InLocation)
-{
-	if (HasNative())
+	if (!RouteNodes.IsValidIndex(InIndex) && InIndex != RouteNodes.Num())
 	{
-		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
-	}
-	RouteNodes.Add(FWireRoutingNode(InLocation));
-}
-
-void UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InNode, int32 InIndex)
-{
-	if (HasNative())
-	{
-		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
+		// Nodes may only be added at an index where there already is a node, or one-past-end.
+		return InvalidRoutingNode;
 	}
 	RouteNodes.Insert(InNode, InIndex);
+	FWireRoutingNode& NewNode = RouteNodes[InIndex];
+	NewNode.Frame.Parent.SetLocalScope(GetTypedOuter<AActor>());
+	return NewNode;
 }
 
-void UAGX_WireComponent::AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex)
+void UAGX_WireComponent::SetNode(const int32 InIndex, const FWireRoutingNode InNode)
 {
 	if (HasNative())
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
-	RouteNodes.Insert(FWireRoutingNode(InLocation), InIndex);
+	if (!RouteNodes.IsValidIndex(InIndex))
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Out-of-bounds index %d for route nodes array was passed to Set Node in Wire "
+				 "Component '%s' in Actor '%s'"),
+			InIndex, *GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+	RouteNodes[InIndex] = InNode;
+	RouteNodes[InIndex].Frame.Parent.SetLocalScope(GetOwner());
 }
 
 void UAGX_WireComponent::RemoveNode(int32 InIndex)
@@ -978,13 +1016,37 @@ void UAGX_WireComponent::RemoveNode(int32 InIndex)
 	RouteNodes.RemoveAt(InIndex);
 }
 
-void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector& InLocation)
+void UAGX_WireComponent::SetNodeLocalLocation(int32 InIndex, const FVector& InLocation)
 {
 	if (HasNative())
 	{
 		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
 	}
-	RouteNodes[InIndex].Location = InLocation;
+	RouteNodes[InIndex].Frame.LocalLocation = InLocation;
+}
+
+void UAGX_WireComponent::SetNodeLocation(int32 InIndex, const FVector InLocation)
+{
+	if (HasNative())
+	{
+		AGX_WireComponent_helpers::PrintNodeModifiedAlreadyInitializedWarning();
+	}
+	USceneComponent* Parent = RouteNodes[InIndex].Frame.GetParentComponent();
+	if (Parent == nullptr)
+	{
+		// No parent means the LocalLocation is relative to the Wire Component and thus InLocation
+		// can be used as-is.
+		RouteNodes[InIndex].Frame.LocalLocation = InLocation;
+		return;
+	}
+
+	// Compute a local location relative to the parent that has the same world location as
+	// InLocation in the Wire Component.
+	const FTransform& ParentTransform = Parent->GetComponentTransform();
+	const FTransform& WireTransform = GetComponentTransform();
+	const FTransform& WireToParent = WireTransform.GetRelativeTransform(ParentTransform);
+	const FVector LocationInParent = WireToParent.TransformPosition(InLocation);
+	RouteNodes[InIndex].Frame.LocalLocation = LocationInParent;
 }
 
 bool UAGX_WireComponent::IsLumpedNode(const FAGX_WireNode& Node)
@@ -1016,11 +1078,16 @@ double UAGX_WireComponent::GetRestLength() const
 	{
 		return 0.0;
 	}
-	double Length = 0.0;
+
+	double Length {0.0};
+	FVector PreviousLocation = RouteNodes[0].Frame.GetWorldLocation(*this);
 	for (int32 I = 1; I < RouteNodes.Num(); ++I)
 	{
-		Length += FVector::Distance(RouteNodes[I - 1].Location, RouteNodes[I].Location);
+		const FVector Location = RouteNodes[I].Frame.GetWorldLocation(*this);
+		Length += FVector::Distance(PreviousLocation, Location);
+		PreviousLocation = Location;
 	}
+
 	return Length;
 }
 
@@ -1113,6 +1180,53 @@ TArray<FVector> UAGX_WireComponent::GetRenderNodeLocations() const
 	}
 	return Result;
 }
+
+#if WITH_EDITOR
+
+void UAGX_WireComponent::OnRouteNodeParentMoved(
+	USceneComponent* Component, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
+{
+	// If this is a callback from a parent we are no longer a child of, then unsubscribe.
+	FWireRoutingNode* Node =
+		RouteNodes.FindByPredicate([Component](const FWireRoutingNode& Node)
+								   { return Node.Frame.GetParentComponent() == Component; });
+	if (Node == nullptr)
+	{
+		// Component is not the parent of any node, unsubscribe.
+		const FParentDelegate* Handle = DelegateHandles.Find(Component);
+		if (Handle != nullptr && Handle->Parent.IsValid())
+		{
+			Component->TransformUpdated.Remove(Handle->DelegateHandle);
+			DelegateHandles.Remove(Component);
+		}
+		return;
+	}
+
+	// At least one Routing Node has the moved Component as its parent.
+	UpdateVisuals();
+}
+
+void UAGX_WireComponent::OnRouteNodeParentReplaced(
+	const FCoreUObjectDelegates::FReplacementObjectMap& /*OldToNew*/)
+{
+	// Here we used to do incremental updates of the Delegate Handles table, but that doesn't work
+	// for the rename case, i.e. when the a Blueprint Reconstruction happens due to the parent
+	// Component being renamed in the Blueprint. In that case we can no longer find the old parent
+	// anymore since there is no way of finding the supposedly new parent. So we are forced to do
+	// a full synchronization.
+	//
+	// Perhaps not a major concern, the old callbacks will be found and cleared out at some point
+	// in the future (perhaps). If this full synchronization call becomes a performance problem then
+	// search the Git patch history for the string
+	//
+	//   Any changes made to the callback setup is a sign that we may need to update the wire
+	//
+	// to find the old code, or do something better than what we did then.
+	SynchronizeParentMovedCallbacks();
+	UpdateVisuals();
+}
+
+#endif
 
 void UAGX_WireComponent::MarkVisualsDirty()
 {
@@ -1219,18 +1333,80 @@ const FWireBarrier* UAGX_WireComponent::GetNative() const
 void UAGX_WireComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-	OwnedBeginWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
-	OwnedEndWinch.BodyAttachment.OwningActor = GetTypedOuter<AActor>();
+
+	// Establish the local scope for all Component References this Component owns. For more
+	// information see comments in AGX_ComponentReference.h.
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
+	OwnedBeginWinch.BodyAttachment.LocalScope = Owner;
+	OwnedEndWinch.BodyAttachment.LocalScope = Owner;
+	for (FWireRoutingNode& Node : RouteNodes)
+	{
+		Node.Frame.Parent.LocalScope = Owner;
+		Node.RigidBody.LocalScope = Owner;
+	}
 
 #if WITH_EDITOR
 	InitPropertyDispatcher();
+
+	// If the wire routing node frame parent's owner is a Blueprint instance then any
+	// modification of that instance will cause a Blueprint Reconstruction. During
+	// reconstruction all the Components will be destroyed and recreated. Unfortunately, Scene
+	// Component does not use Actor Component Instance Data to transfer delegate callbacks, such
+	// as Transform Updated, from the old object to the new one, so we need to do that
+	// ourselves. Fortunately, the engine provides the On Object Replaced event that we can use
+	// to do the transfer.
+	//
+	// Must be in Post Init Properties, not Post Load, because not all Components get the Post Load
+	// callback. In particular, adding a new Component to an already existing Actor in a level will
+	// not call Post Load.
+	if (!ObjectsReplacedDelegateHandle.IsValid())
+	{
+		ObjectsReplacedDelegateHandle = FCoreUObjectDelegates::OnObjectsReplaced.AddUObject(
+			this, &UAGX_WireComponent::OnRouteNodeParentReplaced);
+	}
 #endif
 }
 
 void UAGX_WireComponent::PostLoad()
 {
 	Super::PostLoad();
-	UpdateVisuals();
+
+	// A Wire Component may contain Component References that don't yet exist when Post Init
+	// Properties is run. For example, they may be part of the state that is read from drive on
+	// level load, or cloned from a template. If those Component References don't specify an Owning
+	// Actor explicitly then the implicit one, i.e. our outer Actor, should be used. The Begin- and
+	// EndWinch don't need to do this because they always exists and is always set in Post Init
+	// Properties.
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
+	for (FWireRoutingNode& Node : RouteNodes)
+	{
+		Node.Frame.Parent.LocalScope = Owner;
+		Node.RigidBody.LocalScope = Owner;
+	}
+
+#if WITH_EDITOR
+	// Condition on not Game World instead of is Editor World because we do not want this
+	// block to run in Play In Editor sessions.
+	if (GetWorld() != nullptr && !GetWorld()->IsGameWorld() && !HasAnyFlags(RF_ClassDefaultObject))
+	{
+		// While in the editor we don't update the wire rendering every tick and instead rely on
+		// Transform Updated callbacks from the wire routing node frame parents. These callbacks
+		// must be registered with each parent on start-up. We can't do that here because some of
+		// the parents may not have been loaded yet. So we set up a callback to happen when the
+		// level has finished loading, and hope that everything has been loaded by then.
+		if (!MapLoadDelegateHandle.IsValid())
+		{
+			MapLoadDelegateHandle = FEditorDelegates::MapChange.AddWeakLambda(
+				this,
+				[this](uint32)
+				{
+					FEditorDelegates::MapChange.RemoveAll(this);
+					SynchronizeParentMovedCallbacks();
+					UpdateVisuals();
+				});
+		}
+	}
+#endif
 }
 
 #if WITH_EDITOR
@@ -1351,20 +1527,45 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 		[](ThisClass* Wire)
 		{ Wire->OwnedEndWinch.SetBrakeForceRange(Wire->OwnedEndWinch.BrakeForceRange); });
 
-	/// @todo Find ways to do attach/detach during runtime from the Details Panel.
+	/// @todo Find ways to do attach/detach from winch during runtime from the Details Panel.
+}
+
+void UAGX_WireComponent::PreEditChange(FEditPropertyChain& PropertyAboutToChange)
+{
+	UObject::PreEditChange(PropertyAboutToChange);
+
+	// Here I would like to detect if the change is about to give a routing node a new parent and if
+	// so unsubscribe from the Transform Updated event on the old parent, but I don't know how to
+	// find the index in the Route Nodes list of the routing node that is about to be given a new
+	// parent. In the PostEditChangeChainProperty callback we get a FPropertyChangedChainEvent
+	// instead of a FEditPropertyChain and the event knows the array index because it has been
+	// created from an FPropertyHandle, which has access to FPropertyNode, instead of from an
+	// FProperty. The FProperty doesn't seem to know the array index.
 }
 
 void UAGX_WireComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
-	FEditPropertyChain::TDoubleLinkedListNode* Node = Event.PropertyChain.GetHead();
-	if (Node != nullptr)
+	FEditPropertyChain::TDoubleLinkedListNode* const PropertyNode = Event.PropertyChain.GetHead();
+	if (PropertyNode != nullptr)
 	{
-		const FName Member = Node->GetValue()->GetFName();
+		const FName Member = PropertyNode->GetValue()->GetFName();
 		if (DoesPropertyAffectVisuals(Member))
 		{
 			UpdateVisuals();
+		}
+
+		if (Member == GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes))
+		{
+			// We have no way of knowing what the old parent was, or if the changed node was the
+			// last to have it has its parent, so the best we can do is to synchronize all node
+			// parents. We used to have an attempt at a more incremental approach here but that
+			// didn't work out because of this. To find the old implementation search the Git patch
+			// history for
+			//
+			//    Did a node get a new parent, meaning we must set up a new parent-moved callback?
+			SynchronizeParentMovedCallbacks();
 		}
 	}
 
@@ -1446,9 +1647,28 @@ void UAGX_WireComponent::EndPlay(const EEndPlayReason::Type Reason)
 	}
 }
 
+#if WITH_EDITOR
+void UAGX_WireComponent::PostEditComponentMove(bool bFinished)
+{
+	Super::PostEditComponentMove(bFinished);
+	UpdateVisuals();
+}
+#endif
+
 void UAGX_WireComponent::OnRegister()
 {
 	Super::OnRegister();
+
+	// During level load any Blueprint Instances will be created by running the Construction Script.
+	// Any routing nodes created by that script will not be seen by Post Init Properties and Post
+	// Load, so their Local Scope must be set here.
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
+	for (FWireRoutingNode& Node : RouteNodes)
+	{
+		Node.Frame.Parent.LocalScope = Owner;
+		Node.RigidBody.LocalScope = Owner;
+	}
+
 #if WITH_EDITORONLY_DATA
 	if (SpriteComponent)
 	{
@@ -1474,6 +1694,25 @@ void UAGX_WireComponent::DestroyComponent(bool bPromoteChildren)
 
 	if (VisualSpheres != nullptr)
 		VisualSpheres->DestroyComponent();
+
+#if WITH_EDITOR
+	if (MapLoadDelegateHandle.IsValid())
+	{
+		FEditorDelegates::MapChange.Remove(MapLoadDelegateHandle);
+	}
+	if (ObjectsReplacedDelegateHandle.IsValid())
+	{
+		FCoreUObjectDelegates::OnObjectsReplaced.Remove(ObjectsReplacedDelegateHandle);
+	}
+	for (TTuple<USceneComponent*, FParentDelegate>& Entry : DelegateHandles)
+	{
+		if (!Entry.Value.Parent.IsValid())
+		{
+			continue;
+		}
+		Entry.Value.Parent->TransformUpdated.Remove(Entry.Value.DelegateHandle);
+	}
+#endif
 
 	Super::DestroyComponent(bPromoteChildren);
 }
@@ -1531,8 +1770,8 @@ namespace AGX_WireComponent_helpers
 		}
 		FRigidBodyBarrier* NativeBody = BodyComponent->GetOrCreateNative();
 		check(NativeBody);
-		const FVector LocalLocation = MoveLocationBetweenLocalTransforms(
-			WireTransform, BodyComponent->GetComponentTransform(), RouteNode.Location);
+		const FVector LocalLocation =
+			RouteNode.Frame.GetLocationRelativeTo(*BodyComponent, WireTransform);
 		return {NativeBody, LocalLocation};
 	}
 }
@@ -1571,6 +1810,7 @@ namespace AGX_WireComponent_helpers
 //
 // Is there a better solution?
 #if UE_VERSION_OLDER_THAN(5, 2, 0)
+
 		// Message must contain four %s ordered as Wire name, Wire owner name, Winch name, Winch
 		// owner name.
 		auto LogError = [&Wire, Side](auto& Message)
@@ -1582,6 +1822,7 @@ namespace AGX_WireComponent_helpers
 				LogAGX, Error, Message, *Wire.GetName(), *GetLabelSafe(Wire.GetOwner()), *WinchName,
 				*ActorName);
 		};
+
 #else
 
 #define LogError(Message)                                                                    \
@@ -1791,24 +2032,21 @@ void UAGX_WireComponent::CreateNative()
 		AGX_WireComponent_helpers::CreateNativeWinch(*this, EWireSide::Begin);
 	}
 
+	AActor* const Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
 	// Create AGX Dynamics simulation nodes and initialize the wire.
 	for (int32 I = 0; I < RouteNodes.Num(); ++I)
 	{
 		FWireRoutingNode& RouteNode = RouteNodes[I];
 		FWireNodeBarrier NodeBarrier;
 
-		if (RouteNode.RigidBody.OwningActor == nullptr)
-		{
-			// Default route nodes to search for Rigid Bodies in the same Actor as the Wire is in,
-			// unless another owner has already been specified.
-			RouteNode.RigidBody.OwningActor = GetOwner();
-		}
+		check(RouteNode.Frame.Parent.LocalScope == Owner);
+		check(RouteNode.RigidBody.LocalScope == Owner);
 
 		switch (RouteNode.NodeType)
 		{
 			case EWireNodeType::Free:
 			{
-				const FVector WorldLocation = LocalToWorld.TransformPosition(RouteNode.Location);
+				const FVector WorldLocation = RouteNode.Frame.GetWorldLocation(*this);
 				NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 				break;
 			}
@@ -1819,10 +2057,11 @@ void UAGX_WireComponent::CreateNative()
 				std::tie(Body, Location) = GetBodyAndLocalLocation(RouteNode, LocalToWorld);
 				if (Body == nullptr)
 				{
-					ErrorMessages.Add(
-						FString::Printf(TEXT("Wire node at index %d has invalid body."), I));
-					const FVector WorldLocation =
-						LocalToWorld.TransformPosition(RouteNode.Location);
+					ErrorMessages.Add(FString::Printf(
+						TEXT("Wire node at index %d has invalid body. Creating Free Node instead "
+							 "of Eye Node."),
+						I));
+					const FVector WorldLocation = RouteNode.Frame.GetWorldLocation(*this);
 					NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 					break;
 				}
@@ -1836,10 +2075,11 @@ void UAGX_WireComponent::CreateNative()
 				std::tie(Body, Location) = GetBodyAndLocalLocation(RouteNode, LocalToWorld);
 				if (Body == nullptr)
 				{
-					ErrorMessages.Add(
-						FString::Printf(TEXT("Wire node at index %d has invalid body."), I));
-					const FVector WorldLocation =
-						LocalToWorld.TransformPosition(RouteNode.Location);
+					ErrorMessages.Add(FString::Printf(
+						TEXT("Wire node at index %d has invalid body. Creating Free Node instead "
+							 "for Body Fixed Node."),
+						I));
+					const FVector WorldLocation = RouteNode.Frame.GetWorldLocation(*this);
 					NodeBarrier.AllocateNativeFreeNode(WorldLocation);
 					break;
 				}
@@ -1866,8 +2106,8 @@ void UAGX_WireComponent::CreateNative()
 	if (ErrorMessages.Num() > 0)
 	{
 		FString Message = FString::Printf(
-			TEXT("Errors detected during initialization of wire %s in %s:\n"), *GetName(),
-			*GetNameSafe(GetOwner()));
+			TEXT("Errors detected during initialization of wire '%s' in '%s':\n"), *GetName(),
+			*GetLabelSafe(GetOwner()));
 		for (const FString& Line : ErrorMessages)
 		{
 			Message += Line + '\n';
@@ -1999,7 +2239,8 @@ TArray<FVector> UAGX_WireComponent::GetNodesForRendering() const
 		const FTransform& ComponentTransform = GetComponentTransform();
 		for (const auto& Node : RouteNodes)
 		{
-			NodeLocations.Add(ComponentTransform.TransformPositionNoScale(Node.Location));
+			const FVector WorldLocation = Node.Frame.GetWorldLocation(*this);
+			NodeLocations.Add(WorldLocation);
 		}
 	}
 
@@ -2094,5 +2335,56 @@ void UAGX_WireComponent::SetVisualsInstanceCount(int32 Num)
 	if (VisualSpheres != nullptr)
 		SetNum(*VisualSpheres, Num);
 }
+
+#if WITH_EDITOR
+
+void UAGX_WireComponent::SynchronizeParentMovedCallbacks()
+{
+	// We currently have no reliable way to detect when we should no longer be tracking
+	// a parent. This is a cleanup-pass that should not be necessary but is until we figure
+	// out how to reliably remove our callback from the parent's TransformUpdated event, and
+	// remove an entry from the Delegate Handles list when the parent no longer exists.
+	//
+	// This implementation takes a nuke-all rebuild-all approach. We used to have an incremental
+	// implementation that was a bit more complicated. If this synchronization becomes a performance
+	// problem then the old incremental implementation can be found by searching the Git patch
+	// history for the string
+	//
+	//   Find parents that aren't a parent to any routing node anymore, and parents that has
+	//
+	// or build something new.
+
+	// Remove all old callbacks.
+	for (TTuple<USceneComponent*, FParentDelegate>& ParentHandle : DelegateHandles)
+	{
+		if (!ParentHandle.Value.Parent.IsValid())
+		{
+			continue;
+		}
+		ParentHandle.Value.Parent->TransformUpdated.Remove(ParentHandle.Value.DelegateHandle);
+	}
+	DelegateHandles.Empty(RouteNodes.Num());
+
+	// Add callbacks for the current parents.
+	for (FWireRoutingNode& RouteNode : RouteNodes)
+	{
+		USceneComponent* Parent = RouteNode.Frame.Parent.GetComponent<USceneComponent>();
+		if (!IsValid(Parent) || DelegateHandles.Contains(Parent))
+		{
+			continue;
+		}
+		DelegateHandles.Add(
+			Parent, {Parent, Parent->TransformUpdated.AddUObject(
+								 this, &UAGX_WireComponent::OnRouteNodeParentMoved)});
+	}
+}
+
+void UAGX_WireComponent::SynchronizeRendering()
+{
+	MarkVisualsDirty();
+	SynchronizeParentMovedCallbacks();
+}
+
+#endif
 
 #undef LOCTEXT_NAMESPACE

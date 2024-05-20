@@ -3,7 +3,6 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "NativeBarrier.h"
 #include "Vehicle/AGX_TrackEnums.h"
 
 // Unreal Engine includes.
