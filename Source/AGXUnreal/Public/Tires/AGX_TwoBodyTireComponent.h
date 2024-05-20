@@ -158,14 +158,18 @@ public:
 
 	bool IsDefaultSubObjectOfTwoBodyTireActor() const;
 
+	//~ Begin UActorComponent interface.
+	virtual void PostInitProperties() override;
+	virtual void PostLoad() override;
+	virtual void BeginPlay() override;
+	//~ End UActorComponent interface.
+
 protected:
 	virtual void AllocateNative() override;
 
 	virtual void UpdateNativeProperties() override;
 
-	virtual void BeginPlay() override;
-
-	virtual void PostInitProperties() override;
+	void UpdateReferencesLocalScope();
 
 private:
 	FTwoBodyTireBarrier* CreateTwoBodyTireBarrier();
