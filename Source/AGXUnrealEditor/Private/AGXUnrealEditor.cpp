@@ -83,6 +83,7 @@
 #include "Sensors/AGX_CameraSensorComponentVisualizer.h"
 #include "Sensors/AGX_LidarSensorComponent.h"
 #include "Sensors/AGX_LidarSensorComponentCustomization.h"
+#include "Sensors/AGX_LidarSensorComponentVisualizer.h"
 #include "Sensors/AGX_LidarSensorLineTraceComponent.h"
 #include "Sensors/AGX_LidarSensorLineTraceComponentVisualizer.h"
 #include "Sensors/AGX_LidarSensorReference.h"
@@ -537,6 +538,10 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 		MakeShareable(new FAGX_HeightFieldBoundsComponentVisualizer));
 
 	RegisterComponentVisualizer(
+		UAGX_LidarSensorComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_LidarSensorComponentVisualizer));
+
+	RegisterComponentVisualizer(
 		UAGX_LidarSensorLineTraceComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_LidarSensorLineTraceComponentVisualizer));
 
@@ -567,6 +572,7 @@ void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
 	UnregisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_LidarSensorComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_LidarSensorLineTraceComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_ShovelComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_TireComponent::StaticClass()->GetFName());
