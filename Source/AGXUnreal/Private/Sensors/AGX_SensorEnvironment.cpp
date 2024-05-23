@@ -566,7 +566,10 @@ void AAGX_SensorEnvironment::RegisterLidars()
 				// Collision spheres are updated in Step(), and the overlap events will be triggered
 				// for any object within that radius.
 				CollSph->SetSphereRadius(0.f, false);
-				CollSph->bTraceComplexOnMove = true;
+
+				// = true yields bugs of mutliple begin/end overlaps. See internal issue 957.
+				CollSph->bTraceComplexOnMove = false;
+
 				CollSph->RegisterComponent();
 			}
 
