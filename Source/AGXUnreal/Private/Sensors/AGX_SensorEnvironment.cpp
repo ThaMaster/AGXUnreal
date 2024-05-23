@@ -16,6 +16,8 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 
+#include  <algorithm>
+
 namespace AGX_SensorEnvironment_helpers
 {
 	float GetReflectivityOrDefault(UMaterialInterface* MaterialInterface, float DefaultReflectivity)
@@ -112,10 +114,21 @@ namespace AGX_SensorEnvironment_helpers
 
 		Sphere->SetWorldLocation(Lidar->GetComponentLocation());
 
-		if (!FMath::IsNearlyEqual(
-				Sphere->GetUnscaledSphereRadius(), static_cast<float>(Lidar->Range.Max)))
+		// Chosen arbitrarily, too large will cause Unreal warnings/errors.
+		static constexpr double MaxRadius = 1.0e8;
+		if (Lidar->Range.Max > MaxRadius)
 		{
-			Sphere->SetSphereRadius(Lidar->Range.Max, /*bUpdateOverlaps*/ true);
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Lidar %s has a Max Range of %f, but the maximum supported Range is %f. Using "
+					 "%f."),
+				*Lidar->GetName(), Lidar->Range.Max.GetValue(), MaxRadius, MaxRadius);
+		}
+
+		const float Radius = std::min(Lidar->Range.Max.GetValue(), MaxRadius);
+		if (!FMath::IsNearlyEqual(Sphere->GetUnscaledSphereRadius(), Radius))
+		{
+			Sphere->SetSphereRadius(Radius, /*bUpdateOverlaps*/ true);
 		}
 	}
 
