@@ -573,6 +573,23 @@ inline FAGX_RealInterval ConvertAngle(const agx::RangeReal& R)
 		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper())};
 }
 
+inline FAGX_RealInterval Convert(const agx::RangeReal32& R)
+{
+	return FAGX_RealInterval {R.lower(), R.upper()};
+}
+
+inline FAGX_RealInterval ConvertDistance(const agx::RangeReal32& R)
+{
+	return FAGX_RealInterval {
+		ConvertDistanceToUnreal<double>(R.lower()), ConvertDistanceToUnreal<double>(R.upper())};
+}
+
+inline FAGX_RealInterval ConvertAngle(const agx::RangeReal32& R)
+{
+	return FAGX_RealInterval {
+		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper())};
+}
+
 inline FAGX_CustomPatternInterval Convert(const agxSensor::LidarRayPatternInterval& I)
 {
 	return FAGX_CustomPatternInterval(I.first, I.numRays);

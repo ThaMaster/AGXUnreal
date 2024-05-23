@@ -3,6 +3,9 @@
 #include "Sensors/LidarBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Real.h"
+#include "AGX_RealInterval.h"
+#include "Sensors/AGX_DistanceGaussianNoiseSettings.h"
 #include "Sensors/CustomPatternGenerator.h"
 #include "Sensors/CustomPatternFetcherBase.h"
 #include "Sensors/LidarOutputBarrier.h"
@@ -66,6 +69,30 @@ namespace LidarBarrier_helpers
 		{
 		}
 	};
+
+	agxSensor::LidarModelRef CreateTemporaryLidarModelFrom(EAGX_LidarModel InModel)
+	{
+		switch (InModel)
+		{
+			case EAGX_LidarModel::Custom:
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Custom Lidar Model passed to "
+						 "FLidarBarrier::CreateTemporaryLidarModelFrom. The Custom case should be "
+						 "handled elsewhere, returning nullptr."));
+				return nullptr;
+				break;
+			case EAGX_LidarModel::GenericHorizontalSweep:
+				return new agxSensor::Generic360HorizontalSweep40HzLidarModel();
+				break;
+		}
+
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unknown Lidar Model passed to "
+				 "FLidarBarrier::CreateTemporaryLidarModelFrom. Returning nullptr."));
+		return nullptr;
+	}
 }
 
 void FLidarBarrier::AllocateNativeRayPatternCustom(FCustomPatternFetcherBase* PatternFetcher)
@@ -213,4 +240,94 @@ void FLidarBarrier::AddResult(FLidarOutputBarrier& Result)
 
 	NativeRef->Native->getOutputHandler()->add(
 		LidarBarrier_helpers::GenerateUniqueResultId(), Result.GetNative()->Native);
+}
+
+FAGX_RealInterval FLidarBarrier::GetRangeFrom(EAGX_LidarModel InModel)
+{
+	if (auto Model = LidarBarrier_helpers::CreateTemporaryLidarModelFrom(InModel))
+	{
+		return ConvertDistance(Model->getRayRange()->getRange());
+	}
+
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("FLidarBarrier::GetRangeFrom failed since no agxSensor::LidarModel could be created "
+			 "from the passed EAGX_LidarModel."));
+	return FAGX_RealInterval();
+}
+
+FAGX_Real FLidarBarrier::GetBeamDivergenceFrom(EAGX_LidarModel InModel)
+{
+	if (auto Model = LidarBarrier_helpers::CreateTemporaryLidarModelFrom(InModel))
+	{
+		return ConvertAngleToUnreal<double>(Model->getProperties()->getBeamDivergence());
+	}
+
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("FLidarBarrier::GetBeamDivergenceFrom failed since no agxSensor::LidarModel could be created "
+			 "from the passed EAGX_LidarModel."));
+	return 0.0;
+}
+
+FAGX_Real FLidarBarrier::GetBeamExitRadiusFrom(EAGX_LidarModel InModel)
+{
+	if (auto Model = LidarBarrier_helpers::CreateTemporaryLidarModelFrom(InModel))
+	{
+		return ConvertDistanceToUnreal<FAGX_Real>(Model->getProperties()->getBeamExitRadius());
+	}
+
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("FLidarBarrier::GetBeamExitRadiusFrom failed since no agxSensor::LidarModel could be created "
+			 "from the passed EAGX_LidarModel."));
+	return 0.0;
+}
+
+bool FLidarBarrier::GetEnableDistanceGaussianNoiseFrom(EAGX_LidarModel InModel)
+{
+	if (auto Model = LidarBarrier_helpers::CreateTemporaryLidarModelFrom(InModel))
+	{
+		for (const auto& Noise : Model->getOutputNoises())
+		{
+			if (Noise->as<agxSensor::RtDistanceGaussianNoise>() != nullptr)
+				return true;
+		}
+
+		return false;
+	}
+
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("FLidarBarrier::GetEnableDistanceGaussianNoiseFrom failed since no agxSensor::LidarModel could be created "
+			 "from the passed EAGX_LidarModel."));
+	return false;
+}
+
+TOptional<FAGX_DistanceGaussianNoiseSettings> FLidarBarrier::GetDistanceGaussianNoiseFrom(
+	EAGX_LidarModel InModel)
+{
+	if (auto Model = LidarBarrier_helpers::CreateTemporaryLidarModelFrom(InModel))
+	{
+		for (const auto& Noise : Model->getOutputNoises())
+		{
+			if (auto* DistanceNoiseAGX = Noise->as<agxSensor::RtDistanceGaussianNoise>())
+			{
+				FAGX_DistanceGaussianNoiseSettings Dgn;
+				Dgn.Mean = ConvertDistanceToUnreal<double>(DistanceNoiseAGX->getMean());
+				Dgn.StandardDeviation =
+					ConvertDistanceToUnreal<double>(DistanceNoiseAGX->getStdDevBase());
+				Dgn.StandardDeviationSlope = DistanceNoiseAGX->getStdDevSlope(); // Unitless.
+				return Dgn;
+			}
+		}
+
+		return {};
+	}
+
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("FLidarBarrier::GetRangeFrom failed since no agxSensor::LidarModel could be created "
+			 "from the passed EAGX_LidarModel."));
+	return {};
 }

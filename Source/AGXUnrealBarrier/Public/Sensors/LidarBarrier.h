@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Sensors/AGX_LidarEnums.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
@@ -11,6 +14,9 @@
 class FCustomPatternFetcherBase;
 class FLidarOutputBarrier;
 
+struct FAGX_DistanceGaussianNoiseSettings;
+struct FAGX_Real;
+struct FAGX_RealInterval;
 struct FDistanceGaussianNoiseRef;
 struct FLidarRef;
 
@@ -49,6 +55,12 @@ public:
 	bool IsDistanceGaussianNoiseEnabled() const;
 
 	void AddResult(FLidarOutputBarrier& Result);
+
+	static FAGX_RealInterval GetRangeFrom(EAGX_LidarModel InModel);
+	static FAGX_Real GetBeamDivergenceFrom(EAGX_LidarModel InModel);
+	static FAGX_Real GetBeamExitRadiusFrom(EAGX_LidarModel InModel);
+	static bool GetEnableDistanceGaussianNoiseFrom(EAGX_LidarModel InModel);
+	static TOptional<FAGX_DistanceGaussianNoiseSettings> GetDistanceGaussianNoiseFrom(EAGX_LidarModel InModel);
 
 private:
 	FLidarBarrier(const FLidarBarrier&) = delete;

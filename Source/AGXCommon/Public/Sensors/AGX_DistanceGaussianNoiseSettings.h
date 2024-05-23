@@ -8,7 +8,7 @@
 #include "AGX_DistanceGaussianNoiseSettings.generated.h"
 
 USTRUCT(BlueprintType)
-struct AGXUNREAL_API FAGX_DistanceGaussianNoiseSettings
+struct AGXCOMMON_API FAGX_DistanceGaussianNoiseSettings
 {
 	GENERATED_BODY()
 
@@ -16,7 +16,7 @@ struct AGXUNREAL_API FAGX_DistanceGaussianNoiseSettings
 	 * Mean of the distance gaussian noise [cm].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
-	FAGX_Real Mean {0.0};
+	double Mean {0.0};
 
 	/**
 	 * Standard deviation of the distance gaussian noise [cm].
@@ -24,7 +24,7 @@ struct AGXUNREAL_API FAGX_DistanceGaussianNoiseSettings
 	 * s = stdDev + d * stdDevSlope where d is the distance in centimeters.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
-	FAGX_Real StandardDeviation {2.0};
+	double StandardDeviation {2.0};
 
 	/**
 	 * Standard deviation slope of the distance gaussian noise.
@@ -32,5 +32,5 @@ struct AGXUNREAL_API FAGX_DistanceGaussianNoiseSettings
 	 * s = stdDev + d * stdDevSlope where d is the distance in centimeters.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
-	FAGX_Real StandardDeviationSlope {0.0005};
+	double StandardDeviationSlope {0.0005};
 };

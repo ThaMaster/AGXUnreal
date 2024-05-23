@@ -15,6 +15,8 @@
 #include "CoreMinimal.h"
 #include "Math/UnrealMathUtility.h"
 
+#include <limits>
+
 #include "AGX_LidarSensorComponent.generated.h"
 
 class UNiagaraComponent;
@@ -59,7 +61,7 @@ public:
 	 * Objects outside this range will not be detected by this Lidar Sensor.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
-	FAGX_RealInterval Range {0.0, 20000.0};
+	FAGX_RealInterval Range {0.0, std::numeric_limits<double>::max()};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetRange(FAGX_RealInterval InRange);

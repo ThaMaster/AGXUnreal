@@ -26,10 +26,7 @@ UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	static const TCHAR* DefaultRayPattern =
-		TEXT("StaticMesh'/AGXUnreal/Sensor/Lidar/AGX_RP_HorizontalSweep.AGX_RP_HorizontalSweep'");
-	RayPattern =
-		FAGX_ObjectUtilities::GetAssetFromPath<UAGX_RayPatternHorizontalSweep>(DefaultRayPattern);
+	SetModel(EAGX_LidarModel::GenericHorizontalSweep);
 
 	static const TCHAR* DefaultNiagaraSystem =
 		TEXT("StaticMesh'/AGXUnreal/Sensor/Lidar/NS_LidarNiagaraSystem.NS_LidarNiagaraSystem'");
