@@ -46,27 +46,26 @@ bool FLidarBarrier::HasNative() const
 	return NativeRef->Native != nullptr;
 }
 
-void FLidarBarrier::AllocateNativeLidarRayPatternHorizontalSweep(
-	const FVector2D& FOV, const FVector2D& Resolution, double Frequency)
-{
-	check(!HasNative());
-
-	const agx::Vec2 FovAGX {ConvertAngleToAGX(FOV.X), ConvertAngleToAGX(FOV.Y)};
-	const agx::Vec2 ResolutionAGX {
-		ConvertAngleToAGX(Resolution.X), ConvertAngleToAGX(Resolution.Y)};
-
-	NativeRef->Native = new agxSensor::Lidar(
-		nullptr, new agxSensor::HorizontalSweepLidarModel(FovAGX, ResolutionAGX, Frequency));
-}
-
 namespace LidarBarrier_helpers
 {
-	class CustomLidarModel : public agxSensor::LidarModel
+	class UnrealLidarModel : public agxSensor::LidarModel
 	{
 	public:
-		CustomLidarModel(agxSensor::LidarRayPatternGenerator* PatternGenerator)
+		UnrealLidarModel(agxSensor::LidarRayPatternGenerator* PatternGenerator)
 			: LidarModel(PatternGenerator, new agxSensor::LidarRayRange())
 		{
+		}
+	};
+
+	class GenericHorizontalSweepModel : public agxSensor::HorizontalSweepLidarModel
+	{
+	public:
+		GenericHorizontalSweepModel()
+			: HorizontalSweepLidarModel(
+				  {agx::degreesToRadians(360.0), agx::degreesToRadians(50.0)},
+				  {agx::degreesToRadians(1.0), agx::degreesToRadians(1.0)}, 10.0)
+		{
+			getRayRange()->setRange({0.0, 100.0});
 		}
 	};
 
@@ -83,7 +82,7 @@ namespace LidarBarrier_helpers
 				return nullptr;
 				break;
 			case EAGX_LidarModel::GenericHorizontalSweep:
-				return new agxSensor::Generic360HorizontalSweep40HzLidarModel();
+				return new GenericHorizontalSweepModel();
 				break;
 		}
 
@@ -95,14 +94,25 @@ namespace LidarBarrier_helpers
 	}
 }
 
+void FLidarBarrier::AllocateNativeLidarRayPatternHorizontalSweep(
+	const FVector2D& FOV, const FVector2D& Resolution, double Frequency)
+{
+	check(!HasNative());
+	const agx::Vec2 FovAGX {ConvertAngleToAGX(FOV.X), ConvertAngleToAGX(FOV.Y)};
+	const agx::Vec2 ResolutionAGX {
+		ConvertAngleToAGX(Resolution.X), ConvertAngleToAGX(Resolution.Y)};
+
+	NativeRef->Native = new agxSensor::Lidar(
+		nullptr, new agxSensor::HorizontalSweepLidarModel(FovAGX, ResolutionAGX, Frequency));
+}
+
 void FLidarBarrier::AllocateNativeRayPatternCustom(FCustomPatternFetcherBase* PatternFetcher)
 {
 	check(!HasNative());
 
-	using namespace agxSensor;
-	NativeRef->Native = new Lidar(
-		nullptr,
-		new LidarBarrier_helpers::CustomLidarModel(new FCustomPatternGenerator(PatternFetcher)));
+	using namespace LidarBarrier_helpers;
+	NativeRef->Native = new agxSensor::Lidar(
+		nullptr, new UnrealLidarModel(new FCustomPatternGenerator(PatternFetcher)));
 }
 
 FLidarRef* FLidarBarrier::GetNative()
