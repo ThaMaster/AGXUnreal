@@ -3,6 +3,7 @@
 #include "Utilities/AGX_SensorUtilities.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "AGX_Real.h"
 #include "AGX_RealInterval.h"
 #include "Sensors/AGX_DistanceGaussianNoiseSettings.h"

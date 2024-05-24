@@ -136,7 +136,7 @@ public:
 	 * Should return all ray transforms (in global coordinates) for the whole scan pattern.
 	 * This delegate is called only if no ray transforms has previously been returned by the funcion
 	 * provided by the user, i.e. under normal conditions, it is called only once.
-	 * The FetchNextPatternInterval is called each Step() and determines what part of the scan
+	 * The FetchNextPatternInterval is called each Tick and determines what part of the scan
 	 * pattern to use next, see OnFetchNextPatternInterval.
 	 * The signature of the function assigned must be: TArray<FTransform> MyFunc().
 	 */
