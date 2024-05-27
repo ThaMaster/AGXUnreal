@@ -183,6 +183,8 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 		"ClassIcon.AGX_CameraSensorComponent",
 		new IMAGE_BRUSH("Icons/camera_sensor_32x32", IconSize16));
 	Style->Set(
+		"ClassIcon.AGX_LidarSensorComponent", new IMAGE_BRUSH("Icons/lidar_32x32", IconSize16));
+	Style->Set(
 		"ClassIcon.AGX_LidarSensorLineTraceComponent",
 		new IMAGE_BRUSH("Icons/lidar_32x32", IconSize16));
 	// Tire.

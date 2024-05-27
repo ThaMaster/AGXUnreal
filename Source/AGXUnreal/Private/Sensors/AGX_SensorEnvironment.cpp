@@ -680,6 +680,12 @@ void AAGX_SensorEnvironment::OnLidarBeginOverlapComponent(
 	if (!IsValid(OtherComp))
 		return;
 
+	if (auto SceneComponent = Cast<USceneComponent>(OtherComp))
+	{
+		if (bIgnoreInvisibleObjects && !SceneComponent->ShouldRender())
+			return;
+	}
+
 	auto InstancedMesh = Cast<UInstancedStaticMeshComponent>(OtherComp);
 	if (InstancedMesh != nullptr)
 	{
@@ -767,13 +773,7 @@ void AAGX_SensorEnvironment::OnLidarEndOverlapStaticMeshComponent(UStaticMeshCom
 {
 	FAGX_MeshEntityData* MeshEntityData = TrackedMeshes.Find(&Mesh);
 	if (MeshEntityData == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("AGX_SensorEnvironment '%s' failed to track Static Mesh Component '%s'."),
-			*GetName(), *Mesh.GetName());
 		return;
-	}
 
 	AGX_CHECK(MeshEntityData->EntityData.RefCount > 0);
 	MeshEntityData->EntityData.RefCount--;
@@ -789,25 +789,11 @@ void AAGX_SensorEnvironment::OnLidarEndOverlapInstancedStaticMeshComponent(
 
 	auto InstancedMesh = TrackedInstancedMeshes.Find(&Mesh);
 	if (InstancedMesh == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT(
-				"AGX_SensorEnvironment '%s' failed to track Instanced Static Mesh Component '%s'."),
-			*GetName(), *Mesh.GetName());
 		return;
-	}
 
 	auto InstancedEntityData = InstancedMesh->EntitiesData.Find(Index);
 	if (InstancedEntityData == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("AGX_SensorEnvironment '%s' failed to track Instance %d of Static Mesh Component "
-				 "'%s'."),
-			*GetName(), Index, *Mesh.GetName());
 		return;
-	}
 
 	AGX_CHECK(InstancedEntityData->RefCount > 0);
 	InstancedEntityData->RefCount--;
@@ -824,13 +810,7 @@ void AAGX_SensorEnvironment::OnLidarEndOverlapAGXMeshComponent(UAGX_SimpleMeshCo
 {
 	FAGX_MeshEntityData* MeshEntityData = TrackedAGXMeshes.Find(&Mesh);
 	if (MeshEntityData == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("AGX_SensorEnvironment '%s' failed to track AGX Mesh Component '%s'."), *GetName(),
-			*Mesh.GetName());
 		return;
-	}
 
 	AGX_CHECK(MeshEntityData->EntityData.RefCount > 0);
 	MeshEntityData->EntityData.RefCount--;

@@ -42,6 +42,18 @@ public:
 	bool bAutoAddObjects {true};
 
 	/*
+	 * If set to true, any Component (e.g. Static Mesh) that has Visibility invisible will be
+	 * ignored when using Auto Add Objects. If set to false, the Component will be added regardless
+	 * of visibility.
+	 * If manually adding objects to the Sensor Environment using any of the Add... functions, this
+	 * property will not have an affect, and the object will always be added.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Sensor Environment",
+		Meta = (EditCondition = "bAutoAddObjects"))
+	bool bIgnoreInvisibleObjects {true};
+
+	/*
 	 * Default LOD index used when reading Meshes that are added to this Environment.
 	 * If set to a negative value, the highest valid LOD index is used (lowest resolution).
 	 * If this LOD index does not exist for a Mesh that is added, the closest valid (and lower) LOD
