@@ -44,10 +44,10 @@ void FRtMeshEntityBarrier::AllocateNative(FRtMeshBarrier& Mesh, float Reflectivi
 	check(Mesh.HasNative());
 
 	NativeRef->Native = agxSensor::RtMeshEntity::create(
-		Mesh.GetNative()->Native, /* new agxSensor::RtEntityIdOwnerData()*/ nullptr); // TODO!
-	// TODO!
-	//agxSensor::RtSurfaceMaterial(NativeRef->Native.data->getEntityId())
-	//	.setReflectivity(Reflectivity);
+		Mesh.GetNative()->Native, new agxSensor::RtEntityIdOwnerData());
+
+	const agxSensor::RtEntityId Id = NativeRef->Native.data->getOrCreateEntityId();
+	agxSensor::RtSurfaceMaterial(Id).setReflectivity(Reflectivity);
 }
 
 FRtMeshEntity* FRtMeshEntityBarrier::GetNative()
