@@ -11,9 +11,7 @@
 
 UAGX_TwoBodyTireComponent::UAGX_TwoBodyTireComponent()
 {
-	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	HubRigidBody.LocalScope = Owner;
-	TireRigidBody.LocalScope = Owner;
+	UpdateReferencesLocalScope();
 }
 
 UAGX_RigidBodyComponent* UAGX_TwoBodyTireComponent::GetHubRigidBody() const
@@ -109,6 +107,12 @@ bool UAGX_TwoBodyTireComponent::IsDefaultSubObjectOfTwoBodyTireActor() const
 		   Cast<AAGX_TwoBodyTireActor>(Owner) != nullptr;
 }
 
+void UAGX_TwoBodyTireComponent::PostLoad()
+{
+	Super::PostLoad();
+	UpdateReferencesLocalScope();
+}
+
 void UAGX_TwoBodyTireComponent::AllocateNative()
 {
 	NativeBarrier.Reset(CreateTwoBodyTireBarrier());
@@ -157,10 +161,14 @@ void UAGX_TwoBodyTireComponent::BeginPlay()
 void UAGX_TwoBodyTireComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
+	UpdateReferencesLocalScope();
+}
 
+void UAGX_TwoBodyTireComponent::UpdateReferencesLocalScope()
+{
 	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	check(HubRigidBody.LocalScope == Owner);
-	check(TireRigidBody.LocalScope == Owner);
+	HubRigidBody.LocalScope = Owner;
+	TireRigidBody.LocalScope = Owner;
 }
 
 FTwoBodyTireBarrier* UAGX_TwoBodyTireComponent::CreateTwoBodyTireBarrier()
