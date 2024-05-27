@@ -661,7 +661,6 @@ void AAGX_SensorEnvironment::UpdateTrackedInstancedMeshes()
 
 void AAGX_SensorEnvironment::UpdateTrackedAGXMeshes()
 {
-	check(bAutoAddObjects);
 	AGX_SensorEnvironment_helpers::UpdateTrackedMeshes(TrackedAGXMeshes);
 }
 
