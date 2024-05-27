@@ -577,6 +577,7 @@ void UAGX_TerrainMaterial::CopyTerrainMaterialProperties(const UAGX_TerrainMater
 		Surface = Source->Surface;
 		TerrainBulk = Source->TerrainBulk;
 		TerrainCompaction = Source->TerrainCompaction;
+		LidarReflectivity = Source->LidarReflectivity;
 	}
 }
 

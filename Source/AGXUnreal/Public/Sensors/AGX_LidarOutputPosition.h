@@ -70,7 +70,7 @@ class AGXUNREAL_API UAGX_LidarOutputPosition_LF : public UBlueprintFunctionLibra
 	static void Render(
 		UPARAM(ref) FAGX_LidarOutputPosition& Output,
 		const TArray<FAGX_LidarOutputPositionData>& Data, UAGX_LidarSensorComponent* Lidar,
-		float LifeTime = 0.12f, float BaseSize = 5.f)
+		float LifeTime = 0.12f, float BaseSize = 4.f)
 	{
 		Output.Render(Data, Lidar, LifeTime, BaseSize);
 	}
