@@ -49,7 +49,7 @@ void FAGX_LidarOutputPositionIntensity::Render(
 			(double) std::numeric_limits<uint8>::max());
 
 		const FLinearColor Color = FLinearColor::FromSRGBColor(
-			FColor(Intensity, 0.0, std::numeric_limits<uint8>::max() - Intensity));
+			FColor(Intensity, 0.0, std::numeric_limits<uint8>::max() - Intensity, 255));
 
 		RenderPositions.Add(Transform.TransformPositionNoScale(Datum.Position));
 		RenderColors.Add(Color);
