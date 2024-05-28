@@ -29,11 +29,31 @@
 #include <agxTerrain/TerrainPager.h>
 #include "EndAGXIncludes.h"
 
+struct FElementaryConstraintRef
+{
+	agx::ref_ptr<agx::ElementaryConstraint> Native;
+	FElementaryConstraintRef() = default;
+	FElementaryConstraintRef(agx::ElementaryConstraint* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
 struct FConstraintControllerRef
 {
 	agx::ref_ptr<agx::BasicControllerConstraint> Native;
 	FConstraintControllerRef() = default;
 	FConstraintControllerRef(agx::BasicControllerConstraint* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FTwistRangeControllerRef
+{
+	agx::ref_ptr<agx::TwistRangeController> Native;
+	FTwistRangeControllerRef() = default;
+	FTwistRangeControllerRef(agx::TwistRangeController* InNative)
 		: Native(InNative)
 	{
 	}

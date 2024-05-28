@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_ConstraintComponent.h"
+#include "Constraints/Controllers/AGX_TwistRangeController.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -21,11 +22,19 @@ class AGXUNREAL_API UAGX_BallConstraintComponent : public UAGX_ConstraintCompone
 	GENERATED_BODY()
 
 public:
-	using FBarrierType = FBallJointBarrier;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Secondary Constraints")
+	FAGX_TwistRangeController TwistRangeController;
 
 public:
+
+	// TODO Setup Property Dispatcher callbacks.
+
+	using FBarrierType = FBallJointBarrier;
+
 	UAGX_BallConstraintComponent();
 	virtual ~UAGX_BallConstraintComponent() override;
+
+	virtual void UpdateNativeProperties() override;
 
 	FBallJointBarrier* GetNativeBallJoint();
 	const FBallJointBarrier* GetNativeBallJoint() const;

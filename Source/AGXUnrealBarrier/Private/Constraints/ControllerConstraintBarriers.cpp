@@ -126,6 +126,10 @@ namespace
 	}
 }
 
+//
+// Electric Motor Controller starts here.
+//
+
 namespace
 {
 	agx::ElectricMotorController* GetController(FElectricMotorControllerBarrier& Barrier)
@@ -184,6 +188,10 @@ double FElectricMotorControllerBarrier::GetTorqueConstant() const
 	return GetController(*this)->getTorqueConstant();
 }
 
+//
+// Friction Controller starts here.
+//
+
 namespace
 {
 	agx::FrictionController* GetController(FFrictionControllerBarrier& Barrier)
@@ -228,6 +236,10 @@ bool FFrictionControllerBarrier::GetEnableNonLinearDirectSolveUpdate() const
 	check(HasNative());
 	return GetController(*this)->getEnableNonLinearDirectSolveUpdate();
 }
+
+//
+// Lock Controller starts here.
+//
 
 namespace
 {
@@ -279,6 +291,10 @@ double FLockControllerBarrier::GetPositionRotational() const
 	return Degrees;
 }
 
+//
+// Range Controller starts here.
+//
+
 namespace
 {
 	agx::RangeController* GetController(FRangeControllerBarrier& Barrier)
@@ -329,6 +345,10 @@ FAGX_RealInterval FRangeControllerBarrier::GetRangeRotational() const
 	return RangeUnreal;
 }
 
+//
+// Screw Controller starts here.
+//
+
 namespace
 {
 	agx::ScrewController* GetController(FScrewControllerBarrier& Barrier)
@@ -362,6 +382,10 @@ double FScrewControllerBarrier::GetLead() const
 	agx::Real LeadAGX = GetController(*this)->getLead();
 	return ConvertDistanceToUnreal<double>(LeadAGX);
 }
+
+//
+// Target Speed  Controller starts here.
+//
 
 namespace
 {
@@ -424,4 +448,89 @@ bool FTargetSpeedControllerBarrier::GetLockedAtZeroSpeed() const
 {
 	check(HasNative());
 	return GetController(*this)->getLockedAtZeroSpeed();
+}
+
+//
+// Twist Range Controller starts here.
+//
+
+namespace
+{
+	agx::TwistRangeController* GetController(FTwistRangeControllerBarrier& Barrier)
+	{
+		return Barrier.GetNative()->Native;
+	}
+
+	const agx::TwistRangeController* GetController(const FTwistRangeControllerBarrier& Barrier)
+	{
+		return Barrier.GetNative()->Native;
+	}
+}
+
+FTwistRangeControllerBarrier::FTwistRangeControllerBarrier()
+	: NativeRef(new FTwistRangeControllerRef())
+{
+}
+
+FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
+	const FTwistRangeControllerBarrier& Other)
+	: FTwistRangeControllerBarrier(
+		  std::make_unique<FTwistRangeControllerRef>(Other.NativeRef->Native))
+{
+}
+
+FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
+	std::unique_ptr<FTwistRangeControllerRef> Native)
+	: FElementaryConstraintBarrier(std::make_unique<FElementaryConstraintRef>(Native->Native))
+	, NativeRef(std::move(Native))
+{
+}
+
+FTwistRangeControllerBarrier::~FTwistRangeControllerBarrier()
+{
+	// Must have a non-inlined destructor because the NativeRef destructor must be able to see the
+	// full definition of the pointed-to type, and we are not allowed to include F*Ref / F*Ptr
+	// types in the header file.
+}
+
+FTwistRangeControllerBarrier& FTwistRangeControllerBarrier::operator=(
+	const FTwistRangeControllerBarrier& Other)
+{
+	check(Other.NativeRef->Native == Other.FElementaryConstraintBarrier::NativeRef->Native);
+	FElementaryConstraintBarrier::NativeRef->Native = Other.NativeRef->Native;
+	NativeRef->Native = Other.NativeRef->Native;
+	return *this;
+}
+
+void FTwistRangeControllerBarrier::SetRange(FAGX_RealInterval Range)
+{
+	check(HasNative());
+	agx::RangeReal RangeAGX = ConvertAngle(Range);
+	NativeRef->Native->setRange(RangeAGX);
+}
+
+FAGX_RealInterval FTwistRangeControllerBarrier::GetRange() const
+{
+	check(HasNative());
+	agx::RangeReal RangeAGX = NativeRef->Native->getRange();
+	FAGX_RealInterval Range = ConvertAngle(RangeAGX);
+	return Range;
+}
+
+bool FTwistRangeControllerBarrier::HasNative() const
+{
+	check(NativeRef->Native == FElementaryConstraintBarrier::NativeRef->Native);
+	return NativeRef->Native != nullptr;
+}
+
+FTwistRangeControllerRef* FTwistRangeControllerBarrier::GetNative()
+{
+	check(NativeRef->Native == FElementaryConstraintBarrier::NativeRef->Native);
+	return NativeRef.get();
+}
+
+const FTwistRangeControllerRef* FTwistRangeControllerBarrier::GetNative() const
+{
+	check(NativeRef->Native == FElementaryConstraintBarrier::NativeRef->Native);
+	return NativeRef.get();
 }

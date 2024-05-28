@@ -2,6 +2,7 @@
 
 #include "Constraints/BallJointBarrier.h"
 
+// AGX Dynamics for Unreal includes.
 #include "AGXRefs.h"
 #include "RigidBodyBarrier.h"
 #include "Utilities/AGX_BarrierConstraintUtilities.h"
@@ -11,17 +12,29 @@
 #include "EndAGXIncludes.h"
 
 FBallJointBarrier::FBallJointBarrier()
-	: FConstraintBarrier()
 {
 }
 
 FBallJointBarrier::FBallJointBarrier(std::unique_ptr<FConstraintRef> Native)
 	: FConstraintBarrier(std::move(Native))
 {
+	if (HasNative())
+	{
+		check(NativeRef->Native->is<agx::BallJoint>());
+	}
 }
 
 FBallJointBarrier::~FBallJointBarrier()
 {
+}
+
+FTwistRangeControllerBarrier FBallJointBarrier::GetTwistRangeController()
+{
+	check(HasNative());
+	agx::TwistRangeController* Controller =
+		NativeRef->Native->as<agx::BallJoint>()->getTwistRangeController();
+
+	return FTwistRangeControllerBarrier(std::make_unique<FTwistRangeControllerRef>(Controller));
 }
 
 void FBallJointBarrier::AllocateNativeImpl(

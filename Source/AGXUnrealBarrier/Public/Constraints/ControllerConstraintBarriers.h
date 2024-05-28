@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_RealInterval.h"
+#include "Constraints/ElementaryConstraintBarrier.h"
 
 // Unreal Engine includes.
 #include "Math/Interval.h"
@@ -12,6 +13,7 @@
 #include <memory>
 
 struct FConstraintControllerRef;
+struct FTwistRangeControllerRef;
 
 class AGXUNREALBARRIER_API FConstraintControllerBarrier
 {
@@ -124,4 +126,29 @@ public:
 
 	void SetLockedAtZeroSpeed(bool LockedAtZeroSpeed);
 	bool GetLockedAtZeroSpeed() const;
+};
+
+class AGXUNREALBARRIER_API FTwistRangeControllerBarrier : public FElementaryConstraintBarrier
+{
+public:
+	FTwistRangeControllerBarrier();
+	FTwistRangeControllerBarrier(const FTwistRangeControllerBarrier& Other);
+	FTwistRangeControllerBarrier(std::unique_ptr<FTwistRangeControllerRef> Native);
+	virtual ~FTwistRangeControllerBarrier();
+
+	FTwistRangeControllerBarrier& operator=(const FTwistRangeControllerBarrier& Other);
+
+	void SetRange(FAGX_RealInterval Range);
+	FAGX_RealInterval GetRange() const;
+
+	bool HasNative() const;
+	FTwistRangeControllerRef* GetNative();
+	const FTwistRangeControllerRef* GetNative() const;
+
+protected:
+	/**
+	 * Type-specific native handle. Always points to the same AGX Dynamics object as the handle in
+	 * the base class. The unique_ptr may never be nullptr.
+	 */
+	std::unique_ptr<FTwistRangeControllerRef> NativeRef;
 };
