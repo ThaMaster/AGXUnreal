@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
-#include "Sensors/AGX_CameraSensorComponentBase.h"
+#include "Sensors/AGX_CameraSensorBase.h"
 #include "Sensors/AGX_CameraSensor8BitComponent.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -32,8 +32,8 @@ void FAGX_CameraSensorComponentCustomization::CustomizeDetails(
 {
 	DetailBuilder = &InDetailBuilder;
 
-	UAGX_CameraSensorComponentBase* CameraSensorComponent =
-		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_CameraSensorComponentBase>(
+	UAGX_CameraSensorBase* CameraSensorComponent =
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_CameraSensorBase>(
 			InDetailBuilder);
 	if (CameraSensorComponent == nullptr)
 	{
@@ -44,9 +44,9 @@ void FAGX_CameraSensorComponentCustomization::CustomizeDetails(
 		InDetailBuilder.EditCategory("AGX Camera", FText::GetEmpty(), ECategoryPriority::Important);
 
 	CategoryBuilder.AddProperty(
-		InDetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_CameraSensorComponentBase, FOV)));
+		InDetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_CameraSensorBase, FOV)));
 	CategoryBuilder.AddProperty(InDetailBuilder.GetProperty(
-		GET_MEMBER_NAME_CHECKED(UAGX_CameraSensorComponentBase, Resolution)));
+		GET_MEMBER_NAME_CHECKED(UAGX_CameraSensorBase, Resolution)));
 
 	// clang-format off
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
@@ -72,7 +72,7 @@ void FAGX_CameraSensorComponentCustomization::CustomizeDetails(
 
 namespace AGX_CameraSensorComponentCustomization_helpers
 {
-	UAGX_CameraSensorComponentBase* GetCameraSensorComponent(IDetailLayoutBuilder* DetailBuilder)
+	UAGX_CameraSensorBase* GetCameraSensorComponent(IDetailLayoutBuilder* DetailBuilder)
 	{
 		if (DetailBuilder == nullptr)
 		{
@@ -83,8 +83,8 @@ namespace AGX_CameraSensorComponentCustomization_helpers
 			return nullptr;
 		}
 
-		UAGX_CameraSensorComponentBase* CameraComponent =
-			FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_CameraSensorComponentBase>(
+		UAGX_CameraSensorBase* CameraComponent =
+			FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_CameraSensorBase>(
 				*DetailBuilder);
 		if (CameraComponent == nullptr)
 		{
@@ -131,7 +131,7 @@ namespace AGX_CameraSensorComponentCustomization_helpers
 		return Asset;
 	}
 
-	bool IsSettingsValid(const UAGX_CameraSensorComponentBase& CameraComponent)
+	bool IsSettingsValid(const UAGX_CameraSensorBase& CameraComponent)
 	{
 		auto IsNearlyZero = [](const FVector2D& V)
 		{ return FMath::IsNearlyZero(V.X) || FMath::IsNearlyZero(V.Y); };
@@ -155,7 +155,7 @@ FReply FAGX_CameraSensorComponentCustomization::OnGenerateRuntimeAssetsButtonCli
 	using namespace AGX_CameraSensorComponentCustomization_helpers;
 	AGX_CHECK(DetailBuilder);
 
-	UAGX_CameraSensorComponentBase* CameraComponent = GetCameraSensorComponent(DetailBuilder);
+	UAGX_CameraSensorBase* CameraComponent = GetCameraSensorComponent(DetailBuilder);
 	if (CameraComponent == nullptr)
 		return FReply::Handled(); // Logging done in GetCameraSensorComponent.
 

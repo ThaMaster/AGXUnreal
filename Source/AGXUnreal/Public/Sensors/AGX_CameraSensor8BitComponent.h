@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "ROS2/AGX_ROS2Messages.h"
-#include "Sensors/AGX_CameraSensorComponentBase.h"
+#include "Sensors/AGX_CameraSensorBase.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -24,7 +24,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewImagePixels8Bit, const TArray<
  * The captured image is encoded in 8-bit RGB wih linear color space.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_CameraSensor8BitComponent : public UAGX_CameraSensorComponentBase
+class AGXUNREAL_API UAGX_CameraSensor8BitComponent : public UAGX_CameraSensorBase
 {
 	GENERATED_BODY()
 

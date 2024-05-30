@@ -1,6 +1,6 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-#include "Sensors/AGX_CameraSensorComponentBase.h"
+#include "Sensors/AGX_CameraSensorBase.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
@@ -14,12 +14,12 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/World.h"
 
-UAGX_CameraSensorComponentBase::UAGX_CameraSensorComponentBase()
+UAGX_CameraSensorBase::UAGX_CameraSensorBase()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-void UAGX_CameraSensorComponentBase::SetFOV(float InFOV)
+void UAGX_CameraSensorBase::SetFOV(float InFOV)
 {
 	if (!IsFovValid(InFOV))
 		return;
@@ -30,7 +30,7 @@ void UAGX_CameraSensorComponentBase::SetFOV(float InFOV)
 	FOV = InFOV;
 }
 
-void UAGX_CameraSensorComponentBase::SetResolution(FIntPoint InResolution)
+void UAGX_CameraSensorBase::SetResolution(FIntPoint InResolution)
 {
 	if (!IsResolutionValid(InResolution))
 	{
@@ -47,22 +47,22 @@ void UAGX_CameraSensorComponentBase::SetResolution(FIntPoint InResolution)
 		RenderTarget->ResizeTarget(InResolution.X, InResolution.Y);
 }
 
-USceneCaptureComponent2D* UAGX_CameraSensorComponentBase::GetSceneCaptureComponent2D() const
+USceneCaptureComponent2D* UAGX_CameraSensorBase::GetSceneCaptureComponent2D() const
 {
 	return CaptureComponent2D;
 }
 
-bool UAGX_CameraSensorComponentBase::IsFovValid(float FOV)
+bool UAGX_CameraSensorBase::IsFovValid(float FOV)
 {
 	return FOV > KINDA_SMALL_NUMBER && FOV <= 170.f;
 }
 
-bool UAGX_CameraSensorComponentBase::IsResolutionValid(const FIntPoint& Resolution)
+bool UAGX_CameraSensorBase::IsResolutionValid(const FIntPoint& Resolution)
 {
 	return Resolution.X >= 1 && Resolution.Y >= 1;
 }
 
-void UAGX_CameraSensorComponentBase::BeginPlay()
+void UAGX_CameraSensorBase::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -72,7 +72,7 @@ void UAGX_CameraSensorComponentBase::BeginPlay()
 	Init();
 }
 
-void UAGX_CameraSensorComponentBase::PostApplyToComponent()
+void UAGX_CameraSensorBase::PostApplyToComponent()
 {
 	Super::PostApplyToComponent();
 
@@ -90,7 +90,7 @@ void UAGX_CameraSensorComponentBase::PostApplyToComponent()
 }
 
 #if WITH_EDITOR
-bool UAGX_CameraSensorComponentBase::CanEditChange(const FProperty* InProperty) const
+bool UAGX_CameraSensorBase::CanEditChange(const FProperty* InProperty) const
 {
 	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
 	if (!SuperCanEditChange)
@@ -117,7 +117,7 @@ bool UAGX_CameraSensorComponentBase::CanEditChange(const FProperty* InProperty) 
 	return SuperCanEditChange;
 }
 
-void UAGX_CameraSensorComponentBase::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+void UAGX_CameraSensorBase::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 
@@ -127,7 +127,7 @@ void UAGX_CameraSensorComponentBase::PostEditChangeChainProperty(FPropertyChange
 	Super::PostEditChangeChainProperty(Event);
 }
 
-void UAGX_CameraSensorComponentBase::PostInitProperties()
+void UAGX_CameraSensorBase::PostInitProperties()
 {
 	Super::PostInitProperties();
 
@@ -139,13 +139,13 @@ void UAGX_CameraSensorComponentBase::PostInitProperties()
 	}
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_CameraSensorComponentBase, FOV),
+		GET_MEMBER_NAME_CHECKED(UAGX_CameraSensorBase, FOV),
 		[](ThisClass* This) { This->SetFOV(This->FOV); });
 }
 
 #endif
 
-void UAGX_CameraSensorComponentBase::Init()
+void UAGX_CameraSensorBase::Init()
 {
 	AGX_CHECK(CaptureComponent2D == nullptr);
 
@@ -159,7 +159,7 @@ void UAGX_CameraSensorComponentBase::Init()
 	bIsValid = CheckValid();
 }
 
-void UAGX_CameraSensorComponentBase::InitCaptureComponent()
+void UAGX_CameraSensorBase::InitCaptureComponent()
 {
 	if (CaptureComponent2D == nullptr)
 		return;
@@ -169,7 +169,7 @@ void UAGX_CameraSensorComponentBase::InitCaptureComponent()
 	CaptureComponent2D->CaptureSource = ESceneCaptureSource::SCS_FinalToneCurveHDR;
 }
 
-bool UAGX_CameraSensorComponentBase::CheckValid() const
+bool UAGX_CameraSensorBase::CheckValid() const
 {
 	if (!IsFovValid(FOV))
 	{

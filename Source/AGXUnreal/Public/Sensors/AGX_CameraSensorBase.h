@@ -6,7 +6,7 @@
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
 
-#include "AGX_CameraSensorComponentbase.generated.h"
+#include "AGX_CameraSensorBase.generated.h"
 
 class USceneCaptureComponent2D;
 class UTextureRenderTarget2D;
@@ -17,12 +17,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewImageROS2, const FAGX_SensorMs
  * Camera Sensor Component, allowing to extract camera pixel information in runtime.
  */
 UCLASS(ClassGroup = "AGX", Category = "AGX", Abstract, NotPlaceable)
-class AGXUNREAL_API UAGX_CameraSensorComponentBase : public USceneComponent
+class AGXUNREAL_API UAGX_CameraSensorBase : public USceneComponent
 {
 	GENERATED_BODY()
 
 public:
-	UAGX_CameraSensorComponentBase();
+	UAGX_CameraSensorBase();
 
 	/**
 	 * Horizontal Field of View (FOV) of the Camera Sensor [deg].
