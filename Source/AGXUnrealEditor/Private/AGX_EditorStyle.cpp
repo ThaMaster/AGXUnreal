@@ -180,7 +180,10 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 		new IMAGE_BRUSH("Icons/trimesh_shape_32x32", IconSize16));
 	// Sensors.
 	Style->Set(
-		"ClassIcon.AGX_CameraSensorComponent",
+		"ClassIcon.AGX_CameraSensor8BitComponent",
+		new IMAGE_BRUSH("Icons/camera_sensor_32x32", IconSize16));
+	Style->Set(
+		"ClassIcon.AGX_CameraSensor16BitComponent",
 		new IMAGE_BRUSH("Icons/camera_sensor_32x32", IconSize16));
 	Style->Set(
 		"ClassIcon.AGX_LidarSensorLineTraceComponent",
