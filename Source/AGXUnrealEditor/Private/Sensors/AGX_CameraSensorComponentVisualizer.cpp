@@ -3,7 +3,7 @@
 #include "Sensors/AGX_CameraSensorComponentVisualizer.h"
 
 // AGX Dynamics for Unreal includes.
-#include "Sensors/AGX_CameraSensorComponent.h"
+#include "Sensors/AGX_CameraSensorBase.h"
 #include "Utilities/AGX_SlateUtilities.h"
 
 // Unreal Engine includes.
@@ -15,14 +15,14 @@
 void FAGX_CameraSensorComponentVisualizer::DrawVisualization(
 	const UActorComponent* Component, const FSceneView* View, FPrimitiveDrawInterface* PDI)
 {
-	const UAGX_CameraSensorComponent* Cam = Cast<const UAGX_CameraSensorComponent>(Component);
+	const UAGX_CameraSensorBase* Cam = Cast<const UAGX_CameraSensorBase>(Component);
 	if (Cam == nullptr || !Cam->ShouldRender())
 		return;
 
-	if (!UAGX_CameraSensorComponent::IsFovValid(Cam->FOV))
+	if (!UAGX_CameraSensorBase::IsFovValid(Cam->FOV))
 		return;
 
-	if (!UAGX_CameraSensorComponent::IsResolutionValid(Cam->Resolution))
+	if (!UAGX_CameraSensorBase::IsResolutionValid(Cam->Resolution))
 		return;
 
 	// We will draw a rectangle on an imaginary plane accordint to the FOV of the Camera Sensor.

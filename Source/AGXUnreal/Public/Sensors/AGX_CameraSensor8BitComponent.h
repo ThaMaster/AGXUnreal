@@ -4,74 +4,35 @@
 
 // AGX Dynamics for Unreal includes.
 #include "ROS2/AGX_ROS2Messages.h"
+#include "Sensors/AGX_CameraSensorBase.h"
 
 // Unreal Engine includes.
-#include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
 
 // Standard library includes.
 #include <mutex>
 
-#include "AGX_CameraSensorComponent.generated.h"
+#include "AGX_CameraSensor8BitComponent.generated.h"
 
 class USceneCaptureComponent2D;
 class UTextureRenderTarget2D;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewImagePixels, const TArray<FColor>&, Image);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewImageROS2, const FAGX_SensorMsgsImage&, Image);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewImagePixels8Bit, const TArray<FColor>&, Image);
 
 /**
- * EXPERIMENTAL
- *
  * Camera Sensor Component, allowing to extract camera pixel information in runtime.
- * The captured image is encoded in 8-bit RGB wih sRGB gamma curve.
+ * The captured image is encoded in 8-bit RGB wih linear color space.
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX", Experimental, Meta = (BlueprintSpawnableComponent))
-class AGXUNREAL_API UAGX_CameraSensorComponent : public USceneComponent
+UCLASS(ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent))
+class AGXUNREAL_API UAGX_CameraSensor8BitComponent : public UAGX_CameraSensorBase
 {
 	GENERATED_BODY()
 
 public:
-	UAGX_CameraSensorComponent();
-
-	/**
-	 * Horizontal Field of View (FOV) of the Camera Sensor [deg].
-	 */
-	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "AGX Camera",
-		meta = (ClampMin = "0.0", ClampMax = "170.0"))
-	float FOV {90.f};
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
-	void SetFOV(float InFOV);
-
-	/**
-	 * Output resolution of the Camera Sensor [pixels].
-	 * The first element is the horizontal resolution, and the second vertical resolution.
-	 * Note: using a large resolution will come with a performance hit.
-	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Camera", meta = (ClampMin = "1"))
-	FIntPoint Resolution {256, 256};
-
-	/**
-	 * Sets the resolution of the Camera Sensor.
-	 * Also updates the RenderTarget if available.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
-	void SetResolution(FIntPoint InResolution);
-
-	/**
-	 * Render Target used by the Camera Sensor to write pixel data to.
-	 * It is recommended to use the 'Generate Runtime Assets' button in the Details Panel to
-	 * generate it.
-	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Camera")
-	UTextureRenderTarget2D* RenderTarget {nullptr};
-
 	/**
 	 * Tell the Camera to capture a new image as an array of 8-bit RGB pixels. This is an
 	 * asynchronous operation and is faster than the blocking GetImagePixels which synchronizes with
-	 * the render thread immediately. Bind to the NewImagePixels Event to get a callback with the
+	 * the render thread immediately. Bind to the NewImagePixels delegate to get a callback with the
 	 * image data once it is ready.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
@@ -86,8 +47,8 @@ public:
 	 * objects surviving a Level Transition that also are bound to this delegates must bind to it
 	 * again in the new Level.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "Simulation")
-	FOnNewImagePixels NewImagePixels;
+	UPROPERTY(BlueprintAssignable, Category = "AGX Camera")
+	FOnNewImagePixels8Bit NewImagePixels;
 
 	/**
 	 * Important: This may be a very slow operation. Use the Async version for better performance.
@@ -99,7 +60,7 @@ public:
 	/**
 	 * Tell the Camera to capture a new image as a ROS2 sensor_msgs::Image message. This is an
 	 * asynchronous operation and is faster than the blocking GetImageROS2 which synchronizes with
-	 * the render thread immediately. Bind to the NewImageROS2 Event to get a callback with the
+	 * the render thread immediately. Bind to the NewImageROS2 delegate to get a callback with the
 	 * image message once it is ready.
 	 * If Grayscale is set to true, only a single value (average intensity) for each pixel is
 	 * set.
@@ -117,7 +78,7 @@ public:
 	 * objects surviving a Level Transition that also are bound to this delegates must bind to it
 	 * again in the new Level.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "Simulation")
+	UPROPERTY(BlueprintAssignable, Category = "AGX Camera")
 	FOnNewImageROS2 NewImageROS2;
 
 	/**
@@ -129,30 +90,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
 	FAGX_SensorMsgsImage GetImageROS2(bool Grayscale = false) const;
 
-	/**
-	 * Access the Scene Capture Component 2D used by the AGX Camera Sensor.
-	 * If the Scene Capture Component 2D has not been created, this function returns nullptr.
-	 * The Scene Capture Component 2D is only available during Play.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Camera")
-	USceneCaptureComponent2D* GetSceneCaptureComponent2D() const;
-
-	static bool IsFovValid(float FOV);
-	static bool IsResolutionValid(const FIntPoint& Resolution);
-
 	//~ Begin UActorComponent Interface
-	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
-	virtual void PostApplyToComponent() override;
 	//~ End UActorComponent Interface
-
-	//~ Begin UObject Interface
-#if WITH_EDITOR
-	virtual bool CanEditChange(const FProperty* InProperty) const override;
-	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
-	virtual void PostInitProperties() override;
-#endif
-	//~ End UObject Interface
 
 	struct FAGX_ImageBuffer
 	{
@@ -163,12 +103,9 @@ public:
 	};
 
 private:
-	bool bIsValid {false};
-	USceneCaptureComponent2D* CaptureComponent2D;
 	TSharedPtr<FAGX_ImageBuffer> LastImage;
 
-	void Init();
-	void InitCaptureComponent();
-	bool CheckValid() const;
+	virtual void Init() override;
+	virtual bool CheckValid() const override;
 	void OnAsyncImageRequest();
 };
