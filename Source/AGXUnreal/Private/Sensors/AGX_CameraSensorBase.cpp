@@ -12,6 +12,7 @@
 
 // Unreal Engine includes.
 #include "Components/SceneCaptureComponent2D.h"
+#include "Engine/TextureRenderTarget2D.h"
 #include "Engine/World.h"
 
 UAGX_CameraSensorBase::UAGX_CameraSensorBase()
