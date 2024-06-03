@@ -26,7 +26,6 @@ UAGX_BallConstraintComponent::~UAGX_BallConstraintComponent()
 void UAGX_BallConstraintComponent::UpdateNativeProperties()
 {
 	Super::UpdateNativeProperties();
-
 	TwistRangeController.UpdateNativeProperties();
 }
 
@@ -38,6 +37,26 @@ FBallJointBarrier* UAGX_BallConstraintComponent::GetNativeBallJoint()
 const FBallJointBarrier* UAGX_BallConstraintComponent::GetNativeBallJoint() const
 {
 	return FAGX_ConstraintUtilities::GetNativeCast(this);
+}
+
+namespace AGX_BallConstraintComponent_helpers
+{
+	void InitializeControllerBarriers(UAGX_BallConstraintComponent& Constraint)
+	{
+		FBallJointBarrier* Barrier = Constraint.GetNativeBallJoint();
+		Constraint.TwistRangeController.InitializeBarrier(Barrier->GetTwistRangeController());
+	}
+}
+
+void UAGX_BallConstraintComponent::SetNativeAddress(uint64 NativeAddress)
+{
+	Super::SetNativeAddress(NativeAddress);
+	if (!HasNative())
+	{
+		return;
+	}
+
+	AGX_BallConstraintComponent_helpers::InitializeControllerBarriers(*this);
 }
 
 void UAGX_BallConstraintComponent::PostInitProperties()
@@ -79,6 +98,5 @@ void UAGX_BallConstraintComponent::CreateNativeImpl()
 		return;
 	}
 
-	FBallJointBarrier* Barrier = GetNativeBallJoint();
-	TwistRangeController.InitializeBarrier(Barrier->GetTwistRangeController());
+	AGX_BallConstraintComponent_helpers::InitializeControllerBarriers(*this);
 }
