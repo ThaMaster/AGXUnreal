@@ -90,7 +90,6 @@ double FConstraintControllerBarrier::GetSpookDamping() const
 
 void FConstraintControllerBarrier::SetForceRange(FDoubleInterval InForceRange)
 {
-
 	check(HasNative());
 	/// \todo Should the ForceRange be in N or Unreal-newtons? Unreal-newtons
 	/// is kg cm s^-2 instead of kg m s^-2.
@@ -329,7 +328,6 @@ void FRangeControllerBarrier::SetRangeTranslational(FDoubleInterval InRange)
 	GetController(*this)->setRange(RangeAGX);
 }
 
-
 void FRangeControllerBarrier::SetRangeTranslational(FAGX_RealInterval InRange)
 {
 	SetRangeTranslational(InRange.ToDouble());
@@ -532,12 +530,42 @@ void FTwistRangeControllerBarrier::SetRange(FAGX_RealInterval InRange)
 	SetRange(InRange.ToDouble());
 }
 
+void FTwistRangeControllerBarrier::SetRangeMin(double InMin)
+{
+	check(HasNative());
+	const agx::Real MinAGX = ConvertAngleToAGX(InMin);
+	NativeRef->Native->getRange().lower() = MinAGX;
+}
+
+void FTwistRangeControllerBarrier::SetRangeMax(double InMax)
+{
+	check(HasNative());
+	const agx::Real MaxAGX = ConvertAngleToAGX(InMax);
+	NativeRef->Native->getRange().upper() = MaxAGX;
+}
+
 FDoubleInterval FTwistRangeControllerBarrier::GetRange() const
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = NativeRef->Native->getRange();
 	FDoubleInterval Range = ConvertAngle(RangeAGX);
 	return Range;
+}
+
+double FTwistRangeControllerBarrier::GetRangeMin() const
+{
+	check(HasNative());
+	const agx::Real MinAGX = NativeRef->Native->getRange().lower();
+	const double Min = ConvertAngleToUnreal<double>(MinAGX);
+	return Min;
+}
+
+double FTwistRangeControllerBarrier::GetRangeMax() const
+{
+	check(HasNative());
+	const agx::Real MaxAGX = NativeRef->Native->getRange().upper();
+	const double Max = ConvertAngleToUnreal<double>(MaxAGX);
+	return Max;
 }
 
 bool FTwistRangeControllerBarrier::HasNative() const

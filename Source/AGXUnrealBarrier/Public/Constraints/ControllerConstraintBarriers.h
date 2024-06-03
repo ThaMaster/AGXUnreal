@@ -147,7 +147,11 @@ public:
 
 	void SetRange(FDoubleInterval InRange);
 	void SetRange(FAGX_RealInterval InRange);
+	void SetRangeMin(double InMin);
+	void SetRangeMax(double InMax);
 	FDoubleInterval GetRange() const;
+	double GetRangeMin() const;
+	double GetRangeMax() const;
 
 	bool HasNative() const;
 	FTwistRangeControllerRef* GetNative();

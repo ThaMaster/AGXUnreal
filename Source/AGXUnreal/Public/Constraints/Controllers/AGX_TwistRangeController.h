@@ -54,10 +54,15 @@ public:
 	 */
 	void SetRange(FAGX_RealInterval InRange);
 
+	void SetRangeMin(double InMin);
+	void SetRangeMax(double InMax);
+
 	/**
 	 * Get the amount of rotation around the constraint's Z axis that is allowed.
 	 */
 	FDoubleInterval GetRange() const;
+	double GetRangeMin() const;
+	double GetRangeMax() const;
 
 	bool HasNative() const;
 	FTwistRangeControllerBarrier* GetNative();
@@ -88,15 +93,42 @@ class AGXUNREAL_API UAGX_TwistRangeController_FL : public UBlueprintFunctionLibr
 	GENERATED_BODY()
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Twist Range Controller")
-	static void SetRange(UPARAM(Ref) FAGX_TwistRangeController& Controller, FAGX_RealInterval Range)
+	static void SetRange(UPARAM(Ref) FAGX_TwistRangeController& Controller, double Min, double Max)
 	{
-		Controller.SetRange(Range);
+		Controller.SetRange(FDoubleInterval(Min, Max));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Twist Range Controller")
-	static FAGX_RealInterval GetRange(UPARAM(Ref) FAGX_TwistRangeController& ControllerRef)
+	static void SetRangeMin(UPARAM(Ref) FAGX_TwistRangeController& Controller, double Min)
 	{
-		return ControllerRef.GetRange();
+		Controller.SetRangeMin(Min);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Twist Range Controller")
+	static void SetRangeMax(UPARAM(Ref) FAGX_TwistRangeController& Controller, double Max)
+	{
+		Controller.SetRangeMax(Max);
+	}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Twist Range Controller")
+	static void GetRange(
+		const FAGX_TwistRangeController& ControllerRef, double& OutMin, double& OutMax)
+	{
+		FDoubleInterval Range = ControllerRef.GetRange();
+		OutMin = Range.Min;
+		OutMax = Range.Max;
+	}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Twist Range Controller")
+	static double GetRangeMin(const FAGX_TwistRangeController& ControllerRef)
+	{
+		return ControllerRef.GetRangeMin();
+	}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Twist Range Controller")
+	static double GetRangeMax(const FAGX_TwistRangeController& ControllerRef)
+	{
+		return ControllerRef.GetRangeMax();
 	}
 
 	// TODO Add the rest of the functions.
