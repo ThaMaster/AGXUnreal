@@ -24,6 +24,7 @@ struct FAGX_ConstraintFrictionController;
 struct FAGX_ConstraintLockController;
 struct FAGX_ConstraintRangeController;
 struct FAGX_ConstraintTargetSpeedController;
+struct FAGX_TwistRangeController;
 
 template <typename>
 struct FAGX_PropertyChangedDispatcher;
@@ -140,6 +141,12 @@ public:
 	static void AddScrewControllerPropertyCallbacks(
 		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
 		TFunction<FAGX_ConstraintScrewController*(UConstraintClass*)> GetController,
+		const FName& Member);
+
+	template <typename UConstraintClass>
+	static void AddTwistRangeControllerPropertyCallbacks(
+		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+		TFunction<FAGX_TwistRangeController*(UConstraintClass*)> GetController,
 		const FName& Member);
 #endif
 

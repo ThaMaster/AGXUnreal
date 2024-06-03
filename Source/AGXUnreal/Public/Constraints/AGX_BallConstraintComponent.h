@@ -25,10 +25,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Secondary Constraints")
 	FAGX_TwistRangeController TwistRangeController;
 
-public:
-
-	// TODO Setup Property Dispatcher callbacks.
-
 	using FBarrierType = FBallJointBarrier;
 
 	UAGX_BallConstraintComponent();
@@ -39,6 +35,12 @@ public:
 	FBallJointBarrier* GetNativeBallJoint();
 	const FBallJointBarrier* GetNativeBallJoint() const;
 
+	//~ Begin UObject interface.
+#if WITH_EDITOR
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event) override;
+#endif
+	//~ End UObject interface.
 protected:
 	virtual void CreateNativeImpl() override;
 };
