@@ -33,7 +33,7 @@ public:
 	FVector HalfExtent;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
-	void SetHalfExtent(const FVector& InHalfExtent);
+	void SetHalfExtent(FVector InHalfExtent);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
 	FVector GetHalfExtent() const;
