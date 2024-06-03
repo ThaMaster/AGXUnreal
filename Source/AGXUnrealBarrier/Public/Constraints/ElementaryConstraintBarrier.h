@@ -40,10 +40,9 @@ public:
 	void SetCompliance(double InCompliance);
 	double GetCompliance(int32 InRow = 0) const;
 
-	void setElasticity(double Elasticity, int Row);
-	void setElasticity(double elasticity);
-	double getElasticity(int32 row = 0) const;
-
+	void SetElasticity(double Elasticity, int Row);
+	void SetElasticity(double elasticity);
+	double GetElasticity(int32 row = 0) const;
 
 	void SetSpookDamping(double InDamping, int32 InRow);
 	void SetSpookDamping(double InDamping);

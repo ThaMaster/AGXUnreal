@@ -58,7 +58,7 @@ void FAGX_ElementaryConstraint::SetElasticity(double InElasticity)
 	if (HasNative())
 	{
 		// Elasticity is a dependent property on compliance.
-		NativeBarrier.setElasticity(InElasticity);
+		NativeBarrier.SetElasticity(InElasticity);
 		Compliance = NativeBarrier.GetCompliance();
 	}
 	else
@@ -74,7 +74,7 @@ double FAGX_ElementaryConstraint::GetElasticity() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.getElasticity();
+		return NativeBarrier.GetElasticity();
 	}
 	if (Compliance > DBL_EPSILON)
 	{

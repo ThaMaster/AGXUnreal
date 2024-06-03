@@ -29,7 +29,8 @@ FElementaryConstraintBarrier::~FElementaryConstraintBarrier()
 	// types in the header file.
 }
 
-FElementaryConstraintBarrier& FElementaryConstraintBarrier::operator=(const FElementaryConstraintBarrier& Other)
+FElementaryConstraintBarrier& FElementaryConstraintBarrier::operator=(
+	const FElementaryConstraintBarrier& Other)
 {
 	NativeRef->Native = Other.NativeRef->Native;
 	return *this;
@@ -96,19 +97,19 @@ double FElementaryConstraintBarrier::GetCompliance(int32 InRow) const
 	return NativeRef->Native->getCompliance(InRow);
 }
 
-void FElementaryConstraintBarrier::setElasticity(double Elasticity, int Row)
+void FElementaryConstraintBarrier::SetElasticity(double Elasticity, int Row)
 {
 	check(HasNative());
 	NativeRef->Native->setElasticity(Elasticity, Row);
 }
 
-void FElementaryConstraintBarrier::setElasticity(double Elasticity)
+void FElementaryConstraintBarrier::SetElasticity(double Elasticity)
 {
 	check(HasNative());
 	NativeRef->Native->setElasticity(Elasticity);
 }
 
-double FElementaryConstraintBarrier::getElasticity(int32 Row) const
+double FElementaryConstraintBarrier::GetElasticity(int32 Row) const
 {
 	check(HasNative());
 	return NativeRef->Native->getElasticity(Row);
