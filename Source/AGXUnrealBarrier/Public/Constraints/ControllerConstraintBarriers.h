@@ -36,8 +36,9 @@ public:
 	void SetSpookDamping(double SpookDamping);
 	double GetSpookDamping() const;
 
+	void SetForceRange(FDoubleInterval InForceRange);
 	void SetForceRange(FAGX_RealInterval ForceRange);
-	FAGX_RealInterval GetForceRange() const;
+	FDoubleInterval GetForceRange() const;
 
 	double GetForce() const;
 
@@ -97,11 +98,13 @@ class AGXUNREALBARRIER_API FRangeControllerBarrier : public FConstraintControlle
 public:
 	FRangeControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
-	void SetRangeTranslational(FAGX_RealInterval Range);
-	FAGX_RealInterval GetRangeTranslational() const;
+	void SetRangeTranslational(FDoubleInterval InRange);
+	void SetRangeTranslational(FAGX_RealInterval InRange);
+	FDoubleInterval GetRangeTranslational() const;
 
-	void SetRangeRotational(FAGX_RealInterval Range);
-	FAGX_RealInterval GetRangeRotational() const;
+	void SetRangeRotational(FDoubleInterval InRange);
+	void SetRangeRotational(FAGX_RealInterval InRange);
+	FDoubleInterval GetRangeRotational() const;
 };
 
 class AGXUNREALBARRIER_API FScrewControllerBarrier : public FConstraintControllerBarrier
@@ -136,10 +139,15 @@ public:
 	FTwistRangeControllerBarrier(std::unique_ptr<FTwistRangeControllerRef> Native);
 	virtual ~FTwistRangeControllerBarrier();
 
+	/**
+	 * Make this Barrier point to the same native AGX Dynamics object as Other. The Ref object
+	 * will not be shared, only the AGX Dynamics object.
+	 */
 	FTwistRangeControllerBarrier& operator=(const FTwistRangeControllerBarrier& Other);
 
-	void SetRange(FAGX_RealInterval Range);
-	FAGX_RealInterval GetRange() const;
+	void SetRange(FDoubleInterval InRange);
+	void SetRange(FAGX_RealInterval InRange);
+	FDoubleInterval GetRange() const;
 
 	bool HasNative() const;
 	FTwistRangeControllerRef* GetNative();

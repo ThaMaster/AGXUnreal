@@ -88,21 +88,28 @@ double FConstraintControllerBarrier::GetSpookDamping() const
 	return NativeRef->Native->getDamping();
 }
 
-void FConstraintControllerBarrier::SetForceRange(FAGX_RealInterval ForceRange)
+void FConstraintControllerBarrier::SetForceRange(FDoubleInterval InForceRange)
 {
+
 	check(HasNative());
 	/// \todo Should the ForceRange be in N or Unreal-newtons? Unreal-newtons
 	/// is kg cm s^-2 instead of kg m s^-2.
 	///       ^                     ^
-	const agx::RangeReal ForceRangeAGX = Convert(ForceRange);
+	const agx::RangeReal ForceRangeAGX = Convert(InForceRange);
 	NativeRef->Native->setForceRange(ForceRangeAGX);
 }
 
-FAGX_RealInterval FConstraintControllerBarrier::GetForceRange() const
+void FConstraintControllerBarrier::SetForceRange(FAGX_RealInterval InForceRange)
+{
+	SetForceRange(InForceRange.ToDouble());
+}
+
+FDoubleInterval FConstraintControllerBarrier::GetForceRange() const
 {
 	check(HasNative());
 	const agx::RangeReal ForceRangeAGX = NativeRef->Native->getForceRange();
-	return Convert(ForceRangeAGX);
+	const FDoubleInterval ForceRange = Convert(ForceRangeAGX);
+	return ForceRange;
 }
 
 double FConstraintControllerBarrier::GetForce() const
@@ -315,34 +322,45 @@ FRangeControllerBarrier::FRangeControllerBarrier(std::unique_ptr<FConstraintCont
 	check(NativeRef->Native->is<agx::RangeController>());
 }
 
-void FRangeControllerBarrier::SetRangeTranslational(FAGX_RealInterval Range)
+void FRangeControllerBarrier::SetRangeTranslational(FDoubleInterval InRange)
 {
 	check(HasNative());
-	agx::RangeReal RangeAGX = ConvertDistance(Range);
+	agx::RangeReal RangeAGX = ConvertDistance(InRange);
 	GetController(*this)->setRange(RangeAGX);
 }
 
-FAGX_RealInterval FRangeControllerBarrier::GetRangeTranslational() const
+
+void FRangeControllerBarrier::SetRangeTranslational(FAGX_RealInterval InRange)
+{
+	SetRangeTranslational(InRange.ToDouble());
+}
+
+FDoubleInterval FRangeControllerBarrier::GetRangeTranslational() const
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = GetController(*this)->getRange();
-	FAGX_RealInterval RangeUnreal = ConvertDistance(RangeAGX);
+	FDoubleInterval RangeUnreal = ConvertDistance(RangeAGX);
 	return RangeUnreal;
 }
 
-void FRangeControllerBarrier::SetRangeRotational(FAGX_RealInterval Range)
+void FRangeControllerBarrier::SetRangeRotational(FDoubleInterval InRange)
 {
 	check(HasNative());
-	agx::RangeReal RangeAGX = ConvertAngle(Range);
+	agx::RangeReal RangeAGX = ConvertAngle(InRange);
 	GetController(*this)->setRange(RangeAGX);
 }
 
-FAGX_RealInterval FRangeControllerBarrier::GetRangeRotational() const
+void FRangeControllerBarrier::SetRangeRotational(FAGX_RealInterval InRange)
+{
+	SetRangeRotational(InRange.ToDouble());
+}
+
+FDoubleInterval FRangeControllerBarrier::GetRangeRotational() const
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = GetController(*this)->getRange();
-	FAGX_RealInterval RangeUnreal = ConvertAngle(RangeAGX);
-	return RangeUnreal;
+	FDoubleInterval Range = ConvertAngle(RangeAGX);
+	return Range;
 }
 
 //
@@ -497,23 +515,28 @@ FTwistRangeControllerBarrier& FTwistRangeControllerBarrier::operator=(
 	const FTwistRangeControllerBarrier& Other)
 {
 	check(Other.NativeRef->Native == Other.FElementaryConstraintBarrier::NativeRef->Native);
-	FElementaryConstraintBarrier::NativeRef->Native = Other.NativeRef->Native;
+	FElementaryConstraintBarrier::operator=(Other);
 	NativeRef->Native = Other.NativeRef->Native;
 	return *this;
 }
 
-void FTwistRangeControllerBarrier::SetRange(FAGX_RealInterval Range)
+void FTwistRangeControllerBarrier::SetRange(FDoubleInterval InRange)
 {
 	check(HasNative());
-	agx::RangeReal RangeAGX = ConvertAngle(Range);
+	agx::RangeReal RangeAGX = ConvertAngle(InRange);
 	NativeRef->Native->setRange(RangeAGX);
 }
 
-FAGX_RealInterval FTwistRangeControllerBarrier::GetRange() const
+void FTwistRangeControllerBarrier::SetRange(FAGX_RealInterval InRange)
+{
+	SetRange(InRange.ToDouble());
+}
+
+FDoubleInterval FTwistRangeControllerBarrier::GetRange() const
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = NativeRef->Native->getRange();
-	FAGX_RealInterval Range = ConvertAngle(RangeAGX);
+	FDoubleInterval Range = ConvertAngle(RangeAGX);
 	return Range;
 }
 
