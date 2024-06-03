@@ -2,7 +2,6 @@
 
 #include "Constraints/AGX_ElementaryConstraint.h"
 
-
 // AGX Dynamics for Unreal includes.
 #include "Utilities/AGX_ObjectUtilities.h"
 
@@ -23,7 +22,6 @@ void FAGX_ElementaryConstraint::SetEnable(bool bInEnable)
 		NativeBarrier.SetEnable(bInEnable);
 	}
 	bEnable = bInEnable;
-
 }
 
 bool FAGX_ElementaryConstraint::GetEnable() const
@@ -120,7 +118,25 @@ void FAGX_ElementaryConstraint::SetForceRange(const FDoubleInterval& InForceRang
 
 void FAGX_ElementaryConstraint::SetForceRange(double InMinForce, double InMaxForce)
 {
-	SetForceRange(FAGX_RealInterval{InMinForce, InMaxForce});
+	SetForceRange(FAGX_RealInterval {InMinForce, InMaxForce});
+}
+
+void FAGX_ElementaryConstraint::SetForceRangeMin(double InMinForce)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetForceRangeMin(InMinForce);
+	}
+	ForceRange.Min = InMinForce;
+}
+
+void FAGX_ElementaryConstraint::SetForceRangeMax(double InMaxForce)
+{
+	if (HasNative())
+	{
+		NativeBarrier.SetForceRangeMax(InMaxForce);
+	}
+	ForceRange.Max = InMaxForce;
 }
 
 FDoubleInterval FAGX_ElementaryConstraint::GetForceRange() const
@@ -130,6 +146,24 @@ FDoubleInterval FAGX_ElementaryConstraint::GetForceRange() const
 		return NativeBarrier.GetForceRange();
 	}
 	return ForceRange;
+}
+
+double FAGX_ElementaryConstraint::GetForceRangeMin() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetForceRangeMin();
+	}
+	return ForceRange.Min;
+}
+
+double FAGX_ElementaryConstraint::GetForceRangeMax() const
+{
+	if (HasNative())
+	{
+		return NativeBarrier.GetForceRangeMax();
+	}
+	return ForceRange.Max;
 }
 
 double FAGX_ElementaryConstraint::GetForce()
@@ -225,7 +259,8 @@ void FAGX_ElementaryConstraint::CopyFrom(
 		{
 			FAGX_ObjectUtilities::SetIfEqual(Instance->bEnable, bEnable, bEnableBarrier);
 			FAGX_ObjectUtilities::SetIfEqual(Instance->Compliance, Compliance, ComplianceBarrier);
-			FAGX_ObjectUtilities::SetIfEqual(Instance->SpookDamping, SpookDamping, SpookDampingBarrier);
+			FAGX_ObjectUtilities::SetIfEqual(
+				Instance->SpookDamping, SpookDamping, SpookDampingBarrier);
 			FAGX_ObjectUtilities::SetIfEqual(Instance->ForceRange, ForceRange, ForceRangeBarrier);
 		}
 	}

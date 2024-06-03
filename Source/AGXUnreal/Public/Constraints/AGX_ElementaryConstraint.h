@@ -81,8 +81,12 @@ public:
 	void SetForceRange(const FDoubleInterval& InForceRange);
 	void SetForceRange(const FAGX_RealInterval& InForceRange);
 	void SetForceRange(double InMinForce, double InMaxForce);
+	void SetForceRangeMin(double InMinForce);
+	void SetForceRangeMax(double InMaxForce);
 
 	FDoubleInterval GetForceRange() const;
+	double GetForceRangeMin() const;
+	double GetForceRangeMax() const;
 
 	/**
 	 * Get the force or torque that was applied by this Elementary constraint in the most recent
@@ -173,15 +177,41 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRange(
-		UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, FAGX_RealInterval ForceRange)
+		UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double Min, double Max)
 	{
-		return Constraint.SetForceRange(ForceRange);
+		return Constraint.SetForceRange({Min, Max});
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
-	static FAGX_RealInterval GetForceRange(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint)
+	static void SetForceRangeMin(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double Min)
+	{
+		Constraint.SetForceRangeMin(Min);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetForceRangeMax(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double Max)
+	{
+		Constraint.SetForceRangeMin(Max);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void GetForceRange(
+		UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double& Min, double& Max)
 	{
 		FDoubleInterval ForceRange = Constraint.GetForceRange();
-		return FAGX_RealInterval(ForceRange.Min, ForceRange.Max);
+		Min = ForceRange.Min;
+		Max = ForceRange.Max;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static double GetForceRangeMin(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint)
+	{
+		return Constraint.GetForceRangeMin();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static double GetForceRangeMax(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint)
+	{
+		return Constraint.GetForceRangeMax();
 	}
 };
