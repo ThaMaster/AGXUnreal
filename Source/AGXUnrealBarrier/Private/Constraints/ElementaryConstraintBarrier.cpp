@@ -29,9 +29,25 @@ FElementaryConstraintBarrier::~FElementaryConstraintBarrier()
 	// types in the header file.
 }
 
+FElementaryConstraintBarrier& FElementaryConstraintBarrier::operator=(const FElementaryConstraintBarrier& Other)
+{
+	NativeRef->Native = Other.NativeRef->Native;
+	return *this;
+}
+
 bool FElementaryConstraintBarrier::HasNative() const
 {
 	return NativeRef.get() != nullptr && NativeRef->Native.get() != nullptr;
+}
+
+void FElementaryConstraintBarrier::SetNative(FElementaryConstraintRef* InNativeRef)
+{
+	if (InNativeRef == nullptr)
+	{
+		NativeRef->Native = nullptr;
+		return;
+	}
+	NativeRef->Native = InNativeRef->Native;
 }
 
 FElementaryConstraintRef* FElementaryConstraintBarrier::GetNative()
@@ -56,6 +72,12 @@ bool FElementaryConstraintBarrier::GetEnable() const
 	return NativeRef->Native->getEnable();
 }
 
+bool FElementaryConstraintBarrier::IsActive() const
+{
+	check(HasNative());
+	return NativeRef->Native->isActive();
+}
+
 void FElementaryConstraintBarrier::SetCompliance(double InCompliance, int32 InRow)
 {
 	check(HasNative());
@@ -74,6 +96,24 @@ double FElementaryConstraintBarrier::GetCompliance(int32 InRow) const
 	return NativeRef->Native->getCompliance(InRow);
 }
 
+void FElementaryConstraintBarrier::setElasticity(double Elasticity, int Row)
+{
+	check(HasNative());
+	NativeRef->Native->setElasticity(Elasticity, Row);
+}
+
+void FElementaryConstraintBarrier::setElasticity(double Elasticity)
+{
+	check(HasNative());
+	NativeRef->Native->setElasticity(Elasticity);
+}
+
+double FElementaryConstraintBarrier::getElasticity(int32 Row) const
+{
+	check(HasNative());
+	return NativeRef->Native->getElasticity(Row);
+}
+
 void FElementaryConstraintBarrier::SetSpookDamping(double InDamping, int32 InRow)
 {
 	check(HasNative());
@@ -86,7 +126,7 @@ void FElementaryConstraintBarrier::SetSpookDamping(double InDamping)
 	NativeRef->Native->setDamping(InDamping);
 }
 
-double FElementaryConstraintBarrier::GetDamping(int32 InRow) const
+double FElementaryConstraintBarrier::GetSpookDamping(int32 InRow) const
 {
 	check(HasNative());
 	return NativeRef->Native->getDamping(InRow);
@@ -104,11 +144,11 @@ void FElementaryConstraintBarrier::SetForceRange(FAGX_RealInterval InForceRange,
 	NativeRef->Native->setForceRange(ForceRangeAGX, InRow);
 }
 
-FAGX_RealInterval FElementaryConstraintBarrier::GetForceRange(int32 InRow) const
+FDoubleInterval FElementaryConstraintBarrier::GetForceRange(int32 InRow) const
 {
 	check(HasNative());
 	const agx::RangeReal ForceRangeAGX = NativeRef->Native->getForceRange(InRow);
-	const FAGX_RealInterval ForceRange = Convert(ForceRangeAGX);
+	const FDoubleInterval ForceRange = Convert(ForceRangeAGX);
 	return ForceRange;
 }
 
@@ -134,4 +174,12 @@ int32 FElementaryConstraintBarrier::GetNumRows() const
 {
 	check(HasNative());
 	return NativeRef->Native->getNumRows();
+}
+
+FString FElementaryConstraintBarrier::GetName() const
+{
+	check(HasNative());
+	agx::Name NameAGX = NativeRef->Native->getName();
+	FString Name = Convert(NameAGX);
+	return Name;
 }

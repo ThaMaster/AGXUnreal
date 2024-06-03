@@ -7,36 +7,11 @@
 
 FAGX_TwistRangeController::FAGX_TwistRangeController()
 {
+	bEnable = false;
 }
 
 FAGX_TwistRangeController::~FAGX_TwistRangeController()
 {
-}
-
-FAGX_TwistRangeController& FAGX_TwistRangeController::operator=(
-	const FAGX_TwistRangeController& Other)
-{
-	bEnable = Other.bEnable;
-	Range = Other.Range;
-	return *this;
-}
-
-void FAGX_TwistRangeController::SetEnable(bool bInEnable)
-{
-	if (HasNative())
-	{
-		NativeBarrier.SetEnable(bInEnable);
-	}
-	bEnable = bInEnable;
-}
-
-bool FAGX_TwistRangeController::GetEnable() const
-{
-	if (HasNative())
-	{
-		return NativeBarrier.GetEnable();
-	}
-	return bEnable;
 }
 
 bool FAGX_TwistRangeController::HasNative() const
@@ -62,6 +37,15 @@ const FTwistRangeControllerBarrier* FAGX_TwistRangeController::GetNative() const
 	return &NativeBarrier;
 }
 
+void FAGX_TwistRangeController::SetRange(FDoubleInterval InRange){
+	if (HasNative())
+	{
+		NativeBarrier.SetRange(InRange);
+	}
+	Range = FAGX_RealInterval(InRange);
+}
+
+
 void FAGX_TwistRangeController::SetRange(FAGX_RealInterval InRange)
 {
 	if (HasNative())
@@ -71,7 +55,7 @@ void FAGX_TwistRangeController::SetRange(FAGX_RealInterval InRange)
 	Range = InRange;
 }
 
-FAGX_RealInterval FAGX_TwistRangeController::GetRange() const
+FDoubleInterval FAGX_TwistRangeController::GetRange() const
 {
 	if (HasNative())
 	{
@@ -83,6 +67,7 @@ FAGX_RealInterval FAGX_TwistRangeController::GetRange() const
 void FAGX_TwistRangeController::InitializeBarrier(const FTwistRangeControllerBarrier& Barrier)
 {
 	check(!HasNative());
+	Super::InitializeBarrier(Barrier);
 	NativeBarrier = Barrier;
 	check(HasNative());
 }
@@ -91,14 +76,9 @@ void FAGX_TwistRangeController::CopyFrom(
 	const FTwistRangeControllerBarrier& Source,
 	TArray<FAGX_TwistRangeController*>& ArchetypeInstances, bool bForceOverwriteInstances)
 {
-	// TODO Figure out how this should be, if we decide to have a base class for Twist Range
-	// Controller. Otherwise remove this bit.
-#if 0
-	TArray<FAGX_ConstraintController*> BaseInstances(ArchetypeInstances);
+	TArray<FAGX_ElementaryConstraint*> BaseInstances(ArchetypeInstances);
 	Super::CopyFrom(Source, BaseInstances, bForceOverwriteInstances);
-#endif
 
-	const bool bEnableBarrier = Source.GetEnable();
 	const FAGX_RealInterval RangeBarrier = Source.GetRange();
 
 	for (auto Instance : ArchetypeInstances)
@@ -108,23 +88,18 @@ void FAGX_TwistRangeController::CopyFrom(
 			continue;
 		}
 
-		if (bForceOverwriteInstances || Instance->bEnable == bEnable)
-		{
-			Instance->bEnable = bEnableBarrier;
-		}
 		if (bForceOverwriteInstances || Instance->Range == Range)
 		{
 			Instance->Range = RangeBarrier;
 		}
 	}
 
-	bEnable = bEnableBarrier;
 	Range = RangeBarrier;
 }
 
 void FAGX_TwistRangeController::UpdateNativeProperties()
 {
 	check(HasNative());
-	NativeBarrier.SetEnable(bEnable);
+	Super::UpdateNativeProperties();
 	NativeBarrier.SetRange(Range);
 }
