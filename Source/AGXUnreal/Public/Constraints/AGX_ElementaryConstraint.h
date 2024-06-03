@@ -179,7 +179,7 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	static void SetForceRange(
 		UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double Min, double Max)
 	{
-		return Constraint.SetForceRange({Min, Max});
+		return Constraint.SetForceRange(Min, Max);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
@@ -265,7 +265,7 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	static void SetForceRange(
 		UPARAM(Ref) FAGX_TYPE& Constraint, double Min, double Max)
 	{
-		return Constraint.SetForceRange({Min, Max});
+		return Constraint.SetForceRange(Min, Max);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")

@@ -176,7 +176,7 @@ public:
 	static void SetForceRange(
 		UPARAM(Ref) FAGX_TwistRangeController& Constraint, double Min, double Max)
 	{
-		return Constraint.SetForceRange({Min, Max});
+		return Constraint.SetForceRange(Min, Max);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
