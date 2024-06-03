@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Constraints/ConstraintBarrier.h"
 #include "Constraints/BallJointBarrier.h"
-#include "Constraints/ControllerConstraintBarriers.h"
+#include "AGX_PropertyChangedDispatcher.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 

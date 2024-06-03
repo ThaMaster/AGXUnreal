@@ -3,6 +3,7 @@
 #pragma once
 
 // Unreal Engine includes.
+#include "AGX_LogCategory.h"
 #include "AGX_Real.h"
 
 // Unreal Engine includes.
