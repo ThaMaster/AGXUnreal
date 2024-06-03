@@ -1111,7 +1111,7 @@ FVector UAGX_RigidBodyComponent::GetAngularVelocityDamping() const
 	return AngularVelocityDamping;
 }
 
-void UAGX_RigidBodyComponent::SetMotionControl(TEnumAsByte<enum EAGX_MotionControl> InMotionControl)
+void UAGX_RigidBodyComponent::SetMotionControl(TEnumAsByte<EAGX_MotionControl> InMotionControl)
 {
 	if (HasNative())
 	{
@@ -1119,11 +1119,6 @@ void UAGX_RigidBodyComponent::SetMotionControl(TEnumAsByte<enum EAGX_MotionContr
 	}
 
 	MotionControl = InMotionControl;
-}
-
-void UAGX_RigidBodyComponent::SetMotionControl_BP(TEnumAsByte<EAGX_MotionControl> InMotionControl)
-{
-	SetMotionControl(InMotionControl);
 }
 
 TEnumAsByte<enum EAGX_MotionControl> UAGX_RigidBodyComponent::GetMotionControl() const
