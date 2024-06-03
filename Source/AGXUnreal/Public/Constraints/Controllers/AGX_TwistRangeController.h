@@ -92,6 +92,7 @@ class AGXUNREAL_API UAGX_TwistRangeController_FL : public UBlueprintFunctionLibr
 {
 	GENERATED_BODY()
 
+public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Twist Range Controller")
 	static void SetRange(UPARAM(Ref) FAGX_TwistRangeController& Controller, double Min, double Max)
 	{
@@ -111,12 +112,11 @@ class AGXUNREAL_API UAGX_TwistRangeController_FL : public UBlueprintFunctionLibr
 	}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Twist Range Controller")
-	static void GetRange(
-		const FAGX_TwistRangeController& ControllerRef, double& OutMin, double& OutMax)
+	static void GetRange(const FAGX_TwistRangeController& ControllerRef, double& Min, double& Max)
 	{
 		FDoubleInterval Range = ControllerRef.GetRange();
-		OutMin = Range.Min;
-		OutMax = Range.Max;
+		Min = Range.Min;
+		Max = Range.Max;
 	}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Twist Range Controller")
@@ -131,5 +131,84 @@ class AGXUNREAL_API UAGX_TwistRangeController_FL : public UBlueprintFunctionLibr
 		return ControllerRef.GetRangeMax();
 	}
 
-	// TODO Add the rest of the functions.
+	//
+	// Here follows the base-struct functions. See comment in AGX_ElementaryConstraint.h.
+	//
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetEnable(UPARAM(Ref) FAGX_TwistRangeController& Constraint, bool Enable)
+	{
+		return Constraint.SetEnable(Enable);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static bool GetEnable(UPARAM(Ref) FAGX_TwistRangeController& Constraint)
+	{
+		return Constraint.GetEnable();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetCompliance(UPARAM(Ref) FAGX_TwistRangeController& Constraint, double Compliance)
+	{
+		return Constraint.SetCompliance(Compliance);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static double GetCompliance(UPARAM(Ref) FAGX_TwistRangeController& Constraint)
+	{
+		return Constraint.GetCompliance();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetSpookDamping(
+		UPARAM(Ref) FAGX_TwistRangeController& Constraint, double SpookDamping)
+	{
+		return Constraint.SetSpookDamping(SpookDamping);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static double GetSpookDamping(UPARAM(Ref) FAGX_TwistRangeController& Constraint)
+	{
+		return Constraint.GetSpookDamping();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetForceRange(
+		UPARAM(Ref) FAGX_TwistRangeController& Constraint, double Min, double Max)
+	{
+		return Constraint.SetForceRange({Min, Max});
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetForceRangeMin(UPARAM(Ref) FAGX_TwistRangeController& Constraint, double Min)
+	{
+		Constraint.SetForceRangeMin(Min);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetForceRangeMax(UPARAM(Ref) FAGX_TwistRangeController& Constraint, double Max)
+	{
+		Constraint.SetForceRangeMin(Max);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void GetForceRange(
+		UPARAM(Ref) FAGX_TwistRangeController& Constraint, double& Min, double& Max)
+	{
+		FDoubleInterval ForceRange = Constraint.GetForceRange();
+		Min = ForceRange.Min;
+		Max = ForceRange.Max;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static double GetForceRangeMin(UPARAM(Ref) FAGX_TwistRangeController& Constraint)
+	{
+		return Constraint.GetForceRangeMin();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static double GetForceRangeMax(UPARAM(Ref) FAGX_TwistRangeController& Constraint)
+	{
+		return Constraint.GetForceRangeMax();
+	}
 };

@@ -215,3 +215,91 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 		return Constraint.GetForceRangeMax();
 	}
 };
+
+// We have substructs of FAGX_ElementaryConstraint which we also want to have the base struct
+// Blueprint Library functions. Unfortunately, we have not found a way to automate this yet. The
+// Blueprint Library declared above isn't callable on the subtypes and a #define containing
+// all the function declarations and definitions doesn't work because UHT doesn't expand macros. So
+// for now we're stuck with copy/paste. The following code block should be copy/pasted in each
+// Elementary Constraint sublass' Blueprint Library class. Search/replace FAGX_TYPE and substitute
+// the actual Elementary Constraint subtype.
+/*
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetEnable(UPARAM(Ref) FAGX_TYPE& Constraint, bool Enable)
+	{
+		return Constraint.SetEnable(Enable);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static bool GetEnable(UPARAM(Ref) FAGX_TYPE& Constraint)
+	{
+		return Constraint.GetEnable();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetCompliance(UPARAM(Ref) FAGX_TYPE& Constraint, double Compliance)
+	{
+		return Constraint.SetCompliance(Compliance);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static double GetCompliance(UPARAM(Ref) FAGX_TYPE& Constraint)
+	{
+		return Constraint.GetCompliance();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetSpookDamping(
+		UPARAM(Ref) FAGX_TYPE& Constraint, double SpookDamping)
+	{
+		return Constraint.SetSpookDamping(SpookDamping);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static double GetSpookDamping(UPARAM(Ref) FAGX_TYPE& Constraint)
+	{
+		return Constraint.GetSpookDamping();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetForceRange(
+		UPARAM(Ref) FAGX_TYPE& Constraint, double Min, double Max)
+	{
+		return Constraint.SetForceRange({Min, Max});
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetForceRangeMin(UPARAM(Ref) FAGX_TYPE& Constraint, double Min)
+	{
+		Constraint.SetForceRangeMin(Min);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void SetForceRangeMax(UPARAM(Ref) FAGX_TYPE& Constraint, double Max)
+	{
+		Constraint.SetForceRangeMin(Max);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static void GetForceRange(
+		UPARAM(Ref) FAGX_TYPE& Constraint, double& Min, double& Max)
+	{
+		FDoubleInterval ForceRange = Constraint.GetForceRange();
+		Min = ForceRange.Min;
+		Max = ForceRange.Max;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static double GetForceRangeMin(
+		UPARAM(Ref) FAGX_TYPE& Constraint)
+	{
+		return Constraint.GetForceRangeMin();
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
+	static double GetForceRangeMax(
+		UPARAM(Ref) FAGX_TYPE& Constraint)
+	{
+		return Constraint.GetForceRangeMax();
+	}
+*/
