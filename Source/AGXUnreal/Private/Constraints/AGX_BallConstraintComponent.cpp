@@ -59,6 +59,7 @@ void UAGX_BallConstraintComponent::SetNativeAddress(uint64 NativeAddress)
 	AGX_BallConstraintComponent_helpers::InitializeControllerBarriers(*this);
 }
 
+#if WITH_EDITOR
 void UAGX_BallConstraintComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
@@ -87,6 +88,8 @@ void UAGX_BallConstraintComponent::PostEditChangeChainProperty(FPropertyChangedC
 	// apply all our changes before that so that they are carried over to the copy.
 	Super::PostEditChangeChainProperty(Event);
 }
+
+#endif
 
 void UAGX_BallConstraintComponent::CreateNativeImpl()
 {
