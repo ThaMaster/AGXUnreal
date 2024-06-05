@@ -223,7 +223,32 @@ void FAGX_ConstraintUtilities::StoreTwistRangeController(
 	const FBallJointBarrier& Barrier, FAGX_TwistRangeController& Controller,
 	TArray<FAGX_TwistRangeController*> Instances, bool bForceOverwriteInstances)
 {
-	Controller.CopyFrom(Barrier.GetTwistRangeController(), Instances, bForceOverwriteInstances);
+	// Not all Ball Constraints on the AGX Dynamics side have a Twist Range Controller. That feature
+	// was added with AGX Dynamics 2.37 so any AGX Dynamics archive with a Ball Constraint created
+	// before that version doesn't have one. Means we get a nullptr from
+	// agx::BallJoint::getTwistRangeController. We cannot read from nullptr so the Twist Range
+	// Controller must get its state from somewhere else. The options are:
+	// - Leave as-is, simply return here.
+	// - Reset to the defaults.
+	//
+	// Reset to defaults is best since that doesn't leak state from one AGX Dynamics archive into
+	// the Blueprint for another, however resetting to the default is non-trivial in the case where
+	// the receiving Twist Range Controller already has a Native. We can't simply assign a default
+	// construct FAGX_TwistRangeController since that would break the Barrier holding the Native.
+	// For now we handle the two cases separately. If there is a Native in the destination
+	// Controller then we return immediately. If there is not then we reset back to the default
+	// state by assigning a default-constructed, i.e. Native-less, FAGX_TwistRangeController.
+	const FTwistRangeControllerBarrier& Source = Barrier.GetTwistRangeController();
+	if (!Source.HasNative())
+	{
+		if (!Controller.HasNative())
+		{
+			Controller = FAGX_TwistRangeController();
+		}
+		return;
+	}
+
+	Controller.CopyFrom(Source, Instances, bForceOverwriteInstances);
 }
 
 #if WITH_EDITOR
