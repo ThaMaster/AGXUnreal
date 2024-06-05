@@ -1664,7 +1664,7 @@ class FModifyCylindricalConstraintTest final : public FSynchronizeModelTest
 public:
 	FModifyCylindricalConstraintTest()
 		: FSynchronizeModelTest(
-			  TEXT("FSynchronizeModelTest"),
+			  TEXT("ModifyCylindricalConstraint"),
 			  TEXT("AGXUnreal.Editor.AGX_SynchronizeModelTest.ModifyCylindricalConstraint"),
 			  TEXT("cylindrical_constraint__initial.agx"),
 			  TEXT("cylindrical_constraint__updated.agx"))
@@ -1837,7 +1837,7 @@ namespace
 }
 
 //
-// Ball Constraint test starts here.
+// Ball Constraint modified test starts here.
 //
 
 class FModifyBallConstraintTest final : public FSynchronizeModelTest
@@ -1845,7 +1845,7 @@ class FModifyBallConstraintTest final : public FSynchronizeModelTest
 public:
 	FModifyBallConstraintTest()
 		: FSynchronizeModelTest(
-			  TEXT("FSynchronizeModelTest"),
+			  TEXT("ModifyBallConstraint"),
 			  TEXT("AGXUnreal.Editor.AGX_SynchronizeModelTest.ModifyBallConstraint"),
 			  TEXT("ball_constraint__initial.agx"), TEXT("ball_constraint__updated.agx"))
 	{
@@ -1947,7 +1947,7 @@ public:
 		// Make sure we got the template Components we expect.
 		// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 1 Ball Constraint.
 		if (!TestEqual(
-				TEXT("Number of imported components before synchronize"),
+				TEXT("Number of imported components after synchronize"),
 				UpdatedTemplateComponents.Num(), 4))
 		{
 			return false;
@@ -1957,7 +1957,7 @@ public:
 		UAGX_BallConstraintComponent* BallTemplate =
 			GetTemplateComponentByName<UAGX_BallConstraintComponent>(
 				UpdatedTemplateComponents, TEXT("Ball"));
-		if (!TestNotNull(TEXT("Template Ball before synchronize"), BallTemplate))
+		if (!TestNotNull(TEXT("Template Ball after synchronize"), BallTemplate))
 		{
 			return false;
 		}
@@ -1970,7 +1970,7 @@ public:
 		UAGX_BallConstraintComponent* BallInstance =
 			FAGX_ObjectUtilities::GetComponentByName<UAGX_BallConstraintComponent>(
 				*UpdatedBlueprintInstance, TEXT("Ball"));
-		if (!TestNotNull(TEXT("Ball Constraint instance before synchronize"), BallInstance))
+		if (!TestNotNull(TEXT("Ball Constraint instance after synchronize"), BallInstance))
 		{
 			return false;
 		}
@@ -1992,4 +1992,96 @@ public:
 namespace
 {
 	FModifyBallConstraintTest ModifyBallConstraintTest;
+}
+
+
+//
+// Ball Constraint removed test starts here.
+//
+
+class FRemoveBallConstraintTest final : public FSynchronizeModelTest
+{
+public:
+	FRemoveBallConstraintTest()
+		: FSynchronizeModelTest(
+			  TEXT("RemoveBallConstraint"),
+			  TEXT("AGXUnreal.Editor.AGX_SynchronizeModelTest.RemoveBallConstraint"),
+			  TEXT("ball_constraint__initial.agx"), TEXT("ball_constraint__removed.agx"))
+	{
+	}
+
+	virtual bool PostImport() override
+	{
+		// Make sure we got the template Components we expect.
+		// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 1 Ball Constraint.
+		if (!TestEqual(
+				TEXT("Number of imported components before synchronize"),
+				InitialTemplateComponents.Num(), 4))
+		{
+			return false;
+		}
+
+		// Check the Blueprint.
+		UAGX_BallConstraintComponent* BallTemplate =
+			GetTemplateComponentByName<UAGX_BallConstraintComponent>(
+				InitialTemplateComponents, TEXT("Ball"));
+		if (!TestNotNull(TEXT("Template Ball before synchronize"), BallTemplate))
+		{
+			return false;
+		}
+
+		// Check the Blueprint instance.
+		UAGX_BallConstraintComponent* BallInstance =
+			FAGX_ObjectUtilities::GetComponentByName<UAGX_BallConstraintComponent>(
+				*InitialBlueprintInstance, TEXT("Ball"));
+		if (!TestNotNull(TEXT("Ball Constraint instance before synchronize"), BallInstance))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	virtual bool PostSynchronize() override
+	{
+		// Make sure we got the template Components we expect.
+		// 1 Default Scene Root, 1 Model Source, 1 Rigid Body.
+		if (!TestEqual(
+				TEXT("Number of imported components after synchronize"),
+				UpdatedTemplateComponents.Num(), 3))
+		{
+			return false;
+		}
+
+		// Check the Blueprint.
+		UAGX_BallConstraintComponent* BallTemplate =
+			GetTemplateComponentByName<UAGX_BallConstraintComponent>(
+				UpdatedTemplateComponents, TEXT("Ball"));
+		if (!TestNull(TEXT("Template Ball after synchronize"), BallTemplate))
+		{
+			return false;
+		}
+
+		// Check the Blueprint instance.
+		UAGX_BallConstraintComponent* BallInstance =
+			FAGX_ObjectUtilities::GetComponentByName<UAGX_BallConstraintComponent>(
+				*UpdatedBlueprintInstance, TEXT("Ball"));
+		if (!TestNull(TEXT("Ball Constraint instance after synchronize"), BallInstance))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	virtual bool Cleanup() override
+	{
+		// Nothing to do.
+		return true;
+	}
+};
+
+namespace
+{
+	FRemoveBallConstraintTest RemoveBallConstraintTest;
 }
