@@ -68,6 +68,7 @@ void FAGX_ConstraintUtilities::CopyControllersFrom(
 	TArray<FAGX_ConstraintRangeController*> RCInstances2;
 	TArray<FAGX_ConstraintTargetSpeedController*> TSCInstances1;
 	TArray<FAGX_ConstraintTargetSpeedController*> TSCInstances2;
+	TArray<FAGX_ConstraintScrewController*> SCInstances;
 
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
@@ -83,6 +84,7 @@ void FAGX_ConstraintUtilities::CopyControllersFrom(
 			RCInstances2.Add(&Instance->RangeController2);
 			TSCInstances1.Add(&Instance->TargetSpeedController1);
 			TSCInstances2.Add(&Instance->TargetSpeedController2);
+			SCInstances.Add(&Instance->ScrewController);
 		}
 	}
 
@@ -111,6 +113,8 @@ void FAGX_ConstraintUtilities::CopyControllersFrom(
 		Barrier, Component.TargetSpeedController1, First, TSCInstances1, ForceOverwriteInstances);
 	StoreTargetSpeedController(
 		Barrier, Component.TargetSpeedController2, Second, TSCInstances2, ForceOverwriteInstances);
+
+	StoreScrewController(Barrier, Component.ScrewController, SCInstances, ForceOverwriteInstances);
 }
 
 void FAGX_ConstraintUtilities::StoreElectricMotorController(
@@ -187,6 +191,13 @@ void FAGX_ConstraintUtilities::StoreTargetSpeedController(
 	bool ForceOverwriteInstances)
 {
 	Controller.CopyFrom(*Barrier.GetTargetSpeedController(Dof), Instances, ForceOverwriteInstances);
+}
+
+void FAGX_ConstraintUtilities::StoreScrewController(
+	const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintScrewController& Controller,
+	TArray<FAGX_ConstraintScrewController*> Instances, bool bForceOverwriteInstances)
+{
+	Controller.CopyFrom(*Barrier.GetScrewController(), Instances, bForceOverwriteInstances);
 }
 
 #if WITH_EDITOR
