@@ -1405,6 +1405,7 @@ UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallCons
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
 	UpdateConstraintComponentNoControllers(
 		*Constraint, Barrier, *this, ProcessedThresholds, Unused, false);
+	FAGX_ConstraintUtilities::CopyControllersFrom(*Constraint, Barrier, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1474,6 +1475,21 @@ void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
 	{
 		UpdateConstraintComponentNoControllers(
 			Component, Barrier, *this, ProcessedThresholds, MSTsOnDisk, ForceOverwriteInstances);
+	}
+}
+
+void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
+	const FBallJointBarrier& Barrier, UAGX_ConstraintComponent& Component,
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool bForceOverwriteInstances)
+{
+	UpdateConstraintComponentNoControllers(
+		Component, Barrier, *this, ProcessedThresholds, MSTsOnDisk, bForceOverwriteInstances);
+	UAGX_BallConstraintComponent* BallConstraint = Cast<UAGX_BallConstraintComponent>(&Component);
+	check(BallConstraint != nullptr);
+	if (BallConstraint != nullptr)
+	{
+		FAGX_ConstraintUtilities::CopyControllersFrom(
+			*BallConstraint, Barrier, bForceOverwriteInstances);
 	}
 }
 

@@ -17,7 +17,7 @@ public:
 	FBallJointBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FBallJointBarrier();
 
-	FTwistRangeControllerBarrier GetTwistRangeController();
+	FTwistRangeControllerBarrier GetTwistRangeController() const;
 
 private:
 	virtual void AllocateNativeImpl(

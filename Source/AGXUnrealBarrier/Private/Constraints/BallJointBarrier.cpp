@@ -28,7 +28,7 @@ FBallJointBarrier::~FBallJointBarrier()
 {
 }
 
-FTwistRangeControllerBarrier FBallJointBarrier::GetTwistRangeController()
+FTwistRangeControllerBarrier FBallJointBarrier::GetTwistRangeController() const
 {
 	check(HasNative());
 	agx::TwistRangeController* Controller =

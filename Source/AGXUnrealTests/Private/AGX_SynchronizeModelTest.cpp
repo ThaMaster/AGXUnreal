@@ -1838,3 +1838,162 @@ namespace
 	FModifyCylindricalConstraintTest ModifyCylindricalConstraintTest;
 }
 
+//
+// Ball Constraint test starts here.
+//
+
+class FModifyBallConstraintTest final : public FSynchronizeModelTest
+{
+public:
+	FModifyBallConstraintTest()
+		: FSynchronizeModelTest(
+			  TEXT("FSynchronizeModelTest"),
+			  TEXT("AGXUnreal.Editor.AGX_SynchronizeModelTest.ModifyBallConstraint"),
+			  TEXT("ball_constraint__initial.agx"), TEXT("ball_constraint__updated.agx"))
+	{
+	}
+
+	FString AssetPath; // TODO Is this needed?
+
+	bool CheckBallConstraint(
+		UAGX_BallConstraintComponent& Ball, double Scale, EAGX_SolveType SolveType, bool bEnable)
+	{
+		bool AllCorrect = true;
+		AllCorrect &= TestEqual(TEXT("Template Ball enabled"), Ball.bEnable, bEnable);
+		AllCorrect &= TestEqual(TEXT("Template Ball solve type"), Ball.SolveType, SolveType);
+		AllCorrect &= TestEqual(
+			TEXT("Template Ball compliance trans 1"), Ball.Compliance.Translational_1, Scale * 1.0);
+		AllCorrect &= TestEqual(
+			TEXT("Template Ball compliance trans 2"), Ball.Compliance.Translational_2, Scale * 1.1);
+		AllCorrect &= TestEqual(
+			TEXT("Template Ball compliance trans 3"), Ball.Compliance.Translational_3, Scale * 1.2);
+		AllCorrect &= TestEqual(
+			TEXT("Template Ball Spook damping trans 1"), Ball.SpookDamping.Translational_1,
+			Scale * 2.0);
+		AllCorrect &= TestEqual(
+			TEXT("Template Ball Spook damping trans 2"), Ball.SpookDamping.Translational_2,
+			Scale * 2.1);
+		AllCorrect &= TestEqual(
+			TEXT("Template Ball Spook damping trans 3"), Ball.SpookDamping.Translational_3,
+			Scale * 2.2);
+		AllCorrect &= AgxAutomationCommon::TestEqual(
+			*this, TEXT("Template Ball force range 1"), Ball.ForceRange.Translational_1,
+			FAGX_RealInterval(Scale * 3.0, Scale * 4.0));
+		AllCorrect &= AgxAutomationCommon::TestEqual(
+			*this, TEXT("Template Ball force range 2"), Ball.ForceRange.Translational_2,
+			FAGX_RealInterval(Scale * 3.1, Scale * 4.1));
+		AllCorrect &= AgxAutomationCommon::TestEqual(
+			*this, TEXT("Template Ball force range 3"), Ball.ForceRange.Translational_3,
+			FAGX_RealInterval(Scale * 3.2, Scale * 4.2));
+		// Ball Constraint does not have rotational compliance, damping, or force range since all
+		// rotational degrees of freedom are free.
+		AllCorrect &= TestEqual(TEXT("Template Ball compute forces"), Ball.bComputeForces, bEnable);
+		AllCorrect &= TestEqual(
+			TEXT("Template Ball twist range enabled"), Ball.TwistRangeController.bEnable, bEnable);
+		AllCorrect &= TestEqual(
+			TEXT("Template Ball twist range compliance"), Ball.TwistRangeController.Compliance,
+			Scale * 5.0);
+		AllCorrect &= TestEqual(
+			TEXT("Template Ball twist range damping"), Ball.TwistRangeController.SpookDamping,
+			Scale * 6.0);
+		AllCorrect &= AgxAutomationCommon::TestEqual(
+			*this, TEXT("Template Ball twist range force range"),
+			Ball.TwistRangeController.ForceRange, FAGX_RealInterval(Scale * 7.0, Scale * 8.0));
+		AllCorrect &= AgxAutomationCommon::TestEqual(
+			*this, TEXT("Template Ball twist range range"), Ball.TwistRangeController.Range,
+			FAGX_RealInterval(FromRad(Scale * -0.1), FromRad(Scale * 0.1)));
+
+		return AllCorrect;
+	}
+
+	virtual bool PostImport() override
+	{
+		// Make sure we got the template Components we expect.
+		// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 1 Ball Constraint.
+		if (!TestEqual(
+				TEXT("Number of imported components before synchronize"),
+				InitialTemplateComponents.Num(), 4))
+		{
+			return false;
+		}
+
+		// Check the Blueprint.
+		UAGX_BallConstraintComponent* BallTemplate =
+			GetTemplateComponentByName<UAGX_BallConstraintComponent>(
+				InitialTemplateComponents, TEXT("Ball"));
+		if (!TestNotNull(TEXT("Template Ball before synchronize"), BallTemplate))
+		{
+			return false;
+		}
+		if (!CheckBallConstraint(*BallTemplate, 1.0, EAGX_SolveType::StDirectAndIterative, true))
+		{
+			return false;
+		}
+
+		// Check the Blueprint instance.
+		UAGX_BallConstraintComponent* BallInstance =
+			FAGX_ObjectUtilities::GetComponentByName<UAGX_BallConstraintComponent>(
+				*InitialBlueprintInstance, TEXT("Ball"));
+		if (!TestNotNull(TEXT("Ball Constraint instance before synchronize"), BallInstance))
+		{
+			return false;
+		}
+		if (!CheckBallConstraint(*BallInstance, 1.0, EAGX_SolveType::StDirectAndIterative, true))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	virtual bool PostSynchronize() override
+	{
+		// Make sure we got the template Components we expect.
+		// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 1 Ball Constraint.
+		if (!TestEqual(
+				TEXT("Number of imported components before synchronize"),
+				UpdatedTemplateComponents.Num(), 4))
+		{
+			return false;
+		}
+
+		// Check the Blueprint.
+		UAGX_BallConstraintComponent* BallTemplate =
+			GetTemplateComponentByName<UAGX_BallConstraintComponent>(
+				UpdatedTemplateComponents, TEXT("Ball"));
+		if (!TestNotNull(TEXT("Template Ball before synchronize"), BallTemplate))
+		{
+			return false;
+		}
+		if (!CheckBallConstraint(*BallTemplate, 10.0, EAGX_SolveType::StDirect, false))
+		{
+			return false;
+		}
+
+		// Check the Blueprint instance.
+		UAGX_BallConstraintComponent* BallInstance =
+			FAGX_ObjectUtilities::GetComponentByName<UAGX_BallConstraintComponent>(
+				*UpdatedBlueprintInstance, TEXT("Ball"));
+		if (!TestNotNull(TEXT("Ball Constraint instance before synchronize"), BallInstance))
+		{
+			return false;
+		}
+		if (!CheckBallConstraint(*BallInstance, 10.0, EAGX_SolveType::StDirect, false))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	virtual bool Cleanup() override
+	{
+		// Nothing to do.
+		return true;
+	}
+};
+
+namespace
+{
+	FModifyBallConstraintTest ModifyBallConstraintTest;
+}

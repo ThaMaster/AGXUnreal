@@ -10,6 +10,7 @@
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
+#include "Constraints/BallJointBarrier.h"
 #include "Constraints/Constraint1DOFBarrier.h"
 #include "Constraints/Constraint2DOFBarrier.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
@@ -119,6 +120,22 @@ void FAGX_ConstraintUtilities::CopyControllersFrom(
 	StoreScrewController(Barrier, Component.ScrewController, SCInstances, ForceOverwriteInstances);
 }
 
+void FAGX_ConstraintUtilities::CopyControllersFrom(
+	UAGX_BallConstraintComponent& Component, const FBallJointBarrier& Barrier,
+	bool bForceOverwriteProperties)
+{
+	TArray<FAGX_TwistRangeController*> TRCInstances;
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		{
+			TRCInstances.Add(&Instance->TwistRangeController);
+		}
+	}
+	StoreTwistRangeController(
+		Barrier, Component.TwistRangeController, TRCInstances, bForceOverwriteProperties);
+}
+
 void FAGX_ConstraintUtilities::StoreElectricMotorController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller,
 	TArray<FAGX_ConstraintElectricMotorController*>& Instances, bool ForceOverwriteInstances)
@@ -200,6 +217,13 @@ void FAGX_ConstraintUtilities::StoreScrewController(
 	TArray<FAGX_ConstraintScrewController*> Instances, bool bForceOverwriteInstances)
 {
 	Controller.CopyFrom(*Barrier.GetScrewController(), Instances, bForceOverwriteInstances);
+}
+
+void FAGX_ConstraintUtilities::StoreTwistRangeController(
+	const FBallJointBarrier& Barrier, FAGX_TwistRangeController& Controller,
+	TArray<FAGX_TwistRangeController*> Instances, bool bForceOverwriteInstances)
+{
+	Controller.CopyFrom(Barrier.GetTwistRangeController(), Instances, bForceOverwriteInstances);
 }
 
 #if WITH_EDITOR
