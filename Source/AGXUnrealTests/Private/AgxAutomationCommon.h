@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_RealInterval.h"
+
 // Unreal Engine includes.
 #include "Engine/EngineTypes.h"
 #include "Components/ActorComponent.h"
@@ -44,31 +47,35 @@ namespace AgxAutomationCommon
 	/// for infinity.
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, double Actual, double Expected,
-		double Tolerance = KINDA_SMALL_NUMBER);
+		double Tolerance = UE_KINDA_SMALL_NUMBER);
 
 	/// @todo Remove this TestEqual implementation for FVector4 once it's included in-engine.
 	/// @see Misc/AutomationTest.h
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, const FVector4& Actual,
-		const FVector4& Expected, float Tolerance = KINDA_SMALL_NUMBER);
+		const FVector4& Expected, float Tolerance = UE_KINDA_SMALL_NUMBER);
 
 	/// @todo Remove this TestEqual implementation for FQuat once it's included in-engine.
 	/// @see Misc/AutomationTest.h
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, const FQuat& Actual, const FQuat& Expected,
-		float Tolerance = KINDA_SMALL_NUMBER);
+		float Tolerance = UE_KINDA_SMALL_NUMBER);
 
 	/// @todo Remove this TestEqual implementation for FRotator once it's included in-engine.
 	/// @see Misc/AutomationTest.h
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, const FRotator& Actual,
-		const FRotator& Expected, float Tolerance = KINDA_SMALL_NUMBER);
+		const FRotator& Expected, float Tolerance = UE_KINDA_SMALL_NUMBER);
 
 	/// @todo Remove this TestEqual implementation for FLinearColor once it's included in-engine.
 	/// @see Misc/AutomaitonTest.h
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, const FLinearColor& Actual,
-		const FLinearColor& Expected, float Tolerance = KINDA_SMALL_NUMBER);
+		const FLinearColor& Expected, float Tolerance = UE_KINDA_SMALL_NUMBER);
+
+	bool TestEqual(
+		FAutomationTestBase& Test, const TCHAR* What, const FAGX_RealInterval& Actual,
+		const FAGX_RealInterval& Expected, double Tolerance = UE_KINDA_SMALL_NUMBER);
 
 	void TestLess(
 		FAutomationTestBase& Test, const TCHAR* SmallerName, double Smaller,

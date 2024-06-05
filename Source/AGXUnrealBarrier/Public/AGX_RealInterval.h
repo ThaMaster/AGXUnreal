@@ -7,6 +7,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Containers/UnrealString.h"
 #include "Math/UnrealMathUtility.h"
 #include "Math/Interval.h"
 
@@ -109,6 +110,16 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 	FDoubleInterval ToDouble() const
 	{
 		return FDoubleInterval(Min, Max);
+	}
+
+	FString ToString() const
+	{
+		return FString::Printf(TEXT("(Min=%g Max=%g"), Min, Max);
+	}
+
+	bool Equals(const FAGX_RealInterval& Other, double Tolerance = UE_KINDA_SMALL_NUMBER) const
+	{
+		return FMath::Abs(Min - Other.Min) <= Tolerance && FMath::Abs(Max - Other.Max) <= Tolerance;
 	}
 
 	/// Called by Unreal Engine when de-serializing an FAGX_Real but some other type was found in

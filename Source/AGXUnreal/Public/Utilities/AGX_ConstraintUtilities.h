@@ -101,6 +101,10 @@ public:
 		EAGX_Constraint2DOFFreeDOF Dof, TArray<FAGX_ConstraintTargetSpeedController*>& Instances,
 		bool ForceOverwriteInstances);
 
+	static void StoreScrewController(
+		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintScrewController& Controller,
+		TArray<FAGX_ConstraintScrewController*> Instances, bool bForceOverwriteInstances);
+
 #if WITH_EDITOR
 	template <typename UConstraintClass, typename FControllerClass>
 	static void AddControllerPropertyCallbacks(
