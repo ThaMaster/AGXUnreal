@@ -1671,8 +1671,6 @@ public:
 	{
 	}
 
-	FString AssetPath; // TODO Is this needed?
-
 	bool CheckCylindricalConstraint(
 		UAGX_CylindricalConstraintComponent& Cylindrical, double Scale, EAGX_SolveType SolveType,
 		bool bEnable)
@@ -1852,8 +1850,6 @@ public:
 			  TEXT("ball_constraint__initial.agx"), TEXT("ball_constraint__updated.agx"))
 	{
 	}
-
-	FString AssetPath; // TODO Is this needed?
 
 	bool CheckBallConstraint(
 		UAGX_BallConstraintComponent& Ball, double Scale, EAGX_SolveType SolveType, bool bEnable)
