@@ -350,7 +350,7 @@ public:
 	 * Called by the Unreal Engine test framework. Sets up a latent call to the parameter-less
 	 * RunTest.
 	 */
-	virtual bool RunTest(const FString& Parameters) override
+	virtual bool RunTest(const FString&) override
 	{
 		World = FAGX_EditorUtilities::GetCurrentWorld();
 		if (!TestNotNull(TEXT("World"), World))
@@ -1994,7 +1994,6 @@ namespace
 	FModifyBallConstraintTest ModifyBallConstraintTest;
 }
 
-
 //
 // Ball Constraint removed test starts here.
 //
@@ -2084,4 +2083,105 @@ public:
 namespace
 {
 	FRemoveBallConstraintTest RemoveBallConstraintTest;
+}
+
+//
+// Twist Range Controller-less Ball Constraint test starts here.
+//
+// Some AGX Dynamics archives, those created before 2.37, have Ball Constraints without a Twist
+// Range Controller. This means that we will get an empty Barrier object. It is important
+// that we do not try to use such a Barrier during import or model synchronization. Once the Ball
+// Constraint Component has been created there will always be a Twist Range Controller, it is only
+// missing for Barriers wrapping objects in the temporary agxSDK::Simulation that exists during
+// import.
+//
+
+class FBallConstraintNoTwistRangeTest final : public FSynchronizeModelTest
+{
+public:
+	FBallConstraintNoTwistRangeTest()
+		: FSynchronizeModelTest(
+			  TEXT("BallConstraintNoTwistRangeTest"),
+			  TEXT("AGXUnreal.Editor.AGX_SynchronizeModelTest.BallConstraintNoTwistRangeTest"),
+			  // Same file for both since we want to test the no-twist-controller code path for
+			  // both import and synchronize. No need for a second archive since there is nothing
+			  // to change for the synchronization.
+			  TEXT("ball_constraint__no_twist_range_agx-2_36_1_5.agx"),
+			  TEXT("ball_constraint__no_twist_range_agx-2_36_1_5.agx"))
+	{
+		// Make sure the AGX Dynamics archive hasn't accidentally been re-generated, possibly with
+		// a new AGX Dynamics version that has Twist Range Controller.
+		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
+			FPaths::Combine(FString("SynchronizeModel"), InitialModelFileName));
+		AgxAutomationCommon::CheckFileMD5Checksum(
+			ArchiveFilePath, TEXT("4d72dcda03b7e204da05a9b479208317"), *this);
+	}
+
+	bool CheckTwistRangeController(UAGX_BallConstraintComponent& Ball)
+	{
+		// The Twist Range Controller in the Component should be set to its default configuration
+		// when the Barrier doesn't have a native AGX Dynamics object to read from.
+		bool AllCorrect = true;
+		AllCorrect &= TestEqual(
+			TEXT("Template Ball twist range enabled"), Ball.TwistRangeController.bEnable, false);
+		AllCorrect &= TestEqual(
+			TEXT("Template Ball twist range compliance"), Ball.TwistRangeController.Compliance,
+			ConstraintConstants::DefaultCompliance());
+		AllCorrect &= TestEqual(
+			TEXT("Template Ball twist range damping"), Ball.TwistRangeController.SpookDamping,
+			ConstraintConstants::DefaultSpookDamping());
+		AllCorrect &= AgxAutomationCommon::TestEqual(
+			*this, TEXT("Template Ball twist range force range"),
+			Ball.TwistRangeController.ForceRange, ConstraintConstants::DefaultForceRange());
+		AllCorrect &= AgxAutomationCommon::TestEqual(
+			*this, TEXT("Template Ball twist range range"), Ball.TwistRangeController.Range,
+			FAGX_RealInterval(0.0, 0.0));
+		return AllCorrect;
+	}
+
+	bool DoChecks(const TCHAR* StageName, TArray<UActorComponent*>& Components)
+	{
+		FStringFormatNamedArguments FormatArgs;
+		FormatArgs.Add(TEXT("StageName"), StageName);
+
+		// Make sure we got the template Components we expect.
+		// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 1 Ball Constraint.
+		if (!TestEqual(
+				*FString::Format(
+					TEXT("Number of imported components at stage {StageName}"), FormatArgs),
+				Components.Num(), 4))
+		{
+			return false;
+		}
+
+		// Check the Twist Range Controller.
+		UAGX_BallConstraintComponent* Ball =
+			GetTemplateComponentByName<UAGX_BallConstraintComponent>(Components, TEXT("Ball"));
+		if (!TestNotNull(
+				*FString::Format(TEXT("Template Ball at stage {StageName}"), FormatArgs), Ball))
+		{
+			return false;
+		}
+		return CheckTwistRangeController(*Ball);
+	}
+
+	virtual bool PostImport() override
+	{
+		return DoChecks(TEXT("PostImport"), InitialTemplateComponents);
+	}
+
+	virtual bool PostSynchronize() override
+	{
+		return DoChecks(TEXT("PostSynchronize"), UpdatedTemplateComponents);
+	}
+
+	virtual bool Cleanup() override
+	{
+		return true;
+	}
+};
+
+namespace
+{
+	FBallConstraintNoTwistRangeTest BallConstraintNoTwistRangeTest;
 }

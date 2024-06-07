@@ -119,6 +119,11 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 
 	bool Equals(const FAGX_RealInterval& Other, double Tolerance = UE_KINDA_SMALL_NUMBER) const
 	{
+		// Handle infinity, which the regular path fail on since infinity - infinity is NaN.
+		if (Min == Other.Min && Max == Other.Max)
+		{
+			return true;
+		}
 		return FMath::Abs(Min - Other.Min) <= Tolerance && FMath::Abs(Max - Other.Max) <= Tolerance;
 	}
 
