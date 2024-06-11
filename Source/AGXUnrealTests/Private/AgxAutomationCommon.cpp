@@ -156,7 +156,7 @@ bool AgxAutomationCommon::TestEqual(
 	if (!Expected.Equals(Actual, Tolerance))
 	{
 		Test.AddError(FString::Printf(
-			TEXT("Expected '%s' to be '%s' but it was '%s, with tolerance %f."), What,
+			TEXT("Expected '%s' to be '%s' but it was '%s', with tolerance %f."), What,
 			*Expected.ToString(), *Actual.ToString(), Tolerance));
 		return false;
 	}

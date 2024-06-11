@@ -8,8 +8,8 @@
  * that the contents is as expected, synchronizes with the second .agx file, and again checks that
  * the contents is as expected.
  *
- * A base class,  FSynchronizeModelTest, that does the import and synchronization interspersed with
- * calls to virtual functions implemented by derived classes where the actual testing happens.
+ * A base class, FSynchronizeModelTest, does import and synchronization interspersed with calls
+ * to virtual functions implemented by derived classes where the actual testing happens.
  */
 
 // AGX Dynamics for Unreal includes.
@@ -323,7 +323,7 @@ DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 
 /**
  * Base class for tests that load a model and then synchronizes with an updated version of the
- * same model. Add model-specific test code in the pure-virtual member functions.
+ * same model. Add model-specific test code by overriding the pure-virtual member functions.
  */
 class FSynchronizeModelTest : public AgxAutomationCommon::FAgxAutomationTest
 {
@@ -368,7 +368,7 @@ public:
 
 	/**
 	 * Main test flow implemented here. Handles model loading and synchronization, and calls the
-	 * pure-virtual member functions at appropriate times.
+	 * pure-virtual member functions at the appropriate times.
 	 */
 	void RunTest()
 	{
@@ -1676,63 +1676,50 @@ public:
 		bool bEnable)
 	{
 		bool AllCorrect = true;
-		AllCorrect &= TestEqual(TEXT("Template Cylindrical enabled"), Cylindrical.bEnable, bEnable);
+		AllCorrect &= TestEqual(TEXT("Enabled"), Cylindrical.bEnable, bEnable);
+		AllCorrect &= TestEqual(TEXT("Solve type"), Cylindrical.SolveType, SolveType);
 		AllCorrect &=
-			TestEqual(TEXT("Template Cylindrical solve type"), Cylindrical.SolveType, SolveType);
+			TestEqual(TEXT("Compliance rotat 1"), Cylindrical.Compliance.Rotational_1, Scale * 1.0);
+		AllCorrect &=
+			TestEqual(TEXT("Compliance rotat 1"), Cylindrical.Compliance.Rotational_2, Scale * 1.1);
 		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical compliance rotat 1"), Cylindrical.Compliance.Rotational_1,
-			Scale * 1.0);
+			TEXT("Compliance trans 1"), Cylindrical.Compliance.Translational_1, Scale * 1.2);
 		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical compliance rotat 1"), Cylindrical.Compliance.Rotational_2,
-			Scale * 1.1);
+			TEXT("Compliance trans 2"), Cylindrical.Compliance.Translational_2, Scale * 1.3);
 		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical compliance trans 1"), Cylindrical.Compliance.Translational_1,
-			Scale * 1.2);
+			TEXT("Spook damping rotat 1"), Cylindrical.SpookDamping.Rotational_1, Scale * 2.0);
 		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical compliance trans 2"), Cylindrical.Compliance.Translational_2,
-			Scale * 1.3);
+			TEXT("Spook damping rotat 2"), Cylindrical.SpookDamping.Rotational_2, Scale * 2.1);
 		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical Spook damping rotat 1"),
-			Cylindrical.SpookDamping.Rotational_1, Scale * 2.0);
+			TEXT("Spook damping trans 1"), Cylindrical.SpookDamping.Translational_1, Scale * 2.2);
 		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical Spook damping rotat 2"),
-			Cylindrical.SpookDamping.Rotational_2, Scale * 2.1);
-		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical Spook damping trans 1"),
-			Cylindrical.SpookDamping.Translational_1, Scale * 2.2);
-		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical Spook damping trans 2"),
-			Cylindrical.SpookDamping.Translational_2, Scale * 2.3);
+			TEXT("Spook damping trans 2"), Cylindrical.SpookDamping.Translational_2, Scale * 2.3);
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Template Cylindrical rotational 1 force range"),
-			Cylindrical.ForceRange.Rotational_1, FAGX_RealInterval(Scale * 3.0, Scale * 4.0));
+			*this, TEXT("Rotational 1 force range"), Cylindrical.ForceRange.Rotational_1,
+			FAGX_RealInterval(Scale * 3.0, Scale * 4.0));
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Template Cylindrical rotational 2 force range"),
-			Cylindrical.ForceRange.Rotational_2, FAGX_RealInterval(Scale * 3.1, Scale * 4.1));
+			*this, TEXT("Rotational 2 force range"), Cylindrical.ForceRange.Rotational_2,
+			FAGX_RealInterval(Scale * 3.1, Scale * 4.1));
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Template Cylindrical translational 1 force range"),
-			Cylindrical.ForceRange.Translational_1, FAGX_RealInterval(Scale * 3.2, Scale * 4.2));
+			*this, TEXT("Translational 1 force range"), Cylindrical.ForceRange.Translational_1,
+			FAGX_RealInterval(Scale * 3.2, Scale * 4.2));
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Template Cylindrical translational 2 force range"),
-			Cylindrical.ForceRange.Translational_2, FAGX_RealInterval(Scale * 3.3, Scale * 4.3));
+			*this, TEXT("Translational 2 force range"), Cylindrical.ForceRange.Translational_2,
+			FAGX_RealInterval(Scale * 3.3, Scale * 4.3));
 		// Cylindrical Constraint does not have rotational compliance, damping, or force range since
 		// all rotational degrees of freedom are free.
+		AllCorrect &= TestEqual(TEXT("Compute forces"), Cylindrical.bComputeForces, bEnable);
+		AllCorrect &=
+			TestEqual(TEXT("Twist range enabled"), Cylindrical.ScrewController.bEnable, bEnable);
 		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical compute forces"), Cylindrical.bComputeForces, bEnable);
+			TEXT("Twist range compliance"), Cylindrical.ScrewController.Compliance, Scale * 5.0);
 		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical twist range enabled"), Cylindrical.ScrewController.bEnable,
-			bEnable);
-		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical twist range compliance"),
-			Cylindrical.ScrewController.Compliance, Scale * 5.0);
-		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical twist range damping"),
-			Cylindrical.ScrewController.SpookDamping, Scale * 6.0);
+			TEXT("Twist range damping"), Cylindrical.ScrewController.SpookDamping, Scale * 6.0);
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Template Cylindrical twist range force range"),
-			Cylindrical.ScrewController.ForceRange, FAGX_RealInterval(Scale * 7.0, Scale * 8.0));
+			*this, TEXT("Twist range force range"), Cylindrical.ScrewController.ForceRange,
+			FAGX_RealInterval(Scale * 7.0, Scale * 8.0));
 		AllCorrect &= TestEqual(
-			TEXT("Template Cylindrical lead"), (Cylindrical.ScrewController.Lead),
+			TEXT("Lead"), (Cylindrical.ScrewController.Lead),
 			Scale * AgxAutomationCommon::AgxToUnrealDistance(9.0));
 
 		return AllCorrect;
@@ -1855,48 +1842,48 @@ public:
 		UAGX_BallConstraintComponent& Ball, double Scale, EAGX_SolveType SolveType, bool bEnable)
 	{
 		bool AllCorrect = true;
-		AllCorrect &= TestEqual(TEXT("Template Ball enabled"), Ball.bEnable, bEnable);
-		AllCorrect &= TestEqual(TEXT("Template Ball solve type"), Ball.SolveType, SolveType);
+		AllCorrect &= TestEqual(TEXT("Enabled"), Ball.bEnable, bEnable);
+		AllCorrect &= TestEqual(TEXT("Solve type"), Ball.SolveType, SolveType);
 		AllCorrect &= TestEqual(
-			TEXT("Template Ball compliance trans 1"), Ball.Compliance.Translational_1, Scale * 1.0);
+			TEXT("Compliance trans 1"), Ball.Compliance.Translational_1, Scale * 1.0);
 		AllCorrect &= TestEqual(
-			TEXT("Template Ball compliance trans 2"), Ball.Compliance.Translational_2, Scale * 1.1);
+			TEXT("Compliance trans 2"), Ball.Compliance.Translational_2, Scale * 1.1);
 		AllCorrect &= TestEqual(
-			TEXT("Template Ball compliance trans 3"), Ball.Compliance.Translational_3, Scale * 1.2);
+			TEXT("Compliance trans 3"), Ball.Compliance.Translational_3, Scale * 1.2);
 		AllCorrect &= TestEqual(
-			TEXT("Template Ball Spook damping trans 1"), Ball.SpookDamping.Translational_1,
+			TEXT("Spook damping trans 1"), Ball.SpookDamping.Translational_1,
 			Scale * 2.0);
 		AllCorrect &= TestEqual(
-			TEXT("Template Ball Spook damping trans 2"), Ball.SpookDamping.Translational_2,
+			TEXT("Spook damping trans 2"), Ball.SpookDamping.Translational_2,
 			Scale * 2.1);
 		AllCorrect &= TestEqual(
-			TEXT("Template Ball Spook damping trans 3"), Ball.SpookDamping.Translational_3,
+			TEXT("Spook damping trans 3"), Ball.SpookDamping.Translational_3,
 			Scale * 2.2);
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Template Ball force range 1"), Ball.ForceRange.Translational_1,
+			*this, TEXT("Force range 1"), Ball.ForceRange.Translational_1,
 			FAGX_RealInterval(Scale * 3.0, Scale * 4.0));
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Template Ball force range 2"), Ball.ForceRange.Translational_2,
+			*this, TEXT("Force range 2"), Ball.ForceRange.Translational_2,
 			FAGX_RealInterval(Scale * 3.1, Scale * 4.1));
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Template Ball force range 3"), Ball.ForceRange.Translational_3,
+			*this, TEXT("Force range 3"), Ball.ForceRange.Translational_3,
 			FAGX_RealInterval(Scale * 3.2, Scale * 4.2));
 		// Ball Constraint does not have rotational compliance, damping, or force range since all
 		// rotational degrees of freedom are free.
-		AllCorrect &= TestEqual(TEXT("Template Ball compute forces"), Ball.bComputeForces, bEnable);
+		AllCorrect &= TestEqual(TEXT("Compute forces"), Ball.bComputeForces, bEnable);
 		AllCorrect &= TestEqual(
-			TEXT("Template Ball twist range enabled"), Ball.TwistRangeController.bEnable, bEnable);
+			TEXT("Twist range enabled"), Ball.TwistRangeController.bEnable, bEnable);
 		AllCorrect &= TestEqual(
-			TEXT("Template Ball twist range compliance"), Ball.TwistRangeController.Compliance,
+			TEXT("Twist range compliance"), Ball.TwistRangeController.Compliance,
 			Scale * 5.0);
 		AllCorrect &= TestEqual(
-			TEXT("Template Ball twist range damping"), Ball.TwistRangeController.SpookDamping,
+			TEXT("Twist range damping"), Ball.TwistRangeController.SpookDamping,
 			Scale * 6.0);
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Template Ball twist range force range"),
+			*this, TEXT("Twist range force range"),
 			Ball.TwistRangeController.ForceRange, FAGX_RealInterval(Scale * 7.0, Scale * 8.0));
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Template Ball twist range range"), Ball.TwistRangeController.Range,
+			*this, TEXT("Twist range range"), Ball.TwistRangeController.Range,
 			FAGX_RealInterval(FromRad(Scale * -0.1), FromRad(Scale * 0.1)));
 
 		return AllCorrect;
@@ -2123,18 +2110,18 @@ public:
 		// when the Barrier doesn't have a native AGX Dynamics object to read from.
 		bool AllCorrect = true;
 		AllCorrect &= TestEqual(
-			TEXT("Template Ball twist range enabled"), Ball.TwistRangeController.bEnable, false);
+			TEXT("Twist range enabled"), Ball.TwistRangeController.bEnable, false);
 		AllCorrect &= TestEqual(
-			TEXT("Template Ball twist range compliance"), Ball.TwistRangeController.Compliance,
+			TEXT("Twist range compliance"), Ball.TwistRangeController.Compliance,
 			ConstraintConstants::DefaultCompliance());
 		AllCorrect &= TestEqual(
-			TEXT("Template Ball twist range damping"), Ball.TwistRangeController.SpookDamping,
+			TEXT("Twist range damping"), Ball.TwistRangeController.SpookDamping,
 			ConstraintConstants::DefaultSpookDamping());
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Template Ball twist range force range"),
+			*this, TEXT("Twist range force range"),
 			Ball.TwistRangeController.ForceRange, ConstraintConstants::DefaultForceRange());
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Template Ball twist range range"), Ball.TwistRangeController.Range,
+			*this, TEXT("Twist range range"), Ball.TwistRangeController.Range,
 			FAGX_RealInterval(0.0, 0.0));
 		return AllCorrect;
 	}

@@ -13,12 +13,12 @@
 #include "Constraints/BallJointBarrier.h"
 #include "Constraints/Constraint1DOFBarrier.h"
 #include "Constraints/Constraint2DOFBarrier.h"
+#include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
 #include "Constraints/Controllers/AGX_FrictionController.h"
 #include "Constraints/Controllers/AGX_LockController.h"
 #include "Constraints/Controllers/AGX_RangeController.h"
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
-#include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/Controllers/AGX_TwistRangeController.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -124,16 +124,17 @@ void FAGX_ConstraintUtilities::CopyControllersFrom(
 	UAGX_BallConstraintComponent& Component, const FBallJointBarrier& Barrier,
 	bool bForceOverwriteProperties)
 {
-	TArray<FAGX_TwistRangeController*> TRCInstances;
+	TArray<FAGX_TwistRangeController*> ControllerInstances;
 	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
 	{
-		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		for (UAGX_BallConstraintComponent* Instance :
+			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
 		{
-			TRCInstances.Add(&Instance->TwistRangeController);
+			ControllerInstances.Add(&Instance->TwistRangeController);
 		}
 	}
 	StoreTwistRangeController(
-		Barrier, Component.TwistRangeController, TRCInstances, bForceOverwriteProperties);
+		Barrier, Component.TwistRangeController, ControllerInstances, bForceOverwriteProperties);
 }
 
 void FAGX_ConstraintUtilities::StoreElectricMotorController(
