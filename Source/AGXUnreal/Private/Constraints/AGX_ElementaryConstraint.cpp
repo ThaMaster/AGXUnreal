@@ -113,12 +113,16 @@ void FAGX_ElementaryConstraint::SetForceRange(const FAGX_RealInterval& InForceRa
 
 void FAGX_ElementaryConstraint::SetForceRange(const FDoubleInterval& InForceRange)
 {
-	SetForceRange(FAGX_RealInterval(InForceRange));
+	if (HasNative())
+	{
+		NativeBarrier.SetForceRange(InForceRange);
+	}
+	ForceRange = InForceRange;
 }
 
 void FAGX_ElementaryConstraint::SetForceRange(double InMinForce, double InMaxForce)
 {
-	SetForceRange(FAGX_RealInterval {InMinForce, InMaxForce});
+	SetForceRange(FDoubleInterval {InMinForce, InMaxForce});
 }
 
 void FAGX_ElementaryConstraint::SetForceRangeMin(double InMinForce)

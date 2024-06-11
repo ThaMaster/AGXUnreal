@@ -145,6 +145,13 @@ void FElementaryConstraintBarrier::SetForceRange(FAGX_RealInterval InForceRange,
 	NativeRef->Native->setForceRange(ForceRangeAGX, InRow);
 }
 
+void FElementaryConstraintBarrier::SetForceRange(FDoubleInterval InForceRange, int32 InRow)
+{
+	check(HasNative());
+	const agx::RangeReal ForceRangeAGX = Convert(InForceRange);
+	NativeRef->Native->setForceRange(ForceRangeAGX, InRow);
+}
+
 void FElementaryConstraintBarrier::SetForceRangeMin(double InMin, int32 InRow)
 {
 	check(HasNative());
