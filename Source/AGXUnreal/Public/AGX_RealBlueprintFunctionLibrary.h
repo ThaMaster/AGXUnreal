@@ -3,6 +3,7 @@
 #pragma once
 
 // Unreal Engine includes.
+#include "AGX_LogCategory.h"
 #include "AGX_Real.h"
 
 // Unreal Engine includes.
@@ -37,6 +38,23 @@ public:
 	static FAGX_Real MakeAGXReal(float Value)
 	{
 		return {Value};
+	}
+
+	UFUNCTION(BlueprintPure, Category = "AGX Real")
+	static void ParseReal(const FString& String, double& Float, FAGX_Real& Real)
+	{
+		TOptional<double> Result = FCString::Atod(*String);
+		if (!Result.IsSet())
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("FAGX_Real tried to convert string '%s' to double, but Atod failed."),
+				*String);
+			Float = 0.0;
+			Real = 0.0;
+		}
+		Float = *Result;
+		Real = *Result;
 	}
 
 	/**

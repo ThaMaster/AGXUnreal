@@ -149,6 +149,20 @@ void AgxAutomationCommon::TestEqual(
 	}
 }
 
+bool AgxAutomationCommon::TestEqual(
+	FAutomationTestBase& Test, const TCHAR* What, const FAGX_RealInterval& Actual,
+	const FAGX_RealInterval& Expected, double Tolerance)
+{
+	if (!Expected.Equals(Actual, Tolerance))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Expected '%s' to be '%s' but it was '%s', with tolerance %f."), What,
+			*Expected.ToString(), *Actual.ToString(), Tolerance));
+		return false;
+	}
+	return true;
+}
+
 void AgxAutomationCommon::TestLess(
 	FAutomationTestBase& Test, const TCHAR* SmallerName, double Smaller, const TCHAR* LargerName,
 	double Larger)
@@ -244,8 +258,10 @@ FString AgxAutomationCommon::GetTestScenePath(const TCHAR* SceneName)
 	else
 	{
 		UE_LOG(
-			LogAGX, Warning, TEXT("Did not find full path for test scene '%s'. Searched in '%s'."),
-			SceneName, *SceneDir)
+			LogAGX, Warning,
+			TEXT("Did not find full test scene path for test scene '%s'. Searched in '%s'. Does "
+				 "not exist: '%s'"),
+			SceneName, *SceneDir, *ScenePath);
 		return FString();
 	}
 }
@@ -272,7 +288,8 @@ FString AgxAutomationCommon::GetTestSceneDirPath(const FString& SubDir)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Did not find full path for test scene dir '%s'. Searched in '%s'."),
+			TEXT("Did not find full test scene directory path for test scene dir '%s'. Searched in "
+				 "'%s'."),
 			*SceneDirPath, *SceneDir)
 		return FString();
 	}
@@ -294,7 +311,7 @@ bool AgxAutomationCommon::CheckMapMD5Checksum(
 	return MD5Sum == Expected;
 }
 
-void AgxAutomationCommon::CheckAssetMD5Checksum(
+bool AgxAutomationCommon::CheckAssetMD5Checksum(
 	const FString& PackagePath, const TCHAR* Expected, FAutomationTestBase& Test)
 {
 	const FString FilePath =
@@ -308,6 +325,33 @@ void AgxAutomationCommon::CheckAssetMD5Checksum(
 	// https://docs.unrealengine.com/en-US/API/Runtime/Core/Misc/FFileHelper/LoadFileToArray/2/
 	FString MD5Sum = FMD5::HashBytes(PackageBytes.GetData(), PackageBytes.Num());
 	Test.TestEqual(TEXT("The asset file should have the expected MD5 checksum."), MD5Sum, Expected);
+	return MD5Sum == Expected;
+}
+
+bool AgxAutomationCommon::CheckFileMD5Checksum(
+	const FString& FilePath, const TCHAR* Expected, FAutomationTestBase& Test)
+{
+	const FString MD5Sum = GetFileMD5Checksum(FilePath);
+	Test.TestEqual(TEXT("The asset file should have the expected MD5 checksum."), MD5Sum, Expected);
+	return MD5Sum == Expected;
+}
+
+FString AgxAutomationCommon::GetFileMD5Checksum(const FString& FilePath)
+{
+	TArray<uint8> PackageBytes;
+	if (!FFileHelper::LoadFileToArray(PackageBytes, *FilePath, FILEREAD_None))
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("Could not load file '%s' for MD5 Checksum calculation."),
+			*FilePath);
+		return FString();
+	}
+	// The documentation (and the code) for FFileHelper::LoadFileToArray says that it adds
+	// two bytes of padding to the TArray, but that appears to be a lie. Not doing -2 here
+	// and it seems to work. Not sure what's going on here.
+	// https://docs.unrealengine.com/en-US/API/Runtime/Core/Misc/FFileHelper/LoadFileToArray/2/
+	FString MD5Sum = FMD5::HashBytes(PackageBytes.GetData(), PackageBytes.Num());
+	return MD5Sum;
 }
 
 bool AgxAutomationCommon::DeleteImportDirectory(

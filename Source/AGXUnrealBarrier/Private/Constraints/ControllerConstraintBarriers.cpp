@@ -88,21 +88,27 @@ double FConstraintControllerBarrier::GetSpookDamping() const
 	return NativeRef->Native->getDamping();
 }
 
-void FConstraintControllerBarrier::SetForceRange(FAGX_RealInterval ForceRange)
+void FConstraintControllerBarrier::SetForceRange(FDoubleInterval InForceRange)
 {
 	check(HasNative());
 	/// \todo Should the ForceRange be in N or Unreal-newtons? Unreal-newtons
 	/// is kg cm s^-2 instead of kg m s^-2.
 	///       ^                     ^
-	const agx::RangeReal ForceRangeAGX = Convert(ForceRange);
+	const agx::RangeReal ForceRangeAGX = Convert(InForceRange);
 	NativeRef->Native->setForceRange(ForceRangeAGX);
 }
 
-FAGX_RealInterval FConstraintControllerBarrier::GetForceRange() const
+void FConstraintControllerBarrier::SetForceRange(FAGX_RealInterval InForceRange)
+{
+	SetForceRange(InForceRange.ToDouble());
+}
+
+FDoubleInterval FConstraintControllerBarrier::GetForceRange() const
 {
 	check(HasNative());
 	const agx::RangeReal ForceRangeAGX = NativeRef->Native->getForceRange();
-	return Convert(ForceRangeAGX);
+	const FDoubleInterval ForceRange = Convert(ForceRangeAGX);
+	return ForceRange;
 }
 
 double FConstraintControllerBarrier::GetForce() const
@@ -125,6 +131,10 @@ namespace
 		return dynamic_cast<AGXController*>(Barrier.GetNative()->Native.get());
 	}
 }
+
+//
+// Electric Motor Controller starts here.
+//
 
 namespace
 {
@@ -184,6 +194,10 @@ double FElectricMotorControllerBarrier::GetTorqueConstant() const
 	return GetController(*this)->getTorqueConstant();
 }
 
+//
+// Friction Controller starts here.
+//
+
 namespace
 {
 	agx::FrictionController* GetController(FFrictionControllerBarrier& Barrier)
@@ -228,6 +242,10 @@ bool FFrictionControllerBarrier::GetEnableNonLinearDirectSolveUpdate() const
 	check(HasNative());
 	return GetController(*this)->getEnableNonLinearDirectSolveUpdate();
 }
+
+//
+// Lock Controller starts here.
+//
 
 namespace
 {
@@ -279,6 +297,10 @@ double FLockControllerBarrier::GetPositionRotational() const
 	return Degrees;
 }
 
+//
+// Range Controller starts here.
+//
+
 namespace
 {
 	agx::RangeController* GetController(FRangeControllerBarrier& Barrier)
@@ -299,35 +321,49 @@ FRangeControllerBarrier::FRangeControllerBarrier(std::unique_ptr<FConstraintCont
 	check(NativeRef->Native->is<agx::RangeController>());
 }
 
-void FRangeControllerBarrier::SetRangeTranslational(FAGX_RealInterval Range)
+void FRangeControllerBarrier::SetRangeTranslational(FDoubleInterval InRange)
 {
 	check(HasNative());
-	agx::RangeReal RangeAGX = ConvertDistance(Range);
+	agx::RangeReal RangeAGX = ConvertDistance(InRange);
 	GetController(*this)->setRange(RangeAGX);
 }
 
-FAGX_RealInterval FRangeControllerBarrier::GetRangeTranslational() const
+void FRangeControllerBarrier::SetRangeTranslational(FAGX_RealInterval InRange)
+{
+	SetRangeTranslational(InRange.ToDouble());
+}
+
+FDoubleInterval FRangeControllerBarrier::GetRangeTranslational() const
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = GetController(*this)->getRange();
-	FAGX_RealInterval RangeUnreal = ConvertDistance(RangeAGX);
+	FDoubleInterval RangeUnreal = ConvertDistance(RangeAGX);
 	return RangeUnreal;
 }
 
-void FRangeControllerBarrier::SetRangeRotational(FAGX_RealInterval Range)
+void FRangeControllerBarrier::SetRangeRotational(FDoubleInterval InRange)
 {
 	check(HasNative());
-	agx::RangeReal RangeAGX = ConvertAngle(Range);
+	agx::RangeReal RangeAGX = ConvertAngle(InRange);
 	GetController(*this)->setRange(RangeAGX);
 }
 
-FAGX_RealInterval FRangeControllerBarrier::GetRangeRotational() const
+void FRangeControllerBarrier::SetRangeRotational(FAGX_RealInterval InRange)
+{
+	SetRangeRotational(InRange.ToDouble());
+}
+
+FDoubleInterval FRangeControllerBarrier::GetRangeRotational() const
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = GetController(*this)->getRange();
-	FAGX_RealInterval RangeUnreal = ConvertAngle(RangeAGX);
-	return RangeUnreal;
+	FDoubleInterval Range = ConvertAngle(RangeAGX);
+	return Range;
 }
+
+//
+// Screw Controller starts here.
+//
 
 namespace
 {
@@ -362,6 +398,10 @@ double FScrewControllerBarrier::GetLead() const
 	agx::Real LeadAGX = GetController(*this)->getLead();
 	return ConvertDistanceToUnreal<double>(LeadAGX);
 }
+
+//
+// Target Speed  Controller starts here.
+//
 
 namespace
 {
@@ -424,4 +464,124 @@ bool FTargetSpeedControllerBarrier::GetLockedAtZeroSpeed() const
 {
 	check(HasNative());
 	return GetController(*this)->getLockedAtZeroSpeed();
+}
+
+//
+// Twist Range Controller starts here.
+//
+
+namespace
+{
+	agx::TwistRangeController* GetController(FTwistRangeControllerBarrier& Barrier)
+	{
+		return Barrier.GetNative()->Native;
+	}
+
+	const agx::TwistRangeController* GetController(const FTwistRangeControllerBarrier& Barrier)
+	{
+		return Barrier.GetNative()->Native;
+	}
+}
+
+FTwistRangeControllerBarrier::FTwistRangeControllerBarrier()
+	: NativeRef(new FTwistRangeControllerRef())
+{
+}
+
+FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
+	const FTwistRangeControllerBarrier& Other)
+	: FTwistRangeControllerBarrier(
+		  std::make_unique<FTwistRangeControllerRef>(Other.NativeRef->Native))
+{
+}
+
+FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
+	std::unique_ptr<FTwistRangeControllerRef> Native)
+	: FElementaryConstraintBarrier(std::make_unique<FElementaryConstraintRef>(Native->Native))
+	, NativeRef(std::move(Native))
+{
+}
+
+FTwistRangeControllerBarrier::~FTwistRangeControllerBarrier()
+{
+	// Must have a non-inlined destructor because the NativeRef destructor must be able to see the
+	// full definition of the pointed-to type, and we are not allowed to include F*Ref / F*Ptr
+	// types in the header file.
+}
+
+FTwistRangeControllerBarrier& FTwistRangeControllerBarrier::operator=(
+	const FTwistRangeControllerBarrier& Other)
+{
+	check(Other.NativeRef->Native == Other.FElementaryConstraintBarrier::NativeRef->Native);
+	FElementaryConstraintBarrier::operator=(Other);
+	NativeRef->Native = Other.NativeRef->Native;
+	return *this;
+}
+
+void FTwistRangeControllerBarrier::SetRange(FDoubleInterval InRange)
+{
+	check(HasNative());
+	agx::RangeReal RangeAGX = ConvertAngle(InRange);
+	NativeRef->Native->setRange(RangeAGX);
+}
+
+void FTwistRangeControllerBarrier::SetRange(FAGX_RealInterval InRange)
+{
+	SetRange(InRange.ToDouble());
+}
+
+void FTwistRangeControllerBarrier::SetRangeMin(double InMin)
+{
+	check(HasNative());
+	const agx::Real MinAGX = ConvertAngleToAGX(InMin);
+	NativeRef->Native->getRange().lower() = MinAGX;
+}
+
+void FTwistRangeControllerBarrier::SetRangeMax(double InMax)
+{
+	check(HasNative());
+	const agx::Real MaxAGX = ConvertAngleToAGX(InMax);
+	NativeRef->Native->getRange().upper() = MaxAGX;
+}
+
+FDoubleInterval FTwistRangeControllerBarrier::GetRange() const
+{
+	check(HasNative());
+	agx::RangeReal RangeAGX = NativeRef->Native->getRange();
+	FDoubleInterval Range = ConvertAngle(RangeAGX);
+	return Range;
+}
+
+double FTwistRangeControllerBarrier::GetRangeMin() const
+{
+	check(HasNative());
+	const agx::Real MinAGX = NativeRef->Native->getRange().lower();
+	const double Min = ConvertAngleToUnreal<double>(MinAGX);
+	return Min;
+}
+
+double FTwistRangeControllerBarrier::GetRangeMax() const
+{
+	check(HasNative());
+	const agx::Real MaxAGX = NativeRef->Native->getRange().upper();
+	const double Max = ConvertAngleToUnreal<double>(MaxAGX);
+	return Max;
+}
+
+bool FTwistRangeControllerBarrier::HasNative() const
+{
+	check(NativeRef->Native == FElementaryConstraintBarrier::NativeRef->Native);
+	return NativeRef->Native != nullptr;
+}
+
+FTwistRangeControllerRef* FTwistRangeControllerBarrier::GetNative()
+{
+	check(NativeRef->Native == FElementaryConstraintBarrier::NativeRef->Native);
+	return NativeRef.get();
+}
+
+const FTwistRangeControllerRef* FTwistRangeControllerBarrier::GetNative() const
+{
+	check(NativeRef->Native == FElementaryConstraintBarrier::NativeRef->Native);
+	return NativeRef.get();
 }

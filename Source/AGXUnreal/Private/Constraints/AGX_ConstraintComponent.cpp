@@ -483,9 +483,10 @@ void UAGX_ConstraintComponent::CopyFrom(
 {
 	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetGuid(), *this, ForceOverwriteInstances)
 	AGX_COPY_PROPERTY_FROM(bEnable, Barrier.GetEnable(), *this, ForceOverwriteInstances)
-
 	EAGX_SolveType SolveTypeBarrier = static_cast<EAGX_SolveType>(Barrier.GetSolveType());
 	AGX_COPY_PROPERTY_FROM(SolveType, SolveTypeBarrier, *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		bComputeForces, Barrier.GetEnableComputeForces(), *this, ForceOverwriteInstances);
 
 	const static TArray<EGenericDofIndex> Dofs {
 		EGenericDofIndex::Translational1, EGenericDofIndex::Translational2,
@@ -1059,7 +1060,6 @@ void UAGX_ConstraintComponent::PostDuplicate(bool bDuplicateForPIE)
 
 #endif
 
-
 void UAGX_ConstraintComponent::OnRegister()
 {
 	Super::OnRegister();
@@ -1073,7 +1073,6 @@ void UAGX_ConstraintComponent::OnRegister()
 	BodyAttachment2.RigidBody.LocalScope = Owner;
 	BodyAttachment2.FrameDefiningComponent.LocalScope = Owner;
 }
-
 
 void UAGX_ConstraintComponent::OnUnregister()
 {

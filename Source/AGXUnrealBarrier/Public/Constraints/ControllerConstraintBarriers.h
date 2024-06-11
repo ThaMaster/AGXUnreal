@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_RealInterval.h"
+#include "Constraints/ElementaryConstraintBarrier.h"
 
 // Unreal Engine includes.
 #include "Math/Interval.h"
@@ -12,6 +13,7 @@
 #include <memory>
 
 struct FConstraintControllerRef;
+struct FTwistRangeControllerRef;
 
 class AGXUNREALBARRIER_API FConstraintControllerBarrier
 {
@@ -34,8 +36,9 @@ public:
 	void SetSpookDamping(double SpookDamping);
 	double GetSpookDamping() const;
 
+	void SetForceRange(FDoubleInterval InForceRange);
 	void SetForceRange(FAGX_RealInterval ForceRange);
-	FAGX_RealInterval GetForceRange() const;
+	FDoubleInterval GetForceRange() const;
 
 	double GetForce() const;
 
@@ -95,11 +98,13 @@ class AGXUNREALBARRIER_API FRangeControllerBarrier : public FConstraintControlle
 public:
 	FRangeControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
-	void SetRangeTranslational(FAGX_RealInterval Range);
-	FAGX_RealInterval GetRangeTranslational() const;
+	void SetRangeTranslational(FDoubleInterval InRange);
+	void SetRangeTranslational(FAGX_RealInterval InRange);
+	FDoubleInterval GetRangeTranslational() const;
 
-	void SetRangeRotational(FAGX_RealInterval Range);
-	FAGX_RealInterval GetRangeRotational() const;
+	void SetRangeRotational(FDoubleInterval InRange);
+	void SetRangeRotational(FAGX_RealInterval InRange);
+	FDoubleInterval GetRangeRotational() const;
 };
 
 class AGXUNREALBARRIER_API FScrewControllerBarrier : public FConstraintControllerBarrier
@@ -124,4 +129,38 @@ public:
 
 	void SetLockedAtZeroSpeed(bool LockedAtZeroSpeed);
 	bool GetLockedAtZeroSpeed() const;
+};
+
+class AGXUNREALBARRIER_API FTwistRangeControllerBarrier : public FElementaryConstraintBarrier
+{
+public:
+	FTwistRangeControllerBarrier();
+	FTwistRangeControllerBarrier(const FTwistRangeControllerBarrier& Other);
+	FTwistRangeControllerBarrier(std::unique_ptr<FTwistRangeControllerRef> Native);
+	virtual ~FTwistRangeControllerBarrier();
+
+	/**
+	 * Make this Barrier point to the same native AGX Dynamics object as Other. The Ref object
+	 * will not be shared, only the AGX Dynamics object.
+	 */
+	FTwistRangeControllerBarrier& operator=(const FTwistRangeControllerBarrier& Other);
+
+	void SetRange(FDoubleInterval InRange);
+	void SetRange(FAGX_RealInterval InRange);
+	void SetRangeMin(double InMin);
+	void SetRangeMax(double InMax);
+	FDoubleInterval GetRange() const;
+	double GetRangeMin() const;
+	double GetRangeMax() const;
+
+	bool HasNative() const;
+	FTwistRangeControllerRef* GetNative();
+	const FTwistRangeControllerRef* GetNative() const;
+
+protected:
+	/**
+	 * Type-specific native handle. Always points to the same AGX Dynamics object as the handle in
+	 * the base class. The unique_ptr may never be nullptr.
+	 */
+	std::unique_ptr<FTwistRangeControllerRef> NativeRef;
 };

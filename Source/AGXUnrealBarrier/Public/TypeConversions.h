@@ -537,28 +537,21 @@ inline agx::Vec4f ConvertFloat(const FVector4& V)
 //
 // Interval/Range. AGX Dynamics to Unreal Engine.
 //
-// We've had some issues with the Interval classes built into Unreal Engine. Partly because they
-// were float-only in Unreal Engine 4 (not sure about 5 yet), party because Unreal Engine 4.27
-// crashes whenever an FFloatInterval Property containing infinity is displayed in a Details panel,
-// and partly because they don't support scientific notation in the Details panel.
-//
-// Because of these we introduced FAGX_DoubleInterval and then FAGX_RealInterval.
-//
 
-inline FAGX_RealInterval Convert(const agx::RangeReal& R)
+inline FDoubleInterval Convert(const agx::RangeReal& R)
 {
-	return FAGX_RealInterval {R.lower(), R.upper()};
+	return FDoubleInterval {R.lower(), R.upper()};
 }
 
-inline FAGX_RealInterval ConvertDistance(const agx::RangeReal& R)
+inline FDoubleInterval ConvertDistance(const agx::RangeReal& R)
 {
-	return FAGX_RealInterval {
+	return FDoubleInterval {
 		ConvertDistanceToUnreal<double>(R.lower()), ConvertDistanceToUnreal<double>(R.upper())};
 }
 
-inline FAGX_RealInterval ConvertAngle(const agx::RangeReal& R)
+inline FDoubleInterval ConvertAngle(const agx::RangeReal& R)
 {
-	return FAGX_RealInterval {
+	return FDoubleInterval {
 		ConvertAngleToUnreal<double>(R.lower()), ConvertAngleToUnreal<double>(R.upper())};
 }
 
@@ -566,17 +559,17 @@ inline FAGX_RealInterval ConvertAngle(const agx::RangeReal& R)
 // Interval/Range. Unreal Engine to AGX Dynamics.
 //
 
-inline agx::RangeReal Convert(const FAGX_RealInterval& I)
+inline agx::RangeReal Convert(const FDoubleInterval& I)
 {
 	return agx::RangeReal(I.Min, I.Max);
 }
 
-inline agx::RangeReal ConvertDistance(const FAGX_RealInterval& I)
+inline agx::RangeReal ConvertDistance(const FDoubleInterval& I)
 {
 	return agx::RangeReal(ConvertDistanceToAGX(I.Min), ConvertDistanceToAGX(I.Max));
 }
 
-inline agx::RangeReal ConvertAngle(const FAGX_RealInterval& I)
+inline agx::RangeReal ConvertAngle(const FDoubleInterval& I)
 {
 	return agx::RangeReal(ConvertAngleToAGX(I.Min), ConvertAngleToAGX(I.Max));
 }
