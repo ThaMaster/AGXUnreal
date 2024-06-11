@@ -3,9 +3,9 @@
 #include "Constraints/AGX_BallConstraintComponent.h"
 
 // AGX Dynamics for Unreal includes.
-#include "Constraints/ConstraintBarrier.h"
-#include "Constraints/BallJointBarrier.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "Constraints/BallJointBarrier.h"
+#include "Constraints/ConstraintBarrier.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -46,17 +46,24 @@ namespace AGX_BallConstraintComponent_helpers
 		FBallJointBarrier* Barrier = Constraint.GetNativeBallJoint();
 		Constraint.TwistRangeController.InitializeBarrier(Barrier->GetTwistRangeController());
 	}
+
+	void ClearControllerBarriers(UAGX_BallConstraintComponent& Constraint)
+	{
+		Constraint.TwistRangeController.ClearBarrier();
+	}
 }
 
 void UAGX_BallConstraintComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	Super::SetNativeAddress(NativeAddress);
-	if (!HasNative())
+	if (HasNative())
 	{
-		return;
+		AGX_BallConstraintComponent_helpers::InitializeControllerBarriers(*this);
 	}
-
-	AGX_BallConstraintComponent_helpers::InitializeControllerBarriers(*this);
+	else
+	{
+		AGX_BallConstraintComponent_helpers::ClearControllerBarriers(*this);
+	}
 }
 
 #if WITH_EDITOR

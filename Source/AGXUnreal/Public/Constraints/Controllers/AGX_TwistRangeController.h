@@ -69,10 +69,19 @@ public:
 	const FTwistRangeControllerBarrier* GetNative() const;
 
 	/**
-	 * Bind this Twist Range Controller
+	 * Bind this Twist Range Controller to the AGX Dynamics Twist Range Controller referenced by
+	 * the given Barrier.
 	 * @param Barrier
 	 */
 	void InitializeBarrier(const FTwistRangeControllerBarrier& Barrier);
+
+	/**
+	 * Unbind this Twist Range Controller from the native AGX Dynamics Twist Range Controller, if
+	 * any.
+	 *
+	 * HasNative will return false after this.
+	 */
+	void ClearBarrier();
 
 	void UpdateNativeProperties();
 

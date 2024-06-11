@@ -113,6 +113,14 @@ public:
 	void InitializeBarrier(const FElementaryConstraintBarrier& Barrier);
 
 	/**
+	 * Unbind this Twist Range Controller from the native AGX Dynamics Twist Range Controller, if
+	 * any.
+	 *
+	 * HasNative will return false after this.
+	 */
+	void ClearBarrier();
+
+	/**
 	 * Apply the UProperties on the native AGX Dynamics constraint. May only be called if HasNative
 	 * returns true.
 	 */

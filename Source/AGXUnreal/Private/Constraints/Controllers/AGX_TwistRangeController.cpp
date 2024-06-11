@@ -108,6 +108,12 @@ void FAGX_TwistRangeController::InitializeBarrier(const FTwistRangeControllerBar
 	check(HasNative());
 }
 
+void FAGX_TwistRangeController::ClearBarrier()
+{
+	Super::ClearBarrier();
+	NativeBarrier = FTwistRangeControllerBarrier();
+}
+
 void FAGX_TwistRangeController::CopyFrom(
 	const FTwistRangeControllerBarrier& Source,
 	TArray<FAGX_TwistRangeController*>& ArchetypeInstances, bool bForceOverwriteInstances)
