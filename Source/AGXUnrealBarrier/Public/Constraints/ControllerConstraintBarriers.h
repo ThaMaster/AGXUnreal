@@ -134,16 +134,16 @@ public:
 class AGXUNREALBARRIER_API FTwistRangeControllerBarrier : public FElementaryConstraintBarrier
 {
 public:
-	FTwistRangeControllerBarrier();
-	FTwistRangeControllerBarrier(const FTwistRangeControllerBarrier& Other);
-	FTwistRangeControllerBarrier(std::unique_ptr<FTwistRangeControllerRef> Native);
-	virtual ~FTwistRangeControllerBarrier();
+	// FTwistRangeControllerBarrier();
+	// FTwistRangeControllerBarrier(const FTwistRangeControllerBarrier& Other);
+	FTwistRangeControllerBarrier(std::unique_ptr<FElementaryConstraintRef> Native);
+	//virtual ~FTwistRangeControllerBarrier();
 
 	/**
 	 * Make this Barrier point to the same native AGX Dynamics object as Other. The Ref object
 	 * will not be shared, only the AGX Dynamics object.
 	 */
-	FTwistRangeControllerBarrier& operator=(const FTwistRangeControllerBarrier& Other);
+	//FTwistRangeControllerBarrier& operator=(const FTwistRangeControllerBarrier& Other);
 
 	void SetRange(FDoubleInterval InRange);
 	void SetRange(FAGX_RealInterval InRange);
@@ -153,14 +153,16 @@ public:
 	double GetRangeMin() const;
 	double GetRangeMax() const;
 
+#if 0
 	bool HasNative() const;
 	FTwistRangeControllerRef* GetNative();
 	const FTwistRangeControllerRef* GetNative() const;
+#endif
 
 protected:
 	/**
 	 * Type-specific native handle. Always points to the same AGX Dynamics object as the handle in
 	 * the base class. The unique_ptr may never be nullptr.
 	 */
-	std::unique_ptr<FTwistRangeControllerRef> NativeRef;
+	//std::unique_ptr<FTwistRangeControllerRef> NativeRef;
 };

@@ -15,11 +15,20 @@ FAGX_ElementaryConstraint::~FAGX_ElementaryConstraint()
 {
 }
 
+FAGX_ElementaryConstraint& FAGX_ElementaryConstraint::operator=(const FAGX_ElementaryConstraint& Other)
+{
+	bEnable = Other.bEnable;
+	Compliance = Other.Compliance;
+	SpookDamping = Other.SpookDamping;
+	ForceRange = Other.ForceRange;
+	return *this;
+}
+
 void FAGX_ElementaryConstraint::SetEnable(bool bInEnable)
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetEnable(bInEnable);
+		NativeBarrier->SetEnable(bInEnable);
 	}
 	bEnable = bInEnable;
 }
@@ -28,7 +37,7 @@ bool FAGX_ElementaryConstraint::GetEnable() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetEnable();
+		return NativeBarrier->GetEnable();
 	}
 	return bEnable;
 }
@@ -37,7 +46,7 @@ void FAGX_ElementaryConstraint::SetCompliance(double InCompliance)
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetCompliance(InCompliance);
+		NativeBarrier->SetCompliance(InCompliance);
 	}
 	Compliance = InCompliance;
 }
@@ -46,7 +55,7 @@ double FAGX_ElementaryConstraint::GetCompliance() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetCompliance();
+		return NativeBarrier->GetCompliance();
 	}
 	return Compliance;
 }
@@ -56,8 +65,8 @@ void FAGX_ElementaryConstraint::SetElasticity(double InElasticity)
 	if (HasNative())
 	{
 		// Elasticity is a dependent property on compliance.
-		NativeBarrier.SetElasticity(InElasticity);
-		Compliance = NativeBarrier.GetCompliance();
+		NativeBarrier->SetElasticity(InElasticity);
+		Compliance = NativeBarrier->GetCompliance();
 	}
 	else
 	{
@@ -72,7 +81,7 @@ double FAGX_ElementaryConstraint::GetElasticity() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetElasticity();
+		return NativeBarrier->GetElasticity();
 	}
 	if (Compliance > DBL_EPSILON)
 	{
@@ -88,7 +97,7 @@ void FAGX_ElementaryConstraint::SetSpookDamping(double InSpookDamping)
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetSpookDamping(InSpookDamping);
+		NativeBarrier->SetSpookDamping(InSpookDamping);
 	}
 	SpookDamping = InSpookDamping;
 }
@@ -97,7 +106,7 @@ double FAGX_ElementaryConstraint::GetSpookDamping() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetSpookDamping();
+		return NativeBarrier->GetSpookDamping();
 	}
 	return SpookDamping;
 }
@@ -106,7 +115,7 @@ void FAGX_ElementaryConstraint::SetForceRange(const FAGX_RealInterval& InForceRa
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetForceRange(InForceRange);
+		NativeBarrier->SetForceRange(InForceRange);
 	}
 	ForceRange = InForceRange;
 }
@@ -115,7 +124,7 @@ void FAGX_ElementaryConstraint::SetForceRange(const FDoubleInterval& InForceRang
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetForceRange(InForceRange);
+		NativeBarrier->SetForceRange(InForceRange);
 	}
 	ForceRange = InForceRange;
 }
@@ -129,7 +138,7 @@ void FAGX_ElementaryConstraint::SetForceRangeMin(double InMinForce)
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetForceRangeMin(InMinForce);
+		NativeBarrier->SetForceRangeMin(InMinForce);
 	}
 	ForceRange.Min = InMinForce;
 }
@@ -138,7 +147,7 @@ void FAGX_ElementaryConstraint::SetForceRangeMax(double InMaxForce)
 {
 	if (HasNative())
 	{
-		NativeBarrier.SetForceRangeMax(InMaxForce);
+		NativeBarrier->SetForceRangeMax(InMaxForce);
 	}
 	ForceRange.Max = InMaxForce;
 }
@@ -147,7 +156,7 @@ FDoubleInterval FAGX_ElementaryConstraint::GetForceRange() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetForceRange();
+		return NativeBarrier->GetForceRange();
 	}
 	return ForceRange;
 }
@@ -156,7 +165,7 @@ double FAGX_ElementaryConstraint::GetForceRangeMin() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetForceRangeMin();
+		return NativeBarrier->GetForceRangeMin();
 	}
 	return ForceRange.Min;
 }
@@ -165,7 +174,7 @@ double FAGX_ElementaryConstraint::GetForceRangeMax() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetForceRangeMax();
+		return NativeBarrier->GetForceRangeMax();
 	}
 	return ForceRange.Max;
 }
@@ -174,7 +183,7 @@ double FAGX_ElementaryConstraint::GetForce()
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetForce();
+		return NativeBarrier->GetForce();
 	}
 	return 0.0;
 }
@@ -183,7 +192,7 @@ bool FAGX_ElementaryConstraint::IsActive() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.IsActive();
+		return NativeBarrier->IsActive();
 	}
 	return false;
 }
@@ -192,14 +201,14 @@ FString FAGX_ElementaryConstraint::GetName() const
 {
 	if (HasNative())
 	{
-		return NativeBarrier.GetName();
+		return NativeBarrier->GetName();
 	}
 	return FName(NAME_None).ToString();
 }
 
 bool FAGX_ElementaryConstraint::HasNative() const
 {
-	return NativeBarrier.HasNative();
+	return NativeBarrier.IsValid() && NativeBarrier->HasNative();
 }
 
 FElementaryConstraintBarrier* FAGX_ElementaryConstraint::GetNative()
@@ -208,7 +217,7 @@ FElementaryConstraintBarrier* FAGX_ElementaryConstraint::GetNative()
 	{
 		return nullptr;
 	}
-	return &NativeBarrier;
+	return NativeBarrier.Get();
 }
 
 const FElementaryConstraintBarrier* FAGX_ElementaryConstraint::GetNative() const
@@ -217,29 +226,33 @@ const FElementaryConstraintBarrier* FAGX_ElementaryConstraint::GetNative() const
 	{
 		return nullptr;
 	}
-	return &NativeBarrier;
+	return NativeBarrier.Get();
 }
 
+#if 0
 void FAGX_ElementaryConstraint::InitializeBarrier(const FElementaryConstraintBarrier& Barrier)
 {
 	check(!HasNative());
 	NativeBarrier = Barrier;
 	check(HasNative());
 }
+#endif
 
+#if 0
 void FAGX_ElementaryConstraint::ClearBarrier()
 {
-	NativeBarrier = FElementaryConstraintBarrier();
+	NativeBarrier.Reset(nullptr);
 }
-
+#endif
 
 void FAGX_ElementaryConstraint::UpdateNativeProperties()
 {
 	check(HasNative());
-	NativeBarrier.SetEnable(bEnable);
-	NativeBarrier.SetCompliance(Compliance);
-	NativeBarrier.SetSpookDamping(SpookDamping);
-	NativeBarrier.SetForceRange(ForceRange);
+	NativeBarrier->SetEnable(bEnable);
+	NativeBarrier->SetCompliance(Compliance);
+	NativeBarrier->SetSpookDamping(SpookDamping);
+	NativeBarrier->SetForceRange(ForceRange);
+	UpdateNativePropertiesImpl();
 }
 
 void FAGX_ElementaryConstraint::CopyFrom(

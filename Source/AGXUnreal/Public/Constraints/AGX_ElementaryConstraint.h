@@ -24,6 +24,8 @@ public:
 	FAGX_ElementaryConstraint();
 	virtual ~FAGX_ElementaryConstraint();
 
+	FAGX_ElementaryConstraint& operator=(const FAGX_ElementaryConstraint& Other);
+
 	/**
 	 * Whether this Constraint is enabled or not. A disabled Constraint has no effect on the
 	 * simulation.
@@ -110,7 +112,7 @@ public:
 	FElementaryConstraintBarrier* GetNative();
 	const FElementaryConstraintBarrier* GetNative() const;
 
-	void InitializeBarrier(const FElementaryConstraintBarrier& Barrier);
+	//void InitializeBarrier(const FElementaryConstraintBarrier& Barrier);
 
 	/**
 	 * Unbind this Twist Range Controller from the native AGX Dynamics Twist Range Controller, if
@@ -118,13 +120,16 @@ public:
 	 *
 	 * HasNative will return false after this.
 	 */
-	void ClearBarrier();
+	//void ClearBarrier();
 
 	/**
 	 * Apply the UProperties on the native AGX Dynamics constraint. May only be called if HasNative
 	 * returns true.
 	 */
 	void UpdateNativeProperties();
+
+	virtual void UpdateNativePropertiesImpl()
+		PURE_VIRTUAL(FAGX_ConstraintController::UpdateNativePropertiesImpl, );
 
 	/**
 	 * Copy properties from the give AGX Dynamics constraint controller into this AGXUnreal
@@ -135,7 +140,8 @@ public:
 		TArray<FAGX_ElementaryConstraint*>& ArchetypeInstances, bool bForceOverwriteInstances);
 
 protected:
-	FElementaryConstraintBarrier NativeBarrier;
+	//FElementaryConstraintBarrier NativeBarrier;
+	TUniquePtr<FElementaryConstraintBarrier> NativeBarrier;
 };
 
 /**

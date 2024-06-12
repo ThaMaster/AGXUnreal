@@ -47,10 +47,12 @@ namespace AGX_BallConstraintComponent_helpers
 		Constraint.TwistRangeController.InitializeBarrier(Barrier->GetTwistRangeController());
 	}
 
+	#if 0
 	void ClearControllerBarriers(UAGX_BallConstraintComponent& Constraint)
 	{
 		Constraint.TwistRangeController.ClearBarrier();
 	}
+	#endif
 }
 
 void UAGX_BallConstraintComponent::SetNativeAddress(uint64 NativeAddress)
@@ -60,10 +62,12 @@ void UAGX_BallConstraintComponent::SetNativeAddress(uint64 NativeAddress)
 	{
 		AGX_BallConstraintComponent_helpers::InitializeControllerBarriers(*this);
 	}
+	#if 0
 	else
 	{
 		AGX_BallConstraintComponent_helpers::ClearControllerBarriers(*this);
 	}
+	#endif
 }
 
 #if WITH_EDITOR
