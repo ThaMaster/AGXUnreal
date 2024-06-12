@@ -10,7 +10,7 @@
 
 // Unreal Engine includes.
 #include "DrawDebugHelpers.h"
-#include "Engine.h"
+#include "Engine/Engine.h"
 #include "Materials/Material.h"
 #include "Misc/EngineVersionComparison.h"
 #if !UE_VERSION_OLDER_THAN(5, 2, 0)

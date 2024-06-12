@@ -13,7 +13,7 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
-#include "Engine.h"
+#include "Engine/Engine.h"
 #include "UObject/UObjectGlobals.h"
 
 UAGX_ShovelProperties::UAGX_ShovelProperties()
