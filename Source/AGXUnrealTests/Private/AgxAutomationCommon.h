@@ -2,9 +2,6 @@
 
 #pragma once
 
-// AGX Dynamics for Unreal includes.
-#include "AGX_RealInterval.h"
-
 // Unreal Engine includes.
 #include "Engine/EngineTypes.h"
 #include "Components/ActorComponent.h"
@@ -47,35 +44,31 @@ namespace AgxAutomationCommon
 	/// for infinity.
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, double Actual, double Expected,
-		double Tolerance = UE_KINDA_SMALL_NUMBER);
+		double Tolerance = KINDA_SMALL_NUMBER);
 
 	/// @todo Remove this TestEqual implementation for FVector4 once it's included in-engine.
 	/// @see Misc/AutomationTest.h
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, const FVector4& Actual,
-		const FVector4& Expected, float Tolerance = UE_KINDA_SMALL_NUMBER);
+		const FVector4& Expected, float Tolerance = KINDA_SMALL_NUMBER);
 
 	/// @todo Remove this TestEqual implementation for FQuat once it's included in-engine.
 	/// @see Misc/AutomationTest.h
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, const FQuat& Actual, const FQuat& Expected,
-		float Tolerance = UE_KINDA_SMALL_NUMBER);
+		float Tolerance = KINDA_SMALL_NUMBER);
 
 	/// @todo Remove this TestEqual implementation for FRotator once it's included in-engine.
 	/// @see Misc/AutomationTest.h
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, const FRotator& Actual,
-		const FRotator& Expected, float Tolerance = UE_KINDA_SMALL_NUMBER);
+		const FRotator& Expected, float Tolerance = KINDA_SMALL_NUMBER);
 
 	/// @todo Remove this TestEqual implementation for FLinearColor once it's included in-engine.
 	/// @see Misc/AutomaitonTest.h
 	void TestEqual(
 		FAutomationTestBase& Test, const TCHAR* What, const FLinearColor& Actual,
-		const FLinearColor& Expected, float Tolerance = UE_KINDA_SMALL_NUMBER);
-
-	bool TestEqual(
-		FAutomationTestBase& Test, const TCHAR* What, const FAGX_RealInterval& Actual,
-		const FAGX_RealInterval& Expected, double Tolerance = UE_KINDA_SMALL_NUMBER);
+		const FLinearColor& Expected, float Tolerance = KINDA_SMALL_NUMBER);
 
 	void TestLess(
 		FAutomationTestBase& Test, const TCHAR* SmallerName, double Smaller,
@@ -158,28 +151,8 @@ namespace AgxAutomationCommon
 	 * \param Test The currently running FAutomationTestBase, used for test failure reporting.
 	 * \return True if the MD5 checksums match, false if they differ.
 	 */
-	bool CheckAssetMD5Checksum(
+	void CheckAssetMD5Checksum(
 		const FString& PackagePath, const TCHAR* Expected, FAutomationTestBase& Test);
-
-	/**
-	 * Compare the MD5 checksum of the given file with the given expected MD5 checksum. Report a
-	 * test failure on mismatch.
-	 *
-	 * @param FilePath File system path to the file to check.
-	 * @param Expected MD5 hash that the file should have.
-	 * @param Test The currently running test, used for failure reporting.
-	 * \return True if the MD5 checksums match, false if they differ.
-	 */
-	bool CheckFileMD5Checksum(
-		const FString& FilePath, const TCHAR* Expected, FAutomationTestBase& Test);
-
-	/**
-	 * Get the MD5 checksum for the file at the given path. Returns empty string if file load fails.
-	 *
-	 * @param FilePath Path to file to generate checksum for.
-	 * @return The MD5 checksum for the given file.
-	 */
-	FString GetFileMD5Checksum(const FString& FilePath);
 
 	/**
 	 * Delete all assets created when the given archive was imported.

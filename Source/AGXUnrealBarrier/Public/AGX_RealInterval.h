@@ -7,9 +7,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
-#include "Containers/UnrealString.h"
 #include "Math/UnrealMathUtility.h"
-#include "Math/Interval.h"
 
 #include "AGX_RealInterval.generated.h"
 
@@ -24,10 +22,10 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	FAGX_Real Min {0.0};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
+	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	FAGX_Real Max {0.0};
 
 	FAGX_RealInterval() = default;
@@ -46,14 +44,6 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 		Sort();
 	}
 
-	// Not explicit because we do want transparent transition between FAGX_RealInterval and
-	// FDoubleInterval.
-	FAGX_RealInterval(const FDoubleInterval& InInterval)
-		: Min(InInterval.Min)
-		, Max(InInterval.Max)
-	{
-	}
-
 	explicit FAGX_RealInterval(double MinAndMax)
 		: Min(-MinAndMax)
 		, Max(MinAndMax)
@@ -61,22 +51,11 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 		Sort();
 	}
 
-	operator FDoubleInterval() const
-	{
-		return ToDouble();
-	}
-
 	void Set(double InMin, double InMax)
 	{
 		Min = InMin;
 		Max = InMax;
 		Sort();
-	}
-
-	void Set(FDoubleInterval InInterval)
-	{
-		Min = InInterval.Min;
-		Max = InInterval.Max;
 	}
 
 	void SetMin(double InMin)
@@ -105,26 +84,6 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 		{
 			std::swap(Min, Max);
 		}
-	}
-
-	FDoubleInterval ToDouble() const
-	{
-		return FDoubleInterval(Min, Max);
-	}
-
-	FString ToString() const
-	{
-		return FString::Printf(TEXT("(Min=%g Max=%g"), Min, Max);
-	}
-
-	bool Equals(const FAGX_RealInterval& Other, double Tolerance = UE_KINDA_SMALL_NUMBER) const
-	{
-		// Handle infinity, which the regular path fail on since infinity - infinity is NaN.
-		if (Min == Other.Min && Max == Other.Max)
-		{
-			return true;
-		}
-		return FMath::Abs(Min - Other.Min) <= Tolerance && FMath::Abs(Max - Other.Max) <= Tolerance;
 	}
 
 	/// Called by Unreal Engine when de-serializing an FAGX_Real but some other type was found in

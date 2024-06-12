@@ -232,8 +232,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Dynamics", Meta = (InMotionControl = "MC_DYNAMICS"))
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetMotionControl(TEnumAsByte<enum EAGX_MotionControl> InMotionControl);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
