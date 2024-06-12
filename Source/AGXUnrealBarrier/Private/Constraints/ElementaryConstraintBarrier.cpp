@@ -20,7 +20,6 @@ FElementaryConstraintBarrier::FElementaryConstraintBarrier(
 	std::unique_ptr<FElementaryConstraintRef> InNative)
 	: NativeRef(std::move(InNative))
 {
-	check(NativeRef.get());
 }
 
 FElementaryConstraintBarrier::~FElementaryConstraintBarrier()
@@ -30,21 +29,18 @@ FElementaryConstraintBarrier::~FElementaryConstraintBarrier()
 	// types in the header file.
 }
 
-#if 0
 FElementaryConstraintBarrier& FElementaryConstraintBarrier::operator=(
 	const FElementaryConstraintBarrier& Other)
 {
 	NativeRef->Native = Other.NativeRef->Native;
 	return *this;
 }
-#endif
 
 bool FElementaryConstraintBarrier::HasNative() const
 {
 	return NativeRef.get() != nullptr && NativeRef->Native.get() != nullptr;
 }
 
-#if 0
 void FElementaryConstraintBarrier::SetNative(FElementaryConstraintRef* InNativeRef)
 {
 	if (InNativeRef == nullptr)
@@ -54,7 +50,6 @@ void FElementaryConstraintBarrier::SetNative(FElementaryConstraintRef* InNativeR
 	}
 	NativeRef->Native = InNativeRef->Native;
 }
-#endif
 
 FElementaryConstraintRef* FElementaryConstraintBarrier::GetNative()
 {

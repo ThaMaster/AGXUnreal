@@ -64,19 +64,16 @@ public:
 	double GetRangeMin() const;
 	double GetRangeMax() const;
 
-	#if 0
 	bool HasNative() const;
 	FTwistRangeControllerBarrier* GetNative();
 	const FTwistRangeControllerBarrier* GetNative() const;
-	#endif
 
 	/**
 	 * Bind this Twist Range Controller to the AGX Dynamics Twist Range Controller referenced by
 	 * the given Barrier.
 	 * @param Barrier
 	 */
-	//void InitializeBarrier(const FTwistRangeControllerBarrier& Barrier);
-	void InitializeBarrier(TUniquePtr<FTwistRangeControllerBarrier> Barrier);
+	void InitializeBarrier(const FTwistRangeControllerBarrier& Barrier);
 
 	/**
 	 * Unbind this Twist Range Controller from the native AGX Dynamics Twist Range Controller, if
@@ -84,16 +81,16 @@ public:
 	 *
 	 * HasNative will return false after this.
 	 */
-	//void ClearBarrier();
+	void ClearBarrier();
 
-	virtual void UpdateNativePropertiesImpl() override;
+	void UpdateNativeProperties();
 
 	void CopyFrom(
 		const FTwistRangeControllerBarrier& Source,
 		TArray<FAGX_TwistRangeController*>& ArchetypeInstances, bool bForceOverwriteInstances);
 
 private:
-	//FTwistRangeControllerBarrier NativeBarrier;
+	FTwistRangeControllerBarrier NativeBarrier;
 };
 
 /**

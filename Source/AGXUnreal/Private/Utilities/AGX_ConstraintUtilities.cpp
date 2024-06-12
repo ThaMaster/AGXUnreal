@@ -239,8 +239,8 @@ void FAGX_ConstraintUtilities::StoreTwistRangeController(
 	// For now we handle the two cases separately. If there is a Native in the destination
 	// Controller then we return immediately. If there is not then we reset back to the default
 	// state by assigning a default-constructed, i.e. Native-less, FAGX_TwistRangeController.
-	TUniquePtr<FTwistRangeControllerBarrier> Source = Barrier.GetTwistRangeController();
-	if (!Source->HasNative())
+	const FTwistRangeControllerBarrier& Source = Barrier.GetTwistRangeController();
+	if (!Source.HasNative())
 	{
 		if (!Controller.HasNative())
 		{
@@ -249,7 +249,7 @@ void FAGX_ConstraintUtilities::StoreTwistRangeController(
 		return;
 	}
 
-	Controller.CopyFrom(*Source, Instances, bForceOverwriteInstances);
+	Controller.CopyFrom(Source, Instances, bForceOverwriteInstances);
 }
 
 #if WITH_EDITOR

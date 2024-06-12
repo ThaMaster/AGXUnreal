@@ -24,10 +24,10 @@ public:
 	 * Make this Barrier point to the same native AGX Dynamics object as Other. The Ref object
 	 * will not be shared, only the AGX Dynamics object.
 	 */
-	FElementaryConstraintBarrier& operator=(const FElementaryConstraintBarrier& Other) = delete;
+	FElementaryConstraintBarrier& operator=(const FElementaryConstraintBarrier& Other);
 
 	bool HasNative() const;
-	//void SetNative(FElementaryConstraintRef* InNative);
+	void SetNative(FElementaryConstraintRef* InNative);
 	FElementaryConstraintRef* GetNative();
 	const FElementaryConstraintRef* GetNative() const;
 

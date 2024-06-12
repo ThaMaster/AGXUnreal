@@ -3,8 +3,8 @@
 #include "Constraints/ControllerConstraintBarriers.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGXRefs.h"
 #include "TypeConversions.h"
+#include "AGXRefs.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -474,16 +474,15 @@ namespace
 {
 	agx::TwistRangeController* GetController(FTwistRangeControllerBarrier& Barrier)
 	{
-		return dynamic_cast<agx::TwistRangeController*>(Barrier.GetNative()->Native.get());
+		return Barrier.GetNative()->Native;
 	}
 
 	const agx::TwistRangeController* GetController(const FTwistRangeControllerBarrier& Barrier)
 	{
-		return dynamic_cast<const agx::TwistRangeController*>(Barrier.GetNative()->Native.get());
+		return Barrier.GetNative()->Native;
 	}
 }
 
-#if 0
 FTwistRangeControllerBarrier::FTwistRangeControllerBarrier()
 	: NativeRef(new FTwistRangeControllerRef())
 {
@@ -495,26 +494,21 @@ FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
 		  std::make_unique<FTwistRangeControllerRef>(Other.NativeRef->Native))
 {
 }
-#endif
 
 FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
-	std::unique_ptr<FElementaryConstraintRef> Native)
-	: FElementaryConstraintBarrier(std::move(Native))
+	std::unique_ptr<FTwistRangeControllerRef> Native)
+	: FElementaryConstraintBarrier(std::make_unique<FElementaryConstraintRef>(Native->Native))
+	, NativeRef(std::move(Native))
 {
-	check(HasNative());
-	NativeRef->Native->is<agx::TwistRangeController>();
 }
 
-#if 0
 FTwistRangeControllerBarrier::~FTwistRangeControllerBarrier()
 {
 	// Must have a non-inlined destructor because the NativeRef destructor must be able to see the
 	// full definition of the pointed-to type, and we are not allowed to include F*Ref / F*Ptr
 	// types in the header file.
 }
-#endif
 
-#if 0
 FTwistRangeControllerBarrier& FTwistRangeControllerBarrier::operator=(
 	const FTwistRangeControllerBarrier& Other)
 {
@@ -523,13 +517,12 @@ FTwistRangeControllerBarrier& FTwistRangeControllerBarrier::operator=(
 	NativeRef->Native = Other.NativeRef->Native;
 	return *this;
 }
-#endif
 
 void FTwistRangeControllerBarrier::SetRange(FDoubleInterval InRange)
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = ConvertAngle(InRange);
-	GetController(*this)->setRange(RangeAGX);
+	NativeRef->Native->setRange(RangeAGX);
 }
 
 void FTwistRangeControllerBarrier::SetRange(FAGX_RealInterval InRange)
@@ -541,20 +534,20 @@ void FTwistRangeControllerBarrier::SetRangeMin(double InMin)
 {
 	check(HasNative());
 	const agx::Real MinAGX = ConvertAngleToAGX(InMin);
-	GetController(*this)->getRange().lower() = MinAGX;
+	NativeRef->Native->getRange().lower() = MinAGX;
 }
 
 void FTwistRangeControllerBarrier::SetRangeMax(double InMax)
 {
 	check(HasNative());
 	const agx::Real MaxAGX = ConvertAngleToAGX(InMax);
-	GetController(*this)->getRange().upper() = MaxAGX;
+	NativeRef->Native->getRange().upper() = MaxAGX;
 }
 
 FDoubleInterval FTwistRangeControllerBarrier::GetRange() const
 {
 	check(HasNative());
-	agx::RangeReal RangeAGX = GetController(*this)->getRange();
+	agx::RangeReal RangeAGX = NativeRef->Native->getRange();
 	FDoubleInterval Range = ConvertAngle(RangeAGX);
 	return Range;
 }
@@ -562,7 +555,7 @@ FDoubleInterval FTwistRangeControllerBarrier::GetRange() const
 double FTwistRangeControllerBarrier::GetRangeMin() const
 {
 	check(HasNative());
-	const agx::Real MinAGX = GetController(*this)->getRange().lower();
+	const agx::Real MinAGX = NativeRef->Native->getRange().lower();
 	const double Min = ConvertAngleToUnreal<double>(MinAGX);
 	return Min;
 }
@@ -570,20 +563,20 @@ double FTwistRangeControllerBarrier::GetRangeMin() const
 double FTwistRangeControllerBarrier::GetRangeMax() const
 {
 	check(HasNative());
-	const agx::Real MaxAGX = GetController(*this)->getRange().upper();
+	const agx::Real MaxAGX = NativeRef->Native->getRange().upper();
 	const double Max = ConvertAngleToUnreal<double>(MaxAGX);
 	return Max;
 }
 
-#if 0
 bool FTwistRangeControllerBarrier::HasNative() const
 {
-	check(GetController(*this) == FElementaryConstraintBarrier::GetController(*this));
+	check(NativeRef->Native == FElementaryConstraintBarrier::NativeRef->Native);
 	return NativeRef->Native != nullptr;
 }
 
 FTwistRangeControllerRef* FTwistRangeControllerBarrier::GetNative()
 {
+	check(NativeRef->Native == FElementaryConstraintBarrier::NativeRef->Native);
 	return NativeRef.get();
 }
 
@@ -592,4 +585,3 @@ const FTwistRangeControllerRef* FTwistRangeControllerBarrier::GetNative() const
 	check(NativeRef->Native == FElementaryConstraintBarrier::NativeRef->Native);
 	return NativeRef.get();
 }
-#endif

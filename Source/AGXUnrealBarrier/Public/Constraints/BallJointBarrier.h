@@ -5,8 +5,7 @@
 #include "Constraints/ConstraintBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-//#include "Constraints/ControllerConstraintBarriers.h"
-class FTwistRangeControllerBarrier;
+#include "Constraints/ControllerConstraintBarriers.h"
 
 class FRigidBodyBarrier;
 
@@ -18,8 +17,7 @@ public:
 	FBallJointBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FBallJointBarrier();
 
-	// FTwistRangeControllerBarrier GetTwistRangeController() const;
-	TUniquePtr<FTwistRangeControllerBarrier> GetTwistRangeController() const;
+	FTwistRangeControllerBarrier GetTwistRangeController() const;
 
 private:
 	virtual void AllocateNativeImpl(

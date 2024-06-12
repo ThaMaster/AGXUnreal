@@ -14,7 +14,6 @@ FAGX_TwistRangeController::~FAGX_TwistRangeController()
 {
 }
 
-#if 0
 bool FAGX_TwistRangeController::HasNative() const
 {
 	return NativeBarrier.HasNative();
@@ -37,27 +36,12 @@ const FTwistRangeControllerBarrier* FAGX_TwistRangeController::GetNative() const
 	}
 	return &NativeBarrier;
 }
-#endif
-
-namespace
-{
-	FTwistRangeControllerBarrier* GetTwistRangeBarrier(FAGX_TwistRangeController& Controller)
-	{
-		return static_cast<FTwistRangeControllerBarrier*>(Controller.GetNative());
-	}
-
-	const FTwistRangeControllerBarrier* GetTwistRangeBarrier(
-		const FAGX_TwistRangeController& Controller)
-	{
-		return static_cast<const FTwistRangeControllerBarrier*>(Controller.GetNative());
-	}
-}
 
 void FAGX_TwistRangeController::SetRange(FDoubleInterval InRange)
 {
 	if (HasNative())
 	{
-		GetTwistRangeBarrier(*this)->SetRange(InRange);
+		NativeBarrier.SetRange(InRange);
 	}
 	Range = FAGX_RealInterval(InRange);
 }
@@ -66,7 +50,7 @@ void FAGX_TwistRangeController::SetRangeMin(double InMin)
 {
 	if (HasNative())
 	{
-		GetTwistRangeBarrier(*this)->SetRangeMin(InMin);
+		NativeBarrier.SetRangeMin(InMin);
 	}
 	Range.Min = InMin;
 }
@@ -75,7 +59,7 @@ void FAGX_TwistRangeController::SetRangeMax(double InMax)
 {
 	if (HasNative())
 	{
-		GetTwistRangeBarrier(*this)->SetRangeMax(InMax);
+		NativeBarrier.SetRangeMax(InMax);
 	}
 	Range.Max = InMax;
 }
@@ -84,7 +68,7 @@ void FAGX_TwistRangeController::SetRange(FAGX_RealInterval InRange)
 {
 	if (HasNative())
 	{
-		GetTwistRangeBarrier(*this)->SetRange(InRange);
+		NativeBarrier.SetRange(InRange);
 	}
 	Range = InRange;
 }
@@ -93,7 +77,7 @@ FDoubleInterval FAGX_TwistRangeController::GetRange() const
 {
 	if (HasNative())
 	{
-		return GetTwistRangeBarrier(*this)->GetRange();
+		return NativeBarrier.GetRange();
 	}
 	return Range;
 }
@@ -102,7 +86,7 @@ double FAGX_TwistRangeController::GetRangeMin() const
 {
 	if (HasNative())
 	{
-		return GetTwistRangeBarrier(*this)->GetRangeMin();
+		return NativeBarrier.GetRangeMin();
 	}
 	return Range.Min;
 }
@@ -111,20 +95,11 @@ double FAGX_TwistRangeController::GetRangeMax() const
 {
 	if (HasNative())
 	{
-		return GetTwistRangeBarrier(*this)->GetRangeMax();
+		return NativeBarrier.GetRangeMax();
 	}
 	return Range.Max;
 }
 
-#if 1
-void FAGX_TwistRangeController::InitializeBarrier(
-	TUniquePtr<FTwistRangeControllerBarrier> Barrier)
-{
-	check(!HasNative());
-	NativeBarrier = std::move(Barrier);
-	check(HasNative());
-}
-#else
 void FAGX_TwistRangeController::InitializeBarrier(const FTwistRangeControllerBarrier& Barrier)
 {
 	check(!HasNative());
@@ -132,15 +107,12 @@ void FAGX_TwistRangeController::InitializeBarrier(const FTwistRangeControllerBar
 	NativeBarrier = Barrier;
 	check(HasNative());
 }
-#endif
 
-#if 0
 void FAGX_TwistRangeController::ClearBarrier()
 {
 	Super::ClearBarrier();
 	NativeBarrier = FTwistRangeControllerBarrier();
 }
-#endif
 
 void FAGX_TwistRangeController::CopyFrom(
 	const FTwistRangeControllerBarrier& Source,
@@ -167,8 +139,9 @@ void FAGX_TwistRangeController::CopyFrom(
 	Range = RangeBarrier;
 }
 
-void FAGX_TwistRangeController::UpdateNativePropertiesImpl()
+void FAGX_TwistRangeController::UpdateNativeProperties()
 {
 	check(HasNative());
-	GetTwistRangeBarrier(*this)->SetRange(Range);
+	Super::UpdateNativeProperties();
+	NativeBarrier.SetRange(Range);
 }
