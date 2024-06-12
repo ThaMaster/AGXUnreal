@@ -2256,12 +2256,12 @@ void UAGX_WireComponent::UpdateVisuals()
 {
 	if (!ShouldRenderSelf())
 	{
-		const bool hasVisualCylinders =
+		const bool bHasVisualCylinders =
 			VisualCylinders != nullptr && VisualCylinders->GetInstanceCount() > 0;
-		const bool hasVisualSpheres =
+		const bool bHasVisualSpheres =
 			VisualSpheres != nullptr && VisualSpheres->GetInstanceCount() > 0;
 
-		if (VisualCylinders || hasVisualSpheres)
+		if (bHasVisualCylinders || bHasVisualSpheres)
 			SetVisualsInstanceCount(0);
 
 		return;
