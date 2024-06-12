@@ -149,6 +149,20 @@ void AgxAutomationCommon::TestEqual(
 	}
 }
 
+bool AgxAutomationCommon::TestEqual(
+		FAutomationTestBase& Test, const TCHAR* What, const FAGX_RealInterval& Actual,
+		const FAGX_RealInterval& Expected, double Tolerance)
+{
+	if (!Expected.Equals(Actual, Tolerance))
+	{
+		Test.AddError(FString::Printf(
+			TEXT("Expected '%s' to be '%s' but it was '%s, with tolerance %f."), What,
+			*Expected.ToString(), *Actual.ToString(), Tolerance));
+		return false;
+	}
+	return true;
+}
+
 void AgxAutomationCommon::TestLess(
 	FAutomationTestBase& Test, const TCHAR* SmallerName, double Smaller, const TCHAR* LargerName,
 	double Larger)

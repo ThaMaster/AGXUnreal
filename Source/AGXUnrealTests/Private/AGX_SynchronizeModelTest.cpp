@@ -1,5 +1,17 @@
 // Copyright 2024, Algoryx Simulation AB.
 
+/*
+ * A collection of tests that test AGX Dynamics archive import and model synchronization.
+ *
+ * There are a number of Python scripts that build a scene, saves it to a .agx file, modifies the
+ * scene, and finally saves it to another .agx file. These tests import the first .agx file, checks
+ * that the contents is as expected, synchronizes with the second .agx file, and again checks that
+ * the contents is as expected.
+ *
+ * A base class,  FSynchronizeModelTest, that does the import and synchronization interspersed with
+ * calls to virtual functions implemented by derived classes where the actual testing happens.
+ */
+
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImporterToBlueprint.h"
 #include "AGX_ImportSettings.h"
@@ -7,6 +19,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_BallConstraintComponent.h"
+#include "Constraints/AGX_CylindricalConstraintComponent.h"
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
@@ -33,17 +46,18 @@
 
 namespace AGX_SynchronizeModelTest_helpers
 {
-	// Child Blueprints, like the one produced after an Import does not necessarily contain any SCS
+	// Child Blueprints, like the one produced after an Import, does not necessarily contain any SCS
 	// Nodes themselves. Instead one have to get the SCS Nodes from the base Blueprint, then get the
 	// template Components from them, and go through the archetype instances to find the Components
 	// of interest.
 
 #if 0
 	// todo: important; the found template Components from the GetTemplateComponents
-	// call below are retrieved as expected. But calling GetArchetypeInstances on any of those components
-	// gives nothing, which is really unexpected. It is just as if it is only from this test that
-	// the issue exists, doing the anywhere in the Editor module of the plugin works as
+	// call below are retrieved as expected. But calling GetArchetypeInstances on any of those
+	// components gives nothing, which is really unexpected. It is just as if it is only from this
+	// test that the issue exists, doing the anywhere in the Editor module of the plugin works as
 	// expected.
+	//
 	// Update: it seems that the archetype instances of the base Blueprint are created on-demand
 	// when the Blueprint Editor is opened. This was confirmed by printing out the number of
 	// archetype instances right after a regular Import but before the Blueprint Editor was opened.
@@ -309,7 +323,7 @@ DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
 
 /**
  * Base class for tests that load a model and then synchronizes with an updated version of the
- * same model.
+ * same model. Add model-specific test code in the pure-virtual member functions.
  */
 class FSynchronizeModelTest : public AgxAutomationCommon::FAgxAutomationTest
 {
@@ -332,6 +346,10 @@ public:
 	{
 	}
 
+	/**
+	 * Called by the Unreal Engine test framework. Sets up a latent call to the parameter-less
+	 * RunTest.
+	 */
 	virtual bool RunTest(const FString& Parameters) override
 	{
 		World = FAGX_EditorUtilities::GetCurrentWorld();
@@ -348,6 +366,10 @@ public:
 		return true;
 	}
 
+	/**
+	 * Main test flow implemented here. Handles model loading and synchronization, and calls the
+	 * pure-virtual member functions at appropriate times.
+	 */
 	void RunTest()
 	{
 		using namespace AGX_SynchronizeModelTest_helpers;
@@ -446,6 +468,8 @@ public:
 		UpdatedBlueprintInstance = nullptr;
 	}
 
+	// Model-specific work should be done by implementing these pure-virtual member functions in a
+	// derived class.
 	virtual bool PostImport() = 0;
 	virtual bool PostSynchronize() = 0;
 	virtual bool Cleanup() = 0;
@@ -1297,7 +1321,7 @@ bool FIgnoreDisabledTrimeshTFTest::RunTest(const FString& Parameters)
 }
 
 //
-// Merge Split Thresholds synchronization test starts here.
+// Merge Split Thresholds synchronization tests start here.
 //
 
 /**
@@ -1630,3 +1654,187 @@ namespace
 {
 	FModifyConstraintMergeSplitThresholdsTest ModifyConstraintMergeSplitThresholdsTest;
 }
+
+//
+// Cylindrical Constraint test starts here.
+//
+
+class FModifyCylindricalConstraintTest final : public FSynchronizeModelTest
+{
+public:
+	FModifyCylindricalConstraintTest()
+		: FSynchronizeModelTest(
+			  TEXT("FSynchronizeModelTest"),
+			  TEXT("AGXUnreal.Editor.AGX_SynchronizeModelTest.ModifyCylindricalConstraint"),
+			  TEXT("cylindrical_constraint__initial.agx"),
+			  TEXT("cylindrical_constraint__updated.agx"))
+	{
+	}
+
+	FString AssetPath; // TODO Is this needed?
+
+	bool CheckCylindricalConstraint(
+		UAGX_CylindricalConstraintComponent& Cylindrical, double Scale, EAGX_SolveType SolveType,
+		bool bEnable)
+	{
+		bool AllCorrect = true;
+		AllCorrect &= TestEqual(TEXT("Template Cylindrical enabled"), Cylindrical.bEnable, bEnable);
+		AllCorrect &=
+			TestEqual(TEXT("Template Cylindrical solve type"), Cylindrical.SolveType, SolveType);
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical compliance rotat 1"), Cylindrical.Compliance.Rotational_1,
+			Scale * 1.0);
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical compliance rotat 1"), Cylindrical.Compliance.Rotational_2,
+			Scale * 1.1);
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical compliance trans 1"), Cylindrical.Compliance.Translational_1,
+			Scale * 1.2);
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical compliance trans 2"), Cylindrical.Compliance.Translational_2,
+			Scale * 1.3);
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical Spook damping rotat 1"),
+			Cylindrical.SpookDamping.Rotational_1, Scale * 2.0);
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical Spook damping rotat 2"),
+			Cylindrical.SpookDamping.Rotational_2, Scale * 2.1);
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical Spook damping trans 1"),
+			Cylindrical.SpookDamping.Translational_1, Scale * 2.2);
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical Spook damping trans 2"),
+			Cylindrical.SpookDamping.Translational_2, Scale * 2.3);
+		AllCorrect &= AgxAutomationCommon::TestEqual(
+			*this, TEXT("Template Cylindrical rotational 1 force range"),
+			Cylindrical.ForceRange.Rotational_1, FAGX_RealInterval(Scale * 3.0, Scale * 4.0));
+		AllCorrect &= AgxAutomationCommon::TestEqual(
+			*this, TEXT("Template Cylindrical rotational 2 force range"),
+			Cylindrical.ForceRange.Rotational_2, FAGX_RealInterval(Scale * 3.1, Scale * 4.1));
+		AllCorrect &= AgxAutomationCommon::TestEqual(
+			*this, TEXT("Template Cylindrical translational 1 force range"),
+			Cylindrical.ForceRange.Translational_1, FAGX_RealInterval(Scale * 3.2, Scale * 4.2));
+		AllCorrect &= AgxAutomationCommon::TestEqual(
+			*this, TEXT("Template Cylindrical translational 2 force range"),
+			Cylindrical.ForceRange.Translational_2, FAGX_RealInterval(Scale * 3.3, Scale * 4.3));
+		// Cylindrical Constraint does not have rotational compliance, damping, or force range since
+		// all rotational degrees of freedom are free.
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical compute forces"), Cylindrical.bComputeForces, bEnable);
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical twist range enabled"), Cylindrical.ScrewController.bEnable,
+			bEnable);
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical twist range compliance"),
+			Cylindrical.ScrewController.Compliance, Scale * 5.0);
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical twist range damping"),
+			Cylindrical.ScrewController.SpookDamping, Scale * 6.0);
+		AllCorrect &= AgxAutomationCommon::TestEqual(
+			*this, TEXT("Template Cylindrical twist range force range"),
+			Cylindrical.ScrewController.ForceRange, FAGX_RealInterval(Scale * 7.0, Scale * 8.0));
+		AllCorrect &= TestEqual(
+			TEXT("Template Cylindrical lead"), (Cylindrical.ScrewController.Lead),
+			Scale * AgxAutomationCommon::AgxToUnrealDistance(9.0));
+
+		return AllCorrect;
+	}
+
+	virtual bool PostImport() override
+	{
+		// Make sure we got the template Components we expect.
+		// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 1 Cylindrical Constraint.
+		if (!TestEqual(
+				TEXT("Number of imported components before synchronize"),
+				InitialTemplateComponents.Num(), 4))
+		{
+			return false;
+		}
+
+		// Check the Blueprint.
+		UAGX_CylindricalConstraintComponent* CylindricalTemplate =
+			GetTemplateComponentByName<UAGX_CylindricalConstraintComponent>(
+				InitialTemplateComponents, TEXT("Cylindrical"));
+		if (!TestNotNull(TEXT("Template Cylindrical before synchronize"), CylindricalTemplate))
+		{
+			return false;
+		}
+		if (!CheckCylindricalConstraint(
+				*CylindricalTemplate, 1.0, EAGX_SolveType::StDirectAndIterative, true))
+		{
+			return false;
+		}
+
+		// Check the Blueprint instance.
+		UAGX_CylindricalConstraintComponent* CylindricalInstance =
+			FAGX_ObjectUtilities::GetComponentByName<UAGX_CylindricalConstraintComponent>(
+				*InitialBlueprintInstance, TEXT("Cylindrical"));
+		if (!TestNotNull(
+				TEXT("Cylindrical Constraint instance before synchronize"), CylindricalInstance))
+		{
+			return false;
+		}
+		if (!CheckCylindricalConstraint(
+				*CylindricalInstance, 1.0, EAGX_SolveType::StDirectAndIterative, true))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	virtual bool PostSynchronize() override
+	{
+		// Make sure we got the template Components we expect.
+		// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 1 Cylindrical Constraint.
+		if (!TestEqual(
+				TEXT("Number of imported components before synchronize"),
+				UpdatedTemplateComponents.Num(), 4))
+		{
+			return false;
+		}
+
+		// Check the Blueprint.
+		UAGX_CylindricalConstraintComponent* CylindricalTemplate =
+			GetTemplateComponentByName<UAGX_CylindricalConstraintComponent>(
+				UpdatedTemplateComponents, TEXT("Cylindrical"));
+		if (!TestNotNull(TEXT("Template Cylindrical before synchronize"), CylindricalTemplate))
+		{
+			return false;
+		}
+		if (!CheckCylindricalConstraint(
+				*CylindricalTemplate, 10.0, EAGX_SolveType::StDirect, false))
+		{
+			return false;
+		}
+
+		// Check the Blueprint instance.
+		UAGX_CylindricalConstraintComponent* CylindricalInstance =
+			FAGX_ObjectUtilities::GetComponentByName<UAGX_CylindricalConstraintComponent>(
+				*UpdatedBlueprintInstance, TEXT("Cylindrical"));
+		if (!TestNotNull(
+				TEXT("Cylindrical Constraint instance before synchronize"), CylindricalInstance))
+		{
+			return false;
+		}
+		if (!CheckCylindricalConstraint(
+				*CylindricalInstance, 10.0, EAGX_SolveType::StDirect, false))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	virtual bool Cleanup() override
+	{
+		// Nothing to do.
+		return true;
+	}
+};
+
+namespace
+{
+	FModifyCylindricalConstraintTest ModifyCylindricalConstraintTest;
+}
+
