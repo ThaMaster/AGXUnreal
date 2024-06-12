@@ -14,6 +14,7 @@
 
 // Unreal Engine includes.
 #include "Engine/Engine.h"
+#include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
 
 UAGX_ShovelProperties::UAGX_ShovelProperties()
