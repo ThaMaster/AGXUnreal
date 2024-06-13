@@ -79,6 +79,28 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 		Max = InMax;
 	}
 
+	void Get(double& OutMin, double& OutMax) const
+	{
+		OutMin = Min;
+		OutMax = Max;
+	}
+
+	void Get(FDoubleInterval& OutInterval) const
+	{
+		OutInterval.Min = Min;
+		OutInterval.Max = Max;
+	}
+
+	double GetMin() const
+	{
+		return Min;
+	}
+
+	double GetMax() const
+	{
+		return Max;
+	}
+
 	FDoubleInterval ToDouble() const
 	{
 		return FDoubleInterval(Min, Max);
