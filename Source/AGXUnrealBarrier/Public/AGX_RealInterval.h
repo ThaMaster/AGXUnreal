@@ -56,11 +56,6 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 	{
 	}
 
-	operator FDoubleInterval() const
-	{
-		return ToDouble();
-	}
-
 	void Set(double InMin, double InMax)
 	{
 		Min = InMin;
@@ -84,6 +79,16 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 		Max = InMax;
 	}
 
+	FDoubleInterval ToDouble() const
+	{
+		return FDoubleInterval(Min, Max);
+	}
+
+	operator FDoubleInterval() const
+	{
+		return ToDouble();
+	}
+
 	bool IsNearlyZero(double Tolerance = SMALL_NUMBER) const
 	{
 		return FMath::IsNearlyZero(Min, Tolerance) && FMath::IsNearlyZero(Max, Tolerance);
@@ -100,11 +105,6 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 		{
 			std::swap(Min, Max);
 		}
-	}
-
-	FDoubleInterval ToDouble() const
-	{
-		return FDoubleInterval(Min, Max);
 	}
 
 	FString ToString() const
