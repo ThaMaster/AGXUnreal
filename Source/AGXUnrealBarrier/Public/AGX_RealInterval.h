@@ -40,25 +40,20 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 	}
 
 	explicit FAGX_RealInterval(const double (&MinAndMax)[2])
-		: Min(MinAndMax[0])
-		, Max(MinAndMax[1])
+		: FAGX_RealInterval(MinAndMax[0], MinAndMax[1])
 	{
-		Sort();
 	}
 
 	// Not explicit because we do want transparent transition between FAGX_RealInterval and
 	// FDoubleInterval.
 	FAGX_RealInterval(const FDoubleInterval& InInterval)
-		: Min(InInterval.Min)
-		, Max(InInterval.Max)
+		: FAGX_RealInterval(InInterval.Min, InInterval.Max)
 	{
 	}
 
 	explicit FAGX_RealInterval(double MinAndMax)
-		: Min(-MinAndMax)
-		, Max(MinAndMax)
+		: FAGX_RealInterval(-MinAndMax, MinAndMax)
 	{
-		Sort();
 	}
 
 	operator FDoubleInterval() const
