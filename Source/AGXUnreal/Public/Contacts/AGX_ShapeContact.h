@@ -102,6 +102,15 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	static int GetNumContactPoints(UPARAM(Ref) FAGX_ShapeContact& ShapeContact);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
+	static int32 GetNumPoints(UPARAM(Ref) FAGX_ShapeContact& ShapeContact);
+
+	/**
+	 * Returns the last valid point index. Returns -1 if there are no points and thus no valid index.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
+	static int32 GetLastPointIndex(UPARAM(Ref) FAGX_ShapeContact& ShapeContact);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static bool HasPointNative(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")

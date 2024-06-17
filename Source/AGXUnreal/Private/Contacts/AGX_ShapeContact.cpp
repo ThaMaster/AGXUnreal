@@ -275,12 +275,23 @@ FVector UAGX_ShapeContact_FL::CalculateRelativeVelocity(
 
 int32 UAGX_ShapeContact_FL::GetNumContactPoints(FAGX_ShapeContact& ShapeContact)
 {
+	return GetNumPoints(ShapeContact);
+}
+
+int UAGX_ShapeContact_FL::GetNumPoints(UPARAM(Ref) FAGX_ShapeContact& ShapeContact)
+{
 	if (!TestHasNative(ShapeContact, TEXT("Num Contact Points")))
 	{
 		return 0;
 	}
 	return ShapeContact.GetNumContactPoints();
 }
+
+int UAGX_ShapeContact_FL::GetLastPointIndex(UPARAM(Ref) FAGX_ShapeContact& ShapeContact)
+{
+	return GetNumPoints(ShapeContact) - 1;
+}
+
 
 bool UAGX_ShapeContact_FL::HasPointNative(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
 {
