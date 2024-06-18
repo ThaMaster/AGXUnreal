@@ -2,6 +2,10 @@
 
 #pragma once
 
+// Unreal Engine includes.
+#include "Math/Interval.h"
+
+// Standard library includes.
 #include <memory>
 
 #if 0
@@ -72,7 +76,6 @@ public: // Native management.
 	bool HasNative() const;
 	FTwistRangeControllerRef* GetNative();
 	const FTwistRangeControllerRef* GetNative() const;
-
 
 private: // Member variables.
 	std::unique_ptr<FTwistRangeControllerRef> NativeRef;
