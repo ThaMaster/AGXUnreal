@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 
 #if 0
 
@@ -49,9 +50,19 @@ protected:
 
 #else
 
+struct FTwistRangeControllerRef;
+
 class AGXUNREALBARRIER_API FTwistRangeControllerBarrier
 {
+public: // Special member functions.
+	FTwistRangeControllerBarrier();
+	FTwistRangeControllerBarrier(const FTwistRangeControllerBarrier& Other);
+	FTwistRangeControllerBarrier(std::unique_ptr<FTwistRangeControllerRef> InNative);
+	virtual ~FTwistRangeControllerBarrier();
+	FTwistRangeControllerBarrier& operator=(const FTwistRangeControllerBarrier& Other);
 
+private: // Member variables.
+	std::unique_ptr<FTwistRangeControllerRef> NativeRef;
 };
 
 #endif

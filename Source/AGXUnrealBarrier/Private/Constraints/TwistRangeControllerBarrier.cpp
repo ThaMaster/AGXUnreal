@@ -2,7 +2,7 @@
 
 #include "Constraints/TwistRangeControllerBarrier.h"
 
-#if 0
+
 
 // AGX Dynamics for Unreal includes.
 #include "TypeConversions.h"
@@ -13,6 +13,7 @@
 #include <agx/Constraint.h>
 #include "EndAGXIncludes.h"
 
+#if 0
 //
 // Twist Range Contorller starts here.
 //
@@ -98,3 +99,27 @@ const FTwistRangeControllerRef* FTwistRangeControllerBarrier::GetNative() const
 }
 
 #endif
+
+FTwistRangeControllerBarrier::FTwistRangeControllerBarrier()
+{
+}
+
+FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
+	const FTwistRangeControllerBarrier& Other)
+{
+}
+
+FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
+	std::unique_ptr<FTwistRangeControllerRef> InNative)
+{
+}
+
+FTwistRangeControllerBarrier::~FTwistRangeControllerBarrier()
+{
+}
+
+FTwistRangeControllerBarrier& FTwistRangeControllerBarrier::operator=(
+	const FTwistRangeControllerBarrier& Other)
+{
+	return *this;
+}
