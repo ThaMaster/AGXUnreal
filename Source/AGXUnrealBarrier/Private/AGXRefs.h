@@ -50,6 +50,7 @@ struct FConstraintRef
 	}
 };
 
+#if 0
 struct FTwistRangeControllerRef
 {
 	agx::ref_ptr<agx::TwistRangeController> Native;
@@ -59,6 +60,7 @@ struct FTwistRangeControllerRef
 	{
 	}
 };
+#endif
 
 struct FContactMaterialRef
 {
