@@ -2,11 +2,11 @@
 
 #pragma once
 
-#if 0
+#if 1
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_RealInterval.h"
-#include "Constraints/ControllerConstraintBarriers.h"
+#include "Constraints/TwistRangeControllerBarrier.h"
 
 // Unreal Engine includes.
 #include "Kismet/BlueprintFunctionLibrary.h"
