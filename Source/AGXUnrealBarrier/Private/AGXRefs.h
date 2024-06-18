@@ -50,6 +50,16 @@ struct FConstraintRef
 	}
 };
 
+struct FTwistRangeControllerRef
+{
+	agx::ref_ptr<agx::TwistRangeController> Native;
+	FTwistRangeControllerRef() = default;
+	FTwistRangeControllerRef(agx::TwistRangeController* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
 struct FContactMaterialRef
 {
 	agx::ContactMaterialRef Native;

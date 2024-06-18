@@ -24,6 +24,14 @@ FBallJointBarrier::~FBallJointBarrier()
 {
 }
 
+FTwistRangeControllerBarrier FBallJointBarrier::GetTwistRangeController() const
+{
+	check(HasNative());
+	agx::TwistRangeController* Controller =
+		NativeRef->Native->as<agx::BallJoint>()->getTwistRangeController();
+	return FTwistRangeControllerBarrier(std::make_unique<FTwistRangeControllerRef>(Controller));
+}
+
 void FBallJointBarrier::AllocateNativeImpl(
 	const FRigidBodyBarrier& RigidBody1, const FVector& FramePosition1, const FQuat& FrameRotation1,
 	const FRigidBodyBarrier* RigidBody2, const FVector& FramePosition2, const FQuat& FrameRotation2)
