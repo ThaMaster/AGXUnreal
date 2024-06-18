@@ -426,6 +426,8 @@ bool FTargetSpeedControllerBarrier::GetLockedAtZeroSpeed() const
 	return GetController(*this)->getLockedAtZeroSpeed();
 }
 
+#if 0
+
 //
 // Twist Range Contorller starts here.
 //
@@ -509,3 +511,5 @@ const FTwistRangeControllerRef* FTwistRangeControllerBarrier::GetNative() const
 {
 	return NativeRef.get();
 }
+
+#endif

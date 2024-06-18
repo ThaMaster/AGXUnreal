@@ -127,6 +127,8 @@ public:
 	bool GetLockedAtZeroSpeed() const;
 };
 
+#if 0
+
 class AGXUNREALBARRIER_API FTwistRangeControllerBarrier
 {
 public: // Special member functions.
@@ -166,3 +168,5 @@ public: // Native management.
 protected:
 	std::unique_ptr<FTwistRangeControllerRef> NativeRef;
 };
+
+#endif
