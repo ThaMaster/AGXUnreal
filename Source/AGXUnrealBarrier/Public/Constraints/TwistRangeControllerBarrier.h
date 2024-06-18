@@ -61,6 +61,19 @@ public: // Special member functions.
 	virtual ~FTwistRangeControllerBarrier();
 	FTwistRangeControllerBarrier& operator=(const FTwistRangeControllerBarrier& Other);
 
+public: // AGX Dynamics accessors.
+	void SetEnabled(bool bInEnabled);
+	bool GetEnabled() const;
+
+	void SetRange(FDoubleInterval InRange);
+	FDoubleInterval GetRange() const;
+
+public: // Native management.
+	bool HasNative() const;
+	FTwistRangeControllerRef* GetNative();
+	const FTwistRangeControllerRef* GetNative() const;
+
+
 private: // Member variables.
 	std::unique_ptr<FTwistRangeControllerRef> NativeRef;
 };

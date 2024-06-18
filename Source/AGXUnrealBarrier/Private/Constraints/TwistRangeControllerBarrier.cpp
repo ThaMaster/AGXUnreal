@@ -130,3 +130,45 @@ FTwistRangeControllerBarrier& FTwistRangeControllerBarrier::operator=(
 	NativeRef->Native = Other.NativeRef->Native;
 	return *this;
 }
+
+void FTwistRangeControllerBarrier::SetEnabled(bool bInEnabled)
+{
+	check(HasNative());
+	NativeRef->Native->setEnable(bInEnabled);
+}
+
+bool FTwistRangeControllerBarrier::GetEnabled() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnable();
+}
+
+void FTwistRangeControllerBarrier::SetRange(FDoubleInterval InRange)
+{
+	check(HasNative());
+	const agx::RangeReal RangeAGX = ConvertAngle(InRange);
+	NativeRef->Native->setRange(RangeAGX);
+}
+
+FDoubleInterval FTwistRangeControllerBarrier::GetRange() const
+{
+	check(HasNative());
+	const agx::RangeReal RangeAGX = NativeRef->Native->getRange();
+	const FDoubleInterval Range = ConvertAngle(RangeAGX);
+	return Range;
+}
+
+bool FTwistRangeControllerBarrier::HasNative() const
+{
+	check(NativeRef.get() != nullptr);
+	return NativeRef->Native.get() != nullptr;
+}
+
+FTwistRangeControllerRef* FTwistRangeControllerBarrier::GetNative()
+{
+	return NativeRef.get();
+}
+const FTwistRangeControllerRef* FTwistRangeControllerBarrier::GetNative() const
+{
+	return NativeRef.get();
+}
