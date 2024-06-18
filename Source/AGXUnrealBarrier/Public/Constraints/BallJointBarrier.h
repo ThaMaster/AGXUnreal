@@ -6,7 +6,7 @@
 
 // AGX Dynamics for Unreal includes.
 #if 1
-#include "Constraints/ControllerConstraintBarriers.h"
+#include "Constraints/TwistRangeControllerBarrier.h"
 #endif
 
 
