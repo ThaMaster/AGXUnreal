@@ -4,7 +4,10 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_ConstraintComponent.h"
+
+#if 0
 #include "Constraints/Controllers/AGX_TwistRangeController.h"
+#endif
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -29,8 +32,10 @@ public: // Special member functions.
 	virtual ~UAGX_BallConstraintComponent() override;
 
 public: // Properties.
+#if 0
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Secondary Constraints")
 	FAGX_TwistRangeController TwistRangeController;
+#endif
 
 public: // Function overrides.
 	//~ Begin AGX Constraint Component interface.
