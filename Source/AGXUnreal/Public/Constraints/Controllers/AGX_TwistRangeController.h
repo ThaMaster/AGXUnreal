@@ -6,6 +6,9 @@
 #include "AGX_RealInterval.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
+// Unreal Engine includes.
+#include "Kismet/BlueprintFunctionLibrary.h"
+
 #include "AGX_TwistRangeController.generated.h"
 
 /**
