@@ -197,137 +197,217 @@ namespace
 	}
 }
 
-UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetFirstShape(UPARAM(ref)
-															 FAGX_ShapeContact& ShapeContactRef)
+bool UAGX_ShapeContact_FL::HasNative(FAGX_ShapeContact& ShapeContact)
 {
-	if (!TestHasNative(ShapeContactRef, TEXT("First Shape")))
-	{
-		return nullptr;
-	}
-	if (!ShapeContactRef.GetShape1().HasNative())
-	{
-		return nullptr;
-	}
-	return GetFromGuid<UAGX_ShapeComponent>(ShapeContactRef.GetShape1().GetGeometryGuid());
+	return ShapeContact.HasNative();
 }
 
-UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetSecondShape(UPARAM(ref)
-															  FAGX_ShapeContact& ShapeContactRef)
+bool UAGX_ShapeContact_FL::IsEnabled(FAGX_ShapeContact& ShapeContact)
 {
-	if (!TestHasNative(ShapeContactRef, TEXT("Second Shape")))
+	if (!TestHasNative(ShapeContact, TEXT("Is Enabled")))
 	{
-		return nullptr;
+		return false;
 	}
-	if (!ShapeContactRef.GetShape2().HasNative())
-	{
-		return nullptr;
-	}
-	return GetFromGuid<UAGX_ShapeComponent>(ShapeContactRef.GetShape2().GetGeometryGuid());
+	return ShapeContact.IsEnabled();
 }
 
-UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetFirstBody(UPARAM(ref)
-																FAGX_ShapeContact& ShapeContactRef)
+UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetFirstShape(FAGX_ShapeContact& ShapeContact)
 {
-	if (!TestHasNative(ShapeContactRef, TEXT("First Body")))
+	if (!TestHasNative(ShapeContact, TEXT("First Shape")))
 	{
 		return nullptr;
 	}
-	if (!ShapeContactRef.GetBody1().HasNative())
+	if (!ShapeContact.GetShape1().HasNative())
 	{
 		return nullptr;
 	}
-	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContactRef.GetBody1().GetGuid());
+	return GetFromGuid<UAGX_ShapeComponent>(ShapeContact.GetShape1().GetGeometryGuid());
 }
 
-UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetSecondBody(UPARAM(ref)
-																 FAGX_ShapeContact& ShapeContactRef)
+UAGX_ShapeComponent* UAGX_ShapeContact_FL::GetSecondShape(FAGX_ShapeContact& ShapeContact)
 {
-	if (!TestHasNative(ShapeContactRef, TEXT("Second Body")))
+	if (!TestHasNative(ShapeContact, TEXT("Second Shape")))
 	{
 		return nullptr;
 	}
-	if (!ShapeContactRef.GetBody2().HasNative())
+	if (!ShapeContact.GetShape2().HasNative())
 	{
 		return nullptr;
 	}
-	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContactRef.GetBody2().GetGuid());
+	return GetFromGuid<UAGX_ShapeComponent>(ShapeContact.GetShape2().GetGeometryGuid());
+}
+
+UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetFirstBody(FAGX_ShapeContact& ShapeContact)
+{
+	if (!TestHasNative(ShapeContact, TEXT("First Body")))
+	{
+		return nullptr;
+	}
+	if (!ShapeContact.GetBody1().HasNative())
+	{
+		return nullptr;
+	}
+	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContact.GetBody1().GetGuid());
+}
+
+UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetSecondBody(FAGX_ShapeContact& ShapeContact)
+{
+	if (!TestHasNative(ShapeContact, TEXT("Second Body")))
+	{
+		return nullptr;
+	}
+	if (!ShapeContact.GetBody2().HasNative())
+	{
+		return nullptr;
+	}
+	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContact.GetBody2().GetGuid());
 }
 
 FVector UAGX_ShapeContact_FL::CalculateRelativeVelocity(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex)
 {
-	if (!TestHasNative(ShapeContactRef, TEXT("RelativeVelocity")))
+	if (!TestHasNative(ShapeContact, TEXT("RelativeVelocity")))
 	{
 		return FVector::ZeroVector;
 	}
-	return ShapeContactRef.CalculateRelativeVelocity(PointIndex);
+	return ShapeContact.CalculateRelativeVelocity(PointIndex);
 }
 
-int32 UAGX_ShapeContact_FL::GetNumContactPoints(UPARAM(ref) FAGX_ShapeContact& ShapeContactRef)
+int32 UAGX_ShapeContact_FL::GetNumContactPoints(FAGX_ShapeContact& ShapeContact)
 {
-	if (!TestHasNative(ShapeContactRef, TEXT("Num Contact Points")))
+	return GetNumPoints(ShapeContact);
+}
+
+int UAGX_ShapeContact_FL::GetNumPoints(UPARAM(Ref) FAGX_ShapeContact& ShapeContact)
+{
+	if (!TestHasNative(ShapeContact, TEXT("Num Contact Points")))
 	{
 		return 0;
 	}
-	return ShapeContactRef.GetNumContactPoints();
+	return ShapeContact.GetNumContactPoints();
 }
 
-float UAGX_ShapeContact_FL::GetPointDepth(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
+int UAGX_ShapeContact_FL::GetLastPointIndex(UPARAM(Ref) FAGX_ShapeContact& ShapeContact)
 {
-	if (!CheckHasNativeAndValidPointIndex(ShapeContactRef, PointIndex, TEXT("Depth")))
+	return GetNumPoints(ShapeContact) - 1;
+}
+
+
+bool UAGX_ShapeContact_FL::HasPointNative(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+{
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Has Native")))
+	{
+		return false;
+	}
+	return ShapeContact.GetContactPoint(PointIndex).HasNative();
+}
+
+bool UAGX_ShapeContact_FL::IsPointEnabled(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+{
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Is Enabled")))
+	{
+		return false;
+	}
+	return ShapeContact.GetContactPoint(PointIndex).IsEnabled();
+}
+
+float UAGX_ShapeContact_FL::GetPointDepth(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+{
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Depth")))
 	{
 		return 0.0f;
 	}
-	return ShapeContactRef.GetContactPoint(PointIndex).GetDepth();
+	return ShapeContact.GetContactPoint(PointIndex).GetDepth();
 }
 
-FVector UAGX_ShapeContact_FL::GetPointLocation(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
+FVector UAGX_ShapeContact_FL::GetPointLocation(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
 {
-	if (!CheckHasNativeAndValidPointIndex(ShapeContactRef, PointIndex, TEXT("Location")))
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Location")))
 	{
 		return FVector::ZeroVector;
 	}
-	return ShapeContactRef.GetContactPoint(PointIndex).GetLocation();
+	return ShapeContact.GetContactPoint(PointIndex).GetLocation();
 }
 
-FVector UAGX_ShapeContact_FL::GetPointForce(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
+FVector UAGX_ShapeContact_FL::GetPointNormal(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
 {
-	if (!CheckHasNativeAndValidPointIndex(ShapeContactRef, PointIndex, TEXT("Force")))
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Point Normal")))
 	{
 		return FVector::ZeroVector;
 	}
-	return ShapeContactRef.GetContactPoint(PointIndex).GetForce();
+	return ShapeContact.GetContactPoint(PointIndex).GetNormal();
 }
 
-FVector UAGX_ShapeContact_FL::GetPointNormalForce(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
+FVector UAGX_ShapeContact_FL::GetPointTangentU(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
 {
-	if (!CheckHasNativeAndValidPointIndex(ShapeContactRef, PointIndex, TEXT("Normal Force")))
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Point Tangent U")))
 	{
 		return FVector::ZeroVector;
 	}
-	return ShapeContactRef.GetContactPoint(PointIndex).GetNormalForce();
+	return ShapeContact.GetContactPoint(PointIndex).GetTangentU();
 }
 
-FVector UAGX_ShapeContact_FL::GetPointNormal(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
+FVector UAGX_ShapeContact_FL::GetPointTangentV(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
 {
-	if (!CheckHasNativeAndValidPointIndex(ShapeContactRef, PointIndex, TEXT("Point Normal")))
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Point Tangent V")))
 	{
 		return FVector::ZeroVector;
 	}
-	return ShapeContactRef.GetContactPoint(PointIndex).GetNormal();
+	return ShapeContact.GetContactPoint(PointIndex).GetTangentV();
 }
 
-float UAGX_ShapeContact_FL::GetPointArea(
-	UPARAM(ref) FAGX_ShapeContact& ShapeContactRef, int32 PointIndex)
+FVector UAGX_ShapeContact_FL::GetPointForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
 {
-	if (!CheckHasNativeAndValidPointIndex(ShapeContactRef, PointIndex, TEXT("Point Area")))
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Force")))
+	{
+		return FVector::ZeroVector;
+	}
+	return ShapeContact.GetContactPoint(PointIndex).GetForce();
+}
+
+FVector UAGX_ShapeContact_FL::GetPointNormalForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+{
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Normal Force")))
+	{
+		return FVector::ZeroVector;
+	}
+	return ShapeContact.GetContactPoint(PointIndex).GetNormalForce();
+}
+
+FVector UAGX_ShapeContact_FL::GetPointTangentialForce(
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+{
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Tangential Force")))
+	{
+		return FVector::ZeroVector;
+	}
+	return ShapeContact.GetContactPoint(PointIndex).GetTangentialForce();
+}
+
+FVector UAGX_ShapeContact_FL::GetPointLocalForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+{
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Local Force")))
+	{
+		return FVector::ZeroVector;
+	}
+	return ShapeContact.GetContactPoint(PointIndex).GetLocalForce();
+}
+
+FVector UAGX_ShapeContact_FL::GetPointWitnessPoint(
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, int32 ShapeIndex)
+{
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Witness Point")))
+	{
+		return FVector::ZeroVector;
+	}
+	return ShapeContact.GetContactPoint(PointIndex).GetWitnessPoint(ShapeIndex);
+}
+
+float UAGX_ShapeContact_FL::GetPointArea(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+{
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Point Area")))
 	{
 		return 0.0f;
 	}
-	return ShapeContactRef.GetContactPoint(PointIndex).GetArea();
+	return ShapeContact.GetContactPoint(PointIndex).GetArea();
 }
