@@ -2,8 +2,6 @@
 
 #include "Constraints/TwistRangeControllerBarrier.h"
 
-
-
 // AGX Dynamics for Unreal includes.
 #include "TypeConversions.h"
 #include "AGXRefs.h"
@@ -100,26 +98,35 @@ const FTwistRangeControllerRef* FTwistRangeControllerBarrier::GetNative() const
 
 #endif
 
+// Special member functions.
+
 FTwistRangeControllerBarrier::FTwistRangeControllerBarrier()
+	: NativeRef(new FTwistRangeControllerRef())
 {
 }
 
 FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
 	const FTwistRangeControllerBarrier& Other)
+	: NativeRef(new FTwistRangeControllerRef(Other.NativeRef->Native))
 {
 }
 
 FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
 	std::unique_ptr<FTwistRangeControllerRef> InNative)
+	: NativeRef(std::move(InNative))
 {
 }
 
 FTwistRangeControllerBarrier::~FTwistRangeControllerBarrier()
 {
+	// Must have a non-inlined destructor because the NativeRef destructor must be able to see the
+	// full definition of the pointed-to type, and we are not allowed to include F*Ref / F*Ptr
+	// types in the header file.
 }
 
 FTwistRangeControllerBarrier& FTwistRangeControllerBarrier::operator=(
 	const FTwistRangeControllerBarrier& Other)
 {
+	NativeRef->Native = Other.NativeRef->Native;
 	return *this;
 }
