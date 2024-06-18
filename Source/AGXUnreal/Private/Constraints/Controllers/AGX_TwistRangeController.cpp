@@ -2,6 +2,8 @@
 
 #include "Constraints/Controllers/AGX_TwistRangeController.h"
 
+#if 0
+
 // AGX Dynamics for Unreal includes.
 
 // Special member functions.
@@ -109,3 +111,5 @@ void FAGX_TwistRangeController::InitializeBarrier(const FTwistRangeControllerBar
 
 	Barrier = InBarrier;
 }
+
+#endif

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if 0
+
 // AGX Dynamics for Unreal includes.
 #include "AGX_RealInterval.h"
 #include "Constraints/ControllerConstraintBarriers.h"
@@ -107,3 +109,5 @@ class AGXUNREAL_API UAGX_TwistRangeController_FL : public UBlueprintFunctionLibr
 		Max = ControllerRef.GetRangeMax();
 	}
 };
+
+#endif
