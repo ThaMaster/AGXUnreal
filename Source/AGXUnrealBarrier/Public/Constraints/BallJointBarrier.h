@@ -5,7 +5,7 @@
 #include "Constraints/ConstraintBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-#if 0
+#if 1
 #include "Constraints/ControllerConstraintBarriers.h"
 #endif
 
@@ -21,7 +21,7 @@ public: // Special member functions.
 	virtual ~FBallJointBarrier();
 
 public:
-#if 0
+#if 1
 	FTwistRangeControllerBarrier GetTwistRangeController() const;
 #endif
 

@@ -169,4 +169,11 @@ protected:
 	std::unique_ptr<FTwistRangeControllerRef> NativeRef;
 };
 
+#else
+
+class AGXUNREALBARRIER_API FTwistRangeControllerBarrier
+{
+
+};
+
 #endif
