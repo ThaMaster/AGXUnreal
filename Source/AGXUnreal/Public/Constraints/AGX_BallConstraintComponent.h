@@ -39,6 +39,10 @@ public: // Function overrides.
 	virtual void UpdateNativeProperties() override;
 	//~ End AGX Constraint Component interface.
 
+	//~ Begin IAGX_NativeOwner interface.
+	virtual void SetNativeAddress(uint64 NativeAddress) override;
+	//~ End IAGX_NativeOwner interface.
+
 	//~ Begin UObject interface.
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;
