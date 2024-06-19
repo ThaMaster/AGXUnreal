@@ -64,6 +64,17 @@ public: // Native management.
 	 */
 	void InitializeBarrier(const FTwistRangeControllerBarrier& InBarrier);
 
+	/**
+	 * Copy property values from the given Source Barrier into this.
+	 *
+	 * @param Source The Barrier to read through.
+	 * @param ArchetypeInstances Template instances to update.
+	 * @param bForceOverwriteInstances Whether to also update instances with edited values.
+	 */
+	void CopyFrom(
+		const FTwistRangeControllerBarrier& Source,
+		TArray<FAGX_TwistRangeController*>& ArchetypeInstances, bool bForceOverwriteInstances);
+
 private:
 	FTwistRangeControllerBarrier Barrier;
 };

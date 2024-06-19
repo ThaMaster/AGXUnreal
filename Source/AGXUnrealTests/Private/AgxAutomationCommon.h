@@ -158,8 +158,28 @@ namespace AgxAutomationCommon
 	 * \param Test The currently running FAutomationTestBase, used for test failure reporting.
 	 * \return True if the MD5 checksums match, false if they differ.
 	 */
-	void CheckAssetMD5Checksum(
+	bool CheckAssetMD5Checksum(
 		const FString& PackagePath, const TCHAR* Expected, FAutomationTestBase& Test);
+
+	/**
+	 * Compare the MD5 checksum of the given file with the given expected MD5 checksum. Report a
+	 * test failure on mismatch.
+	 *
+	 * @param FilePath File system path to the file to check.
+	 * @param Expected MD5 hash that the file should have.
+	 * @param Test The currently running test, used for failure reporting.
+	 * \return True if the MD5 checksums match, false if they differ.
+	 */
+	bool CheckFileMD5Checksum(
+		const FString& FilePath, const TCHAR* Expected, FAutomationTestBase& Test);
+
+	/**
+	 * Get the MD5 checksum for the file at the given path. Returns empty string if file load fails.
+	 *
+	 * @param FilePath Path to file to generate checksum for.
+	 * @return The MD5 checksum for the given file.
+	 */
+	FString GetFileMD5Checksum(const FString& FilePath);
 
 	/**
 	 * Delete all assets created when the given archive was imported.

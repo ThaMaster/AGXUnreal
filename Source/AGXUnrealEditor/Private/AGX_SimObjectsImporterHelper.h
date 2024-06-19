@@ -186,6 +186,11 @@ public:
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
 		bool ForceOverwriteInstances);
 
+	void UpdateConstraintComponent(
+		const FBallJointBarrier& Barrier, UAGX_ConstraintComponent& Component,
+		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
+		bool bForceOverwriteInstances);
+
 	UAGX_TwoBodyTireComponent* InstantiateTwoBodyTire(
 		const FTwoBodyTireBarrier& Barrier, AActor& Owner);
 

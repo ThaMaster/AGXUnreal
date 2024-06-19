@@ -88,3 +88,28 @@ void FAGX_TwistRangeController::InitializeBarrier(const FTwistRangeControllerBar
 	Super::InitializeBarrier(InBarrier);
 	Barrier = InBarrier;
 }
+
+void FAGX_TwistRangeController::CopyFrom(
+	const FTwistRangeControllerBarrier& Source,
+	TArray<FAGX_TwistRangeController*>& ArchetypeInstances, bool bForceOverwriteInstances)
+{
+	TArray<FAGX_ElementaryConstraint*> BaseInstances(ArchetypeInstances);
+	Super::CopyFrom(Source, BaseInstances, bForceOverwriteInstances);
+
+	const FAGX_RealInterval RangeBarrier = Source.GetRange();
+
+	for (auto Instance : ArchetypeInstances)
+	{
+		if (Instance == nullptr)
+		{
+			continue;
+		}
+
+		if (bForceOverwriteInstances || Instance->Range == Range)
+		{
+			Instance->Range = RangeBarrier;
+		}
+	}
+
+	Range = RangeBarrier;
+}

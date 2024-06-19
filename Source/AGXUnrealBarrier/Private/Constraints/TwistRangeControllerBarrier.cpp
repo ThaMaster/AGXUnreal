@@ -171,7 +171,7 @@ FDoubleInterval FTwistRangeControllerBarrier::GetRange() const
 bool FTwistRangeControllerBarrier::CheckValidNative()
 {
 	check(!HasNative() || NativeRef->Native->is<agx::TwistRangeController>());
-	if (!HasNative() && !NativeRef->Native->is<agx::TwistRangeController>())
+	if (!HasNative() || (HasNative() && !NativeRef->Native->is<agx::TwistRangeController>()))
 	{
 		UE_LOG(
 			LogAGX, Warning,
