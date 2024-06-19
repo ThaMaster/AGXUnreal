@@ -2,8 +2,6 @@
 
 #include "Constraints/Controllers/AGX_TwistRangeController.h"
 
-#if 1
-
 // AGX Dynamics for Unreal includes.
 
 // Special member functions.
@@ -18,24 +16,6 @@ FAGX_TwistRangeController::~FAGX_TwistRangeController()
 }
 
 // Properties.
-
-void FAGX_TwistRangeController::SetEnabled(bool bInEnabled)
-{
-	if (HasNative())
-	{
-		Barrier.SetEnabled(bInEnabled);
-	}
-	bEnabled = bInEnabled;
-}
-
-bool FAGX_TwistRangeController::GetEnabled() const
-{
-	if (HasNative())
-	{
-		return Barrier.GetEnabled();
-	}
-	return bEnabled;
-}
 
 void FAGX_TwistRangeController::SetRange(double InRangeMin, double InRangeMax)
 {
@@ -67,13 +47,7 @@ double FAGX_TwistRangeController::GetRangeMax() const
 void FAGX_TwistRangeController::UpdateNativeProperties()
 {
 	check(HasNative());
-
-	// TODO Enable this once we inherit from Elementary Constraint.
-	// Super::UpdateNativeProperties();
-
-	// TODO Remove this once we inherit from Elementary Constraint.
-	Barrier.SetEnabled(bEnabled);
-
+	Super::UpdateNativeProperties();
 	Barrier.SetRange(Range);
 }
 
@@ -81,6 +55,7 @@ void FAGX_TwistRangeController::UpdateNativeProperties()
 
 bool FAGX_TwistRangeController::HasNative() const
 {
+	check(Super::HasNative() == Barrier.HasNative());
 	return Barrier.HasNative();
 }
 
@@ -105,11 +80,6 @@ const FTwistRangeControllerBarrier* FAGX_TwistRangeController::GetNative() const
 void FAGX_TwistRangeController::InitializeBarrier(const FTwistRangeControllerBarrier& InBarrier)
 {
 	check(!HasNative());
-
-	// TODO Enable this once we inherit from Elementary Constraint.
-	// Super::InializeBarrier();
-
+	Super::InitializeBarrier(InBarrier);
 	Barrier = InBarrier;
 }
-
-#endif

@@ -6,6 +6,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_RealInterval.h"
+#include "Constraints/AGX_ElementaryConstraint.h"
 #include "Constraints/TwistRangeControllerBarrier.h"
 
 // Unreal Engine includes.
@@ -28,7 +29,7 @@
  *
  */
 USTRUCT(BlueprintType)
-struct AGXUNREAL_API FAGX_TwistRangeController
+struct AGXUNREAL_API FAGX_TwistRangeController : public FAGX_ElementaryConstraint
 {
 	GENERATED_BODY()
 
@@ -37,16 +38,6 @@ public: // Special member functions.
 	virtual ~FAGX_TwistRangeController();
 
 public: // Properties.
-	/**
-	 *
-	 */
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Twist Range Controller", Meta = (EditCondition = "bEnable"))
-	bool bEnabled;
-
-	void SetEnabled(bool bInEnabled);
-	bool GetEnabled() const;
-
 	/**
 	 * The amount of rotation around the constraint's Z axis that is allowed.
 	 */
@@ -58,7 +49,7 @@ public: // Properties.
 	double GetRangeMin() const;
 	double GetRangeMax() const;
 
-	void UpdateNativeProperties();
+	virtual void UpdateNativeProperties() override;
 
 public: // Native management.
 	bool HasNative() const;
