@@ -50,7 +50,17 @@ struct FConstraintRef
 	}
 };
 
-#if 1
+struct FElementaryConstraintRef
+{
+	agx::ref_ptr<agx::ElementaryConstraint> Native;
+	FElementaryConstraintRef() = default;
+	FElementaryConstraintRef(agx::ElementaryConstraint* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+#if 0
 struct FTwistRangeControllerRef
 {
 	agx::ref_ptr<agx::TwistRangeController> Native;

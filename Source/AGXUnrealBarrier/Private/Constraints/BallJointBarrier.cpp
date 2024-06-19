@@ -32,7 +32,7 @@ FTwistRangeControllerBarrier FBallJointBarrier::GetTwistRangeController() const
 	check(HasNative());
 	agx::TwistRangeController* Controller =
 		NativeRef->Native->as<agx::BallJoint>()->getTwistRangeController();
-	return FTwistRangeControllerBarrier(std::make_unique<FTwistRangeControllerRef>(Controller));
+	return FTwistRangeControllerBarrier(std::make_unique<FElementaryConstraintRef>(Controller));
 }
 #endif
 
