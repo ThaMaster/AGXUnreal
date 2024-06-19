@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
+#include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
@@ -17,6 +18,7 @@
 #include "Constraints/Controllers/AGX_RangeController.h"
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
 #include "Constraints/ControllerConstraintBarriers.h"
+#include "Constraints/Controllers/AGX_TwistRangeController.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
@@ -449,6 +451,25 @@ template AGXUNREAL_API void
 FAGX_ConstraintUtilities::AddScrewControllerPropertyCallbacks<UAGX_Constraint2DofComponent>(
 	FAGX_PropertyChangedDispatcher<UAGX_Constraint2DofComponent>& PropertyDispatcher,
 	TFunction<FAGX_ConstraintScrewController*(UAGX_Constraint2DofComponent*)> GetController,
+	const FName& Member);
+
+template <typename UConstraintClass>
+void FAGX_ConstraintUtilities::AddTwistRangeControllerPropertyCallbacks(
+	FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+	TFunction<FAGX_TwistRangeController*(UConstraintClass*)> GetController, const FName& Member)
+{
+	AddControllerPropertyCallbacks(PropertyDispatcher, GetController, Member);
+
+	PropertyDispatcher.Add(
+		Member, GET_MEMBER_NAME_CHECKED(FAGX_TwistRangeController, Range),
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetRange(GetController(EditedObject)->Range); });
+}
+
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddTwistRangeControllerPropertyCallbacks<UAGX_BallConstraintComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_BallConstraintComponent>& PropertyDispatcher,
+	TFunction<FAGX_TwistRangeController*(UAGX_BallConstraintComponent*)> GetController,
 	const FName& Member);
 
 #endif

@@ -15,22 +15,22 @@ FAGX_ElementaryConstraint::~FAGX_ElementaryConstraint()
 {
 }
 
-void FAGX_ElementaryConstraint::SetEnabled(bool bInEnable)
+void FAGX_ElementaryConstraint::SetEnable(bool bInEnable)
 {
 	if (HasNative())
 	{
 		Barrier.SetEnabled(bInEnable);
 	}
-	bEnabled = bInEnable;
+	bEnable = bInEnable;
 }
 
-bool FAGX_ElementaryConstraint::GetEnabled() const
+bool FAGX_ElementaryConstraint::GetEnable() const
 {
 	if (HasNative())
 	{
 		return Barrier.GetEnabled();
 	}
-	return bEnabled;
+	return bEnable;
 }
 
 void FAGX_ElementaryConstraint::SetCompliance(double InCompliance)
@@ -236,7 +236,7 @@ void FAGX_ElementaryConstraint::ClearBarrier()
 void FAGX_ElementaryConstraint::UpdateNativeProperties()
 {
 	check(HasNative());
-	Barrier.SetEnabled(bEnabled);
+	Barrier.SetEnabled(bEnable);
 	Barrier.SetCompliance(Compliance);
 	Barrier.SetSpookDamping(SpookDamping);
 	Barrier.SetForceRange(ForceRange);
@@ -260,14 +260,14 @@ void FAGX_ElementaryConstraint::CopyFrom(
 
 		if (bForceOverwriteInstances)
 		{
-			Instance->bEnabled = bEnableBarrier;
+			Instance->bEnable = bEnableBarrier;
 			Instance->Compliance = ComplianceBarrier;
 			Instance->SpookDamping = SpookDampingBarrier;
 			Instance->ForceRange = ForceRangeBarrier;
 		}
 		else
 		{
-			FAGX_ObjectUtilities::SetIfEqual(Instance->bEnabled, bEnabled, bEnableBarrier);
+			FAGX_ObjectUtilities::SetIfEqual(Instance->bEnable, bEnable, bEnableBarrier);
 			FAGX_ObjectUtilities::SetIfEqual(Instance->Compliance, Compliance, ComplianceBarrier);
 			FAGX_ObjectUtilities::SetIfEqual(
 				Instance->SpookDamping, SpookDamping, SpookDampingBarrier);
@@ -275,7 +275,7 @@ void FAGX_ElementaryConstraint::CopyFrom(
 		}
 	}
 
-	bEnabled = bEnableBarrier;
+	bEnable = bEnableBarrier;
 	Compliance = ComplianceBarrier;
 	SpookDamping = SpookDampingBarrier;
 	ForceRange = ForceRangeBarrier;

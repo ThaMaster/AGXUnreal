@@ -46,6 +46,7 @@ public: // Properties.
 	FAGX_RealInterval Range;
 
 	void SetRange(double InRangeMin, double InRangeMax);
+	void SetRange(FAGX_RealInterval InRange);
 	double GetRangeMin() const;
 	double GetRangeMax() const;
 
@@ -78,13 +79,13 @@ class AGXUNREAL_API UAGX_TwistRangeController_FL : public UBlueprintFunctionLibr
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetEnabled(UPARAM(Ref) FAGX_TwistRangeController& Constraint, bool Enable)
 	{
-		return Constraint.SetEnabled(Enable);
+		return Constraint.SetEnable(Enable);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static bool GetEnabled(UPARAM(Ref) FAGX_TwistRangeController& Constraint)
 	{
-		return Constraint.GetEnabled();
+		return Constraint.GetEnable();
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Twist Range Controller")

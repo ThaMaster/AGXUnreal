@@ -4,10 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Constraints/AGX_ConstraintComponent.h"
-
-#if 1
 #include "Constraints/Controllers/AGX_TwistRangeController.h"
-#endif
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -41,6 +38,13 @@ public: // Function overrides.
 	//~ Begin AGX Constraint Component interface.
 	virtual void UpdateNativeProperties() override;
 	//~ End AGX Constraint Component interface.
+
+	//~ Begin UObject interface.
+#if WITH_EDITOR
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& Event) override;
+#endif
+	//~ End UObject interface.
 
 public: // Native management.
 	FBallJointBarrier* GetNativeBallJoint();

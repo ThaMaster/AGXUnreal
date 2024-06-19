@@ -29,11 +29,11 @@ public:
 	 * simulation.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint Controller")
-	bool bEnabled {true};
+	bool bEnable {true};
 
-	void SetEnabled(bool bInEnable);
+	void SetEnable(bool bInEnable);
 
-	bool GetEnabled() const;
+	bool GetEnable() const;
 
 	/**
 	 * The compliance in a certain DOF. Measured in [m/N] for translational DOFs and [rad/Nm] for
@@ -149,13 +149,13 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetEnable(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, bool Enable)
 	{
-		return Constraint.SetEnabled(Enable);
+		return Constraint.SetEnable(Enable);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static bool GetEnable(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint)
 	{
-		return Constraint.GetEnabled();
+		return Constraint.GetEnable();
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")

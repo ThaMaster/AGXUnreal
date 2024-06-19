@@ -38,6 +38,42 @@ void UAGX_BallConstraintComponent::UpdateNativeProperties()
 
 //~ End AGX Constraint Component interface.
 
+//~ Begin UObject interface.
+
+#if WITH_EDITOR
+
+void UAGX_BallConstraintComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	TFunction<FAGX_TwistRangeController*(ThisClass*)> GetTwistRangeController =
+		[](ThisClass* EditedObject) { return &EditedObject->TwistRangeController; };
+
+	FAGX_ConstraintUtilities::AddTwistRangeControllerPropertyCallbacks(
+		PropertyDispatcher, GetTwistRangeController,
+		GET_MEMBER_NAME_CHECKED(ThisClass, TwistRangeController));
+}
+
+void UAGX_BallConstraintComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
+
+	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
+	// Actor. That means that this object will be removed from the Actor and destroyed. We want to
+	// apply all our changes before that so that they are carried over to the copy.
+	Super::PostEditChangeChainProperty(Event);
+}
+
+#endif
+
+//~ End UObject interface.
 
 // Native management.
 

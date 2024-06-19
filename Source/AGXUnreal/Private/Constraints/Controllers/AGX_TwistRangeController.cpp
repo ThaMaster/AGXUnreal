@@ -8,7 +8,7 @@
 
 FAGX_TwistRangeController::FAGX_TwistRangeController()
 {
-	bEnabled = false;
+	bEnable = false;
 }
 
 FAGX_TwistRangeController::~FAGX_TwistRangeController()
@@ -24,6 +24,11 @@ void FAGX_TwistRangeController::SetRange(double InRangeMin, double InRangeMax)
 		Barrier.SetRange(FDoubleInterval(InRangeMin, InRangeMax));
 	}
 	Range = FAGX_RealInterval {InRangeMin, InRangeMax};
+}
+
+void FAGX_TwistRangeController::SetRange(FAGX_RealInterval InRange)
+{
+	SetRange(InRange.Min, InRange.Max);
 }
 
 double FAGX_TwistRangeController::GetRangeMin() const
