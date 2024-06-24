@@ -29,10 +29,8 @@ public: // Special member functions.
 	virtual ~UAGX_BallConstraintComponent() override;
 
 public: // Properties.
-#if 1
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Secondary Constraints")
 	FAGX_TwistRangeController TwistRangeController;
-#endif
 
 public: // Function overrides.
 	//~ Begin AGX Constraint Component interface.

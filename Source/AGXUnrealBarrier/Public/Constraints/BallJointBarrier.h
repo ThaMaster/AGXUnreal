@@ -5,10 +5,7 @@
 #include "Constraints/ConstraintBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-#if 1
 #include "Constraints/TwistRangeControllerBarrier.h"
-#endif
-
 
 class FRigidBodyBarrier;
 
@@ -20,18 +17,16 @@ public: // Special member functions.
 	FBallJointBarrier(std::unique_ptr<FConstraintRef> Native);
 	virtual ~FBallJointBarrier();
 
-public:
-#if 1
+public: // Accessor functions.
 	FTwistRangeControllerBarrier GetTwistRangeController() const;
-#endif
 
-private:
+private: // Native management.
 	virtual void AllocateNativeImpl(
 		const FRigidBodyBarrier& Rb1, const FVector& FramePosition1, const FQuat& FrameRotation1,
 		const FRigidBodyBarrier* Rb2, const FVector& FramePosition2,
 		const FQuat& FrameRotation2) override;
 
-private:
+private: // Deleted functions.
 	FBallJointBarrier(const FBallJointBarrier&) = delete;
 	void operator=(const FBallJointBarrier&) = delete;
 };

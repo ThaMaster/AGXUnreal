@@ -1857,21 +1857,18 @@ public:
 		bool AllCorrect = true;
 		AllCorrect &= TestEqual(TEXT("Enabled"), Ball.bEnable, bEnable);
 		AllCorrect &= TestEqual(TEXT("Solve type"), Ball.SolveType, SolveType);
+		AllCorrect &=
+			TestEqual(TEXT("Compliance trans 1"), Ball.Compliance.Translational_1, Scale * 1.0);
+		AllCorrect &=
+			TestEqual(TEXT("Compliance trans 2"), Ball.Compliance.Translational_2, Scale * 1.1);
+		AllCorrect &=
+			TestEqual(TEXT("Compliance trans 3"), Ball.Compliance.Translational_3, Scale * 1.2);
 		AllCorrect &= TestEqual(
-			TEXT("Compliance trans 1"), Ball.Compliance.Translational_1, Scale * 1.0);
+			TEXT("Spook damping trans 1"), Ball.SpookDamping.Translational_1, Scale * 2.0);
 		AllCorrect &= TestEqual(
-			TEXT("Compliance trans 2"), Ball.Compliance.Translational_2, Scale * 1.1);
+			TEXT("Spook damping trans 2"), Ball.SpookDamping.Translational_2, Scale * 2.1);
 		AllCorrect &= TestEqual(
-			TEXT("Compliance trans 3"), Ball.Compliance.Translational_3, Scale * 1.2);
-		AllCorrect &= TestEqual(
-			TEXT("Spook damping trans 1"), Ball.SpookDamping.Translational_1,
-			Scale * 2.0);
-		AllCorrect &= TestEqual(
-			TEXT("Spook damping trans 2"), Ball.SpookDamping.Translational_2,
-			Scale * 2.1);
-		AllCorrect &= TestEqual(
-			TEXT("Spook damping trans 3"), Ball.SpookDamping.Translational_3,
-			Scale * 2.2);
+			TEXT("Spook damping trans 3"), Ball.SpookDamping.Translational_3, Scale * 2.2);
 		AllCorrect &= AgxAutomationCommon::TestEqual(
 			*this, TEXT("Force range 1"), Ball.ForceRange.Translational_1,
 			FAGX_RealInterval(Scale * 3.0, Scale * 4.0));
@@ -1884,17 +1881,15 @@ public:
 		// Ball Constraint does not have rotational compliance, damping, or force range since all
 		// rotational degrees of freedom are free.
 		AllCorrect &= TestEqual(TEXT("Compute forces"), Ball.bComputeForces, bEnable);
+		AllCorrect &=
+			TestEqual(TEXT("Twist range enabled"), Ball.TwistRangeController.bEnable, bEnable);
 		AllCorrect &= TestEqual(
-			TEXT("Twist range enabled"), Ball.TwistRangeController.bEnable, bEnable);
+			TEXT("Twist range compliance"), Ball.TwistRangeController.Compliance, Scale * 5.0);
 		AllCorrect &= TestEqual(
-			TEXT("Twist range compliance"), Ball.TwistRangeController.Compliance,
-			Scale * 5.0);
-		AllCorrect &= TestEqual(
-			TEXT("Twist range damping"), Ball.TwistRangeController.SpookDamping,
-			Scale * 6.0);
+			TEXT("Twist range damping"), Ball.TwistRangeController.SpookDamping, Scale * 6.0);
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Twist range force range"),
-			Ball.TwistRangeController.ForceRange, FAGX_RealInterval(Scale * 7.0, Scale * 8.0));
+			*this, TEXT("Twist range force range"), Ball.TwistRangeController.ForceRange,
+			FAGX_RealInterval(Scale * 7.0, Scale * 8.0));
 		AllCorrect &= AgxAutomationCommon::TestEqual(
 			*this, TEXT("Twist range range"), Ball.TwistRangeController.Range,
 			FAGX_RealInterval(FromRad(Scale * -0.1), FromRad(Scale * 0.1)));
@@ -2122,8 +2117,8 @@ public:
 		// The Twist Range Controller in the Component should be set to its default configuration
 		// when the Barrier doesn't have a native AGX Dynamics object to read from.
 		bool AllCorrect = true;
-		AllCorrect &= TestEqual(
-			TEXT("Twist range enabled"), Ball.TwistRangeController.bEnable, false);
+		AllCorrect &=
+			TestEqual(TEXT("Twist range enabled"), Ball.TwistRangeController.bEnable, false);
 		AllCorrect &= TestEqual(
 			TEXT("Twist range compliance"), Ball.TwistRangeController.Compliance,
 			ConstraintConstants::DefaultCompliance());
@@ -2131,8 +2126,8 @@ public:
 			TEXT("Twist range damping"), Ball.TwistRangeController.SpookDamping,
 			ConstraintConstants::DefaultSpookDamping());
 		AllCorrect &= AgxAutomationCommon::TestEqual(
-			*this, TEXT("Twist range force range"),
-			Ball.TwistRangeController.ForceRange, ConstraintConstants::DefaultForceRange());
+			*this, TEXT("Twist range force range"), Ball.TwistRangeController.ForceRange,
+			ConstraintConstants::DefaultForceRange());
 		AllCorrect &= AgxAutomationCommon::TestEqual(
 			*this, TEXT("Twist range range"), Ball.TwistRangeController.Range,
 			FAGX_RealInterval(0.0, 0.0));
