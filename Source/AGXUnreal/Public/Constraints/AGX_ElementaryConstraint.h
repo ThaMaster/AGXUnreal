@@ -214,8 +214,8 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	 * Set the Force Range of an Elementary Constraint. The force applied by the solver will always
 	 * be within this bound [N] or [Nm].
 	 * @param Constraint Constraint to set Force Range on.
-	 * @param Min Minimum force or torque the Elementary Constraint may apply.
-	 * @param Max Maximum force or torque the Elementary Constraint may apply.
+	 * @param Min Minimum force or torque the Elementary Constraint may apply [N] or [Nm].
+	 * @param Max Maximum force or torque the Elementary Constraint may apply [N] or [Nm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRange(
@@ -227,7 +227,7 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	/**
 	 * Set the minimum force or torque an Elementary Constraint can apply [N] or [Nm].
 	 * @param Constraint The Elementary Constraint to set minimum force range on.
-	 * @param Min The new minimum force or torque.
+	 * @param Min The new minimum force or torque [N] or [Nm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRangeMin(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double Min)
@@ -238,7 +238,7 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	/**
 	 * Set the maximum force or torque an Elementary Constraint can apply [N] or [Nm].
 	 * @param Constraint The Elementary Constraint to set maximum force range on.
-	 * @param Max The new maximum force or torque.
+	 * @param Max The new maximum force or torque [N] or [Nm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRangeMax(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double Max)
@@ -249,8 +249,8 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	/**
 	 * Get the Force Range of the Elementary Constraint  [N] or [Nm].
 	 * @param Constraint The Elementary Constraint to get the Force Range for.
-	 * @param Min The minimum force or torque the constraint can apply.
-	 * @param Max The maximum force or torque the constraint can apply.
+	 * @param Min The minimum force or torque the constraint can apply [N] or [Nm].
+	 * @param Max The maximum force or torque the constraint can apply [N] or [Nm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void GetForceRange(
@@ -264,7 +264,7 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	/**
 	 * Get the minimum force or torque the Elementary Constraint can apply [N] or [Nm].
 	 * @param Constraint The Elementary Constraint to get the minimum force range for.
-	 * @return The minimum force or torque the Elementary Constraint can apply.
+	 * @return The minimum force or torque the Elementary Constraint can apply [N] or [Nm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static double GetForceRangeMin(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint)
@@ -275,7 +275,7 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	/**
 	 * Get the maximum force or torque the Elementary Constraint can apply [N] or [Nm].
 	 * @param Constraint The Elementary Constraint to get the maximum force range for.
-	 * @return The maximum force or torque the Elementary Constraint can apply.
+	 * @return The maximum force or torque the Elementary Constraint can apply [N] or [Nm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static double GetForceRangeMax(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint)
@@ -365,8 +365,8 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	 * Set the Force Range of an Elementary Constraint. The force applied by the solver will always
 	 * be within this bound [N] or [Nm].
 	 * @param Constraint Constraint to set Force Range on.
-	 * @param Min Minimum force or torque the Elementary Constraint may apply.
-	 * @param Max Maximum force or torque the Elementary Constraint may apply.
+	 * @param Min Minimum force or torque the Elementary Constraint may apply [N] or [Nm].
+	 * @param Max Maximum force or torque the Elementary Constraint may apply [N] or [Nm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRange(
@@ -378,7 +378,7 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	/**
 	 * Set the minimum force or torque an Elementary Constraint can apply [N] or [Nm].
 	 * @param Constraint The Elementary Constraint to set minimum force range on.
-	 * @param Min The new minimum force or torque.
+	 * @param Min The new minimum force or torque [N] or [Nm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRangeMin(UPARAM(Ref) FAGX_TYPE& Constraint, double Min)
@@ -389,7 +389,7 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	/**
 	 * Set the maximum force or torque an Elementary Constraint can apply [N] or [Nm].
 	 * @param Constraint The Elementary Constraint to set maximum force range on.
-	 * @param Max The new maximum force or torque.
+	 * @param Max The new maximum force or torque [N] or [Nm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRangeMax(UPARAM(Ref) FAGX_TYPE& Constraint, double Max)
@@ -400,8 +400,8 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	/**
 	 * Get the Force Range of the Elementary Constraint  [N] or [Nm].
 	 * @param Constraint The Elementary Constraint to get the Force Range for.
-	 * @param Min The minimum force or torque the constraint can apply.
-	 * @param Max The maximum force or torque the constraint can apply.
+	 * @param Min The minimum force or torque the constraint can apply [N] or [Nm].
+	 * @param Max The maximum force or torque the constraint can apply [N] or [Nm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void GetForceRange(
@@ -415,7 +415,7 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	/**
 	 * Get the minimum force or torque the Elementary Constraint can apply [N] or [Nm].
 	 * @param Constraint The Elementary Constraint to get the minimum force range for.
-	 * @return The minimum force or torque the Elementary Constraint can apply.
+	 * @return The minimum force or torque the Elementary Constraint can apply [N] or [Nm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static double GetForceRangeMin(UPARAM(Ref) FAGX_TYPE& Constraint)
@@ -426,7 +426,7 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	/**
 	 * Get the maximum force or torque the Elementary Constraint can apply [N] or [Nm].
 	 * @param Constraint The Elementary Constraint to get the maximum force range for.
-	 * @return The maximum force or torque the Elementary Constraint can apply.
+	 * @return The maximum force or torque the Elementary Constraint can apply [N] or [Nm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static double GetForceRangeMax(UPARAM(Ref) FAGX_TYPE& Constraint)
