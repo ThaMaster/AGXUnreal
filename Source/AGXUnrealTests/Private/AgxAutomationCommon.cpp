@@ -150,8 +150,8 @@ void AgxAutomationCommon::TestEqual(
 }
 
 bool AgxAutomationCommon::TestEqual(
-		FAutomationTestBase& Test, const TCHAR* What, const FAGX_RealInterval& Actual,
-		const FAGX_RealInterval& Expected, double Tolerance)
+	FAutomationTestBase& Test, const TCHAR* What, const FAGX_RealInterval& Actual,
+	const FAGX_RealInterval& Expected, double Tolerance)
 {
 	if (!Expected.Equals(Actual, Tolerance))
 	{
@@ -529,14 +529,14 @@ bool AgxAutomationCommon::FLogErrorAgxCommand::Update()
 
 bool AgxAutomationCommon::FWaitUntilPIEUpCommand::Update()
 {
-	UE_LOG(LogAGX, Warning, TEXT("Polling for PIE up."));
+	UE_LOG(LogAGX, Display, TEXT("Polling for PIE up."));
 	return GEditor->IsPlayingSessionInEditor() && GEditor->GetPIEWorldContext() != nullptr &&
 		   GEditor->GetPIEWorldContext()->World() != nullptr;
 }
 
 bool AgxAutomationCommon::FWaitUntilPIEDownCommand::Update()
 {
-	UE_LOG(LogAGX, Warning, TEXT("Polling for PIE down."));
+	UE_LOG(LogAGX, Display, TEXT("Polling for PIE down."));
 	return !GEditor->IsPlayingSessionInEditor();
 }
 
@@ -558,10 +558,19 @@ bool AgxAutomationCommon::FWaitUntilSimTime::Update()
 	const UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(World);
 	const float CurrentTime = static_cast<float>(Simulation->GetTimeStamp());
 	const float UnrealTime = World->GetTimeSeconds();
+#if 0
 	UE_LOG(
 		LogAGX, Warning,
 		TEXT("Polling for Simulation time: %f/%f. Ticks remaining: %d. Unreal time: %f"),
 		CurrentTime, Time, MaxTicks, UnrealTime);
+#endif
+	if (MaxTicks <= 0)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Failed to step to simulation time %f before reaching max ticks. Current "
+				 "simulation time is %f and Unreal time is %f."), Time, CurrentTime, UnrealTime);
+	}
 	return CurrentTime >= Time || MaxTicks <= 0;
 }
 
