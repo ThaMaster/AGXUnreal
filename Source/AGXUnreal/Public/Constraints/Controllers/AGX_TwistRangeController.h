@@ -44,7 +44,12 @@ public: // Properties.
 	FAGX_RealInterval Range;
 
 	void SetRange(double InRangeMin, double InRangeMax);
+	void SetRange(FDoubleInterval InRange);
 	void SetRange(FAGX_RealInterval InRange);
+	void SetRangeMin(double InMin);
+	void SetRangeMax(double InMax);
+
+	FDoubleInterval GetRange() const;
 	double GetRangeMin() const;
 	double GetRangeMax() const;
 

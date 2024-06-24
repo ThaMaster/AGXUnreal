@@ -20,10 +20,11 @@ struct AGXUNREAL_API FAGX_ElementaryConstraint
 {
 	GENERATED_BODY()
 
-public:
+public: // Special member functions.
 	FAGX_ElementaryConstraint();
 	virtual ~FAGX_ElementaryConstraint();
 
+public: // Properties and property accessors.
 	/**
 	 * Whether this Constraint is enabled or not. A disabled Constraint has no effect on the
 	 * simulation.
@@ -78,9 +79,9 @@ public:
 		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
 	FAGX_RealInterval ForceRange {ConstraintConstants::DefaultForceRange()};
 
+	void SetForceRange(double InMinForce, double InMaxForce);
 	void SetForceRange(const FDoubleInterval& InForceRange);
 	void SetForceRange(const FAGX_RealInterval& InForceRange);
-	void SetForceRange(double InMinForce, double InMaxForce);
 	void SetForceRangeMin(double InMinForce);
 	void SetForceRangeMax(double InMaxForce);
 
@@ -88,6 +89,7 @@ public:
 	double GetForceRangeMin() const;
 	double GetForceRangeMax() const;
 
+public: // Runtime-only accessors that read directly from the native.
 	/**
 	 * Get the force or torque that was applied by this Elementary constraint in the most recent
 	 * time step.
@@ -106,6 +108,7 @@ public:
 	 */
 	FString GetName() const;
 
+public: // Native management.
 	bool HasNative() const;
 	FElementaryConstraintBarrier* GetNative();
 	const FElementaryConstraintBarrier* GetNative() const;

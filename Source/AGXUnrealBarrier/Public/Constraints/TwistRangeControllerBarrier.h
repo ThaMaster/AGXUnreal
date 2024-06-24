@@ -71,7 +71,14 @@ public: // Special member functions.
 
 public: // AGX Dynamics accessors.
 	void SetRange(FDoubleInterval InRange);
+	void SetRange(FAGX_RealInterval InRange);
+	void SetRange(double InMin, double InMax);
+	void SetRangeMin(double InMin);
+	void SetRangeMax(double InMax);
+
 	FDoubleInterval GetRange() const;
+	double GetRangeMin() const;
+	double GetRangeMax() const;
 
 private:
 	bool CheckValidNative();

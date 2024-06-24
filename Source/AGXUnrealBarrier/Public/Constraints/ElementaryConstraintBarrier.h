@@ -15,7 +15,7 @@ struct FElementaryConstraintRef;
 
 class AGXUNREALBARRIER_API FElementaryConstraintBarrier
 {
-public:
+public: // Special member functions.
 	FElementaryConstraintBarrier();
 	FElementaryConstraintBarrier(std::unique_ptr<FElementaryConstraintRef> InNative);
 	virtual ~FElementaryConstraintBarrier();
@@ -26,11 +26,13 @@ public:
 	 */
 	FElementaryConstraintBarrier& operator=(const FElementaryConstraintBarrier& Other);
 
+public: // Native management.
 	bool HasNative() const;
 	void SetNative(FElementaryConstraintRef* InNative);
 	FElementaryConstraintRef* GetNative();
 	const FElementaryConstraintRef* GetNative() const;
 
+public: // AGX Dynamics accessors.
 	void SetEnabled(bool bEnabled);
 	bool GetEnabled() const;
 

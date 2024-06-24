@@ -160,12 +160,52 @@ void FTwistRangeControllerBarrier::SetRange(FDoubleInterval InRange)
 	::GetNative(*this)->setRange(RangeAGX);
 }
 
+void FTwistRangeControllerBarrier::SetRange(FAGX_RealInterval InRange)
+{
+	SetRange(FDoubleInterval {InRange.Min, InRange.Max});
+}
+
+void FTwistRangeControllerBarrier::SetRange(double InMin, double InMax)
+{
+	SetRange(FDoubleInterval {InMin, InMax});
+}
+
+void FTwistRangeControllerBarrier::SetRangeMin(double InMin)
+{
+	check(HasNative());
+	const agx::Real MinAGX = ConvertAngleToAGX(InMin);
+	::GetNative(*this)->getRange().lower() = MinAGX;
+}
+
+void FTwistRangeControllerBarrier::SetRangeMax(double InMax)
+{
+	check(HasNative());
+	const agx::Real MaxAGX = ConvertAngleToAGX(InMax);
+	::GetNative(*this)->getRange().upper() = MaxAGX;
+}
+
 FDoubleInterval FTwistRangeControllerBarrier::GetRange() const
 {
 	check(HasNative());
 	const agx::RangeReal RangeAGX = ::GetNative(*this)->getRange();
 	const FDoubleInterval Range = ConvertAngle(RangeAGX);
 	return Range;
+}
+
+double FTwistRangeControllerBarrier::GetRangeMin() const
+{
+	check(HasNative());
+	const agx::Real MinAGX = ::GetNative(*this)->getRange().lower();
+	const double Min = ConvertAngleToUnreal<double>(MinAGX);
+	return Min;
+}
+
+double FTwistRangeControllerBarrier::GetRangeMax() const
+{
+	check(HasNative());
+	const agx::Real MaxAGX = ::GetNative(*this)->getRange().upper();
+	const double Max = ConvertAngleToUnreal<double>(MaxAGX);
+	return Max;
 }
 
 bool FTwistRangeControllerBarrier::CheckValidNative()
