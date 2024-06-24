@@ -90,12 +90,25 @@ class AGXUNREAL_API UAGX_TwistRangeController_FL : public UBlueprintFunctionLibr
 {
 	GENERATED_BODY()
 
+	/**
+	 * Set the range that the two constrained bodies may twist relative to each other [deg].
+	 * @param Controller The Twist Range Controller to set range on.
+	 * @param Min The minimum allowed angle.
+	 * @param Max The maximum allowed angle.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Twist Range Controller")
 	static void SetRange(UPARAM(Ref) FAGX_TwistRangeController& Controller, double Min, double Max)
 	{
 		Controller.SetRange(Min, Max);
 	}
 
+	/**
+	 * Get the range of angles that the two constrained bodies may twist relative to each other
+	 * [deg].
+	 * @param ControllerRef The Twist Range Controller to get allowed angle range from.
+	 * @param Min The minimum angle allowed.
+	 * @param Max The maximum angle allowed.
+	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Twist Range Controller")
 	static void GetRange(const FAGX_TwistRangeController& ControllerRef, double& Min, double& Max)
 	{
