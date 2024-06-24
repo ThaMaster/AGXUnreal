@@ -141,30 +141,57 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 {
 	GENERATED_BODY()
 
+	/**
+	 * Enable or disable an Elementary Constraint.
+	 * @param Constraint The Elementary Constraint to enable or disable.
+	 * @param Enable True to enable the Elementary Constraint, false to disable it.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetEnable(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, bool Enable)
 	{
 		return Constraint.SetEnable(Enable);
 	}
 
+	/**
+	 * Check whether the given Elementary Constraint is enabled or disabled.
+	 * @param Constraint The Elementary Constraint to check.
+	 * @return True if the Elementary Constraint is enabled, false otherwise.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static bool GetEnable(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint)
 	{
 		return Constraint.GetEnable();
 	}
 
+	/**
+	 * Set the compliance of an Elementary Constraint. [m/N] for translational DOFs and [rad/Nm] for
+	 * rotational DOFs.
+	 * @param Constraint The Elementary Constraint to set Compliance on.
+	 * @param Compliance The new Compliance.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetCompliance(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double Compliance)
 	{
 		return Constraint.SetCompliance(Compliance);
 	}
 
+	/**
+	 * Get the Compliance from othe Elementary Constraint. [m/N] for translational DOFs and [rad/Nm]
+	 * for rotational DOFs.
+	 * @param Constraint The Elementary Constraint to get Compliance from.
+	 * @return The Compliance of the Elementary Constraint.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static double GetCompliance(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint)
 	{
 		return Constraint.GetCompliance();
 	}
 
+	/**
+	 * Set the Spook damping time of an Elementary Constraint [s].
+	 * @param Constraint Elementary Constraint to set Spook Damping on.
+	 * @param SpookDamping New Spook damping time.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetSpookDamping(
 		UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double SpookDamping)
@@ -172,12 +199,24 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 		return Constraint.SetSpookDamping(SpookDamping);
 	}
 
+	/**
+	 * Get the Spook damping time from the Elementary Constraint [s].
+	 * @param Constraint The Elementary Constraint to get Spook damping from.
+	 * @return The Spook damping of the Elementary Constraint.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static double GetSpookDamping(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint)
 	{
 		return Constraint.GetSpookDamping();
 	}
 
+	/**
+	 * Set the Force Range of an Elementary Constraint. The force applied by the solver will always
+	 * be within this bound [N] or [Nm].
+	 * @param Constraint Constraint to set Force Range on.
+	 * @param Min Minimum force or torque the Elementary Constraint may apply.
+	 * @param Max Maximum force or torque the Elementary Constraint may apply.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRange(
 		UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double Min, double Max)
@@ -185,18 +224,34 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 		return Constraint.SetForceRange(Min, Max);
 	}
 
+	/**
+	 * Set the minimum force or torque an Elementary Constraint can apply [N] or [Nm].
+	 * @param Constraint The Elementary Constraint to set minimum force range on.
+	 * @param Min The new minimum force or torque.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRangeMin(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double Min)
 	{
 		Constraint.SetForceRangeMin(Min);
 	}
 
+	/**
+	 * Set the maximum force or torque an Elementary Constraint can apply [N] or [Nm].
+	 * @param Constraint The Elementary Constraint to set maximum force range on.
+	 * @param Max The new maximum force or torque.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRangeMax(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double Max)
 	{
 		Constraint.SetForceRangeMin(Max);
 	}
 
+	/**
+	 * Get the Force Range of the Elementary Constraint  [N] or [Nm].
+	 * @param Constraint The Elementary Constraint to get the Force Range for.
+	 * @param Min The minimum force or torque the constraint can apply.
+	 * @param Max The maximum force or torque the constraint can apply.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void GetForceRange(
 		UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double& Min, double& Max)
@@ -206,12 +261,22 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 		Max = ForceRange.Max;
 	}
 
+	/**
+	 * Get the minimum force or torque the Elementary Constraint can apply [N] or [Nm].
+	 * @param Constraint The Elementary Constraint to get the minimum force range for.
+	 * @return The minimum force or torque the Elementary Constraint can apply.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static double GetForceRangeMin(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint)
 	{
 		return Constraint.GetForceRangeMin();
 	}
 
+	/**
+	 * Get the maximum force or torque the Elementary Constraint can apply [N] or [Nm].
+	 * @param Constraint The Elementary Constraint to get the maximum force range for.
+	 * @return The maximum force or torque the Elementary Constraint can apply.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static double GetForceRangeMax(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint)
 	{
@@ -226,31 +291,58 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 // for now we're stuck with copy/paste. The following code block should be copy/pasted in each
 // Elementary Constraint sublass' Blueprint Library class. Search/replace FAGX_TYPE and substitute
 // the actual Elementary Constraint subtype.
-/*
+#if 0
+	/**
+	 * Enable or disable an Elementary Constraint.
+	 * @param Constraint The Elementary Constraint to enable or disable.
+	 * @param Enable True to enable the Elementary Constraint, false to disable it.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetEnable(UPARAM(Ref) FAGX_TYPE& Constraint, bool Enable)
 	{
 		return Constraint.SetEnable(Enable);
 	}
 
+	/**
+	 * Check whether the given Elementary Constraint is enabled or disabled.
+	 * @param Constraint The Elementary Constraint to check.
+	 * @return True if the Elementary Constraint is enabled, false otherwise.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static bool GetEnable(UPARAM(Ref) FAGX_TYPE& Constraint)
 	{
 		return Constraint.GetEnable();
 	}
 
+	/**
+	 * Set the compliance of an Elementary Constraint. [m/N] for translational DOFs and [rad/Nm] for
+	 * rotational DOFs.
+	 * @param Constraint The Elementary Constraint to set Compliance on.
+	 * @param Compliance The new Compliance.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetCompliance(UPARAM(Ref) FAGX_TYPE& Constraint, double Compliance)
 	{
 		return Constraint.SetCompliance(Compliance);
 	}
 
+	/**
+	 * Get the Compliance from othe Elementary Constraint. [m/N] for translational DOFs and [rad/Nm]
+	 * for rotational DOFs.
+	 * @param Constraint The Elementary Constraint to get Compliance from.
+	 * @return The Compliance of the Elementary Constraint.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static double GetCompliance(UPARAM(Ref) FAGX_TYPE& Constraint)
 	{
 		return Constraint.GetCompliance();
 	}
 
+	/**
+	 * Set the Spook damping time of an Elementary Constraint [s].
+	 * @param Constraint Elementary Constraint to set Spook Damping on.
+	 * @param SpookDamping New Spook damping time.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetSpookDamping(
 		UPARAM(Ref) FAGX_TYPE& Constraint, double SpookDamping)
@@ -258,12 +350,24 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 		return Constraint.SetSpookDamping(SpookDamping);
 	}
 
+	/**
+	 * Get the Spook damping time from the Elementary Constraint [s].
+	 * @param Constraint The Elementary Constraint to get Spook damping from.
+	 * @return The Spook damping of the Elementary Constraint.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static double GetSpookDamping(UPARAM(Ref) FAGX_TYPE& Constraint)
 	{
 		return Constraint.GetSpookDamping();
 	}
 
+	/**
+	 * Set the Force Range of an Elementary Constraint. The force applied by the solver will always
+	 * be within this bound [N] or [Nm].
+	 * @param Constraint Constraint to set Force Range on.
+	 * @param Min Minimum force or torque the Elementary Constraint may apply.
+	 * @param Max Maximum force or torque the Elementary Constraint may apply.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRange(
 		UPARAM(Ref) FAGX_TYPE& Constraint, double Min, double Max)
@@ -271,18 +375,34 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 		return Constraint.SetForceRange(Min, Max);
 	}
 
+	/**
+	 * Set the minimum force or torque an Elementary Constraint can apply [N] or [Nm].
+	 * @param Constraint The Elementary Constraint to set minimum force range on.
+	 * @param Min The new minimum force or torque.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRangeMin(UPARAM(Ref) FAGX_TYPE& Constraint, double Min)
 	{
 		Constraint.SetForceRangeMin(Min);
 	}
 
+	/**
+	 * Set the maximum force or torque an Elementary Constraint can apply [N] or [Nm].
+	 * @param Constraint The Elementary Constraint to set maximum force range on.
+	 * @param Max The new maximum force or torque.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRangeMax(UPARAM(Ref) FAGX_TYPE& Constraint, double Max)
 	{
 		Constraint.SetForceRangeMin(Max);
 	}
 
+	/**
+	 * Get the Force Range of the Elementary Constraint  [N] or [Nm].
+	 * @param Constraint The Elementary Constraint to get the Force Range for.
+	 * @param Min The minimum force or torque the constraint can apply.
+	 * @param Max The maximum force or torque the constraint can apply.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void GetForceRange(
 		UPARAM(Ref) FAGX_TYPE& Constraint, double& Min, double& Max)
@@ -292,17 +412,25 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 		Max = ForceRange.Max;
 	}
 
+	/**
+	 * Get the minimum force or torque the Elementary Constraint can apply [N] or [Nm].
+	 * @param Constraint The Elementary Constraint to get the minimum force range for.
+	 * @return The minimum force or torque the Elementary Constraint can apply.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
-	static double GetForceRangeMin(
-		UPARAM(Ref) FAGX_TYPE& Constraint)
+	static double GetForceRangeMin(UPARAM(Ref) FAGX_TYPE& Constraint)
 	{
 		return Constraint.GetForceRangeMin();
 	}
 
+	/**
+	 * Get the maximum force or torque the Elementary Constraint can apply [N] or [Nm].
+	 * @param Constraint The Elementary Constraint to get the maximum force range for.
+	 * @return The maximum force or torque the Elementary Constraint can apply.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
-	static double GetForceRangeMax(
-		UPARAM(Ref) FAGX_TYPE& Constraint)
+	static double GetForceRangeMax(UPARAM(Ref) FAGX_TYPE& Constraint)
 	{
 		return Constraint.GetForceRangeMax();
 	}
-*/
+#endif
