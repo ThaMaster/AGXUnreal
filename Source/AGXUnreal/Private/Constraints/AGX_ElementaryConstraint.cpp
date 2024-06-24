@@ -227,12 +227,6 @@ void FAGX_ElementaryConstraint::InitializeBarrier(const FElementaryConstraintBar
 	check(HasNative());
 }
 
-void FAGX_ElementaryConstraint::ClearBarrier()
-{
-	Barrier = FElementaryConstraintBarrier();
-}
-
-
 void FAGX_ElementaryConstraint::UpdateNativeProperties()
 {
 	check(HasNative());
