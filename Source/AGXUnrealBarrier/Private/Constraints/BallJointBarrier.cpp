@@ -20,6 +20,10 @@ FBallJointBarrier::FBallJointBarrier()
 FBallJointBarrier::FBallJointBarrier(std::unique_ptr<FConstraintRef> Native)
 	: FConstraintBarrier(std::move(Native))
 {
+	if (HasNative())
+	{
+		check(NativeRef->Native->is<agx::BallJoint>());
+	}
 }
 
 FBallJointBarrier::~FBallJointBarrier()
