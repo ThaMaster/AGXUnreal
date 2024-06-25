@@ -139,7 +139,6 @@ FTwistRangeControllerBarrier& FTwistRangeControllerBarrier::operator=(
 	return *this;
 }
 
-// AGX Dynamics accessors.
 void FTwistRangeControllerBarrier::SetNative(FElementaryConstraintRef* InNative)
 {
 	Super::SetNative(InNative);
@@ -158,6 +157,8 @@ namespace
 		return static_cast<const agx::TwistRangeController*>(Barrier.GetNative()->Native.get());
 	}
 }
+
+// AGX Dynamics accessors.
 
 void FTwistRangeControllerBarrier::SetRange(FDoubleInterval InRange)
 {
@@ -217,10 +218,10 @@ double FTwistRangeControllerBarrier::GetRangeMax() const
 bool FTwistRangeControllerBarrier::CheckValidNative()
 {
 	check(!HasNative() || NativeRef->Native->is<agx::TwistRangeController>());
-	if (!HasNative() || (HasNative() && !NativeRef->Native->is<agx::TwistRangeController>()))
+	if (HasNative() && !NativeRef->Native->is<agx::TwistRangeController>())
 	{
 		UE_LOG(
-			LogAGX, Warning,
+			LogAGX, Error,
 			TEXT("Invalid Elementary Constraint detected in Twist Range Controller Barrier. Native "
 				 "cleared."));
 		NativeRef->Native = nullptr;
