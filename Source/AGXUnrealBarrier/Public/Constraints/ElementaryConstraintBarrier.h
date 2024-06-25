@@ -16,14 +16,19 @@ struct FElementaryConstraintRef;
 class AGXUNREALBARRIER_API FElementaryConstraintBarrier
 {
 public: // Special member functions.
+	/// Create a Barrier without a Native but with a Native Ref.
 	FElementaryConstraintBarrier();
+
+	/// Create a Barrier with the same Native as Other, but with a separate Native Ref.
+	FElementaryConstraintBarrier(const FElementaryConstraintBarrier& Other);
+
+	/// Create a Barrier taking ownership of the given Native Ref.
+	/// The Native Ref, if non-nullptr, MUST point to a Twist Range Controller.
 	FElementaryConstraintBarrier(std::unique_ptr<FElementaryConstraintRef> InNative);
+
 	virtual ~FElementaryConstraintBarrier();
 
-	/**
-	 * Make this Barrier point to the same native AGX Dynamics object as Other. The Ref object
-	 * will not be shared, only the AGX Dynamics object.
-	 */
+	/// Make this Barrier have the same Native as Other, but keep the Native Refs separate.
 	FElementaryConstraintBarrier& operator=(const FElementaryConstraintBarrier& Other);
 
 public: // Native management.

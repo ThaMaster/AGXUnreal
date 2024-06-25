@@ -17,6 +17,12 @@ FElementaryConstraintBarrier::FElementaryConstraintBarrier()
 }
 
 FElementaryConstraintBarrier::FElementaryConstraintBarrier(
+	const FElementaryConstraintBarrier& Other)
+		: NativeRef(new FElementaryConstraintRef(Other.NativeRef->Native))
+{
+}
+
+FElementaryConstraintBarrier::FElementaryConstraintBarrier(
 	std::unique_ptr<FElementaryConstraintRef> InNative)
 	: NativeRef(std::move(InNative))
 {
