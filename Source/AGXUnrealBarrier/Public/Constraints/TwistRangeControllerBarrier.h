@@ -69,6 +69,9 @@ public: // Special member functions.
 	virtual ~FTwistRangeControllerBarrier();
 	FTwistRangeControllerBarrier& operator=(const FTwistRangeControllerBarrier& Other);
 
+public: // Native management.
+	virtual void SetNative(FElementaryConstraintRef* InNative) override;
+
 public: // AGX Dynamics accessors.
 	void SetRange(FDoubleInterval InRange);
 	void SetRange(FAGX_RealInterval InRange);

@@ -33,7 +33,7 @@ public: // Special member functions.
 
 public: // Native management.
 	bool HasNative() const;
-	void SetNative(FElementaryConstraintRef* InNative);
+	virtual void SetNative(FElementaryConstraintRef* InNative);
 	FElementaryConstraintRef* GetNative();
 	const FElementaryConstraintRef* GetNative() const;
 

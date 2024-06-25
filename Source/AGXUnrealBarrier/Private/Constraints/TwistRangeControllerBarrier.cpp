@@ -140,6 +140,12 @@ FTwistRangeControllerBarrier& FTwistRangeControllerBarrier::operator=(
 }
 
 // AGX Dynamics accessors.
+void FTwistRangeControllerBarrier::SetNative(FElementaryConstraintRef* InNative)
+{
+	Super::SetNative(InNative);
+	CheckValidNative();
+}
+
 namespace
 {
 	agx::TwistRangeController* GetNative(FTwistRangeControllerBarrier& Barrier)
