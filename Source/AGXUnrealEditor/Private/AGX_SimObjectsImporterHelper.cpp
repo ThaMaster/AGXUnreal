@@ -1485,12 +1485,18 @@ void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
 	UpdateConstraintComponentNoControllers(
 		Component, Barrier, *this, ProcessedThresholds, MSTsOnDisk, bForceOverwriteInstances);
 	UAGX_BallConstraintComponent* BallConstraint = Cast<UAGX_BallConstraintComponent>(&Component);
-	check(BallConstraint != nullptr);
-	if (BallConstraint != nullptr)
+	AGX_CHECK(BallConstraint != nullptr);
+	if (BallConstraint == nullptr)
 	{
-		FAGX_ConstraintUtilities::CopyControllersFrom(
-			*BallConstraint, Barrier, bForceOverwriteInstances);
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot copy controllers during update of Ball Constraint '%s' because the Ball "
+				 "Constraint is null."),
+			*Component.GetName());
+		return;
 	}
+	FAGX_ConstraintUtilities::CopyControllersFrom(
+		*BallConstraint, Barrier, bForceOverwriteInstances);
 }
 
 UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire(
