@@ -17,7 +17,7 @@
  *   - End the Play In Editor session.
  *
  * Any state needed by the test is created in the Run Test function and copied into the test
- * Latent Command. Several tests need to do some setup on in the beginning of the test. This is
+ * Latent Command. Several tests need to do some setup in the beginning of the test. This is
  * typically done by passing in a container to store data in and by checking if the container is
  * empty we know if we are in the beginning of the test or not.
  */
@@ -177,6 +177,10 @@ bool FFallingBoxTest::RunTest(const FString& Parameters)
 //
 // Ball Joint Twist Range Controller test starts here.
 //
+// The level contains a Blueprint instance containing two parallel body + constraint setups. One of
+// them have had their properties set in the Blueprint editor's Details panel while the other have
+// had their properties set by a Blueprint Visual Script executed on Begin Play.
+//
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FCheckTwistRangeCommand, FAutomationTestBase&, Test);
 
@@ -250,37 +254,35 @@ bool FCheckTwistRangeCommand::Update()
 		return true;
 	if (!Test.TestEqual(TEXT("BP Rod Body roll"), BpRod->GetRotator().Roll, 15.0))
 		return true;
-	UAGX_BallConstraintComponent* BpBall = GetComponentByName<UAGX_BallConstraintComponent>(*BallActor, "BP Ball Constraint");
+	UAGX_BallConstraintComponent* BpBall =
+		GetComponentByName<UAGX_BallConstraintComponent>(*BallActor, "BP Ball Constraint");
 	if (!Test.TestNotNull(TEXT("BP Ball Constraint"), BpBall))
 		return true;
 	if (!Test.TestTrue(TEXT("BP Ball Constraint has native"), BpBall->HasNative()))
 		return true;
 	if (!Test.TestEqual(
-			TEXT("Ball Constraint RangeMin"), BpBall->TwistRangeController.GetRangeMin(),
-			-15.0))
+			TEXT("Ball Constraint RangeMin"), BpBall->TwistRangeController.GetRangeMin(), -15.0))
 		return true;
 	if (!Test.TestEqual(
-			TEXT("Ball Constraint RangeMax"), BpBall->TwistRangeController.GetRangeMax(),
-			20.0))
+			TEXT("Ball Constraint RangeMax"), BpBall->TwistRangeController.GetRangeMax(), 20.0))
 		return true;
 	if (!Test.TestEqual(
 			TEXT("Ball Constraint Enable"), BpBall->TwistRangeController.GetEnable(), true))
 		return true;
 	if (!Test.TestEqual(
-			TEXT("Ball Constraint Compliance"), BpBall->TwistRangeController.GetCompliance(),
-			1e-9))
+			TEXT("Ball Constraint Compliance"), BpBall->TwistRangeController.GetCompliance(), 1e-9))
 		return true;
 	if (!Test.TestEqual(
-			TEXT("Ball Constraint SpookDamping"),
-			BpBall->TwistRangeController.GetSpookDamping(), 0.035))
+			TEXT("Ball Constraint SpookDamping"), BpBall->TwistRangeController.GetSpookDamping(),
+			0.035))
 		return true;
 	if (!Test.TestEqual(
-			TEXT("Ball Constraint ForceRangeMin"),
-			BpBall->TwistRangeController.GetForceRangeMin(), -2000.0))
+			TEXT("Ball Constraint ForceRangeMin"), BpBall->TwistRangeController.GetForceRangeMin(),
+			-2000.0))
 		return true;
 	if (!Test.TestEqual(
-			TEXT("Ball Constraint ForceRangeMax"),
-			BpBall->TwistRangeController.GetForceRangeMax(), 2000.0))
+			TEXT("Ball Constraint ForceRangeMax"), BpBall->TwistRangeController.GetForceRangeMax(),
+			2000.0))
 		return true;
 
 	return true;
