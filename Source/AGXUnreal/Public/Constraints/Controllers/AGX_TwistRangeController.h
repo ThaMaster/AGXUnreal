@@ -40,7 +40,7 @@ public: // Properties.
 	 * The amount of rotation around the constraint's Z axis that is allowed [deg].
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Twist Range Controller", Meta = (EditCondition = "bEnabled"))
+		EditAnywhere, Category = "AGX Twist Range Controller", Meta = (EditCondition = "bEnable"))
 	FAGX_RealInterval Range;
 
 	void SetRange(double InRangeMin, double InRangeMax);
