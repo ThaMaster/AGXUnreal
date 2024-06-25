@@ -2104,12 +2104,6 @@ public:
 			  TEXT("ball_constraint__no_twist_range_agx-2_36_1_5.agx"),
 			  TEXT("ball_constraint__no_twist_range_agx-2_36_1_5.agx"))
 	{
-		// Make sure the AGX Dynamics archive hasn't accidentally been re-generated, possibly with
-		// a new AGX Dynamics version that has Twist Range Controller.
-		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
-			FPaths::Combine(FString("SynchronizeModel"), InitialModelFileName));
-		AgxAutomationCommon::CheckFileMD5Checksum(
-			ArchiveFilePath, TEXT("4d72dcda03b7e204da05a9b479208317"), *this);
 	}
 
 	bool CheckTwistRangeController(UAGX_BallConstraintComponent& Ball)
@@ -2162,6 +2156,15 @@ public:
 
 	virtual bool PostImport() override
 	{
+		// Make sure the AGX Dynamics archive hasn't accidentally been re-generated, possibly with
+		// a new AGX Dynamics version that has Twist Range Controller.
+		//
+		// Would like to do this in the constructor instead, but
+		FString ArchiveFilePath = AgxAutomationCommon::GetTestScenePath(
+			FPaths::Combine(FString("SynchronizeModel"), InitialModelFileName));
+		AgxAutomationCommon::CheckFileMD5Checksum(
+			ArchiveFilePath, TEXT("4d72dcda03b7e204da05a9b479208317"), *this);
+
 		return DoChecks(TEXT("PostImport"), InitialTemplateComponents);
 	}
 
