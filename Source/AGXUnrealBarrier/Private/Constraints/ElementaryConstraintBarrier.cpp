@@ -11,6 +11,10 @@
 #include "agx/ElementaryConstraint.h"
 #include "EndAGXIncludes.h"
 
+//
+// Special member functions.
+//
+
 FElementaryConstraintBarrier::FElementaryConstraintBarrier()
 	: NativeRef(new FElementaryConstraintRef())
 {
@@ -42,6 +46,10 @@ FElementaryConstraintBarrier& FElementaryConstraintBarrier::operator=(
 	return *this;
 }
 
+//
+// Native management.
+//
+
 bool FElementaryConstraintBarrier::HasNative() const
 {
 	return NativeRef.get() != nullptr && NativeRef->Native.get() != nullptr;
@@ -66,6 +74,10 @@ const FElementaryConstraintRef* FElementaryConstraintBarrier::GetNative() const
 {
 	return NativeRef.get();
 }
+
+//
+// AGX Dynamics accessors.
+//
 
 void FElementaryConstraintBarrier::SetEnabled(bool bEnabled)
 {
@@ -139,23 +151,21 @@ double FElementaryConstraintBarrier::GetSpookDamping(int32 InRow) const
 	return NativeRef->Native->getDamping(InRow);
 }
 
-void FElementaryConstraintBarrier::SetForceRange(double InMin, double InMax, int32 InRow)
-{
-	SetForceRange(FAGX_RealInterval(InMin, InMax), InRow);
-}
-
-void FElementaryConstraintBarrier::SetForceRange(FAGX_RealInterval InForceRange, int32 InRow)
-{
-	check(HasNative());
-	const agx::RangeReal ForceRangeAGX = Convert(InForceRange);
-	NativeRef->Native->setForceRange(ForceRangeAGX, InRow);
-}
-
 void FElementaryConstraintBarrier::SetForceRange(FDoubleInterval InForceRange, int32 InRow)
 {
 	check(HasNative());
 	const agx::RangeReal ForceRangeAGX = Convert(InForceRange);
 	NativeRef->Native->setForceRange(ForceRangeAGX, InRow);
+}
+
+void FElementaryConstraintBarrier::SetForceRange(FAGX_RealInterval InForceRange, int32 InRow)
+{
+	SetForceRange(FDoubleInterval{InForceRange.Min, InForceRange.Max});
+}
+
+void FElementaryConstraintBarrier::SetForceRange(double InMin, double InMax, int32 InRow)
+{
+	SetForceRange(FAGX_RealInterval(InMin, InMax), InRow);
 }
 
 void FElementaryConstraintBarrier::SetForceRangeMin(double InMin, int32 InRow)

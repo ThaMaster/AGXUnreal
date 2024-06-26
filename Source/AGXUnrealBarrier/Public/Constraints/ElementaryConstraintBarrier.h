@@ -55,9 +55,9 @@ public: // AGX Dynamics accessors.
 	void SetSpookDamping(double InDamping);
 	double GetSpookDamping(int32 InRow = 0) const;
 
-	void SetForceRange(double InMin, double InMax, int32 InRow = 0);
-	void SetForceRange(FAGX_RealInterval InForceRange, int32 InRow = 0);
 	void SetForceRange(FDoubleInterval InForceRange, int32 InRow = 0);
+	void SetForceRange(FAGX_RealInterval InForceRange, int32 InRow = 0);
+	void SetForceRange(double InMin, double InMax, int32 InRow = 0);
 	void SetForceRangeMin(double InMin, int32 InRow = 0);
 	void SetForceRangeMax(double InMax, int32 InRow = 0);
 	FDoubleInterval GetForceRange(int32 InRow = 0) const;
