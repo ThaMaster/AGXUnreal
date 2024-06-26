@@ -5,6 +5,7 @@
 // Unreal Engine includes.
 #include "AGX_LogCategory.h"
 #include "AGX_Real.h"
+#include "AGX_RealInterface.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -43,16 +44,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = "AGX Real")
 	static void ParseReal(const FString& String, double& Float, FAGX_Real& Real)
 	{
-		TOptional<double> Result = FCString::Atod(*String);
+		TOptional<double> Result = FAGX_RealInterface::StaticFromString(String);
 		if (!Result.IsSet())
 		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("FAGX_Real tried to convert string '%s' to double, but Atod failed."),
-				*String);
 			Float = 0.0;
 			Real = 0.0;
+			return;
 		}
+
 		Float = *Result;
 		Real = *Result;
 	}
