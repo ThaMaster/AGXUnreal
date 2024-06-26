@@ -29,11 +29,11 @@ public:
 	/**
 	 * The distance from the center of the box to its surface along the three cardinal axes [cm].
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape")
+	UPROPERTY(EditAnywhere, Category = "AGX Shape")
 	FVector HalfExtent;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
-	void SetHalfExtent(const FVector& InHalfExtent);
+	void SetHalfExtent(FVector InHalfExtent);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
 	FVector GetHalfExtent() const;

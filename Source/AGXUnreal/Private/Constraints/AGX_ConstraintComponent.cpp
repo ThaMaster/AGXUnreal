@@ -176,13 +176,13 @@ bool UAGX_ConstraintComponent::SetBody2(UAGX_RigidBodyComponent* Body)
 	return AGX_ConstraintComponent_helpers::SetBody(BodyAttachment2, Body, *this);
 }
 
-void UAGX_ConstraintComponent::SetConstraintAttachmentLocation1(const FVector& LocalLocation)
+void UAGX_ConstraintComponent::SetConstraintAttachmentLocation1(FVector LocalLocation)
 {
 	AGX_ConstraintComponent_helpers::SetLocalLocation(
 		BodyAttachment1, LocalLocation, *NativeBarrier, 0);
 }
 
-void UAGX_ConstraintComponent::SetConstraintAttachmentLocation2(const FVector& LocalLocation)
+void UAGX_ConstraintComponent::SetConstraintAttachmentLocation2(FVector LocalLocation)
 {
 	AGX_ConstraintComponent_helpers::SetLocalLocation(
 		BodyAttachment2, LocalLocation, *NativeBarrier, 1);

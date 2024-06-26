@@ -174,7 +174,7 @@ bool AAGX_Terrain::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
 	return true;
 }
 
-void AAGX_Terrain::AddCollisionGroup(const FName& GroupName)
+void AAGX_Terrain::AddCollisionGroup(FName GroupName)
 {
 	if (GroupName.IsNone())
 	{
@@ -189,7 +189,7 @@ void AAGX_Terrain::AddCollisionGroup(const FName& GroupName)
 		NativeBarrier.AddCollisionGroup(GroupName);
 }
 
-void AAGX_Terrain::RemoveCollisionGroupIfExists(const FName& GroupName)
+void AAGX_Terrain::RemoveCollisionGroupIfExists(FName GroupName)
 {
 	if (GroupName.IsNone())
 		return;

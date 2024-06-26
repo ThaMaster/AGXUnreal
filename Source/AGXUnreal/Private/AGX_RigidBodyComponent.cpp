@@ -784,7 +784,7 @@ void UAGX_RigidBodyComponent::DisableTransformRootCompIfMultiple()
 }
 #endif
 
-void UAGX_RigidBodyComponent::SetPosition(const FVector& Position)
+void UAGX_RigidBodyComponent::SetPosition(FVector Position)
 {
 	if (HasNative())
 	{
@@ -809,7 +809,7 @@ FVector UAGX_RigidBodyComponent::GetPosition() const
 	return GetComponentLocation();
 }
 
-void UAGX_RigidBodyComponent::SetRotation(const FQuat& Rotation)
+void UAGX_RigidBodyComponent::SetRotation(FQuat Rotation)
 {
 	if (HasNative())
 	{
@@ -829,7 +829,7 @@ FQuat UAGX_RigidBodyComponent::GetRotation() const
 	return GetComponentQuat();
 }
 
-void UAGX_RigidBodyComponent::SetRotator(const FRotator& Rotator)
+void UAGX_RigidBodyComponent::SetRotator(FRotator Rotator)
 {
 	const FQuat Quat = Rotator.Quaternion();
 	SetRotation(Quat);
@@ -912,7 +912,7 @@ bool UAGX_RigidBodyComponent::GetAutoGenerateMass() const
 	}
 }
 
-void UAGX_RigidBodyComponent::SetCenterOfMassOffset(const FVector& InCoMOffset)
+void UAGX_RigidBodyComponent::SetCenterOfMassOffset(FVector InCoMOffset)
 {
 	if (HasNative())
 	{
@@ -970,7 +970,7 @@ TArray<UAGX_ShapeComponent*> UAGX_RigidBodyComponent::GetShapes() const
 	return FoundShapes;
 }
 
-void UAGX_RigidBodyComponent::SetPrincipalInertia(const FVector& InPrincipalInertia)
+void UAGX_RigidBodyComponent::SetPrincipalInertia(FVector InPrincipalInertia)
 {
 	if (HasNative())
 	{
@@ -1036,7 +1036,7 @@ float UAGX_RigidBodyComponent::CalculateMass_BP() const
 	return static_cast<float>(CalculateMass());
 }
 
-void UAGX_RigidBodyComponent::SetVelocity(const FVector& InVelocity)
+void UAGX_RigidBodyComponent::SetVelocity(FVector InVelocity)
 {
 	if (HasNative())
 	{
@@ -1056,7 +1056,7 @@ FVector UAGX_RigidBodyComponent::GetVelocity() const
 	return Velocity;
 }
 
-void UAGX_RigidBodyComponent::SetAngularVelocity(const FVector& InAngularVelocity)
+void UAGX_RigidBodyComponent::SetAngularVelocity(FVector InAngularVelocity)
 {
 	if (HasNative())
 	{
@@ -1076,7 +1076,7 @@ FVector UAGX_RigidBodyComponent::GetAngularVelocity() const
 	return AngularVelocity;
 }
 
-void UAGX_RigidBodyComponent::SetLinearVelocityDamping(const FVector& InLinearVelocityDamping)
+void UAGX_RigidBodyComponent::SetLinearVelocityDamping(FVector InLinearVelocityDamping)
 {
 	if (HasNative())
 	{
@@ -1096,7 +1096,7 @@ FVector UAGX_RigidBodyComponent::GetLinearVelocityDamping() const
 	return LinearVelocityDamping;
 }
 
-void UAGX_RigidBodyComponent::SetAngularVelocityDamping(const FVector& InAngularVelocityDamping)
+void UAGX_RigidBodyComponent::SetAngularVelocityDamping(FVector InAngularVelocityDamping)
 {
 	if (HasNative())
 	{
@@ -1136,7 +1136,7 @@ TEnumAsByte<enum EAGX_MotionControl> UAGX_RigidBodyComponent::GetMotionControl()
 	return MotionControl;
 }
 
-void UAGX_RigidBodyComponent::AddForceAtCenterOfMass(const FVector& Force)
+void UAGX_RigidBodyComponent::AddForceAtCenterOfMass(FVector Force)
 {
 	if (!HasNative())
 	{
@@ -1151,7 +1151,7 @@ void UAGX_RigidBodyComponent::AddForceAtCenterOfMass(const FVector& Force)
 	NativeBarrier.AddForceAtCenterOfMass(Force);
 }
 
-void UAGX_RigidBodyComponent::AddForceAtWorldLocation(const FVector& Force, const FVector& Location)
+void UAGX_RigidBodyComponent::AddForceAtWorldLocation(FVector Force, FVector Location)
 {
 	if (!HasNative())
 	{
@@ -1166,7 +1166,7 @@ void UAGX_RigidBodyComponent::AddForceAtWorldLocation(const FVector& Force, cons
 	NativeBarrier.AddForceAtWorldLocation(Force, Location);
 }
 
-void UAGX_RigidBodyComponent::AddForceAtLocalLocation(const FVector& Force, const FVector& Location)
+void UAGX_RigidBodyComponent::AddForceAtLocalLocation(FVector Force, FVector Location)
 {
 	if (!HasNative())
 	{
@@ -1182,7 +1182,7 @@ void UAGX_RigidBodyComponent::AddForceAtLocalLocation(const FVector& Force, cons
 }
 
 void UAGX_RigidBodyComponent::AddLocalForceAtLocalLocation(
-	const FVector& LocalForce, const FVector& Location)
+	FVector LocalForce, FVector Location)
 {
 	const FVector GlobalForce = GetComponentTransform().TransformVectorNoScale(LocalForce);
 	AddForceAtLocalLocation(GlobalForce, Location);
@@ -1198,7 +1198,7 @@ FVector UAGX_RigidBodyComponent::GetForce() const
 	return NativeBarrier.GetForce();
 }
 
-void UAGX_RigidBodyComponent::AddTorqueLocal(const FVector& Torque)
+void UAGX_RigidBodyComponent::AddTorqueLocal(FVector Torque)
 {
 	if (!HasNative())
 	{
@@ -1213,7 +1213,7 @@ void UAGX_RigidBodyComponent::AddTorqueLocal(const FVector& Torque)
 	NativeBarrier.AddTorqueLocal(Torque);
 }
 
-void UAGX_RigidBodyComponent::AddTorqueWorld(const FVector& Torque)
+void UAGX_RigidBodyComponent::AddTorqueWorld(FVector Torque)
 {
 	if (!HasNative())
 	{
@@ -1244,7 +1244,7 @@ FVector UAGX_RigidBodyComponent::GetTorque() const
 }
 
 void UAGX_RigidBodyComponent::MoveTo(
-	const FVector& Position, const FRotator& Rotation, float Duration)
+	FVector Position, FRotator Rotation, float Duration)
 {
 	if (!HasNative() || Duration < 0.f)
 		return;
@@ -1253,7 +1253,7 @@ void UAGX_RigidBodyComponent::MoveTo(
 }
 
 void UAGX_RigidBodyComponent::MoveToLocal(
-	const FVector& PositionLocal, const FRotator& RotationLocal, float Duration)
+	FVector PositionLocal, FRotator RotationLocal, float Duration)
 {
 	if (!HasNative())
 		return;

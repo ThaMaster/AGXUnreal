@@ -209,10 +209,10 @@ public:
 	TArray<FName> CollisionGroups;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
-	void AddCollisionGroup(const FName& GroupName);
+	void AddCollisionGroup(FName GroupName);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
-	void RemoveCollisionGroupIfExists(const FName& GroupName);
+	void RemoveCollisionGroupIfExists(FName GroupName);
 
 	/**
 	 * If a Particle System Component has been spawned by the Terrain, this function will return it.

@@ -966,7 +966,7 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation, int3
 }
 
 FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(
-	const FVector& InLocation, int32 InIndex)
+	FVector InLocation, int32 InIndex)
 {
 	return AddNodeAtIndex(FWireRoutingNode(InLocation), InIndex);
 }
@@ -1016,7 +1016,7 @@ void UAGX_WireComponent::RemoveNode(int32 InIndex)
 	RouteNodes.RemoveAt(InIndex);
 }
 
-void UAGX_WireComponent::SetNodeLocalLocation(int32 InIndex, const FVector& InLocation)
+void UAGX_WireComponent::SetNodeLocalLocation(int32 InIndex, FVector InLocation)
 {
 	if (HasNative())
 	{
@@ -1953,7 +1953,7 @@ bool UAGX_WireComponent::GetCanCollide() const
 	return bCanCollide;
 }
 
-void UAGX_WireComponent::AddCollisionGroup(const FName& GroupName)
+void UAGX_WireComponent::AddCollisionGroup(FName GroupName)
 {
 	if (GroupName.IsNone())
 	{
@@ -1968,7 +1968,7 @@ void UAGX_WireComponent::AddCollisionGroup(const FName& GroupName)
 		NativeBarrier.AddCollisionGroup(GroupName);
 }
 
-void UAGX_WireComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
+void UAGX_WireComponent::RemoveCollisionGroupIfExists(FName GroupName)
 {
 	if (GroupName.IsNone())
 		return;

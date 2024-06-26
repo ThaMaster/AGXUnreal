@@ -73,7 +73,7 @@ public: // Properties.
 	FVector Velocity;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetVelocity(const FVector& InVelocity);
+	void SetVelocity(FVector InVelocity);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetVelocity() const;
