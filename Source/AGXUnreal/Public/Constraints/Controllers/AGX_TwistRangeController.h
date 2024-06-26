@@ -63,7 +63,6 @@ public: // Native management.
 	/**
 	 * Bind this Twist Range Controller to the AGX Dynamics Twist Range Controller referenced by
 	 * the given Barrier.
-	 * @param Barrier
 	 */
 	void InitializeBarrier(const FTwistRangeControllerBarrier& InBarrier);
 
@@ -105,15 +104,15 @@ class AGXUNREAL_API UAGX_TwistRangeController_FL : public UBlueprintFunctionLibr
 	/**
 	 * Get the range of angles that the two constrained bodies may twist relative to each other
 	 * [deg].
-	 * @param ControllerRef The Twist Range Controller to get allowed angle range from.
+	 * @param Controller The Twist Range Controller to get allowed angle range from.
 	 * @param Min The minimum angle allowed [deg].
 	 * @param Max The maximum angle allowed [deg].
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Twist Range Controller")
-	static void GetRange(const FAGX_TwistRangeController& ControllerRef, double& Min, double& Max)
+	static void GetRange(const FAGX_TwistRangeController& Controller, double& Min, double& Max)
 	{
-		Min = ControllerRef.GetRangeMin();
-		Max = ControllerRef.GetRangeMax();
+		Min = Controller.GetRangeMin();
+		Max = Controller.GetRangeMax();
 	}
 
 	// Add Elementary Constraint API. See comment in AGX_ElementaryConstraint.h.
