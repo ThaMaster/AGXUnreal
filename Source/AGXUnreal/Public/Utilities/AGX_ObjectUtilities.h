@@ -187,6 +187,16 @@ public:
 	template <typename T>
 	static T* SetIfNullptr(T*& Storage, T* Value);
 
+	/**
+	 * Set Storage to New if its current value is Expected.
+	 *
+	 * @param Storage Variable to maybe set.
+	 * @param Expected Value Storage should have for the set to happen.
+	 * @param New The value Storage may be set to.
+	 */
+	template <typename T>
+	static void SetIfEqual(T& Storage, T Expected, T New);
+
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
 };
@@ -370,4 +380,13 @@ T* FAGX_ObjectUtilities::SetIfNullptr(T*& Storage, T* const Value)
 		Storage = Value;
 	}
 	return Storage;
+}
+
+template <typename T>
+void FAGX_ObjectUtilities::SetIfEqual(T& Storage, T Expected, T New)
+{
+	if (Storage == Expected)
+	{
+		Storage = New;
+	}
 }

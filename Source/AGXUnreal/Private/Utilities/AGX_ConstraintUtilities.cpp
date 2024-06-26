@@ -6,9 +6,11 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
+#include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "Constraints/AGX_ConstraintBodyAttachment.h"
+#include "Constraints/BallJointBarrier.h"
 #include "Constraints/Constraint1DOFBarrier.h"
 #include "Constraints/Constraint2DOFBarrier.h"
 #include "Constraints/Controllers/AGX_ElectricMotorController.h"
@@ -17,6 +19,7 @@
 #include "Constraints/Controllers/AGX_RangeController.h"
 #include "Constraints/Controllers/AGX_TargetSpeedController.h"
 #include "Constraints/ControllerConstraintBarriers.h"
+#include "Constraints/Controllers/AGX_TwistRangeController.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
@@ -117,6 +120,23 @@ void FAGX_ConstraintUtilities::CopyControllersFrom(
 	StoreScrewController(Barrier, Component.ScrewController, SCInstances, ForceOverwriteInstances);
 }
 
+void FAGX_ConstraintUtilities::CopyControllersFrom(
+	UAGX_BallConstraintComponent& Component, const FBallJointBarrier& Barrier,
+	bool bForceOverwriteProperties)
+{
+	TArray<FAGX_TwistRangeController*> ControllerInstances;
+	if (FAGX_ObjectUtilities::IsTemplateComponent(Component))
+	{
+		for (UAGX_BallConstraintComponent* Instance :
+			 FAGX_ObjectUtilities::GetArchetypeInstances(Component))
+		{
+			ControllerInstances.Add(&Instance->TwistRangeController);
+		}
+	}
+	StoreTwistRangeController(
+		Barrier, Component.TwistRangeController, ControllerInstances, bForceOverwriteProperties);
+}
+
 void FAGX_ConstraintUtilities::StoreElectricMotorController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller,
 	TArray<FAGX_ConstraintElectricMotorController*>& Instances, bool ForceOverwriteInstances)
@@ -198,6 +218,38 @@ void FAGX_ConstraintUtilities::StoreScrewController(
 	TArray<FAGX_ConstraintScrewController*> Instances, bool bForceOverwriteInstances)
 {
 	Controller.CopyFrom(*Barrier.GetScrewController(), Instances, bForceOverwriteInstances);
+}
+
+void FAGX_ConstraintUtilities::StoreTwistRangeController(
+	const FBallJointBarrier& Barrier, FAGX_TwistRangeController& Controller,
+	TArray<FAGX_TwistRangeController*> Instances, bool bForceOverwriteInstances)
+{
+	// Not all Ball Constraints on the AGX Dynamics side have a Twist Range Controller. That feature
+	// was added with AGX Dynamics 2.37 so any AGX Dynamics archive with a Ball Constraint created
+	// before that version doesn't have one. Means we get a nullptr from
+	// agx::BallJoint::getTwistRangeController. We cannot read from nullptr so the Twist Range
+	// Controller must get its state from somewhere else. The options are:
+	// - Leave as-is, simply return here.
+	// - Reset to the defaults.
+	//
+	// Reset to defaults is best since that doesn't leak state from one AGX Dynamics archive into
+	// the Blueprint for another, however resetting to the default is non-trivial in the case where
+	// the receiving Twist Range Controller already has a Native. We can't simply assign a default
+	// construct FAGX_TwistRangeController since that would break the Barrier holding the Native.
+	// For now we handle the two cases separately. If there is a Native in the destination
+	// Controller then we return immediately. If there is not then we reset back to the default
+	// state by assigning a default-constructed, i.e. Native-less, FAGX_TwistRangeController.
+	const FTwistRangeControllerBarrier& Source = Barrier.GetTwistRangeController();
+	if (!Source.HasNative())
+	{
+		if (!Controller.HasNative())
+		{
+			Controller = FAGX_TwistRangeController();
+		}
+		return;
+	}
+
+	Controller.CopyFrom(Source, Instances, bForceOverwriteInstances);
 }
 
 #if WITH_EDITOR
@@ -449,6 +501,25 @@ template AGXUNREAL_API void
 FAGX_ConstraintUtilities::AddScrewControllerPropertyCallbacks<UAGX_Constraint2DofComponent>(
 	FAGX_PropertyChangedDispatcher<UAGX_Constraint2DofComponent>& PropertyDispatcher,
 	TFunction<FAGX_ConstraintScrewController*(UAGX_Constraint2DofComponent*)> GetController,
+	const FName& Member);
+
+template <typename UConstraintClass>
+void FAGX_ConstraintUtilities::AddTwistRangeControllerPropertyCallbacks(
+	FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+	TFunction<FAGX_TwistRangeController*(UConstraintClass*)> GetController, const FName& Member)
+{
+	AddControllerPropertyCallbacks(PropertyDispatcher, GetController, Member);
+
+	PropertyDispatcher.Add(
+		Member, GET_MEMBER_NAME_CHECKED(FAGX_TwistRangeController, Range),
+		[GetController](UConstraintClass* EditedObject)
+		{ GetController(EditedObject)->SetRange(GetController(EditedObject)->Range); });
+}
+
+template AGXUNREAL_API void
+FAGX_ConstraintUtilities::AddTwistRangeControllerPropertyCallbacks<UAGX_BallConstraintComponent>(
+	FAGX_PropertyChangedDispatcher<UAGX_BallConstraintComponent>& PropertyDispatcher,
+	TFunction<FAGX_TwistRangeController*(UAGX_BallConstraintComponent*)> GetController,
 	const FName& Member);
 
 #endif

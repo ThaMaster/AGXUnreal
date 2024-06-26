@@ -138,6 +138,12 @@ protected:
 		const FConstraintControllerBarrier& Source,
 		TArray<FAGX_ConstraintController*>& ArchetypeInstances, bool ForceOverwriteInstances);
 
+	/**
+	 * Handle to the AGX Dynamics instance.
+	 *
+	 * By pointer because there are many types of Constraint Controllers (Range, Speed, Lock, etc)
+	 * and this may point to any of those subclasses of FConstraintControllerBarrier.
+	 */
 	TUniquePtr<FConstraintControllerBarrier> NativeBarrier;
 
 private: // Deprecated functionality.

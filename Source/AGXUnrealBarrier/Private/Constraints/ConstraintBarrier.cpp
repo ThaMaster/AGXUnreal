@@ -18,7 +18,7 @@
 #include <Misc/AssertionMacros.h>
 
 FConstraintBarrier::FConstraintBarrier()
-	: NativeRef {new FConstraintRef}
+	: NativeRef {new FConstraintRef()}
 {
 }
 

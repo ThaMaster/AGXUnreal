@@ -111,6 +111,12 @@ FLockJointBarrier AGXBarrierFactories::CreateLockJointBarrier(agx::LockJoint* Lo
 	return {std::make_unique<FConstraintRef>(LockJoint)};
 }
 
+FTwistRangeControllerBarrier AGXBarrierFactories::CreateTwistRangeControllerBarrier(
+	agx::TwistRangeController* Controller)
+{
+	return {std::make_unique<FElementaryConstraintRef>(Controller)};
+}
+
 FShapeMaterialBarrier AGXBarrierFactories::CreateShapeMaterialBarrier(agx::Material* Material)
 {
 	return {std::make_unique<FMaterialRef>(Material)};

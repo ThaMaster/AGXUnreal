@@ -2,13 +2,29 @@
 
 #include "Constraints/BallJointBarrier.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGXBarrierFactories.h"
 #include "AGXRefs.h"
 #include "RigidBodyBarrier.h"
 #include "Utilities/AGX_BarrierConstraintUtilities.h"
 
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/BallJoint.h>
 #include "EndAGXIncludes.h"
+
+namespace
+{
+	agx::BallJoint* GetNative(FBallJointBarrier& Barrier)
+	{
+		return Barrier.GetNative()->Native->as<agx::BallJoint>();
+	}
+
+	const agx::BallJoint* GetNative(const FBallJointBarrier& Barrier)
+	{
+		return Barrier.GetNative()->Native->as<agx::BallJoint>();
+	}
+}
 
 FBallJointBarrier::FBallJointBarrier()
 	: FConstraintBarrier()
@@ -18,10 +34,21 @@ FBallJointBarrier::FBallJointBarrier()
 FBallJointBarrier::FBallJointBarrier(std::unique_ptr<FConstraintRef> Native)
 	: FConstraintBarrier(std::move(Native))
 {
+	if (HasNative())
+	{
+		check(NativeRef->Native->is<agx::BallJoint>());
+	}
 }
 
 FBallJointBarrier::~FBallJointBarrier()
 {
+}
+
+FTwistRangeControllerBarrier FBallJointBarrier::GetTwistRangeController() const
+{
+	check(HasNative());
+	agx::TwistRangeController* Controller = ::GetNative(*this)->getTwistRangeController();
+	return AGXBarrierFactories::CreateTwistRangeControllerBarrier(Controller);
 }
 
 void FBallJointBarrier::AllocateNativeImpl(

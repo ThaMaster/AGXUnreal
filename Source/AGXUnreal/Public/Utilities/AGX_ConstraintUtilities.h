@@ -14,8 +14,10 @@
 // Standard library includes.
 #include <type_traits>
 
+class FBallJointBarrier;
 class FConstraint1DOFBarrier;
 class FConstraint2DOFBarrier;
+class UAGX_BallConstraintComponent;
 class UAGX_Constraint1DofComponent;
 class UAGX_RigidBodyComponent;
 
@@ -24,6 +26,7 @@ struct FAGX_ConstraintFrictionController;
 struct FAGX_ConstraintLockController;
 struct FAGX_ConstraintRangeController;
 struct FAGX_ConstraintTargetSpeedController;
+struct FAGX_TwistRangeController;
 
 template <typename>
 struct FAGX_PropertyChangedDispatcher;
@@ -54,6 +57,10 @@ public:
 	static void CopyControllersFrom(
 		UAGX_Constraint2DofComponent& Component, const FConstraint2DOFBarrier& Barrier,
 		bool ForceOverwriteInstances);
+
+	static void CopyControllersFrom(
+		UAGX_BallConstraintComponent& Component, const FBallJointBarrier& Barrier,
+		bool bForceOverwriteProperties);
 
 	static void StoreElectricMotorController(
 		const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller,
@@ -104,6 +111,10 @@ public:
 		const FConstraint2DOFBarrier& Barrier, FAGX_ConstraintScrewController& Controller,
 		TArray<FAGX_ConstraintScrewController*> Instances, bool bForceOverwriteInstances);
 
+	static void StoreTwistRangeController(
+		const FBallJointBarrier& Barrier, FAGX_TwistRangeController& Controller,
+		TArray<FAGX_TwistRangeController*> Instances, bool bForceOverwriteInstances);
+
 #if WITH_EDITOR
 	template <typename UConstraintClass, typename FControllerClass>
 	static void AddControllerPropertyCallbacks(
@@ -144,6 +155,12 @@ public:
 	static void AddScrewControllerPropertyCallbacks(
 		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
 		TFunction<FAGX_ConstraintScrewController*(UConstraintClass*)> GetController,
+		const FName& Member);
+
+	template <typename UConstraintClass>
+	static void AddTwistRangeControllerPropertyCallbacks(
+		FAGX_PropertyChangedDispatcher<UConstraintClass>& PropertyDispatcher,
+		TFunction<FAGX_TwistRangeController*(UConstraintClass*)> GetController,
 		const FName& Member);
 #endif
 

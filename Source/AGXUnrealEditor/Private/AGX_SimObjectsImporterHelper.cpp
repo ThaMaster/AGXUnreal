@@ -1405,6 +1405,7 @@ UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallCons
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
 	UpdateConstraintComponentNoControllers(
 		*Constraint, Barrier, *this, ProcessedThresholds, Unused, false);
+	FAGX_ConstraintUtilities::CopyControllersFrom(*Constraint, Barrier, false);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1451,6 +1452,7 @@ UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockCons
 	return Constraint;
 }
 
+// TODO Consider making this a virtual member function on UAGX_Constraint.
 void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
 	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool ForceOverwriteInstances)
@@ -1475,6 +1477,27 @@ void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
 		UpdateConstraintComponentNoControllers(
 			Component, Barrier, *this, ProcessedThresholds, MSTsOnDisk, ForceOverwriteInstances);
 	}
+}
+
+void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
+	const FBallJointBarrier& Barrier, UAGX_ConstraintComponent& Component,
+	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool bForceOverwriteInstances)
+{
+	UpdateConstraintComponentNoControllers(
+		Component, Barrier, *this, ProcessedThresholds, MSTsOnDisk, bForceOverwriteInstances);
+	UAGX_BallConstraintComponent* BallConstraint = Cast<UAGX_BallConstraintComponent>(&Component);
+	AGX_CHECK(BallConstraint != nullptr);
+	if (BallConstraint == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot copy controllers during update of Ball Constraint '%s' because the Ball "
+				 "Constraint is null."),
+			*Component.GetName());
+		return;
+	}
+	FAGX_ConstraintUtilities::CopyControllersFrom(
+		*BallConstraint, Barrier, bForceOverwriteInstances);
 }
 
 UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire(

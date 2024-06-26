@@ -3,7 +3,9 @@
 #pragma once
 
 // Unreal Engine includes.
+#include "AGX_LogCategory.h"
 #include "AGX_Real.h"
+#include "AGX_RealInterface.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -37,6 +39,21 @@ public:
 	static FAGX_Real MakeAGXReal(float Value)
 	{
 		return {Value};
+	}
+
+	UFUNCTION(BlueprintPure, Category = "AGX Real")
+	static void ParseReal(const FString& String, double& Float, FAGX_Real& Real)
+	{
+		TOptional<double> Result = FAGX_RealInterface::StaticFromString(String);
+		if (!Result.IsSet())
+		{
+			Float = 0.0;
+			Real = 0.0;
+			return;
+		}
+
+		Float = *Result;
+		Real = *Result;
 	}
 
 	/**

@@ -4,6 +4,8 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_RealInterval.h"
+#include "AGX_RigidBodyComponent.h"
+#include "Constraints/AGX_BallConstraintComponent.h"
 
 // Unreal Engine includes.
 #include "Engine/EngineTypes.h"
@@ -158,8 +160,28 @@ namespace AgxAutomationCommon
 	 * \param Test The currently running FAutomationTestBase, used for test failure reporting.
 	 * \return True if the MD5 checksums match, false if they differ.
 	 */
-	void CheckAssetMD5Checksum(
+	bool CheckAssetMD5Checksum(
 		const FString& PackagePath, const TCHAR* Expected, FAutomationTestBase& Test);
+
+	/**
+	 * Compare the MD5 checksum of the given file with the given expected MD5 checksum. Report a
+	 * test failure on mismatch.
+	 *
+	 * @param FilePath File system path to the file to check.
+	 * @param Expected MD5 hash that the file should have.
+	 * @param Test The currently running test, used for failure reporting.
+	 * \return True if the MD5 checksums match, false if they differ.
+	 */
+	bool CheckFileMD5Checksum(
+		const FString& FilePath, const TCHAR* Expected, FAutomationTestBase& Test);
+
+	/**
+	 * Get the MD5 checksum for the file at the given path. Returns empty string if file load fails.
+	 *
+	 * @param FilePath Path to file to generate checksum for.
+	 * @return The MD5 checksum for the given file.
+	 */
+	FString GetFileMD5Checksum(const FString& FilePath);
 
 	/**
 	 * Delete all assets created when the given archive was imported.
@@ -210,6 +232,32 @@ namespace AgxAutomationCommon
 	void GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name, T*& Out)
 	{
 		Out = GetByName<T>(Components, Name);
+	}
+
+	template <typename T>
+	T* GetComponentByName(const AActor& Owner, const FName& Name)
+	{
+		for (UActorComponent* Component : Owner.GetComponents())
+		{
+			if (Component->GetFName() == Name)
+			{
+				// Component names are unique within an Actor so no point in continuing the search
+				// if this Component has the wrong type.
+				return Cast<T>(Component);
+			}
+		}
+
+		return nullptr;
+	}
+
+	inline UAGX_RigidBodyComponent* GetRigidBodyByName(const AActor& Owner, FName Name)
+	{
+		return GetComponentByName<UAGX_RigidBodyComponent>(Owner, Name);
+	}
+
+	inline UAGX_BallConstraintComponent* GetBallConstraintByName(const AActor& Owner, FName Name)
+	{
+		return GetComponentByName<UAGX_BallConstraintComponent>(Owner, Name);
 	}
 
 	inline bool IsAnyNullptr()
