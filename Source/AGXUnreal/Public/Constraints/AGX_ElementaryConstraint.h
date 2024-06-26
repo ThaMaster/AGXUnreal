@@ -124,6 +124,9 @@ public: // Native management.
 	/**
 	 * Copy properties from the give AGX Dynamics constraint controller into this AGXUnreal
 	 * constraint controller.
+	 *
+	 * Note that no properties held by child classes will be copied. To do that pass a Barrier of
+	 * the child class type.
 	 */
 	void CopyFrom(
 		const FElementaryConstraintBarrier& Source,
