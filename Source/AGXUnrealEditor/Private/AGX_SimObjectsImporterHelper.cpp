@@ -1452,6 +1452,7 @@ UAGX_LockConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateLockCons
 	return Constraint;
 }
 
+// TODO Consider making this a virtual member function on UAGX_Constraint.
 void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
 	const FConstraintBarrier& Barrier, UAGX_ConstraintComponent& Component,
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool ForceOverwriteInstances)
