@@ -4,6 +4,8 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_RealInterval.h"
+#include "AGX_RigidBodyComponent.h"
+#include "Constraints/AGX_BallConstraintComponent.h"
 
 // Unreal Engine includes.
 #include "Engine/EngineTypes.h"
@@ -230,6 +232,32 @@ namespace AgxAutomationCommon
 	void GetByName(TArray<UActorComponent*>& Components, const TCHAR* Name, T*& Out)
 	{
 		Out = GetByName<T>(Components, Name);
+	}
+
+	template <typename T>
+	T* GetComponentByName(const AActor& Owner, const FName& Name)
+	{
+		for (UActorComponent* Component : Owner.GetComponents())
+		{
+			if (Component->GetFName() == Name)
+			{
+				// Component names are unique within an Actor so no point in continuing the search
+				// if this Component has the wrong type.
+				return Cast<T>(Component);
+			}
+		}
+
+		return nullptr;
+	}
+
+	inline UAGX_RigidBodyComponent* GetRigidBodyByName(const AActor& Owner, FName Name)
+	{
+		return GetComponentByName<UAGX_RigidBodyComponent>(Owner, Name);
+	}
+
+	inline UAGX_BallConstraintComponent* GetBallConstraintByName(const AActor& Owner, FName Name)
+	{
+		return GetComponentByName<UAGX_BallConstraintComponent>(Owner, Name);
 	}
 
 	inline bool IsAnyNullptr()
