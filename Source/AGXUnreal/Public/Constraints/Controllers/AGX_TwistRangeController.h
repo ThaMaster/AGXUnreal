@@ -220,7 +220,7 @@ class AGXUNREAL_API UAGX_TwistRangeController_FL : public UBlueprintFunctionLibr
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRangeMax(UPARAM(Ref) FAGX_TwistRangeController& Constraint, double Max)
 	{
-		Constraint.SetForceRangeMin(Max);
+		Constraint.SetForceRangeMax(Max);
 	}
 
 	/**

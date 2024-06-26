@@ -243,7 +243,7 @@ class AGXUNREAL_API UAGX_ElementaryConstraint_FL : public UBlueprintFunctionLibr
 	UFUNCTION(BlueprintCallable, Category = "AGX Elementary Constraint")
 	static void SetForceRangeMax(UPARAM(Ref) FAGX_ElementaryConstraint& Constraint, double Max)
 	{
-		Constraint.SetForceRangeMin(Max);
+		Constraint.SetForceRangeMax(Max);
 	}
 
 	/**
