@@ -82,7 +82,7 @@ void FTwistRangeControllerBarrier::SetRange(FDoubleInterval InRange)
 
 void FTwistRangeControllerBarrier::SetRange(FAGX_RealInterval InRange)
 {
-	SetRange(FDoubleInterval {InRange.Min, InRange.Max});
+	SetRange(InRange.ToDouble());
 }
 
 void FTwistRangeControllerBarrier::SetRange(double InMin, double InMax)

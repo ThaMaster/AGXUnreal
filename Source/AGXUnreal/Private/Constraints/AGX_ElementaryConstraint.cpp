@@ -5,8 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "Utilities/AGX_ObjectUtilities.h"
 
-// Unreal Engine includes.
-
 FAGX_ElementaryConstraint::FAGX_ElementaryConstraint()
 {
 }
@@ -61,6 +59,10 @@ void FAGX_ElementaryConstraint::SetElasticity(double InElasticity)
 	}
 	else
 	{
+		// No Native so can't let AGX Dynamics do the job for us. This is a re-implementation of
+		// what AGX Dynamics would have done if we had called it. I don't like this code duplication
+		// much. What if the implementation in AGX Dynamics is ever changed? How to we assure this
+		// code is changed accordingly?
 		if (InElasticity > DBL_EPSILON)
 		{
 			Compliance = 1.0 / InElasticity;
@@ -74,6 +76,11 @@ double FAGX_ElementaryConstraint::GetElasticity() const
 	{
 		return Barrier.GetElasticity();
 	}
+
+	// No Native so can't let AGX Dynamics do the job for us. This is a re-implementation of
+	// what AGX Dynamics would have done if we had called it. I don't like this code duplication
+	// much. What if the implementation in AGX Dynamics is ever changed? How to we assure this
+	// code is changed accordingly?
 	if (Compliance > DBL_EPSILON)
 	{
 		return 1.0 / Compliance;
@@ -102,15 +109,6 @@ double FAGX_ElementaryConstraint::GetSpookDamping() const
 	return SpookDamping;
 }
 
-void FAGX_ElementaryConstraint::SetForceRange(const FAGX_RealInterval& InForceRange)
-{
-	if (HasNative())
-	{
-		Barrier.SetForceRange(InForceRange);
-	}
-	ForceRange = InForceRange;
-}
-
 void FAGX_ElementaryConstraint::SetForceRange(const FDoubleInterval& InForceRange)
 {
 	if (HasNative())
@@ -120,9 +118,14 @@ void FAGX_ElementaryConstraint::SetForceRange(const FDoubleInterval& InForceRang
 	ForceRange = InForceRange;
 }
 
-void FAGX_ElementaryConstraint::SetForceRange(double InMinForce, double InMaxForce)
+void FAGX_ElementaryConstraint::SetForceRange(const FAGX_RealInterval& InForceRange)
 {
-	SetForceRange(FDoubleInterval {InMinForce, InMaxForce});
+	SetForceRange(InForceRange.ToDouble());
+}
+
+void FAGX_ElementaryConstraint::SetForceRange(double InForceRangeMin, double InForceRangeMax)
+{
+	SetForceRange(FDoubleInterval {InForceRangeMin, InForceRangeMax});
 }
 
 void FAGX_ElementaryConstraint::SetForceRangeMin(double InMinForce)

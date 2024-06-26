@@ -42,9 +42,7 @@ UAGX_BallConstraintComponent::~UAGX_BallConstraintComponent()
 void UAGX_BallConstraintComponent::UpdateNativeProperties()
 {
 	Super::UpdateNativeProperties();
-#if 1
 	TwistRangeController.UpdateNativeProperties();
-#endif
 }
 
 //~ End AGX Constraint Component interface.

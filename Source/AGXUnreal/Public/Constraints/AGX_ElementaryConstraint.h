@@ -79,9 +79,9 @@ public: // Properties and property accessors.
 		EditAnywhere, Category = "AGX Constraint Controller", Meta = (EditCondition = "bEnable"))
 	FAGX_RealInterval ForceRange {ConstraintConstants::DefaultForceRange()};
 
-	void SetForceRange(double InMinForce, double InMaxForce);
 	void SetForceRange(const FDoubleInterval& InForceRange);
 	void SetForceRange(const FAGX_RealInterval& InForceRange);
+	void SetForceRange(double InForceRangeMin, double InForceRangeMax);
 	void SetForceRangeMin(double InMinForce);
 	void SetForceRangeMax(double InMaxForce);
 

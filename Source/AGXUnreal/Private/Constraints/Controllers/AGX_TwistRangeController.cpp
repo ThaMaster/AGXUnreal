@@ -17,23 +17,23 @@ FAGX_TwistRangeController::~FAGX_TwistRangeController()
 
 // Properties.
 
-void FAGX_TwistRangeController::SetRange(double InRangeMin, double InRangeMax)
+void FAGX_TwistRangeController::SetRange(FDoubleInterval InRange)
 {
 	if (HasNative())
 	{
-		Barrier.SetRange(InRangeMin, InRangeMax);
+		Barrier.SetRange(InRange);
 	}
-	Range = FAGX_RealInterval {InRangeMin, InRangeMax};
-}
-
-void FAGX_TwistRangeController::SetRange(FDoubleInterval InRange)
-{
-	SetRange(InRange.Min, InRange.Max);
+	Range = FAGX_RealInterval {InRange.Min, InRange.Max};
 }
 
 void FAGX_TwistRangeController::SetRange(FAGX_RealInterval InRange)
 {
-	SetRange(InRange.Min, InRange.Max);
+	SetRange(InRange.ToDouble());
+}
+
+void FAGX_TwistRangeController::SetRange(double InRangeMin, double InRangeMax)
+{
+	SetRange(FDoubleInterval{InRangeMin, InRangeMax});
 }
 
 void FAGX_TwistRangeController::SetRangeMin(double InMin)

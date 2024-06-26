@@ -160,7 +160,7 @@ void FElementaryConstraintBarrier::SetForceRange(FDoubleInterval InForceRange, i
 
 void FElementaryConstraintBarrier::SetForceRange(FAGX_RealInterval InForceRange, int32 InRow)
 {
-	SetForceRange(FDoubleInterval{InForceRange.Min, InForceRange.Max});
+	SetForceRange(InForceRange.ToDouble());
 }
 
 void FElementaryConstraintBarrier::SetForceRange(double InMin, double InMax, int32 InRow)

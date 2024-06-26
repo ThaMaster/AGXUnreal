@@ -43,9 +43,9 @@ public: // Properties.
 		EditAnywhere, Category = "AGX Twist Range Controller", Meta = (EditCondition = "bEnable"))
 	FAGX_RealInterval Range;
 
-	void SetRange(double InRangeMin, double InRangeMax);
 	void SetRange(FDoubleInterval InRange);
 	void SetRange(FAGX_RealInterval InRange);
+	void SetRange(double InRangeMin, double InRangeMax);
 	void SetRangeMin(double InMin);
 	void SetRangeMax(double InMax);
 
