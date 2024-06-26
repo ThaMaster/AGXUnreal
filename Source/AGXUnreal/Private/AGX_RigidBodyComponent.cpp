@@ -789,9 +789,14 @@ void UAGX_RigidBodyComponent::SetPosition(const FVector& Position)
 	if (HasNative())
 	{
 		NativeBarrier.SetPosition(Position);
+		ReadTransformFromNative();
 	}
-
-	SetWorldLocation(Position);
+	else
+	{
+		// TODO Is this correct even when Transform Target is something other
+		// than Self?
+		SetWorldLocation(Position);
+	}
 }
 
 FVector UAGX_RigidBodyComponent::GetPosition() const
