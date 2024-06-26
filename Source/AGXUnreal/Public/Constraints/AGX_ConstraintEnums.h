@@ -25,7 +25,7 @@ enum EAGX_SolveType
 UENUM(BlueprintType)
 enum EAGX_FrameDefiningSource
 {
-	InvalidSource = 0,
+	InvalidSource = 0 UMETA(Hidden),
 
 	/** The transformation of the Constraint itself is used to define the transform of the
 	   attachment frame. */
