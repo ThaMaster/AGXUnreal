@@ -53,8 +53,6 @@ public: // Properties.
 	double GetRangeMin() const;
 	double GetRangeMax() const;
 
-	virtual void UpdateNativeProperties() override;
-
 public: // Native management.
 	bool HasNative() const;
 	FTwistRangeControllerBarrier* GetNative();
@@ -76,6 +74,12 @@ public: // Native management.
 	void CopyFrom(
 		const FTwistRangeControllerBarrier& Source,
 		TArray<FAGX_TwistRangeController*>& ArchetypeInstances, bool bForceOverwriteInstances);
+
+public: // Member function overrides.
+	//~ Begin FAGX_ElementaryConstraint interface.
+	virtual void UpdateNativeProperties() override;
+	virtual void InitializeBarrier(const FElementaryConstraintBarrier& InBarrier) override;
+	//~ End FAGX_ElementaryConstraint interface.
 
 private:
 	FTwistRangeControllerBarrier Barrier;

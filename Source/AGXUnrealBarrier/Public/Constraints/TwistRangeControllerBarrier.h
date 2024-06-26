@@ -23,6 +23,9 @@ public: // Special member functions.
 	/// Create a Barrier with the same Native as Other, but with a separate Native Ref.
 	FTwistRangeControllerBarrier(const FTwistRangeControllerBarrier& Other);
 
+	/// Downcast from baseclass. The passed instance must wrap a Twist Range Controller.
+	FTwistRangeControllerBarrier(const FElementaryConstraintBarrier& Other);
+
 	/// Create a Barrier taking ownership of the given Native Ref.
 	/// The Native Ref, if non-nullptr, MUST point to a Twist Range Controller.
 	FTwistRangeControllerBarrier(std::unique_ptr<FElementaryConstraintRef> InNative);

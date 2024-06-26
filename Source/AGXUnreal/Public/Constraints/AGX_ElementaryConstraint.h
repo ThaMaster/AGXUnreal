@@ -113,7 +113,7 @@ public: // Native management.
 	FElementaryConstraintBarrier* GetNative();
 	const FElementaryConstraintBarrier* GetNative() const;
 
-	void InitializeBarrier(const FElementaryConstraintBarrier& InBarrier);
+	virtual void InitializeBarrier(const FElementaryConstraintBarrier& InBarrier);
 
 	/**
 	 * Apply the UProperties on the native AGX Dynamics constraint. May only be called if HasNative

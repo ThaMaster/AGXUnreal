@@ -26,13 +26,26 @@ FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
 }
 
 FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
+	const FElementaryConstraintBarrier& Other)
+	: FElementaryConstraintBarrier(Other)
+{
+	if (!CheckValidNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("A Twist Range Controller Barrier was created from an Elementarcy Constraint "
+				 "Barrier that has a Native that is not a Twist Range Controller"));
+	}
+}
+
+FTwistRangeControllerBarrier::FTwistRangeControllerBarrier(
 	std::unique_ptr<FElementaryConstraintRef> InNative)
 	: FElementaryConstraintBarrier(std::move(InNative))
 {
 	if (!CheckValidNative())
 	{
 		UE_LOG(
-			LogAGX, Warning,
+			LogAGX, Error,
 			TEXT("A Twist Range Controller Barrier was created from an Elementary Constraint of "
 				 "incompatible type. This is not allowed."));
 	}

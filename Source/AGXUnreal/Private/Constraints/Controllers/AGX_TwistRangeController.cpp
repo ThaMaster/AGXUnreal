@@ -81,13 +81,6 @@ double FAGX_TwistRangeController::GetRangeMax() const
 	return Range.Max;
 }
 
-void FAGX_TwistRangeController::UpdateNativeProperties()
-{
-	check(HasNative());
-	Super::UpdateNativeProperties();
-	Barrier.SetRange(Range);
-}
-
 // Native management.
 
 bool FAGX_TwistRangeController::HasNative() const
@@ -144,4 +137,18 @@ void FAGX_TwistRangeController::CopyFrom(
 	}
 
 	Range = RangeBarrier;
+}
+
+// Member function overrides.
+
+void FAGX_TwistRangeController::UpdateNativeProperties()
+{
+	check(HasNative());
+	Super::UpdateNativeProperties();
+	Barrier.SetRange(Range);
+}
+
+void FAGX_TwistRangeController::InitializeBarrier(const FElementaryConstraintBarrier& InBarrier)
+{
+	InitializeBarrier(FTwistRangeControllerBarrier(InBarrier));
 }
