@@ -15,9 +15,9 @@
 #include <type_traits>
 
 class FBallJointBarrier;
-class UAGX_BallConstraintComponent;
 class FConstraint1DOFBarrier;
 class FConstraint2DOFBarrier;
+class UAGX_BallConstraintComponent;
 class UAGX_Constraint1DofComponent;
 class UAGX_RigidBodyComponent;
 
