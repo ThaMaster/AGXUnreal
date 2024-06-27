@@ -162,10 +162,10 @@ public:
 	//~ End USceneComponent Interface
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
-	void AddCollisionGroup(const FName& GroupName);
+	void AddCollisionGroup(FName GroupName);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
-	void RemoveCollisionGroupIfExists(const FName& GroupName);
+	void RemoveCollisionGroupIfExists(FName GroupName);
 
 	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;

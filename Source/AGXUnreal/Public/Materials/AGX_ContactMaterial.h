@@ -381,7 +381,7 @@ public:
 	 * The primary direction is only used by the oriented friction models.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
-	void SetPrimaryDirection(const FVector& InPrimaryDirection);
+	void SetPrimaryDirection(FVector InPrimaryDirection);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Contact Material")
 	FVector GetPrimaryDirection() const;

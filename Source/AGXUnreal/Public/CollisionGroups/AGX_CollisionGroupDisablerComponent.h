@@ -38,14 +38,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Collision Group Pairs")
 	void DisableCollisionGroupPair(
-		const FName& Group1, const FName& Group2, bool HideWarnings = false);
+		FName Group1, FName Group2, bool HideWarnings = false);
 
 	/**
 	 * (Re-)Enable collision between two given collision groups.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Collision Group Pairs")
 	void EnableCollisionGroupPair(
-		const FName& Group1, const FName& Group2, bool HideWarnings = false);
+		FName Group1, FName Group2, bool HideWarnings = false);
 
 	void UpdateAvailableCollisionGroups();
 

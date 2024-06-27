@@ -395,7 +395,7 @@ void UAGX_ShapeComponent::UpdateNativeGlobalTransform()
 	Shape->SetWorldRotation(GetComponentQuat());
 }
 
-void UAGX_ShapeComponent::AddCollisionGroup(const FName& GroupName)
+void UAGX_ShapeComponent::AddCollisionGroup(FName GroupName)
 {
 	if (GroupName.IsNone())
 		return;
@@ -408,7 +408,7 @@ void UAGX_ShapeComponent::AddCollisionGroup(const FName& GroupName)
 		GetNative()->AddCollisionGroup(GroupName);
 }
 
-void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
+void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(FName GroupName)
 {
 	if (GroupName.IsNone())
 		return;

@@ -327,13 +327,13 @@ public:
 	static FAGX_WireWinchRef MakeRef(UPARAM(Ref) FAGX_WireWinch& Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
-	static void SetLocation(FAGX_WireWinchRef Winch, const FVector& InLocation);
+	static void SetLocation(FAGX_WireWinchRef Winch, FVector InLocation);
 
 	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch")
 	static FVector GetLocation(FAGX_WireWinchRef Winch);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Winch")
-	static void SetRotation(FAGX_WireWinchRef Winch, const FRotator& InRotation);
+	static void SetRotation(FAGX_WireWinchRef Winch, FRotator InRotation);
 
 	UFUNCTION(BlueprintPure, Category = "AGX Wire Winch")
 	static FRotator GetRotation(FAGX_WireWinchRef Winch);

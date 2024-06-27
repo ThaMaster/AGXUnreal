@@ -121,10 +121,10 @@ public:
 	TArray<FName> CollisionGroups;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
-	void AddCollisionGroup(const FName& GroupName);
+	void AddCollisionGroup(FName GroupName);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
-	void RemoveCollisionGroupIfExists(const FName& GroupName);
+	void RemoveCollisionGroupIfExists(FName GroupName);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Wire")
 	UMaterialInterface* RenderMaterial {nullptr};
@@ -760,7 +760,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
 	UPARAM(Ref)
-	FWireRoutingNode& AddNodeAtLocationAtIndex(const FVector& InLocation, int32 InIndex);
+	FWireRoutingNode& AddNodeAtLocationAtIndex(FVector InLocation, int32 InIndex);
 
 	/**
 	 * Overwrite the node at the given index with the new node.
@@ -785,7 +785,7 @@ public:
 	 * @param InLocation The new local location of the node
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Route")
-	void SetNodeLocalLocation(int32 InIndex, const FVector& InLocation);
+	void SetNodeLocalLocation(int32 InIndex, FVector InLocation);
 
 	/**
 	 * Set the location of the node at the given index. The location is relative to the Wire

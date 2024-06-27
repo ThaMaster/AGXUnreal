@@ -514,7 +514,7 @@ bool UAGX_ContactMaterial::GetUseSecondarySurfaceViscosity() const
 	}
 }
 
-void UAGX_ContactMaterial::SetPrimaryDirection(const FVector& InPrimaryDirection)
+void UAGX_ContactMaterial::SetPrimaryDirection(FVector InPrimaryDirection)
 {
 	if (IsInstance())
 	{

@@ -30,19 +30,19 @@ public:
 	UAGX_RigidBodyComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetPosition(const FVector& Position);
+	void SetPosition(FVector Position);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetPosition() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetRotation(const FQuat& Rotation);
+	void SetRotation(FQuat Rotation);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FQuat GetRotation() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetRotator(const FRotator& Rotator);
+	void SetRotator(FRotator Rotator);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FRotator GetRotator() const;
@@ -90,7 +90,7 @@ public:
 	FVector CenterOfMassOffset;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetCenterOfMassOffset(const FVector& InCoMOffset);
+	void SetCenterOfMassOffset(FVector InCoMOffset);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetCenterOfMassOffset() const;
@@ -151,7 +151,7 @@ public:
 	FVector PrincipalInertia;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetPrincipalInertia(const FVector& InPrincipalInertia);
+	void SetPrincipalInertia(FVector InPrincipalInertia);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetPrincipalInertia() const;
@@ -175,7 +175,7 @@ public:
 	FVector Velocity;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetVelocity(const FVector& InVelocity);
+	void SetVelocity(FVector InVelocity);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetVelocity() const;
@@ -198,7 +198,7 @@ public:
 	FVector AngularVelocity;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetAngularVelocity(const FVector& InAngularVelocity);
+	void SetAngularVelocity(FVector InAngularVelocity);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetAngularVelocity() const;
@@ -211,7 +211,7 @@ public:
 	FVector LinearVelocityDamping;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetLinearVelocityDamping(const FVector& InLinearVelocityDamping);
+	void SetLinearVelocityDamping(FVector InLinearVelocityDamping);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetLinearVelocityDamping() const;
@@ -224,7 +224,7 @@ public:
 	FVector AngularVelocityDamping;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void SetAngularVelocityDamping(const FVector& InAngularVelocityDamping);
+	void SetAngularVelocityDamping(FVector InAngularVelocityDamping);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetAngularVelocityDamping() const;
@@ -279,7 +279,7 @@ public:
 	 * @param Force The force to add, given in the world coordinate frame.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void AddForceAtCenterOfMass(const FVector& Force);
+	void AddForceAtCenterOfMass(FVector Force);
 
 	/**
 	 * Add an external force, given in the world coordinate frame, applied at a point specified in
@@ -294,7 +294,7 @@ public:
 	 * @param Location The location in the world coordinate frame where the force should be applied.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void AddForceAtWorldLocation(const FVector& Force, const FVector& Location);
+	void AddForceAtWorldLocation(FVector Force, FVector Location);
 
 	/**
 	 * Add an external force, given in the world coordinate frame, applied at a point specified in
@@ -309,7 +309,7 @@ public:
 	 * @param Location The location in the local coordinate frame where the force should be applied.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void AddForceAtLocalLocation(const FVector& Force, const FVector& Location);
+	void AddForceAtLocalLocation(FVector Force, FVector Location);
 
 	/**
 	 * Add an external force, given in the local coordinate frame, applied at a point specified in
@@ -324,7 +324,7 @@ public:
 	 * @param Location The location in the local coordinate frame where the force should be applied.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void AddLocalForceAtLocalLocation(const FVector& LocalForce, const FVector& Location);
+	void AddLocalForceAtLocalLocation(FVector LocalForce, FVector Location);
 
 	/**
 	 * Get the external forces accumulated so far by the AddForce member functions, to be applied
@@ -341,7 +341,7 @@ public:
 	 * @param Torque The torque to add, given in center of mass coordinate frame.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void AddTorqueLocal(const FVector& Torque);
+	void AddTorqueLocal(FVector Torque);
 
 	/**
 	 * Add an external torque, given in the world coordinate frame, that will be affecting this body
@@ -350,7 +350,7 @@ public:
 	 * @param Torque The torque to add, given in world coordinate frame.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void AddTorqueWorld(const FVector& Torque);
+	void AddTorqueWorld(FVector Torque);
 
 	/**
 	 * Get the external torques accumulated so far by the AddTorque member functions, to be applied
@@ -373,13 +373,13 @@ public:
 	 * during the movement.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void MoveTo(const FVector& Position, const FRotator& Rotation, float Duration);
+	void MoveTo(FVector Position, FRotator Rotation, float Duration);
 
 	/**
 	 * Same as MoveTo, but using local coordinates.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	void MoveToLocal(const FVector& PositionLocal, const FRotator& RotationLocal, float Duration);
+	void MoveToLocal(FVector PositionLocal, FRotator RotationLocal, float Duration);
 
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FRigidBodyBarrier* GetOrCreateNative();

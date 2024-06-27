@@ -46,7 +46,7 @@ void UAGX_CollisionGroupDisablerComponent::UpdateAvailableCollisionGroups()
 }
 
 void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
-	const FName& Group1, const FName& Group2, bool HideWarnings)
+	FName Group1, FName Group2, bool HideWarnings)
 {
 	if (Group1.IsNone() || Group2.IsNone())
 	{
@@ -87,7 +87,7 @@ void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
 }
 
 void UAGX_CollisionGroupDisablerComponent::EnableCollisionGroupPair(
-	const FName& Group1, const FName& Group2, bool HideWarnings)
+	FName Group1, FName Group2, bool HideWarnings)
 {
 	if (Group1.IsNone() || Group2.IsNone())
 	{
