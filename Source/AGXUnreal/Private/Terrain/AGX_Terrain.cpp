@@ -1257,11 +1257,12 @@ void AAGX_Terrain::CreateNativeShovels()
 		UAGX_ShovelComponent* ShovelComponent = ShovelRef.Shovel.GetShovelComponent();
 		if (ShovelComponent == nullptr)
 		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("AGX Terrain '%s' have a Shovel reference that does not reference a valid "
-					 "Shovel."),
-				*GetLabelSafe(this));
+			const FString Message = FString::Printf(
+				TEXT("AGX Terrain '%s' have a Shovel reference to '%s' in '%s' that does not "
+					 "reference a valid Shovel."),
+				*GetLabelSafe(this), *ShovelRef.Shovel.Name.ToString(),
+				*GetLabelSafe(ShovelRef.Shovel.OwningActor));
+			FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
 			continue;
 		}
 
