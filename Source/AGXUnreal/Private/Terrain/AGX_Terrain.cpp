@@ -913,7 +913,7 @@ void AAGX_Terrain::InitializeNative()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("BeginPlay called on a Terrain that has already been initialized."));
+			TEXT("Initialize Native called on an AGX Terrain that has already been initialized."));
 		return;
 	}
 
@@ -1352,15 +1352,25 @@ bool AAGX_Terrain::UpdateNativeTerrainMaterial()
 		return true;
 	}
 
-	UAGX_TerrainMaterial* Instance =
-		static_cast<UAGX_TerrainMaterial*>(TerrainMaterial->GetOrCreateInstance(GetWorld()));
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot update native Terrain material because don't have a world to create "
+				 "the "
+				 "material instance in."));
+		return false;
+	}
+
+	UAGX_TerrainMaterial* Instance = TerrainMaterial->GetOrCreateInstance(World);
 	check(Instance);
 
 	if (TerrainMaterial != Instance)
 		TerrainMaterial = Instance;
 
 	FTerrainMaterialBarrier* TerrainMaterialBarrier =
-		Instance->GetOrCreateTerrainMaterialNative(GetWorld());
+		Instance->GetOrCreateTerrainMaterialNative(World);
 	check(TerrainMaterialBarrier);
 
 	GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
