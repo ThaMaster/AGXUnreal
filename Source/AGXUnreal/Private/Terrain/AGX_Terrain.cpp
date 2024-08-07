@@ -8,14 +8,16 @@
 #include "AGX_InternalDelegateAccessor.h"
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
-#include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
 #include "Shapes/HeightFieldShapeBarrier.h"
 #include "Terrain/AGX_CuttingDirectionComponent.h"
 #include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "Terrain/AGX_HeightFieldBoundsComponent.h"
+#include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/AGX_ShovelProperties.h"
 #include "Terrain/AGX_ShovelProperties.h"
 #include "Terrain/AGX_TerrainSpriteComponent.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
@@ -24,15 +26,16 @@
 #include "Utilities/AGX_HeightFieldUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
-#include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_RenderUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
-#include "Landscape.h"
-#include "LandscapeDataAccess.h"
-#include "LandscapeComponent.h"
-#include "LandscapeStreamingProxy.h"
+#include "Algo/AnyOf.h"
 #include "EngineUtils.h"
+#include "Landscape.h"
+#include "LandscapeComponent.h"
+#include "LandscapeDataAccess.h"
+#include "LandscapeStreamingProxy.h"
 #include "Misc/AssertionMacros.h"
 #include "Misc/EngineVersionComparison.h"
 #include "NiagaraComponent.h"
@@ -40,13 +43,6 @@
 #include "NiagaraFunctionLibrary.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectIterator.h"
-#include "WorldPartition/WorldPartitionSubsystem.h"
-
-// Standard library includes.
-#include <algorithm>
-
-#include "Terrain/AGX_ShovelComponent.h"
-#include "Terrain/AGX_ShovelProperties.h"
 #include "WorldPartition/WorldPartition.h"
 
 #ifdef LOCTEXT_NAMESPACE
@@ -902,6 +898,72 @@ namespace
 
 }
 
+namespace AGX_Terrain_helpers
+{
+	void WarnIfStreamingLandscape(const ALandscape* const Landscape, AAGX_Terrain& Terrain)
+	{
+		if (Landscape == nullptr)
+			return;
+		const UWorld* const World = Landscape->GetWorld();
+		if (World == nullptr)
+			return;
+		UWorldPartition* Partition = World->GetWorldPartition();
+		if (Partition == nullptr)
+			return;
+		if (!Partition->IsStreamingEnabled())
+			return;
+		ULandscapeInfo* Info = Landscape->GetLandscapeInfo();
+		if (Info == nullptr)
+			return;
+		const TArray<TWeakObjectPtr<ALandscapeStreamingProxy>>& Proxies = Info->StreamingProxies;
+		if (Proxies.IsEmpty())
+		{
+			// TODO What can we say about this state?
+			return;
+		}
+#if WITH_EDITOR
+		FBox TerrainBounds;
+		TerrainBounds.Min = Terrain.GetActorLocation() - Terrain.TerrainBounds->HalfExtent;
+		TerrainBounds.Max = Terrain.GetActorLocation() + Terrain.TerrainBounds->HalfExtent;
+
+		UE_LOG(
+			LogAGX, Warning, TEXT("Terrain bounds: %s -> %s"), *TerrainBounds.Min.ToString(),
+			*TerrainBounds.Max.ToString())
+		UE_LOG(LogAGX, Warning, TEXT("Found %d streaming proxies."), Info->StreamingProxies.Num());
+		bool bAnySuspicious {false};
+		for (auto& Proxy : Info->StreamingProxies)
+		{
+			FBox Bounds = Proxy->GetStreamingBounds();
+			UE_LOG(
+				LogAGX, Warning, TEXT("  %s -> %s"), *Bounds.Min.ToString(),
+				*Bounds.Max.ToString());
+			const double ProxySize = Bounds.GetSize().GetMax();
+			const double Distance = std::sqrt(Bounds.ComputeSquaredDistanceToBox(TerrainBounds));
+			UE_LOG(LogAGX, Warning, TEXT("  ProxySize=%f, Distance=%f"), ProxySize, Distance);
+			if (Distance < 1.1 * ProxySize && Proxy->GetIsSpatiallyLoaded())
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Found Proxy '%s' for which Is Spatially Loaded should be disabled."),
+					*GetLabelSafe(Proxy.Get()));
+				bAnySuspicious = true;
+			}
+		}
+		if (bAnySuspicious)
+		{
+			// TODO Change to UE_LOG.
+			const FString Message = FString::Printf(
+				TEXT("AGX Terrain '%s' detected that the source Landscape '%s' uses World "
+					 "Partition streaming. This is currently not supported by AGX Terrain. Either "
+					 "untick Enable Streaming in the World Settings or untick Is Spatially Loaded "
+					 "on all Landscape Streaming Proxies near and around the Terrain."),
+				*GetLabelSafe(&Terrain), *GetLabelSafe(Landscape));
+			FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
+		}
+#endif
+	}
+}
+
 void AAGX_Terrain::InitializeNative()
 {
 	if (SourceLandscape == nullptr)
@@ -920,187 +982,7 @@ void AAGX_Terrain::InitializeNative()
 		return;
 	}
 
-	{
-		UWorld* World = GetWorld();
-		UWorldPartition* Partition = World != nullptr ? World->GetWorldPartition() : nullptr;
-		bool bStreaming = Partition != nullptr ? Partition->bEnableStreaming : false;
-		if (bStreaming)
-		{
-			// Get proxies using Get Attached Actors.
-#if 1
-			TArray<AActor*> AttachedActors;
-			SourceLandscape->GetAttachedActors(AttachedActors);
-			UE_LOG(
-				LogAGX, Warning, TEXT("Landscape has %d attached Actors."), AttachedActors.Num());
-			TArray<ALandscapeProxy*> ProxiesFromAttached;
-			ProxiesFromAttached.Reserve(AttachedActors.Num());
-			for (AActor* Actor : AttachedActors)
-			{
-				if (ALandscapeProxy* Proxy = Cast<ALandscapeProxy>(Actor))
-				{
-					UE_LOG(
-						LogAGX, Warning, TEXT("  Found proxy named '%s' at %p"),
-						*Proxy->GetFullName(), Proxy);
-					ProxiesFromAttached.Add(Proxy);
-				}
-			}
-#endif
-
-			// Get proxies from the Landscape Components.
-#if 1
-			TInlineComponentArray<ULandscapeComponent*> Components;
-			SourceLandscape->GetComponents(Components);
-			UE_LOG(
-				LogAGX, Warning, TEXT("Landscape has %d Landscape Components."), Components.Num());
-			TArray<ALandscapeProxy*> ProxiesFromComponents;
-			for (ULandscapeComponent* Component : Components)
-			{
-				// Will this give me the child proxy, or SourceLandscape?
-				if (ALandscapeProxy* Proxy = Component->GetLandscapeProxy())
-				{
-					UE_LOG(
-						LogAGX, Warning, TEXT("  Found proxy named '%s' at %p."),
-						*Proxy->GetFullName(), Proxy);
-					ProxiesFromComponents.Add(Proxy);
-				}
-			}
-#endif
-
-			// Get proxies using Landscape Info.
-			ULandscapeInfo* Info = SourceLandscape->GetLandscapeInfo();
-			TArray<ALandscapeProxy*> ProxiesFromLandscapeInfo;
-			ProxiesFromLandscapeInfo.Reserve(Info->StreamingProxies.Num());
-			UE_LOG(
-				LogAGX, Warning, TEXT("Landscape has %d streaming proxies."),
-				Info->StreamingProxies.Num());
-			for (TWeakObjectPtr<ALandscapeStreamingProxy>& ProxyPtr : Info->StreamingProxies)
-			{
-				ALandscapeProxy* Proxy = ProxyPtr.Get();
-				UE_LOG(
-					LogAGX, Warning, TEXT("  Found proxy named '%s' at %p."), *Proxy->GetFullName(),
-					Proxy);
-				ProxiesFromLandscapeInfo.Add(Proxy);
-			}
-
-			// Get proxies using Actor Iterator.
-#if 1
-			TArray<ALandscapeProxy*> ProxiesFromObjectIterator;
-			UE_LOG(LogAGX, Warning, TEXT("Collecting Landscape Proxies from world."));
-			UWorld* LandscapeWorld = SourceLandscape->GetWorld();
-			UE_LOG(
-				LogAGX, Warning, TEXT("Terrain world: %p\nLandscape world: %p"), World,
-				SourceLandscape->GetWorld());
-			for (TActorIterator<ALandscapeProxy> It(World, ALandscapeProxy::StaticClass()); It;
-				 ++It)
-			{
-				ALandscapeProxy* Proxy = *It;
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("  Found potential proxy named '%s'. It's Landscape Actor is %p. "
-						 "SourceLandscape is %p."),
-					*Proxy->GetFullName(), Proxy->GetLandscapeActor(), SourceLandscape);
-				if (Proxy->GetLandscapeActor() != SourceLandscape)
-				{
-					UE_LOG(
-						LogAGX, Warning,
-						TEXT("    The proxy belong to some other Landscape, ignoring."));
-					continue;
-				}
-				if (Proxy == SourceLandscape)
-				{
-					UE_LOG(
-						LogAGX, Warning,
-						TEXT("    The proxy isn't a proxy at all but the source Landscape, "
-							 "ignoring."));
-					continue;
-				}
-#if WITH_EDITOR
-				UE_LOG(
-					LogAGX, Warning, TEXT("  Found proxy named '%s' at '%p'. Streaming = %d"),
-					*Proxy->GetFullName(), Proxy, Proxy->GetIsSpatiallyLoaded());
-#else
-				UE_LOG(
-					LogAGX, Warning, TEXT("  Found proxy named '%s'. Streaming = %d"),
-					*Proxy->GetFullName(), -1);
-#endif
-				ProxiesFromObjectIterator.Add(Proxy);
-			}
-#endif
-
-#if 0
-			const TArray<ALandscapeProxy*>& Proxies = SourceLandscape->GetLandscapeProxies();
-#endif
-
-			const FString Message = FString::Printf(
-				TEXT("\nFound these proxies:\nFrom object iterator: %d\nFrom landscape info: %d"),
-				ProxiesFromObjectIterator.Num(), ProxiesFromLandscapeInfo.Num());
-			UE_LOG(LogAGX, Warning, TEXT("%s"), *Message);
-			FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(Message);
-
-			auto ShowFoundProxies = [this]()
-			{
-				// Get proxies using Landscape Info.
-				ULandscapeInfo* Info = SourceLandscape->GetLandscapeInfo();
-				TArray<ALandscapeProxy*> ProxiesFromLandscapeInfo;
-				ProxiesFromLandscapeInfo.Reserve(Info->StreamingProxies.Num());
-				for (TWeakObjectPtr<ALandscapeStreamingProxy>& ProxyPtr : Info->StreamingProxies)
-				{
-					ALandscapeProxy* Proxy = ProxyPtr.Get();
-					ProxiesFromLandscapeInfo.Add(Proxy);
-				}
-
-				// Get proxies using Actor Iterator.
-				TArray<ALandscapeProxy*> ProxiesFromObjectIterator;
-				UWorld* LandscapeWorld = SourceLandscape->GetWorld();
-				for (TActorIterator<ALandscapeProxy> It(
-						 LandscapeWorld, ALandscapeProxy::StaticClass());
-					 It; ++It)
-				{
-					ALandscapeProxy* Proxy = *It;
-					if (Proxy->GetLandscapeActor() != SourceLandscape)
-					{
-						continue;
-					}
-					if (Proxy == SourceLandscape)
-					{
-						continue;
-					}
-
-					ProxiesFromLandscapeInfo.Add(Proxy);
-				}
-			};
-			GetWorldTimerManager().SetTimerForNextTick(ShowFoundProxies);
-
-			// TArray<ALandscapeProxy*>& Proxies = ProxiesFromAttached;
-			// TArray<ALandscapeProxy*>& Proxies = ProxiesFromComponents;
-			// TArray<ALandscapeProxy*>& Proxies = ProxiesFromObjectIterator;
-			TArray<ALandscapeProxy*>& Proxies = ProxiesFromLandscapeInfo;
-
-#if WITH_EDITOR
-			bStreaming = Proxies.IsEmpty() ||
-						 std::any_of(
-							 Proxies.begin(), Proxies.end(),
-							 [](ALandscapeProxy* Proxy) { return Proxy->GetIsSpatiallyLoaded(); });
-#else
-			bStreaming = Proxies.IsEmpty();
-#endif
-		}
-
-		if (bStreaming)
-		{
-			const FString Message = FString::Printf(
-				TEXT("AGX Terrain '%s' detected that the source Landscape '%s' uses World "
-					 "Partition streaming. This is currently not supported by AGX Terrain. "
-					 "Either "
-					 "untick Enable Streaming in the World Settings or untick Is Spatially "
-					 "Loaded "
-					 "on all Landscape Streaming Proxies."),
-				*GetLabelSafe(this), *GetLabelSafe(SourceLandscape));
-			FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
-
-			// TODO Should we return here?
-		}
-	}
+	AGX_Terrain_helpers::WarnIfStreamingLandscape(SourceLandscape, *this);
 
 	HeightFetcher.SetTerrain(this);
 
