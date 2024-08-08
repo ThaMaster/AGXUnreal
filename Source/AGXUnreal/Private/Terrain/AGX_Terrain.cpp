@@ -900,11 +900,12 @@ namespace
 
 namespace AGX_Terrain_helpers
 {
-	void WarnIfStreamingLandscape(const ALandscape* const Landscape, AAGX_Terrain& Terrain)
+// WarnIfStreamingLandscape is guarded by WITH_EDITOR because
+// ALandscapeStreamingProxy::GetIsSpatiallyLoaded is.
+#if WITH_EDITOR
+	void WarnIfStreamingLandscape(const ALandscape& Landscape, AAGX_Terrain& Terrain)
 	{
-		if (Landscape == nullptr)
-			return;
-		const UWorld* const World = Landscape->GetWorld();
+		const UWorld* const World = Landscape.GetWorld();
 		if (World == nullptr)
 			return;
 		UWorldPartition* Partition = World->GetWorldPartition();
@@ -912,56 +913,60 @@ namespace AGX_Terrain_helpers
 			return;
 		if (!Partition->IsStreamingEnabled())
 			return;
-		ULandscapeInfo* Info = Landscape->GetLandscapeInfo();
+		ULandscapeInfo* Info = Landscape.GetLandscapeInfo();
 		if (Info == nullptr)
 			return;
 		const TArray<TWeakObjectPtr<ALandscapeStreamingProxy>>& Proxies = Info->StreamingProxies;
 		if (Proxies.IsEmpty())
 		{
-			// TODO What can we say about this state?
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("AGX Terrain '%s' detected that the source Landscape '%s' doesn't have any "
+					 "Streaming Proxies in a level with World Partition and streaming enabled. "
+					 "This is a sign that AGX Terrain may not be able to initialize itself. If "
+					 "initialization fails either disable World Partition Streaming in the World "
+					 "Settings panel or disable Is Spatially Loaded on the Landscape Streaming "
+					 "Proxies in or near the AGX Terrain bounds"),
+				*Terrain.GetActorLabel(), *Landscape.GetActorLabel());
 			return;
 		}
-#if WITH_EDITOR
-		FBox TerrainBounds;
-		TerrainBounds.Min = Terrain.GetActorLocation() - Terrain.TerrainBounds->HalfExtent;
-		TerrainBounds.Max = Terrain.GetActorLocation() + Terrain.TerrainBounds->HalfExtent;
 
-		UE_LOG(
-			LogAGX, Warning, TEXT("Terrain bounds: %s -> %s"), *TerrainBounds.Min.ToString(),
-			*TerrainBounds.Max.ToString())
-		UE_LOG(LogAGX, Warning, TEXT("Found %d streaming proxies."), Info->StreamingProxies.Num());
-		bool bAnySuspicious {false};
+		// Determine if there are any Streaming Proxies with Is Spatially Loaded enabled in or near
+		// the Terrain. Log a note to disable Is Spatially Loaded for each found.
+		FBox TerrainBounds {
+			Terrain.GetActorLocation() - Terrain.TerrainBounds->HalfExtent,
+			Terrain.GetActorLocation() + Terrain.TerrainBounds->HalfExtent};
+		bool bFoundNearStreamingProxy {false};
 		for (auto& Proxy : Info->StreamingProxies)
 		{
+			if (!Proxy->GetIsSpatiallyLoaded())
+				continue;
 			FBox Bounds = Proxy->GetStreamingBounds();
-			UE_LOG(
-				LogAGX, Warning, TEXT("  %s -> %s"), *Bounds.Min.ToString(),
-				*Bounds.Max.ToString());
 			const double ProxySize = Bounds.GetSize().GetMax();
 			const double Distance = std::sqrt(Bounds.ComputeSquaredDistanceToBox(TerrainBounds));
-			UE_LOG(LogAGX, Warning, TEXT("  ProxySize=%f, Distance=%f"), ProxySize, Distance);
-			if (Distance < 1.1 * ProxySize && Proxy->GetIsSpatiallyLoaded())
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("Found Proxy '%s' for which Is Spatially Loaded should be disabled."),
-					*GetLabelSafe(Proxy.Get()));
-				bAnySuspicious = true;
-			}
+			constexpr double Margin {1.1}; // Is this needed? What should it be?
+			if (Distance > ProxySize * Margin)
+				continue;
+			bFoundNearStreamingProxy = true;
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Found Proxy '%s' for which Is Spatially Loaded should be disabled."),
+				*Proxy->GetActorLabel());
 		}
-		if (bAnySuspicious)
+		if (bFoundNearStreamingProxy)
 		{
-			// TODO Change to UE_LOG.
 			const FString Message = FString::Printf(
 				TEXT("AGX Terrain '%s' detected that the source Landscape '%s' uses World "
-					 "Partition streaming. This is currently not supported by AGX Terrain. Either "
-					 "untick Enable Streaming in the World Settings or untick Is Spatially Loaded "
-					 "on all Landscape Streaming Proxies near and around the Terrain."),
-				*GetLabelSafe(&Terrain), *GetLabelSafe(Landscape));
+					 "Partition streaming. This is currently not fully supported by AGX Terrain. "
+					 "Either untick Enable Streaming in the World Settings or untick Is Spatially "
+					 "Loaded on all Landscape Streaming Proxies near and around the Terrain. The "
+					 "Output Log contains a list of proxies that may need to have Is Spatially "
+					 "Loaded disabled. The list may be incomplete."),
+				*GetLabelSafe(&Terrain), *Landscape.GetActorLabel());
 			FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
 		}
-#endif
 	}
+#endif
 }
 
 void AAGX_Terrain::InitializeNative()
@@ -982,7 +987,9 @@ void AAGX_Terrain::InitializeNative()
 		return;
 	}
 
-	AGX_Terrain_helpers::WarnIfStreamingLandscape(SourceLandscape, *this);
+#if WITH_EDITOR
+	AGX_Terrain_helpers::WarnIfStreamingLandscape(*SourceLandscape, *this);
+#endif
 
 	HeightFetcher.SetTerrain(this);
 
