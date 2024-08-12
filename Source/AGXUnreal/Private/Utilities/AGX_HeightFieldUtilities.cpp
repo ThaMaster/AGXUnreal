@@ -9,7 +9,6 @@
 // Unreal Engine includes.
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Landscape.h"
-#include "LandscapeInfo.h"
 #include "LandscapeProxy.h"
 #include "Math/UnrealMathUtility.h"
 #include "Misc/EngineVersionComparison.h"
@@ -26,6 +25,8 @@ namespace AGX_HeightFieldUtilities_helpers
 			return std::tuple<int32, int32>(0, 0);
 		}
 
+		// TODO This assumes that no Landscape Components are placed withX or Y coordinates less
+		// than zero. We should support that.
 		int32 MaxX = 0;
 		int32 MaxY = 0;
 
@@ -71,12 +72,14 @@ namespace AGX_HeightFieldUtilities_helpers
 		// @todo limitation: this will only yield the correct result if the Landscape is not rotated
 		// around world Z axis. We are yet to find a reliable way to find the size in that case for
 		// open world landscapes.
-		// Also, this requires the landscape to be loaded in the world partitioner which is a big
-		// limitation.
+		//
+		// Also, this requires that the Landscape Streaming proxies have Is Spatially Loaded
+		// disabled in the Details panel or streaming to be disabled globally in the World Settings
+		// panel which is a big limitation.
 
-		AGX_CHECK(Landscape.LandscapeComponents.Num() == 0); // Open World check.
+		AGX_CHECK(AGX_HeightFieldUtilities::IsOpenWorldLandscape(Landscape));
+
 		const FBox Bounds = Landscape.GetLoadedBounds();
-
 		const double Dx = Bounds.Max.X - Bounds.Min.X;
 		const double Dy = Bounds.Max.Y - Bounds.Min.Y;
 
