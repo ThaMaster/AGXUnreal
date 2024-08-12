@@ -49,7 +49,7 @@ namespace AGX_HeightFieldBoundsComponent_helpers
 	}
 
 	FVector GetCenterPosInfiniteBounds(
-		int64 QuadSizeX, int64 QuadSizeY, int64 VertexCountX, int64 VertexCountY)
+		double QuadSizeX, double QuadSizeY, int64 VertexCountX, int64 VertexCountY)
 	{
 		// Since Terrain has its center in the middle, when the Terrain covers the entire
 		// Landscape the Terrain will be at the center of the Landscape, regardless of where
