@@ -17,24 +17,18 @@
 #include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "Terrain/AGX_HeightFieldBoundsComponent.h"
 #include "Terrain/AGX_ShovelComponent.h"
-#include "Terrain/AGX_ShovelProperties.h"
-#include "Terrain/AGX_ShovelProperties.h"
 #include "Terrain/AGX_TerrainSpriteComponent.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
 #include "Terrain/ShovelBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Utilities/AGX_HeightFieldUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
-#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_RenderUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
-#include "Algo/AnyOf.h"
-#include "EngineUtils.h"
 #include "Landscape.h"
 #include "LandscapeComponent.h"
-#include "LandscapeDataAccess.h"
 #include "LandscapeStreamingProxy.h"
 #include "Misc/AssertionMacros.h"
 #include "Misc/EngineVersionComparison.h"
@@ -1438,8 +1432,7 @@ bool AAGX_Terrain::UpdateNativeTerrainMaterial()
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Cannot update native Terrain material because don't have a world to create "
-				 "the "
-				 "material instance in."));
+				 "the material instance in."));
 		return false;
 	}
 
