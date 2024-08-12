@@ -922,49 +922,54 @@ namespace AGX_Terrain_helpers
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("AGX Terrain '%s' detected that the source Landscape '%s' doesn't have any "
-					 "Streaming Proxies in a level with World Partition and streaming enabled. "
-					 "This is a sign that AGX Terrain may not be able to initialize itself. If "
-					 "initialization fails either disable World Partition Streaming in the World "
-					 "Settings panel or disable Is Spatially Loaded on the Landscape Streaming "
-					 "Proxies in or near the AGX Terrain bounds"),
+					 "Streaming Proxies in a level with World Partition enabled and World Settings "
+					 "> Enable Streaming ticked. This is a sign that AGX Terrain may not be able "
+					 "to initialize itself. If initialization fails either disable World Partition "
+					 "Streaming in the World Settings panel or disable Is Spatially Loaded on the "
+					 "Landscape Streaming Proxies overlapping the AGX Terrain bounds"),
 				*Terrain.GetActorLabel(), *Landscape.GetActorLabel());
 			return;
 		}
 
-		// Determine if there are any Streaming Proxies with Is Spatially Loaded enabled in or near
-		// the Terrain. Log a note to disable Is Spatially Loaded for each found.
-		FBox TerrainBounds {
+		// If the Terrain has infinite bounds then all Landscape Streaming Proxies must have Is
+		// Spatially Loaded unticked. If the Terrain is bounded then overlapping proxies must have
+		// Is Spatially Loaded unticked.
+		const bool bBounded = !Terrain.TerrainBounds->bInfiniteBounds;
+
+		// If not infinite, then any Landscape Streaming Proxy that overlaps the Terrain Bounds
+		// must have Is Spatially Loaded unticked.
+		const FBox TerrainBounds {
 			Terrain.GetActorLocation() - Terrain.TerrainBounds->HalfExtent,
 			Terrain.GetActorLocation() + Terrain.TerrainBounds->HalfExtent};
-		bool bFoundNearStreamingProxy {false};
-		for (auto& Proxy : Info->StreamingProxies)
+
+		// Determine if there are any Streaming Proxies with Is Spatially Loaded enabled overlapping
+		// the Terrain bounds. Log a note to disable Is Spatially Loaded for each found.
+		bool bFoundIntersectingStreamingProxy {false};
+		for (const auto& Proxy : Info->StreamingProxies)
 		{
 			if (!Proxy->GetIsSpatiallyLoaded())
 				continue;
-			FBox Bounds = Proxy->GetStreamingBounds();
-			const double ProxySize = Bounds.GetSize().GetMax();
-			const double Distance = std::sqrt(Bounds.ComputeSquaredDistanceToBox(TerrainBounds));
-			constexpr double Margin {1.1}; // Is this needed? What should it be?
-			if (Distance > ProxySize * Margin)
+			if (bBounded && !Proxy->GetStreamingBounds().Intersect(TerrainBounds))
 				continue;
-			bFoundNearStreamingProxy = true;
+
+			bFoundIntersectingStreamingProxy = true;
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("Found Proxy '%s' for which Is Spatially Loaded should be disabled."),
 				*Proxy->GetActorLabel());
 		}
-		if (bFoundNearStreamingProxy)
-		{
-			const FString Message = FString::Printf(
-				TEXT("AGX Terrain '%s' detected that the source Landscape '%s' uses World "
-					 "Partition streaming. This is currently not fully supported by AGX Terrain. "
-					 "Either untick Enable Streaming in the World Settings or untick Is Spatially "
-					 "Loaded on all Landscape Streaming Proxies near and around the Terrain. The "
-					 "Output Log contains a list of proxies that may need to have Is Spatially "
-					 "Loaded disabled. The list may be incomplete."),
-				*GetLabelSafe(&Terrain), *Landscape.GetActorLabel());
-			FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
-		}
+		if (!bFoundIntersectingStreamingProxy)
+			return;
+
+		const FString Message = FString::Printf(
+			TEXT("AGX Terrain '%s' detected that the source Landscape '%s' uses World Partition "
+				 "streaming. This is only supported by AGX Terrain if the Landscape Streaming "
+				 "Proxies that overlap the Terrain bounds are loaded on Begin Play. Either untick "
+				 "Enable Streaming in the World Settings or untick Is Spatially Loaded on all "
+				 "Landscape Streaming Proxies near and around the Terrain. The Output Log contains "
+				 "a list of proxies that need to have Is Spatially Loaded disabled."),
+			*GetLabelSafe(&Terrain), *Landscape.GetActorLabel());
+		FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
 	}
 #endif
 }
@@ -983,7 +988,8 @@ void AAGX_Terrain::InitializeNative()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Initialize Native called on an AGX Terrain that has already been initialized."));
+			TEXT("Initialize Native called on AGX Terrain '%s' that has already been initialized."),
+			*GetLabelSafe(this));
 		return;
 	}
 
