@@ -160,12 +160,36 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 		}
 	}();
 
-	const int64 ClosestVertexX = GetClosestVertexIndex(CenterPosLocal.X, QuadSizeX);
-	const int64 ClosestVertexY = GetClosestVertexIndex(CenterPosLocal.Y, QuadSizeY);
+	// Cannot use Center Pos Local here because that is relative to the Landscape's origin, when
+	// we should be using the minimum corner of the loaded bound, since that is what is used to
+	// compute Vertex Count.
+	int64 ClosestVertexX;
+	int64 ClosestVertexY;
+	if (AGX_HeightFieldUtilities::IsOpenWorldLandscape(TransformAndLandscape->Landscape))
+	{
+		const FBox LoadedBounds = TransformAndLandscape->Landscape.GetLoadedBounds();
+		const FVector LoadedStartLocal = Landscape.GetActorTransform().InverseTransformPositionNoScale(LoadedBounds.Min);
+		const FVector TerrainCenterRelLoadedBounds = CenterPosLocal - LoadedStartLocal;
+		ClosestVertexX = GetClosestVertexIndex(TerrainCenterRelLoadedBounds.X, QuadSizeX);
+		ClosestVertexY = GetClosestVertexIndex(TerrainCenterRelLoadedBounds.Y, QuadSizeY);
+	}
+	else
+	{
+		ClosestVertexX = GetClosestVertexIndex(CenterPosLocal.X, QuadSizeX);
+		ClosestVertexY = GetClosestVertexIndex(CenterPosLocal.Y, QuadSizeY);
+	}
 
 	if (ClosestVertexX <= 0 || ClosestVertexX > VertexCountX || ClosestVertexY <= 0 ||
 		ClosestVertexY > VertexCountY)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Failed to create Landscape adjusted bounds: Closest vertex is out of bounds.\n"
+				 "X: Center position local = %f. Closest vertex = %lld. Vertex count = %lld\n"
+				 "Y: Center position local = %f. Closest vertex = %lld. Vertex count = %lld."),
+			CenterPosLocal.X, ClosestVertexX, VertexCountX, CenterPosLocal.Y, ClosestVertexY, VertexCountY);
 		return {};
+	}
 
 	int64 HalfExtentVertsX = GetClosestVertexIndex(SelectedHalfExtent.X, QuadSizeX);
 	int64 HalfExtentVertsY = GetClosestVertexIndex(SelectedHalfExtent.Y, QuadSizeY);
@@ -179,9 +203,22 @@ UAGX_HeightFieldBoundsComponent::GetLandscapeAdjustedBounds() const
 	if (HalfExtentVertsX == 0 || HalfExtentVertsY == 0)
 		return {};
 
-	const FVector BoundPosGlobal = Landscape.GetActorTransform().TransformPositionNoScale(FVector(
-		static_cast<double>(ClosestVertexX) * QuadSizeX,
-		static_cast<double>(ClosestVertexY) * QuadSizeY, 0));
+	FVector BoundPosGlobal;
+	if (AGX_HeightFieldUtilities::IsOpenWorldLandscape(Landscape))
+	{
+		const FBox LoadedBounds = TransformAndLandscape->Landscape.GetLoadedBounds();
+		const FVector LoadedStartLocal = Landscape.GetActorTransform().InverseTransformPositionNoScale(LoadedBounds.Min);
+		BoundPosGlobal = Landscape.GetActorTransform().TransformPositionNoScale(FVector(
+			LoadedStartLocal.X + static_cast<double>(ClosestVertexX) * QuadSizeX,
+			LoadedStartLocal.Y + static_cast<double>(ClosestVertexY) * QuadSizeY,
+			0));
+	}
+	else
+	{
+		BoundPosGlobal = Landscape.GetActorTransform().TransformPositionNoScale(FVector(
+			static_cast<double>(ClosestVertexX) * QuadSizeX,
+			static_cast<double>(ClosestVertexY) * QuadSizeY, 0));
+	}
 
 	FHeightFieldBoundsInfo BoundsInfo;
 	BoundsInfo.Transform = FTransform(Landscape.GetActorRotation(), BoundPosGlobal);
