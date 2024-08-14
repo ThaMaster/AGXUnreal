@@ -236,6 +236,9 @@ void UAGX_WireWinchComponent::CreateNative()
 void UAGX_WireWinchComponent::OnRegister()
 {
 	Super::OnRegister();
+
+	WireWinch.BodyAttachment.SetLocalScope(GetTypedOuter<AActor>());
+
 #if WITH_EDITORONLY_DATA
 	if (SpriteComponent)
 	{

@@ -36,6 +36,8 @@ UAGX_TrackComponent::UAGX_TrackComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	bWantsOnUpdateTransform = true;
 
+	SetComponentReferencesLocalScope();
+
 	static const TCHAR* DefaultMeshPath =
 		TEXT("StaticMesh'/AGXUnreal/Track/StaticMeshes/SM_TrackShoeCube.SM_TrackShoeCube'");
 	if (RenderMesh == nullptr)
@@ -579,6 +581,10 @@ void UAGX_TrackComponent::InitPropertyDispatcher()
 		return;
 	}
 
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TrackComponent, Wheels),
+		[](ThisClass* Self) { Self->SetComponentReferencesLocalScope(); });
+
 	// Assets.
 
 	PropertyDispatcher.Add(
@@ -620,6 +626,7 @@ void UAGX_TrackComponent::InitPropertyDispatcher()
 		[](ThisClass* Self) { Self->WriteMassPropertiesToNative(); });
 
 	// Visuals
+
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TrackComponent, RenderMaterials),
 		[](ThisClass* Track) { Track->WriteRenderMaterialsToVisualMeshWithCheck(); });

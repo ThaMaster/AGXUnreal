@@ -22,6 +22,18 @@
 #include "CoreGlobals.h"
 #include "UObject/UObjectGlobals.h"
 
+namespace AGX_ConstraintComponent_helpers
+{
+	void SetLocalScope(UAGX_ConstraintComponent& Constraint)
+	{
+		AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(Constraint.GetTypedOuter<AActor>());
+		Constraint.BodyAttachment1.RigidBody.LocalScope = Owner;
+		Constraint.BodyAttachment1.FrameDefiningComponent.LocalScope = Owner;
+		Constraint.BodyAttachment2.RigidBody.LocalScope = Owner;
+		Constraint.BodyAttachment2.FrameDefiningComponent.LocalScope = Owner;
+	}
+}
+
 EDofFlag ConvertDofsArrayToBitmask(const TArray<EDofFlag>& LockedDofsOrdered)
 {
 	uint8 bitmask(0);
@@ -102,11 +114,7 @@ void UAGX_ConstraintComponent::PostInitProperties()
 	// copied from the Class Default Object, but before deserialization in cases where this object
 	// is created from another, such as at the start of a Play-in-Editor session or when loading
 	// a map in a cooked build (I hope).
-	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	BodyAttachment1.RigidBody.LocalScope = Owner;
-	BodyAttachment1.FrameDefiningComponent.LocalScope = Owner;
-	BodyAttachment2.RigidBody.LocalScope = Owner;
-	BodyAttachment2.FrameDefiningComponent.LocalScope = Owner;
+	AGX_ConstraintComponent_helpers::SetLocalScope(*this);
 
 #if WITH_EDITOR
 	InitPropertyDispatcher();
@@ -883,11 +891,7 @@ void UAGX_ConstraintComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 		// When using Local Scope instead of piggy-backing on Owning Actor we don't need to do
 		// anything special here. We can let Owning Actor become None / nullptr, Component Reference
 		// will do the correct things as long as Local Scope hasn't been accidentally changed.
-		AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
-		check(BodyAttachment1.RigidBody.LocalScope == Owner);
-		check(BodyAttachment1.FrameDefiningComponent.LocalScope == Owner);
-		check(BodyAttachment2.RigidBody.LocalScope == Owner);
-		check(BodyAttachment2.FrameDefiningComponent.LocalScope == Owner);
+		AGX_ConstraintComponent_helpers::SetLocalScope(*this);
 	}
 
 	// If we are part of a Blueprint then this will trigger a RerunConstructionScript on the owning
@@ -1067,11 +1071,7 @@ void UAGX_ConstraintComponent::OnRegister()
 	// On Register is called after all object initialization has completed, i.e. Unreal Engine
 	// will not be messing with this object anymore. It is now safe to set the Local Scope on our
 	// Component References.
-	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	BodyAttachment1.RigidBody.LocalScope = Owner;
-	BodyAttachment1.FrameDefiningComponent.LocalScope = Owner;
-	BodyAttachment2.RigidBody.LocalScope = Owner;
-	BodyAttachment2.FrameDefiningComponent.LocalScope = Owner;
+	AGX_ConstraintComponent_helpers::SetLocalScope(*this);
 }
 
 void UAGX_ConstraintComponent::OnUnregister()

@@ -52,6 +52,11 @@ AActor* FAGX_ObjectUtilities::GetRootParentActor(AActor* Actor)
 	return Actor;
 }
 
+AActor* FAGX_ObjectUtilities::GetRootParentActor(UActorComponent* Component)
+{
+	return GetRootParentActor(Component->GetTypedOuter<AActor>());
+}
+
 bool FAGX_ObjectUtilities::IsTemplateComponent(const UActorComponent& Component)
 {
 	return Component.HasAnyFlags(RF_ArchetypeObject);

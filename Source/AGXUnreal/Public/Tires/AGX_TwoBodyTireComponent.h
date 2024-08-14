@@ -161,6 +161,7 @@ public:
 	//~ Begin UActorComponent interface.
 	virtual void PostInitProperties() override;
 	virtual void PostLoad() override;
+	virtual void OnRegister() override;
 	virtual void BeginPlay() override;
 	//~ End UActorComponent interface.
 

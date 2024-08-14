@@ -30,7 +30,7 @@ void FAGX_ComponentReference::SetLocalScope(AActor* InLocalScope)
 	//
 	// Therefore, we set the Local Scope to the owner of the Child Actor containing us, and
 	// recursively up until we find an Actor that isn't a Child Actor. This is a workaround, and
-	// better solutions may exists, though I have not found any. Limitations: name collisions
+	// better solutions may exist, though I have not found any. Limitations: name collisions
 	// for Components in any Child Actor and the root Actor are not handled.
 	//
 	// Should we set bSearchChildActors to true here? If we don't then the user may be confused
@@ -43,7 +43,7 @@ void FAGX_ComponentReference::SetLocalScope(AActor* InLocalScope)
 	// safer option is to not modify bSearchChildActors.
 	//
 	// [1] Doesn't actually test for being a Blueprint instance, since traversing the Parent Actor
-	// chain is valid either way and it is preferable to limit the number of special cases as much
+	// chain is valid either way, and it is preferable to limit the number of special cases as much
 	// as possible.
 	LocalScope = FAGX_ObjectUtilities::GetRootParentActor(InLocalScope);
 }

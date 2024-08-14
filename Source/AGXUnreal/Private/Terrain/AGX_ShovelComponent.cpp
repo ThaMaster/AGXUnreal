@@ -20,19 +20,28 @@ class FRigidBodyBarrier;
 
 #define LOCTEXT_NAMESPACE "AGX_ShovelComponent"
 
+namespace AGX_ShovelComponent_helpers
+{
+	void SetLocalScope(UAGX_ShovelComponent& Shovel)
+	{
+		AActor* const Owner =
+			FAGX_ObjectUtilities::GetRootParentActor(Shovel.GetTypedOuter<AActor>());
+		Shovel.RigidBody.LocalScope = Owner;
+		Shovel.TopEdge.Start.Parent.LocalScope = Owner;
+		Shovel.TopEdge.End.Parent.LocalScope = Owner;
+		Shovel.CuttingEdge.Start.Parent.LocalScope = Owner;
+		Shovel.CuttingEdge.End.Parent.LocalScope = Owner;
+		Shovel.CuttingDirection.Parent.LocalScope = Owner;
+	}
+}
+
 // Sets default values for this component's properties
 UAGX_ShovelComponent::UAGX_ShovelComponent()
 {
 	// Keep ticking off until we have a reason to turn it on.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	RigidBody.LocalScope = Owner;
-	TopEdge.Start.Parent.LocalScope = Owner;
-	TopEdge.End.Parent.LocalScope = Owner;
-	CuttingEdge.Start.Parent.LocalScope = Owner;
-	CuttingEdge.End.Parent.LocalScope = Owner;
-	CuttingDirection.Parent.LocalScope = Owner;
+	AGX_ShovelComponent_helpers::SetLocalScope(*this);
 }
 
 void UAGX_ShovelComponent::SetEnabled(bool bInEnabled)
@@ -340,26 +349,22 @@ bool UAGX_ShovelComponent::SwapEdgeDirections()
 	return true;
 }
 
-#if WITH_EDITOR
 void UAGX_ShovelComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
 
-	// This code is run after the constructor and after InitProperties, where property values are
+	// This code is run after the constructor and after Init Properties, where property values are
 	// copied from the Class Default Object, but before deserialization in cases where this object
 	// is created from another, such as at the start of a Play-in-Editor session or when loading
 	// a map in a cooked build (I hope).
-	AActor* const Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	RigidBody.LocalScope = Owner;
-	TopEdge.Start.Parent.LocalScope = Owner;
-	TopEdge.End.Parent.LocalScope = Owner;
-	CuttingEdge.Start.Parent.LocalScope = Owner;
-	CuttingEdge.End.Parent.LocalScope = Owner;
-	CuttingDirection.Parent.LocalScope = Owner;
+	AGX_ShovelComponent_helpers::SetLocalScope(*this);
 
+#if WITH_EDITOR
 	InitPropertyDispatcher();
+#endif
 }
 
+#if WITH_EDITOR
 void UAGX_ShovelComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
@@ -370,6 +375,12 @@ void UAGX_ShovelComponent::PostEditChangeChainProperty(FPropertyChangedChainEven
 	Super::PostEditChangeChainProperty(Event);
 }
 #endif
+
+void UAGX_ShovelComponent::OnRegister()
+{
+	Super::OnRegister();
+	AGX_ShovelComponent_helpers::SetLocalScope(*this);
+}
 
 void UAGX_ShovelComponent::BeginPlay()
 {

@@ -8,17 +8,35 @@
 
 #include "AGX_ComponentReference.generated.h"
 
-class UActor;
+class AActor;
 class UActorComponent;
+
+/*
+The documentation comment below describe our current understanding of the situation. These are the
+cases we want to handle:
+- An Actor or Component is created in the Level Viewport.
+- An Actor or Component is created in a packaged application through application logic.
+- An Actor or Component with a Component Reference member is loaded as part of a level load in
+  the Unreal Editor.
+- An Actor or Component with a Component Reference member is loaded as part of a level load in a
+  packaged application.
+- A new element is added to an array of structs containing a Component Reference from the
+  Details panel.
+- A Blueprint class adds elements to a Blueprint array of structs containing a Component
+  Reference in the Construction Script.
+- A new element is added to an array of structs containing a Component Reference using a function
+  provided by the array-owning type.
+- During Blueprint Reconstruction.
+*/
 
 /**
  * A reference to a typed Component by name and owning Actor.
  *
  * The Component is identified by an Owning Actor pointer and the name of the Component. The type
- * is specified using a UClass, specifically TSubclassOf<UActorComponent>. Instances are meant to be
- * created as members of C++ classes, but the type is usable also from Blueprint Visual Scripts.
+ * is specified using an UClass, specifically TSubclassOf<UActorComponent>. Instances are meant to
+ * be created as members of C++ classes, but the type is usable also from Blueprint Visual Scripts.
  *
- * There are multiple sub-classes of FAGX_ComponentReference that specify the more specific
+ * There are multiple sub-classes of FAGX_ComponentReference that specify a more specific
  * Component type, for example FAGX_RigidBodyReference and FAGX_ShovelReference.
  *
  * The intention is that the Component Reference should be used much like Actor pointers are, but
@@ -30,31 +48,43 @@ class UActorComponent;
  * the Blueprint editor there is no actual Actor yet, so the Actor picker cannot be used to select
  * the Actor that will be created when the Blueprint is instantiated. In fact it cannot reference
  * any Actor. For this reason the Component Reference contains a Local Scope non-Property member
- * that is used as a fallback search Actor when Owning Actor is None / nullptr. All Components that
- * contains a Component Reference member variable should set Local Scope to the Actor that it is
- * part of in the constructor:
+ * that is used as a fallback search Actor when Owning Actor is None / nullptr. All types that
+ * contain a Component Reference member variable should set Local Scope to the Actor that it is
+ * part of in the constructor. For Components use Get Typed Outer instead of Get Owner because the
+ * Owner pointer may not have been set yet.
  *
  * void UMyComponent::UMyComponent()
  * {
- *  	MyComponentReference.SetLocalScope(GetTypedOuter<AActor>());
+ *     MyComponentReference.SetLocalScope(GetTypedOuter<AActor>());
+ * }
+ *
+ * void AMyActor::AMyActor()
+ * {
+ *     MyComponentReference.SetLocalScope(this);
  * }
  *
  * This establishes the so-called local scope for the reference. Unless an Owning Actor is
- * specified, the reference will search within the Actor that the reference is contained within. If
- * the Component contains Component References that are created dynamically, such as in an array,
- * then the Local Scope should be set on those in Post Load since at that point any array elements
- * found in serialized data has been restored. If a Blueprint creates elements in the array in its
- * Construction Script then the Local Scope on those must be set in On Register. On Register is also
- * called after elements has been added to an array from the Details panel. If the Component
- * provide member functions that adds or sets elements in the array then those functions should set
- * the Local Scope on the added or set element.
+ * specified, the reference will search within the Actor that the reference is contained within.
  *
- * So in short, set Local Scope in the Component's:
+ * The Local Scope must be maintained since Unreal Engine overwrites it from time to time. For
+ * Components it is recommended to set it in the On Register virtual member function. This happens
+ * after load so any data, including array elements, have been restored already, and it happens
+ * after Blueprint Construction so any array elements created there will also be available. Also,
+ * On Register is called both in editor and in packaged applications. For Actors it is recommended
+ * to set it in the Pre Register All Components virtual member function.
+ *
+ * If the type contains Component References that are created dynamically, such as in an array,
+ * then the Local Scope should be set on those in member functions that adds or sets elements in the
+ * array. If elements can be added to the array from the Details panel then those new elements
+ * should have the Local Scope set in Post Edit Change (Chain) Property.
+ *
+ * So in short, set Local Scope in:
  * - Constructor
- * - Post Load, if the Component contains an array containing Component References.
- * - On Register, if Component References may be created in Blueprint Construction Script or Details
- *   panel.
- * - Any member function that adds or creates Component References.
+ * - If Details panel editable array: Post Edit Change (Chain) Property.
+ * - Any member function that adds or creates Component References, such as in an array.
+ * - Actor Component: On Register
+ * - Actor: Pre Register All Components.
+ *
  *
  * A struct that both contains an FAGX_ComponentReference and has custom serialization code must
  * ensure that the garbage collector is made aware of the possible change in referencing the Owning

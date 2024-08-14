@@ -113,6 +113,12 @@ void UAGX_TwoBodyTireComponent::PostLoad()
 	UpdateReferencesLocalScope();
 }
 
+void UAGX_TwoBodyTireComponent::OnRegister()
+{
+	Super::OnRegister();
+	UpdateReferencesLocalScope();
+}
+
 void UAGX_TwoBodyTireComponent::AllocateNative()
 {
 	NativeBarrier.Reset(CreateTwoBodyTireBarrier());
