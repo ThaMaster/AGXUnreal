@@ -145,9 +145,15 @@ void FAGX_NotificationUtilities::ShowNotification(
 	Info.bFireAndForget = false;
 	Info.bAllowThrottleWhenFrameRateIsLow = false;
 
-	auto NotificationItem = FSlateNotificationManager::Get().AddNotification(Info);
-	NotificationItem->SetCompletionState(State);
-	NotificationItem->ExpireAndFadeout();
+	TSharedPtr<SNotificationItem> NotificationItem =
+		FSlateNotificationManager::Get().AddNotification(Info);
+	if (NotificationItem.IsValid())
+	{
+		// Notifications cannot be created during project packaging, Add Notification returns
+		// nullptr.
+		NotificationItem->SetCompletionState(State);
+		NotificationItem->ExpireAndFadeout();
+	}
 
 	if (State == SNotificationItem::ECompletionState::CS_Fail)
 	{
