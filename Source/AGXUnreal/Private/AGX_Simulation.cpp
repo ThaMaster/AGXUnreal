@@ -639,19 +639,26 @@ void UAGX_Simulation::Deinitialize()
 	// Explicitly close any asset editors that may be open.
 	// This fixes a crash where if any asset instances have an editor opened for them,
 	// the Unreal Editor would crash on Stop.
+	//
+	// WITH_EDITOR being true does not guarantee that GEditor will be available. It is not, for
+	// example, when running a Play In Editor session with Standalone Game since that launches a
+	// new process for the game without the editor.
 #if WITH_EDITOR
-	CloseInstancedAssetEditors<UAGX_ContactMaterial>();
-	CloseInstancedAssetEditors<UAGX_TerrainMaterial>();
-	CloseInstancedAssetEditors<UAGX_ShapeMaterial>();
+	if (GEditor != nullptr)
+	{
+		CloseInstancedAssetEditors<UAGX_ContactMaterial>();
+		CloseInstancedAssetEditors<UAGX_TerrainMaterial>();
+		CloseInstancedAssetEditors<UAGX_ShapeMaterial>();
 
-	CloseInstancedAssetEditors<UAGX_ConstraintMergeSplitThresholds>();
-	CloseInstancedAssetEditors<UAGX_ShapeContactMergeSplitThresholds>();
-	CloseInstancedAssetEditors<UAGX_WireMergeSplitThresholds>();
+		CloseInstancedAssetEditors<UAGX_ConstraintMergeSplitThresholds>();
+		CloseInstancedAssetEditors<UAGX_ShapeContactMergeSplitThresholds>();
+		CloseInstancedAssetEditors<UAGX_WireMergeSplitThresholds>();
 
-	CloseInstancedAssetEditors<UAGX_TrackInternalMergeProperties>();
-	CloseInstancedAssetEditors<UAGX_TrackProperties>();
+		CloseInstancedAssetEditors<UAGX_TrackInternalMergeProperties>();
+		CloseInstancedAssetEditors<UAGX_TrackProperties>();
 
-	CloseInstancedAssetEditors<UAGX_ShovelProperties>();
+		CloseInstancedAssetEditors<UAGX_ShovelProperties>();
+	}
 #endif
 
 	Super::Deinitialize();
