@@ -47,6 +47,26 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FRotator GetRotator() const;
 
+	/**
+	 * Write the Rigid Body Component's transformation into the native AGX Dynamics object. This is
+	 * necessary after manipulating the Scene Component tree to notify AGX Dynamics about the
+	 * changes.
+	 *
+	 * May only be called if there actually is a native for this Rigid Body.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Rigid Body")
+	bool WriteTransformToNative();
+
+	/**
+	 * Read the native AGX Dynamics object's transformation and apply it to the Transform Target.
+	 *
+	 * This is done automatically on Tick, so there is rarely any need to call this function.
+	 *
+	 * May only be called if there actually is a native for this Rigid Body.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Rigid Body")
+	bool ReadTransformFromNative();
+
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	bool bEnabled = true;
 
@@ -454,9 +474,6 @@ private:
 	 * onto the native in runtime.
 	 */
 	void WritePropertiesToNative();
-
-	void ReadTransformFromNative();
-	void WriteTransformToNative();
 
 	/// A variant of WriteTransformToNative that only writes if we have a Native to write to.
 	void TryWriteTransformToNative();

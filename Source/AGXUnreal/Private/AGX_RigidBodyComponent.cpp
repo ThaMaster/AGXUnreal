@@ -3,13 +3,13 @@
 #include "AGX_RigidBodyComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AMOR/MergeSplitPropertiesBarrier.h"
 #include "Shapes/AGX_ShapeComponent.h"
-#include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -575,9 +575,19 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 	}
 }
 
-void UAGX_RigidBodyComponent::ReadTransformFromNative()
+bool UAGX_RigidBodyComponent::ReadTransformFromNative()
 {
-	check(HasNative());
+	AGX_CHECK(HasNative());
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Read Transform From Native called on Rigid Body Component '%s' in '%s' that does "
+				 "not have a native. Doing nothing."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return false;
+	}
+
 	const FVector NewLocation = NativeBarrier.GetPosition();
 	const FQuat NewRotation = NativeBarrier.GetRotation();
 
@@ -587,6 +597,7 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		const FVector LocationDelta = NewLocation - OldLocation;
 		MoveComponent(LocationDelta, NewRotation, false);
 		ComponentVelocity = NativeBarrier.GetVelocity();
+		return true;
 	};
 
 	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor)
@@ -622,30 +633,44 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 				TEXT("Cannot update transformation of ancestor of RigidBody '%s' because it "
 					 "doesn't have an ancestor."),
 				*GetName());
-			return;
+			return false;
 		}
 		TransformAncestor(*Ancestor);
+		return true;
 	};
 
 	switch (TransformTarget)
 	{
 		case TT_SELF:
-			TransformSelf();
+			return TransformSelf();
 			break;
 		case TT_PARENT:
-			TryTransformAncestor(GetAttachParent());
+			return TryTransformAncestor(GetAttachParent());
 			break;
 		case TT_ROOT:
-			TryTransformAncestor(GetAttachmentRoot());
+			return TryTransformAncestor(GetAttachmentRoot());
 			break;
 	}
+
+	return false;
 }
 
-void UAGX_RigidBodyComponent::WriteTransformToNative()
+bool UAGX_RigidBodyComponent::WriteTransformToNative()
 {
-	check(HasNative());
+	AGX_CHECK(HasNative());
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Write Transform To Native called on Rigid Body Component '%s' in '%s' that does "
+				 "not have a native. Doing nothing."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return false;
+	}
+
 	NativeBarrier.SetPosition(GetComponentLocation());
 	NativeBarrier.SetRotation(GetComponentQuat());
+	return true;
 }
 
 void UAGX_RigidBodyComponent::TryWriteTransformToNative()
