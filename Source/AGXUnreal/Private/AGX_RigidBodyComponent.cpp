@@ -426,13 +426,7 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	WritePropertiesToNative();
 	WriteTransformToNative();
 
-	for (UAGX_ShapeComponent* Shape : GetShapes())
-	{
-		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
-		/// \todo Should not crash on this. HeightField easy to get wrong.
-		check(NativeShape && NativeShape->HasNative());
-		NativeBarrier.AddShape(NativeShape);
-	}
+	SynchronizeShapes();
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
@@ -1289,4 +1283,16 @@ void UAGX_RigidBodyComponent::MoveToLocal(
 	const FQuat RotationGlobal = BodyTransformGlobal.TransformRotation(RotationLocal.Quaternion());
 
 	MoveTo(PositionGlobal, FRotator(RotationGlobal), Duration);
+}
+
+void UAGX_RigidBodyComponent::SynchronizeShapes()
+{
+	for (UAGX_ShapeComponent* Shape : GetShapes())
+	{
+		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
+		/// \todo Should not crash on this. HeightField easy to get wrong.
+		check(NativeShape != nullptr && NativeShape->HasNative());
+		Shape->UpdateNativeLocalTransform();
+		NativeBarrier.AddShape(NativeShape);
+	}
 }

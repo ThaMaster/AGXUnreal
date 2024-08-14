@@ -401,6 +401,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void MoveToLocal(FVector PositionLocal, FRotator RotationLocal, float Duration);
 
+	/**
+	 * Find all Shape Components attached, including transitively, to this Rigid Body Component and
+	 * add them to the body on the AGX Dynamics side as well.
+	 *
+	 * Should be called after attaching new Shape Components to a Rigid Body Component.
+	 *
+	 * @note Will only add shapes, currently does not support removing shapes.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	void SynchronizeShapes();
+
 	/// Get the native AGX Dynamics representation of this rigid body. Create it if necessary.
 	FRigidBodyBarrier* GetOrCreateNative();
 
