@@ -55,7 +55,7 @@ namespace AGX_WireComponent_helpers
 	 */
 	void SetLocalScope(UAGX_WireComponent& Wire)
 	{
-		AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(&Wire);
+		AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(Wire);
 		Wire.OwnedBeginWinch.BodyAttachment.LocalScope = Owner;
 		Wire.OwnedEndWinch.BodyAttachment.LocalScope = Owner;
 		for (FWireRoutingNode& Node : Wire.RouteNodes)
