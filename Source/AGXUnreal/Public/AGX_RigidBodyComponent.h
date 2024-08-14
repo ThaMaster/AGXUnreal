@@ -29,9 +29,31 @@ public:
 	// Sets default values for this component's properties
 	UAGX_RigidBodyComponent();
 
+	/**
+	 * Set the position of the Rigid Body.
+	 *
+	 * The semantics depend on if Set Position is called during editing or runtime. During editing
+	 * it behaves as-if a drag on the Rigid Body Compnent's transform gizmo, i.e. the Rigid
+	 * Body Component is moved to the given location. Durain runtime, when there is a native AGX
+	 * Dynamics object, the semantics is as-if AGX Dynamics had moved the Rigid Body, i.e. the
+	 * Transform Target is moved so that the Rigid Body Component end up at the given position.
+	 *
+	 * @param Position The new position of the Rigid Body.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetPosition(FVector Position);
 
+	/**
+	 * Get the position of the Rigid Body.
+	 *
+	 * If there is a native AGX Dynamics object then that position is read and returned. If there
+	 * is no native object then the Rigid Body Component's Location is returned. These are usually
+	 * in sync but they are not in between AGX Dynamics having updated the native object and the
+	 * Rigid Body Component's Tick Component function having updated the Unreal Engine
+	 * transformation.
+	 *
+	 * @return The position of the Rigid Body.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	FVector GetPosition() const;
 
@@ -252,7 +274,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> MotionControl;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics", Meta = (InMotionControl = "MC_DYNAMICS"))
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Dynamics", Meta = (InMotionControl = "MC_DYNAMICS"))
 	void SetMotionControl(TEnumAsByte<enum EAGX_MotionControl> InMotionControl);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
