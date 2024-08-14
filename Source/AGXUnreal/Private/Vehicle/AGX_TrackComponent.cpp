@@ -640,7 +640,7 @@ void UAGX_TrackComponent::InitPropertyDispatcher()
 
 void UAGX_TrackComponent::SetComponentReferencesLocalScope()
 {
-	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(this);
 	for (FAGX_TrackWheel& Wheel : Wheels)
 	{
 		Wheel.RigidBody.LocalScope = Owner;

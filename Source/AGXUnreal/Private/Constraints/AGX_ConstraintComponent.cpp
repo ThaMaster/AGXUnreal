@@ -26,7 +26,7 @@ namespace AGX_ConstraintComponent_helpers
 {
 	void SetLocalScope(UAGX_ConstraintComponent& Constraint)
 	{
-		AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(Constraint.GetTypedOuter<AActor>());
+		AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(Constraint);
 		Constraint.BodyAttachment1.RigidBody.LocalScope = Owner;
 		Constraint.BodyAttachment1.FrameDefiningComponent.LocalScope = Owner;
 		Constraint.BodyAttachment2.RigidBody.LocalScope = Owner;

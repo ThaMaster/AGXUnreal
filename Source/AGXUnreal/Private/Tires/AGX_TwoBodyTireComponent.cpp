@@ -172,7 +172,7 @@ void UAGX_TwoBodyTireComponent::PostInitProperties()
 
 void UAGX_TwoBodyTireComponent::UpdateReferencesLocalScope()
 {
-	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
+	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(this);
 	HubRigidBody.LocalScope = Owner;
 	TireRigidBody.LocalScope = Owner;
 }

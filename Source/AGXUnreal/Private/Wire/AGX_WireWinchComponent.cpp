@@ -75,7 +75,7 @@ void UAGX_WireWinchComponent::SetNativeAddress(uint64 NativeAddress)
 void UAGX_WireWinchComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	check(WireWinch.BodyAttachment.LocalScope == FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>()));
+	check(WireWinch.BodyAttachment.LocalScope == FAGX_ObjectUtilities::GetRootParentActor(this));
 
 	if (!HasNative() && !GIsReconstructingBlueprintInstances)
 	{

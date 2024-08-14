@@ -45,6 +45,7 @@ public:
 	 * Blueprint class.
 	 */
 	static AActor* GetRootParentActor(UActorComponent* Component);
+	static AActor* GetRootParentActor(UActorComponent& Component);
 
 	/*
 	 * Checks whether the component is a template Component, i.e. it may have archetype instances.

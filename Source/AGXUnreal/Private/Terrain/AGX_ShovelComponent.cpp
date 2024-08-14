@@ -24,8 +24,7 @@ namespace AGX_ShovelComponent_helpers
 {
 	void SetLocalScope(UAGX_ShovelComponent& Shovel)
 	{
-		AActor* const Owner =
-			FAGX_ObjectUtilities::GetRootParentActor(Shovel.GetTypedOuter<AActor>());
+		AActor* const Owner = FAGX_ObjectUtilities::GetRootParentActor(Shovel);
 		Shovel.RigidBody.LocalScope = Owner;
 		Shovel.TopEdge.Start.Parent.LocalScope = Owner;
 		Shovel.TopEdge.End.Parent.LocalScope = Owner;
