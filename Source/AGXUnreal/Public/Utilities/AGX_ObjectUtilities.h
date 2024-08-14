@@ -30,8 +30,22 @@ public:
 	/**
 	 * Walk the Parent Actor chain until a non-Child-Actor is found and return that. If the given
 	 * Actor is not a Child Actor then it is returned.
+	 *
+	 * Required because in some cases the Child Actor is destroyed and replaced so keeping a pointer
+	 * to it is dangerous. For example in Component Reference.
 	 */
 	static AActor* GetRootParentActor(AActor* Actor);
+
+	/**
+	 * Walk the Component's Actor outer parent chain until a non-Child-Actor is found and return
+	 * that.
+	 *
+	 * Required because in some cases the Child Actor is destroyed and replaced so keeping a pointer
+	 * to it is dangerous. For example when a Component Reference is held by a Child Actor in a
+	 * Blueprint class.
+	 */
+	static AActor* GetRootParentActor(UActorComponent* Component);
+	static AActor* GetRootParentActor(UActorComponent& Component);
 
 	/*
 	 * Checks whether the component is a template Component, i.e. it may have archetype instances.

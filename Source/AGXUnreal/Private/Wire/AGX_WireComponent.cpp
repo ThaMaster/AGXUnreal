@@ -41,6 +41,30 @@
 
 #define LOCTEXT_NAMESPACE "UAGX_WireComponent"
 
+namespace AGX_WireComponent_helpers
+{
+	void SetLocalScope(FWireRoutingNode& Node, AActor* Owner)
+	{
+		Node.RigidBody.LocalScope = Owner;
+		Node.Frame.Parent.LocalScope = Owner;
+	}
+
+	/**
+	 * Establish the local scope for all Component References this Component owns. For more
+	 * information see comments in AGX_ComponentReference.h.
+	 */
+	void SetLocalScope(UAGX_WireComponent& Wire)
+	{
+		AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(Wire);
+		Wire.OwnedBeginWinch.BodyAttachment.LocalScope = Owner;
+		Wire.OwnedEndWinch.BodyAttachment.LocalScope = Owner;
+		for (FWireRoutingNode& Node : Wire.RouteNodes)
+		{
+			SetLocalScope(Node, Owner);
+		}
+	}
+}
+
 UAGX_WireComponent::UAGX_WireComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -52,9 +76,7 @@ UAGX_WireComponent::UAGX_WireComponent()
 	AddNodeAtLocation(FVector::ZeroVector);
 	AddNodeAtLocation(FVector(100.0f, 0.0f, 0.0f));
 
-	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	OwnedBeginWinch.BodyAttachment.LocalScope = Owner;
-	OwnedEndWinch.BodyAttachment.LocalScope = Owner;
+	AGX_WireComponent_helpers::SetLocalScope(*this);
 
 	// Setup default visuals.
 	static const TCHAR* WireMatAssetPath =
@@ -965,8 +987,7 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocation(FVector InLocation, int3
 	return AddNode(FWireRoutingNode(InLocation), OutIndex);
 }
 
-FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(
-	FVector InLocation, int32 InIndex)
+FWireRoutingNode& UAGX_WireComponent::AddNodeAtLocationAtIndex(FVector InLocation, int32 InIndex)
 {
 	return AddNodeAtIndex(FWireRoutingNode(InLocation), InIndex);
 }
@@ -984,7 +1005,8 @@ FWireRoutingNode& UAGX_WireComponent::AddNodeAtIndex(const FWireRoutingNode& InN
 	}
 	RouteNodes.Insert(InNode, InIndex);
 	FWireRoutingNode& NewNode = RouteNodes[InIndex];
-	NewNode.Frame.Parent.SetLocalScope(GetTypedOuter<AActor>());
+	AActor* LocalScope = FAGX_ObjectUtilities::GetRootParentActor(this);
+	AGX_WireComponent_helpers::SetLocalScope(NewNode, LocalScope);
 	return NewNode;
 }
 
@@ -1004,7 +1026,8 @@ void UAGX_WireComponent::SetNode(const int32 InIndex, const FWireRoutingNode InN
 		return;
 	}
 	RouteNodes[InIndex] = InNode;
-	RouteNodes[InIndex].Frame.Parent.SetLocalScope(GetOwner());
+	AActor* LocalScope = FAGX_ObjectUtilities::GetRootParentActor(this);
+	AGX_WireComponent_helpers::SetLocalScope(RouteNodes[InIndex], LocalScope);
 }
 
 void UAGX_WireComponent::RemoveNode(int32 InIndex)
@@ -1333,17 +1356,7 @@ const FWireBarrier* UAGX_WireComponent::GetNative() const
 void UAGX_WireComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-
-	// Establish the local scope for all Component References this Component owns. For more
-	// information see comments in AGX_ComponentReference.h.
-	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	OwnedBeginWinch.BodyAttachment.LocalScope = Owner;
-	OwnedEndWinch.BodyAttachment.LocalScope = Owner;
-	for (FWireRoutingNode& Node : RouteNodes)
-	{
-		Node.Frame.Parent.LocalScope = Owner;
-		Node.RigidBody.LocalScope = Owner;
-	}
+	AGX_WireComponent_helpers::SetLocalScope(*this);
 
 #if WITH_EDITOR
 	InitPropertyDispatcher();
@@ -1377,12 +1390,7 @@ void UAGX_WireComponent::PostLoad()
 	// Actor explicitly then the implicit one, i.e. our outer Actor, should be used. The Begin- and
 	// EndWinch don't need to do this because they always exists and is always set in Post Init
 	// Properties.
-	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetTypedOuter<AActor>());
-	for (FWireRoutingNode& Node : RouteNodes)
-	{
-		Node.Frame.Parent.LocalScope = Owner;
-		Node.RigidBody.LocalScope = Owner;
-	}
+	AGX_WireComponent_helpers::SetLocalScope(*this);
 
 #if WITH_EDITOR
 	// Condition on not Game World instead of is Editor World because we do not want this
@@ -1491,6 +1499,7 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 #endif
 
 	// End Winch.
+
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, OwnedEndWinch),
 		GET_MEMBER_NAME_CHECKED(FAGX_WireWinch, PulledInLength),
@@ -1528,6 +1537,12 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 		{ Wire->OwnedEndWinch.SetBrakeForceRange(Wire->OwnedEndWinch.BrakeForceRange); });
 
 	/// @todo Find ways to do attach/detach from winch during runtime from the Details Panel.
+
+	// Routing.
+
+	Dispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RouteNodes),
+		[](ThisClass* Wire) { AGX_WireComponent_helpers::SetLocalScope(*Wire); });
 }
 
 void UAGX_WireComponent::PreEditChange(FEditPropertyChain& PropertyAboutToChange)
@@ -1662,12 +1677,7 @@ void UAGX_WireComponent::OnRegister()
 	// During level load any Blueprint Instances will be created by running the Construction Script.
 	// Any routing nodes created by that script will not be seen by Post Init Properties and Post
 	// Load, so their Local Scope must be set here.
-	AActor* Owner = FAGX_ObjectUtilities::GetRootParentActor(GetOwner());
-	for (FWireRoutingNode& Node : RouteNodes)
-	{
-		Node.Frame.Parent.LocalScope = Owner;
-		Node.RigidBody.LocalScope = Owner;
-	}
+	AGX_WireComponent_helpers::SetLocalScope(*this);
 
 #if WITH_EDITORONLY_DATA
 	if (SpriteComponent)
