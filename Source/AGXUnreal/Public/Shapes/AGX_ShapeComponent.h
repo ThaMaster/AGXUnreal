@@ -199,6 +199,16 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
 	FGuid ImportGuid;
 
+	/**
+	 * Recompute the local transform that the native AGX Dynamics object should have given the
+	 * current Scene Component attachment hierarchy. This is done automatically on Begin Play but
+	 * may be required again if the attachment hierarchy is changed, for example when a Shape
+	 * Component becomes attached to a Rigid Body.
+	 *
+	 * @see UAGX_RigidBodyComponent::SynchronizeShapes
+	 */
+	void UpdateNativeLocalTransform();
+
 protected:
 	/**
 	 * Get a pointer to the actual member Barrier object. This will never return nullptr. The
