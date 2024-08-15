@@ -278,6 +278,13 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	}
 }
 
+void UAGX_ShapeComponent::UpdateNativeLocalTransform()
+{
+	if (!HasNative())
+		return;
+	UpdateNativeLocalTransform(*GetNative());
+}
+
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, bool ForceOverwriteInstances)
 {
 	AGX_COPY_PROPERTY_FROM(

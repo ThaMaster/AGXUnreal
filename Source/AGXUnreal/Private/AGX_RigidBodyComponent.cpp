@@ -3,13 +3,13 @@
 #include "AGX_RigidBodyComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AMOR/MergeSplitPropertiesBarrier.h"
 #include "Shapes/AGX_ShapeComponent.h"
-#include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -426,13 +426,7 @@ void UAGX_RigidBodyComponent::InitializeNative()
 	WritePropertiesToNative();
 	WriteTransformToNative();
 
-	for (UAGX_ShapeComponent* Shape : GetShapes())
-	{
-		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
-		/// \todo Should not crash on this. HeightField easy to get wrong.
-		check(NativeShape && NativeShape->HasNative());
-		NativeBarrier.AddShape(NativeShape);
-	}
+	SynchronizeShapes();
 
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
@@ -575,9 +569,19 @@ void UAGX_RigidBodyComponent::InitializeMotionControl()
 	}
 }
 
-void UAGX_RigidBodyComponent::ReadTransformFromNative()
+bool UAGX_RigidBodyComponent::ReadTransformFromNative()
 {
-	check(HasNative());
+	AGX_CHECK(HasNative());
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Read Transform From Native called on Rigid Body Component '%s' in '%s' that does "
+				 "not have a native. Doing nothing."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return false;
+	}
+
 	const FVector NewLocation = NativeBarrier.GetPosition();
 	const FQuat NewRotation = NativeBarrier.GetRotation();
 
@@ -587,6 +591,7 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 		const FVector LocationDelta = NewLocation - OldLocation;
 		MoveComponent(LocationDelta, NewRotation, false);
 		ComponentVelocity = NativeBarrier.GetVelocity();
+		return true;
 	};
 
 	auto TransformAncestor = [this, &NewLocation, &NewRotation](USceneComponent& Ancestor)
@@ -622,30 +627,44 @@ void UAGX_RigidBodyComponent::ReadTransformFromNative()
 				TEXT("Cannot update transformation of ancestor of RigidBody '%s' because it "
 					 "doesn't have an ancestor."),
 				*GetName());
-			return;
+			return false;
 		}
 		TransformAncestor(*Ancestor);
+		return true;
 	};
 
 	switch (TransformTarget)
 	{
 		case TT_SELF:
-			TransformSelf();
+			return TransformSelf();
 			break;
 		case TT_PARENT:
-			TryTransformAncestor(GetAttachParent());
+			return TryTransformAncestor(GetAttachParent());
 			break;
 		case TT_ROOT:
-			TryTransformAncestor(GetAttachmentRoot());
+			return TryTransformAncestor(GetAttachmentRoot());
 			break;
 	}
+
+	return false;
 }
 
-void UAGX_RigidBodyComponent::WriteTransformToNative()
+bool UAGX_RigidBodyComponent::WriteTransformToNative()
 {
-	check(HasNative());
+	AGX_CHECK(HasNative());
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Write Transform To Native called on Rigid Body Component '%s' in '%s' that does "
+				 "not have a native. Doing nothing."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return false;
+	}
+
 	NativeBarrier.SetPosition(GetComponentLocation());
 	NativeBarrier.SetRotation(GetComponentQuat());
+	return true;
 }
 
 void UAGX_RigidBodyComponent::TryWriteTransformToNative()
@@ -789,12 +808,22 @@ void UAGX_RigidBodyComponent::SetPosition(FVector Position)
 	if (HasNative())
 	{
 		NativeBarrier.SetPosition(Position);
+		// Not calling Unreal Engine's Set World Location because this Rigid Body may have a
+		// Transform Target other than Self. Read Transform From Native will apply the AGX Dynamics
+		// transformation to the correct Scene Component, with the correct local transform if
+		// necessary.
+		//
+		// The semantics is that Set Position moves the Rigid Body Component as-if it had been
+		// moved by AGX Dynamics. This is different from the semantics when there is no native.
 		ReadTransformFromNative();
 	}
 	else
 	{
-		// TODO Is this correct even when Transform Target is something other
-		// than Self?
+		// Set the position of the Rigid Body Component, not the Transform Target.
+		//
+		// The semantics is that Set Position moves the Rigid Body Component to the given
+		// position, leaving the Transform Target where it is. This is analogous to dragging
+		// the Rigid Body Component in the editor.
 		SetWorldLocation(Position);
 	}
 }
@@ -1181,8 +1210,7 @@ void UAGX_RigidBodyComponent::AddForceAtLocalLocation(FVector Force, FVector Loc
 	NativeBarrier.AddForceAtLocalLocation(Force, Location);
 }
 
-void UAGX_RigidBodyComponent::AddLocalForceAtLocalLocation(
-	FVector LocalForce, FVector Location)
+void UAGX_RigidBodyComponent::AddLocalForceAtLocalLocation(FVector LocalForce, FVector Location)
 {
 	const FVector GlobalForce = GetComponentTransform().TransformVectorNoScale(LocalForce);
 	AddForceAtLocalLocation(GlobalForce, Location);
@@ -1243,8 +1271,7 @@ FVector UAGX_RigidBodyComponent::GetTorque() const
 	return NativeBarrier.GetTorque();
 }
 
-void UAGX_RigidBodyComponent::MoveTo(
-	FVector Position, FRotator Rotation, float Duration)
+void UAGX_RigidBodyComponent::MoveTo(FVector Position, FRotator Rotation, float Duration)
 {
 	if (!HasNative() || Duration < 0.f)
 		return;
@@ -1264,4 +1291,24 @@ void UAGX_RigidBodyComponent::MoveToLocal(
 	const FQuat RotationGlobal = BodyTransformGlobal.TransformRotation(RotationLocal.Quaternion());
 
 	MoveTo(PositionGlobal, FRotator(RotationGlobal), Duration);
+}
+
+void UAGX_RigidBodyComponent::SynchronizeShapes()
+{
+	for (UAGX_ShapeComponent* Shape : GetShapes())
+	{
+		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
+		AGX_CHECK(NativeShape != nullptr && NativeShape->HasNative());
+		if (NativeShape == nullptr || !NativeShape->HasNative())
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("When creating AGX Dynamics natives for Shapes in '%s' in '%s', Shape '%s' "
+					 "did not get a native. This Shape will not be included in the simulation."),
+				*GetName(), *GetLabelSafe(GetOwner()), *Shape->GetName());
+			continue;
+		}
+		Shape->UpdateNativeLocalTransform();
+		NativeBarrier.AddShape(NativeShape);
+	}
 }

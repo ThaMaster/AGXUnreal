@@ -894,8 +894,8 @@ namespace
 
 namespace AGX_Terrain_helpers
 {
-// Since ALandscapeStreamingProxy::GetIsSpatiallyLoaded is guarded by WITH_EDITOR,
-// WarnIfStreamingLandscape must be as well.
+// Since ALandscapeStreamingProxy::GetIsSpatiallyLoaded and GetStreamingBounds is guarded by
+// WITH_EDITOR, WarnIfStreamingLandscape must be as well.
 #if WITH_EDITOR
 	void WarnIfStreamingLandscape(const ALandscape& Landscape, AAGX_Terrain& Terrain)
 	{
