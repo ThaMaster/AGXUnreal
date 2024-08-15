@@ -280,11 +280,9 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 
 void UAGX_ShapeComponent::UpdateNativeLocalTransform()
 {
-	FShapeBarrier* Barrier = GetNative();
-	if (Barrier == nullptr)
+	if (!HasNative())
 		return;
-
-	UpdateNativeLocalTransform(*Barrier);
+	UpdateNativeLocalTransform(*GetNative());
 }
 
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, bool ForceOverwriteInstances)
