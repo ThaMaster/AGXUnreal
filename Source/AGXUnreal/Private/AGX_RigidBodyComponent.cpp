@@ -1298,8 +1298,16 @@ void UAGX_RigidBodyComponent::SynchronizeShapes()
 	for (UAGX_ShapeComponent* Shape : GetShapes())
 	{
 		FShapeBarrier* NativeShape = Shape->GetOrCreateNative();
-		/// \todo Should not crash on this. HeightField easy to get wrong.
-		check(NativeShape != nullptr && NativeShape->HasNative());
+		AGX_CHECK(NativeShape != nullptr && NativeShape->HasNative());
+		if (NativeShape == nullptr || !NativeShape->HasNative())
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("When creating AGX Dynamics natives for Shapes in '%s' in '%s', Shape '%s' "
+					 "did not get a native. This Shape will not be included in the simulation."),
+				*GetName(), *GetLabelSafe(GetOwner()), *Shape->GetName());
+			continue;
+		}
 		Shape->UpdateNativeLocalTransform();
 		NativeBarrier.AddShape(NativeShape);
 	}
