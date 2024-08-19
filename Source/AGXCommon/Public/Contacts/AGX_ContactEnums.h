@@ -8,6 +8,19 @@
 
 #include "AGX_ContactEnums.generated.h"
 
+UENUM(BlueprintType)
+enum class EAGX_ContactForceComponents : uint8
+{
+	/// Normal force. Orthogonal to both tangential directions.
+	NormalForce,
+
+	// Tangential force U, orthogonal to the normal force and V.
+	TangentialForceU,
+
+	// Tangential force V, orthogonal to the normal force and V.
+	TangentialForceV
+};
+
 /**
  * Defines the event states for which a listener will be activated, a mask can be bitwise OR:ed from
  * these members.

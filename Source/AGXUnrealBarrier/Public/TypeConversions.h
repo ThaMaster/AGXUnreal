@@ -41,6 +41,7 @@
 #include <agx/RigidBody.h>
 #include <agx/Vec2.h>
 #include <agx/Vec3.h>
+#include <agxCollide/Contacts.h>
 #include <agxModel/TwoBodyTire.h>
 #include <agxSDK/ContactEventListener.h>
 #include <agxUtil/agxUtil.h>
@@ -778,6 +779,34 @@ inline agx::Uuid Convert(const FGuid& Guid)
 //
 // Enumerations, contacts.
 //
+
+inline agxCollide::ContactPoint::ContactForceComponents Convert(
+	EAGX_ContactForceComponents Component)
+{
+	switch (Component)
+	{
+		case EAGX_ContactForceComponents::NormalForce:
+			return agxCollide::ContactPoint::NORMAL_FORCE;
+		case EAGX_ContactForceComponents::TangentialForceU:
+			return agxCollide::ContactPoint::TANGENTIAL_FORCE_U;
+		case EAGX_ContactForceComponents::TangentialForceV:
+			return agxCollide::ContactPoint::TANGENTIAL_FORCE_V;
+	}
+}
+
+inline EAGX_ContactForceComponents Convert(
+	agxCollide::ContactPoint::ContactForceComponents Component)
+{
+	switch (Component)
+	{
+		case agxCollide::ContactPoint::NORMAL_FORCE:
+			return EAGX_ContactForceComponents::NormalForce;
+		case agxCollide::ContactPoint::TANGENTIAL_FORCE_U:
+			return EAGX_ContactForceComponents::TangentialForceU;
+		case agxCollide::ContactPoint::TANGENTIAL_FORCE_V:
+			return EAGX_ContactForceComponents::TangentialForceV;
+	}
+}
 
 inline agxSDK::ContactEventListener::ActivationMask Convert(EAGX_ContactListenerActivationMask Mask)
 {
