@@ -41,6 +41,9 @@ public:
 	 * The Data member consists of position X, Y, Z and Intensity for each point written as double's
 	 * in little endian layout, i.e. 32 bytes per point.
 	 *
+	 * (Optional) the FrameId parameter corresponds to the frame_id of the std_msgs::Header message.
+	 * If not set, it will be an empty string.
+	 *
 	 * Note that all invalid points, such as points representing scan misses, are ignored.
 	 * This means that the sensor_msgs::PointCloud2 message created by this function is always
 	 * dense.
@@ -50,7 +53,8 @@ public:
 	 * generated at later timestamps.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX ROS2")
-	static FAGX_SensorMsgsPointCloud2 ConvertXYZ(const TArray<FAGX_LidarScanPoint>& Points);
+	static FAGX_SensorMsgsPointCloud2 ConvertXYZ(
+		const TArray<FAGX_LidarScanPoint>& Points, const FString& FrameId = "");
 
 	/**
 	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2
@@ -59,6 +63,9 @@ public:
 	 * (TOF) [ps] (uint32) and Intensity (double) for each point in little endian layout, i.e. 28
 	 * bytes per point. The speed of light used for the TOF calculation is the speed of light in
 	 * vacuum.
+	 *
+	 * (Optional) the FrameId parameter corresponds to the frame_id of the std_msgs::Header message.
+	 * If not set, it will be an empty string.
 	 *
 	 * Note that all invalid points, such as points representing scan misses, are ignored.
 	 * This means that the sensor_msgs::PointCloud2 message created by this function is always
@@ -69,5 +76,6 @@ public:
 	 * generated at later timestamps.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	static FAGX_SensorMsgsPointCloud2 ConvertAnglesTOF(const TArray<FAGX_LidarScanPoint>& Points);
+	static FAGX_SensorMsgsPointCloud2 ConvertAnglesTOF(
+		const TArray<FAGX_LidarScanPoint>& Points, const FString& FrameId = "");
 };
