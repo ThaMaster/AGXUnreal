@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Contacts/AGX_ContactEnums.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "Math/Vector.h"
@@ -32,16 +35,17 @@ public:
 	double GetDepth() const;
 	FVector GetVelocity() const;
 	FVector GetWitnessPoint(int32 Index) const;
-	float GetArea() const;
+	double GetArea() const;
 
 	// Collision detection state setters. May only be called before the solver.
-	void SetEnable(bool Enable);
+	void SetEnabled(bool Enable);
 	void SetLocation(const FVector& Location);
 	void SetNormal(const FVector& Normal);
 	void SetTangentU(const FVector& TangentU);
 	void SetTangentV(const FVector& TangentV);
 	void SetDepth(const double Depth);
 	void SetVelocity(const FVector& Velocity);
+	void SetArea(double Area) const;
 
 	// Solver state getters. May only be called after the solver.
 	FVector GetForce() const;
@@ -49,11 +53,11 @@ public:
 	FVector GetNormalForce() const;
 	double GetNormalForceMagnitude() const;
 	FVector GetTangentialForce() const;
+	double GetTangentialForceMagnitude() const;
 	double GetTangentialForceUMagnitude() const;
 	double GetTangentialForceVMagnitude() const;
-	double GetTangentialForceMagnitude() const;
 	FVector GetLocalForce() const;
-	double GetLocalForce(int32 Index);
+	double GetLocalForce(EAGX_ContactForceComponents Index);
 
 	// Native management.
 	bool HasNative() const;

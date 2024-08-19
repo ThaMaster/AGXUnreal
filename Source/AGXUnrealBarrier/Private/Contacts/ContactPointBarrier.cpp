@@ -100,7 +100,7 @@ FVector FContactPointBarrier::GetWitnessPoint(int32 Index) const
 	return ConvertDisplacement(NativeEntity->Native.getWitnessPoint(Index));
 }
 
-float FContactPointBarrier::GetArea() const
+double FContactPointBarrier::GetArea() const
 {
 	check(HasNative());
 	return ConvertAreaToUnreal<float>(NativeEntity->Native.area());
@@ -110,7 +110,7 @@ float FContactPointBarrier::GetArea() const
 // Collision detection state setters. May only be called before the solver.
 //
 
-void FContactPointBarrier::SetEnable(bool bEnable)
+void FContactPointBarrier::SetEnabled(bool bEnable)
 {
 	check(HasNative());
 	return NativeEntity->Native->setEnabled(bEnable);
@@ -152,6 +152,13 @@ void FContactPointBarrier::SetVelocity(const FVector& Velocity)
 	NativeEntity->Native->setVelocity(ConvertFloatDisplacement(Velocity));
 }
 
+void FContactPointBarrier::SetArea(double Area) const
+{
+	check(HasNative());
+	ConvertAreaToAGX<double>(NativeEntity->Native.area());
+}
+
+
 //
 // Solver state getters. May only be called after the solver.
 //
@@ -186,6 +193,12 @@ FVector FContactPointBarrier::GetTangentialForce() const
 	return ConvertVector(NativeEntity->Native.getTangentialForce());
 }
 
+double FContactPointBarrier::GetTangentialForceMagnitude() const
+{
+	check(HasNative());
+	return NativeEntity->Native.getTangentialForceMagnitude();
+}
+
 double FContactPointBarrier::GetTangentialForceUMagnitude() const
 {
 	check(HasNative());
@@ -198,21 +211,16 @@ double FContactPointBarrier::GetTangentialForceVMagnitude() const
 	return NativeEntity->Native.getTangentialForceVMagnitude();
 }
 
-double FContactPointBarrier::GetTangentialForceMagnitude() const
-{
-	check(HasNative());
-	return NativeEntity->Native.getTangentialForceMagnitude();
-}
-
 FVector FContactPointBarrier::GetLocalForce() const
 {
 	check(HasNative());
 	return ConvertVector(NativeEntity->Native.localForce());
 }
 
-double FContactPointBarrier::GetLocalForce(int32 Index)
+double FContactPointBarrier::GetLocalForce(EAGX_ContactForceComponents Component)
 {
 	check(HasNative());
+	const size_t Index = static_cast<size_t>(Component);
 	return NativeEntity->Native.localForce(Index);
 }
 
