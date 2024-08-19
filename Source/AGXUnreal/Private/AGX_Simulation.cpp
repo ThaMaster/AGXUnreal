@@ -13,6 +13,7 @@
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "AMOR/AGX_WireMergeSplitThresholds.h"
 #include "Constraints/AGX_ConstraintComponent.h"
+#include "Contacts/ContactListenerBarrier.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
@@ -791,6 +792,18 @@ void UAGX_Simulation::CreateNative()
 	{
 		NativeBarrier.EnableRemoteDebugging(RemoteDebuggingPort);
 	}
+
+	if (bEnableGlobalContactEventListener)
+	{
+		CreateContactEventListener(
+			NativeBarrier,
+			[this](double Time, FShapeContactBarrier& Contact)
+			{ return ImpactCallback(Time, Contact); },
+			[this](double Time, FShapeContactBarrier& Contact)
+			{ return ContactCallback(Time, Contact); },
+			[this](double Time, FAnyShapeBarrier& FirstShape, FAnyShapeBarrier& SecondShape)
+			{ return SeparationCallback(Time, FirstShape, SecondShape); });
+	}
 }
 
 void UAGX_Simulation::OnLevelTransition()
@@ -1381,4 +1394,28 @@ void UAGX_Simulation::PostStep()
 	const auto SimTime = NativeBarrier.GetTimeStamp();
 	PostStepForwardInternal.Broadcast(SimTime);
 	PostStepForward.Broadcast(SimTime);
+}
+
+EAGX_KeepContactPolicy UAGX_Simulation::ImpactCallback(
+	double TimeStamp, FShapeContactBarrier& Contact)
+{
+	EAGX_KeepContactPolicy Policy {EAGX_KeepContactPolicy::KeepContact};
+	FAGX_KeepContactPolicy PolicyHandle {&Policy};
+	OnImpact.Broadcast(GetTimeStamp(), FAGX_ShapeContact(Contact), PolicyHandle);
+	return Policy;
+}
+
+EAGX_KeepContactPolicy UAGX_Simulation::ContactCallback(
+	double TimeStamp, FShapeContactBarrier& Contact)
+{
+	EAGX_KeepContactPolicy Policy {EAGX_KeepContactPolicy::KeepContact};
+	FAGX_KeepContactPolicy PolicyHandle {&Policy};
+	OnContact.Broadcast(GetTimeStamp(), FAGX_ShapeContact(Contact), PolicyHandle);
+	return Policy;
+}
+
+void UAGX_Simulation::SeparationCallback(
+	double TimeStamp, FAnyShapeBarrier& FirstShape, FAnyShapeBarrier& SecondShape)
+{
+	// TODO Implement UAGX_Simulation::SeparationCallback.
 }

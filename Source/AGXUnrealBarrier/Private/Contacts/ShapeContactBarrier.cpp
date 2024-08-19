@@ -18,6 +18,12 @@ FShapeContactBarrier::FShapeContactBarrier()
 {
 }
 
+FShapeContactBarrier::FShapeContactBarrier(const FShapeContactBarrier& InBarrier)
+	: NativeEntity {new FShapeContactEntity(InBarrier.NativeEntity->Native)}
+{
+}
+
+
 FShapeContactBarrier::FShapeContactBarrier(std::unique_ptr<FShapeContactEntity> NativeEntity)
 	: NativeEntity(std::move(NativeEntity))
 {

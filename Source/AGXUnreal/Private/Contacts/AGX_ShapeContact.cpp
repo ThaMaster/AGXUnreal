@@ -10,6 +10,11 @@
 // Unreal Engine includes.
 #include "UObject/UObjectIterator.h"
 
+FAGX_ShapeContact::FAGX_ShapeContact(const FShapeContactBarrier& InBarrier)
+	: Barrier(InBarrier)
+{
+}
+
 FAGX_ShapeContact::FAGX_ShapeContact(FShapeContactBarrier&& InBarrier)
 	: Barrier(std::move(InBarrier))
 {

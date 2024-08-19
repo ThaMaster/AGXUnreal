@@ -7,10 +7,11 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
-#include "AGX_MotionControl.h"
 #include "AGX_LogCategory.h"
+#include "AGX_MotionControl.h"
 #include "AGX_RealInterval.h"
 #include "Constraints/AGX_Constraint2DOFFreeDOF.h"
+#include "Contacts/AGX_ContactEnums.h"
 #include "Materials/AGX_ContactMaterialEnums.h"
 #include "RigidBodyBarrier.h"
 #include "Terrain/AGX_ShovelEnums.h"
@@ -24,23 +25,24 @@
 #include "Logging/LogVerbosity.h"
 #include "Math/Interval.h"
 #include "Math/Matrix.h"
-#include "Math/Vector.h"
-#include "Math/Vector2D.h"
 #include "Math/Quat.h"
 #include "Math/TwoVectors.h"
+#include "Math/Vector.h"
+#include "Math/Vector2D.h"
 
 // AGX Dynamics includes
 #include "BeginAGXIncludes.h"
+#include "agxTerrain/Shovel.h"
 #include <agx/Constraint.h>
 #include <agx/FrictionModel.h>
 #include <agx/Line.h>
 #include <agx/Notify.h>
-#include <agx/RigidBody.h>
 #include <agx/Quat.h>
+#include <agx/RigidBody.h>
 #include <agx/Vec2.h>
 #include <agx/Vec3.h>
 #include <agxModel/TwoBodyTire.h>
-#include "agxTerrain/Shovel.h"
+#include <agxSDK/ContactEventListener.h>
 #include <agxUtil/agxUtil.h>
 #include <agxVehicle/TrackInternalMergeProperties.h>
 #include <agxVehicle/TrackWheel.h>
@@ -754,6 +756,46 @@ inline agx::Uuid Convert(const FGuid& Guid)
 #endif
 
 	return agx::Uuid(GuidStrAGX);
+}
+
+//
+// Enumerations, contacts.
+//
+
+inline agxSDK::ContactEventListener::ActivationMask Convert(EAGX_ContactListenerActivationMask Mask)
+{
+	// This is a mask, meaning the bit patterns must be the same in both types. Cannot do a switch
+	// case since there will be too many permutations to test.
+	int MaskInt = static_cast<int>(Mask);
+	auto MaskAGX = static_cast<agxSDK::ContactEventListener::ActivationMask>(MaskInt);
+	return MaskAGX;
+}
+
+inline EAGX_ContactListenerActivationMask Convert(agxSDK::ContactEventListener::ActivationMask Mask)
+{
+	// This is a mask, meaning the bit patterns must be the same in both types. Cannot do a switch
+	// case since there will be too many permutations to test.
+	int MaskInt = static_cast<int>(Mask);
+	auto MaskUnreal = static_cast<EAGX_ContactListenerActivationMask>(MaskInt);
+	return MaskUnreal;
+}
+
+inline agxSDK::ContactEventListener::KeepContactPolicy Convert(EAGX_KeepContactPolicy Mask)
+{
+	// This is a mask, meaning the bit patterns must be the same in both types. Cannot do a switch
+	// case since there will be too many permutations to test.
+	int MaskInt = static_cast<int>(Mask);
+	auto MaskAGX = static_cast<agxSDK::ContactEventListener::KeepContactPolicy>(MaskInt);
+	return MaskAGX;
+}
+
+inline EAGX_KeepContactPolicy Convert(agxSDK::ContactEventListener::KeepContactPolicy Mask)
+{
+	// This is a mask, meaning the bit patterns must be the same in both types. Cannot do a switch
+	// case since there will be too many permutations to test.
+	int MaskInt = static_cast<int>(Mask);
+	auto MaskUnreal = static_cast<EAGX_KeepContactPolicy>(MaskInt);
+	return MaskUnreal;
 }
 
 //
