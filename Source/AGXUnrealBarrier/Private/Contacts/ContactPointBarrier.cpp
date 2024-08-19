@@ -48,10 +48,14 @@ FContactPointBarrier& FContactPointBarrier::operator=(const FContactPointBarrier
 	return *this;
 }
 
-float FContactPointBarrier::GetDepth() const
+//
+// Collision detection state getters.
+//
+
+bool FContactPointBarrier::IsEnabled() const
 {
 	check(HasNative());
-	return ConvertDistanceToUnreal<float>(NativeEntity->Native.depth());
+	return NativeEntity->Native.enabled();
 }
 
 FVector FContactPointBarrier::GetLocation() const
@@ -78,28 +82,16 @@ FVector FContactPointBarrier::GetTangentV() const
 	return ConvertFloatVector(NativeEntity->Native.tangentV());
 }
 
-FVector FContactPointBarrier::GetForce() const
+double FContactPointBarrier::GetDepth() const
 {
 	check(HasNative());
-	return ConvertVector(NativeEntity->Native.getForce());
+	return ConvertDistanceToUnreal<double>(NativeEntity->Native.depth());
 }
 
-FVector FContactPointBarrier::GetNormalForce() const
+FVector FContactPointBarrier::GetVelocity() const
 {
 	check(HasNative());
-	return ConvertVector(NativeEntity->Native.getNormalForce());
-}
-
-FVector FContactPointBarrier::GetTangentialForce() const
-{
-	check(HasNative());
-	return ConvertVector(NativeEntity->Native.getTangentialForce());
-}
-
-FVector FContactPointBarrier::GetLocalForce() const
-{
-	check(HasNative());
-	return ConvertVector(NativeEntity->Native.localForce());
+	return ConvertDisplacement(NativeEntity->Native.velocity());
 }
 
 FVector FContactPointBarrier::GetWitnessPoint(int32 Index) const
@@ -114,11 +106,119 @@ float FContactPointBarrier::GetArea() const
 	return ConvertAreaToUnreal<float>(NativeEntity->Native.area());
 }
 
-bool FContactPointBarrier::IsEnabled() const
+//
+// Collision detection state setters. May only be called before the solver.
+//
+
+void FContactPointBarrier::SetEnable(bool bEnable)
 {
 	check(HasNative());
-	return NativeEntity->Native.enabled();
+	return NativeEntity->Native->setEnabled(bEnable);
 }
+
+void FContactPointBarrier::SetLocation(const FVector& Location)
+{
+	check(HasNative());
+	NativeEntity->Native->setPoint(ConvertDisplacement(Location));
+}
+
+void FContactPointBarrier::SetNormal(const FVector& Normal)
+{
+	check(HasNative());
+	NativeEntity->Native->setNormal(ConvertFloatVector(Normal));
+}
+
+void FContactPointBarrier::SetTangentU(const FVector& TangentU)
+{
+	check(HasNative());
+	NativeEntity->Native->setTangentU(ConvertFloatVector(TangentU));
+}
+
+void FContactPointBarrier::SetTangentV(const FVector& TangentV)
+{
+	check(HasNative());
+	NativeEntity->Native->setTangentV(ConvertFloatVector(TangentV));
+}
+
+void FContactPointBarrier::SetDepth(const double Depth)
+{
+	check(HasNative());
+	NativeEntity->Native->setDepth(ConvertDistanceToAGX(Depth));
+}
+
+void FContactPointBarrier::SetVelocity(const FVector& Velocity)
+{
+	check(HasNative());
+	NativeEntity->Native->setVelocity(ConvertFloatDisplacement(Velocity));
+}
+
+//
+// Solver state getters. May only be called after the solver.
+//
+
+FVector FContactPointBarrier::GetForce() const
+{
+	check(HasNative());
+	return ConvertVector(NativeEntity->Native.getForce());
+}
+
+double FContactPointBarrier::GetForceMagnitude() const
+{
+	check(HasNative());
+	return NativeEntity->Native.getForceMagnitude();
+}
+
+FVector FContactPointBarrier::GetNormalForce() const
+{
+	check(HasNative());
+	return ConvertVector(NativeEntity->Native.getNormalForce());
+}
+
+double FContactPointBarrier::GetNormalForceMagnitude() const
+{
+	check(HasNative());
+	return NativeEntity->Native.getNormalForceMagnitude();
+}
+
+FVector FContactPointBarrier::GetTangentialForce() const
+{
+	check(HasNative());
+	return ConvertVector(NativeEntity->Native.getTangentialForce());
+}
+
+double FContactPointBarrier::GetTangentialForceUMagnitude() const
+{
+	check(HasNative());
+	return NativeEntity->Native.getTangentialForceUMagnitude();
+}
+
+double FContactPointBarrier::GetTangentialForceVMagnitude() const
+{
+	check(HasNative());
+	return NativeEntity->Native.getTangentialForceVMagnitude();
+}
+
+double FContactPointBarrier::GetTangentialForceMagnitude() const
+{
+	check(HasNative());
+	return NativeEntity->Native.getTangentialForceMagnitude();
+}
+
+FVector FContactPointBarrier::GetLocalForce() const
+{
+	check(HasNative());
+	return ConvertVector(NativeEntity->Native.localForce());
+}
+
+double FContactPointBarrier::GetLocalForce(int32 Index)
+{
+	check(HasNative());
+	return NativeEntity->Native.localForce(Index);
+}
+
+//
+// Native management.
+//
 
 bool FContactPointBarrier::HasNative() const
 {

@@ -327,7 +327,7 @@ inline FVector ConvertDistance(const agx::Vec3& V)
 
 inline FVector ConvertVector(const agx::Vec3& V)
 {
-	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	// Negate Y because Unreal is left-handed and AGX Dynamics is right-handed.
 	return FVector(
 		ConvertToUnreal<decltype(FVector::X)>(V.x()), -ConvertToUnreal<decltype(FVector::X)>(V.y()),
 		ConvertToUnreal<decltype(FVector::X)>(V.z()));
@@ -335,7 +335,7 @@ inline FVector ConvertVector(const agx::Vec3& V)
 
 inline FVector ConvertDisplacement(const agx::Vec3& V)
 {
-	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	// Negate Y because Unreal is left-handed and AGX Dynamics is right-handed.
 	return FVector(
 		ConvertDistanceToUnreal<decltype(FVector::X)>(V.x()),
 		-ConvertDistanceToUnreal<decltype(FVector::X)>(V.y()),
@@ -362,7 +362,7 @@ inline FVector ConvertDistance(const agx::Vec3f& V)
 
 inline FVector ConvertDisplacement(const agx::Vec3f& V)
 {
-	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	// Negate Y because Unreal is left-handed and AGX Dynamics is right-handed.
 	return FVector(
 		ConvertDistanceToUnreal<decltype(FVector::X)>(V.x()),
 		-ConvertDistanceToUnreal<decltype(FVector::X)>(V.y()),
@@ -371,7 +371,7 @@ inline FVector ConvertDisplacement(const agx::Vec3f& V)
 
 inline FVector ConvertFloatVector(const agx::Vec3f& V)
 {
-	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	// Negate Y because Unreal is left-handed and AGX Dynamics is right-handed.
 	return FVector(
 		ConvertToUnreal<decltype(FVector::X)>(V.x()), -ConvertToUnreal<decltype(FVector::X)>(V.y()),
 		ConvertToUnreal<decltype(FVector::X)>(V.z()));
@@ -450,7 +450,7 @@ inline agx::Vec3 ConvertVector(const FVector& V)
 
 inline agx::Vec3 ConvertDisplacement(const FVector& V)
 {
-	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	// Negate Y because Unreal is left-handed and AGX Dynamics is right-handed.
 	return agx::Vec3(
 		ConvertDistanceToAGX(V.X), -ConvertDistanceToAGX(V.Y), ConvertDistanceToAGX(V.Z));
 }
@@ -473,10 +473,24 @@ inline agx::Vec3f ConvertFloatDistance(const FVector& V)
 
 inline agx::Vec3f ConvertFloatVector(const FVector& V)
 {
-	// Negate Y because Unreal is left handed and AGX Dynamics is right handed.
+	// Negate Y because Unreal is left-handed and AGX Dynamics is right-handed.
+	// clang-format off
 	return agx::Vec3f(
-		static_cast<float>(ConvertToAGX(V.X)), static_cast<float>(-ConvertToAGX(V.Y)),
+		static_cast<float>(ConvertToAGX(V.X)),
+		-static_cast<float>(ConvertToAGX(V.Y)),
 		static_cast<float>(ConvertToAGX(V.Z)));
+	// clang-format on
+}
+
+inline agx::Vec3f ConvertFloatDisplacement(const FVector& V)
+{
+	// Negate Y because Unreal is left-handed and AGX Dynamics is right-handed.
+	// clang-format off
+	return agx::Vec3f(
+		static_cast<float>(ConvertDistanceToAGX(V.X)),
+		-static_cast<float>(ConvertDistanceToAGX(V.Y)),
+		static_cast<float>(ConvertDistanceToAGX(V.Z)));
+	// clang-format on
 }
 
 // Rotation-related.
@@ -484,9 +498,12 @@ inline agx::Vec3f ConvertFloatVector(const FVector& V)
 inline agx::Vec3 ConvertAngularVelocity(const FVector& V)
 {
 	// See comment in the AGX-to-Unreal version of this function.
+	// clang-format off
 	return agx::Vec3(
-		ConvertToAGX(FMath::DegreesToRadians(V.X)), -ConvertToAGX(FMath::DegreesToRadians(V.Y)),
+		ConvertToAGX(FMath::DegreesToRadians(V.X)),
+		-ConvertToAGX(FMath::DegreesToRadians(V.Y)),
 		-ConvertToAGX(FMath::DegreesToRadians(V.Z)));
+	// clang-format on
 }
 
 inline agx::Vec3 ConvertTorque(const FVector& V)
