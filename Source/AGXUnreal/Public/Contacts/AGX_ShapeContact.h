@@ -27,8 +27,8 @@ struct AGXUNREAL_API FAGX_ShapeContact
 	GENERATED_BODY()
 
 	FAGX_ShapeContact() = default;
-	FAGX_ShapeContact(const FShapeContactBarrier& InBarrier);
-	FAGX_ShapeContact(FShapeContactBarrier&& InBarrier);
+	explicit FAGX_ShapeContact(const FShapeContactBarrier& InBarrier);
+	explicit FAGX_ShapeContact(FShapeContactBarrier&& InBarrier);
 
 	/**
 	 * @return True if this ShapeContact is backed by native AGX Dynamics data.
