@@ -313,6 +313,12 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	static double GetPointArea(
 		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
+	static bool SetPointSurfaceVelocity(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, FVector SurfaceVelocity);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
+	static FVector GetPointSurfaceVelocity(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
+
 	/**
 	 * Get the total contact force, in world coordinates. Includes both normal and friction forces.
 	 *

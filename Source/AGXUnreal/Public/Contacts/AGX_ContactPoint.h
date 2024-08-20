@@ -107,15 +107,33 @@ public:
 	FVector GetWitnessPoint(int32 Index) const;
 
 	/**
-	 * Set the area covered by this contact point.
+	 * Set the area covered by this contact point [cm^2].
+	 *
+	 * Only used if the contact material has contact area enabled.
 	 */
 	void SetArea(double Area) const;
 
 	/**
+	 * Get the area covered by this contact point [cm^2].
+	 *
 	 * Only non-zero when the contact material has contact area enabled.
 	 * @return The estimated area.
 	 */
 	double GetArea() const;
+
+	/**
+	 * Set the surface velocity at the contact point [cm/s].
+	 *
+	 * Surface velocity causes the solver to add a relative velocity at the contact point.
+	 */
+	void SetSurfaceVelocity(const FVector& SurfaceVelocity);
+
+	/**
+	 * Get the surface velocity at the contact point [cm/s].
+	 *
+	 * Surface velocity causes the solver to add a relative velocity at the contact point.
+	 */
+	FVector GetSurfaceVelocity() const;
 
 	//
 	// Solver state getters. May only be called after the solver.

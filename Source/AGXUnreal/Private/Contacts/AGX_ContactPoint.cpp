@@ -162,6 +162,20 @@ double FAGX_ContactPoint::GetArea() const
 	return Barrier.GetArea();
 }
 
+void FAGX_ContactPoint::SetSurfaceVelocity(const FVector& SurfaceVelocity)
+{
+	if (!TestHasNativeGet(*this, TEXT("Surface Velocity")))
+		return;
+	Barrier.SetVelocity(SurfaceVelocity);
+}
+
+FVector FAGX_ContactPoint::GetSurfaceVelocity() const
+{
+	if (!TestHasNativeGet(*this, TEXT("Surface Velocity")))
+		return FVector::ZeroVector;
+	return Barrier.GetVelocity();
+}
+
 //
 // Solver state getters. May only be called after the solver.
 //

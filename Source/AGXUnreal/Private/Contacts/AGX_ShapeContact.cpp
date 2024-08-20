@@ -492,6 +492,29 @@ double UAGX_ShapeContact_FL::GetPointArea(FAGX_ShapeContact& ShapeContact, int32
 	return ShapeContact.GetContactPoint(PointIndex).GetArea();
 }
 
+bool UAGX_ShapeContact_FL::SetPointSurfaceVelocity(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, FVector SurfaceVelocity)
+{
+	using namespace AGX_ShapeContact_helpers;
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Surface Velocity")))
+	{
+		return false;
+	}
+	ShapeContact.GetContactPoint(PointIndex).SetSurfaceVelocity(SurfaceVelocity);
+	return true;
+}
+
+FVector UAGX_ShapeContact_FL::GetPointSurfaceVelocity(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
+{
+	using namespace AGX_ShapeContact_helpers;
+	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Surface Velocity")))
+	{
+		bSuccess = false;
+		return FVector::ZeroVector;
+	}
+	bSuccess = true;
+	return ShapeContact.GetContactPoint(PointIndex).GetSurfaceVelocity();
+}
+
 FVector UAGX_ShapeContact_FL::GetPointForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
