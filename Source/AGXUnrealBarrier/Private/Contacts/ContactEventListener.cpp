@@ -45,7 +45,7 @@ ContactEventListener::ContactEventListener(
 //~ Begin agxSDK::ContactEventListener interface.
 
 agxSDK::ContactEventListener::KeepContactPolicy ContactEventListener::impact(
-	const agx::TimeStamp& Time, agxCollide::GeometryContact* GeometryContact)
+	const agx::TimeStamp& TimeStamp, agxCollide::GeometryContact* GeometryContact)
 {
 	if (!ImpactCallback)
 	{
@@ -58,11 +58,11 @@ agxSDK::ContactEventListener::KeepContactPolicy ContactEventListener::impact(
 	// Construct a Barrier object that can be used to access the AGX Dynamics Geometry Contact
 	// from non-Barrier modules and pass it to the registered callback.
 	FShapeContactBarrier ShapeContact(std::make_unique<FShapeContactEntity>(*GeometryContact));
-	return Convert(ImpactCallback(Time, ShapeContact));
+	return Convert(ImpactCallback(TimeStamp, ShapeContact));
 }
 
 agxSDK::ContactEventListener::KeepContactPolicy ContactEventListener::contact(
-	const agx::TimeStamp& Time, agxCollide::GeometryContact* GeometryContact)
+	const agx::TimeStamp& TimeStamp, agxCollide::GeometryContact* GeometryContact)
 {
 	if (!ContactCallback)
 	{
@@ -75,11 +75,11 @@ agxSDK::ContactEventListener::KeepContactPolicy ContactEventListener::contact(
 	// Construct a Barrier object that can be used to access the AGX Dynamics Geometry Contact
 	// from non-Barrier modules and pass it to the registered callback.
 	FShapeContactBarrier ShapeContact(std::make_unique<FShapeContactEntity>(*GeometryContact));
-	return Convert(ContactCallback(Time, ShapeContact));
+	return Convert(ContactCallback(TimeStamp, ShapeContact));
 }
 
 void ContactEventListener::separation(
-	const agx::TimeStamp& Time, agxCollide::GeometryPair& GeometryPair)
+	const agx::TimeStamp& TimeStamp, agxCollide::GeometryPair& GeometryPair)
 {
 	if (!SeparationCallback)
 	{
@@ -96,7 +96,7 @@ void ContactEventListener::separation(
 	FAnyShapeBarrier FirstShape(std::make_unique<FGeometryAndShapeRef>(First, First->getShape()));
 	FAnyShapeBarrier SecondShape(
 		std::make_unique<FGeometryAndShapeRef>(Second, Second->getShape()));
-	SeparationCallback(Time, FirstShape, SecondShape);
+	SeparationCallback(TimeStamp, FirstShape, SecondShape);
 }
 
 //~ End agxSDK::ContactEventListener interface.

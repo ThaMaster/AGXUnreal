@@ -12,6 +12,8 @@
 
 #include "AGX_ContactEventListenerComponent.generated.h"
 
+class UAGX_ShapeComponent;
+
 /**
  * Provides access to AGX Dynamics Shape Contacts before contact pruning and Contact Constraint
  * generation. Makes it possible to manipulate and disable contacts.
@@ -33,12 +35,13 @@ class AGXUNREAL_API UAGX_ContactEventListenerComponent : public UActorComponent
 public: // Delegates.
 	// The Keep Contact Policy parameter emulates a return value.
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
-		FOnImpact, double, Time, const FAGX_ShapeContact&, ShapeContact,
+		FOnImpact, double, TimeStamp, const FAGX_ShapeContact&, ShapeContact,
 		const FAGX_KeepContactPolicy&, KeepContactPolicy);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
-		FOnContact, double, Time, const FAGX_ShapeContact&, ShapeContact,
+		FOnContact, double, TimeStamp, const FAGX_ShapeContact&, ShapeContact,
 		const FAGX_KeepContactPolicy&, KeepContactPolicy);
-	// TODO Add FOnSeparation
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
+		FOnSeparation, double, TimeStamp, UAGX_ShapeComponent*, FirstShape, UAGX_ShapeComponent*, SecondShape);
 
 	UPROPERTY(BlueprintAssignable, Category = "AGX Contact Event Listener")
 	FOnImpact OnImpact;
@@ -46,7 +49,8 @@ public: // Delegates.
 	UPROPERTY(BlueprintAssignable, Category = "AGX Contact Event Listener")
 	FOnImpact OnContact;
 
-	// TODO Add OnSeparation.
+	UPROPERTY(BlueprintAssignable, Category = "AGX Contact Event Listener")
+	FOnSeparation OnSeparation;
 
 public: // Blueprint Native Events.
 	/**
@@ -70,12 +74,11 @@ public: // Blueprint Native Events.
 	EAGX_KeepContactPolicy Contact(double TimeStamp, const FAGX_ShapeContact& ShapeContact);
 
 	/**
-	 * The intention is that this should be called when AGX Dynamics detects a separation between
-	 * two Shapes, but I was not able to finish this in time.
+	 * Callback that is called when AGX Dynamics detects that two Shapes are no longer in contact.
 	 *
 	 * @param TimeStamp The current AGX Dynamics time stamp.
-	 * @param FirstShape One of the Shapes that is no longer in contact with the other Shape.
-	 * @param SecondShape The other Shape, that is no longer in contact with the first Shape.
+	 * @param FirstShape The Shape that is no longer in contact with Second Shape.
+	 * @param SecondShape The Shape that is no longer in contact with the First Shape.
 	 */
 	UFUNCTION(BlueprintNativeEvent, Category = "AGX Contact Event Listener")
 	void Separation(
@@ -87,8 +90,8 @@ public: // Member function overrides.
 	//~ End UActorComponent interface.
 
 private: // Internal callbacks. These are passed to the AGX Dynamics Contact Event Listener.
-	EAGX_KeepContactPolicy ImpactCallback(double Time, FShapeContactBarrier& ShapeContact);
-	EAGX_KeepContactPolicy ContactCallback(double Time, FShapeContactBarrier& ShapeContact);
+	EAGX_KeepContactPolicy ImpactCallback(double TimeStamp, FShapeContactBarrier& ShapeContact);
+	EAGX_KeepContactPolicy ContactCallback(double TimeStamp, FShapeContactBarrier& ShapeContact);
 	void SeparationCallback(
-		double Time, FAnyShapeBarrier& FirstShape, FAnyShapeBarrier& SecondShape);
+		double TimeStamp, FAnyShapeBarrier& FirstShape, FAnyShapeBarrier& SecondShape);
 };

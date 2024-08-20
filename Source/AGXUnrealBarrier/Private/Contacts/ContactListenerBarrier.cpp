@@ -10,9 +10,9 @@
 
 void CreateContactEventListener(
 	FSimulationBarrier& Simulation,
-	TFunction<EAGX_KeepContactPolicy(double Time, FShapeContactBarrier&)> ImpactCallback,
-	TFunction<EAGX_KeepContactPolicy(double Time, FShapeContactBarrier&)> ContactCallback,
-	TFunction<void(double Time, FAnyShapeBarrier&, FAnyShapeBarrier&)> SeparationCallback)
+	TFunction<EAGX_KeepContactPolicy(double TimeStamp, FShapeContactBarrier&)> ImpactCallback,
+	TFunction<EAGX_KeepContactPolicy(double TimeStamp, FShapeContactBarrier&)> ContactCallback,
+	TFunction<void(double TimeStamp, FAnyShapeBarrier&, FAnyShapeBarrier&)> SeparationCallback)
 {
 	// Create the AGX Dynamics step event listener and forward the callbacks to the constructor.
 	//
