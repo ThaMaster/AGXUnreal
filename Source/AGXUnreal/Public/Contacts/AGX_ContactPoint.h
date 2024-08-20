@@ -96,7 +96,7 @@ public:
 	double GetDepth() const;
 
 	/**
-	 * Get witness location for the ith Shape.
+	 * Get witness point location for the ith (0 or 1) Shape.
 	 *
 	 * The location is in world coordinates and at time of collision detection. This means that
 	 * after the solve/step the geometries will most likely have moved.
@@ -128,7 +128,7 @@ public:
 	FVector GetForce() const;
 
 	/**
-	 * Get the magnitude of the contact force.
+	 * Get the magnitude of the contact force. Includes both normal and friction forces.
 	 *
 	 * This is faster than calling Get Force and taking the length of that vector.
 	 */
