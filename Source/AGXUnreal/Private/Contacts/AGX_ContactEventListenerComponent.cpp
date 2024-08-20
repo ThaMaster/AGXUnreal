@@ -28,26 +28,55 @@ void UAGX_ContactEventListenerComponent::BeginPlay()
 }
 
 EAGX_KeepContactPolicy UAGX_ContactEventListenerComponent::ImpactCallback(
-	double Time, FShapeContactBarrier& ShapeContactBarrier)
+	double TimeStamp, FShapeContactBarrier& ContactBarrier)
 {
 	// Called during Step Forward by the AGX Dynamics Contact Event Listener. Forward to the
-	// Blueprint function.
-	FAGX_ShapeContact ShapeContact(std::move(ShapeContactBarrier));
-	return Impact(Time, ShapeContact);
+	// Blueprint function and the delegate.
+	FAGX_ShapeContact Contact(ContactBarrier);
+	EAGX_KeepContactPolicy Policy = Impact(TimeStamp, Contact);
+	if (Policy != EAGX_KeepContactPolicy::RemoveContactImmediately)
+	{
+		FAGX_KeepContactPolicy PolicyHandle {&Policy};
+		OnImpact.Broadcast(TimeStamp, Contact, PolicyHandle);
+	}
+	return Policy;
 }
 
 EAGX_KeepContactPolicy UAGX_ContactEventListenerComponent::ContactCallback(
-	double Time, FShapeContactBarrier& ShapeContactBarrier)
+	double TimeStamp, FShapeContactBarrier& ContactBarrier)
 {
 	// Called during Step Forward by the AGX Dynamics Contact Event Listener. Forward to the
-	// Blueprint function.
-	FAGX_ShapeContact ShapeContact(std::move(ShapeContactBarrier));
-	return Contact(Time, ShapeContact);
+	// Blueprint function and the delegate
+	FAGX_ShapeContact Contact(ContactBarrier);
+	EAGX_KeepContactPolicy Policy = Impact(TimeStamp, Contact);
+	if (Policy != EAGX_KeepContactPolicy::RemoveContactImmediately)
+	{
+		FAGX_KeepContactPolicy PolicyHandle {&Policy};
+		OnContact.Broadcast(TimeStamp, Contact, PolicyHandle);
+	}
+	return Policy;
 }
 
 void UAGX_ContactEventListenerComponent::SeparationCallback(
 	double Time, FAnyShapeBarrier& FirstShape, FAnyShapeBarrier& SecondShape)
 {
-	// This is the part I was not able to implement in time. We need a way to find the AGX Shape
-	// Component that corresponds to the given FAnyShapeBarriers.
+	// TODO Implement UAGX_ContactEventListenerComponent::SeparationCallback.
+}
+
+
+EAGX_KeepContactPolicy UAGX_ContactEventListenerComponent::Impact_Implementation(double Time, const FAGX_ShapeContact& ShapeContact)
+{
+	return EAGX_KeepContactPolicy::KeepContact;
+}
+
+
+EAGX_KeepContactPolicy UAGX_ContactEventListenerComponent::Contact_Implementation(double Time, const FAGX_ShapeContact& ShapeContact)
+{
+	return EAGX_KeepContactPolicy::KeepContact;
+}
+
+
+void UAGX_ContactEventListenerComponent::Separation_Implementation(
+		double Time, const UAGX_ShapeComponent* FirstShape, UAGX_ShapeComponent* SecondShape)
+{
 }
