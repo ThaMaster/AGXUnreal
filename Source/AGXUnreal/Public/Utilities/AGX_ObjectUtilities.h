@@ -2,11 +2,16 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_Check.h"
+
 // Unreal Engine includes.
 #include "Containers/Array.h"
 #include "Components/SceneComponent.h"
 #include "CoreMinimal.h"
 #include "Engine/EngineTypes.h"
+#include "Engine/World.h"
+#include "EngineUtils.h"
 #include "GameFramework/Actor.h"
 #include "Misc/EngineVersionComparison.h"
 
@@ -211,6 +216,94 @@ public:
 	template <typename T>
 	static void SetIfEqual(T& Storage, T Expected, T New);
 
+	template <typename T, typename FPredicate>
+	static T* FindComponentByPredicate(UWorld& World, FPredicate Predicate);
+
+	/**
+	 * Iterator for registered Components on an Actor.
+	 *
+	 * Based on TComponentIterator in GameFrameWorkComponent.h. Not using that directly because
+	 * it is in a plugin, Modular Gameplay, that we cannot depend on. Is there some other convenient
+	 * way to iterate over Components in an Actor that we can use?
+	 */
+	template <typename T>
+	class TComponentIterator
+	{
+	public:
+		explicit TComponentIterator(AActor* OwnerActor)
+		{
+			if (IsValid(OwnerActor))
+			{
+				OwnerActor->GetComponents(AllComponents);
+			}
+
+			Advance();
+		}
+
+		FORCEINLINE void operator++()
+		{
+			Advance();
+		}
+
+		FORCEINLINE explicit operator bool() const
+		{
+			return AllComponents.IsValidIndex(Index);
+		}
+
+		FORCEINLINE bool operator!() const
+		{
+			return !(bool) *this;
+		}
+
+		FORCEINLINE T* operator*() const
+		{
+			return GetComponent();
+		}
+
+		FORCEINLINE T* operator->() const
+		{
+			return GetComponent();
+		}
+
+	protected:
+		/// Get the current component.
+		FORCEINLINE T* GetComponent() const
+		{
+			return AllComponents[Index];
+		}
+
+		/// Moves the iterator to the next valid component.
+		FORCEINLINE bool Advance()
+		{
+			while (++Index < AllComponents.Num())
+			{
+				T* Component = GetComponent();
+				if (Component == nullptr || !IsValid(Component))
+					continue;
+				if (Component->IsRegistered())
+					return true;
+			}
+			return false;
+		}
+
+	private:
+		/// Results from GetComponents.
+		TInlineComponentArray<T*> AllComponents;
+
+		// Index of the current element in the All Components array.
+		int32 Index {-1};
+
+		FORCEINLINE bool operator==(const TComponentIterator& Other) const
+		{
+			return Index == Other.Index;
+		}
+
+		FORCEINLINE bool operator!=(const TComponentIterator& Other) const
+		{
+			return Index != Other.Index;
+		}
+	};
+
 private:
 	static void GetActorsTree(const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors);
 };
@@ -403,4 +496,20 @@ void FAGX_ObjectUtilities::SetIfEqual(T& Storage, T Expected, T New)
 	{
 		Storage = New;
 	}
+}
+
+template <typename T, typename FPredicate>
+T* FAGX_ObjectUtilities::FindComponentByPredicate(UWorld& World, FPredicate Predicate)
+{
+	for (TActorIterator<AActor> ActorIt(&World); ActorIt; ++ActorIt)
+	{
+		for (TComponentIterator<T> ComponentIt(*ActorIt); ComponentIt; ++ComponentIt)
+		{
+			if (Predicate(*ComponentIt))
+			{
+				return *ComponentIt;
+			}
+		}
+	}
+	return nullptr;
 }
