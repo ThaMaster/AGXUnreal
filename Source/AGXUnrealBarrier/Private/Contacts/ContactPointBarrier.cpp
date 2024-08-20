@@ -94,16 +94,16 @@ FVector FContactPointBarrier::GetVelocity() const
 	return ConvertDisplacement(NativeEntity->Native.velocity());
 }
 
-FVector FContactPointBarrier::GetWitnessPoint(int32 Index) const
-{
-	check(HasNative());
-	return ConvertDisplacement(NativeEntity->Native.getWitnessPoint(Index));
-}
-
 double FContactPointBarrier::GetArea() const
 {
 	check(HasNative());
 	return ConvertAreaToUnreal<float>(NativeEntity->Native.area());
+}
+
+FVector FContactPointBarrier::GetWitnessPoint(int32 Index) const
+{
+	check(HasNative());
+	return ConvertDisplacement(NativeEntity->Native.getWitnessPoint(Index));
 }
 
 //
@@ -155,9 +155,8 @@ void FContactPointBarrier::SetVelocity(const FVector& Velocity)
 void FContactPointBarrier::SetArea(double Area) const
 {
 	check(HasNative());
-	ConvertAreaToAGX<double>(NativeEntity->Native.area());
+	NativeEntity->Native->setArea(ConvertAreaToAGX<double>(Area));
 }
-
 
 //
 // Solver state getters. May only be called after the solver.

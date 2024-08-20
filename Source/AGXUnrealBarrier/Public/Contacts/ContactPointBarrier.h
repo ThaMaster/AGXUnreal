@@ -34,8 +34,8 @@ public:
 	FVector GetTangentV() const;
 	double GetDepth() const;
 	FVector GetVelocity() const;
-	FVector GetWitnessPoint(int32 Index) const;
 	double GetArea() const;
+	FVector GetWitnessPoint(int32 Index) const;
 
 	// Collision detection state setters. May only be called before the solver.
 	void SetEnabled(bool Enable);
