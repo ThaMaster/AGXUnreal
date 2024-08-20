@@ -324,13 +324,15 @@ bool UAGX_ShapeContact_FL::SetPointEnabled(
 	return true;
 }
 
-bool UAGX_ShapeContact_FL::IsPointEnabled(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+bool UAGX_ShapeContact_FL::IsPointEnabled(FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Is Enabled")))
 	{
+		bSuccess = false;
 		return false;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).IsEnabled();
 }
 
@@ -346,13 +348,16 @@ bool UAGX_ShapeContact_FL::SetPointLocation(
 	return true;
 }
 
-FVector UAGX_ShapeContact_FL::GetPointLocation(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+FVector UAGX_ShapeContact_FL::GetPointLocation(
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Location")))
 	{
+		bSuccess = false;
 		return FVector::ZeroVector;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetLocation();
 }
 
@@ -368,13 +373,16 @@ bool UAGX_ShapeContact_FL::SetPointNormal(
 	return true;
 }
 
-FVector UAGX_ShapeContact_FL::GetPointNormal(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+FVector UAGX_ShapeContact_FL::GetPointNormal(
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Normal")))
 	{
+		bSuccess = false;
 		return FVector::ZeroVector;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetNormal();
 }
 
@@ -388,13 +396,16 @@ bool UAGX_ShapeContact_FL::SetPointTangentU(
 	return true;
 }
 
-FVector UAGX_ShapeContact_FL::GetPointTangentU(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+FVector UAGX_ShapeContact_FL::GetPointTangentU(
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Tangent U")))
 	{
+		bSuccess = false;
 		return FVector::ZeroVector;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetTangentU();
 }
 
@@ -408,11 +419,16 @@ bool UAGX_ShapeContact_FL::SetPointTangentV(
 	return true;
 }
 
-FVector UAGX_ShapeContact_FL::GetPointTangentV(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+FVector UAGX_ShapeContact_FL::GetPointTangentV(
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Tangent V")))
+	{
+		bSuccess = false;
 		return FVector::ZeroVector;
+	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetTangentV();
 }
 
@@ -426,22 +442,29 @@ bool UAGX_ShapeContact_FL::SetPointDepth(
 	return true;
 }
 
-double UAGX_ShapeContact_FL::GetPointDepth(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+double UAGX_ShapeContact_FL::GetPointDepth(
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Depth")))
+	{
+		bSuccess = false;
 		return 0.0f;
+	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetDepth();
 }
 
 FVector UAGX_ShapeContact_FL::GetPointWitnessPoint(
-	FAGX_ShapeContact& ShapeContact, int32 PointIndex, int32 ShapeIndex)
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, int32 ShapeIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Witness Point")))
 	{
+		bSuccess = false;
 		return FVector::ZeroVector;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetWitnessPoint(ShapeIndex);
 }
 
@@ -457,131 +480,157 @@ bool UAGX_ShapeContact_FL::SetPointArea(
 	return true;
 }
 
-double UAGX_ShapeContact_FL::GetPointArea(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+double UAGX_ShapeContact_FL::GetPointArea(FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Area")))
 	{
+		bSuccess = false;
 		return 0.0f;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetArea();
 }
 
-FVector UAGX_ShapeContact_FL::GetPointForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+FVector UAGX_ShapeContact_FL::GetPointForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Force")))
 	{
+		bSuccess = false;
 		return FVector::ZeroVector;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetForce();
 }
 
 double UAGX_ShapeContact_FL::GetPointForceMagnitude(
-	FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Force Magnitude")))
+	{
+		bSuccess = false;
 		return 0.0;
+	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetForceMagnitude();
 }
 
-FVector UAGX_ShapeContact_FL::GetPointNormalForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+FVector UAGX_ShapeContact_FL::GetPointNormalForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Normal Force")))
 	{
+		bSuccess = false;
 		return FVector::ZeroVector;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetNormalForce();
 }
 
 double UAGX_ShapeContact_FL::GetPointNormalForceMagnitude(
-	FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Normal Force Magnitude")))
 	{
+		bSuccess = false;
 		return 0.0;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetNormalForceMagnitude();
 }
 
 FVector UAGX_ShapeContact_FL::GetPointTangentialForce(
-	FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Tangential Force")))
 	{
+		bSuccess = false;
 		return FVector::ZeroVector;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetTangentialForce();
 }
 
 double UAGX_ShapeContact_FL::GetPointTangentialForceMagnitude(
-	FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(
 			ShapeContact, PointIndex, TEXT("Tangential Force Magnitude")))
 	{
+		bSuccess = false;
 		return 0.0;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetTangentialForceMagnitude();
 }
 
 double UAGX_ShapeContact_FL::GetPointTangentialForceUMagnitude(
-	FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(
 			ShapeContact, PointIndex, TEXT("Tangential Force U Magnitude")))
 	{
+		bSuccess = false;
 		return 0.0;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetTangentialForceUMagnitude();
 }
 
 double UAGX_ShapeContact_FL::GetPointTangentialForceVMagnitude(
-	FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(
 			ShapeContact, PointIndex, TEXT("Tangential Force V Magnitude")))
 	{
+		bSuccess = false;
 		return 0.0;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetTangentialForceVMagnitude();
 }
 
-FVector UAGX_ShapeContact_FL::GetPointLocalForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+FVector UAGX_ShapeContact_FL::GetPointLocalForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Local Force")))
 	{
+		bSuccess = false;
 		return FVector::ZeroVector;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetLocalForce();
 }
 
 double UAGX_ShapeContact_FL::GetPointLocalForceComponent(
-	FAGX_ShapeContact& ShapeContact, int32 PointIndex, EAGX_ContactForceComponents Component)
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, EAGX_ContactForceComponents Component, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Local Force Component")))
 	{
+		bSuccess = false;
 		return 0.0;
 	}
+	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetLocalForce(Component);
 }
 
 FVector UAGX_ShapeContact_FL::CalculateRelativeVelocity(
-	FAGX_ShapeContact& ShapeContact, int32 PointIndex)
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!TestHasNative(ShapeContact, TEXT("Relative Velocity")))
 	{
+		bSuccess = false;
 		return FVector::ZeroVector;
 	}
+	bSuccess = true;
 	return ShapeContact.CalculateRelativeVelocity(PointIndex);
 }

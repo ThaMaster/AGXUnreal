@@ -153,9 +153,13 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	 * Determine is the Contact Point is enabled, i.e. whether the Contact Point should be seen by
 	 * the solver. Only Contact Points that are part of an enabled Shape Contact is seen by the
 	 * solver.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
-	static bool IsPointEnabled(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+	static bool IsPointEnabled(
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Set the world location of the contact point [cm].
@@ -172,9 +176,13 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	 *
 	 * The location specifies where the solver will apply contact forces onto the Rigid Bodies
 	 * involved in the contact.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
-	static FVector GetPointLocation(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+	static FVector GetPointLocation(
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Set the normal direction of the Contact Point. Should be a unit, i.e. length=1.0, vector.
@@ -191,9 +199,13 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	 *
 	 * The normal specifies the direction in which the solver will apply normal forces from the
 	 * contact point.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
-	static FVector GetPointNormal(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+	static FVector GetPointNormal(
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Set the first, of two, tangent direction of the Contact Point.
@@ -210,9 +222,13 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	 *
 	 * The tangent specifies the direction in which the solver will apply friction forces from the
 	 * Contact Point.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
-	static FVector GetPointTangentU(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+	static FVector GetPointTangentU(
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Set the second, of two, tangent direction of the Contact Point.
@@ -229,9 +245,13 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	 *
 	 * The tangent specifies the direction in which the solver will apply friction forces from the
 	 * Contact Point.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
-	static FVector GetPointTangentV(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+	static FVector GetPointTangentV(
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Set the penetration depth of this contact point [cm].
@@ -245,9 +265,13 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 
 	/**
 	 * Get the intersection depth between the two colliding Shapes [cm].
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
-	static double GetPointDepth(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+	static double GetPointDepth(
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Get the witness point for either of the Shapes involved in the contact. The witness point is
@@ -262,10 +286,13 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	 * @param PointIndex The index of the Contact Point in the Shape Contact to inspect.
 	 * @param ShapeIndex The index of the Shape in the Shape Contact to get witness point for. 0
 	 * or 1.
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX SHapeContacts")
 	static FVector GetPointWitnessPoint(
-		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, int32 ShapeIndex);
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, int32 ShapeIndex,
+		bool& bSuccess);
 
 	/**
 	 * Set the area covered by this contact point.
@@ -278,91 +305,129 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	 * Get the area represented by the contact point.
 	 *
 	 * Only relevant if Use Contact Area Approach is enabled on the Contact Material.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
-	static double GetPointArea(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+	static double GetPointArea(
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Get the total contact force, in world coordinates. Includes both normal and friction forces.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
-	static FVector GetPointForce(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+	static FVector GetPointForce(
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Get the magnitude of the contact force. Includes both normal and friction forces.
 	 *
 	 * This is faster than calling Get Force and taking the length of that vector.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static double GetPointForceMagnitude(
-		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Get the normal force of the contact, in world coordinates.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static FVector GetPointNormalForce(
-		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Get the magnitude of the normal force.
 	 *
 	 * This is faster than calling Get Normal Force and taking the length of that vector.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static double GetPointNormalForceMagnitude(
-		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Get the tangential, i.e. friction, force of the contact.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static FVector GetPointTangentialForce(
-		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Get the magnitude of the tangential force.
 	 *
 	 * This is faster than calling Get Tangential Force and taking the length of that vector.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contact")
 	static double GetPointTangentialForceMagnitude(
-		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Get the magnitude of the tangential force in the U direction.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contact")
 	static double GetPointTangentialForceUMagnitude(
-		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Get the magnitude of the tangential force in the V direction.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contact")
 	static double GetPointTangentialForceVMagnitude(
-		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Get all contact force component magnitudes. Ordered normal, tangent U, tangent V.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static FVector GetPointLocalForce(
-		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 
 	/**
 	 * Get the magnitude of one component of the contact force.
+	 *
 	 * @param Component The part of the contact force to get the magnitude for.
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contact")
 	static double GetPointLocalForceComponent(
 		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex,
-		EAGX_ContactForceComponents Component);
+		EAGX_ContactForceComponents Component, bool& bSuccess);
 
 	/**
 	 * Compute the relative velocity at the given contact point. Will be zero for a stable contact.
+	 *
+	 * @param bSuccess False if the Shape Contact doesn't have a native, the Point Index is out of
+	 * range, or the Contact Point doesn't have a native.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape Contacts")
 	static FVector CalculateRelativeVelocity(
-		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex);
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess);
 };
