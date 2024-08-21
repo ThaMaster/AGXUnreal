@@ -92,6 +92,70 @@ FEmptyShapeBarrier FAGX_ShapeContact::GetShape2() const
 	return Barrier.GetShape2();
 }
 
+bool FAGX_ShapeContact::Contains(const FRigidBodyBarrier& Body) const
+{
+	using namespace AGX_ShapeContact_helpers;
+	if (!TestHasNative(*this, TEXT("Contains Body")))
+		return false;
+	if (!Body.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Rigid Body without native AGX Dynamics representation passed to Shape Contact > "
+				 "Contains"));
+		return false;
+	}
+	return Barrier.Contains(Body);
+}
+
+bool FAGX_ShapeContact::Contains(const FShapeBarrier& Shape) const
+{
+	using namespace AGX_ShapeContact_helpers;
+	if (!TestHasNative(*this, TEXT("Contains Shape")))
+		return false;
+	if (!Shape.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Shape without native AGX Dynamics representation passed to Shape Contact > "
+				 "Contains."));
+		return false;
+	}
+	return Barrier.Contains(Shape);
+}
+
+int32 FAGX_ShapeContact::IndexOf(const FRigidBodyBarrier& Body) const
+{
+	using namespace AGX_ShapeContact_helpers;
+	if (!TestHasNative(*this, TEXT("Index Of Body")))
+		return false;
+	if (!Body.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Rigid Body without native AGX Dynamics representation passed to Shape Contact > "
+				 "Index Of"));
+		return -1;
+	}
+	return Barrier.IndexOf(Body);
+}
+
+int32 FAGX_ShapeContact::IndexOf(const FShapeBarrier& Shape) const
+{
+	using namespace AGX_ShapeContact_helpers;
+	if (!TestHasNative(*this, TEXT("Index Of Shape")))
+		return false;
+	if (!Shape.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Shape without native AGX Dynamics representation passed to Shape Contact > Index "
+				 "Of"));
+		return false;
+	}
+	return Barrier.IndexOf(Shape);
+}
+
 FVector FAGX_ShapeContact::CalculateRelativeVelocity(int32 PointIndex) const
 {
 	using namespace AGX_ShapeContact_helpers;
@@ -282,6 +346,96 @@ UAGX_RigidBodyComponent* UAGX_ShapeContact_FL::GetSecondBody(FAGX_ShapeContact& 
 	return GetFromGuid<UAGX_RigidBodyComponent>(ShapeContact.GetBody2().GetGuid());
 }
 
+bool UAGX_ShapeContact_FL::ContainsRigidBody(
+	FAGX_ShapeContact& ShapeContact, UAGX_RigidBodyComponent* RigidBody, bool& bSuccess)
+{
+	using namespace AGX_ShapeContact_helpers;
+	if (!TestHasNative(ShapeContact, TEXT("Contains Rigid Body")))
+	{
+		bSuccess = false;
+		return false;
+	}
+	if (!RigidBody->HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Rigid Body without a native AGX Dynamics representation passed to Shape Contact "
+				 "> Contains."));
+		bSuccess = false;
+		return false;
+	}
+	bSuccess = true;
+	return ShapeContact.Contains(*RigidBody->GetNative());
+}
+
+bool UAGX_ShapeContact_FL::ContainsShape(
+	FAGX_ShapeContact& ShapeContact, UAGX_ShapeComponent* Shape, bool& bSuccess)
+{
+	using namespace AGX_ShapeContact_helpers;
+	if (!TestHasNative(ShapeContact, TEXT("Contains Shape")))
+	{
+		bSuccess = false;
+		return false;
+	}
+	if (!Shape->HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Shape without a native AGX Dynamics representation passed to Shape Contact > "
+				 "Contains."));
+		bSuccess = false;
+		return false;
+	}
+	bSuccess = true;
+	return ShapeContact.Contains(*Shape->GetNative());
+}
+
+int32 UAGX_ShapeContact_FL::IndexOfRigidBody(
+	FAGX_ShapeContact& ShapeContact, UAGX_RigidBodyComponent* RigidBody, bool& bSuccess)
+{
+	using namespace AGX_ShapeContact_helpers;
+	if (!TestHasNative(ShapeContact, TEXT("Index Of Rigid Body")))
+	{
+		bSuccess = false;
+		return -1;
+	}
+	if (!RigidBody->HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Rigid Body without native AGX Dynamics representaiton passed to Shape Contact > "
+				 "Index Of"));
+		bSuccess = false;
+		return -1;
+	}
+	const int32 Index = ShapeContact.IndexOf(*RigidBody->GetNative());
+	bSuccess = Index != -1;
+	return Index;
+}
+
+int32 UAGX_ShapeContact_FL::IndexOfShape(
+	FAGX_ShapeContact& ShapeContact, UAGX_ShapeComponent* Shape, bool& bSuccess)
+{
+	using namespace AGX_ShapeContact_helpers;
+	if (!TestHasNative(ShapeContact, TEXT("Index Of Shape")))
+	{
+		bSuccess = false;
+		return -1;
+	}
+	if (!Shape->HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Shape without native AGX Dynamics representaiton passed to Shape Contact > "
+				 "Index Of"));
+		bSuccess = false;
+		return -1;
+	}
+	const int32 Index = ShapeContact.IndexOf(*Shape->GetNative());
+	bSuccess = Index != -1;
+	return Index;
+}
+
 int32 UAGX_ShapeContact_FL::GetNumContactPoints(FAGX_ShapeContact& ShapeContact)
 {
 	return GetNumPoints(ShapeContact);
@@ -324,7 +478,8 @@ bool UAGX_ShapeContact_FL::SetPointEnabled(
 	return true;
 }
 
-bool UAGX_ShapeContact_FL::IsPointEnabled(FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
+bool UAGX_ShapeContact_FL::IsPointEnabled(
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Is Enabled")))
@@ -480,7 +635,8 @@ bool UAGX_ShapeContact_FL::SetPointArea(
 	return true;
 }
 
-double UAGX_ShapeContact_FL::GetPointArea(FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
+double UAGX_ShapeContact_FL::GetPointArea(
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Area")))
@@ -492,7 +648,8 @@ double UAGX_ShapeContact_FL::GetPointArea(FAGX_ShapeContact& ShapeContact, int32
 	return ShapeContact.GetContactPoint(PointIndex).GetArea();
 }
 
-bool UAGX_ShapeContact_FL::SetPointSurfaceVelocity(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, FVector SurfaceVelocity)
+bool UAGX_ShapeContact_FL::SetPointSurfaceVelocity(
+	UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, FVector SurfaceVelocity)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Surface Velocity")))
@@ -503,7 +660,8 @@ bool UAGX_ShapeContact_FL::SetPointSurfaceVelocity(UPARAM(Ref) FAGX_ShapeContact
 	return true;
 }
 
-FVector UAGX_ShapeContact_FL::GetPointSurfaceVelocity(UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
+FVector UAGX_ShapeContact_FL::GetPointSurfaceVelocity(
+	UPARAM(Ref) FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Surface Velocity")))
@@ -515,7 +673,8 @@ FVector UAGX_ShapeContact_FL::GetPointSurfaceVelocity(UPARAM(Ref) FAGX_ShapeCont
 	return ShapeContact.GetContactPoint(PointIndex).GetSurfaceVelocity();
 }
 
-FVector UAGX_ShapeContact_FL::GetPointForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
+FVector UAGX_ShapeContact_FL::GetPointForce(
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Force")))
@@ -540,7 +699,8 @@ double UAGX_ShapeContact_FL::GetPointForceMagnitude(
 	return ShapeContact.GetContactPoint(PointIndex).GetForceMagnitude();
 }
 
-FVector UAGX_ShapeContact_FL::GetPointNormalForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
+FVector UAGX_ShapeContact_FL::GetPointNormalForce(
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Normal Force")))
@@ -620,7 +780,8 @@ double UAGX_ShapeContact_FL::GetPointTangentialForceVMagnitude(
 	return ShapeContact.GetContactPoint(PointIndex).GetTangentialForceVMagnitude();
 }
 
-FVector UAGX_ShapeContact_FL::GetPointLocalForce(FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
+FVector UAGX_ShapeContact_FL::GetPointLocalForce(
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Local Force")))
@@ -633,7 +794,8 @@ FVector UAGX_ShapeContact_FL::GetPointLocalForce(FAGX_ShapeContact& ShapeContact
 }
 
 double UAGX_ShapeContact_FL::GetPointLocalForceComponent(
-	FAGX_ShapeContact& ShapeContact, int32 PointIndex, EAGX_ContactForceComponents Component, bool& bSuccess)
+	FAGX_ShapeContact& ShapeContact, int32 PointIndex, EAGX_ContactForceComponents Component,
+	bool& bSuccess)
 {
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Local Force Component")))

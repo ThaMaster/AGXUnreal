@@ -47,6 +47,12 @@ struct AGXUNREAL_API FAGX_ShapeContact
 	FEmptyShapeBarrier GetShape1() const;
 	FEmptyShapeBarrier GetShape2() const;
 
+	bool Contains(const FRigidBodyBarrier& Body) const;
+	bool Contains(const FShapeBarrier& Shape) const;
+
+	int32 IndexOf(const FRigidBodyBarrier& Body) const;
+	int32 IndexOf(const FShapeBarrier& Shape) const;
+
 	/**
 	 * @param PointIndex The index of the contact point to calculate the relative velocity at.
 	 * @return The relative velocity at the contact point, in the world coordinate system.
@@ -115,6 +121,43 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Shape Contacts")
 	static UAGX_RigidBodyComponent* GetSecondBody(UPARAM(Ref) FAGX_ShapeContact& ShapeContact);
 
+	/**
+	 * Determine if the Shape Contact includes the given Rigid Body.
+	 */
+	UFUNCTION(
+		BlueprintCallable, BlueprintPure, Category = "AGX Shape Contact",
+		Meta = (DisplayName = "Contains"))
+	static bool ContainsRigidBody(
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, UAGX_RigidBodyComponent* RigidBody,
+		bool& bSuccess);
+
+	/**
+	 * Determine if the Shape Contact includes the given Shape.
+	 */
+	UFUNCTION(
+		BlueprintCallable, BlueprintPure, Category = "AGX Shape Contact",
+		Meta = (DisplayName = "Contains"))
+	static bool ContainsShape(
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, UAGX_ShapeComponent* Shape, bool& bSuccess);
+
+	/**
+	 * Find the index of the given Rigid Body in the Shape Contact.
+	 */
+	UFUNCTION(
+		BlueprintCallable, BlueprintPure, Category = "AGX Shape Contact",
+		Meta = (DisplayName = "Contains"))
+	static int32 IndexOfRigidBody(
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, UAGX_RigidBodyComponent* RigidBody,
+		bool& bSuccess);
+
+	/**
+	 * Find the index of the given Shape in the Shape Contact.
+	 */
+	UFUNCTION(
+		BlueprintCallable, BlueprintPure, Category = "AGX Shape Contact",
+		Meta = (DisplayName = "Contains"))
+	static int32 IndexOfShape(
+		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, UAGX_ShapeComponent* Shape, bool& bSuccess);
 	/**
 	 * Get the number of contact points in the Shape Contacts.
 	 */

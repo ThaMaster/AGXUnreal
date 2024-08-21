@@ -3,6 +3,7 @@
 #include "Contacts/ShapeContactBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGXRefs.h"
 #include "AGX_LogCategory.h"
 #include "AGXBarrierFactories.h"
 #include "Contacts/ShapeContactEntity.h"
@@ -89,6 +90,32 @@ FEmptyShapeBarrier FShapeContactBarrier::GetShape2() const
 	check(HasNative());
 	agxCollide::Geometry* Geometry = NativeEntity->Native.geometry(1);
 	return AGXBarrierFactories::CreateEmptyShapeBarrier(Geometry);
+}
+
+bool FShapeContactBarrier::Contains(const FRigidBodyBarrier& Body) const
+{
+	return IndexOf(Body) != -1;
+}
+
+bool FShapeContactBarrier::Contains(const FShapeBarrier& Shape) const
+{
+	return IndexOf(Shape) != -1;
+}
+
+int32 FShapeContactBarrier::IndexOf(const FRigidBodyBarrier& Body) const
+{
+	check(HasNative());
+	check(Body.HasNative());
+	agx::RigidBody* BodyAGX = Body.GetNative()->Native;
+	return NativeEntity->Native.contains(BodyAGX);
+}
+
+int32 FShapeContactBarrier::IndexOf(const FShapeBarrier& Shape) const
+{
+	check(HasNative());
+	check(Shape.HasNative());
+	agxCollide::Geometry* GeometryAGX = Shape.GetNative()->NativeGeometry;
+	return NativeEntity->Native.contains(GeometryAGX);
 }
 
 int32 FShapeContactBarrier::GetNumContactPoints() const
