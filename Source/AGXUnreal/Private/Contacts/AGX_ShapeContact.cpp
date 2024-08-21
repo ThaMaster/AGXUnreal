@@ -604,7 +604,7 @@ double UAGX_ShapeContact_FL::GetPointDepth(
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Depth")))
 	{
 		bSuccess = false;
-		return 0.0f;
+		return 0.0;
 	}
 	bSuccess = true;
 	return ShapeContact.GetContactPoint(PointIndex).GetDepth();
