@@ -6,13 +6,13 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Contacts/ContactListenerBarrier.h"
+#include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AnyShapeBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/World.h"
-#include "Shapes/AGX_ShapeComponent.h"
 
 void UAGX_ContactEventListenerComponent::BeginPlay()
 {
