@@ -14,10 +14,10 @@ enum class EAGX_ContactForceComponents : uint8
 	/// Normal force. Orthogonal to both tangential directions.
 	NormalForce,
 
-	// Tangential force U, orthogonal to the normal force and V.
+	/// Tangential force U, orthogonal to the normal force and V.
 	TangentialForceU,
 
-	// Tangential force V, orthogonal to the normal force and V.
+	/// Tangential force V, orthogonal to the normal force and V.
 	TangentialForceV
 };
 
@@ -79,7 +79,7 @@ struct AGXCOMMON_API FAGX_KeepContactPolicy
 {
 	GENERATED_BODY()
 
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Keep Contact Policy")
+	// Accessed via the Keep Contact Policy Blueprint Function Library.
 	EAGX_KeepContactPolicy* Policy;
 };
 
