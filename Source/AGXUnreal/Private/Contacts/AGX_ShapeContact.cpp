@@ -570,7 +570,7 @@ bool UAGX_ShapeContact_FL::SetPointTangentV(
 	using namespace AGX_ShapeContact_helpers;
 	if (!CheckHasNativeAndValidPointIndex(ShapeContact, PointIndex, TEXT("Tangent V")))
 		return false;
-	ShapeContact.GetContactPoint(PointIndex).SetTangentU(TangentV);
+	ShapeContact.GetContactPoint(PointIndex).SetTangentV(TangentV);
 	return true;
 }
 

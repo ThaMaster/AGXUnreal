@@ -108,7 +108,7 @@ void FAGX_ContactPoint::SetTangentU(const FVector& TangentU)
 
 FVector FAGX_ContactPoint::GetTangentU() const
 {
-	if (!TestHasNativeGet(*this, TEXT("TangentU")))
+	if (!TestHasNativeGet(*this, TEXT("Tangent U")))
 		return FVector::ZeroVector;
 	return Barrier.GetTangentU();
 }
@@ -117,12 +117,12 @@ void FAGX_ContactPoint::SetTangentV(const FVector& TangentV)
 {
 	if (!TestHasNativeSet(*this, TEXT("Tangent V")))
 		return;
-	Barrier.SetTangentU(TangentV);
+	Barrier.SetTangentV(TangentV);
 }
 
 FVector FAGX_ContactPoint::GetTangentV() const
 {
-	if (!TestHasNativeGet(*this, TEXT("TangentV")))
+	if (!TestHasNativeGet(*this, TEXT("Tangent V")))
 		return FVector::ZeroVector;
 	return Barrier.GetTangentV();
 }
