@@ -18,6 +18,7 @@
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
 #include "Shapes/AGX_ShapeComponent.h"
+#include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/ShapeBarrier.h"
 #include "Terrain/AGX_ShovelProperties.h"
 #include "Terrain/AGX_Terrain.h"
@@ -1401,7 +1402,7 @@ EAGX_KeepContactPolicy UAGX_Simulation::ImpactCallback(
 {
 	EAGX_KeepContactPolicy Policy {EAGX_KeepContactPolicy::KeepContact};
 	FAGX_KeepContactPolicy PolicyHandle {&Policy};
-	OnImpact.Broadcast(GetTimeStamp(), FAGX_ShapeContact(Contact), PolicyHandle);
+	OnImpact.Broadcast(TimeStamp, FAGX_ShapeContact(Contact), PolicyHandle);
 	return Policy;
 }
 
@@ -1410,12 +1411,52 @@ EAGX_KeepContactPolicy UAGX_Simulation::ContactCallback(
 {
 	EAGX_KeepContactPolicy Policy {EAGX_KeepContactPolicy::KeepContact};
 	FAGX_KeepContactPolicy PolicyHandle {&Policy};
-	OnContact.Broadcast(GetTimeStamp(), FAGX_ShapeContact(Contact), PolicyHandle);
+	OnContact.Broadcast(TimeStamp, FAGX_ShapeContact(Contact), PolicyHandle);
 	return Policy;
 }
 
-void UAGX_Simulation::SeparationCallback(
-	double TimeStamp, FAnyShapeBarrier& FirstShape, FAnyShapeBarrier& SecondShape)
+namespace AGX_Simulation_helpers
 {
-	// TODO Implement UAGX_Simulation::SeparationCallback.
+	bool IsMatch(UAGX_ShapeComponent* Shape, const FGuid& Guid)
+	{
+		return Shape->GetNative()->GetGeometryGuid() == Guid;
+	}
+
+	template <typename UComponent>
+	UComponent* FindComponentByGuid(const FGuid& Guid, UWorld& World)
+	{
+		return FAGX_ObjectUtilities::FindComponentByPredicate<UComponent>(
+			World, [&Guid](UComponent* Component) { return IsMatch(Component, Guid); });
+	}
+}
+
+void UAGX_Simulation::SeparationCallback(
+	double TimeStamp, FAnyShapeBarrier& FirstShapeBarrier, FAnyShapeBarrier& SecondShapeBarrier)
+{
+	using namespace AGX_Simulation_helpers;
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Contact Event Listener AGX Simulation cannot find Shape Components because it "
+				 "does "
+				 "not have a world."));
+		return;
+	}
+	UAGX_ShapeComponent* FirstShape =
+		FindComponentByGuid<UAGX_ShapeComponent>(FirstShapeBarrier.GetGeometryGuid(), *World);
+	UAGX_ShapeComponent* SecondShape =
+		FindComponentByGuid<UAGX_ShapeComponent>(SecondShapeBarrier.GetGeometryGuid(), *World);
+
+	// Nullptr First Shape or Second Shape means that AGX Dynamics reported a separation for a
+	// Geometry that exists in the simulation but doesn't have an AGX Dynamics for Unreal
+	// representation. This could be a segment of a wire or something created by custom game logic
+	// implemented in C++. Since there isn't a Component for such Geometries we have no choice but
+	// to pass None / nullptr to the delegate. A user who need to be able to process such
+	// Geometrires will have to implement its own Contact Event Listener, either by inheriting
+	// from agxSDK::ContactEventListener, or by using the callback-based Create Contact Event
+	// Listener function in the Barrier module.
+
+	OnSeparation.Broadcast(TimeStamp, FirstShape, SecondShape);
 }

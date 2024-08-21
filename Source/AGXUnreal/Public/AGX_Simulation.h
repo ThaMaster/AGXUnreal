@@ -39,15 +39,16 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPostStepForward, double, Time);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPreStepForwardInternal, double /*Time*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostStepForwardInternal, double /*Time*/);
 
-// Would like to have the struct parameters by-ref using UPARAM(Ref), but that is only supported
-// for Blueprint Callable functions, not delegates. At last as of Unreal Engine 5.4. We really want
-// return values, but I don't think that is ever going to happen.
+// The Keep Contact Policy parameter emulates a return value.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 	FOnImpact, double, Time, const FAGX_ShapeContact&, ShapeContact, const FAGX_KeepContactPolicy&,
 	KeepContactPolicy);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 	FOnContact, double, Time, const FAGX_ShapeContact&, ShapeContact, const FAGX_KeepContactPolicy&,
 	KeepContactPolicy);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
+	FOnSeparation, double, TimeStamp, UAGX_ShapeComponent*, FirstShape, UAGX_ShapeComponent*,
+	SecondShape);
 
 /**
  * Manages an AGX simulation instance.
@@ -425,16 +426,28 @@ public: // Member functions.
 	bool bEnableGlobalContactEventListener {false};
 
 	/**
-	 *
+	 * Event that is triggered by AGX Dynamics during Step Forward after collision detection but
+	 * before solve. An impact is any overlap that is new this time step, i.e. the two Shapes were
+	 * not overlapping in the previous time step.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Simulation")
 	FOnImpact OnImpact;
 
 	/**
-	 *
+	 * Event that is triggered by AGX Dynamics during Step Forward after collision detection but
+	 * before solve. A contact is any overlap that is not new this time step, i.e. the two Shapes
+	 * were overlapping in the previous time step.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Simulation")
 	FOnContact OnContact;
+
+	/**
+	 * Event that is triggered by AGX Dynamics during Step Forward after collision detection but
+	 * before solve. A separation is when two Shapes are no longer overlapping, i.e. the two Shapes
+	 * were overlapping in the previous time step but not this time step.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Simulation")
+	FOnSeparation OnSeparation;
 
 	void Add(UAGX_ConstraintComponent& Constraint);
 
@@ -570,6 +583,14 @@ private:
 	 */
 	EAGX_KeepContactPolicy ContactCallback(double TimeStamp, FShapeContactBarrier& Contact);
 
+	/**
+	 * Called by AGX Dynamics when two Shapes no longer overlap, if Enable Global Contact Event
+	 * Listener is true. Triggers the On Separation delegate.
+	 *
+	 * @param TimeStamp AGX Dynamics simulation time stamp.
+	 * @param FirstShape The Shape no longer overlapping with Second Shape.
+	 * @param SecondShape The Shape no longer overlapping with First Shape.
+	 */
 	void SeparationCallback(
 		double TimeStamp, FAnyShapeBarrier& FirstShape, FAnyShapeBarrier& SecondShape);
 
