@@ -27,6 +27,7 @@ public:
 	//
 	// Collision detection state.
 	//
+
 	/**
 	 * Enable or disable this contact point.
 	 */
@@ -38,12 +39,12 @@ public:
 	bool IsEnabled() const;
 
 	/**
-	 * Set the world space location of the contact point.
+	 * Set the world space location of the contact point [cm].
 	 */
 	void SetLocation(const FVector& Location);
 
 	/**
-	 * @return The location of the contact point, in world coordinates.
+	 * @return The location of the contact point, in world coordinates [cm].
 	 */
 	FVector GetLocation() const;
 
@@ -85,18 +86,20 @@ public:
 	FVector GetTangentV() const;
 
 	/**
-	 * Set the penetration depth of this contact point. A larger depth will result in larger contact
+	 * Set the penetration depth of this contact point [cm].
+	 *
+	 * A larger depth will result in larger contact
 	 * forces.
 	 */
 	void SetDepth(double Depth);
 
 	/**
-	 * @return The depth of the overlap, in cm.
+	 * @return The depth of the overlap [cm].
 	 */
 	double GetDepth() const;
 
 	/**
-	 * Get witness point location for the ith (0 or 1) Shape.
+	 * Get witness point location for the ith (0 or 1) Shape [cm].
 	 *
 	 * The location is in world coordinates and at time of collision detection. This means that
 	 * after the solve/step the geometries will most likely have moved.
@@ -141,61 +144,62 @@ public:
 
 	/**
 	 * @return The complete (signed) contact force, including both normal and tangential (friction),
-	 * in the world coordinate system.
+	 * in the world coordinate system [N].
 	 */
 	FVector GetForce() const;
 
 	/**
-	 * Get the magnitude of the contact force. Includes both normal and friction forces.
+	 * Get the magnitude of the contact force [N].
 	 *
+	 * Includes both normal and friction forces.
 	 * This is faster than calling Get Force and taking the length of that vector.
 	 */
 	double GetForceMagnitude() const;
 
 	/**
-	 * @return The (signed) normal force in world coordinates.
+	 * @return The (signed) normal force in world coordinates [N].
 	 */
 	FVector GetNormalForce() const;
 
 	/**
-	 * Get the magnitude of the normal force.
+	 * Get the magnitude of the normal force [N].
 	 *
 	 * This is faster than calling Get Normal Force and taking the length of that vector.
 	 */
 	double GetNormalForceMagnitude() const;
 
 	/**
-	 * @return The (signed) tangential force (friction force) in world coordinates.
+	 * @return The (signed) tangential force (friction force) in world coordinates [N].
 	 */
 	FVector GetTangentialForce() const;
 
 	/**
-	 * Get the magnitude of the tangential force.
+	 * Get the magnitude of the tangential force [N].
 	 *
 	 * This is faster than calling Get Tangential Force and taking the length of that vector.
 	 */
 	double GetTangentialForceMagnitude() const;
 
 	/**
-	 * Get the magnitude of the tangential force in the U direction.
+	 * Get the magnitude of the tangential force in the U direction [N].
 	 */
 	double GetTangentialForceUMagnitude() const;
 
 	/**
-	 * Get the magnitude of the tangential force in the V direction.
+	 * Get the magnitude of the tangential force in the V direction [N].
 	 */
 	double GetTangentialForceVMagnitude() const;
 
 	/**
-	 * Get the contact force in the contact's local coordinate system. Ordered normal, tangent
-	 * U, tangent V.
+	 * Get the contact force in the contact's local coordinate system [N].
+	 *
+	 * In the order normal, tangent U, tangent V.
 	 */
 	FVector GetLocalForce() const;
 
 	/**
-	 * Get the magnitude of one component of the contact force.
-	 * @param Index
-	 * @return
+	 * Get the magnitude of one component of the contact force [N].
+	 * @param Index 0=Normal, 1=Tangent U, 2=Tangent V.
 	 */
 	double GetLocalForce(EAGX_ContactForceComponents Component);
 
