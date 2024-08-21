@@ -84,7 +84,7 @@ struct AGXCOMMON_API FAGX_KeepContactPolicy
 };
 
 UCLASS(BlueprintType)
-class AGXCOMMON_API UAGX_KeepContactPolich_FL : public UBlueprintFunctionLibrary
+class AGXCOMMON_API UAGX_KeepContactPolicy_FL : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
