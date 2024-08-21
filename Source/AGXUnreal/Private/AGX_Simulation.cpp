@@ -798,12 +798,12 @@ void UAGX_Simulation::CreateNative()
 	{
 		CreateContactEventListener(
 			NativeBarrier,
-			[this](double Time, FShapeContactBarrier& Contact)
-			{ return ImpactCallback(Time, Contact); },
-			[this](double Time, FShapeContactBarrier& Contact)
-			{ return ContactCallback(Time, Contact); },
-			[this](double Time, FAnyShapeBarrier& FirstShape, FAnyShapeBarrier& SecondShape)
-			{ return SeparationCallback(Time, FirstShape, SecondShape); });
+			[this](double TimeStamp, FShapeContactBarrier& Contact)
+			{ return ImpactCallback(TimeStamp, Contact); },
+			[this](double TimeStamp, FShapeContactBarrier& Contact)
+			{ return ContactCallback(TimeStamp, Contact); },
+			[this](double TimeStamp, FAnyShapeBarrier& FirstShape, FAnyShapeBarrier& SecondShape)
+			{ return SeparationCallback(TimeStamp, FirstShape, SecondShape); });
 	}
 }
 
