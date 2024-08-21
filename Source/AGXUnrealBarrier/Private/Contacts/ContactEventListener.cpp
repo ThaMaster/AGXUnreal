@@ -47,6 +47,9 @@ ContactEventListener::ContactEventListener(
 agxSDK::ContactEventListener::KeepContactPolicy ContactEventListener::impact(
 	const agx::TimeStamp& TimeStamp, agxCollide::GeometryContact* GeometryContact)
 {
+	if (GeometryContact == nullptr)
+		return KEEP_CONTACT;
+
 	if (!ImpactCallback)
 	{
 		UE_LOG(
@@ -64,6 +67,9 @@ agxSDK::ContactEventListener::KeepContactPolicy ContactEventListener::impact(
 agxSDK::ContactEventListener::KeepContactPolicy ContactEventListener::contact(
 	const agx::TimeStamp& TimeStamp, agxCollide::GeometryContact* GeometryContact)
 {
+	if (GeometryContact == nullptr)
+		return KEEP_CONTACT;
+
 	if (!ContactCallback)
 	{
 		UE_LOG(
@@ -93,6 +99,9 @@ void ContactEventListener::separation(
 	// from non-Barrier modules and pass them to the registered callback.
 	agxCollide::Geometry* First = GeometryPair.first;
 	agxCollide::Geometry* Second = GeometryPair.second;
+	if (First == nullptr || Second == nullptr)
+		return;
+
 	FAnyShapeBarrier FirstShape(std::make_unique<FGeometryAndShapeRef>(First, First->getShape()));
 	FAnyShapeBarrier SecondShape(
 		std::make_unique<FGeometryAndShapeRef>(Second, Second->getShape()));
