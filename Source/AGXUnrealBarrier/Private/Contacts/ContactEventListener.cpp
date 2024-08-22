@@ -52,9 +52,6 @@ agxSDK::ContactEventListener::KeepContactPolicy ContactEventListener::impact(
 
 	if (!ImpactCallback)
 	{
-		UE_LOG(
-			LogTemp, Warning,
-			TEXT("Contact Event Listener has an empty impact callback. Doing nothing"));
 		return KEEP_CONTACT;
 	}
 
@@ -72,9 +69,6 @@ agxSDK::ContactEventListener::KeepContactPolicy ContactEventListener::contact(
 
 	if (!ContactCallback)
 	{
-		UE_LOG(
-			LogTemp, Warning,
-			TEXT("Contact Event Listener has an empty contact callback. Doing nothing"));
 		return KEEP_CONTACT;
 	}
 
@@ -89,9 +83,6 @@ void ContactEventListener::separation(
 {
 	if (!SeparationCallback)
 	{
-		UE_LOG(
-			LogTemp, Warning,
-			TEXT("Contact Event Listener has an empty separation callback. Doing nothing"));
 		return;
 	}
 
