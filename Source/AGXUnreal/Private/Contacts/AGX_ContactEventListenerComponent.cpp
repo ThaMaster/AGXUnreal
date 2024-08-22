@@ -41,7 +41,7 @@ EAGX_KeepContactPolicy UAGX_ContactEventListenerComponent::ImpactCallback(
 	EAGX_KeepContactPolicy Policy = Impact(TimeStamp, Contact);
 	if (Policy != EAGX_KeepContactPolicy::RemoveContactImmediately)
 	{
-		FAGX_KeepContactPolicy PolicyHandle {&Policy};
+		FAGX_KeepContactPolicyHandle PolicyHandle {&Policy};
 		OnImpact.Broadcast(TimeStamp, Contact, PolicyHandle);
 	}
 	return Policy;
@@ -56,7 +56,7 @@ EAGX_KeepContactPolicy UAGX_ContactEventListenerComponent::ContactCallback(
 	EAGX_KeepContactPolicy Policy = Impact(TimeStamp, Contact);
 	if (Policy != EAGX_KeepContactPolicy::RemoveContactImmediately)
 	{
-		FAGX_KeepContactPolicy PolicyHandle {&Policy};
+		FAGX_KeepContactPolicyHandle PolicyHandle {&Policy};
 		OnContact.Broadcast(TimeStamp, Contact, PolicyHandle);
 	}
 	return Policy;
@@ -72,8 +72,8 @@ namespace AGX_ContactEventListenerComponent_helpers
 	template <typename UComponent>
 	UComponent* FindComponentByGuid(const FGuid& Guid, UWorld& World)
 	{
-		return FAGX_ObjectUtilities::FindComponentByPredicate<UComponent>(World,
-		[&Guid](UComponent* Component) { return IsMatch(Component, Guid); });
+		return FAGX_ObjectUtilities::FindComponentByPredicate<UComponent>(
+			World, [&Guid](UComponent* Component) { return IsMatch(Component, Guid); });
 	}
 }
 

@@ -41,11 +41,11 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostStepForwardInternal, double /*Time*/)
 
 // The Keep Contact Policy parameter emulates a return value.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
-	FOnImpact, double, Time, const FAGX_ShapeContact&, ShapeContact, const FAGX_KeepContactPolicy&,
-	KeepContactPolicy);
+	FOnImpact, double, Time, const FAGX_ShapeContact&, ShapeContact,
+	const FAGX_KeepContactPolicyHandle&, KeepContactPolicy);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
-	FOnContact, double, Time, const FAGX_ShapeContact&, ShapeContact, const FAGX_KeepContactPolicy&,
-	KeepContactPolicy);
+	FOnContact, double, Time, const FAGX_ShapeContact&, ShapeContact,
+	const FAGX_KeepContactPolicyHandle&, KeepContactPolicy);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 	FOnSeparation, double, TimeStamp, UAGX_ShapeComponent*, FirstShape, UAGX_ShapeComponent*,
 	SecondShape);

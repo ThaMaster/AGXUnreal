@@ -36,12 +36,13 @@ public: // Delegates.
 	// The Keep Contact Policy parameter emulates a return value.
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 		FOnImpact, double, TimeStamp, const FAGX_ShapeContact&, ShapeContact,
-		const FAGX_KeepContactPolicy&, KeepContactPolicy);
+		const FAGX_KeepContactPolicyHandle&, KeepContactPolicy);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 		FOnContact, double, TimeStamp, const FAGX_ShapeContact&, ShapeContact,
-		const FAGX_KeepContactPolicy&, KeepContactPolicy);
+		const FAGX_KeepContactPolicyHandle&, KeepContactPolicy);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
-		FOnSeparation, double, TimeStamp, UAGX_ShapeComponent*, FirstShape, UAGX_ShapeComponent*, SecondShape);
+		FOnSeparation, double, TimeStamp, UAGX_ShapeComponent*, FirstShape, UAGX_ShapeComponent*,
+		SecondShape);
 
 	UPROPERTY(BlueprintAssignable, Category = "AGX Contact Event Listener")
 	FOnImpact OnImpact;

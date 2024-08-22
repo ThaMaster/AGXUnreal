@@ -1401,7 +1401,7 @@ EAGX_KeepContactPolicy UAGX_Simulation::ImpactCallback(
 	double TimeStamp, FShapeContactBarrier& Contact)
 {
 	EAGX_KeepContactPolicy Policy {EAGX_KeepContactPolicy::KeepContact};
-	FAGX_KeepContactPolicy PolicyHandle {&Policy};
+	FAGX_KeepContactPolicyHandle PolicyHandle {&Policy};
 	OnImpact.Broadcast(TimeStamp, FAGX_ShapeContact(Contact), PolicyHandle);
 	return Policy;
 }
@@ -1410,7 +1410,7 @@ EAGX_KeepContactPolicy UAGX_Simulation::ContactCallback(
 	double TimeStamp, FShapeContactBarrier& Contact)
 {
 	EAGX_KeepContactPolicy Policy {EAGX_KeepContactPolicy::KeepContact};
-	FAGX_KeepContactPolicy PolicyHandle {&Policy};
+	FAGX_KeepContactPolicyHandle PolicyHandle {&Policy};
 	OnContact.Broadcast(TimeStamp, FAGX_ShapeContact(Contact), PolicyHandle);
 	return Policy;
 }

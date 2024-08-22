@@ -74,8 +74,8 @@ enum class EAGX_KeepContactPolicy : uint8
 	RemoveContactImmediately
 };
 
-USTRUCT(BlueprintType)
-struct AGXCOMMON_API FAGX_KeepContactPolicy
+USTRUCT(BlueprintType, Meta = (DisplayName = "AGX Keep Contact Policy"))
+struct AGXCOMMON_API FAGX_KeepContactPolicyHandle
 {
 	GENERATED_BODY()
 
@@ -90,7 +90,7 @@ class AGXCOMMON_API UAGX_KeepContactPolicy_FL : public UBlueprintFunctionLibrary
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Keep Contact Policy")
 	static void SetPolicy(
-		UPARAM(Ref) FAGX_KeepContactPolicy& KeepContactPolicy, EAGX_KeepContactPolicy Policy)
+		UPARAM(Ref) FAGX_KeepContactPolicyHandle& KeepContactPolicy, EAGX_KeepContactPolicy Policy)
 	{
 		// Higher-valued values override lower-valued ones. So Keep Contact is overriden by Remove
 		// Contact, which is overriden by Remove Contact Immediately.
