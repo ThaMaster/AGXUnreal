@@ -54,19 +54,19 @@ public:
 	 *
 	 * @return The position of the Rigid Body.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	FVector GetPosition() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetRotation(FQuat Rotation);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	FQuat GetRotation() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetRotator(FRotator Rotator);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	FRotator GetRotator() const;
 
 	/**
@@ -95,7 +95,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetEnabled(bool InEnabled);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
+	bool IsEnabled() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	bool GetEnabled() const;
 
 	/**
@@ -108,7 +111,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetMass(float InMass);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	float GetMass() const;
 
 	/**
@@ -120,7 +123,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetAutoGenerateMass(bool bInAuto);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	bool GetAutoGenerateMass() const;
 
 	/**
@@ -134,7 +137,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetCenterOfMassOffset(FVector InCoMOffset);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	FVector GetCenterOfMassOffset() const;
 
 	/**
@@ -146,7 +149,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetAutoGenerateCenterOfMassOffset(bool bInAuto);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	bool GetAutoGenerateCenterOfMassOffset() const;
 
 	/**
@@ -154,10 +157,10 @@ public:
 	 * This function is only valid if the Rigid Body has a Native object, which usually is true only
 	 * during Play. Returns zero vector if not.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	FVector GetCenterOfMassPosition() const;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	TArray<UAGX_ShapeComponent*> GetShapes() const;
 
 	/**
@@ -195,7 +198,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetPrincipalInertia(FVector InPrincipalInertia);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	FVector GetPrincipalInertia() const;
 
 	/**
@@ -207,7 +210,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetAutoGeneratePrincipalInertia(bool bInAuto);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	bool GetAutoGeneratePrincipalInertia() const;
 
 	/**
@@ -219,7 +222,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetVelocity(FVector InVelocity);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	FVector GetVelocity() const;
 
 	/**
@@ -242,7 +245,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetAngularVelocity(FVector InAngularVelocity);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	FVector GetAngularVelocity() const;
 
 	/**
@@ -255,7 +258,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetLinearVelocityDamping(FVector InLinearVelocityDamping);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	FVector GetLinearVelocityDamping() const;
 
 	/**
@@ -268,7 +271,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	void SetAngularVelocityDamping(FVector InAngularVelocityDamping);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	FVector GetAngularVelocityDamping() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
@@ -278,7 +281,7 @@ public:
 		BlueprintCallable, Category = "AGX Dynamics", Meta = (InMotionControl = "MC_DYNAMICS"))
 	void SetMotionControl(TEnumAsByte<enum EAGX_MotionControl> InMotionControl);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	TEnumAsByte<enum EAGX_MotionControl> GetMotionControl() const;
 
 	/**
@@ -301,7 +304,7 @@ public:
 	 * Returns true if this Rigid Body has been automatically merged and is currently merged.
 	 * Returns false otherwise.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX AMOR")
 	bool IsAutomaticallyMerged();
 
 	/**
@@ -374,7 +377,7 @@ public:
 	 * to this body in the next solve.
 	 * @return The external forces for the next solve accumulated so far.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Dynamics")
 	FVector GetForce() const;
 
 	/**
