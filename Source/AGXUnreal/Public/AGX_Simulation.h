@@ -423,7 +423,7 @@ public: // Member functions.
 	 * Listener Components.
 	 */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Simulation")
-	bool bEnableGlobalContactEventListener {false};
+	bool bEnableGlobalContactEventListener {true};
 
 	/**
 	 * Event that is triggered by AGX Dynamics during Step Forward after collision detection but
