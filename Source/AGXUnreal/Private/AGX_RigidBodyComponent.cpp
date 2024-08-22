@@ -881,7 +881,7 @@ void UAGX_RigidBodyComponent::SetEnabled(bool InEnabled)
 	bEnabled = InEnabled;
 }
 
-bool UAGX_RigidBodyComponent::GetEnabled() const
+bool UAGX_RigidBodyComponent::IsEnabled() const
 {
 	if (HasNative())
 	{
@@ -889,6 +889,11 @@ bool UAGX_RigidBodyComponent::GetEnabled() const
 	}
 
 	return bEnabled;
+}
+
+bool UAGX_RigidBodyComponent::GetEnabled() const
+{
+	return IsEnabled();
 }
 
 void UAGX_RigidBodyComponent::SetMass(float InMass)

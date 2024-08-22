@@ -96,6 +96,9 @@ public:
 	void SetEnabled(bool InEnabled);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	bool IsEnabled() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	bool GetEnabled() const;
 
 	/**
