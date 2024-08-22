@@ -107,6 +107,8 @@ AActor* FAGX_ObjectUtilities::GetActorByLabel(const UWorld& World, const FString
 
 AActor* FAGX_ObjectUtilities::GetActorByName(const UWorld& World, const FString Name)
 {
+	// TODO Can we use TActorIterator here?
+
 	for (ULevel* Level : World.GetLevels())
 	{
 		for (AActor* Actor : Level->Actors)
