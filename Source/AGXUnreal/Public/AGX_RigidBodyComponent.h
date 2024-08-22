@@ -297,7 +297,7 @@ public:
 	 * Creates Merge Split Properties for this Rigid Body. This only needs to be called once per
 	 * Play instance.
 	 */
-	UFUNCTION(BlueprintCallable  , Category = "AGX AMOR")
+	UFUNCTION(BlueprintCallable, Category = "AGX AMOR")
 	void CreateMergeSplitProperties();
 
 	/**
