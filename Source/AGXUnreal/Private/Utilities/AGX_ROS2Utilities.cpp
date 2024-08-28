@@ -72,10 +72,22 @@ namespace AGX_ROS2Utilities_helpers
 
 	void AppendDoubleToUint8Array(double Val, TArray<uint8>& OutData)
 	{
-		static_assert(sizeof(uint64) == sizeof(double));
 		uint64 Bits;
+		static_assert(sizeof(Bits) == sizeof(Val));
 		std::memcpy(&Bits, &Val, sizeof(Bits));
-		for (int i = 0; i < sizeof(double); i++)
+		for (int i = 0; i < sizeof(Val); i++)
+		{
+			OutData.Add(static_cast<uint8_t>(Bits & 0xFF));
+			Bits >>= 8;
+		}
+	};
+
+	void AppendFloatToUint8Array(float Val, TArray<uint8>& OutData)
+	{
+		uint32 Bits;
+		static_assert(sizeof(Bits) == sizeof(Val));
+		std::memcpy(&Bits, &Val, sizeof(Bits));
+		for (int i = 0; i < sizeof(Val); i++)
 		{
 			OutData.Add(static_cast<uint8_t>(Bits & 0xFF));
 			Bits >>= 8;
@@ -177,7 +189,8 @@ FAGX_BuiltinInterfacesTime UAGX_ROS2Utilities::ConvertTime(double TimeStamp)
 }
 
 FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertXYZ(
-	const TArray<FAGX_LidarScanPoint>& Points, const FString& FrameId)
+	const TArray<FAGX_LidarScanPoint>& Points, bool DoublePrecision, bool ROSCoordinates,
+	const FString& FrameId)
 {
 	using namespace AGX_ROS2Utilities_helpers;
 	FAGX_SensorMsgsPointCloud2 Msg;
@@ -189,25 +202,53 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertXYZ(
 
 	Msg.Header.Stamp = ConvertTime(Points[FirstValidIndex].TimeStamp);
 	Msg.Header.FrameId = FrameId;
-	Msg.Fields.Add(MakePointField("x", 0, EAGX_PointFieldType::Float64, 1));
-	Msg.Fields.Add(MakePointField("y", 8, EAGX_PointFieldType::Float64, 1));
-	Msg.Fields.Add(MakePointField("z", 16, EAGX_PointFieldType::Float64, 1));
-	Msg.Fields.Add(MakePointField("intensity", 24, EAGX_PointFieldType::Float64, 1));
+	const EAGX_PointFieldType FieldType =
+		DoublePrecision ? EAGX_PointFieldType::Float64 : EAGX_PointFieldType::Float32;
+	const int32 ElementStep = DoublePrecision ? 8 : 4;
+
+	Msg.Fields.Add(MakePointField("x", 0, FieldType, 1));
+	Msg.Fields.Add(MakePointField("y", 1 * ElementStep, FieldType, 1));
+	Msg.Fields.Add(MakePointField("z", 2 * ElementStep, FieldType, 1));
+	Msg.Fields.Add(MakePointField("intensity", 3 * ElementStep, FieldType, 1));
 
 	Msg.IsBigendian = false;
-	Msg.PointStep = 32; // Bytes per point.
+	Msg.PointStep = 4 * ElementStep; // Bytes per point.
 	Msg.IsDense = true;
 
 	Msg.Data.Reserve(Points.Num() * Msg.PointStep);
+
+	auto AppendToInt8Array = [&](double InData)
+	{
+		if (FieldType == EAGX_PointFieldType::Float32)
+		{
+			AppendFloatToUint8Array(static_cast<float>(InData), Msg.Data);
+		}
+		else if (FieldType == EAGX_PointFieldType::Float64)
+		{
+			AppendDoubleToUint8Array(InData, Msg.Data);
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Unsupported FieldType in lambda AppendToInt8Array in ConvertXYZ."));
+		}
+	};
+
 	for (int32 i = FirstValidIndex; i < Points.Num(); i++)
 	{
 		if (!Points[i].bIsValid)
 			continue;
 
-		AppendDoubleToUint8Array(Points[i].Position.X, Msg.Data);
-		AppendDoubleToUint8Array(Points[i].Position.Y, Msg.Data);
-		AppendDoubleToUint8Array(Points[i].Position.Z, Msg.Data);
-		AppendDoubleToUint8Array(Points[i].Intensity, Msg.Data);
+		AppendToInt8Array(Points[i].Position.X);
+
+		if (ROSCoordinates) // Flip Y due to left vs righ handed coordinates.
+			AppendToInt8Array(-Points[i].Position.Y);
+		else
+			AppendToInt8Array(Points[i].Position.Y);
+
+		AppendToInt8Array(Points[i].Position.Z);
+		AppendToInt8Array(static_cast<double>(Points[i].Intensity));
 	}
 
 	// If the points are unordered, height is 1 and width is the length of the point cloud.
