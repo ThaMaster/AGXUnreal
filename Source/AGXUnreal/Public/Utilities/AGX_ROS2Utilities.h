@@ -38,10 +38,16 @@ public:
 	/**
 	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2
 	 * message.
-	 * The Data member consists of position X, Y, Z and Intensity for each point written as double's
-	 * in little endian layout, i.e. 32 bytes per point.
+	 * The Data member consists of position X, Y, Z and Intensity for each point written as either
+	 * floats or doubles in little endian layout, i.e. 16 or 32 bytes per point.
 	 *
-	 * (Optional) the FrameId parameter corresponds to the frame_id of the std_msgs::Header message.
+	 * DoublePrecision - use double precision type when writing the X, Y, Z and intensity data. If
+	 * set to false, single precision (float) is used.
+	 *
+	 * ROSCoordinates - convert points to use ROS2 coordinate system instead of Unreal's coordinate
+	 * system.
+	 *
+	 * FrameId - corresponds to the frame_id of the std_msgs::Header message.
 	 * If not set, it will be an empty string.
 	 *
 	 * Note that all invalid points, such as points representing scan misses, are ignored.
@@ -54,7 +60,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX ROS2")
 	static FAGX_SensorMsgsPointCloud2 ConvertXYZ(
-		const TArray<FAGX_LidarScanPoint>& Points, const FString& FrameId = "");
+		const TArray<FAGX_LidarScanPoint>& Points, bool DoublePrecision = true,
+		bool ROSCoordinates = false, const FString& FrameId = "");
 
 	/**
 	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2
