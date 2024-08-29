@@ -52,12 +52,12 @@ EAGX_KeepContactPolicy UAGX_ContactEventListenerComponent::ContactCallback(
 {
 	// Called during Step Forward by the AGX Dynamics Contact Event Listener. Forward to the
 	// Blueprint function and the delegate
-	FAGX_ShapeContact Contact(ContactBarrier);
-	EAGX_KeepContactPolicy Policy = Impact(TimeStamp, Contact);
+	FAGX_ShapeContact ContactUnreal(ContactBarrier);
+	EAGX_KeepContactPolicy Policy = Contact(TimeStamp, ContactUnreal);
 	if (Policy != EAGX_KeepContactPolicy::RemoveContactImmediately)
 	{
 		FAGX_KeepContactPolicyHandle PolicyHandle {&Policy};
-		OnContact.Broadcast(TimeStamp, Contact, PolicyHandle);
+		OnContact.Broadcast(TimeStamp, ContactUnreal, PolicyHandle);
 	}
 	return Policy;
 }
