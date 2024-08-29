@@ -60,8 +60,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX ROS2")
 	static FAGX_SensorMsgsPointCloud2 ConvertXYZ(
-		const TArray<FAGX_LidarScanPoint>& Points, bool DoublePrecision = true,
-		bool ROSCoordinates = false, const FString& FrameId = "");
+		const TArray<FAGX_LidarScanPoint>& Points, bool DoublePrecision = false,
+		bool ROSCoordinates = true, const FString& FrameId = "");
 
 	/**
 	 * Takes an array of Lidar Scan Points and converts it into a ROS2 sensor_msgs::PointCloud2

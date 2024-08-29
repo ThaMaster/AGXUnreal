@@ -235,19 +235,24 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertXYZ(
 		}
 	};
 
+	// Centimeter to meter.
+	static constexpr double CtM = 0.01;
+
 	for (int32 i = FirstValidIndex; i < Points.Num(); i++)
 	{
 		if (!Points[i].bIsValid)
 			continue;
 
-		AppendToInt8Array(Points[i].Position.X);
+		FVector Pos = Points[i].Position;
+		if (ROSCoordinates)
+		{
+			Pos = CtM * Pos;
+			Pos.Y = -Pos.Y;// Flip Y due to left vs righ handed coordinates.
+		}
 
-		if (ROSCoordinates) // Flip Y due to left vs righ handed coordinates.
-			AppendToInt8Array(-Points[i].Position.Y);
-		else
-			AppendToInt8Array(Points[i].Position.Y);
-
-		AppendToInt8Array(Points[i].Position.Z);
+		AppendToInt8Array(Pos.X);
+		AppendToInt8Array(Pos.Y);
+		AppendToInt8Array(Pos.Z);
 		AppendToInt8Array(static_cast<double>(Points[i].Intensity));
 	}
 
