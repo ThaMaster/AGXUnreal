@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Sensors/SensorEnvironmentBarrier.h"
 #include "Sensors/AGX_LidarSensorReference.h"
-#include "Sensors/AGX_MeshEntityData.h"
+#include "Sensors/AGX_ShapeInstanceData.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -229,10 +229,10 @@ private:
 private:
 	// Todo: weak object ptr instead of raw ptrs!
 	TMap<TWeakObjectPtr<UAGX_LidarSensorComponent>, TObjectPtr<USphereComponent>> TrackedLidars;
-	TMap<TWeakObjectPtr<UStaticMeshComponent>, FAGX_MeshEntityData> TrackedMeshes;
-	TMap<TWeakObjectPtr<UInstancedStaticMeshComponent>, FAGX_InstancedMeshEntityData>
+	TMap<TWeakObjectPtr<UStaticMeshComponent>, FAGX_RtShapeInstanceData> TrackedMeshes;
+	TMap<TWeakObjectPtr<UInstancedStaticMeshComponent>, FAGX_RtInstancedShapeInstanceData>
 		TrackedInstancedMeshes;
-	TMap<TWeakObjectPtr<UAGX_SimpleMeshComponent>, FAGX_MeshEntityData> TrackedAGXMeshes;
+	TMap<TWeakObjectPtr<UAGX_SimpleMeshComponent>, FAGX_RtShapeInstanceData> TrackedAGXMeshes;
 
 	FSensorEnvironmentBarrier NativeBarrier;
 	FDelegateHandle PostStepForwardHandle;

@@ -75,8 +75,8 @@ bool FSensorEnvironmentBarrier::Add(FTerrainBarrier& Terrain, float Reflectivity
 	check(Terrain.HasNative());
 	agxTerrain::TerrainRef TerrainNative = Terrain.GetNative()->Native;
 	const bool Result = NativeRef->Native->add(TerrainNative);
-	agxSensor::RtSurfaceMaterial::getOrCreate(TerrainNative.get())
-		.setReflectivity(Reflectivity);
+	/*agxSensor::RtSurfaceMaterial::getOrCreate(TerrainNative.get())
+		.setReflectivity(Reflectivity);*/ // TODO!!!
 	return Result;
 }
 

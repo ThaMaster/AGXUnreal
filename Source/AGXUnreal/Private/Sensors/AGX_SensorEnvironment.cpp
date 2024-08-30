@@ -16,7 +16,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 
-#include  <algorithm>
+#include <algorithm>
 
 namespace AGX_SensorEnvironment_helpers
 {
@@ -145,10 +145,10 @@ namespace AGX_SensorEnvironment_helpers
 			}
 
 			const FTransform& CompTransform = It->Key->GetComponentTransform();
-			if (CompTransform.Equals(It->Value.EntityData.Transform))
+			if (CompTransform.Equals(It->Value.InstanceData.Transform))
 				continue;
 
-			It->Value.EntityData.SetTransform(CompTransform);
+			It->Value.InstanceData.SetTransform(CompTransform);
 		}
 	}
 }
@@ -290,11 +290,11 @@ bool AAGX_SensorEnvironment::AddMesh(
 	if (TrackedMeshes.Contains(Mesh))
 		return false;
 
-	FAGX_MeshEntityData& MeshEntity = TrackedMeshes.Add(Mesh, FAGX_MeshEntityData());
-	MeshEntity.Mesh.AllocateNative(Vertices, Indices);
-	MeshEntity.EntityData.Entity.AllocateNative(
-		MeshEntity.Mesh, GetReflectivityOrDefault(Mesh, DefaultReflectivity));
-	MeshEntity.EntityData.SetTransform(Mesh->GetComponentTransform());
+	FAGX_RtShapeInstanceData& ShapeInstance = TrackedMeshes.Add(Mesh, FAGX_RtShapeInstanceData());
+	ShapeInstance.Shape.AllocateNative(Vertices, Indices);
+	ShapeInstance.InstanceData.Instance.AllocateNative(
+		ShapeInstance.Shape, NativeBarrier, GetReflectivityOrDefault(Mesh, DefaultReflectivity));
+	ShapeInstance.InstanceData.SetTransform(Mesh->GetComponentTransform());
 	return true;
 }
 
@@ -314,11 +314,12 @@ bool AAGX_SensorEnvironment::AddMesh(
 	if (TrackedAGXMeshes.Contains(Mesh))
 		return false;
 
-	FAGX_MeshEntityData& MeshEntity = TrackedAGXMeshes.Add(Mesh, FAGX_MeshEntityData());
-	MeshEntity.Mesh.AllocateNative(Vertices, Indices);
-	MeshEntity.EntityData.Entity.AllocateNative(
-		MeshEntity.Mesh, GetReflectivityOrDefault(Mesh, DefaultReflectivity));
-	MeshEntity.EntityData.SetTransform(Mesh->GetComponentTransform());
+	FAGX_RtShapeInstanceData& ShapeInstance =
+		TrackedAGXMeshes.Add(Mesh, FAGX_RtShapeInstanceData());
+	ShapeInstance.Shape.AllocateNative(Vertices, Indices);
+	ShapeInstance.InstanceData.Instance.AllocateNative(
+		ShapeInstance.Shape, NativeBarrier, GetReflectivityOrDefault(Mesh, DefaultReflectivity));
+	ShapeInstance.InstanceData.SetTransform(Mesh->GetComponentTransform());
 	return true;
 }
 
@@ -333,9 +334,10 @@ bool AAGX_SensorEnvironment::AddInstancedMesh(
 	if (TrackedInstancedMeshes.Contains(Mesh))
 		return false;
 
-	auto& InstancedMeshEntity = TrackedInstancedMeshes.Add(Mesh, FAGX_InstancedMeshEntityData());
-	InstancedMeshEntity.Mesh.AllocateNative(Vertices, Indices);
-	AGX_CHECK(InstancedMeshEntity.Mesh.HasNative());
+	auto& InstancedShapeInstance =
+		TrackedInstancedMeshes.Add(Mesh, FAGX_RtInstancedShapeInstanceData());
+	InstancedShapeInstance.Shape.AllocateNative(Vertices, Indices);
+	AGX_CHECK(InstancedShapeInstance.Shape.HasNative());
 	return true;
 }
 
@@ -347,23 +349,25 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance_Internal(
 	AGX_CHECK(Mesh != nullptr);
 	AGX_CHECK(Mesh->IsValidInstance(Index));
 
-	FAGX_InstancedMeshEntityData* InstancedMeshEntity = TrackedInstancedMeshes.Find(Mesh);
+	FAGX_RtInstancedShapeInstanceData* InstancedShapeInstance = TrackedInstancedMeshes.Find(Mesh);
 
 	// This function should only be called for known Instanced Static Mesh Components.
-	AGX_CHECK(InstancedMeshEntity != nullptr);
-	if (InstancedMeshEntity == nullptr)
+	AGX_CHECK(InstancedShapeInstance != nullptr);
+	if (InstancedShapeInstance == nullptr)
 		return false;
 
-	if (InstancedMeshEntity->EntitiesData.Contains(Index))
+	if (InstancedShapeInstance->InstancesData.Contains(Index))
 		return false; // We already track this instance.
 
-	FAGX_EntityData& EntityData = InstancedMeshEntity->EntitiesData.Add(Index, FAGX_EntityData());
-	EntityData.Entity.AllocateNative(
-		InstancedMeshEntity->Mesh, GetReflectivityOrDefault(Mesh, DefaultReflectivity));
-	AGX_CHECK(EntityData.Entity.HasNative());
+	FAGX_RtInstanceData& InstanceData =
+		InstancedShapeInstance->InstancesData.Add(Index, FAGX_RtInstanceData());
+	InstanceData.Instance.AllocateNative(
+		InstancedShapeInstance->Shape, NativeBarrier,
+		GetReflectivityOrDefault(Mesh, DefaultReflectivity));
+	AGX_CHECK(InstanceData.Instance.HasNative());
 	FTransform InstanceTrans;
 	Mesh->GetInstanceTransform(Index, InstanceTrans, true);
-	EntityData.SetTransform(InstanceTrans);
+	InstanceData.SetTransform(InstanceTrans);
 	return true;
 }
 
@@ -421,10 +425,10 @@ bool AAGX_SensorEnvironment::RemoveInstancedMeshInstance(
 	if (InstancedMeshData == nullptr)
 		return false;
 
-	if (!InstancedMeshData->EntitiesData.Contains(Index))
+	if (!InstancedMeshData->InstancesData.Contains(Index))
 		return false;
 
-	InstancedMeshData->EntitiesData.Remove(Index);
+	InstancedMeshData->InstancesData.Remove(Index);
 	return true;
 }
 
@@ -641,7 +645,7 @@ void AAGX_SensorEnvironment::UpdateTrackedInstancedMeshes()
 		}
 
 		// Instance.
-		for (auto Ite = It->Value.EntitiesData.CreateIterator(); Ite; ++Ite)
+		for (auto Ite = It->Value.InstancesData.CreateIterator(); Ite; ++Ite)
 		{
 			if (!It->Key->IsValidInstance(Ite->Key))
 			{
@@ -709,11 +713,11 @@ void AAGX_SensorEnvironment::OnLidarBeginOverlapComponent(
 
 void AAGX_SensorEnvironment::OnLidarBeginOverlapStaticMeshComponent(UStaticMeshComponent& Mesh)
 {
-	FAGX_MeshEntityData* MeshEntityData = TrackedMeshes.Find(&Mesh);
-	if (MeshEntityData == nullptr)
+	FAGX_RtShapeInstanceData* ShapeInstanceData = TrackedMeshes.Find(&Mesh);
+	if (ShapeInstanceData == nullptr)
 		AddMesh(&Mesh, DefaultLODIndex);
 	else
-		MeshEntityData->EntityData.RefCount++;
+		ShapeInstanceData->InstanceData.RefCount++;
 }
 
 void AAGX_SensorEnvironment::OnLidarBeginOverlapInstancedStaticMeshComponent(
@@ -726,20 +730,20 @@ void AAGX_SensorEnvironment::OnLidarBeginOverlapInstancedStaticMeshComponent(
 		return;
 	}
 
-	auto InstancedEntityData = InstancedMeshData->EntitiesData.Find(Index);
-	if (InstancedEntityData == nullptr)
+	auto InstanceData = InstancedMeshData->InstancesData.Find(Index);
+	if (InstanceData == nullptr)
 		AddInstancedMeshInstance(&Mesh, Index, DefaultLODIndex);
 	else
-		InstancedEntityData->RefCount++;
+		InstanceData->RefCount++;
 }
 
 void AAGX_SensorEnvironment::OnLidarBeginOverlapAGXMeshComponent(UAGX_SimpleMeshComponent& Mesh)
 {
-	FAGX_MeshEntityData* MeshEntityData = TrackedAGXMeshes.Find(&Mesh);
-	if (MeshEntityData == nullptr)
+	FAGX_RtShapeInstanceData* ShapeInstanceData = TrackedAGXMeshes.Find(&Mesh);
+	if (ShapeInstanceData == nullptr)
 		AddAGXMesh(&Mesh);
 	else
-		MeshEntityData->EntityData.RefCount++;
+		ShapeInstanceData->InstanceData.RefCount++;
 }
 
 void AAGX_SensorEnvironment::OnLidarEndOverlapComponent(
@@ -770,13 +774,13 @@ void AAGX_SensorEnvironment::OnLidarEndOverlapComponent(
 
 void AAGX_SensorEnvironment::OnLidarEndOverlapStaticMeshComponent(UStaticMeshComponent& Mesh)
 {
-	FAGX_MeshEntityData* MeshEntityData = TrackedMeshes.Find(&Mesh);
-	if (MeshEntityData == nullptr)
+	FAGX_RtShapeInstanceData* ShapeInstanceData = TrackedMeshes.Find(&Mesh);
+	if (ShapeInstanceData == nullptr)
 		return;
 
-	AGX_CHECK(MeshEntityData->EntityData.RefCount > 0);
-	MeshEntityData->EntityData.RefCount--;
-	if (MeshEntityData->EntityData.RefCount == 0)
+	AGX_CHECK(ShapeInstanceData->InstanceData.RefCount > 0);
+	ShapeInstanceData->InstanceData.RefCount--;
+	if (ShapeInstanceData->InstanceData.RefCount == 0)
 		TrackedMeshes.Remove(&Mesh);
 }
 
@@ -786,33 +790,33 @@ void AAGX_SensorEnvironment::OnLidarEndOverlapInstancedStaticMeshComponent(
 	if (!Mesh.IsValidInstance(Index))
 		return;
 
-	auto InstancedMesh = TrackedInstancedMeshes.Find(&Mesh);
-	if (InstancedMesh == nullptr)
+	auto InstancedShape = TrackedInstancedMeshes.Find(&Mesh);
+	if (InstancedShape == nullptr)
 		return;
 
-	auto InstancedEntityData = InstancedMesh->EntitiesData.Find(Index);
-	if (InstancedEntityData == nullptr)
+	auto InstanceData = InstancedShape->InstancesData.Find(Index);
+	if (InstanceData == nullptr)
 		return;
 
-	AGX_CHECK(InstancedEntityData->RefCount > 0);
-	InstancedEntityData->RefCount--;
-	if (InstancedEntityData->RefCount == 0)
-		InstancedMesh->EntitiesData.Remove(Index);
+	AGX_CHECK(InstanceData->RefCount > 0);
+	InstanceData->RefCount--;
+	if (InstanceData->RefCount == 0)
+		InstancedShape->InstancesData.Remove(Index);
 
 	// Finally, we should remove the Instanced Static Mesh Component completely if no instances are
 	// tracked.
-	if (InstancedMesh->EntitiesData.Num() == 0)
+	if (InstancedShape->InstancesData.Num() == 0)
 		RemoveInstancedMesh(&Mesh);
 }
 
 void AAGX_SensorEnvironment::OnLidarEndOverlapAGXMeshComponent(UAGX_SimpleMeshComponent& Mesh)
 {
-	FAGX_MeshEntityData* MeshEntityData = TrackedAGXMeshes.Find(&Mesh);
-	if (MeshEntityData == nullptr)
+	FAGX_RtShapeInstanceData* ShapeInstanceData = TrackedAGXMeshes.Find(&Mesh);
+	if (ShapeInstanceData == nullptr)
 		return;
 
-	AGX_CHECK(MeshEntityData->EntityData.RefCount > 0);
-	MeshEntityData->EntityData.RefCount--;
-	if (MeshEntityData->EntityData.RefCount == 0)
+	AGX_CHECK(ShapeInstanceData->InstanceData.RefCount > 0);
+	ShapeInstanceData->InstanceData.RefCount--;
+	if (ShapeInstanceData->InstanceData.RefCount == 0)
 		TrackedAGXMeshes.Remove(&Mesh);
 }
