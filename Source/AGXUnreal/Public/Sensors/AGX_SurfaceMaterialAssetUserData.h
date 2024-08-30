@@ -7,13 +7,12 @@
 
 #include "AGX_SurfaceMaterialAssetUserData.generated.h"
 
-UCLASS(abstract)
-class AGXUNREAL_API UAGX_SurfaceMaterialAssetUserData : public UObject,
-														public IInterface_AssetUserData
+UCLASS(BlueprintType, ClassGroup = "AGX", Category = "AGX")
+class AGXUNREAL_API UAGX_SurfaceMaterialAssetUserData : public UAssetUserData
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY()
-	int32 TestInt {1};
+	float Reflectivity{0.7};
 };
