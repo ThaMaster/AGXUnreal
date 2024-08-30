@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_SimulationEnums.h"
 #include "Contacts/AGX_ShapeContact.h"
+#include "Contacts/AGX_ContactEnums.h"
 #include "Contacts/ShapeContactBarrier.h"
 #include "SimulationBarrier.h"
 
@@ -37,6 +38,17 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPreStepForward, double, Time);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPostStepForward, double, Time);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPreStepForwardInternal, double /*Time*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostStepForwardInternal, double /*Time*/);
+
+// The Keep Contact Policy parameter emulates a return value.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
+	FOnImpact, double, Time, const FAGX_ShapeContact&, ShapeContact,
+	const FAGX_KeepContactPolicyHandle&, KeepContactPolicy);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
+	FOnContact, double, Time, const FAGX_ShapeContact&, ShapeContact,
+	const FAGX_KeepContactPolicyHandle&, KeepContactPolicy);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
+	FOnSeparation, double, TimeStamp, UAGX_ShapeComponent*, FirstShape, UAGX_ShapeComponent*,
+	SecondShape);
 
 /**
  * Manages an AGX simulation instance.
@@ -405,6 +417,38 @@ public: // Member functions.
 	UPROPERTY(BlueprintAssignable, Category = "Simulation")
 	FOnPostStepForward PostStepForward;
 
+	/**
+	 * Set to true to enable the contact event listener that triggers the On Impact and On Contact
+	 * events in AGX Simulation. Enabling this is not necessary if you only use Contact Event
+	 * Listener Components.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Simulation")
+	bool bEnableGlobalContactEventListener {true};
+
+	/**
+	 * Event that is triggered by AGX Dynamics during Step Forward after collision detection but
+	 * before solve. An impact is any overlap that is new this time step, i.e. the two Shapes were
+	 * not overlapping in the previous time step.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Simulation")
+	FOnImpact OnImpact;
+
+	/**
+	 * Event that is triggered by AGX Dynamics during Step Forward after collision detection but
+	 * before solve. A contact is any overlap that is not new this time step, i.e. the two Shapes
+	 * were overlapping in the previous time step.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Simulation")
+	FOnContact OnContact;
+
+	/**
+	 * Event that is triggered by AGX Dynamics during Step Forward after collision detection but
+	 * before solve. A separation is when two Shapes are no longer overlapping, i.e. the two Shapes
+	 * were overlapping in the previous time step but not this time step.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Simulation")
+	FOnSeparation OnSeparation;
+
 	void Add(UAGX_ConstraintComponent& Constraint);
 
 	/**
@@ -518,6 +562,37 @@ private:
 
 	void PreStep();
 	void PostStep();
+
+	/**
+	 * Called by AGX Dynamics when two Shapes first touch, if Enable Global Contact Event Listener
+	 * is true. Triggers the On Impact delegate.
+	 *
+	 * @param TimeStamp AGX Dynamics simulation time stamp.
+	 * @param Contact Contact information between two Shapes.
+	 * @return What to do with the contact.
+	 */
+	EAGX_KeepContactPolicy ImpactCallback(double TimeStamp, FShapeContactBarrier& Contact);
+
+	/**
+	 * Called by AGX Dynamics on time steps after two Shapes first touch, if still in contact and if
+	 * Enable Global Contact Event Listener is true. Triggers the On Contact delegate.
+	 *
+	 * @param TimeStamp AGX Dynamics simulation time stamp.
+	 * @param Contact Contact information between two Shapes.
+	 * @return What to do with the contact.
+	 */
+	EAGX_KeepContactPolicy ContactCallback(double TimeStamp, FShapeContactBarrier& Contact);
+
+	/**
+	 * Called by AGX Dynamics when two Shapes no longer overlap, if Enable Global Contact Event
+	 * Listener is true. Triggers the On Separation delegate.
+	 *
+	 * @param TimeStamp AGX Dynamics simulation time stamp.
+	 * @param FirstShape The Shape no longer overlapping with Second Shape.
+	 * @param SecondShape The Shape no longer overlapping with First Shape.
+	 */
+	void SeparationCallback(
+		double TimeStamp, FAnyShapeBarrier& FirstShape, FAnyShapeBarrier& SecondShape);
 
 	void EnsureStepperCreated();
 	void EnsureValidLicense();

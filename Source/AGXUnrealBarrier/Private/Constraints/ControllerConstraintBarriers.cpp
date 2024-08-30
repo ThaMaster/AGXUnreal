@@ -126,6 +126,10 @@ namespace
 	}
 }
 
+//
+// Electric Motor Controller starts here.
+//
+
 namespace
 {
 	agx::ElectricMotorController* GetController(FElectricMotorControllerBarrier& Barrier)
@@ -184,6 +188,10 @@ double FElectricMotorControllerBarrier::GetTorqueConstant() const
 	return GetController(*this)->getTorqueConstant();
 }
 
+//
+// Friction Controller starts here.
+//
+
 namespace
 {
 	agx::FrictionController* GetController(FFrictionControllerBarrier& Barrier)
@@ -228,6 +236,10 @@ bool FFrictionControllerBarrier::GetEnableNonLinearDirectSolveUpdate() const
 	check(HasNative());
 	return GetController(*this)->getEnableNonLinearDirectSolveUpdate();
 }
+
+//
+// Lock Controller starts here.
+//
 
 namespace
 {
@@ -279,6 +291,10 @@ double FLockControllerBarrier::GetPositionRotational() const
 	return Degrees;
 }
 
+//
+// Range Controller starts here.
+//
+
 namespace
 {
 	agx::RangeController* GetController(FRangeControllerBarrier& Barrier)
@@ -329,6 +345,10 @@ FAGX_RealInterval FRangeControllerBarrier::GetRangeRotational() const
 	return RangeUnreal;
 }
 
+//
+// Screw Controller starts here.
+//
+
 namespace
 {
 	agx::ScrewController* GetController(FScrewControllerBarrier& Barrier)
@@ -362,6 +382,10 @@ double FScrewControllerBarrier::GetLead() const
 	agx::Real LeadAGX = GetController(*this)->getLead();
 	return ConvertDistanceToUnreal<double>(LeadAGX);
 }
+
+//
+// Target Speed  Controller starts here.
+//
 
 namespace
 {

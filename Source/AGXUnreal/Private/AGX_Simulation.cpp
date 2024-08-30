@@ -13,10 +13,12 @@
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "AMOR/AGX_WireMergeSplitThresholds.h"
 #include "Constraints/AGX_ConstraintComponent.h"
+#include "Contacts/ContactListenerBarrier.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
 #include "Shapes/AGX_ShapeComponent.h"
+#include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/ShapeBarrier.h"
 #include "Terrain/AGX_ShovelProperties.h"
 #include "Terrain/AGX_Terrain.h"
@@ -639,19 +641,26 @@ void UAGX_Simulation::Deinitialize()
 	// Explicitly close any asset editors that may be open.
 	// This fixes a crash where if any asset instances have an editor opened for them,
 	// the Unreal Editor would crash on Stop.
+	//
+	// WITH_EDITOR being true does not guarantee that GEditor will be available. It is not, for
+	// example, when running a Play In Editor session with Standalone Game since that launches a
+	// new process for the game without the editor.
 #if WITH_EDITOR
-	CloseInstancedAssetEditors<UAGX_ContactMaterial>();
-	CloseInstancedAssetEditors<UAGX_TerrainMaterial>();
-	CloseInstancedAssetEditors<UAGX_ShapeMaterial>();
+	if (GEditor != nullptr)
+	{
+		CloseInstancedAssetEditors<UAGX_ContactMaterial>();
+		CloseInstancedAssetEditors<UAGX_TerrainMaterial>();
+		CloseInstancedAssetEditors<UAGX_ShapeMaterial>();
 
-	CloseInstancedAssetEditors<UAGX_ConstraintMergeSplitThresholds>();
-	CloseInstancedAssetEditors<UAGX_ShapeContactMergeSplitThresholds>();
-	CloseInstancedAssetEditors<UAGX_WireMergeSplitThresholds>();
+		CloseInstancedAssetEditors<UAGX_ConstraintMergeSplitThresholds>();
+		CloseInstancedAssetEditors<UAGX_ShapeContactMergeSplitThresholds>();
+		CloseInstancedAssetEditors<UAGX_WireMergeSplitThresholds>();
 
-	CloseInstancedAssetEditors<UAGX_TrackInternalMergeProperties>();
-	CloseInstancedAssetEditors<UAGX_TrackProperties>();
+		CloseInstancedAssetEditors<UAGX_TrackInternalMergeProperties>();
+		CloseInstancedAssetEditors<UAGX_TrackProperties>();
 
-	CloseInstancedAssetEditors<UAGX_ShovelProperties>();
+		CloseInstancedAssetEditors<UAGX_ShovelProperties>();
+	}
 #endif
 
 	Super::Deinitialize();
@@ -783,6 +792,18 @@ void UAGX_Simulation::CreateNative()
 	if (bRemoteDebugging)
 	{
 		NativeBarrier.EnableRemoteDebugging(RemoteDebuggingPort);
+	}
+
+	if (bEnableGlobalContactEventListener)
+	{
+		CreateContactEventListener(
+			NativeBarrier,
+			[this](double TimeStamp, FShapeContactBarrier& Contact)
+			{ return ImpactCallback(TimeStamp, Contact); },
+			[this](double TimeStamp, FShapeContactBarrier& Contact)
+			{ return ContactCallback(TimeStamp, Contact); },
+			[this](double TimeStamp, FAnyShapeBarrier& FirstShape, FAnyShapeBarrier& SecondShape)
+			{ return SeparationCallback(TimeStamp, FirstShape, SecondShape); });
 	}
 }
 
@@ -1374,4 +1395,68 @@ void UAGX_Simulation::PostStep()
 	const auto SimTime = NativeBarrier.GetTimeStamp();
 	PostStepForwardInternal.Broadcast(SimTime);
 	PostStepForward.Broadcast(SimTime);
+}
+
+EAGX_KeepContactPolicy UAGX_Simulation::ImpactCallback(
+	double TimeStamp, FShapeContactBarrier& Contact)
+{
+	EAGX_KeepContactPolicy Policy {EAGX_KeepContactPolicy::KeepContact};
+	FAGX_KeepContactPolicyHandle PolicyHandle {&Policy};
+	OnImpact.Broadcast(TimeStamp, FAGX_ShapeContact(Contact), PolicyHandle);
+	return Policy;
+}
+
+EAGX_KeepContactPolicy UAGX_Simulation::ContactCallback(
+	double TimeStamp, FShapeContactBarrier& Contact)
+{
+	EAGX_KeepContactPolicy Policy {EAGX_KeepContactPolicy::KeepContact};
+	FAGX_KeepContactPolicyHandle PolicyHandle {&Policy};
+	OnContact.Broadcast(TimeStamp, FAGX_ShapeContact(Contact), PolicyHandle);
+	return Policy;
+}
+
+namespace AGX_Simulation_helpers
+{
+	bool IsMatch(UAGX_ShapeComponent* Shape, const FGuid& Guid)
+	{
+		return Shape->GetNative()->GetGeometryGuid() == Guid;
+	}
+
+	template <typename UComponent>
+	UComponent* FindComponentByGuid(const FGuid& Guid, UWorld& World)
+	{
+		return FAGX_ObjectUtilities::FindComponentByPredicate<UComponent>(
+			World, [&Guid](UComponent* Component) { return IsMatch(Component, Guid); });
+	}
+}
+
+void UAGX_Simulation::SeparationCallback(
+	double TimeStamp, FAnyShapeBarrier& FirstShapeBarrier, FAnyShapeBarrier& SecondShapeBarrier)
+{
+	using namespace AGX_Simulation_helpers;
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Contact Event Listener AGX Simulation cannot find Shape Components because it "
+				 "does "
+				 "not have a world."));
+		return;
+	}
+	UAGX_ShapeComponent* FirstShape =
+		FindComponentByGuid<UAGX_ShapeComponent>(FirstShapeBarrier.GetGeometryGuid(), *World);
+	UAGX_ShapeComponent* SecondShape =
+		FindComponentByGuid<UAGX_ShapeComponent>(SecondShapeBarrier.GetGeometryGuid(), *World);
+
+	// Nullptr First Shape or Second Shape means that AGX Dynamics reported a separation for a
+	// Geometry that exists in the simulation but doesn't have an AGX Dynamics for Unreal
+	// representation. This could be a segment of a wire or something created by custom game logic
+	// implemented in C++. Since there isn't a Component for such Geometries we have no choice but
+	// to pass None / nullptr to the delegate. A user who need to be able to process such
+	// Geometrires will have to implement its own Contact Event Listener, either by inheriting
+	// from agxSDK::ContactEventListener, or by using the callback-based Create Contact Event
+	// Listener function in the Barrier module.
+
+	OnSeparation.Broadcast(TimeStamp, FirstShape, SecondShape);
 }

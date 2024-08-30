@@ -7,7 +7,9 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Containers/UnrealString.h"
 #include "Math/UnrealMathUtility.h"
+#include "Math/Interval.h"
 
 #include "AGX_RealInterval.generated.h"
 
@@ -38,17 +40,20 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 	}
 
 	explicit FAGX_RealInterval(const double (&MinAndMax)[2])
-		: Min(MinAndMax[0])
-		, Max(MinAndMax[1])
+		: FAGX_RealInterval(MinAndMax[0], MinAndMax[1])
 	{
-		Sort();
+	}
+
+	// Not explicit because we do want transparent transition between FAGX_RealInterval and
+	// FDoubleInterval.
+	FAGX_RealInterval(const FDoubleInterval& InInterval)
+		: FAGX_RealInterval(InInterval.Min, InInterval.Max)
+	{
 	}
 
 	explicit FAGX_RealInterval(double MinAndMax)
-		: Min(-MinAndMax)
-		, Max(MinAndMax)
+		: FAGX_RealInterval(-MinAndMax, MinAndMax)
 	{
-		Sort();
 	}
 
 	void Set(double InMin, double InMax)
@@ -56,6 +61,12 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 		Min = InMin;
 		Max = InMax;
 		Sort();
+	}
+
+	void Set(FDoubleInterval InInterval)
+	{
+		Min = InInterval.Min;
+		Max = InInterval.Max;
 	}
 
 	void SetMin(double InMin)
@@ -66,6 +77,38 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 	void SetMax(double InMax)
 	{
 		Max = InMax;
+	}
+
+	void Get(double& OutMin, double& OutMax) const
+	{
+		OutMin = Min;
+		OutMax = Max;
+	}
+
+	void Get(FDoubleInterval& OutInterval) const
+	{
+		OutInterval.Min = Min;
+		OutInterval.Max = Max;
+	}
+
+	double GetMin() const
+	{
+		return Min;
+	}
+
+	double GetMax() const
+	{
+		return Max;
+	}
+
+	FDoubleInterval ToDouble() const
+	{
+		return FDoubleInterval(Min, Max);
+	}
+
+	operator FDoubleInterval() const
+	{
+		return ToDouble();
 	}
 
 	bool IsNearlyZero(double Tolerance = SMALL_NUMBER) const
@@ -85,6 +128,22 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 			std::swap(Min, Max);
 		}
 	}
+
+	FString ToString() const
+	{
+		return FString::Printf(TEXT("(Min=%g Max=%g"), Min, Max);
+	}
+
+	bool Equals(const FAGX_RealInterval& Other, double Tolerance = UE_KINDA_SMALL_NUMBER) const
+	{
+		// Handle infinity, which the regular path fail on since infinity - infinity is NaN.
+		if (Min == Other.Min && Max == Other.Max)
+		{
+			return true;
+		}
+		return FMath::Abs(Min - Other.Min) <= Tolerance && FMath::Abs(Max - Other.Max) <= Tolerance;
+	}
+
 
 	/// Called by Unreal Engine when de-serializing an FAGX_Real but some other type was found in
 	/// the archive. FFloatInterval and FAGX_DoubleInterval are read but all other types are

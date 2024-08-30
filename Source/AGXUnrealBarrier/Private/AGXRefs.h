@@ -29,6 +29,16 @@
 #include <agxTerrain/TerrainPager.h>
 #include "EndAGXIncludes.h"
 
+struct FElementaryConstraintRef
+{
+	agx::ref_ptr<agx::ElementaryConstraint> Native;
+	FElementaryConstraintRef() = default;
+	FElementaryConstraintRef(agx::ElementaryConstraint* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
 struct FConstraintControllerRef
 {
 	agx::ref_ptr<agx::BasicControllerConstraint> Native;

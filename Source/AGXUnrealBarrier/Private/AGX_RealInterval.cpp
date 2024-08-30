@@ -6,7 +6,6 @@
 #include "Utilities/DoubleInterval.h"
 
 // Unreal Engine includes.
-#include "Logging/StructuredLog.h"
 #include "Math/Interval.h"
 #include "Misc/EngineVersionComparison.h"
 

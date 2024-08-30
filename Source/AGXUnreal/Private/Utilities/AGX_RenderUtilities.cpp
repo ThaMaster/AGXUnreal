@@ -103,9 +103,12 @@ TArray<FColor> UAGX_RenderUtilities::GetImagePixels8(UTextureRenderTarget2D* Ren
 
 	FTextureRenderTargetResource* RtResource = RenderTarget->GameThread_GetRenderTargetResource();
 	TArray<FColor> PixelData;
+	FReadSurfaceDataFlags Flags(RCM_MinMax, CubeFace_MAX);
+	Flags.SetLinearToGamma(false);
+
 
 	// ReadPixels will synchronize (wait) for the render thread to finish, making it slow.
-	RtResource->ReadPixels(PixelData);
+	RtResource->ReadPixels(PixelData, Flags);
 	return PixelData;
 }
 
@@ -117,8 +120,36 @@ TArray<FFloat16Color> UAGX_RenderUtilities::GetImagePixels16(UTextureRenderTarge
 	FTextureRenderTargetResource* RtResource = RenderTarget->GameThread_GetRenderTargetResource();
 	TArray<FFloat16Color> PixelData;
 
-	// ReadFloat16Pixels will synchronize (wait) for the render thread to finish, making it slow.
-	RtResource->ReadFloat16Pixels(PixelData);
+	// TODO: once UE5.4 is the oldest version we support, simply use the new ReadFloat16Pixels with
+	// the linear color space parameter.
+	const FIntRect Rectangle(0, 0, RenderTarget->SizeX, RenderTarget->SizeY);
+
+	// Read the render target surface data back.
+	struct FReadSurfaceContext
+	{
+		FRenderTarget* SrcRenderTarget;
+		TArray<FFloat16Color>* OutData;
+		FIntRect Rect;
+		FReadSurfaceDataFlags Flags;
+	};
+
+	auto Rt = RenderTarget->GameThread_GetRenderTargetResource();
+	FReadSurfaceContext Context = {
+		Rt, &PixelData, Rectangle, FReadSurfaceDataFlags(RCM_MinMax, CubeFace_MAX)};
+
+	Context.Flags.SetLinearToGamma(false);
+
+	ENQUEUE_RENDER_COMMAND(FAGX_ReadRtCommand16Util)
+	(
+		[Context](FRHICommandListImmediate& RHICmdList)
+		{
+			RHICmdList.ReadSurfaceFloatData(
+				Context.SrcRenderTarget->GetRenderTargetTexture(), Context.Rect, *Context.OutData,
+				Context.Flags);
+		}
+	);
+	FlushRenderingCommands();
+
 	return PixelData;
 }
 

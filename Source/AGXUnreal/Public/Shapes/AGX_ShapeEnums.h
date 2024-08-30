@@ -27,8 +27,10 @@ enum EAGX_ShapeSensorType
 	BooleanSensor
 };
 
-/** Specifies from where to get the triangle data. */
-UENUM()
+/**
+ * Specifies from where to get the triangle data.
+ */
+UENUM(BlueprintType)
 enum EAGX_StaticMeshSourceLocation
 {
 	/** Static Mesh from the first child component that is a Static Mesh Component. */

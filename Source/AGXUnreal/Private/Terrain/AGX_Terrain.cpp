@@ -8,28 +8,26 @@
 #include "AGX_InternalDelegateAccessor.h"
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
-#include "AGX_Simulation.h"
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
 #include "Shapes/HeightFieldShapeBarrier.h"
 #include "Terrain/AGX_CuttingDirectionComponent.h"
 #include "Terrain/AGX_CuttingEdgeComponent.h"
 #include "Terrain/AGX_HeightFieldBoundsComponent.h"
-#include "Terrain/AGX_ShovelProperties.h"
+#include "Terrain/AGX_ShovelComponent.h"
 #include "Terrain/AGX_TerrainSpriteComponent.h"
 #include "Terrain/AGX_TopEdgeComponent.h"
 #include "Terrain/ShovelBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Utilities/AGX_HeightFieldUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
-#include "Utilities/AGX_ObjectUtilities.h"
-#include "Utilities/AGX_StringUtilities.h"
 #include "Utilities/AGX_RenderUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "Landscape.h"
-#include "LandscapeDataAccess.h"
 #include "LandscapeComponent.h"
 #include "LandscapeStreamingProxy.h"
 #include "Misc/AssertionMacros.h"
@@ -39,12 +37,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectIterator.h"
-
-// Standard library includes.
-#include <algorithm>
-
-#include "Terrain/AGX_ShovelComponent.h"
-#include "Terrain/AGX_ShovelProperties.h"
+#include "WorldPartition/WorldPartition.h"
 
 #ifdef LOCTEXT_NAMESPACE
 #error "LOCTEXT_NAMESPACE leakage."
@@ -174,7 +167,7 @@ bool AAGX_Terrain::SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial)
 	return true;
 }
 
-void AAGX_Terrain::AddCollisionGroup(const FName& GroupName)
+void AAGX_Terrain::AddCollisionGroup(FName GroupName)
 {
 	if (GroupName.IsNone())
 	{
@@ -189,7 +182,7 @@ void AAGX_Terrain::AddCollisionGroup(const FName& GroupName)
 		NativeBarrier.AddCollisionGroup(GroupName);
 }
 
-void AAGX_Terrain::RemoveCollisionGroupIfExists(const FName& GroupName)
+void AAGX_Terrain::RemoveCollisionGroupIfExists(FName GroupName)
 {
 	if (GroupName.IsNone())
 		return;
@@ -915,6 +908,82 @@ namespace
 
 }
 
+namespace AGX_Terrain_helpers
+{
+// Since ALandscapeStreamingProxy::GetIsSpatiallyLoaded and GetStreamingBounds is guarded by
+// WITH_EDITOR, WarnIfStreamingLandscape must be as well.
+#if WITH_EDITOR
+	void WarnIfStreamingLandscape(const ALandscape& Landscape, AAGX_Terrain& Terrain)
+	{
+		const UWorld* const World = Landscape.GetWorld();
+		if (World == nullptr)
+			return;
+		UWorldPartition* Partition = World->GetWorldPartition();
+		if (Partition == nullptr)
+			return;
+		if (!Partition->IsStreamingEnabled())
+			return;
+		ULandscapeInfo* Info = Landscape.GetLandscapeInfo();
+		if (Info == nullptr)
+			return;
+		const TArray<TWeakObjectPtr<ALandscapeStreamingProxy>>& Proxies = Info->StreamingProxies;
+		if (Proxies.IsEmpty())
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("AGX Terrain '%s' detected that the source Landscape '%s' doesn't have any "
+					 "Streaming Proxies in a level with World Partition enabled and World Settings "
+					 "> Enable Streaming ticked. This is a sign that AGX Terrain may not be able "
+					 "to initialize itself. If initialization fails either disable World Partition "
+					 "Streaming in the World Settings panel or disable Is Spatially Loaded on the "
+					 "Landscape Streaming Proxies overlapping the AGX Terrain bounds"),
+				*Terrain.GetActorLabel(), *Landscape.GetActorLabel());
+			return;
+		}
+
+		// If the Terrain has infinite bounds then all Landscape Streaming Proxies must have Is
+		// Spatially Loaded unticked. If the Terrain is bounded then overlapping proxies must have
+		// Is Spatially Loaded unticked.
+		const bool bBounded = !Terrain.TerrainBounds->bInfiniteBounds;
+
+		// If not infinite, then any Landscape Streaming Proxy that overlaps the Terrain Bounds
+		// must have Is Spatially Loaded unticked.
+		const FBox TerrainBounds {
+			Terrain.GetActorLocation() - Terrain.TerrainBounds->HalfExtent,
+			Terrain.GetActorLocation() + Terrain.TerrainBounds->HalfExtent};
+
+		// Determine if there are any Streaming Proxies with Is Spatially Loaded enabled overlapping
+		// the Terrain bounds. Log a note to disable Is Spatially Loaded for each found.
+		bool bFoundIntersectingStreamingProxy {false};
+		for (const auto& Proxy : Info->StreamingProxies)
+		{
+			if (!Proxy->GetIsSpatiallyLoaded())
+				continue;
+			if (bBounded && !Proxy->GetStreamingBounds().Intersect(TerrainBounds))
+				continue;
+
+			bFoundIntersectingStreamingProxy = true;
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Found Proxy '%s' for which Is Spatially Loaded should be disabled."),
+				*Proxy->GetActorLabel());
+		}
+		if (!bFoundIntersectingStreamingProxy)
+			return;
+
+		const FString Message = FString::Printf(
+			TEXT("AGX Terrain '%s' detected that the source Landscape '%s' uses World Partition "
+				 "streaming. This is only supported by AGX Terrain if the Landscape Streaming "
+				 "Proxies that overlap the Terrain bounds are loaded on Begin Play. Either untick "
+				 "Enable Streaming in the World Settings or untick Is Spatially Loaded on all "
+				 "Landscape Streaming Proxies near and around the Terrain. The Output Log contains "
+				 "a list of proxies that need to have Is Spatially Loaded disabled."),
+			*GetLabelSafe(&Terrain), *Landscape.GetActorLabel());
+		FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
+	}
+#endif
+}
+
 void AAGX_Terrain::InitializeNative()
 {
 	if (SourceLandscape == nullptr)
@@ -929,9 +998,14 @@ void AAGX_Terrain::InitializeNative()
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("BeginPlay called on a Terrain that has already been initialized."));
+			TEXT("Initialize Native called on AGX Terrain '%s' that has already been initialized."),
+			*GetLabelSafe(this));
 		return;
 	}
+
+#if WITH_EDITOR
+	AGX_Terrain_helpers::WarnIfStreamingLandscape(*SourceLandscape, *this);
+#endif
 
 	HeightFetcher.SetTerrain(this);
 
@@ -980,7 +1054,8 @@ bool AAGX_Terrain::CreateNative()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Unable to create Terrain native for '%s'; the given Terrain Bounds was invalid."),
+			TEXT("Unable to create Terrain native for '%s'; the given Terrain Bounds was "
+				 "invalid."),
 			*GetName());
 		return false;
 	}
@@ -992,9 +1067,9 @@ bool AAGX_Terrain::CreateNative()
 		if (bEnableTerrainPaging)
 		{
 			// For the TerrainPaging case, this Terrain is the "Template Terrain" used by the
-			// Terrain Pager. In this case, we can set small "dummy" values for resolution, size and
-			// heights which will save memory usage.
-			// See AGX Dynamics example 'basic_paging_example.agxPy' for reference.
+			// Terrain Pager. In this case, we can set small "dummy" values for resolution, size
+			// and heights which will save memory usage. See AGX Dynamics example
+			// 'basic_paging_example.agxPy' for reference.
 			FHeightFieldShapeBarrier HeightField;
 			HeightField.AllocateNative(4, 4, 1.0, 1.0);
 			return HeightField;
@@ -1273,11 +1348,12 @@ void AAGX_Terrain::CreateNativeShovels()
 		UAGX_ShovelComponent* ShovelComponent = ShovelRef.Shovel.GetShovelComponent();
 		if (ShovelComponent == nullptr)
 		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("AGX Terrain '%s' have a Shovel reference that does not reference a valid "
-					 "Shovel."),
-				*GetLabelSafe(this));
+			const FString Message = FString::Printf(
+				TEXT("AGX Terrain '%s' have a Shovel reference to '%s' in '%s' that does not "
+					 "reference a valid Shovel."),
+				*GetLabelSafe(this), *ShovelRef.Shovel.Name.ToString(),
+				*GetLabelSafe(ShovelRef.Shovel.OwningActor));
+			FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
 			continue;
 		}
 
@@ -1367,15 +1443,24 @@ bool AAGX_Terrain::UpdateNativeTerrainMaterial()
 		return true;
 	}
 
-	UAGX_TerrainMaterial* Instance =
-		static_cast<UAGX_TerrainMaterial*>(TerrainMaterial->GetOrCreateInstance(GetWorld()));
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot update native Terrain material because don't have a world to create "
+				 "the material instance in."));
+		return false;
+	}
+
+	UAGX_TerrainMaterial* Instance = TerrainMaterial->GetOrCreateInstance(World);
 	check(Instance);
 
 	if (TerrainMaterial != Instance)
 		TerrainMaterial = Instance;
 
 	FTerrainMaterialBarrier* TerrainMaterialBarrier =
-		Instance->GetOrCreateTerrainMaterialNative(GetWorld());
+		Instance->GetOrCreateTerrainMaterialNative(World);
 	check(TerrainMaterialBarrier);
 
 	GetNative()->SetTerrainMaterial(*TerrainMaterialBarrier);
@@ -1735,19 +1820,18 @@ void AAGX_Terrain::Serialize(FArchive& Archive)
 		TerrainMaterial != nullptr && ShapeMaterial == nullptr)
 	{
 		const FString Msg = FString::Printf(
-			TEXT(
-				"Important!\n\nIt was detected that the AGX Terrain Actor '%s' references an "
-				"AGX Terrain Material but no Shape Material. The surface properties of a "
-				"Terrain is no longer described by the Terrain Material, but instead is "
-				"described by a separate Shape Material that can be assigned from the Terrain "
-				"Actor's Details Panel.\n\nIt is recommended to open the Terrain Material and use "
-				"the 'Create Shape Material' button to generate a Shape Material containing the "
-				"Terrain surface properties of the Terrain Material and then assign it to the "
-				"Terrain Actor. Note that this also affects all Contact Materials referencing a "
-				"Terrain Material; these should be updated to point to a Shape Material generated "
-				"from the previously pointed to Terrain Material.\n\nThis information is also "
-				"available in the Changelog in the User Manual.\n\nTo disable this warning, simply "
-				"re-save the Level that contains this Terrain Actor."),
+			TEXT("Important!\n\nIt was detected that the AGX Terrain Actor '%s' references an AGX "
+				 "Terrain Material but no Shape Material. The surface properties of a Terrain is "
+				 "no longer described by the Terrain Material, but instead is described by a "
+				 "separate Shape Material that can be assigned from the Terrain Actor's Details "
+				 "Panel.\n\nIt is recommended to open the Terrain Material and use the 'Create "
+				 "Shape Material' button to generate a Shape Material containing the Terrain "
+				 "surface properties of the Terrain Material and then assign it to the Terrain "
+				 "Actor. Note that this also affects all Contact Materials referencing a Terrain "
+				 "Material; these should be updated to point to a Shape Material generated from "
+				 "the previously pointed to Terrain Material.\n\nThis information is also "
+				 "available in the Changelog in the User Manual.\n\nTo disable this warning, "
+				 "simply re-save the Level that contains this Terrain Actor."),
 			*GetName());
 		FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(Msg);
 	}

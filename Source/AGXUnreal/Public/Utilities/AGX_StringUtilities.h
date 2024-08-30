@@ -43,17 +43,23 @@ FORCEINLINE FName GetFNameSafe(const FField* Field)
 // GetFNameSafe for FField provided by UObject/Field.h since Unreal Engine 5.4.
 #endif
 
+FORCEINLINE FString GetLabel(const AActor& Actor)
+{
+#if WITH_EDITOR
+	return Actor.GetActorLabel();
+#else
+	return Actor.GetName();
+#endif
+
+}
+
 FORCEINLINE FString GetLabelSafe(const AActor* Actor)
 {
 	if (Actor == nullptr)
 	{
 		return TEXT("(none)");
 	}
-#if WITH_EDITOR
-	return Actor->GetActorLabel();
-#else
-	return Actor->GetName();
-#endif
+	return GetLabel(*Actor);
 }
 
 FORCEINLINE bool ContainsOnlyIntegers(const FString& str)

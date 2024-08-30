@@ -78,7 +78,7 @@
 #include "PlayRecord/AGX_PlayRecordTypeActions.h"
 #include "Plot/AGX_PlotComponent.h"
 #include "Plot/AGX_PlotComponentCustomization.h"
-#include "Sensors/AGX_CameraSensorComponent.h"
+#include "Sensors/AGX_CameraSensorBase.h"
 #include "Sensors/AGX_CameraSensorComponentCustomization.h"
 #include "Sensors/AGX_CameraSensorComponentVisualizer.h"
 #include "Sensors/AGX_LidarSensorComponent.h"
@@ -332,7 +332,7 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_AgxEdModeTerrainCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
-		UAGX_CameraSensorComponent::StaticClass()->GetFName(),
+		UAGX_CameraSensorBase::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_CameraSensorComponentCustomization::MakeInstance));
 
@@ -472,7 +472,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeTerrain::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
-		UAGX_CameraSensorComponent::StaticClass()->GetFName());
+		UAGX_CameraSensorBase::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_CollisionGroupAdderComponent::StaticClass()->GetFName());
@@ -522,7 +522,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 {
 	RegisterComponentVisualizer(
-		UAGX_CameraSensorComponent::StaticClass()->GetFName(),
+		UAGX_CameraSensorBase::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_CameraSensorComponentVisualizer));
 
 	RegisterComponentVisualizer(
@@ -568,7 +568,7 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 
 void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
 {
-	UnregisterComponentVisualizer(UAGX_CameraSensorComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_CameraSensorBase::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());

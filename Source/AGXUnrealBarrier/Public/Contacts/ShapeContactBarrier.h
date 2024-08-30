@@ -18,6 +18,7 @@ class AGXUNREALBARRIER_API FShapeContactBarrier
 {
 public:
 	FShapeContactBarrier();
+	FShapeContactBarrier(const FShapeContactBarrier& InBarrier);
 	FShapeContactBarrier(std::unique_ptr<FShapeContactEntity> InNativeEntity);
 	FShapeContactBarrier(FShapeContactBarrier&& InOther);
 	~FShapeContactBarrier();
@@ -34,6 +35,12 @@ public:
 	FEmptyShapeBarrier GetShape1() const;
 	FEmptyShapeBarrier GetShape2() const;
 
+	bool Contains(const FRigidBodyBarrier& Body) const;
+	bool Contains(const FShapeBarrier& Shape) const;
+
+	int32 IndexOf(const FRigidBodyBarrier& Body) const;
+	int32 IndexOf(const FShapeBarrier& Shape) const;
+
 	FVector CalculateRelativeVelocity(int32 PointIndex) const;
 
 	FContactMaterialBarrier GetContactMaterial() const;
@@ -46,9 +53,6 @@ public:
 	bool HasNative() const;
 	FShapeContactEntity* GetNative();
 	const FShapeContactEntity* GetNative() const;
-
-private:
-	FShapeContactBarrier(const FShapeContactBarrier&) = delete;
 
 private:
 	std::unique_ptr<FShapeContactEntity> NativeEntity;

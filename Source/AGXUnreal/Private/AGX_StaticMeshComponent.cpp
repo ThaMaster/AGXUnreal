@@ -23,7 +23,7 @@ UAGX_StaticMeshComponent::UAGX_StaticMeshComponent()
 	MotionControl = EAGX_MotionControl::MC_DYNAMICS;
 }
 
-void UAGX_StaticMeshComponent::SetVelocity(const FVector& InVelocity)
+void UAGX_StaticMeshComponent::SetVelocity(FVector InVelocity)
 {
 	if (HasNative())
 	{

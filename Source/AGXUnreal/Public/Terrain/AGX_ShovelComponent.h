@@ -117,20 +117,21 @@ public:
 
 	bool SwapEdgeDirections();
 
-#if WITH_EDITOR
 	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;
+#if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
-	// ~End UObject interface.
 #endif
+	// ~End UObject interface.
 
-	// ~Begin UActorComponent interface.
+	//~ Begin ActorComponent Interface
+	virtual void OnRegister() override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	// ~End UActorComponent interface.
 
-	// ~Begin IAGX_NativeOwner interface.
+	// ~Begin AGX NativeOwner interface.
 	virtual bool HasNative() const override;
 	virtual uint64 GetNativeAddress() const override;
 	virtual void SetNativeAddress(uint64 NativeAddress) override;

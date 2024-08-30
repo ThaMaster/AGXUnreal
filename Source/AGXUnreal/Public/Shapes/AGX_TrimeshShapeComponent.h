@@ -30,8 +30,10 @@ public:
 
 	/**
 	 * Specifies from where should the Static Mesh triangle data be read.
+	 *
+	 * Only used during initialization, changing this value after Begin Play has no effect.
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Shape")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Shape", Meta=(ExposeOnSpawn))
 	TEnumAsByte<EAGX_StaticMeshSourceLocation> MeshSourceLocation;
 
 	/**
@@ -39,10 +41,11 @@ public:
 	 * which Static Mesh Asset to use.
 	 */
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Shape",
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Shape",
 		Meta =
 			(EditCondition =
-				 "MeshSourceLocation == EAGX_StaticMeshSourceLocation::TSL_STATIC_MESH_ASSET"))
+				"MeshSourceLocation == EAGX_StaticMeshSourceLocation::TSL_STATIC_MESH_ASSET",
+			ExposeOnSpawn))
 	UStaticMesh* MeshSourceAsset;
 
 	/**

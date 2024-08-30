@@ -6,6 +6,7 @@
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_Real.h"
+#include "AGX_RealInterface.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
 // Unreal Engine includes.
@@ -30,94 +31,6 @@
 TSharedRef<IPropertyTypeCustomization> FAGX_RealDetails::MakeInstance()
 {
 	return MakeShareable(new FAGX_RealDetails());
-}
-
-namespace AGX_RealDetails_helpers
-{
-	/**
-	 * A INumericTypeInterface is responsible for converting between string representations and
-	 * numeric representations in a widget. This one has support for scientific notation.
-	 */
-	class FAGX_RealInterface : public INumericTypeInterface<double>
-	{
-	public:
-		static FString StaticToString(const double& Value)
-		{
-			FString Result = FString::Printf(TEXT("%g"), Value);
-			return Result;
-		}
-
-		static TOptional<double> StaticFromString(const FString& InString)
-		{
-			// Unfortunately, FCString::Atod cannot detect parse errors. It's return type is double,
-			// not TOptional<double>, and on error it returns 0.0, which is a common value in
-			// real-world data. Therefore Result.IsSet() will always evaluate to true. The result of
-			// that is when the users enters an invalid string the FAGX_Real will be set to 0.0.
-			//
-			// If we want to detect these error cases in order to restore/keep the old value then we
-			// either need to do input validation ourselves here or use another string-to-double
-			// conversion function. I tried with std::stod, which can report conversion errors, but
-			// it does it via exceptions and I'm not sure Unreal Engine like exceptions.
-			TOptional<double> Result = FCString::Atod(*InString);
-			if (!Result.IsSet())
-			{
-				UE_LOG(
-					LogAGX, Warning,
-					TEXT("FAGX_Real tried to convert string '%s' to double, but Atod failed."),
-					*InString);
-			}
-			return Result;
-		}
-
-		virtual FString ToString(const double& Value) const override
-		{
-			return StaticToString(Value);
-		}
-
-		virtual TOptional<double> FromString(
-			const FString& InString, const double& /*InExistingValue*/) override
-		{
-			return StaticFromString(InString);
-		}
-
-		virtual bool IsCharacterValid(TCHAR InChar) const override
-		{
-			auto IsValidLocalizedCharacter = [InChar]() -> bool
-			{
-				const FDecimalNumberFormattingRules& NumberFormattingRules =
-					ExpressionParser::GetLocalizedNumberFormattingRules();
-				return InChar == NumberFormattingRules.GroupingSeparatorCharacter ||
-					   InChar == NumberFormattingRules.DecimalSeparatorCharacter ||
-					   Algo::Find(NumberFormattingRules.DigitCharacters, InChar) != 0;
-			};
-
-			static const FString ValidChars = TEXT("1234567890eEiInNfF-+.");
-			return InChar != 0 &&
-				   (ValidChars.GetCharArray().Contains(InChar) || IsValidLocalizedCharacter());
-		}
-
-		/// Min Fractional Digits is not used by this Numeric Type Interface.
-		virtual int32 GetMinFractionalDigits() const override
-		{
-			return 0;
-		}
-
-		/// Max Fractional Digits is not used by this Numeric Type Interface.
-		virtual int32 GetMaxFractionalDigits() const override
-		{
-			return 0;
-		}
-
-		/// Min Fractional Digits is not used by this Numeric Type Interface.
-		virtual void SetMinFractionalDigits(const TAttribute<TOptional<int32>>& NewValue) override
-		{
-		}
-
-		/// Max Fractional Digits is not used by this Numeric Type Interface.
-		virtual void SetMaxFractionalDigits(const TAttribute<TOptional<int32>>& NewValue) override
-		{
-		}
-	};
 }
 
 namespace AGX_RealDetails_helpers
@@ -337,7 +250,7 @@ void FAGX_RealDetails::CustomizeHeader(
 		[
 			// The spin box is the main way the user interacts with an FAGX_Real in the Details Panel.
 			SNew(SSpinBox<double>)
-			.TypeInterface(MakeShareable(new AGX_RealDetails_helpers::FAGX_RealInterface))
+			.TypeInterface(MakeShareable(new FAGX_RealInterface))
 			.MinValue(-std::numeric_limits<double>::infinity())
 			.MinSliderValue(SliderMin)
 			.MaxValue(std::numeric_limits<double>::infinity())
@@ -488,7 +401,7 @@ FText FAGX_RealDetails::GetTextValue() const
 			// shown when only a single object is selected. Perhaps we get here if all selected
 			// objects have the same value.
 			return FText::FromString(
-				AGX_RealDetails_helpers::FAGX_RealInterface::StaticToString(Value));
+				FAGX_RealInterface::StaticToString(Value));
 		case FPropertyAccess::MultipleValues:
 			// The Editable Text will not be displayed while there are multiple
 			// objects selected, so it doesn't matter what we return here.
@@ -687,7 +600,7 @@ void FAGX_RealDetails::OnTextChanged(const FText& NewText)
 void FAGX_RealDetails::OnTextCommitted(const FText& NewText, ETextCommit::Type CommitInfo)
 {
 	TOptional<double> NewValue =
-		AGX_RealDetails_helpers::FAGX_RealInterface::StaticFromString(NewText.ToString());
+		FAGX_RealInterface::StaticFromString(NewText.ToString());
 	if (!NewValue.IsSet())
 	{
 		UE_LOG(

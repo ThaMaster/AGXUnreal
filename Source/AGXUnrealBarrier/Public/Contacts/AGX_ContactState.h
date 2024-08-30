@@ -10,7 +10,7 @@ UENUM(BlueprintType)
 enum EAGX_ContactState
 {
 	/** There is no contact between the two shapes. */
-	CS_NoContact = 0 UMETA(DisplayName = "No contact yes"),
+	CS_NoContact = 0 UMETA(DisplayName = "No contact"),
 
 	/** The two shapes have a relative impacting velocity higher than the threshold. */
 	CS_Impact = 1 UMETA(DisplayName = "First contact."),

@@ -1,10 +1,33 @@
 // Copyright 2024, Algoryx Simulation AB.
 
+/*
+ * This file contains a number of Play In Editor unit tests.
+ *
+ * Each test loads a Level, starts a Play In Editor session, and then verifies that the simulation
+ * behaves as expected. Each test is associated with a Level asset in /Game/Tests/, the Levels whose
+ * name does not start with FTEST_, those are Blueprint Functional Tests.
+ *
+ * Each test follows the same structure:
+ * - A Latent Automation Command named FCheckLEVEL_NAMECommand.
+ * - A Simple Automation Test named AGXUnreal.Game.AGX_PlayInEditorTest.LEVEL_NAME.
+ *   - Has Latent Commands to:
+ *   - Load the level.
+ *   - Start Play In Editor session.
+ *   - Check the simulation state, i.e. the test-specific Latent Command.
+ *   - End the Play In Editor session.
+ *
+ * Any state needed by the test is created in the Run Test function and copied into the test
+ * Latent Command. Several tests need to do some setup in the beginning of the test. This is
+ * typically done by passing in a container to store data in and by checking if the container is
+ * empty we know if we are in the beginning of the test or not.
+ */
+
 // AGX Dynamics for Unreal includes.
 #include "AGX_PlayInEditorUtils.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "AgxAutomationCommon.h"
+#include "Constraints/AGX_BallConstraintComponent.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
@@ -16,26 +39,13 @@
 #include "Editor.h"
 #include "Containers/Map.h"
 #include "HAL/FileManager.h"
+#include "Kismet/GameplayStatics.h"
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationEditorCommon.h"
 
 namespace AGX_PlayInEditorTest_helpers
 {
 	using namespace AGX_PlayInEditorUtils;
-
-	template <typename T>
-	T* GetComponentByName(const AActor& Owner, const FString& Name)
-	{
-		for (const auto& Component : Owner.GetComponents())
-		{
-			if (Component->GetName().Equals(Name))
-			{
-				return Cast<T>(Component);
-			}
-		}
-
-		return nullptr;
-	}
 
 	template <typename T>
 	T* GetComponentByName(UWorld* TestWorld, const FString& ActorName, const FString& ComponentName)
@@ -72,7 +82,9 @@ DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
 
 bool FCheckFallinBoxMovedCommand::Update()
 {
+	using namespace AgxAutomationCommon;
 	using namespace AGX_PlayInEditorTest_helpers;
+
 	if (!GEditor->IsPlayingSessionInEditor())
 	{
 		return false;
@@ -91,7 +103,7 @@ bool FCheckFallinBoxMovedCommand::Update()
 			return true;
 		}
 
-		auto Body = GetComponentByName<UAGX_RigidBodyComponent>(*BoxActors["BoxActor"], "BoxBody");
+		auto Body = GetRigidBodyByName(*BoxActors["BoxActor"], TEXT("BoxBody"));
 		Test.TestNotNull("BoxBody", Body);
 		if (Body == nullptr)
 			return true;
@@ -120,7 +132,7 @@ bool FCheckFallinBoxMovedCommand::Update()
 
 	if (SimTime < SimTimeMax)
 	{
-		return false; // Continue ticking..
+		return false; // Continue ticking.
 	}
 
 	// At this point we have ticked to TickMax.
@@ -151,6 +163,103 @@ bool FFallingBoxTest::RunTest(const FString& Parameters)
 }
 
 //
+// Ball Joint Twist Range Controller test starts here.
+//
+// The level contains a Blueprint instance containing two parallel body + constraint setups. One of
+// them have had their properties set in the Blueprint editor's Details panel while the other have
+// had their properties set by a Blueprint Visual Script executed on Begin Play.
+//
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FCheckTwistRangeCommand, FAutomationTestBase&, Test);
+
+bool FCheckTwistRangeCommand::Update()
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	using namespace AgxAutomationCommon;
+
+	if (!GEditor->IsPlayingSessionInEditor())
+	{
+		Test.AddError(TEXT("FCheckTwistRangeCommand is not in a Play In Editor session."));
+		return true;
+	}
+
+	// Get the objects we need.
+	UWorld* TestWorld = GEditor->GetPIEWorldContext()->World();
+	if (!Test.TestNotNull(TEXT("PIE World"), TestWorld))
+		return true;
+	if (!Test.TestEqual(TEXT("Level name"), TestWorld->GetName(), TEXT("BallJointTwistRange")))
+		return true;
+	ActorMap Actors = GetActorsByName(TestWorld, {"Ball"});
+	AActor* BallActor = Actors.FindRef(TEXT("Ball"));
+	if (!Test.TestNotNull(TEXT("Actor 'Ball'"), BallActor))
+		return true;
+	UAGX_RigidBodyComponent* DetailsRod = GetRigidBodyByName(*BallActor, TEXT("Details Rod Body"));
+	if (!Test.TestNotNull(TEXT("Details Rod Body"), DetailsRod))
+		return true;
+	UAGX_RigidBodyComponent* BpRod = GetRigidBodyByName(*BallActor, TEXT("BP Rod Body"));
+	if (!Test.TestNotNull(TEXT("BP Rod Body"), BpRod))
+		return true;
+	UAGX_BallConstraintComponent* DetailsBall =
+		GetBallConstraintByName(*BallActor, TEXT("Details Ball Constraint"));
+	if (!Test.TestNotNull(TEXT("Details Ball Constraint"), DetailsBall))
+		return true;
+	UAGX_BallConstraintComponent* BpBall =
+		GetBallConstraintByName(*BallActor, "BP Ball Constraint");
+	if (!Test.TestNotNull(TEXT("BP Ball Constraint"), BpBall))
+		return true;
+
+	// Test the objects configured in the Details panel.
+	Test.TestTrue(TEXT("Details Rod Body has native"), DetailsRod->HasNative());
+	Test.TestEqual(TEXT("Details Rod Body roll"), DetailsRod->GetRotator().Roll, 20.0);
+	Test.TestTrue(TEXT("Details Ball Constraint has native"), DetailsBall->HasNative());
+	FAGX_TwistRangeController& DetailsTwist = DetailsBall->TwistRangeController;
+	Test.TestEqual(TEXT("Ball Constraint RangeMin"), DetailsTwist.GetRangeMin(), -20.0);
+	Test.TestEqual(TEXT("Ball Constraint RangeMax"), DetailsTwist.GetRangeMax(), 10.0);
+	Test.TestEqual(TEXT("Ball Constraint Enable"), DetailsTwist.GetEnable(), true);
+	Test.TestEqual(TEXT("Ball Constraint Compliance"), DetailsTwist.GetCompliance(), 1e-9);
+	Test.TestEqual(TEXT("Ball Constraint SpookDamping"), DetailsTwist.GetSpookDamping(), 0.04);
+	Test.TestEqual(TEXT("Ball Constraint ForceRangeMin"), DetailsTwist.GetForceRangeMin(), -1000.0);
+	Test.TestEqual(TEXT("Ball Constraint ForceRangeMax"), DetailsTwist.GetForceRangeMax(), 1000.0);
+
+	// Test the objects configured with Blueprint Visual Script.
+	Test.TestTrue(TEXT("BP Rod Body has native"), BpRod->HasNative());
+	Test.TestEqual(TEXT("BP Rod Body roll"), BpRod->GetRotator().Roll, 15.0);
+	Test.TestTrue(TEXT("BP Ball Constraint has native"), BpBall->HasNative());
+	FAGX_TwistRangeController& BpTwist = BpBall->TwistRangeController;
+	Test.TestEqual(TEXT("Ball Constraint RangeMin"), BpTwist.GetRangeMin(), -15.0);
+	Test.TestEqual(TEXT("Ball Constraint RangeMax"), BpTwist.GetRangeMax(), 20.0);
+	Test.TestEqual(TEXT("Ball Constraint Enable"), BpTwist.GetEnable(), true);
+	Test.TestEqual(TEXT("Ball Constraint Compliance"), BpTwist.GetCompliance(), 1e-9);
+	Test.TestEqual(TEXT("Ball Constraint SpookDamping"), BpTwist.GetSpookDamping(), 0.035);
+	Test.TestEqual(TEXT("Ball Constraint ForceRangeMin"), BpTwist.GetForceRangeMin(), -2000.0);
+	Test.TestEqual(TEXT("Ball Constraint ForceRangeMax"), BpTwist.GetForceRangeMax(), 2000.0);
+
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FTwistRangeTest, "AGXUnreal.Game.AGX_PlayInEditorTest.TwistRange",
+	AgxAutomationCommon::DefaultTestFlags)
+
+bool FTwistRangeTest::RunTest(const FString& Parameters)
+{
+	using namespace AGX_PlayInEditorTest_helpers;
+	using namespace AgxAutomationCommon;
+
+	FString MapPath("/Game/Tests/BallJointTwistRange");
+	ADD_LATENT_AUTOMATION_COMMAND(FEditorLoadMap(MapPath));
+	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
+	ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilPIEUpCommand());
+	const double SimTime = 1.0;
+	const int32 MaxTicks = 1000;
+	ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilSimTime(SimTime, MaxTicks));
+	ADD_LATENT_AUTOMATION_COMMAND(FCheckTwistRangeCommand(*this));
+	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
+	ADD_LATENT_AUTOMATION_COMMAND(FWaitUntilPIEDownCommand());
+	return true;
+}
+
+//
 // Terrain Paging test starts here.
 //
 
@@ -161,6 +270,8 @@ DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
 bool FCheckTerrainPagingStateCommand::Update()
 {
 	using namespace AGX_PlayInEditorTest_helpers;
+	using namespace AgxAutomationCommon;
+
 	if (!GEditor->IsPlayingSessionInEditor())
 	{
 		return false;
@@ -508,6 +619,8 @@ DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
 bool FCheckROS2MovedCommand::Update()
 {
 	using namespace AGX_PlayInEditorTest_helpers;
+	using namespace AgxAutomationCommon;
+
 	if (!GEditor->IsPlayingSessionInEditor())
 	{
 		return false;

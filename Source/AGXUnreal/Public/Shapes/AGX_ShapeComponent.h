@@ -162,10 +162,10 @@ public:
 	//~ End USceneComponent Interface
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
-	void AddCollisionGroup(const FName& GroupName);
+	void AddCollisionGroup(FName GroupName);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
-	void RemoveCollisionGroupIfExists(const FName& GroupName);
+	void RemoveCollisionGroupIfExists(FName GroupName);
 
 	// ~Begin UObject interface.
 	virtual void PostInitProperties() override;
@@ -198,6 +198,16 @@ public:
 	 */
 	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
 	FGuid ImportGuid;
+
+	/**
+	 * Recompute the local transform that the native AGX Dynamics object should have given the
+	 * current Scene Component attachment hierarchy. This is done automatically on Begin Play but
+	 * may be required again if the attachment hierarchy is changed, for example when a Shape
+	 * Component becomes attached to a Rigid Body.
+	 *
+	 * @see UAGX_RigidBodyComponent::SynchronizeShapes
+	 */
+	void UpdateNativeLocalTransform();
 
 protected:
 	/**

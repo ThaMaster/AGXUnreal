@@ -927,8 +927,7 @@ FTerrainMaterialBarrier* UAGX_TerrainMaterial::GetOrCreateTerrainMaterialNative(
 				LogAGX, Error,
 				TEXT("GetOrCreateTerrainMaterialNative was called on UAGX_TerrainMaterial '%s'"
 					 "who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called "
-					 "prior "
-					 "to calling this function."),
+					 "prior to calling this function."),
 				*GetName());
 			return nullptr;
 		}
@@ -976,8 +975,7 @@ void UAGX_TerrainMaterial::CreateTerrainMaterialNative(UWorld* PlayingWorld)
 				LogAGX, Error,
 				TEXT("CreateTerrainMaterialNative was called on UAGX_TerrainMaterial '%s'"
 					 "who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called "
-					 "prior "
-					 "to calling this function."),
+					 "prior to calling this function."),
 				*GetName());
 			return;
 		}

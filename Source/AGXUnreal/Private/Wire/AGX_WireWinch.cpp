@@ -428,7 +428,7 @@ FAGX_WireWinchRef UAGX_WireWinch_FL::MakeRef(UPARAM(Ref) FAGX_WireWinch& Winch)
 	return {&Winch};
 }
 
-void UAGX_WireWinch_FL::SetLocation(FAGX_WireWinchRef Winch, const FVector& InLocation)
+void UAGX_WireWinch_FL::SetLocation(FAGX_WireWinchRef Winch, FVector InLocation)
 {
 	if (!Winch.IsValid())
 	{
@@ -448,7 +448,7 @@ FVector UAGX_WireWinch_FL::GetLocation(FAGX_WireWinchRef Winch)
 	return Winch.Winch->Location;
 }
 
-void UAGX_WireWinch_FL::SetRotation(FAGX_WireWinchRef Winch, const FRotator& InRotation)
+void UAGX_WireWinch_FL::SetRotation(FAGX_WireWinchRef Winch, FRotator InRotation)
 {
 	if (!Winch.IsValid())
 	{

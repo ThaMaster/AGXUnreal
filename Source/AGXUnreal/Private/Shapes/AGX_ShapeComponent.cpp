@@ -278,6 +278,13 @@ void UAGX_ShapeComponent::EndPlay(const EEndPlayReason::Type Reason)
 	}
 }
 
+void UAGX_ShapeComponent::UpdateNativeLocalTransform()
+{
+	if (!HasNative())
+		return;
+	UpdateNativeLocalTransform(*GetNative());
+}
+
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, bool ForceOverwriteInstances)
 {
 	AGX_COPY_PROPERTY_FROM(
@@ -395,7 +402,7 @@ void UAGX_ShapeComponent::UpdateNativeGlobalTransform()
 	Shape->SetWorldRotation(GetComponentQuat());
 }
 
-void UAGX_ShapeComponent::AddCollisionGroup(const FName& GroupName)
+void UAGX_ShapeComponent::AddCollisionGroup(FName GroupName)
 {
 	if (GroupName.IsNone())
 		return;
@@ -408,7 +415,7 @@ void UAGX_ShapeComponent::AddCollisionGroup(const FName& GroupName)
 		GetNative()->AddCollisionGroup(GroupName);
 }
 
-void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(const FName& GroupName)
+void UAGX_ShapeComponent::RemoveCollisionGroupIfExists(FName GroupName)
 {
 	if (GroupName.IsNone())
 		return;

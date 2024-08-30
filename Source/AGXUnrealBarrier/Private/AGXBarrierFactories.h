@@ -17,6 +17,7 @@
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Constraints/DistanceJointBarrier.h"
 #include "Constraints/LockJointBarrier.h"
+#include "Constraints/TwistRangeControllerBarrier.h"
 #include "Contacts/ShapeContactBarrier.h"
 #include "Contacts/ContactPointBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
@@ -43,6 +44,7 @@ namespace agx
 	class BallJoint;
 	class CylindricalJoint;
 	class DistanceJoint;
+	class TwistRangeController;
 }
 
 namespace agxCollide
@@ -121,6 +123,9 @@ namespace AGXBarrierFactories
 	FDistanceJointBarrier CreateDistanceJointBarrier(agx::DistanceJoint* DistanceJoint);
 
 	FLockJointBarrier CreateLockJointBarrier(agx::LockJoint* LockJoint);
+
+	FTwistRangeControllerBarrier CreateTwistRangeControllerBarrier(
+		agx::TwistRangeController* Controller);
 
 	FShapeMaterialBarrier CreateShapeMaterialBarrier(agx::Material* Material);
 
