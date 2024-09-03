@@ -12,7 +12,7 @@
  * Lidar Surface Material that can be assigned to Meshes and AGX Shapes in the scene. Determines the
  * Lidar laser ray interaction (e.g. intensity calculation) with such objects.
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX")
+UCLASS(ClassGroup = "AGX_Sensor", Category = "AGX")
 class AGXUNREAL_API UAGX_LidarLambertianOpaqueMaterial : public UAGX_LidarSurfaceMaterial
 {
 	GENERATED_BODY()
@@ -40,7 +40,7 @@ public:
 	static UAGX_LidarLambertianOpaqueMaterial* CreateInstanceFromAsset(
 		UWorld* PlayingWorld, UAGX_LidarLambertianOpaqueMaterial& Source);
 
-	UAGX_LidarLambertianOpaqueMaterial* GetOrCreateInstance(UWorld* PlayingWorld);
+	virtual UAGX_LidarSurfaceMaterial* GetOrCreateInstance(UWorld* PlayingWorld) override;
 	FRtLambertianOpaqueMaterialBarrier* GetOrCreateNative(UWorld* PlayingWorld);
 
 	void UpdateNativeProperties();

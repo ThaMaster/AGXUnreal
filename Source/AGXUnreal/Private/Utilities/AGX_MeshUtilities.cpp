@@ -3,7 +3,7 @@
 #include "Utilities/AGX_MeshUtilities.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_SimpleMeshComponent.h"
+#include "Shapes/AGX_SimpleMeshComponent.h"
 #include "AGX_LogCategory.h"
 
 // Unreal Engine includes.

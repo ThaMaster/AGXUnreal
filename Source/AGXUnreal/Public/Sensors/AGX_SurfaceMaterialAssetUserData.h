@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Sensors/AGX_LidarSurfaceMaterial.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
@@ -14,5 +17,5 @@ class AGXUNREAL_API UAGX_SurfaceMaterialAssetUserData : public UAssetUserData
 
 public:
 	UPROPERTY()
-	float Reflectivity{0.7}; // Todo: pointer to a SurfaceMaterial (base)
+	TObjectPtr<UAGX_LidarSurfaceMaterial> Material {nullptr};
 };

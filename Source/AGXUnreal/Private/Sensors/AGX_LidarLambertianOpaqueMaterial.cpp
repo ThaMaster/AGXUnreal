@@ -98,7 +98,7 @@ UAGX_LidarLambertianOpaqueMaterial* UAGX_LidarLambertianOpaqueMaterial::CreateIn
 	return NewInstance;
 }
 
-UAGX_LidarLambertianOpaqueMaterial* UAGX_LidarLambertianOpaqueMaterial::GetOrCreateInstance(
+UAGX_LidarSurfaceMaterial* UAGX_LidarLambertianOpaqueMaterial::GetOrCreateInstance(
 	UWorld* PlayingWorld)
 {
 	if (IsInstance())

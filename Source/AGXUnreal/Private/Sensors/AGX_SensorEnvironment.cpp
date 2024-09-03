@@ -3,7 +3,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_MeshWithTransform.h"
-#include "AGX_SimpleMeshComponent.h"
+#include "Shapes/AGX_SimpleMeshComponent.h"
 #include "AGX_Simulation.h"
 #include "Materials/AGX_TerrainMaterial.h"
 #include "Sensors/AGX_LidarSensorComponent.h"

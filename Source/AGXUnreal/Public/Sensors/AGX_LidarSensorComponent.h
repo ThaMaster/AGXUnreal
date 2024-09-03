@@ -45,7 +45,7 @@ public:
 	 * The Model, or preset, of this Lidar.
 	 * Changing this will assign Model specific properties to this Lidar.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
 	EAGX_LidarModel Model {EAGX_LidarModel::GenericHorizontalSweep};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
@@ -95,7 +95,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	double GetBeamExitRadius() const;
 
-	// Todo: add comment.
+	/**
+	 * The Ray Pattern determines in what order and in which directions the lidar laser rays are
+	 * emitted.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
 	UAGX_RayPatternBase* RayPattern {nullptr};
 
@@ -160,8 +163,7 @@ public:
 	FOnFetchNextPatternInterval OnFetchNextPatternInterval;
 
 	/** Whether lidar data rendering should be enabled or not. */
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Lidar")
+	UPROPERTY(EditAnywhere, Category = "AGX Lidar")
 	bool bEnableRendering {true};
 
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar", Meta = (EditCondition = "bEnableRendering"))
