@@ -3,7 +3,7 @@
 #include "Constraints/Constraint1DOFBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"

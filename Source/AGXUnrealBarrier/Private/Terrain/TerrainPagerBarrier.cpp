@@ -2,7 +2,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGXBarrierFactories.h"
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
 #include "AGX_Check.h"
 #include "RigidBodyBarrier.h"
 #include "Terrain/ShovelBarrier.h"

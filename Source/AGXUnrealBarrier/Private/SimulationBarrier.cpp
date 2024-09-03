@@ -3,9 +3,10 @@
 #include "SimulationBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_LogCategory.h"
 #include "AGXBarrierFactories.h"
-#include "AGXRefs.h"
+#include "AGX_LogCategory.h"
+#include "BarrierOnly/AGXRefs.h"
+#include "BarrierOnly/Wire/WireRef.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/ShapeMaterialBarrier.h"
@@ -16,7 +17,6 @@
 #include "Tires/TireBarrier.h"
 #include "TypeConversions.h"
 #include "Wire/WireBarrier.h"
-#include "Wire/WireRef.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"

@@ -2,12 +2,14 @@
 
 #include "NotifyBarrier.h"
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
+#include "BarrierOnly/AGXRefs.h"
+
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/Referenced.h>
 #include "EndAGXIncludes.h"
-
-#include "AGX_LogCategory.h"
-#include "AGXRefs.h"
 
 FNotifyBarrier::FNotifyBarrier()
 	: NativeRef {new FNotifyRef()}

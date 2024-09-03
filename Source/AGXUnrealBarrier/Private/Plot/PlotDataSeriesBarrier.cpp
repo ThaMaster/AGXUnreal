@@ -3,7 +3,7 @@
 #include "Plot/PlotDataSeriesBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
 #include "TypeConversions.h"
 
 FPlotDataSeriesBarrier::FPlotDataSeriesBarrier()

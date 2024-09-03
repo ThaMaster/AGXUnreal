@@ -2,9 +2,11 @@
 
 #include "Shapes/EmptyShapeBarrier.h"
 
-#include "AGXRefs.h"
+// AGX Dynamics for Unreal includes.
+#include "BarrierOnly/AGXRefs.h"
 #include "TypeConversions.h"
 
+// Unreal Engine includes.
 #include "Misc/AssertionMacros.h"
 
 FEmptyShapeBarrier::FEmptyShapeBarrier()

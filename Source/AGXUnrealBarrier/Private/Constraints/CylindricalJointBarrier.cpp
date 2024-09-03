@@ -2,7 +2,8 @@
 
 #include "Constraints/CylindricalJointBarrier.h"
 
-#include "AGXRefs.h"
+// AGX Dynamics for Unreal includes.
+#include "BarrierOnly/AGXRefs.h"
 #include "RigidBodyBarrier.h"
 #include "Utilities/AGX_BarrierConstraintUtilities.h"
 
