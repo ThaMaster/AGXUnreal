@@ -35,6 +35,7 @@ public:
 
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
+	virtual void EndPlay(EEndPlayReason::Type Reason) override;
 	//~ End UActorComponent Interface
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Play Record")
