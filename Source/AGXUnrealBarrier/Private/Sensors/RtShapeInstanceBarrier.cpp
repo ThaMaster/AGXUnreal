@@ -40,21 +40,6 @@ bool FRtShapeInstanceBarrier::HasNative() const
 	return NativeRef->Native.handle != nullptr;
 }
 
-namespace RtShapeInstanceBarrier_helpers
-{
-	class RtInstanceIdOwnerData : public agxSensor::RtInstanceData
-	{
-	public:
-		using agxSensor::RtInstanceData::RtInstanceData;
-
-	protected:
-		virtual ~RtInstanceIdOwnerData()
-		{
-			destroyEntityId();
-		}
-	};
-}
-
 void FRtShapeInstanceBarrier::AllocateNative(
 	FRtShapeBarrier& Shape, FSensorEnvironmentBarrier& Environment, float Reflectivity)
 {
@@ -64,10 +49,7 @@ void FRtShapeInstanceBarrier::AllocateNative(
 
 	NativeRef->Native = agxSensor::RtShapeInstance::create(
 		Environment.GetNative()->Native->getScene(),
-		Shape.GetNative()->Native,
-		new RtShapeInstanceBarrier_helpers::RtInstanceIdOwnerData());
-
-	//agxSensor::RtSurfaceMaterial(Id).setReflectivity(Reflectivity);
+		Shape.GetNative()->Native, nullptr);
 }
 
 FRtShapeInstance* FRtShapeInstanceBarrier::GetNative()

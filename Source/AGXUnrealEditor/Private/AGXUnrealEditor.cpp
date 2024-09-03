@@ -87,6 +87,7 @@
 #include "Sensors/AGX_LidarSensorLineTraceComponent.h"
 #include "Sensors/AGX_LidarSensorLineTraceComponentVisualizer.h"
 #include "Sensors/AGX_LidarSensorReference.h"
+#include "Sensors/AGX_LidarSurfaceMaterialTypeActions.h"
 #include "Sensors/AGX_RayPatternCustomTypeActions.h"
 #include "Sensors/AGX_RayPatternHorizontalSweepTypeActions.h"
 #include "Sensors/AGX_SensorEnvironment.h"
@@ -201,14 +202,13 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 		FName(TEXT("AgxUnreal")), LOCTEXT("AgxAssetCategory", "AGX Dynamics"));
 
 	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
-	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_ShapeMaterialTypeActions(AgxAssetCategoryBit)));
-	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_TerrainMaterialAssetTypeActions(AgxAssetCategoryBit)));
-	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_ConstraintMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));	
+	RegisterAssetTypeAction(
+		AssetTools,
+		MakeShareable(new FAGX_LidarSurfaceMaterialTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_PlayRecordTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
@@ -216,8 +216,12 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_RayPatternHorizontalSweepTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_ShapeMaterialTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_ShapeContactMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_TerrainMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_WireMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));

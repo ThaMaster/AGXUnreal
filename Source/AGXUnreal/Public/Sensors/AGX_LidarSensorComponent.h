@@ -32,7 +32,7 @@ DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(
  * Lidar Sensor Component, allowing to create point cluds at runtime.
  */
 UCLASS(
-	ClassGroup = "AGX", Category = "AGX", Meta = (BlueprintSpawnableComponent),
+	ClassGroup = "AGX_Sensor", Category = "AGX", Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
 class AGXUNREAL_API UAGX_LidarSensorComponent : public USceneComponent
 {
@@ -45,7 +45,7 @@ public:
 	 * The Model, or preset, of this Lidar.
 	 * Changing this will assign Model specific properties to this Lidar.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
 	EAGX_LidarModel Model {EAGX_LidarModel::GenericHorizontalSweep};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")

@@ -264,11 +264,23 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 
 	// Thumbnails (assets etc).
 	Style->Set(
+		"ClassThumbnail.AGX_ConstraintMergeSplitThresholds",
+		new IMAGE_BRUSH("Thumbnails/constraint_mergesplit_128x128", IconSize128));
+	Style->Set(
 		"ClassThumbnail.AGX_ContactMaterial",
 		new IMAGE_BRUSH("Thumbnails/contact_material_128x128", IconSize128));
 	Style->Set(
+		"ClassThumbnail.AGX_PlayRecord",
+		new IMAGE_BRUSH("Thumbnails/play_record_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_ShapeContactMergeSplitThresholds",
+		new IMAGE_BRUSH("Thumbnails/shape_contact_mergesplit_128x128", IconSize128));
+	Style->Set(
 		"ClassThumbnail.AGX_ShapeMaterial",
 		new IMAGE_BRUSH("Thumbnails/shape_material_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_ShovelProperties",
+		new IMAGE_BRUSH("Thumbnails/shovel_properties_128x128", IconSize128));
 	Style->Set(
 		"ClassThumbnail.AGX_TerrainMaterial",
 		new IMAGE_BRUSH("Thumbnails/terrain_material_128x128", IconSize128));
@@ -278,18 +290,6 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set(
 		"ClassThumbnail.AGX_TrackProperties",
 		new IMAGE_BRUSH("Thumbnails/track_properties_128x128", IconSize128));
-	Style->Set(
-		"ClassThumbnail.AGX_ShovelProperties",
-		new IMAGE_BRUSH("Thumbnails/shovel_properties_128x128", IconSize128));
-	Style->Set(
-		"ClassThumbnail.AGX_PlayRecord",
-		new IMAGE_BRUSH("Thumbnails/play_record_128x128", IconSize128));
-	Style->Set(
-		"ClassThumbnail.AGX_ConstraintMergeSplitThresholds",
-		new IMAGE_BRUSH("Thumbnails/constraint_mergesplit_128x128", IconSize128));
-	Style->Set(
-		"ClassThumbnail.AGX_ShapeContactMergeSplitThresholds",
-		new IMAGE_BRUSH("Thumbnails/shape_contact_mergesplit_128x128", IconSize128));
 	Style->Set(
 		"ClassThumbnail.AGX_WireMergeSplitThresholds",
 		new IMAGE_BRUSH("Thumbnails/wire_mergesplit_128x128", IconSize128));

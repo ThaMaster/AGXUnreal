@@ -2,8 +2,6 @@
 
 #pragma once
 
-// AGX Dynamics for Unreal includes.
-
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agxSensor/Environment.h>
@@ -11,7 +9,10 @@
 #include <agxSensor/RaytraceDistanceGaussianNoise.h>
 #include <agxSensor/RaytraceHandles.h>
 #include <agxSensor/RaytraceOutput.h>
+#include <agxSensor/RaytraceSurfaceMaterial.h>
 #include "EndAGXIncludes.h"
+
+#include <memory>
 
 struct FSensorEnvironmentRef
 {
@@ -63,6 +64,16 @@ struct FDistanceGaussianNoiseRef
 	agxSensor::RtDistanceGaussianNoiseRef Native;
 	FDistanceGaussianNoiseRef() = default;
 	FDistanceGaussianNoiseRef(agxSensor::RtDistanceGaussianNoise* InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FRtSurfaceMaterial
+{
+	agxSensor::RtSurfaceMaterial Native {nullptr};
+	FRtSurfaceMaterial() = default;
+	FRtSurfaceMaterial(const agxSensor::RtSurfaceMaterial& InNative)
 		: Native(InNative)
 	{
 	}

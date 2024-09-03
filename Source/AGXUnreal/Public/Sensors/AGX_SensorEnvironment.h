@@ -19,7 +19,7 @@ class UInstancedStaticMeshComponent;
 class USphereComponent;
 class UStaticMeshComponent;
 
-UCLASS(ClassGroup = "AGX", Blueprintable, Category = "AGX")
+UCLASS(ClassGroup = "AGX_Sensor", Blueprintable, Category = "AGX")
 class AGXUNREAL_API AAGX_SensorEnvironment : public AActor
 {
 	GENERATED_BODY()
