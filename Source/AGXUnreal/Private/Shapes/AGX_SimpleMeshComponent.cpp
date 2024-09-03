@@ -1,7 +1,7 @@
 // Copyright 2024, Algoryx Simulation AB.
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_SimpleMeshComponent.h"
+#include "Shapes/AGX_SimpleMeshComponent.h"
 #include "AGX_UE4Compatibility.h"
 
 // Unreal Engine includes.
