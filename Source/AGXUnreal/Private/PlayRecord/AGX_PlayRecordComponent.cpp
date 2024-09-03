@@ -8,6 +8,7 @@
 #include "Constraints/AGX_Constraint1DofComponent.h"
 #include "Constraints/AGX_Constraint2DofComponent.h"
 #include "PlayRecord/AGX_PlayRecord.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 // Standard library includes.
 #include <limits>
@@ -21,6 +22,18 @@ void UAGX_PlayRecordComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentIndex = 0;
+}
+
+void UAGX_PlayRecordComponent::EndPlay(EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+
+#if WITH_EDITOR
+	if (PlayRecord != nullptr)
+	{
+		FAGX_ObjectUtilities::MarkAssetDirty(*PlayRecord);
+	}
+#endif
 }
 
 namespace AGX_PlayRecordComponent_helpers
