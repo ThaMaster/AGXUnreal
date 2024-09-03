@@ -26,7 +26,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
  * Lidar Sensor Line Trace Component, allowing to create point cluds at runtime.
  */
 UCLASS(
-	ClassGroup = "AGX", Category = "AGX", Experimental, Meta = (BlueprintSpawnableComponent),
+	ClassGroup = "AGX_Sensor", Category = "AGX", Experimental, Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
 class AGXUNREAL_API UAGX_LidarSensorLineTraceComponent : public USceneComponent
 {
