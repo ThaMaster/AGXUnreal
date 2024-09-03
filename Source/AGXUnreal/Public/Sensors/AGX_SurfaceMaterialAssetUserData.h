@@ -14,5 +14,5 @@ class AGXUNREAL_API UAGX_SurfaceMaterialAssetUserData : public UAssetUserData
 
 public:
 	UPROPERTY()
-	float Reflectivity{0.7};
+	float Reflectivity{0.7}; // Todo: pointer to a SurfaceMaterial (base)
 };

@@ -7,10 +7,10 @@
 #include "AssetTypeCategories.h"
 #include "CoreMinimal.h"
 
-class AGXUNREALEDITOR_API FAGX_LidarSurfaceMaterialTypeActions : public FAssetTypeActions_Base
+class AGXUNREALEDITOR_API FAGX_LidarLambertianOpaqueMaterialTypeActions : public FAssetTypeActions_Base
 {
 public:
-	FAGX_LidarSurfaceMaterialTypeActions(EAssetTypeCategories::Type InAssetCategory);
+	FAGX_LidarLambertianOpaqueMaterialTypeActions(EAssetTypeCategories::Type InAssetCategory);
 
 	FText GetName() const override;
 

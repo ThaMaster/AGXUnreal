@@ -1,14 +1,13 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-#include "Sensors/AGX_LidarSurfaceMaterial.h"
+#include "Sensors/AGX_LidarLambertianOpaqueMaterial.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_Check.h"
 #include "AGX_PropertyChangedDispatcher.h"
 
-
-void UAGX_LidarSurfaceMaterial::SetReflectivity(float InReflectivity)
+void UAGX_LidarLambertianOpaqueMaterial::SetReflectivity(float InReflectivity)
 {
 	if (HasNative())
 	{
@@ -18,7 +17,7 @@ void UAGX_LidarSurfaceMaterial::SetReflectivity(float InReflectivity)
 	Reflectivity = InReflectivity;
 }
 
-float UAGX_LidarSurfaceMaterial::GetReflectivity() const
+float UAGX_LidarLambertianOpaqueMaterial::GetReflectivity() const
 {
 	if (HasNative())
 		return NativeBarrier.GetReflectivity();
@@ -26,7 +25,7 @@ float UAGX_LidarSurfaceMaterial::GetReflectivity() const
 	return Reflectivity;
 }
 
-bool UAGX_LidarSurfaceMaterial::HasNative() const
+bool UAGX_LidarLambertianOpaqueMaterial::HasNative() const
 {
 	if (Instance != nullptr)
 	{
@@ -37,7 +36,7 @@ bool UAGX_LidarSurfaceMaterial::HasNative() const
 	return NativeBarrier.HasNative();
 }
 
-FRtSurfaceMaterialBarrier* UAGX_LidarSurfaceMaterial::GetNative()
+FRtLambertianOpaqueMaterialBarrier* UAGX_LidarLambertianOpaqueMaterial::GetNative()
 {
 	if (Instance != nullptr)
 	{
@@ -48,7 +47,7 @@ FRtSurfaceMaterialBarrier* UAGX_LidarSurfaceMaterial::GetNative()
 	return HasNative() ? &NativeBarrier : nullptr;
 }
 
-const FRtSurfaceMaterialBarrier* UAGX_LidarSurfaceMaterial::GetNative() const
+const FRtLambertianOpaqueMaterialBarrier* UAGX_LidarLambertianOpaqueMaterial::GetNative() const
 {
 	if (Instance != nullptr)
 	{
@@ -59,11 +58,11 @@ const FRtSurfaceMaterialBarrier* UAGX_LidarSurfaceMaterial::GetNative() const
 	return HasNative() ? &NativeBarrier : nullptr;
 }
 
-void UAGX_LidarSurfaceMaterial::CommitToAsset()
+void UAGX_LidarLambertianOpaqueMaterial::CommitToAsset()
 {
 	if (IsInstance())
 	{
-		if (FRtSurfaceMaterialBarrier* Barrier = GetNative())
+		if (FRtLambertianOpaqueMaterialBarrier* Barrier = GetNative())
 		{
 #if WITH_EDITOR
 			Asset->Modify();
@@ -80,8 +79,8 @@ void UAGX_LidarSurfaceMaterial::CommitToAsset()
 	}
 }
 
-UAGX_LidarSurfaceMaterial* UAGX_LidarSurfaceMaterial::CreateInstanceFromAsset(
-	UWorld* PlayingWorld, UAGX_LidarSurfaceMaterial& Source)
+UAGX_LidarLambertianOpaqueMaterial* UAGX_LidarLambertianOpaqueMaterial::CreateInstanceFromAsset(
+	UWorld* PlayingWorld, UAGX_LidarLambertianOpaqueMaterial& Source)
 {
 	check(!Source.IsInstance());
 	check(PlayingWorld);
@@ -89,8 +88,8 @@ UAGX_LidarSurfaceMaterial* UAGX_LidarSurfaceMaterial::CreateInstanceFromAsset(
 
 	const FString InstanceName = Source.GetName() + "_Instance";
 
-	UAGX_LidarSurfaceMaterial* NewInstance = NewObject<UAGX_LidarSurfaceMaterial>(
-		GetTransientPackage(), UAGX_LidarSurfaceMaterial::StaticClass(), *InstanceName,
+	UAGX_LidarLambertianOpaqueMaterial* NewInstance = NewObject<UAGX_LidarLambertianOpaqueMaterial>(
+		GetTransientPackage(), UAGX_LidarLambertianOpaqueMaterial::StaticClass(), *InstanceName,
 		RF_Transient);
 	NewInstance->Asset = &Source;
 	NewInstance->CopyProperties(Source);
@@ -99,14 +98,15 @@ UAGX_LidarSurfaceMaterial* UAGX_LidarSurfaceMaterial::CreateInstanceFromAsset(
 	return NewInstance;
 }
 
-UAGX_LidarSurfaceMaterial* UAGX_LidarSurfaceMaterial::GetOrCreateInstance(UWorld* PlayingWorld)
+UAGX_LidarLambertianOpaqueMaterial* UAGX_LidarLambertianOpaqueMaterial::GetOrCreateInstance(
+	UWorld* PlayingWorld)
 {
 	if (IsInstance())
 	{
 		return this;
 	}
 
-	UAGX_LidarSurfaceMaterial* InstancePtr = Instance.Get();
+	UAGX_LidarLambertianOpaqueMaterial* InstancePtr = Instance.Get();
 	if (!InstancePtr && PlayingWorld && PlayingWorld->IsGameWorld())
 	{
 		InstancePtr = CreateInstanceFromAsset(PlayingWorld, *this);
@@ -116,7 +116,8 @@ UAGX_LidarSurfaceMaterial* UAGX_LidarSurfaceMaterial::GetOrCreateInstance(UWorld
 	return InstancePtr;
 }
 
-FRtSurfaceMaterialBarrier* UAGX_LidarSurfaceMaterial::GetOrCreateNative(UWorld* PlayingWorld)
+FRtLambertianOpaqueMaterialBarrier* UAGX_LidarLambertianOpaqueMaterial::GetOrCreateNative(
+	UWorld* PlayingWorld)
 {
 	if (!IsInstance())
 	{
@@ -124,7 +125,7 @@ FRtSurfaceMaterialBarrier* UAGX_LidarSurfaceMaterial::GetOrCreateNative(UWorld* 
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("GetOrCreateNative was called on UAGX_LidarSurfaceMaterial '%s'"
+				TEXT("GetOrCreateNative was called on UAGX_LidarLambertianOpaqueMaterial '%s'"
 					 "who's instance is nullptr. Ensure e.g. GetOrCreateInstance is called prior "
 					 "to calling this function."),
 				*GetName());
@@ -142,7 +143,7 @@ FRtSurfaceMaterialBarrier* UAGX_LidarSurfaceMaterial::GetOrCreateNative(UWorld* 
 	return GetNative();
 }
 
-void UAGX_LidarSurfaceMaterial::UpdateNativeProperties()
+void UAGX_LidarLambertianOpaqueMaterial::UpdateNativeProperties()
 {
 	if (!HasNative())
 		return;
@@ -151,7 +152,7 @@ void UAGX_LidarSurfaceMaterial::UpdateNativeProperties()
 	NativeBarrier.SetReflectivity(Reflectivity);
 }
 
-bool UAGX_LidarSurfaceMaterial::IsInstance() const
+bool UAGX_LidarLambertianOpaqueMaterial::IsInstance() const
 {
 	// An instance of this class will always have a reference to it's corresponding Asset.
 	// An asset will never have this reference set.
@@ -160,17 +161,18 @@ bool UAGX_LidarSurfaceMaterial::IsInstance() const
 	return bIsInstance;
 }
 
-void UAGX_LidarSurfaceMaterial::CopyFrom(const FRtSurfaceMaterialBarrier& Source)
+void UAGX_LidarLambertianOpaqueMaterial::CopyFrom(const FRtLambertianOpaqueMaterialBarrier& Source)
 {
 	Reflectivity = Source.GetReflectivity();
 }
 
-void UAGX_LidarSurfaceMaterial::CopyProperties(const UAGX_LidarSurfaceMaterial& Source)
+void UAGX_LidarLambertianOpaqueMaterial::CopyProperties(
+	const UAGX_LidarLambertianOpaqueMaterial& Source)
 {
 	Reflectivity = Source.GetReflectivity();
 }
 
-void UAGX_LidarSurfaceMaterial::CreateNative(UWorld* PlayingWorld)
+void UAGX_LidarLambertianOpaqueMaterial::CreateNative(UWorld* PlayingWorld)
 {
 	if (!IsInstance())
 	{
@@ -178,7 +180,8 @@ void UAGX_LidarSurfaceMaterial::CreateNative(UWorld* PlayingWorld)
 		{
 			UE_LOG(
 				LogAGX, Error,
-				TEXT("CreateNative was called on a UAGX_LidarSurfaceMaterial who's instance is nullptr. "
+				TEXT("CreateNative was called on a UAGX_LidarLambertianOpaqueMaterial who's "
+					 "instance is nullptr. "
 					 "Ensure e.g. GetOrCreateInstance is called prior to calling this function."));
 			return;
 		}
@@ -198,19 +201,20 @@ void UAGX_LidarSurfaceMaterial::CreateNative(UWorld* PlayingWorld)
 }
 
 #if WITH_EDITOR
-void UAGX_LidarSurfaceMaterial::PostInitProperties()
+void UAGX_LidarLambertianOpaqueMaterial::PostInitProperties()
 {
 	Super::PostInitProperties();
 	InitPropertyDispatcher();
 }
 
-void UAGX_LidarSurfaceMaterial::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
+void UAGX_LidarLambertianOpaqueMaterial::PostEditChangeChainProperty(
+	FPropertyChangedChainEvent& Event)
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 	Super::PostEditChangeChainProperty(Event);
 }
 
-void UAGX_LidarSurfaceMaterial::InitPropertyDispatcher()
+void UAGX_LidarLambertianOpaqueMaterial::InitPropertyDispatcher()
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
 		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
@@ -220,7 +224,7 @@ void UAGX_LidarSurfaceMaterial::InitPropertyDispatcher()
 	}
 
 	PropertyDispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_LidarSurfaceMaterial, Reflectivity),
+		GET_MEMBER_NAME_CHECKED(UAGX_LidarLambertianOpaqueMaterial, Reflectivity),
 		[](ThisClass* This) { AGX_ASSET_DISPATCHER_LAMBDA_BODY(Reflectivity, SetReflectivity) });
 }
 #endif

@@ -69,11 +69,12 @@ struct FDistanceGaussianNoiseRef
 	}
 };
 
-struct FRtSurfaceMaterial
+struct FRtLambertianOpaqueMaterial
 {
-	agxSensor::RtSurfaceMaterial Native {nullptr};
-	FRtSurfaceMaterial() = default;
-	FRtSurfaceMaterial(const agxSensor::RtSurfaceMaterial& InNative)
+	// Todo: this will be called RtLambertianOpaqueMaterial in AGX soon.
+	agxSensor::RtSurfaceMaterial Native {nullptr}; 
+	FRtLambertianOpaqueMaterial() = default;
+	FRtLambertianOpaqueMaterial(const agxSensor::RtSurfaceMaterial& InNative)
 		: Native(InNative)
 	{
 	}

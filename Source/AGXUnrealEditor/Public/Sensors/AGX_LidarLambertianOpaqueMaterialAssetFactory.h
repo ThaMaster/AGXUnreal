@@ -5,15 +5,15 @@
 #include "CoreMinimal.h"
 #include "Factories/Factory.h"
 
-#include "AGX_LidarSurfaceMaterialAssetFactory.generated.h"
+#include "AGX_LidarLambertianOpaqueMaterialAssetFactory.generated.h"
 
 UCLASS()
-class AGXUNREALEDITOR_API UAGX_LidarSurfaceMaterialAssetFactory : public UFactory
+class AGXUNREALEDITOR_API UAGX_LidarLambertianOpaqueMaterialAssetFactory : public UFactory
 {
 	GENERATED_BODY()
 
 public:
-	UAGX_LidarSurfaceMaterialAssetFactory(const class FObjectInitializer& OBJ);
+	UAGX_LidarLambertianOpaqueMaterialAssetFactory(const class FObjectInitializer& OBJ);
 
 protected:
 	virtual bool IsMacroFactory() const

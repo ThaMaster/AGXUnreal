@@ -87,7 +87,7 @@
 #include "Sensors/AGX_LidarSensorLineTraceComponent.h"
 #include "Sensors/AGX_LidarSensorLineTraceComponentVisualizer.h"
 #include "Sensors/AGX_LidarSensorReference.h"
-#include "Sensors/AGX_LidarSurfaceMaterialTypeActions.h"
+#include "Sensors/AGX_LidarLambertianOpaqueMaterialTypeActions.h"
 #include "Sensors/AGX_RayPatternCustomTypeActions.h"
 #include "Sensors/AGX_RayPatternHorizontalSweepTypeActions.h"
 #include "Sensors/AGX_SensorEnvironment.h"
@@ -205,16 +205,17 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 		AssetTools,
 		MakeShareable(new FAGX_ConstraintMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));	
+		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
-		MakeShareable(new FAGX_LidarSurfaceMaterialTypeActions(AgxAssetCategoryBit)));
+		MakeShareable(new FAGX_LidarLambertianOpaqueMaterialTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_PlayRecordTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_RayPatternCustomTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_RayPatternHorizontalSweepTypeActions(AgxAssetCategoryBit)));
+		AssetTools,
+		MakeShareable(new FAGX_RayPatternHorizontalSweepTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_ShapeMaterialTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
@@ -354,7 +355,7 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		UAGX_ContactMaterial::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_ContactMaterialCustomization::MakeInstance));
-	
+
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_ContactMaterialRegistrarComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
@@ -475,8 +476,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeTerrain::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(
-		UAGX_CameraSensorBase::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(UAGX_CameraSensorBase::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_CollisionGroupAdderComponent::StaticClass()->GetFName());
@@ -485,7 +485,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 		UAGX_CollisionGroupDisablerComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_ContactMaterial::StaticClass()->GetFName());
-	
+
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_ContactMaterialRegistrarComponent::StaticClass()->GetFName());
 
@@ -510,8 +510,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(
-		UAGX_TrackRenderer::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackRenderer::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
