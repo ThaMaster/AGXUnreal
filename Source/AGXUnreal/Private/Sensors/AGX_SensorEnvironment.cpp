@@ -6,8 +6,10 @@
 #include "Shapes/AGX_SimpleMeshComponent.h"
 #include "AGX_Simulation.h"
 #include "Materials/AGX_TerrainMaterial.h"
+#include "Sensors/AGX_LidarLambertianOpaqueMaterial.h"
 #include "Sensors/AGX_LidarSensorComponent.h"
 #include "Sensors/AGX_SensorEnvironmentSpriteComponent.h"
+#include "Sensors/AGX_SurfaceMaterialAssetUserData.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
@@ -20,40 +22,6 @@
 
 namespace AGX_SensorEnvironment_helpers
 {
-	float GetReflectivityOrDefault(UMaterialInterface* MaterialInterface, float DefaultReflectivity)
-	{
-		if (MaterialInterface == nullptr)
-			return DefaultReflectivity;
-
-		FMaterialParameterInfo Info;
-		Info.Name = TEXT("AGXLidarReflectivity");
-		float Reflectivity;
-		if (!MaterialInterface->GetScalarParameterValue(Info, Reflectivity))
-			return DefaultReflectivity;
-
-		return Reflectivity;
-	}
-
-	float GetReflectivityOrDefault(UMeshComponent* Mesh, float DefaultReflectivity)
-	{
-		if (Mesh == nullptr)
-			return DefaultReflectivity;
-
-		return GetReflectivityOrDefault(Mesh->GetMaterial(0), DefaultReflectivity);
-	}
-
-	float GetReflectivityOrDefault(AAGX_Terrain* Terrain, float DefaultReflectivity)
-	{
-		if (Terrain == nullptr)
-			return DefaultReflectivity;
-
-		const auto TerrainMat = Terrain->TerrainMaterial;
-		if (TerrainMat == nullptr)
-			return DefaultReflectivity;
-
-		return TerrainMat->LidarReflectivity;
-	}
-
 	bool GetVerticesIndices(
 		UStaticMeshComponent* Mesh, TArray<FVector>& OutVertices, TArray<FTriIndices>& OutIndices,
 		int32 Lod)
@@ -150,6 +118,37 @@ namespace AGX_SensorEnvironment_helpers
 
 			It->Value.InstanceData.SetTransform(CompTransform);
 		}
+	}
+
+	FRtLambertianOpaqueMaterialBarrier* GetLambertianOpaqueMaterialBarrierFrom(
+		USceneComponent& Component)
+	{
+		auto Data =
+			Component.GetAssetUserDataOfClass(UAGX_SurfaceMaterialAssetUserData::StaticClass());
+		if (Data == nullptr)
+			return nullptr;
+
+		auto SurfaceMaterialData = Cast<UAGX_SurfaceMaterialAssetUserData>(Data);
+		if (SurfaceMaterialData == nullptr)
+			return nullptr;
+
+		auto LambertianOpaqueMaterial =
+			Cast<UAGX_LidarLambertianOpaqueMaterial>(SurfaceMaterialData->LidarSurfaceMaterial);
+		if (LambertianOpaqueMaterial == nullptr)
+			return nullptr;
+
+		return LambertianOpaqueMaterial->GetNative();
+	}
+
+	FRtLambertianOpaqueMaterialBarrier* GetLambertianOpaqueMaterialBarrierFrom(
+		AAGX_Terrain& Terrain)
+	{
+		auto LambertianOpaqueMaterial =
+			Cast<UAGX_LidarLambertianOpaqueMaterial>(Terrain.LidarSurfaceMaterial);
+		if (LambertianOpaqueMaterial == nullptr)
+			return nullptr;
+
+		return LambertianOpaqueMaterial->GetNative();
 	}
 }
 
@@ -292,9 +291,10 @@ bool AAGX_SensorEnvironment::AddMesh(
 
 	FAGX_RtShapeInstanceData& ShapeInstance = TrackedMeshes.Add(Mesh, FAGX_RtShapeInstanceData());
 	ShapeInstance.Shape.AllocateNative(Vertices, Indices);
-	ShapeInstance.InstanceData.Instance.AllocateNative(
-		ShapeInstance.Shape, NativeBarrier, GetReflectivityOrDefault(Mesh, DefaultReflectivity));
+	ShapeInstance.InstanceData.Instance.AllocateNative(ShapeInstance.Shape, NativeBarrier);
 	ShapeInstance.InstanceData.SetTransform(Mesh->GetComponentTransform());
+	ShapeInstance.InstanceData.Instance.SetLidarSurfaceMaterialOrDefault(
+		GetLambertianOpaqueMaterialBarrierFrom(*Mesh));
 	return true;
 }
 
@@ -317,9 +317,10 @@ bool AAGX_SensorEnvironment::AddMesh(
 	FAGX_RtShapeInstanceData& ShapeInstance =
 		TrackedAGXMeshes.Add(Mesh, FAGX_RtShapeInstanceData());
 	ShapeInstance.Shape.AllocateNative(Vertices, Indices);
-	ShapeInstance.InstanceData.Instance.AllocateNative(
-		ShapeInstance.Shape, NativeBarrier, GetReflectivityOrDefault(Mesh, DefaultReflectivity));
+	ShapeInstance.InstanceData.Instance.AllocateNative(ShapeInstance.Shape, NativeBarrier);
 	ShapeInstance.InstanceData.SetTransform(Mesh->GetComponentTransform());
+	ShapeInstance.InstanceData.Instance.SetLidarSurfaceMaterialOrDefault(
+		GetLambertianOpaqueMaterialBarrierFrom(*Mesh));
 	return true;
 }
 
@@ -361,13 +362,13 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance_Internal(
 
 	FAGX_RtInstanceData& InstanceData =
 		InstancedShapeInstance->InstancesData.Add(Index, FAGX_RtInstanceData());
-	InstanceData.Instance.AllocateNative(
-		InstancedShapeInstance->Shape, NativeBarrier,
-		GetReflectivityOrDefault(Mesh, DefaultReflectivity));
+	InstanceData.Instance.AllocateNative(InstancedShapeInstance->Shape, NativeBarrier);
 	AGX_CHECK(InstanceData.Instance.HasNative());
 	FTransform InstanceTrans;
 	Mesh->GetInstanceTransform(Index, InstanceTrans, true);
 	InstanceData.SetTransform(InstanceTrans);
+	InstanceData.Instance.SetLidarSurfaceMaterialOrDefault(
+		GetLambertianOpaqueMaterialBarrierFrom(*Mesh));
 	return true;
 }
 
@@ -383,8 +384,8 @@ bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 		if (PagerBarrier == nullptr)
 			return false;
 
-		return NativeBarrier.Add(
-			*PagerBarrier, GetReflectivityOrDefault(Terrain, DefaultReflectivity));
+		// Note: LidarSurfaceMaterial not supported for Paging Terrain in AGX yet.
+		return NativeBarrier.Add(*PagerBarrier);
 	}
 	else
 	{
@@ -392,9 +393,14 @@ bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 		if (TerrainBarrier == nullptr)
 			return false;
 
-		return NativeBarrier.Add(
-			*TerrainBarrier, GetReflectivityOrDefault(Terrain, DefaultReflectivity));
+		if (!NativeBarrier.Add(*TerrainBarrier))
+			return false;
+
+		NativeBarrier.SetLidarSurfaceMaterialOrDefault(
+			*TerrainBarrier, GetLambertianOpaqueMaterialBarrierFrom(*Terrain));
 	}
+
+	return true;
 }
 
 bool AAGX_SensorEnvironment::RemoveMesh(UStaticMeshComponent* Mesh)

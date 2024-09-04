@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
+#include "Sensors/AGX_LidarSurfaceMaterial.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/TerrainPagerBarrier.h"
 #include "Terrain/AGX_TerrainHeightFetcher.h"
@@ -201,6 +202,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
 	bool SetShapeMaterial(UAGX_ShapeMaterial* InShapeMaterial);
+
+	/**
+	 * The Lidar Surface Material assigned to the Terrain.
+	 * Determines the interaction of lidar laser rays with the Terrain surface.
+	 * This property is only relevant when using the Lidar Sensor.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
+	UAGX_LidarSurfaceMaterial* LidarSurfaceMaterial {nullptr};
 
 	/**
 	 * List of collision groups that this Terrain is part of.

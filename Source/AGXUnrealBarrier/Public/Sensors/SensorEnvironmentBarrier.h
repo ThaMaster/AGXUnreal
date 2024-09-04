@@ -10,6 +10,7 @@
 
 
 class FLidarBarrier;
+class FRtLambertianOpaqueMaterialBarrier;
 class FSimulationBarrier;
 class FTerrainBarrier;
 class FTerrainPagerBarrier;
@@ -31,11 +32,14 @@ public:
 	void ReleaseNative();
 
 	bool Add(FLidarBarrier& Lidar);
-	bool Add(FTerrainBarrier& Terrain, float Reflectivity);
-	bool Add(FTerrainPagerBarrier& Pager, float Reflectivity);
+	bool Add(FTerrainBarrier& Terrain);
+	bool Add(FTerrainPagerBarrier& Pager);
 
 	bool Remove(FTerrainBarrier& Terrain);
 	bool Remove(FTerrainPagerBarrier& Pager);
+
+	void SetLidarSurfaceMaterialOrDefault(
+		FTerrainBarrier& Terrain, FRtLambertianOpaqueMaterialBarrier* Material);
 
 private:
 	FSensorEnvironmentBarrier(const FSensorEnvironmentBarrier&) = delete;

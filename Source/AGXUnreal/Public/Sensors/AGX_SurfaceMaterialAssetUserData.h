@@ -17,5 +17,5 @@ class AGXUNREAL_API UAGX_SurfaceMaterialAssetUserData : public UAssetUserData
 
 public:
 	UPROPERTY()
-	TObjectPtr<UAGX_LidarSurfaceMaterial> Material {nullptr};
+	TObjectPtr<UAGX_LidarSurfaceMaterial> LidarSurfaceMaterial {nullptr};
 };

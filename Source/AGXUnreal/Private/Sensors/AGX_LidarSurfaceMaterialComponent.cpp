@@ -107,17 +107,17 @@ void UAGX_LidarSurfaceMaterialComponent::BeginPlay()
 
 void UAGX_LidarSurfaceMaterialComponent::UpdateMaterial()
 {
-	if (Material == nullptr)
+	if (LidarSurfaceMaterial == nullptr)
 		return;
 
 	UWorld* World = GetWorld();
-	UAGX_LidarSurfaceMaterial* Instance = Material->GetOrCreateInstance(World);
+	UAGX_LidarSurfaceMaterial* Instance = LidarSurfaceMaterial->GetOrCreateInstance(World);
 	check(Instance);
 
 	// Swap asset to instance as we are now in-game.
-	if (Material != Instance)
+	if (LidarSurfaceMaterial != Instance)
 	{
-		Material = Instance;
+		LidarSurfaceMaterial = Instance;
 	}
 }
 
@@ -144,7 +144,7 @@ void UAGX_LidarSurfaceMaterialComponent::AssignMaterial()
 			continue;
 		}
 
-		Data->Material = Material;
+		Data->LidarSurfaceMaterial = LidarSurfaceMaterial;
 		C->AddAssetUserData(Data);
 	}
 }

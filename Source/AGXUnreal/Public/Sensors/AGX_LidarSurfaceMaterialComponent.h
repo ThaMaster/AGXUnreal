@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Sensors/AGX_LidarEnums.h"
+#include "Sensors/AGX_LidarSurfaceMaterial.h"
 
 // Unreal Engine includes.
 #include "Components/SceneComponent.h"
@@ -40,7 +41,7 @@ public:
 	 * assigned.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
-	UAGX_LidarSurfaceMaterial* Material {nullptr};
+	UAGX_LidarSurfaceMaterial* LidarSurfaceMaterial {nullptr};
 
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;

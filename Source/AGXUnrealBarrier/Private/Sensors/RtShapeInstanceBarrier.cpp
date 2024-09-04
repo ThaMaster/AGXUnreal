@@ -35,21 +35,38 @@ FRtShapeInstanceBarrier::~FRtShapeInstanceBarrier()
 {
 }
 
-bool FRtShapeInstanceBarrier::HasNative() const
-{
-	return NativeRef->Native.handle != nullptr;
-}
-
 void FRtShapeInstanceBarrier::AllocateNative(
-	FRtShapeBarrier& Shape, FSensorEnvironmentBarrier& Environment, float Reflectivity)
+	FRtShapeBarrier& Shape, FSensorEnvironmentBarrier& Environment)
 {
 	check(!HasNative());
 	check(Shape.HasNative());
 	check(Environment.HasNative());
 
 	NativeRef->Native = agxSensor::RtShapeInstance::create(
-		Environment.GetNative()->Native->getScene(),
-		Shape.GetNative()->Native, nullptr);
+		Environment.GetNative()->Native->getScene(), Shape.GetNative()->Native, nullptr);
+}
+
+void FRtShapeInstanceBarrier::SetLidarSurfaceMaterialOrDefault(
+	FRtLambertianOpaqueMaterialBarrier* Material)
+{
+	check(HasNative());
+
+	if (Material == nullptr)
+	{
+		// Assign default if setting nullptr Material.
+		NativeRef->Native.handle->setSurfaceMaterial(
+			agxSensor::RtSurfaceMaterial::getDefault().getHandle());
+	}
+	else
+	{
+		check(Material->HasNative());
+		NativeRef->Native.handle->setSurfaceMaterial(Material->GetNative()->Native.getHandle());
+	}
+}
+
+bool FRtShapeInstanceBarrier::HasNative() const
+{
+	return NativeRef->Native.handle != nullptr;
 }
 
 FRtShapeInstance* FRtShapeInstanceBarrier::GetNative()

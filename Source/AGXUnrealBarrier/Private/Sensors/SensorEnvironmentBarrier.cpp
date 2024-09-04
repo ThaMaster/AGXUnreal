@@ -69,7 +69,7 @@ bool FSensorEnvironmentBarrier::Add(FLidarBarrier& Lidar)
 	return NativeRef->Native->add(Lidar.GetNative()->Native);
 }
 
-bool FSensorEnvironmentBarrier::Add(FTerrainBarrier& Terrain, float Reflectivity)
+bool FSensorEnvironmentBarrier::Add(FTerrainBarrier& Terrain)
 {
 	check(HasNative());
 	check(Terrain.HasNative());
@@ -80,7 +80,7 @@ bool FSensorEnvironmentBarrier::Add(FTerrainBarrier& Terrain, float Reflectivity
 	return Result;
 }
 
-bool FSensorEnvironmentBarrier::Add(FTerrainPagerBarrier& Pager, float Reflectivity)
+bool FSensorEnvironmentBarrier::Add(FTerrainPagerBarrier& Pager)
 {
 	check(HasNative());
 	check(Pager.HasNative());
@@ -104,4 +104,23 @@ bool FSensorEnvironmentBarrier::Remove(FTerrainPagerBarrier& Pager)
 	check(HasNative());
 	check(Pager.HasNative());
 	return NativeRef->Native->remove(Pager.GetNative()->Native);
+}
+
+void FSensorEnvironmentBarrier::SetLidarSurfaceMaterialOrDefault(
+	FTerrainBarrier& Terrain, FRtLambertianOpaqueMaterialBarrier* Material)
+{
+	check(Terrain.HasNative());
+
+	if (Material == nullptr)
+	{
+		// Assign default if setting nullptr Material.
+		agxSensor::RtSurfaceMaterial::set(
+			Terrain.GetNative()->Native, agxSensor::RtSurfaceMaterial::getDefault());
+	}
+	else
+	{
+		check(Material->HasNative());
+		agxSensor::RtSurfaceMaterial::set(
+			Terrain.GetNative()->Native, Material->GetNative()->Native);
+	}
 }
