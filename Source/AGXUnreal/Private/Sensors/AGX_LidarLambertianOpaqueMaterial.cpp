@@ -9,20 +9,12 @@
 
 void UAGX_LidarLambertianOpaqueMaterial::SetReflectivity(float InReflectivity)
 {
-	if (HasNative())
-	{
-		NativeBarrier.SetReflectivity(InReflectivity);
-	}
-
-	Reflectivity = InReflectivity;
+	AGX_ASSET_SETTER_IMPL_VALUE(Reflectivity, InReflectivity, SetReflectivity);
 }
 
 float UAGX_LidarLambertianOpaqueMaterial::GetReflectivity() const
 {
-	if (HasNative())
-		return NativeBarrier.GetReflectivity();
-
-	return Reflectivity;
+	AGX_ASSET_GETTER_IMPL_VALUE(Reflectivity, GetReflectivity);
 }
 
 bool UAGX_LidarLambertianOpaqueMaterial::HasNative() const

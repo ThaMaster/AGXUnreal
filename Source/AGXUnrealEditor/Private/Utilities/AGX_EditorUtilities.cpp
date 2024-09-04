@@ -40,6 +40,7 @@
 #include "GameFramework/PlayerController.h"
 #include "IContentBrowserSingleton.h"
 #include "Kismet2/KismetEditorUtilities.h"
+#include "MeshDescription.h"
 #include "Misc/Char.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/MessageDialog.h"

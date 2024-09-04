@@ -18,7 +18,9 @@ class UAGX_LidarSurfaceMaterial;
  * Helper Component that assigns lidar Surface Materials to Static Mesh Components and AGX Shapes at
  * Begin Play.
  */
-UCLASS(ClassGroup = "AGX_Sensor", Category = "AGX", Meta = (BlueprintSpawnableComponent))
+UCLASS(
+	ClassGroup = "AGX_Sensor", Category = "AGX",
+	Meta = (BlueprintSpawnableComponent, DisplayName = "AGX Lidar Surface Material Component"))
 class AGXUNREAL_API UAGX_LidarSurfaceMaterialComponent : public USceneComponent
 {
 	GENERATED_BODY()
