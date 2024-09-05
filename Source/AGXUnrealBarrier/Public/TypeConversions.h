@@ -23,6 +23,7 @@
 
 // Unreal Engine includes.
 #include "Containers/UnrealString.h"
+#include "Interface_CollisionDataProviderCore.h"
 #include "Logging/LogVerbosity.h"
 #include "Math/Interval.h"
 #include "Math/Matrix.h"

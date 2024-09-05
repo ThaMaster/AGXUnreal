@@ -4,6 +4,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Interface_CollisionDataProviderCore.h"
 
 // Standard library includes.
 #include <memory>

@@ -7,6 +7,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "Engine/AssetUserData.h"
 
 #include "AGX_SurfaceMaterialAssetUserData.generated.h"
 

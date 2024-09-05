@@ -7,6 +7,11 @@
 #include "AGX_Check.h"
 #include "AGX_PropertyChangedDispatcher.h"
 
+// Unreal Engine includes.
+#include "Engine/World.h"
+#include "UObject/Package.h"
+
+
 void UAGX_LidarLambertianOpaqueMaterial::SetReflectivity(float InReflectivity)
 {
 	AGX_ASSET_SETTER_IMPL_VALUE(Reflectivity, InReflectivity, SetReflectivity);

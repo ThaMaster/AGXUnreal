@@ -17,6 +17,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 
 #include <algorithm>
 
@@ -470,6 +471,7 @@ const FSensorEnvironmentBarrier* AAGX_SensorEnvironment::GetNative() const
 	return &NativeBarrier;
 }
 
+#if WITH_EDITOR
 bool AAGX_SensorEnvironment::CanEditChange(const FProperty* InProperty) const
 {
 	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
@@ -494,6 +496,7 @@ bool AAGX_SensorEnvironment::CanEditChange(const FProperty* InProperty) const
 	}
 	return SuperCanEditChange;
 }
+#endif
 
 void AAGX_SensorEnvironment::Tick(float DeltaSeconds)
 {

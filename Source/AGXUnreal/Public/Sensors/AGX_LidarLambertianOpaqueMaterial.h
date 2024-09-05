@@ -6,6 +6,9 @@
 #include "Sensors/AGX_LidarSurfaceMaterial.h"
 #include "Sensors/RtLambertianOpaqueMaterialBarrier.h"
 
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
 #include "AGX_LidarLambertianOpaqueMaterial.generated.h"
 
 /**
