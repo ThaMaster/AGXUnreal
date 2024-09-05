@@ -41,7 +41,7 @@ void FAGX_LidarOutputPositionIntensity::Render(
 
 	const FTransform& Transform = Lidar->GetComponentTransform();
 	
-	static constexpr double IntensityScaleFactor = 30.0; // Non-physical, just for visuals.
+	static constexpr double IntensityScaleFactor = 10.0; // Non-physical, just for visuals.
 	for (const auto& Datum : InData)
 	{
 		const uint8 Intensity = static_cast<uint8>(
