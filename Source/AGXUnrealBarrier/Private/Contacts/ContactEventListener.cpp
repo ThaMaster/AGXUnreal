@@ -1,9 +1,9 @@
 #include "Contacts/ContactEventListener.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGXRefs.h"
 #include "AGX_AgxDynamicsObjectsAccess.h"
-#include "Contacts/ShapeContactEntity.h"
+#include "BarrierOnly/AGXRefs.h"
+#include "BarrierOnly/Contacts/ShapeContactEntity.h"
 #include "Shapes/AnyShapeBarrier.h"
 #include "SimulationBarrier.h"
 #include "TypeConversions.h"

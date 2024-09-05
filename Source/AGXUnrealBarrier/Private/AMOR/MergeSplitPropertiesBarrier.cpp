@@ -5,12 +5,12 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
+#include "BarrierOnly/Wire/WireRef.h"
 #include "Constraints/ConstraintBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/ShapeBarrier.h"
 #include "Wire/WireBarrier.h"
-#include "Wire/WireRef.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"

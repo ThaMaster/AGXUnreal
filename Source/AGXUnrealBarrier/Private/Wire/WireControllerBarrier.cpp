@@ -4,12 +4,12 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/ShapeBarrier.h"
-#include "Wire/WireControllerPtr.h"
+#include "BarrierOnly/Wire/WireControllerPtr.h"
 #include "Wire/WireBarrier.h"
-#include "Wire/WireRef.h"
+#include "BarrierOnly/Wire/WireRef.h"
 
 FWireControllerBarrier::FWireControllerBarrier()
 	: Native {new FWireControllerPtr}

@@ -3,7 +3,7 @@
 #include "Wire/WireRenderIteratorBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-#include "Wire/WireNodeRef.h"
+#include "BarrierOnly/Wire/WireNodeRef.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"

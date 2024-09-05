@@ -3,14 +3,14 @@
 #include "AGXSimObjectsReader.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGXBarrierFactories.h"
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
-#include "AGXBarrierFactories.h"
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
-#include "Shapes/SphereShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
+#include "Shapes/SphereShapeBarrier.h"
 #include "SimulationObjectCollection.h"
 #include "TypeConversions.h"
 

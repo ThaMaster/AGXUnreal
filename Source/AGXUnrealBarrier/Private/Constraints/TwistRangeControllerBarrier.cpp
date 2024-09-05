@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
 #include "TypeConversions.h"
 
 // AGX Dynamics includes.

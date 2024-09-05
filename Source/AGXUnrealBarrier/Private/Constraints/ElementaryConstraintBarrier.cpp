@@ -3,7 +3,7 @@
 #include "Constraints/ElementaryConstraintBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
 #include "TypeConversions.h"
 
 // AGX Dynamics includes.

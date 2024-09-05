@@ -3,7 +3,7 @@
 #include "Utilities/AGXUtilities.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
 #include "RigidBodyBarrier.h"
 
 // AGX Dynamics includes.

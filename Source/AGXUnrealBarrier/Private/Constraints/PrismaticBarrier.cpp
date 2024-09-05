@@ -2,10 +2,12 @@
 
 #include "Constraints/PrismaticBarrier.h"
 
-#include "AGXRefs.h"
+// AGX Dynamics for Unreal includes.
+#include "BarrierOnly/AGXRefs.h"
 #include "RigidBodyBarrier.h"
 #include "Utilities/AGX_BarrierConstraintUtilities.h"
 
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/Prismatic.h>
 #include "EndAGXIncludes.h"
