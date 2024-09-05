@@ -156,13 +156,13 @@ void UAGX_LidarSensorComponent::Step()
 		NativeBarrier.SetTransform(GetComponentTransform());
 }
 
-bool UAGX_LidarSensorComponent::AddResult(FAGX_LidarOutputBase& InResult)
+bool UAGX_LidarSensorComponent::AddOutput(FAGX_LidarOutputBase& InOutput)
 {
 	auto Native = GetOrCreateNative();
 	if (Native == nullptr)
 		return false;
 
-	Native->AddResult(*InResult.GetOrCreateNative());
+	Native->AddOutput(*InOutput.GetOrCreateNative());
 	return true;
 }
 

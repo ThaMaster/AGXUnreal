@@ -54,7 +54,7 @@ public:
 	void DisableDistanceGaussianNoise();
 	bool IsDistanceGaussianNoiseEnabled() const;
 
-	void AddResult(FLidarOutputBarrier& Result);
+	void AddOutput(FLidarOutputBarrier& Output);
 
 	static FAGX_RealInterval GetRangeFrom(EAGX_LidarModel InModel);
 	static FAGX_Real GetBeamDivergenceFrom(EAGX_LidarModel InModel);

@@ -189,7 +189,7 @@ double FLidarBarrier::GetBeamExitRadius() const
 
 namespace LidarBarrier_helpers
 {
-	size_t GenerateUniqueResultId()
+	size_t GenerateUniqueOutputId()
 	{
 		static size_t Id = 1;
 		return Id++;
@@ -243,13 +243,13 @@ bool FLidarBarrier::IsDistanceGaussianNoiseEnabled() const
 	return DistanceNoiseNativeRef != nullptr;
 }
 
-void FLidarBarrier::AddResult(FLidarOutputBarrier& Result)
+void FLidarBarrier::AddOutput(FLidarOutputBarrier& Output)
 {
 	check(HasNative());
-	check(Result.HasNative());
+	check(Output.HasNative());
 
 	NativeRef->Native->getOutputHandler()->add(
-		LidarBarrier_helpers::GenerateUniqueResultId(), Result.GetNative()->Native);
+		LidarBarrier_helpers::GenerateUniqueOutputId(), Output.GetNative()->Native);
 }
 
 FAGX_RealInterval FLidarBarrier::GetRangeFrom(EAGX_LidarModel InModel)

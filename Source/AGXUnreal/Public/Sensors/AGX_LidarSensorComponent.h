@@ -103,7 +103,7 @@ public:
 	UAGX_RayPatternBase* RayPattern {nullptr};
 
 	/**
-	 * Enables or disables removal of point misses, i.e. makes the result dense if set to true.
+	 * Enables or disables removal of point misses, i.e. makes the output dense if set to true.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
 	bool bEnableRemovePointsMisses {true};
@@ -178,7 +178,7 @@ public:
 
 	void Step();
 
-	bool AddResult(FAGX_LidarOutputBase& InResult);
+	bool AddOutput(FAGX_LidarOutputBase& InOutput);
 
 	bool HasNative() const;
 	FLidarBarrier* GetOrCreateNative();

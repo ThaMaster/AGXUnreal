@@ -10,7 +10,7 @@ bool FAGX_LidarOutputBase::AddTo(UAGX_LidarSensorComponent* Lidar)
 	if (Lidar == nullptr)
 		return false;
 
-	return Lidar->AddResult(*this);
+	return Lidar->AddOutput(*this);
 }
 
 bool FAGX_LidarOutputBase::operator==(const FAGX_LidarOutputBase& Other) const
