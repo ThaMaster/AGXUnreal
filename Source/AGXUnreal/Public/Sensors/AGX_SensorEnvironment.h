@@ -30,7 +30,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Sensor Environment")
 	TArray<FAGX_LidarSensorReference> LidarSensors;
 
-	/*
+	/**
 	 * Objects in the Level that gets within the range of any added Lidar will automatically be
 	 * added to this Environment if they can be detected.
 	 * Objects will be detected if they have a Static Mesh Component using "Generate Overlap Events"
@@ -41,7 +41,7 @@ public:
 		Meta = (ExposeOnSpawn))
 	bool bAutoAddObjects {true};
 
-	/*
+	/**
 	 * If set to true, any Component (e.g. Static Mesh) that has Visibility invisible will be
 	 * ignored when using Auto Add Objects. If set to false, the Component will be added regardless
 	 * of visibility.
@@ -53,7 +53,7 @@ public:
 		Meta = (EditCondition = "bAutoAddObjects"))
 	bool bIgnoreInvisibleObjects {true};
 
-	/*
+	/**
 	 * Default LOD index used when reading Meshes that are added to this Environment.
 	 * If set to a negative value, the highest valid LOD index is used (lowest resolution).
 	 * If this LOD index does not exist for a Mesh that is added, the closest valid (and lower) LOD
@@ -62,7 +62,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Sensor Environment")
 	int32 DefaultLODIndex {-1};
 
-	/*
+	/**
 	 * Whether or not the transform of added Instanced Static Meshes should be updated each Tick.
 	 * Updating Instanced Static Mesh transforms comes with some perfomance cost, especially if
 	 * a large number of instances are present.
@@ -74,7 +74,15 @@ public:
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Sensor Environment", AdvancedDisplay)
 	bool UpdateAddedInstancedMeshesTransforms {true};
 
-	/*
+	/**
+	 * For debugging purposes. If set to true, a message is logged in the Output Console each time
+	 * an object is succesfully added to this Sensor Environment.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Sensor Environment", AdvancedDisplay)
+	bool DebugLogOnAdd {false};
+
+	/**
 	 * Add a Static Mesh Component so that it can be detected by sensors handled by this Sensor
 	 * Environment.
 	 * (Optional) LOD determines the LOD index used when reading the given Mesh. If left to -1,
@@ -85,7 +93,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool AddMesh(UStaticMeshComponent* Mesh, int32 LOD = -1);
 
-	/*
+	/**
 	 * Add an AGX Simple Mesh Component so that it can be detected by sensors handled by this Sensor
 	 * Environment.
 	 * Only valid to call during Play.
@@ -93,7 +101,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool AddAGXMesh(UAGX_SimpleMeshComponent* Mesh);
 
-	/*
+	/**
 	 * Add all instances of an Instanced Static Mesh Component so that they can be detected by
 	 * sensors handled by this Sensor Environment.
 	 * (Optional) LOD determines the LOD index used when reading the given Mesh. If left to -1,
@@ -104,7 +112,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool AddInstancedMesh(UInstancedStaticMeshComponent* Mesh, int32 LOD = -1);
 
-	/*
+	/**
 	 * Add a single instance of an Instanced Static Mesh Component so that it can be detected by
 	 * sensors handled by this Sensor Environment. The Index corresponds to the Mesh Instance to
 	 * add.
@@ -116,7 +124,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool AddInstancedMeshInstance(UInstancedStaticMeshComponent* Mesh, int32 Index, int32 LOD = -1);
 
-	/*
+	/**
 	 * Add a Terrain so that it can be detected by sensors handled by this Sensor
 	 * Environment.
 	 * Only valid to call during Play.
@@ -124,28 +132,28 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool AddTerrain(AAGX_Terrain* Terrain);
 
-	/*
+	/**
 	 * Remove a Static Mesh Component from this Sensor Environment.
 	 * Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool RemoveMesh(UStaticMeshComponent* Mesh);
 
-	/*
+	/**
 	 * Remove an Instanced Static Mesh Component and all its instances from this Sensor Environment.
 	 * Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool RemoveInstancedMesh(UInstancedStaticMeshComponent* Mesh);
 
-	/*
+	/**
 	 * Remove a single Instanced Static Mesh Instace from this Sensor Environment.
 	 * Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool RemoveInstancedMeshInstance(UInstancedStaticMeshComponent* Mesh, int32 Index);
 
-	/*
+	/**
 	 * Remove a Terrain from this Sensor Environment.
 	 * Only valid to call during Play.
 	 */

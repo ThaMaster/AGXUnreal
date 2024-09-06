@@ -29,10 +29,10 @@ private:
 
 	const TArray<TSharedPtr<EAGX_LidarModel>>* GetAvailableModels();
 
+	FString GetLidarModelString() const;
 	static FString FromEnum(EAGX_LidarModel Model);
 	
 private:
 	IDetailLayoutBuilder* DetailBuilder {nullptr};
 	TArray<TSharedPtr<EAGX_LidarModel>> AvailableModels;
-	EAGX_LidarModel SelectedModel {EAGX_LidarModel::GenericHorizontalSweep};
 };

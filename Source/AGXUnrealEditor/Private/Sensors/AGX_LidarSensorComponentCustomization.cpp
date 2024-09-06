@@ -62,8 +62,7 @@ void FAGX_LidarSensorComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 						  .Text_Lambda(
 							  [this]() {
 								  return FText::FromString(
-									  FAGX_LidarSensorComponentCustomization::FromEnum(
-										  SelectedModel));
+									  FAGX_LidarSensorComponentCustomization::GetLidarModelString());
 							  })]];
 	//clang-format on
 
@@ -90,7 +89,6 @@ void FAGX_LidarSensorComponentCustomization::OnModelComboBoxChanged(
 		return;
 
 	Lidar->SetModel(*NewModel);
-	SelectedModel = *NewModel;
 
 	for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*Lidar))
 	{
@@ -108,6 +106,19 @@ FAGX_LidarSensorComponentCustomization::GetAvailableModels()
 	}
 
 	return &AvailableModels;
+}
+
+FString FAGX_LidarSensorComponentCustomization::GetLidarModelString() const
+{
+	UAGX_LidarSensorComponent* Lidar =
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_LidarSensorComponent>(
+			*DetailBuilder);
+	if (Lidar == nullptr)
+	{
+		return "";
+	}
+
+	return FromEnum(Lidar->GetModel());
 }
 
 FString FAGX_LidarSensorComponentCustomization::FromEnum(EAGX_LidarModel Model)

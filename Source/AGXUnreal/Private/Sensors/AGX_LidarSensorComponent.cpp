@@ -48,6 +48,7 @@ void UAGX_LidarSensorComponent::SetModel(EAGX_LidarModel InModel)
 		return;
 	}
 
+	Model = InModel;
 	Range = FAGX_SensorUtilities::GetRangeFrom(InModel);
 	BeamDivergence = FAGX_SensorUtilities::GetBeamDivergenceFrom(InModel);
 	BeamExitRadius = FAGX_SensorUtilities::GetBeamExitRadiusFrom(InModel);
@@ -234,10 +235,12 @@ const FLidarBarrier* UAGX_LidarSensorComponent::GetNative() const
 
 void UAGX_LidarSensorComponent::CopyFrom(const UAGX_LidarSensorComponent& Source)
 {
+	Model = Source.Model;
 	Range = Source.Range;
 	BeamDivergence = Source.BeamDivergence;
 	BeamExitRadius = Source.BeamExitRadius;
 	RayPattern = Source.RayPattern;
+	bEnableRemovePointsMisses = Source.bEnableRemovePointsMisses;
 	bEnableDistanceGaussianNoise = Source.bEnableDistanceGaussianNoise;
 	DistanceNoiseSettings = Source.DistanceNoiseSettings;
 }

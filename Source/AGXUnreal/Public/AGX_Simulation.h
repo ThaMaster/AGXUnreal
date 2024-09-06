@@ -530,6 +530,13 @@ public: // Member functions.
 
 	void CreateNative();
 
+	/**
+	 * This is called automatically once an object is added to this Simulation. For scenarios where
+	 * no objects with an AGX Dynamics representation exists in the Level, but a stepping Simulation
+	 * object is still required, this function can be called manually, for example in Begin Play.
+	 */
+	void EnsureStepperCreated();
+
 	friend class AAGX_Stepper;
 
 private:
@@ -594,7 +601,6 @@ private:
 	void SeparationCallback(
 		double TimeStamp, FAnyShapeBarrier& FirstShape, FAnyShapeBarrier& SecondShape);
 
-	void EnsureStepperCreated();
 	void EnsureValidLicense();
 
 	void SetGravity();

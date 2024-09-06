@@ -12,6 +12,7 @@
 #include "Sensors/AGX_SurfaceMaterialAssetUserData.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "Components/InstancedStaticMeshComponent.h"
@@ -179,7 +180,16 @@ bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh, int32 InLod)
 	const bool Res =
 		AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVerts, OutInds, Lod);
 	if (Res)
+	{
 		AddMesh(Mesh, OutVerts, OutInds);
+		if (DebugLogOnAdd)
+		{
+			UE_LOG(
+				LogAGX, Log,
+				TEXT("Sensor Environment '%s' added Static Mesh Component '%s' in '%s'."),
+				*GetName(), *Mesh->GetName(), *GetLabelSafe(Mesh->GetOwner()));
+		}
+	}
 
 	return Res;
 }
@@ -200,7 +210,15 @@ bool AAGX_SensorEnvironment::AddAGXMesh(UAGX_SimpleMeshComponent* Mesh)
 	TArray<FTriIndices> OutInds;
 	const bool Res = AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVerts, OutInds);
 	if (Res)
+	{
 		AddMesh(Mesh, OutVerts, OutInds);
+		if (DebugLogOnAdd)
+		{
+			UE_LOG(
+				LogAGX, Log, TEXT("Sensor Environment '%s' added AGX Shape '%s' in '%s'."),
+				*GetName(), *Mesh->GetName(), *GetLabelSafe(Mesh->GetOwner()));
+		}
+	}
 
 	return Res;
 }
@@ -241,6 +259,13 @@ bool AAGX_SensorEnvironment::AddInstancedMesh(UInstancedStaticMeshComponent* Mes
 		AddInstancedMeshInstance_Internal(Mesh, i);
 	}
 
+	if (DebugLogOnAdd)
+	{
+		UE_LOG(
+			LogAGX, Log, TEXT("Sensor Environment '%s' added Instaced Static Mesh '%s' in '%s'."),
+			*GetName(), *Mesh->GetName(), *GetLabelSafe(Mesh->GetOwner()));
+	}
+
 	return true;
 }
 
@@ -272,7 +297,15 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance(
 			return false;
 	}
 
-	return AddInstancedMeshInstance_Internal(Mesh, Index);
+	const bool Res = AddInstancedMeshInstance_Internal(Mesh, Index);
+	if (Res && DebugLogOnAdd)
+	{
+			UE_LOG(
+				LogAGX, Log, TEXT("Sensor Environment '%s' added AGX Shape '%s' in '%s'."),
+				*GetName(), *Mesh->GetName(), *GetLabelSafe(Mesh->GetOwner()));
+	}
+
+	return Res;
 }
 
 bool AAGX_SensorEnvironment::AddMesh(
@@ -399,6 +432,13 @@ bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 
 		NativeBarrier.SetLidarSurfaceMaterialOrDefault(
 			*TerrainBarrier, GetLambertianOpaqueMaterialBarrierFrom(*Terrain));
+	}
+
+	if (DebugLogOnAdd)
+	{
+		UE_LOG(
+			LogAGX, Log, TEXT("Sensor Environment '%s' added Terrain '%s'."), *GetName(),
+			*Terrain->GetName());
 	}
 
 	return true;
@@ -533,6 +573,9 @@ void AAGX_SensorEnvironment::BeginPlay()
 			*GetName());
 		return;
 	}
+
+	// In case the Level has no other AGX types in it.
+	Sim->EnsureStepperCreated();
 
 	NativeBarrier.AllocateNative(*Sim->GetNative());
 	check(NativeBarrier.HasNative());
