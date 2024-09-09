@@ -3,15 +3,15 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "Sensors/AGX_RayPatternBase.h"
+#include "Sensors/AGX_LidarModelParameters.h"
 
-#include "AGX_RayPatternHorizontalSweep.generated.h"
+#include "AGX_GenericHorizontalSweepParameters.generated.h"
 
 /**
- * Scans one vertical line, then goes to the next.
+ * Parameters used to create a Lidar Sensor Component using Lidar Model GenericHorizontalSweep.
  */
-UCLASS(ClassGroup = "AGX", Category = "AGX")
-class AGXUNREAL_API UAGX_RayPatternHorizontalSweep : public UAGX_RayPatternBase
+UCLASS(ClassGroup = "AGX_Sensor", Category = "AGX")
+class AGXCOMMON_API UAGX_GenericHorizontalSweepParameters : public UAGX_LidarModelParameters
 {
 	GENERATED_BODY()
 
@@ -35,5 +35,5 @@ public:
 	 * ray pattern of the Lidar Sensor is covered per second [Hz].
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
-	double Frequency {1.0};
+	double Frequency {5.0};
 };

@@ -7,8 +7,6 @@
 #include "AGX_Check.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Sensors/AGX_LidarOutputBase.h"
-#include "Sensors/AGX_RayPatternCustom.h"
-#include "Sensors/AGX_RayPatternHorizontalSweep.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_SensorUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -19,14 +17,11 @@
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 
-
 #define LOCTEXT_NAMESPACE "AGX_LidarSensor"
 
 UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
-	SetModel(EAGX_LidarModel::GenericHorizontalSweep);
 
 	static const TCHAR* DefaultNiagaraSystem =
 		TEXT("StaticMesh'/AGXUnreal/Sensor/Lidar/NS_LidarNiagaraSystem.NS_LidarNiagaraSystem'");
@@ -49,13 +44,6 @@ void UAGX_LidarSensorComponent::SetModel(EAGX_LidarModel InModel)
 	}
 
 	Model = InModel;
-	Range = FAGX_SensorUtilities::GetRangeFrom(InModel);
-	BeamDivergence = FAGX_SensorUtilities::GetBeamDivergenceFrom(InModel);
-	BeamExitRadius = FAGX_SensorUtilities::GetBeamExitRadiusFrom(InModel);
-	RayPattern = FAGX_SensorUtilities::GetRayPatternFrom(InModel);
-	bEnableDistanceGaussianNoise =
-		FAGX_SensorUtilities::GetEnableDistanceGaussianNoiseFrom(InModel);
-	DistanceNoiseSettings = FAGX_SensorUtilities::GetDistanceGaussianNoiseFrom(InModel);
 }
 
 EAGX_LidarModel UAGX_LidarSensorComponent::GetModel() const
@@ -177,42 +165,51 @@ FLidarBarrier* UAGX_LidarSensorComponent::GetOrCreateNative()
 	if (HasNative())
 		return GetNative();
 
-	if (RayPattern == nullptr)
-	{
-		FAGX_NotificationUtilities::ShowNotification(
-			FString::Printf(
-				TEXT("No Ray Pattern selected for Lidar Sensor '%s' in '%s'. Make sure a valid "
-					 "Ray Pattern has been selected."),
-				*GetName(), *GetLabelSafe(GetOwner())),
-			SNotificationItem::CS_Fail);
-		return nullptr;
-	}
-
-	if (Cast<UAGX_RayPatternCustom>(RayPattern) != nullptr)
-	{
-		PatternFetcher.SetLidar(this);
-		NativeBarrier.AllocateNativeRayPatternCustom(&PatternFetcher);
-		AGX_CHECK(NativeBarrier.HasNative());
-	}
-	else if (auto Pattern = Cast<UAGX_RayPatternHorizontalSweep>(RayPattern))
-	{
-		NativeBarrier.AllocateNativeLidarRayPatternHorizontalSweep(
-			Pattern->FOV, Pattern->Resolution, Pattern->Frequency);
-		AGX_CHECK(NativeBarrier.HasNative());
-	}
-	else
+	if (ModelParameters == nullptr)
 	{
 		FAGX_NotificationUtilities::ShowNotification(
 			FString::Printf(
 				TEXT(
-					"Unknown Ray Pattern selected for Lidar Sensor '%s' in '%s'. Make sure a valid "
-					"Ray Pattern has been selected."),
+					"No Model Parameters selected for Lidar Sensor '%s' in '%s'. Make sure a valid "
+					"Model Parameter Asset has been selected."),
 				*GetName(), *GetLabelSafe(GetOwner())),
 			SNotificationItem::CS_Fail);
 		return nullptr;
 	}
 
-	AGX_CHECK(NativeBarrier.HasNative());
+	if (!ModelParameters->IsA(FAGX_SensorUtilities::GetParameterTypeFrom(GetModel())))
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("Lidar Sensor '%s' in '%s': the assigned Model Parameters Asset is not "
+					 "compatible with the selected Model. Assign a Model Parameters Asset of the "
+					 "appropriate type."),
+				*GetName(), *GetLabelSafe(GetOwner())),
+			SNotificationItem::CS_Fail);
+		return nullptr;
+	}
+
+	if (Model == EAGX_LidarModel::CustomRayPattern)
+	{
+		PatternFetcher.SetLidar(this);
+		NativeBarrier.AllocateNativeCustomRayPattern(PatternFetcher);
+	}
+	else
+	{
+		NativeBarrier.AllocateNative(Model, *ModelParameters);
+	}
+
+	if (!NativeBarrier.HasNative())
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("Lidar Sensor '%s' in '%s': unable to create Native AGX Lidar given the Model "
+					 "and ModelParameters."),
+				*GetName(), *GetLabelSafe(GetOwner())),
+			SNotificationItem::CS_Fail);
+		return nullptr;
+	}
+
 	UpdateNativeProperties();
 	return GetNative();
 }
@@ -239,7 +236,7 @@ void UAGX_LidarSensorComponent::CopyFrom(const UAGX_LidarSensorComponent& Source
 	Range = Source.Range;
 	BeamDivergence = Source.BeamDivergence;
 	BeamExitRadius = Source.BeamExitRadius;
-	RayPattern = Source.RayPattern;
+	ModelParameters = Source.ModelParameters;
 	bEnableRemovePointsMisses = Source.bEnableRemovePointsMisses;
 	bEnableDistanceGaussianNoise = Source.bEnableDistanceGaussianNoise;
 	DistanceNoiseSettings = Source.DistanceNoiseSettings;
@@ -253,9 +250,9 @@ void UAGX_LidarSensorComponent::BeginPlay()
 	if (bEnableRendering && NiagaraSystemAsset != nullptr)
 	{
 		NiagaraSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-			NiagaraSystemAsset, this, NAME_None, FVector::ZeroVector,
-			FRotator::ZeroRotator, FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset,
-			false, ENCPoolMethod::None);
+			NiagaraSystemAsset, this, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
+			FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset, false,
+			ENCPoolMethod::None);
 	}
 }
 
@@ -276,10 +273,9 @@ bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
 		// List of names of properties that does not support editing after initialization.
 		static const TArray<FName> PropertiesNotEditableDuringPlay = {
 			GET_MEMBER_NAME_CHECKED(ThisClass, Model),
-			GET_MEMBER_NAME_CHECKED(ThisClass, RayPattern),
+			GET_MEMBER_NAME_CHECKED(ThisClass, ModelParameters),
 			GET_MEMBER_NAME_CHECKED(ThisClass, bEnableRendering),
-			GET_MEMBER_NAME_CHECKED(ThisClass, NiagaraSystemAsset)
-		};
+			GET_MEMBER_NAME_CHECKED(ThisClass, NiagaraSystemAsset)};
 
 		if (PropertiesNotEditableDuringPlay.Contains(InProperty->GetFName()))
 		{
@@ -331,20 +327,30 @@ void UAGX_LidarSensorComponent::InitPropertyDispatcher()
 }
 #endif // WITH_EDITOR
 
+bool UAGX_LidarSensorComponent::IsCustomParametersSupported() const
+{
+	return Model == EAGX_LidarModel::CustomRayPattern ||
+		   Model == EAGX_LidarModel::GenericHorizontalSweep;
+}
+
 void UAGX_LidarSensorComponent::UpdateNativeProperties()
 {
 	AGX_CHECK(HasNative());
-	NativeBarrier.SetRange(Range);
-	NativeBarrier.SetBeamDivergence(BeamDivergence);
-	NativeBarrier.SetBeamExitRadius(BeamExitRadius);
-	NativeBarrier.SetEnableRemoveRayMisses(bEnableRemovePointsMisses);
 
-	SetEnableDistanceGaussianNoise(bEnableDistanceGaussianNoise);
+	if (IsCustomParametersSupported())
+	{
+		NativeBarrier.SetRange(Range);
+		NativeBarrier.SetBeamDivergence(BeamDivergence);
+		NativeBarrier.SetBeamExitRadius(BeamExitRadius);
+		SetEnableDistanceGaussianNoise(bEnableDistanceGaussianNoise);
+	}
+
+	NativeBarrier.SetEnableRemoveRayMisses(bEnableRemovePointsMisses);
 }
 
 TArray<FTransform> UAGX_LidarSensorComponent::FetchRayTransforms()
 {
-	AGX_CHECK(Cast<UAGX_RayPatternCustom>(RayPattern) != nullptr);
+	AGX_CHECK(Model == EAGX_LidarModel::CustomRayPattern);
 	if (!OnFetchRayTransforms.IsBound())
 	{
 		UE_LOG(
@@ -361,7 +367,7 @@ TArray<FTransform> UAGX_LidarSensorComponent::FetchRayTransforms()
 
 FAGX_CustomPatternInterval UAGX_LidarSensorComponent::FetchNextInterval()
 {
-	AGX_CHECK(Cast<UAGX_RayPatternCustom>(RayPattern) != nullptr);
+	AGX_CHECK(Model == EAGX_LidarModel::CustomRayPattern);
 	if (!OnFetchNextPatternInterval.IsBound())
 	{
 		UE_LOG(

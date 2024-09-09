@@ -3,9 +3,15 @@
 #include "Sensors/AGX_LidarSensorComponentCustomization.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Sensors/AGX_CustomRayPatternParameters.h"
+#include "Sensors/AGX_GenericHorizontalSweepParameters.h"
 #include "Sensors/AGX_LidarSensorComponent.h"
+#include "Sensors/AGX_OusterOS0Parameters.h"
+#include "Sensors/AGX_OusterOS1Parameters.h"
+#include "Sensors/AGX_OusterOS2Parameters.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_SensorUtilities.h"
 
 // Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
@@ -61,9 +67,35 @@ void FAGX_LidarSensorComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 					 [SNew(STextBlock)
 						  .Text_Lambda(
 							  [this]() {
-								  return FText::FromString(
-									  FAGX_LidarSensorComponentCustomization::GetLidarModelString());
+								  return FText::FromString(FAGX_LidarSensorComponentCustomization::
+															   GetLidarModelString());
 							  })]];
+
+	CategoryBuilder.AddProperty(
+		InDetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, Range)));
+
+	CategoryBuilder.AddProperty(InDetailBuilder.GetProperty(
+		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, BeamDivergence)));
+
+	CategoryBuilder.AddProperty(InDetailBuilder.GetProperty(
+		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, BeamExitRadius)));
+
+	CategoryBuilder.AddProperty(InDetailBuilder.GetProperty(
+		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, ModelParameters)));
+
+	// Create Lidar Model Parameters Asset Button.
+	CategoryBuilder.AddCustomRow(FText::GetEmpty())
+		[SNew(SHorizontalBox) +
+		 SHorizontalBox::Slot().AutoWidth()
+			 [SNew(SButton)
+				  .Text(LOCTEXT(
+					  "CreateModelParameterAssetsButtonText", "Create Model Parameters Asset"))
+				  .ToolTipText(LOCTEXT(
+					  "CreateModelParameterAssetsTooltip",
+					  "Create a new Model Parameters Asset for the selected Lidar Model."))
+				  .OnClicked(
+					  this, &FAGX_LidarSensorComponentCustomization::
+								OnCreateModelParametersAssetButtonClicked)]];
 	//clang-format on
 
 	InDetailBuilder.HideCategory(FName("Sockets"));
@@ -72,23 +104,24 @@ void FAGX_LidarSensorComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 void FAGX_LidarSensorComponentCustomization::OnModelComboBoxChanged(
 	TSharedPtr<EAGX_LidarModel> NewModel, ESelectInfo::Type InSeletionInfo)
 {
-	const FText SetModelYesNo = LOCTEXT(
-		"LidarSetModelYesNo",
-		"This action will overwrite the Lidar properties of this Component and any instance of "
-		"this Component. Continue?");
-
 	UAGX_LidarSensorComponent* Lidar =
 		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_LidarSensorComponent>(
 			*DetailBuilder);
 	if (Lidar == nullptr || NewModel == nullptr)
-	{
-		return;
-	}
-
-	if (!FAGX_NotificationUtilities::YesNoQuestion(SetModelYesNo))
 		return;
 
 	Lidar->SetModel(*NewModel);
+
+	UClass* NewModelParametersType = FAGX_SensorUtilities::GetParameterTypeFrom(*NewModel);
+	if (Lidar->ModelParameters != nullptr && NewModelParametersType != nullptr &&
+		!Lidar->ModelParameters->IsA(NewModelParametersType))
+	{
+		// Clear ModelParameters selection if currently selected does not match the Lidar Model.
+		Lidar->ModelParameters = nullptr;
+	}
+
+	if (!Lidar->IsCustomParametersSupported())
+		Lidar->bEnableDistanceGaussianNoise = false; // Help EditCondition logic for this property.
 
 	for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*Lidar))
 	{
@@ -101,8 +134,11 @@ FAGX_LidarSensorComponentCustomization::GetAvailableModels()
 {
 	if (AvailableModels.Num() == 0)
 	{
+		AvailableModels.Add(MakeShared<EAGX_LidarModel>(EAGX_LidarModel::CustomRayPattern));
 		AvailableModels.Add(MakeShared<EAGX_LidarModel>(EAGX_LidarModel::GenericHorizontalSweep));
-		AvailableModels.Add(MakeShared<EAGX_LidarModel>(EAGX_LidarModel::Custom));
+		AvailableModels.Add(MakeShared<EAGX_LidarModel>(EAGX_LidarModel::OusterOS0));
+		AvailableModels.Add(MakeShared<EAGX_LidarModel>(EAGX_LidarModel::OusterOS1));
+		AvailableModels.Add(MakeShared<EAGX_LidarModel>(EAGX_LidarModel::OusterOS2));
 	}
 
 	return &AvailableModels;
@@ -125,10 +161,16 @@ FString FAGX_LidarSensorComponentCustomization::FromEnum(EAGX_LidarModel Model)
 {
 	switch (Model)
 	{
+		case EAGX_LidarModel::CustomRayPattern:
+			return "CustomRayPattern";
 		case EAGX_LidarModel::GenericHorizontalSweep:
 			return "GenericHorizontalSweep";
-		case EAGX_LidarModel::Custom:
-			return "Custom";
+		case EAGX_LidarModel::OusterOS0:
+			return "OusterOS0";
+		case EAGX_LidarModel::OusterOS1:
+			return "OusterOS1";
+		case EAGX_LidarModel::OusterOS2:
+			return "OusterOS2";
 	}
 
 	UE_LOG(
@@ -136,6 +178,95 @@ FString FAGX_LidarSensorComponentCustomization::FromEnum(EAGX_LidarModel Model)
 		TEXT("Unknown EAGX_LidarModel enum literal passed to "
 			 "FAGX_LidarSensorComponentCustomization::FromEnum. Returning 'None'."));
 	return "None";
+}
+
+namespace AGX_LidarSensorComponentCustomization_helpers
+{
+	UAGX_LidarModelParameters* CreateModelParametersAsset(
+		UClass* Type, const FString& AssetNameSuggestion, const FString& DialogTitle)
+	{
+		const FString AssetPath =
+			FAGX_EditorUtilities::SelectNewAssetDialog(Type, "", AssetNameSuggestion, DialogTitle);
+
+		if (AssetPath.IsEmpty())
+			return nullptr;
+
+		const FString AssetName = FPaths::GetBaseFilename(AssetPath);
+
+		UPackage* Package = CreatePackage(*AssetPath);
+		auto Asset = NewObject<UAGX_LidarModelParameters>(
+			Package, Type, FName(*AssetName), RF_Public | RF_Standalone);
+		if (Asset == nullptr)
+		{
+			FAGX_NotificationUtilities::ShowNotification(
+				FString::Printf(TEXT("Unable to create asset given Asset Path: '%s'"), *AssetPath),
+				SNotificationItem::ECompletionState::CS_Fail);
+			return nullptr;
+		}
+
+		return Asset;
+	}
+}
+
+FReply FAGX_LidarSensorComponentCustomization::OnCreateModelParametersAssetButtonClicked()
+{
+	using namespace AGX_LidarSensorComponentCustomization_helpers;
+	AGX_CHECK(DetailBuilder);
+
+	UAGX_LidarSensorComponent* Lidar =
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_LidarSensorComponent>(
+			*DetailBuilder);
+	if (Lidar == nullptr)
+		return FReply::Handled();
+
+	if (Lidar->GetWorld() != nullptr && Lidar->GetWorld()->IsGameWorld())
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			"This action is not possible during Play.",
+			SNotificationItem::ECompletionState::CS_Fail);
+		return FReply::Handled();
+	}
+
+	// Ask the user to specify file name and location for the Model Parameters Asset to be created.
+	const FString DefaultAssetName = FString::Printf(TEXT("LMP_%s"), *FromEnum(Lidar->GetModel()));
+
+	auto ModelParametersType = FAGX_SensorUtilities::GetParameterTypeFrom(Lidar->GetModel());
+	if (ModelParametersType == nullptr)
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			"Unable to create a Model Parameters Asset given the selected Model.",
+			SNotificationItem::ECompletionState::CS_Fail);
+		return FReply::Handled();
+	}
+
+	UAGX_LidarModelParameters* ModelParametersAsset = CreateModelParametersAsset(
+		ModelParametersType, DefaultAssetName, FString("Save Model Parameters Asset As"));
+	if (ModelParametersAsset == nullptr)
+		return FReply::Handled(); // Logging done in CreateModelParametersAsset.
+
+	if (!FAGX_ObjectUtilities::SaveAsset(*ModelParametersAsset))
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(TEXT("Unable to save asset: '%s'"), *ModelParametersAsset->GetName()),
+			SNotificationItem::ECompletionState::CS_Fail);
+		return FReply::Handled();
+	}
+
+	// Finally, assign the created Asset.
+	for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*Lidar))
+	{
+		if (Instance->ModelParameters == Lidar->ModelParameters)
+		{
+			Instance->ModelParameters = ModelParametersAsset;
+		}
+	}
+
+	Lidar->ModelParameters = ModelParametersAsset;
+
+	FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(
+		FString::Printf(TEXT("Successfully saved: '%s'"), *ModelParametersAsset->GetName()));
+
+	return FReply::Handled();
 }
 
 #undef LOCTEXT_NAMESPACE

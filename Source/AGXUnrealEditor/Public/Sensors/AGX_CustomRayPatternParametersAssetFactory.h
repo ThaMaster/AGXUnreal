@@ -5,15 +5,15 @@
 #include "CoreMinimal.h"
 #include "Factories/Factory.h"
 
-#include "AGX_RayPatternHorizontalSweepAssetFactory.generated.h"
+#include "AGX_CustomRayPatternParametersAssetFactory.generated.h"
 
 UCLASS()
-class AGXUNREALEDITOR_API UAGX_RayPatternHorizontalSweepAssetFactory : public UFactory
+class AGXUNREALEDITOR_API UAGX_CustomRayPatternParametersAssetFactory : public UFactory
 {
 	GENERATED_BODY()
 
 public:
-	UAGX_RayPatternHorizontalSweepAssetFactory(const class FObjectInitializer& OBJ);
+	UAGX_CustomRayPatternParametersAssetFactory(const class FObjectInitializer& OBJ);
 
 protected:
 	virtual bool IsMacroFactory() const

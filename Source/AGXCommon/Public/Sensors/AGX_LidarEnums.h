@@ -9,11 +9,20 @@
 UENUM()
 enum class EAGX_LidarModel
 {
-	/** Generic Lidar with a Horizontal Sweep ray pattern. */
-	GenericHorizontalSweep,
-
 	/** Lidar uses a custom ray pattern where the user provides the ray pattern rays. */
-	Custom
+	CustomRayPattern = 0,
+
+	/** Generic Lidar with a Horizontal Sweep ray pattern. */
+	GenericHorizontalSweep = 10,
+
+	/** Ouster OS0 */
+	OusterOS0 = 20,
+
+	/** Ouster OS1 */
+	OusterOS1 = 30,
+
+	/** Ouster OS2 */
+	OusterOS2 = 40,
 };
 
 /** Specifies which Components the Lidar Surface Material Component applies the Lidar Surface
@@ -37,4 +46,39 @@ enum class EAGX_LidarSurfaceMaterialAssignmentSelection
 	 * Assign the Lidar Surface Material to all child Components. Searches recursively.
 	 */
 	Children,
+};
+
+/** Number of channels setting for OusterOS Lidars. */
+UENUM()
+enum class EAGX_OusterOSChannelCount
+{
+	Ch_32,
+	Ch_64,
+	Ch_128
+};
+
+/** Channel distribution setting for OusterOS Lidars. */
+UENUM()
+enum class EAGX_OusterOSChannelDistribution
+{
+	Uniform,
+	AboveHorizon,
+	BelowHorizon
+};
+
+/** Horizontal resolution setting for OusterOS Lidars. */
+UENUM()
+enum class EAGX_OusterOSHorizontalResolution
+{
+	Hr_512,
+	Hr_1024,
+	Hr_2048
+};
+
+/** Frequency setting for OusterOS Lidars. */
+UENUM()
+enum class EAGX_OusterOSFrequency
+{
+	F_10,
+	F_20
 };

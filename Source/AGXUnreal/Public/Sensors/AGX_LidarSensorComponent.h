@@ -7,7 +7,7 @@
 #include "Sensors/AGX_CustomPatternFetcher.h"
 #include "Sensors/AGX_DistanceGaussianNoiseSettings.h"
 #include "Sensors/AGX_LidarEnums.h"
-#include "Sensors/AGX_RayPatternBase.h"
+#include "Sensors/AGX_LidarModelParameters.h"
 #include "Sensors/LidarBarrier.h"
 
 // Unreal Engine includes.
@@ -46,7 +46,7 @@ public:
 	 * Changing this will assign Model specific properties to this Lidar.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	EAGX_LidarModel Model {EAGX_LidarModel::GenericHorizontalSweep};
+	EAGX_LidarModel Model {EAGX_LidarModel::OusterOS1};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetModel(EAGX_LidarModel InModel);
@@ -58,8 +58,12 @@ public:
 	 * The minimum and maximum range of the Lidar Sensor [cm].
 	 * Objects outside this range will not be detected by this Lidar Sensor.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
-	FAGX_RealInterval Range {0.0, 100.0};
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
+		// clang-format off
+		Meta = (ClampMin = "0.0", EditCondition = "Model == EAGX_LidarModel::CustomRayPattern || Model == EAGX_LidarModel::GenericHorizontalSweep"))
+	// clang-format on
+	FAGX_RealInterval Range {0.0, 10000.0};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetRange(FAGX_RealInterval InRange);
@@ -73,7 +77,11 @@ public:
 	 * exit dimater to the cone surface is half this angle.
 	 * This property affects the calculated intensity.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
+		// clang-format off
+		Meta = (ClampMin = "0.0", EditCondition = "Model == EAGX_LidarModel::CustomRayPattern || Model == EAGX_LidarModel::GenericHorizontalSweep"))
+	// clang-format on
 	FAGX_Real BeamDivergence {0.001 * 180.0 / PI};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
@@ -86,7 +94,11 @@ public:
 	 * The diameter of the lidar laser light beam as it exits the lidar [cm].
 	 * This property affects the calculated intensity.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
+		// clang-format off
+		Meta = (ClampMin = "0.0", EditCondition = "Model == EAGX_LidarModel::CustomRayPattern || Model == EAGX_LidarModel::GenericHorizontalSweep"))
+	// clang-format on
 	FAGX_Real BeamExitRadius {0.5};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
@@ -96,11 +108,11 @@ public:
 	double GetBeamExitRadius() const;
 
 	/**
-	 * The Ray Pattern determines in what order and in which directions the lidar laser rays are
-	 * emitted.
+	 * Model Parameters used when creating this Lidar Sensor from a Lidar Model.
+	 * The type of the Model Parameters asset must match the selected Lidar Model.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
-	UAGX_RayPatternBase* RayPattern {nullptr};
+	UAGX_LidarModelParameters* ModelParameters {nullptr};
 
 	/**
 	 * Enables or disables removal of point misses, i.e. makes the output dense if set to true.
@@ -118,7 +130,11 @@ public:
 	 * Enables distance gaussian noise, adding an individual distance error to each measurements
 	 * of Position.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
+		// clang-format off
+		Meta = (EditCondition = "Model == EAGX_LidarModel::CustomRayPattern || Model == EAGX_LidarModel::GenericHorizontalSweep"))
+	// clang-format on
 	bool bEnableDistanceGaussianNoise {false};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
@@ -130,18 +146,20 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
+		// clang-format off
 		Meta = (ClampMin = "0.0", EditCondition = "bEnableDistanceGaussianNoise"))
+	// clang-format on
 	FAGX_DistanceGaussianNoiseSettings DistanceNoiseSettings;
 
 	/**
 	 * Delegate that has to be assigned (bound to) by the user to support custom scan pattern.
 	 * Only used if the ScanPattern is set to Custom.
 	 * Should return all ray transforms (in global coordinates) for the whole scan pattern.
-	 * This delegate is called only if no ray transforms has previously been returned by the funcion
-	 * provided by the user, i.e. under normal conditions, it is called only once.
-	 * The FetchNextPatternInterval is called each Tick and determines what part of the scan
-	 * pattern to use next, see OnFetchNextPatternInterval.
-	 * The signature of the function assigned must be: TArray<FTransform> MyFunc().
+	 * This delegate is called only if no ray transforms has previously been returned by the
+	 * funcion provided by the user, i.e. under normal conditions, it is called only once. The
+	 * FetchNextPatternInterval is called each Tick and determines what part of the scan pattern
+	 * to use next, see OnFetchNextPatternInterval. The signature of the function assigned must
+	 * be: TArray<FTransform> MyFunc().
 	 */
 	UPROPERTY(
 		BlueprintReadWrite, Category = "AGX Lidar",
@@ -152,10 +170,9 @@ public:
 	 * Delegate that has to be assigned (bound to) by the user to support custom scan pattern.
 	 * Only used if the ScanPattern is set to Custom.
 	 * Should return the next AGX Custom Pattern Interval to use.
-	 * This delegate is called each Step() and determines what part of the total scan pattern to use
-	 * in that Step(). See also OnFetchRayTransforms.
-	 * The signature of the function assigned must be: FAGX_CustomPatternInterval
-	 * MyFunc(double TimeStamp).
+	 * This delegate is called each Step() and determines what part of the total scan pattern to
+	 * use in that Step(). See also OnFetchRayTransforms. The signature of the function assigned
+	 * must be: FAGX_CustomPatternInterval MyFunc(double TimeStamp).
 	 */
 	UPROPERTY(
 		BlueprintReadWrite, Category = "AGX Lidar",
@@ -170,8 +187,8 @@ public:
 	UNiagaraSystem* NiagaraSystemAsset {nullptr};
 
 	/**
-	 * If a Niagara System Component has been spawned by the Lidar, this function will return it.
-	 * Returns nullptr otherwise.
+	 * If a Niagara System Component has been spawned by the Lidar, this function will return
+	 * it. Returns nullptr otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	UNiagaraComponent* GetSpawnedNiagaraSystemComponent();
@@ -179,6 +196,8 @@ public:
 	void Step();
 
 	bool AddOutput(FAGX_LidarOutputBase& InOutput);
+
+	bool IsCustomParametersSupported() const;
 
 	bool HasNative() const;
 	FLidarBarrier* GetOrCreateNative();

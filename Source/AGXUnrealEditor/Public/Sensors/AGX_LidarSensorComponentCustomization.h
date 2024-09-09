@@ -33,6 +33,8 @@ private:
 	static FString FromEnum(EAGX_LidarModel Model);
 	
 private:
+	FReply OnCreateModelParametersAssetButtonClicked();
+
 	IDetailLayoutBuilder* DetailBuilder {nullptr};
 	TArray<TSharedPtr<EAGX_LidarModel>> AvailableModels;
 };

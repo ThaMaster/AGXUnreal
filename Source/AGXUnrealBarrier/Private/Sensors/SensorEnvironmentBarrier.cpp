@@ -115,7 +115,7 @@ void FSensorEnvironmentBarrier::SetLidarSurfaceMaterialOrDefault(
 	{
 		// Assign default if setting nullptr Material.
 		agxSensor::RtSurfaceMaterial::set(
-			Terrain.GetNative()->Native, agxSensor::RtSurfaceMaterial::getDefault());
+			Terrain.GetNative()->Native, agxSensor::RtLambertianOpaqueMaterial::create());
 	}
 	else
 	{

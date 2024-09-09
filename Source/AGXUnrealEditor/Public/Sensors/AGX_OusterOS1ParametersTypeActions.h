@@ -7,10 +7,10 @@
 #include "AssetTypeCategories.h"
 #include "CoreMinimal.h"
 
-class AGXUNREALEDITOR_API FAGX_RayPatternHorizontalSweepTypeActions : public FAssetTypeActions_Base
+class AGXUNREALEDITOR_API FAGX_OusterOS1ParametersTypeActions : public FAssetTypeActions_Base
 {
 public:
-	FAGX_RayPatternHorizontalSweepTypeActions(EAssetTypeCategories::Type InAssetCategory);
+	FAGX_OusterOS1ParametersTypeActions(EAssetTypeCategories::Type InAssetCategory);
 
 	FText GetName() const override;
 

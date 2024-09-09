@@ -43,7 +43,7 @@ float FRtLambertianOpaqueMaterialBarrier::GetReflectivity() const
 void FRtLambertianOpaqueMaterialBarrier::AllocateNative()
 {
 	check(!HasNative());
-	Native->Native = agxSensor::RtSurfaceMaterial::create();
+	Native->Native = agxSensor::RtLambertianOpaqueMaterial::create();
 }
 
 bool FRtLambertianOpaqueMaterialBarrier::HasNative() const

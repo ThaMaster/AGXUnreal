@@ -88,8 +88,11 @@
 #include "Sensors/AGX_LidarSensorLineTraceComponentVisualizer.h"
 #include "Sensors/AGX_LidarSensorReference.h"
 #include "Sensors/AGX_LidarLambertianOpaqueMaterialTypeActions.h"
-#include "Sensors/AGX_RayPatternCustomTypeActions.h"
-#include "Sensors/AGX_RayPatternHorizontalSweepTypeActions.h"
+#include "Sensors/AGX_CustomRayPatternParametersTypeActions.h"
+#include "Sensors/AGX_GenericHorizontalSweepParametersTypeActions.h"
+#include "Sensors/AGX_OusterOS0ParametersTypeActions.h"
+#include "Sensors/AGX_OusterOS1ParametersTypeActions.h"
+#include "Sensors/AGX_OusterOS2ParametersTypeActions.h"
 #include "Sensors/AGX_SensorEnvironment.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_ShapeComponentCustomization.h"
@@ -208,32 +211,38 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
-		MakeShareable(new FAGX_LidarLambertianOpaqueMaterialTypeActions(AgxAssetCategoryBit)));
-	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_PlayRecordTypeActions(AgxAssetCategoryBit)));
-	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_RayPatternCustomTypeActions(AgxAssetCategoryBit)));
+		MakeShareable(new FAGX_CustomRayPatternParametersTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
-		MakeShareable(new FAGX_RayPatternHorizontalSweepTypeActions(AgxAssetCategoryBit)));
+		MakeShareable(new FAGX_GenericHorizontalSweepParametersTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools,
+		MakeShareable(new FAGX_LidarLambertianOpaqueMaterialTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_OusterOS0ParametersTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_OusterOS1ParametersTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_OusterOS2ParametersTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_PlayRecordTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_ShapeMaterialTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_ShapeContactMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_ShovelPropertiesActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_TerrainMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
-		MakeShareable(new FAGX_WireMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
+		MakeShareable(new FAGX_TrackInternalMergePropertiesAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_TrackPropertiesAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_ShovelPropertiesActions(AgxAssetCategoryBit)));
-
-	RegisterAssetTypeAction(
 		AssetTools,
-		MakeShareable(new FAGX_TrackInternalMergePropertiesAssetTypeActions(AgxAssetCategoryBit)));
+		MakeShareable(new FAGX_WireMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 }
 
 void FAGXUnrealEditorModule::UnregisterAssetTypeActions()

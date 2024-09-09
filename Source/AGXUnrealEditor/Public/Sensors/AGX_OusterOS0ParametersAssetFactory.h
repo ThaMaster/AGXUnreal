@@ -5,15 +5,15 @@
 #include "CoreMinimal.h"
 #include "Factories/Factory.h"
 
-#include "AGX_RayPatternCustomAssetFactory.generated.h"
+#include "AGX_OusterOS0ParametersAssetFactory.generated.h"
 
 UCLASS()
-class AGXUNREALEDITOR_API UAGX_RayPatternCustomAssetFactory : public UFactory
+class AGXUNREALEDITOR_API UAGX_OusterOS0ParametersAssetFactory : public UFactory
 {
 	GENERATED_BODY()
 
 public:
-	UAGX_RayPatternCustomAssetFactory(const class FObjectInitializer& OBJ);
+	UAGX_OusterOS0ParametersAssetFactory(const class FObjectInitializer& OBJ);
 
 protected:
 	virtual bool IsMacroFactory() const

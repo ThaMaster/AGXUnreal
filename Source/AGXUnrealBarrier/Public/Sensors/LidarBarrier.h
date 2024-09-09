@@ -13,9 +13,8 @@
 
 class FCustomPatternFetcherBase;
 class FLidarOutputBarrier;
+class UAGX_LidarModelParameters;
 
-struct FAGX_DistanceGaussianNoiseSettings;
-struct FAGX_Real;
 struct FAGX_RealInterval;
 struct FDistanceGaussianNoiseRef;
 struct FLidarRef;
@@ -29,9 +28,8 @@ public:
 	~FLidarBarrier();
 
 	bool HasNative() const;
-	void AllocateNativeLidarRayPatternHorizontalSweep(
-		const FVector2D& FOV, const FVector2D& Resolution, double Frequency);
-	void AllocateNativeRayPatternCustom(FCustomPatternFetcherBase* PatternFetcher);
+	void AllocateNative(EAGX_LidarModel Model, const UAGX_LidarModelParameters& Params);
+	void AllocateNativeCustomRayPattern(FCustomPatternFetcherBase& PatternFetcher);
 	FLidarRef* GetNative();
 	const FLidarRef* GetNative() const;
 	void ReleaseNative();
@@ -55,12 +53,6 @@ public:
 	bool IsDistanceGaussianNoiseEnabled() const;
 
 	void AddOutput(FLidarOutputBarrier& Output);
-
-	static FAGX_RealInterval GetRangeFrom(EAGX_LidarModel InModel);
-	static FAGX_Real GetBeamDivergenceFrom(EAGX_LidarModel InModel);
-	static FAGX_Real GetBeamExitRadiusFrom(EAGX_LidarModel InModel);
-	static bool GetEnableDistanceGaussianNoiseFrom(EAGX_LidarModel InModel);
-	static TOptional<FAGX_DistanceGaussianNoiseSettings> GetDistanceGaussianNoiseFrom(EAGX_LidarModel InModel);
 
 private:
 	FLidarBarrier(const FLidarBarrier&) = delete;

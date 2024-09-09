@@ -9,7 +9,7 @@
 #include <agxSensor/RaytraceDistanceGaussianNoise.h>
 #include <agxSensor/RaytraceHandles.h>
 #include <agxSensor/RaytraceOutput.h>
-#include <agxSensor/RaytraceSurfaceMaterial.h>
+#include <agxSensor/RaytraceLambertianOpaqueMaterial.h>
 #include "EndAGXIncludes.h"
 
 #include <memory>
@@ -71,10 +71,9 @@ struct FDistanceGaussianNoiseRef
 
 struct FRtLambertianOpaqueMaterial
 {
-	// Todo: this will be called RtLambertianOpaqueMaterial in AGX soon.
-	agxSensor::RtSurfaceMaterial Native {nullptr}; 
+	agxSensor::RtLambertianOpaqueMaterial Native;
 	FRtLambertianOpaqueMaterial() = default;
-	FRtLambertianOpaqueMaterial(const agxSensor::RtSurfaceMaterial& InNative)
+	FRtLambertianOpaqueMaterial(const agxSensor::RtLambertianOpaqueMaterial& InNative)
 		: Native(InNative)
 	{
 	}

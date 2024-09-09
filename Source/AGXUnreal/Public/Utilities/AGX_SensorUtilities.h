@@ -2,29 +2,15 @@
 
 #pragma once
 
-// Unreal Engine includes.
-#include "CoreMinimal.h"
-#include "Kismet/BlueprintFunctionLibrary.h"
-
 // AGX Dynamics for Unreal includes.
 #include "Sensors/AGX_LidarEnums.h"
+#include "Sensors/AGX_LidarModelParameters.h"
 
-
-class UAGX_RayPatternBase;
-
-struct FAGX_DistanceGaussianNoiseSettings;
-struct FAGX_RealInterval;
-struct FAGX_Real;
+// Unreal Engine includes.
+#include "CoreMinimal.h"
 
 class AGXUNREAL_API FAGX_SensorUtilities
 {
 public:
-	static FAGX_RealInterval GetRangeFrom(EAGX_LidarModel InModel);
-	static FAGX_Real GetBeamDivergenceFrom(EAGX_LidarModel InModel);
-	static FAGX_Real GetBeamExitRadiusFrom(EAGX_LidarModel InModel);
-	static UAGX_RayPatternBase* GetRayPatternFrom(EAGX_LidarModel InModel);
-	static bool GetEnableDistanceGaussianNoiseFrom(EAGX_LidarModel InModel);
-	static FAGX_DistanceGaussianNoiseSettings GetDistanceGaussianNoiseFrom(
-		EAGX_LidarModel InModel);
+	static UClass* GetParameterTypeFrom(EAGX_LidarModel Model);
 };
-

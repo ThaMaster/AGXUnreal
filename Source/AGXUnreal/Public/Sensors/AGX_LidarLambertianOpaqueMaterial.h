@@ -26,7 +26,7 @@ public:
 	 * reflection.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar", Meta = (ClampMin = "0.0", ClampMax = "1.0"))
-	float Reflectivity {0.7f};
+	float Reflectivity {0.8f};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetReflectivity(float InReflectivity);

@@ -54,13 +54,12 @@ void FRtShapeInstanceBarrier::SetLidarSurfaceMaterialOrDefault(
 	if (Material == nullptr)
 	{
 		// Assign default if setting nullptr Material.
-		NativeRef->Native.handle->setSurfaceMaterial(
-			agxSensor::RtSurfaceMaterial::getDefault().getHandle());
+		NativeRef->Native.handle->setMaterial(agxSensor::RtLambertianOpaqueMaterial::create());
 	}
 	else
 	{
 		check(Material->HasNative());
-		NativeRef->Native.handle->setSurfaceMaterial(Material->GetNative()->Native.getHandle());
+		NativeRef->Native.handle->setMaterial(Material->GetNative()->Native);
 	}
 }
 

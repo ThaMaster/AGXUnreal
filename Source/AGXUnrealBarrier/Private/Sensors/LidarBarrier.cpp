@@ -5,7 +5,12 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Real.h"
 #include "AGX_RealInterval.h"
+#include "Sensors/AGX_CustomRayPatternParameters.h"
 #include "Sensors/AGX_DistanceGaussianNoiseSettings.h"
+#include "Sensors/AGX_GenericHorizontalSweepParameters.h"
+#include "Sensors/AGX_OusterOS0Parameters.h"
+#include "Sensors/AGX_OusterOS1Parameters.h"
+#include "Sensors/AGX_OusterOS2Parameters.h"
 #include "Sensors/CustomPatternGenerator.h"
 #include "Sensors/CustomPatternFetcherBase.h"
 #include "Sensors/LidarOutputBarrier.h"
@@ -15,6 +20,7 @@
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agxSensor/LidarModel.h>
+#include <agxSensor/LidarModelOusterOS.h>
 #include <agxSensor/LidarRayPatternHorizontalSweep.h>
 #include <agxSensor/RaytraceDistanceGaussianNoise.h>
 #include <agxSensor/RaytraceOutput.h>
@@ -57,62 +63,97 @@ namespace LidarBarrier_helpers
 		}
 	};
 
-	class GenericHorizontalSweepModel : public agxSensor::HorizontalSweepLidarModel
+	agxSensor::Lidar* CreateAGXLidar(const UAGX_GenericHorizontalSweepParameters& Params)
 	{
-	public:
-		GenericHorizontalSweepModel()
-			: HorizontalSweepLidarModel(
-				  {agx::degreesToRadians(360.0), agx::degreesToRadians(50.0)},
-				  {agx::degreesToRadians(1.0), agx::degreesToRadians(1.0)}, 10.0)
-		{
-			getRayRange()->setRange({0.0, 100.0});
-		}
-	};
+		const agx::Vec2 FovAGX {ConvertAngleToAGX(Params.FOV.X), ConvertAngleToAGX(Params.FOV.Y)};
+		const agx::Vec2 ResolutionAGX {
+			ConvertAngleToAGX(Params.Resolution.X), ConvertAngleToAGX(Params.Resolution.Y)};
 
-	agxSensor::LidarModelRef CreateTemporaryLidarModelFrom(EAGX_LidarModel InModel)
+		return new agxSensor::Lidar(
+			nullptr,
+			new agxSensor::HorizontalSweepLidarModel(FovAGX, ResolutionAGX, Params.Frequency));
+	}
+
+	agxSensor::Lidar* CreateAGXLidar(const UAGX_OusterOS0Parameters& Params)
 	{
-		switch (InModel)
-		{
-			case EAGX_LidarModel::Custom:
-				UE_LOG(
-					LogAGX, Error,
-					TEXT("Custom Lidar Model passed to "
-						 "FLidarBarrier::CreateTemporaryLidarModelFrom. The Custom case should be "
-						 "handled elsewhere, returning nullptr."));
-				return nullptr;
-				break;
-			case EAGX_LidarModel::GenericHorizontalSweep:
-				return new GenericHorizontalSweepModel();
-				break;
-		}
+		auto CountAGX = Convert(Params.ChannelCount);
+		auto DistributionAGX = Convert(Params.ChannelDistribution);
+		auto ResolutionAGX = Convert(Params.HorizontalResolution);
+		auto FrequencyAGX = Convert(Params.Frequency);
+		return new agxSensor::Lidar(
+			nullptr, new agxSensor::LidarModelOusterOS0(
+						 CountAGX, DistributionAGX, ResolutionAGX, FrequencyAGX));
+	}
 
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Unknown Lidar Model passed to "
-				 "FLidarBarrier::CreateTemporaryLidarModelFrom. Returning nullptr."));
-		return nullptr;
+	agxSensor::Lidar* CreateAGXLidar(const UAGX_OusterOS1Parameters& Params)
+	{
+		auto CountAGX = Convert(Params.ChannelCount);
+		auto DistributionAGX = Convert(Params.ChannelDistribution);
+		auto ResolutionAGX = Convert(Params.HorizontalResolution);
+		auto FrequencyAGX = Convert(Params.Frequency);
+		return new agxSensor::Lidar(
+			nullptr, new agxSensor::LidarModelOusterOS1(
+						 CountAGX, DistributionAGX, ResolutionAGX, FrequencyAGX));
+	}
+
+	agxSensor::Lidar* CreateAGXLidar(const UAGX_OusterOS2Parameters& Params)
+	{
+		auto CountAGX = Convert(Params.ChannelCount);
+		auto DistributionAGX = Convert(Params.ChannelDistribution);
+		auto ResolutionAGX = Convert(Params.HorizontalResolution);
+		auto FrequencyAGX = Convert(Params.Frequency);
+		return new agxSensor::Lidar(
+			nullptr, new agxSensor::LidarModelOusterOS2(
+						 CountAGX, DistributionAGX, ResolutionAGX, FrequencyAGX));
+	}
+
+	agxSensor::Lidar* CreateAGXLidar(FCustomPatternFetcherBase* PatternFetcher)
+	{
+		return new agxSensor::Lidar(
+			nullptr, new UnrealLidarModel(new FCustomPatternGenerator(PatternFetcher)));
 	}
 }
 
-void FLidarBarrier::AllocateNativeLidarRayPatternHorizontalSweep(
-	const FVector2D& FOV, const FVector2D& Resolution, double Frequency)
+void FLidarBarrier::AllocateNative(EAGX_LidarModel Model, const UAGX_LidarModelParameters& Params)
 {
+	using namespace LidarBarrier_helpers;
 	check(!HasNative());
-	const agx::Vec2 FovAGX {ConvertAngleToAGX(FOV.X), ConvertAngleToAGX(FOV.Y)};
-	const agx::Vec2 ResolutionAGX {
-		ConvertAngleToAGX(Resolution.X), ConvertAngleToAGX(Resolution.Y)};
 
-	NativeRef->Native = new agxSensor::Lidar(
-		nullptr, new agxSensor::HorizontalSweepLidarModel(FovAGX, ResolutionAGX, Frequency));
+	switch (Model)
+	{
+		case EAGX_LidarModel::CustomRayPattern:
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("CustomRayPattern model passed to FLidarBarrier::AllocateNative, but this "
+					 "case should be handled by FLidarBarrier::AllocateNativeCustomRayPattern."));
+			return;
+		case EAGX_LidarModel::GenericHorizontalSweep:
+			NativeRef->Native =
+				CreateAGXLidar(*static_cast<const UAGX_GenericHorizontalSweepParameters*>(&Params));
+			return;
+		case EAGX_LidarModel::OusterOS0:
+			NativeRef->Native =
+				CreateAGXLidar(*static_cast<const UAGX_OusterOS0Parameters*>(&Params));
+			return;
+		case EAGX_LidarModel::OusterOS1:
+			NativeRef->Native =
+				CreateAGXLidar(*static_cast<const UAGX_OusterOS1Parameters*>(&Params));
+			return;
+		case EAGX_LidarModel::OusterOS2:
+			NativeRef->Native =
+				CreateAGXLidar(*static_cast<const UAGX_OusterOS2Parameters*>(&Params));
+			return;
+	}
+
+	UE_LOG(LogAGX, Error, TEXT("Unknown Lidar Model given to to FLidarBarrier::AllocateNative."));
 }
 
-void FLidarBarrier::AllocateNativeRayPatternCustom(FCustomPatternFetcherBase* PatternFetcher)
+void FLidarBarrier::AllocateNativeCustomRayPattern(FCustomPatternFetcherBase& PatternFetcher)
 {
+	using namespace LidarBarrier_helpers;
 	check(!HasNative());
 
-	using namespace LidarBarrier_helpers;
-	NativeRef->Native = new agxSensor::Lidar(
-		nullptr, new UnrealLidarModel(new FCustomPatternGenerator(PatternFetcher)));
+	NativeRef->Native = CreateAGXLidar(&PatternFetcher);
 }
 
 FLidarRef* FLidarBarrier::GetNative()
@@ -250,94 +291,4 @@ void FLidarBarrier::AddOutput(FLidarOutputBarrier& Output)
 
 	NativeRef->Native->getOutputHandler()->add(
 		LidarBarrier_helpers::GenerateUniqueOutputId(), Output.GetNative()->Native);
-}
-
-FAGX_RealInterval FLidarBarrier::GetRangeFrom(EAGX_LidarModel InModel)
-{
-	if (auto Model = LidarBarrier_helpers::CreateTemporaryLidarModelFrom(InModel))
-	{
-		return ConvertDistance(Model->getRayRange()->getRange());
-	}
-
-	UE_LOG(
-		LogAGX, Error,
-		TEXT("FLidarBarrier::GetRangeFrom failed since no agxSensor::LidarModel could be created "
-			 "from the passed EAGX_LidarModel."));
-	return FAGX_RealInterval();
-}
-
-FAGX_Real FLidarBarrier::GetBeamDivergenceFrom(EAGX_LidarModel InModel)
-{
-	if (auto Model = LidarBarrier_helpers::CreateTemporaryLidarModelFrom(InModel))
-	{
-		return ConvertAngleToUnreal<double>(Model->getProperties()->getBeamDivergence());
-	}
-
-	UE_LOG(
-		LogAGX, Error,
-		TEXT("FLidarBarrier::GetBeamDivergenceFrom failed since no agxSensor::LidarModel could be created "
-			 "from the passed EAGX_LidarModel."));
-	return 0.0;
-}
-
-FAGX_Real FLidarBarrier::GetBeamExitRadiusFrom(EAGX_LidarModel InModel)
-{
-	if (auto Model = LidarBarrier_helpers::CreateTemporaryLidarModelFrom(InModel))
-	{
-		return ConvertDistanceToUnreal<FAGX_Real>(Model->getProperties()->getBeamExitRadius());
-	}
-
-	UE_LOG(
-		LogAGX, Error,
-		TEXT("FLidarBarrier::GetBeamExitRadiusFrom failed since no agxSensor::LidarModel could be created "
-			 "from the passed EAGX_LidarModel."));
-	return 0.0;
-}
-
-bool FLidarBarrier::GetEnableDistanceGaussianNoiseFrom(EAGX_LidarModel InModel)
-{
-	if (auto Model = LidarBarrier_helpers::CreateTemporaryLidarModelFrom(InModel))
-	{
-		for (const auto& Noise : Model->getOutputNoises())
-		{
-			if (Noise->as<agxSensor::RtDistanceGaussianNoise>() != nullptr)
-				return true;
-		}
-
-		return false;
-	}
-
-	UE_LOG(
-		LogAGX, Error,
-		TEXT("FLidarBarrier::GetEnableDistanceGaussianNoiseFrom failed since no agxSensor::LidarModel could be created "
-			 "from the passed EAGX_LidarModel."));
-	return false;
-}
-
-TOptional<FAGX_DistanceGaussianNoiseSettings> FLidarBarrier::GetDistanceGaussianNoiseFrom(
-	EAGX_LidarModel InModel)
-{
-	if (auto Model = LidarBarrier_helpers::CreateTemporaryLidarModelFrom(InModel))
-	{
-		for (const auto& Noise : Model->getOutputNoises())
-		{
-			if (auto* DistanceNoiseAGX = Noise->as<agxSensor::RtDistanceGaussianNoise>())
-			{
-				FAGX_DistanceGaussianNoiseSettings Dgn;
-				Dgn.Mean = ConvertDistanceToUnreal<double>(DistanceNoiseAGX->getMean());
-				Dgn.StandardDeviation =
-					ConvertDistanceToUnreal<double>(DistanceNoiseAGX->getStdDevBase());
-				Dgn.StandardDeviationSlope = DistanceNoiseAGX->getStdDevSlope(); // Unitless.
-				return Dgn;
-			}
-		}
-
-		return {};
-	}
-
-	UE_LOG(
-		LogAGX, Error,
-		TEXT("FLidarBarrier::GetRangeFrom failed since no agxSensor::LidarModel could be created "
-			 "from the passed EAGX_LidarModel."));
-	return {};
 }
