@@ -55,6 +55,19 @@ public:
 	EAGX_LidarModel GetModel() const;
 
 	/**
+	 * Enable or disable this Lidar Sensor Component. If disabled, it will not perform raytracing
+	 * and will thus not produce any output data.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
+	bool bEnabled {true};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetEnabled(bool InEnabled);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	bool GetEnabled() const;
+
+	/**
 	 * The minimum and maximum range of the Lidar Sensor [cm].
 	 * Objects outside this range will not be detected by this Lidar Sensor.
 	 */

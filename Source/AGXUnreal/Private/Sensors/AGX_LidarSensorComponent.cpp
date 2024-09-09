@@ -51,6 +51,22 @@ EAGX_LidarModel UAGX_LidarSensorComponent::GetModel() const
 	return Model;
 }
 
+void UAGX_LidarSensorComponent::SetEnabled(bool InEnabled)
+{
+	if (HasNative())
+		NativeBarrier.SetEnabled(InEnabled);
+
+	bEnabled = InEnabled;
+}
+
+bool UAGX_LidarSensorComponent::GetEnabled() const
+{
+	if (HasNative())
+		return NativeBarrier.GetEnabled();
+
+	return bEnabled;
+}
+
 void UAGX_LidarSensorComponent::SetRange(FAGX_RealInterval InRange)
 {
 	Range = InRange;
@@ -232,6 +248,7 @@ const FLidarBarrier* UAGX_LidarSensorComponent::GetNative() const
 
 void UAGX_LidarSensorComponent::CopyFrom(const UAGX_LidarSensorComponent& Source)
 {
+	bEnabled = Source.bEnabled;
 	Model = Source.Model;
 	Range = Source.Range;
 	BeamDivergence = Source.BeamDivergence;
@@ -316,6 +333,10 @@ void UAGX_LidarSensorComponent::InitPropertyDispatcher()
 	AGX_COMPONENT_DEFAULT_DISPATCHER(BeamExitRadius);
 
 	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, bEnabled),
+		[](ThisClass* This) { This->SetEnabled(This->bEnabled); });
+
+	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, bEnableRemovePointsMisses),
 		[](ThisClass* This)
 		{ This->SetEnableRemovePointsMisses(This->bEnableRemovePointsMisses); });
@@ -346,6 +367,7 @@ void UAGX_LidarSensorComponent::UpdateNativeProperties()
 	}
 
 	NativeBarrier.SetEnableRemoveRayMisses(bEnableRemovePointsMisses);
+	NativeBarrier.SetEnabled(bEnabled);
 }
 
 TArray<FTransform> UAGX_LidarSensorComponent::FetchRayTransforms()

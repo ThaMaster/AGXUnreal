@@ -34,6 +34,9 @@ public:
 	const FLidarRef* GetNative() const;
 	void ReleaseNative();
 
+	void SetEnabled(bool Enabled);
+	bool GetEnabled() const;
+
 	void SetTransform(const FTransform& Transform);
 
 	void SetRange(FAGX_RealInterval Range);

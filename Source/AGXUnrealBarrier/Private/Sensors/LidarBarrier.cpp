@@ -174,6 +174,18 @@ void FLidarBarrier::ReleaseNative()
 		NativeRef->Native = nullptr;
 }
 
+void FLidarBarrier::SetEnabled(bool Enabled)
+{
+	check(HasNative());
+	NativeRef->Native->setEnable(Enabled);
+}
+
+bool FLidarBarrier::GetEnabled() const
+{
+	check(HasNative());
+	return NativeRef->Native->getEnable();
+}
+
 void FLidarBarrier::SetTransform(const FTransform& Transform)
 {
 	check(HasNative());
