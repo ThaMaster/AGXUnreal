@@ -63,5 +63,4 @@ private:
 
 private:
 	std::unique_ptr<FLidarRef> NativeRef;
-	std::unique_ptr<FDistanceGaussianNoiseRef> DistanceNoiseNativeRef;
 };

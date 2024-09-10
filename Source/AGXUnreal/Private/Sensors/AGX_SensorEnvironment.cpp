@@ -642,7 +642,7 @@ void AAGX_SensorEnvironment::RegisterLidars()
 				CollSph->RegisterComponent();
 			}
 
-			TrackedLidars.Add(Lidar, CollSph);
+			TrackedLidars.Add(LidarRef, CollSph);
 		}
 	}
 
@@ -670,14 +670,15 @@ void AAGX_SensorEnvironment::UpdateTrackedLidars()
 	// and transform.
 	for (auto It = TrackedLidars.CreateIterator(); It; ++It)
 	{
-		if (!IsValid(It->Key.Get()))
+		if (!IsValid(It->Key.GetLidarComponent()))
 		{
 			It.RemoveCurrent();
 			continue;
 		}
 
 		if (bAutoAddObjects)
-			AGX_SensorEnvironment_helpers::UpdateCollisionSphere(It->Key.Get(), It->Value.Get());
+			AGX_SensorEnvironment_helpers::UpdateCollisionSphere(
+				It->Key.GetLidarComponent(), It->Value.Get());
 	}
 }
 
@@ -724,7 +725,8 @@ void AAGX_SensorEnvironment::StepTrackedLidars() const
 {
 	for (auto It = TrackedLidars.CreateConstIterator(); It; ++It)
 	{
-		It->Key->Step();
+		if (auto Lidar = It->Key.GetLidarComponent())
+			Lidar->Step();
 	}
 }
 

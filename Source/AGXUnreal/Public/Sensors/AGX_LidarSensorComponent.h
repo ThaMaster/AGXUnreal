@@ -222,6 +222,8 @@ public:
 #if WITH_EDITOR
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+	virtual void DestroyComponent(bool bPromoteChildren) override;
 	virtual bool CanEditChange(const FProperty* InProperty) const override;
 	//~ End UActorComponent Interface
 

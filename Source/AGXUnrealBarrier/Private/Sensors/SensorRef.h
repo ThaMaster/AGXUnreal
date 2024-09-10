@@ -59,16 +59,6 @@ struct FLidarOutputRef
 	}
 };
 
-struct FDistanceGaussianNoiseRef
-{
-	agxSensor::RtDistanceGaussianNoiseRef Native;
-	FDistanceGaussianNoiseRef() = default;
-	FDistanceGaussianNoiseRef(agxSensor::RtDistanceGaussianNoise* InNative)
-		: Native(InNative)
-	{
-	}
-};
-
 struct FRtLambertianOpaqueMaterial
 {
 	agxSensor::RtLambertianOpaqueMaterial Native;

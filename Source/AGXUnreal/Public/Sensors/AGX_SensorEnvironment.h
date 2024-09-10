@@ -222,7 +222,7 @@ private:
 
 private:
 	// Todo: weak object ptr instead of raw ptrs!
-	TMap<TWeakObjectPtr<UAGX_LidarSensorComponent>, TObjectPtr<USphereComponent>> TrackedLidars;
+	TMap<FAGX_LidarSensorReference, TObjectPtr<USphereComponent>> TrackedLidars;
 	TMap<TWeakObjectPtr<UStaticMeshComponent>, FAGX_RtShapeInstanceData> TrackedMeshes;
 	TMap<TWeakObjectPtr<UInstancedStaticMeshComponent>, FAGX_RtInstancedShapeInstanceData>
 		TrackedInstancedMeshes;

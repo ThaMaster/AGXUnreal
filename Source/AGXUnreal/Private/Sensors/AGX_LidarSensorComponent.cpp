@@ -273,6 +273,22 @@ void UAGX_LidarSensorComponent::BeginPlay()
 	}
 }
 
+void UAGX_LidarSensorComponent::EndPlay(const EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+
+	if (HasNative())
+		NativeBarrier.ReleaseNative();
+}
+
+void UAGX_LidarSensorComponent::DestroyComponent(bool bPromoteChildren)
+{
+	if (NiagaraSystemComponent != nullptr)
+		NiagaraSystemComponent->DestroyComponent();
+
+	Super::DestroyComponent(bPromoteChildren);
+}
+
 bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
 {
 	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
