@@ -168,6 +168,16 @@ const FLidarRef* FLidarBarrier::GetNative() const
 	return NativeRef.get();
 }
 
+uint64 FLidarBarrier::GetNativeAddress() const
+{
+	return HasNative() ? reinterpret_cast<uint64>(NativeRef->Native.get()) : 0;
+}
+
+void FLidarBarrier::SetNativeAddress(uint64 Address)
+{
+	NativeRef->Native = reinterpret_cast<agxSensor::Lidar*>(Address);
+}
+
 void FLidarBarrier::ReleaseNative()
 {
 	if (HasNative())
@@ -250,8 +260,8 @@ namespace LidarBarrier_helpers
 
 	agxSensor::RtDistanceGaussianNoise* GetDistanceNoise(agxSensor::Lidar& Lidar)
 	{
-		auto Noises = Lidar.getOutputHandler()->getOutputNoises();
-		for (auto& Noise : Noises)
+		agxSensor::RtOutputNoiseRefVector Noises = Lidar.getOutputHandler()->getOutputNoises();
+		for (auto Noise : Noises)
 		{
 			if (auto DistanceNoise = Noise->as<agxSensor::RtDistanceGaussianNoise>())
 				return DistanceNoise;
@@ -319,4 +329,16 @@ void FLidarBarrier::AddOutput(FLidarOutputBarrier& Output)
 
 	NativeRef->Native->getOutputHandler()->add(
 		LidarBarrier_helpers::GenerateUniqueOutputId(), Output.GetNative()->Native);
+}
+
+void FLidarBarrier::IncrementRefCount() const
+{
+	check(HasNative());
+	NativeRef->Native->reference();
+}
+
+void FLidarBarrier::DecrementRefCount() const
+{
+	check(HasNative());
+	NativeRef->Native->unreference();
 }

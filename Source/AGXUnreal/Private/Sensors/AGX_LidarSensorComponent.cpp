@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_Check.h"
+#include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Sensors/AGX_LidarOutputBase.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -176,6 +177,23 @@ bool UAGX_LidarSensorComponent::HasNative() const
 	return NativeBarrier.HasNative();
 }
 
+uint64 UAGX_LidarSensorComponent::GetNativeAddress() const
+{
+	if (!HasNative())
+	{
+		return 0;
+	}
+	NativeBarrier.IncrementRefCount();
+	return NativeBarrier.GetNativeAddress();
+}
+
+void UAGX_LidarSensorComponent::SetNativeAddress(uint64 NativeAddress)
+{
+	check(!HasNative());
+	NativeBarrier.SetNativeAddress(NativeAddress);
+	NativeBarrier.DecrementRefCount();
+}
+
 FLidarBarrier* UAGX_LidarSensorComponent::GetOrCreateNative()
 {
 	if (HasNative())
@@ -317,6 +335,18 @@ bool UAGX_LidarSensorComponent::CanEditChange(const FProperty* InProperty) const
 	}
 
 	return SuperCanEditChange;
+}
+
+TStructOnScope<FActorComponentInstanceData> UAGX_LidarSensorComponent::GetComponentInstanceData()
+	const
+{
+	return MakeStructOnScope<FActorComponentInstanceData, FAGX_NativeOwnerInstanceData>(
+		this, this,
+		[](UActorComponent* Component)
+		{
+			ThisClass* AsThisClass = Cast<ThisClass>(Component);
+			return static_cast<IAGX_NativeOwner*>(AsThisClass);
+		});
 }
 
 void UAGX_LidarSensorComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
