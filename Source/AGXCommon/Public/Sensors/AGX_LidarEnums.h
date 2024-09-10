@@ -6,7 +6,7 @@
 #include "UObject/ObjectMacros.h"
 
 /** Specifies the model of the Lidar. */
-UENUM()
+UENUM(BlueprintType)
 enum class EAGX_LidarModel
 {
 	/** Lidar uses a custom ray pattern where the user provides the ray pattern rays. */
@@ -27,7 +27,7 @@ enum class EAGX_LidarModel
 
 /** Specifies which Components the Lidar Surface Material Component applies the Lidar Surface
  * Material to. */
-UENUM()
+UENUM(BlueprintType)
 enum class EAGX_LidarSurfaceMaterialAssignmentSelection
 {
 	/**
@@ -49,7 +49,7 @@ enum class EAGX_LidarSurfaceMaterialAssignmentSelection
 };
 
 /** Number of channels setting for OusterOS Lidars. */
-UENUM()
+UENUM(BlueprintType)
 enum class EAGX_OusterOSChannelCount
 {
 	Ch_32,
@@ -58,7 +58,7 @@ enum class EAGX_OusterOSChannelCount
 };
 
 /** Channel distribution setting for OusterOS Lidars. */
-UENUM()
+UENUM(BlueprintType)
 enum class EAGX_OusterOSChannelDistribution
 {
 	Uniform,
@@ -67,7 +67,7 @@ enum class EAGX_OusterOSChannelDistribution
 };
 
 /** Horizontal resolution setting for OusterOS Lidars. */
-UENUM()
+UENUM(BlueprintType)
 enum class EAGX_OusterOSHorizontalResolution
 {
 	Hr_512,
@@ -76,7 +76,7 @@ enum class EAGX_OusterOSHorizontalResolution
 };
 
 /** Frequency setting for OusterOS Lidars. */
-UENUM()
+UENUM(BlueprintType)
 enum class EAGX_OusterOSFrequency
 {
 	F_10,

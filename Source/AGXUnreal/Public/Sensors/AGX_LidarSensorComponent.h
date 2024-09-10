@@ -47,7 +47,7 @@ public:
 	 * Changing this will assign Model specific properties to this Lidar.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	EAGX_LidarModel Model {EAGX_LidarModel::OusterOS1};
+	TEnumAsByte<enum EAGX_LidarModel> Model {EAGX_LidarModel::OusterOS1};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetModel(EAGX_LidarModel InModel);
@@ -125,7 +125,7 @@ public:
 	 * Model Parameters used when creating this Lidar Sensor from a Lidar Model.
 	 * The type of the Model Parameters asset must match the selected Lidar Model.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
 	UAGX_LidarModelParameters* ModelParameters {nullptr};
 
 	/**

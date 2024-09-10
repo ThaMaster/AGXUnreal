@@ -83,6 +83,12 @@ public:
 	bool DebugLogOnAdd {false};
 
 	/**
+	 * Manually add a Lidar Sensor Component. This can also be done from the Details Panel.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	bool AddLidar(UAGX_LidarSensorComponent* Lidar);
+
+	/**
 	 * Add a Static Mesh Component so that it can be detected by sensors handled by this Sensor
 	 * Environment.
 	 * (Optional) LOD determines the LOD index used when reading the given Mesh. If left to -1,
@@ -180,6 +186,7 @@ protected:
 
 private:
 	void RegisterLidars();
+	bool RegisterLidar(FAGX_LidarSensorReference& LidarRef);
 	void UpdateTrackedLidars();
 	void UpdateTrackedMeshes();
 	void UpdateTrackedInstancedMeshes();

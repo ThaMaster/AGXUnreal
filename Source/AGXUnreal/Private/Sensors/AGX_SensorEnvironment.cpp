@@ -162,6 +162,17 @@ AAGX_SensorEnvironment::AAGX_SensorEnvironment()
 		USceneComponent::GetDefaultSceneRootVariableName());
 }
 
+bool AAGX_SensorEnvironment::AddLidar(UAGX_LidarSensorComponent* Lidar)
+{
+	if (Lidar == nullptr)
+		return false;
+
+	FAGX_LidarSensorReference LidarRef;
+	LidarRef.OwningActor = Lidar->GetOwner();
+	LidarRef.Name = FName(*Lidar->GetName());
+	return RegisterLidar(LidarRef);
+}
+
 bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh, int32 InLod)
 {
 	if (!HasNative())
@@ -300,9 +311,9 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance(
 	const bool Res = AddInstancedMeshInstance_Internal(Mesh, Index);
 	if (Res && DebugLogOnAdd)
 	{
-			UE_LOG(
-				LogAGX, Log, TEXT("Sensor Environment '%s' added AGX Shape '%s' in '%s'."),
-				*GetName(), *Mesh->GetName(), *GetLabelSafe(Mesh->GetOwner()));
+		UE_LOG(
+			LogAGX, Log, TEXT("Sensor Environment '%s' added AGX Shape '%s' in '%s'."), *GetName(),
+			*Mesh->GetName(), *GetLabelSafe(Mesh->GetOwner()));
 	}
 
 	return Res;
@@ -608,42 +619,10 @@ void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type Reason)
 void AAGX_SensorEnvironment::RegisterLidars()
 {
 	AGX_CHECK(HasNative());
-	TSet<UPrimitiveComponent*> OverlappingComponents;
 
 	for (FAGX_LidarSensorReference& LidarRef : LidarSensors)
 	{
-		if (UAGX_LidarSensorComponent* Lidar = LidarRef.GetLidarComponent())
-		{
-			FLidarBarrier* Barrier = Lidar->GetOrCreateNative();
-			if (Barrier == nullptr)
-				continue;
-
-			NativeBarrier.Add(*Barrier);
-
-			// Associate each Lidar with a USphereComponent used to detect objects in the world to
-			// give to AGX Dynamics during Play.
-			USphereComponent* CollSph = nullptr;
-			if (bAutoAddObjects)
-			{
-				CollSph = NewObject<USphereComponent>(this);
-				CollSph->OnComponentBeginOverlap.AddDynamic(
-					this, &AAGX_SensorEnvironment::OnLidarBeginOverlapComponent);
-				CollSph->OnComponentEndOverlap.AddDynamic(
-					this, &AAGX_SensorEnvironment::OnLidarEndOverlapComponent);
-
-				// Ensure we don't miss overlap events by setting radius zero now. All collision
-				// Collision spheres are updated in Step(), and the overlap events will be triggered
-				// for any object within that radius.
-				CollSph->SetSphereRadius(0.f, false);
-
-				// = true yields bugs of mutliple begin/end overlaps. See internal issue 957.
-				CollSph->bTraceComplexOnMove = false;
-
-				CollSph->RegisterComponent();
-			}
-
-			TrackedLidars.Add(LidarRef, CollSph);
-		}
+		RegisterLidar(LidarRef);
 	}
 
 	if (bAutoAddObjects)
@@ -661,6 +640,47 @@ void AAGX_SensorEnvironment::RegisterLidars()
 			}
 		}
 	}
+}
+
+bool AAGX_SensorEnvironment::RegisterLidar(FAGX_LidarSensorReference& LidarRef)
+{
+	if (TrackedLidars.Contains(LidarRef))
+		return false;
+
+	UAGX_LidarSensorComponent* Lidar = LidarRef.GetLidarComponent();
+	if (Lidar == nullptr)
+		return false;
+
+	FLidarBarrier* Barrier = Lidar->GetOrCreateNative();
+	if (Barrier == nullptr)
+		return false;
+
+	NativeBarrier.Add(*Barrier);
+
+	// Associate each Lidar with a USphereComponent used to detect objects in the world to
+	// give to AGX Dynamics during Play.
+	USphereComponent* CollSph = nullptr;
+	if (bAutoAddObjects)
+	{
+		CollSph = NewObject<USphereComponent>(this);
+		CollSph->OnComponentBeginOverlap.AddDynamic(
+			this, &AAGX_SensorEnvironment::OnLidarBeginOverlapComponent);
+		CollSph->OnComponentEndOverlap.AddDynamic(
+			this, &AAGX_SensorEnvironment::OnLidarEndOverlapComponent);
+
+		// Ensure we don't miss overlap events by setting radius zero now. All collision
+		// Collision spheres are updated in Step(), and the overlap events will be triggered
+		// for any object within that radius.
+		CollSph->SetSphereRadius(0.f, false);
+
+		// = true yields bugs of mutliple begin/end overlaps. See internal issue 957.
+		CollSph->bTraceComplexOnMove = false;
+
+		CollSph->RegisterComponent();
+	}
+
+	TrackedLidars.Add(LidarRef, CollSph);
+	return true;
 }
 
 void AAGX_SensorEnvironment::UpdateTrackedLidars()
