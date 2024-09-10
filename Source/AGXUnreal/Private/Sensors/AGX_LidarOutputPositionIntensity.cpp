@@ -14,7 +14,7 @@ void FAGX_LidarOutputPositionIntensity::Render(
 	const TArray<FAGX_LidarOutputPositionIntensityData>& InData, UAGX_LidarSensorComponent* Lidar,
 	float LifeTime, float BaseSize)
 {
-	if (Lidar == nullptr)
+	if (Lidar == nullptr || !Lidar->GetEnabled())
 		return;
 
 	if (!Lidar->bEnableRendering)

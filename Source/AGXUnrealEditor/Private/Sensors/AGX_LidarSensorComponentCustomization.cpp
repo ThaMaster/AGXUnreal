@@ -71,6 +71,9 @@ void FAGX_LidarSensorComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 															   GetLidarModelString());
 							  })]];
 
+	CategoryBuilder.AddProperty(InDetailBuilder.GetProperty(
+		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, bEnabled)));
+
 	CategoryBuilder.AddProperty(
 		InDetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, Range)));
 

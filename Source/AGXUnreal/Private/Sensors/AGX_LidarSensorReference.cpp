@@ -14,3 +14,18 @@ UAGX_LidarSensorComponent* FAGX_LidarSensorReference::GetLidarComponent() const
 {
 	return Super::GetComponent<UAGX_LidarSensorComponent>();
 }
+
+
+// Blueprint API
+
+void UAGX_LidarSensorReference_FL::SetLidarComponent(
+	FAGX_LidarSensorReference& Reference, UAGX_LidarSensorComponent* Component)
+{
+	Reference.SetComponent(Component);
+}
+
+UAGX_LidarSensorComponent* UAGX_LidarSensorReference_FL::GetLidarComponent(
+	FAGX_LidarSensorReference& Reference)
+{
+	return Cast<UAGX_LidarSensorComponent>(Reference.GetComponent());
+}
