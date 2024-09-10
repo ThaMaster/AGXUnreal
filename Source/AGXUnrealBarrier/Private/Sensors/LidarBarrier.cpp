@@ -267,6 +267,7 @@ void FLidarBarrier::EnableDistanceGaussianNoise(double Mean, double StdDev, doub
 	if (DistanceNoiseNativeRef == nullptr)
 	{
 		DistanceNoiseNativeRef = std::make_unique<FDistanceGaussianNoiseRef>();
+		DistanceNoiseNativeRef->Native = new agxSensor::RtDistanceGaussianNoise();
 		NativeRef->Native->getOutputHandler()->add(DistanceNoiseNativeRef->Native);
 	}
 
