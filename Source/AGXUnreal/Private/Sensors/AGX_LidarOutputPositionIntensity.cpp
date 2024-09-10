@@ -9,12 +9,11 @@
 #include "NiagaraComponent.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 
-
 void FAGX_LidarOutputPositionIntensity::Render(
 	const TArray<FAGX_LidarOutputPositionIntensityData>& InData, UAGX_LidarSensorComponent* Lidar,
 	float LifeTime, float BaseSize)
 {
-	if (Lidar == nullptr || !Lidar->GetEnabled())
+	if (Lidar == nullptr)
 		return;
 
 	if (!Lidar->bEnableRendering)
@@ -36,13 +35,19 @@ void FAGX_LidarOutputPositionIntensity::Render(
 		return;
 	}
 
+	// Lidar in AGX Dynamics has output data left in the buffers even after being disabled.
+	// Therefore, we check for this explicitly to not render old data after Lidar->setEnable(false).
+	const TArray<FAGX_LidarOutputPositionIntensityData> NoData;
+	const TArray<FAGX_LidarOutputPositionIntensityData>& DataToRender =
+		Lidar->GetEnabled() ? InData : NoData;
+
 	RenderPositions.SetNum(0, false);
 	RenderColors.SetNum(0, false);
 
 	const FTransform& Transform = Lidar->GetComponentTransform();
-	
+
 	static constexpr double IntensityScaleFactor = 10.0; // Non-physical, just for visuals.
-	for (const auto& Datum : InData)
+	for (const auto& Datum : DataToRender)
 	{
 		const uint8 Intensity = static_cast<uint8>(
 			FMath::Clamp(Datum.Intensity * IntensityScaleFactor, 0.0, 1.0) *
@@ -56,11 +61,11 @@ void FAGX_LidarOutputPositionIntensity::Render(
 	}
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
-	Nc->SetNiagaraVariableInt("User.NumPoints", InData.Num());
+	Nc->SetNiagaraVariableInt("User.NumPoints", DataToRender.Num());
 	Nc->SetNiagaraVariableFloat("User.Lifetime", LifeTime);
 	Nc->SetNiagaraVariableFloat("User.ZeroDistanceSize", BaseSize);
 #else
-	Nc->SetVariableInt(FName("User.NumPoints"), InData.Num());
+	Nc->SetVariableInt(FName("User.NumPoints"), DataToRender.Num());
 	Nc->SetVariableFloat(FName("User.Lifetime"), LifeTime);
 	Nc->SetVariableFloat(FName("User.ZeroDistanceSize"), BaseSize);
 #endif
