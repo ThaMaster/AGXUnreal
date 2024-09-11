@@ -211,6 +211,12 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("agx-nt-ros2", LibSource.AGX);
 		RuntimeLibFiles.Add("fastcdr*", LibSource.AGX);
 		RuntimeLibFiles.Add("fastrtps*", LibSource.AGX);
+
+		if (TargetAGXVersion.IsNewerOrEqualTo(2, 38, 0, 0))
+		{
+			RuntimeLibFiles.Add("orocos*", LibSource.AGX);
+		}
+
 		if (TargetAGXVersion.IsOlderThan(2, 32, 0, 0))
 		{
 			RuntimeLibFiles.Add("vdbgrid", LibSource.AGX);
