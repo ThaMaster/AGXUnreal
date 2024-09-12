@@ -65,7 +65,7 @@ namespace AGX_LidarSurfaceMaterialComponent_helpers
 	{
 		switch (Selection)
 		{
-			case EAGX_LidarSurfaceMaterialAssignmentSelection::Parent:
+			case EAGX_LidarSurfaceMaterialAssignmentSelection::LSM_Parent:
 			{
 				TArray<USceneComponent*> Components;
 				if (auto Parent = FindFirstValidParent(Component))
@@ -73,9 +73,9 @@ namespace AGX_LidarSurfaceMaterialComponent_helpers
 
 				return Components;
 			}
-			case EAGX_LidarSurfaceMaterialAssignmentSelection::Siblings:
+			case EAGX_LidarSurfaceMaterialAssignmentSelection::LSM_Siblings:
 				return FindValidSiblings(Component);
-			case EAGX_LidarSurfaceMaterialAssignmentSelection::Children:
+			case EAGX_LidarSurfaceMaterialAssignmentSelection::LSM_Children:
 				return FindValidChildren(Component);
 		}
 

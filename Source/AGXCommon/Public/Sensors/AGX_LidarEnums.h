@@ -34,45 +34,45 @@ enum EAGX_LidarSurfaceMaterialAssignmentSelection
 	 * Assign the Lidar Surface Material to the parent Component. Searches up the Component hierarcy
 	 * for the first valid parent.
 	 */
-	Parent,
+	LSM_Parent,
 
 	/**
 	 * Assign the Lidar Surface Material to all sibling Components, i.e. all Components that share
 	 * the same immediate Parent.
 	 */
-	Siblings,
+	LSM_Siblings,
 
 	/**
 	 * Assign the Lidar Surface Material to all child Components. Searches recursively.
 	 */
-	Children,
+	LSM_Children,
 };
 
 /** Number of channels setting for OusterOS Lidars. */
 UENUM(BlueprintType)
 enum EAGX_OusterOSChannelCount
 {
-	Ch_32,
-	Ch_64,
-	Ch_128
+	CH_32,
+	CH_64,
+	CH_128
 };
 
 /** Channel distribution setting for OusterOS Lidars. */
 UENUM(BlueprintType)
 enum EAGX_OusterOSChannelDistribution
 {
-	Uniform,
-	AboveHorizon,
-	BelowHorizon
+	CD_Uniform,
+	CD_AboveHorizon,
+	CD_BelowHorizon
 };
 
 /** Horizontal resolution setting for OusterOS Lidars. */
 UENUM(BlueprintType)
 enum EAGX_OusterOSHorizontalResolution
 {
-	Hr_512,
-	Hr_1024,
-	Hr_2048
+	HR_512,
+	HR_1024,
+	HR_2048
 };
 
 /** Frequency setting for OusterOS Lidars. */

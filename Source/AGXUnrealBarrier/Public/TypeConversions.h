@@ -988,11 +988,11 @@ inline agxSensor::LidarModelOusterOS::ChannelCount Convert(EAGX_OusterOSChannelC
 {
 	switch (Count)
 	{
-		case EAGX_OusterOSChannelCount::Ch_32:
+		case EAGX_OusterOSChannelCount::CH_32:
 			return agxSensor::LidarModelOusterOS::ch_32;
-		case EAGX_OusterOSChannelCount::Ch_64:
+		case EAGX_OusterOSChannelCount::CH_64:
 			return agxSensor::LidarModelOusterOS::ch_64;
-		case EAGX_OusterOSChannelCount::Ch_128:
+		case EAGX_OusterOSChannelCount::CH_128:
 			return agxSensor::LidarModelOusterOS::ch_128;
 	}
 
@@ -1009,11 +1009,11 @@ inline agxSensor::LidarModelOusterOS::ChannelDistribution Convert(
 {
 	switch (Distribution)
 	{
-		case EAGX_OusterOSChannelDistribution::Uniform:
+		case EAGX_OusterOSChannelDistribution::CD_Uniform:
 			return agxSensor::LidarModelOusterOS::Uniform;
-		case EAGX_OusterOSChannelDistribution::AboveHorizon:
+		case EAGX_OusterOSChannelDistribution::CD_AboveHorizon:
 			return agxSensor::LidarModelOusterOS::AboveHorizon;
-		case EAGX_OusterOSChannelDistribution::BelowHorizon:
+		case EAGX_OusterOSChannelDistribution::CD_BelowHorizon:
 			return agxSensor::LidarModelOusterOS::BelowHorizon;
 	}
 
@@ -1030,11 +1030,11 @@ inline agxSensor::LidarModelOusterOS::HorizontalResolution Convert(
 {
 	switch (Resolution)
 	{
-		case EAGX_OusterOSHorizontalResolution::Hr_512:
+		case EAGX_OusterOSHorizontalResolution::HR_512:
 			return agxSensor::LidarModelOusterOS::hr_512;
-		case EAGX_OusterOSHorizontalResolution::Hr_1024:
+		case EAGX_OusterOSHorizontalResolution::HR_1024:
 			return agxSensor::LidarModelOusterOS::hr_1024;
-		case EAGX_OusterOSHorizontalResolution::Hr_2048:
+		case EAGX_OusterOSHorizontalResolution::HR_2048:
 			return agxSensor::LidarModelOusterOS::hr_2048;
 	}
 
@@ -1069,11 +1069,11 @@ inline EAGX_OusterOSChannelCount Convert(agxSensor::LidarModelOusterOS::ChannelC
 	switch (Count)
 	{
 		case agxSensor::LidarModelOusterOS::ch_32:
-			return EAGX_OusterOSChannelCount::Ch_32;
+			return EAGX_OusterOSChannelCount::CH_32;
 		case agxSensor::LidarModelOusterOS::ch_64:
-			return EAGX_OusterOSChannelCount::Ch_64;
+			return EAGX_OusterOSChannelCount::CH_64;
 		case agxSensor::LidarModelOusterOS::ch_128:
-			return EAGX_OusterOSChannelCount::Ch_128;
+			return EAGX_OusterOSChannelCount::CH_128;
 	}
 
 	UE_LOG(
@@ -1081,7 +1081,7 @@ inline EAGX_OusterOSChannelCount Convert(agxSensor::LidarModelOusterOS::ChannelC
 		TEXT("Conversion failed: Tried to convert an "
 			 "agxSensor::LidarModelOusterOS::ChannelCount literal with unknown value to "
 			 "an EAGX_OusterOSChannelCount literal."));
-	return EAGX_OusterOSChannelCount::Ch_32;
+	return EAGX_OusterOSChannelCount::CH_32;
 }
 
 inline EAGX_OusterOSChannelDistribution Convert(
@@ -1090,11 +1090,11 @@ inline EAGX_OusterOSChannelDistribution Convert(
 	switch (Distribution)
 	{
 		case agxSensor::LidarModelOusterOS::Uniform:
-			return EAGX_OusterOSChannelDistribution::Uniform;
+			return EAGX_OusterOSChannelDistribution::CD_Uniform;
 		case agxSensor::LidarModelOusterOS::AboveHorizon:
-			return EAGX_OusterOSChannelDistribution::AboveHorizon;
+			return EAGX_OusterOSChannelDistribution::CD_AboveHorizon;
 		case agxSensor::LidarModelOusterOS::BelowHorizon:
-			return EAGX_OusterOSChannelDistribution::BelowHorizon;
+			return EAGX_OusterOSChannelDistribution::CD_BelowHorizon;
 	}
 
 	UE_LOG(
@@ -1102,7 +1102,7 @@ inline EAGX_OusterOSChannelDistribution Convert(
 		TEXT("Conversion failed: Tried to convert an "
 			 "agxSensor::LidarModelOusterOS::ChannelDistribution literal with unknown value to "
 			 "an EAGX_OusterOSChannelDistribution literal."));
-	return EAGX_OusterOSChannelDistribution::Uniform;
+	return EAGX_OusterOSChannelDistribution::CD_Uniform;
 }
 
 inline EAGX_OusterOSHorizontalResolution Convert(
@@ -1111,11 +1111,11 @@ inline EAGX_OusterOSHorizontalResolution Convert(
 	switch (Resolution)
 	{
 		case agxSensor::LidarModelOusterOS::hr_512:
-			return EAGX_OusterOSHorizontalResolution::Hr_512;
+			return EAGX_OusterOSHorizontalResolution::HR_512;
 		case agxSensor::LidarModelOusterOS::hr_1024:
-			return EAGX_OusterOSHorizontalResolution::Hr_1024;
+			return EAGX_OusterOSHorizontalResolution::HR_1024;
 		case agxSensor::LidarModelOusterOS::hr_2048:
-			return EAGX_OusterOSHorizontalResolution::Hr_2048;
+			return EAGX_OusterOSHorizontalResolution::HR_2048;
 	}
 
 	UE_LOG(
@@ -1123,7 +1123,7 @@ inline EAGX_OusterOSHorizontalResolution Convert(
 		TEXT("Conversion failed: Tried to convert an "
 			 "agxSensor::LidarModelOusterOS::HorizontalResolution literal with unknown value to "
 			 "an EAGX_OusterOSHorizontalResolution literal."));
-	return EAGX_OusterOSHorizontalResolution::Hr_512;
+	return EAGX_OusterOSHorizontalResolution::HR_512;
 }
 
 inline EAGX_OusterOSFrequency Convert(agxSensor::LidarModelOusterOS::Frequency Freq)

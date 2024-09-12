@@ -29,13 +29,12 @@ public:
 	UAGX_LidarSurfaceMaterialComponent();
 
 public:
-
 	/**
 	 * Determines what Component(s) to assign the Lidar Surface Material to.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	EAGX_LidarSurfaceMaterialAssignmentSelection Selection {
-		EAGX_LidarSurfaceMaterialAssignmentSelection::Parent};
+	TEnumAsByte<enum EAGX_LidarSurfaceMaterialAssignmentSelection> Selection {
+		EAGX_LidarSurfaceMaterialAssignmentSelection::LSM_Parent};
 
 	/**
 	 * The Lidar Surface Material assigned to Static Mesh Components and AGX Shapes.
