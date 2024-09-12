@@ -424,7 +424,7 @@ public:
 	 * Body may not reach the desired Position and Rotation since external forces may act on it
 	 * during the movement.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics", Meta = (DisplayName = "Move To"))
+	UFUNCTION(BlueprintCallable, Category = "AGX Rigid Body")
 	void MoveTo_Rotator(FVector Position, FRotator Rotation, double Duration);
 
 	/**
@@ -439,7 +439,7 @@ public:
 	 * Body may not reach the desired Position and Rotation since external forces may act on it
 	 * during the movement.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Rigid Body", Meta = (DisplayName = "Move To"))
+	UFUNCTION(BlueprintCallable, Category = "AGX Rigid Body")
 	void MoveTo_Quat(FVector Position, FQuat Rotation, double Duration);
 
 	/**
