@@ -54,8 +54,7 @@ namespace AGX_PlayRecordComponent_helpers
 	{
 		for (int32 I = 0; I < Count; ++I)
 		{
-			OutData[I] = State.Values[OutIndex];
-			++OutIndex;
+			OutData[I] = State.Values[OutIndex++];
 		}
 	}
 
@@ -72,8 +71,7 @@ namespace AGX_PlayRecordComponent_helpers
 		FVector Result;
 		for (int32 I = 0; I < 3; ++I)
 		{
-			Result[I] = State.Values[OutIndex];
-			++OutIndex;
+			Result[I] = State.Values[OutIndex++];
 		}
 		return Result;
 	}
