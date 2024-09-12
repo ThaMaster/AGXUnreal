@@ -1276,12 +1276,27 @@ FVector UAGX_RigidBodyComponent::GetTorque() const
 	return NativeBarrier.GetTorque();
 }
 
-void UAGX_RigidBodyComponent::MoveTo(FVector Position, FRotator Rotation, float Duration)
+void UAGX_RigidBodyComponent::MoveTo(FVector Position, FRotator Rotation, double Duration)
 {
-	if (!HasNative() || Duration < 0.f)
+	MoveTo(Position, Rotation.Quaternion(), Duration);
+}
+
+void UAGX_RigidBodyComponent::MoveTo(FVector Position, FQuat Rotation, double Duration)
+{
+	if (!HasNative() || Duration < 0.0)
 		return;
 
-	NativeBarrier.MoveTo(Position, Rotation.Quaternion(), Duration);
+	NativeBarrier.MoveTo(Position, Rotation, Duration);
+}
+
+void UAGX_RigidBodyComponent::MoveTo_Rotator(FVector Position, FRotator Rotation, double Duration)
+{
+	MoveTo(Position, Rotation, Duration);
+}
+
+void UAGX_RigidBodyComponent::MoveTo_Quat(FVector Position, FQuat Rotation, double Duration)
+{
+	MoveTo(Position, Rotation, Duration);
 }
 
 void UAGX_RigidBodyComponent::MoveToLocal(
