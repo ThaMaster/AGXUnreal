@@ -11,6 +11,9 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 
 // Standard library includes.
+#include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
+
 #include <limits>
 
 UAGX_PlayRecordComponent::UAGX_PlayRecordComponent()
@@ -38,6 +41,61 @@ void UAGX_PlayRecordComponent::EndPlay(EEndPlayReason::Type Reason)
 
 namespace AGX_PlayRecordComponent_helpers
 {
+	void AddDoubles(const double* Data, int32 Count, FAGX_PlayRecordState& OutState)
+	{
+		for (int32 I = 0; I < Count; ++I)
+		{
+			OutState.Values.Add(Data[I]);
+		}
+	}
+
+	void GetDoubles(
+		double* OutData, int32 Count, const FAGX_PlayRecordState& State, int32& OutIndex)
+	{
+		for (int32 I = 0; I < Count; ++I)
+		{
+			OutData[I] = State.Values[OutIndex];
+			++OutIndex;
+		}
+	}
+
+	void AddVector(const FVector& Data, FAGX_PlayRecordState& OutState)
+	{
+		for (int32 I = 0; I < 3; ++I)
+		{
+			OutState.Values.Add(Data[I]);
+		}
+	}
+
+	FVector GetVector(const FAGX_PlayRecordState& State, int32& OutIndex)
+	{
+		FVector Result;
+		for (int32 I = 0; I < 3; ++I)
+		{
+			Result[I] = State.Values[OutIndex];
+			++OutIndex;
+		}
+		return Result;
+	}
+
+	void AddQuat(const FQuat& Data, FAGX_PlayRecordState& OutState)
+	{
+		OutState.Values.Add(Data.X);
+		OutState.Values.Add(Data.Y);
+		OutState.Values.Add(Data.Z);
+		OutState.Values.Add(Data.W);
+	}
+
+	FQuat GetQuat(const FAGX_PlayRecordState& State, int32& OutIndex)
+	{
+		FQuat Result;
+		Result.X = State.Values[OutIndex++];
+		Result.Y = State.Values[OutIndex++];
+		Result.Z = State.Values[OutIndex++];
+		Result.W = State.Values[OutIndex++];
+		return Result;
+	}
+
 	void RecordAngle(const UAGX_ConstraintComponent& Constraint, FAGX_PlayRecordState& OutState)
 	{
 		if (const UAGX_Constraint1DofComponent* Constraint1Dof =
@@ -58,6 +116,23 @@ namespace AGX_PlayRecordComponent_helpers
 		UE_LOG(
 			LogAGX, Warning, TEXT("RecordAngle was called with unsupported Constraint '%s'."),
 			*Constraint.GetName());
+	}
+
+	void RecordRigidBody(const UAGX_RigidBodyComponent& RigidBody, FAGX_PlayRecordState& OutState)
+	{
+		const FVector Position = RigidBody.GetPosition();
+		AddVector(Position, OutState);
+		const FQuat Rotation = RigidBody.GetRotation();
+		AddQuat(Rotation, OutState);
+	}
+
+	void PlayBackRigidBody(
+		UAGX_RigidBodyComponent& RigidBody, const FAGX_PlayRecordState& State, double TimeStep,
+		int32& OutIndex)
+	{
+		const FVector Position = GetVector(State, OutIndex);
+		const FQuat Rotation = GetQuat(State, OutIndex);
+		RigidBody.MoveTo(Position, Rotation, TimeStep);
 	}
 
 	void PrepareForPlayback(UAGX_ConstraintComponent& Constraint)
@@ -101,6 +176,31 @@ namespace AGX_PlayRecordComponent_helpers
 			TEXT("PrepareForPlayback was called with unsupported Constraint '%s'."),
 			*Constraint.GetName());
 	}
+
+	void PrepareForPlayback(
+		UAGX_RigidBodyComponent& Body,
+		TMap<UAGX_RigidBodyComponent*, EAGX_MotionControl>& OriginalMotionControl)
+	{
+		OriginalMotionControl.Add(&Body, Body.GetMotionControl());
+		Body.SetMotionControl(EAGX_MotionControl::MC_KINEMATICS);
+	}
+
+	void FinalizePlayback(
+		UAGX_RigidBodyComponent& Body,
+		TMap<UAGX_RigidBodyComponent*, EAGX_MotionControl>& OriginalMotionControl)
+	{
+		EAGX_MotionControl* MotionControl = OriginalMotionControl.Find(&Body);
+		if (MotionControl == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Finalize Playback called on Rigid Body for which Prepare For Playback was "
+					 "not called."));
+			return;
+		}
+
+		Body.SetMotionControl(*MotionControl);
+	}
 }
 
 void UAGX_PlayRecordComponent::RecordConstraintPositions(
@@ -138,6 +238,48 @@ void UAGX_PlayRecordComponent::RecordConstraintPositions(
 		}
 
 		AGX_PlayRecordComponent_helpers::RecordAngle(*Constraint, State);
+	}
+
+	CurrentIndex++;
+}
+
+void UAGX_PlayRecordComponent::RecordRigidBodyPositions(
+	const TArray<UAGX_RigidBodyComponent*>& RigidBodies)
+{
+	using namespace AGX_PlayRecordComponent_helpers;
+
+	if (PlayRecord == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("RecordRigidBodyPositions was called on '%s' but the given Play Record Asset is "
+				 "not set."),
+			*GetName());
+		return;
+	}
+
+	if (CurrentIndex == 0)
+	{
+		PlayRecord->States.Empty(InitialStatesAllocationSize);
+	}
+
+	const auto LastIndex = PlayRecord->States.Add(FAGX_PlayRecordState());
+	AGX_CHECK(CurrentIndex == LastIndex);
+
+	FAGX_PlayRecordState& State = PlayRecord->States.Last();
+	for (UAGX_RigidBodyComponent* Body : RigidBodies)
+	{
+		if (Body == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("'%s' found nullptr Rigid Body in RecordRigidBodyPositions. Rigid Body "
+					 "position recording may not give the wanted result."),
+				*GetName());
+			continue;
+		}
+
+		RecordRigidBody(*Body, State);
 	}
 
 	CurrentIndex++;
@@ -223,6 +365,83 @@ void UAGX_PlayRecordComponent::PlayBackConstraintPositions(
 	}
 
 	CurrentIndex++;
+}
+
+void UAGX_PlayRecordComponent::PlayBackRigidBodyPositions(
+	const TArray<UAGX_RigidBodyComponent*>& RigidBodies)
+{
+	using namespace AGX_PlayRecordComponent_helpers;
+
+	if (PlayRecord == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("PlayBackRigidBodyPositions was called on '%s' but the given Play Record Asset is "
+				 "not set."),
+			*GetName());
+		return;
+	}
+
+	if (PlayRecord->States.IsEmpty())
+		return;
+
+	if (CurrentIndex >= PlayRecord->States.Num())
+	{
+		if (CurrentIndex == PlayRecord->States.Num())
+		{
+			for (UAGX_RigidBodyComponent* Body : RigidBodies)
+			{
+				FinalizePlayback(*Body, OriginalMotionControl);
+			}
+			++CurrentIndex;
+		}
+		return; // We have passed the end of the recording.
+	}
+
+	if (CurrentIndex == 0)
+	{
+		// At the beginning of the recording.
+		for (UAGX_RigidBodyComponent* Body : RigidBodies)
+		{
+			if (Body == nullptr)
+				continue;
+			PrepareForPlayback(*Body, OriginalMotionControl);
+		}
+	}
+
+	const FAGX_PlayRecordState& State = PlayRecord->States[CurrentIndex];
+	const int32 NumValuesInState = State.Values.Num();
+	AGX_CHECK(NumValuesInState == 7 * RigidBodies.Num());
+	if (NumValuesInState != 7 * RigidBodies.Num())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("'%s' found recording state %d with incorrect number of data points. Skipping "
+				 "this state."),
+			*GetName(), CurrentIndex);
+		++CurrentIndex;
+		return;
+	}
+
+	const double TimeStep = UAGX_Simulation::GetFrom(this)->TimeStep;
+
+	int32 ValuesIndex {0};
+	for (UAGX_RigidBodyComponent* Body : RigidBodies)
+	{
+		if (Body == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("'%s' found nullptr Rigid Body in PlayBackRigidBodyPositions. Rigid Body "
+					 "position playback may not give the wanted result."),
+				*GetName());
+			continue;
+		}
+
+		PlayBackRigidBody(*Body, State, TimeStep, ValuesIndex);
+	}
+
+	++CurrentIndex;
 }
 
 void UAGX_PlayRecordComponent::Reset()
