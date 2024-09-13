@@ -409,14 +409,17 @@ void UAGX_PlayRecordComponent::PlayBackRigidBodyPositions(
 
 	const FAGX_PlayRecordState& State = PlayRecord->States[CurrentIndex];
 	const int32 NumValuesInState = State.Values.Num();
-	AGX_CHECK(NumValuesInState == 7 * RigidBodies.Num());
-	if (NumValuesInState != 7 * RigidBodies.Num())
+	constexpr int32 BytesPerBody = 3 + 4; // FVector + FQuat.
+	const int32 ExpectedNumBytes = BytesPerBody * RigidBodies.Num();
+	if (NumValuesInState != ExpectedNumBytes)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("'%s' found recording state %d with incorrect number of data points. Skipping "
+			TEXT("'%s' found recording state at index %d with incorrect number of data points. "
+				 "Expected %d (bytes per body) * %d (num bodies) = %d but found %d. Skipping "
 				 "this state."),
-			*GetName(), CurrentIndex);
+			*GetName(), CurrentIndex, BytesPerBody, RigidBodies.Num(), ExpectedNumBytes,
+			NumValuesInState);
 		++CurrentIndex;
 		return;
 	}
