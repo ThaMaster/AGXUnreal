@@ -430,7 +430,8 @@ void UAGX_PlayRecordComponent::PlayBackRigidBodyPositions(
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("'%s' is part of a world that does not have an AGX Simulation. Cannot play back "
-				 "Rigid Body recordings."));
+				 "Rigid Body recordings."),
+				 *GetName());
 		return;
 	}
 
