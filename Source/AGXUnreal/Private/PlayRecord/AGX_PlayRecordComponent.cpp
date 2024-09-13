@@ -421,7 +421,17 @@ void UAGX_PlayRecordComponent::PlayBackRigidBodyPositions(
 		return;
 	}
 
-	const double TimeStep = UAGX_Simulation::GetFrom(this)->TimeStep;
+	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
+	if (Simulation == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("'%s' is part of a world that does not have an AGX Simulation. Cannot play back "
+				 "Rigid Body recordings."));
+		return;
+	}
+
+	const double TimeStep = Simulation->TimeStep;
 
 	int32 ValuesIndex {0};
 	for (UAGX_RigidBodyComponent* Body : RigidBodies)
