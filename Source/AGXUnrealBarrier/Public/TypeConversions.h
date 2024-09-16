@@ -47,6 +47,7 @@
 #include <agxCollide/Contacts.h>
 #include <agxModel/TwoBodyTire.h>
 #include <agxSensor/LidarModelOusterOS.h>
+#include <agxSensor/LidarRayAngleGaussianNoise.h>
 #include <agxSensor/LidarRayPatternGenerator.h>
 #include <agxSDK/ContactEventListener.h>
 #include <agxTerrain/Shovel.h>
@@ -984,6 +985,46 @@ inline agx::Constraint2DOF::DOF Convert(EAGX_Constraint2DOFFreeDOF Dof)
 // Enumerations, Lidar.
 //
 
+inline agxSensor::LidarRayAngleGaussianNoise::Axis Convert(EAGX_LidarRayAngleDistortionAxis Axis)
+{
+	switch (Axis)
+	{
+		case EAGX_LidarRayAngleDistortionAxis::DA_X:
+			return agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_X;
+		case EAGX_LidarRayAngleDistortionAxis::DA_Y:
+			return agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_Y;
+		case EAGX_LidarRayAngleDistortionAxis::DA_Z:
+			return agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_Z;
+	}
+
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Conversion failed: Tried to convert an "
+			 "EAGX_LidarRayAngleDistortionAxis literal with unknown value to "
+			 "an agxSensor::LidarRayAngleGaussianNoise::Axis literal."));
+	return agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_X;
+}
+
+inline EAGX_LidarRayAngleDistortionAxis Convert(agxSensor::LidarRayAngleGaussianNoise::Axis Axis)
+{
+	switch (Axis)
+	{
+		case agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_X:
+			return EAGX_LidarRayAngleDistortionAxis::DA_X;
+		case agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_Y:
+			return EAGX_LidarRayAngleDistortionAxis::DA_Y;
+		case agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_Z:
+			return EAGX_LidarRayAngleDistortionAxis::DA_Z;
+	}
+
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Conversion failed: Tried to convert an "
+			 "agxSensor::LidarRayAngleGaussianNoise::Axis literal with unknown value to "
+			 "an EAGX_LidarRayAngleDistortionAxis literal."));
+	return EAGX_LidarRayAngleDistortionAxis::DA_X;
+}
+
 inline agxSensor::LidarModelOusterOS::ChannelCount Convert(EAGX_OusterOSChannelCount Count)
 {
 	switch (Count)
@@ -1144,9 +1185,9 @@ inline EAGX_OusterOSFrequency Convert(agxSensor::LidarModelOusterOS::Frequency F
 	return EAGX_OusterOSFrequency::F_10;
 }
 
-	//
-	// Enumerations, Materials.
-	//
+//
+// Enumerations, Materials.
+//
 
 inline agx::FrictionModel::SolveType Convert(EAGX_ContactSolver ContactSolver)
 {

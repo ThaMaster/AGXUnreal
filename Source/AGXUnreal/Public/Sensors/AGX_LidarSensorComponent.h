@@ -9,6 +9,7 @@
 #include "Sensors/AGX_DistanceGaussianNoiseSettings.h"
 #include "Sensors/AGX_LidarEnums.h"
 #include "Sensors/AGX_LidarModelParameters.h"
+#include "Sensors/AGX_RayAngleGaussianNoiseSettings.h"
 #include "Sensors/LidarBarrier.h"
 
 // Unreal Engine includes.
@@ -141,8 +142,8 @@ public:
 	bool GetEnableRemovePointsMisses() const;
 
 	/**
-	 * Enables distance gaussian noise, adding an individual distance error to each measurements
-	 * of Position.
+	 * Enables or disables distance gaussian noise, adding an individual distance error to each
+	 * measurements of Position.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
@@ -164,6 +165,30 @@ public:
 		Meta = (ClampMin = "0.0", EditCondition = "bEnableDistanceGaussianNoise"))
 	// clang-format on
 	FAGX_DistanceGaussianNoiseSettings DistanceNoiseSettings;
+
+	/**
+	 * Enables or disables angle ray gaussian noise, adding an individual angle error to each lidar
+	 * ray.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
+		// clang-format off
+		Meta = (EditCondition = "Model == EAGX_LidarModel::CustomRayPattern || Model == EAGX_LidarModel::GenericHorizontalSweep"))
+	// clang-format on
+	bool bEnableRayAngleGaussianNoise {false};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetEnableRayAngleGaussianNoise(bool bEnable);
+
+	/**
+	 * Determines the lidar ray noise characteristics.
+	 */
+	UPROPERTY(
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
+		// clang-format off
+		Meta = (ClampMin = "0.0", EditCondition = "bEnableRayAngleGaussianNoise"))
+	// clang-format on
+	FAGX_RayAngleGaussianNoiseSettings RayAngleNoiseSettings;
 
 	/**
 	 * Delegate that has to be assigned (bound to) by the user to support custom scan pattern.

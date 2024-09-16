@@ -269,6 +269,19 @@ namespace LidarBarrier_helpers
 
 		return nullptr;
 	}
+
+	agxSensor::LidarRayAngleGaussianNoise* GetRayAngleNoise(agxSensor::Lidar& Lidar)
+	{
+		agxSensor::LidarRayDistortionRefVector Distortions =
+			Lidar.getRayDistortionHandler()->getDistortions();
+		for (auto Distortion : Distortions)
+		{
+			if (auto DistortionNoise = Distortion->as<agxSensor::LidarRayAngleGaussianNoise>())
+				return DistortionNoise;
+		}
+
+		return nullptr;
+	}
 }
 
 void FLidarBarrier::SetEnableRemoveRayMisses(bool bEnable)
@@ -283,7 +296,7 @@ bool FLidarBarrier::GetEnableRemoveRayMisses() const
 	return NativeRef->Native->getOutputHandler()->getEnableRemoveRayMisses();
 }
 
-void FLidarBarrier::EnableDistanceGaussianNoise(double Mean, double StdDev, double StdDevSlope)
+void FLidarBarrier::EnableDistanceGaussianNoise(const FAGX_DistanceGaussianNoiseSettings& Settings)
 {
 	using namespace LidarBarrier_helpers;
 	check(HasNative());
@@ -295,9 +308,9 @@ void FLidarBarrier::EnableDistanceGaussianNoise(double Mean, double StdDev, doub
 		NativeRef->Native->getOutputHandler()->add(DistanceNoise);
 	}
 
-	const agx::Real MeanAGX = ConvertDistanceToAGX(Mean);
-	const agx::Real StdDevAGX = ConvertDistanceToAGX(StdDev);
-	const agx::Real StdDevSlopeAGX = StdDevSlope; // Unitless.
+	const agx::Real MeanAGX = ConvertDistanceToAGX(Settings.Mean);
+	const agx::Real StdDevAGX = ConvertDistanceToAGX(Settings.StandardDeviation);
+	const agx::Real StdDevSlopeAGX = Settings.StandardDeviationSlope; // Unitless.
 
 	DistanceNoise->setMean(MeanAGX);
 	DistanceNoise->setStdDevBase(StdDevAGX);
@@ -310,7 +323,7 @@ void FLidarBarrier::DisableDistanceGaussianNoise()
 	using namespace LidarBarrier_helpers;
 	check(HasNative());
 
-	agxSensor::RtDistanceGaussianNoiseRef DistanceNoise = GetDistanceNoise(*NativeRef->Native);
+	agxSensor::RtDistanceGaussianNoise* DistanceNoise = GetDistanceNoise(*NativeRef->Native);
 	if (DistanceNoise != nullptr)
 		NativeRef->Native->getOutputHandler()->remove(DistanceNoise);
 }
@@ -320,6 +333,44 @@ bool FLidarBarrier::IsDistanceGaussianNoiseEnabled() const
 	using namespace LidarBarrier_helpers;
 	check(HasNative());
 	return GetDistanceNoise(*NativeRef->Native) != nullptr;
+}
+
+void FLidarBarrier::EnableRayAngleGaussianNoise(const FAGX_RayAngleGaussianNoiseSettings& Settings)
+{
+	using namespace LidarBarrier_helpers;
+	check(HasNative());
+
+	agxSensor::LidarRayAngleGaussianNoise* Noise = GetRayAngleNoise(*NativeRef->Native);
+	if (Noise == nullptr)
+	{
+		Noise = new agxSensor::LidarRayAngleGaussianNoise();
+		NativeRef->Native->getRayDistortionHandler()->add(Noise);
+	}
+
+	const auto AxisAGX = Convert(Settings.Axis);
+	const agx::Real MeanAGX = ConvertAngleToAGX(Settings.Mean);
+	const agx::Real StdDevAGX = ConvertAngleToAGX(Settings.StandardDeviation);
+
+	Noise->setAxis(AxisAGX);
+	Noise->setMean(MeanAGX);
+	Noise->setStandardDeviation(StdDevAGX);
+}
+
+void FLidarBarrier::DisableRayAngleGaussianNoise()
+{
+	using namespace LidarBarrier_helpers;
+	check(HasNative());
+
+	agxSensor::LidarRayAngleGaussianNoise* Noise = GetRayAngleNoise(*NativeRef->Native);
+	if (Noise != nullptr)
+		NativeRef->Native->getRayDistortionHandler()->remove(Noise);
+}
+
+bool FLidarBarrier::IsRayAngleGaussianNoiseEnabled() const
+{
+	using namespace LidarBarrier_helpers;
+	check(HasNative());
+	return GetRayAngleNoise(*NativeRef->Native) != nullptr;
 }
 
 void FLidarBarrier::AddOutput(FLidarOutputBarrier& Output)

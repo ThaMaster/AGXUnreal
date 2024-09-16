@@ -4,6 +4,8 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Sensors/AGX_LidarEnums.h"
+#include "Sensors/AGX_DistanceGaussianNoiseSettings.h"
+#include "Sensors/AGX_RayAngleGaussianNoiseSettings.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -53,9 +55,13 @@ public:
 	void SetEnableRemoveRayMisses(bool bEnable);
 	bool GetEnableRemoveRayMisses() const;
 
-	void EnableDistanceGaussianNoise(double Mean, double StdDev, double StdDevSlope);
+	void EnableDistanceGaussianNoise(const FAGX_DistanceGaussianNoiseSettings& Settings);
 	void DisableDistanceGaussianNoise();
 	bool IsDistanceGaussianNoiseEnabled() const;
+
+	void EnableRayAngleGaussianNoise(const FAGX_RayAngleGaussianNoiseSettings& Settings);
+	void DisableRayAngleGaussianNoise();
+	bool IsRayAngleGaussianNoiseEnabled() const;
 
 	void AddOutput(FLidarOutputBarrier& Output);
 
@@ -77,7 +83,6 @@ public:
 	 */
 	void IncrementRefCount() const;
 	void DecrementRefCount() const;
-
 
 private:
 	FLidarBarrier(const FLidarBarrier&) = delete;

@@ -140,13 +140,28 @@ void UAGX_LidarSensorComponent::SetEnableDistanceGaussianNoise(bool bEnable)
 	{
 		if (bEnable)
 		{
-			NativeBarrier.EnableDistanceGaussianNoise(
-				DistanceNoiseSettings.Mean, DistanceNoiseSettings.StandardDeviation,
-				DistanceNoiseSettings.StandardDeviationSlope);
+			NativeBarrier.EnableDistanceGaussianNoise(DistanceNoiseSettings);
 		}
 		else
 		{
 			NativeBarrier.DisableDistanceGaussianNoise();
+		}
+	}
+}
+
+void UAGX_LidarSensorComponent::SetEnableRayAngleGaussianNoise(bool bEnable)
+{
+	bEnableRayAngleGaussianNoise = bEnable;
+
+	if (HasNative())
+	{
+		if (bEnable)
+		{
+			NativeBarrier.EnableRayAngleGaussianNoise(RayAngleNoiseSettings);
+		}
+		else
+		{
+			NativeBarrier.DisableRayAngleGaussianNoise();
 		}
 	}
 }
@@ -274,6 +289,7 @@ void UAGX_LidarSensorComponent::CopyFrom(const UAGX_LidarSensorComponent& Source
 	ModelParameters = Source.ModelParameters;
 	bEnableRemovePointsMisses = Source.bEnableRemovePointsMisses;
 	bEnableDistanceGaussianNoise = Source.bEnableDistanceGaussianNoise;
+	bEnableRayAngleGaussianNoise = Source.bEnableRayAngleGaussianNoise;
 	DistanceNoiseSettings = Source.DistanceNoiseSettings;
 }
 
@@ -391,6 +407,11 @@ void UAGX_LidarSensorComponent::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, bEnableDistanceGaussianNoise),
 		[](ThisClass* This)
 		{ This->SetEnableDistanceGaussianNoise(This->bEnableDistanceGaussianNoise); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, bEnableRayAngleGaussianNoise),
+		[](ThisClass* This)
+		{ This->SetEnableRayAngleGaussianNoise(This->bEnableRayAngleGaussianNoise); });
 }
 #endif // WITH_EDITOR
 
@@ -410,6 +431,7 @@ void UAGX_LidarSensorComponent::UpdateNativeProperties()
 		NativeBarrier.SetBeamDivergence(BeamDivergence);
 		NativeBarrier.SetBeamExitRadius(BeamExitRadius);
 		SetEnableDistanceGaussianNoise(bEnableDistanceGaussianNoise);
+		SetEnableRayAngleGaussianNoise(bEnableRayAngleGaussianNoise);
 	}
 
 	NativeBarrier.SetEnableRemoveRayMisses(bEnableRemovePointsMisses);

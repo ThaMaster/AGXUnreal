@@ -82,3 +82,12 @@ enum EAGX_OusterOSFrequency
 	F_10,
 	F_20
 };
+
+/** Ray angle noise axis setting. */
+UENUM(BlueprintType)
+enum EAGX_LidarRayAngleDistortionAxis
+{
+	DA_X,
+	DA_Y,
+	DA_Z
+};
