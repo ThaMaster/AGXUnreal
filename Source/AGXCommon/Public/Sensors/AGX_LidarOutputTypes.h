@@ -15,7 +15,7 @@ struct AGXCOMMON_API FAGX_LidarOutputPositionData
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Lidar")
-	FVector Position {FVector::ZeroVector};
+	FVector3f Position {FVector3f::ZeroVector};
 };
 
 USTRUCT(BlueprintType)
@@ -24,8 +24,8 @@ struct AGXCOMMON_API FAGX_LidarOutputPositionIntensityData
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Lidar")
-	FVector Position {FVector::ZeroVector};
+	FVector3f Position {FVector3f::ZeroVector};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Lidar")
-	double Intensity {0.0};
+	float Intensity {0.0f};
 };

@@ -47,7 +47,7 @@ void FAGX_LidarOutputPosition::Render(
 	const FTransform& Transform = Lidar->GetComponentTransform();
 	for (const auto& Datum : DataToRender)
 	{
-		RenderPositions.Add(Transform.TransformPositionNoScale(Datum.Position));
+		RenderPositions.Add(Transform.TransformPositionNoScale(FVector(Datum.Position)));
 	}
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
