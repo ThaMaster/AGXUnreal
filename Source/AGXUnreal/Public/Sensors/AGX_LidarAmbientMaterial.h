@@ -30,7 +30,7 @@ public:
 	float GetRefractiveIndex() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar", Meta = (ClampMin = "0.0", ClampMax = "1.0"))
-	float AttenuationCoefficient {0.5f};
+	float AttenuationCoefficient {0.000402272f};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetAttenuationCoefficient(float InAttenuationCoefficient);
@@ -39,16 +39,16 @@ public:
 	float GetAttenuationCoefficient() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar", Meta = (ClampMin = "0.0", ClampMax = "1.0"))
-	float ReturnGammaDistributionProbabilityScaling {1.0f};
+	float ReturnProbabilityScaling {1.58899e-05f};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	void SetReturnGammaDistributionProbabilityScaling(float InScalingParameter);
+	void SetReturnProbabilityScaling(float InScalingParameter);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
-	float GetReturnGammaDistributionProbabilityScaling() const;
+	float GetReturnProbabilityScaling() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar", Meta = (ClampMin = "0.0", ClampMax = "1.0"))
-	float ReturnGammaDistributionShapeParameter {1.0f};
+	float ReturnGammaDistributionShapeParameter {9.5f};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetReturnGammaDistributionShapeParameter(float InShapeParameter);
@@ -57,7 +57,7 @@ public:
 	float GetReturnGammaDistributionShapeParameter() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar", Meta = (ClampMin = "0.0", ClampMax = "1.0"))
-	float ReturnGammaDistributionScaleParameter {1.0f};
+	float ReturnGammaDistributionScaleParameter {0.52f};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetReturnGammaDistributionScaleParameter(float InScaleParameter);

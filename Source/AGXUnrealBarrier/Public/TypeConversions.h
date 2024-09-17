@@ -1045,66 +1045,6 @@ inline agxSensor::LidarModelOusterOS::ChannelCount Convert(EAGX_OusterOSChannelC
 	return agxSensor::LidarModelOusterOS::ch_32;
 }
 
-inline agxSensor::LidarModelOusterOS::ChannelDistribution Convert(
-	EAGX_OusterOSChannelDistribution Distribution)
-{
-	switch (Distribution)
-	{
-		case EAGX_OusterOSChannelDistribution::Uniform:
-			return agxSensor::LidarModelOusterOS::Uniform;
-		case EAGX_OusterOSChannelDistribution::AboveHorizon:
-			return agxSensor::LidarModelOusterOS::AboveHorizon;
-		case EAGX_OusterOSChannelDistribution::BelowHorizon:
-			return agxSensor::LidarModelOusterOS::BelowHorizon;
-	}
-
-	UE_LOG(
-		LogAGX, Error,
-		TEXT("Conversion failed: Tried to convert an "
-			 "EAGX_OusterOSChannelDistribution literal with unknown value to "
-			 "an agxSensor::LidarModelOusterOS::ChannelDistribution literal."));
-	return agxSensor::LidarModelOusterOS::Uniform;
-}
-
-inline agxSensor::LidarModelOusterOS::HorizontalResolution Convert(
-	EAGX_OusterOSHorizontalResolution Resolution)
-{
-	switch (Resolution)
-	{
-		case EAGX_OusterOSHorizontalResolution::HR_512:
-			return agxSensor::LidarModelOusterOS::hr_512;
-		case EAGX_OusterOSHorizontalResolution::HR_1024:
-			return agxSensor::LidarModelOusterOS::hr_1024;
-		case EAGX_OusterOSHorizontalResolution::HR_2048:
-			return agxSensor::LidarModelOusterOS::hr_2048;
-	}
-
-	UE_LOG(
-		LogAGX, Error,
-		TEXT("Conversion failed: Tried to convert an "
-			 "EAGX_OusterOSHorizontalResolution literal with unknown value to "
-			 "an agxSensor::LidarModelOusterOS::HorizontalResolution literal."));
-	return agxSensor::LidarModelOusterOS::hr_512;
-}
-
-inline agxSensor::LidarModelOusterOS::Frequency Convert(EAGX_OusterOSFrequency Freq)
-{
-	switch (Freq)
-	{
-		case EAGX_OusterOSFrequency::F_10:
-			return agxSensor::LidarModelOusterOS::f_10;
-		case EAGX_OusterOSFrequency::F_20:
-			return agxSensor::LidarModelOusterOS::f_20;
-	}
-
-	UE_LOG(
-		LogAGX, Error,
-		TEXT("Conversion failed: Tried to convert an "
-			 "EAGX_OusterOSFrequency literal with unknown value to "
-			 "an agxSensor::LidarModelOusterOS::Frequency literal."));
-	return agxSensor::LidarModelOusterOS::f_10;
-}
-
 inline EAGX_OusterOSChannelCount Convert(agxSensor::LidarModelOusterOS::ChannelCount Count)
 {
 	switch (Count)
@@ -1125,64 +1065,93 @@ inline EAGX_OusterOSChannelCount Convert(agxSensor::LidarModelOusterOS::ChannelC
 	return EAGX_OusterOSChannelCount::CH_32;
 }
 
-inline EAGX_OusterOSChannelDistribution Convert(
-	agxSensor::LidarModelOusterOS::ChannelDistribution Distribution)
+inline agxSensor::LidarModelOusterOS::BeamSpacing Convert(EAGX_OusterOSBeamSpacing BeamSpacing)
 {
-	switch (Distribution)
+	switch (BeamSpacing)
+	{
+		case EAGX_OusterOSBeamSpacing::Uniform:
+			return agxSensor::LidarModelOusterOS::Uniform;
+		case EAGX_OusterOSBeamSpacing::AboveHorizon:
+			return agxSensor::LidarModelOusterOS::AboveHorizon;
+		case EAGX_OusterOSBeamSpacing::BelowHorizon:
+			return agxSensor::LidarModelOusterOS::BelowHorizon;
+	}
+
+	UE_LOG(
+		LogAGX, Error,
+		TEXT("Conversion failed: Tried to convert an "
+			 "EAGX_OusterOSBeamSpacing literal with unknown value to "
+			 "an agxSensor::LidarModelOusterOS::BeamSpacing literal."));
+	return agxSensor::LidarModelOusterOS::Uniform;
+}
+
+inline EAGX_OusterOSBeamSpacing Convert(agxSensor::LidarModelOusterOS::BeamSpacing Spacing)
+{
+	switch (Spacing)
 	{
 		case agxSensor::LidarModelOusterOS::Uniform:
-			return EAGX_OusterOSChannelDistribution::Uniform;
+			return EAGX_OusterOSBeamSpacing::Uniform;
 		case agxSensor::LidarModelOusterOS::AboveHorizon:
-			return EAGX_OusterOSChannelDistribution::AboveHorizon;
+			return EAGX_OusterOSBeamSpacing::AboveHorizon;
 		case agxSensor::LidarModelOusterOS::BelowHorizon:
-			return EAGX_OusterOSChannelDistribution::BelowHorizon;
+			return EAGX_OusterOSBeamSpacing::BelowHorizon;
 	}
 
 	UE_LOG(
 		LogAGX, Error,
 		TEXT("Conversion failed: Tried to convert an "
-			 "agxSensor::LidarModelOusterOS::ChannelDistribution literal with unknown value to "
-			 "an EAGX_OusterOSChannelDistribution literal."));
-	return EAGX_OusterOSChannelDistribution::Uniform;
+			 "agxSensor::LidarModelOusterOS::BeamSpacing literal with unknown value to "
+			 "an EAGX_OusterOSBeamSpacing literal."));
+	return EAGX_OusterOSBeamSpacing::Uniform;
 }
 
-inline EAGX_OusterOSHorizontalResolution Convert(
-	agxSensor::LidarModelOusterOS::HorizontalResolution Resolution)
+inline agxSensor::LidarModelOusterOS::LidarMode Convert(EAGX_OusterOSMode Mode)
 {
-	switch (Resolution)
+	switch (Mode)
 	{
-		case agxSensor::LidarModelOusterOS::hr_512:
-			return EAGX_OusterOSHorizontalResolution::HR_512;
-		case agxSensor::LidarModelOusterOS::hr_1024:
-			return EAGX_OusterOSHorizontalResolution::HR_1024;
-		case agxSensor::LidarModelOusterOS::hr_2048:
-			return EAGX_OusterOSHorizontalResolution::HR_2048;
+		case EAGX_OusterOSMode::Mode_512x10:
+			return agxSensor::LidarModelOusterOS::Mode_512x10;
+		case EAGX_OusterOSMode::Mode_512x20:
+			return agxSensor::LidarModelOusterOS::Mode_512x20;
+		case EAGX_OusterOSMode::Mode_1024x10:
+			return agxSensor::LidarModelOusterOS::Mode_1024x10;
+		case EAGX_OusterOSMode::Mode_1024x20:
+			return agxSensor::LidarModelOusterOS::Mode_1024x20;
+		case EAGX_OusterOSMode::Mode_2048x10:
+			return agxSensor::LidarModelOusterOS::Mode_2048x10;
 	}
 
 	UE_LOG(
 		LogAGX, Error,
 		TEXT("Conversion failed: Tried to convert an "
-			 "agxSensor::LidarModelOusterOS::HorizontalResolution literal with unknown value to "
-			 "an EAGX_OusterOSHorizontalResolution literal."));
-	return EAGX_OusterOSHorizontalResolution::HR_512;
+			 "EAGX_OusterOSMode literal with unknown value to "
+			 "an agxSensor::LidarModelOusterOS::LidarMode literal."));
+	return agxSensor::LidarModelOusterOS::Mode_512x10;
 }
 
-inline EAGX_OusterOSFrequency Convert(agxSensor::LidarModelOusterOS::Frequency Freq)
+
+inline EAGX_OusterOSMode Convert(agxSensor::LidarModelOusterOS::LidarMode Mode)
 {
-	switch (Freq)
+	switch (Mode)
 	{
-		case agxSensor::LidarModelOusterOS::f_10:
-			return EAGX_OusterOSFrequency::F_10;
-		case agxSensor::LidarModelOusterOS::f_20:
-			return EAGX_OusterOSFrequency::F_20;
+		case agxSensor::LidarModelOusterOS::Mode_512x10:
+			return EAGX_OusterOSMode::Mode_512x10;
+		case agxSensor::LidarModelOusterOS::Mode_512x20:
+			return EAGX_OusterOSMode::Mode_512x20;
+		case agxSensor::LidarModelOusterOS::Mode_1024x10:
+			return EAGX_OusterOSMode::Mode_1024x10;
+		case agxSensor::LidarModelOusterOS::Mode_1024x20:
+			return EAGX_OusterOSMode::Mode_1024x20;
+		case agxSensor::LidarModelOusterOS::Mode_2048x10:
+			return EAGX_OusterOSMode::Mode_2048x10;
 	}
 
 	UE_LOG(
 		LogAGX, Error,
 		TEXT("Conversion failed: Tried to convert an "
-			 "agxSensor::LidarModelOusterOS::Frequency literal with unknown value to "
-			 "an EAGX_OusterOSFrequency literal."));
-	return EAGX_OusterOSFrequency::F_10;
+			 "agxSensor::LidarModelOusterOS::LidarMode literal with unknown value to "
+			 "an EAGX_OusterOSMode literal."));
+	return EAGX_OusterOSMode::Mode_512x10;
 }
 
 //

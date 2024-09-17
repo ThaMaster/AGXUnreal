@@ -43,6 +43,8 @@ public:
 
 	void SetLidarSurfaceMaterialOrDefault(
 		FTerrainBarrier& Terrain, FRtLambertianOpaqueMaterialBarrier* Material);
+	void SetLidarSurfaceMaterialOrDefault(
+		FTerrainPagerBarrier& TerrainPager, FRtLambertianOpaqueMaterialBarrier* Material);
 
 private:
 	FSensorEnvironmentBarrier(const FSensorEnvironmentBarrier&) = delete;

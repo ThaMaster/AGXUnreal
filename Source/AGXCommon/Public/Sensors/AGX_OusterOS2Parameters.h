@@ -22,15 +22,14 @@ public:
 
 	/** Channel distribution setting for OusterOS Lidars. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
-	EAGX_OusterOSChannelDistribution ChannelDistribution {
-		EAGX_OusterOSChannelDistribution::Uniform};
+	EAGX_OusterOSBeamSpacing BeamSpacing {
+		EAGX_OusterOSBeamSpacing::Uniform};
 
-	/** Horizontal resolution setting for OusterOS Lidars. */
+	/**
+	 * Mode setting for OusterOS Lidars.
+	 * The first number represents Horizontal Resolution.
+	 * The second number represents frequency.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
-	EAGX_OusterOSHorizontalResolution HorizontalResolution {
-		EAGX_OusterOSHorizontalResolution::HR_512};
-
-	/** Frequency setting for OusterOS Lidars. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
-	EAGX_OusterOSFrequency Frequency {EAGX_OusterOSFrequency::F_10};
+	EAGX_OusterOSMode Mode {EAGX_OusterOSMode::Mode_512x10};
 };

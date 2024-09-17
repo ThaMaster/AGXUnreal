@@ -59,28 +59,26 @@ enum class EAGX_OusterOSChannelCount : uint8
 
 /** Channel distribution setting for OusterOS Lidars. */
 UENUM(BlueprintType)
-enum class EAGX_OusterOSChannelDistribution : uint8
+enum class EAGX_OusterOSBeamSpacing : uint8
 {
 	Uniform,
 	AboveHorizon,
 	BelowHorizon
 };
 
-/** Horizontal resolution setting for OusterOS Lidars. */
+/**
+* Mode setting for OusterOS Lidars.
+* The first number represents Horizontal Resolution.
+* The second number represents frequency.
+*/
 UENUM(BlueprintType)
-enum class EAGX_OusterOSHorizontalResolution : uint8
+enum class EAGX_OusterOSMode : uint8
 {
-	HR_512,
-	HR_1024,
-	HR_2048
-};
-
-/** Frequency setting for OusterOS Lidars. */
-UENUM(BlueprintType)
-enum class EAGX_OusterOSFrequency : uint8
-{
-	F_10,
-	F_20
+	Mode_512x10,
+	Mode_512x20,
+	Mode_1024x10,
+	Mode_1024x20,
+	Mode_2048x10
 };
 
 /** Ray angle noise axis setting. */

@@ -32,18 +32,18 @@ float UAGX_LidarAmbientMaterial::GetAttenuationCoefficient() const
 	AGX_ASSET_GETTER_IMPL_VALUE(AttenuationCoefficient, GetAttenuationCoefficient);
 }
 
-void UAGX_LidarAmbientMaterial::SetReturnGammaDistributionProbabilityScaling(
+void UAGX_LidarAmbientMaterial::SetReturnProbabilityScaling(
 	float InScalingParameter)
 {
 	AGX_ASSET_SETTER_IMPL_VALUE(
-		ReturnGammaDistributionProbabilityScaling, InScalingParameter,
-		SetReturnGammaDistributionProbabilityScaling);
+		ReturnProbabilityScaling, InScalingParameter,
+		SetReturnProbabilityScaling);
 }
 
-float UAGX_LidarAmbientMaterial::GetReturnGammaDistributionProbabilityScaling() const
+float UAGX_LidarAmbientMaterial::GetReturnProbabilityScaling() const
 {
 	AGX_ASSET_GETTER_IMPL_VALUE(
-		ReturnGammaDistributionProbabilityScaling, GetReturnGammaDistributionProbabilityScaling);
+		ReturnProbabilityScaling, GetReturnProbabilityScaling);
 }
 
 void UAGX_LidarAmbientMaterial::SetReturnGammaDistributionShapeParameter(float InShapeParameter)
@@ -196,8 +196,8 @@ void UAGX_LidarAmbientMaterial::UpdateNativeProperties()
 	AGX_CHECK(IsInstance());
 	NativeBarrier.SetRefractiveIndex(RefractiveIndex);
 	NativeBarrier.SetAttenuationCoefficient(AttenuationCoefficient);
-	NativeBarrier.SetReturnGammaDistributionProbabilityScaling(
-		ReturnGammaDistributionProbabilityScaling);
+	NativeBarrier.SetReturnProbabilityScaling(
+		ReturnProbabilityScaling);
 	NativeBarrier.SetReturnGammaDistributionShapeParameter(ReturnGammaDistributionShapeParameter);
 	NativeBarrier.SetReturnGammaDistributionScaleParameter(ReturnGammaDistributionScaleParameter);
 }
@@ -215,8 +215,8 @@ void UAGX_LidarAmbientMaterial::CopyFrom(const FRtAmbientMaterialBarrier& Source
 {
 	RefractiveIndex = Source.GetRefractiveIndex();
 	AttenuationCoefficient = Source.GetAttenuationCoefficient();
-	ReturnGammaDistributionProbabilityScaling =
-		Source.GetReturnGammaDistributionProbabilityScaling();
+	ReturnProbabilityScaling =
+		Source.GetReturnProbabilityScaling();
 	ReturnGammaDistributionShapeParameter = Source.GetReturnGammaDistributionShapeParameter();
 	ReturnGammaDistributionScaleParameter = Source.GetReturnGammaDistributionScaleParameter();
 }
@@ -225,8 +225,8 @@ void UAGX_LidarAmbientMaterial::CopyProperties(const UAGX_LidarAmbientMaterial& 
 {
 	RefractiveIndex = Source.GetRefractiveIndex();
 	AttenuationCoefficient = Source.GetAttenuationCoefficient();
-	ReturnGammaDistributionProbabilityScaling =
-		Source.GetReturnGammaDistributionProbabilityScaling();
+	ReturnProbabilityScaling =
+		Source.GetReturnProbabilityScaling();
 	ReturnGammaDistributionShapeParameter = Source.GetReturnGammaDistributionShapeParameter();
 	ReturnGammaDistributionScaleParameter = Source.GetReturnGammaDistributionScaleParameter();
 }
@@ -293,12 +293,12 @@ void UAGX_LidarAmbientMaterial::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(
-			UAGX_LidarAmbientMaterial, ReturnGammaDistributionProbabilityScaling),
+			UAGX_LidarAmbientMaterial, ReturnProbabilityScaling),
 		[](ThisClass* This)
 		{
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
-				ReturnGammaDistributionProbabilityScaling,
-				SetReturnGammaDistributionProbabilityScaling)
+				ReturnProbabilityScaling,
+				SetReturnProbabilityScaling)
 		});
 
 	PropertyDispatcher.Add(

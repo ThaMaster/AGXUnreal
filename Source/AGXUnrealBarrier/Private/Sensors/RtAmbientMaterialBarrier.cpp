@@ -77,17 +77,17 @@ float FRtAmbientMaterialBarrier::GetAttenuationCoefficient() const
 	return Native->Native.getAttenuationCoefficient();
 }
 
-void FRtAmbientMaterialBarrier::SetReturnGammaDistributionProbabilityScaling(
+void FRtAmbientMaterialBarrier::SetReturnProbabilityScaling(
 	float InScalingParameter)
 {
 	check(HasNative());
-	Native->Native.setReturnGammaDistributionProbabilityScaling(InScalingParameter);
+	Native->Native.setReturnProbabilityScaling(InScalingParameter);
 }
 
-float FRtAmbientMaterialBarrier::GetReturnGammaDistributionProbabilityScaling() const
+float FRtAmbientMaterialBarrier::GetReturnProbabilityScaling() const
 {
 	check(HasNative());
-	return Native->Native.getReturnGammaDistributionProbabilityScaling();
+	return Native->Native.getReturnProbabilityScaling();
 }
 
 void FRtAmbientMaterialBarrier::SetReturnGammaDistributionShapeParameter(float InShapeParameter)

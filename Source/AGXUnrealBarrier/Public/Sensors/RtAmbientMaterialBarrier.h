@@ -31,8 +31,8 @@ public:
 	void SetAttenuationCoefficient(float InAttenuationCoefficient);
 	float GetAttenuationCoefficient() const;
 
-	void SetReturnGammaDistributionProbabilityScaling(float InScalingParameter);
-	float GetReturnGammaDistributionProbabilityScaling() const;
+	void SetReturnProbabilityScaling(float InScalingParameter);
+	float GetReturnProbabilityScaling() const;
 
 	void SetReturnGammaDistributionShapeParameter(float InShapeParameter);
 	float GetReturnGammaDistributionShapeParameter() const;

@@ -77,34 +77,28 @@ namespace LidarBarrier_helpers
 	agxSensor::Lidar* CreateAGXLidar(const UAGX_OusterOS0Parameters& Params)
 	{
 		auto CountAGX = Convert(Params.ChannelCount);
-		auto DistributionAGX = Convert(Params.ChannelDistribution);
-		auto ResolutionAGX = Convert(Params.HorizontalResolution);
-		auto FrequencyAGX = Convert(Params.Frequency);
+		auto BeamSpacingAGX = Convert(Params.BeamSpacing);
+		auto Mode = Convert(Params.Mode);
 		return new agxSensor::Lidar(
-			nullptr, new agxSensor::LidarModelOusterOS0(
-						 CountAGX, DistributionAGX, ResolutionAGX, FrequencyAGX));
+			nullptr, new agxSensor::LidarModelOusterOS0(CountAGX, BeamSpacingAGX, Mode));
 	}
 
 	agxSensor::Lidar* CreateAGXLidar(const UAGX_OusterOS1Parameters& Params)
 	{
 		auto CountAGX = Convert(Params.ChannelCount);
-		auto DistributionAGX = Convert(Params.ChannelDistribution);
-		auto ResolutionAGX = Convert(Params.HorizontalResolution);
-		auto FrequencyAGX = Convert(Params.Frequency);
+		auto BeamSpacingAGX = Convert(Params.BeamSpacing);
+		auto Mode = Convert(Params.Mode);
 		return new agxSensor::Lidar(
-			nullptr, new agxSensor::LidarModelOusterOS1(
-						 CountAGX, DistributionAGX, ResolutionAGX, FrequencyAGX));
+			nullptr, new agxSensor::LidarModelOusterOS1(CountAGX, BeamSpacingAGX, Mode));
 	}
 
 	agxSensor::Lidar* CreateAGXLidar(const UAGX_OusterOS2Parameters& Params)
 	{
 		auto CountAGX = Convert(Params.ChannelCount);
-		auto DistributionAGX = Convert(Params.ChannelDistribution);
-		auto ResolutionAGX = Convert(Params.HorizontalResolution);
-		auto FrequencyAGX = Convert(Params.Frequency);
+		auto BeamSpacingAGX = Convert(Params.BeamSpacing);
+		auto Mode = Convert(Params.Mode);
 		return new agxSensor::Lidar(
-			nullptr, new agxSensor::LidarModelOusterOS2(
-						 CountAGX, DistributionAGX, ResolutionAGX, FrequencyAGX));
+			nullptr, new agxSensor::LidarModelOusterOS2(CountAGX, BeamSpacingAGX, Mode));
 	}
 
 	agxSensor::Lidar* CreateAGXLidar(FCustomPatternFetcherBase* PatternFetcher)
