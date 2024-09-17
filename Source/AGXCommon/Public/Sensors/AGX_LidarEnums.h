@@ -7,7 +7,7 @@
 
 /** Specifies the model of the Lidar. */
 UENUM(BlueprintType)
-enum EAGX_LidarModel
+enum class EAGX_LidarModel : uint8
 {
 	/** Lidar uses a custom ray pattern where the user provides the ray pattern rays. */
 	CustomRayPattern = 0,
@@ -28,29 +28,29 @@ enum EAGX_LidarModel
 /** Specifies which Components the Lidar Surface Material Component applies the Lidar Surface
  * Material to. */
 UENUM(BlueprintType)
-enum EAGX_LidarSurfaceMaterialAssignmentSelection
+enum class EAGX_LidarSurfaceMaterialAssignmentSelection : uint8
 {
 	/**
 	 * Assign the Lidar Surface Material to the parent Component. Searches up the Component hierarcy
 	 * for the first valid parent.
 	 */
-	LSM_Parent,
+	Parent,
 
 	/**
 	 * Assign the Lidar Surface Material to all sibling Components, i.e. all Components that share
 	 * the same immediate Parent.
 	 */
-	LSM_Siblings,
+	Siblings,
 
 	/**
 	 * Assign the Lidar Surface Material to all child Components. Searches recursively.
 	 */
-	LSM_Children,
+	Children,
 };
 
 /** Number of channels setting for OusterOS Lidars. */
 UENUM(BlueprintType)
-enum EAGX_OusterOSChannelCount
+enum class EAGX_OusterOSChannelCount : uint8
 {
 	CH_32,
 	CH_64,
@@ -59,16 +59,16 @@ enum EAGX_OusterOSChannelCount
 
 /** Channel distribution setting for OusterOS Lidars. */
 UENUM(BlueprintType)
-enum EAGX_OusterOSChannelDistribution
+enum class EAGX_OusterOSChannelDistribution : uint8
 {
-	CD_Uniform,
-	CD_AboveHorizon,
-	CD_BelowHorizon
+	Uniform,
+	AboveHorizon,
+	BelowHorizon
 };
 
 /** Horizontal resolution setting for OusterOS Lidars. */
 UENUM(BlueprintType)
-enum EAGX_OusterOSHorizontalResolution
+enum class EAGX_OusterOSHorizontalResolution : uint8
 {
 	HR_512,
 	HR_1024,
@@ -77,7 +77,7 @@ enum EAGX_OusterOSHorizontalResolution
 
 /** Frequency setting for OusterOS Lidars. */
 UENUM(BlueprintType)
-enum EAGX_OusterOSFrequency
+enum class EAGX_OusterOSFrequency : uint8
 {
 	F_10,
 	F_20
@@ -85,9 +85,9 @@ enum EAGX_OusterOSFrequency
 
 /** Ray angle noise axis setting. */
 UENUM(BlueprintType)
-enum EAGX_LidarRayAngleDistortionAxis
+enum class EAGX_LidarRayAngleDistortionAxis : uint8
 {
-	DA_X,
-	DA_Y,
-	DA_Z
+	AxisX,
+	AxisY,
+	AxisZ
 };

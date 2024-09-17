@@ -48,7 +48,7 @@ public:
 	 * Changing this will assign Model specific properties to this Lidar.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	TEnumAsByte<enum EAGX_LidarModel> Model {EAGX_LidarModel::OusterOS1};
+	EAGX_LidarModel Model {EAGX_LidarModel::OusterOS1};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetModel(EAGX_LidarModel InModel);

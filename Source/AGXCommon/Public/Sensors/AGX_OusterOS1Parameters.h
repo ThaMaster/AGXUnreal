@@ -18,19 +18,19 @@ class AGXCOMMON_API UAGX_OusterOS1Parameters : public UAGX_LidarModelParameters
 public:
 	/** Number of channels setting for OusterOS Lidars. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
-	TEnumAsByte<enum EAGX_OusterOSChannelCount> ChannelCount {EAGX_OusterOSChannelCount::CH_32};
+	EAGX_OusterOSChannelCount ChannelCount {EAGX_OusterOSChannelCount::CH_32};
 
 	/** Channel distribution setting for OusterOS Lidars. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
-	TEnumAsByte<enum EAGX_OusterOSChannelDistribution> ChannelDistribution {
-		EAGX_OusterOSChannelDistribution::CD_Uniform};
+	EAGX_OusterOSChannelDistribution ChannelDistribution {
+		EAGX_OusterOSChannelDistribution::Uniform};
 
 	/** Horizontal resolution setting for OusterOS Lidars. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
-	TEnumAsByte<enum EAGX_OusterOSHorizontalResolution> HorizontalResolution {
+	EAGX_OusterOSHorizontalResolution HorizontalResolution {
 		EAGX_OusterOSHorizontalResolution::HR_512};
 
 	/** Frequency setting for OusterOS Lidars. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
-	TEnumAsByte<enum EAGX_OusterOSFrequency> Frequency {EAGX_OusterOSFrequency::F_10};
+	EAGX_OusterOSFrequency Frequency {EAGX_OusterOSFrequency::F_10};
 };

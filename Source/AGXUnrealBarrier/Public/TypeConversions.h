@@ -989,11 +989,11 @@ inline agxSensor::LidarRayAngleGaussianNoise::Axis Convert(EAGX_LidarRayAngleDis
 {
 	switch (Axis)
 	{
-		case EAGX_LidarRayAngleDistortionAxis::DA_X:
+		case EAGX_LidarRayAngleDistortionAxis::AxisX:
 			return agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_X;
-		case EAGX_LidarRayAngleDistortionAxis::DA_Y:
+		case EAGX_LidarRayAngleDistortionAxis::AxisY:
 			return agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_Y;
-		case EAGX_LidarRayAngleDistortionAxis::DA_Z:
+		case EAGX_LidarRayAngleDistortionAxis::AxisZ:
 			return agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_Z;
 	}
 
@@ -1010,11 +1010,11 @@ inline EAGX_LidarRayAngleDistortionAxis Convert(agxSensor::LidarRayAngleGaussian
 	switch (Axis)
 	{
 		case agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_X:
-			return EAGX_LidarRayAngleDistortionAxis::DA_X;
+			return EAGX_LidarRayAngleDistortionAxis::AxisX;
 		case agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_Y:
-			return EAGX_LidarRayAngleDistortionAxis::DA_Y;
+			return EAGX_LidarRayAngleDistortionAxis::AxisY;
 		case agxSensor::LidarRayAngleGaussianNoise::Axis::AXIS_Z:
-			return EAGX_LidarRayAngleDistortionAxis::DA_Z;
+			return EAGX_LidarRayAngleDistortionAxis::AxisZ;
 	}
 
 	UE_LOG(
@@ -1022,7 +1022,7 @@ inline EAGX_LidarRayAngleDistortionAxis Convert(agxSensor::LidarRayAngleGaussian
 		TEXT("Conversion failed: Tried to convert an "
 			 "agxSensor::LidarRayAngleGaussianNoise::Axis literal with unknown value to "
 			 "an EAGX_LidarRayAngleDistortionAxis literal."));
-	return EAGX_LidarRayAngleDistortionAxis::DA_X;
+	return EAGX_LidarRayAngleDistortionAxis::AxisX;
 }
 
 inline agxSensor::LidarModelOusterOS::ChannelCount Convert(EAGX_OusterOSChannelCount Count)
@@ -1050,11 +1050,11 @@ inline agxSensor::LidarModelOusterOS::ChannelDistribution Convert(
 {
 	switch (Distribution)
 	{
-		case EAGX_OusterOSChannelDistribution::CD_Uniform:
+		case EAGX_OusterOSChannelDistribution::Uniform:
 			return agxSensor::LidarModelOusterOS::Uniform;
-		case EAGX_OusterOSChannelDistribution::CD_AboveHorizon:
+		case EAGX_OusterOSChannelDistribution::AboveHorizon:
 			return agxSensor::LidarModelOusterOS::AboveHorizon;
-		case EAGX_OusterOSChannelDistribution::CD_BelowHorizon:
+		case EAGX_OusterOSChannelDistribution::BelowHorizon:
 			return agxSensor::LidarModelOusterOS::BelowHorizon;
 	}
 
@@ -1131,11 +1131,11 @@ inline EAGX_OusterOSChannelDistribution Convert(
 	switch (Distribution)
 	{
 		case agxSensor::LidarModelOusterOS::Uniform:
-			return EAGX_OusterOSChannelDistribution::CD_Uniform;
+			return EAGX_OusterOSChannelDistribution::Uniform;
 		case agxSensor::LidarModelOusterOS::AboveHorizon:
-			return EAGX_OusterOSChannelDistribution::CD_AboveHorizon;
+			return EAGX_OusterOSChannelDistribution::AboveHorizon;
 		case agxSensor::LidarModelOusterOS::BelowHorizon:
-			return EAGX_OusterOSChannelDistribution::CD_BelowHorizon;
+			return EAGX_OusterOSChannelDistribution::BelowHorizon;
 	}
 
 	UE_LOG(
@@ -1143,7 +1143,7 @@ inline EAGX_OusterOSChannelDistribution Convert(
 		TEXT("Conversion failed: Tried to convert an "
 			 "agxSensor::LidarModelOusterOS::ChannelDistribution literal with unknown value to "
 			 "an EAGX_OusterOSChannelDistribution literal."));
-	return EAGX_OusterOSChannelDistribution::CD_Uniform;
+	return EAGX_OusterOSChannelDistribution::Uniform;
 }
 
 inline EAGX_OusterOSHorizontalResolution Convert(
