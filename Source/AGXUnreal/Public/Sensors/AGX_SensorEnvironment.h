@@ -14,6 +14,7 @@
 #include "AGX_SensorEnvironment.generated.h"
 
 class AAGX_Terrain;
+class UAGX_LidarAmbientMaterial;
 class UAGX_SimpleMeshComponent;
 class UInstancedStaticMeshComponent;
 class USphereComponent;
@@ -61,6 +62,13 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Sensor Environment")
 	int32 DefaultLODIndex {-1};
+
+	/**
+	 * The Ambient material used by the Sensor Environment.
+	 * This is used to simulate atmospheric effects on the Lidar laser rays, such as rain or fog.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Sensor Environment")
+	UAGX_LidarAmbientMaterial* AmbientMaterial {nullptr};
 
 	/**
 	 * Whether or not the transform of added Instanced Static Meshes should be updated each Tick.
@@ -191,6 +199,7 @@ private:
 	void UpdateTrackedMeshes();
 	void UpdateTrackedInstancedMeshes();
 	void UpdateTrackedAGXMeshes();
+	void UpdateAmbientMaterial();
 	void StepTrackedLidars() const;
 
 	bool AddMesh(

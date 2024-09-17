@@ -6,6 +6,7 @@
 #include "Shapes/AGX_SimpleMeshComponent.h"
 #include "AGX_Simulation.h"
 #include "Materials/AGX_TerrainMaterial.h"
+#include "Sensors/AGX_LidarAmbientMaterial.h"
 #include "Sensors/AGX_LidarLambertianOpaqueMaterial.h"
 #include "Sensors/AGX_LidarSensorComponent.h"
 #include "Sensors/AGX_SensorEnvironmentSpriteComponent.h"
@@ -538,7 +539,8 @@ bool AAGX_SensorEnvironment::CanEditChange(const FProperty* InProperty) const
 		// List of names of properties that does not support editing after initialization.
 		static const TArray<FName> PropertiesNotEditableDuringPlay = {
 			GET_MEMBER_NAME_CHECKED(ThisClass, LidarSensors),
-			GET_MEMBER_NAME_CHECKED(ThisClass, bAutoAddObjects)};
+			GET_MEMBER_NAME_CHECKED(ThisClass, bAutoAddObjects),
+			GET_MEMBER_NAME_CHECKED(ThisClass, AmbientMaterial)};
 
 		if (PropertiesNotEditableDuringPlay.Contains(InProperty->GetFName()))
 		{
@@ -591,6 +593,7 @@ void AAGX_SensorEnvironment::BeginPlay()
 	NativeBarrier.AllocateNative(*Sim->GetNative());
 	check(NativeBarrier.HasNative());
 
+	UpdateAmbientMaterial();
 	RegisterLidars();
 }
 
@@ -739,6 +742,29 @@ void AAGX_SensorEnvironment::UpdateTrackedInstancedMeshes()
 void AAGX_SensorEnvironment::UpdateTrackedAGXMeshes()
 {
 	AGX_SensorEnvironment_helpers::UpdateTrackedMeshes(TrackedAGXMeshes);
+}
+
+void AAGX_SensorEnvironment::UpdateAmbientMaterial()
+{
+	check(HasNative());
+
+	if (AmbientMaterial == nullptr)
+	{
+		NativeBarrier.SetAmbientMaterial(nullptr);
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	UAGX_LidarAmbientMaterial* Instance = AmbientMaterial->GetOrCreateInstance(World);
+	check(Instance);
+
+	// Swap asset to instance as we are now in-game.
+	if (AmbientMaterial != Instance)
+	{
+		AmbientMaterial = Instance;
+	}
+
+	NativeBarrier.SetAmbientMaterial(AmbientMaterial->GetNative());
 }
 
 void AAGX_SensorEnvironment::StepTrackedLidars() const

@@ -6,6 +6,7 @@
 #include "BeginAGXIncludes.h"
 #include <agxSensor/Environment.h>
 #include <agxSensor/Lidar.h>
+#include <agxSensor/RaytraceAmbientMaterial.h>
 #include <agxSensor/RaytraceDistanceGaussianNoise.h>
 #include <agxSensor/RaytraceHandles.h>
 #include <agxSensor/RaytraceOutput.h>
@@ -64,6 +65,16 @@ struct FRtLambertianOpaqueMaterial
 	agxSensor::RtLambertianOpaqueMaterial Native;
 	FRtLambertianOpaqueMaterial() = default;
 	FRtLambertianOpaqueMaterial(const agxSensor::RtLambertianOpaqueMaterial& InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FRtAmbientMaterial
+{
+	agxSensor::RtAmbientMaterial Native;
+	FRtAmbientMaterial() = default;
+	FRtAmbientMaterial(const agxSensor::RtAmbientMaterial& InNative)
 		: Native(InNative)
 	{
 	}

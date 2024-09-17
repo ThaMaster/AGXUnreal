@@ -10,6 +10,7 @@
 
 
 class FLidarBarrier;
+class FRtAmbientMaterialBarrier;
 class FRtLambertianOpaqueMaterialBarrier;
 class FSimulationBarrier;
 class FTerrainBarrier;
@@ -37,6 +38,8 @@ public:
 
 	bool Remove(FTerrainBarrier& Terrain);
 	bool Remove(FTerrainPagerBarrier& Pager);
+
+	void SetAmbientMaterial(FRtAmbientMaterialBarrier* Material);
 
 	void SetLidarSurfaceMaterialOrDefault(
 		FTerrainBarrier& Terrain, FRtLambertianOpaqueMaterialBarrier* Material);

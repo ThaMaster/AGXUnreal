@@ -1,24 +1,23 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-
 #include "Sensors/RtLambertianOpaqueMaterialBarrier.h"
 
-// AGX Dynamics includes.
-#include "BeginAGXIncludes.h"
-#include <agxSensor/RaytraceSurfaceMaterial.h>
-#include "EndAGXIncludes.h"
+// AGX Dynamics for Unreal includes.
+#include "Sensors/SensorRef.h"
 
 FRtLambertianOpaqueMaterialBarrier::FRtLambertianOpaqueMaterialBarrier()
 	: Native(new FRtLambertianOpaqueMaterial())
 {
 }
 
-FRtLambertianOpaqueMaterialBarrier::FRtLambertianOpaqueMaterialBarrier(std::unique_ptr<FRtLambertianOpaqueMaterial> InNative)
+FRtLambertianOpaqueMaterialBarrier::FRtLambertianOpaqueMaterialBarrier(
+	std::unique_ptr<FRtLambertianOpaqueMaterial> InNative)
 	: Native(std::move(InNative))
 {
 }
 
-FRtLambertianOpaqueMaterialBarrier::FRtLambertianOpaqueMaterialBarrier(FRtLambertianOpaqueMaterialBarrier&& Other)
+FRtLambertianOpaqueMaterialBarrier::FRtLambertianOpaqueMaterialBarrier(
+	FRtLambertianOpaqueMaterialBarrier&& Other)
 	: Native {std::move(Other.Native)}
 {
 	Other.Native.reset(new FRtLambertianOpaqueMaterial());

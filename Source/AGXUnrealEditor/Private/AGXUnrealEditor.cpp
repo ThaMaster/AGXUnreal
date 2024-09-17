@@ -81,13 +81,14 @@
 #include "Sensors/AGX_CameraSensorBase.h"
 #include "Sensors/AGX_CameraSensorComponentCustomization.h"
 #include "Sensors/AGX_CameraSensorComponentVisualizer.h"
+#include "Sensors/AGX_LidarAmbientMaterialTypeActions.h"
+#include "Sensors/AGX_LidarLambertianOpaqueMaterialTypeActions.h"
 #include "Sensors/AGX_LidarSensorComponent.h"
 #include "Sensors/AGX_LidarSensorComponentCustomization.h"
 #include "Sensors/AGX_LidarSensorComponentVisualizer.h"
 #include "Sensors/AGX_LidarSensorLineTraceComponent.h"
 #include "Sensors/AGX_LidarSensorLineTraceComponentVisualizer.h"
 #include "Sensors/AGX_LidarSensorReference.h"
-#include "Sensors/AGX_LidarLambertianOpaqueMaterialTypeActions.h"
 #include "Sensors/AGX_CustomRayPatternParametersTypeActions.h"
 #include "Sensors/AGX_GenericHorizontalSweepParametersTypeActions.h"
 #include "Sensors/AGX_OusterOS0ParametersTypeActions.h"
@@ -215,6 +216,8 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_GenericHorizontalSweepParametersTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_LidarAmbientMaterialTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_LidarLambertianOpaqueMaterialTypeActions(AgxAssetCategoryBit)));

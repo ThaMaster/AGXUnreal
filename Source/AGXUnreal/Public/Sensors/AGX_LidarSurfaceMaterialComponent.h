@@ -33,7 +33,7 @@ public:
 	 * Determines what Component(s) to assign the Lidar Surface Material to.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ExposeOnSpawn))
-	TEnumAsByte<enum EAGX_LidarSurfaceMaterialAssignmentSelection> Selection {
+	EAGX_LidarSurfaceMaterialAssignmentSelection Selection {
 		EAGX_LidarSurfaceMaterialAssignmentSelection::Parent};
 
 	/**

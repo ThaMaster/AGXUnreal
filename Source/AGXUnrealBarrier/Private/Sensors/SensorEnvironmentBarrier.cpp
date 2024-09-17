@@ -11,6 +11,7 @@
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
+#include <agxSensor/RaytraceAmbientMaterial.h>
 #include <agxSensor/RaytraceSurfaceMaterial.h>
 #include "EndAGXIncludes.h"
 
@@ -104,6 +105,15 @@ bool FSensorEnvironmentBarrier::Remove(FTerrainPagerBarrier& Pager)
 	check(HasNative());
 	check(Pager.HasNative());
 	return NativeRef->Native->remove(Pager.GetNative()->Native);
+}
+
+void FSensorEnvironmentBarrier::SetAmbientMaterial(FRtAmbientMaterialBarrier* Material)
+{
+	check(HasNative());
+	if (Material == nullptr)
+		NativeRef->Native->getScene()->setMaterial({nullptr});
+	else
+		NativeRef->Native->getScene()->setMaterial(Material->GetNative()->Native);
 }
 
 void FSensorEnvironmentBarrier::SetLidarSurfaceMaterialOrDefault(

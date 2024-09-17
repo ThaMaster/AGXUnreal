@@ -1,0 +1,101 @@
+// Copyright 2024, Algoryx Simulation AB.
+
+#pragma once
+
+// AGX Dynamics for Unreal includes.
+#include "Sensors/RtAmbientMaterialBarrier.h"
+
+// Unreal Engine includes.
+#include "CoreMinimal.h"
+
+#include "AGX_LidarAmbientMaterial.generated.h"
+
+/**
+ * Lidar Ambient Material that can be assigned to a Sensor Environment.
+ * Used to simulate different weather conditions such as fog or rain.
+ */
+UCLASS(ClassGroup = "AGX_Sensor", Category = "AGX")
+class AGXUNREAL_API UAGX_LidarAmbientMaterial : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, Category = "AGX Lidar", Meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float RefractiveIndex {1.000273f};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetRefractiveIndex(float InRefractiveIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	float GetRefractiveIndex() const;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Lidar", Meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float AttenuationCoefficient {0.5f};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetAttenuationCoefficient(float InAttenuationCoefficient);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	float GetAttenuationCoefficient() const;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Lidar", Meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float ReturnGammaDistributionProbabilityScaling {1.0f};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetReturnGammaDistributionProbabilityScaling(float InScalingParameter);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	float GetReturnGammaDistributionProbabilityScaling() const;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Lidar", Meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float ReturnGammaDistributionShapeParameter {1.0f};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetReturnGammaDistributionShapeParameter(float InShapeParameter);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	float GetReturnGammaDistributionShapeParameter() const;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Lidar", Meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float ReturnGammaDistributionScaleParameter {1.0f};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetReturnGammaDistributionScaleParameter(float InScaleParameter);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	float GetReturnGammaDistributionScaleParameter() const;
+
+	bool HasNative() const;
+	FRtAmbientMaterialBarrier* GetNative();
+	const FRtAmbientMaterialBarrier* GetNative() const;
+
+	void CommitToAsset();
+
+	static UAGX_LidarAmbientMaterial* CreateInstanceFromAsset(
+		UWorld* PlayingWorld, UAGX_LidarAmbientMaterial& Source);
+
+	UAGX_LidarAmbientMaterial* GetOrCreateInstance(UWorld* PlayingWorld);
+
+	FRtAmbientMaterialBarrier* GetOrCreateNative(UWorld* PlayingWorld);
+
+	void UpdateNativeProperties();
+
+	bool IsInstance() const;
+
+	void CopyFrom(const FRtAmbientMaterialBarrier& Source);
+	void CopyProperties(const UAGX_LidarAmbientMaterial& Source);
+
+private:
+	void CreateNative(UWorld* PlayingWorld);
+
+#if WITH_EDITOR
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	void InitPropertyDispatcher();
+#endif
+
+private:
+	TWeakObjectPtr<UAGX_LidarAmbientMaterial> Asset;
+	TWeakObjectPtr<UAGX_LidarAmbientMaterial> Instance;
+	FRtAmbientMaterialBarrier NativeBarrier;
+};

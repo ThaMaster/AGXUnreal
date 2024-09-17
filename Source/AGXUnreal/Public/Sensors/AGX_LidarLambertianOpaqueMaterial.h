@@ -12,7 +12,7 @@
 #include "AGX_LidarLambertianOpaqueMaterial.generated.h"
 
 /**
- * Lidar Surface Material that can be assigned to Meshes and AGX Shapes in the scene. Determines the
+ * Lidar Surface Material that can be assigned to Meshes and AGX Shapes in the Level. Determines the
  * Lidar laser ray interaction (e.g. intensity calculation) with such objects.
  */
 UCLASS(ClassGroup = "AGX_Sensor", Category = "AGX")
