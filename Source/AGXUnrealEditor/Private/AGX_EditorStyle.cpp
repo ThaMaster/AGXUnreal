@@ -270,6 +270,15 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 		"ClassThumbnail.AGX_ContactMaterial",
 		new IMAGE_BRUSH("Thumbnails/contact_material_128x128", IconSize128));
 	Style->Set(
+		"ClassThumbnail.AGX_LidarAmbientMaterial",
+		new IMAGE_BRUSH("Thumbnails/lidar_material_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_LidarModelParameters",
+		new IMAGE_BRUSH("Thumbnails/lidar_128x128", IconSize128));
+	Style->Set(
+		"ClassThumbnail.AGX_LidarSurfaceMaterial",
+		new IMAGE_BRUSH("Thumbnails/lidar_material_128x128", IconSize128));
+	Style->Set(
 		"ClassThumbnail.AGX_PlayRecord",
 		new IMAGE_BRUSH("Thumbnails/play_record_128x128", IconSize128));
 	Style->Set(
