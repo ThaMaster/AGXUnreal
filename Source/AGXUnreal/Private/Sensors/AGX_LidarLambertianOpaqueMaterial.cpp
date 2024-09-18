@@ -89,7 +89,7 @@ UAGX_LidarLambertianOpaqueMaterial* UAGX_LidarLambertianOpaqueMaterial::CreateIn
 		RF_Transient);
 	NewInstance->Asset = &Source;
 	NewInstance->CopyProperties(Source);
-	NewInstance->CreateNative(PlayingWorld);
+	NewInstance->CreateNative();
 
 	return NewInstance;
 }
@@ -112,8 +112,7 @@ UAGX_LidarSurfaceMaterial* UAGX_LidarLambertianOpaqueMaterial::GetOrCreateInstan
 	return InstancePtr;
 }
 
-FRtLambertianOpaqueMaterialBarrier* UAGX_LidarLambertianOpaqueMaterial::GetOrCreateNative(
-	UWorld* PlayingWorld)
+FRtLambertianOpaqueMaterialBarrier* UAGX_LidarLambertianOpaqueMaterial::GetOrCreateNative()
 {
 	if (!IsInstance())
 	{
@@ -128,13 +127,13 @@ FRtLambertianOpaqueMaterialBarrier* UAGX_LidarLambertianOpaqueMaterial::GetOrCre
 			return nullptr;
 		}
 
-		return Instance->GetOrCreateNative(PlayingWorld);
+		return Instance->GetOrCreateNative();
 	}
 
 	AGX_CHECK(IsInstance());
 	if (!HasNative())
 	{
-		CreateNative(PlayingWorld);
+		CreateNative();
 	}
 	return GetNative();
 }
@@ -168,7 +167,7 @@ void UAGX_LidarLambertianOpaqueMaterial::CopyProperties(
 	Reflectivity = Source.GetReflectivity();
 }
 
-void UAGX_LidarLambertianOpaqueMaterial::CreateNative(UWorld* PlayingWorld)
+void UAGX_LidarLambertianOpaqueMaterial::CreateNative()
 {
 	if (!IsInstance())
 	{
@@ -181,7 +180,7 @@ void UAGX_LidarLambertianOpaqueMaterial::CreateNative(UWorld* PlayingWorld)
 					 "Ensure e.g. GetOrCreateInstance is called prior to calling this function."));
 			return;
 		}
-		return Instance->CreateNative(PlayingWorld);
+		return Instance->CreateNative();
 	}
 
 	AGX_CHECK(IsInstance());

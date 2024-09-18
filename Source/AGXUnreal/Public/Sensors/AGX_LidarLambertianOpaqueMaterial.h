@@ -44,7 +44,7 @@ public:
 		UWorld* PlayingWorld, UAGX_LidarLambertianOpaqueMaterial& Source);
 
 	virtual UAGX_LidarSurfaceMaterial* GetOrCreateInstance(UWorld* PlayingWorld) override;
-	FRtLambertianOpaqueMaterialBarrier* GetOrCreateNative(UWorld* PlayingWorld);
+	FRtLambertianOpaqueMaterialBarrier* GetOrCreateNative();
 
 	void UpdateNativeProperties();
 
@@ -54,7 +54,7 @@ public:
 	void CopyProperties(const UAGX_LidarLambertianOpaqueMaterial& Source);
 
 private:
-	void CreateNative(UWorld* PlayingWorld);
+	void CreateNative();
 
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;

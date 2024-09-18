@@ -76,7 +76,7 @@ public:
 
 	UAGX_LidarAmbientMaterial* GetOrCreateInstance(UWorld* PlayingWorld);
 
-	FRtAmbientMaterialBarrier* GetOrCreateNative(UWorld* PlayingWorld);
+	FRtAmbientMaterialBarrier* GetOrCreateNative();
 
 	void UpdateNativeProperties();
 
@@ -86,7 +86,7 @@ public:
 	void CopyProperties(const UAGX_LidarAmbientMaterial& Source);
 
 private:
-	void CreateNative(UWorld* PlayingWorld);
+	void CreateNative();
 
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;

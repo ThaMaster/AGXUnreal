@@ -140,7 +140,7 @@ UAGX_LidarAmbientMaterial* UAGX_LidarAmbientMaterial::CreateInstanceFromAsset(
 		RF_Transient);
 	NewInstance->Asset = &Source;
 	NewInstance->CopyProperties(Source);
-	NewInstance->CreateNative(PlayingWorld);
+	NewInstance->CreateNative();
 
 	return NewInstance;
 }
@@ -162,7 +162,7 @@ UAGX_LidarAmbientMaterial* UAGX_LidarAmbientMaterial::GetOrCreateInstance(UWorld
 	return InstancePtr;
 }
 
-FRtAmbientMaterialBarrier* UAGX_LidarAmbientMaterial::GetOrCreateNative(UWorld* PlayingWorld)
+FRtAmbientMaterialBarrier* UAGX_LidarAmbientMaterial::GetOrCreateNative()
 {
 	if (!IsInstance())
 	{
@@ -177,13 +177,13 @@ FRtAmbientMaterialBarrier* UAGX_LidarAmbientMaterial::GetOrCreateNative(UWorld* 
 			return nullptr;
 		}
 
-		return Instance->GetOrCreateNative(PlayingWorld);
+		return Instance->GetOrCreateNative();
 	}
 
 	AGX_CHECK(IsInstance());
 	if (!HasNative())
 	{
-		CreateNative(PlayingWorld);
+		CreateNative();
 	}
 	return GetNative();
 }
@@ -231,7 +231,7 @@ void UAGX_LidarAmbientMaterial::CopyProperties(const UAGX_LidarAmbientMaterial& 
 	ReturnGammaDistributionScaleParameter = Source.GetReturnGammaDistributionScaleParameter();
 }
 
-void UAGX_LidarAmbientMaterial::CreateNative(UWorld* PlayingWorld)
+void UAGX_LidarAmbientMaterial::CreateNative()
 {
 	if (!IsInstance())
 	{
@@ -245,7 +245,7 @@ void UAGX_LidarAmbientMaterial::CreateNative(UWorld* PlayingWorld)
 				*GetName());
 			return;
 		}
-		return Instance->CreateNative(PlayingWorld);
+		return Instance->CreateNative();
 	}
 
 	AGX_CHECK(IsInstance());
