@@ -53,7 +53,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetReturnGammaDistributionShapeParameter(float InShapeParameter);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	float GetReturnGammaDistributionShapeParameter() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar")
