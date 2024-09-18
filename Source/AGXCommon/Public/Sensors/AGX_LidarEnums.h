@@ -10,19 +10,19 @@ UENUM(BlueprintType)
 enum class EAGX_LidarModel : uint8
 {
 	/** Lidar uses a custom ray pattern where the user provides the ray pattern rays. */
-	CustomRayPattern = 0,
+	CustomRayPattern,
 
 	/** Generic Lidar with a Horizontal Sweep ray pattern. */
-	GenericHorizontalSweep = 5,
+	GenericHorizontalSweep,
 
 	/** Ouster OS0 */
-	OusterOS0 = 10,
+	OusterOS0,
 
 	/** Ouster OS1 */
-	OusterOS1 = 15,
+	OusterOS1,
 
 	/** Ouster OS2 */
-	OusterOS2 = 20,
+	OusterOS2
 };
 
 /** Specifies which Components the Lidar Surface Material Component applies the Lidar Surface
