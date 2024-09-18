@@ -44,7 +44,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetReturnProbabilityScaling(float InScalingParameter);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	float GetReturnProbabilityScaling() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar")
