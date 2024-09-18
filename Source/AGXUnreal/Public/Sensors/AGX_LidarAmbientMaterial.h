@@ -35,7 +35,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetAttenuationCoefficient(float InAttenuationCoefficient);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	float GetAttenuationCoefficient() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar")
