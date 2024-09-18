@@ -26,7 +26,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetRefractiveIndex(float InRefractiveIndex);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	float GetRefractiveIndex() const;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Lidar")
