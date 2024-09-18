@@ -271,14 +271,6 @@ public:
 	double GetMaximumContactDepth() const;
 
 	/**
-	 * The reflectivity of this Terrain as seen by the AGX_LidarSensorComponent.
-	 * Used for calculating Lidar intensity data.
-	 * This parameter will only affect Lidar sensor simulations.
-	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Lidar")
-	float LidarReflectivity {0.6f};
-
-	/**
 	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
 	 * Should never be assigned manually.
 	 */
