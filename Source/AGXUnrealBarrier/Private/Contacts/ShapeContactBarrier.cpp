@@ -3,10 +3,10 @@
 #include "Contacts/ShapeContactBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGXRefs.h"
-#include "AGX_LogCategory.h"
 #include "AGXBarrierFactories.h"
-#include "Contacts/ShapeContactEntity.h"
+#include "AGX_LogCategory.h"
+#include "BarrierOnly/AGXRefs.h"
+#include "BarrierOnly/Contacts/ShapeContactEntity.h"
 #include "TypeConversions.h"
 
 // AGX Dynamics includes.

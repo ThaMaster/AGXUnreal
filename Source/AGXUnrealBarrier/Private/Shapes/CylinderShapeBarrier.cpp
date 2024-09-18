@@ -2,14 +2,16 @@
 
 #include "Shapes/CylinderShapeBarrier.h"
 
-#include "AGXRefs.h"
+// AGX Dynamics for Unreal includes.
+#include "BarrierOnly/AGXRefs.h"
+#include "TypeConversions.h"
 
+// AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agxCollide/Cylinder.h>
 #include "EndAGXIncludes.h"
 
-#include "TypeConversions.h"
-
+// Unreal Engine includes.
 #include "Misc/AssertionMacros.h"
 
 namespace

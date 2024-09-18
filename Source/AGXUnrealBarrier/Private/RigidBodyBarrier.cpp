@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGXBarrierFactories.h"
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
 #include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/CylinderShapeBarrier.h"

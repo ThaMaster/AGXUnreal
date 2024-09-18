@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "AGX_MotionControl.h"
+
 // Unreal Engine includes.
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
@@ -10,6 +13,7 @@
 
 class UAGX_ConstraintComponent;
 class UAGX_PlayRecord;
+class UAGX_RigidBodyComponent;
 
 /**
  * EXPERIMENTAL
@@ -35,6 +39,7 @@ public:
 
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
+	virtual void EndPlay(EEndPlayReason::Type Reason) override;
 	//~ End UActorComponent Interface
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Play Record")
@@ -50,6 +55,16 @@ public:
 	void RecordConstraintPositions(const TArray<UAGX_ConstraintComponent*>& Constraints);
 
 	/**
+	 * Writes the positions and rotations of the given Rigid Bodies to the Play Record asset.
+	 * The written data is permanently stored in the asset, even after Play ends.
+	 * Note that old recorded data will be pemanently removed from the asset at the start of a new
+	 * recording.
+	 * @param RigidBodies The Rigid Bodies that shold be recorded.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Play Record")
+	void RecordRigidBodyPositions(const TArray<UAGX_RigidBodyComponent*>& RigidBodies);
+
+	/**
 	 * Apply the next Constraint positions stored in the PlayRecord Asset to the given Constraints.
 	 * The number of Constraints and their order should match those used to create the PlayRecord
 	 * Asset if matching behavior is wanted. Note that this function uses purely position control
@@ -57,6 +72,17 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Play Record")
 	void PlayBackConstraintPositions(const TArray<UAGX_ConstraintComponent*>& Constraints);
+
+	/**
+	 * Apply the next Rigid Body positions and rotations stored in the PlayRecord asset to the given
+	 * Rigid Bodies. The number of Rigid Bodies and their order must match those used to create
+	 * the PlayRecord asset if matching behavior is wanted. Notes that this function sets the Motion
+	 * Control to Kinematics on the bodies and uses Move To to move them to the next position and
+	 * rotation. At the end of the playback the bodies will be restored to their original Motion
+	 * Control.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Play Record")
+	void PlayBackRigidBodyPositions(const TArray<UAGX_RigidBodyComponent*>& RigidBodies);
 
 	/**
 	 * Resets the internal counter such that e.g. a subsequent playback will start from the
@@ -77,4 +103,6 @@ public:
 
 private:
 	int32 CurrentIndex {0};
+
+	TMap<UAGX_RigidBodyComponent*, EAGX_MotionControl> OriginalMotionControl;
 };

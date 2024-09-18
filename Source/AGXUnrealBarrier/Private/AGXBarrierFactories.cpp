@@ -3,12 +3,11 @@
 #include "AGXBarrierFactories.h"
 
 // AGX Dynamics for Unreal includes.
-#include "Contacts/ShapeContactEntity.h"
+#include "BarrierOnly/AGXRefs.h"
+#include "BarrierOnly/Contacts/ShapeContactEntity.h"
+#include "BarrierOnly/Vehicle/TrackRef.h"
 #include "Contacts/ContactPointEntity.h"
 #include "Terrain/TerrainBarrier.h"
-
-#include "AGXRefs.h"
-#include "Vehicle/TrackRef.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"

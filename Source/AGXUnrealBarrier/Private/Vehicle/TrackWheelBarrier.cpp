@@ -3,10 +3,10 @@
 #include "Vehicle/TrackWheelBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
+#include "BarrierOnly/Vehicle/TrackWheelRef.h"
 #include "RigidBodyBarrier.h"
 #include "TypeConversions.h"
-#include "Vehicle/TrackWheelRef.h"
 
 FTrackWheelBarrier::FTrackWheelBarrier()
 	: NativeRef {new FTrackWheelRef}

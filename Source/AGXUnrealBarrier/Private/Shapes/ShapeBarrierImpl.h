@@ -6,8 +6,10 @@
 
 #include "Shapes/ShapeBarrier.h"
 
-#include "AGXRefs.h"
+// AGX Dynamics for Unreal includes.
+#include "BarrierOnly/AGXRefs.h"
 
+// Standard library includes.
 #include <utility>
 
 template <typename TFunc, typename... TPack>

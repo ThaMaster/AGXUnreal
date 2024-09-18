@@ -3,7 +3,7 @@
 #include "Terrain/TerrainBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "Materials/TerrainMaterialBarrier.h"

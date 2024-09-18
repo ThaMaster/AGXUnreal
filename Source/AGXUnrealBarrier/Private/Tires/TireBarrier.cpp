@@ -3,7 +3,7 @@
 #include "Tires/TireBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
 #include "TypeConversions.h"
 
 FTireBarrier::FTireBarrier()

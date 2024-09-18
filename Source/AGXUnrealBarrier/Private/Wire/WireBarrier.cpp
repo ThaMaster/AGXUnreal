@@ -4,14 +4,14 @@
 
 // AGX Unreal includes.
 #include "AGXBarrierFactories.h"
-#include "AGXRefs.h"
+#include "BarrierOnly/AGXRefs.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "TypeConversions.h"
 #include "Wire/WireNodeBarrier.h"
-#include "Wire/WireNodeRef.h"
-#include "Wire/WireRef.h"
+#include "BarrierOnly/Wire/WireNodeRef.h"
+#include "BarrierOnly/Wire/WireRef.h"
 #include "Wire/WireWinchBarrier.h"
-#include "Wire/WireWinchRef.h"
+#include "BarrierOnly/Wire/WireWinchRef.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"

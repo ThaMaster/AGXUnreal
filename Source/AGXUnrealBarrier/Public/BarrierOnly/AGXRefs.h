@@ -2,10 +2,6 @@
 
 #pragma once
 
-// AGX Dynamics for Unreal includes.
-#include "AGXNotify.h"
-#include "Terrain/TerrainDataSource.h"
-
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include <agx/Constraint.h>
@@ -145,17 +141,6 @@ struct FMergeSplitThresholdsRef
 
 	FMergeSplitThresholdsRef() = default;
 	FMergeSplitThresholdsRef(agxSDK::MergeSplitThresholds* InNative)
-		: Native(InNative)
-	{
-	}
-};
-
-struct FNotifyRef
-{
-	agx::ref_ptr<FAGXNotify> Native;
-
-	FNotifyRef() = default;
-	FNotifyRef(FAGXNotify* InNative)
 		: Native(InNative)
 	{
 	}
