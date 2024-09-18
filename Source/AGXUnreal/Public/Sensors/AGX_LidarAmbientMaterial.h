@@ -62,7 +62,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetReturnGammaDistributionScaleParameter(float InScaleParameter);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	float GetReturnGammaDistributionScaleParameter() const;
 
 	bool HasNative() const;
