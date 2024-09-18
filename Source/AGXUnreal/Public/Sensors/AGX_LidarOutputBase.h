@@ -29,6 +29,9 @@ public:
 	virtual const FLidarOutputBarrier* GetNative() const
 		PURE_VIRTUAL(FAGX_LidarOutputBase::GetNative, return nullptr;);
 
+	virtual FLidarOutputBarrier* GetNative()
+		PURE_VIRTUAL(FAGX_LidarOutputBase::GetNative, return nullptr;);
+
 	// Making UAGX_LidarSensorComponent::AddOutput Blueprint friendly was not so easy since
 	// non-const references becomes out-variables, and pointers to structs are not permitted as
 	// input argument.

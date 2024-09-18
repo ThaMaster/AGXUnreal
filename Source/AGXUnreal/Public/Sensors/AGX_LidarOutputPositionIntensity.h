@@ -30,6 +30,7 @@ public:
 	virtual bool HasNative() const override;
 	virtual FLidarOutputBarrier* GetOrCreateNative() override;
 	virtual const FLidarOutputBarrier* GetNative() const override;
+	virtual FLidarOutputBarrier* GetNative() override;
 
 	void GetData(TArray<FAGX_LidarOutputPositionIntensityData>& OutData);
 

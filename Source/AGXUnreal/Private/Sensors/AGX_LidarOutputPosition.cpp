@@ -87,8 +87,18 @@ const FLidarOutputBarrier* FAGX_LidarOutputPosition::GetNative() const
 	return &NativeBarrier;
 }
 
+FLidarOutputBarrier* FAGX_LidarOutputPosition::GetNative()
+{
+	if (!HasNative())
+		return nullptr;
+
+	return &NativeBarrier;
+}
+
 FAGX_LidarOutputPosition& FAGX_LidarOutputPosition::operator=(const FAGX_LidarOutputPosition& Other)
 {
+	// This operator is needed to be able to declare e.g. TArray's containing this struct.
+	// It is assumed not to be called during play, therefore no members are copied here.
 	return *this;
 }
 

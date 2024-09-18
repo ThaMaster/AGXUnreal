@@ -88,7 +88,7 @@ FLidarOutputBarrier* FAGX_LidarOutputPositionIntensity::GetOrCreateNative()
 		NativeBarrier.AllocateNative();
 	}
 
-	return &NativeBarrier;
+	return GetNative();
 }
 
 const FLidarOutputBarrier* FAGX_LidarOutputPositionIntensity::GetNative() const
@@ -99,9 +99,19 @@ const FLidarOutputBarrier* FAGX_LidarOutputPositionIntensity::GetNative() const
 	return &NativeBarrier;
 }
 
+FLidarOutputBarrier* FAGX_LidarOutputPositionIntensity::GetNative()
+{
+	if (!HasNative())
+		return nullptr;
+
+	return &NativeBarrier;
+}
+
 FAGX_LidarOutputPositionIntensity& FAGX_LidarOutputPositionIntensity::operator=(
 	const FAGX_LidarOutputPositionIntensity& Other)
 {
+	// This operator is needed to be able to declare e.g. TArray's containing this struct.
+	// It is assumed not to be called during play, therefore no members are copied here.
 	return *this;
 }
 
