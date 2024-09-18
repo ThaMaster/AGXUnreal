@@ -76,7 +76,7 @@ FLidarOutputBarrier* FAGX_LidarOutputPosition::GetOrCreateNative()
 		NativeBarrier.AllocateNative();
 	}
 
-	return &NativeBarrier;
+	return GetNative();
 }
 
 const FLidarOutputBarrier* FAGX_LidarOutputPosition::GetNative() const
