@@ -31,7 +31,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetReflectivity(float InReflectivity);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	float GetReflectivity() const;
 
 	bool HasNative() const;
