@@ -116,6 +116,22 @@ double UAGX_LidarSensorComponent::GetBeamExitRadius() const
 	return BeamExitRadius;
 }
 
+void UAGX_LidarSensorComponent::SetRaytraceDepth(int32 Depth)
+{
+	RaytraceDepth = Depth;
+
+	if (HasNative())
+		NativeBarrier.SetRaytraceDepth(Depth);
+}
+
+int32 UAGX_LidarSensorComponent::GetRaytraceDepth() const
+{
+	if (HasNative())
+		return NativeBarrier.GetRaytraceDepth();
+
+	return RaytraceDepth;
+}
+
 void UAGX_LidarSensorComponent::SetEnableRemovePointsMisses(bool bEnable)
 {
 	bEnableRemovePointsMisses = bEnable;
@@ -287,6 +303,7 @@ void UAGX_LidarSensorComponent::CopyFrom(const UAGX_LidarSensorComponent& Source
 	BeamDivergence = Source.BeamDivergence;
 	BeamExitRadius = Source.BeamExitRadius;
 	ModelParameters = Source.ModelParameters;
+	RaytraceDepth = Source.RaytraceDepth;
 	bEnableRemovePointsMisses = Source.bEnableRemovePointsMisses;
 	bEnableDistanceGaussianNoise = Source.bEnableDistanceGaussianNoise;
 	bEnableRayAngleGaussianNoise = Source.bEnableRayAngleGaussianNoise;
@@ -393,6 +410,7 @@ void UAGX_LidarSensorComponent::InitPropertyDispatcher()
 	AGX_COMPONENT_DEFAULT_DISPATCHER(Range);
 	AGX_COMPONENT_DEFAULT_DISPATCHER(BeamDivergence);
 	AGX_COMPONENT_DEFAULT_DISPATCHER(BeamExitRadius);
+	AGX_COMPONENT_DEFAULT_DISPATCHER(RaytraceDepth);
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, bEnabled),
@@ -435,6 +453,7 @@ void UAGX_LidarSensorComponent::UpdateNativeProperties()
 	}
 
 	NativeBarrier.SetEnableRemoveRayMisses(bEnableRemovePointsMisses);
+	NativeBarrier.SetRaytraceDepth(RaytraceDepth);
 	NativeBarrier.SetEnabled(bEnabled);
 }
 

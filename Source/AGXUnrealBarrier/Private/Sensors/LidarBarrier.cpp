@@ -290,6 +290,18 @@ bool FLidarBarrier::GetEnableRemoveRayMisses() const
 	return NativeRef->Native->getOutputHandler()->getEnableRemoveRayMisses();
 }
 
+void FLidarBarrier::SetRaytraceDepth(int32 Depth)
+{
+	check(HasNative());
+	NativeRef->Native->getOutputHandler()->setRaytraceDepth(static_cast<size_t>(Depth));
+}
+
+int32 FLidarBarrier::GetRaytraceDepth() const
+{
+	check(HasNative());
+	return static_cast<int32>(NativeRef->Native->getOutputHandler()->getRaytraceDepth());
+}
+
 void FLidarBarrier::EnableDistanceGaussianNoise(const FAGX_DistanceGaussianNoiseSettings& Settings)
 {
 	using namespace LidarBarrier_helpers;

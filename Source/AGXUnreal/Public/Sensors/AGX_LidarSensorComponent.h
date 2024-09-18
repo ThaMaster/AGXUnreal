@@ -130,6 +130,22 @@ public:
 	UAGX_LidarModelParameters* ModelParameters {nullptr};
 
 	/**
+	 * Determines the number of maximum raytrace steps.
+	 * The number of steps is one more than the number of bounces a ray will make,
+	 * however, this number will generally not affect the size of the output data.
+	 * It should be noted that the time and memory complexity of the raytrace will grow
+	 * exponentially with the maximum number of raytrace steps.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
+	int32 RaytraceDepth {1};
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetRaytraceDepth(int32 Depth);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	int32 GetRaytraceDepth() const;
+
+	/**
 	 * Enables or disables removal of point misses, i.e. makes the output dense if set to true.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")

@@ -55,6 +55,9 @@ public:
 	void SetEnableRemoveRayMisses(bool bEnable);
 	bool GetEnableRemoveRayMisses() const;
 
+	void SetRaytraceDepth(int32 Depth);
+	int32 GetRaytraceDepth() const;
+
 	void EnableDistanceGaussianNoise(const FAGX_DistanceGaussianNoiseSettings& Settings);
 	void DisableDistanceGaussianNoise();
 	bool IsDistanceGaussianNoiseEnabled() const;
