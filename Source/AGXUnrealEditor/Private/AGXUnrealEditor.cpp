@@ -685,6 +685,7 @@ void FAGXUnrealEditorModule::InitializeAssets()
 	AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary();
 	AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary();
 	AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary();
+	AGX_MaterialLibrary::InitializeLidarAmbientMaterialAssetLibrary();
 }
 
 #undef LOCTEXT_NAMESPACE

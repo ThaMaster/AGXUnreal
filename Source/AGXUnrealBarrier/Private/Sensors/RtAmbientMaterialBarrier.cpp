@@ -113,3 +113,22 @@ float FRtAmbientMaterialBarrier::GetReturnGammaDistributionScaleParameter() cons
 	check(HasNative());
 	return Native->Native.getReturnGammaDistributionScaleParameter();
 }
+
+void FRtAmbientMaterialBarrier::ConfigureAsFog(
+	float Visibility, float Wavelength, float Maritimeness)
+{
+	check(HasNative());
+	Native->Native.configureAsFog(Visibility, Wavelength, Maritimeness);
+}
+
+void FRtAmbientMaterialBarrier::ConfigureAsRainfall(float Rate, float Tropicalness)
+{
+	check(HasNative());
+	Native->Native.configureAsRainfall(Rate, Tropicalness);
+}
+
+void FRtAmbientMaterialBarrier::ConfigureAsSnowfall(float Rate, float Wavelength)
+{
+	check(HasNative());
+	Native->Native.configureAsSnowfall(Rate, Wavelength);
+}
