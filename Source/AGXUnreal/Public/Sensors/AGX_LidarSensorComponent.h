@@ -226,13 +226,14 @@ public:
 
 	/**
 	 * Delegate that has to be assigned (bound to) by the user to support custom scan pattern.
-	 * Only used if the ScanPattern is set to Custom.
-	 * Should return all ray transforms (in global coordinates) for the whole scan pattern.
+	 * Only used if the Lidar Model is set to CustomRayPattern.
+	 * Should return all ray transforms (lidar local coordinates) for the whole scan pattern.
+	 * Rays are directed along the z-axis of the given transforms.
 	 * This delegate is called only if no ray transforms has previously been returned by the
 	 * funcion provided by the user, i.e. under normal conditions, it is called only once. The
-	 * FetchNextPatternInterval is called each Tick and determines what part of the scan pattern
-	 * to use next, see OnFetchNextPatternInterval. The signature of the function assigned must
-	 * be: TArray<FTransform> MyFunc().
+	 * FetchNextPatternInterval is called each Step Forward and determines what part of the scan
+	 * pattern to use next, see OnFetchNextPatternInterval. The signature of the function assigned
+	 * must be: TArray<FTransform> MyFunc().
 	 */
 	UPROPERTY(
 		BlueprintReadWrite, Category = "AGX Lidar",
@@ -241,10 +242,10 @@ public:
 
 	/**
 	 * Delegate that has to be assigned (bound to) by the user to support custom scan pattern.
-	 * Only used if the ScanPattern is set to Custom.
+	 * Only used if the Lidar Model is set to CustomRayPattern.
 	 * Should return the next AGX Custom Pattern Interval to use.
 	 * This delegate is called each Step() and determines what part of the total scan pattern to
-	 * use in that Step(). See also OnFetchRayTransforms. The signature of the function assigned
+	 * use in that Step Forward. See also OnFetchRayTransforms. The signature of the function assigned
 	 * must be: FAGX_CustomPatternInterval MyFunc(double TimeStamp).
 	 */
 	UPROPERTY(
