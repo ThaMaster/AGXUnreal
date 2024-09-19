@@ -209,9 +209,7 @@ FAGX_RealInterval FLidarBarrier::GetRange() const
 {
 	check(HasNative());
 	const agx::RangeReal32 RangeAGX = NativeRef->Native->getModel()->getRayRange()->getRange();
-	return FAGX_RealInterval(
-		ConvertDistanceToUnreal<double>(RangeAGX.lower()),
-		ConvertDistanceToUnreal<double>(RangeAGX.upper()));
+	return ConvertDistance(RangeAGX);
 }
 
 void FLidarBarrier::SetBeamDivergence(double BeamDivergence)
@@ -290,16 +288,16 @@ bool FLidarBarrier::GetEnableRemoveRayMisses() const
 	return NativeRef->Native->getOutputHandler()->getEnableRemoveRayMisses();
 }
 
-void FLidarBarrier::SetRaytraceDepth(int32 Depth)
+void FLidarBarrier::SetRaytraceDepth(size_t Depth)
 {
 	check(HasNative());
-	NativeRef->Native->getOutputHandler()->setRaytraceDepth(static_cast<size_t>(Depth));
+	NativeRef->Native->getOutputHandler()->setRaytraceDepth(Depth);
 }
 
-int32 FLidarBarrier::GetRaytraceDepth() const
+size_t FLidarBarrier::GetRaytraceDepth() const
 {
 	check(HasNative());
-	return static_cast<int32>(NativeRef->Native->getOutputHandler()->getRaytraceDepth());
+	return NativeRef->Native->getOutputHandler()->getRaytraceDepth();
 }
 
 void FLidarBarrier::EnableOrUpdateDistanceGaussianNoise(

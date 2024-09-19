@@ -18,6 +18,9 @@
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 
+// Standard library includes.
+#include <limits>
+
 #define LOCTEXT_NAMESPACE "AGX_LidarSensor"
 
 UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
@@ -119,14 +122,28 @@ void UAGX_LidarSensorComponent::SetRaytraceDepth(int32 Depth)
 {
 	RaytraceDepth = Depth;
 
+	if (Depth < 0)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_LidarSensorComponent::SetRaytraceDepth called with invalid Depth: "
+				 "%d. Depth must not be negative."),
+			Depth);
+		return;
+	}
+
 	if (HasNative())
-		NativeBarrier.SetRaytraceDepth(Depth);
+		NativeBarrier.SetRaytraceDepth(static_cast<size_t>(Depth));
 }
 
 int32 UAGX_LidarSensorComponent::GetRaytraceDepth() const
 {
 	if (HasNative())
-		return NativeBarrier.GetRaytraceDepth();
+	{
+		const size_t Depth = NativeBarrier.GetRaytraceDepth();
+		if (Depth > std::numeric_limits<int32>::max())
+			return std::numeric_limits<int32>::max(); // This situation should never ever occur.
+	}
 
 	return RaytraceDepth;
 }
@@ -508,7 +525,7 @@ void UAGX_LidarSensorComponent::UpdateNativeProperties()
 	}
 
 	NativeBarrier.SetEnableRemoveRayMisses(bEnableRemovePointsMisses);
-	NativeBarrier.SetRaytraceDepth(RaytraceDepth);
+	SetRaytraceDepth(RaytraceDepth);
 	NativeBarrier.SetEnabled(bEnabled);
 }
 
