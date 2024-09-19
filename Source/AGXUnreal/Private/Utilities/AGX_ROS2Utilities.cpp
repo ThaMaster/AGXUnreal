@@ -258,7 +258,7 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertXYZ(
 		AppendToInt8Array(static_cast<double>(Points[i].Intensity));
 	}
 
-	// If the points are unordered, height is 1 and width is the length of the point cloud.
+	// Since the points are unordered, height is 1 and width is the length of the point cloud.
 	Msg.Height = 1;
 	Msg.Width = Msg.Data.Num() / Msg.PointStep; // Num points.
 	Msg.RowStep = Msg.Data.Num(); // Bytes per "row" which is the whole point cloud.
@@ -333,7 +333,7 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertAnglesTOF(
 		AppendDoubleToUint8Array(Points[i].Intensity, Msg.Data);
 	}
 
-	// If the points are unordered, height is 1 and width is the length of the point cloud.
+	// Since the points are unordered, height is 1 and width is the length of the point cloud.
 	Msg.Height = 1;
 	Msg.Width = Msg.Data.Num() / Msg.PointStep; // Num points.
 	Msg.RowStep = Msg.Data.Num(); // Bytes per "row" which is the whole point cloud.
@@ -371,7 +371,7 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertPositionData(
 		AppendFloatToUint8Array(D.Position.Z, Msg.Data);
 	}
 
-	// If the points are unordered, height is 1 and width is the length of the point cloud.
+	// Since the points are unordered, height is 1 and width is the length of the point cloud.
 	Msg.Height = 1;
 	Msg.Width = Msg.Data.Num() / Msg.PointStep; // Num points.
 	Msg.RowStep = Msg.Data.Num(); // Bytes per "row" which is the whole point cloud.
@@ -412,7 +412,7 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertPositionIntensityData(
 		AppendFloatToUint8Array(D.Intensity, Msg.Data);
 	}
 
-	// If the points are unordered, height is 1 and width is the length of the point cloud.
+	// Since the points are unordered, height is 1 and width is the length of the point cloud.
 	Msg.Height = 1;
 	Msg.Width = Msg.Data.Num() / Msg.PointStep; // Num points.
 	Msg.RowStep = Msg.Data.Num(); // Bytes per "row" which is the whole point cloud.
