@@ -171,7 +171,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetEnableDistanceGaussianNoise(bool bEnable);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	bool GetEnableDistanceGaussianNoise() const;
 
 	/**
@@ -188,7 +188,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetDistanceNoiseSettings(FAGX_DistanceGaussianNoiseSettings Settings);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	FAGX_DistanceGaussianNoiseSettings GetDistanceNoiseSettings() const;
 
 	/**
@@ -221,7 +221,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetRayAngleNoiseSettings(FAGX_RayAngleGaussianNoiseSettings Settings);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	FAGX_RayAngleGaussianNoiseSettings GetRayAngleNoiseSettings() const;
 
 	/**
