@@ -156,13 +156,34 @@ void UAGX_LidarSensorComponent::SetEnableDistanceGaussianNoise(bool bEnable)
 	{
 		if (bEnable)
 		{
-			NativeBarrier.EnableDistanceGaussianNoise(DistanceNoiseSettings);
+			NativeBarrier.EnableOrUpdateDistanceGaussianNoise(DistanceNoiseSettings);
 		}
 		else
 		{
 			NativeBarrier.DisableDistanceGaussianNoise();
 		}
 	}
+}
+
+bool UAGX_LidarSensorComponent::GetEnableDistanceGaussianNoise() const
+{
+	if (HasNative())
+		return NativeBarrier.GetEnableDistanceGaussianNoise();
+
+	return bEnableDistanceGaussianNoise;
+}
+
+void UAGX_LidarSensorComponent::SetDistanceNoiseSettings(
+	FAGX_DistanceGaussianNoiseSettings Settings)
+{
+	DistanceNoiseSettings = Settings;
+	if (HasNative() && NativeBarrier.GetEnableDistanceGaussianNoise())
+		NativeBarrier.EnableOrUpdateDistanceGaussianNoise(Settings);
+}
+
+FAGX_DistanceGaussianNoiseSettings UAGX_LidarSensorComponent::GetDistanceNoiseSettings() const
+{
+	return DistanceNoiseSettings;
 }
 
 void UAGX_LidarSensorComponent::SetEnableRayAngleGaussianNoise(bool bEnable)
@@ -173,13 +194,34 @@ void UAGX_LidarSensorComponent::SetEnableRayAngleGaussianNoise(bool bEnable)
 	{
 		if (bEnable)
 		{
-			NativeBarrier.EnableRayAngleGaussianNoise(RayAngleNoiseSettings);
+			NativeBarrier.EnableOrUpdateRayAngleGaussianNoise(RayAngleNoiseSettings);
 		}
 		else
 		{
 			NativeBarrier.DisableRayAngleGaussianNoise();
 		}
 	}
+}
+
+bool UAGX_LidarSensorComponent::GetEnableRayAngleGaussianNoise() const
+{
+	if (HasNative())
+		return NativeBarrier.GetEnableRayAngleGaussianNoise();
+
+	return bEnableRayAngleGaussianNoise;
+}
+
+void UAGX_LidarSensorComponent::SetRayAngleNoiseSettings(
+	FAGX_RayAngleGaussianNoiseSettings Settings)
+{
+	RayAngleNoiseSettings = Settings;
+	if (HasNative() && NativeBarrier.GetEnableRayAngleGaussianNoise())
+		NativeBarrier.EnableOrUpdateRayAngleGaussianNoise(Settings);
+}
+
+FAGX_RayAngleGaussianNoiseSettings UAGX_LidarSensorComponent::GetRayAngleNoiseSettings() const
+{
+	return RayAngleNoiseSettings;
 }
 
 UNiagaraComponent* UAGX_LidarSensorComponent::GetSpawnedNiagaraSystemComponent()
@@ -430,6 +472,14 @@ void UAGX_LidarSensorComponent::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, bEnableRayAngleGaussianNoise),
 		[](ThisClass* This)
 		{ This->SetEnableRayAngleGaussianNoise(This->bEnableRayAngleGaussianNoise); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, DistanceNoiseSettings),
+		[](ThisClass* This) { This->SetDistanceNoiseSettings(This->DistanceNoiseSettings); });
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_LidarSensorComponent, RayAngleNoiseSettings),
+		[](ThisClass* This) { This->SetRayAngleNoiseSettings(This->RayAngleNoiseSettings); });
 }
 #endif // WITH_EDITOR
 

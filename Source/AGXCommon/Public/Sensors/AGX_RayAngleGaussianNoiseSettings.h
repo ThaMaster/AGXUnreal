@@ -25,7 +25,7 @@ struct AGXCOMMON_API FAGX_RayAngleGaussianNoiseSettings
 	/**
 	 * Mean of the ray angle gaussian noise [deg].
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
 	double Mean {0.0};
 
 	/**

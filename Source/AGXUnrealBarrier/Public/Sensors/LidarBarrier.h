@@ -58,13 +58,13 @@ public:
 	void SetRaytraceDepth(int32 Depth);
 	int32 GetRaytraceDepth() const;
 
-	void EnableDistanceGaussianNoise(const FAGX_DistanceGaussianNoiseSettings& Settings);
+	void EnableOrUpdateDistanceGaussianNoise(const FAGX_DistanceGaussianNoiseSettings& Settings);
 	void DisableDistanceGaussianNoise();
-	bool IsDistanceGaussianNoiseEnabled() const;
+	bool GetEnableDistanceGaussianNoise() const;
 
-	void EnableRayAngleGaussianNoise(const FAGX_RayAngleGaussianNoiseSettings& Settings);
+	void EnableOrUpdateRayAngleGaussianNoise(const FAGX_RayAngleGaussianNoiseSettings& Settings);
 	void DisableRayAngleGaussianNoise();
-	bool IsRayAngleGaussianNoiseEnabled() const;
+	bool GetEnableRayAngleGaussianNoise() const;
 
 	void AddOutput(FLidarOutputBarrier& Output);
 

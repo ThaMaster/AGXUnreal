@@ -302,7 +302,8 @@ int32 FLidarBarrier::GetRaytraceDepth() const
 	return static_cast<int32>(NativeRef->Native->getOutputHandler()->getRaytraceDepth());
 }
 
-void FLidarBarrier::EnableDistanceGaussianNoise(const FAGX_DistanceGaussianNoiseSettings& Settings)
+void FLidarBarrier::EnableOrUpdateDistanceGaussianNoise(
+	const FAGX_DistanceGaussianNoiseSettings& Settings)
 {
 	using namespace LidarBarrier_helpers;
 	check(HasNative());
@@ -334,14 +335,14 @@ void FLidarBarrier::DisableDistanceGaussianNoise()
 		NativeRef->Native->getOutputHandler()->remove(DistanceNoise);
 }
 
-bool FLidarBarrier::IsDistanceGaussianNoiseEnabled() const
+bool FLidarBarrier::GetEnableDistanceGaussianNoise() const
 {
 	using namespace LidarBarrier_helpers;
 	check(HasNative());
 	return GetDistanceNoise(*NativeRef->Native) != nullptr;
 }
 
-void FLidarBarrier::EnableRayAngleGaussianNoise(const FAGX_RayAngleGaussianNoiseSettings& Settings)
+void FLidarBarrier::EnableOrUpdateRayAngleGaussianNoise(const FAGX_RayAngleGaussianNoiseSettings& Settings)
 {
 	using namespace LidarBarrier_helpers;
 	check(HasNative());
@@ -372,7 +373,7 @@ void FLidarBarrier::DisableRayAngleGaussianNoise()
 		NativeRef->Native->getRayDistortionHandler()->remove(Noise);
 }
 
-bool FLidarBarrier::IsRayAngleGaussianNoiseEnabled() const
+bool FLidarBarrier::GetEnableRayAngleGaussianNoise() const
 {
 	using namespace LidarBarrier_helpers;
 	check(HasNative());

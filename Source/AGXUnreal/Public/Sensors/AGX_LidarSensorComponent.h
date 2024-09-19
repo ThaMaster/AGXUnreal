@@ -171,6 +171,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetEnableDistanceGaussianNoise(bool bEnable);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	bool GetEnableDistanceGaussianNoise() const;
+
 	/**
 	 * Determines the distance noise characteristics. The standard deviation is calculated as
 	 * s = stdDev + d * stdDevSlope where d is the distance in centimeters.
@@ -181,6 +184,12 @@ public:
 		Meta = (ClampMin = "0.0", EditCondition = "bEnableDistanceGaussianNoise"))
 	// clang-format on
 	FAGX_DistanceGaussianNoiseSettings DistanceNoiseSettings;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetDistanceNoiseSettings(FAGX_DistanceGaussianNoiseSettings Settings);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	FAGX_DistanceGaussianNoiseSettings GetDistanceNoiseSettings() const;
 
 	/**
 	 * Enables or disables angle ray gaussian noise, adding an individual angle error to each lidar
@@ -196,6 +205,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetEnableRayAngleGaussianNoise(bool bEnable);
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	bool GetEnableRayAngleGaussianNoise() const;
+
 	/**
 	 * Determines the lidar ray noise characteristics.
 	 */
@@ -205,6 +217,12 @@ public:
 		Meta = (ClampMin = "0.0", EditCondition = "bEnableRayAngleGaussianNoise"))
 	// clang-format on
 	FAGX_RayAngleGaussianNoiseSettings RayAngleNoiseSettings;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	void SetRayAngleNoiseSettings(FAGX_RayAngleGaussianNoiseSettings Settings);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	FAGX_RayAngleGaussianNoiseSettings GetRayAngleNoiseSettings() const;
 
 	/**
 	 * Delegate that has to be assigned (bound to) by the user to support custom scan pattern.
