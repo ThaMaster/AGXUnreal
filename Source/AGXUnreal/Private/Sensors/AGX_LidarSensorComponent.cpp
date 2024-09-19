@@ -32,7 +32,7 @@ UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 
 void UAGX_LidarSensorComponent::SetModel(EAGX_LidarModel InModel)
 {
-	const bool bIsPlaying = GetWorld() && GetWorld()->IsGameWorld();
+	const bool bIsPlaying = GetWorld() && GetWorld()->HasBegunPlay();
 	if (bIsPlaying)
 	{
 		FAGX_NotificationUtilities::ShowNotification(
@@ -243,7 +243,11 @@ bool UAGX_LidarSensorComponent::AddOutput(FAGX_LidarOutputBase& InOutput)
 	if (Native == nullptr)
 		return false;
 
-	Native->AddOutput(*InOutput.GetOrCreateNative());
+	auto OutputNative = InOutput.GetOrCreateNative();
+	if (OutputNative == nullptr)
+		return false;
+
+	Native->AddOutput(*OutputNative);
 	return true;
 }
 
@@ -349,8 +353,9 @@ void UAGX_LidarSensorComponent::CopyFrom(const UAGX_LidarSensorComponent& Source
 	RaytraceDepth = Source.RaytraceDepth;
 	bEnableRemovePointsMisses = Source.bEnableRemovePointsMisses;
 	bEnableDistanceGaussianNoise = Source.bEnableDistanceGaussianNoise;
-	bEnableRayAngleGaussianNoise = Source.bEnableRayAngleGaussianNoise;
 	DistanceNoiseSettings = Source.DistanceNoiseSettings;
+	bEnableRayAngleGaussianNoise = Source.bEnableRayAngleGaussianNoise;
+	RayAngleNoiseSettings = Source.RayAngleNoiseSettings;
 }
 
 #if WITH_EDITOR
