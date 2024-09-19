@@ -67,6 +67,13 @@ class AGXUNREAL_API UAGX_LidarOutputPosition_LF : public UBlueprintFunctionLibra
 		Output.GetData(OutData);
 	}
 
+	/**
+	 * Render the data of this Lidar Output.
+	 *
+	 * LifeTime is how long each point is visible before disappearing [s].
+	 *
+	 * BaseSize is the minimum apparent size of a point [cm].
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	static void Render(
 		UPARAM(ref) FAGX_LidarOutputPosition& Output,

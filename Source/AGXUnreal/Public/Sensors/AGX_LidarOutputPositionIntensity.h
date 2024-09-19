@@ -25,7 +25,7 @@ public:
 
 	void Render(
 		const TArray<FAGX_LidarOutputPositionIntensityData>& Data, UAGX_LidarSensorComponent* Lidar,
-		float LifeTime, float BaseSize);
+		float LifeTime, float BaseSize, float IntensityScaleFactor);
 
 	virtual bool HasNative() const override;
 	virtual FLidarOutputBarrier* GetOrCreateNative() override;
@@ -68,12 +68,23 @@ class AGXUNREAL_API UAGX_LidarOutputPositionIntensity_LF : public UBlueprintFunc
 		Output.GetData(OutData);
 	}
 
+	/**
+	 * Render the data of this Lidar Output.
+	 *
+	 * LifeTime is how long each point is visible before disappearing [s].
+	 *
+	 * BaseSize is the minimum apparent size of a point [cm].
+	 *
+	 * Intensity Scale Factor is a (non-phisical) scaling factor that is multiplied with all
+	 * intensity values before calculating a color for the corresponding points. I.e. it changes the
+	 * sentitivity of the intensity coloration (blue to red).
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	static void Render(
 		UPARAM(ref) FAGX_LidarOutputPositionIntensity& Output,
 		const TArray<FAGX_LidarOutputPositionIntensityData>& Data, UAGX_LidarSensorComponent* Lidar,
-		float LifeTime = 0.12f, float BaseSize = 4.f)
+		float LifeTime = 0.12f, float BaseSize = 4.f, float IntensityScaleFactor = 10.f)
 	{
-		Output.Render(Data, Lidar, LifeTime, BaseSize);
+		Output.Render(Data, Lidar, LifeTime, BaseSize, IntensityScaleFactor);
 	}
 };
