@@ -102,7 +102,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetBeamDivergence(double InBeamDivergence);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	double GetBeamDivergence() const;
 
 	/**
