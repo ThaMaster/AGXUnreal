@@ -69,9 +69,9 @@ namespace AGX_SensorEnvironment_helpers
 		for (int32 I = 3; I < MeshData->Indices.Num(); I += 3)
 		{
 			FTriIndices TriInd;
-			TriInd.v0 = static_cast<int32>(MeshData->Indices[I - 2]);
-			TriInd.v1 = static_cast<int32>(MeshData->Indices[I - 1]);
-			TriInd.v2 = static_cast<int32>(MeshData->Indices[I]);
+			TriInd.v0 = static_cast<int32>(MeshData->Indices[I - 3]);
+			TriInd.v1 = static_cast<int32>(MeshData->Indices[I - 2]);
+			TriInd.v2 = static_cast<int32>(MeshData->Indices[I - 1]);
 			OutIndices.Add(TriInd);
 		}
 
@@ -82,8 +82,6 @@ namespace AGX_SensorEnvironment_helpers
 	{
 		if (Lidar == nullptr || Sphere == nullptr)
 			return;
-
-		Sphere->SetWorldLocation(Lidar->GetComponentLocation());
 
 		// Chosen arbitrarily, too large will cause Unreal warnings/errors.
 		static constexpr double MaxRadius = 1.0e8;
@@ -99,8 +97,10 @@ namespace AGX_SensorEnvironment_helpers
 		const float Radius = std::min(Lidar->Range.Max.GetValue(), MaxRadius);
 		if (!FMath::IsNearlyEqual(Sphere->GetUnscaledSphereRadius(), Radius))
 		{
-			Sphere->SetSphereRadius(Radius, /*bUpdateOverlaps*/ true);
+			Sphere->SetSphereRadius(Radius, /*bUpdateOverlaps*/ false);
 		}
+
+		Sphere->SetWorldLocation(Lidar->GetComponentLocation());
 	}
 
 	template <typename MeshesType>
