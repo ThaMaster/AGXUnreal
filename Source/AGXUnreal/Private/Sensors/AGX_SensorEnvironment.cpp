@@ -622,13 +622,9 @@ void AAGX_SensorEnvironment::RegisterLidars()
 	if (bAutoAddObjects)
 	{
 		// Add Terrains.
-		const ULevel* Level = GetWorld()->GetCurrentLevel();
-
-		// Unsafe to use range based loop here since Actors array may grow if for example the
-		// AGX_Stepper is added during this.
-		for (int32 i = 0; i < Level->Actors.Num(); i++)
+		for (TActorIterator<AActor> ActorIt(GetWorld()); ActorIt; ++ActorIt)
 		{
-			if (AAGX_Terrain* Terrain = Cast<AAGX_Terrain>(Level->Actors[i]))
+			if (AAGX_Terrain* Terrain = Cast<AAGX_Terrain>(*ActorIt))
 			{
 				AddTerrain(Terrain);
 			}
@@ -643,11 +639,25 @@ bool AAGX_SensorEnvironment::RegisterLidar(FAGX_LidarSensorReference& LidarRef)
 
 	UAGX_LidarSensorComponent* Lidar = LidarRef.GetLidarComponent();
 	if (Lidar == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("SensorEnvironment::RegisterLidar tried to get Lidar Sensor Component given Lidar "
+				 "Sensor Reference '%s' but the returned Component was nullptr."),
+			*LidarRef.Name.ToString());
 		return false;
+	}
 
 	FLidarBarrier* Barrier = Lidar->GetOrCreateNative();
 	if (Barrier == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("SensorEnvironment::RegisterLidar tried to get Native for Lidar Sensor Component "
+				 "'%s' in '%s' but got nullptr."),
+			*Lidar->GetName(), *GetLabelSafe(Lidar->GetOwner()));
 		return false;
+	}
 
 	NativeBarrier.Add(*Barrier);
 
