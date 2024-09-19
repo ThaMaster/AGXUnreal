@@ -136,7 +136,7 @@ public:
 	 * It should be noted that the time and memory complexity of the raytrace will grow
 	 * exponentially with the maximum number of raytrace steps.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "1"))
 	int32 RaytraceDepth {1};
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
