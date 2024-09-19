@@ -25,7 +25,7 @@ UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	static const TCHAR* DefaultNiagaraSystem =
-		TEXT("StaticMesh'/AGXUnreal/Sensor/Lidar/NS_LidarNiagaraSystem.NS_LidarNiagaraSystem'");
+		TEXT("NiagaraSystem'/AGXUnreal/Sensor/Lidar/NS_LidarNiagaraSystem.NS_LidarNiagaraSystem'");
 	NiagaraSystemAsset =
 		FAGX_ObjectUtilities::GetAssetFromPath<UNiagaraSystem>(DefaultNiagaraSystem);
 }
@@ -54,10 +54,10 @@ EAGX_LidarModel UAGX_LidarSensorComponent::GetModel() const
 
 void UAGX_LidarSensorComponent::SetEnabled(bool InEnabled)
 {
+	bEnabled = InEnabled;
+
 	if (HasNative())
 		NativeBarrier.SetEnabled(InEnabled);
-
-	bEnabled = InEnabled;
 }
 
 bool UAGX_LidarSensorComponent::GetEnabled() const
@@ -177,6 +177,7 @@ void UAGX_LidarSensorComponent::SetDistanceNoiseSettings(
 	FAGX_DistanceGaussianNoiseSettings Settings)
 {
 	DistanceNoiseSettings = Settings;
+
 	if (HasNative() && NativeBarrier.GetEnableDistanceGaussianNoise())
 		NativeBarrier.EnableOrUpdateDistanceGaussianNoise(Settings);
 }
@@ -215,6 +216,7 @@ void UAGX_LidarSensorComponent::SetRayAngleNoiseSettings(
 	FAGX_RayAngleGaussianNoiseSettings Settings)
 {
 	RayAngleNoiseSettings = Settings;
+
 	if (HasNative() && NativeBarrier.GetEnableRayAngleGaussianNoise())
 		NativeBarrier.EnableOrUpdateRayAngleGaussianNoise(Settings);
 }
@@ -253,9 +255,8 @@ bool UAGX_LidarSensorComponent::HasNative() const
 uint64 UAGX_LidarSensorComponent::GetNativeAddress() const
 {
 	if (!HasNative())
-	{
 		return 0;
-	}
+
 	NativeBarrier.IncrementRefCount();
 	return NativeBarrier.GetNativeAddress();
 }
