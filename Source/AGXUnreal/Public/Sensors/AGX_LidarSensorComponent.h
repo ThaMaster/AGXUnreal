@@ -244,7 +244,7 @@ public:
 	 * Delegate that has to be assigned (bound to) by the user to support custom scan pattern.
 	 * Only used if the Lidar Model is set to CustomRayPattern.
 	 * Should return the next AGX Custom Pattern Interval to use.
-	 * This delegate is called each Step() and determines what part of the total scan pattern to
+	 * This delegate is called each Step Forward and determines what part of the total scan pattern to
 	 * use in that Step Forward. See also OnFetchRayTransforms. The signature of the function assigned
 	 * must be: FAGX_CustomPatternInterval MyFunc(double TimeStamp).
 	 */
@@ -267,7 +267,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	UNiagaraComponent* GetSpawnedNiagaraSystemComponent();
 
-	void Step();
+	void UpdateNativeTransform();
 
 	bool AddOutput(FAGX_LidarOutputBase& InOutput);
 

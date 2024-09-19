@@ -230,7 +230,7 @@ UNiagaraComponent* UAGX_LidarSensorComponent::GetSpawnedNiagaraSystemComponent()
 	return NiagaraSystemComponent;
 }
 
-void UAGX_LidarSensorComponent::Step()
+void UAGX_LidarSensorComponent::UpdateNativeTransform()
 {
 	if (HasNative())
 		NativeBarrier.SetTransform(GetComponentTransform());

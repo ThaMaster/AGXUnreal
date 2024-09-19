@@ -207,7 +207,7 @@ private:
 	void UpdateTrackedInstancedMeshes();
 	void UpdateTrackedAGXMeshes();
 	void UpdateAmbientMaterial();
-	void StepTrackedLidars() const;
+	void TickTrackedLidars() const;
 
 	bool AddMesh(
 		UStaticMeshComponent* Mesh, const TArray<FVector>& Vertices,

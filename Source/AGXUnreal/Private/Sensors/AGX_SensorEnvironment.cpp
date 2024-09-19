@@ -103,8 +103,8 @@ namespace AGX_SensorEnvironment_helpers
 		Sphere->SetWorldLocation(Lidar->GetComponentLocation());
 	}
 
-	template <typename MeshesType>
-	void UpdateTrackedMeshes(MeshesType& MeshesMap)
+	template <typename FMeshToInstanceDataMap>
+	void UpdateTrackedMeshes(FMeshToInstanceDataMap& MeshesMap)
 	{
 		// Update tracked static meshes and remove any invalid ones.
 		for (auto It = MeshesMap.CreateIterator(); It; ++It)
@@ -189,21 +189,21 @@ bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh, int32 InLod)
 	TArray<FVector> OutVerts;
 	TArray<FTriIndices> OutInds;
 	const int32 Lod = InLod < 0 ? DefaultLODIndex : InLod;
-	const bool Res =
-		AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVerts, OutInds, Lod);
-	if (Res)
+
+	if (!AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVerts, OutInds, Lod))
+		return false;
+
+	if (!AddMesh(Mesh, OutVerts, OutInds))
+		return false;
+
+	if (DebugLogOnAdd)
 	{
-		AddMesh(Mesh, OutVerts, OutInds);
-		if (DebugLogOnAdd)
-		{
-			UE_LOG(
-				LogAGX, Log,
-				TEXT("Sensor Environment '%s' added Static Mesh Component '%s' in '%s'."),
-				*GetName(), *Mesh->GetName(), *GetLabelSafe(Mesh->GetOwner()));
-		}
+		UE_LOG(
+			LogAGX, Log, TEXT("Sensor Environment '%s' added Static Mesh Component '%s' in '%s'."),
+			*GetName(), *Mesh->GetName(), *GetLabelSafe(Mesh->GetOwner()));
 	}
 
-	return Res;
+	return true;
 }
 
 bool AAGX_SensorEnvironment::AddAGXMesh(UAGX_SimpleMeshComponent* Mesh)
@@ -220,19 +220,20 @@ bool AAGX_SensorEnvironment::AddAGXMesh(UAGX_SimpleMeshComponent* Mesh)
 
 	TArray<FVector> OutVerts;
 	TArray<FTriIndices> OutInds;
-	const bool Res = AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVerts, OutInds);
-	if (Res)
+	if (!AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVerts, OutInds))
+		return false;
+
+	if (!AddMesh(Mesh, OutVerts, OutInds))
+		return false;
+
+	if (DebugLogOnAdd)
 	{
-		AddMesh(Mesh, OutVerts, OutInds);
-		if (DebugLogOnAdd)
-		{
-			UE_LOG(
-				LogAGX, Log, TEXT("Sensor Environment '%s' added AGX Shape '%s' in '%s'."),
-				*GetName(), *Mesh->GetName(), *GetLabelSafe(Mesh->GetOwner()));
-		}
+		UE_LOG(
+			LogAGX, Log, TEXT("Sensor Environment '%s' added AGX Shape '%s' in '%s'."), *GetName(),
+			*Mesh->GetName(), *GetLabelSafe(Mesh->GetOwner()));
 	}
 
-	return Res;
+	return true;
 }
 
 bool AAGX_SensorEnvironment::AddInstancedMesh(UInstancedStaticMeshComponent* Mesh, int32 InLod)
@@ -255,21 +256,22 @@ bool AAGX_SensorEnvironment::AddInstancedMesh(UInstancedStaticMeshComponent* Mes
 		TArray<FVector> OutVertices;
 		TArray<FTriIndices> OutIndices;
 		const int32 Lod = InLod < 0 ? DefaultLODIndex : InLod;
-		if (AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVertices, OutIndices, Lod))
-		{
-			AddInstancedMesh(Mesh, OutVertices, OutIndices);
-		}
-		else
-		{
+		if (!AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVertices, OutIndices, Lod))
 			return false;
-		}
+
+		if (!AddInstancedMesh(Mesh, OutVertices, OutIndices))
+			return false;
 	}
 
 	const int32 InstanceCnt = Mesh->GetInstanceCount();
+	bool IssuesEncountered = false;
 	for (int32 i = 0; i < InstanceCnt; i++)
 	{
-		AddInstancedMeshInstance_Internal(Mesh, i);
+		IssuesEncountered |= AddInstancedMeshInstance_Internal(Mesh, i);
 	}
+
+	if (IssuesEncountered)
+		return false;
 
 	if (DebugLogOnAdd)
 	{
@@ -303,10 +305,10 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance(
 		TArray<FVector> OutVertices;
 		TArray<FTriIndices> OutIndices;
 		const int32 Lod = InLod < 0 ? DefaultLODIndex : InLod;
-		if (AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVertices, OutIndices, Lod))
-			AddInstancedMesh(Mesh, OutVertices, OutIndices);
-		else
+		if (!AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVertices, OutIndices, Lod))
 			return false;
+
+		return AddInstancedMesh(Mesh, OutVertices, OutIndices);
 	}
 
 	const bool Res = AddInstancedMeshInstance_Internal(Mesh, Index);
@@ -461,8 +463,7 @@ bool AAGX_SensorEnvironment::RemoveMesh(UStaticMeshComponent* Mesh)
 	if (Mesh == nullptr || !TrackedMeshes.Contains(Mesh))
 		return false;
 
-	TrackedMeshes.Remove(Mesh);
-	return true;
+	return TrackedMeshes.Remove(Mesh) > 0;
 }
 
 bool AAGX_SensorEnvironment::RemoveInstancedMesh(UInstancedStaticMeshComponent* Mesh)
@@ -560,7 +561,7 @@ void AAGX_SensorEnvironment::Tick(float DeltaSeconds)
 		UpdateTrackedInstancedMeshes();
 
 	UpdateTrackedAGXMeshes();
-	StepTrackedLidars();
+	TickTrackedLidars();
 }
 
 void AAGX_SensorEnvironment::BeginPlay()
@@ -757,12 +758,12 @@ void AAGX_SensorEnvironment::UpdateAmbientMaterial()
 	NativeBarrier.SetAmbientMaterial(AmbientMaterial->GetNative());
 }
 
-void AAGX_SensorEnvironment::StepTrackedLidars() const
+void AAGX_SensorEnvironment::TickTrackedLidars() const
 {
 	for (auto It = TrackedLidars.CreateConstIterator(); It; ++It)
 	{
 		if (auto Lidar = It->Key.GetLidarComponent())
-			Lidar->Step();
+			Lidar->UpdateNativeTransform();
 	}
 }
 
