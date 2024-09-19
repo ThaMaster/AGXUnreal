@@ -39,7 +39,6 @@ public:
 
 private:
 	FLidarOutputPositionBarrier NativeBarrier;
-	TArray<FAGX_LidarOutputPositionData> Data;
 	TArray<FVector> RenderPositions;
 };
 

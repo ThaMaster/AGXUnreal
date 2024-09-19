@@ -124,7 +124,5 @@ void FAGX_LidarOutputPositionIntensity::GetData(
 	TArray<FAGX_LidarOutputPositionIntensityData>& OutData)
 {
 	if (HasNative())
-		NativeBarrier.GetData(Data);
-
-	OutData = Data;
+		NativeBarrier.GetData(OutData);
 }

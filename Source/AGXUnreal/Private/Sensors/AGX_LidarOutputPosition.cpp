@@ -110,7 +110,5 @@ bool FAGX_LidarOutputPosition::operator==(const FAGX_LidarOutputPosition& Other)
 void FAGX_LidarOutputPosition::GetData(TArray<FAGX_LidarOutputPositionData>& OutData)
 {
 	if (HasNative())
-		NativeBarrier.GetData(Data);
-
-	OutData = Data;
+		NativeBarrier.GetData(OutData);
 }
