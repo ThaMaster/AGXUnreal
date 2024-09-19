@@ -32,13 +32,12 @@ UAGX_LidarSensorComponent::UAGX_LidarSensorComponent()
 
 void UAGX_LidarSensorComponent::SetModel(EAGX_LidarModel InModel)
 {
-	const bool bIsPlaying = GetWorld() && GetWorld()->HasBegunPlay();
-	if (bIsPlaying)
+	if (HasBegunPlay())
 	{
 		FAGX_NotificationUtilities::ShowNotification(
 			FString::Printf(
-				TEXT("Set Model was called during Play on Lidar Sensor '%s' in '%s'. This function "
-					 "may only be called before Play."),
+				TEXT("Set Model was called after BeginPlay on Lidar Sensor '%s' in '%s'. This "
+					 "function may only be called before BeginPlay."),
 				*GetName(), *GetLabelSafe(GetOwner())),
 			SNotificationItem::CS_Fail);
 		return;
