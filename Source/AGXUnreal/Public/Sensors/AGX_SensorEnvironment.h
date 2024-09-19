@@ -28,6 +28,10 @@ class AGXUNREAL_API AAGX_SensorEnvironment : public AActor
 public:
 	AAGX_SensorEnvironment();
 
+	/**
+	 * Array of all Lidar Sensor Components that should be active in the simulation.
+	 * Any Lidar Sensor Components that should be active has to be added by the user to this Array.
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Sensor Environment")
 	TArray<FAGX_LidarSensorReference> LidarSensors;
 
@@ -118,6 +122,9 @@ public:
 	/**
 	 * Add all instances of an Instanced Static Mesh Component so that they can be detected by
 	 * sensors handled by this Sensor Environment.
+	 * 
+	 * Instances created after calling this function will not be added to the Sensor Environment.
+	 * 
 	 * (Optional) LOD determines the LOD index used when reading the given Mesh. If left to -1,
 	 * the DefaultLODIndex is used. See property DefaultLODIndex.
 	 *
@@ -237,7 +244,6 @@ private:
 	void OnLidarEndOverlapAGXMeshComponent(UAGX_SimpleMeshComponent& Mesh);
 
 private:
-	// Todo: weak object ptr instead of raw ptrs!
 	TMap<FAGX_LidarSensorReference, TObjectPtr<USphereComponent>> TrackedLidars;
 	TMap<TWeakObjectPtr<UStaticMeshComponent>, FAGX_RtShapeInstanceData> TrackedMeshes;
 	TMap<TWeakObjectPtr<UInstancedStaticMeshComponent>, FAGX_RtInstancedShapeInstanceData>
@@ -245,5 +251,4 @@ private:
 	TMap<TWeakObjectPtr<UAGX_SimpleMeshComponent>, FAGX_RtShapeInstanceData> TrackedAGXMeshes;
 
 	FSensorEnvironmentBarrier NativeBarrier;
-	FDelegateHandle PostStepForwardHandle;
 };

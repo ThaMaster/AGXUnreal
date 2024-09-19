@@ -601,16 +601,6 @@ void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type Reason)
 {
 	Super::EndPlay(Reason);
 
-	if (Reason != EEndPlayReason::EndPlayInEditor && Reason != EEndPlayReason::Quit &&
-		Reason != EEndPlayReason::LevelTransition)
-	{
-		if (UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this))
-		{
-			FAGX_InternalDelegateAccessor::GetOnPostStepForwardInternal(*Simulation)
-				.Remove(PostStepForwardHandle);
-		}
-	}
-
 	TrackedLidars.Empty();
 	TrackedMeshes.Empty();
 	TrackedInstancedMeshes.Empty();
