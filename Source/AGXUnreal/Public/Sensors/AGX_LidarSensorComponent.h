@@ -31,7 +31,7 @@ DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(
 	FAGX_CustomPatternInterval, FOnFetchNextPatternInterval, double, TimeStamp);
 
 /**
- * Lidar Sensor Component, allowing to create point cluds at runtime.
+ * Lidar Sensor Component, allowing to create point clouds at runtime.
  */
 UCLASS(
 	ClassGroup = "AGX_Sensor", Category = "AGX", Meta = (BlueprintSpawnableComponent),
