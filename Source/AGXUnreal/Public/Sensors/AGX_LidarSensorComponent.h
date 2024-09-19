@@ -83,7 +83,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetRange(FAGX_RealInterval InRange);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	FAGX_RealInterval GetRange() const;
 
 	/**
@@ -142,7 +142,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetRaytraceDepth(int32 Depth);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	int32 GetRaytraceDepth() const;
 
 	/**
@@ -154,7 +154,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetEnableRemovePointsMisses(bool bEnable);
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	bool GetEnableRemovePointsMisses() const;
 
 	/**
@@ -275,10 +275,10 @@ public:
 	virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
 	//~ End UActorComponent Interface
 
-	// ~Begin UObject interface.
+	//~ Begin UObject interface.
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 	virtual void PostInitProperties() override;
-	// ~End UObject interface.
+	//~ End UObject interface.
 #endif
 
 	friend class FAGX_CustomPatternFetcher;
