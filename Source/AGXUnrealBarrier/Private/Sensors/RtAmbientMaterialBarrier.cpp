@@ -77,8 +77,7 @@ float FRtAmbientMaterialBarrier::GetAttenuationCoefficient() const
 	return Native->Native.getAttenuationCoefficient();
 }
 
-void FRtAmbientMaterialBarrier::SetReturnProbabilityScaling(
-	float InScalingParameter)
+void FRtAmbientMaterialBarrier::SetReturnProbabilityScaling(float InScalingParameter)
 {
 	check(HasNative());
 	Native->Native.setReturnProbabilityScaling(InScalingParameter);
@@ -112,6 +111,12 @@ float FRtAmbientMaterialBarrier::GetReturnGammaDistributionScaleParameter() cons
 {
 	check(HasNative());
 	return Native->Native.getReturnGammaDistributionScaleParameter();
+}
+
+void FRtAmbientMaterialBarrier::ConfigureAsAir(float Visibility)
+{
+	check(HasNative());
+	Native->Native.configureAsAir(Visibility);
 }
 
 void FRtAmbientMaterialBarrier::ConfigureAsFog(

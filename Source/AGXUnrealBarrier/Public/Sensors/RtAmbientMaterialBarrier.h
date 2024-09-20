@@ -41,11 +41,18 @@ public:
 	float GetReturnGammaDistributionScaleParameter() const;
 
 	/**
+	 * Configure the material parameters as clear weather air with the specified visibility. This
+	 * configuration uses fog-like atmospheric returns combined with (inverse) MOR attenuation.
+	 * Visibility - visibility in kilometers
+	 */
+	void ConfigureAsAir(float Visibility);
+
+	/**
 	 * Configure the material parameters as foggy weather with the specified visibility. This
 	 * configuration uses fog-like atmospheric returns combined with Al-Naboulsi attenuation.
-	 * visibility - visibility in kilometers
-	 * wavelength - sensor wavelength in nanometers
-	 * maritimeness - interpolation value between continental (0.0) and maritime (1.0) fog
+	 * Visibility - visibility in kilometers
+	 * Wavelength - sensor wavelength in nanometers
+	 * Maritimeness - interpolation value between continental (0.0) and maritime (1.0) fog
 	 */
 	void ConfigureAsFog(float Visibility, float Wavelength, float Maritimeness = 0.0f);
 
@@ -53,8 +60,8 @@ public:
 	 * Configure the material parameters as rainfall with the specified precipitation rate. This
 	 * configuration uses rain-like atmospheric returns combined with Carbonneau rainfall
 	 * attenuation.
-	 * rate - precipitation rate in mm/h
-	 * tropicalness - interpolation value between light (0.0) and tropical (1.0) rain
+	 * Rate - precipitation rate in mm/h
+	 * Tropicalness - interpolation value between light (0.0) and tropical (1.0) rain
 	 */
 	void ConfigureAsRainfall(float Rate, float Tropicalness = 0.0f);
 
@@ -62,9 +69,9 @@ public:
 	 * Configure the material parameters as light snowfall with the specified precipitation rate.
 	 * This configuration uses rain-like atmospheric return combined with Carbonneau snowfall
 	 * attenuation.
-	 * rate - precipitation rate in mm/h
-	 * wavelength - sensor wavelength in nanometers
-	  */
+	 * Rate - precipitation rate in mm/h
+	 * Wavelength - sensor wavelength in nanometers
+	 */
 	void ConfigureAsSnowfall(float Rate, float Wavelength);
 
 private:
