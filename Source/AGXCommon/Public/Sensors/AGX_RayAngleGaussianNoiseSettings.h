@@ -18,7 +18,7 @@ struct AGXCOMMON_API FAGX_RayAngleGaussianNoiseSettings
 	/**
 	 * The axis, local to the ray frame, around which the perturbation should be applied.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar", Meta = (ClampMin = "0.0"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
 	EAGX_LidarRayAngleDistortionAxis Axis {
 		EAGX_LidarRayAngleDistortionAxis::AxisX};
 
