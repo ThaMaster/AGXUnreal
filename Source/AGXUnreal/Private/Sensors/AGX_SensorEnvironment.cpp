@@ -266,13 +266,13 @@ bool AAGX_SensorEnvironment::AddInstancedMesh(UInstancedStaticMeshComponent* Mes
 	}
 
 	const int32 InstanceCnt = Mesh->GetInstanceCount();
-	bool IssuesEncountered = false;
+	bool AllOk = true;
 	for (int32 i = 0; i < InstanceCnt; i++)
 	{
-		IssuesEncountered |= AddInstancedMeshInstance_Internal(Mesh, i);
+		AllOk &= AddInstancedMeshInstance_Internal(Mesh, i);
 	}
 
-	if (IssuesEncountered)
+	if (!AllOk)
 		return false;
 
 	if (DebugLogOnAdd)
