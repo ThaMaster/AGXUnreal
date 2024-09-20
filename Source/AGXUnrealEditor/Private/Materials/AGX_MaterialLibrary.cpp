@@ -288,6 +288,19 @@ bool AGX_MaterialLibrary::InitializeLidarAmbientMaterialAssetLibrary(bool ForceO
 	bool Result = true;
 
 	Result &= UpdateLidarAmbientMaterialAssetLibrary(
+		"AGX_LAM_Air_1000m_Visibility",
+		[](FRtAmbientMaterialBarrier& Barrier) { Barrier.ConfigureAsAir(1.0f); },
+		ForceOverwrite);
+
+	Result &= UpdateLidarAmbientMaterialAssetLibrary(
+		"AGX_LAM_Air_5000m_Visibility",
+		[](FRtAmbientMaterialBarrier& Barrier) { Barrier.ConfigureAsAir(5.0f); }, ForceOverwrite);
+
+	Result &= UpdateLidarAmbientMaterialAssetLibrary(
+		"AGX_LAM_Air_50000m_Visibility",
+		[](FRtAmbientMaterialBarrier& Barrier) { Barrier.ConfigureAsAir(50.0f); }, ForceOverwrite);
+
+	Result &= UpdateLidarAmbientMaterialAssetLibrary(
 		"AGX_LAM_Fog_3000m_Visibility",
 		[](FRtAmbientMaterialBarrier& Barrier) { Barrier.ConfigureAsFog(3.0f, 900.f); },
 		ForceOverwrite);
