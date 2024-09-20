@@ -500,7 +500,7 @@ bool AAGX_SensorEnvironment::RemoveLidar(UAGX_LidarSensorComponent* Lidar)
 
 bool AAGX_SensorEnvironment::RemoveMesh(UStaticMeshComponent* Mesh)
 {
-	if (Mesh == nullptr || !TrackedMeshes.Contains(Mesh))
+	if (Mesh == nullptr)
 		return false;
 
 	return TrackedMeshes.Remove(Mesh) > 0;
