@@ -105,11 +105,11 @@ namespace AGX_SensorEnvironment_helpers
 		Sphere->SetWorldLocation(Lidar->GetComponentLocation());
 	}
 
-	template <typename FMeshToInstanceDataMap>
-	void UpdateTrackedMeshes(FMeshToInstanceDataMap& MeshesMap)
+	template <typename InMapType>
+	void UpdateTrackedMeshes(InMapType& MeshToInstance)
 	{
 		// Update tracked static meshes and remove any invalid ones.
-		for (auto It = MeshesMap.CreateIterator(); It; ++It)
+		for (auto It = MeshToInstance.CreateIterator(); It; ++It)
 		{
 			if (!IsValid(It->Key.Get()))
 			{
