@@ -11,7 +11,7 @@
 
 void FAGX_LidarOutputPositionIntensity::Render(
 	const TArray<FAGX_LidarOutputPositionIntensityData>& InData, UAGX_LidarSensorComponent* Lidar,
-	float LifeTime, float BaseSize, float IntensityScaleFactor)
+	float LifeTime, float ZeroDistanceSize, float IntensityScaleFactor)
 {
 	if (Lidar == nullptr)
 		return;
@@ -62,11 +62,11 @@ void FAGX_LidarOutputPositionIntensity::Render(
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	Nc->SetNiagaraVariableInt("User.NumPoints", DataToRender.Num());
 	Nc->SetNiagaraVariableFloat("User.Lifetime", LifeTime);
-	Nc->SetNiagaraVariableFloat("User.ZeroDistanceSize", BaseSize);
+	Nc->SetNiagaraVariableFloat("User.ZeroDistanceSize", ZeroDistanceSize);
 #else
 	Nc->SetVariableInt(FName("User.NumPoints"), DataToRender.Num());
 	Nc->SetVariableFloat(FName("User.Lifetime"), LifeTime);
-	Nc->SetVariableFloat(FName("User.ZeroDistanceSize"), BaseSize);
+	Nc->SetVariableFloat(FName("User.ZeroDistanceSize"), ZeroDistanceSize);
 #endif
 
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayPosition(

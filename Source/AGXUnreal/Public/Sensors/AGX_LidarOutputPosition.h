@@ -25,7 +25,7 @@ public:
 
 	void Render(
 		const TArray<FAGX_LidarOutputPositionData>& InData, UAGX_LidarSensorComponent* Lidar,
-		float LifeTime, float BaseSize);
+		float LifeTime, float ZeroDistanceSize);
 
 	virtual bool HasNative() const override;
 	virtual FLidarOutputBarrier* GetOrCreateNative() override;
@@ -71,14 +71,14 @@ class AGXUNREAL_API UAGX_LidarOutputPosition_LF : public UBlueprintFunctionLibra
 	 *
 	 * LifeTime is how long each point is visible before disappearing [s].
 	 *
-	 * BaseSize is the minimum apparent size of a point [cm].
+	 * ZeroDistanceSize is the minimum apparent size of a point [cm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	static void Render(
 		UPARAM(ref) FAGX_LidarOutputPosition& Output,
 		const TArray<FAGX_LidarOutputPositionData>& Data, UAGX_LidarSensorComponent* Lidar,
-		float LifeTime = 0.12f, float BaseSize = 4.f)
+		float LifeTime = 0.12f, float ZeroDistanceSize = 4.f)
 	{
-		Output.Render(Data, Lidar, LifeTime, BaseSize);
+		Output.Render(Data, Lidar, LifeTime, ZeroDistanceSize);
 	}
 };
