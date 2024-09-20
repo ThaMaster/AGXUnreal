@@ -8,6 +8,7 @@
 #include "SimulationBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/TerrainPagerBarrier.h"
+#include "Wire/WireBarrier.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -74,23 +75,28 @@ bool FSensorEnvironmentBarrier::Add(FTerrainBarrier& Terrain)
 {
 	check(HasNative());
 	check(Terrain.HasNative());
-	agxTerrain::TerrainRef TerrainNative = Terrain.GetNative()->Native;
-	const bool Result = NativeRef->Native->add(TerrainNative);
-	/*agxSensor::RtSurfaceMaterial::getOrCreate(TerrainNative.get())
-		.setReflectivity(Reflectivity);*/ // TODO!!!
-	return Result;
+	return NativeRef->Native->add(Terrain.GetNative()->Native);
 }
 
 bool FSensorEnvironmentBarrier::Add(FTerrainPagerBarrier& Pager)
 {
 	check(HasNative());
 	check(Pager.HasNative());
-	const bool Result = NativeRef->Native->add(Pager.GetNative()->Native);
-#if 0 // TODO: Enable once supported in AGX.
-	agxSensor::RtSurfaceMaterial::getOrCreate(Pager.GetNative()->Native.get())
-		.setReflectivity(Reflectivity);
-#endif
-	return Result;
+	return NativeRef->Native->add(Pager.GetNative()->Native);
+}
+
+bool FSensorEnvironmentBarrier::Add(FWireBarrier& Wire)
+{
+	check(HasNative());
+	check(Wire.HasNative());
+	return NativeRef->Native->add(Wire.GetNative()->Native);
+}
+
+bool FSensorEnvironmentBarrier::Remove(FLidarBarrier& Lidar)
+{
+	check(HasNative());
+	check(Lidar.HasNative());
+	return NativeRef->Native->remove(Lidar.GetNative()->Native);
 }
 
 bool FSensorEnvironmentBarrier::Remove(FTerrainBarrier& Terrain)
@@ -105,6 +111,13 @@ bool FSensorEnvironmentBarrier::Remove(FTerrainPagerBarrier& Pager)
 	check(HasNative());
 	check(Pager.HasNative());
 	return NativeRef->Native->remove(Pager.GetNative()->Native);
+}
+
+bool FSensorEnvironmentBarrier::Remove(FWireBarrier& Wire)
+{
+	check(HasNative());
+	check(Wire.HasNative());
+	return NativeRef->Native->remove(Wire.GetNative()->Native);
 }
 
 void FSensorEnvironmentBarrier::SetAmbientMaterial(FRtAmbientMaterialBarrier* Material)
@@ -149,4 +162,10 @@ void FSensorEnvironmentBarrier::SetLidarSurfaceMaterialOrDefault(
 	FTerrainPagerBarrier& TerrainPager, FRtLambertianOpaqueMaterialBarrier* Material)
 {
 	SensorEnvironmentBarrier_helpers::SetLidarSurfaceMaterialOrDefault(TerrainPager, Material);
+}
+
+void FSensorEnvironmentBarrier::SetLidarSurfaceMaterialOrDefault(
+	FWireBarrier& Wire, FRtLambertianOpaqueMaterialBarrier* Material)
+{
+	SensorEnvironmentBarrier_helpers::SetLidarSurfaceMaterialOrDefault(Wire, Material);
 }

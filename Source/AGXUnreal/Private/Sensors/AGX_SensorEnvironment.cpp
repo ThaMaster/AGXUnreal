@@ -14,6 +14,8 @@
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Wire/AGX_WireComponent.h"
+#include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
 #include "Components/InstancedStaticMeshComponent.h"
@@ -308,7 +310,8 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance(
 		if (!AGX_SensorEnvironment_helpers::GetVerticesIndices(Mesh, OutVertices, OutIndices, Lod))
 			return false;
 
-		return AddInstancedMesh(Mesh, OutVertices, OutIndices);
+		if (!AddInstancedMesh(Mesh, OutVertices, OutIndices))
+			return false;
 	}
 
 	const bool Res = AddInstancedMeshInstance_Internal(Mesh, Index);
@@ -432,8 +435,11 @@ bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 		if (PagerBarrier == nullptr)
 			return false;
 
-		// Note: LidarSurfaceMaterial not supported for Paging Terrain in AGX yet.
-		return NativeBarrier.Add(*PagerBarrier);
+		if (!NativeBarrier.Add(*PagerBarrier))
+			return false;
+
+		NativeBarrier.SetLidarSurfaceMaterialOrDefault(
+			*PagerBarrier, GetLambertianOpaqueMaterialBarrierFrom(*Terrain));
 	}
 	else
 	{
@@ -456,6 +462,40 @@ bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 	}
 
 	return true;
+}
+
+bool AAGX_SensorEnvironment::AddWire(UAGX_WireComponent* Wire)
+{
+	using namespace AGX_SensorEnvironment_helpers;
+	if (!HasNative() || Wire == nullptr)
+		return false;
+
+	FWireBarrier* Barrier = Wire->GetOrCreateNative();
+	if (Barrier == nullptr)
+		return false;
+
+	if (!NativeBarrier.Add(*Barrier))
+		return false;
+
+	NativeBarrier.SetLidarSurfaceMaterialOrDefault(
+		*Barrier, GetLambertianOpaqueMaterialBarrierFrom(*Wire));
+
+	if (DebugLogOnAdd)
+	{
+		UE_LOG(
+			LogAGX, Log, TEXT("Sensor Environment '%s' added Wire '%s'."), *GetName(),
+			*Wire->GetName());
+	}
+
+	return true;
+}
+
+bool AAGX_SensorEnvironment::RemoveLidar(UAGX_LidarSensorComponent* Lidar)
+{
+	if (!HasNative() || Lidar == nullptr || !Lidar->HasNative())
+		return false;
+
+	return NativeBarrier.Remove(*Lidar->GetNative());
 }
 
 bool AAGX_SensorEnvironment::RemoveMesh(UStaticMeshComponent* Mesh)
@@ -501,6 +541,14 @@ bool AAGX_SensorEnvironment::RemoveTerrain(AAGX_Terrain* Terrain)
 		return NativeBarrier.Remove(*Terrain->GetNativeTerrainPager());
 	else
 		return NativeBarrier.Remove(*Terrain->GetOrCreateNative());
+}
+
+bool AAGX_SensorEnvironment::RemoveWire(UAGX_WireComponent* Wire)
+{
+	if (!HasNative() || Wire == nullptr || !Wire->HasNative())
+		return false;
+
+	return NativeBarrier.Remove(*Wire->GetNative());
 }
 
 bool AAGX_SensorEnvironment::HasNative() const

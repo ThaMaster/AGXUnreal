@@ -15,6 +15,7 @@ class FRtLambertianOpaqueMaterialBarrier;
 class FSimulationBarrier;
 class FTerrainBarrier;
 class FTerrainPagerBarrier;
+class FWireBarrier;
 
 struct FSensorEnvironmentRef;
 
@@ -35,9 +36,12 @@ public:
 	bool Add(FLidarBarrier& Lidar);
 	bool Add(FTerrainBarrier& Terrain);
 	bool Add(FTerrainPagerBarrier& Pager);
+	bool Add(FWireBarrier& Wire);
 
+	bool Remove(FLidarBarrier& Lidar);
 	bool Remove(FTerrainBarrier& Terrain);
 	bool Remove(FTerrainPagerBarrier& Pager);
+	bool Remove(FWireBarrier& Wire);
 
 	void SetAmbientMaterial(FRtAmbientMaterialBarrier* Material);
 
@@ -45,6 +49,8 @@ public:
 		FTerrainBarrier& Terrain, FRtLambertianOpaqueMaterialBarrier* Material);
 	void SetLidarSurfaceMaterialOrDefault(
 		FTerrainPagerBarrier& TerrainPager, FRtLambertianOpaqueMaterialBarrier* Material);
+	void SetLidarSurfaceMaterialOrDefault(
+		FWireBarrier& Wire, FRtLambertianOpaqueMaterialBarrier* Material);
 
 private:
 	FSensorEnvironmentBarrier(const FSensorEnvironmentBarrier&) = delete;

@@ -16,6 +16,7 @@
 class AAGX_Terrain;
 class UAGX_LidarAmbientMaterial;
 class UAGX_SimpleMeshComponent;
+class UAGX_WireComponent;
 class UInstancedStaticMeshComponent;
 class USphereComponent;
 class UStaticMeshComponent;
@@ -101,10 +102,9 @@ public:
 	bool AddLidar(UAGX_LidarSensorComponent* Lidar);
 
 	/**
-	 * Add a Static Mesh Component so that it can be detected by sensors handled by this Sensor
-	 * Environment.
-	 * (Optional) LOD determines the LOD index used when reading the given Mesh. If left to -1,
-	 * the DefaultLODIndex is used. See property DefaultLODIndex.
+	 * Manually add a Static Mesh Component so that it can be detected by sensors handled by this
+	 * Sensor Environment. (Optional) LOD determines the LOD index used when reading the given Mesh.
+	 * If left to -1, the DefaultLODIndex is used. See property DefaultLODIndex.
 	 *
 	 * Only valid to call during Play.
 	 */
@@ -112,19 +112,18 @@ public:
 	bool AddMesh(UStaticMeshComponent* Mesh, int32 LOD = -1);
 
 	/**
-	 * Add an AGX Simple Mesh Component so that it can be detected by sensors handled by this Sensor
-	 * Environment.
-	 * Only valid to call during Play.
+	 * Manually add an AGX Simple Mesh Component so that it can be detected by sensors handled by
+	 * this Sensor Environment. Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool AddAGXMesh(UAGX_SimpleMeshComponent* Mesh);
 
 	/**
-	 * Add all instances of an Instanced Static Mesh Component so that they can be detected by
-	 * sensors handled by this Sensor Environment.
-	 * 
+	 * Manually add all instances of an Instanced Static Mesh Component so that they can be detected
+	 * by sensors handled by this Sensor Environment.
+	 *
 	 * Instances created after calling this function will not be added to the Sensor Environment.
-	 * 
+	 *
 	 * (Optional) LOD determines the LOD index used when reading the given Mesh. If left to -1,
 	 * the DefaultLODIndex is used. See property DefaultLODIndex.
 	 *
@@ -134,11 +133,10 @@ public:
 	bool AddInstancedMesh(UInstancedStaticMeshComponent* Mesh, int32 LOD = -1);
 
 	/**
-	 * Add a single instance of an Instanced Static Mesh Component so that it can be detected by
-	 * sensors handled by this Sensor Environment. The Index corresponds to the Mesh Instance to
-	 * add.
-	 * (Optional) LOD determines the LOD index used when reading the given Mesh. If left to -1,
-	 * the DefaultLODIndex is used. See property DefaultLODIndex.
+	 * Manually add a single instance of an Instanced Static Mesh Component so that it can be
+	 * detected by sensors handled by this Sensor Environment. The Index corresponds to the Mesh
+	 * Instance to add. (Optional) LOD determines the LOD index used when reading the given Mesh. If
+	 * left to -1, the DefaultLODIndex is used. See property DefaultLODIndex.
 	 *
 	 * Only valid to call during Play.
 	 */
@@ -146,7 +144,7 @@ public:
 	bool AddInstancedMeshInstance(UInstancedStaticMeshComponent* Mesh, int32 Index, int32 LOD = -1);
 
 	/**
-	 * Add a Terrain so that it can be detected by sensors handled by this Sensor
+	 * Manually add a Terrain so that it can be detected by sensors handled by this Sensor
 	 * Environment.
 	 * Only valid to call during Play.
 	 */
@@ -154,32 +152,58 @@ public:
 	bool AddTerrain(AAGX_Terrain* Terrain);
 
 	/**
-	 * Remove a Static Mesh Component from this Sensor Environment.
+	 * Manually add a Wire so that it can be detected by sensors handled by this Sensor
+	 * Environment.
+	 * When using this function instead of letting the Sensor Environment 'Auto Add' the Wire, the
+	 * underlying AGX Dynamics Wire will be used for raycast hits instead of the visual
+	 * representation seen in the Viewport.
+	 * Only valid to call during Play.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	bool AddWire(UAGX_WireComponent* Wire);
+
+	/**
+	 * Manually remove a Lidar Sensor Component from this Sensor Environment.
+	 * Only valid to call during Play.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	bool RemoveLidar(UAGX_LidarSensorComponent* Lidar);
+
+	/**
+	 * Manually remove a Static Mesh Component from this Sensor Environment.
 	 * Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool RemoveMesh(UStaticMeshComponent* Mesh);
 
 	/**
-	 * Remove an Instanced Static Mesh Component and all its instances from this Sensor Environment.
-	 * Only valid to call during Play.
+	 * Manually remove an Instanced Static Mesh Component and all its instances from this Sensor
+	 * Environment. Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool RemoveInstancedMesh(UInstancedStaticMeshComponent* Mesh);
 
 	/**
-	 * Remove a single Instanced Static Mesh Instace from this Sensor Environment.
+	 * Manually remove a single Instanced Static Mesh Instace from this Sensor Environment.
 	 * Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool RemoveInstancedMeshInstance(UInstancedStaticMeshComponent* Mesh, int32 Index);
 
 	/**
-	 * Remove a Terrain from this Sensor Environment.
+	 * Manually remove a Terrain from this Sensor Environment.
 	 * Only valid to call during Play.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
 	bool RemoveTerrain(AAGX_Terrain* Terrain);
+
+	/**
+	 * Manually remove a Wire from this Sensor Environment.
+	 * Should only be called for Wires manually added to this Sensor Environment.
+	 * Only valid to call during Play.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Sensor Environment")
+	bool RemoveWire(UAGX_WireComponent* Wire);
 
 	bool HasNative() const;
 	FSensorEnvironmentBarrier* GetNative();
