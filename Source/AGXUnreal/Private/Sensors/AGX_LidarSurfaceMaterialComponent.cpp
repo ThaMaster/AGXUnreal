@@ -7,7 +7,13 @@
 #include "Shapes/AGX_SimpleMeshComponent.h"
 #include "Sensors/AGX_LidarSurfaceMaterial.h"
 #include "Sensors/AGX_SurfaceMaterialAssetUserData.h"
+#include "Vehicle/AGX_TrackComponent.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Wire/AGX_WireComponent.h"
+
+// Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 
 UAGX_LidarSurfaceMaterialComponent::UAGX_LidarSurfaceMaterialComponent()
 {
@@ -16,6 +22,16 @@ UAGX_LidarSurfaceMaterialComponent::UAGX_LidarSurfaceMaterialComponent()
 
 namespace AGX_LidarSurfaceMaterialComponent_helpers
 {
+	bool IsSupported(USceneComponent* Component)
+	{
+		if (Component == nullptr)
+			return false;
+
+		return Component->IsA<UStaticMeshComponent>() ||
+			   Component->IsA<UAGX_SimpleMeshComponent>() || Component->IsA<UAGX_WireComponent>() ||
+			   Component->IsA<UAGX_TrackComponent>();
+	}
+
 	USceneComponent* FindFirstValidParent(const USceneComponent& Component)
 	{
 		TArray<USceneComponent*> Ancestors;
@@ -23,7 +39,7 @@ namespace AGX_LidarSurfaceMaterialComponent_helpers
 
 		for (USceneComponent* Ancestor : Ancestors)
 		{
-			if (Ancestor->IsA<UStaticMeshComponent>() || Ancestor->IsA<UAGX_SimpleMeshComponent>())
+			if (IsSupported(Ancestor))
 				return Ancestor;
 		}
 
@@ -38,7 +54,7 @@ namespace AGX_LidarSurfaceMaterialComponent_helpers
 		TArray<USceneComponent*> ValidSiblings;
 		for (USceneComponent* Sibling : Siblings)
 		{
-			if (Sibling->IsA<UStaticMeshComponent>() || Sibling->IsA<UAGX_SimpleMeshComponent>())
+			if (IsSupported(Sibling))
 				ValidSiblings.Add(Sibling);
 		}
 
@@ -53,7 +69,7 @@ namespace AGX_LidarSurfaceMaterialComponent_helpers
 		TArray<USceneComponent*> ValidChildren;
 		for (USceneComponent* Child : Children)
 		{
-			if (Child->IsA<UStaticMeshComponent>() || Child->IsA<UAGX_SimpleMeshComponent>())
+			if (IsSupported(Child))
 				ValidChildren.Add(Child);
 		}
 
@@ -124,27 +140,45 @@ void UAGX_LidarSurfaceMaterialComponent::UpdateMaterial()
 void UAGX_LidarSurfaceMaterialComponent::AssignMaterial()
 {
 	using namespace AGX_LidarSurfaceMaterialComponent_helpers;
+
 	TArray<USceneComponent*> Components = GetComponentsFromSelection(*this, Selection);
 	for (auto C : Components)
 	{
-		if (C == nullptr)
-			continue;
+		AssignMaterial(C);
 
-		UAGX_SurfaceMaterialAssetUserData* Data = Create(*C);
-		if (Data == nullptr)
+		if (UAGX_WireComponent* Wire = Cast<UAGX_WireComponent>(C))
 		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Lidar Surface Material Component '%s' in '%s' tried to create and add "
-					 "UAGX_SurfaceMaterialAssetUserData to '%s' but it already has an "
-					 "UAGX_SurfaceMaterialAssetUserData. Make sure that multiple Lidar Surface "
-					 "Material Components are not used to target the same Component '%s'. Doing "
-					 "nothing."),
-				*GetName(), *GetLabelSafe(GetOwner()), *C->GetName(), *C->GetName());
-			continue;
+			AssignMaterial(Wire->VisualCylinders.Get());
+			AssignMaterial(Wire->VisualSpheres.Get());
 		}
-
-		Data->LidarSurfaceMaterial = LidarSurfaceMaterial;
-		C->AddAssetUserData(Data);
+		else if (UAGX_TrackComponent* Track = Cast<UAGX_TrackComponent>(C))
+		{
+			AssignMaterial(Track->GetVisualMeshes());
+		}
 	}
+}
+
+void UAGX_LidarSurfaceMaterialComponent::AssignMaterial(USceneComponent* Component)
+{
+	using namespace AGX_LidarSurfaceMaterialComponent_helpers;
+
+	if (Component == nullptr)
+		return;
+
+	UAGX_SurfaceMaterialAssetUserData* Data = Create(*Component);
+	if (Data == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Lidar Surface Material Component '%s' in '%s' tried to create and add "
+				 "UAGX_SurfaceMaterialAssetUserData to '%s' but it already has an "
+				 "UAGX_SurfaceMaterialAssetUserData. Make sure that multiple Lidar Surface "
+				 "Material Components are not used to target the same Component '%s'. Doing "
+				 "nothing."),
+			*GetName(), *GetLabelSafe(GetOwner()), *Component->GetName(), *Component->GetName());
+		return;
+	}
+
+	Data->LidarSurfaceMaterial = LidarSurfaceMaterial;
+	Component->AddAssetUserData(Data);
 }

@@ -15,7 +15,7 @@
 class UAGX_LidarSurfaceMaterial;
 
 /**
- * Helper Component that assigns lidar Surface Materials to Static Mesh Components and AGX Shapes at
+ * Helper Component that assigns lidar Surface Materials to other Components in the Level at
  * Begin Play.
  */
 UCLASS(
@@ -51,4 +51,5 @@ public:
 private:
 	void UpdateMaterial();
 	void AssignMaterial();
+	void AssignMaterial(USceneComponent* Component);
 };
