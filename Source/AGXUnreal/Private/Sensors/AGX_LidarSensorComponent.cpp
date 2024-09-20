@@ -142,7 +142,8 @@ int32 UAGX_LidarSensorComponent::GetRaytraceDepth() const
 	{
 		const size_t Depth = NativeBarrier.GetRaytraceDepth();
 		if (Depth > std::numeric_limits<int32>::max())
-			return std::numeric_limits<int32>::max(); // This situation should never ever occur.
+			Depth = std::numeric_limits<int32>::max(); // This situation should never ever occur.
+		return Depth;
 	}
 
 	return RaytraceDepth;
