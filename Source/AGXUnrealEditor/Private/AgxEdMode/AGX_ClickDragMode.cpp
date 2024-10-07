@@ -43,7 +43,7 @@ bool FAGX_ClickDragMode::InputKey(
 	}
 
 	if (Key != EKeys::LeftMouseButton || Event != IE_Pressed)
-		return true; // Consume input.
+		return false; // Allow input to be handled elsewhere, e.g. for moving camera around.
 
 	FVector RayStart, RayEnd;
 	GetViewportMouseRayStartAndEnd(*ViewportClient, RayStart, RayEnd);
