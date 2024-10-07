@@ -7,6 +7,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
+#include "AgxEdMode/AGX_AddForceMode.h"
 #include "AGXUnrealEditor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_BallConstraintActor.h"
@@ -196,6 +197,21 @@ FAGX_TopMenu::~FAGX_TopMenu()
 
 	Builder.AddMenuSeparator();
 
+	{ // HERE!
+		const FSlateIcon AgxIcon(
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIconSmall,
+			FAGX_EditorStyle::AgxIconSmall);
+		Builder.AddSubMenu(
+			LOCTEXT("ForcePickingMenuLabel", "Force Picking"),
+			LOCTEXT(
+				"ForcePickingMenuTooltip",
+				"Activate/Deactivate the Force Picking mode, making it possible to add forces to "
+				"Rigid Bodies in the Level by clicking and dragging the mouse in the viewport."),
+			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillForcePickingMenu), false, AgxIcon);
+	}
+
+	Builder.AddMenuSeparator();
+
 	{
 		const FSlateIcon AgxIcon(
 			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIconSmall,
@@ -330,6 +346,22 @@ void FAGX_TopMenu::FillLicenseMenu(FMenuBuilder& Builder)
 			"RuntimeActivationMenuLabelToolTip",
 			"Generate an AGX Dynamics for Unreal runtime activation file bound to an application."),
 		[&]() { FAGX_TopMenu::OnOpenGenerateRuntimeActivationDialogClicked(); });
+}
+
+void FAGX_TopMenu::FillForcePickingMenu(FMenuBuilder& Builder)
+{
+	AddFileMenuEntry(
+		Builder, LOCTEXT("StartForcePickingMenuLabel", "Start Force Picking"),
+		LOCTEXT(
+			"StartForcePickingMenuLabelToolTip",
+			"Activate the Force Picking mode, making it possible to add forces to Rigid Bodies in "
+			"the Level by clicking and dragging the mouse in the viewport."),
+		[&]() { FAGX_TopMenu::OnStartForcePickingDialogClicked(); });
+
+	AddFileMenuEntry(
+		Builder, LOCTEXT("StopForcePickingMenuLabel", "Stop Force Picking"),
+		LOCTEXT("StopForcePickingMenuLabelToolTip", "Deactivate the Force Picking mode."),
+		[&]() { FAGX_TopMenu::OnStopForcePickingDialogClicked(); });
 }
 
 void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
@@ -488,6 +520,27 @@ void FAGX_TopMenu::OnOpenGenerateRuntimeActivationDialogClicked()
 		SNew(SAGX_GenerateRuntimeActivationDialog);
 	Window->SetContent(Dialog);
 	FSlateApplication::Get().AddModalWindow(Window, nullptr);
+}
+
+void FAGX_TopMenu::OnStartForcePickingDialogClicked()
+{
+	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
+	if (World == nullptr)
+		return;
+
+	if (!World->IsGameWorld())
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			"Force Picking if only supported during play.");
+		return;
+	}
+
+	FAGX_AddForceMode::Activate();
+}
+
+void FAGX_TopMenu::OnStopForcePickingDialogClicked()
+{
+	FAGX_AddForceMode::Deactivate();
 }
 
 #undef LOCTEXT_NAMESPACE

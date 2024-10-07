@@ -41,6 +41,7 @@
 #include "AgxEdMode/AGX_AgxEdModeFileCustomization.h"
 #include "AgxEdMode/AGX_AgxEdModeTerrain.h"
 #include "AgxEdMode/AGX_AgxEdModeTerrainCustomization.h"
+#include "AgxEdMode/AGX_AddForceMode.h"
 #include "AMOR/AGX_ConstraintMergeSplitThresholdsTypeActions.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholdsTypeActions.h"
 #include "AMOR/AGX_WireMergeSplitThresholdsTypeActions.h"
@@ -579,11 +580,16 @@ void FAGXUnrealEditorModule::RegisterModes()
 			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIcon,
 			FAGX_EditorStyle::AgxIconSmall),
 		/*bVisisble*/ true);
+
+	FEditorModeRegistry::Get().RegisterMode<FAGX_AddForceMode>(
+		FAGX_AddForceMode::EM_AGX_AddForceModeId,
+		LOCTEXT("AGXClickDragModel", "Click Drag Mode"), FSlateIcon(), /*bVisisble*/ false);
 }
 
 void FAGXUnrealEditorModule::UnregisterModes()
 {
 	FEditorModeRegistry::Get().UnregisterMode(FAGX_AgxEdMode::EM_AGX_AgxEdModeId);
+	FEditorModeRegistry::Get().UnregisterMode(FAGX_AddForceMode::EM_AGX_AddForceModeId);
 }
 
 void FAGXUnrealEditorModule::RegisterPlacementCategory()

@@ -28,6 +28,8 @@ private:
 
 	void FillLicenseMenu(FMenuBuilder& Builder);
 
+	void FillForcePickingMenu(FMenuBuilder& Builder);
+
 	template <typename Function>
 	void AddFileMenuEntry(
 		FMenuBuilder& Builder, const FText& Label, const FText& Tooltip,
@@ -41,6 +43,9 @@ private:
 	void OnOpenLicenseActivationDialogClicked();
 	void OnOpenOfflineActivationDialogClicked();
 	void OnOpenGenerateRuntimeActivationDialogClicked();
+
+	void OnStartForcePickingDialogClicked();
+	void OnStopForcePickingDialogClicked();
 
 	TSharedPtr<class FExtender> Extender;
 	TSharedPtr<const class FExtensionBase> UnrealMenuBarExtension;
