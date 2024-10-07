@@ -87,11 +87,12 @@ void FAGX_AddForceMode::OnMouseDrag(const FViewportCursorLocation& CursorInfo)
 	const FVector ForceEndPointWorld =
 		CursorInfo.GetOrigin() + CursorInfo.GetDirection() * ForceOriginInitialDistance;
 
-	DrawDebugPoint(Body->GetWorld(), ForceOriginWorld, 10.f, FColor::Green, false);
-	DrawDebugPoint(Body->GetWorld(), ForceEndPointWorld, 10.f, FColor::Green, false);
+	DrawDebugLine(
+		Body->GetWorld(), ForceOriginWorld, ForceEndPointWorld, FColor::Green, false, -1.f, 99,
+		3.f);
 
-	// Arbitrarily chosen, in the ballpark for heavy vehicles.
-	static constexpr double DistanceToForce = 1000.0;
+	// Arbitrarily chosen, scales with the distance so that theresulting force goes as distance^2.
+	const double DistanceToForce = (ForceEndPointWorld - ForceOriginWorld).Length() * 100.0;
 	const FVector ForceVec = (ForceEndPointWorld - ForceOriginWorld) * DistanceToForce;
 
 	Body->AddForceAtWorldLocation(ForceVec, ForceOriginWorld);
