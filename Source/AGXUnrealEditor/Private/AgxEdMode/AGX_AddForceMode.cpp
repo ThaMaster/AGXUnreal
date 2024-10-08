@@ -92,7 +92,7 @@ void FAGX_AddForceMode::OnMouseDrag(const FViewportCursorLocation& CursorInfo)
 		3.f);
 
 	// Arbitrarily chosen, scales with the distance so that theresulting force goes as distance^2.
-	const double DistanceToForce = (ForceEndPointWorld - ForceOriginWorld).Length() * 100.0;
+	const double DistanceToForce = (ForceEndPointWorld - ForceOriginWorld).Length() * 10.0;
 	const FVector ForceVec = (ForceEndPointWorld - ForceOriginWorld) * DistanceToForce;
 
 	Body->AddForceAtWorldLocation(ForceVec, ForceOriginWorld);
