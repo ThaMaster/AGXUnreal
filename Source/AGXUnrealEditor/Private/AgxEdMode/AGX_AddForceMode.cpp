@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyComponent.h"
+#include "AGX_Simulation.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 
@@ -69,6 +70,24 @@ void FAGX_AddForceMode::OnMouseClickComponent(
 	ForceOriginLocalPos =
 		Body->GetComponentTransform().InverseTransformPositionNoScale(WorldLocation);
 	ForceOriginInitialDistance = (CursorInfo.GetOrigin() - WorldLocation).Length();
+
+	if (LockConstraint.HasNative())
+		DestroyLockConstraint();
+
+	// Create Lock Constraint.
+	LockConstraint.AllocateNative(
+		*Body->GetNative(), ForceOriginLocalPos, FQuat::Identity, nullptr, WorldLocation,
+		FQuat::Identity);
+	LockConstraint.SetEnableComputeForces(true);
+	LockConstraint.SetCompliance(1.0E-6, 0);
+	LockConstraint.SetCompliance(1.0E-6, 1);
+	LockConstraint.SetCompliance(1.0E-6, 2);
+	LockConstraint.SetCompliance(1.0E-3, 3);
+	LockConstraint.SetCompliance(1.0E-3, 4);
+	LockConstraint.SetCompliance(1.0E-3, 5);
+
+	auto Sim = UAGX_Simulation::GetFrom(Body.Get());
+	Sim->GetNative()->Add(LockConstraint);
 }
 
 void FAGX_AddForceMode::OnDeactivateMode()
@@ -78,7 +97,7 @@ void FAGX_AddForceMode::OnDeactivateMode()
 
 void FAGX_AddForceMode::OnMouseDrag(const FViewportCursorLocation& CursorInfo)
 {
-	if (Body == nullptr)
+	if (Body == nullptr || !Body->HasNative())
 		return;
 
 	const FVector ForceOriginWorld =
@@ -91,12 +110,11 @@ void FAGX_AddForceMode::OnMouseDrag(const FViewportCursorLocation& CursorInfo)
 		Body->GetWorld(), ForceOriginWorld, ForceEndPointWorld, FColor::Green, false, -1.f, 99,
 		3.f);
 
-	// Arbitrarily chosen, scales with the distance so that theresulting force goes as distance^2.
-	const double DistanceToForce = (ForceEndPointWorld - ForceOriginWorld).Length() * 10.0;
-	const FVector ForceVec = (ForceEndPointWorld - ForceOriginWorld) * DistanceToForce;
+	LockConstraint.SetLocalLocation(1, ForceEndPointWorld);
 
-	Body->AddForceAtWorldLocation(ForceVec, ForceOriginWorld);
-	Force = ForceVec.Length();
+	FVector ConstraintForce, ConstraintTorque;
+	LockConstraint.GetLastForce(Body->GetNative(), ConstraintForce, ConstraintTorque);
+	Force = ConstraintForce.Length();
 
 	UpdateCursorDecorator();
 }
@@ -107,6 +125,7 @@ void FAGX_AddForceMode::OnEndMouseDrag()
 	ForceOriginLocalPos = FVector::ZeroVector;
 	ForceOriginInitialDistance = 0.0;
 	DestroyCursorDecorator();
+	DestroyLockConstraint();
 }
 
 FText FAGX_AddForceMode::GetCursorDecoratorText() const
@@ -135,4 +154,15 @@ void FAGX_AddForceMode::DestroyCursorDecorator()
 		CursorDecoratorWindow->RequestDestroyWindow();
 		CursorDecoratorWindow.Reset();
 	}
+}
+
+void FAGX_AddForceMode::DestroyLockConstraint()
+{
+	if (!LockConstraint.HasNative())
+		return;
+
+	if (auto Sim = UAGX_Simulation::GetFrom(FAGX_EditorUtilities::GetCurrentWorld()))
+		Sim->GetNative()->Remove(LockConstraint);
+
+	LockConstraint.ReleaseNative();
 }

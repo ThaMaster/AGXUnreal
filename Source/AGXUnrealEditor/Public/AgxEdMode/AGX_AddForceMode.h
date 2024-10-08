@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyComponent.h"
 #include "AgxEdMode/AGX_ClickDragMode.h"
+#include "Constraints/LockJointBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -44,4 +45,8 @@ private:
 	FText GetCursorDecoratorText() const;
 	void UpdateCursorDecorator();
 	void DestroyCursorDecorator();
+
+	void DestroyLockConstraint();
+
+	FLockJointBarrier LockConstraint;
 };
