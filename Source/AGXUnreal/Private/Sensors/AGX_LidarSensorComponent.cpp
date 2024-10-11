@@ -19,6 +19,7 @@
 #include "NiagaraFunctionLibrary.h"
 
 // Standard library includes.
+#include <algorithm>
 #include <limits>
 
 #define LOCTEXT_NAMESPACE "AGX_LidarSensor"
@@ -140,10 +141,9 @@ int32 UAGX_LidarSensorComponent::GetRaytraceDepth() const
 {
 	if (HasNative())
 	{
-		const size_t Depth = NativeBarrier.GetRaytraceDepth();
-		if (Depth > std::numeric_limits<int32>::max())
-			Depth = std::numeric_limits<int32>::max(); // This situation should never ever occur.
-		return Depth;
+		return static_cast<int32>(std::min(
+			NativeBarrier.GetRaytraceDepth(),
+			static_cast<size_t>(std::numeric_limits<int32>::max())));
 	}
 
 	return RaytraceDepth;

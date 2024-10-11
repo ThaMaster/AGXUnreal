@@ -20,7 +20,7 @@ public:
 	~FRtShapeBarrier();
 
 	bool HasNative() const;
-	void AllocateNative(const TArray<FVector>& Vertices, const TArray<FTriIndices>& Indices);
+	bool AllocateNative(const TArray<FVector>& Vertices, const TArray<FTriIndices>& Indices);
 	FRtShapeRef* GetNative();
 	const FRtShapeRef* GetNative() const;
 

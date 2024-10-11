@@ -31,13 +31,14 @@ bool FRtShapeBarrier::HasNative() const
 	return NativeRef->Native != nullptr;
 }
 
-void FRtShapeBarrier::AllocateNative(
+bool FRtShapeBarrier::AllocateNative(
 	const TArray<FVector>& Vertices, const TArray<FTriIndices>& Indices)
 {
 	check(!HasNative());
 	const agx::Vec3Vector VerticesAGX = ConvertVertices(Vertices);
 	const agx::UInt32Vector IndicesAGX = ConvertIndices(Indices);
 	NativeRef->Native = agxSensor::RtShape::create(VerticesAGX, IndicesAGX);
+	return NativeRef->Native != nullptr;
 }
 
 FRtShapeRef* FRtShapeBarrier::GetNative()

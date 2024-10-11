@@ -155,6 +155,21 @@ namespace AGX_SensorEnvironment_helpers
 
 		return LambertianOpaqueMaterial->GetNative();
 	}
+
+	TOptional<FAGX_RtShapeInstanceData> CreateShapeInstanceData(
+		const TArray<FVector>& Vertices, const TArray<FTriIndices>& Indices,
+		USceneComponent& Mesh, FSensorEnvironmentBarrier& SEBarrier)
+	{
+		FAGX_RtShapeInstanceData ShapeInstance;
+		if (!ShapeInstance.Shape.AllocateNative(Vertices, Indices))
+			return {};
+
+		ShapeInstance.InstanceData.Instance.AllocateNative(ShapeInstance.Shape, SEBarrier);
+		ShapeInstance.InstanceData.SetTransform(Mesh.GetComponentTransform());
+		ShapeInstance.InstanceData.Instance.SetLidarSurfaceMaterialOrDefault(
+			GetLambertianOpaqueMaterialBarrierFrom(Mesh));
+		return ShapeInstance;
+	}
 }
 
 AAGX_SensorEnvironment::AAGX_SensorEnvironment()
@@ -340,12 +355,11 @@ bool AAGX_SensorEnvironment::AddMesh(
 	if (TrackedMeshes.Contains(Mesh))
 		return false;
 
-	FAGX_RtShapeInstanceData& ShapeInstance = TrackedMeshes.Add(Mesh, FAGX_RtShapeInstanceData());
-	ShapeInstance.Shape.AllocateNative(Vertices, Indices);
-	ShapeInstance.InstanceData.Instance.AllocateNative(ShapeInstance.Shape, NativeBarrier);
-	ShapeInstance.InstanceData.SetTransform(Mesh->GetComponentTransform());
-	ShapeInstance.InstanceData.Instance.SetLidarSurfaceMaterialOrDefault(
-		GetLambertianOpaqueMaterialBarrierFrom(*Mesh));
+	auto ShapeInstance = CreateShapeInstanceData(Vertices, Indices, *Mesh, NativeBarrier);
+	if (!ShapeInstance.IsSet())
+		return false;
+
+	TrackedMeshes.Add(Mesh, std::move(ShapeInstance.GetValue()));
 	return true;
 }
 
@@ -365,13 +379,11 @@ bool AAGX_SensorEnvironment::AddMesh(
 	if (TrackedAGXMeshes.Contains(Mesh))
 		return false;
 
-	FAGX_RtShapeInstanceData& ShapeInstance =
-		TrackedAGXMeshes.Add(Mesh, FAGX_RtShapeInstanceData());
-	ShapeInstance.Shape.AllocateNative(Vertices, Indices);
-	ShapeInstance.InstanceData.Instance.AllocateNative(ShapeInstance.Shape, NativeBarrier);
-	ShapeInstance.InstanceData.SetTransform(Mesh->GetComponentTransform());
-	ShapeInstance.InstanceData.Instance.SetLidarSurfaceMaterialOrDefault(
-		GetLambertianOpaqueMaterialBarrierFrom(*Mesh));
+	auto ShapeInstance = CreateShapeInstanceData(Vertices, Indices, *Mesh, NativeBarrier);
+	if (!ShapeInstance.IsSet())
+		return false;
+
+	TrackedAGXMeshes.Add(Mesh, std::move(ShapeInstance.GetValue()));
 	return true;
 }
 
@@ -386,10 +398,11 @@ bool AAGX_SensorEnvironment::AddInstancedMesh(
 	if (TrackedInstancedMeshes.Contains(Mesh))
 		return false;
 
-	auto& InstancedShapeInstance =
-		TrackedInstancedMeshes.Add(Mesh, FAGX_RtInstancedShapeInstanceData());
-	InstancedShapeInstance.Shape.AllocateNative(Vertices, Indices);
-	AGX_CHECK(InstancedShapeInstance.Shape.HasNative());
+	FAGX_RtInstancedShapeInstanceData InstancedShapeInstance;
+	if (!InstancedShapeInstance.Shape.AllocateNative(Vertices, Indices))
+		return false;
+
+	TrackedInstancedMeshes.Add(Mesh, std::move(InstancedShapeInstance));
 	return true;
 }
 
