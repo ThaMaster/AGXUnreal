@@ -211,7 +211,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("agx-nt-ros2", LibSource.AGX);
 		RuntimeLibFiles.Add("AlgoryxGPUSensorsImpl", LibSource.AGX);
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
-		RuntimeLibFiles.Add("ois", LibSource.AGX);
 		RuntimeLibFiles.Add("fastcdr*", LibSource.AGX);
 		RuntimeLibFiles.Add("fastrtps*", LibSource.AGX);
 
@@ -266,6 +265,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			RuntimeLibFiles.Add("msvcp140", LibSource.AGX);
+			RuntimeLibFiles.Add("ois", LibSource.AGX);
 			RuntimeLibFiles.Add("vcruntime140", LibSource.AGX);
 			if (TargetAGXVersion.IsNewerOrEqualTo(2, 30, 0, 0) && TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
