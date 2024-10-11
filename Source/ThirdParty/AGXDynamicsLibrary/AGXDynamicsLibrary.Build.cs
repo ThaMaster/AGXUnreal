@@ -209,7 +209,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("agxVehicle", LibSource.AGX);
 		RuntimeLibFiles.Add("agxROS2", LibSource.AGX);
 		RuntimeLibFiles.Add("agx-nt-ros2", LibSource.AGX);
-		RuntimeLibFiles.Add("AlgoryxGPUSensors", LibSource.AGX);
+		RuntimeLibFiles.Add("AlgoryxGPUSensorsImpl", LibSource.AGX);
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
 		RuntimeLibFiles.Add("ois", LibSource.AGX);
 		RuntimeLibFiles.Add("fastcdr*", LibSource.AGX);
