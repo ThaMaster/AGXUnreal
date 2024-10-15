@@ -22,6 +22,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Landscape.h"
 
 #include <algorithm>
 
@@ -169,6 +170,21 @@ namespace AGX_SensorEnvironment_helpers
 		ShapeInstance.InstanceData.Instance.SetLidarSurfaceMaterialOrDefault(
 			GetLambertianOpaqueMaterialBarrierFrom(Mesh));
 		return ShapeInstance;
+	}
+
+	TArray<ALandscape*> GetLandscapeActors(UWorld* World)
+	{
+		if (World == nullptr)
+			return TArray<ALandscape*>();
+
+		TArray<ALandscape*> Landscapes;
+		for (TActorIterator<AActor> ActorIt(World); ActorIt; ++ActorIt)
+		{
+			if (ALandscape* Landscape = Cast<ALandscape>(*ActorIt))
+				Landscapes.Add(Landscape);
+		}
+
+		return Landscapes;
 	}
 }
 
@@ -740,6 +756,12 @@ bool AAGX_SensorEnvironment::RegisterLidar(FAGX_LidarSensorReference& LidarRef)
 
 		// = true yields bugs of mutliple begin/end overlaps. See internal issue 957.
 		CollSph->bTraceComplexOnMove = false;
+
+		// Ignore Landscapes, these will otherwise be terrible for performance.
+		for (auto Landscape : AGX_SensorEnvironment_helpers::GetLandscapeActors(GetWorld()))
+		{
+			CollSph->IgnoreActorWhenMoving(Landscape, true);
+		}
 
 		CollSph->RegisterComponent();
 	}
