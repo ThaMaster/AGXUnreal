@@ -224,6 +224,7 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
+	void InitializeNative();
 	void RegisterLidars();
 	bool RegisterLidar(FAGX_LidarSensorReference& LidarRef);
 	void UpdateTrackedLidars();

@@ -158,8 +158,8 @@ namespace AGX_SensorEnvironment_helpers
 	}
 
 	TOptional<FAGX_RtShapeInstanceData> CreateShapeInstanceData(
-		const TArray<FVector>& Vertices, const TArray<FTriIndices>& Indices,
-		USceneComponent& Mesh, FSensorEnvironmentBarrier& SEBarrier)
+		const TArray<FVector>& Vertices, const TArray<FTriIndices>& Indices, USceneComponent& Mesh,
+		FSensorEnvironmentBarrier& SEBarrier)
 	{
 		FAGX_RtShapeInstanceData ShapeInstance;
 		if (!ShapeInstance.Shape.AllocateNative(Vertices, Indices))
@@ -201,6 +201,13 @@ bool AAGX_SensorEnvironment::AddLidar(UAGX_LidarSensorComponent* Lidar)
 	if (Lidar == nullptr)
 		return false;
 
+	if (!HasNative())
+	{
+		InitializeNative();
+		if (!HasNative())
+			return false;
+	}
+
 	FAGX_LidarSensorReference LidarRef;
 	LidarRef.OwningActor = Lidar->GetOwner();
 	LidarRef.Name = FName(*Lidar->GetName());
@@ -211,12 +218,9 @@ bool AAGX_SensorEnvironment::AddMesh(UStaticMeshComponent* Mesh, int32 InLod)
 {
 	if (!HasNative())
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Sensor Environment AddMesh was called on '%s' that does not have a Native. "
-				 "This function is only valid to call during Play."),
-			*GetName());
-		return false;
+		InitializeNative();
+		if (!HasNative())
+			return false;
 	}
 
 	TArray<FVector> OutVerts;
@@ -243,12 +247,9 @@ bool AAGX_SensorEnvironment::AddAGXMesh(UAGX_SimpleMeshComponent* Mesh)
 {
 	if (!HasNative())
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Sensor Environment AddAGXMesh was called on '%s' that does not have a Native. "
-				 "This function is only valid to call during Play."),
-			*GetName());
-		return false;
+		InitializeNative();
+		if (!HasNative())
+			return false;
 	}
 
 	TArray<FVector> OutVerts;
@@ -276,12 +277,9 @@ bool AAGX_SensorEnvironment::AddInstancedMesh(UInstancedStaticMeshComponent* Mes
 
 	if (!HasNative())
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Sensor Environment AddInstancedMesh was called on '%s' that does not have "
-				 "a Native. This function is only valid to call during Play."),
-			*GetName());
-		return false;
+		InitializeNative();
+		if (!HasNative())
+			return false;
 	}
 
 	if (!TrackedInstancedMeshes.Contains(Mesh))
@@ -324,13 +322,9 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance(
 
 	if (!HasNative())
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT(
-				"Sensor Environment AddInstancedMeshInstance was called on '%s' that does not have "
-				"a Native. This function is only valid to call during Play."),
-			*GetName());
-		return false;
+		InitializeNative();
+		if (!HasNative())
+			return false;
 	}
 
 	if (!TrackedInstancedMeshes.Contains(Mesh))
@@ -455,8 +449,15 @@ bool AAGX_SensorEnvironment::AddInstancedMeshInstance_Internal(
 bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 {
 	using namespace AGX_SensorEnvironment_helpers;
-	if (!HasNative() || Terrain == nullptr)
+	if (Terrain == nullptr)
 		return false;
+
+	if (!HasNative())
+	{
+		InitializeNative();
+		if (!HasNative())
+			return false;
+	}
 
 	if (Terrain->bEnableTerrainPaging)
 	{
@@ -496,8 +497,15 @@ bool AAGX_SensorEnvironment::AddTerrain(AAGX_Terrain* Terrain)
 bool AAGX_SensorEnvironment::AddWire(UAGX_WireComponent* Wire)
 {
 	using namespace AGX_SensorEnvironment_helpers;
-	if (!HasNative() || Wire == nullptr)
+	if (Wire == nullptr)
 		return false;
+
+	if (!HasNative())
+	{
+		InitializeNative();
+		if (!HasNative())
+			return false;
+	}
 
 	FWireBarrier* Barrier = Wire->GetOrCreateNative();
 	if (Barrier == nullptr)
@@ -631,6 +639,9 @@ bool AAGX_SensorEnvironment::CanEditChange(const FProperty* InProperty) const
 
 void AAGX_SensorEnvironment::Tick(float DeltaSeconds)
 {
+	if (!HasNative())
+		return;
+
 	UpdateTrackedLidars();
 	UpdateTrackedMeshes();
 
@@ -644,32 +655,8 @@ void AAGX_SensorEnvironment::Tick(float DeltaSeconds)
 void AAGX_SensorEnvironment::BeginPlay()
 {
 	Super::BeginPlay();
-	if (HasNative())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("AGX_SensorEnvironment '%s' has a Native assigned at the start of BeginPlay which "
-				 "is unexpected. Correct behavior of the SensorEnvironment cannot be guaranteed."),
-			*GetName());
-		return;
-	}
-
-	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this);
-	if (Sim == nullptr || !Sim->HasNative())
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("AGX_SensorEnvironment '%s' was unable to get a UAGX_Simulation with Native "
-				 "in begin play. Correct behavior of the SensorEnvironment cannot be guaranteed."),
-			*GetName());
-		return;
-	}
-
-	// In case the Level has no other AGX types in it.
-	Sim->EnsureStepperCreated();
-
-	NativeBarrier.AllocateNative(*Sim->GetNative());
-	check(NativeBarrier.HasNative());
+	if (!HasNative())
+		InitializeNative();
 
 	UpdateAmbientMaterial();
 	RegisterLidars();
@@ -687,9 +674,43 @@ void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type Reason)
 		NativeBarrier.ReleaseNative();
 }
 
+void AAGX_SensorEnvironment::InitializeNative()
+{
+	AGX_CHECK(!HasNative());
+	if (HasNative())
+		return;
+
+	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this);
+	if (Sim == nullptr || !Sim->HasNative())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("AGX_SensorEnvironment '%s' was unable to get a UAGX_Simulation with Native "
+				 "in InitializeNative. Correct behavior of the SensorEnvironment cannot be "
+				 "guaranteed."),
+			*GetName());
+		return;
+	}
+
+	// In case the Level has no other AGX types in it.
+	Sim->EnsureStepperCreated();
+
+	NativeBarrier.AllocateNative(*Sim->GetNative());
+	if (!NativeBarrier.HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("AGX_SensorEnvironment '%s' was unable to create a Native AGX Dynamics "
+				 "agxSensor::Environment. The Output Log may contain more information."),
+			*GetName());
+	}
+}
+
 void AAGX_SensorEnvironment::RegisterLidars()
 {
 	AGX_CHECK(HasNative());
+	if (!HasNative())
+		return;
 
 	for (FAGX_LidarSensorReference& LidarRef : LidarSensors)
 	{
@@ -830,7 +851,9 @@ void AAGX_SensorEnvironment::UpdateTrackedAGXMeshes()
 
 void AAGX_SensorEnvironment::UpdateAmbientMaterial()
 {
-	check(HasNative());
+	AGX_CHECK(HasNative());
+	if (!HasNative())
+		return;
 
 	if (AmbientMaterial == nullptr)
 	{
