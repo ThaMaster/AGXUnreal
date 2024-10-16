@@ -845,7 +845,7 @@ inline agx::Uuid Convert(const FGuid& Guid)
 // Triangle data.
 //
 
-agx::UInt32Vector ConvertIndices(const TArray<FTriIndices>& Indices)
+inline agx::UInt32Vector ConvertIndices(const TArray<FTriIndices>& Indices)
 {
 	agx::UInt32Vector IndicesAGX;
 	IndicesAGX.reserve(Indices.Num() * 3);
@@ -863,7 +863,7 @@ agx::UInt32Vector ConvertIndices(const TArray<FTriIndices>& Indices)
 	return IndicesAGX;
 }
 
-agx::Vec3Vector ConvertVertices(const TArray<FVector>& Vertices)
+inline agx::Vec3Vector ConvertVertices(const TArray<FVector>& Vertices)
 {
 	agx::Vec3Vector VerticesAGX;
 	VerticesAGX.reserve(Vertices.Num());
