@@ -232,11 +232,11 @@ public class AGXDynamicsLibrary : ModuleRules
 			RuntimeLibFiles.Add("tbb", LibSource.TerrainDependencies);
 		}
 
-    // List of link-time libraries from AGX Dynamics and its dependencies
-    // that we need. These will be added to the Unreal Engine
-    // PublicAdditionalLibraries list. See
-    // https://docs.unrealengine.com/en-US/ProductionPipelines/BuildTools/UnrealBuildTool/ModuleFiles/index.html
-    Dictionary<string, LibSource> LinkLibFiles = new Dictionary<string, LibSource>();
+		// List of link-time libraries from AGX Dynamics and its dependencies
+		// that we need. These will be added to the Unreal Engine
+		// PublicAdditionalLibraries list. See
+		// https://docs.unrealengine.com/en-US/ProductionPipelines/BuildTools/UnrealBuildTool/ModuleFiles/index.html
+		Dictionary<string, LibSource> LinkLibFiles = new Dictionary<string, LibSource>();
 		LinkLibFiles.Add("agxPhysics", LibSource.AGX);
 		LinkLibFiles.Add("agxCore", LibSource.AGX);
 		LinkLibFiles.Add("agxHydraulics", LibSource.AGX);
@@ -248,13 +248,38 @@ public class AGXDynamicsLibrary : ModuleRules
 		LinkLibFiles.Add("agxROS2", LibSource.AGX);
 		LinkLibFiles.Add("agx-nt-ros2", LibSource.AGX);
 
-    // Brick
-    LinkLibFiles.Add("brick.agx", LibSource.Brick);
+		// Brick
+		LinkLibFiles.Add("brick.agx", LibSource.Brick);
+		LinkLibFiles.Add("brick.analysis", LibSource.Brick);
+		LinkLibFiles.Add("brick.bundle", LibSource.Brick);
+		LinkLibFiles.Add("brick.core.api", LibSource.Brick);
+		LinkLibFiles.Add("brick.error", LibSource.Brick);
+		//LinkLibFiles.Add("brick.eval", LibSource.Brick);
+		//LinkLibFiles.Add("brick.generate", LibSource.Brick);
+		LinkLibFiles.Add("brick.internal", LibSource.Brick);
+		LinkLibFiles.Add("brick.nodes", LibSource.Brick);
+		//LinkLibFiles.Add("brick.osg", LibSource.Brick);
+		LinkLibFiles.Add("brick.parser", LibSource.Brick);
+		//LinkLibFiles.Add("brick.runtime", LibSource.Brick);
+		//LinkLibFiles.Add("DriveTrain", LibSource.Brick);
+		//LinkLibFiles.Add("Math", LibSource.Brick);
+		//LinkLibFiles.Add("Physics", LibSource.Brick);
+		//LinkLibFiles.Add("Physics1D", LibSource.Brick);
+		//LinkLibFiles.Add("Physics3D", LibSource.Brick);
+		//LinkLibFiles.Add("Robotics", LibSource.Brick);
+		//LinkLibFiles.Add("Simulation", LibSource.Brick);
+		//LinkLibFiles.Add("Terrain", LibSource.Brick);
+		//LinkLibFiles.Add("Urdf", LibSource.Brick);
+		//LinkLibFiles.Add("Vehicles", LibSource.Brick);
+		//LinkLibFiles.Add("Visuals", LibSource.Brick);
 
-    // List of the include directories from aGX Dynamics and its
-    // dependenciesthat we need. These will be added to the Unreal Engine
-    // PublicIncludePaths.
-    List<LibSource> IncludePaths = new List<LibSource>();
+		LinkLibFiles.Add("fmt", LibSource.Brick);
+		LinkLibFiles.Add("spdlog", LibSource.Brick);
+
+		// List of the include directories from aGX Dynamics and its
+		// dependenciesthat we need. These will be added to the Unreal Engine
+		// PublicIncludePaths.
+		List<LibSource> IncludePaths = new List<LibSource>();
 		IncludePaths.Add(LibSource.AGX);
 		IncludePaths.Add(LibSource.Brick);
 
@@ -340,7 +365,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "plugins", "*"));
 		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "include", "*"));
 		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "lib", "*"));
-		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "brickbundles", "*"));
+		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "brick", "*"));
 		SetLicenseForCopySafe(Target);
 
 		// This is a work-around for Linux which ensures that the .so files are
@@ -394,6 +419,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		foreach (string FilePath in FilesToAdd)
 		{
+			Console.WriteLine(FilePath);
 			PublicAdditionalLibraries.Add(FilePath);
 		}
 	}
@@ -590,12 +616,12 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			string Source = InstalledAGXResources.IncludePath(IncludePath);
 			string Dest = BundledAGXResources.IncludePath(IncludePath);
-      if (!CopyDirectoryRecursively(Source, Dest))
-      {
-        CleanBundledAGXDynamicsResources();
-        return;
-      }
-    }
+			if (!CopyDirectoryRecursively(Source, Dest))
+			{
+				CleanBundledAGXDynamicsResources();
+				return;
+			}
+		}
 
 		// Copy AGX Dynamics cfg directory.
 		{
@@ -644,8 +670,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 	}
 
-    // Copy needed AGX Dynamics Components/agx/... directories and files.
-    {
+		// Copy needed AGX Dynamics Components/agx/... directories and files.
+		{
 			string ComponentsDirSource = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
 			string ComponentsDirDest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
 			string PhysicsDirSource = Path.Combine(ComponentsDirSource, "agx", "Physics");
@@ -721,6 +747,20 @@ public class AGXDynamicsLibrary : ModuleRules
 				return;
 			}
 			if (!WebCopyer.CopyFile(Path.Combine("lib", "external", "jQuery", "jquery-ui-1.8.18.custom.min.js")))
+			{
+				CleanBundledAGXDynamicsResources();
+				return;
+			}
+		}
+
+		// Copy Brick resources
+		{
+			string BrickDirSource = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Brick, true);
+			string BrickDirDest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Brick, true);
+			string BundlesDirSource = Path.Combine(BrickDirSource, "brickbundles");
+			string BundlesDirDest = Path.Combine(BrickDirDest, "brickbundles");
+
+			if (!CopyDirectoryRecursively(BundlesDirSource, BundlesDirDest))
 			{
 				CleanBundledAGXDynamicsResources();
 				return;
@@ -1446,12 +1486,12 @@ public class AGXDynamicsLibrary : ModuleRules
 				Path.Combine(BaseDir, "lib", "x64"),
 				Path.Combine(BaseDir, "bin", "x64")
 			));
-      LibSources.Add(LibSource.Brick, new LibSourceInfo(
-        Path.Combine(BrickDir, "include"),
-        Path.Combine(BrickDir, "lib"),
-        Path.Combine(BrickDir, "brickbundles")
-      ));
-      LibSources.Add(LibSource.Config, new LibSourceInfo(
+			LibSources.Add(LibSource.Brick, new LibSourceInfo(
+				Path.Combine(BrickDir, "include"),
+				Path.Combine(BrickDir, "lib"),
+				BrickDir
+			));
+			LibSources.Add(LibSource.Config, new LibSourceInfo(
 				null, null, null
 			));
 			LibSources.Add(LibSource.Components, new LibSourceInfo(
@@ -1494,19 +1534,19 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			string BaseDir = BundledAGXResourcesPath;
 
-      LicenseTextPath = Path.Combine(BaseDir, "LICENSE.TXT");
+			LicenseTextPath = Path.Combine(BaseDir, "LICENSE.TXT");
 
 			LibSources.Add(LibSource.AGX, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
 				Path.Combine(BaseDir, "lib", "Win64"),
 				Path.Combine(BaseDir, "bin", "Win64")
 			));
-      LibSources.Add(LibSource.Brick, new LibSourceInfo(
-        Path.Combine(BaseDir, "include"),
-        Path.Combine(BaseDir, "lib", "Win64"),
-        Path.Combine(BaseDir, "brickbundles")
-      ));
-      LibSources.Add(LibSource.Config, new LibSourceInfo(
+			LibSources.Add(LibSource.Brick, new LibSourceInfo(
+				Path.Combine(BaseDir, "include", "Brick"),
+				Path.Combine(BaseDir, "lib", "Win64"),
+				BaseDir
+			));
+			LibSources.Add(LibSource.Config, new LibSourceInfo(
 				null, null, null
 			));
 			LibSources.Add(LibSource.Components, new LibSourceInfo(
