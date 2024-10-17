@@ -52,6 +52,9 @@ public:
 	void SetLidarSurfaceMaterialOrDefault(
 		FWireBarrier& Wire, FRtLambertianOpaqueMaterialBarrier* Material);
 
+	/** Returns true if raytrace (RTX) is supported on this computer	*/
+	static bool IsRaytraceSupported();
+
 private:
 	FSensorEnvironmentBarrier(const FSensorEnvironmentBarrier&) = delete;
 	void operator=(const FSensorEnvironmentBarrier&) = delete;

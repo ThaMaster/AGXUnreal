@@ -14,6 +14,7 @@
 #include "BeginAGXIncludes.h"
 #include <agxSensor/RaytraceAmbientMaterial.h>
 #include <agxSensor/RaytraceSurfaceMaterial.h>
+#include <agxSensor/RaytraceConfig.h>
 #include "EndAGXIncludes.h"
 
 FSensorEnvironmentBarrier::FSensorEnvironmentBarrier()
@@ -168,4 +169,9 @@ void FSensorEnvironmentBarrier::SetLidarSurfaceMaterialOrDefault(
 	FWireBarrier& Wire, FRtLambertianOpaqueMaterialBarrier* Material)
 {
 	SensorEnvironmentBarrier_helpers::SetLidarSurfaceMaterialOrDefault(Wire, Material);
+}
+
+bool FSensorEnvironmentBarrier::IsRaytraceSupported()
+{
+	return agxSensor::RtConfig::isRaytraceSupported();
 }

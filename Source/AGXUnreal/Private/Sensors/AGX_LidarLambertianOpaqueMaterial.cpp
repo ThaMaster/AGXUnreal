@@ -6,6 +6,7 @@
 #include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_Check.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "Sensors/SensorEnvironmentBarrier.h"
 
 // Unreal Engine includes.
 #include "Engine/World.h"
@@ -169,6 +170,9 @@ void UAGX_LidarLambertianOpaqueMaterial::CopyProperties(
 
 void UAGX_LidarLambertianOpaqueMaterial::CreateNative()
 {
+	if (!FSensorEnvironmentBarrier::IsRaytraceSupported())
+		return;
+
 	if (!IsInstance())
 	{
 		if (Instance == nullptr)

@@ -13,6 +13,7 @@
 #include "Sensors/AGX_SurfaceMaterialAssetUserData.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/WireBarrier.h"
@@ -655,11 +656,25 @@ void AAGX_SensorEnvironment::Tick(float DeltaSeconds)
 void AAGX_SensorEnvironment::BeginPlay()
 {
 	Super::BeginPlay();
+	const bool RaytraceRTXSupported = FSensorEnvironmentBarrier::IsRaytraceSupported();
+	if (LidarSensors.Num() > 0 && !RaytraceRTXSupported)
+	{
+		const FString Message =
+			"Lidar raytracing (RTX) not supported on this computer, unable to run the Sensor "
+			"Environment. To enable Lidar raytracing (RTX) support, use an RTX "
+			"Graphical Processing Unit (GPU).";
+		FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail, 8.f);
+		return;
+	}
+
 	if (!HasNative())
 		InitializeNative();
 
-	UpdateAmbientMaterial();
-	RegisterLidars();
+	if (RaytraceRTXSupported)
+	{
+		UpdateAmbientMaterial();
+		RegisterLidars();
+	}
 }
 
 void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type Reason)
@@ -678,6 +693,9 @@ void AAGX_SensorEnvironment::InitializeNative()
 {
 	AGX_CHECK(!HasNative());
 	if (HasNative())
+		return;
+
+	if (!FSensorEnvironmentBarrier::IsRaytraceSupported())
 		return;
 
 	UAGX_Simulation* Sim = UAGX_Simulation::GetFrom(this);

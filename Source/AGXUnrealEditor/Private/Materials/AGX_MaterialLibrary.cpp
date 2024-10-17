@@ -10,6 +10,7 @@
 #include "Materials/MaterialLibraryBarrier.h"
 #include "Sensors/AGX_LidarAmbientMaterial.h"
 #include "Sensors/RtAmbientMaterialBarrier.h"
+#include "Sensors/SensorEnvironmentBarrier.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
@@ -285,12 +286,26 @@ bool AGX_MaterialLibrary::InitializeLidarAmbientMaterialAssetLibrary(bool ForceO
 {
 	using namespace AGX_MaterialLibrary_helpers;
 
+	if (!FSensorEnvironmentBarrier::IsRaytraceSupported())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT(
+				"Lidar raytracing (RTX) not supported on this computer, unable to initialize Lidar "
+				"Ambient Material Library. To enable Lidar raytracing (RTX) support, use an RTX "
+				"Graphical Processing Unit (GPU)."));
+		return false;
+	}
+	else
+	{
+		UE_LOG(LogAGX, Log, TEXT("Lidar raytracing (RTX) is supported by the hardware."));
+	}
+
 	bool Result = true;
 
 	Result &= UpdateLidarAmbientMaterialAssetLibrary(
 		"AGX_LAM_Air_1000m_Visibility",
-		[](FRtAmbientMaterialBarrier& Barrier) { Barrier.ConfigureAsAir(1.0f); },
-		ForceOverwrite);
+		[](FRtAmbientMaterialBarrier& Barrier) { Barrier.ConfigureAsAir(1.0f); }, ForceOverwrite);
 
 	Result &= UpdateLidarAmbientMaterialAssetLibrary(
 		"AGX_LAM_Air_5000m_Visibility",
