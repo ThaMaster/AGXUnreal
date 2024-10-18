@@ -69,16 +69,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	bool GetEnabled() const;
 
+	// clang-format off
 	/**
 	 * The minimum and maximum range of the Lidar Sensor [cm].
 	 * Objects outside this range will not be detected by this Lidar Sensor.
 	 */
 	UPROPERTY(
-		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
-		// clang-format off
-		Meta = (ClampMin = "0.0", EditCondition = "Model == EAGX_LidarModel::CustomRayPattern || Model == EAGX_LidarModel::GenericHorizontalSweep"))
-	// clang-format on
+		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",		
+		Meta = (ClampMin = "0.0", EditCondition = "Model == EAGX_LidarModel::CustomRayPattern || Model == EAGX_LidarModel::GenericHorizontalSweep"))	
 	FAGX_RealInterval Range {0.0, 10000.0};
+	// clang-format on
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetRange(FAGX_RealInterval InRange);
@@ -86,6 +86,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	FAGX_RealInterval GetRange() const;
 
+	// clang-format off
 	/**
 	 * Divergence of the lidar laser light beam [deg].
 	 * This the total "cone angle", i.e. the angle between a perfectly parallel beam of the same
@@ -94,10 +95,9 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
-		// clang-format off
 		Meta = (ClampMin = "0.0", EditCondition = "Model == EAGX_LidarModel::CustomRayPattern || Model == EAGX_LidarModel::GenericHorizontalSweep"))
-	// clang-format on
 	FAGX_Real BeamDivergence {0.001 * 180.0 / PI};
+	// clang-format on
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetBeamDivergence(double InBeamDivergence);
@@ -105,16 +105,16 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	double GetBeamDivergence() const;
 
+	// clang-format off
 	/**
 	 * The diameter of the lidar laser light beam as it exits the lidar [cm].
 	 * This property affects the calculated intensity.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
-		// clang-format off
 		Meta = (ClampMin = "0.0", EditCondition = "Model == EAGX_LidarModel::CustomRayPattern || Model == EAGX_LidarModel::GenericHorizontalSweep"))
-	// clang-format on
 	FAGX_Real BeamExitRadius {0.5};
+	// clang-format on
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetBeamExitRadius(double InBeamExitRadius);
@@ -157,16 +157,16 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	bool GetEnableRemovePointsMisses() const;
 
+	// clang-format off
 	/**
 	 * Enables or disables distance gaussian noise, adding an individual distance error to each
 	 * measurements of Position.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
-		// clang-format off
 		Meta = (EditCondition = "Model == EAGX_LidarModel::CustomRayPattern || Model == EAGX_LidarModel::GenericHorizontalSweep"))
-	// clang-format on
 	bool bEnableDistanceGaussianNoise {false};
+	// clang-format on
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetEnableDistanceGaussianNoise(bool bEnable);
@@ -174,16 +174,16 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	bool GetEnableDistanceGaussianNoise() const;
 
+	// clang-format off
 	/**
 	 * Determines the distance noise characteristics. The standard deviation is calculated as
 	 * s = stdDev + d * stdDevSlope where d is the distance in centimeters.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
-		// clang-format off
 		Meta = (ClampMin = "0.0", EditCondition = "bEnableDistanceGaussianNoise"))
-	// clang-format on
 	FAGX_DistanceGaussianNoiseSettings DistanceNoiseSettings;
+	// clang-format on
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetDistanceNoiseSettings(FAGX_DistanceGaussianNoiseSettings Settings);
@@ -191,16 +191,16 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Lidar")
 	FAGX_DistanceGaussianNoiseSettings GetDistanceNoiseSettings() const;
 
+	// clang-format off
 	/**
 	 * Enables or disables angle ray gaussian noise, adding an individual angle error to each lidar
 	 * ray.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
-		// clang-format off
 		Meta = (EditCondition = "Model == EAGX_LidarModel::CustomRayPattern || Model == EAGX_LidarModel::GenericHorizontalSweep"))
-	// clang-format on
 	bool bEnableRayAngleGaussianNoise {false};
+	// clang-format on
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetEnableRayAngleGaussianNoise(bool bEnable);
@@ -208,15 +208,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	bool GetEnableRayAngleGaussianNoise() const;
 
+	// clang-format off
 	/**
 	 * Determines the lidar ray noise characteristics.
 	 */
 	UPROPERTY(
 		EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar",
-		// clang-format off
-		Meta = (ClampMin = "0.0", EditCondition = "bEnableRayAngleGaussianNoise"))
-	// clang-format on
+		Meta = (ClampMin = "0.0", EditCondition = "bEnableRayAngleGaussianNoise"))	
 	FAGX_RayAngleGaussianNoiseSettings RayAngleNoiseSettings;
+	// clang-format on
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Lidar")
 	void SetRayAngleNoiseSettings(FAGX_RayAngleGaussianNoiseSettings Settings);
@@ -244,9 +244,9 @@ public:
 	 * Delegate that has to be assigned (bound to) by the user to support custom scan pattern.
 	 * Only used if the Lidar Model is set to CustomRayPattern.
 	 * Should return the next AGX Custom Pattern Interval to use.
-	 * This delegate is called each Step Forward and determines what part of the total scan pattern to
-	 * use in that Step Forward. See also OnFetchRayTransforms. The signature of the function assigned
-	 * must be: FAGX_CustomPatternInterval MyFunc(double TimeStamp).
+	 * This delegate is called each Step Forward and determines what part of the total scan pattern
+	 * to use in that Step Forward. See also OnFetchRayTransforms. The signature of the function
+	 * assigned must be: FAGX_CustomPatternInterval MyFunc(double TimeStamp).
 	 */
 	UPROPERTY(
 		BlueprintReadWrite, Category = "AGX Lidar",
