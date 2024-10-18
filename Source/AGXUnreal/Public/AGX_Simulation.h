@@ -196,7 +196,7 @@ public: // Properties.
 
 	/** Set to true to enable statistics gathering in AGX Dynamics. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category = "Statistics")
-	bool bEnableStatistics = false;
+	bool bEnableStatistics {true};
 
 	/**
 	 * Set to true to enable the contact event listener that triggers the On Impact and On Contact
