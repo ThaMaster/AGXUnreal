@@ -17,6 +17,7 @@ class IDetailCategoryBuilder;
 class AGXUNREALEDITOR_API FAGX_SimulationCustomization : public IDetailCustomization
 {
 public:
+	FAGX_SimulationCustomization();
 	static TSharedRef<IDetailCustomization> MakeInstance();
 
 	virtual void CustomizeDetails(IDetailLayoutBuilder& InDetailBuilder) override;
@@ -24,6 +25,10 @@ public:
 private:
 	FText GetOutputFilePathText() const;
 	FReply OnBrowseFileButtonClicked();
+	void OnRaytraceDeviceComboBoxChanged(
+		TSharedPtr<FString> SelectedDevice, ESelectInfo::Type InSeletionInfo);
+	FText GetSelectedRaytraceDeviceString() const;
 
+	TArray<TSharedPtr<FString>> RaytraceDevices;
 	IDetailLayoutBuilder* DetailBuilder;
 };

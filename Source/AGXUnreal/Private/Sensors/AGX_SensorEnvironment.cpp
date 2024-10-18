@@ -713,6 +713,19 @@ void AAGX_SensorEnvironment::InitializeNative()
 	// In case the Level has no other AGX types in it.
 	Sim->EnsureStepperCreated();
 
+	// Make sure correct Raytrace device is set.
+	if (Sim->RaytraceDeviceIndex != FSensorEnvironmentBarrier::GetCurrentRayraceDevice())
+	{
+		if (!FSensorEnvironmentBarrier::SetCurrentRaytraceDevice(Sim->RaytraceDeviceIndex))
+		{
+			const FString Message = FString::Printf(
+				TEXT("Tried to set Raytrace device id %d, but the selection failed. Please review "
+					 "the AGX Lidar category in the plugin settings."),
+				Sim->RaytraceDeviceIndex);
+			FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail, 8.f);
+		}
+	}
+
 	NativeBarrier.AllocateNative(*Sim->GetNative());
 	if (!NativeBarrier.HasNative())
 	{

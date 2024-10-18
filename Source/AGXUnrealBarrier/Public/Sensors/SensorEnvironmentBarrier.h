@@ -8,7 +8,6 @@
 // Standard library includes.
 #include <memory>
 
-
 class FLidarBarrier;
 class FRtAmbientMaterialBarrier;
 class FRtLambertianOpaqueMaterialBarrier;
@@ -52,8 +51,23 @@ public:
 	void SetLidarSurfaceMaterialOrDefault(
 		FWireBarrier& Wire, FRtLambertianOpaqueMaterialBarrier* Material);
 
-	/** Returns true if raytrace (RTX) is supported on this computer	*/
+	/// Returns true if raytrace (RTX) is supported on this computer.
 	static bool IsRaytraceSupported();
+
+	/// Returns list of raytrace (RTX) supporting GPU devices.
+	static TArray<FString> GetRaytraceDevices();
+
+	/**
+	 * Get index of the hardware device currently in use for raytracing, or -1 if raytracing is not
+	 * supported.
+	 */
+	static int32 GetCurrentRayraceDevice();
+
+	/**
+	 * Attempts to set the hardware device to use to the one with the specified index.
+	 * Returns true if the hardware device is successfully set.
+	 */
+	static bool SetCurrentRaytraceDevice(int32 DeviceIndex);
 
 private:
 	FSensorEnvironmentBarrier(const FSensorEnvironmentBarrier&) = delete;

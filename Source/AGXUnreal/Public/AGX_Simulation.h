@@ -199,6 +199,14 @@ public: // Properties.
 	bool bEnableStatistics = false;
 
 	/**
+	 * Set to true to enable the contact event listener that triggers the On Impact and On Contact
+	 * events in AGX Simulation. Enabling this is not necessary if you only use Contact Event
+	 * Listener Components.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Simulation")
+	bool bEnableGlobalContactEventListener {true};
+
+	/**
 	 * Globally enable or disable AMOR (Merge Split Handler) in AGX Dynamics.
 	 * Note that each RigidBody / Geometry / Wire / Constraint need to enable merge/split
 	 * individually for AMOR to be used for those.
@@ -232,6 +240,13 @@ public: // Properties.
 		Config, EditAnywhere, BlueprintReadOnly, Category = "AGX AMOR",
 		Meta = (AllowedClasses = "/Script/AGXUnreal.AGX_WireMergeSplitThresholds"))
 	FSoftObjectPath GlobalWireMergeSplitThresholds;
+
+	/**
+	 * Currently active GPU device index used for Lidar Raytracing (RTX).
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "AGX Lidar")
+	int32 RaytraceDeviceIndex {0};
+
 
 #if WITH_EDITORONLY_DATA
 	/**
@@ -416,14 +431,6 @@ public: // Member functions.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Simulation")
 	FOnPostStepForward PostStepForward;
-
-	/**
-	 * Set to true to enable the contact event listener that triggers the On Impact and On Contact
-	 * events in AGX Simulation. Enabling this is not necessary if you only use Contact Event
-	 * Listener Components.
-	 */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Simulation")
-	bool bEnableGlobalContactEventListener {true};
 
 	/**
 	 * Event that is triggered by AGX Dynamics during Step Forward after collision detection but

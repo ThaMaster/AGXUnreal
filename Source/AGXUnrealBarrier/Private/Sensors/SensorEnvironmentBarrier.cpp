@@ -15,7 +15,12 @@
 #include <agxSensor/RaytraceAmbientMaterial.h>
 #include <agxSensor/RaytraceSurfaceMaterial.h>
 #include <agxSensor/RaytraceConfig.h>
+#include <agxUtil/agxUtil.h>
 #include "EndAGXIncludes.h"
+
+// Standard Library includes.
+#include <string>
+#include <vector>
 
 FSensorEnvironmentBarrier::FSensorEnvironmentBarrier()
 	: NativeRef {new FSensorEnvironmentRef}
@@ -174,4 +179,26 @@ void FSensorEnvironmentBarrier::SetLidarSurfaceMaterialOrDefault(
 bool FSensorEnvironmentBarrier::IsRaytraceSupported()
 {
 	return agxSensor::RtConfig::isRaytraceSupported();
+}
+
+TArray<FString> FSensorEnvironmentBarrier::GetRaytraceDevices()
+{
+	std::vector<std::string> DevicesAGX = agxSensor::RtConfig::listRaytraceDevices();
+	TArray<FString> Devices = ToUnrealStringArray(DevicesAGX);
+
+	// Must be called to avoid crash due to different allocators used by AGX Dynamics and
+	// Unreal Engine.
+	agxUtil::freeContainerMemory(DevicesAGX);
+
+	return Devices;
+}
+
+int32 FSensorEnvironmentBarrier::GetCurrentRayraceDevice()
+{
+	return agxSensor::RtConfig::getRaytraceDevice();
+}
+
+bool FSensorEnvironmentBarrier::SetCurrentRaytraceDevice(int32 DeviceIndex)
+{
+	return agxSensor::RtConfig::setRaytraceDevice(DeviceIndex);
 }
