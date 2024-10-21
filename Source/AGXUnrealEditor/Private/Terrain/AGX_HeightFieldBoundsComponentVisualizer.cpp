@@ -31,10 +31,21 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 
 		// We use a large DepthBias here so that the lines are drawn clearly and not dark
 		// (underneath the landscape).
+#if PLATFORM_LINUX
+		// As of Unreal Engine 5.2 and NVIDIA graphics drivers 525,
+		// SDPG_World + DepthOffset=BIG_NUMBER does not make the lines render on top of the
+		// Landscape on Linux. Using SDPG_Foreground instead. The lines are weirdly shaded and not
+		// clear when under the Landscape, but better than nothing.
+		PDI->DrawLine(Corner0, Corner1, Color, SDPG_Foreground, LineThickness);
+		PDI->DrawLine(Corner1, Corner2, Color, SDPG_Foreground, LineThickness);
+		PDI->DrawLine(Corner2, Corner3, Color, SDPG_Foreground, LineThickness);
+		PDI->DrawLine(Corner3, Corner0, Color, SDPG_Foreground, LineThickness);
+#else
 		PDI->DrawLine(Corner0, Corner1, Color, SDPG_World, LineThickness, BIG_NUMBER, false);
 		PDI->DrawLine(Corner1, Corner2, Color, SDPG_World, LineThickness, BIG_NUMBER, false);
 		PDI->DrawLine(Corner2, Corner3, Color, SDPG_World, LineThickness, BIG_NUMBER, false);
 		PDI->DrawLine(Corner3, Corner0, Color, SDPG_World, LineThickness, BIG_NUMBER, false);
+#endif
 	}
 
 	void DrawCircle(
