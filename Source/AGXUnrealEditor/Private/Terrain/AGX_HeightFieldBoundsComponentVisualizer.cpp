@@ -113,13 +113,14 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 		check(Terrain.SourceLandscape != nullptr);
 		check(Terrain.HasNativeTerrainPager());
 
+		const FAGX_TerrainPagingSettings& Settings = Terrain.TerrainPagingSettings;
+
 		const FTerrainPagerBarrier* TPBarrier = Terrain.GetNativeTerrainPager();
 		if (TPBarrier == nullptr)
 			return;
 
 		const auto QuadSize = Terrain.SourceLandscape->GetActorScale().X;
-		const int32 TileNumQuadsSide =
-			FMath::RoundToInt(Terrain.TerrainPagingSettings.TileSize / QuadSize);
+		const int32 TileNumQuadsSide = FMath::RoundToInt(Settings.TileSize / QuadSize);
 		const double TileSize = QuadSize * TileNumQuadsSide;
 
 		const FVector BoundsPosGlobal = BoundsTransform.GetLocation();
@@ -132,7 +133,9 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 			// tiles may have a z-offset that depends on the first loaded tile average height (set
 			// by AGX Dynamics automatically).
 			TileTransform.SetLocation(FVector(TilePosGlobal.X, TilePosGlobal.Y, BoundsPosGlobal.Z));
-			DrawRectangle(TileTransform, TileSize, TileSize, FLinearColor::White, 8.f, PDI);
+			DrawRectangle(
+				TileTransform, TileSize, TileSize, Settings.LoadedTileOutlineColor,
+				2.f * Settings.TileOutlineThickness, PDI);
 		}
 	}
 
@@ -143,11 +146,11 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 		check(Terrain.bEnableTerrainPaging);
 		check(Terrain.SourceLandscape != nullptr);
 
+		const FAGX_TerrainPagingSettings& Settings = Terrain.TerrainPagingSettings;
+
 		const auto QuadSize = Terrain.SourceLandscape->GetActorScale().X;
-		const int32 TileNumQuadsSide =
-			FMath::RoundToInt(Terrain.TerrainPagingSettings.TileSize / QuadSize);
-		const int32 TileOverlapNumQuads =
-			FMath::RoundToInt(Terrain.TerrainPagingSettings.TileOverlap / QuadSize);
+		const int32 TileNumQuadsSide = FMath::RoundToInt(Settings.TileSize / QuadSize);
+		const int32 TileOverlapNumQuads = FMath::RoundToInt(Settings.TileOverlap / QuadSize);
 
 		const double TileSize = QuadSize * TileNumQuadsSide;
 		const double TileOverlap = QuadSize * TileOverlapNumQuads;
@@ -192,7 +195,8 @@ namespace AGX_HeightFieldBoundsComponentVisualizer_helpers
 
 				const FTransform RectangleTransform(BoundsTransform.GetRotation(), StartPosGlobal);
 				DrawRectangle(
-					RectangleTransform, TileSize, -TileSize, FLinearColor::Gray, 4.f, PDI);
+					RectangleTransform, TileSize, -TileSize, Settings.TileOutlineColor,
+					Settings.TileOutlineThickness, PDI);
 			}
 		}
 	}
