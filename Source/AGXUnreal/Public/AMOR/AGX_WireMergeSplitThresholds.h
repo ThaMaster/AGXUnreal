@@ -69,7 +69,7 @@ public:
 
 	double GetMergeTensionScale() const;
 
-	void CreateNative(UWorld* PlayingWorld);
+	void CreateNative();
 	bool HasNative() const;
 	FWireMergeSplitThresholdsBarrier* GetOrCreateNative(UWorld* PlayingWorld);
 	FWireMergeSplitThresholdsBarrier* GetNative();

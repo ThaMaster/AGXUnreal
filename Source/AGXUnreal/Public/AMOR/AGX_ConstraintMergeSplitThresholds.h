@@ -147,7 +147,7 @@ public:
 
 	double GetMaxRelativeSpeed() const;
 
-	void CreateNative(UWorld* PlayingWorld, bool bIsRotational);
+	void CreateNative(bool bIsRotational);
 	bool HasNative() const;
 	FConstraintMergeSplitThresholdsBarrier* GetOrCreateNative(
 		UWorld* PlayingWorld, bool bIsRotational);

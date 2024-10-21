@@ -172,7 +172,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shape Contact Merge Split Thresholds")
 	bool GetSplitOnLogicalImpact() const;
 
-	void CreateNative(UWorld* PlayingWorld);
+	void CreateNative();
 	bool HasNative() const;
 	FShapeContactMergeSplitThresholdsBarrier* GetOrCreateNative(UWorld* PlayingWorld);
 	FShapeContactMergeSplitThresholdsBarrier* GetNative();
