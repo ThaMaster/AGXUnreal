@@ -442,6 +442,16 @@ bool UAGX_ConstraintComponent::GetEnableComputeForces() const
 	return GetComputeForces();
 }
 
+bool UAGX_ConstraintComponent::GetValid() const
+{
+	if (!HasNative())
+	{
+		return false;
+	}
+
+	return NativeBarrier->GetValid();
+}
+
 bool UAGX_ConstraintComponent::GetLastForceIndex(
 	int32 BodyIndex, FVector& OutForce, FVector& OutTorque, bool bForceAtCm) const
 {

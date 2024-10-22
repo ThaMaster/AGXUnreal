@@ -238,6 +238,18 @@ public:
 	bool GetEnableComputeForces() const;
 
 	/**
+	 * Check if the native AGX Dynamics constraint has been successfully created and initialized.
+	 *
+	 * Not to be confused with Unreal Engine's Is Valid. A Constraint Component can we a valid
+	 * Unreal Engine Component without having a valid native AGX Dynamics constraint.
+	 *
+	 * @return True if the native AGX Dynamics constraint has been successfully created and
+	 * initialized.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
+	bool GetValid() const;
+
+	/**
 	 * If Compute Forces is enabled, returns the last force [N] and torque [Nm] applied by this
 	 * constraint on the body at \p BodyIndex. The force is given in world coordinates and is the
 	 * one applied at the anchor position of this constraint.
