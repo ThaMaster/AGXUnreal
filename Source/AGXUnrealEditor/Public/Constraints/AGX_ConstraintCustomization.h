@@ -16,5 +16,11 @@ class AGXUNREALEDITOR_API FAGX_ConstraintCustomization : public IDetailCustomiza
 public:
 	static TSharedRef<IDetailCustomization> MakeInstance();
 
-	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
+	virtual void CustomizeDetails(IDetailLayoutBuilder& InDetailBuilder) override;
+
+private:
+	EVisibility VisibleWhenSameBody() const;
+
+private:
+	IDetailLayoutBuilder* DetailBuilder;
 };
