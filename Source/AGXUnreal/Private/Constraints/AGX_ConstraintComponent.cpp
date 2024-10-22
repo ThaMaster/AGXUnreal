@@ -1171,12 +1171,23 @@ void UAGX_ConstraintComponent::CreateNative()
 	if (!HasNative())
 	{
 		UE_LOG(
-			LogAGX, Error, TEXT("Constraint %s in %s: Unable to create constraint."),
+			LogAGX, Error, TEXT("Constraint '%s' in '%s': Unable to create constraint."),
 			*GetFName().ToString(), *GetOwner()->GetName());
 		return;
 	}
 
 	NativeBarrier->SetName(GetName());
+
+	if (!GetValid())
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Constraint '%s' in '%s': Created invalid constraint. See the LogAGXDynamics "
+				 "categoty in the Output Log."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
+
 	UpdateNativeProperties();
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
