@@ -2,8 +2,10 @@
 
 #pragma once
 
+// Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
+#include "Layout/Visibility.h"
 
 /**
  * Detail Customization of AGX_Constraint, which does the following:
