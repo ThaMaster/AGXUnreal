@@ -106,5 +106,5 @@ namespace
 
 void FBrick::Test()
 {
-
+	::ImportBrickFile("C:/Users/Admin/Desktop/double_pendulum.brick");
 }

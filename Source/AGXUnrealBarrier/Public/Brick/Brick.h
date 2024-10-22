@@ -9,5 +9,5 @@
 class AGXUNREALBARRIER_API FBrick
 {
 public:
-	void Test();
+	static void Test();
 };

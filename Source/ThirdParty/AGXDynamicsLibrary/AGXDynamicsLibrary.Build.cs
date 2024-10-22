@@ -249,32 +249,38 @@ public class AGXDynamicsLibrary : ModuleRules
 		LinkLibFiles.Add("agx-nt-ros2", LibSource.AGX);
 
 		// Brick
+		LinkLibFiles.Add("fmt", LibSource.Brick);
+		LinkLibFiles.Add("spdlog", LibSource.Brick);
 		LinkLibFiles.Add("brick.agx", LibSource.Brick);
 		LinkLibFiles.Add("brick.analysis", LibSource.Brick);
 		LinkLibFiles.Add("brick.bundle", LibSource.Brick);
 		LinkLibFiles.Add("brick.core.api", LibSource.Brick);
 		LinkLibFiles.Add("brick.error", LibSource.Brick);
-		//LinkLibFiles.Add("brick.eval", LibSource.Brick);
-		//LinkLibFiles.Add("brick.generate", LibSource.Brick);
+		LinkLibFiles.Add("brick.eval", LibSource.Brick);
+		LinkLibFiles.Add("brick.generate", LibSource.Brick);
 		LinkLibFiles.Add("brick.internal", LibSource.Brick);
 		LinkLibFiles.Add("brick.nodes", LibSource.Brick);
-		//LinkLibFiles.Add("brick.osg", LibSource.Brick);
+		LinkLibFiles.Add("brick.osg", LibSource.Brick);
 		LinkLibFiles.Add("brick.parser", LibSource.Brick);
-		//LinkLibFiles.Add("brick.runtime", LibSource.Brick);
-		//LinkLibFiles.Add("DriveTrain", LibSource.Brick);
-		//LinkLibFiles.Add("Math", LibSource.Brick);
-		//LinkLibFiles.Add("Physics", LibSource.Brick);
-		//LinkLibFiles.Add("Physics1D", LibSource.Brick);
-		//LinkLibFiles.Add("Physics3D", LibSource.Brick);
-		//LinkLibFiles.Add("Robotics", LibSource.Brick);
-		//LinkLibFiles.Add("Simulation", LibSource.Brick);
-		//LinkLibFiles.Add("Terrain", LibSource.Brick);
-		//LinkLibFiles.Add("Urdf", LibSource.Brick);
-		//LinkLibFiles.Add("Vehicles", LibSource.Brick);
-		//LinkLibFiles.Add("Visuals", LibSource.Brick);
-
-		LinkLibFiles.Add("fmt", LibSource.Brick);
-		LinkLibFiles.Add("spdlog", LibSource.Brick);
+		LinkLibFiles.Add("brick.runtime", LibSource.Brick);
+		LinkLibFiles.Add("DriveTrain", LibSource.Brick);
+		LinkLibFiles.Add("Math", LibSource.Brick);
+		LinkLibFiles.Add("Physics", LibSource.Brick);
+		LinkLibFiles.Add("Physics1D", LibSource.Brick);
+		LinkLibFiles.Add("Physics3D", LibSource.Brick);
+		LinkLibFiles.Add("Robotics", LibSource.Brick);
+		LinkLibFiles.Add("Simulation", LibSource.Brick);
+		LinkLibFiles.Add("Terrain", LibSource.Brick);
+		LinkLibFiles.Add("Urdf", LibSource.Brick);
+		LinkLibFiles.Add("Vehicles", LibSource.Brick);
+		LinkLibFiles.Add("Visuals", LibSource.Brick);
+		LinkLibFiles.Add("brickurdfplugin", LibSource.Brick);
+		LinkLibFiles.Add("urdfdom_model", LibSource.Brick);
+		LinkLibFiles.Add("urdfdom_model_state", LibSource.Brick);
+		LinkLibFiles.Add("urdfdom_world", LibSource.Brick);
+		LinkLibFiles.Add("urdfdom_sensor", LibSource.Brick);
+		LinkLibFiles.Add("console_bridge", LibSource.Brick);
+		LinkLibFiles.Add("tinyxml", LibSource.Brick);
 
 		// List of the include directories from aGX Dynamics and its
 		// dependenciesthat we need. These will be added to the Unreal Engine
