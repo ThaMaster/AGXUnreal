@@ -49,38 +49,38 @@ void FAGX_ConstraintCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 
 namespace AGX_ConstraintCustomization_helpers
 {
-	enum class EBodySetupError : int
+	enum class EAGX_AttachmentSetupError : int
 	{
 		NoError = 0,
 		NoFirstBody = 1 << 0,
 		SameBody = 1 << 1
 	};
 
-	EBodySetupError& operator|=(EBodySetupError& InOutLhs, EBodySetupError InRhs)
+	EAGX_AttachmentSetupError& operator|=(EAGX_AttachmentSetupError& InOutLhs, EAGX_AttachmentSetupError InRhs)
 	{
 		int Lhs = (int) InOutLhs;
 		int Rhs = (int) InRhs;
 		int result = Lhs | Rhs;
-		InOutLhs = (EBodySetupError) result;
+		InOutLhs = (EAGX_AttachmentSetupError) result;
 		return InOutLhs;
 	}
 
-	EBodySetupError operator&(EBodySetupError InLhs, EBodySetupError InRhs)
+	EAGX_AttachmentSetupError operator&(EAGX_AttachmentSetupError InLhs, EAGX_AttachmentSetupError InRhs)
 	{
 		int Lhs = (int) InLhs;
 		int Rhs = (int) InRhs;
 		int Result = Lhs & Rhs;
-		return (EBodySetupError) Result;
+		return (EAGX_AttachmentSetupError) Result;
 	}
 
-	bool HasError(EBodySetupError Error, EBodySetupError Flag)
+	bool HasError(EAGX_AttachmentSetupError Error, EAGX_AttachmentSetupError Flag)
 	{
-		return (Error & Flag) != EBodySetupError::NoError;
+		return (Error & Flag) != EAGX_AttachmentSetupError::NoError;
 	}
 
-	EBodySetupError GetBodySetupError(const IDetailLayoutBuilder& DetailBuilder)
+	EAGX_AttachmentSetupError GetBodySetupError(const IDetailLayoutBuilder& DetailBuilder)
 	{
-		EBodySetupError Error {EBodySetupError::NoError};
+		EAGX_AttachmentSetupError Error {EAGX_AttachmentSetupError::NoError};
 
 		TArray<TWeakObjectPtr<UObject>> Objects;
 		DetailBuilder.GetObjectsBeingCustomized(Objects);
@@ -95,12 +95,12 @@ namespace AGX_ConstraintCustomization_helpers
 
 			if (Body1 == nullptr)
 			{
-				Error |= EBodySetupError::NoFirstBody;
+				Error |= EAGX_AttachmentSetupError::NoFirstBody;
 			}
 
 			if (Body1 != nullptr && Body1 == Body2)
 			{
-				Error |= EBodySetupError::SameBody;
+				Error |= EAGX_AttachmentSetupError::SameBody;
 			}
 		}
 
@@ -113,8 +113,8 @@ EVisibility FAGX_ConstraintCustomization::VisibleWhenBodySetupError() const
 	using namespace AGX_ConstraintCustomization_helpers;
 	if (DetailBuilder == nullptr)
 		return EVisibility::Collapsed;
-	EBodySetupError Error = GetBodySetupError(*DetailBuilder);
-	return FAGX_EditorUtilities::VisibleIf(Error != EBodySetupError::NoError);
+	EAGX_AttachmentSetupError Error = GetBodySetupError(*DetailBuilder);
+	return FAGX_EditorUtilities::VisibleIf(Error != EAGX_AttachmentSetupError::NoError);
 }
 
 FText FAGX_ConstraintCustomization::GetBodySetupErrorText() const
@@ -123,7 +123,7 @@ FText FAGX_ConstraintCustomization::GetBodySetupErrorText() const
 	if (DetailBuilder == nullptr)
 		return FText();
 
-	EBodySetupError Error = GetBodySetupError(*DetailBuilder);
+	EAGX_AttachmentSetupError Error = GetBodySetupError(*DetailBuilder);
 	FString Message;
 	auto Append = [&Message](const FText& Text)
 	{
@@ -132,12 +132,12 @@ FText FAGX_ConstraintCustomization::GetBodySetupErrorText() const
 		Message += Text.ToString();
 	};
 
-	if (HasError(Error, EBodySetupError::NoFirstBody))
+	if (HasError(Error, EAGX_AttachmentSetupError::NoFirstBody))
 	{
 		static FText Text = LOCTEXT("NoFirstBody", "A Constraint must have a first Rigid Body .");
 		Append(Text);
 	}
-	if (HasError(Error, EBodySetupError::SameBody))
+	if (HasError(Error, EAGX_AttachmentSetupError::SameBody))
 	{
 		static FText Text = LOCTEXT(
 			"BothBodiesSame", "Both Body Attachments may not reference the same Rigid Body");
