@@ -23,7 +23,7 @@ void FAGX_ConstraintCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 {
 	DetailBuilder = &InDetailBuilder;
 
-	// Fix category ordering (by priority AND by the order they edited).
+	// Fix category ordering by priority by the order they are often edited.
 	IDetailCategoryBuilder& BodiesCategory = DetailBuilder->EditCategory(
 		"AGX Constraint Bodies", FText::GetEmpty(), ECategoryPriority::Important);
 	DetailBuilder->EditCategory("AGX Constraint", FText::GetEmpty(), ECategoryPriority::Important);
@@ -35,6 +35,7 @@ void FAGX_ConstraintCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 	// clang-format off
 	BodiesCategory.AddCustomRow(LOCTEXT("Error","Error"))
 	[
+		// Switch to SListView and populate a list of FTexts if need more performance.
 		SNew(STextBlock)
 		.Text(this, &FAGX_ConstraintCustomization::GetBodySetupErrorText)
 		.ToolTipText(this, &FAGX_ConstraintCustomization::GetBodySetupErrorText)
@@ -97,7 +98,7 @@ namespace AGX_ConstraintCustomization_helpers
 				Error |= EBodySetupError::NoFirstBody;
 			}
 
-			if (/*Body1 != nullptr &&*/ Body1 == Body2)
+			if (Body1 != nullptr && Body1 == Body2)
 			{
 				Error |= EBodySetupError::SameBody;
 			}
@@ -139,7 +140,7 @@ FText FAGX_ConstraintCustomization::GetBodySetupErrorText() const
 	if (HasError(Error, EBodySetupError::SameBody))
 	{
 		static FText Text = LOCTEXT(
-				"BothBodiesSame", "Both Body Attachments may not reference the same Rigid Body");
+			"BothBodiesSame", "Both Body Attachments may not reference the same Rigid Body");
 		Append(Text);
 	}
 
