@@ -26,8 +26,7 @@ void FAGX_ConstraintCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 	// Fix category ordering (by priority AND by the order they edited).
 	IDetailCategoryBuilder& BodiesCategory = DetailBuilder->EditCategory(
 		"AGX Constraint Bodies", FText::GetEmpty(), ECategoryPriority::Important);
-	DetailBuilder->EditCategory(
-		"AGX Constraint", FText::GetEmpty(), ECategoryPriority::Important);
+	DetailBuilder->EditCategory("AGX Constraint", FText::GetEmpty(), ECategoryPriority::Important);
 	DetailBuilder->EditCategory(
 		"AGX Secondary Constraint", FText::GetEmpty(), ECategoryPriority::Important);
 	DetailBuilder->EditCategory(
@@ -37,37 +36,114 @@ void FAGX_ConstraintCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 	BodiesCategory.AddCustomRow(LOCTEXT("Error","Error"))
 	[
 		SNew(STextBlock)
-		.Text(LOCTEXT("BothBodiesSame", "Both Body Attachments may not reference the same Rigid Body"))
-		.ToolTipText(LOCTEXT("BothBodiesSame", "Both Body Attachments may not reference the same Rigid Body"))
+		.Text(this, &FAGX_ConstraintCustomization::GetBodySetupErrorText)
+		.ToolTipText(this, &FAGX_ConstraintCustomization::GetBodySetupErrorText)
 		.Font(IDetailLayoutBuilder::GetDetailFont())
 		.ColorAndOpacity(FLinearColor::Red)
 	]
-	.Visibility(TAttribute<EVisibility>(this, &FAGX_ConstraintCustomization::VisibleWhenSameBody));
+	.Visibility(TAttribute<EVisibility>(
+		this, &FAGX_ConstraintCustomization::VisibleWhenBodySetupError));
 	// clang-format on
 }
 
-EVisibility FAGX_ConstraintCustomization::VisibleWhenSameBody() const
+namespace AGX_ConstraintCustomization_helpers
 {
-	TArray<TWeakObjectPtr<UObject>> Objects;
-	DetailBuilder->GetObjectsBeingCustomized(Objects);
-
-	bool bAnyEqual {false};
-	for (auto& Object : Objects)
+	enum class EBodySetupError : int
 	{
-		UAGX_ConstraintComponent* Constraint = Cast<UAGX_ConstraintComponent>(Object.Get());
-		if (Constraint == nullptr)
-			continue;
+		NoError = 0,
+		NoFirstBody = 1 << 0,
+		SameBody = 1 << 1
+	};
 
-		UAGX_RigidBodyComponent* Body1 = Constraint->BodyAttachment1.GetRigidBody();
-		UAGX_RigidBodyComponent* Body2 = Constraint->BodyAttachment2.GetRigidBody();
-		if (Body1 != nullptr && Body1 == Body2)
-		{
-			bAnyEqual = true;
-			break;
-		}
+	EBodySetupError& operator|=(EBodySetupError& InOutLhs, EBodySetupError InRhs)
+	{
+		int Lhs = (int) InOutLhs;
+		int Rhs = (int) InRhs;
+		int result = Lhs | Rhs;
+		InOutLhs = (EBodySetupError) result;
+		return InOutLhs;
 	}
 
-	return FAGX_EditorUtilities::VisibleIf(bAnyEqual);
+	EBodySetupError operator&(EBodySetupError InLhs, EBodySetupError InRhs)
+	{
+		int Lhs = (int) InLhs;
+		int Rhs = (int) InRhs;
+		int Result = Lhs & Rhs;
+		return (EBodySetupError) Result;
+	}
+
+	bool HasError(EBodySetupError Error, EBodySetupError Flag)
+	{
+		return (Error & Flag) != EBodySetupError::NoError;
+	}
+
+	EBodySetupError GetBodySetupError(const IDetailLayoutBuilder& DetailBuilder)
+	{
+		EBodySetupError Error {EBodySetupError::NoError};
+
+		TArray<TWeakObjectPtr<UObject>> Objects;
+		DetailBuilder.GetObjectsBeingCustomized(Objects);
+		for (auto& Object : Objects)
+		{
+			UAGX_ConstraintComponent* Constraint = Cast<UAGX_ConstraintComponent>(Object.Get());
+			if (Constraint == nullptr)
+				continue;
+
+			UAGX_RigidBodyComponent* Body1 = Constraint->BodyAttachment1.GetRigidBody();
+			UAGX_RigidBodyComponent* Body2 = Constraint->BodyAttachment2.GetRigidBody();
+
+			if (Body1 == nullptr)
+			{
+				Error |= EBodySetupError::NoFirstBody;
+			}
+
+			if (/*Body1 != nullptr &&*/ Body1 == Body2)
+			{
+				Error |= EBodySetupError::SameBody;
+			}
+		}
+
+		return Error;
+	}
+}
+
+EVisibility FAGX_ConstraintCustomization::VisibleWhenBodySetupError() const
+{
+	using namespace AGX_ConstraintCustomization_helpers;
+	if (DetailBuilder == nullptr)
+		return EVisibility::Collapsed;
+	EBodySetupError Error = GetBodySetupError(*DetailBuilder);
+	return FAGX_EditorUtilities::VisibleIf(Error != EBodySetupError::NoError);
+}
+
+FText FAGX_ConstraintCustomization::GetBodySetupErrorText() const
+{
+	using namespace AGX_ConstraintCustomization_helpers;
+	if (DetailBuilder == nullptr)
+		return FText();
+
+	EBodySetupError Error = GetBodySetupError(*DetailBuilder);
+	FString Message;
+	auto Append = [&Message](const FText& Text)
+	{
+		if (!Message.IsEmpty())
+			Message += TEXT("\n");
+		Message += Text.ToString();
+	};
+
+	if (HasError(Error, EBodySetupError::NoFirstBody))
+	{
+		static FText Text = LOCTEXT("NoFirstBody", "A Constraint must have a first Rigid Body .");
+		Append(Text);
+	}
+	if (HasError(Error, EBodySetupError::SameBody))
+	{
+		static FText Text = LOCTEXT(
+				"BothBodiesSame", "Both Body Attachments may not reference the same Rigid Body");
+		Append(Text);
+	}
+
+	return FText::FromString(Message);
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -21,7 +21,8 @@ public:
 	virtual void CustomizeDetails(IDetailLayoutBuilder& InDetailBuilder) override;
 
 private:
-	EVisibility VisibleWhenSameBody() const;
+	EVisibility VisibleWhenBodySetupError() const;
+	FText GetBodySetupErrorText() const;
 
 private:
 	IDetailLayoutBuilder* DetailBuilder;
