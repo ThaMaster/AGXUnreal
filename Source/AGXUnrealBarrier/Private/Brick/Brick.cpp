@@ -7,6 +7,7 @@
 
 // Brick includes.
 #include "Brick/brick/BrickContext.h"
+#include "Brick/brick/BrickContextInternal.h"
 #include "Brick/Brick/BrickCoreApi.h"
 #include "Brick/brickagx/AgxCache.h"
 #include "Brick/brickagx/BrickAgxApi.h"
@@ -52,17 +53,20 @@ namespace
 		auto BrickCtx = std::make_shared<Brick::Core::Api::BrickContext>(std::vector<std::string>(
 			{"C:/Users/Admin/git/agxunreal/AGXUnrealDev/Plugins/AGXUnreal/Source/ThirdParty/agx/brickbundles"}));
 
-		Math_register_factories(BrickCtx.get());
-		Physics_register_factories(BrickCtx.get());
-		Physics1D_register_factories(BrickCtx.get());
-		Physics3D_register_factories(BrickCtx.get());
-		DriveTrain_register_factories(BrickCtx.get());
-		Robotics_register_factories(BrickCtx.get());
-		Simulation_register_factories(BrickCtx.get());
-		Vehicles_register_factories(BrickCtx.get());
-		Terrain_register_factories(BrickCtx.get());
-		Visuals_register_factories(BrickCtx.get());
-		Urdf_register_factories(BrickCtx.get());
+		auto InternalContext = Brick::Core::Api::BrickContextInternal::fromContext(*BrickCtx);
+		auto EvalCtx = InternalContext->evaluatorContext().get();
+
+		Math_register_factories(EvalCtx);
+		Physics_register_factories(EvalCtx);
+		Physics1D_register_factories(EvalCtx);
+		Physics3D_register_factories(EvalCtx);
+		DriveTrain_register_factories(EvalCtx);
+		Robotics_register_factories(EvalCtx);
+		Simulation_register_factories(EvalCtx);
+		Vehicles_register_factories(EvalCtx);
+		Terrain_register_factories(EvalCtx);
+		Visuals_register_factories(EvalCtx);
+		Urdf_register_factories(EvalCtx);
 
 		BrickAgx::register_plugins(*BrickCtx, Mapper.AGXCache);
 		return BrickCtx;
