@@ -240,7 +240,7 @@ public:
 	/**
 	 * Check if the native AGX Dynamics constraint has been successfully created and initialized.
 	 *
-	 * Not to be confused with Unreal Engine's Is Valid. A Constraint Component can we a valid
+	 * Not to be confused with Unreal Engine's Is Valid. A Constraint Component can be a valid
 	 * Unreal Engine Component without having a valid native AGX Dynamics constraint.
 	 *
 	 * @return True if the native AGX Dynamics constraint has been successfully created and
