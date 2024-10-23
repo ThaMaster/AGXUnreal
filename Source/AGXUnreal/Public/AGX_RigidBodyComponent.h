@@ -182,9 +182,14 @@ public:
 	 * @return The total mass of this rigid body, calculated given volume and density of added
 	 * geometries.
 	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
 	double CalculateMass() const;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics", Meta = (DisplayName = "CalculateMass"))
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Dynamics",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use CalculateMass instead of CalculateMass_BP"))
 	float CalculateMass_BP() const;
 
 	/**

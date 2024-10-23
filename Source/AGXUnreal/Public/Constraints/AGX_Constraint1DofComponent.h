@@ -54,6 +54,7 @@ public:
 	 * is in [deg].
 	 * @return The angle [deg] or position [cm] of the free degree of freedom.
 	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
 	double GetAngle() const;
 
 	/**
@@ -64,7 +65,7 @@ public:
 	 */
 	UFUNCTION(
 		BlueprintCallable, BlueprintPure, Category = "AGX Constraint",
-		META = (DisplayName = "GetAngle"))
+		Meta = (DeprecatedFunction, DeprecationMessage = "Use GetAngle instead of GetAngle_BP"))
 	float GetAngle_BP() const;
 
 	/**
@@ -72,6 +73,8 @@ public:
 	 * then the speed is in [cm/s], if it is a rotational constraint then the speed is in [deg/s].
 	 * @return The speed, either [cm/s] or [rad/s].
 	 */
+	UFUNCTION(
+		BlueprintCallable, BlueprintPure, Category = "AGX Constraint")
 	double GetSpeed() const;
 
 	/**
@@ -81,7 +84,7 @@ public:
 	 */
 	UFUNCTION(
 		BlueprintCallable, BlueprintPure, Category = "AGX Constraint",
-		Meta = (DisplayName = "Get Speed"))
+		Meta = (DeprecatedFunction, DeprecationMessage = "Use GetSpeed instead of GetSpeeds_BP"))
 	float GetSpeed_BP() const;
 
 	UAGX_Constraint1DofComponent();

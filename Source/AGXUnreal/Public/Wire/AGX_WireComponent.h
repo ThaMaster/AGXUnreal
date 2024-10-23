@@ -825,20 +825,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	bool IsInitialized() const;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	double GetRestLength() const;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire", Meta = (DisplayName = "Get Rest Length"))
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Wire",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use GetRestLength instead of GetRestLength_BP"))
 	float GetRestLength_BP() const;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	double GetMass() const;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire", Meta = (DisplayName = "Get Mass"))
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Wire",
+		Meta = (DeprecatedFunction, DeprecationMessage = "Use GetMass instead of GetMass_BP"))
 	float GetMass_BP() const;
 
-	/// \todo What parameter to pass?
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	double GetTension() const;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire", Meta = (DisplayName = "Get Tension"))
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Wire",
+		Meta = (DeprecatedFunction, DeprecationMessage = "Use GetTension instead of GetTension_BP"))
 	float GetTension_BP() const;
 
 	/// @return True if this wire has at least one renderable simulation node.
