@@ -55,16 +55,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void SetHingeComplianceTranslationalZ(double ComplianceZ);
 
-	// clang-format off
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta = (
-			DeprecatedFunction,
-			DeprecationMessage =
-				"Use SetHingeComplianceTranslational instead of SetHingeComplianceTranslational_BP"))
-	void SetHingeComplianceTranslational_BP(float X, float Y, float Z);
-	// clang-format on
-
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void GetHingeComplianceTranslational(double& X, double& Y, double& Z) const;
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
@@ -73,16 +63,6 @@ public:
 	double GetHingeComplianceTranslationalY() const;
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	double GetHingeComplianceTranslationalZ() const;
-
-	// clang-format off
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta = (
-			DeprecatedFunction,
-			DeprecationMessage =
-				"Use GetHingeComplianceTranslational instead of GetHingeComplianceTranslational_BP"))
-	void GetHingeComplianceTranslational_BP(float& X, float& Y, float& Z);
-	// clang-format on
 
 	/**
 	 * Compliance of the hinges between track nodes, around the axis pointing vertically
@@ -104,28 +84,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void SetHingeComplianceRotationalY(double Compliance);
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use SetHingeComplianceRotational instead of SetHingeComplianceRotational_BP"))
-	void SetHingeComplianceRotational_BP(float X, float Y);
-
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void GetHingeComplianceRotational(double& X, double& Y) const;
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	double GetHingeComplianceRotationalX() const;
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	double GetHingeComplianceRotationalY() const;
-
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use GetHingeComplianceRotational instead of GetHingeComplianceRotational_BP"))
-	void GetHingeComplianceRotational_BP(float& X, float& Y);
 
 	/**
 	 * Spook damping of the hinges between track nodes, along the axis pointing vertically
@@ -156,34 +120,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void SetHingeSpookDampingTranslationalZ(double Damping);
 
-	// clang-format off
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta = (
-			DeprecatedFunction,
-			DeprecationMessage =
-				"Use SetHingeSpookDampingTranslational instead of SetHingeSpookDampingTranslational_BP"))
-	void SetHingeSpookDampingTranslational_BP(float DampingX, float DampingY, float DampingZ);
-	// clang-format on
-
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
-	void GetHingeSpookDampingTranslational(double& DampingX, double& DampingY, double& DampingZ) const;
+	void GetHingeSpookDampingTranslational(
+		double& DampingX, double& DampingY, double& DampingZ) const;
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	double GetHingeSpookDampingTranslationalX() const;
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	double GetHingeSpookDampingTranslationalY() const;
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	double GetHingeSpookDampingTranslationalZ() const;
-
-	// clang-format off
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta = (
-			DeprecatedFunction,
-			DeprecationMessage =
-				"Use GetHingeSpookDampingTranslational instead of GetHingeSpookDampingTranslational_BP"))
-	void GetHingeSpookDampingTranslational_BP(float& DampingX, float& DampingY, float& DampingZ);
-	// clang-format on
 
 	/**
 	 * Spook damping of the hinges between track nodes, around the axis pointing vertically
@@ -205,28 +150,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void SetHingeSpookDampingRotationalY(double Damping);
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use SetHingeSpookDampingRotational instead of SetHingeSpookDampingRotational_BP"))
-	void SetHingeSpookDampingRotational_BP(float X, float Y);
-
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void GetHingeSpookDampingRotational(double& X, double& Y) const;
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	double GetHingeSpookDampingRotationalX() const;
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	double GetHingeSpookDampingRotationalY() const;
-
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use GetHingeSpookDampingRotational instead of GetHingeSpookDampingRotational_BP"))
-	void GetHingeSpookDampingRotational_BP(float& X, float& Y);
 
 	/**
 	 * Whether to enable the range in the hinges between the track nodes
@@ -252,24 +181,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void SetHingeRange(double Min, double Max);
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage = "Use SetHingeRange instead of SetHingeRange_BP"))
-	void SetHingeRange_BP(float Min, float Max);
-
 	FAGX_RealInterval GetHingeRange() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void GetHingeRange(double& Min, double& Max) const;
-
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage = "Use GetHingeRange instead of GetHingeRange_BP"))
-	void GetHingeRange_BP(float& Min, float& Max) const;
 
 	/**
 	 * When the track has been initialized some nodes are in contact with the wheels.
@@ -308,28 +223,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void SetTransformNodesToWheelsOverlap(double Overlap);
 
-	// clang-format off
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				"Use SetTransformNodesToWheelsOverlap instead of SetTransformNodesToWheelsOverlap_BP"))
-	void SetTransformNodesToWheelsOverlap_BP(float Overlap);
-	// clang-format on
-
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	double GetTransformNodesToWheelsOverlap() const;
-
-	// clang-format off
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				"Use GetTransformNodesToWheelsOverlap instead of GetTransformNodesToWheelsOverlap_BP"))
-	float GetTransformNodesToWheelsOverlap_BP() const;
-	// clang-format on
 
 	/**
 	 * Threshold when to merge a node to a wheel.
@@ -345,14 +240,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void SetNodesToWheelsMergeThreshold(double MergeThreshold);
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use SetNodesToWheelsMergeThreshold instead of SetNodesToWheelsMergeThreshold_BP"))
-	void SetNodesToWheelsMergeThreshold_BP(float MergeThreshold);
-
 	/**
 	 * Threshold when to split a node from a wheel.
 	 *
@@ -366,14 +253,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void SetNodesToWheelsSplitThreshold(double SplitThreshold);
-
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use SetNodesToWheelsSplitThreshold instead of SetNodesToWheelsSplitThreshold_BP"))
-	void SetNodesToWheelsSplitThreshold_BP(float SplitThreshold);
 
 	/**
 	 * Average direction of non-merged nodes entering or exiting a wheel is used as
@@ -404,16 +283,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void SetMinStabilizingHingeNormalForce(double MinNormalForce);
 
-	// clang-format off
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				"Use SetMinStabilizingHingeNormalForce instead of SetMinStabilizingHingeNormalForce_BP"))
-	void SetMinStabilizingHingeNormalForce_BP(float MinNormalForce);
-	// clang-format on
-
 	/**
 	 * Friction parameter of the internal friction in the node hinges.
 	 *
@@ -427,16 +296,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Track Properties")
 	void SetStabilizingHingeFrictionParameter(double FrictionParameter);
-
-	// clang-format off
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Track Properties",
-		Meta = (
-			DeprecatedFunction,
-			DeprecationMessage =
-				"Use SetStabilizingHingeFrictionParameter instead of SetStabilizingHingeFrictionParameter_BP"))
-	void SetStabilizingHingeFrictionParameter_BP(float FrictionParameter);
-	// clang-format on
 
 public:
 	UAGX_TrackProperties() = default;
@@ -498,6 +357,137 @@ public:
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 #endif
 	// ~End UObject interface.
+
+public: // Deprecated functions.
+	// clang-format off
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta = (
+			DeprecatedFunction,
+			DeprecationMessage =
+				"Use SetHingeComplianceTranslational instead of SetHingeComplianceTranslational_BP"))
+	void SetHingeComplianceTranslational_BP(float X, float Y, float Z);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta = (
+			DeprecatedFunction,
+			DeprecationMessage =
+				"Use GetHingeComplianceTranslational instead of GetHingeComplianceTranslational_BP"))
+	void GetHingeComplianceTranslational_BP(float& X, float& Y, float& Z);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use SetHingeComplianceRotational instead of SetHingeComplianceRotational_BP"))
+	void SetHingeComplianceRotational_BP(float X, float Y);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use GetHingeComplianceRotational instead of GetHingeComplianceRotational_BP"))
+	void GetHingeComplianceRotational_BP(float& X, float& Y);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta = (
+			DeprecatedFunction,
+			DeprecationMessage =
+				"Use SetHingeSpookDampingTranslational instead of SetHingeSpookDampingTranslational_BP"))
+	void SetHingeSpookDampingTranslational_BP(float DampingX, float DampingY, float DampingZ);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta = (
+			DeprecatedFunction,
+			DeprecationMessage =
+				"Use GetHingeSpookDampingTranslational instead of GetHingeSpookDampingTranslational_BP"))
+	void GetHingeSpookDampingTranslational_BP(float& DampingX, float& DampingY, float& DampingZ);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use SetHingeSpookDampingRotational instead of SetHingeSpookDampingRotational_BP"))
+	void SetHingeSpookDampingRotational_BP(float X, float Y);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use GetHingeSpookDampingRotational instead of GetHingeSpookDampingRotational_BP"))
+	void GetHingeSpookDampingRotational_BP(float& X, float& Y);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use SetHingeRange instead of SetHingeRange_BP"))
+	void SetHingeRange_BP(float Min, float Max);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use GetHingeRange instead of GetHingeRange_BP"))
+	void GetHingeRange_BP(float& Min, float& Max) const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				"Use SetTransformNodesToWheelsOverlap instead of SetTransformNodesToWheelsOverlap_BP"))
+	void SetTransformNodesToWheelsOverlap_BP(float Overlap);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				"Use GetTransformNodesToWheelsOverlap instead of GetTransformNodesToWheelsOverlap_BP"))
+	float GetTransformNodesToWheelsOverlap_BP() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use SetNodesToWheelsMergeThreshold instead of SetNodesToWheelsMergeThreshold_BP"))
+	void SetNodesToWheelsMergeThreshold_BP(float MergeThreshold);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use SetNodesToWheelsSplitThreshold instead of SetNodesToWheelsSplitThreshold_BP"))
+	void SetNodesToWheelsSplitThreshold_BP(float SplitThreshold);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta = (
+			DeprecatedFunction,
+			DeprecationMessage =
+				"Use SetStabilizingHingeFrictionParameter instead of SetStabilizingHingeFrictionParameter_BP"))
+	void SetStabilizingHingeFrictionParameter_BP(float FrictionParameter);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Track Properties",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				"Use SetMinStabilizingHingeNormalForce instead of SetMinStabilizingHingeNormalForce_BP"))
+	void SetMinStabilizingHingeNormalForce_BP(float MinNormalForce);
+
+	// clang-format on
 
 private:
 #if WITH_EDITOR

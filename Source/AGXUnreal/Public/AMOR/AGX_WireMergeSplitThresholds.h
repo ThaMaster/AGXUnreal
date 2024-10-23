@@ -32,24 +32,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wire Merge Split Thresholds")
 	FAGX_Real ForcePropagationDecayScale {1.0};
 
-	UFUNCTION(
-		BlueprintCallable, Category = "Wire Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use SetForcePropagationDecayScale instead of SetForcePropagationDecayScale_BP"))
-	void SetForcePropagationDecayScale_BP(float InForcePropagationDecayScale);
-
 	UFUNCTION(BlueprintCallable, Category = "Wire Merge Split Thresholds")
 	void SetForcePropagationDecayScale(double InForcePropagationDecayScale);
-
-	UFUNCTION(
-		BlueprintCallable, Category = "Wire Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use GetForcePropagationDecayScale instead of GetForcePropagationDecayScale_BP"))
-	float GetForcePropagationDecayScale_BP() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Merge Split Thresholds")
 	double GetForcePropagationDecayScale() const;
@@ -63,22 +47,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Wire Merge Split Thresholds")
 	FAGX_Real MergeTensionScale {1.0};
 
-	UFUNCTION(
-		BlueprintCallable, Category = "Wire Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage = "Use SetMergeTensionScale instead of SetMergeTensionScale_BP"))
-	void SetMergeTensionScale_BP(float InMergeTensionScale);
-
 	UFUNCTION(BlueprintCallable, Category = "Wire Merge Split Thresholds")
 	void SetMergeTensionScale(double InMergeTensionScale);
-
-	UFUNCTION(
-		BlueprintCallable, Category = "Wire Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage = "Use GetMergeTensionScale instead of GetMergeTensionScale_BP"))
-	float GetMergeTensionScale_BP() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Wire Merge Split Thresholds")
 	double GetMergeTensionScale() const;
@@ -103,6 +73,37 @@ public:
 	 * Assigns the property values of this class to the passed barrier.
 	 */
 	void CopyTo(FWireMergeSplitThresholdsBarrier& Barrier);
+
+public: // Deprecated functions.
+	UFUNCTION(
+		BlueprintCallable, Category = "Wire Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use SetForcePropagationDecayScale instead of SetForcePropagationDecayScale_BP"))
+	void SetForcePropagationDecayScale_BP(float InForcePropagationDecayScale);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Wire Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use GetForcePropagationDecayScale instead of GetForcePropagationDecayScale_BP"))
+	float GetForcePropagationDecayScale_BP() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Wire Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use SetMergeTensionScale instead of SetMergeTensionScale_BP"))
+	void SetMergeTensionScale_BP(float InMergeTensionScale);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Wire Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use GetMergeTensionScale instead of GetMergeTensionScale_BP"))
+	float GetMergeTensionScale_BP() const;
 
 private:
 #if WITH_EDITOR

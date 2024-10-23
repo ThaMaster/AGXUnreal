@@ -29,24 +29,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxDesiredForceRangeDiff {0.1};
 
-	UFUNCTION(
-		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use SetMaxDesiredForceRangeDiff instead of SetMaxDesiredForceRangeDiff_BP"))
-	void SetMaxDesiredForceRangeDiff_BP(float InMaxDesiredForceRangeDiff);
-
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	void SetMaxDesiredForceRangeDiff(double InMaxDesiredForceRangeDiff);
-
-	UFUNCTION(
-		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use GetMaxDesiredForceRangeDiff instead of GetMaxDesiredForceRangeDiff_BP"))
-	float GetMaxDesiredForceRangeDiff_BP() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	double GetMaxDesiredForceRangeDiff() const;
@@ -63,24 +47,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxDesiredLockAngleDiff {0.00001};
 
-	UFUNCTION(
-		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use SetMaxDesiredLockAngleDiff instead of SetMaxDesiredLockAngleDiff_BP"))
-	void SetMaxDesiredLockAngleDiff_BP(float InMaxDesiredLockAngleDiff);
-
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	void SetMaxDesiredLockAngleDiff(double InMaxDesiredLockAngleDiff);
-
-	UFUNCTION(
-		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use GetMaxDesiredLockAngleDiff instead of GetMaxDesiredLockAngleDiff_BP"))
-	float GetMaxDesiredLockAngleDiff_BP() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	double GetMaxDesiredLockAngleDiff() const;
@@ -97,24 +65,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxDesiredRangeAngleDiff {0.00001};
 
-	UFUNCTION(
-		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use SetMaxDesiredRangeAngleDiff instead of SetMaxDesiredRangeAngleDiff_BP"))
-	void SetMaxDesiredRangeAngleDiff_BP(float InMaxDesiredRangeAngleDiff);
-
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	void SetMaxDesiredRangeAngleDiff(double InMaxDesiredRangeAngleDiff);
-
-	UFUNCTION(
-		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use GetMaxDesiredRangeAngleDiff instead of GetMaxDesiredRangeAngleDiff_BP"))
-	float GetMaxDesiredRangeAngleDiff_BP() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	double GetMaxDesiredRangeAngleDiff() const;
@@ -131,24 +83,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxDesiredSpeedDiff {0.00001};
 
-	UFUNCTION(
-		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use SetMaxDesiredSpeedDiff instead of SetMaxDesiredSpeedDiff_BP"))
-	void SetMaxDesiredSpeedDiff_BP(float InMaxDesiredSpeedDiff);
-
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	void SetMaxDesiredSpeedDiff(double InMaxDesiredSpeedDiff);
-
-	UFUNCTION(
-		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage =
-				 "Use GetMaxDesiredSpeedDiff instead of GetMaxDesiredSpeedDiff_BP"))
-	float GetMaxDesiredSpeedDiff_BP() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	double GetMaxDesiredSpeedDiff() const;
@@ -165,22 +101,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Constraint Merge Split Thresholds")
 	FAGX_Real MaxRelativeSpeed {0.005};
 
-	UFUNCTION(
-		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage = "Use SetMaxRelativeSpeed instead of SetMaxRelativeSpeed_BP"))
-	void SetMaxRelativeSpeed_BP(float InMaxRelativeSpeed);
-
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	void SetMaxRelativeSpeed(double InMaxRelativeSpeed);
-
-	UFUNCTION(
-		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage = "Use GetMaxRelativeSpeed instead of GetMaxRelativeSpeed_BP"))
-	float GetMaxRelativeSpeed_BP() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Constraint Merge Split Thresholds")
 	double GetMaxRelativeSpeed() const;
@@ -208,6 +130,85 @@ public:
 	 * Assigns the property values of this class to the passed barrier.
 	 */
 	void CopyTo(FConstraintMergeSplitThresholdsBarrier& Barrier);
+
+public: // Deprecated functions.
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use SetMaxDesiredForceRangeDiff instead of SetMaxDesiredForceRangeDiff_BP"))
+	void SetMaxDesiredForceRangeDiff_BP(float InMaxDesiredForceRangeDiff);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use GetMaxDesiredForceRangeDiff instead of GetMaxDesiredForceRangeDiff_BP"))
+	float GetMaxDesiredForceRangeDiff_BP() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use SetMaxDesiredLockAngleDiff instead of SetMaxDesiredLockAngleDiff_BP"))
+	void SetMaxDesiredLockAngleDiff_BP(float InMaxDesiredLockAngleDiff);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use GetMaxDesiredLockAngleDiff instead of GetMaxDesiredLockAngleDiff_BP"))
+	float GetMaxDesiredLockAngleDiff_BP() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use SetMaxDesiredRangeAngleDiff instead of SetMaxDesiredRangeAngleDiff_BP"))
+	void SetMaxDesiredRangeAngleDiff_BP(float InMaxDesiredRangeAngleDiff);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use GetMaxDesiredRangeAngleDiff instead of GetMaxDesiredRangeAngleDiff_BP"))
+	float GetMaxDesiredRangeAngleDiff_BP() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use SetMaxDesiredSpeedDiff instead of SetMaxDesiredSpeedDiff_BP"))
+	void SetMaxDesiredSpeedDiff_BP(float InMaxDesiredSpeedDiff);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage =
+				 "Use GetMaxDesiredSpeedDiff instead of GetMaxDesiredSpeedDiff_BP"))
+	float GetMaxDesiredSpeedDiff_BP() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use SetMaxRelativeSpeed instead of SetMaxRelativeSpeed_BP"))
+	void SetMaxRelativeSpeed_BP(float InMaxRelativeSpeed);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "Constraint Merge Split Thresholds",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use GetMaxRelativeSpeed instead of GetMaxRelativeSpeed_BP"))
+	float GetMaxRelativeSpeed_BP() const;
 
 private:
 #if WITH_EDITOR

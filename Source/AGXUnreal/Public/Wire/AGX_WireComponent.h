@@ -828,28 +828,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	double GetRestLength() const;
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Wire",
-		Meta =
-			(DeprecatedFunction,
-			 DeprecationMessage = "Use GetRestLength instead of GetRestLength_BP"))
-	float GetRestLength_BP() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	double GetMass() const;
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Wire",
-		Meta = (DeprecatedFunction, DeprecationMessage = "Use GetMass instead of GetMass_BP"))
-	float GetMass_BP() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	double GetTension() const;
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Wire",
-		Meta = (DeprecatedFunction, DeprecationMessage = "Use GetTension instead of GetTension_BP"))
-	float GetTension_BP() const;
 
 	/// @return True if this wire has at least one renderable simulation node.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
@@ -958,6 +944,27 @@ public:
 	virtual void PostEditComponentMove(bool bFinished) override;
 #endif
 	//~ End Scene Component interface.
+
+private: // Deprecated functions.
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Wire",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use GetRestLength instead of GetRestLength_BP"))
+	float GetRestLength_BP() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Wire",
+		Meta = (DeprecatedFunction, DeprecationMessage = "Use GetMass instead of GetMass_BP"))
+	float GetMass_BP() const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Wire",
+		Meta = (DeprecatedFunction, DeprecationMessage = "Use GetTension instead of GetTension_BP"))
+	float GetTension_BP() const;
+
+
 protected:
 	// ~Begin UActorComponent interface.
 	virtual void OnRegister() override;
@@ -965,6 +972,7 @@ protected:
 	// ~End UActorComponent interface.
 
 private:
+
 #if WITH_EDITOR
 	void InitPropertyDispatcher();
 #endif
