@@ -662,7 +662,7 @@ void AAGX_SensorEnvironment::BeginPlay()
 		const FString Message =
 			"Lidar raytracing (RTX) not supported on this computer, unable to run the Sensor "
 			"Environment. To enable Lidar raytracing (RTX) support, use an RTX "
-			"Graphical Processing Unit (GPU).";
+			"Graphical Processing Unit (GPU) with updated driver.";
 		FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail, 8.f);
 		return;
 	}
