@@ -56,6 +56,7 @@ public:
 		Meta = (DisplayName = "Set Hinge Compliance Translational"))
 	void SetHingeComplianceTranslational_BP(float X, float Y, float Z);
 
+	void GetHingeComplianceTranslational(double& X, double& Y, double& Z) const;
 	double GetHingeComplianceTranslationalX() const;
 	double GetHingeComplianceTranslationalY() const;
 	double GetHingeComplianceTranslationalZ() const;
@@ -87,6 +88,7 @@ public:
 		Meta = (DisplayName = "Set Hinge Compliance Rotational"))
 	void SetHingeComplianceRotational_BP(float X, float Y);
 
+	void GetHingeComplianceRotational(double& X, double& Y) const;
 	double GetHingeComplianceRotationalX() const;
 	double GetHingeComplianceRotationalY() const;
 
@@ -125,6 +127,7 @@ public:
 		Meta = (DisplayName = "Set Hinge Spook Damping Translational"))
 	void SetHingeSpookDampingTranslational_BP(float DampingX, float DampingY, float DampingZ);
 
+	void GetHingeSpookDampingTranslational(double& DampingX, double& DampingY, double& DampingZ) const;
 	double GetHingeSpookDampingTranslationalX() const;
 	double GetHingeSpookDampingTranslationalY() const;
 	double GetHingeSpookDampingTranslationalZ() const;
@@ -156,6 +159,7 @@ public:
 		Meta = (DisplayName = "Set Hinge Spook Damping Rotational"))
 	void SetHingeSpookDampingRotational_BP(float X, float Y);
 
+	void GetHingeSpookDampingRotational(double& X, double& Y) const;
 	double GetHingeSpookDampingRotationalX() const;
 	double GetHingeSpookDampingRotationalY() const;
 

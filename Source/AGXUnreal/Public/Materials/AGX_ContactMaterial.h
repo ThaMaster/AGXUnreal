@@ -497,7 +497,8 @@ public:
 	FAGX_Real AdhesiveForce {0.0};
 
 	void SetAdhesiveForce(double InAdhesiveForce);
-	float GetAdhesiveForce() const;
+
+	double GetAdhesiveForce() const;
 
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Contact Material",
