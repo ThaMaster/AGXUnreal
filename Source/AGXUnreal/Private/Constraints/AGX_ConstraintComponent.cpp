@@ -410,6 +410,13 @@ FAGX_RealInterval UAGX_ConstraintComponent::GetForceRange(EGenericDofIndex Index
 		[this](int32 NativeDof) { return NativeBarrier->GetForceRange(NativeDof); });
 }
 
+void UAGX_ConstraintComponent::GetForceRangeFloat(EGenericDofIndex Index, float& Min, float& Max) const
+{
+	FAGX_RealInterval Range = GetForceRange(Index);
+	Min = Range.Min;
+	Max = Range.Max;
+}
+
 void UAGX_ConstraintComponent::SetComputeForces(bool bInComputeForces)
 {
 	if (HasNative())

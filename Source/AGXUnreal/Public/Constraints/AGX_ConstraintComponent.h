@@ -140,8 +140,7 @@ public:
 	void SetElasticity(EGenericDofIndex Index, double InElasticity);
 
 	UFUNCTION(
-		BlueprintCallable, Category = "AGX Constraint",
-		Meta = (DisplayName = "Get Elasticity"))
+		BlueprintCallable, Category = "AGX Constraint", Meta = (DisplayName = "Get Elasticity"))
 	float GetElasticityFloat(EGenericDofIndex Index) const;
 
 	double GetElasticity(EGenericDofIndex Index) const;
@@ -161,8 +160,7 @@ public:
 	void SetSpookDamping(EGenericDofIndex Index, double InSpookDamping);
 
 	UFUNCTION(
-		BlueprintCallable, Category = "AGX Constraint",
-		Meta = (DisplayName = "Get Spook Damping"))
+		BlueprintCallable, Category = "AGX Constraint", Meta = (DisplayName = "Get Spook Damping"))
 	float GetSpookDampingFloat(EGenericDofIndex Index) const;
 
 	double GetSpookDamping(EGenericDofIndex Index) const;
@@ -194,6 +192,12 @@ public:
 	float GetForceRangeMaxFloat(EGenericDofIndex Index) const;
 
 	FAGX_RealInterval GetForceRange(EGenericDofIndex Index) const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint",
+		Meta = (DisplayName = "Get Force Range"))
+	void GetForceRangeFloat(EGenericDofIndex Index, float& Min, float& Max) const;
+
 
 	/**
 	 * Enable or disable computation of the forces applied to the dynamic bodies in this constraint.
