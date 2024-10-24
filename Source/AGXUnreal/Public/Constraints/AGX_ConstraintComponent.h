@@ -123,26 +123,15 @@ public:
 	FAGX_ConstraintDoublePropertyPerDof Compliance;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
-	void SetCompliance(EGenericDofIndex Index, float InCompliance);
-
 	void SetCompliance(EGenericDofIndex Index, double InCompliance);
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Constraint",
-		Meta = (DisplayName = "Get Compliance"))
-	float GetComplianceFloat(EGenericDofIndex Index) const;
-
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
 	double GetCompliance(EGenericDofIndex Index) const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
-	void SetElasticity(EGenericDofIndex Index, float InElasticity);
-
 	void SetElasticity(EGenericDofIndex Index, double InElasticity);
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Constraint", Meta = (DisplayName = "Get Elasticity"))
-	float GetElasticityFloat(EGenericDofIndex Index) const;
-
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
 	double GetElasticity(EGenericDofIndex Index) const;
 
 	/**
@@ -155,14 +144,9 @@ public:
 	FAGX_ConstraintDoublePropertyPerDof SpookDamping;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
-	void SetSpookDamping(EGenericDofIndex Index, float InSpookDamping);
-
 	void SetSpookDamping(EGenericDofIndex Index, double InSpookDamping);
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Constraint", Meta = (DisplayName = "Get Spook Damping"))
-	float GetSpookDampingFloat(EGenericDofIndex Index) const;
-
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
 	double GetSpookDamping(EGenericDofIndex Index) const;
 
 	/**
@@ -172,32 +156,21 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Constraint")
 	FAGX_ConstraintRangePropertyPerDof ForceRange;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
-	void SetForceRange(EGenericDofIndex Index, float RangeMin, float RangeMax);
-
 	void SetForceRange(EGenericDofIndex Index, const FAGX_RealInterval& InForceRange);
 
-	double GetForceRangeMin(EGenericDofIndex Index) const;
-
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Constraint",
-		Meta = (DisplayName = "Get Force Range Min"))
-	float GetForceRangeMinFloat(EGenericDofIndex Index) const;
-
-	double GetForceRangeMax(EGenericDofIndex Index) const;
-
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Constraint",
-		Meta = (DisplayName = "Get Force Range Max"))
-	float GetForceRangeMaxFloat(EGenericDofIndex Index) const;
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
+	void SetForceRange(EGenericDofIndex Index, double Min, double Max);
 
 	FAGX_RealInterval GetForceRange(EGenericDofIndex Index) const;
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Constraint",
-		Meta = (DisplayName = "Get Force Range"))
-	void GetForceRangeFloat(EGenericDofIndex Index, float& Min, float& Max) const;
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
+	void GetForceRange(EGenericDofIndex Index, double& Min, double& Max) const;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
+	double GetForceRangeMin(EGenericDofIndex Index) const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
+	double GetForceRangeMax(EGenericDofIndex Index) const;
 
 	/**
 	 * Enable or disable computation of the forces applied to the dynamic bodies in this constraint.
@@ -363,7 +336,7 @@ public:
 	 * Returns true if for any of the locked DOFs both the global attachment frame transforms do no
 	 * match.
 	 *
-	 * This function should never be used after the constraint has begun play.*
+	 * This function should never be used after the constraint has begun play.
 	 *
 	 * Can be overriden for specialized constraint checks.
 	 */
@@ -440,6 +413,77 @@ public:
 	 */
 	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
 	FGuid ImportGuid;
+
+public: // Deprecated functions.
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use SetCompliance instead of SetComplianceFloat"))
+	void SetComplianceFloat(EGenericDofIndex Index, float InCompliance);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use GetCompliance instead of GetComplianceFloat"))
+	float GetComplianceFloat(EGenericDofIndex Index) const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use SetElasticity instead of SetElasticityFloat"))
+	void SetElasticityFloat(EGenericDofIndex Index, float InElasticity);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use GetElasticity instead of GetElasticityFloat"))
+	float GetElasticityFloat(EGenericDofIndex Index) const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use SetSpookDamping instead of SetSpookDampinFloat"))
+	void SetSpookDampingFloat(EGenericDofIndex Index, float InSpookDamping);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use GetSpookDamping instead of GetSpookDampingFloat"))
+	float GetSpookDampingFloat(EGenericDofIndex Index) const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use SetForceRange instead of SetForceRangeFloat"))
+	void SetForceRangeFloat(EGenericDofIndex Index, float RangeMin, float RangeMax);
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use GetForceRangeMin instead of GetForceRangeMinFloat"))
+	float GetForceRangeMinFloat(EGenericDofIndex Index) const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use GetForceRangeMax instead of GetForceRangeMaxFloat"))
+	float GetForceRangeMaxFloat(EGenericDofIndex Index) const;
+
+	UFUNCTION(
+		BlueprintCallable, Category = "AGX Constraint",
+		Meta =
+			(DeprecatedFunction,
+			 DeprecationMessage = "Use GetForceRange instead of GetForceRangeFloat"))
+	void GetForceRangeFloat(EGenericDofIndex Index, float& Min, float& Max) const;
 
 protected:
 	/**
