@@ -23,7 +23,6 @@
 #include "Brick/Visuals/Visuals_all.h"
 #include "Brick/Urdf/Urdf_all.h"
 
-
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
 #include "EndAGXIncludes.h"
@@ -39,10 +38,24 @@ namespace
 	public:
 		std::shared_ptr<BrickAgx::AgxCache> AGXCache;
 
-		void MapModel(Brick::Core::ObjectPtr Model)
+		void MapModel(const Brick::Core::ObjectPtr Model)
 		{
 			// Todo.
 			UE_LOG(LogTemp, Warning, TEXT("MapModel called!"));
+			if (Model->is<Brick::Physics3D::System>())
+			{
+				auto System = std::dynamic_pointer_cast<Brick::Physics3D::System>(Model);
+				UE_LOG(
+					LogTemp, Warning, TEXT("MapModel was given a System %s."),
+					*Convert(System->getName()));
+			}
+			else if (Model->is<Brick::Physics3D::Bodies::RigidBody>())
+			{
+				auto Body = Model->as<std::shared_ptr<Brick::Physics3D::Bodies::RigidBody>>();
+				UE_LOG(
+					LogTemp, Warning, TEXT("MapModel was given a Brick Body %s"),
+					*Convert(Body->getName()));
+			}
 		}
 
 	private:
@@ -50,8 +63,9 @@ namespace
 
 	std::shared_ptr<Brick::Core::Api::BrickContext> CreateBrickContext(BrickUnrealMapper& Mapper)
 	{
-		auto BrickCtx = std::make_shared<Brick::Core::Api::BrickContext>(std::vector<std::string>(
-			{"C:/Users/Admin/git/agxunreal/AGXUnrealDev/Plugins/AGXUnreal/Source/ThirdParty/agx/brickbundles"}));
+		auto BrickCtx = std::make_shared<Brick::Core::Api::BrickContext>(
+			std::vector<std::string>({"C:/Users/Admin/git/agxunreal/AGXUnrealDev/Plugins/AGXUnreal/"
+									  "Source/ThirdParty/agx/brickbundles"}));
 
 		auto InternalContext = Brick::Core::Api::BrickContextInternal::fromContext(*BrickCtx);
 		auto EvalCtx = InternalContext->evaluatorContext().get();
