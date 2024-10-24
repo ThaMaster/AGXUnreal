@@ -21,11 +21,11 @@ bool UAGX_BrickAssetFactory::DoesSupportClass(UClass* Class)
 	return Class == UAGX_BrickAsset::StaticClass();
 }
 
-UObject* UAGX_BrickAssetFactory::FactoryCreateBinary(
-	UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context,
-	const TCHAR* Type, const uint8*& Buffer, const uint8* BufferEnd, FFeedbackContext* Warn)
+UObject* UAGX_BrickAssetFactory::FactoryCreateFile(
+	UClass* InClass, UObject* InParent, FName InName, EObjectFlags Flags, const FString& Filename,
+	const TCHAR* Parms, FFeedbackContext* Warn, bool& bOutOperationCanceled)
 {
-	return nullptr; // Todo
+	return nullptr; // todo
 }
 
 bool UAGX_BrickAssetFactory::FactoryCanImport(const FString& Filename)
