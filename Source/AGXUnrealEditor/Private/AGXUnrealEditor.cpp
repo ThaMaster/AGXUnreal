@@ -44,6 +44,7 @@
 #include "AMOR/AGX_ConstraintMergeSplitThresholdsTypeActions.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholdsTypeActions.h"
 #include "AMOR/AGX_WireMergeSplitThresholdsTypeActions.h"
+#include "Brick/AGX_BrickAssetTypeActions.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerActor.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponentCustomization.h"
@@ -193,6 +194,8 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 	EAssetTypeCategories::Type AgxAssetCategoryBit = AssetTools.RegisterAdvancedAssetCategory(
 		FName(TEXT("AgxUnreal")), LOCTEXT("AgxAssetCategory", "AGX Dynamics"));
 
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_BrickAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
