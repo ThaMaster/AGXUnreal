@@ -44,6 +44,8 @@
 #include "AMOR/AGX_ConstraintMergeSplitThresholdsTypeActions.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholdsTypeActions.h"
 #include "AMOR/AGX_WireMergeSplitThresholdsTypeActions.h"
+#include "Brick/AGX_BrickAsset.h"
+#include "Brick/AGX_BrickAssetCustomization.h"
 #include "Brick/AGX_BrickAssetTypeActions.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerActor.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
@@ -294,6 +296,10 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 	 * Class customizations.
 	 */
 
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_BrickAsset::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(&FAGX_BrickAssetCustomization::MakeInstance));
+
 	/// \todo I don't know if this should be AAGX_ConstraintActor or
 	/// UAGX_ConstraintComponent. Should we have one for each? Which should be
 	/// the new one and what should it contain/do?
@@ -437,6 +443,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	/*
 	 * Class Customizations.
 	 */
+
+	PropertyModule.UnregisterCustomClassLayout(UAGX_BrickAsset::StaticClass()->GetFName());
 
 	/// \todo Not sure if this should be AAGX_ConstraintActor,
 	/// UAGX_ConstraintComponent, or both.
