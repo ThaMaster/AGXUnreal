@@ -22,7 +22,11 @@ public:
 
 private:
 	FReply OnImportButtonClicked();
-	FReply OnExperimentButtonClicked();
+	FReply OnCreateBlueprintsButtonClicked();
+	FReply OnUpdateBlueprintButtonClicked();
+	FReply OnCopyFromOtherBlueprintButtonClicked();
 
-	IDetailLayoutBuilder* DetailBuilder;
+	IDetailLayoutBuilder* DetailBuilder {nullptr};
+	UBlueprint* BlueprintBase {nullptr};
+	AActor* TemplateActor {nullptr};
 };
