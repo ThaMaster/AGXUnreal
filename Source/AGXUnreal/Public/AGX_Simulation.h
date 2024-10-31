@@ -515,6 +515,20 @@ public: // Member functions.
 	UFUNCTION(BlueprintCallable, Category = "Simulation")
 	void StepOnce();
 
+	/**
+	 * Set true to integrate positions at the start of the timestep rather than at the end.
+	 * Set false to integrate positions at the end of the timestep.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Simulation")
+	bool SetPreIntegratePositions(bool Enable);
+
+	/**
+	 * Returns true if set to integrate positions at the start of the timestep.
+	 * Returns false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Simulation")
+	bool GetPreIntegratePositions() const;
+
 	static UAGX_Simulation* GetFrom(const UActorComponent* Component);
 
 	static UAGX_Simulation* GetFrom(const AActor* Actor);

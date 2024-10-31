@@ -710,9 +710,6 @@ void AAGX_SensorEnvironment::InitializeNative()
 		return;
 	}
 
-	// In case the Level has no other AGX types in it.
-	Sim->EnsureStepperCreated();
-
 	// Make sure correct Raytrace device is set.
 	if (Sim->RaytraceDeviceIndex != FSensorEnvironmentBarrier::GetCurrentRayraceDevice())
 	{
@@ -735,6 +732,13 @@ void AAGX_SensorEnvironment::InitializeNative()
 				 "agxSensor::Environment. The Output Log may contain more information."),
 			*GetName());
 	}
+
+	// In case the Level has no other AGX types in it.
+	Sim->EnsureStepperCreated();
+
+	// Set positions integrated in PRE so that they are "seen" in the Lidar output in the same step.
+	// This is the same procedure as used in AGX Dynamics tutorials and examples using Lidar.
+	Sim->SetPreIntegratePositions(true);
 }
 
 void AAGX_SensorEnvironment::RegisterLidars()

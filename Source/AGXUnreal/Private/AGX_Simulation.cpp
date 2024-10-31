@@ -1176,6 +1176,28 @@ void UAGX_Simulation::SetTimeStamp(double NewTimeStamp)
 	NativeBarrier.SetTimeStamp(NewTimeStamp);
 }
 
+bool UAGX_Simulation::SetPreIntegratePositions(bool Enable)
+{
+	if (!HasNative())
+		return false;
+
+	NativeBarrier.SetPreIntegratePositions(Enable);
+	return true;
+}
+
+bool UAGX_Simulation::GetPreIntegratePositions() const
+{
+	if (!HasNative())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("GetPreIntegratePositions was called on Simulation that does not have a native."));
+		return false;
+	}
+
+	return NativeBarrier.GetPreIntegratePositions();
+}
+
 UAGX_Simulation* UAGX_Simulation::GetFrom(const UActorComponent* Component)
 {
 	if (!Component)
