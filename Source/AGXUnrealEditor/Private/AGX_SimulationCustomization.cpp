@@ -118,7 +118,8 @@ void FAGX_SimulationCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 			.Content()
 			[
 				SNew(STextBlock)
-				.Text(this, &FAGX_SimulationCustomization::GetSelectedRaytraceDeviceString)
+				.Text_Lambda([this]()
+					{ return GetSelectedRaytraceDeviceString(); })
 			]
 		];
 	// clang-format on
@@ -130,8 +131,7 @@ namespace AGX_SimulationCustomization_helpers
 	{
 		static const auto ConfigSection = TEXT("/Script/AGXUnreal.AGX_Simulation");
 		const FString ConfigFileName = UAGX_Simulation::StaticClass()->GetDefaultConfigFilename();
-		GConfig->SetInt(
-			ConfigSection, *PropertyName.ToString(), Value, ConfigFileName);
+		GConfig->SetInt(ConfigSection, *PropertyName.ToString(), Value, ConfigFileName);
 
 		// Flush the change to the disk
 		GConfig->Flush(false, ConfigFileName);
@@ -226,7 +226,7 @@ void FAGX_SimulationCustomization::OnRaytraceDeviceComboBoxChanged(
 		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, RaytraceDeviceIndex), Index);
 }
 
-FText FAGX_SimulationCustomization::GetSelectedRaytraceDeviceString() const
+FText FAGX_SimulationCustomization::GetSelectedRaytraceDeviceString()
 {
 	if (!FSensorEnvironmentBarrier::IsRaytraceSupported())
 		return FText::FromString("Raytrace (RTX) not supported");
@@ -248,9 +248,14 @@ FText FAGX_SimulationCustomization::GetSelectedRaytraceDeviceString() const
 
 	if (CurrentDeviceIndex >= RaytraceDevices.Num())
 	{
-		FAGX_NotificationUtilities::ShowNotification(
-			"Unable to get name of current Lidar Raytrace (RTX) device",
-			SNotificationItem::CS_Fail);
+		if (!bHasShownUnableToGetDeviceNameNotification)
+		{
+			FAGX_NotificationUtilities::ShowNotification(
+				"Unable to get name of current Lidar Raytrace (RTX) device",
+				SNotificationItem::CS_Fail);
+			bHasShownUnableToGetDeviceNameNotification = true;
+		}
+
 		return FText::FromString("Unknown");
 	}
 

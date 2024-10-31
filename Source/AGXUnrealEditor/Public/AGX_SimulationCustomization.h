@@ -27,8 +27,9 @@ private:
 	FReply OnBrowseFileButtonClicked();
 	void OnRaytraceDeviceComboBoxChanged(
 		TSharedPtr<FString> SelectedDevice, ESelectInfo::Type InSeletionInfo);
-	FText GetSelectedRaytraceDeviceString() const;
+	FText GetSelectedRaytraceDeviceString();
 
 	TArray<TSharedPtr<FString>> RaytraceDevices;
 	IDetailLayoutBuilder* DetailBuilder;
+	bool bHasShownUnableToGetDeviceNameNotification {false};
 };
