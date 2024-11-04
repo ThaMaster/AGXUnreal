@@ -2591,7 +2591,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	/**
 	 * Delete assets that are no longer used.
 	 *
-	 * We find such assets by enumerating either the the SCS collection of the assets on drive and
+	 * We find such assets by enumerating either the SCS collection of the assets on drive and
 	 * comparing each with the simulation object collection. Any asset that is found in the SCS
 	 * collection or on drive but not found in the simulation object collection is deleted.
 	 *
