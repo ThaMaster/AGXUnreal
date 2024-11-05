@@ -600,6 +600,10 @@ EAGX_ImportType FAGX_ImportUtilities::GetFrom(const FString& FilePath)
 	{
 		return EAGX_ImportType::Agx;
 	}
+	else if (FileExtension.Equals("brick"))
+	{
+		return EAGX_ImportType::Brick;
+	}
 	else if (FileExtension.Equals("urdf"))
 	{
 		return EAGX_ImportType::Urdf;

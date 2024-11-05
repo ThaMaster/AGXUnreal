@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGXBarrierFactories.h"
 #include "AGX_Check.h"
+#include "AGX_Environment.h"
 #include "AGX_LogCategory.h"
 #include "BarrierOnly/AGXRefs.h"
 #include "RigidBodyBarrier.h"
@@ -28,6 +29,25 @@
 #include <agx/Prismatic.h>
 #include <agx/RigidBody.h>
 #include <agx/version.h>
+
+// Brick includes.
+#include "Brick/brick/BrickContext.h"
+#include "Brick/brick/BrickContextInternal.h"
+#include "Brick/Brick/BrickCoreApi.h"
+#include "Brick/brickagx/AgxCache.h"
+#include "Brick/brickagx/BrickAgxApi.h"
+#include "Brick/brickagx/BrickToAgxMapper.h"
+#include "Brick/Math/Math_all.h"
+#include "Brick/Physics/Physics_all.h"
+#include "Brick/Physics1D/Physics1D_all.h"
+#include "Brick/Physics3D/Physics3D_all.h"
+#include "Brick/DriveTrain/DriveTrain_all.h"
+#include "Brick/Robotics/Robotics_all.h"
+#include "Brick/Simulation/Simulation_all.h"
+#include "Brick/Vehicles/Vehicles_all.h"
+#include "Brick/Terrain/Terrain_all.h"
+#include "Brick/Visuals/Visuals_all.h"
+#include "Brick/Urdf/Urdf_all.h"
 
 // In 2.28 including Cable.h causes a preprocessor macro named DEPRECATED to be defined. This
 // conflicts with a macro with the same name in Unreal. Undeffing the Unreal one.
@@ -591,9 +611,9 @@ bool FAGXSimObjectsReader::ReadAGXArchive(
 	return true;
 }
 
-AGXUNREALBARRIER_API bool FAGXSimObjectsReader::ReadUrdf(
-	const FString& UrdfFilePath, const FString& UrdfPackagePath,
-	const TArray<double>& InInitJoints,	FSimulationObjectCollection& OutSimObjects)
+bool FAGXSimObjectsReader::ReadUrdf(
+	const FString& UrdfFilePath, const FString& UrdfPackagePath, const TArray<double>& InInitJoints,
+	FSimulationObjectCollection& OutSimObjects)
 {
 	agx::RealVector* InitJointsPtr = nullptr;
 	agx::RealVector InitJoints;
@@ -623,5 +643,84 @@ AGXUNREALBARRIER_API bool FAGXSimObjectsReader::ReadUrdf(
 	Simulation->add(Model);
 	::ReadAll(*Simulation, UrdfFilePath, OutSimObjects);
 
+	return true;
+}
+
+namespace AGXSimObjectsReader_helpers
+{
+	std::shared_ptr<Brick::Core::Api::BrickContext> CreateBrickContext(
+		std::shared_ptr<BrickAgx::AgxCache> AGXCache)
+	{
+		const FString BrickBundlesPath =
+			FPaths::Combine(FAGX_Environment::GetPluginSourcePath(), "Thirdparty", "agx", "brickbundles");
+		auto BrickCtx = std::make_shared<Brick::Core::Api::BrickContext>(
+			std::vector<std::string>({Convert(BrickBundlesPath)}));
+
+		auto InternalContext = Brick::Core::Api::BrickContextInternal::fromContext(*BrickCtx);
+		auto EvalCtx = InternalContext->evaluatorContext().get();
+
+		Math_register_factories(EvalCtx);
+		Physics_register_factories(EvalCtx);
+		Physics1D_register_factories(EvalCtx);
+		Physics3D_register_factories(EvalCtx);
+		DriveTrain_register_factories(EvalCtx);
+		Robotics_register_factories(EvalCtx);
+		Simulation_register_factories(EvalCtx);
+		Vehicles_register_factories(EvalCtx);
+		Terrain_register_factories(EvalCtx);
+		Visuals_register_factories(EvalCtx);
+		Urdf_register_factories(EvalCtx);
+
+		BrickAgx::register_plugins(*BrickCtx, AGXCache);
+		return BrickCtx;
+	}
+
+	Brick::Core::ObjectPtr LoadModelFromFile(
+		const std::string& BrickFile, std::shared_ptr<BrickAgx::AgxCache> AGXCache)
+	{
+		auto Context = CreateBrickContext(AGXCache);
+		if (Context == nullptr)
+		{
+			UE_LOG(LogAGX, Error, TEXT("Error Creating Brick Context"));
+			return nullptr;
+		}
+
+		auto LoadedModel = Brick::Core::Api::loadModelFromFile(BrickFile, {}, *Context);
+
+		if (Context->hasErrors())
+		{
+			LoadedModel = nullptr;
+			for (auto Error : Context->getErrors())
+				UE_LOG(LogAGX, Error, TEXT("Error in Brick Context : %d"), Error->getErrorCode());
+
+			return nullptr;
+		}
+
+		return LoadedModel;
+	}
+}
+
+bool FAGXSimObjectsReader::ReadBrickFile(
+	const FString& Filename, FSimulationObjectCollection& OutSimObjects)
+{
+	using namespace AGXSimObjectsReader_helpers;
+	std::shared_ptr<BrickAgx::AgxCache> AGXCache;
+	Brick::Core::ObjectPtr BrickModel = LoadModelFromFile(Convert(Filename), AGXCache);
+	if (BrickModel == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not read Brick file '%s'. The Log category LogAGXDynamics may include more "
+				 "details."),
+			*Filename);
+		return false;
+	}
+
+	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
+	BrickAgx::BrickToAgxMapper Mapper(Simulation, Convert(Filename), AGXCache);
+	agxSDK::AssemblyRef AssemblyAGX = Mapper.mapObject(BrickModel);
+
+	Simulation->add(AssemblyAGX);
+	::ReadAll(*Simulation, Filename, OutSimObjects);
 	return true;
 }

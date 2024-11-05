@@ -6,6 +6,8 @@
 #include "EditorFramework/AssetImportData.h"
 #include "UObject/AssetRegistryTagsContext.h"
 
+
+#if WITH_EDITORONLY_DATA
 void UAGX_BrickAsset::GetAssetRegistryTags(FAssetRegistryTagsContext Context) const
 {
 	// Not sure exactly what it does. But removing it stops reimport triggering the factory from
@@ -19,3 +21,4 @@ void UAGX_BrickAsset::GetAssetRegistryTags(FAssetRegistryTagsContext Context) co
 
 	Super::GetAssetRegistryTags(Context);
 }
+#endif

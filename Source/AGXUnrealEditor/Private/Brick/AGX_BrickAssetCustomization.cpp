@@ -29,6 +29,9 @@
 
 #define LOCTEXT_NAMESPACE "FAGX_BrickAssetCustomization"
 
+// IMPORTANT: This is all experimental test code used durint development. Remove before merge to
+// master.
+
 TSharedRef<IDetailCustomization> FAGX_BrickAssetCustomization::MakeInstance()
 {
 	return MakeShareable(new FAGX_BrickAssetCustomization);
@@ -117,7 +120,7 @@ void FAGX_BrickAssetCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 FReply FAGX_BrickAssetCustomization::OnImportButtonClicked()
 {
 	AGX_CHECK(DetailBuilder);
-	FBrick::Test();
+	// FBrick::Test();
 	return FReply::Handled();
 }
 
@@ -140,7 +143,8 @@ namespace
 		return UPackageTools::SanitizePackageName(Path + "/" + Name);
 	}
 
-	UBlueprint* CreateBlueprint(const FString& Name, AActor*& OutTemplate, bool SetNonDefaultMass = false)
+	UBlueprint* CreateBlueprint(
+		const FString& Name, AActor*& OutTemplate, bool SetNonDefaultMass = false)
 	{
 		GEditor->SelectNone(false, false);
 		FString PackagePath = CreatePackagePath("Blueprint", Name);
@@ -150,8 +154,7 @@ namespace
 			GEditor->FindActorFactoryByClass(UActorFactoryEmptyActor::StaticClass());
 		FAssetData EmptyActorAssetData = FAssetData(Factory->GetDefaultActorClass(FAssetData()));
 		UObject* EmptyActorAsset = EmptyActorAssetData.GetAsset();
-		OutTemplate =
-			FActorFactoryAssetProxy::AddActorForAsset(EmptyActorAsset, false);
+		OutTemplate = FActorFactoryAssetProxy::AddActorForAsset(EmptyActorAsset, false);
 		check(OutTemplate != nullptr); /// \todo Test and return false instead of check?
 		OutTemplate->SetFlags(RF_Transactional);
 		OutTemplate->SetActorLabel(Name);
@@ -175,7 +178,7 @@ namespace
 		UBlueprint* Blueprint = FKismetEditorUtilities::CreateBlueprintFromActor(
 			Package->GetName(), OutTemplate, Params);
 
-		//RootActorContainer->Destroy();
+		// RootActorContainer->Destroy();
 		FAGX_ObjectUtilities::SaveAsset(*Blueprint);
 
 		// Child Blueprint
@@ -185,9 +188,8 @@ namespace
 
 		UBlueprint* BlueprintChild = FKismetEditorUtilities::CreateBlueprint(
 			Blueprint->GeneratedClass, PackageChild, FName(AssetNameChild),
-			EBlueprintType::BPTYPE_Normal,
-			UBlueprint::StaticClass(), UBlueprintGeneratedClass::StaticClass(),
-			FName("HackyCodeCO"));
+			EBlueprintType::BPTYPE_Normal, UBlueprint::StaticClass(),
+			UBlueprintGeneratedClass::StaticClass(), FName("HackyCodeCO"));
 
 		GEngine->BroadcastLevelActorListChanged();
 
@@ -227,8 +229,7 @@ FReply FAGX_BrickAssetCustomization::OnUpdateBlueprintButtonClicked()
 			FBlueprintEditorUtils::MarkBlueprintAsModified(BlueprintBase);
 			Ri->MarkPackageDirty();
 			Ri->PostEditChange();
-			FPropertyChangedEvent PropertyChangedEvent(
-				Ri->GetClass()->FindPropertyByName(
+			FPropertyChangedEvent PropertyChangedEvent(Ri->GetClass()->FindPropertyByName(
 				GET_MEMBER_NAME_CHECKED(UAGX_RigidBodyComponent, Mass)));
 			Ri->PostEditChangeProperty(PropertyChangedEvent);
 		}
@@ -250,8 +251,7 @@ FReply FAGX_BrickAssetCustomization::OnCopyFromOtherBlueprintButtonClicked()
 	const EditorUtilities::ECopyOptions::Type CopyOptions = (EditorUtilities::ECopyOptions::Type)(
 		EditorUtilities::ECopyOptions::PropagateChangesToArchetypeInstances);
 	EditorUtilities::CopyActorProperties(TemplateActor, CDO, CopyOptions);
-#endif 
-
+#endif
 
 	UBlueprint* BlueprintA = LoadObject<UBlueprint>(nullptr, TEXT("/Game/BlueprintA"));
 	UBlueprint* BlueprintB = LoadObject<UBlueprint>(nullptr, TEXT("/Game/BlueprintB"));
@@ -265,7 +265,7 @@ FReply FAGX_BrickAssetCustomization::OnCopyFromOtherBlueprintButtonClicked()
 	FAGX_ObjectUtilities::SaveAsset(*Replacement);
 #endif
 
-#if 0 //Crash when trying to open Blueprint afterwords.
+#if 0 // Crash when trying to open Blueprint afterwords.
 	UEngine::CopyPropertiesForUnrelatedObjects(BlueprintA, BlueprintB);
 #endif
 
@@ -280,12 +280,8 @@ FReply FAGX_BrickAssetCustomization::OnCopyFromOtherBlueprintButtonClicked()
 	AActor* CDOB = CastChecked<AActor>(BlueprintA->GeneratedClass->GetDefaultObject());
 	EditorUtilities::CopyActorProperties(CDOA, CDOB);
 #endif
-	
-	
 
-	
-
-#if 0	// This will crash after CopyPropertiesForUnrelatedObjects.
+#if 0 // This will crash after CopyPropertiesForUnrelatedObjects.
 	UBlueprint* NewBlueprint = ::CreateBlueprint("BaseBlueprint_new");
 	// Now we have BlueprintBase and NewBlueprint which are almost identical.
 	// NewBlueprint has another mass for the RigidBody.

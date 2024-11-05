@@ -568,6 +568,23 @@ namespace
 		return EImportResult::Success;
 	}
 
+	EImportResult AddComponentsFromBrick(
+		AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		FSimulationObjectCollection SimObjects;
+		if (!FAGXSimObjectsReader::ReadBrickFile(Helper.SourceFilePath, SimObjects))
+		{
+			return EImportResult::ErrorReadingSourceFile;
+		}
+
+		if (!AddAllComponents(ImportedActor, SimObjects, Helper))
+		{
+			return EImportResult::ErrorDuringInstantiations;
+		}
+
+		return EImportResult::Success;
+	}
+
 	EImportResult AddComponentsFromUrdf(
 		AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper,
 		const FAGX_ImportSettings& ImportSettings)
@@ -623,10 +640,20 @@ namespace
 		RootActorContainer->SetRootComponent(ActorRootComponent);
 #endif
 
-		EImportResult Result =
-			ImportSettings.ImportType == EAGX_ImportType::Urdf
-				? AddComponentsFromUrdf(*RootActorContainer, Helper, ImportSettings)
-				: AddComponentsFromAGXArchive(*RootActorContainer, Helper);
+		
+		EImportResult Result {EImportResult::UnknownFailure};
+		switch (ImportSettings.ImportType)
+		{
+			case EAGX_ImportType::Agx:
+				Result = AddComponentsFromAGXArchive(*RootActorContainer, Helper);
+				break;
+			case EAGX_ImportType::Brick:
+				Result = AddComponentsFromBrick(*RootActorContainer, Helper);
+				break;
+			case EAGX_ImportType::Urdf:
+				Result = AddComponentsFromUrdf(*RootActorContainer, Helper, ImportSettings);
+				break;
+		}
 
 		return {Result, RootActorContainer};
 	}
