@@ -67,6 +67,9 @@
 #include <agxVehicle/Track.h>
 #include "EndAGXIncludes.h"
 
+// Unreal Engine inludes.
+#include "Misc/Paths.h"
+
 namespace
 {
 	void ReadShapes(
