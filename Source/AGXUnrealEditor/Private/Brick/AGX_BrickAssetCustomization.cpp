@@ -5,7 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyComponent.h"
 #include "Brick/AGX_BrickAsset.h"
-#include "Brick/Brick.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 
