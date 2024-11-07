@@ -14,6 +14,7 @@
 #include "Shapes/SphereShapeBarrier.h"
 #include "SimulationObjectCollection.h"
 #include "TypeConversions.h"
+#include "Utilities/BrickUtilities.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -725,5 +726,10 @@ bool FAGXSimObjectsReader::ReadBrickFile(
 
 	Simulation->add(AssemblyAGX);
 	::ReadAll(*Simulation, Filename, OutSimObjects);
+
+	// Read Brick inputs.
+	auto System = std::dynamic_pointer_cast<Brick::Physics3D::System>(BrickModel);
+	OutSimObjects.GetPLXInputs() = FBrickUtilities::GetInputs(System.get());
+
 	return true;
 }

@@ -3,7 +3,8 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-// For some reason, these Shapes could not be forward declared without compiler error.
+// For some reason, these could not be forward declared without compiler error.
+#include "Brick/AGX_BrickInputs.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/CylinderShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
@@ -111,6 +112,9 @@ public:
 	TArray<FTrackBarrier>& GetTracks();
 	const TArray<FTrackBarrier>& GetTracks() const;
 
+	TArray<FPLX_Input>& GetPLXInputs();
+	const TArray<FPLX_Input>& GetPLXInputs() const;
+
 private:
 	FSimulationObjectCollection(const FSimulationObjectCollection&) = delete;
 	void operator=(const FSimulationObjectCollection&) = delete;
@@ -142,4 +146,6 @@ private:
 	TArray<FWireBarrier> Wires;
 	TArray<FShovelBarrier> Shovels;
 	TArray<FTrackBarrier> Tracks;
+
+	TArray<FPLX_Input> PLXInputs;
 };

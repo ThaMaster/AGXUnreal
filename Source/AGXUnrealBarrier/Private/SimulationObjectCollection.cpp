@@ -288,3 +288,13 @@ const TArray<FTrackBarrier>& FSimulationObjectCollection::GetTracks() const
 {
 	return Tracks;
 }
+
+TArray<FPLX_Input>& FSimulationObjectCollection::GetPLXInputs()
+{
+	return PLXInputs;
+}
+
+const TArray<FPLX_Input>& FSimulationObjectCollection::GetPLXInputs() const
+{
+	return PLXInputs;
+}
