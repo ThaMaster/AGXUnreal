@@ -808,7 +808,12 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		TMap<FGuid, bool> CylinderShapeGuids;
 		TMap<FGuid, bool> CapsuleShapeGuids;
 		TMap<FGuid, bool> TrimeshShapeGuids;
+
+#if 0
 		TArray<FGuid> RenderDataGuids;
+#else
+		TArray<FGuid> ShapeGuids;
+#endif
 	};
 
 	FShapeGuidsCollection GetShapeGuids(const FSimulationObjectCollection& SimulationObjects)
@@ -817,6 +822,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		auto GetRenderDataGuidFrom = [](const FShapeBarrier& ShapeBarrier) -> TOptional<FGuid>
 		{
+#if 0
 			if (ShapeBarrier.HasValidRenderData())
 			{
 				FRenderDataBarrier Rd = ShapeBarrier.GetRenderData();
@@ -824,6 +830,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			}
 
 			return {};
+#else
+			return ShapeBarrier.GetShapeGuid();
+#endif
 		};
 
 		// Iterate all Shapes owned by a Rigid Body.
@@ -833,31 +842,31 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			{
 				Infos.SphereShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 				if (auto RenderDataGuid = GetRenderDataGuidFrom(Shape))
-					Infos.RenderDataGuids.Add(*RenderDataGuid);
+					Infos.ShapeGuids.Add(*RenderDataGuid);
 			}
 			for (const auto& Shape : Body.GetBoxShapes())
 			{
 				Infos.BoxShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 				if (auto RenderDataGuid = GetRenderDataGuidFrom(Shape))
-					Infos.RenderDataGuids.Add(*RenderDataGuid);
+					Infos.ShapeGuids.Add(*RenderDataGuid);
 			}
 			for (const auto& Shape : Body.GetCylinderShapes())
 			{
 				Infos.CylinderShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 				if (auto RenderDataGuid = GetRenderDataGuidFrom(Shape))
-					Infos.RenderDataGuids.Add(*RenderDataGuid);
+					Infos.ShapeGuids.Add(*RenderDataGuid);
 			}
 			for (const auto& Shape : Body.GetCapsuleShapes())
 			{
 				Infos.CapsuleShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 				if (auto RenderDataGuid = GetRenderDataGuidFrom(Shape))
-					Infos.RenderDataGuids.Add(*RenderDataGuid);
+					Infos.ShapeGuids.Add(*RenderDataGuid);
 			}
 			for (const auto& Shape : Body.GetTrimeshShapes())
 			{
 				Infos.TrimeshShapeGuids.Add(Shape.GetShapeGuid(), Shape.GetEnableCollisions());
 				if (auto RenderDataGuid = GetRenderDataGuidFrom(Shape))
-					Infos.RenderDataGuids.Add(*RenderDataGuid);
+					Infos.ShapeGuids.Add(*RenderDataGuid);
 			}
 		}
 
@@ -866,25 +875,25 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		{
 			Infos.SphereShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 			if (auto RenderDataGuid = GetRenderDataGuidFrom(Barrier))
-				Infos.RenderDataGuids.Add(*RenderDataGuid);
+				Infos.ShapeGuids.Add(*RenderDataGuid);
 		}
 		for (const auto& Barrier : SimulationObjects.GetBoxShapes())
 		{
 			Infos.BoxShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 			if (auto RenderDataGuid = GetRenderDataGuidFrom(Barrier))
-				Infos.RenderDataGuids.Add(*RenderDataGuid);
+				Infos.ShapeGuids.Add(*RenderDataGuid);
 		}
 		for (const auto& Barrier : SimulationObjects.GetCylinderShapes())
 		{
 			Infos.CylinderShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 			if (auto RenderDataGuid = GetRenderDataGuidFrom(Barrier))
-				Infos.RenderDataGuids.Add(*RenderDataGuid);
+				Infos.ShapeGuids.Add(*RenderDataGuid);
 		}
 		for (const auto& Barrier : SimulationObjects.GetCapsuleShapes())
 		{
 			Infos.CapsuleShapeGuids.Add(Barrier.GetShapeGuid(), Barrier.GetEnableCollisions());
 			if (auto RenderDataGuid = GetRenderDataGuidFrom(Barrier))
-				Infos.RenderDataGuids.Add(*RenderDataGuid);
+				Infos.ShapeGuids.Add(*RenderDataGuid);
 		}
 		for (const auto& Barrier : SimulationObjects.GetTrimeshShapes())
 		{
@@ -1025,6 +1034,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 							CollisionStaticMeshComponents.Add(Guid, StaticMeshComponentNode);
 						}
 					}
+#if 0
 					for (const auto& SMCTuple : Re->StaticMeshComponentToOwningRenderData)
 					{
 						if (USCS_Node* StaticMeshComponentNode =
@@ -1038,6 +1048,28 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 							RenderStaticMeshComponents.Add(Guid, StaticMeshComponentNode);
 						}
 					}
+#else
+					for (const auto& [MeshName, ShapeGuid] : Re->StaticMeshComponentToOwningShape)
+					{
+						if (!ShapeGuid.IsValid())
+							continue;
+
+						USCS_Node* MeshNode =
+							Bp.SimpleConstructionScript->FindSCSNode(FName(MeshName));
+						if (MeshNode == nullptr)
+						{
+							UE_LOG(
+								LogAGX, Warning,
+								TEXT("  Model Source Component knows of a Static Mesh Component "
+									 "named '%s' that there is no SCS Node for."),
+								*MeshName);
+							continue;
+						}
+
+						AGX_CHECK(!RenderStaticMeshComponents.Contains(ShapeGuid));
+						RenderStaticMeshComponents.Add(ShapeGuid, MeshNode);
+					}
+#endif
 				}
 				else if (auto St = Cast<UStaticMeshComponent>(Component))
 				{
@@ -1093,8 +1125,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			}
 		}
 
-		// The key is the AGX Dynamics object's UUID converted to an FGuid at the time of the
-		// previous import.
+		// The key is the AGX Dynamics object's GUID at the time of the previous import.
 		TMap<FGuid, USCS_Node*> RigidBodies;
 
 		// Shapes are all Shapes, including Shapes owned by Rigid Bodies.
@@ -1117,7 +1148,8 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// Guid is the AGX Dynamics shape (Trimesh) guid.
 		TMap<FGuid, USCS_Node*> CollisionStaticMeshComponents;
 
-		// Guid is the AGX Dynamics RenderData guid.
+		// The key is the GUID of the Shape Component for which the render data Static Mesh
+		// Component has been created.
 		TMap<FGuid, USCS_Node*> RenderStaticMeshComponents;
 
 		USCS_Node* CollisionGroupDisablerComponent = nullptr;
@@ -1380,15 +1412,24 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		if (!RenderDataBarrier.HasMesh())
 			return;
 
+#if 0
 		const FGuid RenderDataGuid = RenderDataBarrier.GetGuid();
 		USCS_Node* RenderDataNode = SCSNodes.RenderStaticMeshComponents.FindRef(RenderDataGuid);
+#else
+		const FGuid ShapeGuid = ShapeBarrier.GetShapeGuid();
+		USCS_Node* RenderDataNode = SCSNodes.RenderStaticMeshComponents.FindRef(ShapeGuid);
+#endif
 		if (RenderDataNode == nullptr)
 		{
 			RenderDataNode = BaseBP.SimpleConstructionScript->CreateNode(
 				UStaticMeshComponent::StaticClass(),
 				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
 			AttachParent.AddChildNode(RenderDataNode);
+#if 0
 			SCSNodes.RenderStaticMeshComponents.Add(RenderDataGuid, RenderDataNode);
+#else
+			SCSNodes.RenderStaticMeshComponents.Add(ShapeGuid, RenderDataNode);
+#endif
 		}
 		else
 		{
@@ -2007,7 +2048,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// Delete removed Render Data.
 		for (auto It = SCSNodes.RenderStaticMeshComponents.CreateIterator(); It; ++It)
 		{
-			if (!NewShapeGuids.RenderDataGuids.Contains(It->Key))
+			if (!NewShapeGuids.ShapeGuids.Contains(It->Key))
 			{
 				BaseBP.SimpleConstructionScript->RemoveNodeAndPromoteChildren(It->Value);
 				It.RemoveCurrent();
