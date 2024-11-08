@@ -32,17 +32,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
 	TMap<FString, FGuid> StaticMeshComponentToOwningTrimesh;
 
-#if 0
-	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the guid
-	// of the owning RenderData.
-	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
-	TMap<FString, FGuid> StaticMeshComponentToOwningRenderData;
-#else
 	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the GUID
 	// of the owning Shape.
 	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
 	TMap<FString, FGuid> StaticMeshComponentToOwningShape;
-#endif
 
 	// Emulate an ImportGuid on Unreal's Materials.
 	//
