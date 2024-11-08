@@ -6,7 +6,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Class.h"
 
-#include "AGX_BrickInputs.generated.h"
+#include "PLX_Inputs.generated.h"
 
 USTRUCT(BlueprintType)
 struct AGXCOMMON_API FPLX_Input
@@ -19,8 +19,15 @@ struct AGXCOMMON_API FPLX_Input
 	{
 	}
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PLX")
+	virtual ~FPLX_Input() = default;
+
+	UPROPERTY()
 	FString Name;
+
+	virtual UScriptStruct* GetType() const
+	{
+		return FPLX_Input::StaticStruct();
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -32,5 +39,10 @@ struct AGXCOMMON_API FPLX_LinearVelocityMotorVelocityInput : public FPLX_Input
 	explicit FPLX_LinearVelocityMotorVelocityInput(const FString& InName)
 		: FPLX_Input(InName)
 	{
+	}
+
+	virtual UScriptStruct* GetType() const override
+	{
+		return FPLX_LinearVelocityMotorVelocityInput::StaticStruct();
 	}
 };

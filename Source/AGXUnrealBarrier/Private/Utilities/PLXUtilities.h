@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "Brick/AGX_BrickInputs.h"
+#include "OpenPLX/PLX_Inputs.h"
 
 namespace Brick
 {
@@ -17,5 +17,5 @@ namespace Brick
 class FBrickUtilities
 {
 public:
-	static TArray<FPLX_Input> GetInputs(Brick::Physics3D::System* System);
+	static TArray<TUniquePtr<FPLX_Input>> GetInputs(Brick::Physics3D::System* System);
 };

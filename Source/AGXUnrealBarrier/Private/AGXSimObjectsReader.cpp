@@ -14,7 +14,7 @@
 #include "Shapes/SphereShapeBarrier.h"
 #include "SimulationObjectCollection.h"
 #include "TypeConversions.h"
-#include "Utilities/BrickUtilities.h"
+#include "Utilities/PLXUtilities.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -31,7 +31,7 @@
 #include <agx/RigidBody.h>
 #include <agx/version.h>
 
-// Brick includes.
+// OpenPLX includes.
 #include "Brick/brick/BrickContext.h"
 #include "Brick/brick/BrickContextInternal.h"
 #include "Brick/Brick/BrickCoreApi.h"
@@ -652,15 +652,15 @@ bool FAGXSimObjectsReader::ReadUrdf(
 
 namespace AGXSimObjectsReader_helpers
 {
-	std::shared_ptr<Brick::Core::Api::BrickContext> CreateBrickContext(
+	std::shared_ptr<Brick::Core::Api::BrickContext> CreatePLXContext(
 		std::shared_ptr<BrickAgx::AgxCache> AGXCache)
 	{
-		const FString BrickBundlesPath =
+		const FString PLXBundlesPath =
 			FPaths::Combine(FAGX_Environment::GetPluginSourcePath(), "Thirdparty", "agx", "brickbundles");
-		auto BrickCtx = std::make_shared<Brick::Core::Api::BrickContext>(
-			std::vector<std::string>({Convert(BrickBundlesPath)}));
+		auto PLXCtx = std::make_shared<Brick::Core::Api::BrickContext>(
+			std::vector<std::string>({Convert(PLXBundlesPath)}));
 
-		auto InternalContext = Brick::Core::Api::BrickContextInternal::fromContext(*BrickCtx);
+		auto InternalContext = Brick::Core::Api::BrickContextInternal::fromContext(*PLXCtx);
 		auto EvalCtx = InternalContext->evaluatorContext().get();
 
 		Math_register_factories(EvalCtx);
@@ -675,27 +675,27 @@ namespace AGXSimObjectsReader_helpers
 		Visuals_register_factories(EvalCtx);
 		Urdf_register_factories(EvalCtx);
 
-		BrickAgx::register_plugins(*BrickCtx, AGXCache);
-		return BrickCtx;
+		BrickAgx::register_plugins(*PLXCtx, AGXCache);
+		return PLXCtx;
 	}
 
 	Brick::Core::ObjectPtr LoadModelFromFile(
-		const std::string& BrickFile, std::shared_ptr<BrickAgx::AgxCache> AGXCache)
+		const std::string& OpenPLXFile, std::shared_ptr<BrickAgx::AgxCache> AGXCache)
 	{
-		auto Context = CreateBrickContext(AGXCache);
+		auto Context = CreatePLXContext(AGXCache);
 		if (Context == nullptr)
 		{
-			UE_LOG(LogAGX, Error, TEXT("Error Creating Brick Context"));
+			UE_LOG(LogAGX, Error, TEXT("Error Creating OpenPLX Context"));
 			return nullptr;
 		}
 
-		auto LoadedModel = Brick::Core::Api::loadModelFromFile(BrickFile, {}, *Context);
+		auto LoadedModel = Brick::Core::Api::loadModelFromFile(OpenPLXFile, {}, *Context);
 
 		if (Context->hasErrors())
 		{
 			LoadedModel = nullptr;
 			for (auto Error : Context->getErrors())
-				UE_LOG(LogAGX, Error, TEXT("Error in Brick Context : %d"), Error->getErrorCode());
+				UE_LOG(LogAGX, Error, TEXT("Error in OpenPLX Context : %d"), Error->getErrorCode());
 
 			return nullptr;
 		}
@@ -704,17 +704,17 @@ namespace AGXSimObjectsReader_helpers
 	}
 }
 
-bool FAGXSimObjectsReader::ReadBrickFile(
+bool FAGXSimObjectsReader::ReadOpenPLXFile(
 	const FString& Filename, FSimulationObjectCollection& OutSimObjects)
 {
 	using namespace AGXSimObjectsReader_helpers;
 	std::shared_ptr<BrickAgx::AgxCache> AGXCache;
-	Brick::Core::ObjectPtr BrickModel = LoadModelFromFile(Convert(Filename), AGXCache);
-	if (BrickModel == nullptr)
+	Brick::Core::ObjectPtr PLXModel = LoadModelFromFile(Convert(Filename), AGXCache);
+	if (PLXModel == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Could not read Brick file '%s'. The Log category LogAGXDynamics may include more "
+			TEXT("Could not read OpenPLX file '%s'. The Log category LogAGXDynamics may include more "
 				 "details."),
 			*Filename);
 		return false;
@@ -722,13 +722,13 @@ bool FAGXSimObjectsReader::ReadBrickFile(
 
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
 	BrickAgx::BrickToAgxMapper Mapper(Simulation, Convert(Filename), AGXCache);
-	agxSDK::AssemblyRef AssemblyAGX = Mapper.mapObject(BrickModel);
+	agxSDK::AssemblyRef AssemblyAGX = Mapper.mapObject(PLXModel);
 
 	Simulation->add(AssemblyAGX);
 	::ReadAll(*Simulation, Filename, OutSimObjects);
 
-	// Read Brick inputs.
-	auto System = std::dynamic_pointer_cast<Brick::Physics3D::System>(BrickModel);
+	// Read PLX inputs.
+	auto System = std::dynamic_pointer_cast<Brick::Physics3D::System>(PLXModel);
 	OutSimObjects.GetPLXInputs() = FBrickUtilities::GetInputs(System.get());
 
 	return true;

@@ -33,6 +33,7 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
+#include "OpenPLX/PLX_Inputs.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_CapsuleShapeComponent.h"
@@ -62,6 +63,7 @@
 #include "Editor.h"
 #include "FileHelpers.h"
 #include "GameFramework/Actor.h"
+#include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Misc/EngineVersionComparison.h"
@@ -552,15 +554,15 @@ namespace
 	}
 
 	EImportResult AddComponentsFromAGXArchive(
-		AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
+		AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper,
+		FSimulationObjectCollection& OutSimObjects)
 	{
-		FSimulationObjectCollection SimObjects;
-		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, SimObjects))
+		if (!FAGXSimObjectsReader::ReadAGXArchive(Helper.SourceFilePath, OutSimObjects))
 		{
 			return EImportResult::ErrorReadingSourceFile;
 		}
 
-		if (!AddAllComponents(ImportedActor, SimObjects, Helper))
+		if (!AddAllComponents(ImportedActor, OutSimObjects, Helper))
 		{
 			return EImportResult::ErrorDuringInstantiations;
 		}
@@ -568,16 +570,40 @@ namespace
 		return EImportResult::Success;
 	}
 
-	EImportResult AddComponentsFromBrick(
-		AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper)
+	bool AddPLXSignals(const FSimulationObjectCollection& SimObjects, UBlueprint& OutBlueprint)
 	{
-		FSimulationObjectCollection SimObjects;
-		if (!FAGXSimObjectsReader::ReadBrickFile(Helper.SourceFilePath, SimObjects))
+		bool SignalsAdded = false;
+		for (const TUniquePtr<FPLX_Input>& Input : SimObjects.GetPLXInputs())
+		{
+			FEdGraphPinType PinType;
+			PinType.PinCategory = FName(TEXT("struct"));
+			PinType.PinSubCategoryObject = Input->GetType();
+			FBlueprintEditorUtils::AddMemberVariable(&OutBlueprint, FName(Input->Name), PinType);
+			SignalsAdded = true;
+		}
+
+		for (auto& NewVariable : OutBlueprint.NewVariables) // Todo: is there a safer way to get these?
+		{
+			NewVariable.Category = FText::FromString("OpenPLX Inputs");
+			NewVariable.PropertyFlags |= CPF_BlueprintReadOnly;
+		}
+
+		if (SignalsAdded)
+			FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(&OutBlueprint);
+
+		return SignalsAdded;
+	}
+
+	EImportResult AddComponentsFromPLX(
+		AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper,
+		FSimulationObjectCollection& OutSimObjects)
+	{
+		if (!FAGXSimObjectsReader::ReadOpenPLXFile(Helper.SourceFilePath, OutSimObjects))
 		{
 			return EImportResult::ErrorReadingSourceFile;
 		}
 
-		if (!AddAllComponents(ImportedActor, SimObjects, Helper))
+		if (!AddAllComponents(ImportedActor, OutSimObjects, Helper))
 		{
 			return EImportResult::ErrorDuringInstantiations;
 		}
@@ -587,17 +613,16 @@ namespace
 
 	EImportResult AddComponentsFromUrdf(
 		AActor& ImportedActor, FAGX_SimObjectsImporterHelper& Helper,
-		const FAGX_ImportSettings& ImportSettings)
+		const FAGX_ImportSettings& ImportSettings, FSimulationObjectCollection& OutSimObjects)
 	{
-		FSimulationObjectCollection SimObjects;
 		if (!FAGXSimObjectsReader::ReadUrdf(
 				ImportSettings.FilePath, ImportSettings.UrdfPackagePath,
-				ImportSettings.UrdfInitialJoints, SimObjects))
+				ImportSettings.UrdfInitialJoints, OutSimObjects))
 		{
 			return EImportResult::ErrorReadingSourceFile;
 		}
 
-		if (!AddAllComponents(ImportedActor, SimObjects, Helper))
+		if (!AddAllComponents(ImportedActor, OutSimObjects, Helper))
 		{
 			return EImportResult::ErrorDuringInstantiations;
 		}
@@ -605,7 +630,7 @@ namespace
 		return EImportResult::Success;
 	}
 
-	ImportActorResult CreateTemplate(
+	AActor* CreateTemplate(
 		FAGX_SimObjectsImporterHelper& Helper, const FAGX_ImportSettings& ImportSettings)
 	{
 		UActorFactory* Factory =
@@ -617,45 +642,7 @@ namespace
 		check(RootActorContainer != nullptr); /// \todo Test and return false instead of check?
 		RootActorContainer->SetFlags(RF_Transactional);
 		RootActorContainer->SetActorLabel(Helper.RootDirectoryName);
-
-// I would like to be able to create and configure the RootComponent here, but
-// the way Blueprint creation has been done in Unreal Engine makes this
-// impossible. A new RootComponent is always created and the DefaultSceneRoot I
-// create here is made a child of that new SceneComponent. Not what I want. My
-// work-around for now is to rely on the implicitly created RootComponent and
-// hoping it does what we want in all cases. I leave SceneComponents that should
-// be attached to the RootComponent unconnected, they are implicitly connected
-// to the implicit RootComponent by the Blueprint creator code. This produces a
-// weird/invalid template actor so I'm worried that the it-happens-to-work state
-// we now have won't survive for long.
-#if 0
-		USceneComponent* ActorRootComponent = NewObject<USceneComponent>(
-			RootActorContainer, USceneComponent::GetDefaultSceneRootVariableName());
-		check(ActorRootComponent != nullptr);
-		ActorRootComponent->Mobility = EComponentMobility::Movable;
-		ActorRootComponent->bVisualizeComponent = true;
-		ActorRootComponent->SetFlags(RF_Transactional);
-		ActorRootComponent->RegisterComponent();
-		RootActorContainer->AddInstanceComponent(ActorRootComponent);
-		RootActorContainer->SetRootComponent(ActorRootComponent);
-#endif
-
-		
-		EImportResult Result {EImportResult::UnknownFailure};
-		switch (ImportSettings.ImportType)
-		{
-			case EAGX_ImportType::Agx:
-				Result = AddComponentsFromAGXArchive(*RootActorContainer, Helper);
-				break;
-			case EAGX_ImportType::Brick:
-				Result = AddComponentsFromBrick(*RootActorContainer, Helper);
-				break;
-			case EAGX_ImportType::Urdf:
-				Result = AddComponentsFromUrdf(*RootActorContainer, Helper, ImportSettings);
-				break;
-		}
-
-		return {Result, RootActorContainer};
+		return RootActorContainer;
 	}
 
 	UBlueprint* CreateBaseBlueprint(UPackage* Package, AActor* Template)
@@ -710,16 +697,34 @@ namespace
 		PreCreationSetup();
 		FString BlueprintPackagePath = CreateBlueprintPackagePath(Helper, true);
 		UPackage* Package = GetPackage(BlueprintPackagePath);
-		ImportActorResult TemplateResult = CreateTemplate(Helper, ImportSettings);
-		AActor* Template = TemplateResult.Actor;
+		AActor* Template = CreateTemplate(Helper, ImportSettings);
 		if (Template == nullptr)
+			return {EImportResult::UnknownFailure, nullptr};
+
+		FSimulationObjectCollection SimObjects;
+		EImportResult Result {EImportResult::UnknownFailure};
+		switch (ImportSettings.ImportType)
 		{
-			return {TemplateResult.Result, nullptr};
+			case EAGX_ImportType::Agx:
+				Result = AddComponentsFromAGXArchive(*Template, Helper, SimObjects);
+				break;
+			case EAGX_ImportType::Plx:
+				Result = AddComponentsFromPLX(*Template, Helper, SimObjects);
+				break;
+			case EAGX_ImportType::Urdf:
+				Result = AddComponentsFromUrdf(*Template, Helper, ImportSettings, SimObjects);
+				break;
 		}
 
 		UBlueprint* Blueprint = CreateBaseBlueprint(Package, Template);
+		if (ImportSettings.ImportType == EAGX_ImportType::Plx && Blueprint != nullptr)
+		{
+			if (AddPLXSignals(SimObjects, *Blueprint))
+				FKismetEditorUtilities::CompileBlueprint(Blueprint);
+		}
+
 		PostCreationTeardown(Template, Package, Blueprint, BlueprintPackagePath);
-		return {TemplateResult.Result, Blueprint};
+		return {Result, Blueprint};
 	}
 
 	UBlueprint* CreateChildBlueprint(

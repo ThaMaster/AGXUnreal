@@ -602,7 +602,7 @@ EAGX_ImportType FAGX_ImportUtilities::GetFrom(const FString& FilePath)
 	}
 	else if (FileExtension.Equals("brick"))
 	{
-		return EAGX_ImportType::Brick;
+		return EAGX_ImportType::Plx;
 	}
 	else if (FileExtension.Equals("urdf"))
 	{

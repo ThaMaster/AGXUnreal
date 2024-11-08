@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 // For some reason, these could not be forward declared without compiler error.
-#include "Brick/AGX_BrickInputs.h"
+#include "OpenPLX/PLX_Inputs.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/CylinderShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
@@ -112,8 +112,8 @@ public:
 	TArray<FTrackBarrier>& GetTracks();
 	const TArray<FTrackBarrier>& GetTracks() const;
 
-	TArray<FPLX_Input>& GetPLXInputs();
-	const TArray<FPLX_Input>& GetPLXInputs() const;
+	TArray<TUniquePtr<FPLX_Input>>& GetPLXInputs();
+	const TArray<TUniquePtr<FPLX_Input>>& GetPLXInputs() const;
 
 private:
 	FSimulationObjectCollection(const FSimulationObjectCollection&) = delete;
@@ -147,5 +147,5 @@ private:
 	TArray<FShovelBarrier> Shovels;
 	TArray<FTrackBarrier> Tracks;
 
-	TArray<FPLX_Input> PLXInputs;
+	TArray<TUniquePtr<FPLX_Input>> PLXInputs;
 };

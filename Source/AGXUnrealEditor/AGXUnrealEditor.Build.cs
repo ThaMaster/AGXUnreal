@@ -25,7 +25,7 @@ public class AGXUnrealEditor : ModuleRules
 		/// \todo Copied from the prototype plugin. Not sure if all of these are
 		///       required.
 		PublicDependencyModuleNames.AddRange(new string[]{
-			"AGXUnrealBarrier", "AGXUnreal", "ComponentVisualizers", "Core", "CoreUObject", "Engine",
+			"AGXCommon", "AGXUnrealBarrier", "AGXUnreal", "ComponentVisualizers", "Core", "CoreUObject", "Engine",
 			"InputCore", "RawMesh", "RHI", "RenderCore"
 		});
 
