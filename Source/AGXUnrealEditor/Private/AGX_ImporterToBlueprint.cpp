@@ -610,7 +610,7 @@ namespace
 		}
 
 		// OpenPLX imports should always get a PLX_SignalHandlerComponent.
-		Helper.InstantiateModelSourceComponent(ImportedActor);
+		Helper.InstantiateSignalHandlerComponent(ImportedActor);
 
 		return EImportResult::Success;
 	}
