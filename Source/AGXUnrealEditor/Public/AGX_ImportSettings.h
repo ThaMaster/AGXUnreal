@@ -22,6 +22,7 @@ struct FAGX_ImportSettings
 
 struct FAGX_SynchronizeModelSettings
 {
+	EAGX_ImportType ImportType = EAGX_ImportType::Invalid;
 	FString FilePath;
 	bool bIgnoreDisabledTrimeshes = true;
 	bool bForceOverwriteProperties = false;

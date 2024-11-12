@@ -34,6 +34,7 @@
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "OpenPLX/PLX_Inputs.h"
+#include "OpenPLX/PLX_SignalHandlerComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_CapsuleShapeComponent.h"
@@ -608,6 +609,9 @@ namespace
 			return EImportResult::ErrorDuringInstantiations;
 		}
 
+		// OpenPLX imports should always get a PLX_SignalHandlerComponent.
+		Helper.InstantiateModelSourceComponent(ImportedActor);
+
 		return EImportResult::Success;
 	}
 
@@ -1071,6 +1075,11 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 						}
 					}
 				}
+				else if (auto Sh = Cast<UPLX_SignalHandlerComponent>(Component))
+				{
+					AGX_CHECK(SignalHandlerComponent == nullptr);
+					SignalHandlerComponent = Node;
+				}
 				else if (auto St = Cast<UStaticMeshComponent>(Component))
 				{
 					// Handled by gathering information from the ModelSourceComponent since a Static
@@ -1155,6 +1164,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		USCS_Node* CollisionGroupDisablerComponent = nullptr;
 		USCS_Node* ContactMaterialRegistrarComponent = nullptr;
 		USCS_Node* ModelSourceComponent = nullptr;
+		USCS_Node* SignalHandlerComponent = nullptr; // OpenPLX
 		USCS_Node* RootComponent = nullptr;
 	};
 
@@ -1898,6 +1908,28 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			*Cast<UAGX_ModelSourceComponent>(ModelSourceComponent->ComponentTemplate));
 	}
 
+	void AddOrUpdateSignalHandlerComponent(
+		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper)
+	{
+		USCS_Node* SignalHandlerComponent = nullptr;
+		if (SCSNodes.SignalHandlerComponent == nullptr)
+		{
+			SignalHandlerComponent = BaseBP.SimpleConstructionScript->CreateNode(
+				UPLX_SignalHandlerComponent::StaticClass(),
+				FName(FAGX_ImportUtilities::GetUnsetUniqueImportName()));
+			BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(
+				SignalHandlerComponent);
+			SCSNodes.SignalHandlerComponent = SignalHandlerComponent;
+		}
+		else
+		{
+			SignalHandlerComponent = SCSNodes.ModelSourceComponent;
+		}
+
+		Helper.UpdateSignalHandlerComponent(
+			*Cast<UPLX_SignalHandlerComponent>(SignalHandlerComponent->ComponentTemplate));
+	}
+
 	FString GetModelDirectoryPathFromBaseBlueprint(UBlueprint& BaseBP)
 	{
 		const FString ParentDir = FPaths::GetPath(BaseBP.GetPathName());
@@ -1967,6 +1999,9 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		ImportTask.EnterProgressFrame(
 			5.f, FText::FromString("Synchronizing Model Source Component"));
 		AddOrUpdateModelSourceComponent(BaseBP, SCSNodes, Helper);
+
+		if (Settings.ImportType == EAGX_ImportType::Plx)
+			AddOrUpdateSignalHandlerComponent(BaseBP, SCSNodes, Helper); // OpenPLX only.
 
 		ImportTask.EnterProgressFrame(30.f, FText::FromString("Finalizing Synchronization"));
 		Helper.FinalizeImport();

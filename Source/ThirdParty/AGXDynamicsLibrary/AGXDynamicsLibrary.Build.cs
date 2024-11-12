@@ -248,7 +248,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		LinkLibFiles.Add("agxROS2", LibSource.AGX);
 		LinkLibFiles.Add("agx-nt-ros2", LibSource.AGX);
 
-		// Brick
+		// OpenPLX
 		LinkLibFiles.Add("fmt", LibSource.Brick);
 		LinkLibFiles.Add("spdlog", LibSource.Brick);
 		LinkLibFiles.Add("brick.agx", LibSource.Brick);
