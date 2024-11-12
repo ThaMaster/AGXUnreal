@@ -5,11 +5,21 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintComponent.h"
+#include "Import/AGX_ModelSourceComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 UPLX_SignalHandlerComponent::UPLX_SignalHandlerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+}
+
+bool UPLX_SignalHandlerComponent::Send(FPLX_LinearVelocityMotorVelocityInput Input, double Value)
+{
+	if (!SignalHandler.IsInitialized())
+		return false;
+
+	return SignalHandler.Send(Input, Value);
 }
 
 namespace PLX_SignalHandlerComponent_helpers
@@ -30,12 +40,37 @@ namespace PLX_SignalHandlerComponent_helpers
 
 		return ConstraintBarriers;
 	}
+
+	TOptional<FString> GetPLXFilePath(AActor* Owner)
+	{
+		if (Owner == nullptr)
+			return {};
+
+		auto ModelSource = Owner->GetComponentByClass<UAGX_ModelSourceComponent>();
+		if (ModelSource == nullptr)
+			return {};
+
+		// Todo: this must point to the corresponding PLX file in the project files, copied from
+		// import, not the source file itself. This is to ensure portability of standalone-projects.
+		return ModelSource->FilePath;
+	}
 }
 
 void UPLX_SignalHandlerComponent::BeginPlay()
 {
 	using namespace PLX_SignalHandlerComponent_helpers;
 	Super::BeginPlay();
+
+	auto PLXFile = GetPLXFilePath(GetOwner());
+	if (!PLXFile.IsSet())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UPLX_SignalHandlerComponent '%s' in '%s' was unable to get OpenPLX file path "
+				 "from UAGX_ModelSourceComponent. OpenPLX Signals will not work properly."),
+			*GetName(), *GetLabelSafe(GetOwner()));
+		return;
+	}
 
 	auto Sim = UAGX_Simulation::GetFrom(this);
 	auto SimulationBarrier = Sim != nullptr ? Sim->GetNative() : nullptr;
@@ -49,6 +84,10 @@ void UPLX_SignalHandlerComponent::BeginPlay()
 	TArray<FConstraintBarrier*> ConstraintBarriers = CollectConstraintBarriers(GetOwner());
 
 	// Initialize SignalHandler in Barrier module.
-	SignalHandler.Init(*SimulationBarrier, ConstraintBarriers);
+	SignalHandler.Init(*PLXFile, *SimulationBarrier, ConstraintBarriers);
 }
 
+void UPLX_SignalHandlerComponent::EndPlay(const EEndPlayReason::Type Reason)
+{
+	SignalHandler.ReleaseNatives();
+}

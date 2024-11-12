@@ -8,6 +8,7 @@
 // Unreal Engine includes.
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
+#include "OpenPLX/PLX_Inputs.h"
 
 #include "PLX_SignalHandlerComponent.generated.h"
 
@@ -24,8 +25,12 @@ class AGXUNREAL_API UPLX_SignalHandlerComponent : public UActorComponent
 public:
 	UPLX_SignalHandlerComponent();
 
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool Send(FPLX_LinearVelocityMotorVelocityInput Input, double Value);
+
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	//~ End UActorComponent Interface
 
 private:

@@ -4,11 +4,11 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
-#include "AGX_ImportEnums.h"
+#include "Import/AGX_ImportEnums.h"
 #include "AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
 #include "AGX_ObserverFrameComponent.h"
-#include "AGX_ModelSourceComponent.h"
+#include "Import/AGX_ModelSourceComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_SimObjectsImporterHelper.h"
 #include "AGXSimObjectsReader.h"

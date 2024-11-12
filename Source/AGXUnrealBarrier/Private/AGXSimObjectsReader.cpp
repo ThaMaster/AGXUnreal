@@ -5,7 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "AGXBarrierFactories.h"
 #include "AGX_Check.h"
-#include "AGX_Environment.h"
 #include "AGX_LogCategory.h"
 #include "BarrierOnly/AGXRefs.h"
 #include "RigidBodyBarrier.h"
@@ -15,6 +14,9 @@
 #include "SimulationObjectCollection.h"
 #include "TypeConversions.h"
 #include "Utilities/PLXUtilities.h"
+
+// OpenPLX includes.
+#include "Brick/brickagx/BrickToAgxMapper.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -31,24 +33,7 @@
 #include <agx/RigidBody.h>
 #include <agx/version.h>
 
-// OpenPLX includes.
-#include "Brick/brick/BrickContext.h"
-#include "Brick/brick/BrickContextInternal.h"
-#include "Brick/Brick/BrickCoreApi.h"
-#include "Brick/brickagx/AgxCache.h"
-#include "Brick/brickagx/BrickAgxApi.h"
-#include "Brick/brickagx/BrickToAgxMapper.h"
-#include "Brick/Math/Math_all.h"
-#include "Brick/Physics/Physics_all.h"
-#include "Brick/Physics1D/Physics1D_all.h"
-#include "Brick/Physics3D/Physics3D_all.h"
-#include "Brick/DriveTrain/DriveTrain_all.h"
-#include "Brick/Robotics/Robotics_all.h"
-#include "Brick/Simulation/Simulation_all.h"
-#include "Brick/Vehicles/Vehicles_all.h"
-#include "Brick/Terrain/Terrain_all.h"
-#include "Brick/Visuals/Visuals_all.h"
-#include "Brick/Urdf/Urdf_all.h"
+
 
 // In 2.28 including Cable.h causes a preprocessor macro named DEPRECATED to be defined. This
 // conflicts with a macro with the same name in Unreal. Undeffing the Unreal one.
@@ -650,66 +635,11 @@ bool FAGXSimObjectsReader::ReadUrdf(
 	return true;
 }
 
-namespace AGXSimObjectsReader_helpers
-{
-	std::shared_ptr<Brick::Core::Api::BrickContext> CreatePLXContext(
-		std::shared_ptr<BrickAgx::AgxCache> AGXCache)
-	{
-		const FString PLXBundlesPath =
-			FPaths::Combine(FAGX_Environment::GetPluginSourcePath(), "Thirdparty", "agx", "brickbundles");
-		auto PLXCtx = std::make_shared<Brick::Core::Api::BrickContext>(
-			std::vector<std::string>({Convert(PLXBundlesPath)}));
-
-		auto InternalContext = Brick::Core::Api::BrickContextInternal::fromContext(*PLXCtx);
-		auto EvalCtx = InternalContext->evaluatorContext().get();
-
-		Math_register_factories(EvalCtx);
-		Physics_register_factories(EvalCtx);
-		Physics1D_register_factories(EvalCtx);
-		Physics3D_register_factories(EvalCtx);
-		DriveTrain_register_factories(EvalCtx);
-		Robotics_register_factories(EvalCtx);
-		Simulation_register_factories(EvalCtx);
-		Vehicles_register_factories(EvalCtx);
-		Terrain_register_factories(EvalCtx);
-		Visuals_register_factories(EvalCtx);
-		Urdf_register_factories(EvalCtx);
-
-		BrickAgx::register_plugins(*PLXCtx, AGXCache);
-		return PLXCtx;
-	}
-
-	Brick::Core::ObjectPtr LoadModelFromFile(
-		const std::string& OpenPLXFile, std::shared_ptr<BrickAgx::AgxCache> AGXCache)
-	{
-		auto Context = CreatePLXContext(AGXCache);
-		if (Context == nullptr)
-		{
-			UE_LOG(LogAGX, Error, TEXT("Error Creating OpenPLX Context"));
-			return nullptr;
-		}
-
-		auto LoadedModel = Brick::Core::Api::loadModelFromFile(OpenPLXFile, {}, *Context);
-
-		if (Context->hasErrors())
-		{
-			LoadedModel = nullptr;
-			for (auto Error : Context->getErrors())
-				UE_LOG(LogAGX, Error, TEXT("Error in OpenPLX Context : %d"), Error->getErrorCode());
-
-			return nullptr;
-		}
-
-		return LoadedModel;
-	}
-}
-
 bool FAGXSimObjectsReader::ReadOpenPLXFile(
 	const FString& Filename, FSimulationObjectCollection& OutSimObjects)
 {
-	using namespace AGXSimObjectsReader_helpers;
 	std::shared_ptr<BrickAgx::AgxCache> AGXCache;
-	Brick::Core::ObjectPtr PLXModel = LoadModelFromFile(Convert(Filename), AGXCache);
+	Brick::Core::ObjectPtr PLXModel = FPLXUtilities::LoadModel(Filename, AGXCache);
 	if (PLXModel == nullptr)
 	{
 		UE_LOG(
@@ -729,7 +659,7 @@ bool FAGXSimObjectsReader::ReadOpenPLXFile(
 
 	// Read PLX inputs.
 	auto System = std::dynamic_pointer_cast<Brick::Physics3D::System>(PLXModel);
-	OutSimObjects.GetPLXInputs() = FBrickUtilities::GetInputs(System.get());
+	OutSimObjects.GetPLXInputs() = FPLXUtilities::GetInputs(System.get());
 
 	return true;
 }

@@ -6,6 +6,10 @@
 #include "AGX_LogCategory.h"
 #include "OpenPLX/PLX_Inputs.h"
 
+// OpenPLX includes.
+#include "Brick/brick/Object.h"
+#include "Brick/brickagx/AgxCache.h"
+
 namespace Brick
 {
 	namespace Physics3D
@@ -14,8 +18,11 @@ namespace Brick
 	}
 }
 
-class FBrickUtilities
+class FPLXUtilities
 {
 public:
+	static Brick::Core::ObjectPtr LoadModel(
+		const FString& Filename, std::shared_ptr<BrickAgx::AgxCache> AGXCache);
+
 	static TArray<TUniquePtr<FPLX_Input>> GetInputs(Brick::Physics3D::System* System);
 };
