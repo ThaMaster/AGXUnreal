@@ -224,9 +224,159 @@ void FAGX_ModelSourceComponentCustomization::OnNewMaterialSelected(const FAssetD
 
 FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 {
+	// TODO Remove trace log.
 	UE_LOG(
 		LogAGX, Warning, TEXT("Replacing all instances of %s with %s."),
-		*CurrentMaterial->GetName(), *NewMaterial->GetName());
+		*GetNameSafe(CurrentMaterial.Get()), *GetNameSafe(NewMaterial.Get()));
+
+	if (DetailBuilder == nullptr)
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			TEXT("Material replacing is currenly only supported while there is a Detail Builder."),
+			SNotificationItem::CS_Fail);
+		return FReply::Handled();
+	}
+
+	// It is OK for the Materials to not be set, means that all uses of the default material should
+	// be replaced, or that the selected material should be cleared to the default material.
+
+	UAGX_ModelSourceComponent* ModelSource =
+		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_ModelSourceComponent>(
+			*DetailBuilder);
+	if (ModelSource == nullptr)
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			TEXT("Material replacing is currenly only supported with a Model Source Component."),
+			SNotificationItem::CS_Fail);
+		return FReply::Handled();
+	}
+
+	UBlueprint* EditBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*ModelSource);
+#if 0
+	// TODO I think this is just wrong. Consider removing.
+	if (EditBlueprint == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Could not get Blueprint from selected Model Source Component, trying the "
+				 "archetype instance."));
+		UAGX_ModelSourceComponent* Archetype =
+			Cast<UAGX_ModelSourceComponent>(ModelSource->GetArchetype());
+		if (Archetype != nullptr)
+		{
+			EditBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*Archetype);
+		}
+	}
+#endif
+	if (EditBlueprint == nullptr)
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			TEXT("Material replacing is currenly only supported from the Blueprint Editor."),
+			SNotificationItem::CS_Fail);
+		return FReply::Handled();
+	}
+
+	UMaterialInterface* Current = CurrentMaterial.Get();
+	UMaterialInterface* New = NewMaterial.Get();
+
+	int32 NumReplaced {0};
+
+	// Iterate over all SCS nodes. Not only those in the child Blueprint but also all from parent
+	// Blueprints.
+	for (UBlueprint* BlueprintIt = EditBlueprint; BlueprintIt != nullptr;
+		 BlueprintIt = FAGX_BlueprintUtilities::GetParent(*BlueprintIt))
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("Iterating over SCS Nodes in '%s'."), *GetNameSafe(BlueprintIt));
+
+		// Iterate over all SCS nodes in the current Blueprint.
+		for (auto Node : BlueprintIt->SimpleConstructionScript->GetAllNodes())
+		{
+			UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Node->ComponentTemplate);
+			if (Mesh == nullptr)
+				continue;
+
+			UE_LOG(
+				LogAGX, Warning, TEXT("Considering Static Mesh Component '%s'"),
+				*GetNameSafe(Mesh));
+
+			// We only want to update the edit Blueprint, so find the instance that is owned by
+			// the that Blueprint.
+			Mesh = [&]() -> UStaticMeshComponent*
+			{
+				if (FAGX_BlueprintUtilities::GetBlueprintFrom(*Mesh) == EditBlueprint)
+				{
+					return Mesh;
+				}
+
+				for (UStaticMeshComponent* Instance :
+					 FAGX_ObjectUtilities::GetArchetypeInstances(*Mesh))
+				{
+					if (FAGX_BlueprintUtilities::GetBlueprintFrom(*Instance) == EditBlueprint)
+					{
+						return Instance;
+					}
+				}
+
+				return nullptr;
+			}();
+
+			if (Mesh == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("  Did not have any instance owned by the edited Blueprint. Skipping."));
+				continue;
+			}
+
+			UE_LOG(
+				LogAGX, Warning, TEXT("  Considering Materials in '%s', part of '%s'."),
+				*GetNameSafe(Mesh), *GetNameSafe(FAGX_BlueprintUtilities::GetBlueprintFrom(*Mesh)));
+
+			for (int32 MaterialIndex = 0; MaterialIndex < Mesh->GetNumMaterials(); ++MaterialIndex)
+			{
+				UMaterialInterface* Material = Mesh->GetMaterial(MaterialIndex);
+				UE_LOG(LogAGX, Warning, TEXT("  Found Material '%s'."), *GetNameSafe(Material));
+				if (Material != Current)
+				{
+					UE_LOG(LogAGX, Warning, TEXT("    Wrong material, skipping."));
+					continue;
+				}
+
+				UE_LOG(LogAGX, Warning, TEXT("    Correct material, replacing."));
+
+				for (UStaticMeshComponent* Instance :
+					 FAGX_ObjectUtilities::GetArchetypeInstances(*Mesh))
+				{
+					UE_LOG(
+						LogAGX, Warning,
+						TEXT("      Considering updating instance '%s', has Material '%s'."),
+						*GetNameSafe(Instance), *GetNameSafe(Instance->GetMaterial(MaterialIndex)));
+					if (Instance->GetMaterial(MaterialIndex) == Current)
+					{
+						UE_LOG(
+							LogAGX, Warning,
+							TEXT("        That is the one we want to replace. Replacing."));
+						Instance->Modify();
+						Instance->SetMaterial(MaterialIndex, New);
+						++NumReplaced;
+					}
+				}
+
+				Mesh->Modify();
+				Mesh->SetMaterial(MaterialIndex, New);
+				++NumReplaced;
+			}
+		}
+
+		if (NumReplaced > 0)
+		{
+			EditBlueprint->Modify();
+		}
+
+		UE_LOG(LogAGX, Warning, TEXT("Num materials replaced: %d."), NumReplaced);
+	}
+
 	return FReply::Handled();
 }
 
