@@ -145,7 +145,7 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	 */
 	UFUNCTION(
 		BlueprintCallable, BlueprintPure, Category = "AGX Shape Contact",
-		Meta = (DisplayName = "Contains"))
+		Meta = (DisplayName = "Index Of"))
 	static int32 IndexOfRigidBody(
 		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, UAGX_RigidBodyComponent* RigidBody,
 		bool& bSuccess);
@@ -155,7 +155,7 @@ class AGXUNREAL_API UAGX_ShapeContact_FL : public UBlueprintFunctionLibrary
 	 */
 	UFUNCTION(
 		BlueprintCallable, BlueprintPure, Category = "AGX Shape Contact",
-		Meta = (DisplayName = "Contains"))
+		Meta = (DisplayName = "Index Of"))
 	static int32 IndexOfShape(
 		UPARAM(Ref) FAGX_ShapeContact& ShapeContact, UAGX_ShapeComponent* Shape, bool& bSuccess);
 	/**
