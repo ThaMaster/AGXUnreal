@@ -17,6 +17,7 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Input/Reply.h"
+#include "PropertyCustomizationHelpers.h"
 #include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ModelSourceComponentCustomization"
@@ -57,6 +58,8 @@ void FAGX_ModelSourceComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 		]
 	];
 	// clang-format on
+
+	CustomizeMaterialReplacer();
 
 	InDetailBuilder.HideCategory(FName("AGX Synchronize Model Info"));
 	InDetailBuilder.HideCategory(FName("Variable"));
@@ -120,6 +123,66 @@ FReply FAGX_ModelSourceComponentCustomization::OnSynchronizeModelButtonClicked()
 	FAGX_EditorUtilities::SynchronizeModel(*Blueprint);
 
 	// Any logging is done in SynchronizeModel.
+	return FReply::Handled();
+}
+
+void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer()
+{
+	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder->EditCategory("Material Replacer");
+
+	// clang-format off
+	CategoryBuilder.AddCustomRow(LOCTEXT("ReplaceMaterialCurrent", "Replace Material Current"))
+	.NameContent()
+	[
+		SNew(STextBlock)
+		.Font(IDetailLayoutBuilder::GetDetailFont())
+		.Text(LOCTEXT("CurrentMaterial", "Current Material"))
+		.ToolTipText(LOCTEXT("CurrentMaterialTooltip", "The Material currently set on Static Mesh Components that should be replaced with another Material."))
+	]
+	.ValueContent()
+	[
+		SNew(SObjectPropertyEntryBox)
+		.AllowedClass(UMaterialInterface::StaticClass())
+		.ObjectPath(this, &FAGX_ModelSourceComponentCustomization::GetSelectedMaterialPath)
+		.OnObjectChanged(this, &FAGX_ModelSourceComponentCustomization::OnMaterialSelected)
+	];
+
+	CategoryBuilder.AddCustomRow(LOCTEXT("ReplaceMaterialButton", "Replace Material Button"))
+	[
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("ReplaceMaterialsButton", "Replace Materials"))
+			.ToolTipText(LOCTEXT(
+				"ReplaceMaterialsButtonTooltip",
+				"Replace all occurrences of Current Material with New Material in this Blueprint"))
+			.OnClicked(this, &FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked)
+		]
+	];
+	// clang-format on
+}
+
+FString FAGX_ModelSourceComponentCustomization::GetSelectedMaterialPath() const
+{
+	return CurrentMaterial.IsValid() ? CurrentMaterial->GetPathName() : FString();
+}
+
+void FAGX_ModelSourceComponentCustomization::OnMaterialSelected(const FAssetData& AssetData)
+{
+	CurrentMaterial = Cast<UMaterialInterface>(AssetData.GetAsset());
+	if (CurrentMaterial.IsValid())
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Selected Material: %s"), *CurrentMaterial->GetName());
+	}
+}
+
+FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
+{
+	UE_LOG(
+		LogAGX, Warning, TEXT("Replacing all instances of %s with TODO."),
+		*CurrentMaterial->GetName());
 	return FReply::Handled();
 }
 

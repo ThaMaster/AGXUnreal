@@ -23,5 +23,12 @@ public:
 private:
 	FReply OnSynchronizeModelButtonClicked();
 
+	// Members related to render Material replacement.
+	void CustomizeMaterialReplacer();
+	FString GetSelectedMaterialPath() const;
+	void OnMaterialSelected(const FAssetData& AssetData);
+	FReply OnReplaceMaterialsButtonClicked();
+	TWeakObjectPtr<UMaterialInterface> CurrentMaterial;
+
 	IDetailLayoutBuilder* DetailBuilder;
 };
