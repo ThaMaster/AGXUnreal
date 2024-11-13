@@ -126,27 +126,57 @@ FReply FAGX_ModelSourceComponentCustomization::OnSynchronizeModelButtonClicked()
 	return FReply::Handled();
 }
 
+struct FAGX_ModelSourceComponentCustomization_helper
+{
+	using FGetMaterial = FString (FAGX_ModelSourceComponentCustomization::*)() const;
+	using FSetMaterial = void (FAGX_ModelSourceComponentCustomization::*)(const FAssetData&);
+
+	static void CreateMaterialWidget(
+		FAGX_ModelSourceComponentCustomization& Customizer, IDetailCategoryBuilder& CategoryBuilder,
+		const FText& Label, const FText& ToolTip, FGetMaterial GetMaterial,
+		FSetMaterial SetMaterial)
+	{
+		// clang-format off
+		CategoryBuilder.AddCustomRow(LOCTEXT("ReplaceMaterial", "Replace Material"))
+		.NameContent()
+		[
+			SNew(STextBlock)
+			.Font(IDetailLayoutBuilder::GetDetailFont())
+			.Text(Label)
+			.ToolTipText(ToolTip)
+		]
+		.ValueContent()
+		[
+			SNew(SObjectPropertyEntryBox)
+			.AllowedClass(UMaterialInterface::StaticClass())
+			.ObjectPath(&Customizer, GetMaterial)
+			.OnObjectChanged(&Customizer, SetMaterial)
+		];
+		// clang-format on
+	}
+};
+
 void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer()
 {
 	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder->EditCategory("Material Replacer");
 
-	// clang-format off
-	CategoryBuilder.AddCustomRow(LOCTEXT("ReplaceMaterialCurrent", "Replace Material Current"))
-	.NameContent()
-	[
-		SNew(STextBlock)
-		.Font(IDetailLayoutBuilder::GetDetailFont())
-		.Text(LOCTEXT("CurrentMaterial", "Current Material"))
-		.ToolTipText(LOCTEXT("CurrentMaterialTooltip", "The Material currently set on Static Mesh Components that should be replaced with another Material."))
-	]
-	.ValueContent()
-	[
-		SNew(SObjectPropertyEntryBox)
-		.AllowedClass(UMaterialInterface::StaticClass())
-		.ObjectPath(this, &FAGX_ModelSourceComponentCustomization::GetSelectedMaterialPath)
-		.OnObjectChanged(this, &FAGX_ModelSourceComponentCustomization::OnMaterialSelected)
-	];
+	FAGX_ModelSourceComponentCustomization_helper::CreateMaterialWidget(
+		*this, CategoryBuilder, LOCTEXT("CurrentMaterial", "Current Material"),
+		LOCTEXT(
+			"CurrentMaterialTooltip",
+			"The Material currently set on Static Mesh Components that should be replaced with "
+			"another Material."),
+		&FAGX_ModelSourceComponentCustomization::GetCurrentMaterialPath,
+		&FAGX_ModelSourceComponentCustomization::OnCurrentMaterialSelected);
+	FAGX_ModelSourceComponentCustomization_helper::CreateMaterialWidget(
+		*this, CategoryBuilder, LOCTEXT("NewMaterial", "New Material"),
+		LOCTEXT(
+			"NewMaterialTooltip",
+			"The Material that should be assigned instead of Current Material."),
+		&FAGX_ModelSourceComponentCustomization::GetNewMaterialPath,
+		&FAGX_ModelSourceComponentCustomization::OnNewMaterialSelected);
 
+	// clang-format off
 	CategoryBuilder.AddCustomRow(LOCTEXT("ReplaceMaterialButton", "Replace Material Button"))
 	[
 		SNew(SHorizontalBox)
@@ -164,25 +194,39 @@ void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer()
 	// clang-format on
 }
 
-FString FAGX_ModelSourceComponentCustomization::GetSelectedMaterialPath() const
+FString FAGX_ModelSourceComponentCustomization::GetCurrentMaterialPath() const
 {
 	return CurrentMaterial.IsValid() ? CurrentMaterial->GetPathName() : FString();
 }
 
-void FAGX_ModelSourceComponentCustomization::OnMaterialSelected(const FAssetData& AssetData)
+FString FAGX_ModelSourceComponentCustomization::GetNewMaterialPath() const
+{
+	return NewMaterial.IsValid() ? NewMaterial->GetPathName() : FString();
+}
+
+void FAGX_ModelSourceComponentCustomization::OnCurrentMaterialSelected(const FAssetData& AssetData)
 {
 	CurrentMaterial = Cast<UMaterialInterface>(AssetData.GetAsset());
 	if (CurrentMaterial.IsValid())
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Selected Material: %s"), *CurrentMaterial->GetName());
+		UE_LOG(LogAGX, Warning, TEXT("Selected Current Material: %s"), *CurrentMaterial->GetName());
+	}
+}
+
+void FAGX_ModelSourceComponentCustomization::OnNewMaterialSelected(const FAssetData& AssetData)
+{
+	NewMaterial = Cast<UMaterialInterface>(AssetData.GetAsset());
+	if (NewMaterial.IsValid())
+	{
+		UE_LOG(LogAGX, Warning, TEXT("Selected New Material: %s"), *NewMaterial->GetName());
 	}
 }
 
 FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 {
 	UE_LOG(
-		LogAGX, Warning, TEXT("Replacing all instances of %s with TODO."),
-		*CurrentMaterial->GetName());
+		LogAGX, Warning, TEXT("Replacing all instances of %s with %s."),
+		*CurrentMaterial->GetName(), *NewMaterial->GetName());
 	return FReply::Handled();
 }
 

@@ -25,10 +25,15 @@ private:
 
 	// Members related to render Material replacement.
 	void CustomizeMaterialReplacer();
-	FString GetSelectedMaterialPath() const;
-	void OnMaterialSelected(const FAssetData& AssetData);
+	FString GetCurrentMaterialPath() const;
+	FString GetNewMaterialPath() const;
+	void OnCurrentMaterialSelected(const FAssetData& AssetData);
+	void OnNewMaterialSelected(const FAssetData& AssetData);
 	FReply OnReplaceMaterialsButtonClicked();
-	TWeakObjectPtr<UMaterialInterface> CurrentMaterial;
+	inline static TWeakObjectPtr<UMaterialInterface> CurrentMaterial; // TODO Make not static.
+	inline static TWeakObjectPtr<UMaterialInterface> NewMaterial; // TODO Make not static.
 
 	IDetailLayoutBuilder* DetailBuilder;
+
+	friend struct FAGX_ModelSourceComponentCustomization_helper;
 };
