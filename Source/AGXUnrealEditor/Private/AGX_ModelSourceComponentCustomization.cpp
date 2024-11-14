@@ -224,6 +224,9 @@ void FAGX_ModelSourceComponentCustomization::OnNewMaterialSelected(const FAssetD
 
 FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 {
+	FScopedTransaction Transaction(
+		LOCTEXT("ReplaceRenderMaterialsUndo", "Replace Render Materials"));
+
 	// TODO Remove trace log.
 	UE_LOG(
 		LogAGX, Warning, TEXT("Replacing all instances of %s with %s."),
@@ -250,6 +253,12 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 			SNotificationItem::CS_Fail);
 		return FReply::Handled();
 	}
+
+	UE_LOG(
+		LogAGX, Warning,
+		TEXT("Edited Model Source Component is '%s', the outer is '%s' of type '%s'."),
+		*GetNameSafe(ModelSource), *GetNameSafe(ModelSource->GetOuter()),
+		*GetNameSafe(ModelSource->GetOuter()->GetClass()));
 
 	UBlueprint* EditBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*ModelSource);
 #if 0
@@ -278,6 +287,15 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 
 	UMaterialInterface* Current = CurrentMaterial.Get();
 	UMaterialInterface* New = NewMaterial.Get();
+
+	FProperty* Property =
+		UStaticMeshComponent::StaticClass()->FindPropertyByName("OverrideMaterials");
+	FProperty* GptProperty = FindFieldChecked<FProperty>(UStaticMeshComponent::StaticClass(), TEXT("OverrideMaterials"));
+	UE_LOG(LogAGX, Warning, TEXT("\nFindPropertyByName: %p\nFindFieldChecked:   %p"), Property, GptProperty);
+
+	TSharedRef<IPropertyHandle> PropertyHandle = DetailBuilder->GetProperty(
+		GET_MEMBER_NAME_CHECKED(UStaticMeshComponent, OverrideMaterials), UStaticMeshComponent::StaticClass());
+	PropertyHandle->NotifyPreChange();
 
 	int32 NumReplaced {0};
 
@@ -357,14 +375,20 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 						UE_LOG(
 							LogAGX, Warning,
 							TEXT("        That is the one we want to replace. Replacing."));
+						Instance->PreEditChange(Property);
 						Instance->Modify();
 						Instance->SetMaterial(MaterialIndex, New);
+						FPropertyChangedEvent Event(Property, EPropertyChangeType::ValueSet);
+						Instance->PostEditChangeProperty(Event);
 						++NumReplaced;
 					}
 				}
 
+				Mesh->PreEditChange(Property);
 				Mesh->Modify();
 				Mesh->SetMaterial(MaterialIndex, New);
+				FPropertyChangedEvent Event(Property, EPropertyChangeType::ValueSet);
+				Mesh->PostEditChangeProperty(Event);
 				++NumReplaced;
 			}
 		}
@@ -373,6 +397,8 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 		{
 			EditBlueprint->Modify();
 		}
+
+		PropertyHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
 
 		UE_LOG(LogAGX, Warning, TEXT("Num materials replaced: %d."), NumReplaced);
 	}
