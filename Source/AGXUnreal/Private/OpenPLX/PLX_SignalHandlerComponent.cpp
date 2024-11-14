@@ -6,6 +6,7 @@
 #include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Import/AGX_ModelSourceComponent.h"
+#include "OpenPLX/PLX_ModelRegistry.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -35,7 +36,10 @@ namespace PLX_SignalHandlerComponent_helpers
 		for (UAGX_ConstraintComponent* Constraint : ConstraintsInThisActor)
 		{
 			if (auto CBarrier = Constraint->GetOrCreateNative())
-				ConstraintBarriers.Add(CBarrier);
+			{
+				if (CBarrier->HasNative())
+					ConstraintBarriers.Add(CBarrier);
+			}
 		}
 
 		return ConstraintBarriers;
@@ -80,11 +84,19 @@ void UPLX_SignalHandlerComponent::BeginPlay()
 		return;
 	}
 
+	auto PLXModelRegistry = UPLX_ModelRegistry::GetFrom(GetWorld());
+	auto PLXModelRegistryBarrier = PLXModelRegistry != nullptr ? PLXModelRegistry->GetNative() : nullptr;
+	if (PLXModelRegistryBarrier == nullptr)
+	{
+		// Todo: log warning.
+		return;
+	}
+
 	// Collect all Constraints in the same AActor as us.
 	TArray<FConstraintBarrier*> ConstraintBarriers = CollectConstraintBarriers(GetOwner());
 
 	// Initialize SignalHandler in Barrier module.
-	SignalHandler.Init(*PLXFile, *SimulationBarrier, ConstraintBarriers);
+	SignalHandler.Init(*PLXFile, *SimulationBarrier, *PLXModelRegistryBarrier, ConstraintBarriers);
 }
 
 void UPLX_SignalHandlerComponent::EndPlay(const EEndPlayReason::Type Reason)

@@ -1,6 +1,7 @@
 #pragma once
 
 // OpenPLX includes.
+#include "Brick/brickagx/AgxCache.h"
 #include "Brick/brickagx/InputSignalListener.h"
 #include "Brick/brickagx/OutputSignalListener.h"
 
@@ -39,7 +40,9 @@ struct FOutputSignalHandlerRef
 
 struct FPLXModelDatum
 {
-	agx::ref_ptr<BrickAgx::InputSignalListener> InputSignalHandler;
+	std::shared_ptr<BrickAgx::AgxCache> AGXCache;
+	Brick::Core::ObjectPtr PLXModel;
+	agx::ref_ptr<BrickAgx::InputSignalListener> InputSignalListener;
 	agxSDK::AssemblyRef Assembly;
 };
 

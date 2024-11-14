@@ -13,60 +13,39 @@
 #include "Utilities/PLXUtilities.h"
 
 // OpenPLX includes.
-#include "Brick/brickagx/InputSignalListener.h"
 #include "Brick/brickagx/Signals.h"
 #include "Brick/Physics/Signals/RealInputSignal.h"
 #include "Brick/Physics3D/Signals/LinearVelocityMotorVelocityInput.h"
 
-static Brick::Core::ObjectPtr PLXModel = nullptr; // Todo: store somewhere to be re-used!
 
 void FPLXSignalHandler::Init(
 	const FString& PLXFile, FSimulationBarrier& Simulation,
-	TArray<FConstraintBarrier*>& Constraints)
+	FPLXModelRegistry& InModelInfo,	TArray<FConstraintBarrier*>& Constraints)
 {
 	check(Simulation.HasNative());
+	check(InModelInfo.HasNative());
 
-#if 0
-	// Todo: this PLXModel (tree) should be cached somewhere and re-used for other instances of the
-	// same PLX model in the same world, so that LoadModel only has to be done once for any givel
-	// PLX model.
-	std::shared_ptr<BrickAgx::AgxCache> AGXCache;
-	PLXModel = FPLXUtilities::LoadModel(PLXFile, AGXCache);
-	if (PLXModel == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Could not read OpenPLX file '%s'. The Log category LogAGXDynamics may include "
-				 "more details."),
-			*PLXFile);
-		return;
-	}
-
-	// Here, we re-use the InputSignalListener in OpenPLX to propagate signals.
-	// It expects an assembly with the relevant contraints (and powerlines).
-	// If no powerline exists in the OpenPLX model, one must be added anyway because the
-	// InputSignalListener assumes one.
-	NativeAssemblyRef = std::make_shared<FAssemblyRef>(new agxSDK::Assembly());
+	agxSDK::AssemblyRef Assembly = new agxSDK::Assembly();
 	for (FConstraintBarrier* Constraint : Constraints)
 	{
 		AGX_CHECK(Constraint->HasNative());
-		NativeAssemblyRef->Native->add(Constraint->GetNative()->Native);
+		Assembly->add(Constraint->GetNative()->Native);
 	}
 
-	agxPowerLine::PowerLineRef RequiredDummyPowerLine = new agxPowerLine::PowerLine();
-	RequiredDummyPowerLine->setName(agx::Name("BrickPowerLine"));
-	NativeAssemblyRef->Native->add(RequiredDummyPowerLine);
-	NativeInputSignalHandlerRef =
-		std::make_shared<FInputSignalHandlerRef>(NativeAssemblyRef->Native);
-	Simulation.GetNative()->Native->add(NativeInputSignalHandlerRef->Native.get());
-
-	// Todo: build up signals map for fast lookup later.
-#endif
+	FAssemblyRef AssemblyRef(Assembly);
+	ModelInfo = &InModelInfo;
+	ModelHandle = ModelInfo->Register(PLXFile, AssemblyRef, Simulation);
+	if (ModelHandle == FPLXModelRegistry::InvalidHandle)
+	{
+		// Todo: log error
+		return;
+	}
 }
 
 bool FPLXSignalHandler::IsInitialized() const
 {
-	return NativeOutputSignalHandlerRef != nullptr;
+	return true;// Todo, uncomment below once implemented.
+	//return NativeOutputSignalHandlerRef != nullptr;
 }
 
 void FPLXSignalHandler::ReleaseNatives()
@@ -95,9 +74,15 @@ namespace PLXSignalHandler_helpers
 bool FPLXSignalHandler::Send(const FPLX_LinearVelocityMotorVelocityInput& Input, double Value)
 {
 	AGX_CHECK(IsInitialized());
+	if (ModelInfo == nullptr)
+		return false;
+
+	const FPLXModelDatum* ModelDatum = ModelInfo->GetModelDatum(ModelHandle);
+	if (ModelDatum == nullptr)
+		return false;
 
 	std::vector<std::shared_ptr<Brick::Physics::Signals::Input>> SignalInputs;
-	auto System = std::dynamic_pointer_cast<Brick::Physics3D::System>(PLXModel);
+	auto System = std::dynamic_pointer_cast<Brick::Physics3D::System>(ModelDatum->PLXModel);
 	if (System == nullptr)
 		return false;
 
