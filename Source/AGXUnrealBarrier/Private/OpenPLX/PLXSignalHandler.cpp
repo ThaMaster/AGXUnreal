@@ -26,6 +26,7 @@ void FPLXSignalHandler::Init(
 {
 	check(Simulation.HasNative());
 
+#if 0
 	// Todo: this PLXModel (tree) should be cached somewhere and re-used for other instances of the
 	// same PLX model in the same world, so that LoadModel only has to be done once for any givel
 	// PLX model.
@@ -60,18 +61,17 @@ void FPLXSignalHandler::Init(
 	Simulation.GetNative()->Native->add(NativeInputSignalHandlerRef->Native.get());
 
 	// Todo: build up signals map for fast lookup later.
+#endif
 }
 
 bool FPLXSignalHandler::IsInitialized() const
 {
-	return NativeAssemblyRef != nullptr && NativeInputSignalHandlerRef != nullptr;
+	return NativeOutputSignalHandlerRef != nullptr;
 }
 
 void FPLXSignalHandler::ReleaseNatives()
 {
-	NativeInputSignalHandlerRef = nullptr;
-	PLXModel = nullptr;
-	NativeAssemblyRef = nullptr;
+	NativeOutputSignalHandlerRef = nullptr;
 }
 
 namespace PLXSignalHandler_helpers
@@ -92,7 +92,7 @@ namespace PLXSignalHandler_helpers
 	}
 }
 
-bool FPLXSignalHandler::Send(FPLX_LinearVelocityMotorVelocityInput Input, double Value)
+bool FPLXSignalHandler::Send(const FPLX_LinearVelocityMotorVelocityInput& Input, double Value)
 {
 	AGX_CHECK(IsInitialized());
 

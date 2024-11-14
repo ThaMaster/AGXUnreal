@@ -9,9 +9,8 @@
 class FConstraintBarrier;
 class FSimulationBarrier;
 
-struct FAssemblyRef;
-struct FInputSignalHandlerRef;
 struct FPLX_LinearVelocityMotorVelocityInput;
+struct FOutputSignalHandlerRef;
 
 class AGXUNREALBARRIER_API FPLXSignalHandler
 {
@@ -23,9 +22,8 @@ public:
 	void ReleaseNatives();
 
 	// todo: match the base class RealInput on the PLX side for less overloads.
-	bool Send(FPLX_LinearVelocityMotorVelocityInput Input, double Value);
+	bool Send(const FPLX_LinearVelocityMotorVelocityInput& Input, double Value);
 
 private: 
-	std::shared_ptr<FAssemblyRef> NativeAssemblyRef;
-	std::shared_ptr<FInputSignalHandlerRef> NativeInputSignalHandlerRef;
+	std::shared_ptr<FOutputSignalHandlerRef> NativeOutputSignalHandlerRef;
 };
