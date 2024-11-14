@@ -30,8 +30,6 @@ private:
 	void OnCurrentMaterialSelected(const FAssetData& AssetData);
 	void OnNewMaterialSelected(const FAssetData& AssetData);
 	FReply OnReplaceMaterialsButtonClicked();
-	inline static TWeakObjectPtr<UMaterialInterface> CurrentMaterial; // TODO Make not static.
-	inline static TWeakObjectPtr<UMaterialInterface> NewMaterial; // TODO Make not static.
 
 	IDetailLayoutBuilder* DetailBuilder;
 
