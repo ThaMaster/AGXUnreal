@@ -224,8 +224,6 @@ void FAGX_ModelSourceComponentCustomization::OnNewMaterialSelected(const FAssetD
 
 FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 {
-	FScopedTransaction Transaction(
-		LOCTEXT("ReplaceRenderMaterialsUndo", "Replace Render Materials"));
 	auto Bail = [](const TCHAR* Message)
 	{
 		FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
@@ -242,9 +240,6 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 		return Bail(
 			TEXT("Material replacing is currenly only supported while there is a Detail Builder."));
 	}
-
-	// It is OK for the Materials to not be set, means that all uses of the default material should
-	// be replaced, or that the selected material should be cleared to the default material.
 
 	UAGX_ModelSourceComponent* ModelSource =
 		FAGX_EditorUtilities::GetSingleObjectBeingCustomized<UAGX_ModelSourceComponent>(
@@ -269,20 +264,39 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 	}
 
 	UClass* EditedBlueprintClass = EditBlueprint->GeneratedClass;
+	if (EditedBlueprintClass == nullptr)
+	{
+		return Bail(
+			TEXT("Material replacing failed because the Bluperint doesn't have a generated class. "
+				 "It may help to compile the Blueprint first."));
+	}
 
-	UMaterialInterface* Current = CurrentMaterial.Get();
-	UMaterialInterface* New = NewMaterial.Get();
+	const UMaterialInterface* const Current = CurrentMaterial.Get();
+	UMaterialInterface* const New = NewMaterial.Get();
+	// It is OK for the Materials to not be set, i.e. be nullptr. It means that all uses of the
+	// default material should be replaced, or that the selected current material should be cleared
+	// to the default material.
 
-	FProperty* Property =
-		UStaticMeshComponent::StaticClass()->FindPropertyByName("OverrideMaterials");
-	FProperty* GptProperty = FindFieldChecked<FProperty>(UStaticMeshComponent::StaticClass(), TEXT("OverrideMaterials"));
-	UE_LOG(LogAGX, Warning, TEXT("\nFindPropertyByName: %p\nFindFieldChecked:   %p"), Property, GptProperty);
+	FProperty* const Property = UStaticMeshComponent::StaticClass()->FindPropertyByName(
+		GET_MEMBER_NAME_CHECKED(UStaticMeshComponent, OverrideMaterials));
+	if (Property == nullptr)
+	{
+		return Bail(
+			TEXT("Material replacement could not be completed because Static Mesh Component does "
+				 "not have an Override Materials property."));
+	}
 
-	TSharedRef<IPropertyHandle> PropertyHandle = DetailBuilder->GetProperty(
-		GET_MEMBER_NAME_CHECKED(UStaticMeshComponent, OverrideMaterials), UStaticMeshComponent::StaticClass());
-	PropertyHandle->NotifyPreChange();
+	FPropertyChangedEvent Event(Property, EPropertyChangeType::ValueSet);
 
-	int32 NumReplaced {0};
+	auto SetMaterial = [New, Property, &Event](UStaticMeshComponent* Mesh, int32 MaterialIndex)
+	{
+		Mesh->PreEditChange(Property);
+		Mesh->SetMaterial(MaterialIndex, New);
+		Mesh->PostEditChangeProperty(Event);
+	};
+
+	FScopedTransaction Transaction(
+		LOCTEXT("ReplaceRenderMaterialsUndo", "Replace Render Materials"));
 
 	// Iterate over all SCS nodes. Not only those in the child Blueprint but also all from parent
 	// Blueprints.
@@ -304,7 +318,7 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 				*GetNameSafe(Mesh));
 
 			// We only want to update the edit Blueprint, so find the instance that is owned by
-			// the that Blueprint.
+			// that Blueprint.
 			Mesh = FAGX_ObjectUtilities::GetMatchedInstance(Mesh, EditedBlueprintClass);
 			if (Mesh == nullptr)
 			{
@@ -342,32 +356,14 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 						UE_LOG(
 							LogAGX, Warning,
 							TEXT("        That is the one we want to replace. Replacing."));
-						Instance->PreEditChange(Property);
-						Instance->Modify();
-						Instance->SetMaterial(MaterialIndex, New);
-						FPropertyChangedEvent Event(Property, EPropertyChangeType::ValueSet);
-						Instance->PostEditChangeProperty(Event);
-						++NumReplaced;
+
+						SetMaterial(Instance, MaterialIndex);
 					}
 				}
 
-				Mesh->PreEditChange(Property);
-				Mesh->Modify();
-				Mesh->SetMaterial(MaterialIndex, New);
-				FPropertyChangedEvent Event(Property, EPropertyChangeType::ValueSet);
-				Mesh->PostEditChangeProperty(Event);
-				++NumReplaced;
+				SetMaterial(Mesh, MaterialIndex);
 			}
 		}
-
-		if (NumReplaced > 0)
-		{
-			EditBlueprint->Modify();
-		}
-
-		PropertyHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
-
-		UE_LOG(LogAGX, Warning, TEXT("Num materials replaced: %d."), NumReplaced);
 	}
 
 	return FReply::Handled();
