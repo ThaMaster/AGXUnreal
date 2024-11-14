@@ -285,6 +285,9 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 		return FReply::Handled();
 	}
 
+
+	UClass* EditedBlueprintClass = EditBlueprint->GeneratedClass;
+
 	UMaterialInterface* Current = CurrentMaterial.Get();
 	UMaterialInterface* New = NewMaterial.Get();
 
@@ -320,25 +323,7 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 
 			// We only want to update the edit Blueprint, so find the instance that is owned by
 			// the that Blueprint.
-			Mesh = [&]() -> UStaticMeshComponent*
-			{
-				if (FAGX_BlueprintUtilities::GetBlueprintFrom(*Mesh) == EditBlueprint)
-				{
-					return Mesh;
-				}
-
-				for (UStaticMeshComponent* Instance :
-					 FAGX_ObjectUtilities::GetArchetypeInstances(*Mesh))
-				{
-					if (FAGX_BlueprintUtilities::GetBlueprintFrom(*Instance) == EditBlueprint)
-					{
-						return Instance;
-					}
-				}
-
-				return nullptr;
-			}();
-
+			Mesh = FAGX_ObjectUtilities::GetMatchedInstance(Mesh, EditedBlueprintClass);
 			if (Mesh == nullptr)
 			{
 				UE_LOG(
