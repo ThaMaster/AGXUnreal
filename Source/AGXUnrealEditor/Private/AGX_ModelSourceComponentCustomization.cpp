@@ -262,25 +262,11 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 		*GetNameSafe(ModelSource->GetOuter()->GetClass()));
 
 	UBlueprint* EditBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*ModelSource);
-#if 0
-	// TODO I think this is just wrong. Consider removing.
 	if (EditBlueprint == nullptr)
 	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Could not get Blueprint from selected Model Source Component, trying the "
-				 "archetype instance."));
-		UAGX_ModelSourceComponent* Archetype =
-			Cast<UAGX_ModelSourceComponent>(ModelSource->GetArchetype());
-		if (Archetype != nullptr)
-		{
-			EditBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*Archetype);
-		}
 		return Bail(
 			TEXT("Material replacing is currenly only supported from the Blueprint Editor."));
 	}
-#endif
-
 
 	UClass* EditedBlueprintClass = EditBlueprint->GeneratedClass;
 
