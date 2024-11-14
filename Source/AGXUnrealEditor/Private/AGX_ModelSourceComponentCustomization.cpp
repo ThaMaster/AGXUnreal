@@ -226,6 +226,11 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 {
 	FScopedTransaction Transaction(
 		LOCTEXT("ReplaceRenderMaterialsUndo", "Replace Render Materials"));
+	auto Bail = [](const TCHAR* Message)
+	{
+		FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
+		return FReply::Handled();
+	};
 
 	// TODO Remove trace log.
 	UE_LOG(
@@ -234,10 +239,8 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 
 	if (DetailBuilder == nullptr)
 	{
-		FAGX_NotificationUtilities::ShowNotification(
-			TEXT("Material replacing is currenly only supported while there is a Detail Builder."),
-			SNotificationItem::CS_Fail);
-		return FReply::Handled();
+		return Bail(
+			TEXT("Material replacing is currenly only supported while there is a Detail Builder."));
 	}
 
 	// It is OK for the Materials to not be set, means that all uses of the default material should
@@ -248,10 +251,8 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 			*DetailBuilder);
 	if (ModelSource == nullptr)
 	{
-		FAGX_NotificationUtilities::ShowNotification(
-			TEXT("Material replacing is currenly only supported with a Model Source Component."),
-			SNotificationItem::CS_Fail);
-		return FReply::Handled();
+		return Bail(
+			TEXT("Material replacing is currenly only supported with a Model Source Component."));
 	}
 
 	UE_LOG(
@@ -275,15 +276,10 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 		{
 			EditBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*Archetype);
 		}
+		return Bail(
+			TEXT("Material replacing is currenly only supported from the Blueprint Editor."));
 	}
 #endif
-	if (EditBlueprint == nullptr)
-	{
-		FAGX_NotificationUtilities::ShowNotification(
-			TEXT("Material replacing is currenly only supported from the Blueprint Editor."),
-			SNotificationItem::CS_Fail);
-		return FReply::Handled();
-	}
 
 
 	UClass* EditedBlueprintClass = EditBlueprint->GeneratedClass;
