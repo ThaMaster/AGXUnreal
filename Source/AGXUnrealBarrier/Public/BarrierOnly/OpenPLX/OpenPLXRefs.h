@@ -14,6 +14,7 @@
 // Standard library includes.
 #include <memory>
 #include <vector>
+#include <unordered_map>
 
 struct FInputSignalHandlerRef
 {
@@ -43,6 +44,7 @@ struct FPLXModelDatum
 	std::shared_ptr<BrickAgx::AgxCache> AGXCache;
 	Brick::Core::ObjectPtr PLXModel;
 	agx::ref_ptr<BrickAgx::InputSignalListener> InputSignalListener;
+	std::unordered_map<std::string, agx::ref_ptr<BrickAgx::OutputSignalListener>> OutputSignalListeners;
 	agxSDK::AssemblyRef Assembly;
 };
 

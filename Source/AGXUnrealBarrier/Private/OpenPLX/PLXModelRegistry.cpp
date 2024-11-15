@@ -55,12 +55,41 @@ namespace FPLXModelRegistry_helpers
 }
 
 FPLXModelRegistry::Handle FPLXModelRegistry::Register(
-	const FString& PLXFile, FAssemblyRef& Assembly, FSimulationBarrier& Simulation)
+	const FString& PLXFile, const FString& Prefix, FAssemblyRef& Assembly,
+	FSimulationBarrier& Simulation)
 {
 	check(HasNative());
 	check(Simulation.HasNative());
 
+	if (Prefix.IsEmpty())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FPLXModelRegistry::Register got an empty UniqueModelInstancePrefix when "
+				 "registering OpenPLX file '%s'. The OpenPLX model instance will not be "
+				 "registered."),
+			*PLXFile);
+		return InvalidHandle;
+	}
+
 	Handle Handle = GetFrom(PLXFile);
+
+	// Check that we got a unique Model Instance Prefix.
+	if (Handle != InvalidHandle)
+	{
+		const size_t Index = FPLXModelRegistry_helpers::Convert(Handle);
+		if (Native->ModelData[Index].OutputSignalListeners.contains(Convert(Prefix)))
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("FPLXModelRegistry::Register got UniqueModelInstancePrefix '%s' that has "
+					 "already been used when registering an instance using OpenPLX file '%s'. This "
+					 "registration will fail and the behaviour of this instance may not work as "
+					 "expected."),
+				*Prefix, *PLXFile);
+			return InvalidHandle;
+		}
+	}
 
 	if (Handle == InvalidHandle) // We have never seen this PLX Model before.
 		Handle = PrepareNewModel(PLXFile);
@@ -79,7 +108,7 @@ FPLXModelRegistry::Handle FPLXModelRegistry::Register(
 	// Add the given assebly as a sub-assembly to the existing root assembly.
 	// This way, the InputSignalListener will correctly find all relevant AGX objects.
 	ModelDatum->Assembly->add(Assembly.Native);
-	
+
 	if (ModelDatum->InputSignalListener != nullptr) // Has been added before.
 		Simulation.GetNative()->Native->remove(ModelDatum->InputSignalListener);
 
@@ -88,6 +117,12 @@ FPLXModelRegistry::Handle FPLXModelRegistry::Register(
 	ModelDatum->InputSignalListener = new BrickAgx::InputSignalListener(ModelDatum->Assembly);
 	Simulation.GetNative()->Native->add(ModelDatum->InputSignalListener);
 
+	// Finally add an OutputSignalListener that is used for this PLX model instance only, producing
+	// output signals. It has a unique name prefix that is used to keep signals from getting name
+	// collisions when having mutliple instances of the same PLX model in the world.
+	ModelDatum->OutputSignalListeners.insert(
+		{Convert(Prefix),
+		 new BrickAgx::OutputSignalListener(Assembly.Native, ModelDatum->PLXModel)});
 	return Handle;
 }
 

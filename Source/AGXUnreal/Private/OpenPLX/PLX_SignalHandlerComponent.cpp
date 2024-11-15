@@ -85,7 +85,8 @@ void UPLX_SignalHandlerComponent::BeginPlay()
 	}
 
 	auto PLXModelRegistry = UPLX_ModelRegistry::GetFrom(GetWorld());
-	auto PLXModelRegistryBarrier = PLXModelRegistry != nullptr ? PLXModelRegistry->GetNative() : nullptr;
+	auto PLXModelRegistryBarrier =
+		PLXModelRegistry != nullptr ? PLXModelRegistry->GetNative() : nullptr;
 	if (PLXModelRegistryBarrier == nullptr)
 	{
 		// Todo: log warning.
@@ -96,10 +97,8 @@ void UPLX_SignalHandlerComponent::BeginPlay()
 	TArray<FConstraintBarrier*> ConstraintBarriers = CollectConstraintBarriers(GetOwner());
 
 	// Initialize SignalHandler in Barrier module.
-	SignalHandler.Init(*PLXFile, *SimulationBarrier, *PLXModelRegistryBarrier, ConstraintBarriers);
-}
-
-void UPLX_SignalHandlerComponent::EndPlay(const EEndPlayReason::Type Reason)
-{
-	SignalHandler.ReleaseNatives();
+	const FString UniqueInstancePrefix = GetOwner()->GetName();
+	SignalHandler.Init(
+		*PLXFile, UniqueInstancePrefix, *SimulationBarrier, *PLXModelRegistryBarrier,
+		ConstraintBarriers);
 }

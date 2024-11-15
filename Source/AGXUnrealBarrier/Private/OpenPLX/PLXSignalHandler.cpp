@@ -17,10 +17,10 @@
 #include "Brick/Physics/Signals/RealInputSignal.h"
 #include "Brick/Physics3D/Signals/LinearVelocityMotorVelocityInput.h"
 
-
 void FPLXSignalHandler::Init(
-	const FString& PLXFile, FSimulationBarrier& Simulation,
-	FPLXModelRegistry& InModelInfo,	TArray<FConstraintBarrier*>& Constraints)
+	const FString& PLXFile, const FString& UniqueModelInstancePrefix,
+	FSimulationBarrier& Simulation, FPLXModelRegistry& InModelInfo,
+	TArray<FConstraintBarrier*>& Constraints)
 {
 	check(Simulation.HasNative());
 	check(InModelInfo.HasNative());
@@ -34,23 +34,19 @@ void FPLXSignalHandler::Init(
 
 	FAssemblyRef AssemblyRef(Assembly);
 	ModelInfo = &InModelInfo;
-	ModelHandle = ModelInfo->Register(PLXFile, AssemblyRef, Simulation);
+	ModelHandle = ModelInfo->Register(PLXFile, UniqueModelInstancePrefix, AssemblyRef, Simulation);
 	if (ModelHandle == FPLXModelRegistry::InvalidHandle)
 	{
 		// Todo: log error
 		return;
 	}
+
+	bIsInitialized = true;
 }
 
 bool FPLXSignalHandler::IsInitialized() const
 {
-	return true;// Todo, uncomment below once implemented.
-	//return NativeOutputSignalHandlerRef != nullptr;
-}
-
-void FPLXSignalHandler::ReleaseNatives()
-{
-	NativeOutputSignalHandlerRef = nullptr;
+	return bIsInitialized;
 }
 
 namespace PLXSignalHandler_helpers
@@ -73,7 +69,7 @@ namespace PLXSignalHandler_helpers
 
 bool FPLXSignalHandler::Send(const FPLX_LinearVelocityMotorVelocityInput& Input, double Value)
 {
-	AGX_CHECK(IsInitialized());
+	check(IsInitialized());
 	if (ModelInfo == nullptr)
 		return false;
 
@@ -91,13 +87,11 @@ bool FPLXSignalHandler::Send(const FPLX_LinearVelocityMotorVelocityInput& Input,
 	// Todo - map these in advance.
 	for (std::shared_ptr<Brick::Physics::Signals::Input>& SignalInput : SignalInputs)
 	{
-		auto LinearVelInput =
-			std::dynamic_pointer_cast<Brick::Physics3D::Signals::LinearVelocityMotorVelocityInput>(
-				SignalInput);
-		if (LinearVelInput == nullptr)
+		if (Convert(SignalInput->getName()) != Input.Name)
 			continue;
 
-		auto Signal = Brick::Physics::Signals::RealInputSignal::create(ConvertDistanceToAGX(Value), LinearVelInput);
+		auto Signal = Brick::Physics::Signals::RealInputSignal::create(
+			ConvertDistanceToAGX(Value), SignalInput);
 		BrickAgx::Signals::sendInputSignal(Signal);
 		return true;
 	}

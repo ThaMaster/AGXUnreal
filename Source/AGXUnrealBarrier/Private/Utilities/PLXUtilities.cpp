@@ -45,15 +45,38 @@ namespace PLXUtilities_helpers
 
 		for (auto& Input : System->getValues<Brick::Physics::Signals::Input>())
 		{
-			if (auto LvmvI = std::dynamic_pointer_cast<
+			if (auto Lvmvi = std::dynamic_pointer_cast<
 					Brick::Physics3D::Signals::LinearVelocityMotorVelocityInput>(Input))
 			{
 				OutInputs.Emplace(MakeUnique<FPLX_LinearVelocityMotorVelocityInput>(
-					Convert(LvmvI->motor()->getName())));
+					Convert(Input->getName())));
 				continue;
 			}
 
 			UE_LOG(LogAGX, Warning, TEXT("Unhandled PLX Input: %s"), *Convert(Input->getName()));
+		}
+	}
+
+	void GetOutputs(Brick::Physics3D::System* System, TArray<TUniquePtr<FPLX_Output>>& OutOutputs)
+	{
+		if (System == nullptr)
+			return;
+
+		for (auto& Subsystem : System->getValues<Brick::Physics3D::System>())
+		{
+			GetOutputs(System, OutOutputs);
+		}
+
+		for (auto& Output : System->getValues<Brick::Physics::Signals::Output>())
+		{
+			if (auto Hao = std::dynamic_pointer_cast<Brick::Physics3D::Signals::HingeAngleOutput>(Output))
+			{
+				OutOutputs.Emplace(
+					MakeUnique<FPLX_HingeAngleOutput>(Convert(Output->getName())));
+				continue;
+			}
+
+			UE_LOG(LogAGX, Warning, TEXT("Unhandled PLX Output: %s"), *Convert(Output->getName()));
 		}
 	}
 
@@ -129,4 +152,11 @@ TArray<TUniquePtr<FPLX_Input>> FPLXUtilities::GetInputs(Brick::Physics3D::System
 	TArray<TUniquePtr<FPLX_Input>> Inputs;
 	PLXUtilities_helpers::GetInputs(System, Inputs);
 	return Inputs;
+}
+
+TArray<TUniquePtr<FPLX_Output>> FPLXUtilities::GetOutputs(Brick::Physics3D::System* System)
+{
+	TArray<TUniquePtr<FPLX_Output>> Outputs;
+	PLXUtilities_helpers::GetOutputs(System, Outputs);
+	return Outputs;
 }

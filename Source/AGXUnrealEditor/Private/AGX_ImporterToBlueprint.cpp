@@ -34,6 +34,7 @@
 #include "Materials/ContactMaterialBarrier.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "OpenPLX/PLX_Inputs.h"
+#include "OpenPLX/PLX_Outputs.h"
 #include "OpenPLX/PLX_SignalHandlerComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
@@ -571,7 +572,7 @@ namespace
 		return EImportResult::Success;
 	}
 
-	bool AddPLXSignals(const FSimulationObjectCollection& SimObjects, UBlueprint& OutBlueprint)
+	bool AddPLXInputs(const FSimulationObjectCollection& SimObjects, UBlueprint& OutBlueprint)
 	{
 		bool SignalsAdded = false;
 		for (const TUniquePtr<FPLX_Input>& Input : SimObjects.GetPLXInputs())
@@ -595,6 +596,41 @@ namespace
 			}
 
 			OutBlueprint.NewVariables[VarIndex].Category = FText::FromString("OpenPLX Inputs");
+			OutBlueprint.NewVariables[VarIndex].PropertyFlags |= CPF_BlueprintReadOnly;
+		}
+
+		if (SignalsAdded)
+			FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(&OutBlueprint);
+
+		return SignalsAdded;
+	}
+
+	bool AddPLXOutputs(const FSimulationObjectCollection& SimObjects, UBlueprint& OutBlueprint)
+	{
+		bool SignalsAdded = false;
+		for (const TUniquePtr<FPLX_Output>& Output : SimObjects.GetPLXOutputs())
+		{
+			FEdGraphPinType PinType;
+			PinType.PinCategory = FName(TEXT("struct"));
+			PinType.PinSubCategoryObject = Output->GetType();
+			FBlueprintEditorUtils::AddMemberVariable(
+				&OutBlueprint, FName(Output->Name), PinType,
+				FString::Printf(TEXT("(Name=\"%s\")"), *Output->Name));
+			SignalsAdded = true;
+
+			const int32 VarIndex =
+				FBlueprintEditorUtils::FindNewVariableIndex(&OutBlueprint, FName(Output->Name));
+			if (VarIndex == INDEX_NONE)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Unable to properly setup OpenPLX Output '%s' as a variable in Blueprint "
+						 "'%s'. The OpenPLX Output might not work as expected."),
+					*Output->Name, *OutBlueprint.GetName());
+				continue;
+			}
+
+			OutBlueprint.NewVariables[VarIndex].Category = FText::FromString("OpenPLX Outputs");
 			OutBlueprint.NewVariables[VarIndex].PropertyFlags |= CPF_BlueprintReadOnly;
 		}
 
@@ -732,7 +768,9 @@ namespace
 		UBlueprint* Blueprint = CreateBaseBlueprint(Package, Template);
 		if (ImportSettings.ImportType == EAGX_ImportType::Plx && Blueprint != nullptr)
 		{
-			if (AddPLXSignals(SimObjects, *Blueprint))
+			const bool InputsAdded = AddPLXInputs(SimObjects, *Blueprint);
+			const bool OutputsAdded = AddPLXOutputs(SimObjects, *Blueprint);
+			if (InputsAdded || OutputsAdded)
 				FKismetEditorUtilities::CompileBlueprint(Blueprint);
 		}
 

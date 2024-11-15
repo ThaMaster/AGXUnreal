@@ -660,6 +660,7 @@ bool FAGXSimObjectsReader::ReadOpenPLXFile(
 	// Read PLX inputs.
 	auto System = std::dynamic_pointer_cast<Brick::Physics3D::System>(PLXModel);
 	OutSimObjects.GetPLXInputs() = FPLXUtilities::GetInputs(System.get());
+	OutSimObjects.GetPLXOutputs() = FPLXUtilities::GetOutputs(System.get());
 
 	return true;
 }

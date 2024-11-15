@@ -298,3 +298,13 @@ const TArray<TUniquePtr<FPLX_Input>>& FSimulationObjectCollection::GetPLXInputs(
 {
 	return PLXInputs;
 }
+
+TArray<TUniquePtr<FPLX_Output>>& FSimulationObjectCollection::GetPLXOutputs()
+{
+	return PLXOutputs;
+}
+
+const TArray<TUniquePtr<FPLX_Output>>& FSimulationObjectCollection::GetPLXOutputs() const
+{
+	return PLXOutputs;
+}

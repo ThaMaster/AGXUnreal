@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "OpenPLX/PLX_Inputs.h"
+#include "OpenPLX/PLX_Outputs.h"
 
 // OpenPLX includes.
 #include "Brick/brick/Object.h"
@@ -25,4 +26,5 @@ public:
 		const FString& Filename, std::shared_ptr<BrickAgx::AgxCache> AGXCache);
 
 	static TArray<TUniquePtr<FPLX_Input>> GetInputs(Brick::Physics3D::System* System);
+	static TArray<TUniquePtr<FPLX_Output>> GetOutputs(Brick::Physics3D::System* System);
 };
