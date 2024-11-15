@@ -49,52 +49,26 @@ bool FPLXSignalHandler::IsInitialized() const
 	return bIsInitialized;
 }
 
-namespace PLXSignalHandler_helpers
-{
-	void findAllSignalInputs(
-		Brick::Physics3D::System* System,
-		std::vector<std::shared_ptr<Brick::Physics::Signals::Input>>& OutSignalInputs)
-	{
-		for (auto& Subsystem : System->getValues<Brick::Physics3D::System>())
-		{
-			findAllSignalInputs(System, OutSignalInputs);
-		}
-
-		for (auto& SignalInput : System->getValues<Brick::Physics::Signals::Input>())
-		{
-			OutSignalInputs.push_back(SignalInput);
-		}
-	}
-}
-
 bool FPLXSignalHandler::Send(const FPLX_LinearVelocityMotorVelocityInput& Input, double Value)
 {
 	check(IsInitialized());
 	if (ModelInfo == nullptr)
 		return false;
 
-	const FPLXModelDatum* ModelDatum = ModelInfo->GetModelDatum(ModelHandle);
+	FPLXModelDatum* ModelDatum = ModelInfo->GetModelDatum(ModelHandle);
 	if (ModelDatum == nullptr)
 		return false;
 
-	std::vector<std::shared_ptr<Brick::Physics::Signals::Input>> SignalInputs;
-	auto System = std::dynamic_pointer_cast<Brick::Physics3D::System>(ModelDatum->PLXModel);
-	if (System == nullptr)
+	auto PLXInput = ModelDatum->Inputs.find(Convert(Input.Name));
+	if (PLXInput == ModelDatum->Inputs.end())
 		return false;
 
-	PLXSignalHandler_helpers::findAllSignalInputs(System.get(), SignalInputs);
+	auto Signal =
+		Brick::Physics::Signals::RealInputSignal::create(ConvertDistanceToAGX(Value), PLXInput->second);
 
-	// Todo - map these in advance.
-	for (std::shared_ptr<Brick::Physics::Signals::Input>& SignalInput : SignalInputs)
-	{
-		if (Convert(SignalInput->getName()) != Input.Name)
-			continue;
-
-		auto Signal = Brick::Physics::Signals::RealInputSignal::create(
-			ConvertDistanceToAGX(Value), SignalInput);
-		BrickAgx::Signals::sendInputSignal(Signal);
-		return true;
-	}
+	// Todo: prepend unique instance name prefix to signal once supported.
+	BrickAgx::Signals::sendInputSignal(Signal);
+	return true;
 
 	return false;
 }

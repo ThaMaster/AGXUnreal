@@ -10,6 +10,7 @@
 #include "TypeConversions.h"
 #include "Utilities/PLXUtilities.h"
 
+
 // Standard library includes.
 #include <limits>
 
@@ -51,6 +52,29 @@ namespace FPLXModelRegistry_helpers
 	{
 		check(Val >= 0);
 		return static_cast<size_t>(Val);
+	}
+
+	void MapAllInputs(
+		Brick::Physics3D::System* System,
+		std::unordered_map<std::string, std::shared_ptr<Brick::Physics::Signals::Input>>&
+			OutInputs)
+	{
+		if (System == nullptr)
+			return;
+
+		for (auto& Subsystem : System->getValues<Brick::Physics3D::System>())
+		{
+			MapAllInputs(System, OutInputs);
+		}
+
+		for (auto& Input : System->getValues<Brick::Physics::Signals::Input>())
+		{
+			if (Input == nullptr)
+				continue;
+
+			AGX_CHECK(!OutInputs.contains(Input->getName()));
+			OutInputs.insert({Input->getName(), Input});
+		}
 	}
 }
 
@@ -120,9 +144,13 @@ FPLXModelRegistry::Handle FPLXModelRegistry::Register(
 	// Finally add an OutputSignalListener that is used for this PLX model instance only, producing
 	// output signals. It has a unique name prefix that is used to keep signals from getting name
 	// collisions when having mutliple instances of the same PLX model in the world.
+	agx::ref_ptr<BrickAgx::OutputSignalListener> OutputSignalListener =
+		new BrickAgx::OutputSignalListener(Assembly.Native, ModelDatum->PLXModel);
 	ModelDatum->OutputSignalListeners.insert(
-		{Convert(Prefix),
-		 new BrickAgx::OutputSignalListener(Assembly.Native, ModelDatum->PLXModel)});
+		{Convert(Prefix), OutputSignalListener});
+	AGX_CHECK(!Simulation.GetNative()->Native->remove(OutputSignalListener));
+	Simulation.GetNative()->Native->add(OutputSignalListener);
+
 	return Handle;
 }
 
@@ -175,6 +203,9 @@ FPLXModelRegistry::Handle FPLXModelRegistry::PrepareNewModel(const FString& PLXF
 			*PLXFile);
 		return InvalidHandle;
 	}
+
+	auto System = std::dynamic_pointer_cast<Brick::Physics3D::System>(NewModel.PLXModel);
+	FPLXModelRegistry_helpers::MapAllInputs(System.get(), NewModel.Inputs);
 
 	// OpenPLX's InputSignalListener expects an Assembly with a PowerLine always.
 	// Therefore we add one here, even though it's a bit of a hack.

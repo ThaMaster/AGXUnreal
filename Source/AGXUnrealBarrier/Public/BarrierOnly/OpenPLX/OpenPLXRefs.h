@@ -2,8 +2,10 @@
 
 // OpenPLX includes.
 #include "Brick/brickagx/AgxCache.h"
+#include "Brick/brickagx/Signals.h"
 #include "Brick/brickagx/InputSignalListener.h"
 #include "Brick/brickagx/OutputSignalListener.h"
+#include "Brick/Physics3D/System.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -46,6 +48,7 @@ struct FPLXModelDatum
 	agx::ref_ptr<BrickAgx::InputSignalListener> InputSignalListener;
 	std::unordered_map<std::string, agx::ref_ptr<BrickAgx::OutputSignalListener>> OutputSignalListeners;
 	agxSDK::AssemblyRef Assembly;
+	std::unordered_map<std::string, std::shared_ptr<Brick::Physics::Signals::Input>> Inputs;
 };
 
 struct FPLXModelData

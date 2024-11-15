@@ -150,6 +150,9 @@ Brick::Core::ObjectPtr FPLXUtilities::LoadModel(
 TArray<TUniquePtr<FPLX_Input>> FPLXUtilities::GetInputs(Brick::Physics3D::System* System)
 {
 	TArray<TUniquePtr<FPLX_Input>> Inputs;
+	if (System == nullptr)
+		return Inputs;
+
 	PLXUtilities_helpers::GetInputs(System, Inputs);
 	return Inputs;
 }
@@ -157,6 +160,9 @@ TArray<TUniquePtr<FPLX_Input>> FPLXUtilities::GetInputs(Brick::Physics3D::System
 TArray<TUniquePtr<FPLX_Output>> FPLXUtilities::GetOutputs(Brick::Physics3D::System* System)
 {
 	TArray<TUniquePtr<FPLX_Output>> Outputs;
+	if (System == nullptr)
+		return Outputs;
+
 	PLXUtilities_helpers::GetOutputs(System, Outputs);
 	return Outputs;
 }
