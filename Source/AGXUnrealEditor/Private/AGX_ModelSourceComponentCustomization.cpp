@@ -239,13 +239,29 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 	}
 
 	UBlueprint* EditBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*ModelSource);
-	if (EditBlueprint == nullptr)
+	AActor* Owner = ModelSource->GetOwner();
+	if (EditBlueprint == nullptr && Owner == nullptr)
 	{
 		return Bail(
-			TEXT("Material replacing is currenly only supported from the Blueprint Editor."));
+			TEXT("Material replacing failed because the Model Source Component has neither an "
+				 "Owner nor a Blueprint"));
 	}
 
-	FAGX_MaterialReplacer::ReplaceMaterials(EditBlueprint);
+	if (EditBlueprint != nullptr)
+	{
+		TSharedRef<IPropertyHandle> PropertyHandle = DetailBuilder->GetProperty(
+			GET_MEMBER_NAME_CHECKED(UStaticMeshComponent, OverrideMaterials),
+			UStaticMeshComponent::StaticClass());
+		FAGX_MaterialReplacer::ReplaceMaterials(*EditBlueprint, PropertyHandle.Get());
+	}
+	else if (Owner != nullptr)
+	{
+		FAGX_MaterialReplacer::ReplaceMaterials(*Owner);
+	}
+	else
+	{
+		checkNoEntry();
+	}
 
 	return FReply::Handled();
 }
