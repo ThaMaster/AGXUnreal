@@ -11,6 +11,7 @@
 class FConstraintBarrier;
 class FSimulationBarrier;
 
+struct FPLX_HingeAngleOutput;
 struct FPLX_LinearVelocityMotorVelocityInput;
 struct FOutputSignalHandlerRef;
 
@@ -25,8 +26,9 @@ public:
 
 	bool IsInitialized() const;
 
-	// todo: match the base class RealInput on the PLX side for less overloads.
 	bool Send(const FPLX_LinearVelocityMotorVelocityInput& Input, double Value);
+
+	bool Receive(const FPLX_HingeAngleOutput& Output, double& OutValue);
 
 private:
 	bool bIsInitialized {false};

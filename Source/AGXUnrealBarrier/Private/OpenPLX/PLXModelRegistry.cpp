@@ -146,8 +146,7 @@ FPLXModelRegistry::Handle FPLXModelRegistry::Register(
 	// collisions when having mutliple instances of the same PLX model in the world.
 	agx::ref_ptr<BrickAgx::OutputSignalListener> OutputSignalListener =
 		new BrickAgx::OutputSignalListener(Assembly.Native, ModelDatum->PLXModel);
-	ModelDatum->OutputSignalListeners.insert(
-		{Convert(Prefix), OutputSignalListener});
+	ModelDatum->OutputSignalListeners.insert({Convert(Prefix), OutputSignalListener});
 	AGX_CHECK(!Simulation.GetNative()->Native->remove(OutputSignalListener));
 	Simulation.GetNative()->Native->add(OutputSignalListener);
 

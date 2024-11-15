@@ -9,6 +9,7 @@
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
 #include "OpenPLX/PLX_Inputs.h"
+#include "OpenPLX/PLX_Outputs.h"
 
 #include "PLX_SignalHandlerComponent.generated.h"
 
@@ -26,7 +27,10 @@ public:
 	UPLX_SignalHandlerComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool Send(FPLX_LinearVelocityMotorVelocityInput Input, double Value);
+	bool Send(const FPLX_LinearVelocityMotorVelocityInput& Input, double Value);
+
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool Receive(const FPLX_HingeAngleOutput& Output, double& OutValue);
 
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;

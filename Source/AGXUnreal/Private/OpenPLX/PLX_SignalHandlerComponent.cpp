@@ -15,7 +15,7 @@ UPLX_SignalHandlerComponent::UPLX_SignalHandlerComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-bool UPLX_SignalHandlerComponent::Send(FPLX_LinearVelocityMotorVelocityInput Input, double Value)
+bool UPLX_SignalHandlerComponent::Send(const FPLX_LinearVelocityMotorVelocityInput& Input, double Value)
 {
 	if (!SignalHandler.IsInitialized())
 		return false;
@@ -58,6 +58,11 @@ namespace PLX_SignalHandlerComponent_helpers
 		// import, not the source file itself. This is to ensure portability of standalone-projects.
 		return ModelSource->FilePath;
 	}
+}
+
+bool UPLX_SignalHandlerComponent::Receive(const FPLX_HingeAngleOutput& Output, double& OutValue)
+{
+	return SignalHandler.Receive(Output, OutValue);
 }
 
 void UPLX_SignalHandlerComponent::BeginPlay()
