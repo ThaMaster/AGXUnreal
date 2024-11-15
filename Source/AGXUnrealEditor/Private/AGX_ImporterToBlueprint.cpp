@@ -579,14 +579,23 @@ namespace
 			FEdGraphPinType PinType;
 			PinType.PinCategory = FName(TEXT("struct"));
 			PinType.PinSubCategoryObject = Input->GetType();
-			FBlueprintEditorUtils::AddMemberVariable(&OutBlueprint, FName(Input->Name), PinType);
+			FBlueprintEditorUtils::AddMemberVariable(
+				&OutBlueprint, FName(Input->Name), PinType, FString::Printf(TEXT("(Name=\"%s\")"), *Input->Name));
 			SignalsAdded = true;
-		}
 
-		for (auto& NewVariable : OutBlueprint.NewVariables) // Todo: is there a safer way to get these?
-		{
-			NewVariable.Category = FText::FromString("OpenPLX Inputs");
-			NewVariable.PropertyFlags |= CPF_BlueprintReadOnly;
+			const int32 VarIndex =
+				FBlueprintEditorUtils::FindNewVariableIndex(&OutBlueprint, FName(Input->Name));
+			if (VarIndex == INDEX_NONE)
+			{
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Unable to properly setup OpenPLX Input '%s' as a variable in Blueprint "
+						 "'%s'. The OpenPLX input might not work as expected."), *Input->Name, *OutBlueprint.GetName());
+				continue;
+			}
+
+			OutBlueprint.NewVariables[VarIndex].Category = FText::FromString("OpenPLX Inputs");
+			OutBlueprint.NewVariables[VarIndex].PropertyFlags |= CPF_BlueprintReadOnly;
 		}
 
 		if (SignalsAdded)

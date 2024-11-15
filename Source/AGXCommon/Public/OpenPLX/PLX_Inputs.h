@@ -21,7 +21,7 @@ struct AGXCOMMON_API FPLX_Input
 
 	virtual ~FPLX_Input() = default;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPXL")
 	FString Name;
 
 	virtual UScriptStruct* GetType() const
