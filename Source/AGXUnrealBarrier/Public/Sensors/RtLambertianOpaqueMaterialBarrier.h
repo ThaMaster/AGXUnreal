@@ -14,8 +14,6 @@ class AGXUNREALBARRIER_API FRtLambertianOpaqueMaterialBarrier
 {
 public:
 	FRtLambertianOpaqueMaterialBarrier();
-	FRtLambertianOpaqueMaterialBarrier(std::unique_ptr<FRtLambertianOpaqueMaterial> InNative);
-	FRtLambertianOpaqueMaterialBarrier(FRtLambertianOpaqueMaterialBarrier&& Other);
 	virtual ~FRtLambertianOpaqueMaterialBarrier();
 
 	void SetReflectivity(float Reflectivity);
@@ -28,10 +26,7 @@ public:
 	const FRtLambertianOpaqueMaterial* GetNative() const;
 	void ReleaseNative();
 
-private:
-	FRtLambertianOpaqueMaterialBarrier(const FRtLambertianOpaqueMaterialBarrier&) = delete;
-	void operator=(const FRtLambertianOpaqueMaterialBarrier&) = delete;
 
 protected:
-	std::unique_ptr<FRtLambertianOpaqueMaterial> Native;
+	std::shared_ptr<FRtLambertianOpaqueMaterial> Native;
 };

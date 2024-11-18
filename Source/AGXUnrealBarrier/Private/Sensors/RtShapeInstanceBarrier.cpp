@@ -59,7 +59,7 @@ void FRtShapeInstanceBarrier::SetLidarSurfaceMaterialOrDefault(
 	else
 	{
 		check(Material->HasNative());
-		NativeRef->Native.handle->setMaterial(Material->GetNative()->Native);
+		NativeRef->Native.handle->setMaterial(*Material->GetNative()->Native);
 	}
 }
 

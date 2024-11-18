@@ -131,7 +131,9 @@ FContactMaterialBarrier AGXBarrierFactories::CreateContactMaterialBarrier(
 FRtAmbientMaterialBarrier AGXBarrierFactories::CreateLidarAmbientMaterialBarrier(
 	agxSensor::RtAmbientMaterial Material)
 {
-	return {std::make_unique<FRtAmbientMaterial>(Material)};
+	FRtAmbientMaterialBarrier Barrier;
+	Barrier.AllocateNative();
+	return Barrier;
 }
 
 FShapeContactBarrier AGXBarrierFactories::CreateShapeContactBarrier(

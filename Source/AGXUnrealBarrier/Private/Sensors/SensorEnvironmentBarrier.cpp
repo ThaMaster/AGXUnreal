@@ -132,7 +132,7 @@ void FSensorEnvironmentBarrier::SetAmbientMaterial(FRtAmbientMaterialBarrier* Ma
 	if (Material == nullptr)
 		NativeRef->Native->getScene()->setMaterial({nullptr});
 	else
-		NativeRef->Native->getScene()->setMaterial(Material->GetNative()->Native);
+		NativeRef->Native->getScene()->setMaterial(*Material->GetNative()->Native);
 }
 
 namespace SensorEnvironmentBarrier_helpers
@@ -153,7 +153,7 @@ namespace SensorEnvironmentBarrier_helpers
 		{
 			check(Material->HasNative());
 			agxSensor::RtSurfaceMaterial::set(
-				Barrier.GetNative()->Native, Material->GetNative()->Native);
+				Barrier.GetNative()->Native, *Material->GetNative()->Native);
 		}
 	}
 }

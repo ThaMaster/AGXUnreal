@@ -6,21 +6,8 @@
 #include "Sensors/SensorRef.h"
 
 FRtLambertianOpaqueMaterialBarrier::FRtLambertianOpaqueMaterialBarrier()
-	: Native(new FRtLambertianOpaqueMaterial())
+	: Native(std::make_shared<FRtLambertianOpaqueMaterial>())
 {
-}
-
-FRtLambertianOpaqueMaterialBarrier::FRtLambertianOpaqueMaterialBarrier(
-	std::unique_ptr<FRtLambertianOpaqueMaterial> InNative)
-	: Native(std::move(InNative))
-{
-}
-
-FRtLambertianOpaqueMaterialBarrier::FRtLambertianOpaqueMaterialBarrier(
-	FRtLambertianOpaqueMaterialBarrier&& Other)
-	: Native {std::move(Other.Native)}
-{
-	Other.Native.reset(new FRtLambertianOpaqueMaterial());
 }
 
 FRtLambertianOpaqueMaterialBarrier::~FRtLambertianOpaqueMaterialBarrier()
@@ -30,24 +17,25 @@ FRtLambertianOpaqueMaterialBarrier::~FRtLambertianOpaqueMaterialBarrier()
 void FRtLambertianOpaqueMaterialBarrier::SetReflectivity(float Reflectivity)
 {
 	check(HasNative());
-	Native->Native.setReflectivity(Reflectivity);
+	Native->Native->setReflectivity(Reflectivity);
 }
 
 float FRtLambertianOpaqueMaterialBarrier::GetReflectivity() const
 {
 	check(HasNative());
-	return Native->Native.getReflectivity();
+	return Native->Native->getReflectivity();
 }
 
 void FRtLambertianOpaqueMaterialBarrier::AllocateNative()
 {
 	check(!HasNative());
-	Native->Native = agxSensor::RtLambertianOpaqueMaterial::create();
+	Native->Native = std::make_shared<agxSensor::RtLambertianOpaqueMaterial>();
+	*Native->Native = agxSensor::RtLambertianOpaqueMaterial::create();
 }
 
 bool FRtLambertianOpaqueMaterialBarrier::HasNative() const
 {
-	return Native->Native.isValid();
+	return Native->Native != nullptr && Native->Native->isValid();
 }
 
 FRtLambertianOpaqueMaterial* FRtLambertianOpaqueMaterialBarrier::GetNative()

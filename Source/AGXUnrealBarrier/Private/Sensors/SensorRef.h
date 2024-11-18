@@ -62,20 +62,12 @@ struct FLidarOutputRef
 
 struct FRtLambertianOpaqueMaterial
 {
-	agxSensor::RtLambertianOpaqueMaterial Native;
+	std::shared_ptr<agxSensor::RtLambertianOpaqueMaterial> Native;
 	FRtLambertianOpaqueMaterial() = default;
-	FRtLambertianOpaqueMaterial(const agxSensor::RtLambertianOpaqueMaterial& InNative)
-		: Native(InNative)
-	{
-	}
 };
 
 struct FRtAmbientMaterial
 {
-	agxSensor::RtAmbientMaterial Native;
+	std::shared_ptr<agxSensor::RtAmbientMaterial> Native;
 	FRtAmbientMaterial() = default;
-	FRtAmbientMaterial(const agxSensor::RtAmbientMaterial& InNative)
-		: Native(InNative)
-	{
-	}
 };

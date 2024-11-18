@@ -14,8 +14,6 @@ class AGXUNREALBARRIER_API FRtAmbientMaterialBarrier
 {
 public:
 	FRtAmbientMaterialBarrier();
-	FRtAmbientMaterialBarrier(std::unique_ptr<FRtAmbientMaterial> InNative);
-	FRtAmbientMaterialBarrier(FRtAmbientMaterialBarrier&& Other);
 	virtual ~FRtAmbientMaterialBarrier();
 
 	virtual void AllocateNative();
@@ -74,10 +72,7 @@ public:
 	 */
 	void ConfigureAsSnowfall(float Rate, float Wavelength);
 
-private:
-	FRtAmbientMaterialBarrier(const FRtAmbientMaterialBarrier&) = delete;
-	void operator=(const FRtAmbientMaterialBarrier&) = delete;
 
 protected:
-	std::unique_ptr<FRtAmbientMaterial> Native;
+	std::shared_ptr<FRtAmbientMaterial> Native;
 };
