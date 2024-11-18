@@ -26,6 +26,9 @@
 #include <agxSensor/RaytraceOutput.h>
 #include "EndAGXIncludes.h"
 
+// Standard library includes.
+#include <limits>
+
 FLidarBarrier::FLidarBarrier()
 	: NativeRef {new FLidarRef}
 {
@@ -58,7 +61,7 @@ namespace LidarBarrier_helpers
 	{
 	public:
 		UnrealLidarModel(agxSensor::LidarRayPatternGenerator* PatternGenerator)
-			: LidarModel(PatternGenerator, new agxSensor::LidarRayRange())
+			: LidarModel(PatternGenerator, {0.f, std::numeric_limits<agx::Real32>::max()})
 		{
 		}
 	};
@@ -71,7 +74,7 @@ namespace LidarBarrier_helpers
 
 		return new agxSensor::Lidar(
 			nullptr,
-			new agxSensor::HorizontalSweepLidarModel(FovAGX, ResolutionAGX, Params.Frequency));
+			new agxSensor::LidarModelHorizontalSweep(FovAGX, ResolutionAGX, Params.Frequency));
 	}
 
 	agxSensor::Lidar* CreateAGXLidar(const UAGX_OusterOS0Parameters& Params)
