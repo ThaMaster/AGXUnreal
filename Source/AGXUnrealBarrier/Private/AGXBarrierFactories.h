@@ -25,7 +25,6 @@
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
 #include "Shapes/CylinderShapeBarrier.h"
-#include "Shapes/EmptyShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
 #include "Terrain/ShovelBarrier.h"
@@ -102,8 +101,6 @@ namespace agxVehicle
 namespace AGXBarrierFactories
 {
 	FRigidBodyBarrier AGXUNREALBARRIER_API CreateRigidBodyBarrier(agx::RigidBody* Body);
-
-	FEmptyShapeBarrier CreateEmptyShapeBarrier(agxCollide::Geometry* Geometry);
 
 	FAnyShapeBarrier CreateAnyShapeBarrier(agxCollide::Shape* Shape);
 

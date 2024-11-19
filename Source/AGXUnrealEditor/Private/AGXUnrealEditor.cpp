@@ -364,6 +364,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_CollisionGroupDisablerComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
+		UAGX_ConstraintComponent::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_ConstraintCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
 		UAGX_ContactMaterial::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_ContactMaterialCustomization::MakeInstance));
