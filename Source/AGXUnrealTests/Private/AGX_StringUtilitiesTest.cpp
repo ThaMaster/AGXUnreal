@@ -22,7 +22,7 @@ bool FWaitTicks::Update()
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FStringUtilities_GetFNameSafe_Test, "AGXUnreal.StringUtilities.GetFNameSafe",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::CriticalPriority |
+	AgxAutomationCommon::ETF_ApplicationContextMask | EAutomationTestFlags::CriticalPriority |
 		EAutomationTestFlags::ProductFilter)
 
 bool FStringUtilities_GetFNameSafe_Test::RunTest(const FString& Parameters)

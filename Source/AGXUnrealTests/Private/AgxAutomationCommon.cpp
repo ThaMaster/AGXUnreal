@@ -596,7 +596,7 @@ AgxAutomationCommon::FCheckWorldsTest::FCheckWorldsTest()
 {
 }
 
-uint32 AgxAutomationCommon::FCheckWorldsTest::GetTestFlags() const
+EAutomationTestFlags AgxAutomationCommon::FCheckWorldsTest::GetTestFlags() const
 {
 	return DefaultTestFlags;
 }
@@ -641,7 +641,7 @@ AgxAutomationCommon::FAgxAutomationTest::FAgxAutomationTest(
 {
 }
 
-uint32 AgxAutomationCommon::FAgxAutomationTest::GetTestFlags() const
+EAutomationTestFlags AgxAutomationCommon::FAgxAutomationTest::GetTestFlags() const
 {
 	return DefaultTestFlags;
 }
