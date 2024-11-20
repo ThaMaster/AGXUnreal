@@ -40,15 +40,22 @@ namespace AgxAutomationCommon
 	 */
 	UWorld* GetTestWorld();
 
-	constexpr EAutomationTestFlags DefaultTestFlags =
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
+	constexpr EAutomationTestFlags::Type DefaultTestFlags =
+		static_cast<const EAutomationTestFlags::Type>(
 			EAutomationTestFlags::ProductFilter | EAutomationTestFlags::EditorContext |
-			EAutomationTestFlags::ClientContext;
+			EAutomationTestFlags::ClientContext);
+
+	constexpr EAutomationTestFlags::Type ETF_ApplicationContextMask =
+		static_cast<const EAutomationTestFlags::Type>(
+		EAutomationTestFlags::ApplicationContextMask);
+#else
+	constexpr EAutomationTestFlags DefaultTestFlags = EAutomationTestFlags::ProductFilter |
+															EAutomationTestFlags::EditorContext |
+															EAutomationTestFlags::ClientContext;
 
 	constexpr EAutomationTestFlags ETF_ApplicationContextMask =
-#if UE_VERSION_OLDER_THAN(5, 5, 0)
 		EAutomationTestFlags::ApplicationContextMask;
-#else
-		EAutomationTestFlags_ApplicationContextMask;
 #endif
 		
 
@@ -349,7 +356,11 @@ namespace AgxAutomationCommon
 	{
 	public:
 		FAgxAutomationTest(const FString& InName, const FString& InBeautifiedTestName);
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
+		uint32 GetTestFlags() const override;
+#else
 		EAutomationTestFlags GetTestFlags() const override;
+#endif
 		uint32 GetRequiredDeviceNum() const override;
 
 	protected:
@@ -370,7 +381,11 @@ namespace AgxAutomationCommon
 	public:
 		FCheckWorldsTest();
 
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
+		uint32 GetTestFlags() const override;
+#else
 		EAutomationTestFlags GetTestFlags() const override;
+#endif
 
 		uint32 GetRequiredDeviceNum() const override;
 
