@@ -308,6 +308,10 @@ bool AGX_MaterialLibrary::InitializeLidarAmbientMaterialAssetLibrary(bool ForceO
 		[](FRtAmbientMaterialBarrier& Barrier) { Barrier.ConfigureAsAir(1.0f); }, ForceOverwrite);
 
 	Result &= UpdateLidarAmbientMaterialAssetLibrary(
+		"AGX_LAM_Air_2500m_Visibility",
+		[](FRtAmbientMaterialBarrier& Barrier) { Barrier.ConfigureAsAir(2.5f); }, ForceOverwrite);
+
+	Result &= UpdateLidarAmbientMaterialAssetLibrary(
 		"AGX_LAM_Air_5000m_Visibility",
 		[](FRtAmbientMaterialBarrier& Barrier) { Barrier.ConfigureAsAir(5.0f); }, ForceOverwrite);
 
@@ -318,6 +322,11 @@ bool AGX_MaterialLibrary::InitializeLidarAmbientMaterialAssetLibrary(bool ForceO
 	Result &= UpdateLidarAmbientMaterialAssetLibrary(
 		"AGX_LAM_Fog_3000m_Visibility",
 		[](FRtAmbientMaterialBarrier& Barrier) { Barrier.ConfigureAsFog(3.0f, 900.f); },
+		ForceOverwrite);
+
+	Result &= UpdateLidarAmbientMaterialAssetLibrary(
+		"AGX_LAM_Fog_2000m_Visibility",
+		[](FRtAmbientMaterialBarrier& Barrier) { Barrier.ConfigureAsFog(2.0f, 900.f); },
 		ForceOverwrite);
 
 	Result &= UpdateLidarAmbientMaterialAssetLibrary(
