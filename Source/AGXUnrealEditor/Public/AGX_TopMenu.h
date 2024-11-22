@@ -28,7 +28,7 @@ private:
 
 	void FillLicenseMenu(FMenuBuilder& Builder);
 
-	void FillForcePickingMenu(FMenuBuilder& Builder);
+	void FillGrabModeMenu(FMenuBuilder& Builder);
 
 	template <typename Function>
 	void AddFileMenuEntry(
@@ -44,8 +44,8 @@ private:
 	void OnOpenOfflineActivationDialogClicked();
 	void OnOpenGenerateRuntimeActivationDialogClicked();
 
-	void OnStartForcePickingDialogClicked();
-	void OnStopForcePickingDialogClicked();
+	void OnStartGrabModeDialogClicked();
+	void OnStopGrabModeDialogClicked();
 
 	TSharedPtr<class FExtender> Extender;
 	TSharedPtr<const class FExtensionBase> UnrealMenuBarExtension;

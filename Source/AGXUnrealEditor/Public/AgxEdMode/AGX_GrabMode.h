@@ -13,10 +13,10 @@
 
 struct FViewportCursorLocation;
 
-class FAGX_ForcePickingMode : public FAGX_ClickDragMode
+class FAGX_GrabMode : public FAGX_ClickDragMode
 {
 public:
-	const static FEditorModeID EM_AGX_ForcePickingModeId;
+	const static FEditorModeID EM_AGX_GrabModeId;
 
 	static void Activate();
 

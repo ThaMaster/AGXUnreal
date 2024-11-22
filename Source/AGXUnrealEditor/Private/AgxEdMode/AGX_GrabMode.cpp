@@ -1,6 +1,6 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-#include "AgxEdMode/AGX_ForcePickingMode.h"
+#include "AgxEdMode/AGX_GrabMode.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyComponent.h"
@@ -12,9 +12,9 @@
 #include "EditorViewportClient.h"
 #include "EditorModeManager.h"
 
-const FEditorModeID FAGX_ForcePickingMode::EM_AGX_ForcePickingModeId = TEXT("EM_AGX_ForcePickingModeId");
+const FEditorModeID FAGX_GrabMode::EM_AGX_GrabModeId = TEXT("EM_AGX_GrabModeId");
 
-void FAGX_ForcePickingMode::Activate()
+void FAGX_GrabMode::Activate()
 {
 	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
 	if (World == nullptr)
@@ -23,24 +23,24 @@ void FAGX_ForcePickingMode::Activate()
 	if (!World->IsGameWorld())
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Add Force Mode can only be activated during play.");
+			"AGX Grab Mode can only be activated during play.");
 		return;
 	}
 
-	if (!GLevelEditorModeTools().IsModeActive(EM_AGX_ForcePickingModeId))
-		GLevelEditorModeTools().ActivateMode(EM_AGX_ForcePickingModeId);
+	if (!GLevelEditorModeTools().IsModeActive(EM_AGX_GrabModeId))
+		GLevelEditorModeTools().ActivateMode(EM_AGX_GrabModeId);
 
 	// Detach (eject).
 	GEditor->RequestToggleBetweenPIEandSIE();
 }
 
-void FAGX_ForcePickingMode::Deactivate()
+void FAGX_GrabMode::Deactivate()
 {
-	if (GLevelEditorModeTools().IsModeActive(EM_AGX_ForcePickingModeId))
-		GLevelEditorModeTools().DeactivateMode(EM_AGX_ForcePickingModeId);
+	if (GLevelEditorModeTools().IsModeActive(EM_AGX_GrabModeId))
+		GLevelEditorModeTools().DeactivateMode(EM_AGX_GrabModeId);
 }
 
-namespace AGX_ForcePickingMode_helpers
+namespace AGX_GrabMode_helpers
 {
 	UAGX_RigidBodyComponent* FindRigidBody(const UPrimitiveComponent& Component)
 	{
@@ -57,7 +57,7 @@ namespace AGX_ForcePickingMode_helpers
 	}
 }
 
-void FAGX_ForcePickingMode::OnMouseClickComponent(
+void FAGX_GrabMode::OnMouseClickComponent(
 	UPrimitiveComponent* Component, const FVector& WorldLocation,
 	const FViewportCursorLocation& CursorInfo)
 {
@@ -66,7 +66,7 @@ void FAGX_ForcePickingMode::OnMouseClickComponent(
 	if (Component == nullptr)
 		return;
 
-	Body = AGX_ForcePickingMode_helpers::FindRigidBody(*Component);
+	Body = AGX_GrabMode_helpers::FindRigidBody(*Component);
 	if (Body == nullptr)
 		return;
 
@@ -93,12 +93,12 @@ void FAGX_ForcePickingMode::OnMouseClickComponent(
 	Sim->GetNative()->Add(LockConstraint);
 }
 
-void FAGX_ForcePickingMode::OnDeactivateMode()
+void FAGX_GrabMode::OnDeactivateMode()
 {
 	Deactivate();
 }
 
-void FAGX_ForcePickingMode::OnMouseDrag(const FViewportCursorLocation& CursorInfo)
+void FAGX_GrabMode::OnMouseDrag(const FViewportCursorLocation& CursorInfo)
 {
 	if (Body == nullptr || !Body->HasNative())
 		return;
@@ -122,7 +122,7 @@ void FAGX_ForcePickingMode::OnMouseDrag(const FViewportCursorLocation& CursorInf
 	UpdateCursorDecorator();
 }
 
-void FAGX_ForcePickingMode::OnEndMouseDrag()
+void FAGX_GrabMode::OnEndMouseDrag()
 {
 	Body.Reset();
 	ForceOriginLocalPos = FVector::ZeroVector;
@@ -131,26 +131,26 @@ void FAGX_ForcePickingMode::OnEndMouseDrag()
 	DestroyLockConstraint();
 }
 
-FText FAGX_ForcePickingMode::GetCursorDecoratorText() const
+FText FAGX_GrabMode::GetCursorDecoratorText() const
 {
 	return FText::FromString(FString::Printf(TEXT("%f N"), Force));
 }
 
-void FAGX_ForcePickingMode::UpdateCursorDecorator()
+void FAGX_GrabMode::UpdateCursorDecorator()
 {
 	if (!CursorDecoratorWindow.IsValid())
 	{
 		CursorDecoratorWindow = SWindow::MakeCursorDecorator();
 		FSlateApplication::Get().AddWindow(CursorDecoratorWindow.ToSharedRef(), true);
 		CursorDecoratorWindow->SetContent(
-			SNew(SToolTip).Text(this, &FAGX_ForcePickingMode::GetCursorDecoratorText));
+			SNew(SToolTip).Text(this, &FAGX_GrabMode::GetCursorDecoratorText));
 	}
 
 	CursorDecoratorWindow->MoveWindowTo(
 		FSlateApplication::Get().GetCursorPos() + FSlateApplication::Get().GetCursorSize());
 }
 
-void FAGX_ForcePickingMode::DestroyCursorDecorator()
+void FAGX_GrabMode::DestroyCursorDecorator()
 {
 	if (CursorDecoratorWindow.IsValid())
 	{
@@ -159,7 +159,7 @@ void FAGX_ForcePickingMode::DestroyCursorDecorator()
 	}
 }
 
-void FAGX_ForcePickingMode::DestroyLockConstraint()
+void FAGX_GrabMode::DestroyLockConstraint()
 {
 	if (!LockConstraint.HasNative())
 		return;

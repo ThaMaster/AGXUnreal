@@ -7,7 +7,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
-#include "AgxEdMode/AGX_ForcePickingMode.h"
+#include "AgxEdMode/AGX_GrabMode.h"
 #include "AGXUnrealEditor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_BallConstraintActor.h"
@@ -197,17 +197,17 @@ FAGX_TopMenu::~FAGX_TopMenu()
 
 	Builder.AddMenuSeparator();
 
-	{ // HERE!
+	{
 		const FSlateIcon AgxIcon(
 			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIconSmall,
 			FAGX_EditorStyle::AgxIconSmall);
 		Builder.AddSubMenu(
-			LOCTEXT("ForcePickingMenuLabel", "Force Picking"),
+			LOCTEXT("GrabModeMenuLabel", "Grab mode"),
 			LOCTEXT(
-				"ForcePickingMenuTooltip",
-				"Activate/Deactivate the Force Picking mode, making it possible to add forces to "
+				"GrabModeMenuTooltip",
+				"Activate/Deactivate the Grab mode, making it possible to grab "
 				"Rigid Bodies in the Level by clicking and dragging the mouse in the viewport."),
-			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillForcePickingMenu), false, AgxIcon);
+			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillGrabModeMenu), false, AgxIcon);
 	}
 
 	Builder.AddMenuSeparator();
@@ -348,20 +348,20 @@ void FAGX_TopMenu::FillLicenseMenu(FMenuBuilder& Builder)
 		[&]() { FAGX_TopMenu::OnOpenGenerateRuntimeActivationDialogClicked(); });
 }
 
-void FAGX_TopMenu::FillForcePickingMenu(FMenuBuilder& Builder)
+void FAGX_TopMenu::FillGrabModeMenu(FMenuBuilder& Builder)
 {
 	AddFileMenuEntry(
-		Builder, LOCTEXT("StartForcePickingMenuLabel", "Start Force Picking"),
+		Builder, LOCTEXT("StartGrabModeMenuLabel", "Start Grab Mode"),
 		LOCTEXT(
-			"StartForcePickingMenuLabelToolTip",
-			"Activate the Force Picking mode, making it possible to add forces to Rigid Bodies in "
+			"StartGrabModeMenuLabelToolTip",
+			"Activate the Grab mode, making it possible to add forces to Rigid Bodies in "
 			"the Level by clicking and dragging the mouse in the viewport."),
-		[&]() { FAGX_TopMenu::OnStartForcePickingDialogClicked(); });
+		[&]() { FAGX_TopMenu::OnStartGrabModeDialogClicked(); });
 
 	AddFileMenuEntry(
-		Builder, LOCTEXT("StopForcePickingMenuLabel", "Stop Force Picking"),
-		LOCTEXT("StopForcePickingMenuLabelToolTip", "Deactivate the Force Picking mode."),
-		[&]() { FAGX_TopMenu::OnStopForcePickingDialogClicked(); });
+		Builder, LOCTEXT("StopGrabModeMenuLabel", "Stop Grab Mode"),
+		LOCTEXT("StopGrabModeMenuLabelToolTip", "Deactivate the Grab mode."),
+		[&]() { FAGX_TopMenu::OnStopGrabModeDialogClicked(); });
 }
 
 void FAGX_TopMenu::OnCreateConstraintClicked(UClass* ConstraintClass)
@@ -522,7 +522,7 @@ void FAGX_TopMenu::OnOpenGenerateRuntimeActivationDialogClicked()
 	FSlateApplication::Get().AddModalWindow(Window, nullptr);
 }
 
-void FAGX_TopMenu::OnStartForcePickingDialogClicked()
+void FAGX_TopMenu::OnStartGrabModeDialogClicked()
 {
 	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
 	if (World == nullptr)
@@ -531,16 +531,16 @@ void FAGX_TopMenu::OnStartForcePickingDialogClicked()
 	if (!World->IsGameWorld())
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-			"Force Picking if only supported during play.");
+			"Grab mode if only supported during play.");
 		return;
 	}
 
-	FAGX_ForcePickingMode::Activate();
+	FAGX_GrabMode::Activate();
 }
 
-void FAGX_TopMenu::OnStopForcePickingDialogClicked()
+void FAGX_TopMenu::OnStopGrabModeDialogClicked()
 {
-	FAGX_ForcePickingMode::Deactivate();
+	FAGX_GrabMode::Deactivate();
 }
 
 #undef LOCTEXT_NAMESPACE

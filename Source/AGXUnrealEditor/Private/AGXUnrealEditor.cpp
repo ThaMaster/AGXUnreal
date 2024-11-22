@@ -41,7 +41,7 @@
 #include "AgxEdMode/AGX_AgxEdModeFileCustomization.h"
 #include "AgxEdMode/AGX_AgxEdModeTerrain.h"
 #include "AgxEdMode/AGX_AgxEdModeTerrainCustomization.h"
-#include "AgxEdMode/AGX_ForcePickingMode.h"
+#include "AgxEdMode/AGX_GrabMode.h"
 #include "AMOR/AGX_ConstraintMergeSplitThresholdsTypeActions.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholdsTypeActions.h"
 #include "AMOR/AGX_WireMergeSplitThresholdsTypeActions.h"
@@ -586,15 +586,15 @@ void FAGXUnrealEditorModule::RegisterModes()
 			FAGX_EditorStyle::AgxIconSmall),
 		/*bVisisble*/ true);
 
-	FEditorModeRegistry::Get().RegisterMode<FAGX_ForcePickingMode>(
-		FAGX_ForcePickingMode::EM_AGX_ForcePickingModeId,
+	FEditorModeRegistry::Get().RegisterMode<FAGX_GrabMode>(
+		FAGX_GrabMode::EM_AGX_GrabModeId,
 		LOCTEXT("AGXClickDragModel", "Click Drag Mode"), FSlateIcon(), /*bVisisble*/ false);
 }
 
 void FAGXUnrealEditorModule::UnregisterModes()
 {
 	FEditorModeRegistry::Get().UnregisterMode(FAGX_AgxEdMode::EM_AGX_AgxEdModeId);
-	FEditorModeRegistry::Get().UnregisterMode(FAGX_ForcePickingMode::EM_AGX_ForcePickingModeId);
+	FEditorModeRegistry::Get().UnregisterMode(FAGX_GrabMode::EM_AGX_GrabModeId);
 }
 
 void FAGXUnrealEditorModule::RegisterPlacementCategory()
