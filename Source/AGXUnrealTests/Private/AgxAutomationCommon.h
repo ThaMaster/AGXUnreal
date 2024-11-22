@@ -47,17 +47,15 @@ namespace AgxAutomationCommon
 			EAutomationTestFlags::ClientContext);
 
 	constexpr EAutomationTestFlags::Type ETF_ApplicationContextMask =
-		static_cast<const EAutomationTestFlags::Type>(
-		EAutomationTestFlags::ApplicationContextMask);
+		static_cast<const EAutomationTestFlags::Type>(EAutomationTestFlags::ApplicationContextMask);
 #else
 	constexpr EAutomationTestFlags DefaultTestFlags = EAutomationTestFlags::ProductFilter |
-															EAutomationTestFlags::EditorContext |
-															EAutomationTestFlags::ClientContext;
+													  EAutomationTestFlags::EditorContext |
+													  EAutomationTestFlags::ClientContext;
 
 	constexpr EAutomationTestFlags ETF_ApplicationContextMask =
 		EAutomationTestFlags_ApplicationContextMask;
 #endif
-		
 
 	/// @todo Remove this TestEqual implementation for double once Unreal Engine's get support
 	/// for infinity.
