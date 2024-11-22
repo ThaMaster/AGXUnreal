@@ -267,7 +267,8 @@ public class AGXDynamicsLibrary : ModuleRules
 			}
 
 			RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
-			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
+			RuntimeLibFiles.Add("libpng16", LibSource.Dependencies);
+			RuntimeLibFiles.Add("OIS", LibSource.Dependencies);
 			if (TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
 				RuntimeLibFiles.Add("glew", LibSource.Dependencies);
