@@ -55,7 +55,7 @@ namespace AgxAutomationCommon
 															EAutomationTestFlags::ClientContext;
 
 	constexpr EAutomationTestFlags ETF_ApplicationContextMask =
-		EAutomationTestFlags::ApplicationContextMask;
+		EAutomationTestFlags_ApplicationContextMask;
 #endif
 		
 
