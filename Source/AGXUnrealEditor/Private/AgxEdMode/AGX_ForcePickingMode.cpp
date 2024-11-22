@@ -1,6 +1,6 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-#include "AgxEdMode/AGX_AddForceMode.h"
+#include "AgxEdMode/AGX_ForcePickingMode.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_RigidBodyComponent.h"
@@ -12,9 +12,9 @@
 #include "EditorViewportClient.h"
 #include "EditorModeManager.h"
 
-const FEditorModeID FAGX_AddForceMode::EM_AGX_AddForceModeId = TEXT("EM_AGX_AddForceModeId");
+const FEditorModeID FAGX_ForcePickingMode::EM_AGX_ForcePickingModeId = TEXT("EM_AGX_ForcePickingModeId");
 
-void FAGX_AddForceMode::Activate()
+void FAGX_ForcePickingMode::Activate()
 {
 	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
 	if (World == nullptr)
@@ -27,17 +27,20 @@ void FAGX_AddForceMode::Activate()
 		return;
 	}
 
-	if (!GLevelEditorModeTools().IsModeActive(EM_AGX_AddForceModeId))
-		GLevelEditorModeTools().ActivateMode(EM_AGX_AddForceModeId);
+	if (!GLevelEditorModeTools().IsModeActive(EM_AGX_ForcePickingModeId))
+		GLevelEditorModeTools().ActivateMode(EM_AGX_ForcePickingModeId);
+
+	// Detach (eject).
+	GEditor->RequestToggleBetweenPIEandSIE();
 }
 
-void FAGX_AddForceMode::Deactivate()
+void FAGX_ForcePickingMode::Deactivate()
 {
-	if (GLevelEditorModeTools().IsModeActive(EM_AGX_AddForceModeId))
-		GLevelEditorModeTools().DeactivateMode(EM_AGX_AddForceModeId);
+	if (GLevelEditorModeTools().IsModeActive(EM_AGX_ForcePickingModeId))
+		GLevelEditorModeTools().DeactivateMode(EM_AGX_ForcePickingModeId);
 }
 
-namespace AGX_AddForceMode_helpers
+namespace AGX_ForcePickingMode_helpers
 {
 	UAGX_RigidBodyComponent* FindRigidBody(const UPrimitiveComponent& Component)
 	{
@@ -54,7 +57,7 @@ namespace AGX_AddForceMode_helpers
 	}
 }
 
-void FAGX_AddForceMode::OnMouseClickComponent(
+void FAGX_ForcePickingMode::OnMouseClickComponent(
 	UPrimitiveComponent* Component, const FVector& WorldLocation,
 	const FViewportCursorLocation& CursorInfo)
 {
@@ -63,7 +66,7 @@ void FAGX_AddForceMode::OnMouseClickComponent(
 	if (Component == nullptr)
 		return;
 
-	Body = AGX_AddForceMode_helpers::FindRigidBody(*Component);
+	Body = AGX_ForcePickingMode_helpers::FindRigidBody(*Component);
 	if (Body == nullptr)
 		return;
 
@@ -90,12 +93,12 @@ void FAGX_AddForceMode::OnMouseClickComponent(
 	Sim->GetNative()->Add(LockConstraint);
 }
 
-void FAGX_AddForceMode::OnDeactivateMode()
+void FAGX_ForcePickingMode::OnDeactivateMode()
 {
 	Deactivate();
 }
 
-void FAGX_AddForceMode::OnMouseDrag(const FViewportCursorLocation& CursorInfo)
+void FAGX_ForcePickingMode::OnMouseDrag(const FViewportCursorLocation& CursorInfo)
 {
 	if (Body == nullptr || !Body->HasNative())
 		return;
@@ -119,7 +122,7 @@ void FAGX_AddForceMode::OnMouseDrag(const FViewportCursorLocation& CursorInfo)
 	UpdateCursorDecorator();
 }
 
-void FAGX_AddForceMode::OnEndMouseDrag()
+void FAGX_ForcePickingMode::OnEndMouseDrag()
 {
 	Body.Reset();
 	ForceOriginLocalPos = FVector::ZeroVector;
@@ -128,26 +131,26 @@ void FAGX_AddForceMode::OnEndMouseDrag()
 	DestroyLockConstraint();
 }
 
-FText FAGX_AddForceMode::GetCursorDecoratorText() const
+FText FAGX_ForcePickingMode::GetCursorDecoratorText() const
 {
 	return FText::FromString(FString::Printf(TEXT("%f N"), Force));
 }
 
-void FAGX_AddForceMode::UpdateCursorDecorator()
+void FAGX_ForcePickingMode::UpdateCursorDecorator()
 {
 	if (!CursorDecoratorWindow.IsValid())
 	{
 		CursorDecoratorWindow = SWindow::MakeCursorDecorator();
 		FSlateApplication::Get().AddWindow(CursorDecoratorWindow.ToSharedRef(), true);
 		CursorDecoratorWindow->SetContent(
-			SNew(SToolTip).Text(this, &FAGX_AddForceMode::GetCursorDecoratorText));
+			SNew(SToolTip).Text(this, &FAGX_ForcePickingMode::GetCursorDecoratorText));
 	}
 
 	CursorDecoratorWindow->MoveWindowTo(
 		FSlateApplication::Get().GetCursorPos() + FSlateApplication::Get().GetCursorSize());
 }
 
-void FAGX_AddForceMode::DestroyCursorDecorator()
+void FAGX_ForcePickingMode::DestroyCursorDecorator()
 {
 	if (CursorDecoratorWindow.IsValid())
 	{
@@ -156,7 +159,7 @@ void FAGX_AddForceMode::DestroyCursorDecorator()
 	}
 }
 
-void FAGX_AddForceMode::DestroyLockConstraint()
+void FAGX_ForcePickingMode::DestroyLockConstraint()
 {
 	if (!LockConstraint.HasNative())
 		return;

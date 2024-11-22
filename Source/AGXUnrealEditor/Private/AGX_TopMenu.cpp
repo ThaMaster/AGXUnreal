@@ -7,7 +7,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
-#include "AgxEdMode/AGX_AddForceMode.h"
+#include "AgxEdMode/AGX_ForcePickingMode.h"
 #include "AGXUnrealEditor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_BallConstraintActor.h"
@@ -535,12 +535,12 @@ void FAGX_TopMenu::OnStartForcePickingDialogClicked()
 		return;
 	}
 
-	FAGX_AddForceMode::Activate();
+	FAGX_ForcePickingMode::Activate();
 }
 
 void FAGX_TopMenu::OnStopForcePickingDialogClicked()
 {
-	FAGX_AddForceMode::Deactivate();
+	FAGX_ForcePickingMode::Deactivate();
 }
 
 #undef LOCTEXT_NAMESPACE

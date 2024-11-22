@@ -7,7 +7,7 @@
 #include "AgxEdMode/AGX_AgxEdModeFile.h"
 #include "AgxEdMode/AGX_AgxEdModeTerrain.h"
 #include "AgxEdMode/AGX_AgxEdModeToolkit.h"
-#include "AgxEdMode/AGX_AddForceMode.h"
+#include "AgxEdMode/AGX_ForcePickingMode.h"
 #include "Toolkits/ToolkitManager.h"
 #include "Utilities/AGX_EditorUtilities.h"
 
@@ -37,7 +37,7 @@ void FAGX_AgxEdMode::Enter()
 
 	UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
 	if (World != nullptr && World->IsGameWorld())
-		FAGX_AddForceMode::Activate();
+		FAGX_ForcePickingMode::Activate();
 
 	if (!Toolkit.IsValid() && UsesToolkits())
 	{
