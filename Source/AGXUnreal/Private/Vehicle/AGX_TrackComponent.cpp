@@ -247,7 +247,7 @@ void UAGX_TrackComponent::GetNodeTransforms(
 #if UE_VERSION_OLDER_THAN(5, 5, 0)
 		OutTransforms.SetNum(0, /*bAllowShrinking*/ false);
 #else
-		OutTransforms.SetNum(NumNodes, EAllowShrinking::No);
+		OutTransforms.SetNum(0, EAllowShrinking::No);
 #endif
 	}
 }
