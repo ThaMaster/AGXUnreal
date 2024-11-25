@@ -259,7 +259,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		else if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			RuntimeLibFiles.Add("msvcp140", LibSource.AGX);
-			RuntimeLibFiles.Add("ois", LibSource.AGX);
 			RuntimeLibFiles.Add("vcruntime140", LibSource.AGX);
 			if (TargetAGXVersion.IsNewerOrEqualTo(2, 30, 0, 0) && TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
@@ -272,6 +271,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 			RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
 			RuntimeLibFiles.Add("libpng16", LibSource.Dependencies);
+			RuntimeLibFiles.Add("OIS", LibSource.Dependencies);
 			if (TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
 				RuntimeLibFiles.Add("glew", LibSource.Dependencies);

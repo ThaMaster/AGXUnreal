@@ -90,15 +90,16 @@ namespace AGX_ConstraintCustomization_helpers
 			if (Constraint == nullptr)
 				continue;
 
-			UAGX_RigidBodyComponent* Body1 = Constraint->BodyAttachment1.GetRigidBody();
-			UAGX_RigidBodyComponent* Body2 = Constraint->BodyAttachment2.GetRigidBody();
+			const FName RB1Name = Constraint->BodyAttachment1.RigidBody.Name;
+			const AActor* RB1LocalScope = Constraint->BodyAttachment1.RigidBody.LocalScope;
+			const FName RB2Name = Constraint->BodyAttachment2.RigidBody.Name;
+			const AActor* RB2LocalScope = Constraint->BodyAttachment2.RigidBody.LocalScope;
 
-			if (Body1 == nullptr)
+			if (RB1Name.IsNone())
 			{
 				Error |= EAGX_AttachmentSetupError::NoFirstBody;
 			}
-
-			if (Body1 != nullptr && Body1 == Body2)
+			else if (RB1Name == RB2Name && RB1LocalScope == RB2LocalScope)
 			{
 				Error |= EAGX_AttachmentSetupError::SameBody;
 			}
