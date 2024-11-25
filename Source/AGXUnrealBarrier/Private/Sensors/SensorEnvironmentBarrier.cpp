@@ -6,6 +6,8 @@
 #include "BarrierOnly/AGXRefs.h"
 #include "BarrierOnly/Wire/WireRef.h"
 #include "Sensors/LidarBarrier.h"
+#include "Sensors/RtAmbientMaterialBarrier.h"
+#include "Sensors/RtLambertianOpaqueMaterialBarrier.h"
 #include "Sensors/SensorRef.h"
 #include "Sensors/RtAmbientMaterialBarrier.h"
 #include "Sensors/RtLambertianOpaqueMaterialBarrier.h"
