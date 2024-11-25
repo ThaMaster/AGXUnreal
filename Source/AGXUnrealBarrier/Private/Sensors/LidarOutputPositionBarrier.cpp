@@ -13,6 +13,9 @@
 #include <agxSensor/RaytraceOutput.h>
 #include "EndAGXIncludes.h"
 
+// Unreal Engine includes.
+#include "Misc/EngineVersionComparison.h"
+
 namespace LidarOutputPositionBarrier_helpers
 {
 	struct LidarPositionData
@@ -41,7 +44,11 @@ void FLidarOutputPositionBarrier::GetData(TArray<FAGX_LidarOutputPositionData>& 
 	agxSensor::BinaryOutputView<LidarPositionData> ViewAGX =
 		GetNative()->Native->view<LidarPositionData>();
 
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 	OutData.SetNumUninitialized(ViewAGX.size(), false);
+#else
+	OutData.SetNumUninitialized(ViewAGX.size(), EAllowShrinking::No);
+#endif
 	for (int32 I = 0; I < ViewAGX.size(); I++)
 	{
 		OutData[I] = {ConvertDisplacement(ViewAGX[I].X, ViewAGX[I].Y, ViewAGX[I].Z)};
