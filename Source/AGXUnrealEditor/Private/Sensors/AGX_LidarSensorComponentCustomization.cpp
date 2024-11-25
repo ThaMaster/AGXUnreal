@@ -17,7 +17,7 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailWidgetRow.h" 
 #include "DetailLayoutBuilder.h"
-#include "Types/SlateEnums.h"
+#include "Styling/SlateTypes.h"
 #include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_LidarSensorComponentCustomization"
