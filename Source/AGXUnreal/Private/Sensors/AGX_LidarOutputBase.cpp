@@ -3,6 +3,7 @@
 #include "Sensors/AGX_LidarOutputBase.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Sensors/AGX_LidarSensorComponent.h"
 #include "Sensors/LidarOutputBarrier.h"
 
 bool FAGX_LidarOutputBase::AddTo(UAGX_LidarSensorComponent* Lidar)

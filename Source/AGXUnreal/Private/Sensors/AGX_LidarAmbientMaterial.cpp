@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_Check.h"
+#include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 
 // Unreal Engine includes.

@@ -45,6 +45,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/MessageDialog.h"
 #include "PackageTools.h"
+#include "PhysicsEngine/BodySetup.h"
 #include "RawMesh.h"
 #include "SSubobjectEditor.h"
 #include "UObject/SavePackage.h"

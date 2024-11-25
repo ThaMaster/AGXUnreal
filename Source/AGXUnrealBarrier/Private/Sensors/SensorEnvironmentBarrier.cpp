@@ -3,6 +3,7 @@
 #include "Sensors/SensorEnvironmentBarrier.h"
 
 // AGX Dynamics for Unreal includes.
+#include "BarrierOnly/AGXRefs.h"
 #include "Sensors/LidarBarrier.h"
 #include "Sensors/SensorRef.h"
 #include "SimulationBarrier.h"

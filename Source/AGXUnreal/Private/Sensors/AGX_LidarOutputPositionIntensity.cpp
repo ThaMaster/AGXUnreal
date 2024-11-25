@@ -3,9 +3,11 @@
 #include "Sensors/AGX_LidarOutputPositionIntensity.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "Sensors/AGX_LidarSensorComponent.h"
 
 // Unreal Engine includes.
+#include "Misc/EngineVersionComparison.h"
 #include "NiagaraComponent.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 
