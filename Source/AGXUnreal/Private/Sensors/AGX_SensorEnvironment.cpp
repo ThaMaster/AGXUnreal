@@ -175,10 +175,10 @@ namespace AGX_SensorEnvironment_helpers
 
 	TArray<ALandscape*> GetLandscapeActors(UWorld* World)
 	{
-		if (World == nullptr)
-			return TArray<ALandscape*>();
-
 		TArray<ALandscape*> Landscapes;
+		if (World == nullptr)
+			return Landscapes;
+		
 		for (TActorIterator<AActor> ActorIt(World); ActorIt; ++ActorIt)
 		{
 			if (ALandscape* Landscape = Cast<ALandscape>(*ActorIt))
