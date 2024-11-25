@@ -1132,7 +1132,8 @@ void AGX_MeshUtilities::MakeCylindricalArrow(
 	// const float ConeRadiusOverHeight = Data.ConeRadius / Data.ConeHeight;
 	const float TotalHeight = Data.CylinderHeight + Data.ConeHeight;
 
-	FVector3f Position, TangentX, TangentY, TangentZ;
+	FVector3f Position, TangentX, TangentY;
+	FVector3f TangentZ {FVector3f::ZeroVector};
 	FLinearColor Color; /// \todo Set vertex color to something.
 	FVector2f TexCoord;
 

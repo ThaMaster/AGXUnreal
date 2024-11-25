@@ -145,7 +145,7 @@ bool FCheckFallinBoxMovedCommand::Update()
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FFallingBoxTest, "AGXUnreal.Game.AGX_PlayInEditorTest.FallingBox",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+	AgxAutomationCommon::ETF_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 
 bool FFallingBoxTest::RunTest(const FString& Parameters)
 {
@@ -361,7 +361,7 @@ bool FCheckTerrainPagingStateCommand::Update()
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FTerrainPagingTest, "AGXUnreal.Game.AGX_PlayInEditorTest.TerrainPaging",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+	AgxAutomationCommon::ETF_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 
 bool FTerrainPagingTest::RunTest(const FString& Parameters)
 {
@@ -468,7 +468,7 @@ bool FCheckPlaygroundStateCommand::Update()
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FPlaygroundTest, "AGXUnreal.Game.AGX_PlayInEditorTest.Playground",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+	AgxAutomationCommon::ETF_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 
 bool FPlaygroundTest::RunTest(const FString& Parameters)
 {
@@ -595,7 +595,7 @@ bool FCheckMaterialLibraryStateCommand::Update()
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FMaterialLibraryTest, "AGXUnreal.Game.AGX_PlayInEditorTest.MaterialLibrary",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+	AgxAutomationCommon::ETF_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 
 bool FMaterialLibraryTest::RunTest(const FString& Parameters)
 {
@@ -694,7 +694,7 @@ bool FCheckROS2MovedCommand::Update()
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FROS2Test, "AGXUnreal.Game.AGX_PlayInEditorTest.ROS2",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+	AgxAutomationCommon::ETF_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 
 bool FROS2Test::RunTest(const FString& Parameters)
 {

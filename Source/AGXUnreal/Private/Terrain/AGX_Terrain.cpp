@@ -959,8 +959,20 @@ namespace AGX_Terrain_helpers
 		{
 			if (!Proxy->GetIsSpatiallyLoaded())
 				continue;
+
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 			if (bBounded && !Proxy->GetStreamingBounds().Intersect(TerrainBounds))
 				continue;
+#else
+			if (bBounded)
+			{
+				FBox EditorBound;
+				FBox RuntimeBound;
+				Proxy->GetStreamingBounds(RuntimeBound, EditorBound);
+				if (EditorBound.Intersect(TerrainBounds))
+					continue;
+			}
+#endif
 
 			bFoundIntersectingStreamingProxy = true;
 			UE_LOG(

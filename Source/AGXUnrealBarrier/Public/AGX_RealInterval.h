@@ -131,7 +131,7 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 
 	FString ToString() const
 	{
-		return FString::Printf(TEXT("(Min=%g Max=%g"), Min, Max);
+		return FString::Printf(TEXT("(Min=%g Max=%g"), Min.GetValue(), Max.GetValue());
 	}
 
 	bool Equals(const FAGX_RealInterval& Other, double Tolerance = UE_KINDA_SMALL_NUMBER) const

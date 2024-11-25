@@ -142,7 +142,11 @@ namespace AGX_LidarSensorLineTraceComponent_helpers
 			return {};
 
 		// Make room for the new points.
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 		OutData.SetNumUninitialized(NumPointsPreAppend + NumRays, false);
+#else
+		OutData.SetNumUninitialized(NumPointsPreAppend + NumRays, EAllowShrinking::No);
+#endif
 
 		// This number is somewhat arbitrary, but a good starting point.
 		// The cost of starting several threads will at some point make single threaded execution
@@ -300,7 +304,12 @@ void UAGX_LidarSensorLineTraceComponent::RequestManualScan(
 	}
 
 	PointCloudDataOutput.Broadcast(Buffer);
+
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 	Buffer.SetNum(0, false);
+#else
+	Buffer.SetNum(0, EAllowShrinking::No);
+#endif
 }
 
 void UAGX_LidarSensorLineTraceComponent::BeginPlay()
@@ -495,7 +504,11 @@ void UAGX_LidarSensorLineTraceComponent::OutputPointCloudDataIfReady()
 	if (OutputCycleTimeElapsed >= LidarState.OutputCycleDuration)
 	{
 		PointCloudDataOutput.Broadcast(Buffer);
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 		Buffer.SetNum(0, false);
+#else
+		Buffer.SetNum(0, EAllowShrinking::No);
+#endif
 		LidarState.CurrentOutputCycleStartTime = LidarState.ElapsedTime;
 	}
 }
