@@ -1,8 +1,9 @@
 // Copyright 2024, Algoryx Simulation AB.
 
 // AGX Dynamics for Unreal includes.
-#include "Utilities/AGX_StringUtilities.h"
 #include "AGX_LogCategory.h"
+#include "AgxAutomationCommon.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "GameFramework/Actor.h"
