@@ -23,6 +23,7 @@
  */
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "AGX_PlayInEditorUtils.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
@@ -30,6 +31,7 @@
 #include "Constraints/AGX_BallConstraintComponent.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
+#include "Sensors/SensorEnvironmentBarrier.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Terrain/AGX_Terrain.h"
@@ -749,7 +751,7 @@ bool FCheckLidarSteppedCommand::Update()
 		return false; // Continue ticking..
 	}
 
-	// At this point we have ticked to TickMax. 
+	// At this point we have ticked to TickMax.
 	return true;
 }
 
@@ -759,6 +761,14 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FLidarTest::RunTest(const FString& Parameters)
 {
+	if (!FSensorEnvironmentBarrier::IsRaytraceSupported())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Skipping AGX_PlayInEditorTest.Lidar test because Raytracing is not supported on "
+				 "this computer."));
+		return true;
+	}
 	using namespace AGX_PlayInEditorTest_helpers;
 	FString MapPath = FString("/Game/Tests/Test_Lidar");
 
@@ -766,8 +776,7 @@ bool FLidarTest::RunTest(const FString& Parameters)
 	ADD_LATENT_AUTOMATION_COMMAND(FStartPIECommand(true));
 
 	double SimTimeMax = 5.0;
-	ADD_LATENT_AUTOMATION_COMMAND(
-		FCheckLidarSteppedCommand(SimTimeMax, *this));
+	ADD_LATENT_AUTOMATION_COMMAND(FCheckLidarSteppedCommand(SimTimeMax, *this));
 
 	ADD_LATENT_AUTOMATION_COMMAND(FEndPlayMapCommand);
 	return true;
