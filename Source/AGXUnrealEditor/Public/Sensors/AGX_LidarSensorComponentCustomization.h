@@ -8,6 +8,7 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
+#include "Types/SlateEnums.h"
 
 class FReply;
 class IDetailLayoutBuilder;
@@ -31,7 +32,7 @@ private:
 
 	FString GetLidarModelString() const;
 	static FString FromEnum(EAGX_LidarModel Model);
-	
+
 private:
 	FReply OnCreateModelParametersAssetButtonClicked();
 

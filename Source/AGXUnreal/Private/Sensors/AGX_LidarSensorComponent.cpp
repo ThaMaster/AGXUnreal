@@ -8,6 +8,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_PropertyChangedDispatcher.h"
+#include "AGX_Simulation.h"
 #include "Sensors/AGX_LidarOutputBase.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_SensorUtilities.h"

@@ -15,10 +15,12 @@
 
 // Unreal Engine includes.
 #include "DetailCategoryBuilder.h"
-#include "DetailWidgetRow.h" 
+#include "DetailWidgetRow.h"
 #include "DetailLayoutBuilder.h"
 #include "Types/SlateEnums.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SComboBox.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_LidarSensorComponentCustomization"
 

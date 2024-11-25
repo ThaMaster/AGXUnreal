@@ -4,11 +4,15 @@
 
 // AGX Dynamics for Unreal includes.
 #include "BarrierOnly/AGXRefs.h"
+#include "BarrierOnly/Wire/WireRef.h"
 #include "Sensors/LidarBarrier.h"
 #include "Sensors/SensorRef.h"
+#include "Sensors/RtAmbientMaterialBarrier.h"
+#include "Sensors/RtLambertianOpaqueMaterialBarrier.h"
 #include "SimulationBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Terrain/TerrainPagerBarrier.h"
+#include "TypeConversions.h"
 #include "Wire/WireBarrier.h"
 
 // AGX Dynamics includes.
