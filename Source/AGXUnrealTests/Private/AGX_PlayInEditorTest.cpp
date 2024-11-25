@@ -507,7 +507,15 @@ void FStepExampleLevelsTest::GetTests(
 {
 	// ComponentGallery ignored because it produces several errors on Play: for example Constraints
 	// without a Body.
-	const TArray<FString> IgnoreLevels {"ComponentGallery"};
+	TArray<FString> IgnoreLevels {"ComponentGallery"};
+	if (!FSensorEnvironmentBarrier::IsRaytraceSupported())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Skipping StepExampleLevels.Lidar test because Raytracing is not supported on "
+				 "this computer."));
+		IgnoreLevels.Add("Lidar");
+	}
 
 	const FString LevelsDir = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Levels"));
 	TArray<FString> FoundAssetes;
