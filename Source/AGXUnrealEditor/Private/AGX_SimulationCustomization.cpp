@@ -125,19 +125,6 @@ void FAGX_SimulationCustomization::CustomizeDetails(IDetailLayoutBuilder& InDeta
 	// clang-format on
 }
 
-namespace AGX_SimulationCustomization_helpers
-{
-	void SaveIntToIniFile(const FName& PropertyName, int32 Value)
-	{
-		static const auto ConfigSection = TEXT("/Script/AGXUnreal.AGX_Simulation");
-		const FString ConfigFileName = UAGX_Simulation::StaticClass()->GetDefaultConfigFilename();
-		GConfig->SetInt(ConfigSection, *PropertyName.ToString(), Value, ConfigFileName);
-
-		// Flush the change to the disk
-		GConfig->Flush(false, ConfigFileName);
-	}
-}
-
 FText FAGX_SimulationCustomization::GetOutputFilePathText() const
 {
 	if (DetailBuilder == nullptr)
@@ -221,9 +208,19 @@ void FAGX_SimulationCustomization::OnRaytraceDeviceComboBoxChanged(
 		return;
 	}
 
+	for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances<UAGX_Simulation>(*Simulation))
+	{
+		if (Instance->RaytraceDeviceIndex == Simulation->RaytraceDeviceIndex)
+			Instance->RaytraceDeviceIndex = Index;
+	}
+
 	Simulation->RaytraceDeviceIndex = Index;
-	AGX_SimulationCustomization_helpers::SaveIntToIniFile(
-		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, RaytraceDeviceIndex), Index);
+
+	// Save to config file.
+	const FProperty* Property = UAGX_Simulation::StaticClass()->FindPropertyByName(
+		GET_MEMBER_NAME_CHECKED(UAGX_Simulation, RaytraceDeviceIndex));
+	Simulation->UpdateSinglePropertyInConfigFile(
+		Property, UAGX_Simulation::StaticClass()->GetDefaultConfigFilename());
 }
 
 FText FAGX_SimulationCustomization::GetSelectedRaytraceDeviceString()
