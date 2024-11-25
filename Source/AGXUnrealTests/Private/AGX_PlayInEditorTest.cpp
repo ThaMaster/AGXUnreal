@@ -757,7 +757,7 @@ bool FCheckLidarSteppedCommand::Update()
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FLidarTest, "AGXUnreal.Game.AGX_PlayInEditorTest.Lidar",
-	EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+	AgxAutomationCommon::ETF_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 
 bool FLidarTest::RunTest(const FString& Parameters)
 {

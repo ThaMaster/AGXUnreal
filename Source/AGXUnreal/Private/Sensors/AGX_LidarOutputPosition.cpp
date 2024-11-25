@@ -42,7 +42,11 @@ void FAGX_LidarOutputPosition::Render(
 	const TArray<FAGX_LidarOutputPositionData>& DataToRender =
 		Lidar->GetEnabled() ? InData : NoData;
 
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 	RenderPositions.SetNum(0, false);
+#else
+	RenderPositions.SetNum(0, EAllowShrinking::No);
+#endif
 
 	const FTransform& Transform = Lidar->GetComponentTransform();
 	for (const auto& Datum : DataToRender)

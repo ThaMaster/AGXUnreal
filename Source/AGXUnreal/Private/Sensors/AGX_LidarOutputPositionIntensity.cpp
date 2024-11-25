@@ -41,8 +41,14 @@ void FAGX_LidarOutputPositionIntensity::Render(
 	const TArray<FAGX_LidarOutputPositionIntensityData>& DataToRender =
 		Lidar->GetEnabled() ? InData : NoData;
 
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 	RenderPositions.SetNum(0, false);
 	RenderColors.SetNum(0, false);
+#else
+	RenderPositions.SetNum(0, EAllowShrinking::No);
+	RenderColors.SetNum(0, EAllowShrinking::No);
+#endif
+	
 
 	const FTransform& Transform = Lidar->GetComponentTransform();
 
