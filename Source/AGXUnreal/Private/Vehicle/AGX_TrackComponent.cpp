@@ -964,6 +964,7 @@ void UAGX_TrackComponent::UpdateNativeProperties()
 void UAGX_TrackComponent::CreateVisuals()
 {
 	VisualMeshes = NewObject<UInstancedStaticMeshComponent>(this, FName(TEXT("VisualMeshes")));
+	VisualMeshes->SetCanEverAffectNavigation(false);
 	VisualMeshes->RegisterComponent();
 	VisualMeshes->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
