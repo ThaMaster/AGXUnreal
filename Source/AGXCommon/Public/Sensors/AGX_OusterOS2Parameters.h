@@ -3,6 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
+#include "Sensors/AGX_LidarEnums.h"
 #include "Sensors/AGX_LidarModelParameters.h"
 
 #include "AGX_OusterOS2Parameters.generated.h"
