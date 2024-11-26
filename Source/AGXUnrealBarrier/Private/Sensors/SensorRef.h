@@ -10,6 +10,7 @@
 #include <agxSensor/RaytraceDistanceGaussianNoise.h>
 #include <agxSensor/RaytraceHandles.h>
 #include <agxSensor/RaytraceOutput.h>
+#include <agxSensor/RaytraceShapeInstance.h>
 #include <agxSensor/RaytraceLambertianOpaqueMaterial.h>
 #include "EndAGXIncludes.h"
 
