@@ -8,7 +8,6 @@
 #include <agxSensor/Lidar.h>
 #include <agxSensor/RaytraceAmbientMaterial.h>
 #include <agxSensor/RaytraceDistanceGaussianNoise.h>
-#include <agxSensor/RaytraceInstanceData.h> // Temporary fix, must come before RaytraceHandles. Remove after 2.39.0.1
 #include <agxSensor/RaytraceHandles.h>
 #include <agxSensor/RaytraceOutput.h>
 #include <agxSensor/RaytraceLambertianOpaqueMaterial.h>
