@@ -24,10 +24,10 @@ struct AGXUNREALBARRIER_API FAGX_RealInterval
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	FAGX_Real Min {0.0};
 
-	UPROPERTY(EditAnywhere, Category = "AGX Dynamics")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Dynamics")
 	FAGX_Real Max {0.0};
 
 	FAGX_RealInterval() = default;

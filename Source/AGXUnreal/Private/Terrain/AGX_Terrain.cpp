@@ -439,6 +439,14 @@ bool AAGX_Terrain::HasNativeTerrainPager() const
 	return NativeTerrainPagerBarrier.HasNative();
 }
 
+FTerrainBarrier* AAGX_Terrain::GetOrCreateNative()
+{
+	if (!HasNative())
+		InitializeNative();
+
+	return GetNative();
+}
+
 FTerrainBarrier* AAGX_Terrain::GetNative()
 {
 	if (!NativeBarrier.HasNative())
@@ -457,6 +465,14 @@ const FTerrainBarrier* AAGX_Terrain::GetNative() const
 	}
 
 	return &NativeBarrier;
+}
+
+FTerrainPagerBarrier* AAGX_Terrain::GetOrCreateNativeTerrainPager()
+{
+	if (!HasNative())
+		InitializeNative();
+
+	return GetNativeTerrainPager();
 }
 
 FTerrainPagerBarrier* AAGX_Terrain::GetNativeTerrainPager()
