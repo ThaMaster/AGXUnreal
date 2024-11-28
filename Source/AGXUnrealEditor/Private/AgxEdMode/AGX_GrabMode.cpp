@@ -100,7 +100,7 @@ void FAGX_GrabMode::OnDeactivateMode()
 
 void FAGX_GrabMode::OnMouseDrag(const FViewportCursorLocation& CursorInfo)
 {
-	if (Body == nullptr || !Body->HasNative())
+	if (!IsHoldingBody())
 		return;
 
 	const FVector ForceOriginWorld =
@@ -131,9 +131,20 @@ void FAGX_GrabMode::OnEndMouseDrag()
 	DestroyLockConstraint();
 }
 
+bool FAGX_GrabMode::GetCursor(EMouseCursor::Type& OutCursor) const
+{
+	OutCursor = IsHoldingBody() ? EMouseCursor::GrabHandClosed : EMouseCursor::GrabHand;
+	return true;
+}
+
+bool FAGX_GrabMode::IsHoldingBody() const
+{
+	return Body != nullptr && Body->HasNative();
+}
+
 FText FAGX_GrabMode::GetCursorDecoratorText() const
 {
-	return FText::FromString(FString::Printf(TEXT("%f N"), Force));
+	return FText::FromString(FString::Printf(TEXT("%.2f N"), Force));
 }
 
 void FAGX_GrabMode::UpdateCursorDecorator()

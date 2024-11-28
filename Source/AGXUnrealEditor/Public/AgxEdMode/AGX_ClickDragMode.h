@@ -11,6 +11,8 @@ struct FViewportCursorLocation;
 class FAGX_ClickDragMode : public FEdMode
 {
 public:
+
+	// ~Begin FEdMode interface.
 	virtual bool InputKey(
 		FEditorViewportClient* ViewportClient, FViewport* Viewport, FKey Key,
 		EInputEvent Event) override;
@@ -24,6 +26,7 @@ public:
 	virtual bool IsCompatibleWith(FEditorModeID OtherModeID) const override;
 
 	virtual void Tick(FEditorViewportClient* ViewportClient, float DeltaTime) override;
+	// ~End FEdMode interface.
 
 protected:
 	virtual void OnMouseClickComponent(
