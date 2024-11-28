@@ -11,6 +11,7 @@
 // Unreal Engine includes.
 #include "EditorViewportClient.h"
 #include "EditorModeManager.h"
+#include "Kismet2/DebuggerCommands.h"
 
 const FEditorModeID FAGX_GrabMode::EM_AGX_GrabModeId = TEXT("EM_AGX_GrabModeId");
 
@@ -30,8 +31,9 @@ void FAGX_GrabMode::Activate()
 	if (!GLevelEditorModeTools().IsModeActive(EM_AGX_GrabModeId))
 		GLevelEditorModeTools().ActivateMode(EM_AGX_GrabModeId);
 
-	// Detach (eject).
-	GEditor->RequestToggleBetweenPIEandSIE();
+	// Detach (eject) if attached.
+	if (FPlayWorldCommandCallbacks::IsInPIE())
+		GEditor->RequestToggleBetweenPIEandSIE();
 }
 
 void FAGX_GrabMode::Deactivate()
