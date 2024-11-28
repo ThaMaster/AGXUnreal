@@ -202,11 +202,11 @@ FAGX_TopMenu::~FAGX_TopMenu()
 			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIconSmall,
 			FAGX_EditorStyle::AgxIconSmall);
 		Builder.AddSubMenu(
-			LOCTEXT("GrabModeMenuLabel", "Grab mode"),
+			LOCTEXT("GrabModeMenuLabel", "Grab Mode"),
 			LOCTEXT(
 				"GrabModeMenuTooltip",
-				"Activate/Deactivate the Grab mode, making it possible to grab "
-				"Rigid Bodies in the Level by clicking and dragging the mouse in the viewport."),
+				"Activate/Deactivate the Grab mode, making it possible to grab a "
+				"Rigid Body in the Level by clicking and dragging the mouse in the viewport."),
 			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillGrabModeMenu), false, AgxIcon);
 	}
 
@@ -354,8 +354,8 @@ void FAGX_TopMenu::FillGrabModeMenu(FMenuBuilder& Builder)
 		Builder, LOCTEXT("StartGrabModeMenuLabel", "Start Grab Mode"),
 		LOCTEXT(
 			"StartGrabModeMenuLabelToolTip",
-			"Activate the Grab mode, making it possible to add forces to Rigid Bodies in "
-			"the Level by clicking and dragging the mouse in the viewport."),
+			"Activate the Grab mode, making it possible to grab a "
+			"Rigid Body in the Level by clicking and dragging the mouse in the viewport."),
 		[&]() { FAGX_TopMenu::OnStartGrabModeDialogClicked(); });
 
 	AddFileMenuEntry(
