@@ -351,7 +351,7 @@ void FAGX_TopMenu::FillLicenseMenu(FMenuBuilder& Builder)
 void FAGX_TopMenu::FillGrabModeMenu(FMenuBuilder& Builder)
 {
 	AddFileMenuEntry(
-		Builder, LOCTEXT("StartGrabModeMenuLabel", "Start Grab Mode"),
+		Builder, LOCTEXT("StartGrabModeMenuLabel", "Start"),
 		LOCTEXT(
 			"StartGrabModeMenuLabelToolTip",
 			"Activate the Grab mode, making it possible to grab a "
@@ -359,7 +359,7 @@ void FAGX_TopMenu::FillGrabModeMenu(FMenuBuilder& Builder)
 		[&]() { FAGX_TopMenu::OnStartGrabModeDialogClicked(); });
 
 	AddFileMenuEntry(
-		Builder, LOCTEXT("StopGrabModeMenuLabel", "Stop Grab Mode"),
+		Builder, LOCTEXT("StopGrabModeMenuLabel", "Stop"),
 		LOCTEXT("StopGrabModeMenuLabelToolTip", "Deactivate the Grab mode."),
 		[&]() { FAGX_TopMenu::OnStopGrabModeDialogClicked(); });
 }
