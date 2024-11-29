@@ -6,11 +6,6 @@
 #include "AGX_Check.h"
 #include "Sensors/SensorRef.h"
 
-// AGX Dynamics includes.
-#include "BeginAGXIncludes.h"
-#include <agxSensor/RaytraceLambertianOpaqueMaterial.h>
-#include "EndAGXIncludes.h"
-
 FRtLambertianOpaqueMaterialBarrier::FRtLambertianOpaqueMaterialBarrier()
 	: Native(std::make_shared<FRtLambertianOpaqueMaterial>())
 {
