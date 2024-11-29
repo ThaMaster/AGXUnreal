@@ -179,7 +179,7 @@ namespace AGX_SensorEnvironment_helpers
 		TArray<ALandscape*> Landscapes;
 		if (World == nullptr)
 			return Landscapes;
-		
+
 		for (TActorIterator<AActor> ActorIt(World); ActorIt; ++ActorIt)
 		{
 			if (ALandscape* Landscape = Cast<ALandscape>(*ActorIt))
@@ -688,6 +688,11 @@ void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type Reason)
 	TrackedAGXMeshes.Empty();
 	if (HasNative())
 		NativeBarrier.ReleaseNative();
+
+	if (AmbientMaterial != nullptr && AmbientMaterial->HasNative())
+	{
+		AmbientMaterial->ReleaseNative();
+	}
 }
 
 void AAGX_SensorEnvironment::InitializeNative()
