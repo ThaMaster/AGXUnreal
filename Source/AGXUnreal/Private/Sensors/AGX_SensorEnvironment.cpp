@@ -686,13 +686,12 @@ void AAGX_SensorEnvironment::EndPlay(const EEndPlayReason::Type Reason)
 	TrackedMeshes.Empty();
 	TrackedInstancedMeshes.Empty();
 	TrackedAGXMeshes.Empty();
-	if (HasNative())
-		NativeBarrier.ReleaseNative();
 
 	if (AmbientMaterial != nullptr && AmbientMaterial->HasNative())
-	{
 		AmbientMaterial->ReleaseNative();
-	}
+
+    if (HasNative())
+		NativeBarrier.ReleaseNative();
 }
 
 void AAGX_SensorEnvironment::InitializeNative()
