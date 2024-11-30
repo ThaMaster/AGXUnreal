@@ -14,7 +14,6 @@
 #include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
-#include "Containers/AllowShrinking.h"
 #include "Misc/EngineVersionComparison.h"
 
 namespace LidarOutputPositionIntensityBarrier_helpers
