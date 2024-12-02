@@ -247,6 +247,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		// OpenPLX
 		LinkLibFiles.Add("fmt", LibSource.OpenPLX);
+		LinkLibFiles.Add("libsodium", LibSource.OpenPLX);
 		LinkLibFiles.Add("spdlog", LibSource.OpenPLX);
 		LinkLibFiles.Add("agx-openplx.api", LibSource.OpenPLX);
 		LinkLibFiles.Add("openplx.analysis", LibSource.OpenPLX);
