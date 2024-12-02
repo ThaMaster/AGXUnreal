@@ -287,7 +287,12 @@ namespace
 		const FString SuffixToStrip(TEXT("Component"));
 		if (ComponentName.EndsWith(SuffixToStrip))
 		{
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 			ComponentName.LeftInline(ComponentName.Len() - SuffixToStrip.Len(), false);
+#else
+			ComponentName.LeftInline(
+				ComponentName.Len() - SuffixToStrip.Len(), EAllowShrinking::No);
+#endif
 		}
 
 		UBlueprint* Blueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(Component);
@@ -301,7 +306,11 @@ namespace
 			return Component.GetName() + FGuid::NewGuid().ToString();
 		}
 
-		for (int i = 0; FAGX_BlueprintUtilities::NameExists(*Blueprint, ComponentName); i++)
+		// Find a suffix number that makes the name unique within the Blueprint. Start at 1 because
+		// that is what FComponentEditorUtils::GenerateValidVariableName does, and that function is
+		// called when the model is first imported, as opposed to synchronized which is what we're
+		// doing here.
+		for (int i = 1; FAGX_BlueprintUtilities::NameExists(*Blueprint, ComponentName); i++)
 		{
 			ComponentName = FString::Printf(TEXT("%s%d"), *ComponentName, i);
 		}
