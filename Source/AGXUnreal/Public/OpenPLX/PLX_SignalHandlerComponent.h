@@ -27,10 +27,10 @@ public:
 	UPLX_SignalHandlerComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool Send(const FPLX_LinearVelocityMotorVelocityInput& Input, double Value);
+	bool Send(const FPLX_LinearVelocity1DInput& Input, double Value);
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool Receive(const FPLX_HingeAngleOutput& Output, double& OutValue);
+	bool Receive(const FPLX_AngleOutput& Output, double& OutValue);
 
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;

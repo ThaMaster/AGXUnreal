@@ -51,7 +51,7 @@ namespace AGX_ImportDialog_helpers
 
 void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 {
-	FileTypes = ".agx;*.brick;*.urdf";
+	FileTypes = ".agx;*.openplx;*.urdf";
 
 	// clang-format off
 	ChildSlot

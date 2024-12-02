@@ -31,18 +31,18 @@ struct AGXCOMMON_API FPLX_Input
 };
 
 USTRUCT(BlueprintType)
-struct AGXCOMMON_API FPLX_LinearVelocityMotorVelocityInput : public FPLX_Input
+struct AGXCOMMON_API FPLX_LinearVelocity1DInput : public FPLX_Input
 {
 	GENERATED_BODY()
 
-	FPLX_LinearVelocityMotorVelocityInput() = default;
-	explicit FPLX_LinearVelocityMotorVelocityInput(const FString& InName)
+	FPLX_LinearVelocity1DInput() = default;
+	explicit FPLX_LinearVelocity1DInput(const FString& InName)
 		: FPLX_Input(InName)
 	{
 	}
 
 	virtual UScriptStruct* GetType() const override
 	{
-		return FPLX_LinearVelocityMotorVelocityInput::StaticStruct();
+		return FPLX_LinearVelocity1DInput::StaticStruct();
 	}
 };

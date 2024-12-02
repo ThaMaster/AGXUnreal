@@ -609,7 +609,7 @@ EAGX_ImportType FAGX_ImportUtilities::GetFrom(const FString& FilePath)
 	{
 		return EAGX_ImportType::Agx;
 	}
-	else if (FileExtension.Equals("brick"))
+	else if (FileExtension.Equals("openplx"))
 	{
 		return EAGX_ImportType::Plx;
 	}

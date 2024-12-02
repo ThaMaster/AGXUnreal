@@ -17,7 +17,7 @@
 
 void SAGX_SynchronizeModelDialog::Construct(const FArguments& InArgs)
 {
-	FileTypes = ".agx;*.brick";
+	FileTypes = ".agx;*.openplx";
 	ImportType = EAGX_ImportType::Agx;
 
 	// clang-format off

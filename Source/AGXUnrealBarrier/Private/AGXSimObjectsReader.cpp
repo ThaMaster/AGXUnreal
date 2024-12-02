@@ -16,7 +16,7 @@
 #include "Utilities/PLXUtilities.h"
 
 // OpenPLX includes.
-#include "Brick/brickagx/BrickToAgxMapper.h"
+#include "OpenPLX/agx-openplx/OpenPlxToAgxMapper.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -638,8 +638,8 @@ bool FAGXSimObjectsReader::ReadUrdf(
 bool FAGXSimObjectsReader::ReadOpenPLXFile(
 	const FString& Filename, FSimulationObjectCollection& OutSimObjects)
 {
-	std::shared_ptr<BrickAgx::AgxCache> AGXCache;
-	Brick::Core::ObjectPtr PLXModel = FPLXUtilities::LoadModel(Filename, AGXCache);
+	std::shared_ptr<agxopenplx::AgxCache> AGXCache;
+	openplx::Core::ObjectPtr PLXModel = FPLXUtilities::LoadModel(Filename, AGXCache);
 	if (PLXModel == nullptr)
 	{
 		UE_LOG(
@@ -651,14 +651,14 @@ bool FAGXSimObjectsReader::ReadOpenPLXFile(
 	}
 
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
-	BrickAgx::BrickToAgxMapper Mapper(Simulation, Convert(Filename), AGXCache);
+	agxopenplx::OpenPlxToAgxMapper Mapper(Simulation, Convert(Filename), AGXCache);
 	agxSDK::AssemblyRef AssemblyAGX = Mapper.mapObject(PLXModel);
 
 	Simulation->add(AssemblyAGX);
 	::ReadAll(*Simulation, Filename, OutSimObjects);
 
 	// Read PLX inputs.
-	auto System = std::dynamic_pointer_cast<Brick::Physics3D::System>(PLXModel);
+	auto System = std::dynamic_pointer_cast<openplx::Physics3D::System>(PLXModel);
 	OutSimObjects.GetPLXInputs() = FPLXUtilities::GetInputs(System.get());
 	OutSimObjects.GetPLXOutputs() = FPLXUtilities::GetOutputs(System.get());
 

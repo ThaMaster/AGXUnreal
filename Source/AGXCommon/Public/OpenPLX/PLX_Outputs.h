@@ -31,18 +31,18 @@ struct AGXCOMMON_API FPLX_Output
 };
 
 USTRUCT(BlueprintType)
-struct AGXCOMMON_API FPLX_HingeAngleOutput : public FPLX_Output
+struct AGXCOMMON_API FPLX_AngleOutput : public FPLX_Output
 {
 	GENERATED_BODY()
 
-	FPLX_HingeAngleOutput() = default;
-	explicit FPLX_HingeAngleOutput(const FString& InName)
+	FPLX_AngleOutput() = default;
+	explicit FPLX_AngleOutput(const FString& InName)
 		: FPLX_Output(InName)
 	{
 	}
 
 	virtual UScriptStruct* GetType() const override
 	{
-		return FPLX_HingeAngleOutput::StaticStruct();
+		return FPLX_AngleOutput::StaticStruct();
 	}
 };

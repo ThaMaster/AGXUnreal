@@ -55,19 +55,19 @@ namespace FPLXModelRegistry_helpers
 	}
 
 	void MapAllInputs(
-		Brick::Physics3D::System* System,
-		std::unordered_map<std::string, std::shared_ptr<Brick::Physics::Signals::Input>>&
+		openplx::Physics3D::System* System,
+		std::unordered_map<std::string, std::shared_ptr<openplx::Physics::Signals::Input>>&
 			OutInputs)
 	{
 		if (System == nullptr)
 			return;
 
-		for (auto& Subsystem : System->getValues<Brick::Physics3D::System>())
+		for (auto& Subsystem : System->getValues<openplx::Physics3D::System>())
 		{
 			MapAllInputs(System, OutInputs);
 		}
 
-		for (auto& Input : System->getValues<Brick::Physics::Signals::Input>())
+		for (auto& Input : System->getValues<openplx::Physics::Signals::Input>())
 		{
 			if (Input == nullptr)
 				continue;
@@ -138,17 +138,17 @@ FPLXModelRegistry::Handle FPLXModelRegistry::Register(
 
 	// The InputSignalListener always needs to be re-created even if it existed before, since now
 	// we have added another sub-assembly containing agx-objects it needs to know about.
-	ModelDatum->InputSignalListener = new BrickAgx::InputSignalListener(ModelDatum->Assembly);
-	Simulation.GetNative()->Native->add(ModelDatum->InputSignalListener);
+//	ModelDatum->InputSignalListener = new agxopenplx::InputSignalListener(ModelDatum->Assembly);  // TODO!!!!
+	// Simulation.GetNative()->Native->add(ModelDatum->InputSignalListener); // TODO!!!!
 
 	// Finally add an OutputSignalListener that is used for this PLX model instance only, producing
 	// output signals. It has a unique name prefix that is used to keep signals from getting name
 	// collisions when having mutliple instances of the same PLX model in the world.
-	agx::ref_ptr<BrickAgx::OutputSignalListener> OutputSignalListener =
-		new BrickAgx::OutputSignalListener(Assembly.Native, ModelDatum->PLXModel);
-	ModelDatum->OutputSignalListeners.insert({Convert(Prefix), OutputSignalListener});
-	AGX_CHECK(!Simulation.GetNative()->Native->remove(OutputSignalListener));
-	Simulation.GetNative()->Native->add(OutputSignalListener);
+	//agx::ref_ptr<agxopenplx::OutputSignalListener> OutputSignalListener = // TODO!!!!
+	//	new agxopenplx::OutputSignalListener(Assembly.Native, ModelDatum->PLXModel); // TODO!!!!
+	//ModelDatum->OutputSignalListeners.insert({Convert(Prefix), OutputSignalListener}); // TODO!!!!
+	//AGX_CHECK(!Simulation.GetNative()->Native->remove(OutputSignalListener)); // TODO!!!!
+	//Simulation.GetNative()->Native->add(OutputSignalListener); // TODO!!!!
 
 	return Handle;
 }
@@ -203,14 +203,14 @@ FPLXModelRegistry::Handle FPLXModelRegistry::PrepareNewModel(const FString& PLXF
 		return InvalidHandle;
 	}
 
-	auto System = std::dynamic_pointer_cast<Brick::Physics3D::System>(NewModel.PLXModel);
+	auto System = std::dynamic_pointer_cast<openplx::Physics3D::System>(NewModel.PLXModel);
 	FPLXModelRegistry_helpers::MapAllInputs(System.get(), NewModel.Inputs);
 
 	// OpenPLX's InputSignalListener expects an Assembly with a PowerLine always.
 	// Therefore we add one here, even though it's a bit of a hack.
 	NewModel.Assembly = new agxSDK::Assembly();
 	agxPowerLine::PowerLineRef RequiredDummyPowerLine = new agxPowerLine::PowerLine();
-	RequiredDummyPowerLine->setName(agx::Name("BrickPowerLine"));
+	RequiredDummyPowerLine->setName(agx::Name("OpenPlxPowerLine"));
 	NewModel.Assembly->add(RequiredDummyPowerLine);
 
 	const Handle NewHande = FPLXModelRegistry_helpers::Convert(Native->ModelData.size());

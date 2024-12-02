@@ -7,22 +7,22 @@
 #include "TypeConversions.h"
 
 // OpenPLX includes.
-#include "Brick/brick/BrickContext.h"
-#include "Brick/brick/BrickContextInternal.h"
-#include "Brick/Brick/BrickCoreApi.h"
-#include "Brick/brickagx/BrickAgxApi.h"
-#include "Brick/Math/Math_all.h"
-#include "Brick/Physics/Physics_all.h"
-#include "Brick/Physics1D/Physics1D_all.h"
-#include "Brick/Physics3D/Physics3D_all.h"
-#include "Brick/Physics3D/Signals/LinearVelocityMotorVelocityInput.h"
-#include "Brick/DriveTrain/DriveTrain_all.h"
-#include "Brick/Robotics/Robotics_all.h"
-#include "Brick/Simulation/Simulation_all.h"
-#include "Brick/Vehicles/Vehicles_all.h"
-#include "Brick/Terrain/Terrain_all.h"
-#include "Brick/Visuals/Visuals_all.h"
-#include "Brick/Urdf/Urdf_all.h"
+#include "OpenPLX/openplx/OpenPlxContext.h"
+#include "OpenPLX/openplx/OpenPlxContextInternal.h"
+#include "OpenPLX/openplx/OpenPlxCoreAPI.h"
+#include "OpenPLX/agx-openplx/AgxOpenPlxApi.h"
+#include "OpenPLX/Math/Math_all.h"
+#include "OpenPLX/Physics/Physics_all.h"
+#include "OpenPLX/Physics1D/Physics1D_all.h"
+#include "OpenPLX/Physics3D/Physics3D_all.h"
+#include "OpenPLX/Physics/Signals/LinearVelocity1DInput.h"
+#include "OpenPLX/DriveTrain/DriveTrain_all.h"
+#include "OpenPLX/Robotics/Robotics_all.h"
+#include "OpenPLX/Simulation/Simulation_all.h"
+#include "OpenPLX/Vehicles/Vehicles_all.h"
+#include "OpenPLX/Terrain/Terrain_all.h"
+#include "OpenPLX/Visuals/Visuals_all.h"
+#include "OpenPLX/Urdf/Urdf_all.h"
 
 
 // Unreal Engine includes.
@@ -33,22 +33,22 @@
 
 namespace PLXUtilities_helpers
 {
-	void GetInputs(Brick::Physics3D::System* System, TArray<TUniquePtr<FPLX_Input>>& OutInputs)
+	void GetInputs(openplx::Physics3D::System* System, TArray<TUniquePtr<FPLX_Input>>& OutInputs)
 	{
 		if (System == nullptr)
 			return;
 
-		for (auto& Subsystem : System->getValues<Brick::Physics3D::System>())
+		for (auto& Subsystem : System->getValues<openplx::Physics3D::System>())
 		{
 			GetInputs(System, OutInputs);
 		}
 
-		for (auto& Input : System->getValues<Brick::Physics::Signals::Input>())
+		for (auto& Input : System->getValues<openplx::Physics::Signals::Input>())
 		{
-			if (auto Lvmvi = std::dynamic_pointer_cast<
-					Brick::Physics3D::Signals::LinearVelocityMotorVelocityInput>(Input))
+			if (auto Lvmvi = std::dynamic_pointer_cast<openplx::Physics::Signals::LinearVelocity1DInput>(
+						Input))
 			{
-				OutInputs.Emplace(MakeUnique<FPLX_LinearVelocityMotorVelocityInput>(
+				OutInputs.Emplace(MakeUnique<FPLX_LinearVelocity1DInput>(
 					Convert(Input->getName())));
 				continue;
 			}
@@ -57,22 +57,23 @@ namespace PLXUtilities_helpers
 		}
 	}
 
-	void GetOutputs(Brick::Physics3D::System* System, TArray<TUniquePtr<FPLX_Output>>& OutOutputs)
+	void GetOutputs(openplx::Physics3D::System* System, TArray<TUniquePtr<FPLX_Output>>& OutOutputs)
 	{
 		if (System == nullptr)
 			return;
 
-		for (auto& Subsystem : System->getValues<Brick::Physics3D::System>())
+		for (auto& Subsystem : System->getValues<openplx::Physics3D::System>())
 		{
 			GetOutputs(System, OutOutputs);
 		}
 
-		for (auto& Output : System->getValues<Brick::Physics::Signals::Output>())
+		for (auto& Output : System->getValues<openplx::Physics::Signals::Output>())
 		{
-			if (auto Hao = std::dynamic_pointer_cast<Brick::Physics3D::Signals::HingeAngleOutput>(Output))
+			if (auto Hao =
+					std::dynamic_pointer_cast<openplx::Physics::Signals::AngleOutput>(Output))
 			{
 				OutOutputs.Emplace(
-					MakeUnique<FPLX_HingeAngleOutput>(Convert(Output->getName())));
+					MakeUnique<FPLX_AngleOutput>(Convert(Output->getName())));
 				continue;
 			}
 
@@ -80,15 +81,15 @@ namespace PLXUtilities_helpers
 		}
 	}
 
-	std::shared_ptr<Brick::Core::Api::BrickContext> CreatePLXContext(
-		std::shared_ptr<BrickAgx::AgxCache> AGXCache)
+	std::shared_ptr<openplx::Core::Api::OpenPlxContext> CreatePLXContext(
+		std::shared_ptr<agxopenplx::AgxCache> AGXCache)
 	{
 		const FString PLXBundlesPath = FPaths::Combine(
-			FAGX_Environment::GetPluginSourcePath(), "Thirdparty", "agx", "brickbundles");
-		auto PLXCtx = std::make_shared<Brick::Core::Api::BrickContext>(
+			FAGX_Environment::GetPluginSourcePath(), "Thirdparty", "agx", "openplxbundles");
+		auto PLXCtx = std::make_shared<openplx::Core::Api::OpenPlxContext>(
 			std::vector<std::string>({Convert(PLXBundlesPath)}));
 
-		auto InternalContext = Brick::Core::Api::BrickContextInternal::fromContext(*PLXCtx);
+		auto InternalContext = openplx::Core::Api::OpenPlxContextInternal::fromContext(*PLXCtx);
 		auto EvalCtx = InternalContext->evaluatorContext().get();
 
 		Math_register_factories(EvalCtx);
@@ -103,12 +104,12 @@ namespace PLXUtilities_helpers
 		Visuals_register_factories(EvalCtx);
 		Urdf_register_factories(EvalCtx);
 
-		BrickAgx::register_plugins(*PLXCtx, AGXCache);
+		agxopenplx::register_plugins(*PLXCtx, AGXCache);
 		return PLXCtx;
 	}
 
-	Brick::Core::ObjectPtr LoadModelFromFile(
-		const std::string& OpenPLXFile, std::shared_ptr<BrickAgx::AgxCache> AGXCache)
+	openplx::Core::ObjectPtr LoadModelFromFile(
+		const std::string& OpenPLXFile, std::shared_ptr<agxopenplx::AgxCache> AGXCache)
 	{
 		auto Context = CreatePLXContext(AGXCache);
 		if (Context == nullptr)
@@ -117,7 +118,7 @@ namespace PLXUtilities_helpers
 			return nullptr;
 		}
 
-		auto LoadedModel = Brick::Core::Api::loadModelFromFile(OpenPLXFile, {}, *Context);
+		auto LoadedModel = openplx::Core::Api::loadModelFromFile(OpenPLXFile, {}, *Context);
 
 		if (Context->hasErrors())
 		{
@@ -132,8 +133,8 @@ namespace PLXUtilities_helpers
 	}
 }
 
-Brick::Core::ObjectPtr FPLXUtilities::LoadModel(
-	const FString& Filename, std::shared_ptr<BrickAgx::AgxCache> AGXCache)
+openplx::Core::ObjectPtr FPLXUtilities::LoadModel(
+	const FString& Filename, std::shared_ptr<agxopenplx::AgxCache> AGXCache)
 {
 	if (!FPaths::FileExists(Filename))
 	{
@@ -147,7 +148,7 @@ Brick::Core::ObjectPtr FPLXUtilities::LoadModel(
 	return PLXUtilities_helpers::LoadModelFromFile(Convert(Filename), AGXCache);
 }
 
-TArray<TUniquePtr<FPLX_Input>> FPLXUtilities::GetInputs(Brick::Physics3D::System* System)
+TArray<TUniquePtr<FPLX_Input>> FPLXUtilities::GetInputs(openplx::Physics3D::System* System)
 {
 	TArray<TUniquePtr<FPLX_Input>> Inputs;
 	if (System == nullptr)
@@ -157,7 +158,7 @@ TArray<TUniquePtr<FPLX_Input>> FPLXUtilities::GetInputs(Brick::Physics3D::System
 	return Inputs;
 }
 
-TArray<TUniquePtr<FPLX_Output>> FPLXUtilities::GetOutputs(Brick::Physics3D::System* System)
+TArray<TUniquePtr<FPLX_Output>> FPLXUtilities::GetOutputs(openplx::Physics3D::System* System)
 {
 	TArray<TUniquePtr<FPLX_Output>> Outputs;
 	if (System == nullptr)

@@ -56,8 +56,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		/// libraries.
 		AGX,
 
-		/// Brick libraries location.
-		Brick,
+		/// OpenPLX libraries location.
+		OpenPLX,
 
 		/// The configuration part of AGX Dynamics. Contains generated header
 		/// files for things such as version and CMake settings. Does not
@@ -85,7 +85,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		/// Points to AGX Dynamics external resources.
 		External
-  };
+	};
 
 	/// A carrier for the paths associated with a LibSource.
 	///
@@ -246,45 +246,45 @@ public class AGXDynamicsLibrary : ModuleRules
 		LinkLibFiles.Add("agx-nt-ros2", LibSource.AGX);
 
 		// OpenPLX
-		LinkLibFiles.Add("fmt", LibSource.Brick);
-		LinkLibFiles.Add("spdlog", LibSource.Brick);
-		LinkLibFiles.Add("brick.agx", LibSource.Brick);
-		LinkLibFiles.Add("brick.analysis", LibSource.Brick);
-		LinkLibFiles.Add("brick.bundle", LibSource.Brick);
-		LinkLibFiles.Add("brick.core.api", LibSource.Brick);
-		LinkLibFiles.Add("brick.error", LibSource.Brick);
-		LinkLibFiles.Add("brick.eval", LibSource.Brick);
-		LinkLibFiles.Add("brick.generate", LibSource.Brick);
-		LinkLibFiles.Add("brick.internal", LibSource.Brick);
-		LinkLibFiles.Add("brick.nodes", LibSource.Brick);
-		LinkLibFiles.Add("brick.osg", LibSource.Brick);
-		LinkLibFiles.Add("brick.parser", LibSource.Brick);
-		LinkLibFiles.Add("brick.runtime", LibSource.Brick);
-		LinkLibFiles.Add("DriveTrain", LibSource.Brick);
-		LinkLibFiles.Add("Math", LibSource.Brick);
-		LinkLibFiles.Add("Physics", LibSource.Brick);
-		LinkLibFiles.Add("Physics1D", LibSource.Brick);
-		LinkLibFiles.Add("Physics3D", LibSource.Brick);
-		LinkLibFiles.Add("Robotics", LibSource.Brick);
-		LinkLibFiles.Add("Simulation", LibSource.Brick);
-		LinkLibFiles.Add("Terrain", LibSource.Brick);
-		LinkLibFiles.Add("Urdf", LibSource.Brick);
-		LinkLibFiles.Add("Vehicles", LibSource.Brick);
-		LinkLibFiles.Add("Visuals", LibSource.Brick);
-		LinkLibFiles.Add("brickurdfplugin", LibSource.Brick);
-		LinkLibFiles.Add("urdfdom_model", LibSource.Brick);
-		LinkLibFiles.Add("urdfdom_model_state", LibSource.Brick);
-		LinkLibFiles.Add("urdfdom_world", LibSource.Brick);
-		LinkLibFiles.Add("urdfdom_sensor", LibSource.Brick);
-		LinkLibFiles.Add("console_bridge", LibSource.Brick);
-		LinkLibFiles.Add("tinyxml", LibSource.Brick);
+		LinkLibFiles.Add("fmt", LibSource.OpenPLX);
+		LinkLibFiles.Add("spdlog", LibSource.OpenPLX);
+		LinkLibFiles.Add("agx-openplx.api", LibSource.OpenPLX);
+		LinkLibFiles.Add("openplx.analysis", LibSource.OpenPLX);
+		LinkLibFiles.Add("openplx.bundle", LibSource.OpenPLX);
+		LinkLibFiles.Add("openplx.core.api", LibSource.OpenPLX);
+		LinkLibFiles.Add("openplx.error", LibSource.OpenPLX);
+		LinkLibFiles.Add("openplx.eval", LibSource.OpenPLX);
+		LinkLibFiles.Add("openplx.generate", LibSource.OpenPLX);
+		LinkLibFiles.Add("openplx.internal", LibSource.OpenPLX);
+		LinkLibFiles.Add("openplx.nodes", LibSource.OpenPLX);
+		LinkLibFiles.Add("agx-openplx.osg", LibSource.OpenPLX);
+		LinkLibFiles.Add("openplx.parser", LibSource.OpenPLX);
+		LinkLibFiles.Add("openplx.runtime", LibSource.OpenPLX);
+		LinkLibFiles.Add("DriveTrain", LibSource.OpenPLX);
+		LinkLibFiles.Add("Math", LibSource.OpenPLX);
+		LinkLibFiles.Add("Physics", LibSource.OpenPLX);
+		LinkLibFiles.Add("Physics1D", LibSource.OpenPLX);
+		LinkLibFiles.Add("Physics3D", LibSource.OpenPLX);
+		LinkLibFiles.Add("Robotics", LibSource.OpenPLX);
+		LinkLibFiles.Add("Simulation", LibSource.OpenPLX);
+		LinkLibFiles.Add("Terrain", LibSource.OpenPLX);
+		LinkLibFiles.Add("Urdf", LibSource.OpenPLX);
+		LinkLibFiles.Add("Vehicles", LibSource.OpenPLX);
+		LinkLibFiles.Add("Visuals", LibSource.OpenPLX);
+		LinkLibFiles.Add("openplxurdfplugin", LibSource.OpenPLX);
+		LinkLibFiles.Add("urdfdom_model", LibSource.OpenPLX);
+		LinkLibFiles.Add("urdfdom_model_state", LibSource.OpenPLX);
+		LinkLibFiles.Add("urdfdom_world", LibSource.OpenPLX);
+		LinkLibFiles.Add("urdfdom_sensor", LibSource.OpenPLX);
+		LinkLibFiles.Add("console_bridge", LibSource.OpenPLX);
+		LinkLibFiles.Add("tinyxml", LibSource.OpenPLX);
 
 		// List of the include directories from aGX Dynamics and its
 		// dependenciesthat we need. These will be added to the Unreal Engine
 		// PublicIncludePaths.
 		List<LibSource> IncludePaths = new List<LibSource>();
 		IncludePaths.Add(LibSource.AGX);
-		IncludePaths.Add(LibSource.Brick);
+		IncludePaths.Add(LibSource.OpenPLX);
 
 		// OS specific dependencies.
 		if (Target.Platform == UnrealTargetPlatform.Linux)
@@ -370,7 +370,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "plugins", "*"));
 		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "include", "*"));
 		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "lib", "*"));
-		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "brick", "*"));
+		RuntimeDependencies.Add(Path.Combine(BundledAGXResourcesPath, "openplx", "*"));
 		SetLicenseForCopySafe(Target);
 
 		// This is a work-around for Linux which ensures that the .so files are
@@ -734,12 +734,12 @@ public class AGXDynamicsLibrary : ModuleRules
 			}
 		}
 
-		// Copy Brick resources
+		// Copy OpenPLX resources
 		{
-			string BrickDirSource = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Brick, true);
-			string BrickDirDest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Brick, true);
-			string BundlesDirSource = Path.Combine(BrickDirSource, "brickbundles");
-			string BundlesDirDest = Path.Combine(BrickDirDest, "brickbundles");
+			string OpenPLXDirSource = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.OpenPLX, true);
+			string OpenPLXDirDest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.OpenPLX, true);
+			string BundlesDirSource = Path.Combine(OpenPLXDirSource, "openplxbundles");
+			string BundlesDirDest = Path.Combine(OpenPLXDirDest, "openplxbundles");
 
 			if (!CopyDirectoryRecursively(BundlesDirSource, BundlesDirDest))
 			{
@@ -1433,7 +1433,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		private void InitializeWindowsInstalledAGX()
 		{
 			string BaseDir = Environment.GetEnvironmentVariable("AGX_DIR");
-			string BrickDir = Path.GetFullPath(Path.Combine(BaseDir, "..", "rebrick"));
+			string OpenPLXDir = Path.GetFullPath(Path.Combine(BaseDir, "..", "openplx"));
 			string PluginDir = Environment.GetEnvironmentVariable("AGX_PLUGIN_PATH");
 			string DataDir = Environment.GetEnvironmentVariable("AGX_DATA_DIR");
 
@@ -1444,10 +1444,10 @@ public class AGXDynamicsLibrary : ModuleRules
 				Path.Combine(BaseDir, "lib", "x64"),
 				Path.Combine(BaseDir, "bin", "x64")
 			));
-			LibSources.Add(LibSource.Brick, new LibSourceInfo(
-				Path.Combine(BrickDir, "include"),
-				Path.Combine(BrickDir, "lib"),
-				BrickDir
+			LibSources.Add(LibSource.OpenPLX, new LibSourceInfo(
+				Path.Combine(OpenPLXDir, "include"),
+				Path.Combine(OpenPLXDir, "lib"),
+				OpenPLXDir
 			));
 			LibSources.Add(LibSource.Config, new LibSourceInfo(
 				null, null, null
@@ -1491,8 +1491,8 @@ public class AGXDynamicsLibrary : ModuleRules
 				Path.Combine(BaseDir, "lib", "Win64"),
 				Path.Combine(BaseDir, "bin", "Win64")
 			));
-			LibSources.Add(LibSource.Brick, new LibSourceInfo(
-				Path.Combine(BaseDir, "include", "Brick"),
+			LibSources.Add(LibSource.OpenPLX, new LibSourceInfo(
+				Path.Combine(BaseDir, "include", "OpenPLX"),
 				Path.Combine(BaseDir, "lib", "Win64"),
 				BaseDir
 			));

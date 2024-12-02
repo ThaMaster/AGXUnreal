@@ -36,5 +36,5 @@ namespace FAGXSimObjectsReader
 		const TArray<double>& InitJoints, FSimulationObjectCollection& OutSimObjects);
 
 	AGXUNREALBARRIER_API bool ReadOpenPLXFile(
-		const FString& BrickFilePath, FSimulationObjectCollection& OutSimObjects);
+		const FString& OpenPLXFilePath, FSimulationObjectCollection& OutSimObjects);
 };

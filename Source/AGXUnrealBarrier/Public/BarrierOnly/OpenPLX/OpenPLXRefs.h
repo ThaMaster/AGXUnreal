@@ -1,11 +1,10 @@
 #pragma once
 
 // OpenPLX includes.
-#include "Brick/brickagx/AgxCache.h"
-#include "Brick/brickagx/Signals.h"
-#include "Brick/brickagx/InputSignalListener.h"
-#include "Brick/brickagx/OutputSignalListener.h"
-#include "Brick/Physics3D/System.h"
+#include "OpenPLX/agx-openplx/AgxCache.h"
+#include "OpenPLX/agx-openplx/InputSignalListener.h"
+#include "OpenPLX/agx-openplx/OutputSignalListener.h"
+#include "OpenPLX/Physics3D/System.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -20,35 +19,35 @@
 
 struct FInputSignalHandlerRef
 {
-	agx::ref_ptr<BrickAgx::InputSignalListener> Native;
+	agx::ref_ptr<agxopenplx::InputSignalListener> Native;
 
 	FInputSignalHandlerRef() = default;
 	FInputSignalHandlerRef(agxSDK::Assembly* Assembly)
-		: Native(new BrickAgx::InputSignalListener(Assembly))
+	//	: Native(new agxopenplx::InputSignalListener(Assembly)) // TODO!!!!
 	{
 	}
 };
 
 struct FOutputSignalHandlerRef
 {
-	agx::ref_ptr<BrickAgx::OutputSignalListener> Native;
+	agx::ref_ptr<agxopenplx::OutputSignalListener> Native;
 
 	FOutputSignalHandlerRef() = default;
 	FOutputSignalHandlerRef(
-		agxSDK::Assembly* Assembly, const std::shared_ptr<Brick::Core::Object>& PlxModel)
-		: Native(new BrickAgx::OutputSignalListener(Assembly, PlxModel))
+		agxSDK::Assembly* Assembly, const std::shared_ptr<openplx::Core::Object>& PlxModel)
+		//: Native(new agxopenplx::OutputSignalListener(Assembly, PlxModel)) // TODO!!!!
 	{
 	}
 };
 
 struct FPLXModelDatum
 {
-	std::shared_ptr<BrickAgx::AgxCache> AGXCache;
-	Brick::Core::ObjectPtr PLXModel;
-	agx::ref_ptr<BrickAgx::InputSignalListener> InputSignalListener;
-	std::unordered_map<std::string, agx::ref_ptr<BrickAgx::OutputSignalListener>> OutputSignalListeners;
+	std::shared_ptr<agxopenplx::AgxCache> AGXCache;
+	openplx::Core::ObjectPtr PLXModel;
+	agx::ref_ptr<agxopenplx::InputSignalListener> InputSignalListener;
+	std::unordered_map<std::string, agx::ref_ptr<agxopenplx::OutputSignalListener>> OutputSignalListeners;
 	agxSDK::AssemblyRef Assembly;
-	std::unordered_map<std::string, std::shared_ptr<Brick::Physics::Signals::Input>> Inputs;
+	std::unordered_map<std::string, std::shared_ptr<openplx::Physics::Signals::Input>> Inputs;
 };
 
 struct FPLXModelData

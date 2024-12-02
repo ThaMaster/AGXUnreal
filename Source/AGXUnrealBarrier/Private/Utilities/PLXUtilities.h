@@ -8,10 +8,10 @@
 #include "OpenPLX/PLX_Outputs.h"
 
 // OpenPLX includes.
-#include "Brick/brick/Object.h"
-#include "Brick/brickagx/AgxCache.h"
+#include "OpenPLX/openplx/Object.h"
+#include "OpenPLX/agx-openplx/AgxCache.h"
 
-namespace Brick
+namespace openplx
 {
 	namespace Physics3D
 	{
@@ -22,9 +22,9 @@ namespace Brick
 class FPLXUtilities
 {
 public:
-	static Brick::Core::ObjectPtr LoadModel(
-		const FString& Filename, std::shared_ptr<BrickAgx::AgxCache> AGXCache);
+	static openplx::Core::ObjectPtr LoadModel(
+		const FString& Filename, std::shared_ptr<agxopenplx::AgxCache> AGXCache);
 
-	static TArray<TUniquePtr<FPLX_Input>> GetInputs(Brick::Physics3D::System* System);
-	static TArray<TUniquePtr<FPLX_Output>> GetOutputs(Brick::Physics3D::System* System);
+	static TArray<TUniquePtr<FPLX_Input>> GetInputs(openplx::Physics3D::System* System);
+	static TArray<TUniquePtr<FPLX_Output>> GetOutputs(openplx::Physics3D::System* System);
 };

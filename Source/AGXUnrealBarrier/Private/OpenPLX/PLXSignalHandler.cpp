@@ -15,9 +15,8 @@
 #include "Utilities/PLXUtilities.h"
 
 // OpenPLX includes.
-#include "Brick/brickagx/Signals.h"
-#include "Brick/brickagx/SignalListenerUtils.h"
-#include "Brick/Physics/Signals/RealInputSignal.h"
+#include "OpenPLX/agx-openplx/SignalListenerUtils.h"
+#include "OpenPLX/Physics/Signals/RealInputSignal.h"
 
 void FPLXSignalHandler::Init(
 	const FString& PLXFile, const FString& UniqueModelInstancePrefix,
@@ -37,7 +36,7 @@ void FPLXSignalHandler::Init(
 	// OpenPLX OutputSignalListener requires the assembly to contain a PowerLine with a
 	// cetain name. Remove once this has been cleaned up in OpenPLX, it's a bit hacky.
 	agxPowerLine::PowerLineRef RequiredDummyPowerLine = new agxPowerLine::PowerLine();
-	RequiredDummyPowerLine->setName(agx::Name("BrickPowerLine"));
+	RequiredDummyPowerLine->setName(agx::Name("OpenPlxPowerLine"));
 	Assembly->add(RequiredDummyPowerLine);
 
 	FAssemblyRef AssemblyRef(Assembly);
@@ -57,7 +56,7 @@ bool FPLXSignalHandler::IsInitialized() const
 	return bIsInitialized;
 }
 
-bool FPLXSignalHandler::Send(const FPLX_LinearVelocityMotorVelocityInput& Input, double Value)
+bool FPLXSignalHandler::Send(const FPLX_LinearVelocity1DInput& Input, double Value)
 {
 	check(IsInitialized());
 	if (ModelInfo == nullptr || ModelHandle == FPLXModelRegistry::InvalidHandle)
@@ -71,15 +70,15 @@ bool FPLXSignalHandler::Send(const FPLX_LinearVelocityMotorVelocityInput& Input,
 	if (PLXInput == ModelDatum->Inputs.end())
 		return false;
 
-	auto Signal = Brick::Physics::Signals::RealInputSignal::create(
+	auto Signal = openplx::Physics::Signals::RealInputSignal::create(
 		ConvertDistanceToAGX(Value), PLXInput->second);
 
 	// Todo: prepend unique instance name prefix to signal once supported.
-	BrickAgx::Signals::sendInputSignal(Signal);
+	//agxopenplx::Signals::sendInputSignal(Signal); // // TODO!!!!
 	return true;
 }
 
-bool FPLXSignalHandler::Receive(const FPLX_HingeAngleOutput& Output, double& OutValue)
+bool FPLXSignalHandler::Receive(const FPLX_AngleOutput& Output, double& OutValue)
 {
 	check(IsInitialized());
 	if (ModelInfo == nullptr || ModelHandle == FPLXModelRegistry::InvalidHandle)
@@ -88,17 +87,17 @@ bool FPLXSignalHandler::Receive(const FPLX_HingeAngleOutput& Output, double& Out
 	// Todo: make this more efficient than looking through all outputs every time.
 	// We could build a map from name to signal in the ModelRegistry, each time step, for example.
 	// Do this once the signal refactoring in OpenPLX has been done.
-	auto ValueOutputSignal =
-		BrickAgx::getSignalBySourceName<Brick::Physics::Signals::ValueOutputSignal>(
-			BrickAgx::Signals::getOutputSignals(), Convert(Output.Name));
+	/*auto ValueOutputSignal = // // TODO!!!!
+		agxopenplx::getSignalBySourceName<openplx::Physics::Signals::ValueOutputSignal>( // TODO!!!!
+			agxopenplx::Signals::getOutputSignals(), Convert(Output.Name)); // TODO!!!!
 	if (ValueOutputSignal == nullptr)
 		return false;
 
 	auto Value =
-		std::dynamic_pointer_cast<Brick::Physics::Signals::RealValue>(ValueOutputSignal->value());
+		std::dynamic_pointer_cast<openplx::Physics::Signals::RealValue>(ValueOutputSignal->value()); // TODO!!!!
 	if (Value == nullptr)
-		return false;
+		return false; // TODO!!!!
 
-	OutValue = ConvertAngleToUnreal<double>(Value->value());
+	OutValue = ConvertAngleToUnreal<double>(Value->value());*/ // TODO!!!!
 	return true;
 }

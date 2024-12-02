@@ -15,7 +15,7 @@ UPLX_SignalHandlerComponent::UPLX_SignalHandlerComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-bool UPLX_SignalHandlerComponent::Send(const FPLX_LinearVelocityMotorVelocityInput& Input, double Value)
+bool UPLX_SignalHandlerComponent::Send(const FPLX_LinearVelocity1DInput& Input, double Value)
 {
 	if (!SignalHandler.IsInitialized())
 		return false;
@@ -60,7 +60,7 @@ namespace PLX_SignalHandlerComponent_helpers
 	}
 }
 
-bool UPLX_SignalHandlerComponent::Receive(const FPLX_HingeAngleOutput& Output, double& OutValue)
+bool UPLX_SignalHandlerComponent::Receive(const FPLX_AngleOutput& Output, double& OutValue)
 {
 	return SignalHandler.Receive(Output, OutValue);
 }
