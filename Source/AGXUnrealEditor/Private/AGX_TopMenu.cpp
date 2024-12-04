@@ -198,13 +198,16 @@ FAGX_TopMenu::~FAGX_TopMenu()
 	Builder.AddMenuSeparator();
 
 	{
+		const FSlateIcon GrabIcon(
+			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::GrabIcon,
+			FAGX_EditorStyle::GrabIcon);
 		Builder.AddSubMenu(
 			LOCTEXT("GrabModeMenuLabel", "Grab Mode"),
 			LOCTEXT(
 				"GrabModeMenuTooltip",
 				"Activate/Deactivate the Grab mode, making it possible to grab a "
 				"Rigid Body in the Level by clicking and dragging the mouse in the viewport."),
-			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillGrabModeMenu), false);
+			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillGrabModeMenu), false, GrabIcon);
 	}
 
 	Builder.AddMenuSeparator();
