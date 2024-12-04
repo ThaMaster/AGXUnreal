@@ -102,8 +102,5 @@ void UPLX_SignalHandlerComponent::BeginPlay()
 	TArray<FConstraintBarrier*> ConstraintBarriers = CollectConstraintBarriers(GetOwner());
 
 	// Initialize SignalHandler in Barrier module.
-	const FString UniqueInstancePrefix = GetOwner()->GetName();
-	SignalHandler.Init(
-		*PLXFile, UniqueInstancePrefix, *SimulationBarrier, *PLXModelRegistryBarrier,
-		ConstraintBarriers);
+	SignalHandler.Init(*PLXFile, *SimulationBarrier, *PLXModelRegistryBarrier, ConstraintBarriers);
 }

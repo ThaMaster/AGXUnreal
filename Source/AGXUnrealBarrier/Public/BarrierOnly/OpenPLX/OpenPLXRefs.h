@@ -22,8 +22,9 @@ struct FInputSignalHandlerRef
 	agx::ref_ptr<agxopenplx::InputSignalListener> Native;
 
 	FInputSignalHandlerRef() = default;
-	FInputSignalHandlerRef(agxSDK::Assembly* Assembly)
-	//	: Native(new agxopenplx::InputSignalListener(Assembly)) // TODO!!!!
+	FInputSignalHandlerRef(
+		agxSDK::Assembly* Assembly, std::shared_ptr<agxopenplx::InputSignalQueue> InputQueue)
+		: Native(new agxopenplx::InputSignalListener(Assembly, InputQueue))
 	{
 	}
 };
@@ -34,23 +35,41 @@ struct FOutputSignalHandlerRef
 
 	FOutputSignalHandlerRef() = default;
 	FOutputSignalHandlerRef(
-		agxSDK::Assembly* Assembly, const std::shared_ptr<openplx::Core::Object>& PlxModel)
-		//: Native(new agxopenplx::OutputSignalListener(Assembly, PlxModel)) // TODO!!!!
+		agxSDK::Assembly* Assembly, const std::shared_ptr<openplx::Core::Object>& PlxModel,
+		std::shared_ptr<agxopenplx::OutputSignalQueue> OutputQueue)
+		: Native(new agxopenplx::OutputSignalListener(Assembly, PlxModel, OutputQueue))
 	{
 	}
 };
 
-struct FPLXModelDatum
+struct FInputSignalQueueRef
 {
-	std::shared_ptr<agxopenplx::AgxCache> AGXCache;
-	openplx::Core::ObjectPtr PLXModel;
-	agx::ref_ptr<agxopenplx::InputSignalListener> InputSignalListener;
-	std::unordered_map<std::string, agx::ref_ptr<agxopenplx::OutputSignalListener>> OutputSignalListeners;
-	agxSDK::AssemblyRef Assembly;
-	std::unordered_map<std::string, std::shared_ptr<openplx::Physics::Signals::Input>> Inputs;
+	std::shared_ptr<agxopenplx::InputSignalQueue> Native;
+	FInputSignalQueueRef() = default;
+	FInputSignalQueueRef(std::shared_ptr<agxopenplx::InputSignalQueue> InNative)
+		: Native(InNative)
+	{
+	}
+};
+
+struct FOutputSignalQueueRef
+{
+	std::shared_ptr<agxopenplx::OutputSignalQueue> Native;
+	FOutputSignalQueueRef() = default;
+	FOutputSignalQueueRef(std::shared_ptr<agxopenplx::OutputSignalQueue> InNative)
+		: Native(InNative)
+	{
+	}
 };
 
 struct FPLXModelData
 {
-	std::vector<FPLXModelDatum> ModelData;
+	std::shared_ptr<agxopenplx::AgxCache> AGXCache;
+	openplx::Core::ObjectPtr PLXModel;
+	std::unordered_map<std::string, std::shared_ptr<openplx::Physics::Signals::Input>> Inputs;
+};
+
+struct FPLXModelDataArray
+{
+	std::vector<FPLXModelData> ModelData;
 };

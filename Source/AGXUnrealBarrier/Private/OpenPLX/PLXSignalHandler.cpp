@@ -18,34 +18,78 @@
 #include "OpenPLX/agx-openplx/SignalListenerUtils.h"
 #include "OpenPLX/Physics/Signals/RealInputSignal.h"
 
+FPLXSignalHandler::FPLXSignalHandler()
+{
+}
+
 void FPLXSignalHandler::Init(
-	const FString& PLXFile, const FString& UniqueModelInstancePrefix,
-	FSimulationBarrier& Simulation, FPLXModelRegistry& InModelInfo,
+	const FString& PLXFile, FSimulationBarrier& Simulation, FPLXModelRegistry& InModelRegistry,
 	TArray<FConstraintBarrier*>& Constraints)
 {
 	check(Simulation.HasNative());
-	check(InModelInfo.HasNative());
+	check(InModelRegistry.HasNative());
 
-	agxSDK::AssemblyRef Assembly = new agxSDK::Assembly();
+	AssemblyRef = std::make_shared<FAssemblyRef>(new agxSDK::Assembly());
 	for (FConstraintBarrier* Constraint : Constraints)
 	{
 		AGX_CHECK(Constraint->HasNative());
-		Assembly->add(Constraint->GetNative()->Native);
+		AssemblyRef->Native->add(Constraint->GetNative()->Native);
 	}
 
 	// OpenPLX OutputSignalListener requires the assembly to contain a PowerLine with a
-	// cetain name. Remove once this has been cleaned up in OpenPLX, it's a bit hacky.
+	// certain name. Remove once this has been cleaned up in OpenPLX, it's a bit hacky.
 	agxPowerLine::PowerLineRef RequiredDummyPowerLine = new agxPowerLine::PowerLine();
 	RequiredDummyPowerLine->setName(agx::Name("OpenPlxPowerLine"));
-	Assembly->add(RequiredDummyPowerLine);
+	AssemblyRef->Native->add(RequiredDummyPowerLine);
 
-	FAssemblyRef AssemblyRef(Assembly);
-	ModelInfo = &InModelInfo;
-	ModelHandle = ModelInfo->Register(PLXFile, UniqueModelInstancePrefix, AssemblyRef, Simulation);
+	ModelRegistry = &InModelRegistry;
+	ModelHandle = ModelRegistry->Register(PLXFile);
 	if (ModelHandle == FPLXModelRegistry::InvalidHandle)
 	{
-		// Todo: log error
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT(
+				"Could not load OpenPLX model '%s'. The Console Log may contain more information."),
+			*PLXFile);
 		return;
+	}
+
+	FPLXModelData* ModelData = ModelRegistry->GetModelDatum(ModelHandle);
+	if (ModelData == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unexpected error: Unable to get registered OpenPLX model '%s'. The OpenPLX model "
+				 "may not behave as intended."),
+			*PLXFile);
+		return;
+	}
+
+	auto System = std::dynamic_pointer_cast<openplx::Physics3D::System>(ModelData->PLXModel);
+	if (System == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to get a openplx::Physics3D::System from the registered OpenPLX model "
+				 "'%s'. The OpenPLX model may not behave as intended."),
+			*PLXFile);
+		return;
+	}
+
+	if (FPLXUtilities::HasInputs(System.get()))
+	{
+		InputQueueRef =
+			std::make_shared<FInputSignalQueueRef>(agxopenplx::InputSignalQueue::create());
+		InputSignalHandlerRef =
+			std::make_shared<FInputSignalHandlerRef>(AssemblyRef->Native, InputQueueRef->Native);
+	}
+
+	if (FPLXUtilities::HasOutputs(System.get()))
+	{
+		OutputQueueRef =
+			std::make_shared<FOutputSignalQueueRef>(agxopenplx::OutputSignalQueue::create());
+		OutputSignalHandlerRef = std::make_shared<FOutputSignalHandlerRef>(
+			AssemblyRef->Native, ModelData->PLXModel, OutputQueueRef->Native);
 	}
 
 	bIsInitialized = true;
@@ -59,45 +103,60 @@ bool FPLXSignalHandler::IsInitialized() const
 bool FPLXSignalHandler::Send(const FPLX_LinearVelocity1DInput& Input, double Value)
 {
 	check(IsInitialized());
-	if (ModelInfo == nullptr || ModelHandle == FPLXModelRegistry::InvalidHandle)
+	if (ModelRegistry == nullptr || ModelHandle == FPLXModelRegistry::InvalidHandle)
 		return false;
 
-	FPLXModelDatum* ModelDatum = ModelInfo->GetModelDatum(ModelHandle);
-	if (ModelDatum == nullptr)
+	if (InputQueueRef == nullptr || InputQueueRef->Native == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Tried to send OpenPLX Linear Velocity 1D Input signal, value %f, but the OpenPLX "
+				 "model does not have any registered inputs."),
+			Value);
+		return false;
+	}
+
+	FPLXModelData* ModelData = ModelRegistry->GetModelDatum(ModelHandle);
+	if (ModelData == nullptr)
 		return false;
 
-	auto PLXInput = ModelDatum->Inputs.find(Convert(Input.Name));
-	if (PLXInput == ModelDatum->Inputs.end())
+	auto PLXInput = ModelData->Inputs.find(Convert(Input.Name));
+	if (PLXInput == ModelData->Inputs.end())
 		return false;
 
 	auto Signal = openplx::Physics::Signals::RealInputSignal::create(
 		ConvertDistanceToAGX(Value), PLXInput->second);
 
-	// Todo: prepend unique instance name prefix to signal once supported.
-	//agxopenplx::Signals::sendInputSignal(Signal); // // TODO!!!!
+	InputQueueRef->Native->send(Signal);
 	return true;
 }
 
 bool FPLXSignalHandler::Receive(const FPLX_AngleOutput& Output, double& OutValue)
 {
 	check(IsInitialized());
-	if (ModelInfo == nullptr || ModelHandle == FPLXModelRegistry::InvalidHandle)
+	if (ModelRegistry == nullptr || ModelHandle == FPLXModelRegistry::InvalidHandle)
 		return false;
 
-	// Todo: make this more efficient than looking through all outputs every time.
-	// We could build a map from name to signal in the ModelRegistry, each time step, for example.
-	// Do this once the signal refactoring in OpenPLX has been done.
-	/*auto ValueOutputSignal = // // TODO!!!!
-		agxopenplx::getSignalBySourceName<openplx::Physics::Signals::ValueOutputSignal>( // TODO!!!!
-			agxopenplx::Signals::getOutputSignals(), Convert(Output.Name)); // TODO!!!!
+	if (OutputQueueRef == nullptr || OutputQueueRef->Native == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Tried to receive OpenPLX Angle Output signal, but the OpenPLX "
+				 "model does not have any registered outputs."));
+		return false;
+	}
+
+	auto ValueOutputSignal =
+		agxopenplx::getSignalBySourceName<openplx::Physics::Signals::ValueOutputSignal>(
+			OutputQueueRef->Native->getSignals(), Convert(Output.Name));
 	if (ValueOutputSignal == nullptr)
 		return false;
 
 	auto Value =
-		std::dynamic_pointer_cast<openplx::Physics::Signals::RealValue>(ValueOutputSignal->value()); // TODO!!!!
+		std::dynamic_pointer_cast<openplx::Physics::Signals::RealValue>(ValueOutputSignal->value());
 	if (Value == nullptr)
-		return false; // TODO!!!!
+		return false;
 
-	OutValue = ConvertAngleToUnreal<double>(Value->value());*/ // TODO!!!!
+	OutValue = ConvertAngleToUnreal<double>(Value->value());
 	return true;
 }

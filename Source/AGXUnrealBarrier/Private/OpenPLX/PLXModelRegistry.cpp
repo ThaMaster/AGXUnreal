@@ -15,7 +15,7 @@
 #include <limits>
 
 FPLXModelRegistry::FPLXModelRegistry()
-	: Native(std::make_unique<FPLXModelData>())
+	: Native(std::make_unique<FPLXModelDataArray>())
 {
 }
 
@@ -54,7 +54,7 @@ namespace FPLXModelRegistry_helpers
 		return static_cast<size_t>(Val);
 	}
 
-	void MapAllInputs(
+	void MapInputs(
 		openplx::Physics3D::System* System,
 		std::unordered_map<std::string, std::shared_ptr<openplx::Physics::Signals::Input>>&
 			OutInputs)
@@ -64,7 +64,7 @@ namespace FPLXModelRegistry_helpers
 
 		for (auto& Subsystem : System->getValues<openplx::Physics3D::System>())
 		{
-			MapAllInputs(System, OutInputs);
+			MapInputs(System, OutInputs);
 		}
 
 		for (auto& Input : System->getValues<openplx::Physics::Signals::Input>())
@@ -78,82 +78,19 @@ namespace FPLXModelRegistry_helpers
 	}
 }
 
-FPLXModelRegistry::Handle FPLXModelRegistry::Register(
-	const FString& PLXFile, const FString& Prefix, FAssemblyRef& Assembly,
-	FSimulationBarrier& Simulation)
+FPLXModelRegistry::Handle FPLXModelRegistry::Register(const FString& PLXFile)
 {
 	check(HasNative());
-	check(Simulation.HasNative());
-
-	if (Prefix.IsEmpty())
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("FPLXModelRegistry::Register got an empty UniqueModelInstancePrefix when "
-				 "registering OpenPLX file '%s'. The OpenPLX model instance will not be "
-				 "registered."),
-			*PLXFile);
-		return InvalidHandle;
-	}
 
 	Handle Handle = GetFrom(PLXFile);
-
-	// Check that we got a unique Model Instance Prefix.
-	if (Handle != InvalidHandle)
-	{
-		const size_t Index = FPLXModelRegistry_helpers::Convert(Handle);
-		if (Native->ModelData[Index].OutputSignalListeners.contains(Convert(Prefix)))
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("FPLXModelRegistry::Register got UniqueModelInstancePrefix '%s' that has "
-					 "already been used when registering an instance using OpenPLX file '%s'. This "
-					 "registration will fail and the behaviour of this instance may not work as "
-					 "expected."),
-				*Prefix, *PLXFile);
-			return InvalidHandle;
-		}
-	}
-
 	if (Handle == InvalidHandle) // We have never seen this PLX Model before.
-		Handle = PrepareNewModel(PLXFile);
-
-	if (Handle == InvalidHandle)
-		return InvalidHandle; // Something went wrong.
-
-	// At this point, we know there exists valid PLXModelData for this PLXModel.
-	// We need to add the given Assembly to the base Assembly and (re)-create the
-	// InputSignalListener which is shared by all instances of this PLX Model.
-
-	FPLXModelDatum* ModelDatum = GetModelDatum(Handle);
-	if (ModelDatum == nullptr)
-		return InvalidHandle;
-
-	// Add the given assebly as a sub-assembly to the existing root assembly.
-	// This way, the InputSignalListener will correctly find all relevant AGX objects.
-	ModelDatum->Assembly->add(Assembly.Native);
-
-	if (ModelDatum->InputSignalListener != nullptr) // Has been added before.
-		Simulation.GetNative()->Native->remove(ModelDatum->InputSignalListener);
-
-	// The InputSignalListener always needs to be re-created even if it existed before, since now
-	// we have added another sub-assembly containing agx-objects it needs to know about.
-//	ModelDatum->InputSignalListener = new agxopenplx::InputSignalListener(ModelDatum->Assembly);  // TODO!!!!
-	// Simulation.GetNative()->Native->add(ModelDatum->InputSignalListener); // TODO!!!!
-
-	// Finally add an OutputSignalListener that is used for this PLX model instance only, producing
-	// output signals. It has a unique name prefix that is used to keep signals from getting name
-	// collisions when having mutliple instances of the same PLX model in the world.
-	//agx::ref_ptr<agxopenplx::OutputSignalListener> OutputSignalListener = // TODO!!!!
-	//	new agxopenplx::OutputSignalListener(Assembly.Native, ModelDatum->PLXModel); // TODO!!!!
-	//ModelDatum->OutputSignalListeners.insert({Convert(Prefix), OutputSignalListener}); // TODO!!!!
-	//AGX_CHECK(!Simulation.GetNative()->Native->remove(OutputSignalListener)); // TODO!!!!
-	//Simulation.GetNative()->Native->add(OutputSignalListener); // TODO!!!!
+		Handle = LoadNewModel(PLXFile);
 
 	return Handle;
 }
 
-const FPLXModelDatum* FPLXModelRegistry::GetModelDatum(Handle Handle) const
+template <typename T>
+T* FPLXModelRegistry::GetModelDatumImpl(Handle Handle) const
 {
 	check(HasNative());
 	if (Handle == InvalidHandle)
@@ -166,17 +103,14 @@ const FPLXModelDatum* FPLXModelRegistry::GetModelDatum(Handle Handle) const
 	return &Native->ModelData[Index];
 }
 
-FPLXModelDatum* FPLXModelRegistry::GetModelDatum(Handle Handle)
+const FPLXModelData* FPLXModelRegistry::GetModelDatum(Handle Handle) const
 {
-	check(HasNative());
-	if (Handle == InvalidHandle)
-		return nullptr;
+	return GetModelDatumImpl<const FPLXModelData>(Handle);
+}
 
-	const size_t Index = FPLXModelRegistry_helpers::Convert(Handle);
-	if (Index >= Native->ModelData.size())
-		return nullptr;
-
-	return &Native->ModelData[Index];
+FPLXModelData* FPLXModelRegistry::GetModelDatum(Handle Handle)
+{
+	return GetModelDatumImpl<FPLXModelData>(Handle);
 }
 
 FPLXModelRegistry::Handle FPLXModelRegistry::GetFrom(const FString& PLXFile) const
@@ -185,13 +119,13 @@ FPLXModelRegistry::Handle FPLXModelRegistry::GetFrom(const FString& PLXFile) con
 	return It != KnownModels.end() ? It->second : InvalidHandle;
 }
 
-FPLXModelRegistry::Handle FPLXModelRegistry::PrepareNewModel(const FString& PLXFile)
+FPLXModelRegistry::Handle FPLXModelRegistry::LoadNewModel(const FString& PLXFile)
 {
 	// Here we create a new slot in the PLXModelData array with the PLX model tree as well
-	// as some other required objects line an agxSDK::Assembly that the InputSignalListener needs.
+	// as some other required objects like the AGX Cache.
 	AGX_CHECK(GetFrom(PLXFile) == InvalidHandle);
 
-	FPLXModelDatum NewModel;
+	FPLXModelData NewModel;
 	NewModel.PLXModel = FPLXUtilities::LoadModel(PLXFile, NewModel.AGXCache);
 	if (NewModel.PLXModel == nullptr)
 	{
@@ -204,18 +138,20 @@ FPLXModelRegistry::Handle FPLXModelRegistry::PrepareNewModel(const FString& PLXF
 	}
 
 	auto System = std::dynamic_pointer_cast<openplx::Physics3D::System>(NewModel.PLXModel);
-	FPLXModelRegistry_helpers::MapAllInputs(System.get(), NewModel.Inputs);
+	if (System == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Could not get OpenPLX system from file '%s'. The OpenPLX model will not be loaded."),
+			*PLXFile);
+		return InvalidHandle;
+	}
 
-	// OpenPLX's InputSignalListener expects an Assembly with a PowerLine always.
-	// Therefore we add one here, even though it's a bit of a hack.
-	NewModel.Assembly = new agxSDK::Assembly();
-	agxPowerLine::PowerLineRef RequiredDummyPowerLine = new agxPowerLine::PowerLine();
-	RequiredDummyPowerLine->setName(agx::Name("OpenPlxPowerLine"));
-	NewModel.Assembly->add(RequiredDummyPowerLine);
-
-	const Handle NewHande = FPLXModelRegistry_helpers::Convert(Native->ModelData.size());
+	FPLXModelRegistry_helpers::MapInputs(System.get(), NewModel.Inputs);
+	
+	const Handle NewHandle = FPLXModelRegistry_helpers::Convert(Native->ModelData.size());
 	Native->ModelData.emplace_back(std::move(NewModel));
-	KnownModels.insert({Convert(PLXFile), NewHande});
+	KnownModels.insert({Convert(PLXFile), NewHandle});
 
-	return NewHande;
+	return NewHandle;
 }

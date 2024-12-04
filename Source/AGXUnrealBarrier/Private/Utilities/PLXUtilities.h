@@ -25,6 +25,9 @@ public:
 	static openplx::Core::ObjectPtr LoadModel(
 		const FString& Filename, std::shared_ptr<agxopenplx::AgxCache> AGXCache);
 
+	static bool HasInputs(openplx::Physics3D::System* System);
+	static bool HasOutputs(openplx::Physics3D::System* System);
+
 	static TArray<TUniquePtr<FPLX_Input>> GetInputs(openplx::Physics3D::System* System);
 	static TArray<TUniquePtr<FPLX_Output>> GetOutputs(openplx::Physics3D::System* System);
 };

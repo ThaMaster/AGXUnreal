@@ -11,17 +11,21 @@
 class FConstraintBarrier;
 class FSimulationBarrier;
 
+struct FAssemblyRef;
+struct FInputSignalHandlerRef;
+struct FOutputSignalHandlerRef;
+struct FInputSignalQueueRef;
+struct FOutputSignalQueueRef;
 struct FPLX_AngleOutput;
 struct FPLX_LinearVelocity1DInput;
-struct FOutputSignalHandlerRef;
 
 class AGXUNREALBARRIER_API FPLXSignalHandler
 {
 public:
+	FPLXSignalHandler();
+
 	void Init(
-		const FString& PLXFile, const FString& UniqueModelInstancePrefix,
-		FSimulationBarrier& Simulation,
-		FPLXModelRegistry& InModelInfo,
+		const FString& PLXFile, FSimulationBarrier& Simulation, FPLXModelRegistry& InModelRegistry,
 		TArray<FConstraintBarrier*>& Constraints);
 
 	bool IsInitialized() const;
@@ -32,7 +36,12 @@ public:
 
 private:
 	bool bIsInitialized {false};
-	FPLXModelRegistry* ModelInfo {nullptr};
-
+	FPLXModelRegistry* ModelRegistry {nullptr};
 	FPLXModelRegistry::Handle ModelHandle {FPLXModelRegistry::InvalidHandle};
+
+	std::shared_ptr<FAssemblyRef> AssemblyRef;
+	std::shared_ptr<FInputSignalHandlerRef> InputSignalHandlerRef;
+	std::shared_ptr<FOutputSignalHandlerRef> OutputSignalHandlerRef;
+	std::shared_ptr<FInputSignalQueueRef> InputQueueRef;
+	std::shared_ptr<FOutputSignalQueueRef> OutputQueueRef;
 };

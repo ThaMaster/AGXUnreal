@@ -148,6 +148,40 @@ openplx::Core::ObjectPtr FPLXUtilities::LoadModel(
 	return PLXUtilities_helpers::LoadModelFromFile(Convert(Filename), AGXCache);
 }
 
+bool FPLXUtilities::HasInputs(openplx::Physics3D::System* System)
+{
+	if (System == nullptr)
+		return false;
+
+	if (System->getValues<openplx::Physics::Signals::Input>().size() > 0)
+		return true;
+
+	for (auto& Subsystem : System->getValues<openplx::Physics3D::System>())
+	{
+		if (HasInputs(Subsystem.get()))
+			return true;
+	}
+
+	return false;
+}
+
+bool FPLXUtilities::HasOutputs(openplx::Physics3D::System* System)
+{
+	if (System == nullptr)
+		return false;
+
+	if (System->getValues<openplx::Physics::Signals::Output>().size() > 0)
+		return true;
+
+	for (auto& Subsystem : System->getValues<openplx::Physics3D::System>())
+	{
+		if (HasOutputs(Subsystem.get()))
+			return true;
+	}
+
+	return false;
+}
+
 TArray<TUniquePtr<FPLX_Input>> FPLXUtilities::GetInputs(openplx::Physics3D::System* System)
 {
 	TArray<TUniquePtr<FPLX_Input>> Inputs;

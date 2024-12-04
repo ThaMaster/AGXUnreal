@@ -11,7 +11,7 @@ class FSimulationBarrier;
 
 struct FAssemblyRef;
 struct FPLXModelData;
-struct FPLXModelDatum;
+struct FPLXModelDataArray;
 
 class AGXUNREALBARRIER_API FPLXModelRegistry
 {
@@ -27,32 +27,30 @@ public:
 
 	/**
 	 * The PLXFile is the absolute path of a OpenPLX model to be loaded.
-	 * The Assembly must contain the AGX objects relevant for the specific instance of this OpenPLX
-	 * model (there can exist many).
-	 * The Simulation is the Simulation object used by AGXUnreal during Play.
-	 * 
-	 * The Handle returned can be used to later access the loaded OpenPLX model along with related
-	 * data. This Handle will be shared by all who register the same PLX file, for example when the
-	 * same PLX model is instanced many times in the same world.
+	 *
+	 * The Handle returned can be used to later access the loaded OpenPLX model. This Handle will be
+	 * shared by all who register the same PLX file, for example when the same PLX model is
+	 * instanced many times in the same Level.
 	 */
-	Handle Register(
-		const FString& PLXFile, const FString& UniqueModelInstancePrefix, FAssemblyRef& Assembly,
-		FSimulationBarrier& Simulation);
+	Handle Register(const FString& PLXFile);
 
 	/**
-	 * Important note: the lifetime of the returned FPLXModelDatum is only guaranteed during direct
-	 * usage in local scope. Do not store this pointer for later use.
+	 * Important note: the lifetime of the returned FPLXModelData is only guaranteed during direct
+	 * usage in local scope. It is not thread safe. Do not store this pointer for later use.
 	 */
-	const FPLXModelDatum* GetModelDatum(Handle Handle) const;
-	FPLXModelDatum* GetModelDatum(Handle Handle);
+	const FPLXModelData* GetModelDatum(Handle Handle) const;
+	FPLXModelData* GetModelDatum(Handle Handle);
 
 private:
 	FPLXModelRegistry(const FPLXModelRegistry&) = delete;
 	void operator=(const FPLXModelRegistry&) = delete;
 
-	Handle GetFrom(const FString& PLXFile) const;
-	Handle PrepareNewModel(const FString& PLXFile);
+	template <typename T>
+	T* GetModelDatumImpl(Handle Handle) const;
 
-	std::unique_ptr<FPLXModelData> Native;
+	Handle GetFrom(const FString& PLXFile) const;
+	Handle LoadNewModel(const FString& PLXFile);
+
+	std::unique_ptr<FPLXModelDataArray> Native;
 	std::unordered_map<std::string, Handle> KnownModels;
 };
