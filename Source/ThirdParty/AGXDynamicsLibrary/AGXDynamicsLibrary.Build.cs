@@ -279,6 +279,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		LinkLibFiles.Add("urdfdom_sensor", LibSource.OpenPLX);
 		LinkLibFiles.Add("console_bridge", LibSource.OpenPLX);
 		LinkLibFiles.Add("tinyxml", LibSource.OpenPLX);
+		LinkLibFiles.Add("hash-library", LibSource.OpenPLX);
 
 		// List of the include directories from aGX Dynamics and its
 		// dependenciesthat we need. These will be added to the Unreal Engine
