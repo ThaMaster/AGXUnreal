@@ -24,7 +24,6 @@
 #include "OpenPLX/Visuals/Visuals_all.h"
 #include "OpenPLX/Urdf/Urdf_all.h"
 
-
 // Unreal Engine includes.
 #include "Templates/UniquePtr.h"
 
@@ -33,54 +32,6 @@
 
 namespace PLXUtilities_helpers
 {
-	void GetInputs(openplx::Physics3D::System* System, TArray<TUniquePtr<FPLX_Input>>& OutInputs)
-	{
-		if (System == nullptr)
-			return;
-
-		for (auto& Subsystem : System->getValues<openplx::Physics3D::System>())
-		{
-			GetInputs(System, OutInputs);
-		}
-
-		for (auto& Input : System->getValues<openplx::Physics::Signals::Input>())
-		{
-			if (auto Lvmvi = std::dynamic_pointer_cast<openplx::Physics::Signals::LinearVelocity1DInput>(
-						Input))
-			{
-				OutInputs.Emplace(MakeUnique<FPLX_LinearVelocity1DInput>(
-					Convert(Input->getName())));
-				continue;
-			}
-
-			UE_LOG(LogAGX, Warning, TEXT("Unhandled PLX Input: %s"), *Convert(Input->getName()));
-		}
-	}
-
-	void GetOutputs(openplx::Physics3D::System* System, TArray<TUniquePtr<FPLX_Output>>& OutOutputs)
-	{
-		if (System == nullptr)
-			return;
-
-		for (auto& Subsystem : System->getValues<openplx::Physics3D::System>())
-		{
-			GetOutputs(System, OutOutputs);
-		}
-
-		for (auto& Output : System->getValues<openplx::Physics::Signals::Output>())
-		{
-			if (auto Hao =
-					std::dynamic_pointer_cast<openplx::Physics::Signals::AngleOutput>(Output))
-			{
-				OutOutputs.Emplace(
-					MakeUnique<FPLX_AngleOutput>(Convert(Output->getName())));
-				continue;
-			}
-
-			UE_LOG(LogAGX, Warning, TEXT("Unhandled PLX Output: %s"), *Convert(Output->getName()));
-		}
-	}
-
 	std::shared_ptr<openplx::Core::Api::OpenPlxContext> CreatePLXContext(
 		std::shared_ptr<agxopenplx::AgxCache> AGXCache)
 	{
@@ -139,8 +90,7 @@ openplx::Core::ObjectPtr FPLXUtilities::LoadModel(
 	if (!FPaths::FileExists(Filename))
 	{
 		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Could not read OpenPLX file '%s'. The file does not exist."),
+			LogAGX, Warning, TEXT("Could not read OpenPLX file '%s'. The file does not exist."),
 			*Filename);
 		return nullptr;
 	}
@@ -153,16 +103,7 @@ bool FPLXUtilities::HasInputs(openplx::Physics3D::System* System)
 	if (System == nullptr)
 		return false;
 
-	if (System->getValues<openplx::Physics::Signals::Input>().size() > 0)
-		return true;
-
-	for (auto& Subsystem : System->getValues<openplx::Physics3D::System>())
-	{
-		if (HasInputs(Subsystem.get()))
-			return true;
-	}
-
-	return false;
+	return System->getNestedObjects<openplx::Physics::Signals::Input>().size() > 0;
 }
 
 bool FPLXUtilities::HasOutputs(openplx::Physics3D::System* System)
@@ -170,16 +111,7 @@ bool FPLXUtilities::HasOutputs(openplx::Physics3D::System* System)
 	if (System == nullptr)
 		return false;
 
-	if (System->getValues<openplx::Physics::Signals::Output>().size() > 0)
-		return true;
-
-	for (auto& Subsystem : System->getValues<openplx::Physics3D::System>())
-	{
-		if (HasOutputs(Subsystem.get()))
-			return true;
-	}
-
-	return false;
+	return System->getNestedObjects<openplx::Physics::Signals::Output>().size() > 0;
 }
 
 TArray<TUniquePtr<FPLX_Input>> FPLXUtilities::GetInputs(openplx::Physics3D::System* System)
@@ -188,7 +120,17 @@ TArray<TUniquePtr<FPLX_Input>> FPLXUtilities::GetInputs(openplx::Physics3D::Syst
 	if (System == nullptr)
 		return Inputs;
 
-	PLXUtilities_helpers::GetInputs(System, Inputs);
+	for (auto& Input : System->getNestedObjects<openplx::Physics::Signals::Input>())
+	{
+		if (auto Lvmvi =
+				std::dynamic_pointer_cast<openplx::Physics::Signals::LinearVelocity1DInput>(Input))
+		{
+			Inputs.Emplace(MakeUnique<FPLX_LinearVelocity1DInput>(Convert(Input->getName())));
+			continue;
+		}
+
+		UE_LOG(LogAGX, Warning, TEXT("Unhandled PLX Input: %s"), *Convert(Input->getName()));
+	}
 	return Inputs;
 }
 
@@ -198,6 +140,15 @@ TArray<TUniquePtr<FPLX_Output>> FPLXUtilities::GetOutputs(openplx::Physics3D::Sy
 	if (System == nullptr)
 		return Outputs;
 
-	PLXUtilities_helpers::GetOutputs(System, Outputs);
+	for (auto& Output : System->getNestedObjects<openplx::Physics::Signals::Output>())
+	{
+		if (auto Hao = std::dynamic_pointer_cast<openplx::Physics::Signals::AngleOutput>(Output))
+		{
+			Outputs.Emplace(MakeUnique<FPLX_AngleOutput>(Convert(Output->getName())));
+			continue;
+		}
+
+		UE_LOG(LogAGX, Warning, TEXT("Unhandled PLX Output: %s"), *Convert(Output->getName()));
+	}
 	return Outputs;
 }

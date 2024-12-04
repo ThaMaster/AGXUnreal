@@ -54,27 +54,24 @@ namespace FPLXModelRegistry_helpers
 		return static_cast<size_t>(Val);
 	}
 
-	void MapInputs(
-		openplx::Physics3D::System* System,
-		std::unordered_map<std::string, std::shared_ptr<openplx::Physics::Signals::Input>>&
-			OutInputs)
+	using InputMap = std::unordered_map<std::string, std::shared_ptr<openplx::Physics::Signals::Input>>;
+
+	InputMap MapInputs(openplx::Physics3D::System* System)
 	{
+		InputMap Inputs;
 		if (System == nullptr)
-			return;
+			return Inputs;
 
-		for (auto& Subsystem : System->getValues<openplx::Physics3D::System>())
-		{
-			MapInputs(System, OutInputs);
-		}
-
-		for (auto& Input : System->getValues<openplx::Physics::Signals::Input>())
+		for (auto& Input : System->getNestedObjects<openplx::Physics::Signals::Input>())
 		{
 			if (Input == nullptr)
 				continue;
 
-			AGX_CHECK(!OutInputs.contains(Input->getName()));
-			OutInputs.insert({Input->getName(), Input});
+			AGX_CHECK(!Inputs.contains(Input->getName()));
+			Inputs.insert({Input->getName(), Input});
 		}
+
+		return Inputs;
 	}
 }
 
@@ -90,7 +87,7 @@ FPLXModelRegistry::Handle FPLXModelRegistry::Register(const FString& PLXFile)
 }
 
 template <typename T>
-T* FPLXModelRegistry::GetModelDatumImpl(Handle Handle) const
+T* FPLXModelRegistry::GetModelDataImpl(Handle Handle) const
 {
 	check(HasNative());
 	if (Handle == InvalidHandle)
@@ -103,14 +100,14 @@ T* FPLXModelRegistry::GetModelDatumImpl(Handle Handle) const
 	return &Native->ModelData[Index];
 }
 
-const FPLXModelData* FPLXModelRegistry::GetModelDatum(Handle Handle) const
+const FPLXModelData* FPLXModelRegistry::GetModelData(Handle Handle) const
 {
-	return GetModelDatumImpl<const FPLXModelData>(Handle);
+	return GetModelDataImpl<const FPLXModelData>(Handle);
 }
 
-FPLXModelData* FPLXModelRegistry::GetModelDatum(Handle Handle)
+FPLXModelData* FPLXModelRegistry::GetModelData(Handle Handle)
 {
-	return GetModelDatumImpl<FPLXModelData>(Handle);
+	return GetModelDataImpl<FPLXModelData>(Handle);
 }
 
 FPLXModelRegistry::Handle FPLXModelRegistry::GetFrom(const FString& PLXFile) const
@@ -147,8 +144,7 @@ FPLXModelRegistry::Handle FPLXModelRegistry::LoadNewModel(const FString& PLXFile
 		return InvalidHandle;
 	}
 
-	FPLXModelRegistry_helpers::MapInputs(System.get(), NewModel.Inputs);
-	
+	NewModel.Inputs = FPLXModelRegistry_helpers::MapInputs(System.get());	
 	const Handle NewHandle = FPLXModelRegistry_helpers::Convert(Native->ModelData.size());
 	Native->ModelData.emplace_back(std::move(NewModel));
 	KnownModels.insert({Convert(PLXFile), NewHandle});

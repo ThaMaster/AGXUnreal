@@ -38,15 +38,15 @@ public:
 	 * Important note: the lifetime of the returned FPLXModelData is only guaranteed during direct
 	 * usage in local scope. It is not thread safe. Do not store this pointer for later use.
 	 */
-	const FPLXModelData* GetModelDatum(Handle Handle) const;
-	FPLXModelData* GetModelDatum(Handle Handle);
+	const FPLXModelData* GetModelData(Handle Handle) const;
+	FPLXModelData* GetModelData(Handle Handle);
 
 private:
 	FPLXModelRegistry(const FPLXModelRegistry&) = delete;
 	void operator=(const FPLXModelRegistry&) = delete;
 
 	template <typename T>
-	T* GetModelDatumImpl(Handle Handle) const;
+	T* GetModelDataImpl(Handle Handle) const;
 
 	Handle GetFrom(const FString& PLXFile) const;
 	Handle LoadNewModel(const FString& PLXFile);

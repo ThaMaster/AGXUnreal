@@ -54,7 +54,7 @@ void FPLXSignalHandler::Init(
 		return;
 	}
 
-	FPLXModelData* ModelData = ModelRegistry->GetModelDatum(ModelHandle);
+	FPLXModelData* ModelData = ModelRegistry->GetModelData(ModelHandle);
 	if (ModelData == nullptr)
 	{
 		UE_LOG(
@@ -82,6 +82,7 @@ void FPLXSignalHandler::Init(
 			std::make_shared<FInputSignalQueueRef>(agxopenplx::InputSignalQueue::create());
 		InputSignalHandlerRef =
 			std::make_shared<FInputSignalHandlerRef>(AssemblyRef->Native, InputQueueRef->Native);
+		Simulation.GetNative()->Native->add(InputSignalHandlerRef->Native);
 	}
 
 	if (FPLXUtilities::HasOutputs(System.get()))
@@ -90,6 +91,7 @@ void FPLXSignalHandler::Init(
 			std::make_shared<FOutputSignalQueueRef>(agxopenplx::OutputSignalQueue::create());
 		OutputSignalHandlerRef = std::make_shared<FOutputSignalHandlerRef>(
 			AssemblyRef->Native, ModelData->PLXModel, OutputQueueRef->Native);
+		Simulation.GetNative()->Native->add(OutputSignalHandlerRef->Native);
 	}
 
 	bIsInitialized = true;
@@ -116,13 +118,20 @@ bool FPLXSignalHandler::Send(const FPLX_LinearVelocity1DInput& Input, double Val
 		return false;
 	}
 
-	FPLXModelData* ModelData = ModelRegistry->GetModelDatum(ModelHandle);
+	FPLXModelData* ModelData = ModelRegistry->GetModelData(ModelHandle);
 	if (ModelData == nullptr)
 		return false;
 
 	auto PLXInput = ModelData->Inputs.find(Convert(Input.Name));
 	if (PLXInput == ModelData->Inputs.end())
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Tried to send OpenPLX Linear Velocity 1D Input signal, value %f, but the "
+				 "corresponding OpenPLX input '%s' was not found. The signal will not be sent."),
+			Value, *Input.Name);
 		return false;
+	}
 
 	auto Signal = openplx::Physics::Signals::RealInputSignal::create(
 		ConvertDistanceToAGX(Value), PLXInput->second);
@@ -141,8 +150,9 @@ bool FPLXSignalHandler::Receive(const FPLX_AngleOutput& Output, double& OutValue
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Tried to receive OpenPLX Angle Output signal, but the OpenPLX "
-				 "model does not have any registered outputs."));
+			TEXT("Tried to receive OpenPLX Angle Output signal for output '%s', but the OpenPLX "
+				 "model does not have any registered outputs."),
+			*Output.Name);
 		return false;
 	}
 
@@ -152,10 +162,17 @@ bool FPLXSignalHandler::Receive(const FPLX_AngleOutput& Output, double& OutValue
 	if (ValueOutputSignal == nullptr)
 		return false;
 
-	auto Value =
-		std::dynamic_pointer_cast<openplx::Physics::Signals::RealValue>(ValueOutputSignal->value());
+	auto Value = std::dynamic_pointer_cast<openplx::Physics::Signals::AngleValue>(
+		ValueOutputSignal->value());
 	if (Value == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Unexpected error: Tried to cast OpenPLX Angle Output signal for output '%s', but "
+				 "got nullptr. Possible type miss match. The signal will not be received."),
+			*Output.Name);
 		return false;
+	}
 
 	OutValue = ConvertAngleToUnreal<double>(Value->value());
 	return true;
