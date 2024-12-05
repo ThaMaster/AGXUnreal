@@ -102,7 +102,7 @@ TSharedRef<class FSlateStyleSet> FAGX_EditorStyle::Create()
 	Style->Set(TerrainIcon, new IMAGE_BRUSH("Icons/Terrain_64x64", IconSize64));
 	Style->Set(TerrainIconSmall, new IMAGE_BRUSH("Icons/Terrain_32x32", IconSize32));
 	Style->Set(LicenseKeyIcon, new IMAGE_BRUSH("Icons/license_key_16x16", IconSize16));
-	Style->Set(GrabIcon, new IMAGE_BRUSH("Icons/grab_hand_64x64", IconSize16));
+	Style->Set(GrabIcon, new IMAGE_BRUSH("Icons/grab_32x32", IconSize16));
 
 	// Component icons, visible in the Components list/hierarchy of an Actor and in the Add
 	// Component dialog / list. Bodies.
