@@ -6,6 +6,7 @@
 #include "AssetToolsModule.h"
 #include "AssetTypeCategories.h"
 #include "Editor/UnrealEdEngine.h"
+#include "Framework/Commands/Commands.h"
 #include "IAssetTools.h"
 #include "IAssetTypeActions.h"
 #include "IPlacementModeModule.h"
@@ -130,7 +131,6 @@
 #include "Wire/AGX_WireWinchDetails.h"
 #include "Wire/AGX_WireWinchVisualizer.h"
 
-
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
 class FAGX_GlobalKeyboardCommands : public TCommands<FAGX_GlobalKeyboardCommands>
@@ -237,7 +237,8 @@ void FAGXUnrealEditorModule::RegisterCommands()
 		LevelEditorModule.GetGlobalLevelEditorActions()->MapAction(
 			GrabModeCommands.ActivateGrabCommand,
 			FExecuteAction::CreateRaw(this, &FAGXUnrealEditorModule::OnGrabModeCommand),
-			FCanExecuteAction::CreateRaw(this, &FAGXUnrealEditorModule::OnCanExecuteGrabModeCommand));
+			FCanExecuteAction::CreateRaw(
+				this, &FAGXUnrealEditorModule::OnCanExecuteGrabModeCommand));
 	}
 }
 
@@ -683,8 +684,8 @@ void FAGXUnrealEditorModule::RegisterModes()
 		/*bVisisble*/ true);
 
 	FEditorModeRegistry::Get().RegisterMode<FAGX_GrabMode>(
-		FAGX_GrabMode::EM_AGX_GrabModeId, LOCTEXT("AGXGrabMode", "Grab Mode"),
-		FSlateIcon(), /*bVisisble*/ false);
+		FAGX_GrabMode::EM_AGX_GrabModeId, LOCTEXT("AGXGrabMode", "Grab Mode"), FSlateIcon(),
+		/*bVisisble*/ false);
 }
 
 void FAGXUnrealEditorModule::UnregisterModes()

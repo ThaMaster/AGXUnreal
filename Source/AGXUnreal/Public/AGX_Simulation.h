@@ -13,6 +13,7 @@
 #include "Containers/Map.h"
 #include "CoreMinimal.h"
 #include "Engine/EngineTypes.h"
+#include "Framework/Commands/InputChord.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 

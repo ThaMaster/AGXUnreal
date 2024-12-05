@@ -9,9 +9,13 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 
 // Unreal Engine includes.
+#include "Components/PrimitiveComponent.h"
+#include "DrawDebugHelpers.h"
 #include "EditorViewportClient.h"
 #include "EditorModeManager.h"
+#include "Framework/Application/SlateApplication.h"
 #include "Kismet2/DebuggerCommands.h"
+#include "Widgets/SToolTip.h"
 
 const FEditorModeID FAGX_GrabMode::EM_AGX_GrabModeId = TEXT("EM_AGX_GrabModeId");
 
