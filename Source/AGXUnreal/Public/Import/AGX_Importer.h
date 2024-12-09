@@ -8,27 +8,46 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
+class UAGX_RigidBodyComponent;
+class FRigidBodyBarrier;
+
 struct FAGX_ImporterSettings;
+struct FSimulationObjectCollection;
 
 struct AGXUNREAL_API FAGX_ImportResult
 {
-	explicit FAGX_ImportResult(EAGX_ImportInstantiationResult InResult)
+	explicit FAGX_ImportResult(EAGX_ImportResult InResult)
 		: Result(InResult)
 	{
 	}
 
-	FAGX_ImportResult(EAGX_ImportInstantiationResult InResult, AActor* InActor)
+	FAGX_ImportResult(EAGX_ImportResult InResult, AActor* InActor)
 		: Result(InResult)
 		, Actor(InActor)
 	{
 	}
 
-	EAGX_ImportInstantiationResult Result {EAGX_ImportInstantiationResult::Invalid};
+	EAGX_ImportResult Result {EAGX_ImportResult::Invalid};
 	AActor* Actor {nullptr};
+};
+
+/** Mapped objects seen during import process. */
+struct AGXUNREAL_API FAGX_ImporterObjectMaps
+{
+	TMap<FGuid, UAGX_RigidBodyComponent*> Bodies;
 };
 
 class AGXUNREAL_API FAGX_Importer
 {
 public:
 	FAGX_ImportResult Import(const FAGX_ImporterSettings& Settings);
+	const FAGX_ImporterObjectMaps& GetProcessedObjects() const;
+	
+private:
+	EAGX_ImportResult AddComponents(
+		const FSimulationObjectCollection& SimObjects, const FAGX_ImporterSettings& Settings,
+		AActor& OutActor);
+	EAGX_ImportResult AddRigidBody(const FRigidBodyBarrier& Barrier, AActor& OutActor);
+
+	FAGX_ImporterObjectMaps ProcessedObjects;
 };

@@ -25,10 +25,10 @@ enum class EAGX_ImportType : uint8
 
 /* TODO: add decription */
 UENUM()
-enum class EAGX_ImportInstantiationResult : uint8
+enum class EAGX_ImportResult : uint8
 {
-	Invalid,
-	Success,
-	RecoverableErrorsOccured,
-	FatalError
+	Success = 1 << 0,
+	RecoverableErrorsOccured = 1 << 1,
+	FatalError = 1 << 2,
+	Invalid = 1 << 3
 };

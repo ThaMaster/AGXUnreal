@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
 #include "Constraints/AnyConstraintBarrier.h"
 #include "Constraints/BallJointBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
@@ -23,10 +24,27 @@
 
 namespace AGX_Importer_helpers
 {
-	bool IsUnrecoverableError(EAGX_ImportInstantiationResult Result)
+	EAGX_ImportResult& operator|=(EAGX_ImportResult& InOutLhs, EAGX_ImportResult InRhs)
 	{
-		return Result == EAGX_ImportInstantiationResult::FatalError ||
-				Result == EAGX_ImportInstantiationResult::Invalid;
+		uint8 Lhs = (uint8) InOutLhs;
+		uint8 Rhs = (uint8) InRhs;
+		uint8 result = Lhs | Rhs;
+		InOutLhs = (EAGX_ImportResult) result;
+		return InOutLhs;
+	}
+
+	EAGX_ImportResult operator&(EAGX_ImportResult InLhs, EAGX_ImportResult InRhs)
+	{
+		uint8 Lhs = (uint8) InLhs;
+		uint8 Rhs = (uint8) InRhs;
+		uint8 Result = Lhs & Rhs;
+		return (EAGX_ImportResult) Result;
+	}
+
+	bool IsUnrecoverableError(EAGX_ImportResult Result)
+	{
+		return (uint8) (Result & EAGX_ImportResult::FatalError) != 0 ||
+			   (uint8) (Result & EAGX_ImportResult::Invalid) != 0;
 	}
 
 	AActor* CreateActor(const FString& Name)
@@ -81,15 +99,10 @@ namespace AGX_Importer_helpers
 		return Name;
 	}
 
-	EAGX_ImportInstantiationResult AddComponents(
-		const FSimulationObjectCollection& SimObjects, const FAGX_ImporterSettings& Settings,
-		AActor& OutActor)
+	void PostCreateComponent(UActorComponent& Component, AActor& Owner)
 	{
-		for (const auto& Body : SimObjects.GetRigidBodies())
-		{
-
-		}
-		return EAGX_ImportInstantiationResult::Success;
+		Component.SetFlags(RF_Transactional);
+		Owner.AddInstanceComponent(&Component);
 	}
 }
 
@@ -99,15 +112,55 @@ FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)
 
 	AActor* Actor = CreateActor(GetModelName(Settings.FilePath));
 	if (Actor == nullptr)
-		return FAGX_ImportResult(EAGX_ImportInstantiationResult::FatalError);
+		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 
 	FSimulationObjectCollection SimObjects;
 	if (!CreateSimulationObjectCollection(Settings.FilePath, SimObjects))
-		return FAGX_ImportResult(EAGX_ImportInstantiationResult::FatalError);
+		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 
-	EAGX_ImportInstantiationResult Result = AddComponents(SimObjects, Settings, *Actor);
+	EAGX_ImportResult Result = AddComponents(SimObjects, Settings, *Actor);
 	if (IsUnrecoverableError(Result))
 		return FAGX_ImportResult(Result);
 
 	return FAGX_ImportResult(Result, Actor);
+}
+
+const FAGX_ImporterObjectMaps& FAGX_Importer::GetProcessedObjects() const
+{
+	return ProcessedObjects;
+}
+
+EAGX_ImportResult FAGX_Importer::AddRigidBody(const FRigidBodyBarrier& Barrier, AActor& OutActor)
+{
+	const FString Name = Barrier.GetName(); // Todo: sanitize.
+	const FGuid Guid = Barrier.GetGuid();
+	if (ProcessedObjects.Bodies.FindRef(Guid) != nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_Importer::AddRigidBody called on Rigid Body '%s' that has already been "
+				 "added."), *Name);
+		return EAGX_ImportResult::RecoverableErrorsOccured;
+	}
+
+	UAGX_RigidBodyComponent* Component = NewObject<UAGX_RigidBodyComponent>(&OutActor);
+	Component->Rename(*Name);
+	Component->CopyFrom(Barrier, /*ForceOverwriteInstances*/ false); // Todo: remove flag in api
+	AGX_Importer_helpers::PostCreateComponent(*Component, OutActor);
+	ProcessedObjects.Bodies.Add(Guid, Component);
+	return EAGX_ImportResult::Success;
+}
+
+EAGX_ImportResult FAGX_Importer::AddComponents(
+	const FSimulationObjectCollection& SimObjects, const FAGX_ImporterSettings& Settings,
+	AActor& OutActor)
+{
+	using namespace AGX_Importer_helpers;
+	EAGX_ImportResult Result = EAGX_ImportResult::Success;
+	for (const auto& Body : SimObjects.GetRigidBodies())
+	{
+		Result |= AddRigidBody(Body, OutActor);
+	}
+
+	return Result;
 }
