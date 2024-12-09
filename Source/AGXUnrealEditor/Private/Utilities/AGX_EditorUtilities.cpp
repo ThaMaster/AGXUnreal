@@ -5,7 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImporterToBlueprint.h"
 #include "AGX_LogCategory.h"
-#include "AGX_ModelSourceComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
@@ -17,6 +16,7 @@
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
+#include "Import/AGX_ModelSourceComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
