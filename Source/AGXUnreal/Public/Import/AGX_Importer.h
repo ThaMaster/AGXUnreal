@@ -8,8 +8,9 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-class UAGX_RigidBodyComponent;
 class FRigidBodyBarrier;
+class UAGX_ModelSourceComponent;
+class UAGX_RigidBodyComponent;
 
 struct FAGX_ImporterSettings;
 struct FSimulationObjectCollection;
@@ -28,13 +29,15 @@ struct AGXUNREAL_API FAGX_ImportResult
 	}
 
 	EAGX_ImportResult Result {EAGX_ImportResult::Invalid};
-	AActor* Actor {nullptr};
+	TObjectPtr<AActor> Actor;
 };
 
 /** Mapped objects seen during import process. */
 struct AGXUNREAL_API FAGX_ImporterObjectMaps
 {
 	TMap<FGuid, UAGX_RigidBodyComponent*> Bodies;
+
+	UAGX_ModelSourceComponent* ModelSourceComponent {nullptr};
 };
 
 class AGXUNREAL_API FAGX_Importer
@@ -47,6 +50,9 @@ private:
 	EAGX_ImportResult AddComponents(
 		const FSimulationObjectCollection& SimObjects, const FAGX_ImporterSettings& Settings,
 		AActor& OutActor);
+
+	EAGX_ImportResult AddModelSourceComponent(
+		const FAGX_ImporterSettings& Settings, AActor& OutActor);
 	EAGX_ImportResult AddRigidBody(const FRigidBodyBarrier& Barrier, AActor& OutActor);
 
 	FAGX_ImporterObjectMaps ProcessedObjects;

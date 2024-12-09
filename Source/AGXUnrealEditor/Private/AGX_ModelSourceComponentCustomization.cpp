@@ -117,7 +117,7 @@ FReply FAGX_ModelSourceComponentCustomization::OnSynchronizeModelButtonClicked()
 		return FReply::Handled();
 	}
 
-	FAGX_EditorUtilities::SynchronizeModel(*Blueprint);
+	FAGX_EditorUtilities::SynchronizeModel(*Blueprint, true);
 
 	// Any logging is done in SynchronizeModel.
 	return FReply::Handled();

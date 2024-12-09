@@ -13,6 +13,7 @@
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
 #include "Import/AGX_ImporterSettings.h"
+#include "Import/AGX_ModelSourceComponent.h"
 #include "Import/AGXSimObjectsReader.h"
 #include "Import/SimulationObjectCollection.h"
 #include "Materials/ShapeMaterialBarrier.h"
@@ -130,7 +131,7 @@ const FAGX_ImporterObjectMaps& FAGX_Importer::GetProcessedObjects() const
 	return ProcessedObjects;
 }
 
-EAGX_ImportResult FAGX_Importer::AddRigidBody(const FRigidBodyBarrier& Barrier, AActor& OutActor)
+EAGX_ImportResult FAGX_Importer::AddRigidBody(const FRigidBodyBarrier& Barrier, AActor& Owner)
 {
 	const FString Name = Barrier.GetName(); // Todo: sanitize.
 	const FGuid Guid = Barrier.GetGuid();
@@ -139,15 +140,39 @@ EAGX_ImportResult FAGX_Importer::AddRigidBody(const FRigidBodyBarrier& Barrier, 
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("FAGX_Importer::AddRigidBody called on Rigid Body '%s' that has already been "
-				 "added."), *Name);
+				 "added."),
+			*Name);
 		return EAGX_ImportResult::RecoverableErrorsOccured;
 	}
 
-	UAGX_RigidBodyComponent* Component = NewObject<UAGX_RigidBodyComponent>(&OutActor);
+	UAGX_RigidBodyComponent* Component = NewObject<UAGX_RigidBodyComponent>(&Owner);
 	Component->Rename(*Name);
 	Component->CopyFrom(Barrier, /*ForceOverwriteInstances*/ false); // Todo: remove flag in api
-	AGX_Importer_helpers::PostCreateComponent(*Component, OutActor);
+	AGX_Importer_helpers::PostCreateComponent(*Component, Owner);
 	ProcessedObjects.Bodies.Add(Guid, Component);
+	return EAGX_ImportResult::Success;
+}
+
+EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(
+	const FAGX_ImporterSettings& Settings, AActor& Owner)
+{
+	const FString Name = "AGX_ModelSource";
+	if (ProcessedObjects.ModelSourceComponent != nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_Importer::AddModelSourceComponent called, but a ModelSourceComponent has "
+				 "already been added."),
+			*Name);
+		return EAGX_ImportResult::RecoverableErrorsOccured;
+	}
+
+	UAGX_ModelSourceComponent* Component = NewObject<UAGX_ModelSourceComponent>(&Owner);
+	Component->Rename(*Name);
+	Component->FilePath = Settings.FilePath;
+	Component->bIgnoreDisabledTrimeshes = Settings.bIgnoreDisabledTrimeshes;
+	AGX_Importer_helpers::PostCreateComponent(*Component, Owner);
+	ProcessedObjects.ModelSourceComponent = Component;
 	return EAGX_ImportResult::Success;
 }
 
@@ -157,6 +182,9 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 {
 	using namespace AGX_Importer_helpers;
 	EAGX_ImportResult Result = EAGX_ImportResult::Success;
+
+	Result |= AddModelSourceComponent(Settings, OutActor);
+
 	for (const auto& Body : SimObjects.GetRigidBodies())
 	{
 		Result |= AddRigidBody(Body, OutActor);

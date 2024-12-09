@@ -11,11 +11,14 @@ struct FAGX_ImporterSettings;
 namespace AGX_ImporterToEditor
 {
 	/**
-	 * Read simulation objects from a .agx archive or .urdf file and create an Actor
-	 * Blueprint populated with corresponding AGXUnreal objects.
-	 *
-	 * @param ImportSettings - Struct containing all information needed to perform the import.
-	 * @return An Actor Blueprint containing the read objects.
+	 * Todo: Add comment.
 	 */
 	AGXUNREALEDITOR_API UBlueprint* Import(const FAGX_ImporterSettings& Settings);
+
+	/**
+	 * Todo: Add comment.
+	 */
+	AGXUNREALEDITOR_API bool Reimport(
+		UBlueprint& BaseBP, const FAGX_ImporterSettings& Settings,
+		UBlueprint* OpenBlueprint = nullptr);
 }

@@ -17,9 +17,19 @@
 
 namespace AGX_ImporterToEditor_helpers
 {
-	void PreCreationSetup()
+	void PreCreateBlueprintSetup()
 	{
 		GEditor->SelectNone(false, false);
+	}
+
+	void PreReimportSetup()
+	{
+		// During Model Synchronization, old assets are deleted and references to these assets are
+		// automatically cleared. Having the Blueprint Editor opened while doing this causes
+		// crashing during this process and the exact reason why is not clear. So we solve this
+		// by closing all asset editors here first.
+		if (GEditor != nullptr)
+			GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
 	}
 
 	FString CreateBlueprintPackagePath(const FString& ModelName, bool IsBase)
@@ -74,7 +84,7 @@ namespace AGX_ImporterToEditor_helpers
 
 	UBlueprint* CreateBaseBlueprint(AActor& Template)
 	{
-		PreCreationSetup();
+		PreCreateBlueprintSetup();
 		FString BlueprintPackagePath = CreateBlueprintPackagePath(Template.GetName(), true);
 		UPackage* Package = GetPackage(BlueprintPackagePath);
 		static constexpr bool ReplaceInWorld = false;
@@ -92,10 +102,10 @@ namespace AGX_ImporterToEditor_helpers
 		return Blueprint;
 	}
 
-	UBlueprint* CreateChildBlueprint(const AActor& Template, UBlueprint& BaseBlueprint)
+	UBlueprint* CreateChildBlueprint(const FString& ModelName, UBlueprint& BaseBlueprint)
 	{
-		PreCreationSetup();
-		FString BlueprintPackagePath = CreateBlueprintPackagePath(Template.GetName(), false);
+		PreCreateBlueprintSetup();
+		FString BlueprintPackagePath = CreateBlueprintPackagePath(ModelName, false);
 		UPackage* Package = GetPackage(BlueprintPackagePath);
 		const FString AssetName = FPaths::GetBaseFilename(Package->GetName());
 
@@ -134,6 +144,11 @@ namespace AGX_ImporterToEditor_helpers
 
 		return true;
 	}
+
+	void UpdateBlueprint(UBlueprint& Blueprint, const FAGX_ImporterObjectMaps& ImporterObjects)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Reimport Blueprint update here... todo.")); // Todo
+	}
 }
 
 UBlueprint* AGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
@@ -144,11 +159,30 @@ UBlueprint* AGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
 	if (!ValidateImportResult(Result, Settings))
 		return nullptr;
 
+	const FString Name = Result.Actor->GetName();
 	UBlueprint* BaseBlueprint = CreateBaseBlueprint(*Result.Actor);
-	UBlueprint* ChildBlueprint = CreateChildBlueprint(*Result.Actor, *BaseBlueprint);
+	UBlueprint* ChildBlueprint = CreateChildBlueprint(Name, *BaseBlueprint);
 
 	if (Settings.bOpenBlueprintEditorAfterImport)
 		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(ChildBlueprint);
 
 	return ChildBlueprint;
+}
+
+bool AGX_ImporterToEditor::Reimport(
+	UBlueprint& BaseBP, const FAGX_ImporterSettings& Settings, UBlueprint* OpenBlueprint)
+{
+	using namespace AGX_ImporterToEditor_helpers;
+	PreReimportSetup();
+	FAGX_Importer Importer;
+	FAGX_ImportResult Result = Importer.Import(Settings);
+	if (!ValidateImportResult(Result, Settings))
+		return false;
+
+	UpdateBlueprint(BaseBP, Importer.GetProcessedObjects());
+
+	if (Settings.bOpenBlueprintEditorAfterImport && OpenBlueprint != nullptr)
+		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(OpenBlueprint);
+
+	return true;
 }
