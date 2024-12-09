@@ -6,11 +6,14 @@
 #include "AGX_LogCategory.h"
 #include "Import/AGX_Importer.h"
 #include "Import/AGX_ImporterSettings.h"
+#include "Import/AGX_SCSNodeCollection.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_ImporterUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
+#include "Engine/SCS_Node.h"
 #include "FileHelpers.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "PackageTools.h"
@@ -147,7 +150,17 @@ namespace AGX_ImporterToEditor_helpers
 
 	void UpdateBlueprint(UBlueprint& Blueprint, const FAGX_ImporterObjectMaps& ImporterObjects)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Reimport Blueprint update here... todo.")); // Todo
+		FAGX_SCSNodeCollection Nodes(Blueprint);
+
+		// Rigid Bodies.
+		for (const auto& [Guid, RigidBody] : ImporterObjects.Bodies)
+		{
+			USCS_Node* N = Nodes.RigidBodies.FindRef(Guid);
+			if (N == nullptr)
+				continue; // Todo: create new.
+
+			FAGX_ImporterUtilities::CopyProperties(*RigidBody, *Cast<UAGX_RigidBodyComponent>(N->ComponentTemplate));
+		}
 	}
 }
 
