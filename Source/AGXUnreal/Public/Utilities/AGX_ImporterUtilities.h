@@ -8,5 +8,6 @@
 class AGXUNREAL_API FAGX_ImporterUtilities
 {
 public:
-	static void CopyProperties(const UObject& Source, UObject& OutDestination);
+	static void CopyProperties(
+		const UObject& Source, UObject& OutDestination, bool UpdateArchetypeInstances = true);
 };
