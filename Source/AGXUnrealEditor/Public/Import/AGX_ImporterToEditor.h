@@ -8,17 +8,22 @@
 class UBlueprint;
 struct FAGX_ImporterSettings;
 
-namespace AGX_ImporterToEditor
+class AGXUNREALEDITOR_API FAGX_ImporterToEditor
 {
+public:
 	/**
 	 * Todo: Add comment.
 	 */
-	AGXUNREALEDITOR_API UBlueprint* Import(const FAGX_ImporterSettings& Settings);
+	UBlueprint* Import(const FAGX_ImporterSettings& Settings);
 
 	/**
 	 * Todo: Add comment.
 	 */
-	AGXUNREALEDITOR_API bool Reimport(
+	bool Reimport(
 		UBlueprint& BaseBP, const FAGX_ImporterSettings& Settings,
 		UBlueprint* OpenBlueprint = nullptr);
-}
+
+private:
+	FString RootDirectory;
+	FString ModelName;
+};

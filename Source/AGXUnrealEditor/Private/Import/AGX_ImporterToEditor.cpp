@@ -3,11 +3,14 @@
 #include "Import/AGX_ImporterToEditor.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_AGXToUeContext.h"
 #include "AGX_LogCategory.h"
+#include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "Import/AGX_Importer.h"
 #include "Import/AGX_ImporterSettings.h"
 #include "Import/AGX_SCSNodeCollection.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_ImporterUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -35,44 +38,53 @@ namespace AGX_ImporterToEditor_helpers
 			GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
 	}
 
-	FString CreateBlueprintPackagePath(const FString& ModelName, bool IsBase)
+	FString MakeModelName(FString SourceFilename)
+	{
+		return FAGX_EditorUtilities::SanitizeName(
+			SourceFilename, FAGX_ImportUtilities::GetImportRootDirectoryName());
+	}
+
+	FString MakeRootDirectoryPath(const FString ModelName)
+	{
+		const FString ImportDirPath =
+			FString::Printf(TEXT("/Game/%s/"), *FAGX_ImportUtilities::GetImportRootDirectoryName());
+		FString BasePath = FAGX_ImportUtilities::CreatePackagePath(ImportDirPath, ModelName, false);
+
+		auto PackageExists = [&](const FString& DirPath)
+		{
+			FString DiskPath = FPackageName::LongPackageNameToFilename(DirPath);
+			return FPackageName::DoesPackageExist(DirPath) ||
+				   FindObject<UPackage>(nullptr, *DirPath) != nullptr ||
+				   FPaths::DirectoryExists(DiskPath) || FPaths::FileExists(DiskPath);
+		};
+
+		int32 TryCount = 0;
+		FString DirectoryPath = BasePath;
+		FString DirectoryName = ModelName;
+		while (PackageExists(DirectoryPath))
+		{
+			++TryCount;
+			DirectoryPath = BasePath + TEXT("_") + FString::FromInt(TryCount);
+			DirectoryName = ModelName + TEXT("_") + FString::FromInt(TryCount);
+		}
+		UE_LOG(LogAGX, Display, TEXT("Importing model '%s' to '%s'."), *ModelName, *DirectoryPath);
+		return DirectoryPath;
+	}
+
+	FString CreateBlueprintPackagePath(
+		const FString& RootDir, const FString& ModelName, bool IsBase)
 	{
 		const FString SubDirectory = IsBase ? "Blueprint" : "";
-
-		const FString ImportDirPath = FString::Printf(
-			TEXT("/Game/%s/%s/"), *FAGX_ImportUtilities::GetImportRootDirectoryName(), *ModelName);
-
-		FString ParentPackagePath =
-			FAGX_ImportUtilities::CreatePackagePath(ImportDirPath, SubDirectory);
-
-		FGuid BaseNameGuid = FGuid::NewGuid();
-		FString ParentAssetName = IsBase ? BaseNameGuid.ToString() : ModelName;
-
-		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(ParentPackagePath, ParentAssetName);
+		FString ParentPackagePath = FAGX_ImportUtilities::CreatePackagePath(RootDir, SubDirectory);
 		UPackage* ParentPackage = CreatePackage(*ParentPackagePath);
-		FString Path = FPaths::GetPath(ParentPackage->GetName());
+		const FString Path = FPaths::GetPath(ParentPackage->GetName());
 
 		// Create a known unique name for the Blueprint package, but don't create the actual
 		// package yet.
 		const FString BlueprintName =
-			IsBase ? "BP_Base_" + BaseNameGuid.ToString() : TEXT("BP_") + ModelName;
+			IsBase ? "BP_Base_" + FGuid::NewGuid().ToString() : TEXT("BP_") + ModelName;
 		FString BasePackagePath = UPackageTools::SanitizePackageName(Path + "/" + BlueprintName);
 		FString PackagePath = BasePackagePath;
-
-		auto PackageExists = [](const FString& PackagePath)
-		{
-			check(!FEditorFileUtils::IsMapPackageAsset(PackagePath));
-			return FPackageName::DoesPackageExist(PackagePath) ||
-				   FindObject<UPackage>(nullptr, *PackagePath) != nullptr;
-		};
-
-		/// \todo Should be possible to use one of the unique name creators here.
-		int32 TryCount = 0;
-		while (PackageExists(PackagePath))
-		{
-			++TryCount;
-			PackagePath = BasePackagePath + "_" + FString::FromInt(TryCount);
-		}
 
 		return PackagePath;
 	}
@@ -85,10 +97,11 @@ namespace AGX_ImporterToEditor_helpers
 		return Package;
 	}
 
-	UBlueprint* CreateBaseBlueprint(AActor& Template)
+	UBlueprint* CreateBaseBlueprint(
+		const FString& RootDir, const FString& ModelName, AActor& Template)
 	{
 		PreCreateBlueprintSetup();
-		FString BlueprintPackagePath = CreateBlueprintPackagePath(Template.GetName(), true);
+		FString BlueprintPackagePath = CreateBlueprintPackagePath(RootDir, ModelName, true);
 		UPackage* Package = GetPackage(BlueprintPackagePath);
 		static constexpr bool ReplaceInWorld = false;
 		static constexpr bool KeepMobility = true;
@@ -105,10 +118,11 @@ namespace AGX_ImporterToEditor_helpers
 		return Blueprint;
 	}
 
-	UBlueprint* CreateChildBlueprint(const FString& ModelName, UBlueprint& BaseBlueprint)
+	UBlueprint* CreateChildBlueprint(
+		const FString& RootDir, const FString& ModelName, UBlueprint& BaseBlueprint)
 	{
 		PreCreateBlueprintSetup();
-		FString BlueprintPackagePath = CreateBlueprintPackagePath(ModelName, false);
+		FString BlueprintPackagePath = CreateBlueprintPackagePath(RootDir, ModelName, false);
 		UPackage* Package = GetPackage(BlueprintPackagePath);
 		const FString AssetName = FPaths::GetBaseFilename(Package->GetName());
 
@@ -148,23 +162,55 @@ namespace AGX_ImporterToEditor_helpers
 		return true;
 	}
 
-	void UpdateBlueprint(UBlueprint& Blueprint, const FAGX_ImporterObjectMaps& ImporterObjects)
+	void UpdateBlueprint(UBlueprint& Blueprint, const FAGX_AGXToUeContext& Context)
 	{
 		FAGX_SCSNodeCollection Nodes(Blueprint);
 
-		// Rigid Bodies.
-		for (const auto& [Guid, RigidBody] : ImporterObjects.Bodies)
+		if (Context.RigidBodies != nullptr)
 		{
-			USCS_Node* N = Nodes.RigidBodies.FindRef(Guid);
-			if (N == nullptr)
-				continue; // Todo: create new.
+			for (const auto& [Guid, RigidBody] : *Context.RigidBodies)
+			{
+				USCS_Node* N = Nodes.RigidBodies.FindRef(Guid);
+				if (N == nullptr)
+					continue; // Todo: create new.
 
-			FAGX_ImporterUtilities::CopyProperties(*RigidBody, *Cast<UAGX_RigidBodyComponent>(N->ComponentTemplate));
+				FAGX_ImporterUtilities::CopyProperties(
+					*RigidBody, *Cast<UAGX_RigidBodyComponent>(N->ComponentTemplate));
+			}
+		}
+	}
+
+	void WriteAssetToDisk(const FString& RootDir, const FString& AssetType, UObject& Object)
+	{
+		FString AssetName = FAGX_ImportUtilities::CreateAssetName(Object.GetName(), "", AssetType);
+		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(RootDir, AssetType);
+		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
+		UPackage* Package = CreatePackage(*PackagePath);
+		Object.Rename(*Object.GetName(), Package);
+		Package->MarkPackageDirty();
+		Object.SetFlags(RF_Public | RF_Standalone);
+		FAGX_ObjectUtilities::SaveAsset(Object);
+	}
+
+	void WriteAssetsToDisk(const FString& RootDir, const FAGX_AGXToUeContext* Context)
+	{
+		if (Context == nullptr)
+			return;
+
+		if (Context->MSThresholds != nullptr)
+		{
+			const FString AssetType =
+				FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName();
+			for (const auto& [Guid, MST] : *Context->MSThresholds)
+			{
+				if (auto SCMST = Cast<UAGX_ShapeContactMergeSplitThresholds>(MST))
+					WriteAssetToDisk(RootDir, AssetType, *SCMST);
+			}
 		}
 	}
 }
 
-UBlueprint* AGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
+UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 	FAGX_Importer Importer;
@@ -172,9 +218,13 @@ UBlueprint* AGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
 	if (!ValidateImportResult(Result, Settings))
 		return nullptr;
 
-	const FString Name = Result.Actor->GetName();
-	UBlueprint* BaseBlueprint = CreateBaseBlueprint(*Result.Actor);
-	UBlueprint* ChildBlueprint = CreateChildBlueprint(Name, *BaseBlueprint);
+	ModelName = MakeModelName(Result.Actor->GetName());
+	RootDirectory = MakeRootDirectoryPath(ModelName);
+
+	WriteAssetsToDisk(RootDirectory, Result.Context);
+
+	UBlueprint* BaseBlueprint = CreateBaseBlueprint(RootDirectory, ModelName, *Result.Actor);
+	UBlueprint* ChildBlueprint = CreateChildBlueprint(RootDirectory, ModelName, *BaseBlueprint);
 
 	if (Settings.bOpenBlueprintEditorAfterImport)
 		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(ChildBlueprint);
@@ -182,7 +232,7 @@ UBlueprint* AGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
 	return ChildBlueprint;
 }
 
-bool AGX_ImporterToEditor::Reimport(
+bool FAGX_ImporterToEditor::Reimport(
 	UBlueprint& BaseBP, const FAGX_ImporterSettings& Settings, UBlueprint* OpenBlueprint)
 {
 	using namespace AGX_ImporterToEditor_helpers;
@@ -192,7 +242,7 @@ bool AGX_ImporterToEditor::Reimport(
 	if (!ValidateImportResult(Result, Settings))
 		return false;
 
-	UpdateBlueprint(BaseBP, Importer.GetProcessedObjects());
+	UpdateBlueprint(BaseBP, Importer.GetContext());
 
 	if (Settings.bOpenBlueprintEditorAfterImport && OpenBlueprint != nullptr)
 		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(OpenBlueprint);

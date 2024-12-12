@@ -131,7 +131,8 @@ void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint, bool bOpenBlu
 				Settings.FilePath = OldSettings->FilePath;
 				Settings.bIgnoreDisabledTrimeshes = OldSettings->bIgnoreDisabledTrimeshes;
 				Settings.bOpenBlueprintEditorAfterImport = bOpenBlueprintEditorAfter;
-				AGX_ImporterToEditor::Reimport(*OuterMostParent, Settings, &Blueprint);
+				FAGX_ImporterToEditor Importer;
+				Importer.Reimport(*OuterMostParent, Settings, &Blueprint);
 			}
 
 			return false; // This tells the FTSTicker to not call this lambda again.

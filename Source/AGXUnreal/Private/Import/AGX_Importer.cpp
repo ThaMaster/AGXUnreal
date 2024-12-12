@@ -107,6 +107,12 @@ namespace AGX_Importer_helpers
 	}
 }
 
+FAGX_Importer::FAGX_Importer()
+{
+	Context.RigidBodies = MakeUnique<decltype(FAGX_AGXToUeContext::RigidBodies)::ElementType>();
+	Context.MSThresholds = MakeUnique<decltype(FAGX_AGXToUeContext::MSThresholds)::ElementType>();
+}
+
 FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)
 {
 	using namespace AGX_Importer_helpers;
@@ -123,19 +129,19 @@ FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)
 	if (IsUnrecoverableError(Result))
 		return FAGX_ImportResult(Result);
 
-	return FAGX_ImportResult(Result, Actor);
+	return FAGX_ImportResult(Result, Actor, &Context);
 }
 
-const FAGX_ImporterObjectMaps& FAGX_Importer::GetProcessedObjects() const
+const FAGX_AGXToUeContext& FAGX_Importer::GetContext() const
 {
-	return ProcessedObjects;
+	return Context;
 }
 
 EAGX_ImportResult FAGX_Importer::AddRigidBody(const FRigidBodyBarrier& Barrier, AActor& Owner)
 {
 	const FString Name = Barrier.GetName(); // Todo: sanitize.
 	const FGuid Guid = Barrier.GetGuid();
-	if (ProcessedObjects.Bodies.FindRef(Guid) != nullptr)
+	if (Context.RigidBodies->FindRef(Guid) != nullptr)
 	{
 		UE_LOG(
 			LogAGX, Warning,
@@ -147,9 +153,9 @@ EAGX_ImportResult FAGX_Importer::AddRigidBody(const FRigidBodyBarrier& Barrier, 
 
 	UAGX_RigidBodyComponent* Component = NewObject<UAGX_RigidBodyComponent>(&Owner);
 	Component->Rename(*Name);
-	Component->CopyFrom(Barrier, /*ForceOverwriteInstances*/ false); // Todo: remove flag in api
+	Component->CopyFrom(Barrier, &Context);
 	AGX_Importer_helpers::PostCreateComponent(*Component, Owner);
-	ProcessedObjects.Bodies.Add(Guid, Component);
+	Context.RigidBodies->Add(Guid, Component);
 	return EAGX_ImportResult::Success;
 }
 
@@ -157,7 +163,7 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(
 	const FAGX_ImporterSettings& Settings, AActor& Owner)
 {
 	const FString Name = "AGX_ModelSource";
-	if (ProcessedObjects.ModelSourceComponent != nullptr)
+	if (Context.ModelSourceComponent != nullptr)
 	{
 		UE_LOG(
 			LogAGX, Warning,
@@ -172,7 +178,7 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(
 	Component->FilePath = Settings.FilePath;
 	Component->bIgnoreDisabledTrimeshes = Settings.bIgnoreDisabledTrimeshes;
 	AGX_Importer_helpers::PostCreateComponent(*Component, Owner);
-	ProcessedObjects.ModelSourceComponent = Component;
+	Context.ModelSourceComponent = Component;
 	return EAGX_ImportResult::Success;
 }
 

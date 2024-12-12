@@ -393,7 +393,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRigidBodyComponent(
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk, bool ForceOverwriteInstances)
 {
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
-	Component.CopyFrom(Barrier, ForceOverwriteInstances);
+	Component.CopyFrom(Barrier, nullptr /*todo*/);
 
 	const FShapeContactMergeSplitThresholdsBarrier ThresholdsBarrier =
 		FShapeContactMergeSplitThresholdsBarrier::CreateFrom(Barrier);
