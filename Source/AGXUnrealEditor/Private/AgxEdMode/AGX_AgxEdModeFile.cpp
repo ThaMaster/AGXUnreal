@@ -55,7 +55,7 @@ void UAGX_AgxEdModeFile::ImportToBlueprint()
 		Settings.FilePath = ImportSettings->FilePath;
 		Settings.bIgnoreDisabledTrimeshes = ImportSettings->bIgnoreDisabledTrimeshes;
 		Settings.bOpenBlueprintEditorAfterImport = ImportSettings->bOpenBlueprintEditorAfterImport;
-		
+
 		FAGX_ImporterToEditor Importer;
 		Importer.Import(Settings);
 	}

@@ -218,7 +218,7 @@ UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
 	if (!ValidateImportResult(Result, Settings))
 		return nullptr;
 
-	ModelName = MakeModelName(Result.Actor->GetName());
+	ModelName = AGX_ImporterToEditor_helpers::MakeModelName(Result.Actor->GetName());
 	RootDirectory = MakeRootDirectoryPath(ModelName);
 
 	WriteAssetsToDisk(RootDirectory, Result.Context);

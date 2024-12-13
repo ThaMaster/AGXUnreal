@@ -138,6 +138,13 @@ void FAGX_ShapeContactMergeSplitProperties::CreateNativeThresholds(UWorld* Playi
 		return;
 	}
 
+	if (Thresholds->IsInstance())
+	{
+		// This will be true if we are runtime imported and instantiated.
+		Thresholds->CreateNative();
+		return;
+	}
+
 	UAGX_ShapeContactMergeSplitThresholds* ThresholdsInstance =
 		Thresholds->GetOrCreateInstance(PlayingWorld);
 	if (ThresholdsInstance == nullptr)

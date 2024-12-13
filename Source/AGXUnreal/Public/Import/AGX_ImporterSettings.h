@@ -9,7 +9,7 @@ struct FAGX_ImporterSettings
 {
 	FString FilePath;
 	bool bIgnoreDisabledTrimeshes = true;
-	bool bOpenBlueprintEditorAfterImport = true;
+	bool bOpenBlueprintEditorAfterImport = true; // Todo : remove
 };
 
 struct FAGX_AGXImporterSettings : public FAGX_ImporterSettings
