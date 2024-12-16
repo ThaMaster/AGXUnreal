@@ -6,6 +6,7 @@
 #include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
+#include "AGX_AssetGetterSetterImpl.h"
 #include "AGX_NativeOwnerInstanceData.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
@@ -84,6 +85,8 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 
 	GetNative()->SetName(GetName());
 	GetNative()->SetIsSensor(bIsSensor, SensorType == EAGX_ShapeSensorType::ContactsSensor);
+	FShapeBarrier* Barrier = GetNative();
+	Barrier->SetSurfaceVelocity(SurfaceVelocity);
 
 	if (!UpdateNativeMaterial())
 	{
@@ -207,6 +210,7 @@ void UAGX_ShapeComponent::PostInitProperties()
 		GET_MEMBER_NAME_CHECKED(ThisClass, bIsSensor),
 		[](ThisClass* This) { This->SetIsSensor(This->bIsSensor); });
 
+	AGX_COMPONENT_DEFAULT_DISPATCHER(SurfaceVelocity);
 	AGX_COMPONENT_DEFAULT_DISPATCHER(ShapeMaterial);
 
 	PropertyDispatcher.Add(
@@ -492,6 +496,24 @@ bool UAGX_ShapeComponent::GetIsSensor() const
 	}
 
 	return bIsSensor;
+}
+
+void UAGX_ShapeComponent::SetSurfaceVelocity(FVector InSurfaceVelocity)
+{
+	if (HasNative())
+	{
+		GetNative()->SetSurfaceVelocity(InSurfaceVelocity);
+	}
+	SurfaceVelocity = InSurfaceVelocity;
+}
+
+FVector UAGX_ShapeComponent::GetSurfaceVelocity() const
+{
+	if (HasNative())
+	{
+		return GetNative()->GetSurfaceVelocity();
+	}
+	return SurfaceVelocity;
 }
 
 TArray<FAGX_ShapeContact> UAGX_ShapeComponent::GetShapeContacts() const

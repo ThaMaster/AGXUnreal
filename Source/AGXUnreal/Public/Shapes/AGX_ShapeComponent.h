@@ -99,7 +99,34 @@ public:
 	TEnumAsByte<enum EAGX_ShapeSensorType> SensorType = EAGX_ShapeSensorType::ContactsSensor;
 
 	/**
-	 * Defines the AMOR (merge split) properties for this Shapes. For this to take effect, AMOR has
+	 * Set the velocity of this Shape's surface in the Shape's local coordinate frame [cm/s].
+	 *
+	 * If this velocity is non-zero the constraints will try to achieve the relative velocity
+	 * between the objects in the friction plane to be the wanted surface velocity.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AGX Shape")
+	FVector SurfaceVelocity {FVector::ZeroVector};
+
+	/**
+	 * Set the velocity of this Shape's surface in the Shape's local coordinate frame [cm/s].
+	 *
+	 * If this velocity is non-zero the constraints will try to achieve the relative velocity
+	 * between the objects in the friction plane to be the wanted surface velocity.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	void SetSurfaceVelocity(FVector InSurfaceVelocity);
+
+	/**
+	 * Get the velocity of this Shape's surface in the Shape's local coordinate frame [cm/s].
+	 *
+	 * If this velocity is non-zero the constraints will try to achieve the relative velocity
+	 * between the objects in the friction plane to be the wanted surface velocity.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Shape")
+	FVector GetSurfaceVelocity() const;
+
+	/**
+	 * Defines the AMOR (merge split) properties for this Shape. For this to take effect, AMOR has
 	 * to be enabled globally in the AGX Dynamics for Unreal project settings.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX AMOR")
