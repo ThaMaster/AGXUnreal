@@ -6,6 +6,8 @@
 #include "CoreMinimal.h"
 
 class UBlueprint;
+
+struct FAGX_AGXToUeContext;
 struct FAGX_ImporterSettings;
 
 class AGXUNREALEDITOR_API FAGX_ImporterToEditor
@@ -23,7 +25,13 @@ public:
 		UBlueprint& BaseBP, const FAGX_ImporterSettings& Settings,
 		UBlueprint* OpenBlueprint = nullptr);
 
+	void UpdateBlueprint(UBlueprint& Blueprint, const FAGX_AGXToUeContext& Context);
+
 private:
 	FString RootDirectory;
 	FString ModelName;
+
+	// Maps objects owned by transient package (not written to disk) to the corresponding asset.
+	// The transient package objects comes from the FAGX_Importer. This map is used during Reimport.
+	TMap<UObject*, UObject*> TransientToAsset;
 };

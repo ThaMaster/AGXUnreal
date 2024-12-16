@@ -16,5 +16,5 @@ struct AGXUNREAL_API FAGX_AGXToUeContext
 {
 	TUniquePtr<TMap<FGuid, UAGX_RigidBodyComponent*>> RigidBodies;
 	TUniquePtr<TMap<FGuid, UAGX_MergeSplitThresholdsBase*>> MSThresholds;
-	UAGX_ModelSourceComponent* ModelSourceComponent;
+	UAGX_ModelSourceComponent* ModelSourceComponent {nullptr};
 };

@@ -58,6 +58,12 @@ public:
 	static bool IsTemplateComponent(const UActorComponent& Component);
 
 	/**
+	* Copy all properties from an UObject to another. The objects must be of same type.
+	*/
+	static bool CopyProperties(
+		const UObject& Source, UObject& OutDestination, bool UpdateArchetypeInstances = true);
+
+	/**
 	 * Give a list of pointer-to-base, return a new list with the elements that
 	 * are of a particular derived type.
 	 */

@@ -12,7 +12,6 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
-#include "Utilities/AGX_ImporterUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
@@ -69,6 +68,17 @@ namespace AGX_ImporterToEditor_helpers
 		}
 		UE_LOG(LogAGX, Display, TEXT("Importing model '%s' to '%s'."), *ModelName, *DirectoryPath);
 		return DirectoryPath;
+	}
+
+	FString GetModelDirectoryPathFromBaseBlueprint(UBlueprint& BaseBP)
+	{
+		const FString ParentDir = FPaths::GetPath(BaseBP.GetPathName());
+		if (!FPaths::GetBaseFilename(ParentDir).Equals("Blueprint"))
+		{
+			return "";
+		}
+
+		return FPaths::GetPath(ParentDir);
 	}
 
 	FString CreateBlueprintPackagePath(
@@ -136,6 +146,88 @@ namespace AGX_ImporterToEditor_helpers
 		return BlueprintChild;
 	}
 
+	void CopyPropertyRecursive(
+		const void* Source, void* OutDest, const FProperty* Property,
+		const TArray<UObject*>& ArchetypeInstances,
+		const TMap<UObject*, UObject*>& TransientToAsset)
+	{
+		if (Property == nullptr || !Property->HasAnyPropertyFlags(CPF_Edit))
+			return;
+
+		const void* SourceValue = Property->ContainerPtrToValuePtr<void>(Source);
+		void* DestValue = Property->ContainerPtrToValuePtr<void>(OutDest);
+		if (Property->Identical(SourceValue, DestValue))
+			return; // Nothing to do, already equal.
+
+		if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
+		{
+			UObject* SourceObject = ObjectProperty->GetObjectPropertyValue(SourceValue);
+			if (UObject* Asset = TransientToAsset.FindRef(SourceObject))
+			{
+				ObjectProperty->SetObjectPropertyValue(DestValue, Asset);
+				return;
+			}
+		}
+		else if (const FStructProperty* StructProperty = CastField<FStructProperty>(Property))
+		{
+			const void* StructSource = StructProperty->ContainerPtrToValuePtr<void>(Source);
+			void* StructDest = StructProperty->ContainerPtrToValuePtr<void>(OutDest);
+
+			// Recursively copy properties within the struct
+			for (TFieldIterator<FProperty> StructPropIt(StructProperty->Struct); StructPropIt;
+				 ++StructPropIt)
+			{
+				FProperty* StructPropertyField = *StructPropIt;
+				CopyPropertyRecursive(
+					StructSource, StructDest, StructPropertyField, ArchetypeInstances,
+					TransientToAsset);
+			}
+			return;
+		}
+
+		// Update archetype instances
+		for (UObject* Instance : ArchetypeInstances)
+		{
+			if (Instance == nullptr)
+				continue;
+
+			void* ArchetypeInstanceValue = Property->ContainerPtrToValuePtr<void>(Instance);
+			if (Property->Identical(ArchetypeInstanceValue, DestValue)) // In sync; copy!
+				Property->CopyCompleteValue(ArchetypeInstanceValue, SourceValue);
+		}
+
+		Property->CopyCompleteValue(DestValue, SourceValue);
+	}
+
+	// Similar to FAGX_ObjectUtilities::CopyProperties, but with some special handling for the
+	// TransientToAsset map.
+	bool CopyProperties(
+		const UObject& Source, UObject& OutDest, const TMap<UObject*, UObject*>& TransientToAsset)
+	{
+		UClass* Class = Source.GetClass();
+		if (OutDest.GetClass() != Class)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Tried to copy properties from object '%s' of type '%s' to object '%s' of "
+					 "type '%s'. Types must match."),
+				*Source.GetName(), *Source.GetClass()->GetName(), *OutDest.GetName(),
+				*OutDest.GetClass()->GetName());
+			return false;
+		}
+
+		TArray<UObject*> ArchetypeInstances;
+		OutDest.GetArchetypeInstances(ArchetypeInstances);
+
+		for (TFieldIterator<FProperty> PropIt(Class); PropIt; ++PropIt)
+		{
+			const FProperty* Property = *PropIt;
+			CopyPropertyRecursive(&Source, &OutDest, Property, ArchetypeInstances, TransientToAsset);
+		}
+
+		return true;
+	}
+
 	bool ValidateImportResult(
 		const FAGX_ImportResult& Result, const FAGX_ImporterSettings& Settings)
 	{
@@ -160,24 +252,6 @@ namespace AGX_ImporterToEditor_helpers
 		}
 
 		return true;
-	}
-
-	void UpdateBlueprint(UBlueprint& Blueprint, const FAGX_AGXToUeContext& Context)
-	{
-		FAGX_SCSNodeCollection Nodes(Blueprint);
-
-		if (Context.RigidBodies != nullptr)
-		{
-			for (const auto& [Guid, RigidBody] : *Context.RigidBodies)
-			{
-				USCS_Node* N = Nodes.RigidBodies.FindRef(Guid);
-				if (N == nullptr)
-					continue; // Todo: create new.
-
-				FAGX_ImporterUtilities::CopyProperties(
-					*RigidBody, *Cast<UAGX_RigidBodyComponent>(N->ComponentTemplate));
-			}
-		}
 	}
 
 	void WriteAssetToDisk(const FString& RootDir, const FString& AssetType, UObject& Object)
@@ -208,6 +282,27 @@ namespace AGX_ImporterToEditor_helpers
 			}
 		}
 	}
+
+	template <typename T>
+	T* UpdateOrCreateAsset(
+		T& Source, const FString& RootDir, const FString& AssetType,
+		TMap<UObject*, UObject*>& OutTransientToAsset)
+	{
+		const FString DirPath = FPaths::Combine(RootDir, AssetType);
+		T* Asset = FAGX_EditorUtilities::FindAsset<T>(Source.ImportGuid, DirPath);
+		if (Asset == nullptr)
+		{
+			WriteAssetToDisk(RootDir, AssetType, Source);
+			return &Source;
+		}
+
+		// For shared assets, we might be copying and saving multiple times here, but we assume
+		// these operations are relatively cheap, and keep the code simple here.
+		AGX_CHECK(FAGX_ObjectUtilities::CopyProperties(Source, *Asset, false));
+		FAGX_ObjectUtilities::SaveAsset(*Asset);
+		OutTransientToAsset.Add(&Source, Asset);
+		return Asset;
+	}
 }
 
 UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
@@ -236,16 +331,57 @@ bool FAGX_ImporterToEditor::Reimport(
 	UBlueprint& BaseBP, const FAGX_ImporterSettings& Settings, UBlueprint* OpenBlueprint)
 {
 	using namespace AGX_ImporterToEditor_helpers;
+
+	if (GEditor != nullptr)
+		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
+
+	// As a safety measure, we save and compile the OpenBlueprint (now closed) so that all
+	// references according to the state on disk are up to date.
+	if (OpenBlueprint != nullptr)
+		FAGX_EditorUtilities::SaveAndCompile(*OpenBlueprint);
+
 	PreReimportSetup();
 	FAGX_Importer Importer;
 	FAGX_ImportResult Result = Importer.Import(Settings);
 	if (!ValidateImportResult(Result, Settings))
 		return false;
 
+	RootDirectory = GetModelDirectoryPathFromBaseBlueprint(BaseBP);
 	UpdateBlueprint(BaseBP, Importer.GetContext());
 
 	if (Settings.bOpenBlueprintEditorAfterImport && OpenBlueprint != nullptr)
 		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(OpenBlueprint);
 
 	return true;
+}
+
+void FAGX_ImporterToEditor::UpdateBlueprint(
+	UBlueprint& Blueprint, const FAGX_AGXToUeContext& Context)
+{
+	using namespace AGX_ImporterToEditor_helpers;
+	FAGX_SCSNodeCollection Nodes(Blueprint);
+
+	if (Context.MSThresholds != nullptr)
+	{
+		for (const auto& [Guid, MST] : *Context.MSThresholds)
+		{
+			UAGX_MergeSplitThresholdsBase* Asset = UpdateOrCreateAsset(
+				*MST, RootDirectory,
+				FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName(),
+				TransientToAsset);
+		}
+	}
+
+	if (Context.RigidBodies != nullptr)
+	{
+		for (const auto& [Guid, RigidBody] : *Context.RigidBodies)
+		{
+			USCS_Node* N = Nodes.RigidBodies.FindRef(Guid);
+			if (N == nullptr)
+				continue; // Todo: create new.
+
+			CopyProperties(
+				*RigidBody, *Cast<UAGX_RigidBodyComponent>(N->ComponentTemplate), TransientToAsset);
+		}
+	}
 }

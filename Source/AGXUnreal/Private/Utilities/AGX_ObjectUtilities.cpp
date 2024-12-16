@@ -70,6 +70,57 @@ bool FAGX_ObjectUtilities::IsTemplateComponent(const UActorComponent& Component)
 	return Component.HasAnyFlags(RF_ArchetypeObject);
 }
 
+bool FAGX_ObjectUtilities::CopyProperties(
+	const UObject& Source, UObject& OutDestination, bool UpdateArchetypeInstances)
+{
+	UClass* Class = Source.GetClass();
+	if (OutDestination.GetClass() != Class)
+	{
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("Tried to copy properties from object '%s' of type '%s' to object '%s' of "
+				 "type '%s'. Types must match."),
+			*Source.GetName(), *Source.GetClass()->GetName(), *OutDestination.GetName(),
+			*OutDestination.GetClass()->GetName());
+		return false;
+	}
+
+	TArray<UObject*> ArchetypeInstances;
+	if (UpdateArchetypeInstances)
+		OutDestination.GetArchetypeInstances(ArchetypeInstances);
+
+	for (TFieldIterator<FProperty> PropIt(Class); PropIt; ++PropIt)
+	{
+		FProperty* Property = *PropIt;
+
+		// To speed up execution, can we add custom property flags for AGXUnreal properties?
+		if (Property && Property->HasAnyPropertyFlags(CPF_Edit))
+		{
+			const void* SourceValue = Property->ContainerPtrToValuePtr<void>(&Source);
+			void* DestValue = Property->ContainerPtrToValuePtr<void>(&OutDestination);
+			if (Property->Identical(SourceValue, DestValue))
+				continue; // Nothing to do, already equal.
+
+			if (UpdateArchetypeInstances)
+			{
+				for (UObject* Instance : ArchetypeInstances)
+				{
+					if (Instance == nullptr)
+						continue;
+
+					void* ArchetypeInstanceValue = Property->ContainerPtrToValuePtr<void>(Instance);
+					if (Property->Identical(ArchetypeInstanceValue, DestValue)) // In sync; copy!
+						Property->CopyCompleteValue(ArchetypeInstanceValue, SourceValue);
+				}
+			}
+
+			Property->CopyCompleteValue(DestValue, SourceValue);
+		}
+	}
+
+	return true;
+}
+
 void FAGX_ObjectUtilities::GetActorsTree(
 	const TArray<AActor*>& CurrentLevel, TArray<AActor*>& ChildActors)
 {
