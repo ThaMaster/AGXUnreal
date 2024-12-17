@@ -3,13 +3,13 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_RigidBodyComponent.h"
 #include "AgxEdMode/AGX_ClickDragMode.h"
 #include "Constraints/LockJointBarrier.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
+class UAGX_RigidBodyComponent;
 
 struct FViewportCursorLocation;
 
@@ -23,7 +23,6 @@ public:
 	static void Deactivate();
 
 protected:
-
 	// ~Begin FAGX_ClickDragMode interface.
 	virtual void OnMouseClickComponent(
 		UPrimitiveComponent* Component, const FVector& WorldLocation,
