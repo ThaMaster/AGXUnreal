@@ -147,56 +147,54 @@ namespace AGX_ImporterToEditor_helpers
 	}
 
 	void CopyPropertyRecursive(
-		const void* Source, void* OutDest, const FProperty* Property,
-		const TArray<UObject*>& ArchetypeInstances,
+		const void* Archetype, const void* Source, void* OutDest, const FProperty* Property,
 		const TMap<UObject*, UObject*>& TransientToAsset)
 	{
 		if (Property == nullptr || !Property->HasAnyPropertyFlags(CPF_Edit))
 			return;
 
-		const void* SourceValue = Property->ContainerPtrToValuePtr<void>(Source);
-		void* DestValue = Property->ContainerPtrToValuePtr<void>(OutDest);
-		if (Property->Identical(SourceValue, DestValue))
+		const void* ArchetypeVal = Property->ContainerPtrToValuePtr<void>(Archetype);
+		const void* SourceVal = Property->ContainerPtrToValuePtr<void>(Source);
+		void* DestVal = Property->ContainerPtrToValuePtr<void>(OutDest);
+
+		if (Property->Identical(SourceVal, DestVal))
 			return; // Nothing to do, already equal.
 
 		if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
 		{
-			UObject* SourceObject = ObjectProperty->GetObjectPropertyValue(SourceValue);
+			UObject* SourceObject = ObjectProperty->GetObjectPropertyValue(SourceVal);
 			if (UObject* Asset = TransientToAsset.FindRef(SourceObject))
 			{
-				ObjectProperty->SetObjectPropertyValue(DestValue, Asset);
+				const bool ShouldCopy =
+					Archetype == OutDest || Property->Identical(ArchetypeVal, DestVal);
+
+				if (ShouldCopy)
+					ObjectProperty->SetObjectPropertyValue(DestVal, Asset);
+
 				return;
 			}
 		}
 		else if (const FStructProperty* StructProperty = CastField<FStructProperty>(Property))
 		{
+			const void* StructArchetype = StructProperty->ContainerPtrToValuePtr<void>(Archetype);
 			const void* StructSource = StructProperty->ContainerPtrToValuePtr<void>(Source);
 			void* StructDest = StructProperty->ContainerPtrToValuePtr<void>(OutDest);
 
-			// Recursively copy properties within the struct
+			// Recursively copy properties within the struct.
 			for (TFieldIterator<FProperty> StructPropIt(StructProperty->Struct); StructPropIt;
 				 ++StructPropIt)
 			{
 				FProperty* StructPropertyField = *StructPropIt;
 				CopyPropertyRecursive(
-					StructSource, StructDest, StructPropertyField, ArchetypeInstances,
+					StructArchetype, StructSource, StructDest, StructPropertyField,
 					TransientToAsset);
 			}
 			return;
 		}
 
-		// Update archetype instances
-		for (UObject* Instance : ArchetypeInstances)
-		{
-			if (Instance == nullptr)
-				continue;
-
-			void* ArchetypeInstanceValue = Property->ContainerPtrToValuePtr<void>(Instance);
-			if (Property->Identical(ArchetypeInstanceValue, DestValue)) // In sync; copy!
-				Property->CopyCompleteValue(ArchetypeInstanceValue, SourceValue);
-		}
-
-		Property->CopyCompleteValue(DestValue, SourceValue);
+		const bool ShouldCopy = Archetype == OutDest || Property->Identical(ArchetypeVal, DestVal);
+		if (ShouldCopy)
+			Property->CopyCompleteValue(DestVal, SourceVal);
 	}
 
 	// Similar to FAGX_ObjectUtilities::CopyProperties, but with some special handling for the
@@ -218,11 +216,19 @@ namespace AGX_ImporterToEditor_helpers
 
 		TArray<UObject*> ArchetypeInstances;
 		OutDest.GetArchetypeInstances(ArchetypeInstances);
+		for (UObject* Instance : ArchetypeInstances)
+		{
+			for (TFieldIterator<FProperty> PropIt(Class); PropIt; ++PropIt)
+			{
+				const FProperty* Property = *PropIt;
+				CopyPropertyRecursive(&OutDest, &Source, Instance, Property, TransientToAsset);
+			}
+		}
 
 		for (TFieldIterator<FProperty> PropIt(Class); PropIt; ++PropIt)
 		{
 			const FProperty* Property = *PropIt;
-			CopyPropertyRecursive(&Source, &OutDest, Property, ArchetypeInstances, TransientToAsset);
+			CopyPropertyRecursive(&OutDest, &Source, &OutDest, Property, TransientToAsset);
 		}
 
 		return true;
