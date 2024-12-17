@@ -88,12 +88,7 @@ void FAGX_GrabMode::OnMouseClickComponent(
 		*Body->GetNative(), ForceOriginLocalPos, FQuat::Identity, nullptr, WorldLocation,
 		FQuat::Identity);
 	LockConstraint.SetEnableComputeForces(true);
-	LockConstraint.SetCompliance(1.0E-6, 0);
-	LockConstraint.SetCompliance(1.0E-6, 1);
-	LockConstraint.SetCompliance(1.0E-6, 2);
-	LockConstraint.SetCompliance(1.0E-3, 3);
-	LockConstraint.SetCompliance(1.0E-3, 4);
-	LockConstraint.SetCompliance(1.0E-3, 5);
+	LockConstraint.SetCompliance(1.0E-6, -1);
 
 	auto Sim = UAGX_Simulation::GetFrom(Body.Get());
 	Sim->GetNative()->Add(LockConstraint);
