@@ -26,6 +26,8 @@ public:
 	virtual bool IsCompatibleWith(FEditorModeID OtherModeID) const override;
 
 	virtual void Tick(FEditorViewportClient* ViewportClient, float DeltaTime) override;
+
+	virtual bool LostFocus(FEditorViewportClient* ViewportClient, FViewport* Viewport) override;
 	// ~End FEdMode interface.
 
 protected:
@@ -40,8 +42,6 @@ protected:
 		PURE_VIRTUAL(FAGX_ClickDragMode::OnMouseDrag, );
 
 	virtual void OnEndMouseDrag() PURE_VIRTUAL(FAGX_ClickDragMode::OnEndMouseDrag, );
-
-	virtual bool LostFocus(FEditorViewportClient* ViewportClient, FViewport* Viewport);
 
 private:
 	enum class EAGX_ClickDragState
