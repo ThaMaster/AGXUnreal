@@ -290,11 +290,13 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, bool ForceOverw
 	AGX_COPY_PROPERTY_FROM(
 		bCanCollide, Barrier.GetEnableCollisions(), *this, ForceOverwriteInstances)
 	AGX_COPY_PROPERTY_FROM(bIsSensor, Barrier.GetIsSensor(), *this, ForceOverwriteInstances)
+	AGX_COPY_PROPERTY_FROM(
+		SurfaceVelocity, Barrier.GetSurfaceVelocity(), *this, ForceOverwriteInstances);
 	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetShapeGuid(), *this, ForceOverwriteInstances)
 
-	const EAGX_ShapeSensorType BarrierSensorType =
-		Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactsSensor
-												   : EAGX_ShapeSensorType::BooleanSensor;
+	const EAGX_ShapeSensorType BarrierSensorType = Barrier.GetIsSensorGeneratingContactData()
+													   ? EAGX_ShapeSensorType::ContactsSensor
+													   : EAGX_ShapeSensorType::BooleanSensor;
 	AGX_COPY_PROPERTY_FROM(SensorType, BarrierSensorType, *this, ForceOverwriteInstances)
 
 	FVector BarrierPosition;
