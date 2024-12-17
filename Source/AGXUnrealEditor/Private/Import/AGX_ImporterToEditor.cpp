@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_AGXToUeContext.h"
 #include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "Import/AGX_Importer.h"
 #include "Import/AGX_ImporterSettings.h"
@@ -309,6 +310,42 @@ namespace AGX_ImporterToEditor_helpers
 		OutTransientToAsset.Add(&Source, Asset);
 		return Asset;
 	}
+
+	// The Template Component must come from a context where it has a unique name.
+	USCS_Node* GetOrCreateNode(
+		const FGuid& Guid, const UActorComponent* Template, UBlueprint& OutBlueprint,
+		TMap<FGuid, USCS_Node*>& OutGuidToNode)
+	{
+		const FName Name(*Template->GetName());
+		USCS_Node* Node = OutGuidToNode.FindRef(Guid);
+
+		// Resolve name collisions.
+		USCS_Node* NameCollNode = OutBlueprint.SimpleConstructionScript->FindSCSNode(Name);
+		if (NameCollNode != nullptr && NameCollNode != Node)
+			NameCollNode->SetVariableName(*FAGX_ImportUtilities::GetUnsetUniqueImportName());
+
+		if (Node == nullptr)
+		{
+			Node = OutBlueprint.SimpleConstructionScript->CreateNode(Template->GetClass(), Name);
+			OutBlueprint.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(Node);
+			OutGuidToNode.Add(Guid, Node);
+		}
+		else if (!Node->GetVariableName().IsEqual(Name))
+		{
+			Node->SetVariableName(Name);
+		}
+
+		return Node;
+	}
+
+	template <typename T>
+	FString GetAssetTypeFromType()
+	{
+		if constexpr (std::is_same_v<T, UAGX_MergeSplitThresholdsBase>)
+			return FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName();
+
+		// Unsupported types will yield compile errors.
+	}
 }
 
 UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
@@ -361,6 +398,27 @@ bool FAGX_ImporterToEditor::Reimport(
 	return true;
 }
 
+template <typename T>
+T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source)
+{
+	using namespace AGX_ImporterToEditor_helpers;
+	const FString AssetType = GetAssetTypeFromType<T>();
+	const FString DirPath = FPaths::Combine(RootDirectory, AssetType);
+	T* Asset = FAGX_EditorUtilities::FindAsset<T>(Source.ImportGuid, DirPath);
+	if (Asset == nullptr)
+	{
+		WriteAssetToDisk(RootDirectory, AssetType, Source);
+		return &Source;
+	}
+
+	// For shared assets, we might be copying and saving multiple times here, but we assume
+	// these operations are relatively cheap, and keep the code simple here.
+	AGX_CHECK(FAGX_ObjectUtilities::CopyProperties(Source, *Asset, false));
+	FAGX_ObjectUtilities::SaveAsset(*Asset);
+	TransientToAsset.Add(&Source, Asset);
+	return Asset;
+}
+
 void FAGX_ImporterToEditor::UpdateBlueprint(
 	UBlueprint& Blueprint, const FAGX_AGXToUeContext& Context)
 {
@@ -371,23 +429,17 @@ void FAGX_ImporterToEditor::UpdateBlueprint(
 	{
 		for (const auto& [Guid, MST] : *Context.MSThresholds)
 		{
-			UAGX_MergeSplitThresholdsBase* Asset = UpdateOrCreateAsset(
-				*MST, RootDirectory,
-				FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName(),
-				TransientToAsset);
+			const auto A = UpdateOrCreateAsset(*MST);
+			AGX_CHECK(A != nullptr);
 		}
 	}
 
 	if (Context.RigidBodies != nullptr)
 	{
-		for (const auto& [Guid, RigidBody] : *Context.RigidBodies)
+		for (const auto& [Guid, Component] : *Context.RigidBodies)
 		{
-			USCS_Node* N = Nodes.RigidBodies.FindRef(Guid);
-			if (N == nullptr)
-				continue; // Todo: create new.
-
-			CopyProperties(
-				*RigidBody, *Cast<UAGX_RigidBodyComponent>(N->ComponentTemplate), TransientToAsset);
+			USCS_Node* N = GetOrCreateNode(Guid, Component, Blueprint, Nodes.RigidBodies);
+			CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
 		}
 	}
 }

@@ -28,6 +28,9 @@ public:
 	void UpdateBlueprint(UBlueprint& Blueprint, const FAGX_AGXToUeContext& Context);
 
 private:
+	template <typename T>
+	T* UpdateOrCreateAsset(T& Source);
+
 	FString RootDirectory;
 	FString ModelName;
 
