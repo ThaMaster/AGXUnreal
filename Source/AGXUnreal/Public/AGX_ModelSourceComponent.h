@@ -45,4 +45,12 @@ public:
 	// Render Material.
 	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
 	TMap<FString, FGuid> UnrealMaterialToImportGuid;
+
+	virtual void Serialize(FArchive& Archive) override;
+
+private:
+	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the guid
+	// of the owning RenderData.
+	UPROPERTY()
+	TMap<FString, FGuid> StaticMeshComponentToOwningRenderData_DEPRECATED;
 };
