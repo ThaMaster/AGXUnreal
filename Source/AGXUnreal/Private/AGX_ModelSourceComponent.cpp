@@ -86,4 +86,9 @@ void UAGX_ModelSourceComponent::Serialize(FArchive& Archive)
 	}
 }
 
+const TMap<FString, FGuid> UAGX_ModelSourceComponent::GetDeprecatedRenderDataTable() const
+{
+	return StaticMeshComponentToOwningRenderData_DEPRECATED;
+}
+
 #undef LOCTEXT_NAMESPACE

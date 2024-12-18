@@ -48,6 +48,8 @@ public:
 
 	virtual void Serialize(FArchive& Archive) override;
 
+	const TMap<FString, FGuid> GetDeprecatedRenderDataTable() const;
+
 private:
 	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the guid
 	// of the owning RenderData.

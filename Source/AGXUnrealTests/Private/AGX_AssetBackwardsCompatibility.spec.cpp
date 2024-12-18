@@ -4,13 +4,16 @@
 #include "AgxAutomationCommon.h"
 #include "AGX_CustomVersion.h"
 #include "AGX_LogCategory.h"
+#include "AGX_ModelSourceComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_TerrainMaterial.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 
 // Unreal Engine includes.
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetRegistry/IAssetRegistry.h"
+#include "Engine/Blueprint.h"
 #include "HAL/FileManager.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/EngineVersion.h"
@@ -23,6 +26,11 @@
 #include "UObject/Package.h"
 #include "UObject/PackageFileSummary.h"
 #include "UObject/UObjectGlobals.h"
+
+/*
+ * This file contains a set of tests ensuring that we can still import assets saved with an older
+ * version of AGX Dynamics for Unreal.
+ */
 
 namespace AGX_AssetBackwardsCompatibilitySpec_helpers
 {
@@ -496,6 +504,80 @@ void FAGX_TerrainMaterialSplitBackwardsCompatibilitySpec::Define()
 				   TestTrue(
 					   TEXT("ShapeMaterial Wire SpookDampingBend"),
 					   TempShapeMaterial->Wire.SpookDampingBend == 7.0);
+			   });
+		});
+}
+
+BEGIN_DEFINE_SPEC(
+	FAGX_ModelSourceComponentAndRenderDataBackwardsCompatibilitySpec,
+	"AGXUnreal.Editor.BackwardsCompatibility.ModelSourceComponentAndRenderData",
+	AgxAutomationCommon::DefaultTestFlags)
+END_DEFINE_SPEC(FAGX_ModelSourceComponentAndRenderDataBackwardsCompatibilitySpec)
+
+void FAGX_ModelSourceComponentAndRenderDataBackwardsCompatibilitySpec::Define()
+{
+	using namespace AGX_AssetBackwardsCompatibilitySpec_helpers;
+
+	Describe(
+		"Loading a Blueprint class with render data imported before AGXUnreal 1.14",
+		[this]()
+		{
+			It("should migrate Static Mesh Component table entries",
+			   [this]()
+			   {
+				   // Make sure the imported assets hasn't been accidentally saved-over since the
+				   // import on AGX Dynamics for Unreal 1.13.1.
+
+				   const FString PackagePathBpBase {
+					   TEXT("/Game/Tests/BackwardsCompatibility/render_data_build/Blueprint/"
+							"BP_Base_1FE6507766DD477192D85058E3CDAB4B")};
+				   const FString MD5ChecksumBpBase {TEXT("21236f5cc49bbff1e853ac359a0036e8")};
+				   AgxAutomationCommon::CheckAssetMD5Checksum(
+					   PackagePathBpBase, *MD5ChecksumBpBase, *this);
+
+				   const FString PackagePathBpChild {
+					   TEXT("/Game/Tests/BackwardsCompatibility/render_data_build/"
+							"BP_render_data_build")};
+				   const FString MD5ChecksumBpChild {TEXT("4fe8226fa70940a9a234735444c15dd8")};
+				   AgxAutomationCommon::CheckAssetMD5Checksum(
+					   PackagePathBpChild, *MD5ChecksumBpChild, *this);
+
+				   const FString PackagePathMesh {
+					   TEXT("/Game/Tests/BackwardsCompatibility/render_data_build/RenderMesh/"
+							"SM_RenderMesh_944C2AF4E9279E2C61D073B86467F6BA")};
+				   const FString MD5ChecksumMesh {TEXT("17c060944fc0aae17354671846bceb32")};
+				   AgxAutomationCommon::CheckAssetMD5Checksum(
+					   PackagePathMesh, *MD5ChecksumMesh, *this);
+
+				   UBlueprint* BaseBlueprint = LoadAsset<UBlueprint>(
+					   PackagePathBpBase, "BP_Base_1FE6507766DD477192D85058E3CDAB4B");
+				   TestNotNull(TEXT("BaseBlueprint"), BaseBlueprint);
+				   USCS_Node* ModelSourceNode = FAGX_BlueprintUtilities::GetSCSNodeFromName(
+													*BaseBlueprint, TEXT("AGX_ModelSource"), true)
+													.FoundNode;
+				   TestNotNull(TEXT("ModelSourceNode"), ModelSourceNode);
+
+				   UAGX_ModelSourceComponent* ModelSourceComponent =
+					   Cast<UAGX_ModelSourceComponent>(ModelSourceNode->ComponentTemplate);
+				   TestNotNull(TEXT("ModelSourceComponent"), ModelSourceComponent);
+
+				   TestEqual(
+					   TEXT("StaticMeshComponentToOwningShape.Num()"),
+					   ModelSourceComponent->StaticMeshComponentToOwningShape.Num(), 1);
+				   TArray<FString> Keys;
+				   ModelSourceComponent->StaticMeshComponentToOwningShape.GetKeys(Keys);
+				   TestEqual(TEXT("Keys.Num()"), Keys.Num(), 1);
+				   const FString& Key = Keys[0];
+				   TestEqual(TEXT("Key"), Key, TEXT("RenderMesh_944C2AF4E9279E2C61D073B86467F6BA"));
+
+				   const FGuid Guid = ModelSourceComponent->StaticMeshComponentToOwningShape[Key];
+				   TestEqual(
+					   TEXT("Guid"), Guid.ToString(EGuidFormats::DigitsWithHyphens),
+					   TEXT("D44C9070-444A-F0CA-F233-6CC3F8526D95"));
+
+				   const TMap<FString, FGuid> OldTable =
+					   ModelSourceComponent->GetDeprecatedRenderDataTable();
+				   TestEqual(TEXT("OldTable.Num()"), OldTable.Num(), 1);
 			   });
 		});
 }
