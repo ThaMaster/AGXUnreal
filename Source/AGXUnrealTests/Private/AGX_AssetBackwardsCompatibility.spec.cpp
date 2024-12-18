@@ -525,29 +525,32 @@ void FAGX_ModelSourceComponentAndRenderDataBackwardsCompatibilitySpec::Define()
 			It("should migrate Static Mesh Component table entries",
 			   [this]()
 			   {
+				   auto MakePath = [](const TCHAR* Asset) -> FString {
+					   return FString::Printf(
+						   TEXT("/Game/Tests/BackwardsCompatibility/render_data_build/%s"), Asset);
+				   };
+
 				   // Make sure the imported assets hasn't been accidentally saved-over since the
 				   // import on AGX Dynamics for Unreal 1.13.1.
 
 				   // Base Blueprint.
 				   const FString PackagePathBpBase {
-					   TEXT("/Game/Tests/BackwardsCompatibility/render_data_build/Blueprint/"
-							"BP_Base_1FE6507766DD477192D85058E3CDAB4B")};
+					   MakePath(TEXT("Blueprint/"
+									 "BP_Base_1FE6507766DD477192D85058E3CDAB4B"))};
 				   const FString MD5ChecksumBpBase {TEXT("21236f5cc49bbff1e853ac359a0036e8")};
 				   AgxAutomationCommon::CheckAssetMD5Checksum(
 					   PackagePathBpBase, *MD5ChecksumBpBase, *this);
 
 				   // Child Blueprint.
-				   const FString PackagePathBpChild {
-					   TEXT("/Game/Tests/BackwardsCompatibility/render_data_build/"
-							"BP_render_data_build")};
+				   const FString PackagePathBpChild {MakePath(TEXT("BP_render_data_build"))};
 				   const FString MD5ChecksumBpChild {TEXT("4fe8226fa70940a9a234735444c15dd8")};
 				   AgxAutomationCommon::CheckAssetMD5Checksum(
 					   PackagePathBpChild, *MD5ChecksumBpChild, *this);
 
 				   // Static Mesh.
 				   const FString PackagePathMesh {
-					   TEXT("/Game/Tests/BackwardsCompatibility/render_data_build/RenderMesh/"
-							"SM_RenderMesh_944C2AF4E9279E2C61D073B86467F6BA")};
+					   MakePath(TEXT("RenderMesh/"
+									 "SM_RenderMesh_944C2AF4E9279E2C61D073B86467F6BA"))};
 				   const FString MD5ChecksumMesh {TEXT("17c060944fc0aae17354671846bceb32")};
 				   AgxAutomationCommon::CheckAssetMD5Checksum(
 					   PackagePathMesh, *MD5ChecksumMesh, *this);
