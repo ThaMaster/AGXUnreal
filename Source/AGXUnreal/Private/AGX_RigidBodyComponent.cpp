@@ -494,8 +494,11 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 void UAGX_RigidBodyComponent::CopyFrom(
 	const FRigidBodyBarrier& Barrier, FAGX_AGXToUeContext* Context)
 {
-	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
+	const FString& Name =
+		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetOuter(), Barrier.GetName());
+	Rename(*Name);
 
+	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
 	ImportGuid = Barrier.GetGuid();
 	Mass = MassProperties.GetMass();
 	bAutoGenerateMass = MassProperties.GetAutoGenerateMass();
@@ -516,8 +519,12 @@ void UAGX_RigidBodyComponent::CopyFrom(
 	if (Msp.HasNative())
 		MergeSplitProperties.CopyFrom(Msp, Context);
 
-	FAGX_ObjectUtilities::SetAnyComponentWorldTransform(
-		*this, FTransform(Barrier.GetRotation(), Barrier.GetPosition()));
+	SetWorldTransform(FTransform(Barrier.GetRotation(), Barrier.GetPosition()));
+	if (Context == nullptr || Context->RigidBodies == nullptr)
+		return;
+
+	if (!Context->RigidBodies->Contains(ImportGuid))
+		Context->RigidBodies->Add(ImportGuid, this);
 }
 
 void UAGX_RigidBodyComponent::InitializeMotionControl()

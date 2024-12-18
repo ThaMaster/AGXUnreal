@@ -21,6 +21,7 @@
 #include "Shapes/AnyShapeBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Vehicle/TrackBarrier.h"
 
 namespace AGX_Importer_helpers
@@ -87,8 +88,7 @@ namespace AGX_Importer_helpers
 
 	FString GetModelName(const FString& FilePath)
 	{
-		// Todo: sanitize name.
-		FString Name = FPaths::GetBaseFilename(FilePath);
+		FString Name = FAGX_ObjectUtilities::SanitizeObjectName(FPaths::GetBaseFilename(FilePath));
 		if (Name.IsEmpty())
 		{
 			UE_LOG(
@@ -117,7 +117,11 @@ FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)
 {
 	using namespace AGX_Importer_helpers;
 
-	AActor* Actor = CreateActor(GetModelName(Settings.FilePath));
+	const FString Name = GetModelName(Settings.FilePath);
+	if (Name.IsEmpty())
+		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
+
+	AActor* Actor = CreateActor(Name);
 	if (Actor == nullptr)
 		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 
@@ -139,7 +143,6 @@ const FAGX_AGXToUeContext& FAGX_Importer::GetContext() const
 
 EAGX_ImportResult FAGX_Importer::AddRigidBody(const FRigidBodyBarrier& Barrier, AActor& Owner)
 {
-	const FString Name = Barrier.GetName(); // Todo: sanitize.
 	const FGuid Guid = Barrier.GetGuid();
 	if (Context.RigidBodies->FindRef(Guid) != nullptr)
 	{
@@ -147,15 +150,15 @@ EAGX_ImportResult FAGX_Importer::AddRigidBody(const FRigidBodyBarrier& Barrier, 
 			LogAGX, Warning,
 			TEXT("FAGX_Importer::AddRigidBody called on Rigid Body '%s' that has already been "
 				 "added."),
-			*Name);
+			*Barrier.GetName());
 		return EAGX_ImportResult::RecoverableErrorsOccured;
 	}
 
 	UAGX_RigidBodyComponent* Component = NewObject<UAGX_RigidBodyComponent>(&Owner);
-	Component->Rename(*Name);
+	const FString Name =
+		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(Component->GetOuter(), Barrier.GetName());
 	Component->CopyFrom(Barrier, &Context);
 	AGX_Importer_helpers::PostCreateComponent(*Component, Owner);
-	Context.RigidBodies->Add(Guid, Component);
 	return EAGX_ImportResult::Success;
 }
 

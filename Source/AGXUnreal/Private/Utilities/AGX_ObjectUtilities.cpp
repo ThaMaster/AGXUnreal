@@ -64,7 +64,6 @@ AActor* FAGX_ObjectUtilities::GetRootParentActor(UActorComponent& Component)
 	return GetRootParentActor(Component.GetTypedOuter<AActor>());
 }
 
-
 bool FAGX_ObjectUtilities::IsTemplateComponent(const UActorComponent& Component)
 {
 	return Component.HasAnyFlags(RF_ArchetypeObject);
@@ -119,6 +118,26 @@ bool FAGX_ObjectUtilities::CopyProperties(
 	}
 
 	return true;
+}
+
+FString FAGX_ObjectUtilities::SanitizeObjectName(const FString& Name)
+{
+	return MakeObjectNameFromDisplayLabel(Name, FName(*Name)).ToString();
+}
+
+FString FAGX_ObjectUtilities::MakeObjectNameUnique(UObject* Outer, FString Name)
+{
+	if (StaticFindObjectFast(UObject::StaticClass(), Outer, FName(*Name)) != nullptr)
+	{
+		Name = MakeUniqueObjectName(Outer, UObject::StaticClass(), FName(*Name)).ToString();
+	}
+
+	return Name;
+}
+
+FString FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(UObject* Outer, const FString& Name)
+{
+	return MakeObjectNameUnique(Outer, SanitizeObjectName(Name));
 }
 
 void FAGX_ObjectUtilities::GetActorsTree(

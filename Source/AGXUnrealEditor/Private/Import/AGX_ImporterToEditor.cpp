@@ -263,11 +263,11 @@ namespace AGX_ImporterToEditor_helpers
 
 	void WriteAssetToDisk(const FString& RootDir, const FString& AssetType, UObject& Object)
 	{
-		FString AssetName = FAGX_ImportUtilities::CreateAssetName(Object.GetName(), "", AssetType);
-		FString PackagePath = FAGX_ImportUtilities::CreatePackagePath(RootDir, AssetType);
-		FAGX_ImportUtilities::MakePackageAndAssetNameUnique(PackagePath, AssetName);
+		const FString AssetName = Object.GetName();
+		const FString PackagePath =
+			FPaths::Combine(FAGX_ImportUtilities::CreatePackagePath(RootDir, AssetType), AssetName);
 		UPackage* Package = CreatePackage(*PackagePath);
-		Object.Rename(*Object.GetName(), Package);
+		Object.Rename(*AssetName, Package);
 		Package->MarkPackageDirty();
 		Object.SetFlags(RF_Public | RF_Standalone);
 		FAGX_ObjectUtilities::SaveAsset(Object);
