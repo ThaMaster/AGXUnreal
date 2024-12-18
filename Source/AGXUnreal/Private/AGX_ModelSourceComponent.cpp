@@ -14,6 +14,64 @@
 
 #define LOCTEXT_NAMESPACE "UAGX_ModelSourceComponent"
 
+namespace AGX_ModelSourceComponent_helpers
+{
+	/**
+	 * To support importing AGX Dynamics archives where multiple Shapes share the same Render Data
+	 * we changed a table to contain Shape GUIDs instead of Render Data GUIDs. When opening old
+	 * imported model Blueprints the old table entries must be converted into new table entries.
+	 * This is done by finding the first parent Shape Component of each Static Mesh Component that
+	 * renders Render Data and use that Shape Component's Import GUID instead of the Render Data's
+	 * GUID.
+	 */
+	void UpgradeRenderDataTable(
+		UAGX_ModelSourceComponent& ModelSource,
+		const TMap<FString, FGuid>& StaticMeshComponentToOwningRenderData_DEPRECATED,
+		TMap<FString, FGuid>& StaticMeshComponentToOwningShape)
+	{
+		// For now, we only do the table translation for Blueprints. Is there any case where the
+		// translation must be done for a regular Actor? Any other case we should consider?
+		UBlueprint* Blueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(ModelSource);
+		if (Blueprint == nullptr)
+			return;
+
+		// Migrate each entry in the old table to the new table.
+		for (const auto& [StaticMeshName, RenderDataGuid] :
+			 StaticMeshComponentToOwningRenderData_DEPRECATED)
+		{
+			// Find the Static Mesh Component that renders the Render Data.
+			USCS_Node* RenderDataMeshNode =
+				FAGX_BlueprintUtilities::GetSCSNodeFromName(*Blueprint, StaticMeshName, true)
+					.FoundNode;
+			if (RenderDataMeshNode == nullptr)
+				continue;
+
+			// Find the Shape Component that owns the Render Data.
+			USCS_Node* ShapeNode =
+				FAGX_BlueprintUtilities::GetParentSCSNode<UAGX_ShapeComponent>(RenderDataMeshNode);
+			if (ShapeNode == nullptr)
+				continue;
+			UAGX_ShapeComponent* ShapeComponent =
+				Cast<UAGX_ShapeComponent>(ShapeNode->ComponentTemplate);
+			if (ShapeComponent == nullptr)
+				continue;
+
+			// Create entry in the new table.
+			FGuid ShapeGuid = ShapeComponent->ImportGuid;
+			StaticMeshComponentToOwningShape.Add(StaticMeshName, ShapeGuid);
+		}
+
+		// We would like to save the Blueprint with the updated table and to do that we need to mark
+		// it dirty. However, Unreal does not allow marking a package dirty during loading.
+		// So the old table will linger until the Blueprint is changed through some other means.
+		// Worse, the Blueprint is the hidden parent Blueprint that the user should not modify, so
+		// it likely won't be modified until the user does a model synchronization.
+#if 0
+		Blueprint->MarkPackageDirty();
+#endif
+	}
+}
+
 void UAGX_ModelSourceComponent::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
@@ -22,41 +80,10 @@ void UAGX_ModelSourceComponent::Serialize(FArchive& Archive)
 	if (Archive.IsLoading() &&
 		Archive.CustomVer(FAGX_CustomVersion::GUID) < FAGX_CustomVersion::RenderDataPerShape)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Reading Model Source Component from old serialization."));
-		AActor* Owner = GetOwner();
-		UBlueprint* Blueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*this);
-		UE_LOG(LogAGX, Warning, TEXT("  Owner: %s (%p)"), *GetLabelSafe(Owner), Owner);
-		UE_LOG(LogAGX, Warning, TEXT("  Blueprint: %s (%p)"), *GetNameSafe(Blueprint), Blueprint);
-		for (const auto& [Name, RenderDataGuid] : StaticMeshComponentToOwningRenderData_DEPRECATED)
-		{
-			FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult SearchResult =
-				FAGX_BlueprintUtilities::GetSCSNodeFromName(*Blueprint, Name, true);
-			UActorComponent* Component = SearchResult.FoundNode->ComponentTemplate;
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("  Found Render Data Static Mesh Component %s for name key %s."),
-				*GetNameSafe(Component), *Name);
-
-			USCS_Node* ShapeNode = FAGX_BlueprintUtilities::GetParentSCSNode<UAGX_ShapeComponent>(
-				SearchResult.FoundNode);
-			UAGX_ShapeComponent* ShapeComponent =
-				Cast<UAGX_ShapeComponent>(ShapeNode->ComponentTemplate);
-			FGuid ShapeGuid = ShapeComponent->ImportGuid;
-			UE_LOG(
-				LogAGX, Warning, TEXT("  Found Shape Component %s."), *GetNameSafe(ShapeComponent));
-
-			StaticMeshComponentToOwningShape.Add(Name, ShapeGuid);
-		}
-
-		if (!Blueprint->MarkPackageDirty())
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Could not mark Blueprint package dirty after Render Data table update in "
-					 "Model Source Component."));
-		}
+		AGX_ModelSourceComponent_helpers::UpgradeRenderDataTable(
+			*this, StaticMeshComponentToOwningRenderData_DEPRECATED,
+			StaticMeshComponentToOwningShape);
 	}
-
 }
 
 #undef LOCTEXT_NAMESPACE
