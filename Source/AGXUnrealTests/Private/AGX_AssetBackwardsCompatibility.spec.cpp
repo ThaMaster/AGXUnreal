@@ -528,6 +528,7 @@ void FAGX_ModelSourceComponentAndRenderDataBackwardsCompatibilitySpec::Define()
 				   // Make sure the imported assets hasn't been accidentally saved-over since the
 				   // import on AGX Dynamics for Unreal 1.13.1.
 
+				   // Base Blueprint.
 				   const FString PackagePathBpBase {
 					   TEXT("/Game/Tests/BackwardsCompatibility/render_data_build/Blueprint/"
 							"BP_Base_1FE6507766DD477192D85058E3CDAB4B")};
@@ -535,6 +536,7 @@ void FAGX_ModelSourceComponentAndRenderDataBackwardsCompatibilitySpec::Define()
 				   AgxAutomationCommon::CheckAssetMD5Checksum(
 					   PackagePathBpBase, *MD5ChecksumBpBase, *this);
 
+				   // Child Blueprint.
 				   const FString PackagePathBpChild {
 					   TEXT("/Game/Tests/BackwardsCompatibility/render_data_build/"
 							"BP_render_data_build")};
@@ -542,6 +544,7 @@ void FAGX_ModelSourceComponentAndRenderDataBackwardsCompatibilitySpec::Define()
 				   AgxAutomationCommon::CheckAssetMD5Checksum(
 					   PackagePathBpChild, *MD5ChecksumBpChild, *this);
 
+				   // Static Mesh.
 				   const FString PackagePathMesh {
 					   TEXT("/Game/Tests/BackwardsCompatibility/render_data_build/RenderMesh/"
 							"SM_RenderMesh_944C2AF4E9279E2C61D073B86467F6BA")};
@@ -549,35 +552,48 @@ void FAGX_ModelSourceComponentAndRenderDataBackwardsCompatibilitySpec::Define()
 				   AgxAutomationCommon::CheckAssetMD5Checksum(
 					   PackagePathMesh, *MD5ChecksumMesh, *this);
 
+				   // Load the base Blueprint.
 				   UBlueprint* BaseBlueprint = LoadAsset<UBlueprint>(
 					   PackagePathBpBase, "BP_Base_1FE6507766DD477192D85058E3CDAB4B");
 				   TestNotNull(TEXT("BaseBlueprint"), BaseBlueprint);
+
+				   // Get the SCS Node for the Model Source Component.
 				   USCS_Node* ModelSourceNode = FAGX_BlueprintUtilities::GetSCSNodeFromName(
 													*BaseBlueprint, TEXT("AGX_ModelSource"), true)
 													.FoundNode;
 				   TestNotNull(TEXT("ModelSourceNode"), ModelSourceNode);
 
+				   // Get the Model Source Component.
 				   UAGX_ModelSourceComponent* ModelSourceComponent =
 					   Cast<UAGX_ModelSourceComponent>(ModelSourceNode->ComponentTemplate);
 				   TestNotNull(TEXT("ModelSourceComponent"), ModelSourceComponent);
 
-				   TestEqual(
-					   TEXT("StaticMeshComponentToOwningShape.Num()"),
-					   ModelSourceComponent->StaticMeshComponentToOwningShape.Num(), 1);
-				   TArray<FString> Keys;
-				   ModelSourceComponent->StaticMeshComponentToOwningShape.GetKeys(Keys);
-				   TestEqual(TEXT("Keys.Num()"), Keys.Num(), 1);
-				   const FString& Key = Keys[0];
-				   TestEqual(TEXT("Key"), Key, TEXT("RenderMesh_944C2AF4E9279E2C61D073B86467F6BA"));
-
-				   const FGuid Guid = ModelSourceComponent->StaticMeshComponentToOwningShape[Key];
-				   TestEqual(
-					   TEXT("Guid"), Guid.ToString(EGuidFormats::DigitsWithHyphens),
-					   TEXT("D44C9070-444A-F0CA-F233-6CC3F8526D95"));
-
+				   // Test that the Model Source Component has entries in the old table, otherwise
+				   // this would not be an old asset.
 				   const TMap<FString, FGuid> OldTable =
 					   ModelSourceComponent->GetDeprecatedRenderDataTable();
 				   TestEqual(TEXT("OldTable.Num()"), OldTable.Num(), 1);
+				   TArray<FString> OldKeys;
+				   OldTable.GetKeys(OldKeys);
+				   TestEqual(TEXT("OldKeys.Num()"), OldKeys.Num(), 1);
+				   const FString& OldKey = OldKeys[0];
+
+				   // Make sure the new table has the entry we expect.
+				   const TMap<FString, FGuid> NewTable =
+					   ModelSourceComponent->StaticMeshComponentToOwningShape;
+				   TestEqual(TEXT("NewTable.Num()"), NewTable.Num(), 1);
+				   TArray<FString> NewKeys;
+				   ModelSourceComponent->StaticMeshComponentToOwningShape.GetKeys(NewKeys);
+				   TestEqual(TEXT("NewKeys.Num()"), NewKeys.Num(), 1);
+				   const FString& NewKey = NewKeys[0];
+				   const FString ExpectedKey {TEXT("RenderMesh_944C2AF4E9279E2C61D073B86467F6BA")};
+				   TestEqual(TEXT("NewKey, literal"), NewKey, ExpectedKey);
+				   TestEqual(TEXT("NewKey, OldKey"), NewKey, OldKey);
+				   const FGuid Guid =
+					   ModelSourceComponent->StaticMeshComponentToOwningShape[NewKey];
+				   const FString ExpectedGuid {TEXT("D44C9070-444A-F0CA-F233-6CC3F8526D95")};
+				   TestEqual(
+					   TEXT("Guid"), Guid.ToString(EGuidFormats::DigitsWithHyphens), ExpectedGuid);
 			   });
 		});
 }
