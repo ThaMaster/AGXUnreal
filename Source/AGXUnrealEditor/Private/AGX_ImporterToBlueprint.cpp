@@ -1008,21 +1008,6 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 						}
 					}
 
-					if (Re->GetDeprecatedRenderDataTable().Num() > 0)
-					{
-						// When adding support for shared Render Data, i.e. many Shape Components
-						// having Static Mesh Components pointing to the same Static Mesh asset, a
-						// table was converted from holding Render Data UUIDs to instead holding
-						// Shape UUIDs. When loading old Blueprints with data in the old table those
-						// table entries must be upgraded to the new format and moved to the new
-						// table. This is normally done in the Serialize member function, but with
-						// Unreal Engine 5.4 Epic Games changed the Blueprints are loaded caused
-						// the upgrade code to fail. It could no longer find the Static Mesh SCS
-						// Node that is needed to do the upgrade. So instead we do that work here,
-						// where the Blueprint has been completely loaded.
-						Re->UpgradeRenderDataTableFromRenderDataUuidToShapeUuid();
-					}
-
 					for (const auto& [MeshName, ShapeGuid] : Re->StaticMeshComponentToOwningShape)
 					{
 						if (!ShapeGuid.IsValid())

@@ -21,13 +21,47 @@ void UAGX_ModelSourceComponent::Serialize(FArchive& Archive)
 	if (Archive.IsLoading() &&
 		Archive.CustomVer(FAGX_CustomVersion::GUID) < FAGX_CustomVersion::RenderDataPerShape)
 	{
-		UpgradeRenderDataTableFromRenderDataUuidToShapeUuid();
+		UBlueprint* Blueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*this);
+		if (Blueprint == nullptr)
+		{
+			// Currently only support upgrading Model Source Components that are part of a
+			// Blueprint.
+			return;
+		}
+
+		// This Model Source Component was saved with an AGX Dynamics for Unreal version prior to
+		// the introduction of support for shared Render Data. This mean that we need to upgrade
+		// the entries in the now deprecated Render Data table and add those entries to the Shape
+		// UUID based table. We can't do that immediately because the Shape Components we want to
+		// read the UUID from may not have been loaded yet. Instead we setup a callback to be called
+		// when the Blueprint has finished loading, i.e. when all Components are available, and do
+		// the work there instead.
+		FCoreUObjectDelegates::OnAssetLoaded.AddUObject(
+			this, &UAGX_ModelSourceComponent::OnBlueprintLoaded);
 	}
 #endif
 }
 
-
 #if WITH_EDITOR
+
+void UAGX_ModelSourceComponent::OnBlueprintLoaded(UObject* LoadedObject)
+{
+	UBlueprint* OwningBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*this);
+	if (OwningBlueprint == nullptr)
+	{
+		// We are not part of a Blueprint and should not get this callback.
+		FCoreUObjectDelegates::OnAssetLoaded.RemoveAll(this);
+		return;
+	}
+
+	UBlueprint* LoadedBlueprint = Cast<UBlueprint>(LoadedObject);
+	if (LoadedBlueprint == OwningBlueprint)
+	{
+		// Our Blueprint has finished loading, now safe to upgrade the Render Data table entries.
+		FCoreUObjectDelegates::OnAssetLoaded.RemoveAll(this);
+		UpgradeRenderDataTableFromRenderDataUuidToShapeUuid();
+	}
+}
 
 /**
  * To support importing AGX Dynamics archives where multiple Shapes share the same Render Data

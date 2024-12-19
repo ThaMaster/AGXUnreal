@@ -48,6 +48,9 @@ public:
 
 	virtual void Serialize(FArchive& Archive) override;
 
+	const TMap<FString, FGuid>& GetDeprecatedRenderDataTable() const;
+
+private:
 #if WITH_EDITOR
 	/**
 	 * Upgrade entries in the deprecated Render Data table and insert the result into the Shape
@@ -60,9 +63,10 @@ public:
 	 * Blueprint loading implementation.
 	 */
 	void UpgradeRenderDataTableFromRenderDataUuidToShapeUuid();
+
+	void OnBlueprintLoaded(UObject* LoadedObject);
 #endif
 
-	const TMap<FString, FGuid>& GetDeprecatedRenderDataTable() const;
 
 private:
 	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the guid
