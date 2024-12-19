@@ -577,6 +577,11 @@ void FAGX_ModelSourceComponentAndRenderDataBackwardsCompatibilitySpec::Define()
 				   if (!TestNotNull(TEXT("ModelSourceComponent"), ModelSourceComponent))
 					   return;
 
+				   // Due to a bug introduced with Unreal Engine 5.4 we must manually upgrade the
+				   // Render Data tables since Serialize doesn't work properly after Unreal
+				   // Engine 5.3.
+				   ModelSourceComponent->UpgradeRenderDataTableFromRenderDataUuidToShapeUuid();
+
 				   // Test that the Model Source Component has entries in the old table, otherwise
 				   // this would not be an old asset.
 				   const TMap<FString, FGuid> OldTable =
