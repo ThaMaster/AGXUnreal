@@ -48,6 +48,7 @@ public:
 
 	virtual void Serialize(FArchive& Archive) override;
 
+#if WITH_EDITOR
 	/**
 	 * Upgrade entries in the deprecated Render Data table and insert the result into the Shape
 	 * UUID based Render Data Table. This is required after loading a Blueprint saved prior to the
@@ -59,6 +60,7 @@ public:
 	 * Blueprint loading implementation.
 	 */
 	void UpgradeRenderDataTableFromRenderDataUuidToShapeUuid();
+#endif
 
 	const TMap<FString, FGuid>& GetDeprecatedRenderDataTable() const;
 

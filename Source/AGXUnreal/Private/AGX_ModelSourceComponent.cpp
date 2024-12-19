@@ -24,6 +24,9 @@ void UAGX_ModelSourceComponent::Serialize(FArchive& Archive)
 	}
 }
 
+
+#if WITH_EDITOR
+
 /**
  * To support importing AGX Dynamics archives where multiple Shapes share the same Render Data
  * we changed a table to contain Shape GUIDs instead of Render Data GUIDs. When opening old
@@ -83,6 +86,8 @@ void UAGX_ModelSourceComponent::UpgradeRenderDataTableFromRenderDataUuidToShapeU
 		Blueprint->MarkPackageDirty();
 #endif
 }
+
+#endif
 
 const TMap<FString, FGuid>& UAGX_ModelSourceComponent::GetDeprecatedRenderDataTable() const
 {
