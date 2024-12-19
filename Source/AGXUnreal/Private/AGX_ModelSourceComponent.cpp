@@ -16,12 +16,14 @@ void UAGX_ModelSourceComponent::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
 
+#if WITH_EDITOR
 	Archive.UsingCustomVersion(FAGX_CustomVersion::GUID);
 	if (Archive.IsLoading() &&
 		Archive.CustomVer(FAGX_CustomVersion::GUID) < FAGX_CustomVersion::RenderDataPerShape)
 	{
 		UpgradeRenderDataTableFromRenderDataUuidToShapeUuid();
 	}
+#endif
 }
 
 
