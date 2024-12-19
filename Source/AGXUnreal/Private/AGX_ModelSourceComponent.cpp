@@ -4,10 +4,8 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_CustomVersion.h"
-#include "AGX_LogCategory.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
-#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "Serialization/Archive.h"
