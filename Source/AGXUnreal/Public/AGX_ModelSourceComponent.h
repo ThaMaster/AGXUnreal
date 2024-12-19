@@ -60,7 +60,7 @@ public:
 	 */
 	void UpgradeRenderDataTableFromRenderDataUuidToShapeUuid();
 
-	const TMap<FString, FGuid> GetDeprecatedRenderDataTable() const;
+	const TMap<FString, FGuid>& GetDeprecatedRenderDataTable() const;
 
 private:
 	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the guid

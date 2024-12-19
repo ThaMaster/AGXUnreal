@@ -84,7 +84,7 @@ void UAGX_ModelSourceComponent::UpgradeRenderDataTableFromRenderDataUuidToShapeU
 #endif
 }
 
-const TMap<FString, FGuid> UAGX_ModelSourceComponent::GetDeprecatedRenderDataTable() const
+const TMap<FString, FGuid>& UAGX_ModelSourceComponent::GetDeprecatedRenderDataTable() const
 {
 	return StaticMeshComponentToOwningRenderData_DEPRECATED;
 }

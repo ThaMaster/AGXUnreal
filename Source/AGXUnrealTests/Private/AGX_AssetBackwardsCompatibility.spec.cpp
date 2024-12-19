@@ -584,7 +584,7 @@ void FAGX_ModelSourceComponentAndRenderDataBackwardsCompatibilitySpec::Define()
 
 				   // Test that the Model Source Component has entries in the old table, otherwise
 				   // this would not be an old asset.
-				   const TMap<FString, FGuid> OldTable =
+				   const TMap<FString, FGuid>& OldTable =
 					   ModelSourceComponent->GetDeprecatedRenderDataTable();
 				   if (!TestEqual(TEXT("OldTable.Num()"), OldTable.Num(), 1))
 					   return;
@@ -595,7 +595,7 @@ void FAGX_ModelSourceComponentAndRenderDataBackwardsCompatibilitySpec::Define()
 				   const FString& OldKey = OldKeys[0];
 
 				   // Make sure the new table has the entry we expect.
-				   const TMap<FString, FGuid> NewTable =
+				   const TMap<FString, FGuid>& NewTable =
 					   ModelSourceComponent->StaticMeshComponentToOwningShape;
 				   if (!TestEqual(TEXT("NewTable.Num()"), NewTable.Num(), 1))
 					   return;
