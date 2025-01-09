@@ -51,6 +51,7 @@ public:
 	const TArray<FRigidBodyBarrier>& GetRigidBodies() const;
 
 	TArray<FAnyShapeBarrier> CollectAllShapes() const;
+	TArray<FAnyShapeBarrier> CollectAllPrimitiveShapes() const;
 
 	TArray<FSphereShapeBarrier>& GetSphereShapes();
 	const TArray<FSphereShapeBarrier>& GetSphereShapes() const;

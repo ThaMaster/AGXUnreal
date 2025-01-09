@@ -8,6 +8,7 @@
 #include "BarrierOnly/AGXRefs.h"
 #include "TypeConversions.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "RigidBodyBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
 #include "Shapes/RenderDataRef.h"
 
@@ -351,6 +352,12 @@ FAGX_RenderMaterial FShapeBarrier::GetRenderMaterial() const
 		RenderMaterialUnreal.Shininess = RenderMaterialAgx->getShininess();
 	}
 	return RenderMaterialUnreal;
+}
+
+FRigidBodyBarrier FShapeBarrier::GetRigidBody() const
+{
+	check(HasNative());
+	return AGXBarrierFactories::CreateRigidBodyBarrier(NativeRef->NativeGeometry->getRigidBody());
 }
 
 namespace

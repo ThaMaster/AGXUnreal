@@ -125,19 +125,19 @@ FString FAGX_ObjectUtilities::SanitizeObjectName(const FString& Name)
 	return MakeObjectNameFromDisplayLabel(Name, FName(*Name)).ToString();
 }
 
-FString FAGX_ObjectUtilities::MakeObjectNameUnique(UObject* Outer, FString Name)
+FString FAGX_ObjectUtilities::MakeObjectNameUnique(UObject* Owner, FString Name)
 {
-	if (StaticFindObjectFast(UObject::StaticClass(), Outer, FName(*Name)) != nullptr)
+	if (StaticFindObjectFast(UObject::StaticClass(), Owner, FName(*Name)) != nullptr)
 	{
-		Name = MakeUniqueObjectName(Outer, UObject::StaticClass(), FName(*Name)).ToString();
+		Name = MakeUniqueObjectName(Owner, UObject::StaticClass(), FName(*Name)).ToString();
 	}
 
 	return Name;
 }
 
-FString FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(UObject* Outer, const FString& Name)
+FString FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(UObject* Owner, const FString& Name)
 {
-	return MakeObjectNameUnique(Outer, SanitizeObjectName(Name));
+	return MakeObjectNameUnique(Owner, SanitizeObjectName(Name));
 }
 
 void FAGX_ObjectUtilities::GetActorsTree(

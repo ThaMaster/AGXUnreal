@@ -105,6 +105,15 @@ namespace AGX_Importer_helpers
 		Component.SetFlags(RF_Transactional);
 		Owner.AddInstanceComponent(&Component);
 	}
+
+	template <typename T>
+	T& GetComponentsMapFrom(FAGX_AGXToUeContext& Context)
+	{
+		if constexpr (std::is_same_v<T, UAGX_RigidBodyComponent>)
+			return *Context.RigidBodies.Get();
+
+		// Unsupported types will yield compile errors.
+	}
 }
 
 FAGX_Importer::FAGX_Importer()
@@ -141,24 +150,41 @@ const FAGX_AGXToUeContext& FAGX_Importer::GetContext() const
 	return Context;
 }
 
-EAGX_ImportResult FAGX_Importer::AddRigidBody(const FRigidBodyBarrier& Barrier, AActor& Owner)
+template <typename TComponent, typename TBarrier>
+EAGX_ImportResult FAGX_Importer::AddComponent(
+	const TBarrier& Barrier, USceneComponent* Parent, AActor& OutActor)
 {
-	const FGuid Guid = Barrier.GetGuid();
-	if (Context.RigidBodies->FindRef(Guid) != nullptr)
+	AGX_CHECK(Barrier.HasNative());
+	if (!Barrier.HasNative())
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("FAGX_Importer::AddRigidBody called on Rigid Body '%s' that has already been "
-				 "added."),
-			*Barrier.GetName());
+			TEXT("FAGX_Importer::AddComponent called on given a barrier that does not have a "
+				 "Native. The Component will not be created."));
 		return EAGX_ImportResult::RecoverableErrorsOccured;
 	}
 
-	UAGX_RigidBodyComponent* Component = NewObject<UAGX_RigidBodyComponent>(&Owner);
+	const FGuid Guid = Barrier.GetGuid();
+	auto& ProcessedComponents = AGX_Importer_helpers::GetComponentsMapFrom<TComponent>(Context);
+	if (ProcessedComponents.FindRef(Guid) != nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_Importer::AddComponent called on Component '%s' that has already been "
+				 "added."),
+			*Barrier.GetName());
+		AGX_CHECK(false);
+		return EAGX_ImportResult::RecoverableErrorsOccured;
+	}
+
+	TComponent* Component = NewObject<TComponent>(&OutActor);
 	const FString Name =
-		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(Component->GetOuter(), Barrier.GetName());
+		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(OutActor, Barrier.GetName());
 	Component->CopyFrom(Barrier, &Context);
-	AGX_Importer_helpers::PostCreateComponent(*Component, Owner);
+	if (Parent != nullptr)
+		Component->AttachToComponent(
+			Parent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	AGX_Importer_helpers::PostCreateComponent(*Component, OutActor);
 	return EAGX_ImportResult::Success;
 }
 
@@ -191,13 +217,21 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 {
 	using namespace AGX_Importer_helpers;
 	EAGX_ImportResult Result = EAGX_ImportResult::Success;
-
-	Result |= AddModelSourceComponent(Settings, OutActor);
+	USceneComponent* Root = OutActor.GetRootComponent();
+	AGX_CHECK(Root != nullptr);
 
 	for (const auto& Body : SimObjects.GetRigidBodies())
+		Result |= AddComponent<UAGX_RigidBodyComponent, FRigidBodyBarrier>(Body, Root, OutActor);
+
+	for (const auto& Shape : SimObjects.GetSphereShapes())
 	{
-		Result |= AddRigidBody(Body, OutActor);
+		UActorComponent* Parent = Shape.GetRigidBody().HasNative()
+									  ? Context.RigidBodies->FindRef(Shape.GetRigidBody().GetGuid())
+									  : OutActor.GetRootComponent();
+		check(Parent != nullptr);
 	}
+
+	Result |= AddModelSourceComponent(Settings, OutActor);
 
 	return Result;
 }

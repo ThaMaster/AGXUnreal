@@ -15,6 +15,7 @@
 #include <tuple>
 
 struct FGeometryAndShapeRef;
+class FRigidBodyBarrier;
 class FShapeMaterialBarrier;
 
 class FRenderDataBarrier;
@@ -141,6 +142,12 @@ public:
 	 * material.
 	 */
 	FAGX_RenderMaterial GetRenderMaterial() const;
+
+	/**
+	 * Return the owning RigidBody if there is one. If none exists, a RigidBodyBarrier without a
+	 * Native is returned.
+	 */
+	FRigidBodyBarrier GetRigidBody() const;
 
 protected:
 	template <typename TFunc, typename... TPack>

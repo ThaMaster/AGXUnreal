@@ -10,6 +10,7 @@
 #include "CoreMinimal.h"
 
 class FRigidBodyBarrier;
+class FShapeBarrier;
 class UAGX_ModelSourceComponent;
 class UAGX_RigidBodyComponent;
 
@@ -35,16 +36,6 @@ struct AGXUNREAL_API FAGX_ImportResult
 	FAGX_AGXToUeContext* Context {nullptr};
 };
 
-#if 0
-/** Mapped objects seen during import process. */
-struct AGXUNREAL_API FAGX_ImporterObjectMaps
-{
-	TMap<FGuid, UAGX_RigidBodyComponent*> Bodies;
-	TMap<FGuid, UAGX_MergeSplitThresholdsBase*> MSThresholds;
-	UAGX_ModelSourceComponent* ModelSourceComponent {nullptr};
-};
-#endif
-
 class AGXUNREAL_API FAGX_Importer
 {
 public:
@@ -59,7 +50,10 @@ private:
 
 	EAGX_ImportResult AddModelSourceComponent(
 		const FAGX_ImporterSettings& Settings, AActor& OutActor);
-	EAGX_ImportResult AddRigidBody(const FRigidBodyBarrier& Barrier, AActor& OutActor);
+
+	template <typename TComponent, typename TBarrier>
+	EAGX_ImportResult AddComponent(
+		const TBarrier& Barrier, USceneComponent* Parent, AActor& OutActor);
 
 	FAGX_AGXToUeContext Context;
 };

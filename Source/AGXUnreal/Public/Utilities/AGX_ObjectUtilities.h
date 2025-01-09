@@ -69,15 +69,15 @@ public:
 	static FString SanitizeObjectName(const FString& Name);
 
 	/**
-	 * Makes an Object Name that is unique in the given context (outer).
+	 * Makes an Object Name that is unique in the given context (Owner).
 	 */
-	static FString MakeObjectNameUnique(UObject* Outer, FString Name);
+	static FString MakeObjectNameUnique(UObject* Owner, FString Name);
 
 	/**
 	 * Combines SanitizeObjectName and MakeObjectNameUnique to make a valid, final name that can be
 	 * used for Components, Assets and Actors.
 	 */
-	static FString SanitizeAndMakeNameUnique(UObject* Outer, const FString& Name);
+	static FString SanitizeAndMakeNameUnique(UObject* Owner, const FString& Name);
 
 	/**
 	 * Give a list of pointer-to-base, return a new list with the elements that

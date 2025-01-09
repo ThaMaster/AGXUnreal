@@ -43,34 +43,51 @@ const TArray<FRigidBodyBarrier>& FSimulationObjectCollection::GetRigidBodies() c
 	return RigidBodies;
 }
 
-TArray<FAnyShapeBarrier> FSimulationObjectCollection::CollectAllShapes() const
+namespace SimulationObjectCollection_helpers
 {
-	TArray<FAnyShapeBarrier> AllShapes;
-	auto AddShapes = [&AllShapes](const auto& Shapes)
+	template <typename T>
+	void AppendShapes(const TArray<T>& Shapes, TArray<FAnyShapeBarrier>& OutShapes)
 	{
-		AllShapes.Reserve(AllShapes.Num() + Shapes.Num());
+		OutShapes.Reserve(OutShapes.Num() + Shapes.Num());
 		for (auto& Shape : Shapes)
 		{
 			// This unpacking/repackaging seems overly complicated. Why can't we just copy the
 			// Barrier into the TArray?
 			agxCollide::Shape* ShapeAGX = FAGX_AgxDynamicsObjectsAccess::GetShapeFrom(&Shape);
-			AllShapes.Add(AGXBarrierFactories::CreateAnyShapeBarrier(ShapeAGX));
+			OutShapes.Add(AGXBarrierFactories::CreateAnyShapeBarrier(ShapeAGX));
 		}
-	};
-	AddShapes(SphereShapes);
-	AddShapes(BoxShapes);
-	AddShapes(CylinderShapes);
-	AddShapes(CapsuleShapes);
-	AddShapes(TrimeshShapes);
+	}
+}
+
+TArray<FAnyShapeBarrier> FSimulationObjectCollection::CollectAllShapes() const
+{
+	using namespace SimulationObjectCollection_helpers;
+	TArray<FAnyShapeBarrier> AllShapes = CollectAllPrimitiveShapes();
+
+	AppendShapes(TrimeshShapes, AllShapes);
+	for (const FRigidBodyBarrier& Body : RigidBodies)
+		AppendShapes(Body.GetTrimeshShapes(), AllShapes);
+
+	return AllShapes;
+}
+
+TArray<FAnyShapeBarrier> FSimulationObjectCollection::CollectAllPrimitiveShapes() const
+{
+	using namespace SimulationObjectCollection_helpers;
+	TArray<FAnyShapeBarrier> PrimitiveShapes;
+
+	AppendShapes(SphereShapes, PrimitiveShapes);
+	AppendShapes(BoxShapes, PrimitiveShapes);
+	AppendShapes(CylinderShapes, PrimitiveShapes);
+	AppendShapes(CapsuleShapes, PrimitiveShapes);
 	for (const FRigidBodyBarrier& Body : RigidBodies)
 	{
-		AddShapes(Body.GetSphereShapes());
-		AddShapes(Body.GetBoxShapes());
-		AddShapes(Body.GetCylinderShapes());
-		AddShapes(Body.GetCapsuleShapes());
-		AddShapes(Body.GetTrimeshShapes());
+		AppendShapes(Body.GetSphereShapes(), PrimitiveShapes);
+		AppendShapes(Body.GetBoxShapes(), PrimitiveShapes);
+		AppendShapes(Body.GetCylinderShapes(), PrimitiveShapes);
+		AppendShapes(Body.GetCapsuleShapes(), PrimitiveShapes);
 	}
-	return AllShapes;
+	return PrimitiveShapes;
 }
 
 TArray<FSphereShapeBarrier>& FSimulationObjectCollection::GetSphereShapes()
