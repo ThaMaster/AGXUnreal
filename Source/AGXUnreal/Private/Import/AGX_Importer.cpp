@@ -107,7 +107,7 @@ namespace AGX_Importer_helpers
 	}
 
 	template <typename T>
-	T& GetComponentsMapFrom(FAGX_AGXToUeContext& Context)
+	TMap<FGuid, T*>& GetComponentsMapFrom(FAGX_AGXToUeContext& Context)
 	{
 		if constexpr (std::is_same_v<T, UAGX_RigidBodyComponent>)
 			return *Context.RigidBodies.Get();
@@ -179,7 +179,7 @@ EAGX_ImportResult FAGX_Importer::AddComponent(
 
 	TComponent* Component = NewObject<TComponent>(&OutActor);
 	const FString Name =
-		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(OutActor, Barrier.GetName());
+		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(&OutActor, Barrier.GetName());
 	Component->CopyFrom(Barrier, &Context);
 	if (Parent != nullptr)
 		Component->AttachToComponent(
