@@ -11,6 +11,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Contacts/AGX_ShapeContact.h"
+#include "Import/AGX_AGXToUeContext.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -285,88 +286,28 @@ void UAGX_ShapeComponent::UpdateNativeLocalTransform()
 	UpdateNativeLocalTransform(*GetNative());
 }
 
-void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, bool ForceOverwriteInstances)
+void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_AGXToUeContext* Context)
 {
-	AGX_COPY_PROPERTY_FROM(
-		bCanCollide, Barrier.GetEnableCollisions(), *this, ForceOverwriteInstances)
-	AGX_COPY_PROPERTY_FROM(bIsSensor, Barrier.GetIsSensor(), *this, ForceOverwriteInstances)
-	AGX_COPY_PROPERTY_FROM(ImportGuid, Barrier.GetShapeGuid(), *this, ForceOverwriteInstances)
+	bCanCollide = Barrier.GetEnableCollisions();
+	bIsSensor = Barrier.GetIsSensor();
+	ImportGuid, Barrier.GetShapeGuid();
 
 	const TEnumAsByte<enum EAGX_ShapeSensorType> BarrierSensorType =
 		Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactsSensor
 												   : EAGX_ShapeSensorType::BooleanSensor;
-	AGX_COPY_PROPERTY_FROM(SensorType, BarrierSensorType, *this, ForceOverwriteInstances)
+	SensorType = BarrierSensorType;
 
-	FVector BarrierPosition;
-	FQuat BarrierRotation;
-	std::tie(BarrierPosition, BarrierRotation) = Barrier.GetLocalPositionAndRotation();
+	auto [BarrierPosition, BarrierRotation] = Barrier.GetLocalPositionAndRotation();
+	SetRelativeLocationAndRotation(BarrierPosition, BarrierRotation);
 
-	TArray<FName> BarrierCollisionGroups = Barrier.GetCollisionGroups();
-	TArray<FName> CollisionGroupsToRemove;
-	for (const FName& Group : CollisionGroups)
-	{
-		if (!BarrierCollisionGroups.Contains(Group))
-		{
-			// Needed for re-import.
-			CollisionGroupsToRemove.Add(Group);
-		}
-	}
+	for (const FName& Group : Barrier.GetCollisionGroups())
+		AddCollisionGroup(Group);
 
 	const FMergeSplitPropertiesBarrier Msp =
 		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FShapeBarrier*>(&Barrier));
-	if (FAGX_ObjectUtilities::IsTemplateComponent(*this))
-	{
-		for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))
-		{
-			if (ForceOverwriteInstances || Instance->GetRelativeLocation() == GetRelativeLocation())
-			{
-				Instance->SetRelativeLocation(BarrierPosition);
-			}
-
-			if (ForceOverwriteInstances || Instance->GetRelativeRotation() == GetRelativeRotation())
-			{
-				Instance->SetRelativeRotation(BarrierRotation);
-			}
-
-			for (const FName& GroupToRem : CollisionGroupsToRemove)
-			{
-				Instance->RemoveCollisionGroupIfExists(GroupToRem);
-			}
-
-			for (const FName& Group : BarrierCollisionGroups)
-			{
-				// AddCollisionGroup only adds unique groups.
-				Instance->AddCollisionGroup(Group);
-			}
-
-			// Merge Split Properties.
-			if (Msp.HasNative())
-			{
-				if (ForceOverwriteInstances ||
-					Instance->MergeSplitProperties == MergeSplitProperties)
-				{
-					Instance->MergeSplitProperties.CopyFrom(Msp, nullptr /*todo*/);
-				}
-			}
-		}
-	}
-
-	SetRelativeLocationAndRotation(BarrierPosition, BarrierRotation);
-
-	for (const FName& GroupToRem : CollisionGroupsToRemove)
-	{
-		RemoveCollisionGroupIfExists(GroupToRem);
-	}
-
-	for (const FName& Group : BarrierCollisionGroups)
-	{
-		AddCollisionGroup(Group);
-	}
 
 	if (Msp.HasNative())
-	{
-		MergeSplitProperties.CopyFrom(Msp, nullptr /*todo*/);
-	}
+		MergeSplitProperties.CopyFrom(Msp, Context);
 }
 
 void UAGX_ShapeComponent::CreateMergeSplitProperties()

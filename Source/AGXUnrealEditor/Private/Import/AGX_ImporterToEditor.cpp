@@ -3,10 +3,10 @@
 #include "Import/AGX_ImporterToEditor.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_AGXToUeContext.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
+#include "Import/AGX_AGXToUeContext.h"
 #include "Import/AGX_Importer.h"
 #include "Import/AGX_ImporterSettings.h"
 #include "Import/AGX_SCSNodeCollection.h"

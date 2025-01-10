@@ -102,6 +102,9 @@ public:
 	FGuid GetShapeGuid() const;
 	FGuid GetGeometryGuid() const;
 
+	/** Returns the Shape GUID. */
+	FGuid GetGuid() const;
+
 	/**
 	 * Get all collision groups registered for this Shape.
 	 *

@@ -3,8 +3,8 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_AGXToUeContext.h"
 #include "Import/AGX_ImportEnums.h"
+#include "Import/AGX_AGXToUeContext.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"

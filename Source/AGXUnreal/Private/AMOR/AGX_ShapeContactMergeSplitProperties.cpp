@@ -3,11 +3,11 @@
 #include "AMOR/AGX_ShapeContactMergeSplitProperties.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_AGXToUeContext.h"
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
+#include "Import/AGX_AGXToUeContext.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 

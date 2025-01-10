@@ -119,7 +119,7 @@ private:
 	// The Simulation from which all other Simulation Objects collected from.
 	FSimulationBarrier Simulation;
 
-	// These are "free" Shapes only, i.e. not owned by a RigidBody.
+	// These are all Shapes, even those owned by a RigidBody.
 	TArray<FSphereShapeBarrier> SphereShapes;
 	TArray<FBoxShapeBarrier> BoxShapes;
 	TArray<FCylinderShapeBarrier> CylinderShapes;

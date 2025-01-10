@@ -19,6 +19,9 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/AnyShapeBarrier.h"
+#include "Shapes/AGX_BoxShapeComponent.h"
+#include "Shapes/AGX_ShapeComponent.h"
+#include "Shapes/AGX_SphereShapeComponent.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -107,12 +110,27 @@ namespace AGX_Importer_helpers
 	}
 
 	template <typename T>
-	TMap<FGuid, T*>& GetComponentsMapFrom(FAGX_AGXToUeContext& Context)
+	auto& GetComponentsMapFrom(FAGX_AGXToUeContext& Context)
 	{
 		if constexpr (std::is_same_v<T, UAGX_RigidBodyComponent>)
 			return *Context.RigidBodies.Get();
 
+		if constexpr (std::is_same_v<T, UAGX_SphereShapeComponent>)
+			return *Context.Shapes.Get();
+
 		// Unsupported types will yield compile errors.
+	}
+
+	UAGX_RigidBodyComponent* GetOwningRigidBody(
+		const FShapeBarrier& Shape, const FAGX_AGXToUeContext& Context, const AActor& Actor)
+	{
+		FRigidBodyBarrier BodyBarrier = Shape.GetRigidBody();
+		if (!BodyBarrier.HasNative())
+			return nullptr;
+
+		UAGX_RigidBodyComponent* Body = Context.RigidBodies->FindRef(BodyBarrier.GetGuid());
+		AGX_CHECK(Body != nullptr);
+		return Body;
 	}
 }
 
@@ -181,10 +199,15 @@ EAGX_ImportResult FAGX_Importer::AddComponent(
 	const FString Name =
 		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(&OutActor, Barrier.GetName());
 	Component->CopyFrom(Barrier, &Context);
+
 	if (Parent != nullptr)
+	{
 		Component->AttachToComponent(
 			Parent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	}
+
 	AGX_Importer_helpers::PostCreateComponent(*Component, OutActor);
+	ProcessedComponents.Add(Guid, Component);
 	return EAGX_ImportResult::Success;
 }
 
@@ -225,10 +248,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	for (const auto& Shape : SimObjects.GetSphereShapes())
 	{
-		UActorComponent* Parent = Shape.GetRigidBody().HasNative()
-									  ? Context.RigidBodies->FindRef(Shape.GetRigidBody().GetGuid())
-									  : OutActor.GetRootComponent();
-		check(Parent != nullptr);
+		UAGX_RigidBodyComponent* Parent = GetOwningRigidBody(Shape, Context, OutActor);
+		Result |= AddComponent<UAGX_SphereShapeComponent, FShapeBarrier>(Shape, Root, OutActor);
 	}
 
 	Result |= AddModelSourceComponent(Settings, OutActor);

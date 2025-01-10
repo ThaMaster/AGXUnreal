@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_MeshWithTransform.h"
+#include "Import/AGX_AGXToUeContext.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 // Unreal Engine includes.
@@ -81,9 +82,9 @@ void UAGX_TrimeshShapeComponent::UpdateNativeProperties()
 }
 
 void UAGX_TrimeshShapeComponent::CopyFrom(
-	const FTrimeshShapeBarrier& Barrier, bool ForceOverwriteInstances)
+	const FShapeBarrier& ShapeBarrier, FAGX_AGXToUeContext* Context)
 {
-	Super::CopyFrom(Barrier, ForceOverwriteInstances);
+	Super::CopyFrom(ShapeBarrier, Context);
 }
 
 void UAGX_TrimeshShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& /*OutMeshData*/)
@@ -187,7 +188,8 @@ void UAGX_TrimeshShapeComponent::CreateNative()
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("TrimeshShapeComponent '%s' in '%s' does not have a StaticMeshComponent to read triangle "
+			TEXT("TrimeshShapeComponent '%s' in '%s' does not have a StaticMeshComponent to read "
+				 "triangle "
 				 "data from. The generated native shape will be invalid."),
 			*GetName(), *GetLabelSafe(GetOwner()));
 		NativeBarrier.AllocateNative({}, {}, /*bClockwise*/ false, GetName());

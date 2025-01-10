@@ -5,10 +5,11 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-class UAGX_ShapeMaterial;
 class UAGX_MergeSplitThresholdsBase;
-class UAGX_RigidBodyComponent;
 class UAGX_ModelSourceComponent;
+class UAGX_RigidBodyComponent;
+class UAGX_ShapeComponent;
+class UAGX_ShapeMaterial;
 
 /*
  * Todo: add comment.
@@ -16,6 +17,7 @@ class UAGX_ModelSourceComponent;
 struct AGXUNREAL_API FAGX_AGXToUeContext
 {
 	TUniquePtr<TMap<FGuid, UAGX_RigidBodyComponent*>> RigidBodies;
+	TUniquePtr<TMap<FGuid, UAGX_ShapeComponent*>> Shapes;
 
 	TUniquePtr<TMap<FGuid, UAGX_MergeSplitThresholdsBase*>> MSThresholds;
 	TUniquePtr<TMap<FGuid, UAGX_ShapeMaterial*>> ShapeMaterials;

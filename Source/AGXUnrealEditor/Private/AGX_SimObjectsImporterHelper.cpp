@@ -525,7 +525,7 @@ void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
 	bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances)
 {
-	Component.CopyFrom(Barrier, ForceOverwritePropertiesInInstances);
+	Component.CopyFrom(Barrier, nullptr);
 	UpdateShapeComponent(
 		Barrier, Component, MSTsOnDisk, ForceOverwritePropertiesInInstances,
 		ForceReassignRenderMaterialInInstances);
@@ -561,7 +561,7 @@ void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
 	bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances)
 {
-	Component.CopyFrom(Barrier, ForceOverwritePropertiesInInstances);
+	Component.CopyFrom(Barrier, nullptr);
 	UpdateShapeComponent(
 		Barrier, Component, MSTsOnDisk, ForceOverwritePropertiesInInstances,
 		ForceReassignRenderMaterialInInstances);
@@ -598,7 +598,7 @@ void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
 	bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances)
 {
-	Component.CopyFrom(Barrier, ForceOverwritePropertiesInInstances);
+	Component.CopyFrom(Barrier, nullptr);
 	UpdateShapeComponent(
 		Barrier, Component, MSTsOnDisk, ForceOverwritePropertiesInInstances,
 		ForceReassignRenderMaterialInInstances);
@@ -634,7 +634,7 @@ void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
 	bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances)
 {
-	Component.CopyFrom(Barrier, ForceOverwritePropertiesInInstances);
+	Component.CopyFrom(Barrier, nullptr);
 	UpdateShapeComponent(
 		Barrier, Component, MSTsOnDisk, ForceOverwritePropertiesInInstances,
 		ForceReassignRenderMaterialInInstances);
@@ -771,7 +771,7 @@ void FAGX_SimObjectsImporterHelper::UpdateComponent(
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
 	bool ForceOverwritePropertiesInInstances, bool ForceReassignRenderMaterialInInstances)
 {
-	Component.CopyFrom(Barrier, ForceOverwritePropertiesInInstances);
+	Component.CopyFrom(Barrier, nullptr);
 	UpdateShapeComponent(
 		Barrier, Component, MSTsOnDisk, ForceOverwritePropertiesInInstances,
 		ForceReassignRenderMaterialInInstances);

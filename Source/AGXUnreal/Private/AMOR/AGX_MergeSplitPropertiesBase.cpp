@@ -3,8 +3,8 @@
 #include "AMOR/AGX_MergeSplitPropertiesBase.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_AGXToUeContext.h"
 #include "AGX_LogCategory.h"
+#include "Import/AGX_AGXToUeContext.h"
 
 // Unreal Engine includes.
 #include "UObject/Class.h"

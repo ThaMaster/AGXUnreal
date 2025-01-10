@@ -255,6 +255,11 @@ FGuid FShapeBarrier::GetGeometryGuid() const
 	return Convert(NativeRef->NativeGeometry->getUuid());
 }
 
+FGuid FShapeBarrier::GetGuid() const
+{
+	return GetShapeGuid();
+}
+
 TArray<FName> FShapeBarrier::GetCollisionGroups() const
 {
 	check(HasNative());
