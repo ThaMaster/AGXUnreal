@@ -137,6 +137,8 @@ namespace AGX_Importer_helpers
 FAGX_Importer::FAGX_Importer()
 {
 	Context.RigidBodies = MakeUnique<decltype(FAGX_AGXToUeContext::RigidBodies)::ElementType>();
+	Context.Shapes = MakeUnique<decltype(FAGX_AGXToUeContext::Shapes)::ElementType>();
+
 	Context.MSThresholds = MakeUnique<decltype(FAGX_AGXToUeContext::MSThresholds)::ElementType>();
 }
 
@@ -240,16 +242,14 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 {
 	using namespace AGX_Importer_helpers;
 	EAGX_ImportResult Result = EAGX_ImportResult::Success;
-	USceneComponent* Root = OutActor.GetRootComponent();
-	AGX_CHECK(Root != nullptr);
 
 	for (const auto& Body : SimObjects.GetRigidBodies())
-		Result |= AddComponent<UAGX_RigidBodyComponent, FRigidBodyBarrier>(Body, Root, OutActor);
+		Result |= AddComponent<UAGX_RigidBodyComponent, FRigidBodyBarrier>(Body, nullptr, OutActor);
 
 	for (const auto& Shape : SimObjects.GetSphereShapes())
 	{
 		UAGX_RigidBodyComponent* Parent = GetOwningRigidBody(Shape, Context, OutActor);
-		Result |= AddComponent<UAGX_SphereShapeComponent, FShapeBarrier>(Shape, Root, OutActor);
+		Result |= AddComponent<UAGX_SphereShapeComponent, FShapeBarrier>(Shape, Parent, OutActor);
 	}
 
 	Result |= AddModelSourceComponent(Settings, OutActor);
