@@ -10,6 +10,7 @@ class UAGX_ModelSourceComponent;
 class UAGX_RigidBodyComponent;
 class UAGX_ShapeComponent;
 class UAGX_ShapeMaterial;
+class UStaticMeshComponent;
 
 /*
  * Todo: add comment.
@@ -18,6 +19,10 @@ struct AGXUNREAL_API FAGX_AGXToUeContext
 {
 	TUniquePtr<TMap<FGuid, UAGX_RigidBodyComponent*>> RigidBodies;
 	TUniquePtr<TMap<FGuid, UAGX_ShapeComponent*>> Shapes;
+
+	// The key is the GUID of the Shape Component for which the render data Static Mesh
+	// Component has been created.
+	TUniquePtr<TMap<FGuid, UStaticMeshComponent*>> RenderStaticMeshCom;
 
 	TUniquePtr<TMap<FGuid, UAGX_MergeSplitThresholdsBase*>> MSThresholds;
 	TUniquePtr<TMap<FGuid, UAGX_ShapeMaterial*>> ShapeMaterials;
