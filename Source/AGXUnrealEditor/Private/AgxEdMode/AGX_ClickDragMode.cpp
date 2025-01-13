@@ -3,7 +3,9 @@
 #include "AgxEdMode/AGX_ClickDragMode.h"
 
 // Unreal Engine includes.
+#include "CollisionQueryParams.h"
 #include "EditorModes.h"
+#include "Engine/HitResult.h"
 #include "LevelEditorViewport.h"
 
 namespace AGX_ClickDragMode_helpers
