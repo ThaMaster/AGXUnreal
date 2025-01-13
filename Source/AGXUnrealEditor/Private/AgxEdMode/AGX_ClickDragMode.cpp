@@ -3,6 +3,7 @@
 #include "AgxEdMode/AGX_ClickDragMode.h"
 
 // Unreal Engine includes.
+#include "CollisionQueryParams.h"
 #include "EditorModes.h"
 #include "LevelEditorViewport.h"
 
