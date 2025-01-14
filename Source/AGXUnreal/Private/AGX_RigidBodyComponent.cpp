@@ -599,7 +599,6 @@ bool UAGX_RigidBodyComponent::ReadTransformFromNative()
 		MoveComponent(LocationDelta, NewRotation, false);
 		if (!HasNative())
 		{
-			UE_LOG(LogAGX, Warning, TEXT("TransformSelf detected Component destruction."));
 			return true;
 		}
 		ComponentVelocity = NativeBarrier.GetVelocity();
