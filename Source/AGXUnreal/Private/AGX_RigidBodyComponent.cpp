@@ -597,11 +597,10 @@ bool UAGX_RigidBodyComponent::ReadTransformFromNative()
 		// MoveComponent may trigger user callbacks, e.g. On Begin Overlap, which may remove this
 		// Rigid Body from the simulation.
 		MoveComponent(LocationDelta, NewRotation, false);
-		if (!HasNative())
+		if (HasNative())
 		{
-			return true;
+			ComponentVelocity = NativeBarrier.GetVelocity();
 		}
-		ComponentVelocity = NativeBarrier.GetVelocity();
 		return true;
 	};
 
