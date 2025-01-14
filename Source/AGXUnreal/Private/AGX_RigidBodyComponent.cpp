@@ -312,7 +312,7 @@ void UAGX_RigidBodyComponent::TickComponent(
 	if (MotionControl != MC_STATIC)
 	{
 		// ReadTransformFromNative may trigger user callbacks, e.g. On Begin Overlap, which may
-		// destroy this Component.
+		// remove this Rigid Body from the simulation.
 		ReadTransformFromNative();
 		if (HasNative())
 		{
@@ -594,8 +594,8 @@ bool UAGX_RigidBodyComponent::ReadTransformFromNative()
 	{
 		const FVector OldLocation = GetComponentLocation();
 		const FVector LocationDelta = NewLocation - OldLocation;
-		// MoveComponent may trigger user callbacks, e.g. On Begin Overlap, which may destroy this
-		// Component.
+		// MoveComponent may trigger user callbacks, e.g. On Begin Overlap, which may remove this
+		// Rigid Body from the simulation.
 		MoveComponent(LocationDelta, NewRotation, false);
 		if (!HasNative())
 		{
@@ -625,8 +625,8 @@ bool UAGX_RigidBodyComponent::ReadTransformFromNative()
 		FTransform::Multiply(&NewTransform, &AncestorRelativeToBody, &TargetBodyLocation);
 		NewTransform.SetScale3D(Ancestor.GetComponentScale());
 
-		// SetWorldTransform may trigger user callbacks, e.g. On Begin Overlap, which may destroy
-		// this Component.
+		// SetWorldTransform may trigger user callbacks, e.g. On Begin Overlap, which may remove
+		// this Rigid Body from the simulation.
 		Ancestor.SetWorldTransform(NewTransform);
 		if (HasNative())
 		{
