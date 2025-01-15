@@ -34,7 +34,8 @@ FString FAGX_MaterialReplacer::GetNewPathName()
 	return NewMaterial.IsValid() ? NewMaterial->GetPathName() : FString();
 }
 
-bool FAGX_MaterialReplacer::ReplaceMaterials(UBlueprint& EditBlueprint, IPropertyHandle& PropertyHandle)
+bool FAGX_MaterialReplacer::ReplaceMaterials(
+	UBlueprint& EditBlueprint, IPropertyHandle& PropertyHandle)
 {
 	auto Bail = [](const TCHAR* Message)
 	{
@@ -160,7 +161,8 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(AActor& Actor)
 		return !Root->IsInBlueprint() && RootArchetype->IsInBlueprint();
 	}();
 
-	auto SetMaterial = [New, Property, &Event, bIsBlueprintInstance](UStaticMeshComponent* Mesh, int32 MaterialIndex)
+	auto SetMaterial = [New, Property, &Event, bIsBlueprintInstance](
+						   UStaticMeshComponent* Mesh, int32 MaterialIndex)
 	{
 		Mesh->PreEditChange(Property);
 		Mesh->SetMaterial(MaterialIndex, New);
@@ -191,7 +193,9 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(AActor& Actor)
 			for (UStaticMeshComponent* Instance :
 				 FAGX_ObjectUtilities::GetArchetypeInstances(*Mesh))
 			{
-				UE_LOG(LogAGX, Warning, TEXT("    Found instance '%s' at %p."), *GetNameSafe(Instance), Instance);
+				UE_LOG(
+					LogAGX, Warning, TEXT("    Found instance '%s' at %p."), *GetNameSafe(Instance),
+					Instance);
 				if (Instance->GetMaterial(MaterialIndex) == Current)
 				{
 					UE_LOG(LogAGX, Warning, TEXT("    Updating material."));
@@ -203,7 +207,9 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(AActor& Actor)
 				}
 			}
 
-			UE_LOG(LogAGX, Warning, TEXT("  Setting material on the source mesh: '%s' at %p."), *GetNameSafe(Mesh), Mesh);
+			UE_LOG(
+				LogAGX, Warning, TEXT("  Setting material on the source mesh: '%s' at %p."),
+				*GetNameSafe(Mesh), Mesh);
 			SetMaterial(Mesh, MaterialIndex);
 		}
 	}
