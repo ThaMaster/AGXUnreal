@@ -60,7 +60,7 @@ void FAGX_ModelSourceComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 	];
 	// clang-format on
 
-	CustomizeMaterialReplacer();
+	CustomizeMaterialReplacer(ModelSourceComponent);
 
 	InDetailBuilder.HideCategory(FName("AGX Synchronize Model Info"));
 	InDetailBuilder.HideCategory(FName("Variable"));
@@ -131,11 +131,14 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 {
 	using FGetMaterial = FString (FAGX_ModelSourceComponentCustomization::*)() const;
 	using FSetMaterial = void (FAGX_ModelSourceComponentCustomization::*)(const FAssetData&);
+	using FShouldFilterMaterial =
+		bool (FAGX_ModelSourceComponentCustomization::*)(const FAssetData&);
 
 	static void CreateMaterialWidget(
 		FAGX_ModelSourceComponentCustomization& Customizer, IDetailCategoryBuilder& CategoryBuilder,
 		TSharedPtr<FAssetThumbnailPool>& ThumbnailPool, const FText& Label, const FText& ToolTip,
 		FGetMaterial GetMaterial, FSetMaterial SetMaterial,
+		FShouldFilterMaterial ShouldFilterMaterial)
 	{
 		// clang-format off
 		CategoryBuilder.AddCustomRow(LOCTEXT("ReplaceMaterial", "Replace Material"))
@@ -151,16 +154,71 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 			SNew(SObjectPropertyEntryBox)
 			.AllowedClass(UMaterialInterface::StaticClass())
 			.ThumbnailPool(ThumbnailPool)
+			.OnShouldFilterAsset(&Customizer, ShouldFilterMaterial)
 			.ObjectPath(&Customizer, GetMaterial)
 			.OnObjectChanged(&Customizer, SetMaterial)
 		];
 		// clang-format on
 	}
+
+	static TSet<UObject*> ExtractRenderMaterials(UBlueprint& Blueprint)
+	{
+		TSet<UObject*> Materials;
+		for (UStaticMeshComponent* MeshTemplate :
+			 FAGX_BlueprintUtilities::GetAllTemplateComponents<UStaticMeshComponent>(Blueprint))
+		{
+			for (int32 MaterialIndex = 0; MaterialIndex < MeshTemplate->GetNumMaterials(); ++MaterialIndex)
+			{
+				Materials.Add(MeshTemplate->GetMaterial(MaterialIndex));
+			}
+		}
+		return Materials;
+	}
+
+	static TSet<UObject*> ExtractRenderMaterials(AActor& Actor)
+	{
+		return TSet<UObject*>();
+	}
+
+	static TSet<UObject*> ExtractRenderMaterials(UAGX_ModelSourceComponent* ModelSource)
+	{
+		// Determine if the Model Source Component is part of a Blueprint or an Actor. This code
+		// assumes that Components that are part of a Blueprint, the actual Blueprint and not an
+		// instance of a Blueprint, does not have an Owner. This is true as of Unreal Engine 5.3 but
+		// is not guaranteed to be true forever.
+		UBlueprint* EditBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*ModelSource);
+		AActor* Owner = ModelSource->GetOwner();
+		if (EditBlueprint == nullptr && Owner == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Material replacing failed because the Model Source Component has neither an "
+					 "Owner nor a Blueprint"));
+			return TSet<UObject*>();
+		}
+		else if (EditBlueprint != nullptr)
+		{
+			return ExtractRenderMaterials(*EditBlueprint);
+		}
+		else if (Owner != nullptr)
+		{
+			return ExtractRenderMaterials(*Owner);
+		}
+		else
+		{
+			// Should never get here, the above if-else-if chain should cover all cases.
+			checkNoEntry();
+			return TSet<UObject*>();
+		}
+	}
 };
 
-void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer()
+void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer(
+	UAGX_ModelSourceComponent* ModelSource)
 {
 	using namespace AGX_ModelSourceComponentCustomization_helpers;
+	KnownAssets = ExtractRenderMaterials(ModelSource);
+
 	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder->EditCategory("Material Replacer");
 
 	TSharedPtr<FAssetThumbnailPool> ThumbnailPool = DetailBuilder->GetThumbnailPool();
@@ -171,14 +229,16 @@ void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer()
 			"The Material currently set on Static Mesh Components that should be replaced with "
 			"another Material."),
 		&FAGX_ModelSourceComponentCustomization::GetCurrentMaterialPath,
-		&FAGX_ModelSourceComponentCustomization::OnCurrentMaterialSelected);
+		&FAGX_ModelSourceComponentCustomization::OnCurrentMaterialSelected,
+		&FAGX_ModelSourceComponentCustomization::IncludeOnlyUsedMaterials);
 	CreateMaterialWidget(
 		*this, CategoryBuilder, ThumbnailPool, LOCTEXT("NewMaterial", "New Material"),
 		LOCTEXT(
 			"NewMaterialTooltip",
 			"The Material that should be assigned instead of Current Material."),
 		&FAGX_ModelSourceComponentCustomization::GetNewMaterialPath,
-		&FAGX_ModelSourceComponentCustomization::OnNewMaterialSelected);
+		&FAGX_ModelSourceComponentCustomization::OnNewMaterialSelected,
+		&FAGX_ModelSourceComponentCustomization::IncludeAllMaterials);
 
 	// clang-format off
 	CategoryBuilder.AddCustomRow(LOCTEXT("ReplaceMaterialButton", "Replace Material Button"))
@@ -216,6 +276,18 @@ void FAGX_ModelSourceComponentCustomization::OnCurrentMaterialSelected(const FAs
 void FAGX_ModelSourceComponentCustomization::OnNewMaterialSelected(const FAssetData& AssetData)
 {
 	FAGX_MaterialReplacer::SetNew(AssetData);
+}
+
+bool FAGX_ModelSourceComponentCustomization::IncludeOnlyUsedMaterials(const FAssetData& AssetData)
+{
+	UObject* Asset = AssetData.GetAsset();
+	const bool HideAsset = !KnownAssets.Contains(Asset);
+	return HideAsset;
+}
+
+bool FAGX_ModelSourceComponentCustomization::IncludeAllMaterials(const FAssetData& AssetData)
+{
+	return false;
 }
 
 FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
@@ -266,6 +338,8 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 		// Should never get here, the above if-else-if chain should cover all cases.
 		checkNoEntry();
 	}
+
+	KnownAssets.Add(FAGX_MaterialReplacer::NewMaterial.Get());
 
 	return FReply::Handled();
 }
