@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "Shapes/AGX_SimpleMeshComponent.h"
+#include "Shapes/RenderDataBarrier.h"
 #include "AGX_LogCategory.h"
 
 // Unreal Engine includes.
@@ -14,6 +15,7 @@
 #include "Rendering/PositionVertexBuffer.h"
 #include "RenderingThread.h"
 #include "RHIGPUReadback.h"
+#include "StaticMeshAttributes.h"
 #include "StaticMeshResources.h"
 
 // Standard library includes.
@@ -2019,3 +2021,180 @@ TArray<FAGX_MeshWithTransform> AGX_MeshUtilities::ToMeshWithTransformArray(
 
 	return Meshes;
 }
+
+UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
+	UObject& Outer, const TArray<FVector3f>& Vertices, const TArray<int32>& Triangles,
+	const TArray<FVector3f>& Normals, const TArray<FVector2D>& UVs,
+	const TArray<FVector3f>& Tangents, UMaterialInterface* Material)
+{
+	UStaticMesh* StaticMesh = NewObject<UStaticMesh>(&Outer, NAME_None, RF_Public | RF_Standalone);
+
+	// Create MeshDescription
+	FMeshDescription MeshDescription;
+	FStaticMeshAttributes Attributes(MeshDescription);
+	Attributes.Register();
+
+	// Fill MeshDescription with vertex data
+	TMap<int32, FVertexID> VertexIDMap;
+
+	// Create vertices
+	for (int32 i = 0; i < Vertices.Num(); ++i)
+	{
+		FVertexID VertexID = MeshDescription.CreateVertex();
+		Attributes.GetVertexPositions()[VertexID] = Vertices[i];
+		VertexIDMap.Add(i, VertexID);
+	}
+
+	// Create a polygon group for the material
+	FPolygonGroupID PolygonGroupID = MeshDescription.CreatePolygonGroup();
+	if (Material)
+	{
+		StaticMesh->GetStaticMaterials().Add(FStaticMaterial(Material));
+	}
+
+	// Create triangles
+	for (int32 i = 0; i < Triangles.Num(); i += 3)
+	{
+		FVertexInstanceID VertexInstanceIDs[3];
+
+		for (int32 j = 0; j < 3; ++j)
+		{
+			// const int32 VertexIndex = Triangles[i + j];
+			const int32 VertexIndex = Triangles[i + (2 - j)]; // Reverse winding order
+			FVertexInstanceID VertexInstanceID =
+				MeshDescription.CreateVertexInstance(VertexIDMap[VertexIndex]);
+			VertexInstanceIDs[j] = VertexInstanceID;
+
+			// Assign per-vertex-instance data (UVs, normals, tangents)
+			Attributes.GetVertexInstanceUVs()[VertexInstanceID] = FVector2f(UVs[VertexIndex]);
+			Attributes.GetVertexInstanceNormals()[VertexInstanceID] = Normals[VertexIndex];
+			Attributes.GetVertexInstanceTangents()[VertexInstanceID] = Tangents[VertexIndex];
+		}
+
+		// Create the polygon
+		MeshDescription.CreatePolygon(
+			PolygonGroupID, TArray<FVertexInstanceID> {
+								VertexInstanceIDs[0], VertexInstanceIDs[1], VertexInstanceIDs[2]});
+	}
+
+	// Assign the MeshDescription to the UStaticMesh
+	UStaticMesh::FBuildMeshDescriptionsParams Params;
+	Params.bFastBuild = true;
+	StaticMesh->BuildFromMeshDescriptions({&MeshDescription}, Params);
+
+	return StaticMesh;
+}
+
+UMaterialInstanceDynamic* AGX_MeshUtilities::CreateRenderMaterial(UObject& Outer, UMaterial& Base)
+{
+	return UMaterialInstanceDynamic::Create(&Base, &Outer);
+}
+
+// FRawMesh AGX_MeshUtilities::CreateRawMeshFromRenderData(const FRenderDataBarrier& RenderData)
+//{
+//	if (RenderData.GetNumTriangles() <= 0)
+//	{
+//		// No render mesh data available, this render data is invalid.
+//		UE_LOG(
+//			LogAGX, Error,
+//			TEXT("Did not find any triangle data in imported render data '%s'. Cannot create "
+//				 "StaticMesh asset."),
+//			*RenderData.GetGuid().ToString());
+//		return FRawMesh();
+//	}
+
+// What we have:
+//
+// The render data consists of four arrays: positions, normals, texture coordinates, and
+// indices. The function is similar to the collision data, but this time everything is
+// indexed and all arrays except for the index array create a single conceptual Vertex
+// struct.
+//
+// Data shared among triangles:
+//    positions:  [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+//    normals:    [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+//    tex coords: [Vec2, Vec2, Vec2, Vec2, Vec2, ... ]
+//
+// Data owned by each triangle:
+//                |  Triangle 0   |  Triangle 1   | ... |
+//    indices:    | int, int, int | int, int, int | ... |
+//
+//
+// What we want:
+//
+// Unreal Engine store its meshes in a format similar to the render format in AGX Dynamics, but
+// more data is owned per triangle instead of shared between multiple triangles. The Unreal
+// Engine format consists of six arrays: positions, indices, tangent X, tangent Y, tangent Z,
+// and texture coordinates. Tangent Z has the same meaning as the normal in the AGX Dynamics
+// data.
+//
+// Data shared among triangles:
+//   positions: [Vec3, Vec3, Vec3, Vec3, Vec3, ... ]
+//
+// Data owned by each triangle:
+//               |    Triangle 0    |    Triangle 1    | ... |
+//    indices:   | int,  int,  int  | int,  int,  int  | ... | Index into positions.
+//    tangent x: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... | Not written, generated.
+//    tangent y: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... | Not written, generated.
+//    tangent z: | Vec3, Vec3, Vec3 | Vec3, Vec3, Vec3 | ... | Copied from Render Data.
+//    tex coord: | Vec2, Vec2, Vec2 | Vec2, Vec2, Vec2 | ... | Copied from Render Data.
+//    colors:    | FCol, FCol, FCol | FCol, FCol, FCol | ... | While everywhere.
+//    material:  |       int        |       int        | ... | 0 everywhere.
+//    smoothing: |      uint        |      uint        | ... | All-1 everywhere.
+
+//	FRawMesh RawMesh;
+//
+//	// A straight up copy of the vertex positions may be wasteful since the render data may
+//	// contain duplicated positions with different normals or texture coordinates. Sine Unreal
+//	// Engine decouples the normals and the texture coordinates from the positions we may end up
+//	// with useless position duplicates. If this becomes a serious concern, then find a way to
+//	// remove duplicates and patch the WedgeIndies to point to the correct merged vertex position.
+//	// Must use the render vertex indices in the per-index conversion loop below.
+//	const TArray<FVector>& TrimeshVertexPositions = RenderData.GetPositions();
+//	RawMesh.VertexPositions.SetNum(TrimeshVertexPositions.Num());
+//	for (int32 I = 0; I < TrimeshVertexPositions.Num(); ++I)
+//	{
+//		// May do a double -> float conversion, depending on the UE_LARGE_WORLD_COORDINATES_DISABLED
+//		// preprocessor macro.
+//		RawMesh.VertexPositions[I] = ToMeshVector(TrimeshVertexPositions[I]);
+//	}
+//
+//	RawMesh.WedgeIndices = RenderData.GetIndices();
+//
+//	const int32 NumTriangles = RenderData.GetNumTriangles();
+//	const int32 NumIndices = RenderData.GetNumIndices();
+//
+//	RawMesh.WedgeTangentZ.Reserve(NumIndices);
+//	RawMesh.WedgeColors.Reserve(NumIndices);
+//	RawMesh.WedgeTexCoords[0].Reserve(NumIndices);
+//
+//	const TArray<FVector> RenderNormals = RenderData.GetNormals();
+//	const auto RenderTexCoords = RenderData.GetTextureCoordinates();
+//
+//	for (int32 I = 0; I < NumIndices; ++I)
+//	{
+//		const int32 RenderI = RawMesh.WedgeIndices[I];
+//		RawMesh.WedgeTangentZ.Add(ToMeshVector(RenderNormals[RenderI]));
+//		// Not all Render Data has texture coordinates.
+//		if (RenderTexCoords.Num() > I)
+//		{
+//			RawMesh.WedgeTexCoords[0].Add(
+//				FVector2f {(float) RenderTexCoords[RenderI].X, (float) RenderTexCoords[RenderI].Y});
+//		}
+//		else
+//		{
+//			RawMesh.WedgeTexCoords[0].Add({0.0f, 0.0f});
+//		}
+//		RawMesh.WedgeColors.Add(FColor(255, 255, 255));
+//	}
+//
+//	RawMesh.FaceMaterialIndices.Reserve(NumTriangles);
+//	RawMesh.FaceSmoothingMasks.Reserve(NumTriangles);
+//	for (int32 I = 0; I < NumTriangles; ++I)
+//	{
+//		RawMesh.FaceMaterialIndices.Add(0);
+//		RawMesh.FaceSmoothingMasks.Add(0xFFFFFFFF);
+//	}
+//
+//	return RawMesh;
+//}

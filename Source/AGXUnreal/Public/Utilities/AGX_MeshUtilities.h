@@ -34,6 +34,9 @@
 
 class AStaticMeshActor;
 class FDynamicMeshIndexBuffer32;
+class FRenderDataBarrier;
+class UStaticMesh;
+
 struct FStaticMeshVertexBuffers;
 struct FAGX_SimpleMeshTriangle;
 
@@ -335,4 +338,19 @@ public:
 
 	static TArray<FAGX_MeshWithTransform> ToMeshWithTransformArray(
 		const TArray<AStaticMeshActor*> Actors);
+
+	/**
+	* Creates and builds a new static mesh.
+	* This function supports runtime usage.
+	*/
+	static UStaticMesh* CreateStaticMesh(
+		UObject& Outer, const TArray<FVector3f>& Vertices, const TArray<int32>& Triangles,
+		const TArray<FVector3f>& Normals, const TArray<FVector2D>& UVs,
+		const TArray<FVector3f>& Tangents, UMaterialInterface* Material);
+
+	/**
+	* Creates a new render Material instance based on the given UMaterial Base.
+	* This function supports runtime usage.
+	*/
+	UMaterialInstanceDynamic* CreateRenderMaterial(UObject& Outer, UMaterial& Base);
 };
