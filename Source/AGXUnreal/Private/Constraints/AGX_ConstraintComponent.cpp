@@ -295,7 +295,7 @@ namespace
 	}
 }
 
-void UAGX_ConstraintComponent::SetCompliance(EGenericDofIndex Index, float InCompliance)
+void UAGX_ConstraintComponent::SetComplianceFloat(EGenericDofIndex Index, float InCompliance)
 {
 	SetCompliance(Index, static_cast<double>(InCompliance));
 }
@@ -321,7 +321,7 @@ double UAGX_ConstraintComponent::GetCompliance(EGenericDofIndex Index) const
 		[this](int32 NativeDof) { return NativeBarrier->GetCompliance(NativeDof); });
 }
 
-void UAGX_ConstraintComponent::SetElasticity(EGenericDofIndex Index, float InElasticity)
+void UAGX_ConstraintComponent::SetElasticityFloat(EGenericDofIndex Index, float InElasticity)
 {
 	SetElasticity(Index, static_cast<double>(InElasticity));
 }
@@ -341,7 +341,7 @@ double UAGX_ConstraintComponent::GetElasticity(EGenericDofIndex Index) const
 	return 1.0 / GetCompliance(Index);
 }
 
-void UAGX_ConstraintComponent::SetSpookDamping(EGenericDofIndex Index, float InSpookDamping)
+void UAGX_ConstraintComponent::SetSpookDampingFloat(EGenericDofIndex Index, float InSpookDamping)
 {
 	SetSpookDamping(Index, static_cast<double>(InSpookDamping));
 }
@@ -367,7 +367,13 @@ double UAGX_ConstraintComponent::GetSpookDamping(EGenericDofIndex Index) const
 		[this](int32 NativeDof) { return NativeBarrier->GetSpookDamping(NativeDof); });
 }
 
-void UAGX_ConstraintComponent::SetForceRange(EGenericDofIndex Index, float RangeMin, float RangeMax)
+void UAGX_ConstraintComponent::SetForceRange(EGenericDofIndex Index, double Min, double Max)
+{
+	SetForceRange(Index, {Min, Max});
+}
+
+void UAGX_ConstraintComponent::SetForceRangeFloat(
+	EGenericDofIndex Index, float RangeMin, float RangeMax)
 {
 	SetForceRange(
 		Index, FAGX_RealInterval(static_cast<double>(RangeMin), static_cast<double>(RangeMax)));
@@ -403,11 +409,26 @@ float UAGX_ConstraintComponent::GetForceRangeMaxFloat(EGenericDofIndex Index) co
 	return static_cast<float>(GetForceRangeMax(Index));
 }
 
+void UAGX_ConstraintComponent::GetForceRange(EGenericDofIndex Index, double& Min, double& Max) const
+{
+	FAGX_RealInterval Range = GetForceRange(Index);
+	Min = Range.Min;
+	Max = Range.Max;
+}
+
 FAGX_RealInterval UAGX_ConstraintComponent::GetForceRange(EGenericDofIndex Index) const
 {
 	return GetFromBarrier(
 		*this, Index, TEXT("GetForceRange"), ForceRange[Index],
 		[this](int32 NativeDof) { return NativeBarrier->GetForceRange(NativeDof); });
+}
+
+void UAGX_ConstraintComponent::GetForceRangeFloat(
+	EGenericDofIndex Index, float& Min, float& Max) const
+{
+	FAGX_RealInterval Range = GetForceRange(Index);
+	Min = Range.Min;
+	Max = Range.Max;
 }
 
 void UAGX_ConstraintComponent::SetComputeForces(bool bInComputeForces)
@@ -1181,11 +1202,11 @@ void UAGX_ConstraintComponent::CreateNative()
 	if (!GetValid())
 	{
 		UE_LOG(
-			LogAGX, Error,
-			TEXT("Constraint '%s' in '%s': Created invalid constraint. See the LogAGXDynamics "
-				 "categoty in the Output Log."),
+			LogAGX, Warning,
+			TEXT("Constraint '%s' in '%s': GetValid returned false after creating Native AGX "
+				 "Dynamics Constraint. The LogAGXDynamics category in the Output Log may contain "
+				 "more information."),
 			*GetName(), *GetLabelSafe(GetOwner()));
-		return;
 	}
 
 	UpdateNativeProperties();

@@ -84,7 +84,7 @@ FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult FAGX_BlueprintUtilities:
 	if (!SearchParentBlueprints)
 	{
 		// Nothing found, we are done.
-		return FAGX_BlueprintUtilities::FAGX_BlueprintNodeSearchResult(Blueprint, nullptr);
+		return FAGX_BlueprintNodeSearchResult(Blueprint, nullptr);
 	}
 
 	// Try with the next parent Blueprint.
@@ -132,6 +132,10 @@ FTransform FAGX_BlueprintUtilities::GetTemplateComponentWorldTransform(
 	}
 
 	if (ComponentNode == nullptr)
+	{
+		return FTransform::Identity;
+	}
+	else if (ComponentNode->IsRootNode())
 	{
 		return FTransform::Identity;
 	}
@@ -417,11 +421,11 @@ USCS_Node* FAGX_BlueprintUtilities::GetParentSCSNode(USCS_Node* Node, bool bSear
 	if (!bSearchParentBlueprints)
 		return nullptr;
 
-	const FString ParentName = Node->ParentComponentOrVariableName.ToString();
-	if (ParentName.IsEmpty())
+	const FName ParentName = Node->ParentComponentOrVariableName;
+	if (ParentName.IsNone())
 		return nullptr;
 
-	return GetSCSNodeFromName(*Blueprint, ParentName, true).FoundNode;
+	return GetSCSNodeFromName(*Blueprint, ParentName.ToString(), true).FoundNode;
 }
 
 UActorComponent* FAGX_BlueprintUtilities::GetTemplateComponentAttachParent(

@@ -80,12 +80,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		/// Points to the AGX Dynamics Material library location.
 		MaterialLibrary,
 
-		/// Points to the AGX Dynamics Terrain Material library location.
-		TerrainMaterialLibrary,
-
-		/// Points to the AGX Dynamics Contact Material library location.
-		ContactMaterialLibrary,
-
 		/// Points to AGX Dynamics external resources.
 		External
   };
@@ -202,13 +196,15 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("agxCore", LibSource.AGX);
 		RuntimeLibFiles.Add("agxHydraulics", LibSource.AGX);
 		RuntimeLibFiles.Add("agxSabre", LibSource.AGX);
+		RuntimeLibFiles.Add("agxSensor", LibSource.AGX);
 		RuntimeLibFiles.Add("agxTerrain", LibSource.AGX);
 		RuntimeLibFiles.Add("agxCable", LibSource.AGX);
 		RuntimeLibFiles.Add("agxModel", LibSource.AGX);
 		RuntimeLibFiles.Add("agxVehicle", LibSource.AGX);
-		RuntimeLibFiles.Add("colamd", LibSource.AGX);
 		RuntimeLibFiles.Add("agxROS2", LibSource.AGX);
 		RuntimeLibFiles.Add("agx-nt-ros2", LibSource.AGX);
+		RuntimeLibFiles.Add("AlgoryxGPUSensorsImpl", LibSource.AGX);
+		RuntimeLibFiles.Add("colamd", LibSource.AGX);
 		RuntimeLibFiles.Add("fastcdr*", LibSource.AGX);
 		RuntimeLibFiles.Add("fastrtps*", LibSource.AGX);
 
@@ -238,6 +234,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		LinkLibFiles.Add("agxCore", LibSource.AGX);
 		LinkLibFiles.Add("agxHydraulics", LibSource.AGX);
 		LinkLibFiles.Add("agxSabre", LibSource.AGX);
+		LinkLibFiles.Add("agxSensor", LibSource.AGX);
 		LinkLibFiles.Add("agxTerrain", LibSource.AGX);
 		LinkLibFiles.Add("agxCable", LibSource.AGX);
 		LinkLibFiles.Add("agxModel", LibSource.AGX);
@@ -273,7 +270,8 @@ public class AGXDynamicsLibrary : ModuleRules
 			}
 
 			RuntimeLibFiles.Add("zlib", LibSource.Dependencies);
-			RuntimeLibFiles.Add("libpng", LibSource.Dependencies);
+			RuntimeLibFiles.Add("libpng16", LibSource.Dependencies);
+			RuntimeLibFiles.Add("OIS", LibSource.Dependencies);
 			if (TargetAGXVersion.IsOlderThan(2, 31, 0, 0))
 			{
 				RuntimeLibFiles.Add("glew", LibSource.Dependencies);
@@ -318,6 +316,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			DelayLoadLibraries.Add("agxPhysics", LibSource.AGX);
 			DelayLoadLibraries.Add("agxCore", LibSource.AGX);
 			DelayLoadLibraries.Add("agxSabre", LibSource.AGX);
+			DelayLoadLibraries.Add("agxSensor", LibSource.AGX);
 			DelayLoadLibraries.Add("agxTerrain", LibSource.AGX);
 			DelayLoadLibraries.Add("agxCable", LibSource.AGX);
 			DelayLoadLibraries.Add("agxModel", LibSource.AGX);
@@ -601,6 +600,7 @@ public class AGXDynamicsLibrary : ModuleRules
 				"agxPowerLine",
 				"agxRender",
 				"agxSabre",
+				"agxSensor",
 				"agxSDK",
 				"agxStream",
 				"agxTerrain",
@@ -667,32 +667,8 @@ public class AGXDynamicsLibrary : ModuleRules
 		}
 	}
 
-	// Copy Terrain Material Library.
-	{
-		string Source = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
-		string Dest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.TerrainMaterialLibrary, true);
-
-		if (!CopyDirectoryRecursively(Source, Dest))
+		// Copy needed AGX Dynamics Components/agx/... directories and files.
 		{
-			CleanBundledAGXDynamicsResources();
-			return;
-		}
-	}
-
-	// Copy Contact Material Library.
-	{
-		string Source = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.ContactMaterialLibrary, true);
-		string Dest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.ContactMaterialLibrary, true);
-
-		if (!CopyDirectoryRecursively(Source, Dest))
-		{
-			CleanBundledAGXDynamicsResources();
-			return;
-		}
-	}
-
-    // Copy needed AGX Dynamics Components/agx/... directories and files.
-    {
 			string ComponentsDirSource = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
 			string ComponentsDirDest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.Components, true);
 			string PhysicsDirSource = Path.Combine(ComponentsDirSource, "agx", "Physics");
@@ -1355,15 +1331,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 			LibSources.Add(LibSource.MaterialLibrary, new LibSourceInfo(
 				null, null,
-				Path.Combine(SourceDir, "data", "MaterialLibrary", "Materials")
-			));
-			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
-				null, null,
-				Path.Combine(SourceDir, "data", "MaterialLibrary", "TerrainMaterials")
-			));
-			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
-				null, null,
-				Path.Combine(SourceDir, "data", "MaterialLibrary", "ContactMaterials")
+				Path.Combine(SourceDir, "data", "MaterialLibrary")
 			));
 			LibSources.Add(LibSource.External, new LibSourceInfo(
 				Path.Combine(BuildDir, "include", "external"),
@@ -1409,15 +1377,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 			LibSources.Add(LibSource.MaterialLibrary, new LibSourceInfo(
 				null, null,
-				Path.Combine(BaseDir, "data", "MaterialLibrary", "Materials")
-			));
-			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
-				null, null,
-				Path.Combine(BaseDir, "data", "MaterialLibrary", "TerrainMaterials")
-			));
-			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
-				null, null,
-				Path.Combine(BaseDir, "data", "MaterialLibrary", "ContactMaterials")
+				Path.Combine(BaseDir, "data", "MaterialLibrary")
 			));
 			LibSources.Add(LibSource.External, new LibSourceInfo(
 				Path.Combine(BaseDir, "include", "external"),
@@ -1462,16 +1422,9 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 			LibSources.Add(LibSource.MaterialLibrary, new LibSourceInfo(
 				null, null,
-				Path.Combine(BaseDir, "data", "MaterialLibrary", "Materials")
+				Path.Combine(BaseDir, "data", "MaterialLibrary")
 			));
-			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
-				null, null,
-				Path.Combine(BaseDir, "data", "MaterialLibrary", "TerrainMaterials")
-			));
-			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
-				null, null,
-				Path.Combine(BaseDir, "data", "MaterialLibrary", "ContactMaterials")
-			));
+			
 			LibSources.Add(LibSource.External, new LibSourceInfo(
 				Path.Combine(BaseDir, "include", "external"),
 				null, null
@@ -1515,15 +1468,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 			LibSources.Add(LibSource.MaterialLibrary, new LibSourceInfo(
 				null, null,
-				Path.Combine(DataDir, "MaterialLibrary", "Materials")
-			));
-			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
-				null, null,
-				Path.Combine(DataDir, "MaterialLibrary", "TerrainMaterials")
-			));
-			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
-				null, null,
-				Path.Combine(DataDir, "MaterialLibrary", "ContactMaterials")
+				Path.Combine(DataDir, "MaterialLibrary")
 			));
 			LibSources.Add(LibSource.External, new LibSourceInfo(
 				Path.Combine(BaseDir, "include", "external"),
@@ -1565,15 +1510,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			));
 			LibSources.Add(LibSource.MaterialLibrary, new LibSourceInfo(
 				null, null,
-				Path.Combine(BaseDir, "data", "MaterialLibrary", "Materials")
-			));
-			LibSources.Add(LibSource.TerrainMaterialLibrary, new LibSourceInfo(
-				null, null,
-				Path.Combine(BaseDir, "data", "MaterialLibrary", "TerrainMaterials")
-			));
-			LibSources.Add(LibSource.ContactMaterialLibrary, new LibSourceInfo(
-				null, null,
-				Path.Combine(BaseDir, "data", "MaterialLibrary", "ContactMaterials")
+				Path.Combine(BaseDir, "data", "MaterialLibrary")
 			));
 			LibSources.Add(LibSource.External, new LibSourceInfo(
 				Path.Combine(BaseDir, "include", "external"),
@@ -1699,7 +1636,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			{
 				// On Windows there is separate file types for linking and at
 				// runtime. At link time .lib files in the lib directory is
-				// used, and  at run time .dll files in the bin directory is
+				// used, and at run time .dll files in the bin directory is
 				// used.
 				LinkLibraryPrefix = "";
 				LinkLibraryPostfix = ".lib";

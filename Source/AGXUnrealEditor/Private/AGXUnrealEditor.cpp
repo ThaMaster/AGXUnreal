@@ -6,10 +6,12 @@
 #include "AssetToolsModule.h"
 #include "AssetTypeCategories.h"
 #include "Editor/UnrealEdEngine.h"
+#include "Framework/Commands/Commands.h"
 #include "IAssetTools.h"
 #include "IAssetTypeActions.h"
 #include "IPlacementModeModule.h"
 #include "ISettingsModule.h"
+#include "LevelEditor.h"
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
 #include "UnrealEdGlobals.h"
@@ -27,6 +29,7 @@
 #include "AGX_RigidBodyReference.h"
 #include "AGX_Real.h"
 #include "AGX_RealDetails.h"
+#include "AGX_RuntimeStyle.h"
 #include "AGX_ModelSourceComponent.h"
 #include "AGX_ModelSourceComponentCustomization.h"
 #include "AGX_Simulation.h"
@@ -41,6 +44,7 @@
 #include "AgxEdMode/AGX_AgxEdModeFileCustomization.h"
 #include "AgxEdMode/AGX_AgxEdModeTerrain.h"
 #include "AgxEdMode/AGX_AgxEdModeTerrainCustomization.h"
+#include "AgxEdMode/AGX_GrabMode.h"
 #include "AMOR/AGX_ConstraintMergeSplitThresholdsTypeActions.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholdsTypeActions.h"
 #include "AMOR/AGX_WireMergeSplitThresholdsTypeActions.h"
@@ -81,8 +85,20 @@
 #include "Sensors/AGX_CameraSensorBase.h"
 #include "Sensors/AGX_CameraSensorComponentCustomization.h"
 #include "Sensors/AGX_CameraSensorComponentVisualizer.h"
+#include "Sensors/AGX_LidarAmbientMaterialTypeActions.h"
+#include "Sensors/AGX_LidarLambertianOpaqueMaterialTypeActions.h"
+#include "Sensors/AGX_LidarSensorComponent.h"
+#include "Sensors/AGX_LidarSensorComponentCustomization.h"
+#include "Sensors/AGX_LidarSensorComponentVisualizer.h"
 #include "Sensors/AGX_LidarSensorLineTraceComponent.h"
 #include "Sensors/AGX_LidarSensorLineTraceComponentVisualizer.h"
+#include "Sensors/AGX_LidarSensorReference.h"
+#include "Sensors/AGX_CustomRayPatternParametersTypeActions.h"
+#include "Sensors/AGX_GenericHorizontalSweepParametersTypeActions.h"
+#include "Sensors/AGX_OusterOS0ParametersTypeActions.h"
+#include "Sensors/AGX_OusterOS1ParametersTypeActions.h"
+#include "Sensors/AGX_OusterOS2ParametersTypeActions.h"
+#include "Sensors/AGX_SensorEnvironment.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_ShapeComponentCustomization.h"
 #include "Terrain/AGX_Terrain.h"
@@ -98,6 +114,7 @@
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Tires/AGX_TwoBodyTireActor.h"
 #include "Tires/AGX_TwoBodyTireComponentCustomization.h"
+#include "Utilities/AGX_EditorUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/AGX_TrackComponentDetails.h"
 #include "Vehicle/AGX_TrackComponentVisualizer.h"
@@ -115,6 +132,37 @@
 #include "Wire/AGX_WireWinchVisualizer.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
+
+class FAGX_GlobalKeyboardCommands : public TCommands<FAGX_GlobalKeyboardCommands>
+{
+public:
+	FAGX_GlobalKeyboardCommands()
+		: TCommands<FAGX_GlobalKeyboardCommands>(
+			  TEXT("FAGXUnrealEditorModule"), LOCTEXT("FAGXUnrealEditorModule", "AGX UE Editor"),
+			  NAME_None, FAGX_RuntimeStyle::GetStyleSetName())
+	{
+	}
+
+	virtual void RegisterCommands() override
+	{
+		auto Sim = Cast<UAGX_Simulation>(UAGX_Simulation::StaticClass()->GetDefaultObject());
+		if (Sim == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("RegisterCommands failed in AGXUnrealEditor, could not get the AGX Simulation "
+					 "CDO. Keyboard commands may not work as expected."));
+			return;
+		}
+
+		UI_COMMAND(
+			ActivateGrabCommand, "Activate AGX Grab", "Activate AGX Grab",
+			EUserInterfaceActionType::Button, Sim->GrabModeKeyboardShortcut);
+	}
+
+public:
+	TSharedPtr<FUICommandInfo> ActivateGrabCommand;
+};
 
 void FAGXUnrealEditorModule::StartupModule()
 {
@@ -177,12 +225,26 @@ void FAGXUnrealEditorModule::UnregisterProjectSettings()
 
 void FAGXUnrealEditorModule::RegisterCommands()
 {
-	// Nothing here yet.
+	FAGX_GlobalKeyboardCommands::Register();
+
+	FLevelEditorModule& LevelEditorModule =
+		FModuleManager::GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
+
+	const auto GrabModeCommands = FAGX_GlobalKeyboardCommands::Get();
+	if (!LevelEditorModule.GetGlobalLevelEditorActions()->IsActionMapped(
+			GrabModeCommands.ActivateGrabCommand))
+	{
+		LevelEditorModule.GetGlobalLevelEditorActions()->MapAction(
+			GrabModeCommands.ActivateGrabCommand,
+			FExecuteAction::CreateRaw(this, &FAGXUnrealEditorModule::OnGrabModeCommand),
+			FCanExecuteAction::CreateRaw(
+				this, &FAGXUnrealEditorModule::OnCanExecuteGrabModeCommand));
+	}
 }
 
 void FAGXUnrealEditorModule::UnregisterCommands()
 {
-	// Nothing here yet.
+	FAGX_GlobalKeyboardCommands::Unregister();
 }
 
 void FAGXUnrealEditorModule::RegisterAssetTypeActions()
@@ -194,30 +256,46 @@ void FAGXUnrealEditorModule::RegisterAssetTypeActions()
 		FName(TEXT("AgxUnreal")), LOCTEXT("AgxAssetCategory", "AGX Dynamics"));
 
 	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
-	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_ShapeMaterialTypeActions(AgxAssetCategoryBit)));
-	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_TerrainMaterialAssetTypeActions(AgxAssetCategoryBit)));
-	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_ConstraintMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_ContactMaterialAssetTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools,
+		MakeShareable(new FAGX_CustomRayPatternParametersTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools,
+		MakeShareable(new FAGX_GenericHorizontalSweepParametersTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_LidarAmbientMaterialTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools,
+		MakeShareable(new FAGX_LidarLambertianOpaqueMaterialTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_OusterOS0ParametersTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_OusterOS1ParametersTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_OusterOS2ParametersTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_PlayRecordTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_ShapeMaterialTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_ShapeContactMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
-		AssetTools,
-		MakeShareable(new FAGX_WireMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
-	RegisterAssetTypeAction(
-		AssetTools, MakeShareable(new FAGX_TrackPropertiesAssetTypeActions(AgxAssetCategoryBit)));
-	RegisterAssetTypeAction(
 		AssetTools, MakeShareable(new FAGX_ShovelPropertiesActions(AgxAssetCategoryBit)));
-
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_TerrainMaterialAssetTypeActions(AgxAssetCategoryBit)));
 	RegisterAssetTypeAction(
 		AssetTools,
 		MakeShareable(new FAGX_TrackInternalMergePropertiesAssetTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools, MakeShareable(new FAGX_TrackPropertiesAssetTypeActions(AgxAssetCategoryBit)));
+	RegisterAssetTypeAction(
+		AssetTools,
+		MakeShareable(new FAGX_WireMergeSplitThresholdsTypeActions(AgxAssetCategoryBit)));
 }
 
 void FAGXUnrealEditorModule::UnregisterAssetTypeActions()
@@ -264,6 +342,12 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		FAGX_Frame::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
 			&FAGX_FrameCustomization::MakeInstance));
+
+	// Lidar Sensor Reference uses the base class customization.
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		FAGX_LidarSensorReference::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(
+			&FAGX_ComponentReferenceCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FAGX_Real::StaticStruct()->GetFName(),
@@ -350,9 +434,9 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 			&FAGX_HeightFieldBoundsComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
-		UAGX_TerrainMaterial::StaticClass()->GetFName(),
+		UAGX_LidarSensorComponent::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
-			&FAGX_TerrainMaterialCustomization::MakeInstance));
+			&FAGX_LidarSensorComponentCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_ModelSourceComponent::StaticClass()->GetFName(),
@@ -383,6 +467,11 @@ void FAGXUnrealEditorModule::RegisterCustomizations()
 		UAGX_Simulation::StaticClass()->GetFName(),
 		FOnGetDetailCustomizationInstance::CreateStatic(
 			&FAGX_SimulationCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
+		UAGX_TerrainMaterial::StaticClass()->GetFName(),
+		FOnGetDetailCustomizationInstance::CreateStatic(
+			&FAGX_TerrainMaterialCustomization::MakeInstance));
 
 	PropertyModule.RegisterCustomClassLayout(
 		UAGX_TrackComponent::StaticClass()->GetFName(),
@@ -425,6 +514,9 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_Frame::StaticStruct()->GetFName());
 
+	PropertyModule.UnregisterCustomPropertyTypeLayout(
+		FAGX_LidarSensorReference::StaticStruct()->GetFName());
+
 	PropertyModule.UnregisterCustomPropertyTypeLayout(FAGX_Real::StaticStruct()->GetFName());
 
 	PropertyModule.UnregisterCustomPropertyTypeLayout(
@@ -451,8 +543,7 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_AgxEdModeTerrain::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(
-		UAGX_CameraSensorBase::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(UAGX_CameraSensorBase::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_CollisionGroupAdderComponent::StaticClass()->GetFName());
@@ -468,7 +559,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(UAGX_TerrainMaterial::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(
+		UAGX_LidarSensorComponent::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_ModelSourceComponent::StaticClass()->GetFName());
@@ -481,10 +573,11 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_Simulation::StaticClass()->GetFName());
 
+	PropertyModule.UnregisterCustomClassLayout(UAGX_TerrainMaterial::StaticClass()->GetFName());
+
 	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(
-		UAGX_TrackRenderer::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(UAGX_TrackRenderer::StaticClass()->GetFName());
 
 	PropertyModule.UnregisterCustomClassLayout(
 		UAGX_TwoBodyTireComponent::StaticClass()->GetFName());
@@ -513,6 +606,10 @@ void FAGXUnrealEditorModule::RegisterComponentVisualizers()
 	RegisterComponentVisualizer(
 		UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName(),
 		MakeShareable(new FAGX_HeightFieldBoundsComponentVisualizer));
+
+	RegisterComponentVisualizer(
+		UAGX_LidarSensorComponent::StaticClass()->GetFName(),
+		MakeShareable(new FAGX_LidarSensorComponentVisualizer));
 
 	RegisterComponentVisualizer(
 		UAGX_LidarSensorLineTraceComponent::StaticClass()->GetFName(),
@@ -545,6 +642,7 @@ void FAGXUnrealEditorModule::UnregisterComponentVisualizers()
 	UnregisterComponentVisualizer(UAGX_ConstraintComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_ConstraintFrameComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_HeightFieldBoundsComponent::StaticClass()->GetFName());
+	UnregisterComponentVisualizer(UAGX_LidarSensorComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_LidarSensorLineTraceComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_ShovelComponent::StaticClass()->GetFName());
 	UnregisterComponentVisualizer(UAGX_TireComponent::StaticClass()->GetFName());
@@ -584,11 +682,16 @@ void FAGXUnrealEditorModule::RegisterModes()
 			FAGX_EditorStyle::GetStyleSetName(), FAGX_EditorStyle::AgxIcon,
 			FAGX_EditorStyle::AgxIconSmall),
 		/*bVisisble*/ true);
+
+	FEditorModeRegistry::Get().RegisterMode<FAGX_GrabMode>(
+		FAGX_GrabMode::EM_AGX_GrabModeId, LOCTEXT("AGXGrabMode", "Grab Mode"), FSlateIcon(),
+		/*bVisisble*/ false);
 }
 
 void FAGXUnrealEditorModule::UnregisterModes()
 {
 	FEditorModeRegistry::Get().UnregisterMode(FAGX_AgxEdMode::EM_AGX_AgxEdModeId);
+	FEditorModeRegistry::Get().UnregisterMode(FAGX_GrabMode::EM_AGX_GrabModeId);
 }
 
 void FAGXUnrealEditorModule::RegisterPlacementCategory()
@@ -620,6 +723,7 @@ void FAGXUnrealEditorModule::RegisterPlacementCategory()
 	RegisterPlaceableItem(AAGX_HingeConstraintActor::StaticClass());
 	RegisterPlaceableItem(AAGX_LockConstraintActor::StaticClass());
 	RegisterPlaceableItem(AAGX_PrismaticConstraintActor::StaticClass());
+	RegisterPlaceableItem(AAGX_SensorEnvironment::StaticClass());
 	RegisterPlaceableItem(AAGX_Terrain::StaticClass());
 	RegisterPlaceableItem(AAGX_CollisionGroupDisablerActor::StaticClass());
 	RegisterPlaceableItem(AAGX_RigidBodyActor::StaticClass());
@@ -641,6 +745,18 @@ void FAGXUnrealEditorModule::InitializeAssets()
 	AGX_MaterialLibrary::InitializeShapeMaterialAssetLibrary();
 	AGX_MaterialLibrary::InitializeContactMaterialAssetLibrary();
 	AGX_MaterialLibrary::InitializeTerrainMaterialAssetLibrary();
+	AGX_MaterialLibrary::InitializeLidarAmbientMaterialAssetLibrary();
+}
+
+void FAGXUnrealEditorModule::OnGrabModeCommand() const
+{
+	FAGX_GrabMode::Activate();
+}
+
+bool FAGXUnrealEditorModule::OnCanExecuteGrabModeCommand() const
+{
+	const UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
+	return World != nullptr && World->IsGameWorld();
 }
 
 #undef LOCTEXT_NAMESPACE
