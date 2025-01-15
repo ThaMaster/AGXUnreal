@@ -127,15 +127,15 @@ FReply FAGX_ModelSourceComponentCustomization::OnSynchronizeModelButtonClicked()
 	return FReply::Handled();
 }
 
-struct FAGX_ModelSourceComponentCustomization_helper
+namespace AGX_ModelSourceComponentCustomization_helpers
 {
 	using FGetMaterial = FString (FAGX_ModelSourceComponentCustomization::*)() const;
 	using FSetMaterial = void (FAGX_ModelSourceComponentCustomization::*)(const FAssetData&);
 
 	static void CreateMaterialWidget(
 		FAGX_ModelSourceComponentCustomization& Customizer, IDetailCategoryBuilder& CategoryBuilder,
-		const FText& Label, const FText& ToolTip, FGetMaterial GetMaterial,
-		FSetMaterial SetMaterial)
+		TSharedPtr<FAssetThumbnailPool>& ThumbnailPool, const FText& Label, const FText& ToolTip,
+		FGetMaterial GetMaterial, FSetMaterial SetMaterial,
 	{
 		// clang-format off
 		CategoryBuilder.AddCustomRow(LOCTEXT("ReplaceMaterial", "Replace Material"))
@@ -150,6 +150,7 @@ struct FAGX_ModelSourceComponentCustomization_helper
 		[
 			SNew(SObjectPropertyEntryBox)
 			.AllowedClass(UMaterialInterface::StaticClass())
+			.ThumbnailPool(ThumbnailPool)
 			.ObjectPath(&Customizer, GetMaterial)
 			.OnObjectChanged(&Customizer, SetMaterial)
 		];
@@ -159,18 +160,20 @@ struct FAGX_ModelSourceComponentCustomization_helper
 
 void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer()
 {
+	using namespace AGX_ModelSourceComponentCustomization_helpers;
 	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder->EditCategory("Material Replacer");
 
-	FAGX_ModelSourceComponentCustomization_helper::CreateMaterialWidget(
-		*this, CategoryBuilder, LOCTEXT("CurrentMaterial", "Current Material"),
+	TSharedPtr<FAssetThumbnailPool> ThumbnailPool = DetailBuilder->GetThumbnailPool();
+	CreateMaterialWidget(
+		*this, CategoryBuilder, ThumbnailPool, LOCTEXT("CurrentMaterial", "Current Material"),
 		LOCTEXT(
 			"CurrentMaterialTooltip",
 			"The Material currently set on Static Mesh Components that should be replaced with "
 			"another Material."),
 		&FAGX_ModelSourceComponentCustomization::GetCurrentMaterialPath,
 		&FAGX_ModelSourceComponentCustomization::OnCurrentMaterialSelected);
-	FAGX_ModelSourceComponentCustomization_helper::CreateMaterialWidget(
-		*this, CategoryBuilder, LOCTEXT("NewMaterial", "New Material"),
+	CreateMaterialWidget(
+		*this, CategoryBuilder, ThumbnailPool, LOCTEXT("NewMaterial", "New Material"),
 		LOCTEXT(
 			"NewMaterialTooltip",
 			"The Material that should be assigned instead of Current Material."),
