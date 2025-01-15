@@ -238,6 +238,10 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 			TEXT("Material replacing is currenly only supported with a Model Source Component."));
 	}
 
+	// Determine if the Model Source Component is part of a Blueprint or an Actor. This code assumes
+	// that Components that are part of a Blueprint, the actual Blueprint and not an instance of a
+	// Blueprint, does not have an Owner. This is true as of Unreal Engine 5.3 but is not guaranteed
+	// to be true forever.
 	UBlueprint* EditBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*ModelSource);
 	AActor* Owner = ModelSource->GetOwner();
 	if (EditBlueprint == nullptr && Owner == nullptr)
@@ -246,13 +250,9 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 			TEXT("Material replacing failed because the Model Source Component has neither an "
 				 "Owner nor a Blueprint"));
 	}
-
-	if (EditBlueprint != nullptr)
+	else if (EditBlueprint != nullptr)
 	{
-		TSharedRef<IPropertyHandle> PropertyHandle = DetailBuilder->GetProperty(
-			GET_MEMBER_NAME_CHECKED(UStaticMeshComponent, OverrideMaterials),
-			UStaticMeshComponent::StaticClass());
-		FAGX_MaterialReplacer::ReplaceMaterials(*EditBlueprint, PropertyHandle.Get());
+		FAGX_MaterialReplacer::ReplaceMaterials(*EditBlueprint);
 	}
 	else if (Owner != nullptr)
 	{
@@ -260,6 +260,7 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 	}
 	else
 	{
+		// Should never get here, the above if-else-if chain should cover all cases.
 		checkNoEntry();
 	}
 

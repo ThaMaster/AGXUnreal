@@ -34,25 +34,63 @@ FString FAGX_MaterialReplacer::GetNewPathName()
 	return NewMaterial.IsValid() ? NewMaterial->GetPathName() : FString();
 }
 
-bool FAGX_MaterialReplacer::ReplaceMaterials(
-	UBlueprint& EditBlueprint, IPropertyHandle& PropertyHandle)
+namespace AGX_MaterialReplacer_helpers
 {
+	TArray<UStaticMeshComponent*> GetStaticMeshTemplates(
+		UBlueprint& Blueprint, UClass& BlueprintClass)
+	{
+		TArray<UStaticMeshComponent*> Templates;
+		Templates.Reserve(32);
+
+		// Iterate over the inheritance chain, starting at the given Blueprint.
+		for (UBlueprint* Parent = &Blueprint; Parent != nullptr;
+			 Parent = FAGX_BlueprintUtilities::GetParent(*Parent))
+		{
+			// Iterate over all SCS nodes in the Blueprint.
+			for (auto Node : Parent->SimpleConstructionScript->GetAllNodes())
+			{
+				if (Node == nullptr)
+					continue;
+
+				// Only interested in Static Mesh Components.
+				UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Node->ComponentTemplate);
+				if (Mesh == nullptr)
+					continue;
+
+				// We only want to update the edit Blueprint, so find the instance that is owned by
+				// that Blueprint.
+				Mesh = FAGX_ObjectUtilities::GetMatchedInstance(Mesh, &BlueprintClass);
+				if (Mesh == nullptr)
+					continue;
+
+				Templates.Add(Mesh);
+			}
+		}
+
+		return Templates;
+	}
+}
+
+bool FAGX_MaterialReplacer::ReplaceMaterials(UBlueprint& Blueprint)
+{
+	using namespace AGX_MaterialReplacer_helpers;
+
 	auto Bail = [](const TCHAR* Message)
 	{
 		FAGX_NotificationUtilities::ShowNotification(Message, SNotificationItem::CS_Fail);
 		return false;
 	};
 
-	UClass* EditedBlueprintClass = EditBlueprint.GeneratedClass;
-	if (EditedBlueprintClass == nullptr)
+	UClass* BlueprintClass = Blueprint.GeneratedClass;
+	if (BlueprintClass == nullptr)
 	{
 		return Bail(
 			TEXT("Material replacing failed because the Bluperint doesn't have a generated class. "
 				 "It may help to compile the Blueprint first."));
 	}
 
-	const UMaterialInterface* const Current = CurrentMaterial.Get();
-	UMaterialInterface* const New = NewMaterial.Get();
+	const UMaterialInterface* const CurrentMat = CurrentMaterial.Get();
+	UMaterialInterface* const NewMat = NewMaterial.Get();
 	// It is OK for the Materials to not be set, i.e. be nullptr. It means that all uses of the
 	// default material should be replaced, or that the selected current material should be cleared
 	// to the default material.
@@ -66,60 +104,58 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(
 				 "not have an Override Materials property."));
 	}
 
-	FPropertyChangedEvent Event(Property, EPropertyChangeType::ValueSet);
-
-	auto SetMaterial = [New, Property, &Event](UStaticMeshComponent* Mesh, int32 MaterialIndex)
-	{
-		Mesh->PreEditChange(Property);
-		Mesh->Modify();
-		Mesh->SetMaterial(MaterialIndex, New);
-		Mesh->PostEditChangeProperty(Event);
-	};
-
 	FScopedTransaction Transaction(
 		LOCTEXT("ReplaceRenderMaterialsUndo", "Replace Render Materials"));
 
-	PropertyHandle.NotifyPreChange();
+	TArray<UStaticMeshComponent*> ChangedBlueprintMeshes;
+	ChangedBlueprintMeshes.Reserve(32);
 
-	// Iterate over all SCS nodes. Not only those in the child Blueprint but also all from parent
-	// Blueprints.
-	for (UBlueprint* BlueprintIt = &EditBlueprint; BlueprintIt != nullptr;
-		 BlueprintIt = FAGX_BlueprintUtilities::GetParent(*BlueprintIt))
+	// Iterate over all Static Mesh SCS nodes. Not only those in the current Blueprint but also all
+	// Static Meshes inherited from parent Blueprints.
+	for (UStaticMeshComponent* MeshTemplate : GetStaticMeshTemplates(Blueprint, *BlueprintClass))
 	{
-		// Iterate over all SCS nodes in the current Blueprint.
-		for (auto Node : BlueprintIt->SimpleConstructionScript->GetAllNodes())
+		for (int32 MaterialIndex = 0; MaterialIndex < MeshTemplate->GetNumMaterials();
+			 ++MaterialIndex)
 		{
-			UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Node->ComponentTemplate);
-			if (Mesh == nullptr)
+			// Only replace matching Materials.
+			if (MeshTemplate->GetMaterial(MaterialIndex) != CurrentMat)
 				continue;
 
-			// We only want to update the edit Blueprint, so find the instance that is owned by
-			// that Blueprint.
-			Mesh = FAGX_ObjectUtilities::GetMatchedInstance(Mesh, EditedBlueprintClass);
-			if (Mesh == nullptr)
-				continue;
+			FEditPropertyChain EditPropertyChain;
+			EditPropertyChain.AddHead(Property);
+			EditPropertyChain.SetActivePropertyNode(Property);
 
-			for (int32 MaterialIndex = 0; MaterialIndex < Mesh->GetNumMaterials(); ++MaterialIndex)
+			// Hack: PreEditChange is virtual and overloaded in UObject. However, UActorComponent
+			// only overrides one overload of PreEditChange, which hides the other due to C++
+			// overloading rules. By casting to the base class, UObject, we include all overloads in
+			// that class in the overload set.
+			MeshTemplate->UObject::PreEditChange(EditPropertyChain);
+			//((UObject*) MeshTemplate)->PreEditChange(EditPropertyChain);
+
+			MeshTemplate->SetMaterial(MaterialIndex, NewMat);
+
+			ChangedBlueprintMeshes.Add(MeshTemplate);
+
+			FPropertyChangedEvent PropertyChangedEvent(Property);
+
+			for (UStaticMeshComponent* Instance :
+				 FAGX_ObjectUtilities::GetArchetypeInstances(*MeshTemplate))
 			{
-				UMaterialInterface* Material = Mesh->GetMaterial(MaterialIndex);
-				if (Material != Current)
-					continue;
-
-				for (UStaticMeshComponent* Instance :
-					 FAGX_ObjectUtilities::GetArchetypeInstances(*Mesh))
+				Instance->PreEditChange(Property);
+				if (Instance->GetMaterial(MaterialIndex) == CurrentMat)
 				{
-					if (Instance->GetMaterial(MaterialIndex) == Current)
-					{
-						SetMaterial(Instance, MaterialIndex);
-					}
+					Instance->SetMaterial(MaterialIndex, NewMat);
 				}
-
-				SetMaterial(Mesh, MaterialIndex);
+				Instance->PostEditChangeProperty(PropertyChangedEvent);
 			}
 		}
 	}
 
-	PropertyHandle.NotifyPostChange(EPropertyChangeType::ValueSet);
+	for (UStaticMeshComponent* Mesh : ChangedBlueprintMeshes)
+	{
+		FPropertyChangedEvent PropertyChangedEvent(Property, EPropertyChangeType::ValueSet);
+		Mesh->PostEditChangeProperty(PropertyChangedEvent);
+	}
 
 	return true;
 }

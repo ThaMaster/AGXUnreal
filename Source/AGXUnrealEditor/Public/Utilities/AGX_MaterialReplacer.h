@@ -11,7 +11,7 @@ struct AGXUNREALEDITOR_API FAGX_MaterialReplacer
 	static FString GetCurrentPathName();
 	static FString GetNewPathName();
 
-	static bool ReplaceMaterials(UBlueprint& EditBlueprint, IPropertyHandle& PropertyHandle);
+	static bool ReplaceMaterials(UBlueprint& Blueprint);
 	static bool ReplaceMaterials(AActor& Actor);
 
 	inline static TWeakObjectPtr<UMaterialInterface> CurrentMaterial;
