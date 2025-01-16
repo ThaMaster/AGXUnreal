@@ -55,5 +55,8 @@ private:
 	EAGX_ImportResult AddComponent(
 		const TBarrier& Barrier, USceneComponent& Parent, AActor& OutActor);
 
+	template <typename TShapeComponent>
+	EAGX_ImportResult AddShape(const FShapeBarrier& Shape, AActor& OutActor);
+
 	FAGX_AGXToUeContext Context;
 };

@@ -20,8 +20,11 @@
 #include "RigidBodyBarrier.h"
 #include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
+#include "Shapes/AGX_CapsuleShapeComponent.h"
+#include "Shapes/AGX_CylinderShapeComponent.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
+#include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -117,7 +120,7 @@ namespace AGX_Importer_helpers
 		if constexpr (std::is_same_v<T, UAGX_RigidBodyComponent>)
 			return *Context.RigidBodies.Get();
 
-		if constexpr (std::is_same_v<T, UAGX_SphereShapeComponent>)
+		if constexpr (std::is_base_of_v<UAGX_ShapeComponent, T>)
 			return *Context.Shapes.Get();
 
 		// Unsupported types will yield compile errors.
@@ -252,13 +255,30 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	for (const auto& Body : SimObjects.GetRigidBodies())
 		Result |= AddComponent<UAGX_RigidBodyComponent, FRigidBodyBarrier>(Body, *Root, OutActor);
 
+	for (const auto& Shape : SimObjects.GetBoxShapes())
+		AddShape<UAGX_BoxShapeComponent>(Shape, OutActor);
+
+	for (const auto& Shape : SimObjects.GetCapsuleShapes())
+		AddShape<UAGX_CapsuleShapeComponent>(Shape, OutActor);
+
+	for (const auto& Shape : SimObjects.GetCylinderShapes())
+		AddShape<UAGX_CylinderShapeComponent>(Shape, OutActor);
+
 	for (const auto& Shape : SimObjects.GetSphereShapes())
-	{
-		auto Parent = GetOwningRigidBodyOrRoot(Shape, Context, OutActor);
-		Result |= AddComponent<UAGX_SphereShapeComponent, FShapeBarrier>(Shape, *Parent, OutActor);
-	}
+		AddShape<UAGX_SphereShapeComponent>(Shape, OutActor);
+
+	for (const auto& Shape : SimObjects.GetTrimeshShapes())
+		AddShape<UAGX_TrimeshShapeComponent>(Shape, OutActor);
 
 	Result |= AddModelSourceComponent(Settings, OutActor);
 
 	return Result;
+}
+
+template <typename TShapeComponent>
+EAGX_ImportResult FAGX_Importer::AddShape(const FShapeBarrier& Shape, AActor& OutActor)
+{
+	using namespace AGX_Importer_helpers;
+	auto Parent = GetOwningRigidBodyOrRoot(Shape, Context, OutActor);
+	return AddComponent<TShapeComponent, FShapeBarrier>(Shape, *Parent, OutActor);
 }
