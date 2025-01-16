@@ -24,14 +24,30 @@ void FAGX_MaterialReplacer::SetNew(const FAssetData& AssetData)
 	NewMaterial = Cast<UMaterialInterface>(AssetData.GetAsset());
 }
 
+namespace AGX_MaterialReplacer_helpers
+{
+	FString GetPathName(TWeakObjectPtr<UMaterialInterface>& Material)
+	{
+		// Unreal Engine 5.5 got TWeakObjectPtr::Pin, which is used to guarantee that the pointed-to
+		// object isn't destroyed while we are using it. On earlier Unreal Engine versions we can
+		// only hope.
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
+		TWeakObjectPtr<UMaterialInterface>& Mat = Material;
+#else
+		TStrongObjectPtr<UMaterialInterface> CurrentMat = Material.Pin();
+#endif
+		return Mat.IsValid() ? Mat->GetPathName() : FString();
+	}
+}
+
 FString FAGX_MaterialReplacer::GetCurrentPathName()
 {
-	return CurrentMaterial.IsValid() ? CurrentMaterial->GetPathName() : FString();
+	return AGX_MaterialReplacer_helpers::GetPathName(CurrentMaterial);
 }
 
 FString FAGX_MaterialReplacer::GetNewPathName()
 {
-	return NewMaterial.IsValid() ? NewMaterial->GetPathName() : FString();
+	return AGX_MaterialReplacer_helpers::GetPathName(NewMaterial);
 }
 
 namespace AGX_MaterialReplacer_helpers
@@ -89,6 +105,10 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(UBlueprint& Blueprint)
 				 "It may help to compile the Blueprint first."));
 	}
 
+#if !UE_VERSION_OLDER_THAN(5, 5, 0)
+	auto CurrentMaterialPin = CurrentMaterial.Pin();
+	auto NewMaterilPin = NewMaterial.Pin();
+#endif
 	const UMaterialInterface* const CurrentMat = CurrentMaterial.Get();
 	UMaterialInterface* const NewMat = NewMaterial.Get();
 	// It is OK for the Materials to not be set, i.e. be nullptr. It means that all uses of the
@@ -168,8 +188,12 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(AActor& Actor)
 		return false;
 	};
 
-	const UMaterialInterface* const Current = CurrentMaterial.Get();
-	UMaterialInterface* const New = NewMaterial.Get();
+#if !UE_VERSION_OLDER_THAN(5, 5, 0)
+	auto CurrentMaterialPin = CurrentMaterial.Pin();
+	auto NewMaterilPin = NewMaterial.Pin();
+#endif
+	const UMaterialInterface* const CurrentMat = CurrentMaterial.Get();
+	UMaterialInterface* const NewMat = NewMaterial.Get();
 	// It is OK for the Materials to not be set, i.e. be nullptr. It means that all uses of the
 	// default material should be replaced, or that the selected current material should be cleared
 	// to the default material.
@@ -197,11 +221,11 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(AActor& Actor)
 		return !Root->IsInBlueprint() && RootArchetype->IsInBlueprint();
 	}();
 
-	auto SetMaterial = [New, Property, &Event, bIsBlueprintInstance](
+	auto SetMaterial = [NewMat, Property, &Event, bIsBlueprintInstance](
 						   UStaticMeshComponent* Mesh, int32 MaterialIndex)
 	{
 		Mesh->PreEditChange(Property);
-		Mesh->SetMaterial(MaterialIndex, New);
+		Mesh->SetMaterial(MaterialIndex, NewMat);
 		if (!bIsBlueprintInstance)
 			Mesh->PostEditChangeProperty(Event);
 	};
@@ -216,16 +240,13 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(AActor& Actor)
 	{
 		for (int32 MaterialIndex = 0; MaterialIndex < Mesh->GetNumMaterials(); ++MaterialIndex)
 		{
-			UMaterialInterface* Material = Mesh->GetMaterial(MaterialIndex);
-			if (Material != Current)
-			{
+			if (Mesh->GetMaterial(MaterialIndex) != CurrentMat)
 				continue;
-			}
 
 			for (UStaticMeshComponent* Instance :
 				 FAGX_ObjectUtilities::GetArchetypeInstances(*Mesh))
 			{
-				if (Instance->GetMaterial(MaterialIndex) == Current)
+				if (Instance->GetMaterial(MaterialIndex) == CurrentMat)
 				{
 					SetMaterial(Instance, MaterialIndex);
 				}
