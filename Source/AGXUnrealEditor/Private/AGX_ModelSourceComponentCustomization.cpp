@@ -369,9 +369,17 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 	{
 		// If we get here then we found a Model Source that is part of both a Blueprint and an
 		// Actor, which we assumed would never happen.
-		const TCHAR* const Message = TEXT(
+		// Must use a define because Unreal Engine's check macros require a constant expression.
+#if 1
+		constexpr TCHAR Message[] = TEXT(
 			"Replace Materials failed because the Model Source Componenthas both a Blueprint and "
 			"an Actor.");
+#else
+#define Message                                                                                \
+	TEXT(                                                                                      \
+		"Replace Materials failed because the Model Source Componenthas both a Blueprint and " \
+		"an Actor.")
+#endif
 		AGX_CHECKF(false, Message);
 		return Bail(Message);
 	}

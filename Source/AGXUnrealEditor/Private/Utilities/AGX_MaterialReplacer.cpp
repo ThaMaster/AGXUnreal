@@ -33,7 +33,7 @@ namespace AGX_MaterialReplacer_helpers
 #if UE_VERSION_OLDER_THAN(5, 5, 0)
 		TWeakObjectPtr<UMaterialInterface>& Mat = Material;
 #else
-		TStrongObjectPtr<UMaterialInterface> CurrentMat = Material.Pin();
+		TStrongObjectPtr<UMaterialInterface> Mat = Material.Pin();
 #endif
 		return Mat.IsValid() ? Mat->GetPathName() : FString();
 	}
