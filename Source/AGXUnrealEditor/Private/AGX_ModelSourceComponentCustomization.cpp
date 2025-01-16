@@ -163,13 +163,10 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 		// clang-format on
 	}
 
-	// Instead of explicitly relying on Static Mesh Component we would like to use the Unreal Engine
+	// Instead of explicitly relying on Mesh Component we would like to use the Unreal Engine
 	// type FMaterialIterator. Unfortunately, it is not public and thus not accessible here.
-	//
-	// TODO Consider using UMeshComponent instead of UStaticMeshComponent to cover more cases.
 
-	void CollectRenderMaterials(
-		const UStaticMeshComponent& Mesh, TSet<UMaterialInterface*>& Materials)
+	void CollectRenderMaterials(const UMeshComponent& Mesh, TSet<UMaterialInterface*>& Materials)
 	{
 		for (int32 Index = 0; Index < Mesh.GetNumMaterials(); ++Index)
 		{
@@ -180,8 +177,8 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 	static TSet<UMaterialInterface*> CollectRenderMaterials(UBlueprint& Blueprint)
 	{
 		TSet<UMaterialInterface*> Materials;
-		for (UStaticMeshComponent* MeshTemplate :
-			 FAGX_BlueprintUtilities::GetAllTemplateComponents<UStaticMeshComponent>(Blueprint))
+		for (UMeshComponent* MeshTemplate :
+			 FAGX_BlueprintUtilities::GetAllTemplateComponents<UMeshComponent>(Blueprint))
 		{
 			CollectRenderMaterials(*MeshTemplate, Materials);
 		}
@@ -190,11 +187,11 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 
 	static TSet<UMaterialInterface*> CollectRenderMaterials(AActor& Actor)
 	{
-		TArray<UStaticMeshComponent*> Meshes;
+		TArray<UMeshComponent*> Meshes;
 		Actor.GetComponents(Meshes);
 		TSet<UMaterialInterface*> Materials;
 		Materials.Reserve(Meshes.Num());
-		for (UStaticMeshComponent* Mesh : Meshes)
+		for (UMeshComponent* Mesh : Meshes)
 		{
 			CollectRenderMaterials(*Mesh, Materials);
 		}
@@ -256,8 +253,8 @@ void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer(
 		*this, CategoryBuilder, ThumbnailPool, LOCTEXT("CurrentMaterial", "Current Material"),
 		LOCTEXT(
 			"CurrentMaterialTooltip",
-			"The Material currently set on Static Mesh Components that should be replaced with "
-			"the new Material."),
+			"The Material currently set on Mesh Components that should be replaced with the new "
+			"Material."),
 		&FAGX_ModelSourceComponentCustomization::GetCurrentMaterialPath,
 		&FAGX_ModelSourceComponentCustomization::OnCurrentMaterialSelected,
 		&FAGX_ModelSourceComponentCustomization::IncludeOnlyUsedMaterials);
@@ -291,7 +288,7 @@ void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer(
 // Since the Detail Customization can be recreated at any time, especially when switching between
 // selecting different Components, the selection data is stored statically in a separate helper
 // type. This means that the user can switch back and forth between the Model Source Component and
-// Static Mesh Components and keep the selections made.
+// Mesh Components and keep the selections made.
 
 FString FAGX_ModelSourceComponentCustomization::GetCurrentMaterialPath() const
 {

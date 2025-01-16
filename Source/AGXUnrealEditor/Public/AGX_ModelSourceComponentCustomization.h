@@ -13,7 +13,6 @@ class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
 class UMaterialInterface;
 
-
 /**
  * Defines the design of the Model Source Component in the Editor.
  */

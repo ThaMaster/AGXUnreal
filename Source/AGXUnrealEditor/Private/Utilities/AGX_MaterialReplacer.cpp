@@ -51,10 +51,9 @@ FString FAGX_MaterialReplacer::GetNewPathName()
 
 namespace AGX_MaterialReplacer_helpers
 {
-	TArray<UStaticMeshComponent*> GetStaticMeshTemplates(
-		UBlueprint& Blueprint, UClass& BlueprintClass)
+	TArray<UMeshComponent*> GetMeshTemplates(UBlueprint& Blueprint, UClass& BlueprintClass)
 	{
-		TArray<UStaticMeshComponent*> Templates;
+		TArray<UMeshComponent*> Templates;
 		Templates.Reserve(32);
 
 		// Iterate over the inheritance chain, starting at the given Blueprint.
@@ -67,8 +66,8 @@ namespace AGX_MaterialReplacer_helpers
 				if (Node == nullptr)
 					continue;
 
-				// Only interested in Static Mesh Components.
-				UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(Node->ComponentTemplate);
+				// Only interested in Mesh Components.
+				UMeshComponent* Mesh = Cast<UMeshComponent>(Node->ComponentTemplate);
 				if (Mesh == nullptr)
 					continue;
 
@@ -114,24 +113,24 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(UBlueprint& Blueprint)
 	// default material should be replaced, or that the selected current material should be cleared
 	// to the default material.
 
-	FProperty* const Property = UStaticMeshComponent::StaticClass()->FindPropertyByName(
-		GET_MEMBER_NAME_CHECKED(UStaticMeshComponent, OverrideMaterials));
+	FProperty* const Property = UMeshComponent::StaticClass()->FindPropertyByName(
+		GET_MEMBER_NAME_CHECKED(UMeshComponent, OverrideMaterials));
 	if (Property == nullptr)
 	{
 		return Bail(
-			TEXT("Material replacement could not be completed because Static Mesh Component does "
-				 "not have an Override Materials property."));
+			TEXT("Material replacement could not be completed because Mesh Component does not have "
+				 "an Override Materials property."));
 	}
 
 	FScopedTransaction Transaction(
 		LOCTEXT("ReplaceRenderMaterialsUndo", "Replace Render Materials"));
 
-	TArray<UStaticMeshComponent*> ChangedBlueprintMeshes;
+	TArray<UMeshComponent*> ChangedBlueprintMeshes;
 	ChangedBlueprintMeshes.Reserve(32);
 
-	// Iterate over all Static Mesh templates. Not only those in the current Blueprint but also all
-	// Static Meshes inherited from parent Blueprints.
-	for (UStaticMeshComponent* Template : GetStaticMeshTemplates(Blueprint, *BlueprintClass))
+	// Iterate over all Mesh templates. Not only those in the current Blueprint but also all Meshes
+	// inherited from parent Blueprints.
+	for (UMeshComponent* Template : GetMeshTemplates(Blueprint, *BlueprintClass))
 	{
 		for (int32 MaterialIndex = 0; MaterialIndex < Template->GetNumMaterials(); ++MaterialIndex)
 		{
@@ -158,8 +157,7 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(UBlueprint& Blueprint)
 			// even when not actually changing anything. Not sure why, but not calling them causes
 			// the meshes disappear from the viewport.
 			FPropertyChangedEvent PropertyChangedEvent(Property);
-			for (UStaticMeshComponent* Instance :
-				 FAGX_ObjectUtilities::GetArchetypeInstances(*Template))
+			for (UMeshComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*Template))
 			{
 				Instance->PreEditChange(Property);
 				if (Instance->GetMaterial(MaterialIndex) == CurrentMat)
@@ -172,7 +170,7 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(UBlueprint& Blueprint)
 	}
 
 	// Call the post-change callback on all modified template Components.
-	for (UStaticMeshComponent* Mesh : ChangedBlueprintMeshes)
+	for (UMeshComponent* Mesh : ChangedBlueprintMeshes)
 	{
 		FPropertyChangedEvent PropertyChangedEvent(Property, EPropertyChangeType::ValueSet);
 		Mesh->PostEditChangeProperty(PropertyChangedEvent);
@@ -199,13 +197,13 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(AActor& Actor)
 	// default material should be replaced, or that the selected current material should be cleared
 	// to the default material.
 
-	FProperty* const Property = UStaticMeshComponent::StaticClass()->FindPropertyByName(
-		GET_MEMBER_NAME_CHECKED(UStaticMeshComponent, OverrideMaterials));
+	FProperty* const Property = UMeshComponent::StaticClass()->FindPropertyByName(
+		GET_MEMBER_NAME_CHECKED(UMeshComponent, OverrideMaterials));
 	if (Property == nullptr)
 	{
 		return Bail(
-			TEXT("Material replacement could not be completed because Static Mesh Component does "
-				 "not have an Override Materials property."));
+			TEXT("Material replacement could not be completed because Mesh Component does not have "
+				 "an Override Materials property."));
 	}
 
 	FPropertyChangedEvent Event(Property, EPropertyChangeType::ValueSet);
@@ -224,8 +222,8 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(AActor& Actor)
 		return !Root->IsInBlueprint() && RootArchetype->IsInBlueprint();
 	}();
 
-	auto SetMaterial = [NewMat, Property, &Event, bIsBlueprintInstance](
-						   UStaticMeshComponent* Mesh, int32 MaterialIndex)
+	auto SetMaterial =
+		[NewMat, Property, &Event, bIsBlueprintInstance](UMeshComponent* Mesh, int32 MaterialIndex)
 	{
 		Mesh->PreEditChange(Property);
 		Mesh->SetMaterial(MaterialIndex, NewMat);
@@ -233,21 +231,20 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(AActor& Actor)
 			Mesh->PostEditChangeProperty(Event);
 	};
 
-	TArray<UStaticMeshComponent*> Meshes;
+	TArray<UMeshComponent*> Meshes;
 	Actor.GetComponents(Meshes);
 
 	FScopedTransaction Transaction(
 		LOCTEXT("ReplaceRenderMaterialsUndo", "Replace Render Materials"));
 
-	for (UStaticMeshComponent* Mesh : Meshes)
+	for (UMeshComponent* Mesh : Meshes)
 	{
 		for (int32 MaterialIndex = 0; MaterialIndex < Mesh->GetNumMaterials(); ++MaterialIndex)
 		{
 			if (Mesh->GetMaterial(MaterialIndex) != CurrentMat)
 				continue;
 
-			for (UStaticMeshComponent* Instance :
-				 FAGX_ObjectUtilities::GetArchetypeInstances(*Mesh))
+			for (UMeshComponent* Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*Mesh))
 			{
 				if (Instance->GetMaterial(MaterialIndex) == CurrentMat)
 				{
