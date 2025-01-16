@@ -63,17 +63,18 @@ void FAGX_ModelSourceComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 	CustomizeMaterialReplacer(ModelSourceComponent);
 
 	InDetailBuilder.HideCategory(FName("AGX Synchronize Model Info"));
-	InDetailBuilder.HideCategory(FName("Variable"));
-	InDetailBuilder.HideCategory(FName("Sockets"));
-	InDetailBuilder.HideCategory(FName("Tags"));
-	InDetailBuilder.HideCategory(FName("ComponentTick"));
-	InDetailBuilder.HideCategory(FName("ComponentReplication"));
 	InDetailBuilder.HideCategory(FName("Activation"));
-	InDetailBuilder.HideCategory(FName("Cooking"));
-	InDetailBuilder.HideCategory(FName("Events"));
 	InDetailBuilder.HideCategory(FName("AssetUserData"));
 	InDetailBuilder.HideCategory(FName("Collision"));
+	InDetailBuilder.HideCategory(FName("ComponentReplication"));
+	InDetailBuilder.HideCategory(FName("ComponentTick"));
+	InDetailBuilder.HideCategory(FName("Cooking"));
+	InDetailBuilder.HideCategory(FName("Events"));
+	InDetailBuilder.HideCategory(FName("Navigation"));
 	InDetailBuilder.HideCategory(FName("Replication"));
+	InDetailBuilder.HideCategory(FName("Sockets"));
+	InDetailBuilder.HideCategory(FName("Tags"));
+	InDetailBuilder.HideCategory(FName("Variable"));
 }
 
 namespace AGX_ModelSourceComponentCustomization_helpers
