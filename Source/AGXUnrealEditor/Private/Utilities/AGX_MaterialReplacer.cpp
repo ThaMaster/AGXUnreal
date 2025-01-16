@@ -10,7 +10,9 @@
 
 // Unreal Engine includes.
 #include "AssetRegistry/AssetData.h"
+#include "Components/MeshComponent.h"
 #include "ScopedTransaction.h"
+#include "Materials/MaterialInterface.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_MaterialReplacer"
 

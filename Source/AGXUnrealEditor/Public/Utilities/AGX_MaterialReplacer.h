@@ -4,6 +4,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "UObject/WeakObjectPtr.h"
 
 class AActor;
 class UBlueprint;
