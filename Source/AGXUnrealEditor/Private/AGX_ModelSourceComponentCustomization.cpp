@@ -14,12 +14,14 @@
 #include "Widgets/AGX_ImportDialog.h"
 
 // Unreal Engine includes.
+#include "Components/MeshComponent.h"
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "Input/Reply.h"
 #include "PropertyCustomizationHelpers.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_ModelSourceComponentCustomization"
 

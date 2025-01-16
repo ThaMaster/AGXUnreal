@@ -5,6 +5,9 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
+class AActor;
+class UBlueprint;
+class UMaterialInterface;
 struct FAssetData;
 
 /**

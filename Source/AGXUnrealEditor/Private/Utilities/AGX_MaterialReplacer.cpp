@@ -10,6 +10,7 @@
 
 // Unreal Engine includes.
 #include "AssetRegistry/AssetData.h"
+#include "ScopedTransaction.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_MaterialReplacer"
 
