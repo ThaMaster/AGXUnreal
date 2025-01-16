@@ -10,7 +10,6 @@
 
 // Unreal Engine includes.
 #include "AssetRegistry/AssetData.h"
-#include "Utilities/AGX_StringUtilities.h"
 
 #define LOCTEXT_NAMESPACE "FAGX_MaterialReplacer"
 
@@ -73,8 +72,8 @@ namespace AGX_MaterialReplacer_helpers
 				if (Mesh == nullptr)
 					continue;
 
-				// We only want to update the edit Blueprint, so find the instance that is owned by
-				// that Blueprint.
+				// We only want to update the given Blueprint, not any parent Blueprints, so find
+				// the instance that is owned by that Blueprint.
 				Mesh = FAGX_ObjectUtilities::GetMatchedInstance(Mesh, &BlueprintClass);
 				if (Mesh == nullptr)
 					continue;
@@ -130,36 +129,37 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(UBlueprint& Blueprint)
 	TArray<UStaticMeshComponent*> ChangedBlueprintMeshes;
 	ChangedBlueprintMeshes.Reserve(32);
 
-	// Iterate over all Static Mesh SCS nodes. Not only those in the current Blueprint but also all
+	// Iterate over all Static Mesh templates. Not only those in the current Blueprint but also all
 	// Static Meshes inherited from parent Blueprints.
-	for (UStaticMeshComponent* MeshTemplate : GetStaticMeshTemplates(Blueprint, *BlueprintClass))
+	for (UStaticMeshComponent* Template : GetStaticMeshTemplates(Blueprint, *BlueprintClass))
 	{
-		for (int32 MaterialIndex = 0; MaterialIndex < MeshTemplate->GetNumMaterials();
-			 ++MaterialIndex)
+		for (int32 MaterialIndex = 0; MaterialIndex < Template->GetNumMaterials(); ++MaterialIndex)
 		{
 			// Only replace matching Materials.
-			if (MeshTemplate->GetMaterial(MaterialIndex) != CurrentMat)
+			if (Template->GetMaterial(MaterialIndex) != CurrentMat)
 				continue;
 
 			FEditPropertyChain EditPropertyChain;
 			EditPropertyChain.AddHead(Property);
 			EditPropertyChain.SetActivePropertyNode(Property);
 
-			// Hack: PreEditChange is virtual and overloaded in UObject. However, UActorComponent
-			// only overrides one overload of PreEditChange, which hides the other due to C++
-			// overloading rules. By casting to the base class, UObject, we include all overloads in
-			// that class in the overload set.
-			MeshTemplate->UObject::PreEditChange(EditPropertyChain);
-			//((UObject*) MeshTemplate)->PreEditChange(EditPropertyChain);
+			// PreEditChange is virtual and overloaded in UObject. However, UActorComponent only
+			// overrides one overload of PreEditChange, which hides the other due to C++ overloading
+			// rules. To call the overload we need, we must explicitly specify its scope.
+			Template->UObject::PreEditChange(EditPropertyChain);
+			Template->SetMaterial(MaterialIndex, NewMat);
+			ChangedBlueprintMeshes.Add(Template);
+			// Post edit change is deferred to after all templates has been updated.
+			// Not sure why, but it is what FComponentMaterialCategory::OnMaterialChanged does and
+			// was recommended by Unreal Developer Network.
+			// https://udn.unrealengine.com/s/question/0D5QP00000j1F1e0AE/how-do-i-implement-undoredo-when-modifying-a-blueprint-from-a-details-panel-customization
 
-			MeshTemplate->SetMaterial(MaterialIndex, NewMat);
-
-			ChangedBlueprintMeshes.Add(MeshTemplate);
-
+			// Update the archetype instances. The Pre and PostEditChange calls are required
+			// even when not actually changing anything. Not sure why, but not calling them causes
+			// the meshes disappear from the viewport.
 			FPropertyChangedEvent PropertyChangedEvent(Property);
-
 			for (UStaticMeshComponent* Instance :
-				 FAGX_ObjectUtilities::GetArchetypeInstances(*MeshTemplate))
+				 FAGX_ObjectUtilities::GetArchetypeInstances(*Template))
 			{
 				Instance->PreEditChange(Property);
 				if (Instance->GetMaterial(MaterialIndex) == CurrentMat)
@@ -171,6 +171,7 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(UBlueprint& Blueprint)
 		}
 	}
 
+	// Call the post-change callback on all modified template Components.
 	for (UStaticMeshComponent* Mesh : ChangedBlueprintMeshes)
 	{
 		FPropertyChangedEvent PropertyChangedEvent(Property, EPropertyChangeType::ValueSet);
@@ -209,7 +210,9 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(AActor& Actor)
 
 	FPropertyChangedEvent Event(Property, EPropertyChangeType::ValueSet);
 
-	// If the Actor we are modifying is an instance of a Blueprint then we cannot
+	// If the Actor we are modifying is an instance of a Blueprint then we must defer all Post Edit
+	// Change calls so that we can do all our changes before Blueprint Reconstruction happens and
+	// destroys all the Components we have pointers to.
 	const bool bIsBlueprintInstance = [&Actor]()
 	{
 		USceneComponent* Root = Actor.GetRootComponent();
