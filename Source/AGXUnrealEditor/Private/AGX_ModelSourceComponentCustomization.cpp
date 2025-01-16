@@ -161,7 +161,7 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 		// clang-format on
 	}
 
-	void ExtractRenderMaterials(const UStaticMeshComponent& Mesh, TSet<UObject*>& Materials)
+	void ExtractRenderMaterials(const UStaticMeshComponent& Mesh, TSet<UMaterialInterface*>& Materials)
 	{
 		for (int32 Index = 0; Index < Mesh.GetNumMaterials(); ++Index)
 		{
@@ -169,9 +169,9 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 		}
 	}
 
-	static TSet<UObject*> ExtractRenderMaterials(UBlueprint& Blueprint)
+	static TSet<UMaterialInterface*> ExtractRenderMaterials(UBlueprint& Blueprint)
 	{
-		TSet<UObject*> Materials;
+		TSet<UMaterialInterface*> Materials;
 		for (UStaticMeshComponent* MeshTemplate :
 			 FAGX_BlueprintUtilities::GetAllTemplateComponents<UStaticMeshComponent>(Blueprint))
 		{
@@ -182,11 +182,11 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 
 
 
-	static TSet<UObject*> ExtractRenderMaterials(AActor& Actor)
+	static TSet<UMaterialInterface*> ExtractRenderMaterials(AActor& Actor)
 	{
 		TArray<UStaticMeshComponent*> Meshes;
 		Actor.GetComponents(Meshes);
-		TSet<UObject*> Materials;
+		TSet<UMaterialInterface*> Materials;
 		Materials.Reserve(Meshes.Num());
 		for (UStaticMeshComponent* Mesh : Meshes)
 		{
@@ -195,7 +195,7 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 		return Materials;
 	}
 
-	static TSet<UObject*> ExtractRenderMaterials(UAGX_ModelSourceComponent* ModelSource)
+	static TSet<UMaterialInterface*> ExtractRenderMaterials(UAGX_ModelSourceComponent* ModelSource)
 	{
 		// Determine if the Model Source Component is part of a Blueprint or an Actor. This code
 		// assumes that Components that are part of a Blueprint, the actual Blueprint and not an
@@ -209,7 +209,7 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 				LogAGX, Warning,
 				TEXT("Material replacing failed because the Model Source Component has neither an "
 					 "Owner nor a Blueprint"));
-			return TSet<UObject*>();
+			return TSet<UMaterialInterface*>();
 		}
 		else if (EditBlueprint != nullptr)
 		{
@@ -223,7 +223,7 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 		{
 			// Should never get here, the above if-else-if chain should cover all cases.
 			checkNoEntry();
-			return TSet<UObject*>();
+			return TSet<UMaterialInterface*>();
 		}
 	}
 };
@@ -295,7 +295,10 @@ void FAGX_ModelSourceComponentCustomization::OnNewMaterialSelected(const FAssetD
 
 bool FAGX_ModelSourceComponentCustomization::IncludeOnlyUsedMaterials(const FAssetData& AssetData)
 {
-	UObject* Asset = AssetData.GetAsset();
+	const UMaterialInterface* Asset = Cast<UMaterialInterface>(AssetData.GetAsset());
+	if (Asset == nullptr)
+		return true; // Non-Material assets should be hidden.
+
 	const bool HideAsset = !KnownAssets.Contains(Asset);
 	return HideAsset;
 }

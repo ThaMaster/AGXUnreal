@@ -11,6 +11,7 @@ class UAGX_ModelSourceComponent;
 
 class IDetailLayoutBuilder;
 class IDetailCategoryBuilder;
+class UMaterialInterface;
 
 
 /**
@@ -39,7 +40,7 @@ private:
 	IDetailLayoutBuilder* DetailBuilder;
 
 	// List of Material assets currently in use by the Blueprint.
-	TSet<UObject*> KnownAssets;
+	TSet<UMaterialInterface*> KnownAssets;
 
 	friend struct FAGX_ModelSourceComponentCustomization_helper;
 };
