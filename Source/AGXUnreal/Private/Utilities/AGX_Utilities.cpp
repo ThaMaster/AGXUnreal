@@ -7,6 +7,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "Import/AGX_Importer.h"
 #include "Import/AGX_ImporterSettings.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGXUtilities.h"
 
 // Unreal Engine includes.
@@ -82,6 +83,7 @@ AActor* UAGX_AGXUtilities::InstantiateActor(
 
 	UWorld* World = WorldContextObject->GetWorld();
 	FActorSpawnParameters Params;
+	Params.Name = *FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(World, TemplateActor->GetName());
 	Params.Template = TemplateActor;
 	return World->SpawnActor<AActor>(AActor::StaticClass(), Transform, Params);
 }

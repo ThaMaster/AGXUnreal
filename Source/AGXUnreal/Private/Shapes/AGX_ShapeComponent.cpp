@@ -14,6 +14,9 @@
 #include "Import/AGX_AGXToUeContext.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "Shapes/RenderDataBarrier.h"
+#include "Shapes/RenderMaterial.h"
+#include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
@@ -286,11 +289,76 @@ void UAGX_ShapeComponent::UpdateNativeLocalTransform()
 	UpdateNativeLocalTransform(*GetNative());
 }
 
+namespace AGX_ShapeComponent_helpers
+{
+	UMaterialInterface* GetOrCreateRenderMaterial(
+		const FRenderDataBarrier& RenderData, bool IsSensor, FAGX_AGXToUeContext& Context)
+	{
+		if (Context.RenderMaterials == nullptr || !RenderData.HasMaterial())
+			return AGX_MeshUtilities::GetDefaultRenderMaterial(IsSensor);
+
+		const FAGX_RenderMaterial MBarrier = RenderData.GetMaterial();
+		if (auto Existing = Context.RenderMaterials->FindRef(MBarrier.Guid))
+			return Existing;
+
+		UMaterial* Base = AGX_MeshUtilities::GetDefaultRenderMaterial(IsSensor);
+		auto Result = AGX_MeshUtilities::CreateRenderMaterial(MBarrier, Base);
+
+		if (Result != nullptr)
+			Context.RenderMaterials->Add(MBarrier.Guid, Result);
+
+		return Result;
+	}
+
+	UStaticMesh* GetOrCreateStaticMesh(
+		const FRenderDataBarrier& RenderData, UMaterialInterface* Material,
+		FAGX_AGXToUeContext& Context)
+	{
+		AGX_CHECK(Context.StaticMeshes != nullptr);
+		if (auto Existing = Context.StaticMeshes->FindRef(RenderData.GetGuid()))
+			return Existing;
+
+		UStaticMesh* Mesh = AGX_MeshUtilities::CreateStaticMesh(RenderData, Material);
+		if (Mesh != nullptr)
+			Context.StaticMeshes->Add(RenderData.GetGuid(), Mesh);
+
+		return Mesh;
+	}
+
+	UStaticMeshComponent* CreateStaticMeshComponent(
+		const FShapeBarrier& Shape, AActor& Owner, FAGX_AGXToUeContext& Context)
+	{
+		AGX_CHECK(AGX_MeshUtilities::HasRenderDataMesh(Shape));
+		const FRenderDataBarrier RenderData = Shape.GetRenderData();
+
+		UMaterialInterface* Material =
+			GetOrCreateRenderMaterial(RenderData, Shape.GetIsSensor(), Context);
+		AGX_CHECK(Material != nullptr);
+
+		UStaticMesh* StaticMesh = GetOrCreateStaticMesh(RenderData, Material, Context);
+		AGX_CHECK(StaticMesh != nullptr);
+		if (StaticMesh == nullptr)
+			return nullptr;
+
+		const FString ComponentName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+			&Owner, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()));
+		UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(&Owner, *ComponentName);
+		Component->SetStaticMesh(StaticMesh);
+		Component->SetFlags(RF_Transactional);
+		Owner.AddInstanceComponent(Component);
+
+		return Component;
+	}
+}
+
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_AGXToUeContext* Context)
 {
 	bCanCollide = Barrier.GetEnableCollisions();
 	bIsSensor = Barrier.GetIsSensor();
-	ImportGuid, Barrier.GetShapeGuid();
+	ImportGuid = Barrier.GetShapeGuid();
+	const FString Name =
+		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetOwner(), Barrier.GetName());
+	Rename(*Name);
 
 	const TEnumAsByte<enum EAGX_ShapeSensorType> BarrierSensorType =
 		Barrier.GetIsSensorGeneratingContactData() ? EAGX_ShapeSensorType::ContactsSensor
@@ -308,6 +376,19 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_AGXToUeCon
 
 	if (Msp.HasNative())
 		MergeSplitProperties.CopyFrom(Msp, Context);
+
+	if (Context != nullptr && Context->StaticMeshes != nullptr && GetOwner() != nullptr &&
+		AGX_MeshUtilities::HasRenderDataMesh(Barrier))
+	{
+		UStaticMeshComponent* Mesh =
+			AGX_ShapeComponent_helpers::CreateStaticMeshComponent(Barrier, *GetOwner(), *Context);
+		AGX_CHECK(Mesh != nullptr);
+		if (Mesh != nullptr)
+		{
+			Mesh->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			Context->RenderStaticMeshCom->Add(Barrier.GetShapeGuid(), Mesh);
+		}
+	}
 }
 
 void UAGX_ShapeComponent::CreateMergeSplitProperties()

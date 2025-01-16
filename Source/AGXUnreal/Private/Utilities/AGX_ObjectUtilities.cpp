@@ -127,10 +127,11 @@ FString FAGX_ObjectUtilities::SanitizeObjectName(const FString& Name)
 
 FString FAGX_ObjectUtilities::MakeObjectNameUnique(UObject* Owner, FString Name)
 {
+	if (Owner == nullptr)
+		return Name;
+
 	if (StaticFindObjectFast(UObject::StaticClass(), Owner, FName(*Name)) != nullptr)
-	{
 		Name = MakeUniqueObjectName(Owner, UObject::StaticClass(), FName(*Name)).ToString();
-	}
 
 	return Name;
 }

@@ -6,9 +6,7 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Components/StaticMeshComponent.h"
 #include "Import/AGX_AGXToUeContext.h"
-#include "Shapes/RenderDataBarrier.h"
 #include "Utilities/AGX_MeshUtilities.h"
-#include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
 #include "PhysicsEngine/AggregateGeom.h"
@@ -109,31 +107,6 @@ void UAGX_SphereShapeComponent::CopyFrom(
 	Super::CopyFrom(ShapeBarrier, Context);
 	const auto Barrier = static_cast<const FSphereShapeBarrier*>(&ShapeBarrier);
 	Radius = Barrier->GetRadius();
-
-	if (!Barrier->HasValidRenderData() || GetOwner() == nullptr || Context == nullptr ||
-		Context->RenderStaticMeshCom == nullptr)
-		return; // We are done.
-
-	// Todo:
-	// 1. add static mesh asset
-	// 2. add render material
-	// 3. update static mesh component properties
-	// 4. break this all out in Utility Functions
-	// 5. update the Context with all added objects
-
-	const FRenderDataBarrier RenderDataBarrier = ShapeBarrier.GetRenderData();
-	if (!RenderDataBarrier.HasMesh())
-		return;
-
-	const FString MeshComName = FAGX_ObjectUtilities::MakeObjectNameUnique(
-		GetOwner(),
-		FString::Printf(TEXT("RenderMesh_%s"), *RenderDataBarrier.GetGuid().ToString()));
-
-	auto MeshCom = NewObject<UStaticMeshComponent>(GetOwner(), *MeshComName);
-	MeshCom->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-
-	MeshCom->SetFlags(RF_Transactional);
-	GetOwner()->AddInstanceComponent(MeshCom);
 }
 
 void UAGX_SphereShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& OutMeshData)

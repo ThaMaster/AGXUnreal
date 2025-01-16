@@ -53,7 +53,7 @@ private:
 
 	template <typename TComponent, typename TBarrier>
 	EAGX_ImportResult AddComponent(
-		const TBarrier& Barrier, USceneComponent* Parent, AActor& OutActor);
+		const TBarrier& Barrier, USceneComponent& Parent, AActor& OutActor);
 
 	FAGX_AGXToUeContext Context;
 };

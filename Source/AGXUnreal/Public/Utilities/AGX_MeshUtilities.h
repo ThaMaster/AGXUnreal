@@ -35,10 +35,13 @@
 class AStaticMeshActor;
 class FDynamicMeshIndexBuffer32;
 class FRenderDataBarrier;
+class FShapeBarrier;
 class UStaticMesh;
+class UStaticMeshComponent;
 
-struct FStaticMeshVertexBuffers;
+struct FAGX_RenderMaterial;
 struct FAGX_SimpleMeshTriangle;
+struct FStaticMeshVertexBuffers;
 
 /// \todo Each nested ***ConstructionData classes below could contain the respective Make-function
 /// as a member function, to even furter reduce potential usage mistakes!
@@ -340,17 +343,33 @@ public:
 		const TArray<AStaticMeshActor*> Actors);
 
 	/**
-	* Creates and builds a new static mesh.
-	* This function supports runtime usage.
-	*/
+	 * Creates and builds a new static mesh.
+	 * This function supports runtime usage.
+	 */
 	static UStaticMesh* CreateStaticMesh(
-		UObject& Outer, const TArray<FVector3f>& Vertices, const TArray<int32>& Triangles,
+		const TArray<FVector3f>& Vertices, const TArray<uint32>& Triangles,
 		const TArray<FVector3f>& Normals, const TArray<FVector2D>& UVs,
-		const TArray<FVector3f>& Tangents, UMaterialInterface* Material);
+		const TArray<FVector3f>& Tangents, const FString& Name, UMaterialInterface* Material);
 
 	/**
-	* Creates a new render Material instance based on the given UMaterial Base.
-	* This function supports runtime usage.
-	*/
-	UMaterialInstanceDynamic* CreateRenderMaterial(UObject& Outer, UMaterial& Base);
+	 * Creates and builds a new static mesh.
+	 * This function supports runtime usage.
+	 */
+	static UStaticMesh* CreateStaticMesh(
+		const FRenderDataBarrier& RenderData, UMaterialInterface* Material);
+
+	static bool HasRenderDataMesh(const FShapeBarrier& Shape);
+
+	/**
+	 * Creates a new render Material instance based on the given RenderMaterial Barrier and Base.
+	 * If Base is nullptr, this functions returns nullptr.
+	 * This function supports runtime usage.
+	 */
+	static UMaterialInterface* CreateRenderMaterial(
+		const FAGX_RenderMaterial& MaterialBarrier, UMaterial* Base);
+
+	/**
+	 * Returns the default (AGX) render material.
+	 */
+	static UMaterial* GetDefaultRenderMaterial(bool bIsSensor);
 };
