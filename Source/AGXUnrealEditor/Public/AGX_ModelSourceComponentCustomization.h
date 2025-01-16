@@ -40,7 +40,7 @@ private:
 	IDetailLayoutBuilder* DetailBuilder;
 
 	// List of Material assets currently in use by the Blueprint.
-	TSet<UMaterialInterface*> KnownAssets;
+	TSet<UMaterialInterface*> KnownMaterials;
 
 	friend struct FAGX_ModelSourceComponentCustomization_helper;
 };

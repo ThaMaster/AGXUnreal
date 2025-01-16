@@ -130,6 +130,7 @@ FReply FAGX_ModelSourceComponentCustomization::OnSynchronizeModelButtonClicked()
 
 namespace AGX_ModelSourceComponentCustomization_helpers
 {
+	// Callback for letting the UI widgets communicate back to the customization class.
 	using FGetMaterial = FString (FAGX_ModelSourceComponentCustomization::*)() const;
 	using FSetMaterial = void (FAGX_ModelSourceComponentCustomization::*)(const FAssetData&);
 	using FShouldFilterMaterial =
@@ -154,15 +155,21 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 		[
 			SNew(SObjectPropertyEntryBox)
 			.AllowedClass(UMaterialInterface::StaticClass())
+			.ObjectPath(&Customizer, GetMaterial)
 			.ThumbnailPool(ThumbnailPool)
 			.OnShouldFilterAsset(&Customizer, ShouldFilterMaterial)
-			.ObjectPath(&Customizer, GetMaterial)
 			.OnObjectChanged(&Customizer, SetMaterial)
 		];
 		// clang-format on
 	}
 
-	void ExtractRenderMaterials(const UStaticMeshComponent& Mesh, TSet<UMaterialInterface*>& Materials)
+	// Instead of explicitly relying on Static Mesh Component we would like to use the Unreal Engine
+	// type FMaterialIterator. Unfortunately, it is not public and thus not accessible here.
+	//
+	// TODO Consider using UMeshComponent instead of UStaticMeshComponent to cover more cases.
+
+	void CollectRenderMaterials(
+		const UStaticMeshComponent& Mesh, TSet<UMaterialInterface*>& Materials)
 	{
 		for (int32 Index = 0; Index < Mesh.GetNumMaterials(); ++Index)
 		{
@@ -170,20 +177,18 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 		}
 	}
 
-	static TSet<UMaterialInterface*> ExtractRenderMaterials(UBlueprint& Blueprint)
+	static TSet<UMaterialInterface*> CollectRenderMaterials(UBlueprint& Blueprint)
 	{
 		TSet<UMaterialInterface*> Materials;
 		for (UStaticMeshComponent* MeshTemplate :
 			 FAGX_BlueprintUtilities::GetAllTemplateComponents<UStaticMeshComponent>(Blueprint))
 		{
-			ExtractRenderMaterials(*MeshTemplate, Materials);
+			CollectRenderMaterials(*MeshTemplate, Materials);
 		}
 		return Materials;
 	}
 
-
-
-	static TSet<UMaterialInterface*> ExtractRenderMaterials(AActor& Actor)
+	static TSet<UMaterialInterface*> CollectRenderMaterials(AActor& Actor)
 	{
 		TArray<UStaticMeshComponent*> Meshes;
 		Actor.GetComponents(Meshes);
@@ -191,20 +196,20 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 		Materials.Reserve(Meshes.Num());
 		for (UStaticMeshComponent* Mesh : Meshes)
 		{
-			ExtractRenderMaterials(*Mesh, Materials);
+			CollectRenderMaterials(*Mesh, Materials);
 		}
 		return Materials;
 	}
 
-	static TSet<UMaterialInterface*> ExtractRenderMaterials(UAGX_ModelSourceComponent* ModelSource)
+	static TSet<UMaterialInterface*> CollectRenderMaterials(UAGX_ModelSourceComponent* ModelSource)
 	{
 		// Determine if the Model Source Component is part of a Blueprint or an Actor. This code
 		// assumes that Components that are part of a Blueprint, the actual Blueprint and not an
 		// instance of a Blueprint, does not have an Owner. This is true as of Unreal Engine 5.3 but
 		// is not guaranteed to be true forever.
-		UBlueprint* EditBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*ModelSource);
+		UBlueprint* Blueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*ModelSource);
 		AActor* Owner = ModelSource->GetOwner();
-		if (EditBlueprint == nullptr && Owner == nullptr)
+		if (Blueprint == nullptr && Owner == nullptr)
 		{
 			UE_LOG(
 				LogAGX, Warning,
@@ -212,13 +217,22 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 					 "Owner nor a Blueprint"));
 			return TSet<UMaterialInterface*>();
 		}
-		else if (EditBlueprint != nullptr)
+		else if (Blueprint != nullptr && Owner != nullptr)
 		{
-			return ExtractRenderMaterials(*EditBlueprint);
+			// If we get here then we found a Model Source that is part of both a Blueprint and an
+			// Actor, which we assumed would never happen.
+			AGX_CHECKF(
+				false, TEXT("Replace Materials found a Model Source Component that is part of both "
+							"a Blueprint and an Actor."));
+			return TSet<UMaterialInterface*>();
+		}
+		else if (Blueprint != nullptr)
+		{
+			return CollectRenderMaterials(*Blueprint);
 		}
 		else if (Owner != nullptr)
 		{
-			return ExtractRenderMaterials(*Owner);
+			return CollectRenderMaterials(*Owner);
 		}
 		else
 		{
@@ -233,7 +247,7 @@ void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer(
 	UAGX_ModelSourceComponent* ModelSource)
 {
 	using namespace AGX_ModelSourceComponentCustomization_helpers;
-	KnownAssets = ExtractRenderMaterials(ModelSource);
+	KnownMaterials = CollectRenderMaterials(ModelSource);
 
 	IDetailCategoryBuilder& CategoryBuilder = DetailBuilder->EditCategory("Material Replacer");
 
@@ -243,7 +257,7 @@ void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer(
 		LOCTEXT(
 			"CurrentMaterialTooltip",
 			"The Material currently set on Static Mesh Components that should be replaced with "
-			"another Material."),
+			"the new Material."),
 		&FAGX_ModelSourceComponentCustomization::GetCurrentMaterialPath,
 		&FAGX_ModelSourceComponentCustomization::OnCurrentMaterialSelected,
 		&FAGX_ModelSourceComponentCustomization::IncludeOnlyUsedMaterials);
@@ -251,7 +265,7 @@ void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer(
 		*this, CategoryBuilder, ThumbnailPool, LOCTEXT("NewMaterial", "New Material"),
 		LOCTEXT(
 			"NewMaterialTooltip",
-			"The Material that should be assigned instead of Current Material."),
+			"The Material that should be assigned instead of the current Material."),
 		&FAGX_ModelSourceComponentCustomization::GetNewMaterialPath,
 		&FAGX_ModelSourceComponentCustomization::OnNewMaterialSelected,
 		&FAGX_ModelSourceComponentCustomization::IncludeAllMaterials);
@@ -267,12 +281,17 @@ void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer(
 			.Text(LOCTEXT("ReplaceMaterialsButton", "Replace Materials"))
 			.ToolTipText(LOCTEXT(
 				"ReplaceMaterialsButtonTooltip",
-				"Replace all occurrences of Current Material with New Material in this Blueprint"))
+				"Replace all occurrences of Current Material with New Material in this Blueprint or Actor"))
 			.OnClicked(this, &FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked)
 		]
 	];
 	// clang-format on
 }
+
+// Since the Detail Customization can be recreated at any time, especially when switching between
+// selecting different Components, the selection data is stored statically in a separate helper
+// type. This means that the user can switch back and forth between the Model Source Component and
+// Static Mesh Components and keep the selections made.
 
 FString FAGX_ModelSourceComponentCustomization::GetCurrentMaterialPath() const
 {
@@ -294,17 +313,19 @@ void FAGX_ModelSourceComponentCustomization::OnNewMaterialSelected(const FAssetD
 	FAGX_MaterialReplacer::SetNew(AssetData);
 }
 
+// Filter function that returns true for any asset that should be filtered out, i.e. hidden.
 bool FAGX_ModelSourceComponentCustomization::IncludeOnlyUsedMaterials(const FAssetData& AssetData)
 {
 	const UMaterialInterface* Asset = Cast<UMaterialInterface>(AssetData.GetAsset());
 	if (Asset == nullptr)
-		return true; // Non-Material assets should be hidden.
+		return true; // Should never happen since AllowedClass is set.
 
-	const bool HideAsset = !KnownAssets.Contains(Asset);
+	const bool HideAsset = !KnownMaterials.Contains(Asset);
 	return HideAsset;
 }
 
-bool FAGX_ModelSourceComponentCustomization::IncludeAllMaterials(const FAssetData& AssetData)
+// Filter function that does not filter out, i.e. hides, anything.
+bool FAGX_ModelSourceComponentCustomization::IncludeAllMaterials(const FAssetData&)
 {
 	return false;
 }
@@ -328,25 +349,35 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 			*DetailBuilder);
 	if (ModelSource == nullptr)
 	{
-		return Bail(
-			TEXT("Material replacing is currenly only supported with a Model Source Component."));
+		return Bail(TEXT(
+			"Material replacing is currenly only supported with a single Model Source Component."));
 	}
 
 	// Determine if the Model Source Component is part of a Blueprint or an Actor. This code assumes
 	// that Components that are part of a Blueprint, the actual Blueprint and not an instance of a
 	// Blueprint, does not have an Owner. This is true as of Unreal Engine 5.3 but is not guaranteed
 	// to be true forever.
-	UBlueprint* EditBlueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*ModelSource);
+	UBlueprint* Blueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*ModelSource);
 	AActor* Owner = ModelSource->GetOwner();
-	if (EditBlueprint == nullptr && Owner == nullptr)
+	if (Blueprint == nullptr && Owner == nullptr)
 	{
 		return Bail(
 			TEXT("Material replacing failed because the Model Source Component has neither an "
 				 "Owner nor a Blueprint"));
 	}
-	else if (EditBlueprint != nullptr)
+	else if (Blueprint != nullptr && Owner != nullptr)
 	{
-		FAGX_MaterialReplacer::ReplaceMaterials(*EditBlueprint);
+		// If we get here then we found a Model Source that is part of both a Blueprint and an
+		// Actor, which we assumed would never happen.
+		const TCHAR* const Message = TEXT(
+			"Replace Materials failed because the Model Source Componenthas both a Blueprint and "
+			"an Actor.");
+		AGX_CHECKF(false, Message);
+		return Bail(Message);
+	}
+	else if (Blueprint != nullptr)
+	{
+		FAGX_MaterialReplacer::ReplaceMaterials(*Blueprint);
 	}
 	else if (Owner != nullptr)
 	{
@@ -358,7 +389,8 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 		checkNoEntry();
 	}
 
-	KnownAssets.Add(FAGX_MaterialReplacer::NewMaterial.Get());
+	// The new Material is now in use, so add it to the set of known Materials.
+	KnownMaterials.Add(FAGX_MaterialReplacer::NewMaterial.Get());
 
 	return FReply::Handled();
 }
