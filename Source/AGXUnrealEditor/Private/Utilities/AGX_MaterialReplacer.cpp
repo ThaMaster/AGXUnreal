@@ -214,38 +214,23 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(AActor& Actor)
 
 	for (UStaticMeshComponent* Mesh : Meshes)
 	{
-		UE_LOG(LogAGX, Warning, TEXT("Found static mesh '%s' at %p."), *GetNameSafe(Mesh), Mesh);
 		for (int32 MaterialIndex = 0; MaterialIndex < Mesh->GetNumMaterials(); ++MaterialIndex)
 		{
-			UE_LOG(LogAGX, Warning, TEXT("  Checking material index %d."), MaterialIndex);
 			UMaterialInterface* Material = Mesh->GetMaterial(MaterialIndex);
 			if (Material != Current)
 			{
-				UE_LOG(LogAGX, Warning, TEXT("  Wrong material, ignoring."));
 				continue;
 			}
 
-			UE_LOG(LogAGX, Warning, TEXT("  Updating instances."))
 			for (UStaticMeshComponent* Instance :
 				 FAGX_ObjectUtilities::GetArchetypeInstances(*Mesh))
 			{
-				UE_LOG(
-					LogAGX, Warning, TEXT("    Found instance '%s' at %p."), *GetNameSafe(Instance),
-					Instance);
 				if (Instance->GetMaterial(MaterialIndex) == Current)
 				{
-					UE_LOG(LogAGX, Warning, TEXT("    Updating material."));
 					SetMaterial(Instance, MaterialIndex);
-				}
-				else
-				{
-					UE_LOG(LogAGX, Warning, TEXT("    Wrong material, ignoring."));
 				}
 			}
 
-			UE_LOG(
-				LogAGX, Warning, TEXT("  Setting material on the source mesh: '%s' at %p."),
-				*GetNameSafe(Mesh), Mesh);
 			SetMaterial(Mesh, MaterialIndex);
 		}
 	}
