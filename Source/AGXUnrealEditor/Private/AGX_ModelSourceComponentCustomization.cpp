@@ -161,23 +161,38 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 		// clang-format on
 	}
 
+	void ExtractRenderMaterials(const UStaticMeshComponent& Mesh, TSet<UObject*>& Materials)
+	{
+		for (int32 Index = 0; Index < Mesh.GetNumMaterials(); ++Index)
+		{
+			Materials.Add(Mesh.GetMaterial(Index));
+		}
+	}
+
 	static TSet<UObject*> ExtractRenderMaterials(UBlueprint& Blueprint)
 	{
 		TSet<UObject*> Materials;
 		for (UStaticMeshComponent* MeshTemplate :
 			 FAGX_BlueprintUtilities::GetAllTemplateComponents<UStaticMeshComponent>(Blueprint))
 		{
-			for (int32 MaterialIndex = 0; MaterialIndex < MeshTemplate->GetNumMaterials(); ++MaterialIndex)
-			{
-				Materials.Add(MeshTemplate->GetMaterial(MaterialIndex));
-			}
+			ExtractRenderMaterials(*MeshTemplate, Materials);
 		}
 		return Materials;
 	}
 
+
+
 	static TSet<UObject*> ExtractRenderMaterials(AActor& Actor)
 	{
-		return TSet<UObject*>();
+		TArray<UStaticMeshComponent*> Meshes;
+		Actor.GetComponents(Meshes);
+		TSet<UObject*> Materials;
+		Materials.Reserve(Meshes.Num());
+		for (UStaticMeshComponent* Mesh : Meshes)
+		{
+			ExtractRenderMaterials(*Mesh, Materials);
+		}
+		return Materials;
 	}
 
 	static TSet<UObject*> ExtractRenderMaterials(UAGX_ModelSourceComponent* ModelSource)
