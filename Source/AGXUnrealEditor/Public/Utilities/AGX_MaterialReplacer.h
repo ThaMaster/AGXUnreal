@@ -4,6 +4,12 @@
 
 struct FAssetData;
 
+/**
+ * Helper class for replacing render Materials in a Blueprint or Actor.
+ *
+ * Keeps track of which Material should be replace by which other Material and does the actual
+ * replacing. Intended to be used with SObjectPropertyEntryBox.
+ */
 struct AGXUNREALEDITOR_API FAGX_MaterialReplacer
 {
 	static void SetCurrent(const FAssetData& AssetData);
