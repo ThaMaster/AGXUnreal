@@ -5,13 +5,15 @@
 // AGX Unreal includes.
 #include "AGXBarrierFactories.h"
 #include "BarrierOnly/AGXRefs.h"
+#include "BarrierOnly/Wire/WireNodeRef.h"
+#include "BarrierOnly/Wire/WireParameterControllerPtr.h"
+#include "BarrierOnly/Wire/WireRef.h"
+#include "BarrierOnly/Wire/WireWinchRef.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "TypeConversions.h"
 #include "Wire/WireNodeBarrier.h"
-#include "BarrierOnly/Wire/WireNodeRef.h"
-#include "BarrierOnly/Wire/WireRef.h"
 #include "Wire/WireWinchBarrier.h"
-#include "BarrierOnly/Wire/WireWinchRef.h"
+#include "Wire/WireParameterControllerBarrier.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -263,6 +265,12 @@ double FWireBarrier::GetTension() const
 
 	/// \todo Do tension need conversion to Unreal units?
 	return Data.raw;
+}
+
+FWireParameterControllerBarrier FWireBarrier::GetParameterController() const
+{
+	return FWireParameterControllerBarrier(
+		std::make_unique<FWireParameterControllerPtr>(NativeRef->Native));
 }
 
 bool FWireBarrier::Attach(FWireWinchBarrier& Winch, bool bBegin)

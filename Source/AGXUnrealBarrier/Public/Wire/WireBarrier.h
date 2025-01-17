@@ -12,6 +12,7 @@ class FShapeMaterialBarrier;
 struct FWireRef;
 class FWireNodeBarrier;
 class FWireWinchBarrier;
+class FWireParameterControllerBarrier;
 
 class AGXUNREALBARRIER_API FWireBarrier
 {
@@ -85,6 +86,8 @@ public:
 
 	/** Get the tension at the begin side of the wire [N] */
 	double GetTension() const;
+
+	FWireParameterControllerBarrier GetParameterController() const;
 
 	/**
 	 * Attach a winch to a free end of this wire.

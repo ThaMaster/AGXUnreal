@@ -7,6 +7,7 @@
 #include "AMOR/AGX_WireMergeSplitProperties.h"
 #include "Wire/AGX_WireEnums.h"
 #include "Wire/AGX_WireRoutingNode.h"
+#include "Wire/AGX_WireParameterController.h"
 #include "Wire/AGX_WireWinch.h"
 #include "Wire/WireBarrier.h"
 
@@ -80,15 +81,11 @@ public:
 		Meta = (ClampMin = "0", UIMin = "0"))
 	float LinearVelocityDamping = 0.0f;
 
-	// Not sure what this is, or if we should expose it.
-	///**
-	// * Value that indicates how likely it is that mass nodes appears along the wire. Higher value
-	// * means more likely.
-	// */
-	// UPROPERTY(
-	//	EditAnywhere, BlueprintReadWrite, Category = "AGX Wire",
-	//	Meta = (ClampMin = "0", UIMin = "0"))
-	// float ScaleConstant = 0.35f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, BlueprintSetter = SetWireParameterController, Category = "AGX Wire")
+	FAGX_WireParameterController WireParameterController;
+
+	UFUNCTION(BlueprintSetter)
+	void SetWireParameterController(const FAGX_WireParameterController& InWireParameterController);
 
 	/**
 	 * Defines physical properties of the wire.
