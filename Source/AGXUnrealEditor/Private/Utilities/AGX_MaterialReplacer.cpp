@@ -102,7 +102,7 @@ bool FAGX_MaterialReplacer::ReplaceMaterials(UBlueprint& Blueprint)
 	if (BlueprintClass == nullptr)
 	{
 		return Bail(
-			TEXT("Material replacing failed because the Bluperint doesn't have a generated class. "
+			TEXT("Material replacing failed because the Blueprint doesn't have a generated class. "
 				 "It may help to compile the Blueprint first."));
 	}
 
