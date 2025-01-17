@@ -202,31 +202,17 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 
 	static TSet<UMaterialInterface*> CollectRenderMaterials(UAGX_ModelSourceComponent* ModelSource)
 	{
-		// Determine if the Model Source Component is part of a Blueprint or an Actor. This code
-		// assumes that Components that are part of a Blueprint, the actual Blueprint and not an
-		// instance of a Blueprint, does not have an Owner. This is true as of Unreal Engine 5.3 but
-		// is not guaranteed to be true forever.
+		// Determine if the Model Source Component is part of a Blueprint or an Actor.
 		UBlueprint* Blueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*ModelSource);
 		AActor* Owner = ModelSource->GetOwner();
-		if (Blueprint == nullptr && Owner == nullptr)
+		if (Blueprint != nullptr)
 		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Material replacing failed because the Model Source Component has neither an "
-					 "Owner nor a Blueprint"));
-			return TSet<UMaterialInterface*>();
-		}
-		else if (Blueprint != nullptr && Owner != nullptr)
-		{
-			// If we get here then we found a Model Source that is part of both a Blueprint and an
-			// Actor, which we assumed would never happen.
 			AGX_CHECKF(
-				false, TEXT("Replace Materials found a Model Source Component that is part of both "
-							"a Blueprint and an Actor."));
-			return TSet<UMaterialInterface*>();
-		}
-		else if (Blueprint != nullptr)
-		{
+				Owner != nullptr,
+				TEXT("Material Replacer operating on a Model Source Component "
+					 "that is both part of a Blueprint and an Actor. We did not expect this could "
+					 "happen. User applications will use the Blueprint code to collect Materials "
+					 "but not sure it will find all Materials."));
 			return CollectRenderMaterials(*Blueprint);
 		}
 		else if (Owner != nullptr)
@@ -235,8 +221,10 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 		}
 		else
 		{
-			// Should never get here, the above if-else-if chain should cover all cases.
-			checkNoEntry();
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Material Replacer could not collect in-use render Materials because the "
+					 "Model Source Component is part of neither a Blueprint nor an Actor."));
 			return TSet<UMaterialInterface*>();
 		}
 	}
@@ -352,30 +340,17 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 			"Material replacing is currenly only supported with a single Model Source Component."));
 	}
 
-	// Determine if the Model Source Component is part of a Blueprint or an Actor. This code assumes
-	// that Components that are part of a Blueprint, the actual Blueprint and not an instance of a
-	// Blueprint, does not have an Owner. This is true as of Unreal Engine 5.3 but is not guaranteed
-	// to be true forever.
+	// Determine if the Model Source Component is part of a Blueprint or an Actor.
 	UBlueprint* Blueprint = FAGX_BlueprintUtilities::GetBlueprintFrom(*ModelSource);
 	AActor* Owner = ModelSource->GetOwner();
-	if (Blueprint == nullptr && Owner == nullptr)
+	if (Blueprint != nullptr)
 	{
-		return Bail(
-			TEXT("Material replacing failed because the Model Source Component has neither an "
-				 "Owner nor a Blueprint"));
-	}
-	else if (Blueprint != nullptr && Owner != nullptr)
-	{
-		// If we get here then we found a Model Source that is part of both a Blueprint and an
-		// Actor, which we assumed would never happen.
-		constexpr TCHAR Message[] = TEXT(
-			"Replace Materials failed because the Model Source Componenthas both a Blueprint and "
-			"an Actor.");
-		AGX_CHECKF(false, Message);
-		return Bail(Message);
-	}
-	else if (Blueprint != nullptr)
-	{
+		AGX_CHECKF(
+			Owner != nullptr,
+			TEXT("Material Replacer operating on a Model Source Component that is both part of a "
+				 "Blueprint and an Actor. We did not expect this could happen. User applications "
+				 "will use the Blueprint code to replace Materials but not sure the change will be "
+				 "applied completely and correctly."));
 		FAGX_MaterialReplacer::ReplaceMaterials(*Blueprint);
 	}
 	else if (Owner != nullptr)
@@ -384,8 +359,9 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 	}
 	else
 	{
-		// Should never get here, the above if-else-if chain should cover all cases.
-		checkNoEntry();
+		return Bail(
+			TEXT("Material replacing failed because the Model Source Component has neither an "
+				 "Owner nor a Blueprint"));
 	}
 
 	// The new Material is now in use, so add it to the set of known Materials.
