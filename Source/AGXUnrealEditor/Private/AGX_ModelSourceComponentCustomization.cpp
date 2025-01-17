@@ -240,7 +240,7 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 			return TSet<UMaterialInterface*>();
 		}
 	}
-};
+}
 
 void FAGX_ModelSourceComponentCustomization::CustomizeMaterialReplacer(
 	UAGX_ModelSourceComponent* ModelSource)
