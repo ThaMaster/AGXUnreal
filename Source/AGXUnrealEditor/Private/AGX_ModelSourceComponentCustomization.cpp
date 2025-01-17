@@ -208,7 +208,7 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 		if (Blueprint != nullptr)
 		{
 			AGX_CHECKF(
-				Owner != nullptr,
+				Owner == nullptr,
 				TEXT("Material Replacer operating on a Model Source Component "
 					 "that is both part of a Blueprint and an Actor. We did not expect this could "
 					 "happen. User applications will use the Blueprint code to collect Materials "
@@ -346,7 +346,7 @@ FReply FAGX_ModelSourceComponentCustomization::OnReplaceMaterialsButtonClicked()
 	if (Blueprint != nullptr)
 	{
 		AGX_CHECKF(
-			Owner != nullptr,
+			Owner == nullptr,
 			TEXT("Material Replacer operating on a Model Source Component that is both part of a "
 				 "Blueprint and an Actor. We did not expect this could happen. User applications "
 				 "will use the Blueprint code to replace Materials but not sure the change will be "
