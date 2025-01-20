@@ -49,6 +49,8 @@ struct AGXUNREAL_API FAGX_WireParameterController
 	double RadiusMultiplier {1.001};
 	void SetRadiusMultiplier(double Multiplier);
 	double GetRadiusMultiplier() const;
+	/** Only available when there is an underlying native AGX Dynamics object. */
+	double GetScaledRadiusMultiplier(double WireRadius) const;
 
 	/**
 	 * The scale constant controls the insert/remove of lumped nodes in a wire.
@@ -142,6 +144,18 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 	static double GetRadiusMultiplier(UPARAM(Ref) FAGX_WireParameterController& Controller)
 	{
 		return Controller.GetRadiusMultiplier();
+	}
+
+	/**
+	 *
+	 * @param Controller Wire Parameter Controller to read from.
+	 * @param WireRadius The radius of the wire [cm].
+	 * @return Scaled wire radius parameter.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
+	static double GetScaledRadiusMultiplier(UPARAM(Ref) FAGX_WireParameterController& Controller, double WireRadius)
+	{
+		return Controller.GetScaledRadiusMultiplier(WireRadius);
 	}
 
 	/**

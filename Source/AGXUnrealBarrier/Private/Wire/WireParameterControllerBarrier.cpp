@@ -87,6 +87,13 @@ double FWireParameterControllerBarrier::GetRadiusMultiplier() const
 	return NativePtr->NativeWire->getParameterController()->getNonScaledRadiusMultiplier();
 }
 
+double FWireParameterControllerBarrier::GetScaledRadiusMultiplier(double WireRadius) const
+{
+	check(HasNative());
+	const double WireRadiusAGX = ConvertDistanceToAGX(WireRadius);
+	return NativePtr->NativeWire->getParameterController()->getRadiusMultiplier(WireRadius);
+}
+
 void FWireParameterControllerBarrier::SetScaleConstant(double ScaleConstant)
 {
 	check(HasNative());

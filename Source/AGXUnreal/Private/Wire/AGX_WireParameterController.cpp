@@ -17,6 +17,16 @@ AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, MinimumDistan
 AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, RadiusMultiplier)
 AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, ScaleConstant)
 
+double FAGX_WireParameterController::GetScaledRadiusMultiplier(double WireRadius) const
+{
+	if (!HasNative())
+	{
+		return 0.0;
+	}
+	return NativeBarrier.GetScaledRadiusMultiplier(WireRadius);
+}
+
+
 void FAGX_WireParameterController::WritePropertiesToNative()
 {
 	NativeBarrier.SetMaximumContactMovementOneTimestep(MaximumContactMovementOneTimestep);

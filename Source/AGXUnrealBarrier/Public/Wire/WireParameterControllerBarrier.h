@@ -28,6 +28,7 @@ public:
 
 	void SetRadiusMultiplier(double RadiusMultiplier);
 	double GetRadiusMultiplier() const;
+	double GetScaledRadiusMultiplier(double WireRadius) const;
 
 	void SetScaleConstant(double ScaleConstant);
 	double GetScaleConstant() const;
