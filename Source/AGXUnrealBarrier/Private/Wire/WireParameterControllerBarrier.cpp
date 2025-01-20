@@ -3,8 +3,8 @@
 #include "Wire/WireParameterControllerBarrier.h"
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_LogCategory.h"
 #include "BarrierOnly/Wire/WireParameterControllerPtr.h"
+#include "TypeConversions.h"
 
 FWireParameterControllerBarrier::FWireParameterControllerBarrier()
 	: NativePtr {new FWireParameterControllerPtr()}
@@ -40,6 +40,23 @@ FWireParameterControllerBarrier& FWireParameterControllerBarrier::operator=(
 {
 	*NativePtr = *Other.NativePtr;
 	return *this;
+}
+
+void FWireParameterControllerBarrier::SetMaximumContactMovementOneTimestep(double MaxMovement)
+{
+	check(HasNative());
+	const double MaxMovementAgx = ConvertDistanceToAGX(MaxMovement);
+	NativePtr->NativeWire->getParameterController()->setMaximumContactMovementOneTimestep(
+		MaxMovementAgx);
+}
+
+double FWireParameterControllerBarrier::GetMaximumContactMovementOneTimestep() const
+{
+	check(HasNative());
+	const double MaxMovementAgx =
+		NativePtr->NativeWire->getParameterController()->getMaximumContactMovementOneTimestep();
+	const double MaxMovement = ConvertDistanceToUnreal<double>(MaxMovementAgx);
+	return MaxMovement;
 }
 
 void FWireParameterControllerBarrier::SetScaleConstant(double ScaleConstant)

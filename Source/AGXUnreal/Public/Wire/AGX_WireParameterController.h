@@ -20,18 +20,30 @@ struct AGXUNREAL_API FAGX_WireParameterController
 
 	void SetBarrier(const FWireParameterControllerBarrier& InBarrier);
 
+	/**
+	 * This value should be related the size of objects the wire is interacting with, to avoid
+	 * tunneling.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Wire Parameter Controller")
+	double MaximumContactMovementOneTimestep {0.1};
+	void SetMaximumContactMovementOneTimestep(double MaxMovement);
+	double GetMaximumContactMovementOneTimestep() const;
+
+	/**
+	 * The scale constant controls the insert/remove of lumped nodes in a wire. The parameter
+	 * has an analytical value derived given the Nyquist frequency. The probability to have more
+	 * lumped nodes in the wire increases with this scale constant.
+	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Parameter Controller")
 	double ScaleConstant {0.35};
-
 	void SetScaleConstant(double InScaleConstant);
 	double GetScaleConstant() const;
 
 	void WritePropertiesToNative();
-
 	bool HasNative() const;
 
 private:
-	FWireParameterControllerBarrier Barrier;
+	FWireParameterControllerBarrier NativeBarrier;
 };
 
 UCLASS()
@@ -39,6 +51,33 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 {
 	GENERATED_BODY()
 
+	/**
+	 * This value should be related the size of objects the wire is interacting with, to avoid
+	 * tunneling.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
+	static void SetMaximumContactMovementOneTimestep(
+		UPARAM(Ref) FAGX_WireParameterController& Controller, double MaxMovement)
+	{
+		Controller.SetMaximumContactMovementOneTimestep(MaxMovement);
+	}
+
+	/**
+	 * This value should be related the size of objects the wire is interacting with, to avoid
+	 * tunneling.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
+	static double GetMaximumContactMovementOneTimeStep(UPARAM(Ref)
+														   FAGX_WireParameterController& Controller)
+	{
+		return Controller.GetMaximumContactMovementOneTimestep();
+	}
+
+	/**
+	 * The scale constant controls the insert/remove of lumped nodes in a wire. The parameter
+	 * has an analytical value derived given the Nyquist frequency. The probability to have more
+	 * lumped nodes in the wire increases with this scale constant.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
 	static void SetScaleConstant(
 		UPARAM(Ref) FAGX_WireParameterController& Controller, double ScaleConstant)
@@ -46,6 +85,11 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 		Controller.SetScaleConstant(ScaleConstant);
 	}
 
+	/**
+	 * The scale constant controls the insert/remove of lumped nodes in a wire. The parameter
+	 * has an analytical value derived given the Nyquist frequency. The probability to have more
+	 * lumped nodes in the wire increases with this scale constant.
+	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
 	static double GetScaleConstant(UPARAM(Ref) FAGX_WireParameterController& Controller)
 	{

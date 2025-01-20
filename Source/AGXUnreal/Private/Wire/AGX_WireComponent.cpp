@@ -1446,16 +1446,24 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, bCanCollide),
 		[](ThisClass* This) { This->SetCanCollide(This->bCanCollide); });
 
-	Dispatcher.Add(
-		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, WireParameterController),
-		GET_MEMBER_NAME_CHECKED(FAGX_WireParameterController, ScaleConstant),
-		[](ThisClass* This)
-		{
-			if (This->HasNative())
-			{
-				This->WireParameterController.WritePropertiesToNative();
-			}
-		});
+// Helper macro for registering Property Dispatches callbacks when modifying members of the
+// Wire Parameter Controller struct.
+#define ADD_PARAMETER_CONTROLLER_DISPACTCHER(PropertyName)                    \
+	Dispatcher.Add(                                                           \
+		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, WireParameterController), \
+		GET_MEMBER_NAME_CHECKED(FAGX_WireParameterController, PropertyName),  \
+		[](ThisClass* This)                                                   \
+		{                                                                     \
+			if (This->HasNative())                                            \
+			{                                                                 \
+				This->WireParameterController.Set##PropertyName(              \
+					This->WireParameterController.PropertyName);              \
+			}                                                                 \
+		})
+
+	// Dispatchers for Properties owned by Wire Parameter Controller.
+	ADD_PARAMETER_CONTROLLER_DISPACTCHER(MaximumContactMovementOneTimestep);
+	ADD_PARAMETER_CONTROLLER_DISPACTCHER(ScaleConstant);
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RenderMaterial),
@@ -1936,7 +1944,8 @@ namespace AGX_WireComponent_helpers
 	}
 }
 
-void UAGX_WireComponent::SetWireParameterController(const FAGX_WireParameterController& InWireParameterController)
+void UAGX_WireComponent::SetWireParameterController(
+	const FAGX_WireParameterController& InWireParameterController)
 {
 	WireParameterController = InWireParameterController;
 	WireParameterController.SetBarrier(NativeBarrier.GetParameterController());

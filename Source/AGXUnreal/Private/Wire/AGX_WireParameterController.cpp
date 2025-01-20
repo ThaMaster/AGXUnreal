@@ -3,40 +3,25 @@
 #include "Wire/AGX_WireParameterController.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Utilities/AGX_BarrierUtilities.h"
 #include "Wire/WireParameterControllerBarrier.h"
 
 void FAGX_WireParameterController::SetBarrier(const FWireParameterControllerBarrier& InBarrier)
 {
-	Barrier = InBarrier;
+	NativeBarrier = InBarrier;
 }
 
-void FAGX_WireParameterController::SetScaleConstant(double InScaleConstant)
-{
-	if (HasNative())
-	{
-		Barrier.SetScaleConstant(InScaleConstant);
-	}
-	ScaleConstant = InScaleConstant;
-}
-
-double FAGX_WireParameterController::GetScaleConstant() const
-{
-	if (HasNative())
-	{
-		return Barrier.GetScaleConstant();
-	}
-	else
-	{
-		return ScaleConstant;
-	}
-}
+AGX_BARRIER_SET_GET_PROPERTY(
+	FAGX_WireParameterController, double, MaximumContactMovementOneTimestep)
+AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, ScaleConstant)
 
 void FAGX_WireParameterController::WritePropertiesToNative()
 {
-	Barrier.SetScaleConstant(ScaleConstant);
+	NativeBarrier.SetMaximumContactMovementOneTimestep(MaximumContactMovementOneTimestep);
+	NativeBarrier.SetScaleConstant(ScaleConstant);
 }
 
 bool FAGX_WireParameterController::HasNative() const
 {
-	return Barrier.HasNative();
+	return NativeBarrier.HasNative();
 }

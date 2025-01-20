@@ -20,6 +20,9 @@ public:
 	~FWireParameterControllerBarrier();
 	FWireParameterControllerBarrier& operator=(const FWireParameterControllerBarrier& Other);
 
+	void SetMaximumContactMovementOneTimestep(double MaxMovement);
+	double GetMaximumContactMovementOneTimestep() const;
+
 	void SetScaleConstant(double ScaleConstant);
 	double GetScaleConstant() const;
 
