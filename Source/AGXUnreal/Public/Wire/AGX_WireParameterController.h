@@ -40,6 +40,16 @@ struct AGXUNREAL_API FAGX_WireParameterController
 	double GetMinimumDistanceBetweenNodes() const;
 
 	/**
+	 * Set the wire sphere sphare radius multiplier.
+	 *
+	 * It's convenient to have larger geometry spheres for the lumped elements in a wire. It looks
+	 * more natural and it helps the contact handling in the wires.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Wire Parameter Controller")
+	double RadiusMultiplier {1.001};
+	void SetRadiusMultiplier(double Multiplier);
+	double GetRadiusMultiplier() const;
+
 	/**
 	 * The scale constant controls the insert/remove of lumped nodes in a wire.
 	 *
@@ -110,10 +120,35 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 	}
 
 	/**
+	 * Set the wire sphere shape radius multiplier.
+	 *
+	 * It's convenient to have larger geometry spheres for the lumped elements in a wire. It looks
+	 * more natural and it helps the contact handling in the wires.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
+	static void SetRadiusMultiplier(
+		UPARAM(Ref) FAGX_WireParameterController& Controller, double RadiusMultiplier)
+	{
+		Controller.SetRadiusMultiplier(RadiusMultiplier);
+	}
+
+	/**
+	 * Get the wire sphere shape radius multiplier.
+	 *
+	 * It's convenient to have larger geometry spheres for the lumped elements in a wire. It
+	 * looks more natural and it helps the contact handling in the wires.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
+	static double GetRadiusMultiplier(UPARAM(Ref) FAGX_WireParameterController& Controller)
+	{
+		return Controller.GetRadiusMultiplier();
+	}
+
+	/**
 	 * The scale constant controls the insert/remove of lumped nodes in a wire.
 	 *
-	 * The parameter has an analytical value derived given the Nyquist frequency. The probability to
-	 * have more lumped nodes in the wire increases with this scale constant.
+	 * The parameter has an analytical value derived given the Nyquist frequency. The
+	 * probability to have more lumped nodes in the wire increases with this scale constant.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
 	static void SetScaleConstant(
@@ -125,8 +160,8 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 	/**
 	 * The scale constant controls the insert/remove of lumped nodes in a wire.
 	 *
-	 * The parameter has an analytical value derived given the Nyquist frequency. The probability to
-	 * have more lumped nodes in the wire increases with this scale constant.
+	 * The parameter has an analytical value derived given the Nyquist frequency. The
+	 * probability to have more lumped nodes in the wire increases with this scale constant.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
 	static double GetScaleConstant(UPARAM(Ref) FAGX_WireParameterController& Controller)

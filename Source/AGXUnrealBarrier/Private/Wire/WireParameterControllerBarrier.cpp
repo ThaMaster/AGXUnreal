@@ -75,6 +75,18 @@ double FWireParameterControllerBarrier::GetMinimumDistanceBetweenNodes() const
 	return MinDistance;
 }
 
+void FWireParameterControllerBarrier::SetRadiusMultiplier(double RadiusMultiplier)
+{
+	check(HasNative());
+	NativePtr->NativeWire->getParameterController()->setRadiusMultiplier(RadiusMultiplier);
+}
+
+double FWireParameterControllerBarrier::GetRadiusMultiplier() const
+{
+	check(HasNative());
+	return NativePtr->NativeWire->getParameterController()->getNonScaledRadiusMultiplier();
+}
+
 void FWireParameterControllerBarrier::SetScaleConstant(double ScaleConstant)
 {
 	check(HasNative());

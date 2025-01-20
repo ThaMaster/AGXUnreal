@@ -26,6 +26,9 @@ public:
 	void SetMinimumDistanceBetweenNodes(double MinDistance);
 	double GetMinimumDistanceBetweenNodes() const;
 
+	void SetRadiusMultiplier(double RadiusMultiplier);
+	double GetRadiusMultiplier() const;
+
 	void SetScaleConstant(double ScaleConstant);
 	double GetScaleConstant() const;
 
