@@ -23,6 +23,9 @@ public:
 	void SetMaximumContactMovementOneTimestep(double MaxMovement);
 	double GetMaximumContactMovementOneTimestep() const;
 
+	void SetMinimumDistanceBetweenNodes(double MinDistance);
+	double GetMinimumDistanceBetweenNodes() const;
+
 	void SetScaleConstant(double ScaleConstant);
 	double GetScaleConstant() const;
 

@@ -30,6 +30,15 @@ struct AGXUNREAL_API FAGX_WireParameterController
 	double GetMaximumContactMovementOneTimestep() const;
 
 	/**
+	 * Set the minimum distance allowed between nodes. I.e., a lumped element node will NOT
+	 * be created closer than this distance from routed nodes.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Wire Parameter Controller")
+	double MinimumDistanceBetweenNodes {5.0};
+	void SetMinimumDistanceBetweenNodes(double MinDistance);
+	double GetMinimumDistanceBetweenNodes() const;
+
+	/**
 	 * The scale constant controls the insert/remove of lumped nodes in a wire. The parameter
 	 * has an analytical value derived given the Nyquist frequency. The probability to have more
 	 * lumped nodes in the wire increases with this scale constant.
@@ -71,6 +80,26 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 														   FAGX_WireParameterController& Controller)
 	{
 		return Controller.GetMaximumContactMovementOneTimestep();
+	}
+
+	/**
+	 * Set the minimum distance allowed between nodes. I.e., a lumped element node will NOT
+	 * be created closer than this distance from routed nodes.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
+	static void SetMinimumDistanceBetweenNodes(UPARAM(Ref) FAGX_WireParameterController& Controller, double MinDistance)
+	{
+		Controller.SetMinimumDistanceBetweenNodes(MinDistance);
+	}
+
+	/**
+	 * Set the minimum distance allowed between nodes. I.e., a lumped element node will NOT
+	 * be created closer than this distance from routed nodes.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
+	static double GetMinimumDistanceBetweenNodes(UPARAM(Ref) FAGX_WireParameterController& Controller)
+	{
+		return Controller.GetMinimumDistanceBetweenNodes();
 	}
 
 	/**

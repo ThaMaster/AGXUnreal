@@ -1463,6 +1463,7 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 
 	// Dispatchers for Properties owned by Wire Parameter Controller.
 	ADD_PARAMETER_CONTROLLER_DISPACTCHER(MaximumContactMovementOneTimestep);
+	ADD_PARAMETER_CONTROLLER_DISPACTCHER(MinimumDistanceBetweenNodes);
 	ADD_PARAMETER_CONTROLLER_DISPACTCHER(ScaleConstant);
 
 	Dispatcher.Add(

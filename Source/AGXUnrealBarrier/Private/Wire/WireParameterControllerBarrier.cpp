@@ -45,18 +45,34 @@ FWireParameterControllerBarrier& FWireParameterControllerBarrier::operator=(
 void FWireParameterControllerBarrier::SetMaximumContactMovementOneTimestep(double MaxMovement)
 {
 	check(HasNative());
-	const double MaxMovementAgx = ConvertDistanceToAGX(MaxMovement);
+	const double MaxMovementAGX = ConvertDistanceToAGX(MaxMovement);
 	NativePtr->NativeWire->getParameterController()->setMaximumContactMovementOneTimestep(
-		MaxMovementAgx);
+		MaxMovementAGX);
 }
 
 double FWireParameterControllerBarrier::GetMaximumContactMovementOneTimestep() const
 {
 	check(HasNative());
-	const double MaxMovementAgx =
+	const double MaxMovementAGX =
 		NativePtr->NativeWire->getParameterController()->getMaximumContactMovementOneTimestep();
-	const double MaxMovement = ConvertDistanceToUnreal<double>(MaxMovementAgx);
+	const double MaxMovement = ConvertDistanceToUnreal<double>(MaxMovementAGX);
 	return MaxMovement;
+}
+
+void FWireParameterControllerBarrier::SetMinimumDistanceBetweenNodes(double MinDistance)
+{
+	check(HasNative());
+	const double MinDistanceAGX = ConvertDistanceToAGX(MinDistance);
+	NativePtr->NativeWire->getParameterController()->setMinimumDistanceBetweenNodes(MinDistanceAGX);
+}
+
+double FWireParameterControllerBarrier::GetMinimumDistanceBetweenNodes() const
+{
+	check(HasNative());
+	const double MinDistanceAGX =
+		NativePtr->NativeWire->getParameterController()->getMinimumDistanceBetweenNodes();
+	const double MinDistance = ConvertDistanceToUnreal<double>(MinDistanceAGX);
+	return MinDistance;
 }
 
 void FWireParameterControllerBarrier::SetScaleConstant(double ScaleConstant)

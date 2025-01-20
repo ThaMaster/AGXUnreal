@@ -13,11 +13,13 @@ void FAGX_WireParameterController::SetBarrier(const FWireParameterControllerBarr
 
 AGX_BARRIER_SET_GET_PROPERTY(
 	FAGX_WireParameterController, double, MaximumContactMovementOneTimestep)
+AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, MinimumDistanceBetweenNodes);
 AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, ScaleConstant)
 
 void FAGX_WireParameterController::WritePropertiesToNative()
 {
 	NativeBarrier.SetMaximumContactMovementOneTimestep(MaximumContactMovementOneTimestep);
+	NativeBarrier.SetMinimumDistanceBetweenNodes(MinimumDistanceBetweenNodes);
 	NativeBarrier.SetScaleConstant(ScaleConstant);
 }
 
