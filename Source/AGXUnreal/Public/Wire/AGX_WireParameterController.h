@@ -22,16 +22,17 @@ struct AGXUNREAL_API FAGX_WireParameterController
 
 	/**
 	 * This value should be related the size of objects the wire is interacting with, to avoid
-	 * tunneling.
+	 * tunneling [cm].
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Parameter Controller")
-	double MaximumContactMovementOneTimestep {0.1};
+	double MaximumContactMovementOneTimestep {10.0};
 	void SetMaximumContactMovementOneTimestep(double MaxMovement);
 	double GetMaximumContactMovementOneTimestep() const;
 
 	/**
-	 * Set the minimum distance allowed between nodes. I.e., a lumped element node will NOT
-	 * be created closer than this distance from routed nodes.
+	 * Set the minimum distance allowed between nodes [cm].
+	 *
+	 * I.e., a lumped element node will NOT be created closer than this distance from routed nodes.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Parameter Controller")
 	double MinimumDistanceBetweenNodes {5.0};
@@ -39,9 +40,11 @@ struct AGXUNREAL_API FAGX_WireParameterController
 	double GetMinimumDistanceBetweenNodes() const;
 
 	/**
-	 * The scale constant controls the insert/remove of lumped nodes in a wire. The parameter
-	 * has an analytical value derived given the Nyquist frequency. The probability to have more
-	 * lumped nodes in the wire increases with this scale constant.
+	/**
+	 * The scale constant controls the insert/remove of lumped nodes in a wire.
+	 *
+	 * The parameter has an analytical value derived given the Nyquist frequency. The probability to
+	 * have more lumped nodes in the wire increases with this scale constant.
 	 */
 	UPROPERTY(EditAnywhere, Category = "Wire Parameter Controller")
 	double ScaleConstant {0.35};
@@ -62,7 +65,7 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 
 	/**
 	 * This value should be related the size of objects the wire is interacting with, to avoid
-	 * tunneling.
+	 * tunneling [cm].
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
 	static void SetMaximumContactMovementOneTimestep(
@@ -73,7 +76,7 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 
 	/**
 	 * This value should be related the size of objects the wire is interacting with, to avoid
-	 * tunneling.
+	 * tunneling [cm].
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
 	static double GetMaximumContactMovementOneTimeStep(UPARAM(Ref)
@@ -83,29 +86,34 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 	}
 
 	/**
-	 * Set the minimum distance allowed between nodes. I.e., a lumped element node will NOT
-	 * be created closer than this distance from routed nodes.
+	 * Set the minimum distance allowed between nodes [cm].
+	 *
+	 * I.e., a lumped element node will NOT be created closer than this distance from routed nodes.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
-	static void SetMinimumDistanceBetweenNodes(UPARAM(Ref) FAGX_WireParameterController& Controller, double MinDistance)
+	static void SetMinimumDistanceBetweenNodes(
+		UPARAM(Ref) FAGX_WireParameterController& Controller, double MinDistance)
 	{
 		Controller.SetMinimumDistanceBetweenNodes(MinDistance);
 	}
 
 	/**
-	 * Set the minimum distance allowed between nodes. I.e., a lumped element node will NOT
-	 * be created closer than this distance from routed nodes.
+	 * Set the minimum distance allowed between nodes [cm].
+	 *
+	 * I.e., a lumped element node will NOT be created closer than this distance from routed nodes.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
-	static double GetMinimumDistanceBetweenNodes(UPARAM(Ref) FAGX_WireParameterController& Controller)
+	static double GetMinimumDistanceBetweenNodes(UPARAM(Ref)
+													 FAGX_WireParameterController& Controller)
 	{
 		return Controller.GetMinimumDistanceBetweenNodes();
 	}
 
 	/**
-	 * The scale constant controls the insert/remove of lumped nodes in a wire. The parameter
-	 * has an analytical value derived given the Nyquist frequency. The probability to have more
-	 * lumped nodes in the wire increases with this scale constant.
+	 * The scale constant controls the insert/remove of lumped nodes in a wire.
+	 *
+	 * The parameter has an analytical value derived given the Nyquist frequency. The probability to
+	 * have more lumped nodes in the wire increases with this scale constant.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
 	static void SetScaleConstant(
@@ -115,9 +123,10 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 	}
 
 	/**
-	 * The scale constant controls the insert/remove of lumped nodes in a wire. The parameter
-	 * has an analytical value derived given the Nyquist frequency. The probability to have more
-	 * lumped nodes in the wire increases with this scale constant.
+	 * The scale constant controls the insert/remove of lumped nodes in a wire.
+	 *
+	 * The parameter has an analytical value derived given the Nyquist frequency. The probability to
+	 * have more lumped nodes in the wire increases with this scale constant.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
 	static double GetScaleConstant(UPARAM(Ref) FAGX_WireParameterController& Controller)
