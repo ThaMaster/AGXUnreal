@@ -16,6 +16,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "Math/UnrealMathUtility.h"
 #include "Misc/EngineVersionComparison.h"
+#include "PhysicsEngine/BodySetup.h"
 #include "Rendering/PositionVertexBuffer.h"
 #include "RenderingThread.h"
 #include "RHIGPUReadback.h"
@@ -2034,23 +2035,27 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	UStaticMesh* StaticMesh =
 		NewObject<UStaticMesh>(GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
 
-	// Create MeshDescription
+	// Create MeshDescription.
 	FMeshDescription MeshDescription;
 	FStaticMeshAttributes Attributes(MeshDescription);
 	Attributes.Register();
 
-	// Fill MeshDescription with vertex data
+	// Fill MeshDescription with vertex data.
 	TMap<int32, FVertexID> VertexIDMap;
 
-	// Create vertices
-	for (int32 i = 0; i < Vertices.Num(); ++i)
+	// BoundingBox used for SimpleCollision box.
+	FBox BoundingBox(ForceInitToZero);
+
+	// Create vertices.
+	for (int32 I = 0; I < Vertices.Num(); I++)
 	{
 		FVertexID VertexID = MeshDescription.CreateVertex();
-		Attributes.GetVertexPositions()[VertexID] = Vertices[i];
-		VertexIDMap.Add(i, VertexID);
+		Attributes.GetVertexPositions()[VertexID] = Vertices[I];
+		VertexIDMap.Add(I, VertexID);
+		BoundingBox += FVector(Vertices[I]);
 	}
 
-	// Create a polygon group for the material
+	// Create a polygon group for the material.
 	FPolygonGroupID PolygonGroupID = MeshDescription.CreatePolygonGroup();
 	if (Material)
 	{
@@ -2087,6 +2092,9 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	UStaticMesh::FBuildMeshDescriptionsParams Params;
 	Params.bFastBuild = true;
 	StaticMesh->BuildFromMeshDescriptions({&MeshDescription}, Params);
+
+	const bool SimpleCollisionRes = AddBoxSimpleCollision(BoundingBox, *StaticMesh);
+	AGX_CHECK(SimpleCollisionRes);
 
 	return StaticMesh;
 }
@@ -2168,4 +2176,24 @@ UMaterial* AGX_MeshUtilities::GetDefaultRenderMaterial(bool bIsSensor)
 			(bIsSensor ? TEXT(" sensor") : TEXT("")), AssetPath);
 	}
 	return Material;
+}
+
+bool AGX_MeshUtilities::AddBoxSimpleCollision(const FBox& BoundingBox, UStaticMesh& OutStaticMesh)
+{
+	UBodySetup* BodySetup = OutStaticMesh.GetBodySetup();
+	if (!BodySetup)
+		return false;
+
+	BodySetup->InvalidatePhysicsData();
+
+	FKBoxElem BoxElem;
+	BoxElem.Center = BoundingBox.GetCenter();
+	const FVector Extents = BoundingBox.GetExtent();
+	BoxElem.X = Extents.X * 2.0f;
+	BoxElem.Y = Extents.Y * 2.0f;
+	BoxElem.Z = Extents.Z * 2.0f;
+	BodySetup->AggGeom.BoxElems.Add(BoxElem);
+
+	BodySetup->CreatePhysicsMeshes();
+	return true;
 }

@@ -372,4 +372,9 @@ public:
 	 * Returns the default (AGX) render material.
 	 */
 	static UMaterial* GetDefaultRenderMaterial(bool bIsSensor);
+
+	/**
+	* Add a Simple Collision Box to the given StaticMesh.
+	*/
+	static bool AddBoxSimpleCollision(const FBox& BoundingBox, UStaticMesh& OutStaticMesh);
 };
