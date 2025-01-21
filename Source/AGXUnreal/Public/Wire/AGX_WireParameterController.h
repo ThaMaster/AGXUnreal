@@ -94,6 +94,17 @@ struct AGXUNREAL_API FAGX_WireParameterController
 	void SetStopNodeReferenceDistance(double Distance);
 	double GetStopNodeReferenceDistance() const;
 
+	/**
+	 * A scale for the damping of the dynamics solver for ShapeContactNodes.
+	 *
+	 * This will scale the damping of the damping found in the material parameters for an
+	 * interaction of a wire/other contact.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Wire Parameter Controller")
+	double WireContactDynamicsSolverDampingScale {2};
+	void SetWireContactDynamicsSolverDampingScale(double Scale);
+	double GetWireContactDynamicsSolverDampingScale() const;
+
 	void WritePropertiesToNative();
 	bool HasNative() const;
 
@@ -269,7 +280,8 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 	 * but the behavior can be strange. Default: 1 m, equivalent to winch speed of 60 m/s in 60 Hz.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
-	static void SetStopNodeReferenceDistance(UPARAM(Ref) FAGX_WireParameterController& Controller, double Distance)
+	static void SetStopNodeReferenceDistance(
+		UPARAM(Ref) FAGX_WireParameterController& Controller, double Distance)
 	{
 		Controller.SetStopNodeReferenceDistance(Distance);
 	}
@@ -280,9 +292,31 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 	 * This also defines the theoretic maximum speed, in fact, in practice the speed can be higher
 	 * but the behavior can be strange. Default: 1 m, equivalent to winch speed of 60 m/s in 60 Hz.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category  = "AGX Wire Parameter Controller")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
 	static double GetStopNodeReferenceDistance(UPARAM(Ref) FAGX_WireParameterController& Controller)
 	{
 		return Controller.GetStopNodeReferenceDistance();
+	}
+
+	/**
+	 * A scale for the damping of the dynamics solver for ShapeContactNodes.
+	 *
+	 * This will scale the damping of the damping found in the material parameters for an interaction of a wire/other contact.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
+	static void SetWireContactDynamicsSolverDampingScale(UPARAM(Ref) FAGX_WireParameterController& Controller, double Scale)
+	{
+		Controller.SetWireContactDynamicsSolverDampingScale(Scale);
+	}
+
+	/**
+	 * A scale for the damping of the dynamics solver for ShapeContactNodes.
+	 *
+	 * This will scale the damping of the damping found in the material parameters for an interaction of a wire/other contact.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
+	static double GetWireContactDynamicsSolverDampingScale(UPARAM(Ref) FAGX_WireParameterController& Controller)
+	{
+		return  Controller.GetWireContactDynamicsSolverDampingScale();
 	}
 };

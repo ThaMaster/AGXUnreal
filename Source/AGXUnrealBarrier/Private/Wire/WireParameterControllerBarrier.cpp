@@ -140,9 +140,24 @@ void FWireParameterControllerBarrier::SetStopNodeReferenceDistance(double Distan
 double FWireParameterControllerBarrier::GetStopNodeReferenceDistance() const
 {
 	check(HasNative());
-	const agx::Real DistanceAGX = NativePtr->NativeWire->getParameterController()->getStopNodeReferenceDistance();
+	const agx::Real DistanceAGX =
+		NativePtr->NativeWire->getParameterController()->getStopNodeReferenceDistance();
 	const double Distance = ConvertToUnreal<double>(DistanceAGX);
 	return Distance;
+}
+
+void FWireParameterControllerBarrier::SetWireContactDynamicsSolverDampingScale(double Scale)
+{
+	check(HasNative());
+	NativePtr->NativeWire->getParameterController()->setWireContactDynamicsSolverDampingScale(
+		Scale);
+}
+
+double FWireParameterControllerBarrier::GetWireContactDynamicsSolverDampingScale() const
+{
+	check(HasNative());
+	return NativePtr->NativeWire->getParameterController()
+		->getWireContactDynamicsSolverDampingScale();
 }
 
 bool FWireParameterControllerBarrier::HasNative() const

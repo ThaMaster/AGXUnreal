@@ -19,6 +19,7 @@ AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, ScaleConstant
 AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, SplitTensionMultiplier)
 AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, StopNodeLumpMinDistanceFraction)
 AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, StopNodeReferenceDistance)
+AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, WireContactDynamicsSolverDampingScale);
 
 double FAGX_WireParameterController::GetScaledRadiusMultiplier(double WireRadius) const
 {
@@ -38,6 +39,7 @@ void FAGX_WireParameterController::WritePropertiesToNative()
 	NativeBarrier.SetSplitTensionMultiplier(SplitTensionMultiplier);
 	NativeBarrier.SetStopNodeLumpMinDistanceFraction(StopNodeLumpMinDistanceFraction);
 	NativeBarrier.SetStopNodeReferenceDistance(StopNodeReferenceDistance);
+	NativeBarrier.SetWireContactDynamicsSolverDampingScale(WireContactDynamicsSolverDampingScale);
 }
 
 bool FAGX_WireParameterController::HasNative() const

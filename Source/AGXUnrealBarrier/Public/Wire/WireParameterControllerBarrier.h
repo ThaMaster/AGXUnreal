@@ -42,6 +42,9 @@ public:
 	void SetStopNodeReferenceDistance(double Distance);
 	double GetStopNodeReferenceDistance() const;
 
+	void SetWireContactDynamicsSolverDampingScale(double Scale);
+	double GetWireContactDynamicsSolverDampingScale() const;
+
 	bool HasNative() const;
 
 private:
