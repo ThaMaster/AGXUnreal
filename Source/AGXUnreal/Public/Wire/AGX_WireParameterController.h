@@ -241,7 +241,7 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 	 * A multiplier for tension scaling when deciding if a constraint could be replaced with a
 	 * force.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
 	static double GetSplitTensionMultiplier(UPARAM(Ref) FAGX_WireParameterController& Controller)
 	{
 		return Controller.GetSplitTensionMultiplier();
