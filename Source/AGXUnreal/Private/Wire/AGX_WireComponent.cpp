@@ -1468,6 +1468,7 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 	ADD_PARAMETER_CONTROLLER_DISPACTCHER(ScaleConstant);
 	ADD_PARAMETER_CONTROLLER_DISPACTCHER(SplitTensionMultiplier);
 	ADD_PARAMETER_CONTROLLER_DISPACTCHER(StopNodeLumpMinDistanceFraction);
+	ADD_PARAMETER_CONTROLLER_DISPACTCHER(StopNodeReferenceDistance);
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RenderMaterial),

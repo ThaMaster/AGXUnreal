@@ -83,6 +83,17 @@ struct AGXUNREAL_API FAGX_WireParameterController
 	void SetStopNodeLumpMinDistanceFraction(double Fraction);
 	double GetStopNodeLumpMinDistanceFraction() const;
 
+	/**
+	 * The distance between the lump node and the stop node for winches [cm].
+	 *
+	 * This also defines the theoretic maximum speed, in fact, in practice the speed can be higher
+	 * but the behavior can be strange. Default: 1 m, equivalent to winch speed of 60 m/s in 60 Hz.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Wire Parameter Controller")
+	double StopNodeReferenceDistance {100};
+	void SetStopNodeReferenceDistance(double Distance);
+	double GetStopNodeReferenceDistance() const;
+
 	void WritePropertiesToNative();
 	bool HasNative() const;
 
@@ -249,5 +260,29 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 														 FAGX_WireParameterController& Controller)
 	{
 		return Controller.GetStopNodeLumpMinDistanceFraction();
+	}
+
+	/**
+	 * The distance between the lump node and the stop node for winches [cm].
+	 *
+	 * This also defines the theoretic maximum speed, in fact, in practice the speed can be higher
+	 * but the behavior can be strange. Default: 1 m, equivalent to winch speed of 60 m/s in 60 Hz.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
+	static void SetStopNodeReferenceDistance(UPARAM(Ref) FAGX_WireParameterController& Controller, double Distance)
+	{
+		Controller.SetStopNodeReferenceDistance(Distance);
+	}
+
+	/**
+	 * The distance between the lump node and the stop node for winches [cm].
+	 *
+	 * This also defines the theoretic maximum speed, in fact, in practice the speed can be higher
+	 * but the behavior can be strange. Default: 1 m, equivalent to winch speed of 60 m/s in 60 Hz.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category  = "AGX Wire Parameter Controller")
+	static double GetStopNodeReferenceDistance(UPARAM(Ref) FAGX_WireParameterController& Controller)
+	{
+		return Controller.GetStopNodeReferenceDistance();
 	}
 };

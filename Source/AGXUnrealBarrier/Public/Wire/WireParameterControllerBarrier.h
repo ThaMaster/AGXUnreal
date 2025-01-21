@@ -39,6 +39,9 @@ public:
 	void SetStopNodeLumpMinDistanceFraction(double Fraction);
 	double GetStopNodeLumpMinDistanceFraction() const;
 
+	void SetStopNodeReferenceDistance(double Distance);
+	double GetStopNodeReferenceDistance() const;
+
 	bool HasNative() const;
 
 private:

@@ -130,6 +130,21 @@ double FWireParameterControllerBarrier::GetStopNodeLumpMinDistanceFraction() con
 	return NativePtr->NativeWire->getParameterController()->getStopNodeLumpMinDistanceFraction();
 }
 
+void FWireParameterControllerBarrier::SetStopNodeReferenceDistance(double Distance)
+{
+	check(HasNative());
+	const agx::Real DistanceAGX = ConvertDistanceToAGX(Distance);
+	NativePtr->NativeWire->getParameterController()->setStopNodeReferenceDistance(DistanceAGX);
+}
+
+double FWireParameterControllerBarrier::GetStopNodeReferenceDistance() const
+{
+	check(HasNative());
+	const agx::Real DistanceAGX = NativePtr->NativeWire->getParameterController()->getStopNodeReferenceDistance();
+	const double Distance = ConvertToUnreal<double>(DistanceAGX);
+	return Distance;
+}
+
 bool FWireParameterControllerBarrier::HasNative() const
 {
 	return NativePtr->NativeWire != nullptr;

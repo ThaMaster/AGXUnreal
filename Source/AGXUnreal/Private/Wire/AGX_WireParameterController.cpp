@@ -18,6 +18,7 @@ AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, RadiusMultipl
 AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, ScaleConstant)
 AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, SplitTensionMultiplier)
 AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, StopNodeLumpMinDistanceFraction)
+AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, StopNodeReferenceDistance)
 
 double FAGX_WireParameterController::GetScaledRadiusMultiplier(double WireRadius) const
 {
@@ -36,6 +37,7 @@ void FAGX_WireParameterController::WritePropertiesToNative()
 	NativeBarrier.SetScaleConstant(ScaleConstant);
 	NativeBarrier.SetSplitTensionMultiplier(SplitTensionMultiplier);
 	NativeBarrier.SetStopNodeLumpMinDistanceFraction(StopNodeLumpMinDistanceFraction);
+	NativeBarrier.SetStopNodeReferenceDistance(StopNodeReferenceDistance);
 }
 
 bool FAGX_WireParameterController::HasNative() const
