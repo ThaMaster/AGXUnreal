@@ -86,6 +86,12 @@ public:
 		Category = "AGX Wire")
 	FAGX_WireParameterController WireParameterController;
 
+	/**
+	 * Copy all properties from the given Parameter Controller into this Wire's Parameter Controller.
+	 *
+	 * The underlying native Parameter Controller object is not replaced, only modified. It is not
+	 * possible to use this functions to make multiple Wires share the same Parameter Controller.
+	 */
 	UFUNCTION(BlueprintSetter)
 	void SetWireParameterController(const FAGX_WireParameterController& InWireParameterController);
 

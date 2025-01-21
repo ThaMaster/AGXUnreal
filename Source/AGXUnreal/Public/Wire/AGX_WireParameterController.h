@@ -18,8 +18,6 @@ struct AGXUNREAL_API FAGX_WireParameterController
 {
 	GENERATED_BODY()
 
-	void SetBarrier(const FWireParameterControllerBarrier& InBarrier);
-
 	/**
 	 * This value should be related the size of objects the wire is interacting with, to avoid
 	 * tunneling [cm].
@@ -105,6 +103,9 @@ struct AGXUNREAL_API FAGX_WireParameterController
 	void SetWireContactDynamicsSolverDampingScale(double Scale);
 	double GetWireContactDynamicsSolverDampingScale() const;
 
+	void SetBarrier(const FWireParameterControllerBarrier& InBarrier);
+	void ClearBarrier();
+	void CopyFrom(const FWireParameterControllerBarrier& Barrier);
 	void WritePropertiesToNative();
 	bool HasNative() const;
 

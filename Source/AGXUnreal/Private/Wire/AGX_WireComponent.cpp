@@ -1263,6 +1263,7 @@ void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
 	MinSegmentLength = 1.0f / Barrier.GetResolutionPerUnitLength();
 	LinearVelocityDamping = static_cast<float>(Barrier.GetLinearVelocityDamping());
 	bCanCollide = Barrier.GetEnableCollisions();
+	WireParameterController.CopyFrom(Barrier.GetParameterController());
 
 	for (const FName& Group : Barrier.GetCollisionGroups())
 	{
@@ -1296,11 +1297,14 @@ void UAGX_WireComponent::SetNativeAddress(uint64 NativeAddress)
 {
 	check(!HasNative());
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
-	WireParameterController.SetBarrier(NativeBarrier.GetParameterController());
-
 	if (HasNative())
 	{
+		WireParameterController.SetBarrier(NativeBarrier.GetParameterController());
 		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+	}
+	else
+	{
+		WireParameterController.ClearBarrier();
 	}
 }
 
@@ -1688,7 +1692,7 @@ void UAGX_WireComponent::EndPlay(const EEndPlayReason::Type Reason)
 	if (HasNative())
 	{
 		NativeBarrier.ReleaseNative();
-		WireParameterController.SetBarrier(FWireParameterControllerBarrier());
+		WireParameterController.ClearBarrier();
 	}
 }
 

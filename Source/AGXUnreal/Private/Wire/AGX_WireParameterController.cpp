@@ -6,10 +6,6 @@
 #include "Utilities/AGX_BarrierUtilities.h"
 #include "Wire/WireParameterControllerBarrier.h"
 
-void FAGX_WireParameterController::SetBarrier(const FWireParameterControllerBarrier& InBarrier)
-{
-	NativeBarrier = InBarrier;
-}
 
 AGX_BARRIER_SET_GET_PROPERTY(
 	FAGX_WireParameterController, double, MaximumContactMovementOneTimestep)
@@ -28,6 +24,28 @@ double FAGX_WireParameterController::GetScaledRadiusMultiplier(double WireRadius
 		return 0.0;
 	}
 	return NativeBarrier.GetScaledRadiusMultiplier(WireRadius);
+}
+
+void FAGX_WireParameterController::SetBarrier(const FWireParameterControllerBarrier& InBarrier)
+{
+	NativeBarrier = InBarrier;
+}
+
+void FAGX_WireParameterController::ClearBarrier(){
+	NativeBarrier = FWireParameterControllerBarrier();
+}
+
+
+void FAGX_WireParameterController::CopyFrom(const FWireParameterControllerBarrier& Barrier)
+{
+	MaximumContactMovementOneTimestep = Barrier.GetMaximumContactMovementOneTimestep();
+	MinimumDistanceBetweenNodes = Barrier.GetMinimumDistanceBetweenNodes();
+	RadiusMultiplier = Barrier.GetRadiusMultiplier();
+	ScaleConstant = Barrier.GetScaleConstant();
+	SplitTensionMultiplier = Barrier.GetSplitTensionMultiplier();
+	StopNodeLumpMinDistanceFraction = Barrier.GetStopNodeLumpMinDistanceFraction();
+	StopNodeReferenceDistance = Barrier.GetStopNodeReferenceDistance();
+	WireContactDynamicsSolverDampingScale = Barrier.GetWireContactDynamicsSolverDampingScale();
 }
 
 void FAGX_WireParameterController::WritePropertiesToNative()
