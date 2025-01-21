@@ -1719,7 +1719,6 @@ void AAGX_Terrain::UpdateParticlesArrays()
 #endif
 
 	const int32 NumParticles = Positions.Num();
-	ERROR_HERE.
 
 	TArray<FVector4> PositionsAndScale;
 	PositionsAndScale.SetNum(NumParticles);
