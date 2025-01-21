@@ -40,7 +40,7 @@ struct AGXUNREAL_API FAGX_WireParameterController
 	double GetMinimumDistanceBetweenNodes() const;
 
 	/**
-	 * Set the wire sphere sphare radius multiplier.
+	 * Set the wire sphere shape radius multiplier.
 	 *
 	 * It's convenient to have larger geometry spheres for the lumped elements in a wire. It looks
 	 * more natural and it helps the contact handling in the wires.
@@ -72,6 +72,16 @@ struct AGXUNREAL_API FAGX_WireParameterController
 	void SetSplitTensionMultiplier(double Multiplier);
 	double GetSplitTensionMultiplier() const;
 
+	/**
+	 * The fraction of stop node reference distance that defines the range end of the prismatic
+	 * constraint used by most winches.
+	 *
+	 * Default: 0.05 which means 5 cm if stop node reference distance is 100 cm.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Wire Parameter Controller")
+	double StopNodeLumpMinDistanceFraction {0.05};
+	void SetStopNodeLumpMinDistanceFraction(double Fraction);
+	double GetStopNodeLumpMinDistanceFraction() const;
 
 	void WritePropertiesToNative();
 	bool HasNative() const;
@@ -195,20 +205,49 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 	}
 
 	/**
-	 * A multiplier for tension scaling when deciding if a constraint could be replaced with a force.
+	 * A multiplier for tension scaling when deciding if a constraint could be replaced with a
+	 * force.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
-	static void SetSplitTensionMultiplier(UPARAM(Ref) FAGX_WireParameterController& Controller, double Multiplier)
+	static void SetSplitTensionMultiplier(
+		UPARAM(Ref) FAGX_WireParameterController& Controller, double Multiplier)
 	{
 		Controller.SetSplitTensionMultiplier(Multiplier);
 	}
 
 	/**
-	 * A multiplier for tension scaling when deciding if a constraint could be replaced with a force.
+	 * A multiplier for tension scaling when deciding if a constraint could be replaced with a
+	 * force.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
 	static double GetSplitTensionMultiplier(UPARAM(Ref) FAGX_WireParameterController& Controller)
 	{
 		return Controller.GetSplitTensionMultiplier();
+	}
+
+	/**
+	 * The fraction of stop node reference distance that defines the range end of the prismatic
+	 * constraint used by most winches.
+	 *
+	 * Default: 0.05 which means 5 cm if stop node reference distance is 100 cm.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
+	static void SetStopNodeLumpMinDistanceFraction(
+		UPARAM(Ref) FAGX_WireParameterController& Controller, double Fraction)
+	{
+		Controller.SetStopNodeLumpMinDistanceFraction(Fraction);
+	}
+
+	/**
+	 * The fraction of stop node reference distance that defines the range end of the prismatic
+	 * constraint used by most winches.
+	 *
+	 * Default: 0.05 which means 5 cm if stop node reference distance is 100 cm.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
+	static double GetStopNodeLumpMinDistanceFraction(UPARAM(Ref)
+														 FAGX_WireParameterController& Controller)
+	{
+		return Controller.GetStopNodeLumpMinDistanceFraction();
 	}
 };

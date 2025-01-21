@@ -81,7 +81,9 @@ public:
 		Meta = (ClampMin = "0", UIMin = "0"))
 	float LinearVelocityDamping = 0.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, BlueprintSetter = SetWireParameterController, Category = "AGX Wire")
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, BlueprintSetter = SetWireParameterController,
+		Category = "AGX Wire")
 	FAGX_WireParameterController WireParameterController;
 
 	UFUNCTION(BlueprintSetter)
@@ -825,14 +827,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	double GetRestLength() const;
 
-
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	double GetMass() const;
 
-
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
 	double GetTension() const;
-
 
 	/// @return True if this wire has at least one renderable simulation node.
 	UFUNCTION(BlueprintCallable, Category = "AGX Wire")
@@ -943,7 +942,6 @@ public:
 	//~ End Scene Component interface.
 
 private: // Deprecated functions.
-
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Wire",
 		Meta =
@@ -961,7 +959,6 @@ private: // Deprecated functions.
 		Meta = (DeprecatedFunction, DeprecationMessage = "Use GetTension instead of GetTension_BP"))
 	float GetTension_BP() const;
 
-
 protected:
 	// ~Begin UActorComponent interface.
 	virtual void OnRegister() override;
@@ -969,7 +966,6 @@ protected:
 	// ~End UActorComponent interface.
 
 private:
-
 #if WITH_EDITOR
 	void InitPropertyDispatcher();
 #endif

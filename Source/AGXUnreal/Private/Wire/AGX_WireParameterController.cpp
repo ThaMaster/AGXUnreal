@@ -17,6 +17,7 @@ AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, MinimumDistan
 AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, RadiusMultiplier)
 AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, ScaleConstant)
 AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, SplitTensionMultiplier)
+AGX_BARRIER_SET_GET_PROPERTY(FAGX_WireParameterController, double, StopNodeLumpMinDistanceFraction)
 
 double FAGX_WireParameterController::GetScaledRadiusMultiplier(double WireRadius) const
 {
@@ -27,7 +28,6 @@ double FAGX_WireParameterController::GetScaledRadiusMultiplier(double WireRadius
 	return NativeBarrier.GetScaledRadiusMultiplier(WireRadius);
 }
 
-
 void FAGX_WireParameterController::WritePropertiesToNative()
 {
 	NativeBarrier.SetMaximumContactMovementOneTimestep(MaximumContactMovementOneTimestep);
@@ -35,6 +35,7 @@ void FAGX_WireParameterController::WritePropertiesToNative()
 	NativeBarrier.SetRadiusMultiplier(RadiusMultiplier);
 	NativeBarrier.SetScaleConstant(ScaleConstant);
 	NativeBarrier.SetSplitTensionMultiplier(SplitTensionMultiplier);
+	NativeBarrier.SetStopNodeLumpMinDistanceFraction(StopNodeLumpMinDistanceFraction);
 }
 
 bool FAGX_WireParameterController::HasNative() const

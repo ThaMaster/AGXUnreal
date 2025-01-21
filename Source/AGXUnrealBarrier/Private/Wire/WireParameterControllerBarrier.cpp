@@ -118,6 +118,18 @@ double FWireParameterControllerBarrier::GetSplitTensionMultiplier() const
 	return NativePtr->NativeWire->getParameterController()->getSplitTensionMultiplier();
 }
 
+void FWireParameterControllerBarrier::SetStopNodeLumpMinDistanceFraction(double Fraction)
+{
+	check(HasNative());
+	NativePtr->NativeWire->getParameterController()->setStopNodeLumpMinDistanceFraction(Fraction);
+}
+
+double FWireParameterControllerBarrier::GetStopNodeLumpMinDistanceFraction() const
+{
+	check(HasNative());
+	return NativePtr->NativeWire->getParameterController()->getStopNodeLumpMinDistanceFraction();
+}
+
 bool FWireParameterControllerBarrier::HasNative() const
 {
 	return NativePtr->NativeWire != nullptr;

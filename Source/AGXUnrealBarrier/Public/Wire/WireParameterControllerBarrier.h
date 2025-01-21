@@ -36,6 +36,9 @@ public:
 	void SetSplitTensionMultiplier(double Multiplier);
 	double GetSplitTensionMultiplier() const;
 
+	void SetStopNodeLumpMinDistanceFraction(double Fraction);
+	double GetStopNodeLumpMinDistanceFraction() const;
+
 	bool HasNative() const;
 
 private:
