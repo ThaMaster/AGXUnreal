@@ -63,6 +63,16 @@ struct AGXUNREAL_API FAGX_WireParameterController
 	void SetScaleConstant(double InScaleConstant);
 	double GetScaleConstant() const;
 
+	/**
+	 * A multiplier for tension scaling when deciding if a constraint could be replaced with a
+	 * force.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Wire Parameter Controller")
+	double SplitTensionMultiplier {2.0};
+	void SetSplitTensionMultiplier(double Multiplier);
+	double GetSplitTensionMultiplier() const;
+
+
 	void WritePropertiesToNative();
 	bool HasNative() const;
 
@@ -153,7 +163,8 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 	 * @return Scaled wire radius parameter.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Wire Parameter Controller")
-	static double GetScaledRadiusMultiplier(UPARAM(Ref) FAGX_WireParameterController& Controller, double WireRadius)
+	static double GetScaledRadiusMultiplier(
+		UPARAM(Ref) FAGX_WireParameterController& Controller, double WireRadius)
 	{
 		return Controller.GetScaledRadiusMultiplier(WireRadius);
 	}
@@ -181,5 +192,23 @@ class AGXUNREAL_API UAGX_WireParameterController_FL : public UBlueprintFunctionL
 	static double GetScaleConstant(UPARAM(Ref) FAGX_WireParameterController& Controller)
 	{
 		return Controller.GetScaleConstant();
+	}
+
+	/**
+	 * A multiplier for tension scaling when deciding if a constraint could be replaced with a force.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
+	static void SetSplitTensionMultiplier(UPARAM(Ref) FAGX_WireParameterController& Controller, double Multiplier)
+	{
+		Controller.SetSplitTensionMultiplier(Multiplier);
+	}
+
+	/**
+	 * A multiplier for tension scaling when deciding if a constraint could be replaced with a force.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Wire Parameter Controller")
+	static double GetSplitTensionMultiplier(UPARAM(Ref) FAGX_WireParameterController& Controller)
+	{
+		return Controller.GetSplitTensionMultiplier();
 	}
 };

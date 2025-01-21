@@ -33,6 +33,9 @@ public:
 	void SetScaleConstant(double ScaleConstant);
 	double GetScaleConstant() const;
 
+	void SetSplitTensionMultiplier(double Multiplier);
+	double GetSplitTensionMultiplier() const;
+
 	bool HasNative() const;
 
 private:

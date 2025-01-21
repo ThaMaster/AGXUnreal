@@ -106,6 +106,18 @@ double FWireParameterControllerBarrier::GetScaleConstant() const
 	return NativePtr->NativeWire->getParameterController()->getScaleConstant();
 }
 
+void FWireParameterControllerBarrier::SetSplitTensionMultiplier(double Multiplier)
+{
+	check(HasNative());
+	NativePtr->NativeWire->getParameterController()->setSplitTensionMultiplier(Multiplier);
+}
+
+double FWireParameterControllerBarrier::GetSplitTensionMultiplier() const
+{
+	check(HasNative());
+	return NativePtr->NativeWire->getParameterController()->getSplitTensionMultiplier();
+}
+
 bool FWireParameterControllerBarrier::HasNative() const
 {
 	return NativePtr->NativeWire != nullptr;

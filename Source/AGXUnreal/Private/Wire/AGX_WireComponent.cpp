@@ -1466,6 +1466,7 @@ void UAGX_WireComponent::InitPropertyDispatcher()
 	ADD_PARAMETER_CONTROLLER_DISPACTCHER(MinimumDistanceBetweenNodes);
 	ADD_PARAMETER_CONTROLLER_DISPACTCHER(RadiusMultiplier);
 	ADD_PARAMETER_CONTROLLER_DISPACTCHER(ScaleConstant);
+	ADD_PARAMETER_CONTROLLER_DISPACTCHER(SplitTensionMultiplier);
 
 	Dispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_WireComponent, RenderMaterial),
