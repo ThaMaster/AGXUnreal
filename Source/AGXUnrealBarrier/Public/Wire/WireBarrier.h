@@ -42,9 +42,6 @@ public:
 	TArray<FName> GetCollisionGroups() const;
 	void RemoveCollisionGroup(const FName& GroupName);
 
-	void SetScaleConstant(double ScaleConstant);
-	double GetScaleConstant() const;
-
 	void SetLinearVelocityDamping(double Damping);
 	double GetLinearVelocityDamping() const;
 
