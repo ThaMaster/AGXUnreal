@@ -11,7 +11,7 @@
 #include "Terrain/AGX_TerrainPagingSettings.h"
 #include "Terrain/AGX_Shovel.h"
 #include "AGX_ShovelReference.h"
-
+#include "AGX_TerrainEnums.h"
 // Unreal Engine includes.
 #include "Misc/EngineVersionComparison.h"
 #include "Containers/Array.h"
@@ -303,6 +303,49 @@ public:
 		EditAnywhere, Category = "AGX Terrain Rendering",
 		Meta = (EditCondition = "bEnableParticleRendering"))
 	UNiagaraSystem* ParticleSystemAsset;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain Particle Upsampling", 
+		Meta = (EditCondition = "bEnableParticleRendering"))
+	bool bEnableParticleUpsampling = false;
+
+	/**
+	* The desired upscaling factor which the renderer will try to achieve.
+	*/
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
+		Meta =
+			(EditCondition = "bEnableParticleUpsampling", ClampMin = "1", UIMin = "1", 
+				UIMax = "10000"))
+	int32 Upscaling = 100;
+
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
+		Meta = (EditCondition = "bEnableParticleUpsampling"))
+	bool bEnableVoxelSize = false;
+
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
+		Meta =
+			(EditCondition = "bEnableVoxelSize", UIMin = "0.01",
+			 UIMax = "1000"))
+	double VoxelSize = 0.05;
+
+	/**
+	* This controls how quickly the particles are eased in/out when spawned/destroyed.
+	*/
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
+		Meta = (EditCondition = "bEnableParticleUpsampling", UIMin = "0.1")
+	)
+	double EaseStepSize = 0.1;
+	
+	/**
+	* Impostor renders the particles as impostor spheres, while Mesh renders them as instanced meshes.
+	*/
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "AGX Terrain Particle Upsampling",
+		Meta = (EditCondition = "bEnableParticleUpsampling"))
+	TEnumAsByte<enum EAGX_ParticleUpsamplingRenderMode> RenderMode;
 
 	/** Whether shovel active zone should be rendered or not. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")

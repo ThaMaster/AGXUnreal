@@ -23,6 +23,17 @@ enum class EAGX_ShovelFrame : uint8
 	CuttingDirection
 };
 
+/**
+* The different rendering modes which is supported by the particle upsampler
+*/
+UENUM(BlueprintType)
+enum EAGX_ParticleUpsamplingRenderMode : uint8
+{
+	Impostor = 0 UMETA(DisplayName = "Impostor"),
+	Mesh = 1 UMETA(DisplayName = "Mesh")
+};
+
+
 inline bool IsTranslatable(EAGX_ShovelFrame ShovelFrame)
 {
 	switch (ShovelFrame)
