@@ -1259,6 +1259,7 @@ void UAGX_WireComponent::MarkVisualsDirty()
 
 void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier)
 {
+	check(Barrier.HasNative());
 	Radius = Barrier.GetRadius();
 	MinSegmentLength = 1.0f / Barrier.GetResolutionPerUnitLength();
 	LinearVelocityDamping = static_cast<float>(Barrier.GetLinearVelocityDamping());
@@ -1299,8 +1300,8 @@ void UAGX_WireComponent::SetNativeAddress(uint64 NativeAddress)
 	NativeBarrier.SetNativeAddress(static_cast<uintptr_t>(NativeAddress));
 	if (HasNative())
 	{
-		WireParameterController.SetBarrier(NativeBarrier.GetParameterController());
 		MergeSplitProperties.BindBarrierToOwner(*GetNative());
+		WireParameterController.SetBarrier(NativeBarrier.GetParameterController());
 	}
 	else
 	{
@@ -1958,10 +1959,15 @@ void UAGX_WireComponent::SetWireParameterController(
 	const FAGX_WireParameterController& InWireParameterController)
 {
 	WireParameterController = InWireParameterController;
-	WireParameterController.SetBarrier(NativeBarrier.GetParameterController());
-	if (WireParameterController.HasNative())
+	// Make sure the Wire Parameter Controller is bound to this wire.
+	if (HasNative())
 	{
+		WireParameterController.SetBarrier(NativeBarrier.GetParameterController());
 		WireParameterController.WritePropertiesToNative();
+	}
+	else
+	{
+		WireParameterController.ClearBarrier();
 	}
 }
 

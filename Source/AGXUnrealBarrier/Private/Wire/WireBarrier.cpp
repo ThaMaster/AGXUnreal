@@ -269,6 +269,7 @@ double FWireBarrier::GetTension() const
 
 FWireParameterControllerBarrier FWireBarrier::GetParameterController() const
 {
+	check(HasNative());
 	return FWireParameterControllerBarrier(
 		std::make_unique<FWireParameterControllerPtr>(NativeRef->Native));
 }
