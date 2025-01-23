@@ -46,15 +46,13 @@ void FWireParameterControllerBarrier::SetMaximumContactMovementOneTimestep(doubl
 {
 	check(HasNative());
 	const double MaxMovementAGX = ConvertDistanceToAGX(MaxMovement);
-	NativePtr->NativeWire->getParameterController()->setMaximumContactMovementOneTimestep(
-		MaxMovementAGX);
+	NativePtr->GetNative()->setMaximumContactMovementOneTimestep(MaxMovementAGX);
 }
 
 double FWireParameterControllerBarrier::GetMaximumContactMovementOneTimestep() const
 {
 	check(HasNative());
-	const double MaxMovementAGX =
-		NativePtr->NativeWire->getParameterController()->getMaximumContactMovementOneTimestep();
+	const double MaxMovementAGX = NativePtr->GetNative()->getMaximumContactMovementOneTimestep();
 	const double MaxMovement = ConvertDistanceToUnreal<double>(MaxMovementAGX);
 	return MaxMovement;
 }
@@ -63,14 +61,13 @@ void FWireParameterControllerBarrier::SetMinimumDistanceBetweenNodes(double MinD
 {
 	check(HasNative());
 	const double MinDistanceAGX = ConvertDistanceToAGX(MinDistance);
-	NativePtr->NativeWire->getParameterController()->setMinimumDistanceBetweenNodes(MinDistanceAGX);
+	NativePtr->GetNative()->setMinimumDistanceBetweenNodes(MinDistanceAGX);
 }
 
 double FWireParameterControllerBarrier::GetMinimumDistanceBetweenNodes() const
 {
 	check(HasNative());
-	const double MinDistanceAGX =
-		NativePtr->NativeWire->getParameterController()->getMinimumDistanceBetweenNodes();
+	const double MinDistanceAGX = NativePtr->GetNative()->getMinimumDistanceBetweenNodes();
 	const double MinDistance = ConvertDistanceToUnreal<double>(MinDistanceAGX);
 	return MinDistance;
 }
@@ -78,70 +75,69 @@ double FWireParameterControllerBarrier::GetMinimumDistanceBetweenNodes() const
 void FWireParameterControllerBarrier::SetRadiusMultiplier(double RadiusMultiplier)
 {
 	check(HasNative());
-	NativePtr->NativeWire->getParameterController()->setRadiusMultiplier(RadiusMultiplier);
+	NativePtr->GetNative()->setRadiusMultiplier(RadiusMultiplier);
 }
 
 double FWireParameterControllerBarrier::GetRadiusMultiplier() const
 {
 	check(HasNative());
-	return NativePtr->NativeWire->getParameterController()->getNonScaledRadiusMultiplier();
+	return NativePtr->GetNative()->getNonScaledRadiusMultiplier();
 }
 
 double FWireParameterControllerBarrier::GetScaledRadiusMultiplier(double WireRadius) const
 {
 	check(HasNative());
 	const double WireRadiusAGX = ConvertDistanceToAGX(WireRadius);
-	return NativePtr->NativeWire->getParameterController()->getRadiusMultiplier(WireRadius);
+	return NativePtr->GetNative()->getRadiusMultiplier(WireRadius);
 }
 
 void FWireParameterControllerBarrier::SetScaleConstant(double ScaleConstant)
 {
 	check(HasNative());
-	NativePtr->NativeWire->getParameterController()->setScaleConstant(ScaleConstant);
+	NativePtr->GetNative()->setScaleConstant(ScaleConstant);
 }
 
 double FWireParameterControllerBarrier::GetScaleConstant() const
 {
 	check(HasNative());
-	return NativePtr->NativeWire->getParameterController()->getScaleConstant();
+	return NativePtr->GetNative()->getScaleConstant();
 }
 
 void FWireParameterControllerBarrier::SetSplitTensionMultiplier(double Multiplier)
 {
 	check(HasNative());
-	NativePtr->NativeWire->getParameterController()->setSplitTensionMultiplier(Multiplier);
+	NativePtr->GetNative()->setSplitTensionMultiplier(Multiplier);
 }
 
 double FWireParameterControllerBarrier::GetSplitTensionMultiplier() const
 {
 	check(HasNative());
-	return NativePtr->NativeWire->getParameterController()->getSplitTensionMultiplier();
+	return NativePtr->GetNative()->getSplitTensionMultiplier();
 }
 
 void FWireParameterControllerBarrier::SetStopNodeLumpMinDistanceFraction(double Fraction)
 {
 	check(HasNative());
-	NativePtr->NativeWire->getParameterController()->setStopNodeLumpMinDistanceFraction(Fraction);
+	NativePtr->GetNative()->setStopNodeLumpMinDistanceFraction(Fraction);
 }
 
 double FWireParameterControllerBarrier::GetStopNodeLumpMinDistanceFraction() const
 {
 	check(HasNative());
-	return NativePtr->NativeWire->getParameterController()->getStopNodeLumpMinDistanceFraction();
+	return NativePtr->GetNative()->getStopNodeLumpMinDistanceFraction();
 }
 
 void FWireParameterControllerBarrier::SetStopNodeReferenceDistance(double Distance)
 {
 	check(HasNative());
 	const agx::Real DistanceAGX = ConvertDistanceToAGX(Distance);
-	NativePtr->NativeWire->getParameterController()->setStopNodeReferenceDistance(DistanceAGX);
+	NativePtr->GetNative()->setStopNodeReferenceDistance(DistanceAGX);
 }
 
 double FWireParameterControllerBarrier::GetStopNodeReferenceDistance() const
 {
 	check(HasNative());
-	const agx::Real DistanceAGX =
-		NativePtr->NativeWire->getParameterController()->getStopNodeReferenceDistance();
+	const agx::Real DistanceAGX = NativePtr->GetNative()->getStopNodeReferenceDistance();
 	const double Distance = ConvertToUnreal<double>(DistanceAGX);
 	return Distance;
 }
@@ -149,15 +145,13 @@ double FWireParameterControllerBarrier::GetStopNodeReferenceDistance() const
 void FWireParameterControllerBarrier::SetWireContactDynamicsSolverDampingScale(double Scale)
 {
 	check(HasNative());
-	NativePtr->NativeWire->getParameterController()->setWireContactDynamicsSolverDampingScale(
-		Scale);
+	NativePtr->GetNative()->setWireContactDynamicsSolverDampingScale(Scale);
 }
 
 double FWireParameterControllerBarrier::GetWireContactDynamicsSolverDampingScale() const
 {
 	check(HasNative());
-	return NativePtr->NativeWire->getParameterController()
-		->getWireContactDynamicsSolverDampingScale();
+	return NativePtr->GetNative()->getWireContactDynamicsSolverDampingScale();
 }
 
 bool FWireParameterControllerBarrier::HasNative() const
