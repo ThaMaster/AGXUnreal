@@ -288,6 +288,24 @@ namespace AGX_ImporterToEditor_helpers
 					WriteAssetToDisk(RootDir, AssetType, *SCMST);
 			}
 		}
+
+		if (Context->RenderMaterials != nullptr)
+		{
+			const FString AssetType = FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName();
+			for (const auto& [Guid, Rm] : *Context->RenderMaterials)
+			{
+				WriteAssetToDisk(RootDir, AssetType, *Rm);
+			}
+		}
+
+		if (Context->StaticMeshes != nullptr)
+		{
+			const FString AssetType = FAGX_ImportUtilities::GetImportRenderMeshDirectoryName();
+			for (const auto& [Guid, Sm] : *Context->StaticMeshes)
+			{
+				WriteAssetToDisk(RootDir, AssetType, *Sm);
+			}
+		}
 	}
 
 	template <typename T>

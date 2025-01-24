@@ -2043,16 +2043,12 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	// Fill MeshDescription with vertex data.
 	TMap<int32, FVertexID> VertexIDMap;
 
-	// BoundingBox used for SimpleCollision box.
-	FBox BoundingBox(ForceInitToZero);
-
 	// Create vertices.
 	for (int32 I = 0; I < Vertices.Num(); I++)
 	{
 		FVertexID VertexID = MeshDescription.CreateVertex();
 		Attributes.GetVertexPositions()[VertexID] = Vertices[I];
 		VertexIDMap.Add(I, VertexID);
-		BoundingBox += FVector(Vertices[I]);
 	}
 
 	// Create a polygon group for the material.
@@ -2090,11 +2086,14 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 
 	// Assign the MeshDescription to the UStaticMesh.
 	UStaticMesh::FBuildMeshDescriptionsParams Params;
+#if WITH_EDITOR
+	Params.bFastBuild = false; // If set to true, errors occurs when trying to save this to disk.
+#else
 	Params.bFastBuild = true;
+#endif
+	Params.bBuildSimpleCollision = true;
+	Params.bAllowCpuAccess = false;
 	StaticMesh->BuildFromMeshDescriptions({&MeshDescription}, Params);
-
-	const bool SimpleCollisionRes = AddBoxSimpleCollision(BoundingBox, *StaticMesh);
-	AGX_CHECK(SimpleCollisionRes);
 
 	return StaticMesh;
 }
