@@ -340,9 +340,17 @@ namespace AGX_ShapeComponent_helpers
 		if (StaticMesh == nullptr)
 			return nullptr;
 
+		// The triangles in the AGX Dynamics render data are relative to the Geometry, but the
+		// Unreal Engine Component we create is placed at the position of the AGX Dynamics
+		// Shape. There is no Component for the Geometry. To get the triangles in the right
+		// place we need to offset the render data Component by the inverse of the
+		// Geometry-to-Shape transformation in the source AGX Dynamics data.
+		const FTransform RelTransform = Shape.GetGeometryToShapeTransform().Inverse();
+
 		const FString ComponentName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 			&Owner, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()));
 		UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(&Owner, *ComponentName);
+		Component->SetRelativeTransform(RelTransform);
 		Component->SetStaticMesh(StaticMesh);
 		Component->SetFlags(RF_Transactional);
 		Owner.AddInstanceComponent(Component);
