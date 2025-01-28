@@ -2105,23 +2105,25 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 		return nullptr;
 
 	TArray<FVector3f> Vertices;
-	for (const FVector& Position : RenderData.GetPositions())
+	const auto VerticesAGX = RenderData.GetPositions();
+	Vertices.Reserve(VerticesAGX.Num());
+	for (const FVector& Position : VerticesAGX)
 	{
 		Vertices.Add(FVector3f(Position));
 	}
 
-	TArray<uint32> Indices = RenderData.GetIndices();
+	const TArray<uint32> Indices = RenderData.GetIndices();
 
-	const auto Normals3d = RenderData.GetNormals();
+	const auto NormalsAGX = RenderData.GetNormals();
 	TArray<FVector3f> Normals;
-	Normals.Reserve(Normals3d.Num());
-	for (const FVector& Normal : Normals3d)
+	Normals.Reserve(NormalsAGX.Num());
+	for (const FVector& Normal : NormalsAGX)
 	{
 		Normals.Add(FVector3f(Normal));
 	}
 
 	TArray<FVector2D> UVs;
-	const TArray<FVector2D>& RenderTexCoords = RenderData.GetTextureCoordinates();
+	const TArray<FVector2D> RenderTexCoords = RenderData.GetTextureCoordinates();
 	UVs.Reserve(RenderTexCoords.Num());
 	for (const FVector2D& UV : RenderTexCoords)
 	{
@@ -2130,9 +2132,9 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 
 	// Generate tangents (placeholder, can be computed as needed)
 	TArray<FVector3f> Tangents;
-	Tangents.AddZeroed(Vertices.Num());
+	Tangents.SetNumZeroed(Vertices.Num());
 
-	const FString Name = FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString());
+	const FString Name = FString::Printf(TEXT("SM_RenderMesh_%s"), *RenderData.GetGuid().ToString());
 	return CreateStaticMesh(Vertices, Indices, Normals, UVs, Tangents, Name, Material);
 }
 

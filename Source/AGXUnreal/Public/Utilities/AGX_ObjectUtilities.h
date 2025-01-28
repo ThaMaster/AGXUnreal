@@ -100,6 +100,9 @@ public:
 	static T* GetComponentByName(const AActor& Actor, const TCHAR* Name);
 
 	template <typename T>
+	static TArray<T*> GetChildrenOfType(const USceneComponent& Parent, bool Recursive);
+
+	template <typename T>
 	static T* Get(const FComponentReference& Reference, const AActor* FallbackOwner);
 
 	static const AActor* GetActor(
@@ -382,6 +385,22 @@ T* FAGX_ObjectUtilities::GetComponentByName(const AActor& Actor, const TCHAR* Na
 	auto It = Components.FindByPredicate([Name](const T* Component)
 										 { return Component->GetName() == Name; });
 	return It ? *It : nullptr;
+}
+
+template <typename T>
+inline TArray<T*> FAGX_ObjectUtilities::GetChildrenOfType(
+	const USceneComponent& Parent, bool Recursive)
+{
+	TArray<USceneComponent*> Children;
+	Parent.GetChildrenComponents(Recursive, Children);
+	TArray<T*> Result;
+	for (USceneComponent* Child : Children)
+	{
+		if (auto C = Cast<T>(Child))
+			Result.Add(C);
+	}
+
+	return Result;
 }
 
 template <typename T>

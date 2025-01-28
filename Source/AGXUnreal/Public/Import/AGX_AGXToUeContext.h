@@ -27,6 +27,9 @@ struct AGXUNREAL_API FAGX_AGXToUeContext
 	TUniquePtr<TMap<FGuid, UStaticMeshComponent*>> RenderStaticMeshCom;
 
 	TUniquePtr<TMap<FGuid, UMaterialInterface*>> RenderMaterials;
+
+	// For render meshes, the GUID is taken from the RenderData.
+	// For collision meshes (Trimesh), the GUID is taken from the Trimesh itself.
 	TUniquePtr<TMap<FGuid, UStaticMesh*>> StaticMeshes;
 
 	TUniquePtr<TMap<FGuid, UAGX_MergeSplitThresholdsBase*>> MSThresholds;
