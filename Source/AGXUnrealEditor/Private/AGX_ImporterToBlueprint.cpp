@@ -2507,7 +2507,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 		DeleteMeshAssets(
 			SCSNodes.CollisionStaticMeshComponents,
-			FAGX_ImportUtilities::GetImportStaticMeshDirectoryName());
+			FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName());
 		DeleteMeshAssets(
 			SCSNodes.RenderStaticMeshComponents,
 			FAGX_ImportUtilities::GetImportRenderMeshDirectoryName());

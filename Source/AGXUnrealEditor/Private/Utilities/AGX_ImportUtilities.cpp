@@ -506,7 +506,7 @@ FString FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName()
 	return FString("MergeSplitThresholds");
 }
 
-FString FAGX_ImportUtilities::GetImportStaticMeshDirectoryName()
+FString FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName()
 {
 	return FString("StaticMesh");
 }

@@ -314,13 +314,13 @@ namespace AGX_ShapeComponent_helpers
 		const FRenderDataBarrier& RenderData, UMaterialInterface* Material,
 		FAGX_AGXToUeContext& Context)
 	{
-		AGX_CHECK(Context.StaticMeshes != nullptr);
-		if (auto Existing = Context.StaticMeshes->FindRef(RenderData.GetGuid()))
+		AGX_CHECK(Context.RenderStaticMeshes != nullptr);
+		if (auto Existing = Context.RenderStaticMeshes->FindRef(RenderData.GetGuid()))
 			return Existing;
 
 		UStaticMesh* Mesh = AGX_MeshUtilities::CreateStaticMesh(RenderData, Material);
 		if (Mesh != nullptr)
-			Context.StaticMeshes->Add(RenderData.GetGuid(), Mesh);
+			Context.RenderStaticMeshes->Add(RenderData.GetGuid(), Mesh);
 
 		return Mesh;
 	}
@@ -385,7 +385,7 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_AGXToUeCon
 	if (Msp.HasNative())
 		MergeSplitProperties.CopyFrom(Msp, Context);
 
-	if (Context != nullptr && Context->StaticMeshes != nullptr && GetOwner() != nullptr &&
+	if (Context != nullptr && Context->RenderStaticMeshes != nullptr && GetOwner() != nullptr &&
 		AGX_MeshUtilities::HasRenderDataMesh(Barrier))
 	{
 		UStaticMeshComponent* Mesh =

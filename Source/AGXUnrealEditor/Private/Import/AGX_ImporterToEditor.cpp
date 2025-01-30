@@ -298,10 +298,19 @@ namespace AGX_ImporterToEditor_helpers
 			}
 		}
 
-		if (Context->StaticMeshes != nullptr)
+		if (Context->RenderStaticMeshes != nullptr)
 		{
 			const FString AssetType = FAGX_ImportUtilities::GetImportRenderMeshDirectoryName();
-			for (const auto& [Guid, Sm] : *Context->StaticMeshes)
+			for (const auto& [Guid, Sm] : *Context->RenderStaticMeshes)
+			{
+				WriteAssetToDisk(RootDir, AssetType, *Sm);
+			}
+		}
+
+		if (Context->CollisionStaticMeshes != nullptr)
+		{
+			const FString AssetType = FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName();
+			for (const auto& [Guid, Sm] : *Context->CollisionStaticMeshes)
 			{
 				WriteAssetToDisk(RootDir, AssetType, *Sm);
 			}
@@ -431,8 +440,10 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source)
 
 	// For shared assets, we might be copying and saving multiple times here, but we assume
 	// these operations are relatively cheap, and keep the code simple here.
-	AGX_CHECK(FAGX_ObjectUtilities::CopyProperties(Source, *Asset, false));
-	FAGX_ObjectUtilities::SaveAsset(*Asset);
+	bool Result = FAGX_ObjectUtilities::CopyProperties(Source, *Asset, false);
+	AGX_CHECK(Result);
+	Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
+	AGX_CHECK(Result);
 	TransientToAsset.Add(&Source, Asset);
 	return Asset;
 }
@@ -452,6 +463,8 @@ void FAGX_ImporterToEditor::UpdateBlueprint(
 		}
 	}
 
+	// Todo: static meshes
+
 	if (Context.RigidBodies != nullptr)
 	{
 		for (const auto& [Guid, Component] : *Context.RigidBodies)
@@ -460,4 +473,9 @@ void FAGX_ImporterToEditor::UpdateBlueprint(
 			CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
 		}
 	}
+}
+
+UStaticMesh* FAGX_ImporterToEditor::UpdateOrCreateStaticMesh(UStaticMesh& Mesh)
+{
+	return nullptr;
 }

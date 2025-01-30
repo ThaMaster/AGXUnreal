@@ -87,8 +87,8 @@ namespace TrimshShapeComponent_helpers
 		const FTrimeshShapeBarrier& Barrier, UMaterialInterface* Material,
 		FAGX_AGXToUeContext& Context)
 	{
-		AGX_CHECK(Context.StaticMeshes != nullptr);
-		if (auto Existing = Context.StaticMeshes->FindRef(Barrier.GetGuid()))
+		AGX_CHECK(Context.CollisionStaticMeshes != nullptr);
+		if (auto Existing = Context.CollisionStaticMeshes->FindRef(Barrier.GetGuid()))
 			return Existing;
 
 		TArray<FVector3f> Vertices;
@@ -128,7 +128,7 @@ namespace TrimshShapeComponent_helpers
 			Vertices, Indices, Normals, UVs, Tangents, Name, Material);
 
 		if (Mesh != nullptr)
-			Context.StaticMeshes->Add(Barrier.GetGuid(), Mesh);
+			Context.CollisionStaticMeshes->Add(Barrier.GetGuid(), Mesh);
 
 		return Mesh;
 	}
@@ -169,7 +169,7 @@ void UAGX_TrimeshShapeComponent::CopyFrom(
 	using namespace TrimshShapeComponent_helpers;
 
 	Super::CopyFrom(ShapeBarrier, Context);
-	if (Context == nullptr || Context->StaticMeshes == nullptr || GetOwner() == nullptr)
+	if (Context == nullptr || Context->CollisionStaticMeshes == nullptr || GetOwner() == nullptr)
 		return; // We are done.
 
 	// At this point, there might exists a StaticMeshComponent as a child to this Trimesh

@@ -31,6 +31,8 @@ private:
 	template <typename T>
 	T* UpdateOrCreateAsset(T& Source);
 
+	UStaticMesh* UpdateOrCreateStaticMesh(UStaticMesh& Mesh);
+
 	FString RootDirectory;
 	FString ModelName;
 
