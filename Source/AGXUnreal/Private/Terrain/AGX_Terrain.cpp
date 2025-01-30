@@ -1714,8 +1714,15 @@ void AAGX_Terrain::UpdateParticlesArrays()
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());
+	ParticleSystemComponent->SetNiagaraVariableInt("User.Upscaling", Upscaling);
+	ParticleSystemComponent->SetNiagaraVariableBool(
+		"User.Enable Upsampling", bEnableParticleUpsampling);
+
 #else
 	ParticleSystemComponent->SetVariableInt(FName("User.Target Particle Count"), Exists.Num());
+	ParticleSystemComponent->SetVariableInt(FName("User.Upscaling"), Upscaling);
+	ParticleSystemComponent->SetVariableBool(
+		FName("User.Enable Upsampling"), bEnableParticleUpsampling);
 #endif
 
 	const int32 NumParticles = Positions.Num();

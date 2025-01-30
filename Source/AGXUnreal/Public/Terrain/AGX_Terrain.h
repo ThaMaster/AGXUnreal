@@ -308,11 +308,6 @@ public:
 		Meta = (EditCondition = "bEnableParticleRendering"))
 	bool bEnableParticleUpsampling = false;
 
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
-		Meta = (EditCondition = "bEnableParticleUpsampling"))
-	UNiagaraSystem* ParticleUpsamplingSystem;
-
 	/**
 	* The desired upscaling factor which the renderer will try to achieve.
 	*/
