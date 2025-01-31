@@ -381,6 +381,9 @@ namespace AGX_ImporterToEditor_helpers
 				return "Unsupported";
 			}
 		}
+
+		if constexpr (std::is_same_v<T, UMaterialInterface>)
+			return FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName();
 	}
 }
 
@@ -498,9 +501,27 @@ void FAGX_ImporterToEditor::UpdateBlueprint(
 		}
 	}
 
+	if (Context.RenderMaterials != nullptr)
+	{
+		for (const auto& [Guid, Rm] : *Context.RenderMaterials)
+		{
+			const auto A = UpdateOrCreateAsset(*Rm);
+			AGX_CHECK(A != nullptr);
+		}
+	}
+
 	if (Context.CollisionStaticMeshes != nullptr)
 	{
 		for (const auto& [Guid, Sm] : *Context.CollisionStaticMeshes)
+		{
+			const auto A = UpdateOrCreateAsset(*Sm);
+			AGX_CHECK(A != nullptr);
+		}
+	}
+
+	if (Context.RenderStaticMeshes != nullptr)
+	{
+		for (const auto& [Guid, Sm] : *Context.RenderStaticMeshes)
 		{
 			const auto A = UpdateOrCreateAsset(*Sm);
 			AGX_CHECK(A != nullptr);
