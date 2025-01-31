@@ -2098,6 +2098,77 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	return StaticMesh;
 }
 
+bool AGX_MeshUtilities::CopyStaticMesh(UStaticMesh* Source, UStaticMesh* Destination)
+{
+	if (Source == nullptr || Destination == nullptr || Source->GetRenderData() == nullptr)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("CopyStaticMesh got invalid Source or Destination mesh!"));
+		return false;
+	}
+
+	FMeshDescription MeshDescription;
+	FStaticMeshAttributes Attributes(MeshDescription);
+	Attributes.Register();
+
+	const FStaticMeshLODResources& LOD = Source->GetRenderData()->LODResources[0];
+
+	// Map for tracking vertices.
+	TMap<int32, FVertexID> VertexIDMap;
+
+	// Extract vertex positions.
+	for (uint32 i = 0; i < LOD.VertexBuffers.PositionVertexBuffer.GetNumVertices(); i++)
+	{
+		FVertexID VertexID = MeshDescription.CreateVertex();
+		Attributes.GetVertexPositions()[VertexID] =
+			LOD.VertexBuffers.PositionVertexBuffer.VertexPosition(i);
+		VertexIDMap.Add(i, VertexID);
+	}
+
+	FPolygonGroupID PolygonGroupID = MeshDescription.CreatePolygonGroup();
+
+	// Copy materials.
+	Destination->GetStaticMaterials() = Source->GetStaticMaterials();
+
+	// Extract index data and create faces.
+	const FIndexArrayView Indices = LOD.IndexBuffer.GetArrayView();
+	for (int32 i = 0; i < Indices.Num(); i += 3)
+	{
+		FVertexInstanceID VertexInstanceIDs[3];
+
+		for (int32 j = 0; j < 3; ++j)
+		{
+			const int32 VertexIndex = Indices[i + j];
+			FVertexInstanceID VertexInstanceID =
+				MeshDescription.CreateVertexInstance(VertexIDMap[VertexIndex]);
+			VertexInstanceIDs[j] = VertexInstanceID;
+
+			// Copy per-vertex-instance data.
+			Attributes.GetVertexInstanceUVs()[VertexInstanceID] =
+				FVector2f(LOD.VertexBuffers.StaticMeshVertexBuffer.GetVertexUV(VertexIndex, 0));
+			Attributes.GetVertexInstanceNormals()[VertexInstanceID] =
+				LOD.VertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(VertexIndex);
+			Attributes.GetVertexInstanceTangents()[VertexInstanceID] =
+				LOD.VertexBuffers.StaticMeshVertexBuffer.VertexTangentX(VertexIndex);
+		}
+
+		MeshDescription.CreatePolygon(
+			PolygonGroupID, TArray<FVertexInstanceID> {
+								VertexInstanceIDs[0], VertexInstanceIDs[1], VertexInstanceIDs[2]});
+	}
+
+	UStaticMesh::FBuildMeshDescriptionsParams Params;
+#if WITH_EDITOR
+	Params.bFastBuild = false;
+#else
+	Params.bFastBuild = true;
+#endif
+	Params.bBuildSimpleCollision = true;
+	Params.bAllowCpuAccess = false;
+	Destination->BuildFromMeshDescriptions({&MeshDescription}, Params);
+
+	return true;
+}
+
 UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	const FRenderDataBarrier& RenderData, UMaterialInterface* Material)
 {
@@ -2134,7 +2205,8 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	TArray<FVector3f> Tangents;
 	Tangents.SetNumZeroed(Vertices.Num());
 
-	const FString Name = FString::Printf(TEXT("SM_RenderMesh_%s"), *RenderData.GetGuid().ToString());
+	const FString Name =
+		FString::Printf(TEXT("SM_RenderMesh_%s"), *RenderData.GetGuid().ToString());
 	return CreateStaticMesh(Vertices, Indices, Normals, UVs, Tangents, Name, Material);
 }
 
@@ -2160,6 +2232,32 @@ UMaterialInterface* AGX_MeshUtilities::CreateRenderMaterial(
 							 : FString::Printf(TEXT("MI_%s"), *MaterialBarrier.Name.ToString());
 
 	Material->Rename(*Name);
+
+	auto SetVector = [&Material](const TCHAR* Name, const FVector4& Value) {
+		Material->SetVectorParameterValue(FName(Name), FAGX_RenderMaterial::ConvertToLinear(Value));
+	};
+
+	auto SetScalar = [&Material](const TCHAR* Name, float Value)
+	{ Material->SetScalarParameterValue(FName(Name), Value); };
+
+	Material->ClearParameterValues();
+	if (MaterialBarrier.bHasDiffuse)
+	{
+		SetVector(TEXT("Diffuse"), MaterialBarrier.Diffuse);
+	}
+	if (MaterialBarrier.bHasAmbient)
+	{
+		SetVector(TEXT("Ambient"), MaterialBarrier.Ambient);
+	}
+	if (MaterialBarrier.bHasEmissive)
+	{
+		SetVector(TEXT("Emissive"), MaterialBarrier.Emissive);
+	}
+	if (MaterialBarrier.bHasShininess)
+	{
+		SetScalar(TEXT("Shininess"), MaterialBarrier.Shininess);
+	}
+
 	return Material;
 }
 
@@ -2196,5 +2294,123 @@ bool AGX_MeshUtilities::AddBoxSimpleCollision(const FBox& BoundingBox, UStaticMe
 	BodySetup->AggGeom.BoxElems.Add(BoxElem);
 
 	BodySetup->CreatePhysicsMeshes();
+	return true;
+}
+
+bool AGX_MeshUtilities::AreStaticMeshesEqual(UStaticMesh* MeshA, UStaticMesh* MeshB)
+{
+	if (!MeshA || !MeshB)
+		return false;
+
+	if (MeshA == MeshB)
+		return true;
+
+	if (MeshA->GetMaterial(0) != nullptr || MeshB->GetMaterial(0) != nullptr)
+	{
+		if (!AreImportedRenderMaterialsEqual(MeshA->GetMaterial(0), MeshB->GetMaterial(0)))
+			return false;
+	}
+
+	const bool AHasRenderData = MeshA->GetRenderData() != nullptr;
+	const bool BHasRenderData = MeshB->GetRenderData() != nullptr;
+	if (AHasRenderData != BHasRenderData)
+		return false;
+
+	if (MeshA->GetRenderData()->LODResources.Num() != MeshB->GetRenderData()->LODResources.Num())
+		return false;
+
+	for (int32 LODIndex = 0; LODIndex < MeshA->GetRenderData()->LODResources.Num(); ++LODIndex)
+	{
+		const FStaticMeshLODResources& LOD_A = MeshA->GetRenderData()->LODResources[LODIndex];
+		const FStaticMeshLODResources& LOD_B = MeshB->GetRenderData()->LODResources[LODIndex];
+
+		if (LOD_A.VertexBuffers.PositionVertexBuffer.GetNumVertices() !=
+			LOD_B.VertexBuffers.PositionVertexBuffer.GetNumVertices())
+		{
+			return false;
+		}
+
+		for (uint32 i = 0; i < LOD_A.VertexBuffers.PositionVertexBuffer.GetNumVertices(); i++)
+		{
+			FVector3f PosA = LOD_A.VertexBuffers.PositionVertexBuffer.VertexPosition(i);
+			FVector3f PosB = LOD_B.VertexBuffers.PositionVertexBuffer.VertexPosition(i);
+
+			if (!PosA.Equals(PosB, UE_KINDA_SMALL_NUMBER))
+				return false;
+		}
+
+		if (LOD_A.IndexBuffer.GetNumIndices() != LOD_B.IndexBuffer.GetNumIndices())
+			return false;
+	}
+
+	return true;
+}
+
+bool AGX_MeshUtilities::AreImportedRenderMaterialsEqual(
+	UMaterialInterface* MatA, UMaterialInterface* MatB)
+{
+	if (!MatA || !MatB)
+		return false;
+
+	if (MatA == MatB)
+		return true;
+
+	UMaterial* BaseMatA = MatA->GetBaseMaterial();
+	UMaterial* BaseMatB = MatB->GetBaseMaterial();
+	if (BaseMatA != BaseMatB)
+		return false;
+
+	TArray<FMaterialParameterInfo> ScalarParamsA, ScalarParamsB;
+	TArray<FGuid> ScalarIdsA, ScalarIdsB;
+	MatA->GetAllScalarParameterInfo(ScalarParamsA, ScalarIdsA);
+	MatB->GetAllScalarParameterInfo(ScalarParamsB, ScalarIdsB);
+
+	if (ScalarParamsA.Num() != ScalarParamsB.Num())
+		return false;
+
+	for (int32 i = 0; i < ScalarParamsA.Num(); i++)
+	{
+		float ValueA, ValueB;
+		if (!MatA->GetScalarParameterValue(ScalarParamsA[i], ValueA) ||
+			!MatB->GetScalarParameterValue(ScalarParamsB[i], ValueB))
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unable to read scalar parameter '%s' in AreImportedRenderMaterialsEqual for "
+					 "one of the Render Materials '%s' or '%s'."),
+				*ScalarParamsA[i].ToString(), *MatA->GetName(), *MatB->GetName());
+			return false;
+		}
+
+		if (!FMath::IsNearlyEqual(ValueA, ValueB, UE_KINDA_SMALL_NUMBER))
+			return false;
+	}
+
+	TArray<FMaterialParameterInfo> VectorParamsA, VectorParamsB;
+	TArray<FGuid> VectorIdsA, VectorIdsB;
+	MatA->GetAllVectorParameterInfo(VectorParamsA, VectorIdsA);
+	MatB->GetAllVectorParameterInfo(VectorParamsB, VectorIdsB);
+
+	if (VectorParamsA.Num() != VectorParamsB.Num())
+		return false;
+
+	for (int32 i = 0; i < VectorParamsA.Num(); i++)
+	{
+		FLinearColor ColorA, ColorB;
+		if (!MatA->GetVectorParameterValue(VectorParamsA[i], ColorA) ||
+			!MatB->GetVectorParameterValue(VectorParamsB[i], ColorB))
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unable to read Vector parameter '%s' in AreImportedRenderMaterialsEqual for "
+					 "one of the Render Materials '%s' or '%s'."),
+				*VectorParamsA[i].ToString(), *MatA->GetName(), *MatB->GetName());
+			return false; // Could not retrieve vector value.
+		}
+
+		if (!ColorA.Equals(ColorB, UE_KINDA_SMALL_NUMBER))
+			return false;
+	}
+
 	return true;
 }

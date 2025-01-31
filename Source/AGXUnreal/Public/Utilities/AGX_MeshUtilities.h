@@ -352,6 +352,12 @@ public:
 		const TArray<FVector3f>& Tangents, const FString& Name, UMaterialInterface* Material);
 
 	/**
+	 * Copies triangle information and render material from one Static Mesh to another.
+	 * Does not copy other properties.
+	 */
+	static bool CopyStaticMesh(UStaticMesh* Source, UStaticMesh* Destination);
+
+	/**
 	 * Creates and builds a new static mesh.
 	 * This function supports runtime usage.
 	 */
@@ -374,7 +380,18 @@ public:
 	static UMaterial* GetDefaultRenderMaterial(bool bIsSensor);
 
 	/**
-	* Add a Simple Collision Box to the given StaticMesh.
-	*/
+	 * Add a Simple Collision Box to the given StaticMesh.
+	 */
 	static bool AddBoxSimpleCollision(const FBox& BoundingBox, UStaticMesh& OutStaticMesh);
+
+	/**
+	 * Simple comparison to test if two meshes are equal.
+	 * Does not test all possible data, but does vertex and RenderMaterial comparisons.
+	 */
+	static bool AreStaticMeshesEqual(UStaticMesh* MeshA, UStaticMesh* MeshB);
+
+	/**
+	 * Checks whether two Render Materials are equal.
+	 */
+	static bool AreImportedRenderMaterialsEqual(UMaterialInterface* MatA, UMaterialInterface* MatB);
 };

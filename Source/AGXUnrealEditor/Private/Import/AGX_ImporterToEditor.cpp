@@ -13,6 +13,7 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
@@ -20,6 +21,9 @@
 #include "FileHelpers.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "PackageTools.h"
+
+// Standard library includes.
+#include <type_traits>
 
 namespace AGX_ImporterToEditor_helpers
 {
@@ -309,7 +313,8 @@ namespace AGX_ImporterToEditor_helpers
 
 		if (Context->CollisionStaticMeshes != nullptr)
 		{
-			const FString AssetType = FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName();
+			const FString AssetType =
+				FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName();
 			for (const auto& [Guid, Sm] : *Context->CollisionStaticMeshes)
 			{
 				WriteAssetToDisk(RootDir, AssetType, *Sm);
@@ -317,26 +322,15 @@ namespace AGX_ImporterToEditor_helpers
 		}
 	}
 
-	template <typename T>
-	T* UpdateOrCreateAsset(
-		T& Source, const FString& RootDir, const FString& AssetType,
-		TMap<UObject*, UObject*>& OutTransientToAsset)
+	template <typename T, typename = void>
+	struct HasImportGuid : std::false_type
 	{
-		const FString DirPath = FPaths::Combine(RootDir, AssetType);
-		T* Asset = FAGX_EditorUtilities::FindAsset<T>(Source.ImportGuid, DirPath);
-		if (Asset == nullptr)
-		{
-			WriteAssetToDisk(RootDir, AssetType, Source);
-			return &Source;
-		}
+	};
 
-		// For shared assets, we might be copying and saving multiple times here, but we assume
-		// these operations are relatively cheap, and keep the code simple here.
-		AGX_CHECK(FAGX_ObjectUtilities::CopyProperties(Source, *Asset, false));
-		FAGX_ObjectUtilities::SaveAsset(*Asset);
-		OutTransientToAsset.Add(&Source, Asset);
-		return Asset;
-	}
+	template <typename T>
+	struct HasImportGuid<T, std::void_t<decltype(std::declval<T>().ImportGuid)>> : std::true_type
+	{
+	};
 
 	// The Template Component must come from a context where it has a unique name.
 	USCS_Node* GetOrCreateNode(
@@ -366,12 +360,27 @@ namespace AGX_ImporterToEditor_helpers
 	}
 
 	template <typename T>
-	FString GetAssetTypeFromType()
+	FString GetAssetTypeFromType(const UObject& Asset)
 	{
 		if constexpr (std::is_same_v<T, UAGX_MergeSplitThresholdsBase>)
 			return FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName();
 
-		// Unsupported types will yield compile errors.
+		if constexpr (std::is_same_v<T, UStaticMesh>)
+		{
+			if (Asset.GetName().Contains("Collision"))
+				return FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName();
+			else if (Asset.GetName().Contains("Render"))
+				return FAGX_ImportUtilities::GetImportRenderMeshDirectoryName();
+			else
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("GetAssetTypeFromType called with StaticMesh with unsupported name '%s'. "
+						 "This may cause errors during import/reimport."),
+					*Asset.GetName());
+				return "Unsupported";
+			}
+		}
 	}
 }
 
@@ -429,21 +438,47 @@ template <typename T>
 T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source)
 {
 	using namespace AGX_ImporterToEditor_helpers;
-	const FString AssetType = GetAssetTypeFromType<T>();
+	const FString AssetType = GetAssetTypeFromType<T>(Source);
 	const FString DirPath = FPaths::Combine(RootDirectory, AssetType);
-	T* Asset = FAGX_EditorUtilities::FindAsset<T>(Source.ImportGuid, DirPath);
+	T* Asset = nullptr;
+	if constexpr (HasImportGuid<T>::value)
+		Asset = FAGX_EditorUtilities::FindAsset<T>(Source.ImportGuid, DirPath);
+	else
+		Asset = FAGX_EditorUtilities::FindAsset<T>(Source.GetName(), DirPath);
+
 	if (Asset == nullptr)
 	{
 		WriteAssetToDisk(RootDirectory, AssetType, Source);
-		return &Source;
+		return &Source; // We are done.
 	}
 
-	// For shared assets, we might be copying and saving multiple times here, but we assume
-	// these operations are relatively cheap, and keep the code simple here.
-	bool Result = FAGX_ObjectUtilities::CopyProperties(Source, *Asset, false);
-	AGX_CHECK(Result);
-	Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
-	AGX_CHECK(Result);
+	// At this point we have identified an existing Asset that we need to update using Source.
+
+	if constexpr (std::is_same_v<T, UStaticMesh>)
+	{
+		// UStaticMesh needs some special handling, because it is a complicated object which also
+		// can take a lot of time creating/building. If the new Static Mesh and the old one is
+		// "equal", then we do nothing except add an entry to the TransientToAsset map so that we
+		// never copy the new one over to a component during reimport. If they are not equal, we
+		// update the old one, just like for any other assets during reimport.
+		if (!AGX_MeshUtilities::AreStaticMeshesEqual(&Source, Asset))
+		{
+			bool Result = AGX_MeshUtilities::CopyStaticMesh(&Source, Asset);
+			AGX_CHECK(Result);
+			Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
+			AGX_CHECK(Result);
+		}
+	}
+	else // Non Static Mesh Asset.
+	{
+		// For shared assets, we might be copying and saving multiple times here, but we assume
+		// these operations are relatively cheap, and keep the code simple here.
+		bool Result = FAGX_ObjectUtilities::CopyProperties(Source, *Asset, false);
+		AGX_CHECK(Result);
+		Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
+		AGX_CHECK(Result);
+	}
+
 	TransientToAsset.Add(&Source, Asset);
 	return Asset;
 }
@@ -463,7 +498,14 @@ void FAGX_ImporterToEditor::UpdateBlueprint(
 		}
 	}
 
-	// Todo: static meshes
+	if (Context.CollisionStaticMeshes != nullptr)
+	{
+		for (const auto& [Guid, Sm] : *Context.CollisionStaticMeshes)
+		{
+			const auto A = UpdateOrCreateAsset(*Sm);
+			AGX_CHECK(A != nullptr);
+		}
+	}
 
 	if (Context.RigidBodies != nullptr)
 	{

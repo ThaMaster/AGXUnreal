@@ -382,6 +382,12 @@ public:
 	static T* FindAsset(const FGuid& Guid, const FString& AssetDirPath);
 
 	/**
+	* Find and loads asset by name.
+	*/
+	template <typename T>
+	static T* FindAsset(const FString& Name, const FString& AssetDirPath);
+
+	/**
 	 * Save and Compile the passed Blueprint. This function cannot reside in AGX_BlueprintUtilities
 	 * since its implementation depends on an Editor module function.
 	 */
@@ -497,5 +503,14 @@ inline T* FAGX_EditorUtilities::FindAsset(const FGuid& Guid, const FString& Asse
 {
 	TArray<T*> Assets = FindAssets<T>(AssetDirPath);
 	T** Result = Assets.FindByPredicate([&Guid](T* Asset) { return Asset->ImportGuid == Guid; });
+	return Result != nullptr ? *Result : nullptr;
+}
+
+template <typename T>
+inline T* FAGX_EditorUtilities::FindAsset(const FString& Name, const FString& AssetDirPath)
+{
+	AGX_CHECK(!FName(*Name).IsNone());
+	TArray<T*> Assets = FindAssets<T>(AssetDirPath);
+	T** Result = Assets.FindByPredicate([&Name](T* Asset) { return Asset->GetName().Equals(Name); });
 	return Result != nullptr ? *Result : nullptr;
 }
