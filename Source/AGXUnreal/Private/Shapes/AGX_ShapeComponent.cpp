@@ -350,6 +350,7 @@ namespace AGX_ShapeComponent_helpers
 		const FString ComponentName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 			&Owner, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()));
 		UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(&Owner, *ComponentName);
+		Component->SetMaterial(0, Material);
 		Component->SetRelativeTransform(RelTransform);
 		Component->SetStaticMesh(StaticMesh);
 		Component->SetFlags(RF_Transactional);

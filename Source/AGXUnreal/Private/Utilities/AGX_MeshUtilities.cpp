@@ -2053,10 +2053,6 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 
 	// Create a polygon group for the material.
 	FPolygonGroupID PolygonGroupID = MeshDescription.CreatePolygonGroup();
-	if (Material)
-	{
-		StaticMesh->GetStaticMaterials().Add(FStaticMaterial(Material));
-	}
 
 	// Create triangles.
 	for (int32 i = 0; i < Indices.Num(); i += 3)
@@ -2084,6 +2080,9 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 
 	StaticMesh->Rename(*Name);
 
+	if (Material != nullptr)
+		StaticMesh->AddMaterial(Material);
+
 	// Assign the MeshDescription to the UStaticMesh.
 	UStaticMesh::FBuildMeshDescriptionsParams Params;
 #if WITH_EDITOR
@@ -2094,6 +2093,8 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	Params.bBuildSimpleCollision = true;
 	Params.bAllowCpuAccess = false;
 	StaticMesh->BuildFromMeshDescriptions({&MeshDescription}, Params);
+
+	
 
 	return StaticMesh;
 }
@@ -2126,9 +2127,6 @@ bool AGX_MeshUtilities::CopyStaticMesh(UStaticMesh* Source, UStaticMesh* Destina
 
 	FPolygonGroupID PolygonGroupID = MeshDescription.CreatePolygonGroup();
 
-	// Copy materials.
-	Destination->GetStaticMaterials() = Source->GetStaticMaterials();
-
 	// Extract index data and create faces.
 	const FIndexArrayView Indices = LOD.IndexBuffer.GetArrayView();
 	for (int32 i = 0; i < Indices.Num(); i += 3)
@@ -2154,6 +2152,15 @@ bool AGX_MeshUtilities::CopyStaticMesh(UStaticMesh* Source, UStaticMesh* Destina
 		MeshDescription.CreatePolygon(
 			PolygonGroupID, TArray<FVertexInstanceID> {
 								VertexInstanceIDs[0], VertexInstanceIDs[1], VertexInstanceIDs[2]});
+	}
+
+	{
+		int32 MaterialIndex = 0;
+		while (auto Mat = Source->GetMaterial(MaterialIndex))
+		{
+			Destination->AddMaterial(Mat);
+			MaterialIndex++;
+		}
 	}
 
 	UStaticMesh::FBuildMeshDescriptionsParams Params;

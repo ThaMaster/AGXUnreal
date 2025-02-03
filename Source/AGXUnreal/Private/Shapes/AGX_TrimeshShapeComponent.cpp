@@ -190,6 +190,8 @@ void UAGX_TrimeshShapeComponent::CopyFrom(
 
 	if (RenderMeshCom != nullptr)
 		RenderMeshCom->AttachToComponent(MeshCom, AttachmentRule);
+
+	MeshSourceLocation = EAGX_StaticMeshSourceLocation::TSL_CHILD_STATIC_MESH_COMPONENT;
 }
 
 void UAGX_TrimeshShapeComponent::CreateVisualMesh(FAGX_SimpleMeshData& /*OutMeshData*/)
