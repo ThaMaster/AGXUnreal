@@ -2094,8 +2094,6 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	Params.bAllowCpuAccess = false;
 	StaticMesh->BuildFromMeshDescriptions({&MeshDescription}, Params);
 
-	
-
 	return StaticMesh;
 }
 
