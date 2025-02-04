@@ -147,6 +147,8 @@ namespace TrimshShapeComponent_helpers
 		const FString ComponentName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 			&Owner, FString::Printf(TEXT("CollisionMesh_%s"), *Barrier.GetGuid().ToString()));
 		UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(&Owner, *ComponentName);
+
+		Component->SetMaterial(0, Material);
 		Component->SetStaticMesh(StaticMesh);
 		Component->SetFlags(RF_Transactional);
 		Owner.AddInstanceComponent(Component);
