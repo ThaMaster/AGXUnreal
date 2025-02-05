@@ -377,6 +377,14 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_AGXToUeCon
 	auto [BarrierPosition, BarrierRotation] = Barrier.GetLocalPositionAndRotation();
 	SetRelativeLocationAndRotation(BarrierPosition, BarrierRotation);
 
+	// The reason we let GetEnableCollisions and GetEnable determine whether or not this Shape
+	// should be visible or not has to do with the behavior of agxViewer which we want to mimic. If
+	// a shape in a agxCollide::Geometry which has canCollide == false is written to a AGX archive
+	// and then read by agxViewer, the shape will not be visible (unless it has RenderData).
+	const bool Visible =
+		Barrier.GetEnableCollisions() && Barrier.GetEnabled() && !Barrier.HasRenderData();
+	SetVisibility(Visible);
+
 	for (const FName& Group : Barrier.GetCollisionGroups())
 		AddCollisionGroup(Group);
 

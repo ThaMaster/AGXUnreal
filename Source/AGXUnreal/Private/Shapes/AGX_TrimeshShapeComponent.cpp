@@ -150,6 +150,16 @@ namespace TrimshShapeComponent_helpers
 
 		Component->SetMaterial(0, Material);
 		Component->SetStaticMesh(StaticMesh);
+
+		// The reason we let GetEnableCollisions determine whether or not the Collision Static Mesh
+		// should be visible or not has to do with the behavior of agxViewer which we want to mimic.
+		// If a shape in a agxCollide::Geometry which has canCollide == false is written to a AGX
+		// archive and then read by agxViewer, the shape will not be visible (unless it has
+		// RenderData).
+		const bool Visible =
+			Barrier.GetEnableCollisions() && Barrier.GetEnabled() && !Barrier.HasRenderData();
+		Component->SetVisibility(Visible);
+
 		Component->SetFlags(RF_Transactional);
 		Owner.AddInstanceComponent(Component);
 
