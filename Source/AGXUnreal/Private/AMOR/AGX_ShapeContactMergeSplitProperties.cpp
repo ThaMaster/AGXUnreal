@@ -7,7 +7,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
-#include "Import/AGX_AGXToUeContext.h"
+#include "Import/AGX_ImportContext.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 
@@ -96,7 +96,7 @@ void FAGX_ShapeContactMergeSplitProperties::CreateNative(UAGX_ShapeComponent& Ow
 }
 
 void FAGX_ShapeContactMergeSplitProperties::CopyFrom(
-	const FMergeSplitPropertiesBarrier& Barrier, FAGX_AGXToUeContext* Context)
+	const FMergeSplitPropertiesBarrier& Barrier, FAGX_ImportContext* Context)
 {
 	FAGX_MergeSplitPropertiesBase::CopyFrom(Barrier, Context);
 

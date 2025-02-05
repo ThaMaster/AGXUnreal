@@ -9,7 +9,7 @@
 #include "AGX_Simulation.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AMOR/MergeSplitPropertiesBarrier.h"
-#include "Import/AGX_AGXToUeContext.h"
+#include "Import/AGX_ImportContext.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -492,7 +492,7 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 }
 
 void UAGX_RigidBodyComponent::CopyFrom(
-	const FRigidBodyBarrier& Barrier, FAGX_AGXToUeContext* Context)
+	const FRigidBodyBarrier& Barrier, FAGX_ImportContext* Context)
 {
 	const FString& Name =
 		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetOuter(), Barrier.GetName());

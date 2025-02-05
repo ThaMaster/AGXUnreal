@@ -51,7 +51,7 @@ public:
 	void CreateNative(UAGX_ShapeComponent& Owner);
 
 	virtual void CopyFrom(
-		const FMergeSplitPropertiesBarrier& Barrier, FAGX_AGXToUeContext* Context) override;
+		const FMergeSplitPropertiesBarrier& Barrier, FAGX_ImportContext* Context) override;
 
 	/*
 	 * This struct is typically a member (UPROPERTY) of its owner, which is a

@@ -19,7 +19,7 @@
 
 #include "AGX_ShapeComponent.generated.h"
 
-struct FAGX_AGXToUeContext;
+struct FAGX_ImportContext;
 
 class UAGX_ShapeMaterial;
 class UBodySetup;
@@ -261,7 +261,7 @@ protected:
 	 * Copy properties from the given AGX Dynamics shape into this component.
 	 * @param Barrier The AGX Dynamics shape to copy from.
 	 */
-	virtual void CopyFrom(const FShapeBarrier& Barrier, FAGX_AGXToUeContext* Context);
+	virtual void CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportContext* Context);
 
 	/**
 	 * Updates the local transform of the native geometry to match this component's

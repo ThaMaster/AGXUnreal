@@ -13,7 +13,7 @@
 
 class UAGX_MergeSplitThresholdsBase;
 
-struct FAGX_AGXToUeContext;
+struct FAGX_ImportContext;
 
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FAGX_MergeSplitPropertiesBase
@@ -44,7 +44,7 @@ public:
 	const FMergeSplitPropertiesBarrier* GetNative() const;
 	FMergeSplitPropertiesBarrier* GetNative();
 
-	virtual void CopyFrom(const FMergeSplitPropertiesBarrier& Barrier, FAGX_AGXToUeContext* Context);
+	virtual void CopyFrom(const FMergeSplitPropertiesBarrier& Barrier, FAGX_ImportContext* Context);
 
 	virtual UAGX_MergeSplitThresholdsBase* GetThresholds()
 		PURE_VIRTUAL(UAGX_MergeSplitThresholdsBase::GetThresholds, return nullptr;);

@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_PropertyChangedDispatcher.h"
 #include "Components/StaticMeshComponent.h"
-#include "Import/AGX_AGXToUeContext.h"
+#include "Import/AGX_ImportContext.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 // Unreal Engine includes.
@@ -102,7 +102,7 @@ void UAGX_SphereShapeComponent::UpdateNativeProperties()
 }
 
 void UAGX_SphereShapeComponent::CopyFrom(
-	const FShapeBarrier& ShapeBarrier, FAGX_AGXToUeContext* Context)
+	const FShapeBarrier& ShapeBarrier, FAGX_ImportContext* Context)
 {
 	Super::CopyFrom(ShapeBarrier, Context);
 	const auto Barrier = static_cast<const FSphereShapeBarrier*>(&ShapeBarrier);

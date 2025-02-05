@@ -78,7 +78,7 @@ public:
 	 * Copy properties from the given AGX Dynamics trimesh into this component.
 	 * @param Barrier The AGX Dynamics trimesh to copy from.
 	 */
-	virtual void CopyFrom(const FShapeBarrier& Barrier, FAGX_AGXToUeContext* Context) override;
+	virtual void CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportContext* Context) override;
 
 #if WITH_EDITOR
 	// ~Begin UObject interface.

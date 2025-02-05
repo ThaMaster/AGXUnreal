@@ -11,7 +11,7 @@
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Contacts/AGX_ShapeContact.h"
-#include "Import/AGX_AGXToUeContext.h"
+#include "Import/AGX_ImportContext.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
@@ -292,7 +292,7 @@ void UAGX_ShapeComponent::UpdateNativeLocalTransform()
 namespace AGX_ShapeComponent_helpers
 {
 	UMaterialInterface* GetOrCreateRenderMaterial(
-		const FRenderDataBarrier& RenderData, bool IsSensor, FAGX_AGXToUeContext& Context)
+		const FRenderDataBarrier& RenderData, bool IsSensor, FAGX_ImportContext& Context)
 	{
 		if (Context.RenderMaterials == nullptr || !RenderData.HasMaterial())
 			return AGX_MeshUtilities::GetDefaultRenderMaterial(IsSensor);
@@ -312,7 +312,7 @@ namespace AGX_ShapeComponent_helpers
 
 	UStaticMesh* GetOrCreateStaticMesh(
 		const FRenderDataBarrier& RenderData, UMaterialInterface* Material,
-		FAGX_AGXToUeContext& Context)
+		FAGX_ImportContext& Context)
 	{
 		AGX_CHECK(Context.RenderStaticMeshes != nullptr);
 		if (auto Existing = Context.RenderStaticMeshes->FindRef(RenderData.GetGuid()))
@@ -326,7 +326,7 @@ namespace AGX_ShapeComponent_helpers
 	}
 
 	UStaticMeshComponent* CreateStaticMeshComponent(
-		const FShapeBarrier& Shape, AActor& Owner, FAGX_AGXToUeContext& Context)
+		const FShapeBarrier& Shape, AActor& Owner, FAGX_ImportContext& Context)
 	{
 		AGX_CHECK(AGX_MeshUtilities::HasRenderDataMesh(Shape));
 		const FRenderDataBarrier RenderData = Shape.GetRenderData();
@@ -360,7 +360,7 @@ namespace AGX_ShapeComponent_helpers
 	}
 }
 
-void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_AGXToUeContext* Context)
+void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportContext* Context)
 {
 	bCanCollide = Barrier.GetEnableCollisions();
 	bIsSensor = Barrier.GetIsSensor();
@@ -377,14 +377,6 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_AGXToUeCon
 	auto [BarrierPosition, BarrierRotation] = Barrier.GetLocalPositionAndRotation();
 	SetRelativeLocationAndRotation(BarrierPosition, BarrierRotation);
 
-	// The reason we let GetEnableCollisions and GetEnable determine whether or not this Shape
-	// should be visible or not has to do with the behavior of agxViewer which we want to mimic. If
-	// a shape in a agxCollide::Geometry which has canCollide == false is written to a AGX archive
-	// and then read by agxViewer, the shape will not be visible (unless it has RenderData).
-	const bool Visible =
-		Barrier.GetEnableCollisions() && Barrier.GetEnabled() && !Barrier.HasRenderData();
-	SetVisibility(Visible);
-
 	for (const FName& Group : Barrier.GetCollisionGroups())
 		AddCollisionGroup(Group);
 
@@ -394,7 +386,20 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_AGXToUeCon
 	if (Msp.HasNative())
 		MergeSplitProperties.CopyFrom(Msp, Context);
 
-	if (Context != nullptr && Context->RenderStaticMeshes != nullptr && GetOwner() != nullptr &&
+	if (Context == nullptr)
+		return; // We are done.
+
+	Context->Shapes->Add(ImportGuid, this);
+
+	// The reason we let GetEnableCollisions and GetEnable determine whether or not this Shape
+	// should be visible or not has to do with the behavior of agxViewer which we want to mimic. If
+	// a shape in a agxCollide::Geometry which has canCollide == false is written to a AGX archive
+	// and then read by agxViewer, the shape will not be visible (unless it has RenderData).
+	const bool Visible =
+		Barrier.GetEnableCollisions() && Barrier.GetEnabled() && !Barrier.HasRenderData();
+	SetVisibility(Visible);
+
+	if (Context->RenderStaticMeshes != nullptr && GetOwner() != nullptr &&
 		AGX_MeshUtilities::HasRenderDataMesh(Barrier))
 	{
 		UStaticMeshComponent* Mesh =

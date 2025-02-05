@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "Import/AGX_AGXToUeContext.h"
+#include "Import/AGX_ImportContext.h"
 
 // Unreal Engine includes.
 #include "UObject/Class.h"
@@ -77,7 +77,7 @@ FMergeSplitPropertiesBarrier* FAGX_MergeSplitPropertiesBase::GetNative()
 }
 
 void FAGX_MergeSplitPropertiesBase::CopyFrom(
-	const FMergeSplitPropertiesBarrier& Barrier, FAGX_AGXToUeContext* /*Context*/)
+	const FMergeSplitPropertiesBarrier& Barrier, FAGX_ImportContext* /*Context*/)
 {
 	bEnableMerge = Barrier.GetEnableMerge();
 	bEnableSplit = Barrier.GetEnableSplit();

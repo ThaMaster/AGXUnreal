@@ -116,7 +116,7 @@ namespace AGX_Importer_helpers
 	}
 
 	template <typename T>
-	auto& GetComponentsMapFrom(FAGX_AGXToUeContext& Context)
+	auto& GetComponentsMapFrom(FAGX_ImportContext& Context)
 	{
 		if constexpr (std::is_same_v<T, UAGX_RigidBodyComponent>)
 			return *Context.RigidBodies.Get();
@@ -128,7 +128,7 @@ namespace AGX_Importer_helpers
 	}
 
 	USceneComponent* GetOwningRigidBodyOrRoot(
-		const FShapeBarrier& Shape, const FAGX_AGXToUeContext& Context, const AActor& Actor)
+		const FShapeBarrier& Shape, const FAGX_ImportContext& Context, const AActor& Actor)
 	{
 		FRigidBodyBarrier BodyBarrier = Shape.GetRigidBody();
 		if (!BodyBarrier.HasNative())
@@ -142,18 +142,20 @@ namespace AGX_Importer_helpers
 
 FAGX_Importer::FAGX_Importer()
 {
-	Context.RigidBodies = MakeUnique<decltype(FAGX_AGXToUeContext::RigidBodies)::ElementType>();
-	Context.Shapes = MakeUnique<decltype(FAGX_AGXToUeContext::Shapes)::ElementType>();
+	Context.RigidBodies = MakeUnique<decltype(FAGX_ImportContext::RigidBodies)::ElementType>();
+	Context.Shapes = MakeUnique<decltype(FAGX_ImportContext::Shapes)::ElementType>();
 	Context.RenderStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.RenderMaterials = MakeUnique<TMap<FGuid, UMaterialInterface*>>();
 	Context.RenderStaticMeshes = MakeUnique<TMap<FGuid, UStaticMesh*>>();
 	Context.CollisionStaticMeshes = MakeUnique<TMap<FGuid, UStaticMesh*>>();
-	Context.MSThresholds = MakeUnique<decltype(FAGX_AGXToUeContext::MSThresholds)::ElementType>();
+	Context.MSThresholds = MakeUnique<decltype(FAGX_ImportContext::MSThresholds)::ElementType>();
 }
 
 FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)
 {
 	using namespace AGX_Importer_helpers;
+
+	Context.Settings = &Settings;
 
 	const FString Name = GetModelName(Settings.FilePath);
 	if (Name.IsEmpty())
@@ -167,14 +169,14 @@ FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)
 	if (!CreateSimulationObjectCollection(Settings.FilePath, SimObjects))
 		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 
-	EAGX_ImportResult Result = AddComponents(SimObjects, Settings, *Actor);
+	EAGX_ImportResult Result = AddComponents(SimObjects, *Actor);
 	if (IsUnrecoverableError(Result))
 		return FAGX_ImportResult(Result);
 
 	return FAGX_ImportResult(Result, Actor, &Context);
 }
 
-const FAGX_AGXToUeContext& FAGX_Importer::GetContext() const
+const FAGX_ImportContext& FAGX_Importer::GetContext() const
 {
 	return Context;
 }
@@ -217,8 +219,7 @@ EAGX_ImportResult FAGX_Importer::AddComponent(
 	return EAGX_ImportResult::Success;
 }
 
-EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(
-	const FAGX_ImporterSettings& Settings, AActor& Owner)
+EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(AActor& Owner)
 {
 	const FString Name = "AGX_ModelSource";
 	if (Context.ModelSourceComponent != nullptr)
@@ -233,16 +234,15 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(
 
 	UAGX_ModelSourceComponent* Component = NewObject<UAGX_ModelSourceComponent>(&Owner);
 	Component->Rename(*Name);
-	Component->FilePath = Settings.FilePath;
-	Component->bIgnoreDisabledTrimeshes = Settings.bIgnoreDisabledTrimeshes;
+	Component->FilePath = Context.Settings->FilePath;
+	Component->bIgnoreDisabledTrimeshes = Context.Settings->bIgnoreDisabledTrimeshes;
 	AGX_Importer_helpers::PostCreateComponent(*Component, Owner);
 	Context.ModelSourceComponent = Component;
 	return EAGX_ImportResult::Success;
 }
 
 EAGX_ImportResult FAGX_Importer::AddComponents(
-	const FSimulationObjectCollection& SimObjects, const FAGX_ImporterSettings& Settings,
-	AActor& OutActor)
+	const FSimulationObjectCollection& SimObjects, AActor& OutActor)
 {
 	using namespace AGX_Importer_helpers;
 	EAGX_ImportResult Result = EAGX_ImportResult::Success;
@@ -265,9 +265,9 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 		AddShape<UAGX_SphereShapeComponent>(Shape, OutActor);
 
 	for (const auto& Shape : SimObjects.GetTrimeshShapes())
-		AddShape<UAGX_TrimeshShapeComponent>(Shape, OutActor);
+		AddTrimeshShape(Shape, OutActor);
 
-	Result |= AddModelSourceComponent(Settings, OutActor);
+	Result |= AddModelSourceComponent(OutActor);
 
 	return Result;
 }
@@ -278,4 +278,32 @@ EAGX_ImportResult FAGX_Importer::AddShape(const FShapeBarrier& Shape, AActor& Ou
 	using namespace AGX_Importer_helpers;
 	auto Parent = GetOwningRigidBodyOrRoot(Shape, Context, OutActor);
 	return AddComponent<TShapeComponent, FShapeBarrier>(Shape, *Parent, OutActor);
+}
+
+EAGX_ImportResult FAGX_Importer::AddTrimeshShape(const FShapeBarrier& Shape, AActor& OutActor)
+{
+	auto Result = AddShape<UAGX_TrimeshShapeComponent>(Shape, OutActor);
+
+	if (Context.Settings->bIgnoreDisabledTrimeshes && !Shape.GetEnableCollisions())
+	{
+		// We don't want to import the Trimesh but we do want to import the Render Data.
+		// For simplicity, the have imported the Trimesh as usual above, but will not remove the
+		// Trimesh Component. The Trimesh Component will know to not create a collision Mesh, so we
+		// don't need to consider that.
+		auto Trimesh = Context.Shapes->FindRef(Shape.GetShapeGuid());
+		AGX_CHECK(Trimesh != nullptr);
+		if (Trimesh == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Could not find Trimesh '%s' that should have been imported."),
+				*Shape.GetName());
+			return EAGX_ImportResult::RecoverableErrorsOccured;
+		}
+
+		auto Res = FAGX_ObjectUtilities::RemoveComponentAndPromoteChildren(Trimesh, &OutActor);
+		AGX_CHECK(Res);
+	}
+
+	return EAGX_ImportResult::Success;
 }

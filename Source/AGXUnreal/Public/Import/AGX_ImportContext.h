@@ -5,6 +5,8 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
+struct FAGX_ImporterSettings;
+
 class UAGX_MergeSplitThresholdsBase;
 class UAGX_ModelSourceComponent;
 class UAGX_RigidBodyComponent;
@@ -17,7 +19,7 @@ class UStaticMeshComponent;
 /*
  * Todo: add comment.
  */
-struct AGXUNREAL_API FAGX_AGXToUeContext
+struct AGXUNREAL_API FAGX_ImportContext
 {
 	TUniquePtr<TMap<FGuid, UAGX_RigidBodyComponent*>> RigidBodies;
 	TUniquePtr<TMap<FGuid, UAGX_ShapeComponent*>> Shapes;
@@ -39,4 +41,6 @@ struct AGXUNREAL_API FAGX_AGXToUeContext
 	TUniquePtr<TMap<FGuid, UAGX_ShapeMaterial*>> ShapeMaterials;
 
 	UAGX_ModelSourceComponent* ModelSourceComponent {nullptr};
+
+	const FAGX_ImporterSettings* Settings {nullptr};
 };

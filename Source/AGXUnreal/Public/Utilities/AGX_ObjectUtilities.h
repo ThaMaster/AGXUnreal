@@ -57,6 +57,8 @@ public:
 	 */
 	static bool IsTemplateComponent(const UActorComponent& Component);
 
+	static bool RemoveComponentAndPromoteChildren(USceneComponent* Component, AActor* Owner);
+
 	/**
 	 * Copy all properties from an UObject to another. The objects must be of same type.
 	 */

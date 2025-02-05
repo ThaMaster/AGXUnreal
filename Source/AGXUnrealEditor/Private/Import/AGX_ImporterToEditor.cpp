@@ -6,7 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
-#include "Import/AGX_AGXToUeContext.h"
+#include "Import/AGX_ImportContext.h"
 #include "Import/AGX_Importer.h"
 #include "Import/AGX_ImporterSettings.h"
 #include "Import/AGX_SCSNodeCollection.h"
@@ -277,7 +277,7 @@ namespace AGX_ImporterToEditor_helpers
 		FAGX_ObjectUtilities::SaveAsset(Object);
 	}
 
-	void WriteAssetsToDisk(const FString& RootDir, const FAGX_AGXToUeContext* Context)
+	void WriteAssetsToDisk(const FString& RootDir, const FAGX_ImportContext* Context)
 	{
 		if (Context == nullptr)
 			return;
@@ -487,7 +487,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source)
 }
 
 void FAGX_ImporterToEditor::UpdateBlueprint(
-	UBlueprint& Blueprint, const FAGX_AGXToUeContext& Context)
+	UBlueprint& Blueprint, const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 	FAGX_SCSNodeCollection Nodes(Blueprint);

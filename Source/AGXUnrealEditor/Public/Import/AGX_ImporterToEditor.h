@@ -7,7 +7,7 @@
 
 class UBlueprint;
 
-struct FAGX_AGXToUeContext;
+struct FAGX_ImportContext;
 struct FAGX_ImporterSettings;
 
 class AGXUNREALEDITOR_API FAGX_ImporterToEditor
@@ -25,7 +25,7 @@ public:
 		UBlueprint& BaseBP, const FAGX_ImporterSettings& Settings,
 		UBlueprint* OpenBlueprint = nullptr);
 
-	void UpdateBlueprint(UBlueprint& Blueprint, const FAGX_AGXToUeContext& Context);
+	void UpdateBlueprint(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
 
 private:
 	template <typename T>

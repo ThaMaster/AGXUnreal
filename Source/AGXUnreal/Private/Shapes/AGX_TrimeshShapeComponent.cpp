@@ -5,7 +5,8 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_MeshWithTransform.h"
-#include "Import/AGX_AGXToUeContext.h"
+#include "Import/AGX_ImportContext.h"
+#include "Import/AGX_ImporterSettings.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 // Unreal Engine includes.
@@ -85,7 +86,7 @@ namespace TrimshShapeComponent_helpers
 {
 	UStaticMesh* GetOrCreateStaticMesh(
 		const FTrimeshShapeBarrier& Barrier, UMaterialInterface* Material,
-		FAGX_AGXToUeContext& Context)
+		FAGX_ImportContext& Context)
 	{
 		AGX_CHECK(Context.CollisionStaticMeshes != nullptr);
 		if (auto Existing = Context.CollisionStaticMeshes->FindRef(Barrier.GetGuid()))
@@ -134,8 +135,8 @@ namespace TrimshShapeComponent_helpers
 	}
 
 	UStaticMeshComponent* CreateStaticMeshComponent(
-		const FTrimeshShapeBarrier& Barrier, AActor& Owner,
-		UMaterialInterface* Material, FAGX_AGXToUeContext& Context)
+		const FTrimeshShapeBarrier& Barrier, AActor& Owner, UMaterialInterface* Material,
+		FAGX_ImportContext& Context)
 	{
 		AGX_CHECK(Material != nullptr);
 
@@ -176,13 +177,19 @@ namespace TrimshShapeComponent_helpers
 }
 
 void UAGX_TrimeshShapeComponent::CopyFrom(
-	const FShapeBarrier& ShapeBarrier, FAGX_AGXToUeContext* Context)
+	const FShapeBarrier& ShapeBarrier, FAGX_ImportContext* Context)
 {
 	using namespace TrimshShapeComponent_helpers;
 
 	Super::CopyFrom(ShapeBarrier, Context);
 	if (Context == nullptr || Context->CollisionStaticMeshes == nullptr || GetOwner() == nullptr)
 		return; // We are done.
+
+	if (Context->Settings != nullptr && Context->Settings->bIgnoreDisabledTrimeshes &&
+		!ShapeBarrier.GetEnableCollisions())
+	{
+		return; // We should not create a collision mesh.
+	}
 
 	// At this point, there might exists a StaticMeshComponent as a child to this Trimesh
 	// representing the RenderData. We want to create another StaticMeshComponent for representing

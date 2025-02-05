@@ -69,6 +69,41 @@ bool FAGX_ObjectUtilities::IsTemplateComponent(const UActorComponent& Component)
 	return Component.HasAnyFlags(RF_ArchetypeObject);
 }
 
+bool FAGX_ObjectUtilities::RemoveComponentAndPromoteChildren(
+	USceneComponent* Component, AActor* Owner)
+{
+	if (Component == nullptr || Owner == nullptr || Component->GetOwner() != Owner)
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("RemoveComponentAndPromoteChildren: Invalid Component or Owner"));
+		return false;
+	}
+
+	USceneComponent* ParentComponent = Component->GetAttachParent();
+
+	TArray<USceneComponent*> Children;
+	Component->GetChildrenComponents(false, Children);
+
+	for (USceneComponent* Child : Children)
+	{
+		if (Child == nullptr)
+			continue;
+
+		Child->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		if (ParentComponent != nullptr)
+			Child->AttachToComponent(
+				ParentComponent, FAttachmentTransformRules::KeepWorldTransform);
+		else
+			Child->AttachToComponent(
+				Owner->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+	}
+
+	Component->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	Owner->RemoveInstanceComponent(Component);
+	Component->DestroyComponent();
+	return true;
+}
+
 bool FAGX_ObjectUtilities::CopyProperties(
 	const UObject& Source, UObject& OutDestination, bool UpdateArchetypeInstances)
 {

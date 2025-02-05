@@ -61,7 +61,7 @@ public:
 	 * Will also copy properties inherited from UAGX_ShapeComponent.
 	 * @param Barrier The AGX Dynamics box to copy from.
 	 */
-	virtual void CopyFrom(const FShapeBarrier& Barrier, FAGX_AGXToUeContext* Context) override;
+	virtual void CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportContext* Context) override;
 
 protected:
 	// ~Begin UAGX_ShapeComponent interface.
