@@ -55,6 +55,12 @@ namespace AGX_Importer_helpers
 			   (uint8) (Result & EAGX_ImportResult::Invalid) != 0;
 	}
 
+	void PostCreateComponent(UActorComponent& Component, AActor& Owner)
+	{
+		Component.SetFlags(RF_Transactional);
+		Owner.AddInstanceComponent(&Component);
+	}
+
 	AActor* CreateActor(const FString& Name)
 	{
 		if (Name.IsEmpty())
@@ -72,8 +78,9 @@ namespace AGX_Importer_helpers
 			return nullptr;
 		}
 
-		NewActor->SetRootComponent(
-			NewObject<USceneComponent>(NewActor, FName(TEXT("DefaultSceneRoot"))));
+		auto Root = NewObject<USceneComponent>(NewActor, FName(TEXT("DefaultSceneRoot")));
+		PostCreateComponent(*Root, *NewActor);
+		NewActor->SetRootComponent(Root);
 
 		return NewActor;
 	}
@@ -106,12 +113,6 @@ namespace AGX_Importer_helpers
 		}
 
 		return Name;
-	}
-
-	void PostCreateComponent(UActorComponent& Component, AActor& Owner)
-	{
-		Component.SetFlags(RF_Transactional);
-		Owner.AddInstanceComponent(&Component);
 	}
 
 	template <typename T>

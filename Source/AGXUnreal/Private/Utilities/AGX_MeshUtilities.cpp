@@ -2091,7 +2091,7 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	Params.bFastBuild = true;
 #endif
 	Params.bBuildSimpleCollision = true;
-	Params.bAllowCpuAccess = false;
+	Params.bAllowCpuAccess = true;
 	StaticMesh->BuildFromMeshDescriptions({&MeshDescription}, Params);
 
 	return StaticMesh;
@@ -2168,7 +2168,7 @@ bool AGX_MeshUtilities::CopyStaticMesh(UStaticMesh* Source, UStaticMesh* Destina
 	Params.bFastBuild = true;
 #endif
 	Params.bBuildSimpleCollision = true;
-	Params.bAllowCpuAccess = false;
+	Params.bAllowCpuAccess = true;
 	Destination->BuildFromMeshDescriptions({&MeshDescription}, Params);
 
 	return true;
