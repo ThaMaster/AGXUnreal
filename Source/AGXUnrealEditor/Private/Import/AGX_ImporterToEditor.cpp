@@ -9,6 +9,7 @@
 #include "Import/AGX_ImportContext.h"
 #include "Import/AGX_Importer.h"
 #include "Import/AGX_ImporterSettings.h"
+#include "Import/AGX_ModelSourceComponent.h"
 #include "Import/AGX_SCSNodeCollection.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
@@ -42,6 +43,12 @@ namespace AGX_ImporterToEditor_helpers
 		// by closing all asset editors here first.
 		if (GEditor != nullptr)
 			GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
+	}
+
+	void WriteImportTag(UActorComponent& Component, const FGuid& SessionGuid)
+	{
+		Component.ComponentTags.Empty();
+		Component.ComponentTags.Add(*SessionGuid.ToString());
 	}
 
 	FString MakeModelName(FString SourceFilename)
@@ -445,7 +452,6 @@ namespace AGX_ImporterToEditor_helpers
 	USCS_Node* GetCorrespondingAttachParent(
 		const FAGX_SCSNodeCollection& Nodes, const TComponent* ReImportedComponent)
 	{
-		// TOdo: impl.
 		return Nodes.RootComponent;
 	}
 
@@ -640,7 +646,9 @@ void FAGX_ImporterToEditor::UpdateComponents(
 	UBlueprint& Blueprint, const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
+
 	FAGX_SCSNodeCollection Nodes(Blueprint);
+	WriteImportTag(*Nodes.RootComponent->ComponentTemplate, Context.SessionGuid);
 
 	if (Context.RigidBodies != nullptr)
 	{
@@ -649,6 +657,12 @@ void FAGX_ImporterToEditor::UpdateComponents(
 			USCS_Node* N = GetOrCreateNode(Guid, Component, Nodes, Nodes.RigidBodies, Blueprint);
 			CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
 		}
+	}
+
+	if (auto Component = Context.ModelSourceComponent)
+	{
+		CopyProperties(
+			*Component, *Nodes.ModelSourceComponent->ComponentTemplate, TransientToAsset);
 	}
 
 	if (Context.Shapes != nullptr)
