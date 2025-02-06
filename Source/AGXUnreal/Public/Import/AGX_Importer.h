@@ -40,6 +40,7 @@ class AGXUNREAL_API FAGX_Importer
 {
 public:
 	FAGX_Importer();
+
 	FAGX_ImportResult Import(const FAGX_ImporterSettings& Settings);
 	const FAGX_ImportContext& GetContext() const;
 

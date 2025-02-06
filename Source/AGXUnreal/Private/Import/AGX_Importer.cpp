@@ -55,13 +55,20 @@ namespace AGX_Importer_helpers
 			   (uint8) (Result & EAGX_ImportResult::Invalid) != 0;
 	}
 
-	void PostCreateComponent(UActorComponent& Component, AActor& Owner)
+	void WriteImportTag(UActorComponent& Component, const FGuid& SessionGuid)
 	{
+		Component.ComponentTags.Empty();
+		Component.ComponentTags.Add(*SessionGuid.ToString());
+	}
+
+	void PostCreateComponent(UActorComponent& Component, AActor& Owner, const FGuid& SessionGuid)
+	{
+		WriteImportTag(Component, SessionGuid);
 		Component.SetFlags(RF_Transactional);
 		Owner.AddInstanceComponent(&Component);
 	}
 
-	AActor* CreateActor(const FString& Name)
+	AActor* CreateActor(const FString& Name, const FGuid& SessionGuid)
 	{
 		if (Name.IsEmpty())
 		{
@@ -79,7 +86,7 @@ namespace AGX_Importer_helpers
 		}
 
 		auto Root = NewObject<USceneComponent>(NewActor, FName(TEXT("DefaultSceneRoot")));
-		PostCreateComponent(*Root, *NewActor);
+		PostCreateComponent(*Root, *NewActor, SessionGuid);
 		NewActor->SetRootComponent(Root);
 
 		return NewActor;
@@ -156,12 +163,13 @@ FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)
 	using namespace AGX_Importer_helpers;
 
 	Context.Settings = &Settings;
+	Context.SessionGuid = FGuid::NewGuid();
 
 	const FString Name = GetModelName(Settings.FilePath);
 	if (Name.IsEmpty())
 		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 
-	AActor* Actor = CreateActor(Name);
+	AActor* Actor = CreateActor(Name, Context.SessionGuid);
 	if (Actor == nullptr)
 		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 
@@ -214,7 +222,7 @@ EAGX_ImportResult FAGX_Importer::AddComponent(
 	Component->CopyFrom(Barrier, &Context);
 	Component->AttachToComponent(&Parent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
-	AGX_Importer_helpers::PostCreateComponent(*Component, OutActor);
+	AGX_Importer_helpers::PostCreateComponent(*Component, OutActor, Context.SessionGuid);
 	ProcessedComponents.Add(Guid, Component);
 	return EAGX_ImportResult::Success;
 }
@@ -236,7 +244,7 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(AActor& Owner)
 	Component->Rename(*Name);
 	Component->FilePath = Context.Settings->FilePath;
 	Component->bIgnoreDisabledTrimeshes = Context.Settings->bIgnoreDisabledTrimeshes;
-	AGX_Importer_helpers::PostCreateComponent(*Component, Owner);
+	AGX_Importer_helpers::PostCreateComponent(*Component, Owner, Context.SessionGuid);
 	Context.ModelSourceComponent = Component;
 	return EAGX_ImportResult::Success;
 }

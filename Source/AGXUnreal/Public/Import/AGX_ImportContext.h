@@ -21,7 +21,7 @@ class UStaticMeshComponent;
  */
 struct AGXUNREAL_API FAGX_ImportContext
 {
-	TUniquePtr<TMap<FGuid, UAGX_RigidBodyComponent*>> RigidBodies;
+	TUniquePtr<TMap<FGuid, TObjectPtr<UAGX_RigidBodyComponent>>> RigidBodies;
 	TUniquePtr<TMap<FGuid, UAGX_ShapeComponent*>> Shapes;
 
 	// The key is the GUID of the Shape Component for which the render data Static Mesh
@@ -41,6 +41,8 @@ struct AGXUNREAL_API FAGX_ImportContext
 	TUniquePtr<TMap<FGuid, UAGX_ShapeMaterial*>> ShapeMaterials;
 
 	UAGX_ModelSourceComponent* ModelSourceComponent {nullptr};
+
+	FGuid SessionGuid;
 
 	const FAGX_ImporterSettings* Settings {nullptr};
 };

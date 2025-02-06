@@ -265,6 +265,32 @@ namespace AGX_ImporterToEditor_helpers
 		return true;
 	}
 
+	void RemoveDeletedComponents(UBlueprint& Blueprint, const FGuid& SessionGuid)
+	{
+		auto HasMatchingTag = [&SessionGuid](const UActorComponent& Component)
+		{
+			if (Component.ComponentTags.Num() == 0)
+				return false;
+
+			return FGuid(Component.ComponentTags[0].ToString()) == SessionGuid;
+		};
+
+		// Any Component that does not have the current SessionGuid tag, we know is not part of the
+		// newly imported model and should be removed.
+		const TArray<USCS_Node*> Nodes = Blueprint.SimpleConstructionScript->GetAllNodes(); 
+		for (USCS_Node* Node : Nodes)
+		{
+			if (Node == nullptr || Node->ComponentTemplate == nullptr)
+			{
+				AGX_CHECK(false);
+				continue;
+			}
+
+			if (!HasMatchingTag(*Node->ComponentTemplate))
+				Blueprint.SimpleConstructionScript->RemoveNodeAndPromoteChildren(Node);
+		}
+	}
+
 	void WriteAssetToDisk(const FString& RootDir, const FString& AssetType, UObject& Object)
 	{
 		const FString AssetName = Object.GetName();
@@ -348,11 +374,14 @@ namespace AGX_ImporterToEditor_helpers
 		if (Node == nullptr)
 		{
 			Node = OutBlueprint.SimpleConstructionScript->CreateNode(Template->GetClass(), Name);
+
+			// TODO: Set correct parent here!
 			OutBlueprint.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(Node);
 			OutGuidToNode.Add(Guid, Node);
 		}
 		else if (!Node->GetVariableName().IsEqual(Name))
 		{
+			// TODO: Set corrent parent here!
 			Node->SetVariableName(Name);
 		}
 
@@ -490,7 +519,14 @@ void FAGX_ImporterToEditor::UpdateBlueprint(
 	UBlueprint& Blueprint, const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
-	FAGX_SCSNodeCollection Nodes(Blueprint);
+	UpdateAssets(Blueprint, Context);
+	UpdateComponents(Blueprint, Context);
+	RemoveDeletedComponents(Blueprint, Context.SessionGuid);
+}
+
+void FAGX_ImporterToEditor::UpdateAssets(UBlueprint& Blueprint, const FAGX_ImportContext& Context)
+{
+	using namespace AGX_ImporterToEditor_helpers;
 
 	if (Context.MSThresholds != nullptr)
 	{
@@ -527,6 +563,13 @@ void FAGX_ImporterToEditor::UpdateBlueprint(
 			AGX_CHECK(A != nullptr);
 		}
 	}
+}
+
+void FAGX_ImporterToEditor::UpdateComponents(
+	UBlueprint& Blueprint, const FAGX_ImportContext& Context)
+{
+	using namespace AGX_ImporterToEditor_helpers;
+	FAGX_SCSNodeCollection Nodes(Blueprint);
 
 	if (Context.RigidBodies != nullptr)
 	{
@@ -536,9 +579,4 @@ void FAGX_ImporterToEditor::UpdateBlueprint(
 			CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
 		}
 	}
-}
-
-UStaticMesh* FAGX_ImporterToEditor::UpdateOrCreateStaticMesh(UStaticMesh& Mesh)
-{
-	return nullptr;
 }

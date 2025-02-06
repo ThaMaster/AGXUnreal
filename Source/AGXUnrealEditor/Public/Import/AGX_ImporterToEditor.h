@@ -25,13 +25,14 @@ public:
 		UBlueprint& BaseBP, const FAGX_ImporterSettings& Settings,
 		UBlueprint* OpenBlueprint = nullptr);
 
-	void UpdateBlueprint(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
-
 private:
+	void UpdateBlueprint(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
+	void UpdateAssets(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
+	void UpdateComponents(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
+
+
 	template <typename T>
 	T* UpdateOrCreateAsset(T& Source);
-
-	UStaticMesh* UpdateOrCreateStaticMesh(UStaticMesh& Mesh);
 
 	FString RootDirectory;
 	FString ModelName;
