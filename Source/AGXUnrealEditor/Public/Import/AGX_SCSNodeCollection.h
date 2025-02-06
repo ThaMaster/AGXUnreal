@@ -23,11 +23,7 @@ struct AGXUNREALEDITOR_API FAGX_SCSNodeCollection
 	TMap<FGuid, USCS_Node*> RigidBodies;
 
 	// Shapes are all Shapes, including Shapes owned by Rigid Bodies.
-	TMap<FGuid, USCS_Node*> SphereShapes;
-	TMap<FGuid, USCS_Node*> BoxShapes;
-	TMap<FGuid, USCS_Node*> CylinderShapes;
-	TMap<FGuid, USCS_Node*> CapsuleShapes;
-	TMap<FGuid, USCS_Node*> TrimeshShapes;
+	TMap<FGuid, USCS_Node*> Shapes;
 
 	TMap<FGuid, USCS_Node*> HingeConstraints;
 	TMap<FGuid, USCS_Node*> PrismaticConstraints;

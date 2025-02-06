@@ -10,6 +10,8 @@
 #include "Import/AGX_Importer.h"
 #include "Import/AGX_ImporterSettings.h"
 #include "Import/AGX_SCSNodeCollection.h"
+#include "Shapes/AGX_ShapeComponent.h"
+#include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
@@ -432,12 +434,28 @@ namespace AGX_ImporterToEditor_helpers
 	{
 	};
 
-	// The Template Component must come from a context where it has a unique name.
-	USCS_Node* GetOrCreateNode(
-		const FGuid& Guid, const UActorComponent* Template, UBlueprint& OutBlueprint,
-		TMap<FGuid, USCS_Node*>& OutGuidToNode)
+	/**
+	 * Given a Component that has been re-imported, but is not part of the Blueprint that the
+	 * SCSNodeCollection represents, this function tries to find the USCS_Node corresponding to the
+	 * re-imported Component's attach parent.
+	 * Some Components will always be attached to root, and we can use that fact to simplify this
+	 * function.
+	 */
+	template <typename TComponent>
+	USCS_Node* GetCorrespondingAttachParent(
+		const FAGX_SCSNodeCollection& Nodes, const TComponent* ReImportedComponent)
 	{
-		const FName Name(*Template->GetName());
+		// TOdo: impl.
+		return Nodes.RootComponent;
+	}
+
+	template <typename TComponent>
+	USCS_Node* GetOrCreateNode(
+		const FGuid& Guid, const TComponent* ReImportedComponent,
+		const FAGX_SCSNodeCollection& Nodes, TMap<FGuid, USCS_Node*>& OutGuidToNode,
+		UBlueprint& OutBlueprint)
+	{
+		const FName Name(*ReImportedComponent->GetName());
 		USCS_Node* Node = OutGuidToNode.FindRef(Guid);
 
 		// Resolve name collisions.
@@ -445,17 +463,20 @@ namespace AGX_ImporterToEditor_helpers
 		if (NameCollNode != nullptr && NameCollNode != Node)
 			NameCollNode->SetVariableName(*FAGX_ImportUtilities::GetUnsetUniqueImportName());
 
+		USCS_Node* Parent = GetCorrespondingAttachParent(Nodes, ReImportedComponent);
+		AGX_CHECK(Parent != nullptr);
 		if (Node == nullptr)
 		{
-			Node = OutBlueprint.SimpleConstructionScript->CreateNode(Template->GetClass(), Name);
+			Node = OutBlueprint.SimpleConstructionScript->CreateNode(
+				ReImportedComponent->GetClass(), Name);
 
-			// TODO: Set correct parent here!
-			OutBlueprint.SimpleConstructionScript->GetDefaultSceneRootNode()->AddChildNode(Node);
-			OutGuidToNode.Add(Guid, Node);
+			Parent->AddChildNode(Node);
 		}
-		else if (!Node->GetVariableName().IsEqual(Name))
+		else if (!Node->GetVariableName().IsEqual(Name)) // Node existed.
 		{
-			// TODO: Set corrent parent here!
+			// We don't need to handle transform explicitly here, it is copied over later to the
+			// component template owned by this node.
+			FAGX_BlueprintUtilities::ReParentNode(OutBlueprint, *Node, *Parent, false);
 			Node->SetVariableName(Name);
 		}
 
@@ -625,7 +646,36 @@ void FAGX_ImporterToEditor::UpdateComponents(
 	{
 		for (const auto& [Guid, Component] : *Context.RigidBodies)
 		{
-			USCS_Node* N = GetOrCreateNode(Guid, Component, Blueprint, Nodes.RigidBodies);
+			USCS_Node* N = GetOrCreateNode(Guid, Component, Nodes, Nodes.RigidBodies, Blueprint);
+			CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+		}
+	}
+
+	if (Context.Shapes != nullptr)
+	{
+		for (const auto& [Guid, Component] : *Context.Shapes)
+		{
+			USCS_Node* N = GetOrCreateNode(Guid, Component, Nodes, Nodes.Shapes, Blueprint);
+			CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+		}
+	}
+
+	if (Context.CollisionStaticMeshCom != nullptr)
+	{
+		for (const auto& [Guid, Component] : *Context.CollisionStaticMeshCom)
+		{
+			USCS_Node* N = GetOrCreateNode(
+				Guid, Component, Nodes, Nodes.CollisionStaticMeshComponents, Blueprint);
+			CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+		}
+	}
+
+	if (Context.RenderStaticMeshCom != nullptr)
+	{
+		for (const auto& [Guid, Component] : *Context.RenderStaticMeshCom)
+		{
+			USCS_Node* N = GetOrCreateNode(
+				Guid, Component, Nodes, Nodes.RenderStaticMeshComponents, Blueprint);
 			CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
 		}
 	}
