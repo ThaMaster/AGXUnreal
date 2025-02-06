@@ -65,35 +65,11 @@ FAGX_SCSNodeCollection::FAGX_SCSNodeCollection(const UBlueprint& Bp)
 			if (Ri->ImportGuid.IsValid())
 				RigidBodies.Add(Ri->ImportGuid, Node);
 		}
-		else if (auto Sph = Cast<UAGX_SphereShapeComponent>(Component))
+		else if (auto Shape = Cast<UAGX_ShapeComponent>(Component))
 		{
-			AGX_CHECK(!SphereShapes.Contains(Sph->ImportGuid));
-			if (Sph->ImportGuid.IsValid())
-				SphereShapes.Add(Sph->ImportGuid, Node);
-		}
-		else if (auto Box = Cast<UAGX_BoxShapeComponent>(Component))
-		{
-			AGX_CHECK(!BoxShapes.Contains(Box->ImportGuid));
-			if (Box->ImportGuid.IsValid())
-				BoxShapes.Add(Box->ImportGuid, Node);
-		}
-		else if (auto Cyl = Cast<UAGX_CylinderShapeComponent>(Component))
-		{
-			AGX_CHECK(!CylinderShapes.Contains(Cyl->ImportGuid));
-			if (Cyl->ImportGuid.IsValid())
-				CylinderShapes.Add(Cyl->ImportGuid, Node);
-		}
-		else if (auto Cap = Cast<UAGX_CapsuleShapeComponent>(Component))
-		{
-			AGX_CHECK(!CapsuleShapes.Contains(Cap->ImportGuid));
-			if (Cap->ImportGuid.IsValid())
-				CapsuleShapes.Add(Cap->ImportGuid, Node);
-		}
-		else if (auto Tri = Cast<UAGX_TrimeshShapeComponent>(Component))
-		{
-			AGX_CHECK(!TrimeshShapes.Contains(Tri->ImportGuid));
-			if (Tri->ImportGuid.IsValid())
-				TrimeshShapes.Add(Tri->ImportGuid, Node);
+			AGX_CHECK(!Shapes.Contains(Shape->ImportGuid));
+			if (Shape->ImportGuid.IsValid())
+				Shapes.Add(Shape->ImportGuid, Node);
 		}
 		else if (auto Co = Cast<UAGX_ConstraintComponent>(Component))
 		{
