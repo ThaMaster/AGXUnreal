@@ -32,7 +32,7 @@ private:
 
 
 	template <typename T>
-	T* UpdateOrCreateAsset(T& Source);
+	T* UpdateOrCreateAsset(T& Source, const FAGX_ImportContext& Context);
 
 	FString RootDirectory;
 	FString ModelName;

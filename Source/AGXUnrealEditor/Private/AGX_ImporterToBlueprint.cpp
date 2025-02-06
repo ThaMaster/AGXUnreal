@@ -2510,7 +2510,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 			FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName());
 		DeleteMeshAssets(
 			SCSNodes.RenderStaticMeshComponents,
-			FAGX_ImportUtilities::GetImportRenderMeshDirectoryName());
+			FAGX_ImportUtilities::GetImportRenderStaticMeshDirectoryName());
 	}
 
 	TMap<UStaticMeshComponent*, UMaterialInterface*> GetRenderMaterials(

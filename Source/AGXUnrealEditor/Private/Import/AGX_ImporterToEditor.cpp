@@ -75,6 +75,33 @@ namespace AGX_ImporterToEditor_helpers
 		return DirectoryPath;
 	}
 
+	template <typename T>
+	FString GetAssetTypeFromType(const UObject& Asset)
+	{
+		if constexpr (std::is_same_v<T, UAGX_MergeSplitThresholdsBase>)
+			return FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName();
+
+		if constexpr (std::is_same_v<T, UStaticMesh>)
+		{
+			if (Asset.GetName().Contains("Collision"))
+				return FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName();
+			else if (Asset.GetName().Contains("Render"))
+				return FAGX_ImportUtilities::GetImportRenderStaticMeshDirectoryName();
+			else
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("GetAssetTypeFromType called with StaticMesh with unsupported name '%s'. "
+						 "This may cause errors during import/reimport."),
+					*Asset.GetName());
+				return "Unsupported";
+			}
+		}
+
+		if constexpr (std::is_same_v<T, UMaterialInterface>)
+			return FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName();
+	}
+
 	FString GetModelDirectoryPathFromBaseBlueprint(UBlueprint& BaseBP)
 	{
 		const FString ParentDir = FPaths::GetPath(BaseBP.GetPathName());
@@ -277,7 +304,7 @@ namespace AGX_ImporterToEditor_helpers
 
 		// Any Component that does not have the current SessionGuid tag, we know is not part of the
 		// newly imported model and should be removed.
-		const TArray<USCS_Node*> Nodes = Blueprint.SimpleConstructionScript->GetAllNodes(); 
+		const TArray<USCS_Node*> Nodes = Blueprint.SimpleConstructionScript->GetAllNodes();
 		for (USCS_Node* Node : Nodes)
 		{
 			if (Node == nullptr || Node->ComponentTemplate == nullptr)
@@ -291,7 +318,51 @@ namespace AGX_ImporterToEditor_helpers
 		}
 	}
 
-	void WriteAssetToDisk(const FString& RootDir, const FString& AssetType, UObject& Object)
+	void RemoveDeletedAssets(const FString& RootDirectory, const FGuid& SessionGuid)
+	{
+		auto HasMatchingSessionGuid = [&SessionGuid](const UObject& Object)
+		{
+			UMetaData* MetaData = Object.GetOutermost()->GetMetaData();
+			const FString GuidStr = MetaData->GetValue(&Object, TEXT("AGX_ImportSessionGuid"));
+			return FGuid(GuidStr) == SessionGuid;
+		};
+
+		TArray<UObject*> AssetsToDelete;
+
+		auto CollectForRemoval = [&](auto Assets)
+		{
+			for (auto Asset : Assets)
+			{
+				if (!HasMatchingSessionGuid(*Asset))
+					AssetsToDelete.Add(Asset);
+			}
+		};
+
+		CollectForRemoval(FAGX_EditorUtilities::FindAssets<UMaterialInterface>(FPaths::Combine(
+			RootDirectory, FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName())));
+
+		CollectForRemoval(FAGX_EditorUtilities::FindAssets<UStaticMesh>(FPaths::Combine(
+			RootDirectory, FAGX_ImportUtilities::GetImportRenderStaticMeshDirectoryName())));
+
+		CollectForRemoval(FAGX_EditorUtilities::FindAssets<UStaticMesh>(FPaths::Combine(
+			RootDirectory, FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName())));
+
+		CollectForRemoval(
+			FAGX_EditorUtilities::FindAssets<UAGX_MergeSplitThresholdsBase>(FPaths::Combine(
+				RootDirectory,
+				FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName())));
+
+		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
+	}
+
+	void AddSessionGuid(const FGuid& SessionGuid, UObject& OutObject)
+	{
+		UMetaData* MetaData = OutObject.GetOutermost()->GetMetaData();
+		MetaData->SetValue(&OutObject, TEXT("AGX_ImportSessionGuid"), *SessionGuid.ToString());
+	}
+
+	void WriteAssetToDisk(
+		const FString& RootDir, const FString& AssetType, UObject& Object, const FGuid& SessionGuid)
 	{
 		const FString AssetName = Object.GetName();
 		const FString PackagePath =
@@ -300,6 +371,8 @@ namespace AGX_ImporterToEditor_helpers
 		Object.Rename(*AssetName, Package);
 		Package->MarkPackageDirty();
 		Object.SetFlags(RF_Public | RF_Standalone);
+
+		AddSessionGuid(SessionGuid, Object);
 		FAGX_ObjectUtilities::SaveAsset(Object);
 	}
 
@@ -315,7 +388,7 @@ namespace AGX_ImporterToEditor_helpers
 			for (const auto& [Guid, MST] : *Context->MSThresholds)
 			{
 				if (auto SCMST = Cast<UAGX_ShapeContactMergeSplitThresholds>(MST))
-					WriteAssetToDisk(RootDir, AssetType, *SCMST);
+					WriteAssetToDisk(RootDir, AssetType, *SCMST, Context->SessionGuid);
 			}
 		}
 
@@ -324,16 +397,17 @@ namespace AGX_ImporterToEditor_helpers
 			const FString AssetType = FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName();
 			for (const auto& [Guid, Rm] : *Context->RenderMaterials)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Rm);
+				WriteAssetToDisk(RootDir, AssetType, *Rm, Context->SessionGuid);
 			}
 		}
 
 		if (Context->RenderStaticMeshes != nullptr)
 		{
-			const FString AssetType = FAGX_ImportUtilities::GetImportRenderMeshDirectoryName();
+			const FString AssetType =
+				FAGX_ImportUtilities::GetImportRenderStaticMeshDirectoryName();
 			for (const auto& [Guid, Sm] : *Context->RenderStaticMeshes)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Sm);
+				WriteAssetToDisk(RootDir, AssetType, *Sm, Context->SessionGuid);
 			}
 		}
 
@@ -343,7 +417,7 @@ namespace AGX_ImporterToEditor_helpers
 				FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName();
 			for (const auto& [Guid, Sm] : *Context->CollisionStaticMeshes)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Sm);
+				WriteAssetToDisk(RootDir, AssetType, *Sm, Context->SessionGuid);
 			}
 		}
 	}
@@ -386,33 +460,6 @@ namespace AGX_ImporterToEditor_helpers
 		}
 
 		return Node;
-	}
-
-	template <typename T>
-	FString GetAssetTypeFromType(const UObject& Asset)
-	{
-		if constexpr (std::is_same_v<T, UAGX_MergeSplitThresholdsBase>)
-			return FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName();
-
-		if constexpr (std::is_same_v<T, UStaticMesh>)
-		{
-			if (Asset.GetName().Contains("Collision"))
-				return FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName();
-			else if (Asset.GetName().Contains("Render"))
-				return FAGX_ImportUtilities::GetImportRenderMeshDirectoryName();
-			else
-			{
-				UE_LOG(
-					LogAGX, Error,
-					TEXT("GetAssetTypeFromType called with StaticMesh with unsupported name '%s'. "
-						 "This may cause errors during import/reimport."),
-					*Asset.GetName());
-				return "Unsupported";
-			}
-		}
-
-		if constexpr (std::is_same_v<T, UMaterialInterface>)
-			return FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName();
 	}
 }
 
@@ -467,7 +514,7 @@ bool FAGX_ImporterToEditor::Reimport(
 }
 
 template <typename T>
-T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source)
+T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 	const FString AssetType = GetAssetTypeFromType<T>(Source);
@@ -480,7 +527,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source)
 
 	if (Asset == nullptr)
 	{
-		WriteAssetToDisk(RootDirectory, AssetType, Source);
+		WriteAssetToDisk(RootDirectory, AssetType, Source, Context.SessionGuid);
 		return &Source; // We are done.
 	}
 
@@ -497,6 +544,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source)
 		{
 			bool Result = AGX_MeshUtilities::CopyStaticMesh(&Source, Asset);
 			AGX_CHECK(Result);
+			AddSessionGuid(Context.SessionGuid, *Asset);
 			Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
 			AGX_CHECK(Result);
 		}
@@ -507,6 +555,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source)
 		// these operations are relatively cheap, and keep the code simple here.
 		bool Result = FAGX_ObjectUtilities::CopyProperties(Source, *Asset, false);
 		AGX_CHECK(Result);
+		AddSessionGuid(Context.SessionGuid, *Asset);
 		Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
 		AGX_CHECK(Result);
 	}
@@ -522,6 +571,7 @@ void FAGX_ImporterToEditor::UpdateBlueprint(
 	UpdateAssets(Blueprint, Context);
 	UpdateComponents(Blueprint, Context);
 	RemoveDeletedComponents(Blueprint, Context.SessionGuid);
+	RemoveDeletedAssets(RootDirectory, Context.SessionGuid);
 }
 
 void FAGX_ImporterToEditor::UpdateAssets(UBlueprint& Blueprint, const FAGX_ImportContext& Context)
@@ -532,7 +582,7 @@ void FAGX_ImporterToEditor::UpdateAssets(UBlueprint& Blueprint, const FAGX_Impor
 	{
 		for (const auto& [Guid, MST] : *Context.MSThresholds)
 		{
-			const auto A = UpdateOrCreateAsset(*MST);
+			const auto A = UpdateOrCreateAsset(*MST, Context);
 			AGX_CHECK(A != nullptr);
 		}
 	}
@@ -541,7 +591,7 @@ void FAGX_ImporterToEditor::UpdateAssets(UBlueprint& Blueprint, const FAGX_Impor
 	{
 		for (const auto& [Guid, Rm] : *Context.RenderMaterials)
 		{
-			const auto A = UpdateOrCreateAsset(*Rm);
+			const auto A = UpdateOrCreateAsset(*Rm, Context);
 			AGX_CHECK(A != nullptr);
 		}
 	}
@@ -550,7 +600,7 @@ void FAGX_ImporterToEditor::UpdateAssets(UBlueprint& Blueprint, const FAGX_Impor
 	{
 		for (const auto& [Guid, Sm] : *Context.CollisionStaticMeshes)
 		{
-			const auto A = UpdateOrCreateAsset(*Sm);
+			const auto A = UpdateOrCreateAsset(*Sm, Context);
 			AGX_CHECK(A != nullptr);
 		}
 	}
@@ -559,7 +609,7 @@ void FAGX_ImporterToEditor::UpdateAssets(UBlueprint& Blueprint, const FAGX_Impor
 	{
 		for (const auto& [Guid, Sm] : *Context.RenderStaticMeshes)
 		{
-			const auto A = UpdateOrCreateAsset(*Sm);
+			const auto A = UpdateOrCreateAsset(*Sm, Context);
 			AGX_CHECK(A != nullptr);
 		}
 	}

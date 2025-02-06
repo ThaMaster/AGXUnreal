@@ -167,7 +167,7 @@ public:
 	static FString GetImportRenderMaterialDirectoryName();
 	static FString GetImportMergeSplitThresholdsDirectoryName();
 	static FString GetImportCollisionStaticMeshDirectoryName();
-	static FString GetImportRenderMeshDirectoryName();
+	static FString GetImportRenderStaticMeshDirectoryName();
 	static FString GetImportShovelPropertiesDirectoryName();
 
 	/**

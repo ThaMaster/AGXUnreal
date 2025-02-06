@@ -511,7 +511,7 @@ FString FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName()
 	return FString("StaticMesh");
 }
 
-FString FAGX_ImportUtilities::GetImportRenderMeshDirectoryName()
+FString FAGX_ImportUtilities::GetImportRenderStaticMeshDirectoryName()
 {
 	return FString("RenderMesh");
 }
