@@ -470,25 +470,6 @@ namespace AGX_ImporterToEditor_helpers
 	{
 	};
 
-	// Searches all Static Mesh Component Nodes of a SCSNodeCollection for a matching name.
-	USCS_Node* FindByName(const FAGX_SCSNodeCollection& Nodes, const FName& Name)
-	{
-		auto FindInCollection = [](auto Collection, const auto& InName) -> USCS_Node*
-		{
-			for (const auto& [Guid, Node] : Collection)
-				if (Node->GetVariableName() == InName)
-					return Node;
-
-			return nullptr;
-		};
-
-		if (auto N = FindInCollection(Nodes.RenderStaticMeshComponents, Name))
-			return N;
-		if (auto N = FindInCollection(Nodes.CollisionStaticMeshComponents, Name))
-			return N;
-		return nullptr;
-	}
-
 	/**
 	 * Given a Component that has been reimported, but is not part of the Blueprint that the
 	 * SCSNodeCollection represents, this function tries to find the USCS_Node corresponding to the
@@ -497,7 +478,7 @@ namespace AGX_ImporterToEditor_helpers
 	 * function.
 	 */
 	template <typename TComponent>
-	USCS_Node* GetCorrespondingAttachParent(
+	USCS_Node* GetCorrespondingAttachParent(const UBlueprint& Bp,
 		const FAGX_SCSNodeCollection& Nodes, const TComponent& ReimportedComponent)
 	{
 		USceneComponent* Parent = ReimportedComponent.GetAttachParent();
@@ -527,7 +508,7 @@ namespace AGX_ImporterToEditor_helpers
 				return Nodes.RigidBodies.FindRef(Body->ImportGuid);
 			if (auto Smc = Cast<UStaticMeshComponent>(Parent))
 			{
-				if (auto S = FindByName(Nodes, *Parent->GetName()))
+				if (auto S = Bp.SimpleConstructionScript->FindSCSNode(*Parent->GetName()))
 					return S;
 			}
 		}
@@ -574,7 +555,7 @@ namespace AGX_ImporterToEditor_helpers
 		USCS_Node* Node = FindNodeAndResolveConflicts(
 			Guid, ReimportedComponent, Nodes, OutGuidToNode, OutBlueprint);
 
-		USCS_Node* Parent = GetCorrespondingAttachParent(Nodes, ReimportedComponent);
+		USCS_Node* Parent = GetCorrespondingAttachParent(OutBlueprint, Nodes, ReimportedComponent);
 		AGX_CHECK(Parent != nullptr);
 		if (Parent == nullptr)
 		{
@@ -829,8 +810,8 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 	{
 		for (const auto& [Guid, Component] : *Context.CollisionStaticMeshCom)
 		{
-			USCS_Node* N = GetOrCreateNode(
-				Guid, *Component, Nodes, Nodes.CollisionStaticMeshComponents, Blueprint);
+			TMap<FGuid, USCS_Node*> Unused;
+			USCS_Node* N = GetOrCreateNode(Guid, *Component, Nodes, Unused, Blueprint);
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
@@ -842,8 +823,8 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 	{
 		for (const auto& [Guid, Component] : *Context.RenderStaticMeshCom)
 		{
-			USCS_Node* N = GetOrCreateNode(
-				Guid, *Component, Nodes, Nodes.RenderStaticMeshComponents, Blueprint);
+			TMap<FGuid, USCS_Node*> Unused;
+			USCS_Node* N = GetOrCreateNode(Guid, *Component, Nodes, Unused, Blueprint);
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
