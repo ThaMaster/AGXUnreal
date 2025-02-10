@@ -536,7 +536,7 @@ namespace AGX_ImporterToEditor_helpers
 	}
 
 	template <typename TComponent>
-	USCS_Node* GetOrCreateNode(
+	USCS_Node* FindNodeAndResolveConflicts(
 		const FGuid& Guid, const TComponent& ReimportedComponent,
 		const FAGX_SCSNodeCollection& Nodes, TMap<FGuid, USCS_Node*>& OutGuidToNode,
 		UBlueprint& OutBlueprint)
@@ -548,6 +548,31 @@ namespace AGX_ImporterToEditor_helpers
 		USCS_Node* NameCollNode = OutBlueprint.SimpleConstructionScript->FindSCSNode(Name);
 		if (Node != nullptr && NameCollNode != nullptr && NameCollNode != Node)
 			NameCollNode->SetVariableName(*FAGX_ImportUtilities::GetUnsetUniqueImportName());
+
+		return Node;
+	}
+
+	template <>
+	USCS_Node* FindNodeAndResolveConflicts<UStaticMeshComponent>(
+		const FGuid& Guid, const UStaticMeshComponent& ReimportedComponent,
+		const FAGX_SCSNodeCollection& Nodes, TMap<FGuid, USCS_Node*>& OutGuidToNode,
+		UBlueprint& OutBlueprint)
+	{
+		// StaticMeshComponents we look up by using the name which includes the guid.
+		// We expect no conflicts.
+		const FName Name(*ReimportedComponent.GetName());
+		return OutBlueprint.SimpleConstructionScript->FindSCSNode(Name);
+	}
+
+	template <typename TComponent>
+	USCS_Node* GetOrCreateNode(
+		const FGuid& Guid, const TComponent& ReimportedComponent,
+		const FAGX_SCSNodeCollection& Nodes, TMap<FGuid, USCS_Node*>& OutGuidToNode,
+		UBlueprint& OutBlueprint)
+	{
+		const FName Name(*ReimportedComponent.GetName());
+		USCS_Node* Node = FindNodeAndResolveConflicts(
+			Guid, ReimportedComponent, Nodes, OutGuidToNode, OutBlueprint);
 
 		USCS_Node* Parent = GetCorrespondingAttachParent(Nodes, ReimportedComponent);
 		AGX_CHECK(Parent != nullptr);
