@@ -166,6 +166,8 @@ namespace TrimshShapeComponent_helpers
 		Component->SetFlags(RF_Transactional);
 		Owner.AddInstanceComponent(Component);
 
+		Context.CollisionStaticMeshCom->Add(Barrier.GetShapeGuid(), Component);
+
 		return Component;
 	}
 

@@ -124,6 +124,7 @@ FAGX_Importer::FAGX_Importer()
 	Context.RigidBodies = MakeUnique<decltype(FAGX_ImportContext::RigidBodies)::ElementType>();
 	Context.Shapes = MakeUnique<decltype(FAGX_ImportContext::Shapes)::ElementType>();
 	Context.RenderStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
+	Context.CollisionStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.RenderMaterials = MakeUnique<TMap<FGuid, UMaterialInterface*>>();
 	Context.RenderStaticMeshes = MakeUnique<TMap<FGuid, UStaticMesh*>>();
 	Context.CollisionStaticMeshes = MakeUnique<TMap<FGuid, UStaticMesh*>>();
