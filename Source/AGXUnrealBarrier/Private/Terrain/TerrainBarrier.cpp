@@ -431,6 +431,10 @@ FParticleDataById FTerrainBarrier::GetParticleDataById(EParticleDataFlags ToIncl
 	{
 		FTerrainUtilities::GetParticleRadiiById(*this, ParticleData.Radii);
 	}
+	if (ToInclude & EParticleDataFlags::Masses)
+	{
+		FTerrainUtilities::GetParticleMassesById(*this, ParticleData.Masses);
+	}
 
 	return ParticleData;
 }

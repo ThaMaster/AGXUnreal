@@ -180,6 +180,17 @@ namespace TerrainUtilities_helpers
 			[](float ValueAgx) { return ConvertDistanceToUnreal<float>(ValueAgx); });
 	}
 
+	// Mass getters.
+
+	void GetMassById(const FParticlesWithIdToIndex& Particles, TArray<float>& OutMasses)
+	{
+		constexpr float InvalidMarker = std::numeric_limits<float>::quiet_NaN();
+		GetParticleDataById(
+			Particles, OutMasses, InvalidMarker, 
+			[](const agx::Physics::GranularBodyPtr& Particle){ return Particle.mass(); }, 
+			[](float ValueAgx) { return ConvertToUnreal<float>(ValueAgx); });
+	}
+
 	// Rotations getter.
 
 	void AppendRotations(
@@ -325,6 +336,17 @@ void FTerrainUtilities::GetParticleRadiiById(
 	using namespace TerrainUtilities_helpers;
 	const FParticlesWithIdToIndex ParticlesWithIdToIndex = GetParticlesWithIdToIndex(Terrain);
 	GetRadiiById(ParticlesWithIdToIndex, OutRadii);
+}
+
+void FTerrainUtilities::GetParticleMassesById(
+	const FTerrainBarrier& Terrain, TArray<float>& OutMasses)
+{
+	AGX_CHECK(Terrain.HasNative)
+	if (!Terrain.HasNative())
+		return;
+	using namespace TerrainUtilities_helpers;
+	const FParticlesWithIdToIndex ParticlesWithIdToIndex = GetParticlesWithIdToIndex(Terrain);
+	GetMassById(ParticlesWithIdToIndex, OutMasses);
 }
 
 void FTerrainUtilities::GetParticleDataById(

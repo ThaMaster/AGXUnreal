@@ -11,6 +11,7 @@ struct FParticleData
 	TArray<FVector> Velocities;
 	TArray<float> Radii;
 	TArray<FQuat> Rotations;
+	TArray<float> Masses;
 };
 
 /**
@@ -32,6 +33,7 @@ struct FParticleDataById
 	TArray<FVector> Velocities;
 	TArray<float> Radii;
 	TArray<FQuat> Rotations;
+	TArray<float> Masses;
 	TArray<bool> Exists; // TArray instead of TBitArray to be compatible with Niagara Arrays.
 };
 
@@ -43,7 +45,8 @@ namespace ParticleDataFlags
 		Velocities = 1 << 1,
 		Radii = 1 << 2,
 		Rotations = 1 << 3,
-		All = Positions | Velocities | Radii | Rotations
+		Masses = 1 << 4,
+		All = Positions | Velocities | Radii | Rotations | Masses
 	};
 }
 

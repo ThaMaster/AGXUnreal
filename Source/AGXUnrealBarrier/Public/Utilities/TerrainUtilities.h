@@ -60,6 +60,8 @@ public:
 	static void GetParticleRotationsById(
 		const FTerrainBarrier& Terrain, TArray<FQuat>& OutRotation);
 
+	static void GetParticleMassesById(const FTerrainBarrier& Terrain, TArray<float>& OutMasses);
+
 	/**
 	 * Writes the data indicated by the ToInclude bit set flags of all particles known to the passed
 	 * Terrain to OutParticleData. The Exists array is always populated, even when ToInclude is

@@ -1701,7 +1701,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 
 	// Copy data with holes.
 	EParticleDataFlags ToInclude = EParticleDataFlags::Positions | EParticleDataFlags::Rotations |
-								   EParticleDataFlags::Radii | EParticleDataFlags::Velocities;
+								   EParticleDataFlags::Radii | EParticleDataFlags::Velocities | EParticleDataFlags::Masses;
 	const FParticleDataById ParticleData =
 		bEnableTerrainPaging ? NativeTerrainPagerBarrier.GetParticleDataById(ToInclude)
 							 : NativeBarrier.GetParticleDataById(ToInclude);
@@ -1711,6 +1711,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	const TArray<float>& Radii = ParticleData.Radii;
 	const TArray<bool>& Exists = ParticleData.Exists;
 	const TArray<FVector>& Velocities = ParticleData.Velocities;
+	const TArray<float>& Masses = ParticleData.Masses;
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());
