@@ -27,20 +27,15 @@
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
+#include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Vehicle/TrackBarrier.h"
 
 namespace AGX_Importer_helpers
 {
-	void WriteImportTag(UActorComponent& Component, const FGuid& SessionGuid)
-	{
-		Component.ComponentTags.Empty();
-		Component.ComponentTags.Add(*SessionGuid.ToString());
-	}
-
 	void PostCreateComponent(UActorComponent& Component, AActor& Owner, const FGuid& SessionGuid)
 	{
-		WriteImportTag(Component, SessionGuid);
+		FAGX_ImportRuntimeUtilities::WriteSessionGuid(Component, SessionGuid);
 		Component.SetFlags(RF_Transactional);
 		Owner.AddInstanceComponent(&Component);
 	}

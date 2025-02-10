@@ -16,6 +16,7 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
 #include "Shapes/RenderMaterial.h"
+#include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -350,6 +351,7 @@ namespace AGX_ShapeComponent_helpers
 		const FString ComponentName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 			&Owner, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()));
 		UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(&Owner, *ComponentName);
+		FAGX_ImportRuntimeUtilities::WriteSessionGuid(*Component, Context.SessionGuid);
 		Component->SetMaterial(0, Material);
 		Component->SetRelativeTransform(RelTransform);
 		Component->SetStaticMesh(StaticMesh);

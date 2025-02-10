@@ -7,6 +7,7 @@
 #include "AGX_MeshWithTransform.h"
 #include "Import/AGX_ImportContext.h"
 #include "Import/AGX_ImporterSettings.h"
+#include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
 
 // Unreal Engine includes.
@@ -149,6 +150,7 @@ namespace TrimshShapeComponent_helpers
 			&Owner, FString::Printf(TEXT("CollisionMesh_%s"), *Barrier.GetGuid().ToString()));
 		UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(&Owner, *ComponentName);
 
+		FAGX_ImportRuntimeUtilities::WriteSessionGuid(*Component, Context.SessionGuid);
 		Component->SetMaterial(0, Material);
 		Component->SetStaticMesh(StaticMesh);
 
