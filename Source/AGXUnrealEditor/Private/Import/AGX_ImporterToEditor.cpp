@@ -279,10 +279,10 @@ namespace AGX_ImporterToEditor_helpers
 	{
 		if (IsUnrecoverableError(Result))
 		{
-			const FString Text = FString::Printf(
-				TEXT("Errors occurred during import and the result may not be the "
-					 "expected result. Log category LogAGX in the Output Log may "
-					 "contain more information."));
+			const FString Text =
+				FString::Printf(TEXT("Errors occurred during import and the result may not be the "
+									 "expected result. Log category LogAGX in the Output Log may "
+									 "contain more information."));
 			FAGX_NotificationUtilities::ShowNotification(Text, SNotificationItem::CS_Fail);
 			return false;
 		}
@@ -315,6 +315,19 @@ namespace AGX_ImporterToEditor_helpers
 		}
 
 		return ValidateImportEnum(Result.Result);
+	}
+
+	bool ValidateBlueprintForReimport(const UBlueprint& Bp)
+	{
+		if (Bp.SimpleConstructionScript->FindSCSNode(TEXT("AGX_ModelSource")) == nullptr)
+		{
+			const FString Text = FString::Printf(TEXT(
+				"Unable to find a valid AGX Mode Source Component in the selected Blueprint."));
+			FAGX_NotificationUtilities::ShowNotification(Text, SNotificationItem::CS_Fail);
+			return false;
+		}
+
+		return true;
 	}
 
 	void RemoveDeletedComponents(UBlueprint& Blueprint, const FGuid& SessionGuid)
@@ -533,7 +546,7 @@ namespace AGX_ImporterToEditor_helpers
 
 		// Resolve name collisions.
 		USCS_Node* NameCollNode = OutBlueprint.SimpleConstructionScript->FindSCSNode(Name);
-		if (NameCollNode != nullptr && NameCollNode != Node)
+		if (Node != nullptr && NameCollNode != nullptr && NameCollNode != Node)
 			NameCollNode->SetVariableName(*FAGX_ImportUtilities::GetUnsetUniqueImportName());
 
 		USCS_Node* Parent = GetCorrespondingAttachParent(Nodes, ReimportedComponent);
@@ -593,6 +606,9 @@ bool FAGX_ImporterToEditor::Reimport(
 {
 	using namespace AGX_ImporterToEditor_helpers;
 
+	if (!ValidateBlueprintForReimport(BaseBP))
+		return false;
+
 	if (GEditor != nullptr)
 		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
 
@@ -609,7 +625,8 @@ bool FAGX_ImporterToEditor::Reimport(
 
 	RootDirectory = GetModelDirectoryPathFromBaseBlueprint(BaseBP);
 	const auto UpdateResult = UpdateBlueprint(BaseBP, Importer.GetContext());
-	ValidateImportEnum(UpdateResult);
+	if (!ValidateImportEnum(UpdateResult))
+		return false;
 
 	if (Settings.bOpenBlueprintEditorAfterImport && OpenBlueprint != nullptr)
 		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(OpenBlueprint);
