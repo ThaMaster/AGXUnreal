@@ -1304,7 +1304,7 @@ bool FCheckRenderDataImportedCommand::Update()
 
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
-	// Root(1), Rigid Body(2), Shape(3), Static Mesh(4), ReImport(5).
+	// Root(1), Rigid Body(2), Shape(3), Static Mesh(4), Reimport(5).
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 5);
 
 	// Enable this to see the names of the components that was imported. Useful when adding new
@@ -1678,7 +1678,7 @@ bool FCheckGeometrySensorsImportedCommand::Update()
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
-	// Three Rigid Bodies, three Geometries, one Default Scene Root, one ReImport Component.
+	// Three Rigid Bodies, three Geometries, one Default Scene Root, one Reimport Component.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 8);
 
 	UAGX_SphereShapeComponent* BoolSensor = GetByName<UAGX_SphereShapeComponent>(
@@ -2210,7 +2210,7 @@ bool FCheckRigidBodyPropertiesImportedCommand::Update()
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
-	// One Rigid Bodies, one Geometry, one Default Scene Root and one ReImport Component.
+	// One Rigid Bodies, one Geometry, one Default Scene Root and one Reimport Component.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
 
 	UAGX_RigidBodyComponent* SphereBody = GetByName<UAGX_RigidBodyComponent>(
@@ -2422,7 +2422,7 @@ bool FCheckSimpleGeometriesImportedCommand::Update()
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
-	// 5 Rigid Bodies, 10 Geometries, 2 Static Meshes, one Default Scene Root and one ReImport
+	// 5 Rigid Bodies, 10 Geometries, 2 Static Meshes, one Default Scene Root and one Reimport
 	// Component
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 19);
 
@@ -2575,7 +2575,7 @@ bool FCheckContactMaterialsImportedCommand::Update()
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// 4 Rigid Bodies, 4 Geometries, 1 Contact Material Registrar, one Default Scene Root and one
-	// ReImport Component.
+	// Reimport Component.
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 11);
 
 	UAGX_ContactMaterialRegistrarComponent* Registrar =
@@ -2764,7 +2764,7 @@ bool FCheckObserverFramesImportedCommand::Update()
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// 1 Default Scene Root, 4 groups each containing a Rigid Body, a Shape, a Scene and one
-	// ReImport Component.
+	// Reimport Component.
 	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), 14);
 
 	auto TestGroup =
@@ -2917,7 +2917,7 @@ bool FCheckURDFLinkWithMeshesImportedCommand::Update()
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
 	// One DefaultSceneRoot, one Rigid Body, one Trimesh with a render mesh and a collision mesh,
-	// one Trimesh with only one collision mesh and one ReImport Component.
+	// one Trimesh with only one collision mesh and one Reimport Component.
 	Test.TestEqual("Number of components", Components.Num(), 8);
 
 	UAGX_TrimeshShapeComponent* Urdfmeshvisual = GetByName<UAGX_TrimeshShapeComponent>(
@@ -3056,7 +3056,7 @@ bool FCheckURDFLinksGeometriesConstraintsImportedCommand::Update()
 	TArray<UActorComponent*> Components =
 		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
 
-	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components, 2 Constraints and one ReImport
+	// 1 DefaultSceneRoot, 4 Rigid Bodies, 4 Shape Components, 2 Constraints and one Reimport
 	// Component.
 	Test.TestEqual("Number of components", Components.Num(), 12);
 
@@ -3206,7 +3206,7 @@ bool FCheckTrackImportedCommand::Update()
 
 	// 24 Hinge Constraints (24), 25 Rigid Bodies (49), 20 Sphere Shapes
 	// (69), 24 Cylinder Shapes (93), 3 Box Shapes (96), a Collision Group Disabler (97), a
-	// Contact Material Registrar (98), a Default Scene Root (99), two Tracks (101) and one ReImport
+	// Contact Material Registrar (98), a Default Scene Root (99), two Tracks (101) and one Reimport
 	// Component(102).
 	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 102);
 	if (Components.Num() != 102)

@@ -275,6 +275,31 @@ namespace AGX_ImporterToEditor_helpers
 		return true;
 	}
 
+	bool ValidateImportEnum(EAGX_ImportResult Result)
+	{
+		if (IsUnrecoverableError(Result))
+		{
+			const FString Text = FString::Printf(
+				TEXT("Errors occurred during import and the result may not be the "
+					 "expected result. Log category LogAGX in the Output Log may "
+					 "contain more information."));
+			FAGX_NotificationUtilities::ShowNotification(Text, SNotificationItem::CS_Fail);
+			return false;
+		}
+
+		if (Result != EAGX_ImportResult::Success)
+		{
+			const FString Text = FString::Printf(
+				TEXT("Some issues occurred during import and the result may not be the "
+					 "expected result. Log category LogAGX in the Output Log may "
+					 "contain more information."));
+			FAGX_NotificationUtilities::ShowNotification(Text, SNotificationItem::CS_Fail);
+			return false;
+		}
+
+		return true;
+	}
+
 	bool ValidateImportResult(
 		const FAGX_ImportResult& Result, const FAGX_ImporterSettings& Settings)
 	{
@@ -289,16 +314,7 @@ namespace AGX_ImporterToEditor_helpers
 			return false;
 		}
 
-		if (Result.Result != EAGX_ImportResult::Success)
-		{
-			const FString Text = FString::Printf(
-				TEXT("Some issues occurred during import and the result may not be the "
-					 "expected result. Log category LogAGX in the Output Log may "
-					 "contain more information."));
-			FAGX_NotificationUtilities::ShowNotification(Text, SNotificationItem::CS_Fail);
-		}
-
-		return true;
+		return ValidateImportEnum(Result.Result);
 	}
 
 	void RemoveDeletedComponents(UBlueprint& Blueprint, const FGuid& SessionGuid)
@@ -441,27 +457,78 @@ namespace AGX_ImporterToEditor_helpers
 	{
 	};
 
+	// Searches all Static Mesh Component Nodes of a SCSNodeCollection for a matching name.
+	USCS_Node* FindByName(const FAGX_SCSNodeCollection& Nodes, const FName& Name)
+	{
+		auto FindInCollection = [](auto Collection, const auto& InName) -> USCS_Node*
+		{
+			for (const auto& [Guid, Node] : Collection)
+				if (Node->GetVariableName() == InName)
+					return Node;
+
+			return nullptr;
+		};
+
+		if (auto N = FindInCollection(Nodes.RenderStaticMeshComponents, Name))
+			return N;
+		if (auto N = FindInCollection(Nodes.CollisionStaticMeshComponents, Name))
+			return N;
+		return nullptr;
+	}
+
 	/**
-	 * Given a Component that has been re-imported, but is not part of the Blueprint that the
+	 * Given a Component that has been reimported, but is not part of the Blueprint that the
 	 * SCSNodeCollection represents, this function tries to find the USCS_Node corresponding to the
-	 * re-imported Component's attach parent.
+	 * reimported Component's attach parent.
 	 * Some Components will always be attached to root, and we can use that fact to simplify this
 	 * function.
 	 */
 	template <typename TComponent>
 	USCS_Node* GetCorrespondingAttachParent(
-		const FAGX_SCSNodeCollection& Nodes, const TComponent* ReImportedComponent)
+		const FAGX_SCSNodeCollection& Nodes, const TComponent& ReimportedComponent)
 	{
-		return Nodes.RootComponent;
+		USceneComponent* Parent = ReimportedComponent.GetAttachParent();
+		AGX_CHECK(Parent != nullptr);
+		if (Parent == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Found no attach parent to reimported Component '%s', returning root."),
+				*ReimportedComponent.GetName());
+			return Nodes.RootComponent;
+		}
+
+		if constexpr (std::is_same_v<TComponent, UAGX_ShapeComponent>)
+		{
+			// A Shape can have a RigidBody or Root as parent.
+			if (auto Body = Cast<UAGX_RigidBodyComponent>(Parent))
+				return Nodes.RigidBodies.FindRef(Body->ImportGuid);
+		}
+
+		if constexpr (std::is_same_v<TComponent, UStaticMeshComponent>)
+		{
+			// A StaticMesh can have a Shape, RigidBody, StaticMesh or Root as parent.
+			if (auto Shape = Cast<UAGX_ShapeComponent>(Parent))
+				return Nodes.Shapes.FindRef(Shape->ImportGuid);
+			if (auto Body = Cast<UAGX_RigidBodyComponent>(Parent))
+				return Nodes.RigidBodies.FindRef(Body->ImportGuid);
+			if (auto Smc = Cast<UStaticMeshComponent>(Parent))
+			{
+				if (auto S = FindByName(Nodes, *Parent->GetName()))
+					return S;
+			}
+		}
+
+		return Nodes.RootComponent; // Default.
 	}
 
 	template <typename TComponent>
 	USCS_Node* GetOrCreateNode(
-		const FGuid& Guid, const TComponent* ReImportedComponent,
+		const FGuid& Guid, const TComponent& ReimportedComponent,
 		const FAGX_SCSNodeCollection& Nodes, TMap<FGuid, USCS_Node*>& OutGuidToNode,
 		UBlueprint& OutBlueprint)
 	{
-		const FName Name(*ReImportedComponent->GetName());
+		const FName Name(*ReimportedComponent.GetName());
 		USCS_Node* Node = OutGuidToNode.FindRef(Guid);
 
 		// Resolve name collisions.
@@ -469,12 +536,21 @@ namespace AGX_ImporterToEditor_helpers
 		if (NameCollNode != nullptr && NameCollNode != Node)
 			NameCollNode->SetVariableName(*FAGX_ImportUtilities::GetUnsetUniqueImportName());
 
-		USCS_Node* Parent = GetCorrespondingAttachParent(Nodes, ReImportedComponent);
+		USCS_Node* Parent = GetCorrespondingAttachParent(Nodes, ReimportedComponent);
 		AGX_CHECK(Parent != nullptr);
+		if (Parent == nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("Could not find corresponding attach parent for component '%s'."),
+				*ReimportedComponent.GetName());
+			return nullptr;
+		}
+
 		if (Node == nullptr)
 		{
 			Node = OutBlueprint.SimpleConstructionScript->CreateNode(
-				ReImportedComponent->GetClass(), Name);
+				ReimportedComponent.GetClass(), Name);
 
 			Parent->AddChildNode(Node);
 		}
@@ -532,7 +608,8 @@ bool FAGX_ImporterToEditor::Reimport(
 		return false;
 
 	RootDirectory = GetModelDirectoryPathFromBaseBlueprint(BaseBP);
-	UpdateBlueprint(BaseBP, Importer.GetContext());
+	const auto UpdateResult = UpdateBlueprint(BaseBP, Importer.GetContext());
+	ValidateImportEnum(UpdateResult);
 
 	if (Settings.bOpenBlueprintEditorAfterImport && OpenBlueprint != nullptr)
 		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(OpenBlueprint);
@@ -591,19 +668,29 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 	return Asset;
 }
 
-void FAGX_ImporterToEditor::UpdateBlueprint(
+EAGX_ImportResult FAGX_ImporterToEditor::UpdateBlueprint(
 	UBlueprint& Blueprint, const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
-	UpdateAssets(Blueprint, Context);
-	UpdateComponents(Blueprint, Context);
+	EAGX_ImportResult Result = UpdateAssets(Blueprint, Context);
+	if (IsUnrecoverableError(Result))
+		return Result;
+
+	Result |= UpdateComponents(Blueprint, Context);
+	if (IsUnrecoverableError(Result))
+		return Result;
+
 	RemoveDeletedComponents(Blueprint, Context.SessionGuid);
 	RemoveDeletedAssets(RootDirectory, Context.SessionGuid);
+
+	return Result;
 }
 
-void FAGX_ImporterToEditor::UpdateAssets(UBlueprint& Blueprint, const FAGX_ImportContext& Context)
+EAGX_ImportResult FAGX_ImporterToEditor::UpdateAssets(
+	UBlueprint& Blueprint, const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
+	EAGX_ImportResult Result = EAGX_ImportResult::Success;
 
 	if (Context.MSThresholds != nullptr)
 	{
@@ -611,6 +698,8 @@ void FAGX_ImporterToEditor::UpdateAssets(UBlueprint& Blueprint, const FAGX_Impor
 		{
 			const auto A = UpdateOrCreateAsset(*MST, Context);
 			AGX_CHECK(A != nullptr);
+			if (A == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 		}
 	}
 
@@ -620,6 +709,8 @@ void FAGX_ImporterToEditor::UpdateAssets(UBlueprint& Blueprint, const FAGX_Impor
 		{
 			const auto A = UpdateOrCreateAsset(*Rm, Context);
 			AGX_CHECK(A != nullptr);
+			if (A == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 		}
 	}
 
@@ -629,6 +720,8 @@ void FAGX_ImporterToEditor::UpdateAssets(UBlueprint& Blueprint, const FAGX_Impor
 		{
 			const auto A = UpdateOrCreateAsset(*Sm, Context);
 			AGX_CHECK(A != nullptr);
+			if (A == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 		}
 	}
 
@@ -638,24 +731,37 @@ void FAGX_ImporterToEditor::UpdateAssets(UBlueprint& Blueprint, const FAGX_Impor
 		{
 			const auto A = UpdateOrCreateAsset(*Sm, Context);
 			AGX_CHECK(A != nullptr);
+			if (A == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 		}
 	}
+
+	return Result;
 }
 
-void FAGX_ImporterToEditor::UpdateComponents(
+EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 	UBlueprint& Blueprint, const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 
+	// The order of the Components below must be such that parent Components are updated first, and
+	// potential child Components last. This is because the children Components may be assigned a
+	// new parent during reimport and to avoid errors, the parent should then be up to date so that
+	// it can be correctly identified (for example in GetCorrespondingAttachParent above).
+
 	FAGX_SCSNodeCollection Nodes(Blueprint);
 	WriteImportTag(*Nodes.RootComponent->ComponentTemplate, Context.SessionGuid);
+	EAGX_ImportResult Result = EAGX_ImportResult::Success;
 
 	if (Context.RigidBodies != nullptr)
 	{
 		for (const auto& [Guid, Component] : *Context.RigidBodies)
 		{
-			USCS_Node* N = GetOrCreateNode(Guid, Component, Nodes, Nodes.RigidBodies, Blueprint);
-			CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+			USCS_Node* N = GetOrCreateNode(Guid, *Component, Nodes, Nodes.RigidBodies, Blueprint);
+			if (N == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+			else
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
 		}
 	}
 
@@ -669,8 +775,11 @@ void FAGX_ImporterToEditor::UpdateComponents(
 	{
 		for (const auto& [Guid, Component] : *Context.Shapes)
 		{
-			USCS_Node* N = GetOrCreateNode(Guid, Component, Nodes, Nodes.Shapes, Blueprint);
-			CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+			USCS_Node* N = GetOrCreateNode(Guid, *Component, Nodes, Nodes.Shapes, Blueprint);
+			if (N == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+			else
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
 		}
 	}
 
@@ -679,8 +788,11 @@ void FAGX_ImporterToEditor::UpdateComponents(
 		for (const auto& [Guid, Component] : *Context.CollisionStaticMeshCom)
 		{
 			USCS_Node* N = GetOrCreateNode(
-				Guid, Component, Nodes, Nodes.CollisionStaticMeshComponents, Blueprint);
-			CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+				Guid, *Component, Nodes, Nodes.CollisionStaticMeshComponents, Blueprint);
+			if (N == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+			else
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
 		}
 	}
 
@@ -689,8 +801,13 @@ void FAGX_ImporterToEditor::UpdateComponents(
 		for (const auto& [Guid, Component] : *Context.RenderStaticMeshCom)
 		{
 			USCS_Node* N = GetOrCreateNode(
-				Guid, Component, Nodes, Nodes.RenderStaticMeshComponents, Blueprint);
-			CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+				Guid, *Component, Nodes, Nodes.RenderStaticMeshComponents, Blueprint);
+			if (N == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+			else
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
 		}
 	}
+
+	return Result;
 }

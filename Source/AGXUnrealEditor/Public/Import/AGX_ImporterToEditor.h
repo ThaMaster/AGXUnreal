@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Import/AGX_ImportEnums.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
@@ -26,9 +29,9 @@ public:
 		UBlueprint* OpenBlueprint = nullptr);
 
 private:
-	void UpdateBlueprint(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
-	void UpdateAssets(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
-	void UpdateComponents(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
+	EAGX_ImportResult UpdateBlueprint(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
+	EAGX_ImportResult UpdateAssets(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
+	EAGX_ImportResult UpdateComponents(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
 
 
 	template <typename T>
