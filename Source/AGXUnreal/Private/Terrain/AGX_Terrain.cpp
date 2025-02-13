@@ -1459,6 +1459,11 @@ void AAGX_Terrain::InitializeRendering()
 	if (bEnableParticleRendering)
 	{
 		InitializeParticleSystem();
+
+		if (bEnableParticleUpsampling)
+		{
+			InitializeParticleUpsamplingSystem();
+		}
 	}
 
 	UpdateLandscapeMaterialParameters();
@@ -1669,7 +1674,12 @@ void AAGX_Terrain::ClearDisplacementMap()
 
 bool AAGX_Terrain::InitializeParticleSystem()
 {
-	return InitializeParticleSystemComponent() && InitializeParticleUpsamplingComponent();
+	return InitializeParticleSystemComponent();
+}
+
+bool AAGX_Terrain::InitializeParticleUpsamplingSystem()
+{
+	return InitializeParticleUpsamplingComponent();
 }
 
 bool AAGX_Terrain::InitializeParticleSystemComponent()
@@ -1719,6 +1729,14 @@ bool AAGX_Terrain::InitializeParticleUpsamplingComponent()
 		return false;
 	}
 
+	if (bUseTerrainMaterialDensity && TerrainMaterial == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Cannot use material density from terrain material since it has not been set, "
+				 "using user parameter instead."));
+	}
+
 	ParticleUpsamplingComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 		ParticleUpsamplingAsset, RootComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
 		FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset, false,
@@ -1737,7 +1755,6 @@ bool AAGX_Terrain::InitializeParticleUpsamplingComponent()
 		ParticleUpsamplingComponent->bVisualizeComponent = true;
 	}
 #endif
-
 	return ParticleUpsamplingComponent != nullptr;
 }
 
@@ -1753,24 +1770,62 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	}
 	// Copy data with holes.
 	EParticleDataFlags ToInclude = EParticleDataFlags::Positions | EParticleDataFlags::Rotations |
-								   EParticleDataFlags::Radii | EParticleDataFlags::Velocities | EParticleDataFlags::Masses;
+								   EParticleDataFlags::Radii | EParticleDataFlags::Velocities |
+								   EParticleDataFlags::Masses;
 	const FParticleDataById ParticleData =
 		bEnableTerrainPaging ? NativeTerrainPagerBarrier.GetParticleDataById(ToInclude)
 							 : NativeBarrier.GetParticleDataById(ToInclude);
 
+	// Use terrain density, otherwise use user parameter
+	int PDensity = (bUseTerrainMaterialDensity && TerrainMaterial != nullptr)
+					   ? PDensity = TerrainMaterial->GetDensity()
+					   : ParticleDensity;
+
+#if 1
 	const TArray<FVector>& Positions = ParticleData.Positions;
 	const TArray<FQuat>& Rotations = ParticleData.Rotations;
 	const TArray<float>& Radii = ParticleData.Radii;
 	const TArray<bool>& Exists = ParticleData.Exists;
 	const TArray<FVector>& Velocities = ParticleData.Velocities;
 	const TArray<float>& Masses = ParticleData.Masses;
-
+#else
+	const TArray<FVector>& Positions {{0.0, 0.0, 300.0}, {20.0, 0.0, 300.0}};
+	const TArray<FQuat>& Rotations {FQuat::Identity, FQuat::Identity};
+	const TArray<float>& Radii {5.0, 5.0};
+	const TArray<bool>& Exists {true, true};
+	const TArray<FVector>& Velocities {FVector::ZeroVector, FVector::ZeroVector};
+	const TArray<float>& Masses {1, 1};
+#endif
+	
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());
-	ParticleUpsamplingComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());
+
+	if (bEnableParticleUpsampling)
+	{
+		ParticleUpsamplingComponent->SetNiagaraVariableInt(
+			"User.Target Particle Count", Exists.Num());
+		ParticleUpsamplingComponent->SetNiagaraVariableFloat(
+			"User.Particle Density", (float)ParticleDensity);
+		ParticleUpsamplingComponent->SetNiagaraVariableInt(
+			"User.Upscaling", Upscaling);
+		ParticleUpsamplingComponent->SetNiagaraVariableFloat(
+			"User.Ease Step Size", EaseStepSize);
+	}
 #else
 	ParticleSystemComponent->SetVariableInt(FName("User.Target Particle Count"), Exists.Num());
-	ParticleUpsamplingComponent->SetVariableInt(FName("User.Target Particle Count"), Exists.Num());
+
+	if (bEnableParticleUpsampling)
+	{
+		ParticleUpsamplingComponent->SetVariableInt(
+			FName("User.Target Particle Count"), Exists.Num());
+		ParticleUpsamplingComponent->SetVariableFloat(
+			FName("User.Particle Density"), (float)ParticleDensity);
+		ParticleUpsamplingComponent->SetVariableInt(
+			FName("User.Upscaling"), Upscaling);
+		ParticleUpsamplingComponent->SetNiagaraVariableFloat(
+			"User.Ease Step Size", EaseStepSize);
+	}
+
 #endif
 
 	const int32 NumParticles = Positions.Num();
@@ -1803,16 +1858,19 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		ParticleSystemComponent, TEXT("Velocities"), Velocities);
 
 	// Set upsampling data.
-	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-		ParticleUpsamplingComponent, "Positions And Scales", PositionsAndScale);
-	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
-		ParticleUpsamplingComponent, TEXT("Velocities"), Velocities);
-	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-		ParticleUpsamplingComponent, "Orientations", Orientations);
-	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayBool(
-		ParticleUpsamplingComponent, "Exists", Exists);
-	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayFloat(
-		ParticleUpsamplingComponent, "Masses", Masses);
+	if (bEnableParticleUpsampling)
+	{
+		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
+			ParticleUpsamplingComponent, "Positions And Scales", PositionsAndScale);
+		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
+			ParticleUpsamplingComponent, TEXT("Velocities"), Velocities);
+		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
+			ParticleUpsamplingComponent, "Orientations", Orientations);
+		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayBool(
+			ParticleUpsamplingComponent, "Exists", Exists);
+		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayFloat(
+			ParticleUpsamplingComponent, "Masses", Masses);
+	}
 }
 
 void AAGX_Terrain::UpdateLandscapeMaterialParameters()

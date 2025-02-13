@@ -333,6 +333,18 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
 		Meta = (EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling"))
+	bool bUseTerrainMaterialDensity = false;
+
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
+		Meta =
+			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling && !bUseTerrainMaterialDensity",
+			 ClampMin = "50", UIMin = "50", UIMax = "10000"))
+	int32 ParticleDensity = 1220;
+
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
+		Meta = (EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling"))
 	bool bEnableVoxelSize = false;
 
 	UPROPERTY(
@@ -428,9 +440,11 @@ private:
 	void UpdateDisplacementMap();
 	void ClearDisplacementMap();
 	bool InitializeParticleSystem();
+	bool InitializeParticleUpsamplingSystem();
 	bool InitializeParticleSystemComponent();
 	bool InitializeParticleUpsamplingComponent();
 	void UpdateParticlesArrays();
+
 #if WITH_EDITOR
 	void InitPropertyDispatcher();
 #endif
