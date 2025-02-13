@@ -230,6 +230,13 @@ public:
 	int32 GetNumParticles() const;
 
 	/**
+	 * If a Particle Upsampling System Component has been spawned by the Terrain, this function will
+	 * return it. Returns nullptr otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
+	UNiagaraComponent* GetSpawnedParticleUpsamplingComponent();
+
+	/**
 	 * Deprecated. Use Shovel Components instead.
 	 *
 	 * A list of the rigid body actors that should be used as terrain shovels.
@@ -308,27 +315,30 @@ public:
 		Meta = (EditCondition = "bEnableParticleRendering"))
 	bool bEnableParticleUpsampling = false;
 
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Terrain Particle Upsampling", 
+		Meta = (EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling"))
+	UNiagaraSystem* ParticleUpsamplingAsset;
+
 	/**
 	* The desired upscaling factor which the renderer will try to achieve.
 	*/
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
 		Meta =
-			(EditCondition = "bEnableParticleUpsampling", ClampMin = "1", UIMin = "1", 
+			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling", ClampMin = "1", UIMin = "1", 
 				UIMax = "10000"))
 	int32 Upscaling = 100;
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
-		Meta = (EditCondition = "bEnableParticleUpsampling"))
+		Meta = (EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling"))
 	bool bEnableVoxelSize = false;
-
-	
 
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
 		Meta =
-			(EditCondition = "bEnableVoxelSize", UIMin = "0.01",
+			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling && bEnableVoxelSize", UIMin = "0.01",
 			 UIMax = "1000"))
 	double VoxelSize = 0.05;
 
@@ -337,7 +347,7 @@ public:
 	*/
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
-		Meta = (EditCondition = "bEnableParticleUpsampling", UIMin = "0.1")
+		Meta = (EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling", UIMin = "0.1")
 	)
 	double EaseStepSize = 0.1;
 	
@@ -346,7 +356,7 @@ public:
 	*/
 	UPROPERTY(
 		EditAnywhere, BlueprintReadWrite, Category = "AGX Terrain Particle Upsampling",
-		Meta = (EditCondition = "bEnableParticleUpsampling"))
+		Meta = (EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling"))
 	TEnumAsByte<enum EAGX_ParticleUpsamplingRenderMode> RenderMode;
 
 	/** Whether shovel active zone should be rendered or not. */
@@ -419,6 +429,7 @@ private:
 	void ClearDisplacementMap();
 	bool InitializeParticleSystem();
 	bool InitializeParticleSystemComponent();
+	bool InitializeParticleUpsamplingComponent();
 	void UpdateParticlesArrays();
 #if WITH_EDITOR
 	void InitPropertyDispatcher();
@@ -488,6 +499,9 @@ private:
 
 	// Particle related variables.
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
+
+	// Upsampling related variables.
+	UNiagaraComponent* ParticleUpsamplingComponent = nullptr;
 
 	/**
 	 * Thread safe convenience function for reading heights from the source Landscape.
