@@ -1777,8 +1777,10 @@ void AAGX_Terrain::UpdateParticlesArrays()
 							 : NativeBarrier.GetParticleDataById(ToInclude);
 
 	// Use terrain density, otherwise use user parameter
+	// Need to divide by 1000 since the TerrainMaterial density is kg/m^3,
+	// we want to convert it to g/cm^2
 	int PDensity = (bUseTerrainMaterialDensity && TerrainMaterial != nullptr)
-					   ? PDensity = TerrainMaterial->GetDensity()
+					   ? PDensity = (TerrainMaterial->GetDensity()/1000)
 					   : ParticleDensity;
 
 #if 1
