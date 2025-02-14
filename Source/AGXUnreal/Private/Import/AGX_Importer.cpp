@@ -31,6 +31,10 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Vehicle/TrackBarrier.h"
 
+// Unreal Engine includes.
+#include "UObject/Package.h"
+
+
 namespace AGX_Importer_helpers
 {
 	void PostCreateComponent(UActorComponent& Component, AActor& Owner, const FGuid& SessionGuid)

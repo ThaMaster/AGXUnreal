@@ -5,6 +5,8 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
+class UActorComponent;
+
 class AGXUNREAL_API FAGX_ImportRuntimeUtilities
 {
 public:

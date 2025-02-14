@@ -14,6 +14,8 @@
 // Unreal Engine includes.
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
+#include "Materials/Material.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Math/UnrealMathUtility.h"
 #include "Misc/EngineVersionComparison.h"
 #include "PhysicsEngine/BodySetup.h"
@@ -22,6 +24,7 @@
 #include "RHIGPUReadback.h"
 #include "StaticMeshAttributes.h"
 #include "StaticMeshResources.h"
+#include "UObject/Package.h"
 
 // Standard library includes.
 #include <limits>

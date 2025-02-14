@@ -6,6 +6,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
+#include "AGX_LogCategory.h"
 #include "AGX_ObserverFrameComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
@@ -31,6 +32,7 @@
 #include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
 #include "Engine/Blueprint.h"
 #include "Engine/SCS_Node.h"
 

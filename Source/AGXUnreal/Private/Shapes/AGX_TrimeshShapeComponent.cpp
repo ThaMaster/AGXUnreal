@@ -13,6 +13,7 @@
 // Unreal Engine includes.
 #include "Engine/StaticMesh.h"
 #include "Components/StaticMeshComponent.h"
+#include "Materials/Material.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 UAGX_TrimeshShapeComponent::UAGX_TrimeshShapeComponent()

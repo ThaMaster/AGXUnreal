@@ -8,6 +8,8 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+
 
 class FRigidBodyBarrier;
 class FShapeBarrier;

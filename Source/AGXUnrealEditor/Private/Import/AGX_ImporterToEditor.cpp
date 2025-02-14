@@ -20,10 +20,15 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
+#include "Components/StaticMeshComponent.h"
+#include "Editor.h"
 #include "Engine/SCS_Node.h"
 #include "FileHelpers.h"
+#include "Materials/MaterialInterface.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "PackageTools.h"
+#include "Subsystems/AssetEditorSubsystem.h"
+#include "UObject/MetaData.h"
 
 // Standard library includes.
 #include <type_traits>

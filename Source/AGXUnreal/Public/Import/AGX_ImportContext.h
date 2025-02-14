@@ -12,8 +12,9 @@ class UAGX_ModelSourceComponent;
 class UAGX_RigidBodyComponent;
 class UAGX_ShapeComponent;
 class UAGX_ShapeMaterial;
-class UStaticMesh;
 class UMaterialInstanceConstant;
+class UMaterialInterface;
+class UStaticMesh;
 class UStaticMeshComponent;
 
 /*
