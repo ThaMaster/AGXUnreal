@@ -215,8 +215,14 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(AActor& Owner)
 
 	UAGX_ModelSourceComponent* Component = NewObject<UAGX_ModelSourceComponent>(&Owner);
 	Component->Rename(*Name);
-	Component->FilePath = Context.Settings->FilePath;
-	Component->bIgnoreDisabledTrimeshes = Context.Settings->bIgnoreDisabledTrimeshes;
+
+	/*
+	* The Model Source Component cannot be filled here since it relies on things like
+	* asset paths to render materials of the import. Therefore, the Component is only
+	* created and prepared, and any high-level importer using this importer
+	* needs to fill in the data if it is wanted.
+	*/
+
 	AGX_Importer_helpers::PostCreateComponent(*Component, Owner, Context.SessionGuid);
 	Context.ModelSourceComponent = Component;
 	return EAGX_ImportResult::Success;
@@ -234,19 +240,19 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 		Result |= AddComponent<UAGX_RigidBodyComponent, FRigidBodyBarrier>(Body, *Root, OutActor);
 
 	for (const auto& Shape : SimObjects.GetBoxShapes())
-		AddShape<UAGX_BoxShapeComponent>(Shape, OutActor);
+		Result |= AddShape<UAGX_BoxShapeComponent>(Shape, OutActor);
 
 	for (const auto& Shape : SimObjects.GetCapsuleShapes())
-		AddShape<UAGX_CapsuleShapeComponent>(Shape, OutActor);
+		Result |= AddShape<UAGX_CapsuleShapeComponent>(Shape, OutActor);
 
 	for (const auto& Shape : SimObjects.GetCylinderShapes())
-		AddShape<UAGX_CylinderShapeComponent>(Shape, OutActor);
+		Result |= AddShape<UAGX_CylinderShapeComponent>(Shape, OutActor);
 
 	for (const auto& Shape : SimObjects.GetSphereShapes())
-		AddShape<UAGX_SphereShapeComponent>(Shape, OutActor);
+		Result |= AddShape<UAGX_SphereShapeComponent>(Shape, OutActor);
 
 	for (const auto& Shape : SimObjects.GetTrimeshShapes())
-		AddTrimeshShape(Shape, OutActor);
+		Result |= AddTrimeshShape(Shape, OutActor);
 
 	Result |= AddModelSourceComponent(OutActor);
 

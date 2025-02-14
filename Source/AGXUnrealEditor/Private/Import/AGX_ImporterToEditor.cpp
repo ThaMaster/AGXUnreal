@@ -478,8 +478,9 @@ namespace AGX_ImporterToEditor_helpers
 	 * function.
 	 */
 	template <typename TComponent>
-	USCS_Node* GetCorrespondingAttachParent(const UBlueprint& Bp,
-		const FAGX_SCSNodeCollection& Nodes, const TComponent& ReimportedComponent)
+	USCS_Node* GetCorrespondingAttachParent(
+		const UBlueprint& Bp, const FAGX_SCSNodeCollection& Nodes,
+		const TComponent& ReimportedComponent)
 	{
 		USceneComponent* Parent = ReimportedComponent.GetAttachParent();
 		AGX_CHECK(Parent != nullptr);
@@ -583,6 +584,50 @@ namespace AGX_ImporterToEditor_helpers
 
 		return Node;
 	}
+
+	/**
+	 * The FAGX_Importer only creates the Model Source Component but does not populate
+	 * its contents since it cannot know the editor only information that is needed by
+	 * e.g. render materials.
+	 */
+	EAGX_ImportResult FinalizeModelSourceComponent(const FAGX_ImportContext& Context, const FString& RootDir)
+	{
+		UAGX_ModelSourceComponent* Component = Context.ModelSourceComponent;
+
+		if (Component != nullptr)
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("FinalizeModelSourceComponent called, but a ModelSourceComponent could not be "
+					 "found in the given FAGX_ImportContext."));
+			return EAGX_ImportResult::FatalError;
+		}
+
+		Component->FilePath = Context.Settings->FilePath;
+		Component->bIgnoreDisabledTrimeshes = Context.Settings->bIgnoreDisabledTrimeshes;
+
+		for (const auto& [Guid, CollisionComponent] : *Context.CollisionStaticMeshCom)
+		{
+			const FString Name = CollisionComponent->GetName();
+			Component->StaticMeshComponentToOwningTrimesh.Add(Name, Guid);
+		}
+
+		for (const auto& [Guid, RenderComponent] : *Context.RenderStaticMeshCom)
+		{
+			const FString Name = RenderComponent->GetName();
+			Component->StaticMeshComponentToOwningShape.Add(Name, Guid);
+		}
+
+		for (const auto& [Guid, Material] : *Context.RenderMaterials)
+		{
+			const FString RelativePath = FAGX_EditorUtilities::GetRelativePath(
+				FPaths::GetPath(RootDir), Material->GetPathName());
+
+			Component->UnrealMaterialToImportGuid.Add(RelativePath, Guid);
+		}
+
+		return EAGX_ImportResult::Success;
+	}
 }
 
 UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
@@ -595,6 +640,9 @@ UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
 
 	ModelName = AGX_ImporterToEditor_helpers::MakeModelName(Result.Actor->GetName());
 	RootDirectory = MakeRootDirectoryPath(ModelName);
+
+	if (!ValidateImportEnum(FinalizeModelSourceComponent(*Result.Context, RootDirectory)))
+		return nullptr;
 
 	WriteAssetsToDisk(RootDirectory, Result.Context);
 
