@@ -330,23 +330,42 @@ public:
 				UIMax = "10000"))
 	int32 Upscaling = 100;
 
+	/**
+	* Toggle between using the terrain materials density or user specified
+	* density for fine particle calculations. 
+	* 
+	* Will use user specified value if no terrain material has been set.
+	*/
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
 		Meta = (EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling"))
 	bool bUseTerrainMaterialDensity = false;
 
+	/**
+	* User defined density to use for fine particle calculations.
+	* 
+	* (Measured in g/cm^3)
+	*/
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
 		Meta =
 			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling && !bUseTerrainMaterialDensity",
-			 ClampMin = "50", UIMin = "50", UIMax = "10000"))
-	int32 ParticleDensity = 1220;
+			 ClampMin = "0.01", UIMin = "0.01", UIMax = "3.0"))
+	double ParticleDensity = 1.22;
 
+	/**
+	* Toggle between using the default voxel size or use user defined size.
+	*/
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
 		Meta = (EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling"))
 	bool bEnableVoxelSize = false;
 
+	/**
+	* The size of how large a singe voxel will be when setting up the data grids.
+	* 
+	* Really small voxel size will decrease performance singificantly.
+	*/
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
 		Meta =
