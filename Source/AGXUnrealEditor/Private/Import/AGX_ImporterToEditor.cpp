@@ -683,6 +683,10 @@ bool FAGX_ImporterToEditor::Reimport(
 		return false;
 
 	RootDirectory = GetModelDirectoryPathFromBaseBlueprint(BaseBP);
+
+	if (!ValidateImportEnum(FinalizeModelSourceComponent(*Result.Context, RootDirectory)))
+		return false;
+
 	const auto UpdateResult = UpdateBlueprint(BaseBP, Importer.GetContext());
 	if (!ValidateImportEnum(UpdateResult))
 		return false;
