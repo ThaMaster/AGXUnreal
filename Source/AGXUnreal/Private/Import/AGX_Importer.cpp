@@ -277,11 +277,12 @@ EAGX_ImportResult FAGX_Importer::AddTrimeshShape(const FShapeBarrier& Shape, AAc
 
 	if (Context.Settings->bIgnoreDisabledTrimeshes && !Shape.GetEnableCollisions())
 	{
+		const FGuid Guid = Shape.GetShapeGuid();
 		// We don't want to import the Trimesh but we do want to import the Render Data.
-		// For simplicity, the have imported the Trimesh as usual above, but will not remove the
+		// For simplicity, the have imported the Trimesh as usual above, but will now remove the
 		// Trimesh Component. The Trimesh Component will know to not create a collision Mesh, so we
 		// don't need to consider that.
-		auto Trimesh = Context.Shapes->FindRef(Shape.GetShapeGuid());
+		auto Trimesh = Context.Shapes->FindRef(Guid);
 		AGX_CHECK(Trimesh != nullptr);
 		if (Trimesh == nullptr)
 		{
@@ -292,6 +293,7 @@ EAGX_ImportResult FAGX_Importer::AddTrimeshShape(const FShapeBarrier& Shape, AAc
 			return EAGX_ImportResult::RecoverableErrorsOccured;
 		}
 
+		Context.Shapes->Remove(Guid);
 		auto Res = FAGX_ObjectUtilities::RemoveComponentAndPromoteChildren(Trimesh, &OutActor);
 		AGX_CHECK(Res);
 	}

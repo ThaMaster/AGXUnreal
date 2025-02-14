@@ -11,6 +11,7 @@
 #include "Import/AGX_ImporterSettings.h"
 #include "Import/AGX_ModelSourceComponent.h"
 #include "Import/AGX_SCSNodeCollection.h"
+#include "Materials/AGX_ShapeMaterial.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -192,6 +193,9 @@ namespace AGX_ImporterToEditor_helpers
 		return BlueprintChild;
 	}
 
+	/**
+	 * Important, the TransientToAsset lookup only works for properties not inside arrays.
+	 */
 	void CopyPropertyRecursive(
 		const void* Archetype, const void* Source, void* OutDest, const FProperty* Property,
 		const TMap<UObject*, UObject*>& TransientToAsset)
@@ -278,6 +282,16 @@ namespace AGX_ImporterToEditor_helpers
 		}
 
 		return true;
+	}
+
+	// Because CopyProperties does not handle TransientToAsset objects inside arrays.
+	template <typename T>
+	void FixupRenderMaterial(const TMap<UObject*, UObject*>& TransientToAsset, T& OutMesh)
+	{
+		UMaterialInterface* Asset =
+			Cast<UMaterialInterface>(TransientToAsset.FindRef(OutMesh.GetMaterial(0)));
+		if (Asset != nullptr)
+			OutMesh.SetMaterial(0, Asset);
 	}
 
 	bool ValidateImportEnum(EAGX_ImportResult Result)
@@ -522,11 +536,50 @@ namespace AGX_ImporterToEditor_helpers
 		return Nodes.RootComponent; // Default.
 	}
 
+	void DestroyTransientAssets(FAGX_ImportContext& Context)
+	{
+		auto TransientPackage = GetTransientPackage();
+		auto DestroyIfTransient = [TransientPackage](UObject* Obj)
+		{
+			if (Obj != nullptr && Obj->GetPackage() == TransientPackage)
+				Obj->ConditionalBeginDestroy();
+		};
+
+		if (Context.RenderMaterials != nullptr)
+		{
+			for (auto& [Unused, Obj] : *Context.RenderMaterials)
+				DestroyIfTransient(Obj);
+		}
+
+		if (Context.RenderStaticMeshes != nullptr)
+		{
+			for (auto& [Unused, Obj] : *Context.RenderStaticMeshes)
+				DestroyIfTransient(Obj);
+		}
+
+		if (Context.CollisionStaticMeshes != nullptr)
+		{
+			for (auto& [Unused, Obj] : *Context.CollisionStaticMeshes)
+				DestroyIfTransient(Obj);
+		}
+
+		if (Context.MSThresholds != nullptr)
+		{
+			for (auto& [Unused, Obj] : *Context.MSThresholds)
+				DestroyIfTransient(Obj);
+		}
+
+		if (Context.ShapeMaterials != nullptr)
+		{
+			for (auto& [Unused, Obj] : *Context.ShapeMaterials)
+				DestroyIfTransient(Obj);
+		}
+	}
+
 	template <typename TComponent>
 	USCS_Node* FindNodeAndResolveConflicts(
 		const FGuid& Guid, const TComponent& ReimportedComponent,
-		const FAGX_SCSNodeCollection& Nodes, TMap<FGuid, USCS_Node*>& OutGuidToNode,
-		UBlueprint& OutBlueprint)
+		TMap<FGuid, USCS_Node*>& OutGuidToNode, UBlueprint& OutBlueprint)
 	{
 		const FName Name(*ReimportedComponent.GetName());
 		USCS_Node* Node = OutGuidToNode.FindRef(Guid);
@@ -542,8 +595,7 @@ namespace AGX_ImporterToEditor_helpers
 	template <>
 	USCS_Node* FindNodeAndResolveConflicts<UStaticMeshComponent>(
 		const FGuid& Guid, const UStaticMeshComponent& ReimportedComponent,
-		const FAGX_SCSNodeCollection& Nodes, TMap<FGuid, USCS_Node*>& OutGuidToNode,
-		UBlueprint& OutBlueprint)
+		TMap<FGuid, USCS_Node*>& OutGuidToNode, UBlueprint& OutBlueprint)
 	{
 		// StaticMeshComponents we look up by using the name which includes the guid.
 		// We expect no conflicts.
@@ -559,7 +611,7 @@ namespace AGX_ImporterToEditor_helpers
 	{
 		const FName Name(*ReimportedComponent.GetName());
 		USCS_Node* Node = FindNodeAndResolveConflicts(
-			Guid, ReimportedComponent, Nodes, OutGuidToNode, OutBlueprint);
+			Guid, ReimportedComponent, OutGuidToNode, OutBlueprint);
 
 		USCS_Node* Parent = GetCorrespondingAttachParent(OutBlueprint, Nodes, ReimportedComponent);
 		AGX_CHECK(Parent != nullptr);
@@ -576,15 +628,17 @@ namespace AGX_ImporterToEditor_helpers
 		{
 			Node = OutBlueprint.SimpleConstructionScript->CreateNode(
 				ReimportedComponent.GetClass(), Name);
-
 			Parent->AddChildNode(Node);
+			AGX_CHECK(OutGuidToNode.FindRef(Guid) == nullptr);
+			OutGuidToNode.Add(Guid, Node);
 		}
-		else if (!Node->GetVariableName().IsEqual(Name)) // Node existed.
+		else // Node existed.
 		{
 			// We don't need to handle transform explicitly here, it is copied over later to the
 			// component template owned by this node.
 			FAGX_BlueprintUtilities::ReParentNode(OutBlueprint, *Node, *Parent, false);
-			Node->SetVariableName(Name);
+			if (!Node->GetVariableName().IsEqual(Name))
+				Node->SetVariableName(Name);
 		}
 
 		return Node;
@@ -595,7 +649,8 @@ namespace AGX_ImporterToEditor_helpers
 	 * its contents since it cannot know the editor only information that is needed by
 	 * e.g. render materials.
 	 */
-	EAGX_ImportResult FinalizeModelSourceComponent(const FAGX_ImportContext& Context, const FString& RootDir)
+	EAGX_ImportResult FinalizeModelSourceComponent(
+		const FAGX_ImportContext& Context, const FString& RootDir)
 	{
 		UAGX_ModelSourceComponent* Component = Context.ModelSourceComponent;
 
@@ -691,6 +746,8 @@ bool FAGX_ImporterToEditor::Reimport(
 	if (!ValidateImportEnum(UpdateResult))
 		return false;
 
+	DestroyTransientAssets(*Result.Context);
+
 	if (Settings.bOpenBlueprintEditorAfterImport && OpenBlueprint != nullptr)
 		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(OpenBlueprint);
 
@@ -715,21 +772,23 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 		return &Source; // We are done.
 	}
 
+	AGX_CHECK(Asset != &Source);
+
 	// At this point we have identified an existing Asset that we need to update using Source.
 
 	if constexpr (std::is_same_v<T, UStaticMesh>)
 	{
 		// UStaticMesh needs some special handling, because it is a complicated object which also
 		// can take a lot of time creating/building. If the new Static Mesh and the old one is
-		// "equal", then we do nothing except add an entry to the TransientToAsset map so that we
-		// never copy the new one over to a component during reimport. If they are not equal, we
-		// update the old one, just like for any other assets during reimport.
+		// "equal", then we do nothing except add an entry to the TransientToAsset map and update
+		// the session guid. If they are not equal, we update the old one, just like for any other
+		// assets during reimport.
 		if (!AGX_MeshUtilities::AreStaticMeshesEqual(&Source, Asset))
 		{
 			bool Result = AGX_MeshUtilities::CopyStaticMesh(&Source, Asset);
 			AGX_CHECK(Result);
-			AddSessionGuid(Context.SessionGuid, *Asset);
-			Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
+			Result = CopyProperties(Source, *Asset, TransientToAsset);
+			FixupRenderMaterial(TransientToAsset, *Asset); // CopyProperties does not handle arrays.
 			AGX_CHECK(Result);
 		}
 	}
@@ -737,13 +796,13 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 	{
 		// For shared assets, we might be copying and saving multiple times here, but we assume
 		// these operations are relatively cheap, and keep the code simple here.
-		bool Result = FAGX_ObjectUtilities::CopyProperties(Source, *Asset, false);
-		AGX_CHECK(Result);
-		AddSessionGuid(Context.SessionGuid, *Asset);
-		Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
+		bool Result = CopyProperties(Source, *Asset, TransientToAsset);
 		AGX_CHECK(Result);
 	}
 
+	AddSessionGuid(Context.SessionGuid, *Asset);
+	bool Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
+	AGX_CHECK(Result);
 	TransientToAsset.Add(&Source, Asset);
 	return Asset;
 }
@@ -872,7 +931,13 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
+			{
 				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+
+				// CopyProperties does not handle arrays such as render materials.
+				FixupRenderMaterial(
+					TransientToAsset, *Cast<UStaticMeshComponent>(N->ComponentTemplate));
+			}
 		}
 	}
 
@@ -885,7 +950,13 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
+			{
 				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+
+				// CopyProperties does not handle arrays such as render materials.
+				FixupRenderMaterial(
+					TransientToAsset, *Cast<UStaticMeshComponent>(N->ComponentTemplate));
+			}
 		}
 	}
 

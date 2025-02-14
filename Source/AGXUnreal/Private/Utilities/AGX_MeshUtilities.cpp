@@ -2156,6 +2156,7 @@ bool AGX_MeshUtilities::CopyStaticMesh(UStaticMesh* Source, UStaticMesh* Destina
 	}
 
 	{
+		Destination->GetStaticMaterials().Empty();
 		int32 MaterialIndex = 0;
 		while (auto Mat = Source->GetMaterial(MaterialIndex))
 		{
