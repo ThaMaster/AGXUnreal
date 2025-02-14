@@ -349,7 +349,7 @@ namespace AGX_ShapeComponent_helpers
 		const FTransform RelTransform = Shape.GetGeometryToShapeTransform().Inverse();
 
 		const FString ComponentName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
-			&Owner, FString::Printf(TEXT("RenderMesh_%s"), *RenderData.GetGuid().ToString()));
+			&Owner, FString::Printf(TEXT("RenderMesh_%s"), *Shape.GetShapeGuid().ToString()));
 		UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(&Owner, *ComponentName);
 		FAGX_ImportRuntimeUtilities::WriteSessionGuid(*Component, Context.SessionGuid);
 		Component->SetMaterial(0, Material);
