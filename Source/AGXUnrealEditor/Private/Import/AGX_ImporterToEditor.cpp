@@ -599,7 +599,7 @@ namespace AGX_ImporterToEditor_helpers
 	{
 		UAGX_ModelSourceComponent* Component = Context.ModelSourceComponent;
 
-		if (Component != nullptr)
+		if (Component == nullptr)
 		{
 			UE_LOG(
 				LogAGX, Error,
