@@ -11,3 +11,24 @@ void FAGX_ImportRuntimeUtilities::WriteSessionGuid(
 	Component.ComponentTags.Empty();
 	Component.ComponentTags.Add(*SessionGuid.ToString());
 }
+
+void FAGX_ImportRuntimeUtilities::WriteSessionGuidToAssetType(
+	UObject& Object, const FGuid& SessionGuid)
+{
+	UMetaData* MetaData = Object.GetOutermost()->GetMetaData();
+	MetaData->SetValue(&Object, TEXT("AGX_ImportSessionGuid"), *SessionGuid.ToString());
+}
+
+void FAGX_ImportRuntimeUtilities::OnComponentCreated(
+	UActorComponent& Component, AActor& Owner, const FGuid& SessionGuid)
+{
+	WriteSessionGuid(Component, SessionGuid);
+	Component.SetFlags(RF_Transactional);
+	Owner.AddInstanceComponent(&Component);
+}
+
+void FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(UObject& Object, const FGuid& SessionGuid)
+{
+	UMetaData* MetaData = Object.GetOutermost()->GetMetaData();
+	MetaData->SetValue(&Object, TEXT("AGX_ImportSessionGuid"), *SessionGuid.ToString());
+}

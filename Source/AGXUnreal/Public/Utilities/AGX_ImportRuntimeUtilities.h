@@ -18,4 +18,10 @@ public:
 	 * import/reimport session.
 	 */
 	static void WriteSessionGuid(UActorComponent& Component, const FGuid& SessionGuid);
+
+	static void WriteSessionGuidToAssetType(UObject& Object, const FGuid& SessionGuid);
+
+	static void OnComponentCreated(UActorComponent& OutComponent, AActor& Owner, const FGuid& SessionGuid);
+
+	static void OnAssetTypeCreated(UObject& OutObject, const FGuid& SessionGuid);
 };

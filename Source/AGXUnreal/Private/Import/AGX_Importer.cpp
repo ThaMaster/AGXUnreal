@@ -37,13 +37,6 @@
 
 namespace AGX_Importer_helpers
 {
-	void PostCreateComponent(UActorComponent& Component, AActor& Owner, const FGuid& SessionGuid)
-	{
-		FAGX_ImportRuntimeUtilities::WriteSessionGuid(Component, SessionGuid);
-		Component.SetFlags(RF_Transactional);
-		Owner.AddInstanceComponent(&Component);
-	}
-
 	AActor* CreateActor(const FString& Name, const FGuid& SessionGuid)
 	{
 		if (Name.IsEmpty())
@@ -62,7 +55,7 @@ namespace AGX_Importer_helpers
 		}
 
 		auto Root = NewObject<USceneComponent>(NewActor, FName(TEXT("DefaultSceneRoot")));
-		PostCreateComponent(*Root, *NewActor, SessionGuid);
+		FAGX_ImportRuntimeUtilities::OnComponentCreated(*Root, *NewActor, SessionGuid);
 		NewActor->SetRootComponent(Root);
 
 		return NewActor;
@@ -199,7 +192,7 @@ EAGX_ImportResult FAGX_Importer::AddComponent(
 	Component->CopyFrom(Barrier, &Context);
 	Component->AttachToComponent(&Parent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
-	AGX_Importer_helpers::PostCreateComponent(*Component, OutActor, Context.SessionGuid);
+	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
 	ProcessedComponents.Add(Guid, Component);
 	return EAGX_ImportResult::Success;
 }
@@ -227,7 +220,7 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(AActor& Owner)
 	* needs to fill in the data if it is wanted.
 	*/
 
-	AGX_Importer_helpers::PostCreateComponent(*Component, Owner, Context.SessionGuid);
+	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, Owner, Context.SessionGuid);
 	Context.ModelSourceComponent = Component;
 	return EAGX_ImportResult::Success;
 }

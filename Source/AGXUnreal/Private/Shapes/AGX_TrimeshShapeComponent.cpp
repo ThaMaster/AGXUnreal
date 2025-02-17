@@ -147,11 +147,13 @@ namespace TrimshShapeComponent_helpers
 		if (StaticMesh == nullptr)
 			return nullptr;
 
+		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*StaticMesh, Context.SessionGuid);
+
 		const FString ComponentName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 			&Owner, FString::Printf(TEXT("CollisionMesh_%s"), *Barrier.GetGuid().ToString()));
 		UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(&Owner, *ComponentName);
+		FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, Owner, Context.SessionGuid);
 
-		FAGX_ImportRuntimeUtilities::WriteSessionGuid(*Component, Context.SessionGuid);
 		Component->SetMaterial(0, Material);
 		Component->SetStaticMesh(StaticMesh);
 
@@ -163,9 +165,6 @@ namespace TrimshShapeComponent_helpers
 		const bool Visible =
 			Barrier.GetEnableCollisions() && Barrier.GetEnabled() && !Barrier.HasRenderData();
 		Component->SetVisibility(Visible);
-
-		Component->SetFlags(RF_Transactional);
-		Owner.AddInstanceComponent(Component);
 
 		Context.CollisionStaticMeshCom->Add(Barrier.GetShapeGuid(), Component);
 

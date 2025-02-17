@@ -16,6 +16,7 @@
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -49,12 +50,6 @@ namespace AGX_ImporterToEditor_helpers
 		// by closing all asset editors here first.
 		if (GEditor != nullptr)
 			GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
-	}
-
-	void WriteImportTag(UActorComponent& Component, const FGuid& SessionGuid)
-	{
-		Component.ComponentTags.Empty();
-		Component.ComponentTags.Add(*SessionGuid.ToString());
 	}
 
 	FString MakeModelName(FString SourceFilename)
@@ -412,14 +407,8 @@ namespace AGX_ImporterToEditor_helpers
 		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
 	}
 
-	void AddSessionGuid(const FGuid& SessionGuid, UObject& OutObject)
-	{
-		UMetaData* MetaData = OutObject.GetOutermost()->GetMetaData();
-		MetaData->SetValue(&OutObject, TEXT("AGX_ImportSessionGuid"), *SessionGuid.ToString());
-	}
-
 	void WriteAssetToDisk(
-		const FString& RootDir, const FString& AssetType, UObject& Object, const FGuid& SessionGuid)
+		const FString& RootDir, const FString& AssetType, UObject& Object)
 	{
 		const FString AssetName = Object.GetName();
 		const FString PackagePath =
@@ -429,7 +418,6 @@ namespace AGX_ImporterToEditor_helpers
 		Package->MarkPackageDirty();
 		Object.SetFlags(RF_Public | RF_Standalone);
 
-		AddSessionGuid(SessionGuid, Object);
 		FAGX_ObjectUtilities::SaveAsset(Object);
 	}
 
@@ -445,7 +433,7 @@ namespace AGX_ImporterToEditor_helpers
 			for (const auto& [Guid, MST] : *Context->MSThresholds)
 			{
 				if (auto SCMST = Cast<UAGX_ShapeContactMergeSplitThresholds>(MST))
-					WriteAssetToDisk(RootDir, AssetType, *SCMST, Context->SessionGuid);
+					WriteAssetToDisk(RootDir, AssetType, *SCMST);
 			}
 		}
 
@@ -454,7 +442,7 @@ namespace AGX_ImporterToEditor_helpers
 			const FString AssetType = FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName();
 			for (const auto& [Guid, Rm] : *Context->RenderMaterials)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Rm, Context->SessionGuid);
+				WriteAssetToDisk(RootDir, AssetType, *Rm);
 			}
 		}
 
@@ -464,7 +452,7 @@ namespace AGX_ImporterToEditor_helpers
 				FAGX_ImportUtilities::GetImportRenderStaticMeshDirectoryName();
 			for (const auto& [Guid, Sm] : *Context->RenderStaticMeshes)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Sm, Context->SessionGuid);
+				WriteAssetToDisk(RootDir, AssetType, *Sm);
 			}
 		}
 
@@ -474,7 +462,7 @@ namespace AGX_ImporterToEditor_helpers
 				FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName();
 			for (const auto& [Guid, Sm] : *Context->CollisionStaticMeshes)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Sm, Context->SessionGuid);
+				WriteAssetToDisk(RootDir, AssetType, *Sm);
 			}
 		}
 	}
@@ -768,7 +756,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 
 	if (Asset == nullptr)
 	{
-		WriteAssetToDisk(RootDirectory, AssetType, Source, Context.SessionGuid);
+		WriteAssetToDisk(RootDirectory, AssetType, Source);
 		return &Source; // We are done.
 	}
 
@@ -800,7 +788,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 		AGX_CHECK(Result);
 	}
 
-	AddSessionGuid(Context.SessionGuid, *Asset);
+	FAGX_ImportRuntimeUtilities::WriteSessionGuidToAssetType(*Asset, Context.SessionGuid);
 	bool Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
 	AGX_CHECK(Result);
 	TransientToAsset.Add(&Source, Asset);
@@ -889,7 +877,10 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 	// it can be correctly identified (for example in GetCorrespondingAttachParent above).
 
 	FAGX_SCSNodeCollection Nodes(Blueprint);
-	WriteImportTag(*Nodes.RootComponent->ComponentTemplate, Context.SessionGuid);
+
+	FAGX_ImportRuntimeUtilities::WriteSessionGuid(
+		*Nodes.RootComponent->ComponentTemplate, Context.SessionGuid);
+
 	EAGX_ImportResult Result = EAGX_ImportResult::Success;
 
 	if (Context.RigidBodies != nullptr)

@@ -9,6 +9,7 @@
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "Import/AGX_ImportContext.h"
 #include "Shapes/AGX_ShapeComponent.h"
+#include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 
 template <typename T>
@@ -117,6 +118,7 @@ void FAGX_ShapeContactMergeSplitProperties::CopyFrom(
 	}
 
 	Thresholds = NewObject<UAGX_ShapeContactMergeSplitThresholds>();
+	FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Thresholds, Context->SessionGuid);
 	const FString& THName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 		Thresholds->GetOuter(), FString::Printf(TEXT("AGX_SMST_%s"), *MSTGuid.ToString()));
 	Thresholds->Rename(*THName);
