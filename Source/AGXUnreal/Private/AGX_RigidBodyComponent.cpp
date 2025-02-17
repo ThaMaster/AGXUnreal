@@ -520,6 +520,7 @@ void UAGX_RigidBodyComponent::CopyFrom(
 		MergeSplitProperties.CopyFrom(Msp, Context);
 
 	SetWorldTransform(FTransform(Barrier.GetRotation(), Barrier.GetPosition()));
+
 	if (Context == nullptr || Context->RigidBodies == nullptr)
 		return;
 

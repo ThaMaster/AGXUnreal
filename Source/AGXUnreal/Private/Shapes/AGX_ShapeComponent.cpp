@@ -434,7 +434,7 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 		AGX_CHECK(Mesh != nullptr);
 		if (Mesh != nullptr)
 		{
-			Mesh->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			Mesh->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 			Context->RenderStaticMeshCom->Add(Barrier.GetShapeGuid(), Mesh);
 		}
 	}

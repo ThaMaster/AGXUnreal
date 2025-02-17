@@ -208,7 +208,7 @@ void UAGX_TrimeshShapeComponent::CopyFrom(
 	if (MeshCom == nullptr)
 		return;
 
-	const auto AttachmentRule = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
+	const auto AttachmentRule = FAttachmentTransformRules::KeepRelativeTransform;
 	MeshCom->AttachToComponent(this, AttachmentRule);
 
 	if (RenderMeshCom != nullptr)

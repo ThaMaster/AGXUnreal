@@ -200,8 +200,7 @@ EAGX_ImportResult FAGX_Importer::AddComponent(
 	const FString Name =
 		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(&OutActor, Barrier.GetName());
 	Component->CopyFrom(Barrier, &Context);
-	Component->AttachToComponent(&Parent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-
+	Component->AttachToComponent(&Parent, FAttachmentTransformRules::KeepRelativeTransform);
 	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
 	ProcessedComponents.Add(Guid, Component);
 	return EAGX_ImportResult::Success;
