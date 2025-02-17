@@ -14,6 +14,8 @@
 
 #include "AGX_ShapeMaterial.generated.h"
 
+struct FAGX_ImportContext;
+
 /**
  * Defines contacts properties between Shapes as well as properties affecting the mass
  * distribution of AGX Rigid Bodies.
@@ -142,7 +144,7 @@ public:
 
 	void CommitToAsset();
 
-	void CopyFrom(const FShapeMaterialBarrier& Source);
+	void CopyFrom(const FShapeMaterialBarrier& Source, FAGX_ImportContext* Context);
 
 	static UAGX_ShapeMaterial* CreateInstanceFromAsset(
 		UWorld* PlayingWorld, UAGX_ShapeMaterial* Source);

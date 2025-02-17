@@ -7,6 +7,7 @@
 
 struct FAGX_ImporterSettings;
 
+class UAGX_ConstraintComponent;
 class UAGX_MergeSplitThresholdsBase;
 class UAGX_ModelSourceComponent;
 class UAGX_RigidBodyComponent;
@@ -24,6 +25,7 @@ struct AGXUNREAL_API FAGX_ImportContext
 {
 	TUniquePtr<TMap<FGuid, UAGX_RigidBodyComponent*>> RigidBodies;
 	TUniquePtr<TMap<FGuid, UAGX_ShapeComponent*>> Shapes;
+	TUniquePtr<TMap<FGuid, UAGX_ConstraintComponent*>> Constraints;
 
 	// The key is the GUID of the Shape Component for which the render data Static Mesh
 	// Component has been created.

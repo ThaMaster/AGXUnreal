@@ -922,6 +922,18 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 		}
 	}
 
+	if (Context.Constraints != nullptr)
+	{
+		for (const auto& [Guid, Component] : *Context.Constraints)
+		{
+			USCS_Node* N = GetOrCreateNode(Guid, *Component, Nodes, Nodes.Constraints, Blueprint);
+			if (N == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+			else
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+		}
+	}
+
 	if (auto Component = Context.ModelSourceComponent)
 	{
 		CopyProperties(

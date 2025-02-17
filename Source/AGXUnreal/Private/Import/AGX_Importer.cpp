@@ -5,6 +5,12 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "Constraints/AGX_BallConstraintComponent.h"
+#include "Constraints/AGX_CylindricalConstraintComponent.h"
+#include "Constraints/AGX_DistanceConstraintComponent.h"
+#include "Constraints/AGX_HingeConstraintComponent.h"
+#include "Constraints/AGX_LockConstraintComponent.h"
+#include "Constraints/AGX_PrismaticConstraintComponent.h"
 #include "Constraints/AnyConstraintBarrier.h"
 #include "Constraints/BallJointBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
@@ -33,7 +39,6 @@
 
 // Unreal Engine includes.
 #include "UObject/Package.h"
-
 
 namespace AGX_Importer_helpers
 {
@@ -100,6 +105,9 @@ namespace AGX_Importer_helpers
 		if constexpr (std::is_base_of_v<UAGX_ShapeComponent, T>)
 			return *Context.Shapes.Get();
 
+		if constexpr (std::is_base_of_v<UAGX_ConstraintComponent, T>)
+			return *Context.Constraints.Get();
+
 		// Unsupported types will yield compile errors.
 	}
 
@@ -120,6 +128,7 @@ FAGX_Importer::FAGX_Importer()
 {
 	Context.RigidBodies = MakeUnique<decltype(FAGX_ImportContext::RigidBodies)::ElementType>();
 	Context.Shapes = MakeUnique<decltype(FAGX_ImportContext::Shapes)::ElementType>();
+	Context.Constraints = MakeUnique<decltype(FAGX_ImportContext::Constraints)::ElementType>();
 	Context.RenderStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.CollisionStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.RenderMaterials = MakeUnique<TMap<FGuid, UMaterialInterface*>>();
@@ -215,11 +224,11 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(AActor& Owner)
 	Component->Rename(*Name);
 
 	/*
-	* The Model Source Component cannot be filled here since it relies on things like
-	* asset paths to render materials of the import. Therefore, the Component is only
-	* created and prepared, and any high-level importer using this importer
-	* needs to fill in the data if it is wanted.
-	*/
+	 * The Model Source Component cannot be filled here since it relies on things like
+	 * asset paths to render materials of the import. Therefore, the Component is only
+	 * created and prepared, and any high-level importer using this importer
+	 * needs to fill in the data if it is wanted.
+	 */
 
 	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, Owner, Context.SessionGuid);
 	Context.ModelSourceComponent = Component;
@@ -230,31 +239,52 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	const FSimulationObjectCollection& SimObjects, AActor& OutActor)
 {
 	using namespace AGX_Importer_helpers;
-	EAGX_ImportResult Result = EAGX_ImportResult::Success;
+	EAGX_ImportResult Res = EAGX_ImportResult::Success;
 	USceneComponent* Root = OutActor.GetRootComponent();
 	check(Root != nullptr);
 
 	for (const auto& Body : SimObjects.GetRigidBodies())
-		Result |= AddComponent<UAGX_RigidBodyComponent, FRigidBodyBarrier>(Body, *Root, OutActor);
+		Res |= AddComponent<UAGX_RigidBodyComponent, FRigidBodyBarrier>(Body, *Root, OutActor);
 
 	for (const auto& Shape : SimObjects.GetBoxShapes())
-		Result |= AddShape<UAGX_BoxShapeComponent>(Shape, OutActor);
+		Res |= AddShape<UAGX_BoxShapeComponent>(Shape, OutActor);
 
 	for (const auto& Shape : SimObjects.GetCapsuleShapes())
-		Result |= AddShape<UAGX_CapsuleShapeComponent>(Shape, OutActor);
+		Res |= AddShape<UAGX_CapsuleShapeComponent>(Shape, OutActor);
 
 	for (const auto& Shape : SimObjects.GetCylinderShapes())
-		Result |= AddShape<UAGX_CylinderShapeComponent>(Shape, OutActor);
+		Res |= AddShape<UAGX_CylinderShapeComponent>(Shape, OutActor);
 
 	for (const auto& Shape : SimObjects.GetSphereShapes())
-		Result |= AddShape<UAGX_SphereShapeComponent>(Shape, OutActor);
+		Res |= AddShape<UAGX_SphereShapeComponent>(Shape, OutActor);
 
 	for (const auto& Shape : SimObjects.GetTrimeshShapes())
-		Result |= AddTrimeshShape(Shape, OutActor);
+		Res |= AddTrimeshShape(Shape, OutActor);
 
-	Result |= AddModelSourceComponent(OutActor);
+	for (const auto& C : SimObjects.GetBallConstraints())
+		Res |= AddComponent<UAGX_BallConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
 
-	return Result;
+	for (const auto& C : SimObjects.GetCylindricalConstraints())
+		Res |= AddComponent<UAGX_CylindricalConstraintComponent, FConstraintBarrier>(
+			C, *Root, OutActor);
+
+	for (const auto& C : SimObjects.GetDistanceConstraints())
+		Res |=
+			AddComponent<UAGX_DistanceConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
+
+	for (const auto& C : SimObjects.GetHingeConstraints())
+		Res |= AddComponent<UAGX_HingeConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
+
+	for (const auto& C : SimObjects.GetLockConstraints())
+		Res |= AddComponent<UAGX_LockConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
+
+	for (const auto& C : SimObjects.GetPrismaticConstraints())
+		Res |=
+			AddComponent<UAGX_PrismaticConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
+
+	Res |= AddModelSourceComponent(OutActor);
+
+	return Res;
 }
 
 template <typename TShapeComponent>

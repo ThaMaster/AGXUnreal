@@ -9,6 +9,7 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
+#include "Import/AGX_ImportContext.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Utilities/AGX_StringUtilities.h"
@@ -677,7 +678,7 @@ void UAGX_ContactMaterial::CommitToAsset()
 #if WITH_EDITOR
 			Asset->Modify();
 #endif
-			Asset->CopyFrom(*GetNative());
+			Asset->CopyFrom(*GetNative(), nullptr);
 #if WITH_EDITOR
 			FAGX_ObjectUtilities::MarkAssetDirty(*Asset);
 #endif
@@ -737,7 +738,8 @@ void UAGX_ContactMaterial::CopyFrom(const UAGX_ContactMaterial* Source)
 #undef COPY_PROPERTY
 }
 
-void UAGX_ContactMaterial::CopyFrom(const FContactMaterialBarrier& Source)
+void UAGX_ContactMaterial::CopyFrom(
+	const FContactMaterialBarrier& Source, FAGX_ImportContext* Context)
 {
 	if (!Source.HasNative())
 	{

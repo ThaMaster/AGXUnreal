@@ -8,6 +8,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
+#include "Import/AGX_ImportContext.h"
 #include "Materials/TerrainMaterialBarrier.h"
 
 // Unreal Engine includes.
@@ -516,7 +517,7 @@ void UAGX_TerrainMaterial::Serialize(FArchive& Archive)
 	TerrainCompaction.Serialize(Archive);
 }
 
-void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
+void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source, FAGX_ImportContext* Context)
 {
 	TerrainBulk = FAGX_TerrainBulkProperties();
 	TerrainBulk.AdhesionOverlapFactor = Source.GetAdhesionOverlapFactor();

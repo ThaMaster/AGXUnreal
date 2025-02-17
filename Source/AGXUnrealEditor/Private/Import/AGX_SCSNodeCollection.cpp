@@ -75,51 +75,9 @@ FAGX_SCSNodeCollection::FAGX_SCSNodeCollection(const UBlueprint& Bp)
 		}
 		else if (auto Co = Cast<UAGX_ConstraintComponent>(Component))
 		{
-			if (auto Hi = Cast<UAGX_HingeConstraintComponent>(Component))
-			{
-				AGX_CHECK(!HingeConstraints.Contains(Hi->ImportGuid));
-				if (Hi->ImportGuid.IsValid())
-					HingeConstraints.Add(Hi->ImportGuid, Node);
-			}
-			else if (auto Pr = Cast<UAGX_PrismaticConstraintComponent>(Component))
-			{
-				AGX_CHECK(!PrismaticConstraints.Contains(Pr->ImportGuid));
-				if (Pr->ImportGuid.IsValid())
-					PrismaticConstraints.Add(Pr->ImportGuid, Node);
-			}
-			else if (auto Ba = Cast<UAGX_BallConstraintComponent>(Component))
-			{
-				AGX_CHECK(!BallConstraints.Contains(Ba->ImportGuid));
-				if (Ba->ImportGuid.IsValid())
-					BallConstraints.Add(Ba->ImportGuid, Node);
-			}
-			else if (auto Cy = Cast<UAGX_CylindricalConstraintComponent>(Component))
-			{
-				AGX_CHECK(!CylindricalConstraints.Contains(Cy->ImportGuid));
-				if (Cy->ImportGuid.IsValid())
-					CylindricalConstraints.Add(Cy->ImportGuid, Node);
-			}
-			else if (auto Di = Cast<UAGX_DistanceConstraintComponent>(Component))
-			{
-				AGX_CHECK(!DistanceConstraints.Contains(Di->ImportGuid));
-				if (Di->ImportGuid.IsValid())
-					DistanceConstraints.Add(Di->ImportGuid, Node);
-			}
-			else if (auto Lo = Cast<UAGX_LockConstraintComponent>(Component))
-			{
-				AGX_CHECK(!LockConstraints.Contains(Lo->ImportGuid));
-				if (Lo->ImportGuid.IsValid())
-					LockConstraints.Add(Lo->ImportGuid, Node);
-			}
-			else
-			{
-				UE_LOG(
-					LogAGX, Error,
-					TEXT("FAGX_SCSNodeCollection found constraint node: '%s' with unsupported "
-						 "type %s."),
-					*Node->GetName(), *Component->GetClass()->GetName());
-				AGX_CHECK(false);
-			}
+			AGX_CHECK(!Constraints.Contains(Co->ImportGuid));
+			if (Co->ImportGuid.IsValid())
+				Constraints.Add(Co->ImportGuid, Node);
 		}
 		else if (auto Re = Cast<UAGX_ModelSourceComponent>(Component))
 		{

@@ -19,6 +19,7 @@
 #include "AGX_TerrainMaterial.generated.h"
 
 class UAGX_ShapeMaterial;
+struct FAGX_ImportContext;
 
 /**
  * Defines the material for a terrain.
@@ -279,7 +280,7 @@ public:
 
 	virtual void Serialize(FArchive& Archive) override;
 
-	void CopyFrom(const FTerrainMaterialBarrier& Source);
+	void CopyFrom(const FTerrainMaterialBarrier& Source, FAGX_ImportContext* Context);
 
 	FTerrainMaterialBarrier* GetOrCreateTerrainMaterialNative(UWorld* PlayingWorld);
 	UAGX_TerrainMaterial* GetOrCreateInstance(UWorld* PlayingWorld);

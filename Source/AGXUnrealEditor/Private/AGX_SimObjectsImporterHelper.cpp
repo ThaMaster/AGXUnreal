@@ -1056,7 +1056,7 @@ void FAGX_SimObjectsImporterHelper::UpdateRenderDataComponent(
 void FAGX_SimObjectsImporterHelper::UpdateAndSaveShapeMaterialAsset(
 	const FShapeMaterialBarrier& Barrier, UAGX_ShapeMaterial& Asset)
 {
-	Asset.CopyFrom(Barrier);
+	Asset.CopyFrom(Barrier, nullptr);
 	FAGX_EditorUtilities::RenameAsset(Asset, Barrier.GetName(), "ShapeMaterial");
 	FAGX_ObjectUtilities::SaveAsset(Asset);
 
@@ -1185,7 +1185,7 @@ void FAGX_SimObjectsImporterHelper::UpdateAndSaveContactMaterialAsset(
 	UAGX_ContactMaterialRegistrarComponent& CMRegistrar)
 {
 	FShapeMaterialPair Materials = GetShapeMaterials(Barrier);
-	Asset.CopyFrom(Barrier);
+	Asset.CopyFrom(Barrier, nullptr);
 	Asset.Material1 = Materials.first;
 	Asset.Material2 = Materials.second;
 
@@ -1332,7 +1332,7 @@ namespace
 		}
 
 		FAGX_ImportUtilities::Rename(Constraint, Barrier.GetName());
-		Constraint.CopyFrom(Barrier, ForceOverwriteInstances);
+		//Constraint.CopyFrom(Barrier, ForceOverwriteInstances);
 		const FTransform NewWorldTransform =
 			FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 				Barrier, Constraint, Bodies.first, Bodies.second);

@@ -371,8 +371,7 @@ namespace AGX_ShapeComponent_helpers
 		auto Sm = NewObject<UAGX_ShapeMaterial>(
 			GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
 		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Sm, Context.SessionGuid);
-		Sm->CopyFrom(Barrier);
-		Context.ShapeMaterials->Add(Barrier.GetGuid(), Sm);
+		Sm->CopyFrom(Barrier, &Context);
 		return Sm;
 	}
 
@@ -402,7 +401,6 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 
 	const FMergeSplitPropertiesBarrier Msp =
 		FMergeSplitPropertiesBarrier::CreateFrom(*const_cast<FShapeBarrier*>(&Barrier));
-
 	if (Msp.HasNative())
 		MergeSplitProperties.CopyFrom(Msp, Context);
 
