@@ -360,10 +360,28 @@ namespace AGX_ShapeComponent_helpers
 		Component->SetStaticMesh(StaticMesh);
 		return Component;
 	}
+
+	UAGX_ShapeMaterial* GetOrCreateShapeMaterial(
+		const FShapeMaterialBarrier& Barrier, FAGX_ImportContext& Context)
+	{
+		check(Barrier.HasNative());
+		if (auto Existing = Context.ShapeMaterials->FindRef(Barrier.GetGuid()))
+			return Existing;
+
+		auto Sm = NewObject<UAGX_ShapeMaterial>(
+			GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
+		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Sm, Context.SessionGuid);
+		Sm->CopyFrom(Barrier);
+		Context.ShapeMaterials->Add(Barrier.GetGuid(), Sm);
+		return Sm;
+	}
+
 }
 
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportContext* Context)
 {
+	using namespace AGX_ShapeComponent_helpers;
+
 	bCanCollide = Barrier.GetEnableCollisions();
 	bIsSensor = Barrier.GetIsSensor();
 	ImportGuid = Barrier.GetShapeGuid();
@@ -393,6 +411,15 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 
 	Context->Shapes->Add(ImportGuid, this);
 
+	////// Shape Material ///////
+	const FShapeMaterialBarrier SMB = Barrier.GetMaterial();
+	if (SMB.HasNative())
+	{
+		UAGX_ShapeMaterial* Sm = GetOrCreateShapeMaterial(SMB, *Context);
+		ShapeMaterial = Sm;
+	}
+
+	////// Visibility ///////
 	// The reason we let GetEnableCollisions and GetEnable determine whether or not this Shape
 	// should be visible or not has to do with the behavior of agxViewer which we want to mimic. If
 	// a shape in a agxCollide::Geometry which has canCollide == false is written to a AGX archive
@@ -401,11 +428,11 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 		Barrier.GetEnableCollisions() && Barrier.GetEnabled() && !Barrier.HasRenderData();
 	SetVisibility(Visible);
 
+	////// Render Mesh ///////
 	if (Context->RenderStaticMeshes != nullptr && GetOwner() != nullptr &&
 		AGX_MeshUtilities::HasRenderDataMesh(Barrier))
 	{
-		UStaticMeshComponent* Mesh =
-			AGX_ShapeComponent_helpers::CreateStaticMeshComponent(Barrier, *GetOwner(), *Context);
+		UStaticMeshComponent* Mesh = CreateStaticMeshComponent(Barrier, *GetOwner(), *Context);
 		AGX_CHECK(Mesh != nullptr);
 		if (Mesh != nullptr)
 		{

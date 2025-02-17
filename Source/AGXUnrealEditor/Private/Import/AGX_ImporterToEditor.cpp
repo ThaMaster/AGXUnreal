@@ -110,6 +110,9 @@ namespace AGX_ImporterToEditor_helpers
 
 		if constexpr (std::is_same_v<T, UMaterialInterface>)
 			return FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName();
+
+		if constexpr (std::is_same_v<T, UAGX_ShapeMaterial>)
+			return FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName();
 	}
 
 	FString GetModelDirectoryPathFromBaseBlueprint(UBlueprint& BaseBP)
@@ -465,6 +468,16 @@ namespace AGX_ImporterToEditor_helpers
 				WriteAssetToDisk(RootDir, AssetType, *Sm);
 			}
 		}
+
+		if (Context->ShapeMaterials != nullptr)
+		{
+			const FString AssetType =
+				FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName();
+			for (const auto& [Guid, Sm] : *Context->ShapeMaterials)
+			{
+				WriteAssetToDisk(RootDir, AssetType, *Sm);
+			}
+		}
 	}
 
 	template <typename T, typename = void>
@@ -789,6 +802,9 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 	}
 
 	FAGX_ImportRuntimeUtilities::WriteSessionGuidToAssetType(*Asset, Context.SessionGuid);
+	if (!Asset->GetName().Equals(Source.GetName()))
+		Asset->Rename(*Source.GetName());
+
 	bool Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
 	AGX_CHECK(Result);
 	TransientToAsset.Add(&Source, Asset);
@@ -855,6 +871,17 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateAssets(
 	if (Context.RenderStaticMeshes != nullptr)
 	{
 		for (const auto& [Guid, Sm] : *Context.RenderStaticMeshes)
+		{
+			const auto A = UpdateOrCreateAsset(*Sm, Context);
+			AGX_CHECK(A != nullptr);
+			if (A == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+		}
+	}
+
+	if (Context.ShapeMaterials != nullptr)
+	{
+		for (const auto& [Guid, Sm] : *Context.ShapeMaterials)
 		{
 			const auto A = UpdateOrCreateAsset(*Sm, Context);
 			AGX_CHECK(A != nullptr);

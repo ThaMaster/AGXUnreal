@@ -8,6 +8,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_Simulation.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/World.h"
@@ -347,6 +348,10 @@ void UAGX_ShapeMaterial::CopyFrom(const FShapeMaterialBarrier& Source)
 	Surface.AdhesiveOverlap = Source.GetAdhesiveOverlap();
 
 	ImportGuid = Source.GetGuid();
+
+	const FString& Name =
+		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetOuter(), Source.GetName());
+	Rename(*Name);
 }
 
 UAGX_ShapeMaterial* UAGX_ShapeMaterial::GetOrCreateInstance(UWorld* PlayingWorld)

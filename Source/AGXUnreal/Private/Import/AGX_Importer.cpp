@@ -126,6 +126,7 @@ FAGX_Importer::FAGX_Importer()
 	Context.RenderStaticMeshes = MakeUnique<TMap<FGuid, UStaticMesh*>>();
 	Context.CollisionStaticMeshes = MakeUnique<TMap<FGuid, UStaticMesh*>>();
 	Context.MSThresholds = MakeUnique<decltype(FAGX_ImportContext::MSThresholds)::ElementType>();
+	Context.ShapeMaterials = MakeUnique<TMap<FGuid, UAGX_ShapeMaterial*>>();
 }
 
 FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)

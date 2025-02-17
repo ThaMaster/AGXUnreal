@@ -82,11 +82,6 @@ public:
 
 	void ClearMaterial();
 	void SetMaterial(const FShapeMaterialBarrier& Material);
-
-	/// \todo Should GetMaterial() create a new FShapeMaterialBarrier, or get an existing somehow?
-	/// If it creates a new FShapeMaterialBarrier we should implement comparison operators etc since
-	/// multiple FShapeMaterialBarrier that points to the same native object should be logically
-	/// seen as same object (similar to smart pointers).
 	FShapeMaterialBarrier GetMaterial() const;
 
 	void SetEnableCollisions(bool CanCollide);
