@@ -1355,8 +1355,7 @@ namespace
 		UpdateConstraintComponentNoControllers(
 			Constraint, Barrier, Helper, ProcessedThresholds, MSTsOnDisk, ForceOverwriteInstances);
 		FAGX_ConstraintUtilities::CopyControllersFrom(
-			Constraint, *static_cast<const FConstraint1DOFBarrier*>(&Barrier),
-			ForceOverwriteInstances);
+			Constraint, *static_cast<const FConstraint1DOFBarrier*>(&Barrier));
 	}
 
 	void UpdateConstraint2DofComponent(
@@ -1368,8 +1367,7 @@ namespace
 		UpdateConstraintComponentNoControllers(
 			Constraint, Barrier, Helper, ProcessedThresholds, MSTsOnDisk, ForceOverwriteInstances);
 		FAGX_ConstraintUtilities::CopyControllersFrom(
-			Constraint, *static_cast<const FConstraint2DOFBarrier*>(&Barrier),
-			ForceOverwriteInstances);
+			Constraint, *static_cast<const FConstraint2DOFBarrier*>(&Barrier));
 	}
 }
 
@@ -1405,7 +1403,7 @@ UAGX_BallConstraintComponent* FAGX_SimObjectsImporterHelper::InstantiateBallCons
 	const TMap<FGuid, UAGX_MergeSplitThresholdsBase*> Unused;
 	UpdateConstraintComponentNoControllers(
 		*Constraint, Barrier, *this, ProcessedThresholds, Unused, false);
-	FAGX_ConstraintUtilities::CopyControllersFrom(*Constraint, Barrier, false);
+	FAGX_ConstraintUtilities::CopyControllersFrom(*Constraint, Barrier);
 	Constraint->SetFlags(RF_Transactional);
 	Owner.AddInstanceComponent(Constraint);
 	Constraint->RegisterComponent();
@@ -1496,8 +1494,7 @@ void FAGX_SimObjectsImporterHelper::UpdateConstraintComponent(
 			*Component.GetName());
 		return;
 	}
-	FAGX_ConstraintUtilities::CopyControllersFrom(
-		*BallConstraint, Barrier, bForceOverwriteInstances);
+	FAGX_ConstraintUtilities::CopyControllersFrom(*BallConstraint, Barrier);
 }
 
 UAGX_TwoBodyTireComponent* FAGX_SimObjectsImporterHelper::InstantiateTwoBodyTire(
