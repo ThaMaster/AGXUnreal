@@ -76,42 +76,6 @@ namespace AGX_TerrainMaterialSpec_helpers
 		}
 	}
 
-	double SetAllRealPropertiesToIncreasingValues(
-		double NextValue, FStructProperty* StructProperty, void* StructMemory)
-	{
-		// Loop over AdhesionOverlapFactor, Cohesion, Density, etc.
-		UScriptStruct* Struct = StructProperty->Struct;
-		for (TFieldIterator<FProperty> PropertyIt(Struct); PropertyIt; ++PropertyIt)
-		{
-			FProperty* Property = *PropertyIt;
-			UE_LOG(LogAGX, Warning, TEXT("  Found property of type %s"), *Property->GetCPPType());
-			if (FStructProperty* NestedStructProperty = CastField<FStructProperty>(Property))
-			{
-				UE_LOG(
-					LogAGX, Warning, TEXT("  Found nested struct of type %s."),
-					*NestedStructProperty->Struct->GetName());
-				void* PropertyMemory = Property->ContainerPtrToValuePtr<void>(StructMemory);
-				if (NestedStructProperty->Struct == FAGX_Real::StaticStruct())
-				{
-					UE_LOG(
-						LogAGX, Warning, TEXT("    Found FAGX_Real struct, writing %f."),
-						NextValue);
-					FAGX_Real* Real = static_cast<FAGX_Real*>(PropertyMemory);
-					Real->Value = NextValue;
-					NextValue += 1.0;
-				}
-				else
-				{
-					UE_LOG(LogAGX, Warning, TEXT("Is a struct, recursion."));
-					NextValue = SetAllRealPropertiesToIncreasingValues(
-						NextValue, NestedStructProperty, PropertyMemory);
-				}
-			}
-		}
-
-		return NextValue;
-	}
-
 	void SetAllRealPropertiesToIncreasingValues(UObject* Object)
 	{
 		auto Callback = [NextValue = 0.0](void* Memory, const TCHAR* /*Name*/) mutable
