@@ -9,6 +9,7 @@
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
 #include "UObject/UnrealType.h"
+#include "Engine/World.h"
 
 BEGIN_DEFINE_SPEC(
 	FAGX_TerrainMaterialSpec, "AGXUnreal.Spec.TerrainMaterial",
@@ -125,113 +126,87 @@ void FAGX_TerrainMaterialSpec::Define()
 				   SetAllRealPropertiesToIncreasingValues(Source);
 				   AssertAllRealPropertiesHaveIncreasingValues(Source, *this);
 
-			   	TObjectPtr<UAGX_TerrainMaterial> Destination =  NewObject<UAGX_TerrainMaterial>(GetTransientPackage(), TEXT("Destination Terrain Material"));
-			   	Destination->CopyTerrainMaterialProperties(Source);
-			   	AGX_TerrainMaterialSpec_helpers::AssertAllRealPropertiesHaveIncreasingValues(Destination);
-
-#if 0
 				   TObjectPtr<UAGX_TerrainMaterial> Destination = NewObject<UAGX_TerrainMaterial>(
-					   GetTransientPackage(), TEXT("Destination Terrain Materia."));
+					   GetTransientPackage(), TEXT("Destination Terrain Material"));
+				   Destination->CopyTerrainMaterialProperties(Source);
+				   AssertAllRealPropertiesHaveIncreasingValues(Destination, *this);
+			   });
+		});
 
-				   UE_LOG(LogAGX, Warning, TEXT("Source: %p"), Source);
-				   UE_LOG(LogAGX, Warning, TEXT("TerrainBulk:  %p"), &Source->TerrainBulk);
-				   UE_LOG(
-					   LogAGX, Warning, TEXT("AdhesionOverlapFactor: %p"),
-					   &Source->TerrainBulk.AdhesionOverlapFactor);
-				   UE_LOG(
-					   LogAGX, Warning, TEXT("Value: %p"),
-					   &Source->TerrainBulk.AdhesionOverlapFactor.Value);
-				   UE_LOG(
-					   LogAGX, Warning, TEXT("Value: %f"),
-					   Source->TerrainBulk.AdhesionOverlapFactor.Value);
+	Describe(
+		"When copying properties from a Terrain Material to a Barrier",
+		[this]()
+		{
+			It("should copy all properties",
+			   [this]()
+			   {
+				   TObjectPtr<UAGX_TerrainMaterial> Source = NewObject<UAGX_TerrainMaterial>(
+					   GetTransientPackage(), TEXT("Source Terrain Material"));
+				   SetAllRealPropertiesToIncreasingValues(Source);
 
-				   // Loop over TerrainBulk, TerrainCompaction, etc.
-				   UClass* Class = UAGX_TerrainMaterial::StaticClass();
-				   for (TFieldIterator<FProperty> PropIt(Class); PropIt; ++PropIt)
-				   {
-					   FProperty* TerrainMaterialProperty = *PropIt;
-					   UE_LOG(
-						   LogAGX, Warning, TEXT("Got property named '%s' from owner class '%s'."),
-						   *TerrainMaterialProperty->GetName(),
-						   *TerrainMaterialProperty->GetOwnerClass()->GetName());
+				   // AGX Dynamics puts limits on some properties. Make sure we are within those
+				   // limits before creating the native.
+				   double BankStatePhi0Test {Source->TerrainCompaction.BankStatePhi0};
+				   double BankStatePhi0Agx {1.0};
+				   Source->TerrainCompaction.BankStatePhi0 = BankStatePhi0Agx;
 
-					   FStructProperty* TerrainMaterialStructProperty =
-						   CastField<FStructProperty>(TerrainMaterialProperty);
-					   void* StructPtr =
-						   TerrainMaterialStructProperty->ContainerPtrToValuePtr<void>(Source);
-					   UE_LOG(LogAGX, Warning, TEXT("  Struct: %p"), StructPtr);
-					   UE_LOG(LogAGX, Warning, TEXT("Looping over struct members:"));
+				   UWorld* World = UWorld::CreateWorld(
+					   EWorldType::Game, false, TEXT("Terrain Material Test World"),
+					   GetTransientPackage());
 
-#if 1
-					   // Loop over AdhesionOverlapFactor, Cohesion, Density, etc.
-					   TObjectPtr<UScriptStruct> Struct = TerrainMaterialStructProperty->Struct;
-					   for (TFieldIterator<FProperty> StructPropIt(Struct); StructPropIt;
-							++StructPropIt)
-					   {
-						   FProperty* StructMemberProperty = *StructPropIt;
-						   UE_LOG(
-							   LogAGX, Warning, TEXT("  Struct member %s"),
-							   *StructMemberProperty->GetName());
-						   void* RealStructPtr =
-							   StructPropIt->ContainerPtrToValuePtr<void>(StructPtr);
-						   UE_LOG(LogAGX, Warning, TEXT("  RealStructPtr: %p"), RealStructPtr);
-#if 1
-						   FAGX_Real* RealValue = (FAGX_Real*) RealStructPtr;
-						   UE_LOG(LogAGX, Warning, TEXT("  RealStructValue: %f"), RealValue->Value);
-						   StructMemberProperty->HasAnyPropertyFlags(CPF_Deprecated);
+				   TObjectPtr<UAGX_TerrainMaterial> Instance =
+					   UAGX_TerrainMaterial::CreateFromAsset(World, Source);
+				   FTerrainMaterialBarrier* Barrier = Instance->GetTerrainMaterialNative();
 
-#else
-						   FStructProperty* RealProperty =
-							   CastField<FStructProperty>(StructMemberProperty);
-						   for (TFieldIterator<FProperty> RealPropIt(RealProperty->Struct);
-								RealPropIt; ++RealPropIt)
-						   {
-							   FProperty* RealInnerProperty = *RealPropIt;
-							   UE_LOG(
-								   LogAGX, Warning, TEXT("    Real property: %s"),
-								   *RealInnerProperty->GetName());
-							   if (FDoubleProperty* DoubleProperty =
-									   CastField<FDoubleProperty>(RealInnerProperty))
-							   {
-								   UE_LOG(LogAGX, Warning, TEXT("Is a Double property."));
-								   void* StructMemory =
-									   RealInnerProperty->ContainerPtrToValuePtr<void>(Source);
-								   double DoubleValue = DoubleProperty->GetPropertyValue(
-									   RealProperty->ContainerPtrToValuePtr<void>(StructMemory));
-								   UE_LOG(LogTemp, Log, TEXT("    Double value: %f"), DoubleValue);
-							   }
-							   else
-							   {
-								   UE_LOG(
-									   LogAGX, Warning, TEXT("    Property %s has unknown type."),
-									   *RealInnerProperty->GetName());
-							   }
-						   }
-#endif
-					   }
-#else
-				for (FField* StructMember = Struct->ChildProperties; StructMember != nullptr;
-					 StructMember = StructMember->Next)
-				{
-					UE_LOG(
-						LogAGX, Warning, TEXT("  Got sub-property named '%s' of type '%s'."),
-						*StructMember->GetName(), *StructMember->GetClass()->GetName());
+				   TObjectPtr<UAGX_TerrainMaterial> Destination = NewObject<UAGX_TerrainMaterial>(
+					   GetTransientPackage(), TEXT("Destination Terrain Material"));
+				   Destination->CopyFrom(*Barrier);
 
-					const FProperty* ChildProperty = nullptr;
-					const void* ChildData = nullptr;
-					TerrainMaterialStructProperty->FindInnerPropertyInstance(
-						StructMember->GetFName(), StructPtr, ChildProperty, ChildData);
-					const FAGX_Real* AsReal = reinterpret_cast<const FAGX_Real*>(ChildData);
-					UE_LOG(LogAGX, Warning, TEXT("  Has value: %d"), AsReal->Value);
-				}
-				UE_LOG(LogAGX, Warning, TEXT("No more struct members."))
+				   // Special handling for properties that AGX Dynamics doesn't support arbitrary
+				   // values for.
 
-				// TestEqual(
-				//  TEXT("Class"), reinterpret_cast<intptr_t>(Class),
-				//  reinterpret_cast<intptr_t>(Property->GetClass()));
-#endif
-				   };
-#endif
+				   // Bank State Phi 0 has limits. Do test on the limited value and then set back
+				   // to what the generic test harness expects.
+				   TestEqual(
+					   TEXT("Terrain Material Compaction Bank State Phi 0"),
+					   Destination->TerrainCompaction.BankStatePhi0, BankStatePhi0Agx);
+				   Destination->TerrainCompaction.BankStatePhi0 = BankStatePhi0Test;
+
+				   // Adhesion Overlap Factor is aliased, both Terrain Bulk and Terrain Particles
+				   // has it and they write to the same AGX Dynamics memory. This means that when
+				   // we read back from AGX Dynamics we do two reads of the same memory and expect
+				   // two different values. That's not going to happen. Hard-copy here so that the
+				   // test don't fail.
+				   Destination->TerrainBulk.AdhesionOverlapFactor =
+					   Source->TerrainBulk.AdhesionOverlapFactor;
+
+				   // Bulk, Surface, and Wire properties, the old remains from when Terrain Material
+				   // was a Shape Material, are not copied Barrier -> Asset so we can't expect them
+				   // to be automatically set to what the test harness expects. So just copy from
+				   // the source.
+				   const FAGX_ShapeMaterialBulkProperties& SourceBulk =
+					   Source->GetShapeMaterialBulkProperties();
+				   const FAGX_ShapeMaterialBulkProperties& DestinationBulk =
+					   Destination->GetShapeMaterialBulkProperties();
+				   memcpy(
+					   (void*) &DestinationBulk, &SourceBulk,
+					   sizeof(FAGX_ShapeMaterialBulkProperties));
+				   const FAGX_ShapeMaterialSurfaceProperties& SourceSurface =
+					   Source->GetShapeMaterialSurfaceProperties();
+				   const FAGX_ShapeMaterialSurfaceProperties& DestinationSurface =
+					   Destination->GetShapeMaterialSurfaceProperties();
+				   memcpy(
+					   (void*) &DestinationSurface, &SourceSurface,
+					   sizeof(FAGX_ShapeMaterialSurfaceProperties));
+				   const FAGX_ShapeMaterialWireProperties& SourceWire =
+					   Source->GetShapeMaterialWireProperties();
+				   const FAGX_ShapeMaterialWireProperties& DestinationWire =
+					   Destination->GetShapeMaterialWireProperties();
+				   memcpy(
+					   (void*) &DestinationWire, &SourceWire,
+					   sizeof(FAGX_ShapeMaterialWireProperties));
+
+				   AssertAllRealPropertiesHaveIncreasingValues(Destination, *this);
 			   });
 		});
 }
