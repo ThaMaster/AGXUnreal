@@ -249,6 +249,7 @@ EAGX_ImportResult FAGX_Importer::AddContactMaterialRegistrarComponent(
 	}
 
 	auto Component = NewObject<UAGX_ContactMaterialRegistrarComponent>(&OutActor);
+	Component->Rename(*Name);
 	Component->CopyFrom(SimObjects.GetContactMaterials(), &Context);
 
 	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);

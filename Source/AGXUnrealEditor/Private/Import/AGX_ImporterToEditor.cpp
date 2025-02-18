@@ -11,6 +11,8 @@
 #include "Import/AGX_ImporterSettings.h"
 #include "Import/AGX_ModelSourceComponent.h"
 #include "Import/AGX_SCSNodeCollection.h"
+#include "Materials/AGX_ContactMaterial.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
@@ -113,6 +115,9 @@ namespace AGX_ImporterToEditor_helpers
 
 		if constexpr (std::is_same_v<T, UAGX_ShapeMaterial>)
 			return FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName();
+
+		if constexpr (std::is_same_v<T, UAGX_ContactMaterial>)
+			return FAGX_ImportUtilities::GetImportContactMaterialDirectoryName();
 	}
 
 	FString GetModelDirectoryPathFromBaseBlueprint(UBlueprint& BaseBP)
@@ -617,6 +622,16 @@ namespace AGX_ImporterToEditor_helpers
 		return OutBlueprint.SimpleConstructionScript->FindSCSNode(Name);
 	}
 
+	template <>
+	USCS_Node* FindNodeAndResolveConflicts<UAGX_ContactMaterialRegistrarComponent>(
+		const FGuid& Guid, const UAGX_ContactMaterialRegistrarComponent& ReimportedComponent,
+		TMap<FGuid, USCS_Node*>& OutGuidToNode, UBlueprint& OutBlueprint)
+	{
+		// UAGX_ContactMaterialRegistrarComponent we look up by using the name.
+		const FName Name(*ReimportedComponent.GetName());
+		return OutBlueprint.SimpleConstructionScript->FindSCSNode(Name);
+	}
+
 	template <typename TComponent>
 	USCS_Node* GetOrCreateNode(
 		const FGuid& Guid, const TComponent& ReimportedComponent,
@@ -627,22 +642,28 @@ namespace AGX_ImporterToEditor_helpers
 		USCS_Node* Node =
 			FindNodeAndResolveConflicts(Guid, ReimportedComponent, OutGuidToNode, OutBlueprint);
 
-		USCS_Node* Parent = GetCorrespondingAttachParent(OutBlueprint, Nodes, ReimportedComponent);
-		AGX_CHECK(Parent != nullptr);
-		if (Parent == nullptr)
+		USCS_Node* Parent = nullptr;
+		if constexpr (std::is_base_of_v<USceneComponent, TComponent>)
 		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("Could not find corresponding attach parent for component '%s'."),
-				*ReimportedComponent.GetName());
-			return nullptr;
+			Parent = GetCorrespondingAttachParent(OutBlueprint, Nodes, ReimportedComponent);
+			AGX_CHECK(Parent != nullptr);
+			if (Parent == nullptr)
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Could not find corresponding attach parent for component '%s'."),
+					*ReimportedComponent.GetName());
+				return nullptr;
+			}
 		}
 
 		if (Node == nullptr)
 		{
 			Node = OutBlueprint.SimpleConstructionScript->CreateNode(
 				ReimportedComponent.GetClass(), Name);
-			Parent->AddChildNode(Node);
+			if constexpr (std::is_base_of_v<USceneComponent, TComponent>)
+				Parent->AddChildNode(Node);
+
 			AGX_CHECK(OutGuidToNode.FindRef(Guid) == nullptr);
 			OutGuidToNode.Add(Guid, Node);
 		}
@@ -650,7 +671,9 @@ namespace AGX_ImporterToEditor_helpers
 		{
 			// We don't need to handle transform explicitly here, it is copied over later to the
 			// component template owned by this node.
-			FAGX_BlueprintUtilities::ReParentNode(OutBlueprint, *Node, *Parent, false);
+			if constexpr (std::is_base_of_v<USceneComponent, TComponent>)
+				FAGX_BlueprintUtilities::ReParentNode(OutBlueprint, *Node, *Parent, false);
+
 			if (!Node->GetVariableName().IsEqual(Name))
 				Node->SetVariableName(Name);
 		}
@@ -903,6 +926,17 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateAssets(
 		}
 	}
 
+	if (Context.ContactMaterials != nullptr)
+	{
+		for (const auto& [Guid, Cm] : *Context.ContactMaterials)
+		{
+			const auto A = UpdateOrCreateAsset(*Cm, Context);
+			AGX_CHECK(A != nullptr);
+			if (A == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+		}
+	}
+
 	return Result;
 }
 
@@ -977,7 +1011,8 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 			{
 				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
 
-				// CopyProperties does not handle arrays such as render materials.
+				// CopyProperties does not handle TransientToAsset mappings in arrays such as render
+				// materials.
 				FixupRenderMaterial(
 					TransientToAsset, *Cast<UStaticMeshComponent>(N->ComponentTemplate));
 			}
@@ -996,9 +1031,35 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 			{
 				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
 
-				// CopyProperties does not handle arrays such as render materials.
+				// CopyProperties does not handle TransientToAsset mappings in arrays such as render
+				// materials.
 				FixupRenderMaterial(
 					TransientToAsset, *Cast<UStaticMeshComponent>(N->ComponentTemplate));
+			}
+		}
+	}
+
+	if (auto Component = Context.ContactMaterialRegistrar)
+	{
+		FGuid UnusedGuid = FGuid::NewGuid();
+		TMap<FGuid, USCS_Node*> Unused;
+		USCS_Node* N = GetOrCreateNode(UnusedGuid, *Component, Nodes, Unused, Blueprint);
+		if (N == nullptr)
+			Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+		else
+		{
+			CopyProperties(
+				*Component, *Nodes.ContactMaterialRegistrarComponent->ComponentTemplate,
+				TransientToAsset);
+
+			// We need to update CM pointers of the re-imported Contact Material Registrar since
+			// CopyProperties does not support TransientToAsset mapping of arrays.
+			auto CMR = Cast<UAGX_ContactMaterialRegistrarComponent>(N->ComponentTemplate);
+			for (int32 i = 0; i < CMR->ContactMaterials.Num(); i++)
+			{
+				CMR->ContactMaterials[i] =
+					Cast<UAGX_ContactMaterial>(TransientToAsset.FindRef(CMR->ContactMaterials[i]));
+				AGX_CHECK(CMR->ContactMaterials[i] != nullptr);
 			}
 		}
 	}
