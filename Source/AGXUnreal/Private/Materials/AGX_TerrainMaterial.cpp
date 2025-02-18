@@ -899,7 +899,6 @@ bool UAGX_TerrainMaterial::HasTerrainMaterialNative() const
 	return TerrainMaterialNativeBarrier.HasNative();
 }
 
-
 UAGX_TerrainMaterial* UAGX_TerrainMaterial::CreateFromAsset(
 	UWorld* PlayingWorld, UAGX_TerrainMaterial* Source)
 {
@@ -1068,15 +1067,12 @@ bool UAGX_TerrainMaterial::IsInstance() const
 {
 	// An instance of this class will always have a reference to it's corresponding Asset.
 	// An asset will never have this reference set.
-	const bool bIsInstance = Asset != nullptr;
-
-	// Internal testing the hypothesis that UObject::IsAsset is a valid inverse of this
-	// function.
-	// @todo Consider removing this function and instead use UObject::IsAsset, if the below
-	// check has never failed.
-	AGX_CHECK(bIsInstance != IsAsset());
-
-	return bIsInstance;
+	//
+	// Cannot use a negated return value from IsAsset because sometimes we create runtime instances
+	// that we want to use as-if they are assets without actually creating real on-drive assets,
+	// and difficult to fool the IsAsset function into believing that something is an asset when it
+	// actually is not.
+	return Asset != nullptr;
 }
 
 const FAGX_ShapeMaterialBulkProperties& UAGX_TerrainMaterial::GetShapeMaterialBulkProperties()
