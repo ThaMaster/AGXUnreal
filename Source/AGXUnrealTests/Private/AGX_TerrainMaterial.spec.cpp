@@ -39,7 +39,7 @@ namespace AGX_TerrainMaterialSpec_helpers
 			void* PropertyMemory = Property->ContainerPtrToValuePtr<void>(StructMemory);
 			if (Property->GetCPPType() == CPPType)
 			{
-				Callback(PropertyMemory);
+				Callback(PropertyMemory, *Property->GetName());
 			}
 			else if (FStructProperty* NestedStructProperty = CastField<FStructProperty>(Property))
 			{
@@ -67,7 +67,7 @@ namespace AGX_TerrainMaterialSpec_helpers
 			void* PropertyMemory = Property->ContainerPtrToValuePtr<void>(Object);
 			if (Property->GetCPPType() == CPPType)
 			{
-				Callback(PropertyMemory);
+				Callback(PropertyMemory, *Property->GetName());
 			}
 			else if (FStructProperty* NestedStructProperty = CastField<FStructProperty>(Property))
 			{
@@ -114,7 +114,7 @@ namespace AGX_TerrainMaterialSpec_helpers
 
 	void SetAllRealPropertiesToIncreasingValues(UObject* Object)
 	{
-		auto Callback = [NextValue = 0.0](void* Memory) mutable
+		auto Callback = [NextValue = 0.0](void* Memory, const TCHAR* /*Name*/) mutable
 		{
 			FAGX_Real* Real = static_cast<FAGX_Real*>(Memory);
 			UE_LOG(LogAGX, Warning, TEXT("  Overwriting %f with %f."), Real->Value, NextValue);
@@ -125,15 +125,18 @@ namespace AGX_TerrainMaterialSpec_helpers
 		VisitProperties(Object, TEXT("FAGX_Real"), Callback);
 	}
 
-	void AssertAllRealPropertiesHaveIncreasingValues(UObject* Object)
+	void AssertAllRealPropertiesHaveIncreasingValues(
+		UObject* Object, FAGX_TerrainMaterialSpec& Test)
 	{
-		auto Callback = [NextValue = 0.0](void* Memory) mutable
+		auto Callback = [NextValue = 0.0, &Test](void* Memory, const TCHAR* Name) mutable
 		{
 			FAGX_Real* Real = static_cast<FAGX_Real*>(Memory);
 			UE_LOG(LogAGX, Warning, TEXT("  Expecting %f, found %f."), NextValue, Real->Value);
-			if (NextValue != Real->Value)
+			if (!Test.TestEqual(TEXT("A property"), Real->Value, NextValue))
 			{
-				UE_LOG(LogAGX, Warning, TEXT("     MISMATCH!"));
+				UE_LOG(
+					LogAGX, Warning, TEXT("Failed increasing-values check for property '%s'."),
+					Name);
 			}
 			NextValue = NextValue + 1.0;
 		};
@@ -144,7 +147,7 @@ namespace AGX_TerrainMaterialSpec_helpers
 
 void FAGX_TerrainMaterialSpec::Define()
 {
-	UE_LOG(LogAGX, Warning, TEXT("Discovering FAGX_TerrainMaterialSpec"));
+	using namespace AGX_TerrainMaterialSpec_helpers;
 	Describe(
 		"When copying properties from one Terrain Material to another",
 		[this]()
@@ -155,9 +158,8 @@ void FAGX_TerrainMaterialSpec::Define()
 				   TObjectPtr<UAGX_TerrainMaterial> Source = NewObject<UAGX_TerrainMaterial>(
 					   GetTransientPackage(), TEXT("Source Terrain Material"));
 
-				   AGX_TerrainMaterialSpec_helpers::SetAllRealPropertiesToIncreasingValues(Source);
-				   AGX_TerrainMaterialSpec_helpers::AssertAllRealPropertiesHaveIncreasingValues(
-					   Source);
+				   SetAllRealPropertiesToIncreasingValues(Source);
+				   AssertAllRealPropertiesHaveIncreasingValues(Source, *this);
 
 			   	TObjectPtr<UAGX_TerrainMaterial> Destination =  NewObject<UAGX_TerrainMaterial>(GetTransientPackage(), TEXT("Destination Terrain Material"));
 			   	Destination->CopyTerrainMaterialProperties(Source);
