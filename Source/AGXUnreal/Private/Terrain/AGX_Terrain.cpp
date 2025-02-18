@@ -1729,14 +1729,6 @@ bool AAGX_Terrain::InitializeParticleUpsamplingComponent()
 		return false;
 	}
 
-	if (bUseTerrainMaterialDensity && TerrainMaterial == nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Cannot use material density from terrain material since it has not been set, "
-				 "using user parameter instead."));
-	}
-
 	ParticleUpsamplingComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 		ParticleUpsamplingAsset, RootComponent, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
 		FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset, false,
@@ -1776,12 +1768,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		bEnableTerrainPaging ? NativeTerrainPagerBarrier.GetParticleDataById(ToInclude)
 							 : NativeBarrier.GetParticleDataById(ToInclude);
 
-	// Use terrain density, otherwise use user parameter
-	// Need to divide by 1000 since the TerrainMaterial density is kg/m^3,
-	// we want to convert it to g/cm^2
-	int PDensity = (bUseTerrainMaterialDensity && TerrainMaterial != nullptr)
-					   ? PDensity = (TerrainMaterial->GetDensity()/1000)
-					   : ParticleDensity;
+	
 
 #if 1
 	const TArray<FVector>& Positions = ParticleData.Positions;
@@ -1798,7 +1785,6 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	const TArray<FVector>& Velocities {FVector::ZeroVector, FVector::ZeroVector};
 	const TArray<float>& Masses {1, 1};
 #endif
-	
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());
 
@@ -1806,8 +1792,6 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	{
 		ParticleUpsamplingComponent->SetNiagaraVariableInt(
 			"User.Target Particle Count", Exists.Num());
-		ParticleUpsamplingComponent->SetNiagaraVariableFloat(
-			"User.Particle Density", (float)ParticleDensity);
 		ParticleUpsamplingComponent->SetNiagaraVariableInt(
 			"User.Upscaling", Upscaling);
 		ParticleUpsamplingComponent->SetNiagaraVariableFloat(
@@ -1820,8 +1804,6 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	{
 		ParticleUpsamplingComponent->SetVariableInt(
 			FName("User.Target Particle Count"), Exists.Num());
-		ParticleUpsamplingComponent->SetVariableFloat(
-			FName("User.Particle Density"), (float)ParticleDensity);
 		ParticleUpsamplingComponent->SetVariableInt(
 			FName("User.Upscaling"), Upscaling);
 		ParticleUpsamplingComponent->SetNiagaraVariableFloat(

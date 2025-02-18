@@ -327,31 +327,8 @@ public:
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
 		Meta =
 			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling", ClampMin = "1", UIMin = "1", 
-				UIMax = "10000"))
+				UIMax = "5000"))
 	int32 Upscaling = 100;
-
-	/**
-	* Toggle between using the terrain materials density or user specified
-	* density for fine particle calculations. 
-	* 
-	* Will use user specified value if no terrain material has been set.
-	*/
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
-		Meta = (EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling"))
-	bool bUseTerrainMaterialDensity = false;
-
-	/**
-	* User defined density to use for fine particle calculations.
-	* 
-	* (Measured in g/cm^3)
-	*/
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
-		Meta =
-			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling && !bUseTerrainMaterialDensity",
-			 ClampMin = "0.01", UIMin = "0.01", UIMax = "3.0"))
-	double ParticleDensity = 1.22;
 
 	/**
 	* Toggle between using the default voxel size or use user defined size.
