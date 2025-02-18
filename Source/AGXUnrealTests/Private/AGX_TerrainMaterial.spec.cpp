@@ -126,6 +126,18 @@ namespace AGX_TerrainMaterialSpec_helpers
 
 		VisitProperties(Object, TEXT("FAGX_Real"), Callback);
 	}
+
+	/**
+	 * Dump a bunch of bytes from one place in memory to another. Uses a const-destination because
+	 * that is what UAGX_TerrainMaterial::GetShapeMaterial*Properties returns. The object itself
+	 * isn't actually const so this is safe. This is all a hack to get the unit test to pass, thus
+	 * the long and unwieldy name.
+	 */
+	template <typename T>
+	void RawByteCopyOverNotActuallyConst(const T& Destination, const T& Source)
+	{
+		memcpy((void*) &Destination, (void*) &Source, sizeof(T));
+	}
 }
 
 void FAGX_TerrainMaterialSpec::Define()
@@ -210,28 +222,22 @@ void FAGX_TerrainMaterialSpec::Define()
 				   // Bulk, Surface, and Wire properties, the old remains from when Terrain Material
 				   // was a Shape Material, are not copied Barrier -> Asset, so we can't expect them
 				   // to be automatically set to what the test harness expects. So just copy from
-				   // the source.
-				   const FAGX_ShapeMaterialBulkProperties& SourceBulk =
-					   Source->GetShapeMaterialBulkProperties();
-				   const FAGX_ShapeMaterialBulkProperties& DestinationBulk =
-					   Destination->GetShapeMaterialBulkProperties();
-				   memcpy(
-					   (void*) &DestinationBulk, &SourceBulk,
-					   sizeof(FAGX_ShapeMaterialBulkProperties));
-				   const FAGX_ShapeMaterialSurfaceProperties& SourceSurface =
-					   Source->GetShapeMaterialSurfaceProperties();
-				   const FAGX_ShapeMaterialSurfaceProperties& DestinationSurface =
-					   Destination->GetShapeMaterialSurfaceProperties();
-				   memcpy(
-					   (void*) &DestinationSurface, &SourceSurface,
-					   sizeof(FAGX_ShapeMaterialSurfaceProperties));
-				   const FAGX_ShapeMaterialWireProperties& SourceWire =
-					   Source->GetShapeMaterialWireProperties();
-				   const FAGX_ShapeMaterialWireProperties& DestinationWire =
-					   Destination->GetShapeMaterialWireProperties();
-				   memcpy(
-					   (void*) &DestinationWire, &SourceWire,
-					   sizeof(FAGX_ShapeMaterialWireProperties));
+				   // the source. We don't actually care about these values, they are never used by
+				   // the plugin.
+				   //
+				   // We do some ugly const_cast via void* here. I'm leaving it as-is because the
+				   // data is guaranteed to be non-const at the declaration, this is data we don't
+				   // care about, and this is only a test so the code isn't running on end-user
+				   // machines.
+				   RawByteCopyOverNotActuallyConst(
+					   Destination->GetShapeMaterialBulkProperties(),
+					   Source->GetShapeMaterialBulkProperties());
+				   RawByteCopyOverNotActuallyConst(
+					   Destination->GetShapeMaterialSurfaceProperties(),
+					   Source->GetShapeMaterialSurfaceProperties());
+				   RawByteCopyOverNotActuallyConst(
+					   Destination->GetShapeMaterialWireProperties(),
+					   Source->GetShapeMaterialWireProperties());
 
 				   TestAllRealPropertiesHaveIncreasingValues(Destination, *this);
 			   });
