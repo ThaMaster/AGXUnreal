@@ -11,6 +11,9 @@
 #include "UObject/UnrealType.h"
 #include "Engine/World.h"
 
+/**
+ * Test that Terrain Material properties are copied properly between asset, instance, and barrier.
+ */
 BEGIN_DEFINE_SPEC(
 	FAGX_TerrainMaterialSpec, "AGXUnreal.Spec.TerrainMaterial",
 	AgxAutomationCommon::DefaultTestFlags)
@@ -18,21 +21,26 @@ END_DEFINE_SPEC(FAGX_TerrainMaterialSpec)
 
 namespace AGX_TerrainMaterialSpec_helpers
 {
+	/**
+	 * Run a callback for every non-deprecated property of the given CPPType in the given struct.
+	 * Intended to be called from an overload that takes a UObject as a starting-point.
+	 *
+	 * Visits nested struct properties recursively.
+	 *
+	 * @param StructProperty Reflection data for the struct whose properties are being visited.
+	 * @param StructMemory Pointer to the struct described by StructProperty.
+	 * @param CPPType The name of the type that the callback should be called for.
+	 * @param Callback Callback to call when a CPPType'd property is found.
+	 */
 	template <typename CallbackT>
 	void VisitProperties(
 		FStructProperty* StructProperty, void* StructMemory, const FString& CPPType,
 		CallbackT& Callback)
 	{
 		UScriptStruct* Struct = StructProperty->Struct;
-		UE_LOG(
-			LogAGX, Warning, TEXT("  Visiting %s properties in %s."), *CPPType,
-			*StructProperty->GetName());
 		for (TFieldIterator<FProperty> PropertyIt(Struct); PropertyIt; ++PropertyIt)
 		{
 			FProperty* Property = *PropertyIt;
-			UE_LOG(
-				LogAGX, Warning, TEXT("Found property named %s of type %s."), *Property->GetName(),
-				*Property->GetCPPType());
 			if (Property->HasAnyPropertyFlags(CPF_Deprecated))
 			{
 				continue;
@@ -49,18 +57,22 @@ namespace AGX_TerrainMaterialSpec_helpers
 		}
 	}
 
+	/**
+	 * Run a callback for every non-deprecated property of the given CPPType in the given object.
+	 *
+	 * Visits nested struct properties recursively.
+	 *
+	 * @param Object The object whose properties are to be visited.
+	 * @param CPPType The name of the type that the callback should be called for.
+	 * @param Callback Callback to call when a CPPType'd property is found.
+	 */
 	template <typename CallbackT>
 	void VisitProperties(UObject* Object, const FString& CPPType, CallbackT& Callback)
 	{
 		UClass* Class = Object->GetClass();
-		UE_LOG(
-			LogAGX, Warning, TEXT("Visiting %s properties in %s."), *CPPType, *Object->GetName());
 		for (TFieldIterator<FProperty> PropertyIt(Class); PropertyIt; ++PropertyIt)
 		{
 			FProperty* Property = *PropertyIt;
-			UE_LOG(
-				LogAGX, Warning, TEXT("Found property named %s of type %s."), *Property->GetName(),
-				*Property->GetCPPType());
 			if (Property->HasAnyPropertyFlags(CPF_Deprecated))
 			{
 				continue;
@@ -77,12 +89,15 @@ namespace AGX_TerrainMaterialSpec_helpers
 		}
 	}
 
+	/**
+	 * Set all AGX Real properties in the given object to increasing values starting at 0.0 and
+	 * increasing by one for each AGX Real property found.
+	 */
 	void SetAllRealPropertiesToIncreasingValues(UObject* Object)
 	{
 		auto Callback = [NextValue = 0.0](void* Memory, const TCHAR* /*Name*/) mutable
 		{
 			FAGX_Real* Real = static_cast<FAGX_Real*>(Memory);
-			UE_LOG(LogAGX, Warning, TEXT("  Overwriting %f with %f."), Real->Value, NextValue);
 			Real->Value = NextValue;
 			NextValue = NextValue + 1.0;
 		};
@@ -90,14 +105,17 @@ namespace AGX_TerrainMaterialSpec_helpers
 		VisitProperties(Object, TEXT("FAGX_Real"), Callback);
 	}
 
-	void AssertAllRealPropertiesHaveIncreasingValues(
-		UObject* Object, FAGX_TerrainMaterialSpec& Test)
+	/**
+	 * Test that all FAGX_Real has the values that SetAllRealPropertiesToIncreasingValues would have
+	 * set if run on this object.
+	 */
+	void TestAllRealPropertiesHaveIncreasingValues(UObject* Object, FAGX_TerrainMaterialSpec& Test)
 	{
 		auto Callback = [NextValue = 0.0, &Test](void* Memory, const TCHAR* Name) mutable
 		{
 			FAGX_Real* Real = static_cast<FAGX_Real*>(Memory);
-			UE_LOG(LogAGX, Warning, TEXT("  Expecting %f, found %f."), NextValue, Real->Value);
-			if (!Test.TestEqual(TEXT("A property"), Real->Value, NextValue))
+			static const FString Message(TEXT("property (see separate LogAGX warning for which)"));
+			if (!Test.TestEqual(Message, Real->Value, NextValue))
 			{
 				UE_LOG(
 					LogAGX, Warning, TEXT("Failed increasing-values check for property '%s'."),
@@ -113,6 +131,8 @@ namespace AGX_TerrainMaterialSpec_helpers
 void FAGX_TerrainMaterialSpec::Define()
 {
 	using namespace AGX_TerrainMaterialSpec_helpers;
+
+	// Test that we copy all properties when we create runtime instances from assets on drive.
 	Describe(
 		"When copying properties from one Terrain Material to another",
 		[this]()
@@ -120,19 +140,21 @@ void FAGX_TerrainMaterialSpec::Define()
 			It("should copy all properties",
 			   [this]()
 			   {
+				   // Create source.
 				   TObjectPtr<UAGX_TerrainMaterial> Source = NewObject<UAGX_TerrainMaterial>(
 					   GetTransientPackage(), TEXT("Source Terrain Material"));
-
 				   SetAllRealPropertiesToIncreasingValues(Source);
-				   AssertAllRealPropertiesHaveIncreasingValues(Source, *this);
+				   TestAllRealPropertiesHaveIncreasingValues(Source, *this);
 
+				   // Create and test destination.
 				   TObjectPtr<UAGX_TerrainMaterial> Destination = NewObject<UAGX_TerrainMaterial>(
 					   GetTransientPackage(), TEXT("Destination Terrain Material"));
 				   Destination->CopyTerrainMaterialProperties(Source);
-				   AssertAllRealPropertiesHaveIncreasingValues(Destination, *this);
+				   TestAllRealPropertiesHaveIncreasingValues(Destination, *this);
 			   });
 		});
 
+	// Test that we round-trip all properties to and then back from the native AGX Dynamics object.
 	Describe(
 		"When copying properties from a Terrain Material to a Barrier",
 		[this]()
@@ -140,6 +162,7 @@ void FAGX_TerrainMaterialSpec::Define()
 			It("should copy all properties",
 			   [this]()
 			   {
+				   // Create source, a stand-in for an on-drive asset.
 				   TObjectPtr<UAGX_TerrainMaterial> Source = NewObject<UAGX_TerrainMaterial>(
 					   GetTransientPackage(), TEXT("Source Terrain Material"));
 				   SetAllRealPropertiesToIncreasingValues(Source);
@@ -154,10 +177,13 @@ void FAGX_TerrainMaterialSpec::Define()
 					   EWorldType::Game, false, TEXT("Terrain Material Test World"),
 					   GetTransientPackage());
 
+				   // Create Barrier, i.e. the native AGX Dynamics object. This will copy properties
+				   // Source -> Instance -> Barrier.
 				   TObjectPtr<UAGX_TerrainMaterial> Instance =
 					   UAGX_TerrainMaterial::CreateFromAsset(World, Source);
 				   FTerrainMaterialBarrier* Barrier = Instance->GetTerrainMaterialNative();
 
+				   // Create and copy into the destination.
 				   TObjectPtr<UAGX_TerrainMaterial> Destination = NewObject<UAGX_TerrainMaterial>(
 					   GetTransientPackage(), TEXT("Destination Terrain Material"));
 				   Destination->CopyFrom(*Barrier);
@@ -165,23 +191,24 @@ void FAGX_TerrainMaterialSpec::Define()
 				   // Special handling for properties that AGX Dynamics doesn't support arbitrary
 				   // values for.
 
-				   // Bank State Phi 0 has limits. Do test on the limited value and then set back
-				   // to what the generic test harness expects.
+				   // Bank State Phi 0 has limits. Test the limited value and then set back to what
+				   // the generic test harness expects.
 				   TestEqual(
 					   TEXT("Terrain Material Compaction Bank State Phi 0"),
 					   Destination->TerrainCompaction.BankStatePhi0, BankStatePhi0Agx);
 				   Destination->TerrainCompaction.BankStatePhi0 = BankStatePhi0Test;
 
 				   // Adhesion Overlap Factor is aliased, both Terrain Bulk and Terrain Particles
-				   // has it and they write to the same AGX Dynamics memory. This means that when
+				   // has it, and they write to the same AGX Dynamics memory. This means that when
 				   // we read back from AGX Dynamics we do two reads of the same memory and expect
-				   // two different values. That's not going to happen. Hard-copy here so that the
-				   // test don't fail.
+				   // two different values. That's not going to happen. Hard-copy the first property
+				   // here so that the test don't fail. Since we also have the second property the
+				   // copied value is still tested.
 				   Destination->TerrainBulk.AdhesionOverlapFactor =
 					   Source->TerrainBulk.AdhesionOverlapFactor;
 
 				   // Bulk, Surface, and Wire properties, the old remains from when Terrain Material
-				   // was a Shape Material, are not copied Barrier -> Asset so we can't expect them
+				   // was a Shape Material, are not copied Barrier -> Asset, so we can't expect them
 				   // to be automatically set to what the test harness expects. So just copy from
 				   // the source.
 				   const FAGX_ShapeMaterialBulkProperties& SourceBulk =
@@ -206,7 +233,7 @@ void FAGX_TerrainMaterialSpec::Define()
 					   (void*) &DestinationWire, &SourceWire,
 					   sizeof(FAGX_ShapeMaterialWireProperties));
 
-				   AssertAllRealPropertiesHaveIncreasingValues(Destination, *this);
+				   TestAllRealPropertiesHaveIncreasingValues(Destination, *this);
 			   });
 		});
 }
