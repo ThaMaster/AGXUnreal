@@ -738,6 +738,32 @@ void UAGX_ContactMaterial::CopyFrom(const UAGX_ContactMaterial* Source)
 #undef COPY_PROPERTY
 }
 
+namespace AGX_ContactMaterial_helpers
+{
+	void SetupMaterials(
+		const FContactMaterialBarrier& Barrier, UAGX_ContactMaterial& OutCm,
+		FAGX_ImportContext& Context)
+	{
+		FShapeMaterialBarrier MBarrier1 = Barrier.GetMaterial1();
+		FShapeMaterialBarrier MBarrier2 = Barrier.GetMaterial2();
+		if (!MBarrier1.HasNative() || !MBarrier2.HasNative())
+			return;
+
+		UAGX_ShapeMaterial* Material1 = Context.ShapeMaterials->FindRef(MBarrier1.GetGuid());
+		UAGX_ShapeMaterial* Material2 = Context.ShapeMaterials->FindRef(MBarrier2.GetGuid());
+		if (Material1 == nullptr || Material2 == nullptr)
+			return;
+
+		const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+			OutCm.GetOuter(),
+			FString::Printf(TEXT("CM_%s_%s"), *MBarrier1.GetName(), *MBarrier2.GetName()));
+		OutCm.Rename(*Name);
+
+		OutCm.Material1 = Material1;
+		OutCm.Material2 = Material2;
+	}
+}
+
 void UAGX_ContactMaterial::CopyFrom(
 	const FContactMaterialBarrier& Source, FAGX_ImportContext* Context)
 {
@@ -784,6 +810,9 @@ void UAGX_ContactMaterial::CopyFrom(
 	ImportGuid = Source.GetGuid();
 
 #undef COPY_PROPERTY
+
+	if (Context != nullptr)
+		AGX_ContactMaterial_helpers::SetupMaterials(Source, *this, *Context);
 }
 
 UAGX_ContactMaterial* UAGX_ContactMaterial::CreateInstanceFromAsset(

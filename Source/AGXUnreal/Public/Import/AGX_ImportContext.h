@@ -8,6 +8,8 @@
 struct FAGX_ImporterSettings;
 
 class UAGX_ConstraintComponent;
+class UAGX_ContactMaterial;
+class UAGX_ContactMaterialRegistrarComponent;
 class UAGX_MergeSplitThresholdsBase;
 class UAGX_ModelSourceComponent;
 class UAGX_RigidBodyComponent;
@@ -42,8 +44,10 @@ struct AGXUNREAL_API FAGX_ImportContext
 
 	TUniquePtr<TMap<FGuid, UAGX_MergeSplitThresholdsBase*>> MSThresholds;
 	TUniquePtr<TMap<FGuid, UAGX_ShapeMaterial*>> ShapeMaterials;
+	TUniquePtr<TMap<FGuid, UAGX_ContactMaterial*>> ContactMaterials;
 
 	UAGX_ModelSourceComponent* ModelSourceComponent {nullptr};
+	UAGX_ContactMaterialRegistrarComponent* ContactMaterialRegistrar{nullptr};
 
 	FGuid SessionGuid;
 

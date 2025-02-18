@@ -562,7 +562,7 @@ void UAGX_ConstraintComponent::CopyFrom(
 	SolveType = SolveTypeBarrier;
 	bComputeForces = Barrier.GetEnableComputeForces();
 
-	const FString& Name =
+	const FString Name =
 		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetOuter(), Barrier.GetName());
 	Rename(*Name);
 

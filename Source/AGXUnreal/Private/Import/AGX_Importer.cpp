@@ -22,6 +22,7 @@
 #include "Import/AGX_ModelSourceComponent.h"
 #include "Import/AGXSimObjectsReader.h"
 #include "Import/SimulationObjectCollection.h"
+#include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/AnyShapeBarrier.h"
@@ -136,6 +137,7 @@ FAGX_Importer::FAGX_Importer()
 	Context.CollisionStaticMeshes = MakeUnique<TMap<FGuid, UStaticMesh*>>();
 	Context.MSThresholds = MakeUnique<decltype(FAGX_ImportContext::MSThresholds)::ElementType>();
 	Context.ShapeMaterials = MakeUnique<TMap<FGuid, UAGX_ShapeMaterial*>>();
+	Context.ContactMaterials = MakeUnique<TMap<FGuid, UAGX_ContactMaterial*>>();
 }
 
 FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)
@@ -214,8 +216,7 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(AActor& Owner)
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("FAGX_Importer::AddModelSourceComponent called, but a ModelSourceComponent has "
-				 "already been added."),
-			*Name);
+				 "already been added."));
 		return EAGX_ImportResult::RecoverableErrorsOccured;
 	}
 
@@ -231,6 +232,27 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(AActor& Owner)
 
 	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, Owner, Context.SessionGuid);
 	Context.ModelSourceComponent = Component;
+	return EAGX_ImportResult::Success;
+}
+
+EAGX_ImportResult FAGX_Importer::AddContactMaterialRegistrarComponent(
+	const FSimulationObjectCollection& SimObjects, AActor& OutActor)
+{
+	const FString Name = "AGX_ContactMaterialRegistrar";
+	if (Context.ContactMaterialRegistrar != nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_Importer::AddContactMaterialRegistrarComponent called, but a "
+				 "ContactMaterialRegistrarComponent has already been added."));
+		return EAGX_ImportResult::RecoverableErrorsOccured;
+	}
+
+	auto Component = NewObject<UAGX_ContactMaterialRegistrarComponent>(&OutActor);
+	Component->CopyFrom(SimObjects.GetContactMaterials(), &Context);
+
+	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
+	Context.ContactMaterialRegistrar = Component;
 	return EAGX_ImportResult::Success;
 }
 
@@ -280,6 +302,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	for (const auto& C : SimObjects.GetPrismaticConstraints())
 		Res |=
 			AddComponent<UAGX_PrismaticConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
+
+	Res |= AddContactMaterialRegistrarComponent(SimObjects, OutActor);
 
 	Res |= AddModelSourceComponent(OutActor);
 

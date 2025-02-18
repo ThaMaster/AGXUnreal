@@ -52,6 +52,9 @@ private:
 
 	EAGX_ImportResult AddModelSourceComponent(AActor& OutActor);
 
+	EAGX_ImportResult AddContactMaterialRegistrarComponent(
+		const FSimulationObjectCollection& SimObjects, AActor& OutActor);
+
 	template <typename TComponent, typename TBarrier>
 	EAGX_ImportResult AddComponent(
 		const TBarrier& Barrier, USceneComponent& Parent, AActor& OutActor);

@@ -410,8 +410,7 @@ namespace AGX_ImporterToEditor_helpers
 		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
 	}
 
-	void WriteAssetToDisk(
-		const FString& RootDir, const FString& AssetType, UObject& Object)
+	void WriteAssetToDisk(const FString& RootDir, const FString& AssetType, UObject& Object)
 	{
 		const FString AssetName = Object.GetName();
 		const FString PackagePath =
@@ -471,11 +470,19 @@ namespace AGX_ImporterToEditor_helpers
 
 		if (Context->ShapeMaterials != nullptr)
 		{
-			const FString AssetType =
-				FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName();
+			const FString AssetType = FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName();
 			for (const auto& [Guid, Sm] : *Context->ShapeMaterials)
 			{
 				WriteAssetToDisk(RootDir, AssetType, *Sm);
+			}
+		}
+
+		if (Context->ContactMaterials != nullptr)
+		{
+			const FString AssetType = FAGX_ImportUtilities::GetImportContactMaterialDirectoryName();
+			for (const auto& [Guid, Cm] : *Context->ContactMaterials)
+			{
+				WriteAssetToDisk(RootDir, AssetType, *Cm);
 			}
 		}
 	}
@@ -575,6 +582,12 @@ namespace AGX_ImporterToEditor_helpers
 			for (auto& [Unused, Obj] : *Context.ShapeMaterials)
 				DestroyIfTransient(Obj);
 		}
+
+		if (Context.ContactMaterials != nullptr)
+		{
+			for (auto& [Unused, Obj] : *Context.ContactMaterials)
+				DestroyIfTransient(Obj);
+		}
 	}
 
 	template <typename TComponent>
@@ -611,8 +624,8 @@ namespace AGX_ImporterToEditor_helpers
 		UBlueprint& OutBlueprint)
 	{
 		const FName Name(*ReimportedComponent.GetName());
-		USCS_Node* Node = FindNodeAndResolveConflicts(
-			Guid, ReimportedComponent, OutGuidToNode, OutBlueprint);
+		USCS_Node* Node =
+			FindNodeAndResolveConflicts(Guid, ReimportedComponent, OutGuidToNode, OutBlueprint);
 
 		USCS_Node* Parent = GetCorrespondingAttachParent(OutBlueprint, Nodes, ReimportedComponent);
 		AGX_CHECK(Parent != nullptr);
