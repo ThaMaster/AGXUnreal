@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Import/AGX_ImportContext.h"
 #include "Import/AGX_Importer.h"
 #include "Import/AGX_ImporterSettings.h"
@@ -632,6 +633,16 @@ namespace AGX_ImporterToEditor_helpers
 		return OutBlueprint.SimpleConstructionScript->FindSCSNode(Name);
 	}
 
+	template <>
+	USCS_Node* FindNodeAndResolveConflicts<UAGX_CollisionGroupDisablerComponent>(
+		const FGuid& Guid, const UAGX_CollisionGroupDisablerComponent& ReimportedComponent,
+		TMap<FGuid, USCS_Node*>& OutGuidToNode, UBlueprint& OutBlueprint)
+	{
+		// UAGX_CollisionGroupDisablerComponent we look up by using the name.
+		const FName Name(*ReimportedComponent.GetName());
+		return OutBlueprint.SimpleConstructionScript->FindSCSNode(Name);
+	}
+
 	template <typename TComponent>
 	USCS_Node* GetOrCreateNode(
 		const FGuid& Guid, const TComponent& ReimportedComponent,
@@ -983,6 +994,7 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 
 	if (auto Component = Context.ModelSourceComponent)
 	{
+		AGX_CHECK(Nodes.ModelSourceComponent != nullptr);
 		CopyProperties(
 			*Component, *Nodes.ModelSourceComponent->ComponentTemplate, TransientToAsset);
 	}
@@ -1061,6 +1073,21 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 					Cast<UAGX_ContactMaterial>(TransientToAsset.FindRef(CMR->ContactMaterials[i]));
 				AGX_CHECK(CMR->ContactMaterials[i] != nullptr);
 			}
+		}
+	}
+
+	if (auto Component = Context.CollisionGroupDisabler)
+	{
+		FGuid UnusedGuid = FGuid::NewGuid();
+		TMap<FGuid, USCS_Node*> Unused;
+		USCS_Node* N = GetOrCreateNode(UnusedGuid, *Component, Nodes, Unused, Blueprint);
+		if (N == nullptr)
+			Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+		else
+		{
+			CopyProperties(
+				*Component, *Nodes.CollisionGroupDisablerComponent->ComponentTemplate,
+				TransientToAsset);
 		}
 	}
 

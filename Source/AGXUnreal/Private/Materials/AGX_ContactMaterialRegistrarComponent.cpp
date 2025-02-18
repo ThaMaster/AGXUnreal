@@ -143,6 +143,10 @@ void UAGX_ContactMaterialRegistrarComponent::CopyFrom(
 		if (auto Cm = GetOrCreateContactMaterial(Barrier, *Context))
 			ContactMaterials.Add(Cm);
 	}
+	
+	AGX_CHECK(Context->ContactMaterialRegistrar == nullptr);
+	if (Context->ContactMaterialRegistrar == nullptr)
+		Context->ContactMaterialRegistrar = this;
 }
 
 void UAGX_ContactMaterialRegistrarComponent::BeginPlay()

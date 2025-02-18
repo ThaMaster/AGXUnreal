@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
+#include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_BallConstraintComponent.h"
 #include "Constraints/AGX_CylindricalConstraintComponent.h"
 #include "Constraints/AGX_DistanceConstraintComponent.h"
@@ -253,7 +254,27 @@ EAGX_ImportResult FAGX_Importer::AddContactMaterialRegistrarComponent(
 	Component->CopyFrom(SimObjects.GetContactMaterials(), &Context);
 
 	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
-	Context.ContactMaterialRegistrar = Component;
+	return EAGX_ImportResult::Success;
+}
+
+EAGX_ImportResult FAGX_Importer::AddCollisionGroupDisablerComponent(
+	const FSimulationObjectCollection& SimObjects, AActor& OutActor)
+{
+	const FString Name = "AGX_CollisionGroupDisabler";
+	if (Context.CollisionGroupDisabler != nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_Importer::AddCollisionGroupDisablerComponent called, but a "
+				 "CollisionGroupDisablerComponent has already been added."));
+		return EAGX_ImportResult::RecoverableErrorsOccured;
+	}
+
+	auto Component = NewObject<UAGX_CollisionGroupDisablerComponent>(&OutActor);
+	Component->Rename(*Name);
+	Component->CopyFrom(SimObjects.GetDisabledCollisionGroups(), &Context);
+
+	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
 	return EAGX_ImportResult::Success;
 }
 
@@ -304,7 +325,11 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 		Res |=
 			AddComponent<UAGX_PrismaticConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
 
-	Res |= AddContactMaterialRegistrarComponent(SimObjects, OutActor);
+	if (SimObjects.GetContactMaterials().Num() > 0)
+		Res |= AddContactMaterialRegistrarComponent(SimObjects, OutActor);
+
+	if (SimObjects.GetDisabledCollisionGroups().Num() > 0)
+		Res |= AddCollisionGroupDisablerComponent(SimObjects, OutActor);
 
 	Res |= AddModelSourceComponent(OutActor);
 

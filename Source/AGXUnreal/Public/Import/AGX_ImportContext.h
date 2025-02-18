@@ -7,6 +7,7 @@
 
 struct FAGX_ImporterSettings;
 
+class UAGX_CollisionGroupDisablerComponent;
 class UAGX_ConstraintComponent;
 class UAGX_ContactMaterial;
 class UAGX_ContactMaterialRegistrarComponent;
@@ -48,6 +49,7 @@ struct AGXUNREAL_API FAGX_ImportContext
 
 	UAGX_ModelSourceComponent* ModelSourceComponent {nullptr};
 	UAGX_ContactMaterialRegistrarComponent* ContactMaterialRegistrar{nullptr};
+	UAGX_CollisionGroupDisablerComponent* CollisionGroupDisabler {nullptr};
 
 	FGuid SessionGuid;
 
