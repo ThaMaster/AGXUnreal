@@ -32,6 +32,10 @@ namespace AGX_TerrainMaterialSpec_helpers
 			UE_LOG(
 				LogAGX, Warning, TEXT("Found property named %s of type %s."), *Property->GetName(),
 				*Property->GetCPPType());
+			if (Property->HasAnyPropertyFlags(CPF_Deprecated))
+			{
+				continue;
+			}
 			void* PropertyMemory = Property->ContainerPtrToValuePtr<void>(StructMemory);
 			if (Property->GetCPPType() == CPPType)
 			{
@@ -56,6 +60,10 @@ namespace AGX_TerrainMaterialSpec_helpers
 			UE_LOG(
 				LogAGX, Warning, TEXT("Found property named %s of type %s."), *Property->GetName(),
 				*Property->GetCPPType());
+			if (Property->HasAnyPropertyFlags(CPF_Deprecated))
+			{
+				continue;
+			}
 			void* PropertyMemory = Property->ContainerPtrToValuePtr<void>(Object);
 			if (Property->GetCPPType() == CPPType)
 			{
