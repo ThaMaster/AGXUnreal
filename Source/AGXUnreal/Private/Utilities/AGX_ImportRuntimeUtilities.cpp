@@ -29,6 +29,6 @@ void FAGX_ImportRuntimeUtilities::OnComponentCreated(
 
 void FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(UObject& Object, const FGuid& SessionGuid)
 {
-	UMetaData* MetaData = Object.GetOutermost()->GetMetaData();
-	MetaData->SetValue(&Object, TEXT("AGX_ImportSessionGuid"), *SessionGuid.ToString());
+	if (auto MetaData = Object.GetOutermost()->GetMetaData())
+		MetaData->SetValue(&Object, TEXT("AGX_ImportSessionGuid"), *SessionGuid.ToString());
 }
