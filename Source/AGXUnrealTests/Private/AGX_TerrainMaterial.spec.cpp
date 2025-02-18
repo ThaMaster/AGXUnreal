@@ -185,7 +185,9 @@ void FAGX_TerrainMaterialSpec::Define()
 				   double BankStatePhi0Agx {1.0};
 				   Source->TerrainCompaction.BankStatePhi0 = BankStatePhi0Agx;
 
-				   UWorld* World = UWorld::CreateWorld(
+				   // Create a temporary world to hold our Terrain Material instance, so we don't
+				   // put stuff that shouldn't be there in the main world.
+				   TObjectPtr<UWorld> World = UWorld::CreateWorld(
 					   EWorldType::Game, false, TEXT("Terrain Material Test World"),
 					   GetTransientPackage());
 
@@ -240,6 +242,8 @@ void FAGX_TerrainMaterialSpec::Define()
 					   Source->GetShapeMaterialWireProperties());
 
 				   TestAllRealPropertiesHaveIncreasingValues(Destination, *this);
+
+				   World->DestroyWorld(false);
 			   });
 		});
 }
