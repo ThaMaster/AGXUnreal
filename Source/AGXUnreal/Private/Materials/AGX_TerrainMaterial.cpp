@@ -518,6 +518,7 @@ void UAGX_TerrainMaterial::Serialize(FArchive& Archive)
 
 void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 {
+	// Copy Bulk properties.
 	TerrainBulk = FAGX_TerrainBulkProperties();
 	TerrainBulk.AdhesionOverlapFactor = Source.GetAdhesionOverlapFactor();
 	TerrainBulk.Cohesion = Source.GetCohesion();
@@ -529,6 +530,7 @@ void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 	TerrainBulk.SwellFactor = Source.GetSwellFactor();
 	TerrainBulk.YoungsModulus = Source.GetYoungsModulus();
 
+	// Copy Compaction properties.
 	TerrainCompaction = FAGX_TerrainCompactionProperties();
 	TerrainCompaction.AngleOfReposeCompactionRate = Source.GetAngleOfReposeCompactionRate();
 	TerrainCompaction.BankStatePhi0 = Source.GetBankStatePhi();
@@ -541,6 +543,7 @@ void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 	TerrainCompaction.StressCutOffFraction = Source.GetStressCutOffFraction();
 	TerrainCompaction.DilatancyAngleScalingFactor = Source.GetDilatancyAngleScalingFactor();
 
+	// Copy Particle properties.
 	TerrainParticles = FAGX_TerrainParticleProperties();
 	TerrainParticles.AdhesionOverlapFactor = Source.GetParticleAdhesionOverlapFactor();
 	TerrainParticles.ParticleCohesion = Source.GetParticleCohesion();
@@ -555,6 +558,7 @@ void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 	TerrainParticles.ParticleTerrainYoungsModulus = Source.GetParticleTerrainYoungsModulus();
 	TerrainParticles.ParticleYoungsModulus = Source.GetParticleYoungsModulus();
 
+	// Copy Excavation properties.
 	TerrainExcavationContact = FAGX_TerrainExcavationContactProperties();
 	TerrainExcavationContact.AggregateStiffnessMultiplier =
 		Source.GetAggregateStiffnessMultiplier();
@@ -570,13 +574,14 @@ void UAGX_TerrainMaterial::CopyTerrainMaterialProperties(const UAGX_TerrainMater
 {
 	if (Source)
 	{
-		// As of now, this property is not used for terrain (replaced by the terrain specific bulk
-		// properties) and will always have default values.
-		Bulk = Source->Bulk;
-
-		Surface = Source->Surface;
 		TerrainBulk = Source->TerrainBulk;
 		TerrainCompaction = Source->TerrainCompaction;
+
+		// The rest of the properties are legacy and should not be used. Still copied to maintain
+		// consistency, and to keep our unit tests passing.
+		Bulk = Source->Bulk;
+		Surface = Source->Surface;
+		Wire = Source->Wire;
 	}
 }
 
