@@ -2,6 +2,11 @@
 
 #include "Utilities/AGX_ImportRuntimeUtilities.h"
 
+// AGX Dynamics for Unreal includes.
+#include "Import/AGX_ImportContext.h"
+#include "Materials/AGX_ShapeMaterial.h"
+#include "Materials/ShapeMaterialBarrier.h"
+
 // Unreal Engine includes.
 #include "Components/ActorComponent.h"
 
@@ -31,4 +36,29 @@ void FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(UObject& Object, const FGui
 {
 	if (auto MetaData = Object.GetOutermost()->GetMetaData())
 		MetaData->SetValue(&Object, TEXT("AGX_ImportSessionGuid"), *SessionGuid.ToString());
+}
+
+UAGX_ShapeMaterial* FAGX_ImportRuntimeUtilities::GetOrCreateShapeMaterial(
+	const FShapeMaterialBarrier& Barrier, FAGX_ImportContext* Context)
+{
+	if (!Barrier.HasNative())
+		return nullptr;
+
+	if (Context != nullptr && Context->ShapeMaterials != nullptr)
+	{
+		if (auto Existing = Context->ShapeMaterials->FindRef(Barrier.GetGuid()))
+			return Existing;
+	}
+	
+	auto Sm =
+		NewObject<UAGX_ShapeMaterial>(GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
+	Sm->CopyFrom(Barrier, Context);
+
+	if (Context != nullptr && Context->ShapeMaterials != nullptr)
+	{
+		OnAssetTypeCreated(*Sm, Context->SessionGuid);
+		Context->ShapeMaterials->Add(Barrier.GetGuid(), Sm);
+	}
+
+	return Sm;
 }

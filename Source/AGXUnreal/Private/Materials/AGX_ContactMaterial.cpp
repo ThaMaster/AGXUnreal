@@ -12,6 +12,7 @@
 #include "Import/AGX_ImportContext.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
+#include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
@@ -749,15 +750,19 @@ namespace AGX_ContactMaterial_helpers
 		if (!MBarrier1.HasNative() || !MBarrier2.HasNative())
 			return;
 
-		UAGX_ShapeMaterial* Material1 = Context.ShapeMaterials->FindRef(MBarrier1.GetGuid());
-		UAGX_ShapeMaterial* Material2 = Context.ShapeMaterials->FindRef(MBarrier2.GetGuid());
-		if (Material1 == nullptr || Material2 == nullptr)
-			return;
+		const FString Name1 = MBarrier1.GetName();
+		const FString Name2 = MBarrier2.GetName();
 
 		const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 			OutCm.GetOuter(),
 			FString::Printf(TEXT("CM_%s_%s"), *MBarrier1.GetName(), *MBarrier2.GetName()));
 		OutCm.Rename(*Name);
+
+		UAGX_ShapeMaterial* Material1 =
+			FAGX_ImportRuntimeUtilities::GetOrCreateShapeMaterial(MBarrier1, &Context);
+		UAGX_ShapeMaterial* Material2 =
+			FAGX_ImportRuntimeUtilities::GetOrCreateShapeMaterial(MBarrier2, &Context);
+		AGX_CHECK(Material1 != nullptr && Material2 != nullptr);
 
 		OutCm.Material1 = Material1;
 		OutCm.Material2 = Material2;

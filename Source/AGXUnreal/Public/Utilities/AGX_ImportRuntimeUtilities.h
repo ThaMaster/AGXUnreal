@@ -5,7 +5,10 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
+class FShapeMaterialBarrier;
+class UAGX_ShapeMaterial;
 class UActorComponent;
+struct FAGX_ImportContext;
 
 class AGXUNREAL_API FAGX_ImportRuntimeUtilities
 {
@@ -24,4 +27,7 @@ public:
 	static void OnComponentCreated(UActorComponent& OutComponent, AActor& Owner, const FGuid& SessionGuid);
 
 	static void OnAssetTypeCreated(UObject& OutObject, const FGuid& SessionGuid);
+
+	static UAGX_ShapeMaterial* GetOrCreateShapeMaterial(
+		const FShapeMaterialBarrier& Barrier, FAGX_ImportContext* Context);
 };

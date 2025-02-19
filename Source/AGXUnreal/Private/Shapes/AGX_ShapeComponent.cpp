@@ -360,21 +360,6 @@ namespace AGX_ShapeComponent_helpers
 		Component->SetStaticMesh(StaticMesh);
 		return Component;
 	}
-
-	UAGX_ShapeMaterial* GetOrCreateShapeMaterial(
-		const FShapeMaterialBarrier& Barrier, FAGX_ImportContext& Context)
-	{
-		check(Barrier.HasNative());
-		if (auto Existing = Context.ShapeMaterials->FindRef(Barrier.GetGuid()))
-			return Existing;
-
-		auto Sm = NewObject<UAGX_ShapeMaterial>(
-			GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
-		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Sm, Context.SessionGuid);
-		Sm->CopyFrom(Barrier, &Context);
-		return Sm;
-	}
-
 }
 
 void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportContext* Context)
@@ -413,7 +398,8 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 	const FShapeMaterialBarrier SMB = Barrier.GetMaterial();
 	if (SMB.HasNative())
 	{
-		UAGX_ShapeMaterial* Sm = GetOrCreateShapeMaterial(SMB, *Context);
+		UAGX_ShapeMaterial* Sm =
+			FAGX_ImportRuntimeUtilities::GetOrCreateShapeMaterial(SMB, Context);
 		ShapeMaterial = Sm;
 	}
 
