@@ -27,6 +27,8 @@ namespace AGX_TerrainMaterialSpec_helpers
 	 *
 	 * Visits nested struct properties recursively.
 	 *
+	 * Currently does not handle container properties such as arrays, maps, and sets.
+	 *
 	 * @param StructProperty Reflection data for the struct whose properties are being visited.
 	 * @param StructMemory Pointer to the struct described by StructProperty.
 	 * @param CPPType The name of the type that the callback should be called for.
@@ -61,6 +63,8 @@ namespace AGX_TerrainMaterialSpec_helpers
 	 * Run a callback for every non-deprecated property of the given CPPType in the given object.
 	 *
 	 * Visits nested struct properties recursively.
+	 *
+	 * Currently does not handle container properties such as arrays, maps, and sets.
 	 *
 	 * @param Object The object whose properties are to be visited.
 	 * @param CPPType The name of the type that the callback should be called for.
