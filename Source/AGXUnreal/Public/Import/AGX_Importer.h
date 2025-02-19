@@ -10,7 +10,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
-
 class FRigidBodyBarrier;
 class FShapeBarrier;
 class UAGX_ModelSourceComponent;
@@ -18,6 +17,7 @@ class UAGX_RigidBodyComponent;
 
 struct FAGX_ImporterSettings;
 struct FSimulationObjectCollection;
+struct FObserverFrameData;
 
 struct AGXUNREAL_API FAGX_ImportResult
 {
@@ -57,6 +57,9 @@ private:
 
 	EAGX_ImportResult AddCollisionGroupDisablerComponent(
 		const FSimulationObjectCollection& SimObjects, AActor& OutActor);
+
+	EAGX_ImportResult AddObserverFrame(
+		const FObserverFrameData& Frame, const FSimulationObjectCollection& SimObjects, AActor& OutActor);
 
 	template <typename TComponent, typename TBarrier>
 	EAGX_ImportResult AddComponent(

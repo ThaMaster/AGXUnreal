@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_ObserverFrameComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_BallConstraintComponent.h"
@@ -131,6 +132,7 @@ FAGX_Importer::FAGX_Importer()
 	Context.RigidBodies = MakeUnique<decltype(FAGX_ImportContext::RigidBodies)::ElementType>();
 	Context.Shapes = MakeUnique<decltype(FAGX_ImportContext::Shapes)::ElementType>();
 	Context.Constraints = MakeUnique<decltype(FAGX_ImportContext::Constraints)::ElementType>();
+	Context.ObserverFrames = MakeUnique<TMap<FGuid, UAGX_ObserverFrameComponent*>>();
 	Context.RenderStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.CollisionStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.RenderMaterials = MakeUnique<TMap<FGuid, UMaterialInterface*>>();
@@ -252,7 +254,6 @@ EAGX_ImportResult FAGX_Importer::AddContactMaterialRegistrarComponent(
 	auto Component = NewObject<UAGX_ContactMaterialRegistrarComponent>(&OutActor);
 	Component->Rename(*Name);
 	Component->CopyFrom(SimObjects.GetContactMaterials(), &Context);
-
 	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
 	return EAGX_ImportResult::Success;
 }
@@ -275,6 +276,28 @@ EAGX_ImportResult FAGX_Importer::AddCollisionGroupDisablerComponent(
 	Component->CopyFrom(SimObjects.GetDisabledCollisionGroups(), &Context);
 
 	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
+	return EAGX_ImportResult::Success;
+}
+
+EAGX_ImportResult FAGX_Importer::AddObserverFrame(
+	const FObserverFrameData& Frame, const FSimulationObjectCollection& SimObjects,
+	AActor& OutActor)
+{
+	auto Parent = Context.RigidBodies->FindRef(Frame.BodyGuid);
+	if (Parent == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_Importer::AddObserverFrame called for Observer Frame '%s', but the "
+				 "owning Rigid Body could not be found. The Observer Frame will not be imported."),
+			*Frame.Name);
+		return EAGX_ImportResult::RecoverableErrorsOccured;
+	}
+
+	auto Component = NewObject<UAGX_ObserverFrameComponent>(&OutActor);
+	Component->CopyFrom(Frame, &Context);
+	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
+	Component->AttachToComponent(Parent, FAttachmentTransformRules::KeepRelativeTransform);
 	return EAGX_ImportResult::Success;
 }
 
@@ -330,6 +353,9 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	if (SimObjects.GetDisabledCollisionGroups().Num() > 0)
 		Res |= AddCollisionGroupDisablerComponent(SimObjects, OutActor);
+
+	for (const auto& Frame : SimObjects.GetObserverFrames())
+		Res |= AddObserverFrame(Frame, SimObjects, OutActor);
 
 	Res |= AddModelSourceComponent(OutActor);
 

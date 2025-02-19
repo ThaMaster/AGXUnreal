@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_ObserverFrameComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AMOR/AGX_ShapeContactMergeSplitThresholds.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
@@ -533,6 +534,15 @@ namespace AGX_ImporterToEditor_helpers
 				return Nodes.RigidBodies.FindRef(Body->ImportGuid);
 		}
 
+		if constexpr (std::is_same_v<TComponent, UAGX_ObserverFrameComponent>)
+		{
+			// An observer frame always have a RigidBody as parent.
+			auto Body = Cast<UAGX_RigidBodyComponent>(Parent);
+			AGX_CHECK(Body != nullptr);
+			if (Body != nullptr)
+				return Nodes.RigidBodies.FindRef(Body->ImportGuid);
+		}
+
 		if constexpr (std::is_same_v<TComponent, UStaticMeshComponent>)
 		{
 			// A StaticMesh can have a Shape, RigidBody, StaticMesh or Root as parent.
@@ -985,6 +995,19 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 		for (const auto& [Guid, Component] : *Context.Constraints)
 		{
 			USCS_Node* N = GetOrCreateNode(Guid, *Component, Nodes, Nodes.Constraints, Blueprint);
+			if (N == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+			else
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+		}
+	}
+
+	if (Context.ObserverFrames != nullptr)
+	{
+		for (const auto& [Guid, Component] : *Context.ObserverFrames)
+		{
+			USCS_Node* N =
+				GetOrCreateNode(Guid, *Component, Nodes, Nodes.ObserverFrames, Blueprint);
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else

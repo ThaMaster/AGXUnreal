@@ -33,19 +33,19 @@ class FShapeMaterialBarrier;
 class FTwoBodyTireBarrier;
 class FTrackBarrier;
 
+struct AGXUNREALBARRIER_API FObserverFrameData
+{
+	FString Name;
+	FGuid BodyGuid;
+	FGuid ObserverGuid;
+	FTransform Transform;
+};
+
 struct AGXUNREALBARRIER_API FSimulationObjectCollection
 {
 public:
 	FSimulationObjectCollection() = default;
 	~FSimulationObjectCollection();
-
-	struct ObserverFrameData
-	{
-		FString Name;
-		FGuid BodyGuid;
-		FGuid ObserverGuid;
-		FTransform Transform;
-	};
 
 	TArray<FRigidBodyBarrier>& GetRigidBodies();
 	const TArray<FRigidBodyBarrier>& GetRigidBodies() const;
@@ -94,8 +94,8 @@ public:
 	TArray<std::pair<FString, FString>>& GetDisabledCollisionGroups();
 	const TArray<std::pair<FString, FString>>& GetDisabledCollisionGroups() const;
 
-	TArray<ObserverFrameData>& GetObserverFrames();
-	const TArray<ObserverFrameData>& GetObserverFrames() const;
+	TArray<FObserverFrameData>& GetObserverFrames();
+	const TArray<FObserverFrameData>& GetObserverFrames() const;
 
 	TArray<FShapeMaterialBarrier>& GetShapeMaterials();
 	const TArray<FShapeMaterialBarrier>& GetShapeMaterials() const;
@@ -137,7 +137,7 @@ private:
 	TArray<FRigidBodyBarrier> RigidBodies;
 	TArray<FContactMaterialBarrier> ContactMaterials;
 	TArray<std::pair<FString, FString>> DisabledCollisionGroups;
-	TArray<ObserverFrameData> ObserverFrames;
+	TArray<FObserverFrameData> ObserverFrames;
 	TArray<FShapeMaterialBarrier> ShapeMaterials;
 	TArray<FTwoBodyTireBarrier> TwoBodyTires;
 	TArray<FWireBarrier> Wires;
