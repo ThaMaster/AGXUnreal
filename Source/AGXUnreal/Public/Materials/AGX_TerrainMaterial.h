@@ -279,14 +279,16 @@ public:
 
 	virtual void Serialize(FArchive& Archive) override;
 
-	void CopyFrom(const FTerrainMaterialBarrier& Source);
-
 	FTerrainMaterialBarrier* GetOrCreateTerrainMaterialNative(UWorld* PlayingWorld);
+	FTerrainMaterialBarrier* GetTerrainMaterialNative();
 	UAGX_TerrainMaterial* GetOrCreateInstance(UWorld* PlayingWorld);
+	bool HasTerrainMaterialNative() const;
 	static UAGX_TerrainMaterial* CreateFromAsset(
 		UWorld* PlayingWorld, UAGX_TerrainMaterial* Source);
 
 	void CopyTerrainMaterialProperties(const UAGX_TerrainMaterial* Source);
+	void UpdateTerrainMaterialNativeProperties();
+	void CopyFrom(const FTerrainMaterialBarrier& Source);
 
 	bool IsInstance() const;
 
@@ -302,9 +304,6 @@ private:
 #endif
 
 	void CreateTerrainMaterialNative();
-	bool HasTerrainMaterialNative() const;
-	FTerrainMaterialBarrier* GetTerrainMaterialNative();
-	void UpdateTerrainMaterialNativeProperties();
 
 	TWeakObjectPtr<UAGX_TerrainMaterial> Asset;
 	TWeakObjectPtr<UAGX_TerrainMaterial> Instance;

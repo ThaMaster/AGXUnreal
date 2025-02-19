@@ -22,6 +22,9 @@ public:
 	/**
 	 * Sets the adhesion overlap factor of the bulk material, i.e what fraction of the particle
 	 * radius is allowed to overlap to simulate adhesion.
+	 *
+	 * As of AGX Dynamics versions 2.29 this property is deprecated. The the property with the same
+	 * name in Terrain Particle Properties instead.
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Material Bulk",
