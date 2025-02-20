@@ -1544,7 +1544,7 @@ void FAGX_SimObjectsImporterHelper::UpdateTwoBodyTire(
 	SetRigidBody(GetBody(Barrier.GetTireRigidBody()), Component.TireRigidBody);
 	SetRigidBody(GetBody(Barrier.GetHubRigidBody()), Component.HubRigidBody);
 	FAGX_ImportUtilities::Rename(Component, Barrier.GetName());
-	Component.CopyFrom(Barrier, ForceOverwriteInstances);
+	Component.CopyFrom(Barrier, nullptr);
 }
 
 UAGX_CollisionGroupDisablerComponent*

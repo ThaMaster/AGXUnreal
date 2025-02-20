@@ -590,7 +590,11 @@ void UAGX_ConstraintComponent::CopyFrom(
 	}
 
 	if (Context != nullptr && Context->Constraints != nullptr && Context->RigidBodies != nullptr)
+	{
 		AGX_ConstraintComponent_helpers::SetupBodyAttachments(Barrier, *this, *Context);
+		AGX_CHECK(!Context->Constraints->Contains(ImportGuid));
+		Context->Constraints->Add(ImportGuid, this);
+	}
 }
 
 void UAGX_ConstraintComponent::SetSolveType(EAGX_SolveType InSolveType)

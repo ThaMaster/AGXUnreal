@@ -35,6 +35,7 @@
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
 #include "Terrain/TerrainBarrier.h"
+#include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -111,6 +112,9 @@ namespace AGX_Importer_helpers
 		if constexpr (std::is_base_of_v<UAGX_ConstraintComponent, T>)
 			return *Context.Constraints.Get();
 
+		if constexpr (std::is_base_of_v<UAGX_TwoBodyTireComponent, T>)
+			return *Context.Tires.Get();
+
 		// Unsupported types will yield compile errors.
 	}
 
@@ -132,6 +136,7 @@ FAGX_Importer::FAGX_Importer()
 	Context.RigidBodies = MakeUnique<decltype(FAGX_ImportContext::RigidBodies)::ElementType>();
 	Context.Shapes = MakeUnique<decltype(FAGX_ImportContext::Shapes)::ElementType>();
 	Context.Constraints = MakeUnique<decltype(FAGX_ImportContext::Constraints)::ElementType>();
+	Context.Tires = MakeUnique<decltype(FAGX_ImportContext::Tires)::ElementType>();
 	Context.ObserverFrames = MakeUnique<TMap<FGuid, UAGX_ObserverFrameComponent*>>();
 	Context.RenderStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.CollisionStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
@@ -189,25 +194,18 @@ EAGX_ImportResult FAGX_Importer::AddComponent(
 	}
 
 	const FGuid Guid = Barrier.GetGuid();
-	auto& ProcessedComponents = AGX_Importer_helpers::GetComponentsMapFrom<TComponent>(Context);
-	if (ProcessedComponents.FindRef(Guid) != nullptr)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("FAGX_Importer::AddComponent called on Component '%s' that has already been "
-				 "added."),
-			*Barrier.GetName());
-		AGX_CHECK(false);
-		return EAGX_ImportResult::RecoverableErrorsOccured;
-	}
+	AGX_CHECK(
+		AGX_Importer_helpers::GetComponentsMapFrom<TComponent>(Context).FindRef(Guid) == nullptr);
 
 	TComponent* Component = NewObject<TComponent>(&OutActor);
 	const FString Name =
 		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(&OutActor, Barrier.GetName());
 	Component->CopyFrom(Barrier, &Context);
-	Component->AttachToComponent(&Parent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	if constexpr (std::is_base_of_v<USceneComponent, TComponent>)
+		Component->AttachToComponent(&Parent, FAttachmentTransformRules::KeepRelativeTransform);
+
 	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
-	ProcessedComponents.Add(Guid, Component);
 	return EAGX_ImportResult::Success;
 }
 
@@ -234,6 +232,7 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(AActor& Owner)
 	 */
 
 	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, Owner, Context.SessionGuid);
+	AGX_CHECK(Context.ModelSourceComponent == nullptr);
 	Context.ModelSourceComponent = Component;
 	return EAGX_ImportResult::Success;
 }
@@ -347,6 +346,9 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	for (const auto& C : SimObjects.GetPrismaticConstraints())
 		Res |=
 			AddComponent<UAGX_PrismaticConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
+
+	for (const auto& Tire : SimObjects.GetTwoBodyTires())
+		Res |= AddComponent<UAGX_TwoBodyTireComponent, FTwoBodyTireBarrier>(Tire, *Root, OutActor);
 
 	if (SimObjects.GetContactMaterials().Num() > 0)
 		Res |= AddContactMaterialRegistrarComponent(SimObjects, OutActor);

@@ -389,9 +389,10 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 	if (Msp.HasNative())
 		MergeSplitProperties.CopyFrom(Msp, Context);
 
-	if (Context == nullptr)
+	if (Context == nullptr || Context->Shapes == nullptr)
 		return; // We are done.
 
+	AGX_CHECK(!Context->Shapes->Contains(ImportGuid));
 	Context->Shapes->Add(ImportGuid, this);
 
 	////// Shape Material ///////

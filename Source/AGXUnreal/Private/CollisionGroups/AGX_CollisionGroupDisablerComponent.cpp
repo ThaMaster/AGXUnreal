@@ -206,6 +206,5 @@ void UAGX_CollisionGroupDisablerComponent::CopyFrom(
 		return; // We are done.
 
 	AGX_CHECK(Context->CollisionGroupDisabler == nullptr);
-	if (Context->CollisionGroupDisabler == nullptr)
-		Context->CollisionGroupDisabler = this;
+	Context->CollisionGroupDisabler = this;
 }

@@ -145,8 +145,7 @@ void UAGX_ContactMaterialRegistrarComponent::CopyFrom(
 	}
 	
 	AGX_CHECK(Context->ContactMaterialRegistrar == nullptr);
-	if (Context->ContactMaterialRegistrar == nullptr)
-		Context->ContactMaterialRegistrar = this;
+	Context->ContactMaterialRegistrar = this;
 }
 
 void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
