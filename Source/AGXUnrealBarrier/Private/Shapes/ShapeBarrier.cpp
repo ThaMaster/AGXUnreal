@@ -11,6 +11,7 @@
 #include "RigidBodyBarrier.h"
 #include "Shapes/RenderDataBarrier.h"
 #include "Shapes/RenderDataRef.h"
+#include "TypeConversions.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -126,6 +127,21 @@ bool FShapeBarrier::GetIsSensorGeneratingContactData() const
 {
 	check(HasNative());
 	return NativeRef->NativeGeometry->isSensorGeneratingContactData();
+}
+
+void FShapeBarrier::SetSurfaceVelocity(const FVector& SurfaceVelocity)
+{
+	check(HasNative());
+	agx::Vec3f SurfaceVelocityAGX = ConvertFloatDisplacement(SurfaceVelocity);
+	NativeRef->NativeGeometry->setSurfaceVelocity(SurfaceVelocityAGX);
+}
+
+FVector FShapeBarrier::GetSurfaceVelocity() const
+{
+	check(HasNative());
+	agx::Vec3f SurfaceVelocityAGX = NativeRef->NativeGeometry->getSurfaceVelocity();
+	FVector SurfaceVelocity = ConvertDisplacement(SurfaceVelocityAGX);
+	return SurfaceVelocity;
 }
 
 void FShapeBarrier::SetIsSensor(bool IsSensor, bool GenerateContactData)
