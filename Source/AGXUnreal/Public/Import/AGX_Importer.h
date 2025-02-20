@@ -12,6 +12,7 @@
 
 class FRigidBodyBarrier;
 class FShapeBarrier;
+class FShovelBarrier;
 class UAGX_ModelSourceComponent;
 class UAGX_RigidBodyComponent;
 
@@ -69,6 +70,8 @@ private:
 	EAGX_ImportResult AddShape(const FShapeBarrier& Shape, AActor& OutActor);
 
 	EAGX_ImportResult AddTrimeshShape(const FShapeBarrier& Shape, AActor& OutActor);
+
+	EAGX_ImportResult AddShovel(const FShovelBarrier& Shovel, AActor& OutActor);
 
 	FAGX_ImportContext Context;
 };

@@ -34,6 +34,8 @@
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "Terrain/AGX_ShovelComponent.h"
+#include "Terrain/ShovelBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Tires/TwoBodyTireBarrier.h"
@@ -115,13 +117,17 @@ namespace AGX_Importer_helpers
 		if constexpr (std::is_base_of_v<UAGX_TwoBodyTireComponent, T>)
 			return *Context.Tires.Get();
 
+		if constexpr (std::is_base_of_v<UAGX_ShovelComponent, T>)
+			return *Context.Shovels.Get();
+
 		// Unsupported types will yield compile errors.
 	}
 
+	template <typename TBarrier>
 	USceneComponent* GetOwningRigidBodyOrRoot(
-		const FShapeBarrier& Shape, const FAGX_ImportContext& Context, const AActor& Actor)
+		const TBarrier& Barrier, const FAGX_ImportContext& Context, const AActor& Actor)
 	{
-		FRigidBodyBarrier BodyBarrier = Shape.GetRigidBody();
+		FRigidBodyBarrier BodyBarrier = Barrier.GetRigidBody();
 		if (!BodyBarrier.HasNative())
 			return Actor.GetRootComponent();
 
@@ -137,6 +143,7 @@ FAGX_Importer::FAGX_Importer()
 	Context.Shapes = MakeUnique<decltype(FAGX_ImportContext::Shapes)::ElementType>();
 	Context.Constraints = MakeUnique<decltype(FAGX_ImportContext::Constraints)::ElementType>();
 	Context.Tires = MakeUnique<decltype(FAGX_ImportContext::Tires)::ElementType>();
+	Context.Shovels = MakeUnique<decltype(FAGX_ImportContext::Shovels)::ElementType>();
 	Context.ObserverFrames = MakeUnique<TMap<FGuid, UAGX_ObserverFrameComponent*>>();
 	Context.RenderStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.CollisionStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
@@ -146,6 +153,7 @@ FAGX_Importer::FAGX_Importer()
 	Context.MSThresholds = MakeUnique<decltype(FAGX_ImportContext::MSThresholds)::ElementType>();
 	Context.ShapeMaterials = MakeUnique<TMap<FGuid, UAGX_ShapeMaterial*>>();
 	Context.ContactMaterials = MakeUnique<TMap<FGuid, UAGX_ContactMaterial*>>();
+	Context.ShovelProperties = MakeUnique<TMap<FGuid, UAGX_ShovelProperties*>>();
 }
 
 FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)
@@ -198,8 +206,6 @@ EAGX_ImportResult FAGX_Importer::AddComponent(
 		AGX_Importer_helpers::GetComponentsMapFrom<TComponent>(Context).FindRef(Guid) == nullptr);
 
 	TComponent* Component = NewObject<TComponent>(&OutActor);
-	const FString Name =
-		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(&OutActor, Barrier.GetName());
 	Component->CopyFrom(Barrier, &Context);
 
 	if constexpr (std::is_base_of_v<USceneComponent, TComponent>)
@@ -350,6 +356,9 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	for (const auto& Tire : SimObjects.GetTwoBodyTires())
 		Res |= AddComponent<UAGX_TwoBodyTireComponent, FTwoBodyTireBarrier>(Tire, *Root, OutActor);
 
+	for (const auto& Shovel : SimObjects.GetShovels())
+		Res |= AddShovel(Shovel, OutActor);
+
 	if (SimObjects.GetContactMaterials().Num() > 0)
 		Res |= AddContactMaterialRegistrarComponent(SimObjects, OutActor);
 
@@ -400,4 +409,11 @@ EAGX_ImportResult FAGX_Importer::AddTrimeshShape(const FShapeBarrier& Shape, AAc
 	}
 
 	return Result;
+}
+
+EAGX_ImportResult FAGX_Importer::AddShovel(const FShovelBarrier& Shovel, AActor& OutActor)
+{
+	using namespace AGX_Importer_helpers;
+	auto Parent = GetOwningRigidBodyOrRoot(Shovel, Context, OutActor);
+	return AddComponent<UAGX_ShovelComponent, FShovelBarrier>(Shovel, *Parent, OutActor);
 }

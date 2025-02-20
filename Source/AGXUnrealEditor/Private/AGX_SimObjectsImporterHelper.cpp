@@ -1888,7 +1888,7 @@ void FAGX_SimObjectsImporterHelper::UpdateShovel(
 	ShovelComponent.CuttingDirection.Parent.Name = BodyName;
 
 	// Copy the values that have a 1:1 mapping from the Barrier to the Component.
-	ShovelComponent.CopyFrom(ShovelBarrier, ForceOverwriteInstances);
+	ShovelComponent.CopyFrom(ShovelBarrier, nullptr);
 
 	const FString Name = FString::Printf(TEXT("Shovel_%s"), *BaseName);
 	FAGX_ImportUtilities::Rename(ShovelComponent, Name);

@@ -17,6 +17,8 @@ class UAGX_ObserverFrameComponent;
 class UAGX_RigidBodyComponent;
 class UAGX_ShapeComponent;
 class UAGX_ShapeMaterial;
+class UAGX_ShovelComponent;
+class UAGX_ShovelProperties;
 class UAGX_TwoBodyTireComponent;
 class UMaterialInstanceConstant;
 class UMaterialInterface;
@@ -32,6 +34,7 @@ struct AGXUNREAL_API FAGX_ImportContext
 	TUniquePtr<TMap<FGuid, UAGX_ShapeComponent*>> Shapes;
 	TUniquePtr<TMap<FGuid, UAGX_ConstraintComponent*>> Constraints;
 	TUniquePtr<TMap<FGuid, UAGX_TwoBodyTireComponent*>> Tires;
+	TUniquePtr<TMap<FGuid, UAGX_ShovelComponent*>> Shovels;
 	TUniquePtr<TMap<FGuid, UAGX_ObserverFrameComponent*>> ObserverFrames;
 
 	// The key is the GUID of the Shape Component for which the render data Static Mesh
@@ -50,6 +53,7 @@ struct AGXUNREAL_API FAGX_ImportContext
 	TUniquePtr<TMap<FGuid, UAGX_MergeSplitThresholdsBase*>> MSThresholds;
 	TUniquePtr<TMap<FGuid, UAGX_ShapeMaterial*>> ShapeMaterials;
 	TUniquePtr<TMap<FGuid, UAGX_ContactMaterial*>> ContactMaterials;
+	TUniquePtr<TMap<FGuid, UAGX_ShovelProperties*>> ShovelProperties;
 
 	UAGX_ModelSourceComponent* ModelSourceComponent {nullptr};
 	UAGX_ContactMaterialRegistrarComponent* ContactMaterialRegistrar{nullptr};

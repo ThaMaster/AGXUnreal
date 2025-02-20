@@ -17,6 +17,9 @@
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Shapes/AGX_ShapeComponent.h"
+#include "Terrain/AGX_Shovel.h"
+#include "Terrain/AGX_ShovelProperties.h"
+#include "Terrain/ShovelBarrier.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
@@ -121,6 +124,9 @@ namespace AGX_ImporterToEditor_helpers
 
 		if constexpr (std::is_same_v<T, UAGX_ContactMaterial>)
 			return FAGX_ImportUtilities::GetImportContactMaterialDirectoryName();
+
+		if constexpr (std::is_same_v<T, UAGX_ShovelProperties>)
+			return FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName();
 	}
 
 	FString GetModelDirectoryPathFromBaseBlueprint(UBlueprint& BaseBP)
@@ -493,6 +499,15 @@ namespace AGX_ImporterToEditor_helpers
 				WriteAssetToDisk(RootDir, AssetType, *Cm);
 			}
 		}
+
+		if (Context->ShovelProperties != nullptr)
+		{
+			const FString AssetType = FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName();
+			for (const auto& [Guid, Cm] : *Context->ShovelProperties)
+			{
+				WriteAssetToDisk(RootDir, AssetType, *Cm);
+			}
+		}
 	}
 
 	template <typename T, typename = void>
@@ -603,6 +618,12 @@ namespace AGX_ImporterToEditor_helpers
 		if (Context.ContactMaterials != nullptr)
 		{
 			for (auto& [Unused, Obj] : *Context.ContactMaterials)
+				DestroyIfTransient(Obj);
+		}
+
+		if (Context.ShovelProperties != nullptr)
+		{
+			for (auto& [Unused, Obj] : *Context.ShovelProperties)
 				DestroyIfTransient(Obj);
 		}
 	}
@@ -959,6 +980,17 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateAssets(
 		}
 	}
 
+	if (Context.ShovelProperties != nullptr)
+	{
+		for (const auto& [Guid, Sp] : *Context.ShovelProperties)
+		{
+			const auto A = UpdateOrCreateAsset(*Sp, Context);
+			AGX_CHECK(A != nullptr);
+			if (A == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+		}
+	}
+
 	return Result;
 }
 
@@ -1008,6 +1040,18 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 		for (const auto& [Guid, Component] : *Context.Tires)
 		{
 			USCS_Node* N = GetOrCreateNode(Guid, *Component, Nodes, Nodes.TwoBodyTires, Blueprint);
+			if (N == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+			else
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+		}
+	}
+
+	if (Context.Shovels != nullptr)
+	{
+		for (const auto& [Guid, Component] : *Context.Shovels)
+		{
+			USCS_Node* N = GetOrCreateNode(Guid, *Component, Nodes, Nodes.Shovels, Blueprint);
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
