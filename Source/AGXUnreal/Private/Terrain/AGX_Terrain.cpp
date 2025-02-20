@@ -1808,6 +1808,8 @@ void AAGX_Terrain::UpdateParticlesArrays()
 			FName("User.Upscaling"), Upscaling);
 		ParticleUpsamplingComponent->SetNiagaraVariableFloat(
 			"User.Ease Step Size", EaseStepSize);
+		ParticleUpsamplingComponent->SetNiagaraVariableBool(
+			"User.ShowDebugGrid", bShowDebugBounds);
 	}
 
 #endif
