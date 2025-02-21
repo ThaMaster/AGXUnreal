@@ -1640,7 +1640,7 @@ UAGX_WireComponent* FAGX_SimObjectsImporterHelper::InstantiateWire(
 
 	// Copy simple properties such as radius and segment length. More complicated properties, such
 	// as physical material, winches and route nodes, are handled below.
-	Component->CopyFrom(Barrier);
+	Component->CopyFrom(Barrier, nullptr);
 
 	// Find and assign the physical material asset.
 	FShapeMaterialBarrier NativeMaterial = Barrier.GetMaterial();

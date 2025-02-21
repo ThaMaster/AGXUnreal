@@ -150,9 +150,11 @@ FAGX_SCSNodeCollection::FAGX_SCSNodeCollection(const UBlueprint& Bp)
 			if (Shovel->ImportGuid.IsValid())
 				Shovels.Add(Shovel->ImportGuid, Node);
 		}
-		else if (auto Wi = Cast<UAGX_WireComponent>(Component))
+		else if (auto Wire = Cast<UAGX_WireComponent>(Component))
 		{
-			// Not supported, will be ignored.
+			AGX_CHECK(!Wires.Contains(Wire->ImportGuid))
+			if (Wire->ImportGuid.IsValid())
+				Wires.Add(Wire->ImportGuid, Node);
 		}
 		else if (auto Tr = Cast<UAGX_TrackComponent>(Component))
 		{

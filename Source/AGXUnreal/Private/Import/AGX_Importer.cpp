@@ -42,6 +42,8 @@
 #include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Vehicle/TrackBarrier.h"
+#include "Wire/AGX_WireComponent.h"
+#include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
 #include "UObject/Package.h"
@@ -120,6 +122,9 @@ namespace AGX_Importer_helpers
 		if constexpr (std::is_base_of_v<UAGX_ShovelComponent, T>)
 			return *Context.Shovels.Get();
 
+		if constexpr (std::is_base_of_v<UAGX_WireComponent, T>)
+			return *Context.Wires.Get();
+
 		// Unsupported types will yield compile errors.
 	}
 
@@ -144,6 +149,7 @@ FAGX_Importer::FAGX_Importer()
 	Context.Constraints = MakeUnique<decltype(FAGX_ImportContext::Constraints)::ElementType>();
 	Context.Tires = MakeUnique<decltype(FAGX_ImportContext::Tires)::ElementType>();
 	Context.Shovels = MakeUnique<decltype(FAGX_ImportContext::Shovels)::ElementType>();
+	Context.Wires = MakeUnique<decltype(FAGX_ImportContext::Wires)::ElementType>();
 	Context.ObserverFrames = MakeUnique<TMap<FGuid, UAGX_ObserverFrameComponent*>>();
 	Context.RenderStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.CollisionStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
@@ -358,6 +364,9 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	for (const auto& Shovel : SimObjects.GetShovels())
 		Res |= AddShovel(Shovel, OutActor);
+
+	for (const auto& Wire : SimObjects.GetWires())
+		Res |= AddComponent<UAGX_WireComponent, FWireBarrier>(Wire, *Root, OutActor);
 
 	if (SimObjects.GetContactMaterials().Num() > 0)
 		Res |= AddContactMaterialRegistrarComponent(SimObjects, OutActor);
