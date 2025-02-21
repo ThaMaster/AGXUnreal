@@ -245,6 +245,8 @@ void SAGX_SynchronizeModelDialog::OnForceOverwritePropertiesClicked(ECheckBoxSta
 	bForceOverwriteProperties = NewCheckedState == ECheckBoxState::Checked;
 	if (bForceOverwriteProperties)
 		bForceReassignRenderMaterials = false; // These are incompatible.
+
+	RefreshGui();
 }
 
 void SAGX_SynchronizeModelDialog::OnForceReassignRenderMaterialsClicked(
@@ -253,6 +255,8 @@ void SAGX_SynchronizeModelDialog::OnForceReassignRenderMaterialsClicked(
 	bForceReassignRenderMaterials = NewCheckedState == ECheckBoxState::Checked;
 	if (bForceReassignRenderMaterials)
 		bForceOverwriteProperties = false; // These are incompatible.
+
+	RefreshGui();
 }
 
 #undef LOCTEXT_NAMESPACE
