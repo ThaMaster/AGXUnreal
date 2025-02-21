@@ -1915,7 +1915,7 @@ UAGX_TrackComponent* FAGX_SimObjectsImporterHelper::InstantiateTrack(
 
 	// Copy simple properties such as number of nodes and width. More complicated properties, such
 	// as Wheels, TrackProperties asset etc, are handled below.
-	Component->CopyFrom(Barrier);
+	Component->CopyFrom(Barrier, nullptr);
 
 	// Apply Shape Material.
 	FShapeMaterialBarrier ShapeMaterial = Barrier.GetMaterial();

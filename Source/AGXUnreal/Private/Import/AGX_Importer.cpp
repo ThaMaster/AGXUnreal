@@ -41,6 +41,7 @@
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/TrackBarrier.h"
 #include "Wire/AGX_WireComponent.h"
 #include "Wire/WireBarrier.h"
@@ -125,6 +126,9 @@ namespace AGX_Importer_helpers
 		if constexpr (std::is_base_of_v<UAGX_WireComponent, T>)
 			return *Context.Wires.Get();
 
+		if constexpr (std::is_base_of_v<UAGX_TrackComponent, T>)
+			return *Context.Tracks.Get();
+
 		// Unsupported types will yield compile errors.
 	}
 
@@ -150,6 +154,7 @@ FAGX_Importer::FAGX_Importer()
 	Context.Tires = MakeUnique<decltype(FAGX_ImportContext::Tires)::ElementType>();
 	Context.Shovels = MakeUnique<decltype(FAGX_ImportContext::Shovels)::ElementType>();
 	Context.Wires = MakeUnique<decltype(FAGX_ImportContext::Wires)::ElementType>();
+	Context.Tracks = MakeUnique<decltype(FAGX_ImportContext::Tracks)::ElementType>();
 	Context.ObserverFrames = MakeUnique<TMap<FGuid, UAGX_ObserverFrameComponent*>>();
 	Context.RenderStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.CollisionStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
@@ -160,6 +165,7 @@ FAGX_Importer::FAGX_Importer()
 	Context.ShapeMaterials = MakeUnique<TMap<FGuid, UAGX_ShapeMaterial*>>();
 	Context.ContactMaterials = MakeUnique<TMap<FGuid, UAGX_ContactMaterial*>>();
 	Context.ShovelProperties = MakeUnique<TMap<FGuid, UAGX_ShovelProperties*>>();
+	Context.TrackProperties = MakeUnique<TMap<FGuid, UAGX_TrackProperties*>>();
 }
 
 FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)
@@ -367,6 +373,9 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	for (const auto& Wire : SimObjects.GetWires())
 		Res |= AddComponent<UAGX_WireComponent, FWireBarrier>(Wire, *Root, OutActor);
+
+	for (const auto& Track : SimObjects.GetTracks())
+		Res |= AddComponent<UAGX_TrackComponent, FTrackBarrier>(Track, *Root, OutActor);
 
 	if (SimObjects.GetContactMaterials().Num() > 0)
 		Res |= AddContactMaterialRegistrarComponent(SimObjects, OutActor);

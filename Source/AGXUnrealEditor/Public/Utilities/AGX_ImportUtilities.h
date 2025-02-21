@@ -169,6 +169,7 @@ public:
 	static FString GetImportCollisionStaticMeshDirectoryName();
 	static FString GetImportRenderStaticMeshDirectoryName();
 	static FString GetImportShovelPropertiesDirectoryName();
+	static FString GetImportTrackPropertiesDirectoryName();
 
 	/**
 	 * Template version of the asset directory name getter.

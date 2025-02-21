@@ -28,6 +28,9 @@
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Vehicle/AGX_TrackComponent.h"
+#include "Vehicle/AGX_TrackProperties.h"
+#include "Vehicle/TrackBarrier.h"
 #include "Wire/AGX_WireComponent.h"
 
 // Unreal Engine includes.
@@ -128,6 +131,9 @@ namespace AGX_ImporterToEditor_helpers
 
 		if constexpr (std::is_same_v<T, UAGX_ShovelProperties>)
 			return FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName();
+
+		if constexpr (std::is_same_v<T, UAGX_TrackProperties>)
+			return FAGX_ImportUtilities::GetImportTrackPropertiesDirectoryName();
 	}
 
 	FString GetModelDirectoryPathFromBaseBlueprint(UBlueprint& BaseBP)
@@ -578,9 +584,19 @@ namespace AGX_ImporterToEditor_helpers
 		{
 			const FString AssetType =
 				FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName();
-			for (const auto& [Guid, Cm] : *Context->ShovelProperties)
+			for (const auto& [Guid, Sp] : *Context->ShovelProperties)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Cm);
+				WriteAssetToDisk(RootDir, AssetType, *Sp);
+			}
+		}
+
+		if (Context->TrackProperties != nullptr)
+		{
+			const FString AssetType =
+				FAGX_ImportUtilities::GetImportTrackPropertiesDirectoryName();
+			for (const auto& [Guid, Tp] : *Context->TrackProperties)
+			{
+				WriteAssetToDisk(RootDir, AssetType, *Tp);
 			}
 		}
 	}
@@ -699,6 +715,12 @@ namespace AGX_ImporterToEditor_helpers
 		if (Context.ShovelProperties != nullptr)
 		{
 			for (auto& [Unused, Obj] : *Context.ShovelProperties)
+				DestroyIfTransient(Obj);
+		}
+
+		if (Context.TrackProperties != nullptr)
+		{
+			for (auto& [Unused, Obj] : *Context.TrackProperties)
 				DestroyIfTransient(Obj);
 		}
 	}
@@ -1067,6 +1089,17 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateAssets(
 		}
 	}
 
+	if (Context.TrackProperties != nullptr)
+	{
+		for (const auto& [Guid, Tp] : *Context.TrackProperties)
+		{
+			const auto A = UpdateOrCreateAsset(*Tp, Context);
+			AGX_CHECK(A != nullptr);
+			if (A == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+		}
+	}
+
 	return Result;
 }
 
@@ -1143,6 +1176,18 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 		for (const auto& [Guid, Component] : *Context.Wires)
 		{
 			USCS_Node* N = GetOrCreateNode(Guid, *Component, Nodes, Nodes.Wires, Blueprint);
+			if (N == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+			else
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset, OverwriteRule);
+		}
+	}
+
+	if (Context.Tracks != nullptr)
+	{
+		for (const auto& [Guid, Component] : *Context.Tracks)
+		{
+			USCS_Node* N = GetOrCreateNode(Guid, *Component, Nodes, Nodes.Tracks, Blueprint);
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else

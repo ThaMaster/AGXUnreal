@@ -521,6 +521,11 @@ FString FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName()
 	return FString("ShovelProperties");
 }
 
+FString FAGX_ImportUtilities::GetImportTrackPropertiesDirectoryName()
+{
+	return FString("TrackProperties");
+}
+
 template <>
 AGXUNREALEDITOR_API_TEMPLATE FString
 FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeMaterial>()

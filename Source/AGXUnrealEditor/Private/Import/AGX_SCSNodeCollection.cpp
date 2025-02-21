@@ -156,9 +156,11 @@ FAGX_SCSNodeCollection::FAGX_SCSNodeCollection(const UBlueprint& Bp)
 			if (Wire->ImportGuid.IsValid())
 				Wires.Add(Wire->ImportGuid, Node);
 		}
-		else if (auto Tr = Cast<UAGX_TrackComponent>(Component))
+		else if (auto Track = Cast<UAGX_TrackComponent>(Component))
 		{
-			// Not supported, will be ignored.
+			AGX_CHECK(!Tracks.Contains(Track->ImportGuid))
+			if (Track->ImportGuid.IsValid())
+				Tracks.Add(Track->ImportGuid, Node);
 		}
 		else
 		{
