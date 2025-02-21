@@ -506,6 +506,8 @@ void UAGX_TrackProperties::CopyFrom(const FTrackPropertiesBarrier& Source)
 
 	MinStabilizingHingeNormalForce = Source.GetMinStabilizingHingeNormalForce();
 	StabilizingHingeFrictionParameter = Source.GetStabilizingHingeFrictionParameter();
+
+	ImportGuid = Source.GetGuid();
 }
 
 UAGX_TrackProperties* UAGX_TrackProperties::CreateInstanceFromAsset(

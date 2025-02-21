@@ -20,6 +20,7 @@ class UAGX_ShapeMaterial;
 class UAGX_ShovelComponent;
 class UAGX_ShovelProperties;
 class UAGX_TrackComponent;
+class UAGX_TrackInternalMergeProperties;
 class UAGX_TrackProperties;
 class UAGX_TwoBodyTireComponent;
 class UAGX_WireComponent;
@@ -60,6 +61,7 @@ struct AGXUNREAL_API FAGX_ImportContext
 	TUniquePtr<TMap<FGuid, UAGX_ContactMaterial*>> ContactMaterials;
 	TUniquePtr<TMap<FGuid, UAGX_ShovelProperties*>> ShovelProperties;
 	TUniquePtr<TMap<FGuid, UAGX_TrackProperties*>> TrackProperties;
+	TUniquePtr<TMap<FGuid, UAGX_TrackInternalMergeProperties*>> TrackMergeProperties;
 
 	UAGX_ModelSourceComponent* ModelSourceComponent {nullptr};
 	UAGX_ContactMaterialRegistrarComponent* ContactMaterialRegistrar{nullptr};

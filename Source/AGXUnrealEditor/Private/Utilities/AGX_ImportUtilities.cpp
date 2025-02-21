@@ -526,6 +526,11 @@ FString FAGX_ImportUtilities::GetImportTrackPropertiesDirectoryName()
 	return FString("TrackProperties");
 }
 
+FString FAGX_ImportUtilities::GetImportTrackMergePropertiesDirectoryName()
+{
+	return FString("TrackInternalMergeProperties");
+}
+
 template <>
 AGXUNREALEDITOR_API_TEMPLATE FString
 FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeMaterial>()

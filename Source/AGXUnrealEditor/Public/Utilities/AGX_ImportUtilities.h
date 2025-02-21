@@ -170,6 +170,7 @@ public:
 	static FString GetImportRenderStaticMeshDirectoryName();
 	static FString GetImportShovelPropertiesDirectoryName();
 	static FString GetImportTrackPropertiesDirectoryName();
+	static FString GetImportTrackMergePropertiesDirectoryName();
 
 	/**
 	 * Template version of the asset directory name getter.

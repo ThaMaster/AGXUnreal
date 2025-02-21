@@ -20,6 +20,7 @@
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/TrackPropertiesBarrier.h"
+#include "Vehicle/TrackWheelBarrier.h"
 
 // Unreal Engine includes.
 #include "Components/InstancedStaticMeshComponent.h"
@@ -193,17 +194,35 @@ namespace AGX_TrackComponent_helpers
 
 		if (auto Existing = Context.TrackProperties->FindRef(PropertiesBarrier.GetGuid()))
 			return Existing;
-		
+
 		auto Properties = NewObject<UAGX_TrackProperties>(
 			GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
 		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Properties, Context.SessionGuid);
 		Properties->CopyFrom(PropertiesBarrier);
 		const FString TrackName = Barrier.GetName();
-		const FString Name =
-			TrackName.IsEmpty() ? FString("AGX_TP_Track") : FString("AGX_TP_") + TrackName;
+		const FString Name = FString("AGX_TP_") + TrackName;
 		Properties->Rename(*Name);
 
 		Context.TrackProperties->Add(PropertiesBarrier.GetGuid(), Properties);
+		return Properties;
+	}
+
+	UAGX_TrackInternalMergeProperties* GetOrCreateMergeProperties(
+		const FTrackBarrier& Barrier, FAGX_ImportContext& Context)
+	{
+		const FGuid Guid = Barrier.GetGuid();
+		if (auto Existing = Context.TrackMergeProperties->FindRef(Guid))
+			return Existing;
+
+		auto Properties = NewObject<UAGX_TrackInternalMergeProperties>(
+			GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
+		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Properties, Context.SessionGuid);
+		Properties->CopyFrom(Barrier);
+		const FString TrackName = Barrier.GetName();
+		const FString Name = FString("AGX_TIMP_") + TrackName;
+		Properties->Rename(*Name);
+
+		Context.TrackMergeProperties->Add(Guid, Properties);
 		return Properties;
 	}
 }
@@ -244,6 +263,37 @@ void UAGX_TrackComponent::CopyFrom(const FTrackBarrier& Barrier, FAGX_ImportCont
 
 	ShapeMaterial = GetOrCreateShapeMaterial(Barrier, *Context);
 	TrackProperties = GetOrCreateTrackProperties(Barrier, *Context);
+	InternalMergeProperties = GetOrCreateMergeProperties(Barrier, *Context);
+
+	// Wheels.
+	auto SetRigidBody = [&](UAGX_RigidBodyComponent* Body, FAGX_RigidBodyReference& BodyRef)
+	{
+		if (Body == nullptr)
+			return;
+
+		BodyRef.Name = Body->GetFName();
+	};
+
+	for (const FTrackWheelBarrier& WheelBarrier : Barrier.GetWheels())
+	{
+		FAGX_TrackWheel Wheel;
+		auto WheelBodyBarrier = WheelBarrier.GetRigidBody();
+		if (WheelBodyBarrier.HasNative())
+		{
+			UAGX_RigidBodyComponent* Rb = Context->RigidBodies->FindRef(WheelBodyBarrier.GetGuid());
+			SetRigidBody(Rb, Wheel.RigidBody);
+		}
+
+		Wheel.bUseFrameDefiningComponent = false;
+		Wheel.RelativeLocation = WheelBarrier.GetRelativeLocation();
+		Wheel.RelativeRotation = WheelBarrier.GetRelativeRotation();
+		Wheel.Radius = static_cast<float>(WheelBarrier.GetRadius());
+		Wheel.Model = WheelBarrier.GetModel();
+		Wheel.bSplitSegments = WheelBarrier.GetSplitSegments();
+		Wheel.bMoveNodesToRotationPlane = WheelBarrier.GetMoveNodesToRotationPlane();
+		Wheel.bMoveNodesToWheel = WheelBarrier.GetMoveNodesToWheel();
+		Wheels.Add(Wheel);
+	}
 }
 
 int32 UAGX_TrackComponent::GetNumNodes() const

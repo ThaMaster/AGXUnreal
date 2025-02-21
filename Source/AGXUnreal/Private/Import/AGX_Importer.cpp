@@ -166,6 +166,7 @@ FAGX_Importer::FAGX_Importer()
 	Context.ContactMaterials = MakeUnique<TMap<FGuid, UAGX_ContactMaterial*>>();
 	Context.ShovelProperties = MakeUnique<TMap<FGuid, UAGX_ShovelProperties*>>();
 	Context.TrackProperties = MakeUnique<TMap<FGuid, UAGX_TrackProperties*>>();
+	Context.TrackMergeProperties = MakeUnique<TMap<FGuid, UAGX_TrackInternalMergeProperties*>>();
 }
 
 FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)

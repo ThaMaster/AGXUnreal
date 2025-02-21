@@ -29,6 +29,7 @@
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
+#include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/TrackBarrier.h"
 #include "Wire/AGX_WireComponent.h"
@@ -134,6 +135,9 @@ namespace AGX_ImporterToEditor_helpers
 
 		if constexpr (std::is_same_v<T, UAGX_TrackProperties>)
 			return FAGX_ImportUtilities::GetImportTrackPropertiesDirectoryName();
+
+		if constexpr (std::is_same_v<T, UAGX_TrackInternalMergeProperties>)
+			return FAGX_ImportUtilities::GetImportTrackMergePropertiesDirectoryName();
 	}
 
 	FString GetModelDirectoryPathFromBaseBlueprint(UBlueprint& BaseBP)
@@ -599,6 +603,15 @@ namespace AGX_ImporterToEditor_helpers
 				WriteAssetToDisk(RootDir, AssetType, *Tp);
 			}
 		}
+
+		if (Context->TrackMergeProperties != nullptr)
+		{
+			const FString AssetType = FAGX_ImportUtilities::GetImportTrackMergePropertiesDirectoryName();
+			for (const auto& [Guid, Tp] : *Context->TrackMergeProperties)
+			{
+				WriteAssetToDisk(RootDir, AssetType, *Tp);
+			}
+		}
 	}
 
 	template <typename T, typename = void>
@@ -721,6 +734,12 @@ namespace AGX_ImporterToEditor_helpers
 		if (Context.TrackProperties != nullptr)
 		{
 			for (auto& [Unused, Obj] : *Context.TrackProperties)
+				DestroyIfTransient(Obj);
+		}
+
+		if (Context.TrackMergeProperties != nullptr)
+		{
+			for (auto& [Unused, Obj] : *Context.TrackMergeProperties)
 				DestroyIfTransient(Obj);
 		}
 	}
@@ -1092,6 +1111,17 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateAssets(
 	if (Context.TrackProperties != nullptr)
 	{
 		for (const auto& [Guid, Tp] : *Context.TrackProperties)
+		{
+			const auto A = UpdateOrCreateAsset(*Tp, Context);
+			AGX_CHECK(A != nullptr);
+			if (A == nullptr)
+				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+		}
+	}
+
+	if (Context.TrackMergeProperties != nullptr)
+	{
+		for (const auto& [Guid, Tp] : *Context.TrackMergeProperties)
 		{
 			const auto A = UpdateOrCreateAsset(*Tp, Context);
 			AGX_CHECK(A != nullptr);

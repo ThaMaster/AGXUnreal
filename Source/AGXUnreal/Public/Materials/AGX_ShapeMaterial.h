@@ -136,7 +136,7 @@ public:
 	void SetSpookDampingBend(double InSpookDamping);
 
 	/*
-	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * The import Guid of this Object. Only used by the AGX Dynamics for Unreal import system.
 	 * Should never be assigned manually.
 	 */
 	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
