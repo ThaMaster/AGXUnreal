@@ -209,9 +209,10 @@ namespace AGX_ImporterToEditor_helpers
 	/**
 	 * Important, the TransientToAsset lookup only works for properties not inside arrays.
 	 */
+	template <typename TOverwriteRuleFunc>
 	void CopyPropertyRecursive(
 		const void* Archetype, const void* Source, void* OutDest, const FProperty* Property,
-		const TMap<UObject*, UObject*>& TransientToAsset)
+		const TMap<UObject*, UObject*>& TransientToAsset, TOverwriteRuleFunc OverwriteRule)
 	{
 		if (Property == nullptr || !Property->HasAnyPropertyFlags(CPF_Edit))
 			return;
@@ -229,7 +230,7 @@ namespace AGX_ImporterToEditor_helpers
 			if (UObject* Asset = TransientToAsset.FindRef(SourceObject))
 			{
 				const bool ShouldCopy =
-					Archetype == OutDest || Property->Identical(ArchetypeVal, DestVal);
+					Archetype == OutDest || OverwriteRule(Property, ArchetypeVal, DestVal);
 
 				if (ShouldCopy)
 					ObjectProperty->SetObjectPropertyValue(DestVal, Asset);
@@ -250,20 +251,23 @@ namespace AGX_ImporterToEditor_helpers
 				FProperty* StructPropertyField = *StructPropIt;
 				CopyPropertyRecursive(
 					StructArchetype, StructSource, StructDest, StructPropertyField,
-					TransientToAsset);
+					TransientToAsset, OverwriteRule);
 			}
 			return;
 		}
 
-		const bool ShouldCopy = Archetype == OutDest || Property->Identical(ArchetypeVal, DestVal);
+		const bool ShouldCopy =
+			Archetype == OutDest || OverwriteRule(Property, ArchetypeVal, DestVal);
 		if (ShouldCopy)
 			Property->CopyCompleteValue(DestVal, SourceVal);
 	}
 
 	// Similar to FAGX_ObjectUtilities::CopyProperties, but with some special handling for the
-	// TransientToAsset map.
+	// TransientToAsset map and overwrite rule.
+	template <typename TOverwriteRuleFunc>
 	bool CopyProperties(
-		const UObject& Source, UObject& OutDest, const TMap<UObject*, UObject*>& TransientToAsset)
+		const UObject& Source, UObject& OutDest, const TMap<UObject*, UObject*>& TransientToAsset,
+		TOverwriteRuleFunc OverwriteRule)
 	{
 		UClass* Class = Source.GetClass();
 		if (OutDest.GetClass() != Class)
@@ -284,27 +288,96 @@ namespace AGX_ImporterToEditor_helpers
 			for (TFieldIterator<FProperty> PropIt(Class); PropIt; ++PropIt)
 			{
 				const FProperty* Property = *PropIt;
-				CopyPropertyRecursive(&OutDest, &Source, Instance, Property, TransientToAsset);
+				CopyPropertyRecursive(
+					&OutDest, &Source, Instance, Property, TransientToAsset, OverwriteRule);
 			}
 		}
 
 		for (TFieldIterator<FProperty> PropIt(Class); PropIt; ++PropIt)
 		{
 			const FProperty* Property = *PropIt;
-			CopyPropertyRecursive(&OutDest, &Source, &OutDest, Property, TransientToAsset);
+			CopyPropertyRecursive(
+				&OutDest, &Source, &OutDest, Property, TransientToAsset, OverwriteRule);
 		}
 
 		return true;
+	}
+
+	bool DefaultOverwriteRule(
+		const FProperty* Property, const void* ArchetypeVal, const void* DestinationVal)
+	{
+		return Property->Identical(ArchetypeVal, DestinationVal);
+	}
+
+	bool ForceOverwriteRule(
+		const FProperty* Property, const void* ArchetypeVal, const void* DestinationVal)
+	{
+		return true;
+	}
+
+	bool RenderMaterialOverwriteRule(
+		const FProperty* Property, const void* ArchetypeVal, const void* DestinationVal)
+	{
+#if 1
+		if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
+		{
+			if (ObjectProperty->PropertyClass->IsChildOf(UMaterialInterface::StaticClass()))
+				return true; // Always overwrite material properties
+		}
+		else if (const FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Property))
+		{
+			if (const FObjectProperty* InnerObjectProperty =
+					CastField<FObjectProperty>(ArrayProperty->Inner))
+			{
+				if (InnerObjectProperty->PropertyClass->IsChildOf(
+						UMaterialInterface::StaticClass()))
+					return true; // Always overwrite arrays of material properties.
+			}
+		}
+#endif
+
+		// Default behavior for non-material properties.
+		return DefaultOverwriteRule(Property, ArchetypeVal, DestinationVal);
+	}
+
+	template <typename T>
+	void FixupRenderMaterialImpl(const TMap<UObject*, UObject*>& TransientToAsset, T& OutMesh)
+	{
+		UMaterialInterface* Asset =
+			Cast<UMaterialInterface>(TransientToAsset.FindRef(OutMesh.GetMaterial(0)));
+		if (Asset != nullptr)
+			OutMesh.SetMaterial(0, Asset);
 	}
 
 	// Because CopyProperties does not handle TransientToAsset objects inside arrays.
 	template <typename T>
 	void FixupRenderMaterial(const TMap<UObject*, UObject*>& TransientToAsset, T& OutMesh)
 	{
-		UMaterialInterface* Asset =
-			Cast<UMaterialInterface>(TransientToAsset.FindRef(OutMesh.GetMaterial(0)));
-		if (Asset != nullptr)
-			OutMesh.SetMaterial(0, Asset);
+		for (auto& Instance : FAGX_ObjectUtilities::GetArchetypeInstances(OutMesh))
+			FixupRenderMaterialImpl(TransientToAsset, *Instance);
+
+		FixupRenderMaterialImpl(TransientToAsset, OutMesh);
+	}
+
+	void FixupContactMaterialsImpl(
+		const TMap<UObject*, UObject*>& TransientToAsset,
+		UAGX_ContactMaterialRegistrarComponent& OutComp)
+	{
+		for (int32 i = 0; i < OutComp.ContactMaterials.Num(); i++)
+		{
+			if (auto Cm = TransientToAsset.FindRef(OutComp.ContactMaterials[i]))
+				OutComp.ContactMaterials[i] =	Cast<UAGX_ContactMaterial>(Cm);
+		}
+	}
+
+	void FixupContactMaterials(
+		const TMap<UObject*, UObject*>& TransientToAsset,
+		UAGX_ContactMaterialRegistrarComponent& OutComp)
+	{
+		for (auto& Instance : FAGX_ObjectUtilities::GetArchetypeInstances(OutComp))
+			FixupContactMaterialsImpl(TransientToAsset, *Instance);
+
+		FixupContactMaterialsImpl(TransientToAsset, OutComp);
 	}
 
 	bool ValidateImportEnum(EAGX_ImportResult Result)
@@ -503,7 +576,8 @@ namespace AGX_ImporterToEditor_helpers
 
 		if (Context->ShovelProperties != nullptr)
 		{
-			const FString AssetType = FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName();
+			const FString AssetType =
+				FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName();
 			for (const auto& [Guid, Cm] : *Context->ShovelProperties)
 			{
 				WriteAssetToDisk(RootDir, AssetType, *Cm);
@@ -797,7 +871,7 @@ UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
 }
 
 bool FAGX_ImporterToEditor::Reimport(
-	UBlueprint& BaseBP, const FAGX_ImporterSettings& Settings, UBlueprint* OpenBlueprint)
+	UBlueprint& BaseBP, const FAGX_AGXReimportSettings& Settings, UBlueprint* OpenBlueprint)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 
@@ -823,7 +897,7 @@ bool FAGX_ImporterToEditor::Reimport(
 	if (!ValidateImportEnum(FinalizeModelSourceComponent(*Result.Context, RootDirectory)))
 		return false;
 
-	const auto UpdateResult = UpdateBlueprint(BaseBP, Importer.GetContext());
+	const auto UpdateResult = UpdateBlueprint(BaseBP, Settings, Importer.GetContext());
 	if (!ValidateImportEnum(UpdateResult))
 		return false;
 
@@ -868,7 +942,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 		{
 			bool Result = AGX_MeshUtilities::CopyStaticMesh(&Source, Asset);
 			AGX_CHECK(Result);
-			Result = CopyProperties(Source, *Asset, TransientToAsset);
+			Result = CopyProperties(Source, *Asset, TransientToAsset, DefaultOverwriteRule);
 			FixupRenderMaterial(TransientToAsset, *Asset); // CopyProperties does not handle arrays.
 			AGX_CHECK(Result);
 		}
@@ -877,7 +951,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 	{
 		// For shared assets, we might be copying and saving multiple times here, but we assume
 		// these operations are relatively cheap, and keep the code simple here.
-		bool Result = CopyProperties(Source, *Asset, TransientToAsset);
+		bool Result = CopyProperties(Source, *Asset, TransientToAsset, DefaultOverwriteRule);
 		AGX_CHECK(Result);
 	}
 
@@ -892,14 +966,15 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 }
 
 EAGX_ImportResult FAGX_ImporterToEditor::UpdateBlueprint(
-	UBlueprint& Blueprint, const FAGX_ImportContext& Context)
+	UBlueprint& Blueprint, const FAGX_AGXReimportSettings& Settings,
+	const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 	EAGX_ImportResult Result = UpdateAssets(Blueprint, Context);
 	if (IsUnrecoverableError(Result))
 		return Result;
 
-	Result |= UpdateComponents(Blueprint, Context);
+	Result |= UpdateComponents(Blueprint, Settings, Context);
 	if (IsUnrecoverableError(Result))
 		return Result;
 
@@ -996,7 +1071,8 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateAssets(
 }
 
 EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
-	UBlueprint& Blueprint, const FAGX_ImportContext& Context)
+	UBlueprint& Blueprint, const FAGX_AGXReimportSettings& Settings,
+	const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 
@@ -1011,6 +1087,8 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 		*Nodes.RootComponent->ComponentTemplate, Context.SessionGuid);
 
 	EAGX_ImportResult Result = EAGX_ImportResult::Success;
+	auto OverwriteRule =
+		Settings.bForceOverwriteProperties ? ForceOverwriteRule : DefaultOverwriteRule;
 
 	if (Context.RigidBodies != nullptr)
 	{
@@ -1020,7 +1098,7 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
-				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset, OverwriteRule);
 		}
 	}
 
@@ -1032,7 +1110,7 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
-				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset, OverwriteRule);
 		}
 	}
 
@@ -1044,7 +1122,7 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
-				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset, OverwriteRule);
 		}
 	}
 
@@ -1056,7 +1134,7 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
-				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset, OverwriteRule);
 		}
 	}
 
@@ -1068,7 +1146,7 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
-				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset, OverwriteRule);
 		}
 	}
 
@@ -1081,7 +1159,7 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
-				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset, OverwriteRule);
 		}
 	}
 
@@ -1089,23 +1167,38 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 	{
 		AGX_CHECK(Nodes.ModelSourceComponent != nullptr);
 		CopyProperties(
-			*Component, *Nodes.ModelSourceComponent->ComponentTemplate, TransientToAsset);
+			*Component, *Nodes.ModelSourceComponent->ComponentTemplate, TransientToAsset,
+			OverwriteRule);
 	}
 
 	if (Context.Shapes != nullptr)
 	{
+		auto RenderMaterialRule =
+			Settings.bForceReassignRenderMaterials ? RenderMaterialOverwriteRule : OverwriteRule;
+
 		for (const auto& [Guid, Component] : *Context.Shapes)
 		{
 			USCS_Node* N = GetOrCreateNode(Guid, *Component, Nodes, Nodes.Shapes, Blueprint);
 			if (N == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
-				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+			{
+				CopyProperties(
+					*Component, *N->ComponentTemplate, TransientToAsset, RenderMaterialRule);
+
+				// CopyProperties does not handle TransientToAsset mappings in arrays such as render
+				// materials.
+				FixupRenderMaterial(
+					TransientToAsset, *Cast<UAGX_ShapeComponent>(N->ComponentTemplate));
+			}
 		}
 	}
 
 	if (Context.CollisionStaticMeshCom != nullptr)
 	{
+		auto RenderMaterialRule =
+			Settings.bForceReassignRenderMaterials ? RenderMaterialOverwriteRule : OverwriteRule;
+
 		for (const auto& [Guid, Component] : *Context.CollisionStaticMeshCom)
 		{
 			TMap<FGuid, USCS_Node*> Unused;
@@ -1114,7 +1207,8 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
 			{
-				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+				CopyProperties(
+					*Component, *N->ComponentTemplate, TransientToAsset, RenderMaterialRule);
 
 				// CopyProperties does not handle TransientToAsset mappings in arrays such as render
 				// materials.
@@ -1126,6 +1220,9 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 
 	if (Context.RenderStaticMeshCom != nullptr)
 	{
+		auto RenderMaterialRule =
+			Settings.bForceReassignRenderMaterials ? RenderMaterialOverwriteRule : OverwriteRule;
+
 		for (const auto& [Guid, Component] : *Context.RenderStaticMeshCom)
 		{
 			TMap<FGuid, USCS_Node*> Unused;
@@ -1134,7 +1231,8 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
 			else
 			{
-				CopyProperties(*Component, *N->ComponentTemplate, TransientToAsset);
+				CopyProperties(
+					*Component, *N->ComponentTemplate, TransientToAsset, RenderMaterialRule);
 
 				// CopyProperties does not handle TransientToAsset mappings in arrays such as render
 				// materials.
@@ -1155,17 +1253,13 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 		{
 			CopyProperties(
 				*Component, *Nodes.ContactMaterialRegistrarComponent->ComponentTemplate,
-				TransientToAsset);
+				TransientToAsset, OverwriteRule);
 
 			// We need to update CM pointers of the re-imported Contact Material Registrar since
 			// CopyProperties does not support TransientToAsset mapping of arrays.
-			auto CMR = Cast<UAGX_ContactMaterialRegistrarComponent>(N->ComponentTemplate);
-			for (int32 i = 0; i < CMR->ContactMaterials.Num(); i++)
-			{
-				CMR->ContactMaterials[i] =
-					Cast<UAGX_ContactMaterial>(TransientToAsset.FindRef(CMR->ContactMaterials[i]));
-				AGX_CHECK(CMR->ContactMaterials[i] != nullptr);
-			}
+			FixupContactMaterials(
+				TransientToAsset,
+				*Cast<UAGX_ContactMaterialRegistrarComponent>(N->ComponentTemplate));
 		}
 	}
 
@@ -1180,7 +1274,7 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 		{
 			CopyProperties(
 				*Component, *Nodes.CollisionGroupDisablerComponent->ComponentTemplate,
-				TransientToAsset);
+				TransientToAsset, OverwriteRule);
 		}
 	}
 

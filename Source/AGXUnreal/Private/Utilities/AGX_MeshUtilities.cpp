@@ -2236,9 +2236,11 @@ UMaterialInterface* AGX_MeshUtilities::CreateRenderMaterial(
 
 	auto Material = UMaterialInstanceDynamic::Create(Base, GetTransientPackage());
 	const FGuid Guid = MaterialBarrier.Guid;
-	const FString Name = MaterialBarrier.Name.IsNone()
+	const FString WantedName = MaterialBarrier.Name.IsNone()
 							 ? FString::Printf(TEXT("MI_RenderMaterial_%s"), *Guid.ToString())
 							 : FString::Printf(TEXT("MI_%s"), *MaterialBarrier.Name.ToString());
+	const FString Name =
+		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetTransientPackage(), WantedName);
 
 	Material->Rename(*Name);
 

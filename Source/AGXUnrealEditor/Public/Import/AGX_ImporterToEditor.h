@@ -12,6 +12,7 @@ class UBlueprint;
 
 struct FAGX_ImportContext;
 struct FAGX_ImporterSettings;
+struct FAGX_AGXReimportSettings;
 
 class AGXUNREALEDITOR_API FAGX_ImporterToEditor
 {
@@ -25,14 +26,17 @@ public:
 	 * Todo: Add comment.
 	 */
 	bool Reimport(
-		UBlueprint& BaseBP, const FAGX_ImporterSettings& Settings,
+		UBlueprint& BaseBP, const FAGX_AGXReimportSettings& Settings,
 		UBlueprint* OpenBlueprint = nullptr);
 
 private:
-	EAGX_ImportResult UpdateBlueprint(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
+	EAGX_ImportResult UpdateBlueprint(
+		UBlueprint& Blueprint, const FAGX_AGXReimportSettings& Settings,
+		const FAGX_ImportContext& Context);
 	EAGX_ImportResult UpdateAssets(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
-	EAGX_ImportResult UpdateComponents(UBlueprint& Blueprint, const FAGX_ImportContext& Context);
-
+	EAGX_ImportResult UpdateComponents(
+		UBlueprint& Blueprint, const FAGX_AGXReimportSettings& Settings,
+		const FAGX_ImportContext& Context);
 
 	template <typename T>
 	T* UpdateOrCreateAsset(T& Source, const FAGX_ImportContext& Context);

@@ -25,3 +25,9 @@ struct FAGX_UrdfImporterSettings : public FAGX_ImporterSettings
 
 	TArray<double> UrdfInitialJoints;
 };
+
+struct FAGX_AGXReimportSettings : public FAGX_ImporterSettings
+{
+	bool bForceOverwriteProperties = false;
+	bool bForceReassignRenderMaterials = false;
+};

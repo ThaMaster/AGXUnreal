@@ -296,7 +296,7 @@ namespace AGX_ShapeComponent_helpers
 	UMaterialInterface* GetOrCreateRenderMaterial(
 		const FRenderDataBarrier& RenderData, bool IsSensor, FAGX_ImportContext& Context)
 	{
-		if (Context.RenderMaterials == nullptr || !RenderData.HasMaterial())
+		if (Context.RenderMaterials == nullptr || !RenderData.HasNative() || !RenderData.HasMaterial())
 			return AGX_MeshUtilities::GetDefaultRenderMaterial(IsSensor);
 
 		const FAGX_RenderMaterial MBarrier = RenderData.GetMaterial();
@@ -305,6 +305,7 @@ namespace AGX_ShapeComponent_helpers
 
 		UMaterial* Base = AGX_MeshUtilities::GetDefaultRenderMaterial(IsSensor);
 		auto Result = AGX_MeshUtilities::CreateRenderMaterial(MBarrier, Base);
+		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Result, Context.SessionGuid);
 
 		if (Result != nullptr)
 			Context.RenderMaterials->Add(MBarrier.Guid, Result);
@@ -328,14 +329,11 @@ namespace AGX_ShapeComponent_helpers
 	}
 
 	UStaticMeshComponent* CreateStaticMeshComponent(
-		const FShapeBarrier& Shape, AActor& Owner, FAGX_ImportContext& Context)
+		const FShapeBarrier& Shape, AActor& Owner,
+		UMaterialInterface* Material, FAGX_ImportContext& Context)
 	{
 		AGX_CHECK(AGX_MeshUtilities::HasRenderDataMesh(Shape));
 		const FRenderDataBarrier RenderData = Shape.GetRenderData();
-
-		UMaterialInterface* Material =
-			GetOrCreateRenderMaterial(RenderData, Shape.GetIsSensor(), Context);
-		AGX_CHECK(Material != nullptr);
 
 		UStaticMesh* StaticMesh = GetOrCreateStaticMesh(RenderData, Material, Context);
 		AGX_CHECK(StaticMesh != nullptr);
@@ -414,11 +412,15 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 		Barrier.GetEnableCollisions() && Barrier.GetEnabled() && !Barrier.HasRenderData();
 	SetVisibility(Visible);
 
+	UMaterialInterface* Material =
+		GetOrCreateRenderMaterial(Barrier.GetRenderData(), Barrier.GetIsSensor(), *Context);
+	SetMaterial(0, Material);
+
 	////// Render Mesh ///////
 	if (Context->RenderStaticMeshes != nullptr && GetOwner() != nullptr &&
 		AGX_MeshUtilities::HasRenderDataMesh(Barrier))
 	{
-		UStaticMeshComponent* Mesh = CreateStaticMeshComponent(Barrier, *GetOwner(), *Context);
+		UStaticMeshComponent* Mesh = CreateStaticMeshComponent(Barrier, *GetOwner(), Material, *Context);
 		AGX_CHECK(Mesh != nullptr);
 		if (Mesh != nullptr)
 		{

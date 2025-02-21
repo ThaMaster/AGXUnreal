@@ -18,6 +18,7 @@
 #include "Constraints/AGX_ConstraintActor.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Constraints/AGX_ConstraintFrameActor.h"
+#include "Import/AGX_ImporterSettings.h"
 #include "Import/AGX_ModelSourceComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_ImportUtilities.h"
@@ -115,7 +116,7 @@ void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint, bool bOpenBlu
 			Window->SetContent(SynchronizeDialog);
 			FSlateApplication::Get().AddModalWindow(Window, nullptr);
 
-			if (auto OldSettings = SynchronizeDialog->ToSynchronizeModelSettings())
+			if (auto Settings = SynchronizeDialog->ToReimportSettings())
 			{
 				const static FString Info =
 					"Model synchronization may permanently remove or overwrite existing "
@@ -127,12 +128,8 @@ void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint, bool bOpenBlu
 					return false;
 				}
 
-				FAGX_ImporterSettings Settings; // Todo, remove old SyncImportSettings completely.
-				Settings.FilePath = OldSettings->FilePath;
-				Settings.bIgnoreDisabledTrimeshes = OldSettings->bIgnoreDisabledTrimeshes;
-				Settings.bOpenBlueprintEditorAfterImport = bOpenBlueprintEditorAfter;
 				FAGX_ImporterToEditor Importer;
-				Importer.Reimport(*OuterMostParent, Settings, &Blueprint);
+				Importer.Reimport(*OuterMostParent, *Settings, &Blueprint);
 			}
 
 			return false; // This tells the FTSTicker to not call this lambda again.
