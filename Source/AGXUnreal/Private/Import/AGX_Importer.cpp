@@ -93,7 +93,7 @@ namespace AGX_Importer_helpers
 
 	FString GetModelName(const FString& FilePath)
 	{
-		FString Name = FAGX_ObjectUtilities::SanitizeObjectName(FPaths::GetBaseFilename(FilePath));
+		FString Name = FAGX_ObjectUtilities::SanitizeObjectName(FPaths::GetBaseFilename(FilePath), nullptr);
 		if (Name.IsEmpty())
 		{
 			UE_LOG(
@@ -219,12 +219,12 @@ EAGX_ImportResult FAGX_Importer::AddComponent(
 		AGX_Importer_helpers::GetComponentsMapFrom<TComponent>(Context).FindRef(Guid) == nullptr);
 
 	TComponent* Component = NewObject<TComponent>(&OutActor);
+	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
 	Component->CopyFrom(Barrier, &Context);
 
 	if constexpr (std::is_base_of_v<USceneComponent, TComponent>)
 		Component->AttachToComponent(&Parent, FAttachmentTransformRules::KeepRelativeTransform);
-
-	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
+	
 	return EAGX_ImportResult::Success;
 }
 

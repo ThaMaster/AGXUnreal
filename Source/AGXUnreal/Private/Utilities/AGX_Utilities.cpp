@@ -83,7 +83,8 @@ AActor* UAGX_AGXUtilities::InstantiateActor(
 
 	UWorld* World = WorldContextObject->GetWorld();
 	FActorSpawnParameters Params;
-	Params.Name = *FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(World, TemplateActor->GetName());
+	Params.Name =
+		*FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(World, TemplateActor->GetName(), nullptr);
 	Params.Template = TemplateActor;
 	return World->SpawnActor<AActor>(AActor::StaticClass(), Transform, Params);
 }

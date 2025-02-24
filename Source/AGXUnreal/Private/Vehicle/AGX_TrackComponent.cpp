@@ -237,8 +237,8 @@ void UAGX_TrackComponent::CopyFrom(const FTrackBarrier& Barrier, FAGX_ImportCont
 	CollisionGroups = Barrier.GetCollisionGroups();
 	ImportGuid = Barrier.GetGuid();
 
-	const FString Name =
-		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetOwner(), Barrier.GetName());
+	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+		GetOwner(), Barrier.GetName(), UAGX_TrackComponent::StaticClass());
 	Rename(*Name);
 
 	if (Barrier.GetNumNodes() > 0)
@@ -260,6 +260,9 @@ void UAGX_TrackComponent::CopyFrom(const FTrackBarrier& Barrier, FAGX_ImportCont
 	if (Context == nullptr || Context->Tracks == nullptr || Context->ShapeMaterials == nullptr ||
 		Context->TrackProperties == nullptr)
 		return; // We are done.
+
+	AGX_CHECK(!Context->Tracks->Contains(ImportGuid));
+	Context->Tracks->Add(ImportGuid, this);
 
 	ShapeMaterial = GetOrCreateShapeMaterial(Barrier, *Context);
 	TrackProperties = GetOrCreateTrackProperties(Barrier, *Context);

@@ -260,7 +260,8 @@ namespace AGX_ShovelComponent_helpers
 		else
 			Name = FString::Printf(TEXT("Shovel_%s"), *RigidBody->GetName());
 
-		return FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(Shovel.GetOwner(), Name);
+		return FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+			Shovel.GetOwner(), Name, UAGX_ShovelComponent::StaticClass());
 	}
 
 	UAGX_ShovelProperties* CreateShovelProperties(

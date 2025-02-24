@@ -499,8 +499,8 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 void UAGX_RigidBodyComponent::CopyFrom(
 	const FRigidBodyBarrier& Barrier, FAGX_ImportContext* Context)
 {
-	const FString Name =
-		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetOuter(), Barrier.GetName());
+	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+		GetOuter(), Barrier.GetName(), UAGX_RigidBodyComponent::StaticClass());
 	Rename(*Name);
 
 	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();

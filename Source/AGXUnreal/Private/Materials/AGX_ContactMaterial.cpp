@@ -755,7 +755,7 @@ namespace AGX_ContactMaterial_helpers
 
 		const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 			OutCm.GetOuter(),
-			FString::Printf(TEXT("CM_%s_%s"), *MBarrier1.GetName(), *MBarrier2.GetName()));
+			FString::Printf(TEXT("CM_%s_%s"), *MBarrier1.GetName(), *MBarrier2.GetName()), nullptr);
 		OutCm.Rename(*Name);
 
 		UAGX_ShapeMaterial* Material1 =

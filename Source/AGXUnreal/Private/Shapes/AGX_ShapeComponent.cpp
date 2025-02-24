@@ -350,7 +350,7 @@ namespace AGX_ShapeComponent_helpers
 		const FTransform RelTransform = Shape.GetGeometryToShapeTransform().Inverse();
 
 		const FString ComponentName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
-			&Owner, FString::Printf(TEXT("RenderMesh_%s"), *Shape.GetShapeGuid().ToString()));
+			&Owner, FString::Printf(TEXT("RenderMesh_%s"), *Shape.GetShapeGuid().ToString()), nullptr);
 		UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(&Owner, *ComponentName);
 		FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, Owner, Context.SessionGuid);
 		Component->SetMaterial(0, Material);
@@ -368,8 +368,8 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 	bIsSensor = Barrier.GetIsSensor();
 	ImportGuid = Barrier.GetShapeGuid();
 	SurfaceVelocity = Barrier.GetSurfaceVelocity();
-	const FString Name =
-		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetOwner(), Barrier.GetName());
+	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+		GetOwner(), Barrier.GetName(), UAGX_ShapeComponent::StaticClass());
 	Rename(*Name);
 
 	const EAGX_ShapeSensorType BarrierSensorType = Barrier.GetIsSensorGeneratingContactData()

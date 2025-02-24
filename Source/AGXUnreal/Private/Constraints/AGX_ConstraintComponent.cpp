@@ -562,8 +562,8 @@ void UAGX_ConstraintComponent::CopyFrom(
 	SolveType = SolveTypeBarrier;
 	bComputeForces = Barrier.GetEnableComputeForces();
 
-	const FString Name =
-		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetOuter(), Barrier.GetName());
+	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+		GetOuter(), Barrier.GetName(), UAGX_ConstraintComponent::StaticClass());
 	Rename(*Name);
 
 	const static TArray<EGenericDofIndex> Dofs {

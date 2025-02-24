@@ -67,8 +67,9 @@ public:
 
 	/**
 	 * Returns a sanitized version of the given name that uses only valid characters.
+	 * UClass of the object can be passed to give a better default name in case of empty name.
 	 */
-	static FString SanitizeObjectName(const FString& Name);
+	static FString SanitizeObjectName(FString Name, UClass* Class);
 
 	/**
 	 * Makes an Object Name that is unique in the given context (Owner).
@@ -78,8 +79,9 @@ public:
 	/**
 	 * Combines SanitizeObjectName and MakeObjectNameUnique to make a valid, final name that can be
 	 * used for Components, Assets and Actors.
+	 * UClass of the object can be passed to give a better default name in case of empty name.
 	 */
-	static FString SanitizeAndMakeNameUnique(UObject* Owner, const FString& Name);
+	static FString SanitizeAndMakeNameUnique(UObject* Owner, const FString& Name, UClass* Class);
 
 	/**
 	 * Give a list of pointer-to-base, return a new list with the elements that

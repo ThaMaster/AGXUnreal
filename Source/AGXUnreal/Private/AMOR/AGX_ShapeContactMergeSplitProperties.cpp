@@ -121,7 +121,7 @@ void FAGX_ShapeContactMergeSplitProperties::CopyFrom(
 		GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
 	FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Thresholds, Context->SessionGuid);
 	const FString THName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
-		Thresholds->GetOuter(), FString::Printf(TEXT("AGX_SMST_%s"), *MSTGuid.ToString()));
+		Thresholds->GetOuter(), FString::Printf(TEXT("AGX_SMST_%s"), *MSTGuid.ToString()), nullptr);
 	Thresholds->Rename(*THName);
 	Thresholds->CopyFrom(ThresholdsBarrier);
 	Context->MSThresholds->Add(MSTGuid, Thresholds);

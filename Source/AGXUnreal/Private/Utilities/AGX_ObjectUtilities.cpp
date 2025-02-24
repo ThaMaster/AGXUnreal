@@ -155,8 +155,13 @@ bool FAGX_ObjectUtilities::CopyProperties(
 	return true;
 }
 
-FString FAGX_ObjectUtilities::SanitizeObjectName(const FString& Name)
+FString FAGX_ObjectUtilities::SanitizeObjectName(FString Name, UClass* Class)
 {
+	if (Class != nullptr && (Name.IsEmpty() || Name.Equals("None")))
+		Name = Class->GetName();
+
+	
+	Name.RemoveFromEnd("Component");
 	return MakeObjectNameFromDisplayLabel(Name, FName(*Name)).ToString();
 }
 
@@ -171,9 +176,10 @@ FString FAGX_ObjectUtilities::MakeObjectNameUnique(UObject* Owner, FString Name)
 	return Name;
 }
 
-FString FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(UObject* Owner, const FString& Name)
+FString FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+	UObject* Owner, const FString& Name, UClass* Class)
 {
-	return MakeObjectNameUnique(Owner, SanitizeObjectName(Name));
+	return MakeObjectNameUnique(Owner, SanitizeObjectName(Name, Class));
 }
 
 void FAGX_ObjectUtilities::GetActorsTree(
