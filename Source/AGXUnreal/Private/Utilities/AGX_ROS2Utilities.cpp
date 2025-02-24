@@ -366,9 +366,9 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertPositionData(
 		FVector3f Pos = D.Position;
 		Pos = CtM * Pos;
 		Pos.Y = -Pos.Y; // Flip Y due to left vs righ handed coordinates.
-		AppendFloatToUint8Array(D.Position.X, Msg.Data);
-		AppendFloatToUint8Array(D.Position.Y, Msg.Data);
-		AppendFloatToUint8Array(D.Position.Z, Msg.Data);
+		AppendFloatToUint8Array(Pos.X, Msg.Data);
+		AppendFloatToUint8Array(Pos.Y, Msg.Data);
+		AppendFloatToUint8Array(Pos.Z, Msg.Data);
 	}
 
 	// Since the points are unordered, height is 1 and width is the length of the point cloud.
@@ -406,9 +406,9 @@ FAGX_SensorMsgsPointCloud2 UAGX_ROS2Utilities::ConvertPositionIntensityData(
 		FVector3f Pos = D.Position;
 		Pos = CtM * Pos;
 		Pos.Y = -Pos.Y; // Flip Y due to left vs righ handed coordinates.
-		AppendFloatToUint8Array(D.Position.X, Msg.Data);
-		AppendFloatToUint8Array(D.Position.Y, Msg.Data);
-		AppendFloatToUint8Array(D.Position.Z, Msg.Data);
+		AppendFloatToUint8Array(Pos.X, Msg.Data);
+		AppendFloatToUint8Array(Pos.Y, Msg.Data);
+		AppendFloatToUint8Array(Pos.Z, Msg.Data);
 		AppendFloatToUint8Array(D.Intensity, Msg.Data);
 	}
 
