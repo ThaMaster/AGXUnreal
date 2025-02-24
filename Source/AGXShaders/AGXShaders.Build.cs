@@ -14,7 +14,11 @@ public class AGXShaders : ModuleRules
 			"Core", "Engine", "UnrealEd", "CoreUObject"
 		});
 
-    if (Target.bBuildEditor == true)
+        PublicDependencyModuleNames.AddRange(new string[] {
+            "AGXCommon", "AGXUnrealBarrier", "RHI", "RenderCore", "Core", "CoreUObject", "Engine",
+            "InputCore", "Niagara"});
+
+        if (Target.bBuildEditor == true)
     {
       PrivateDependencyModuleNames.Add("TargetPlatform");
     }
