@@ -48,8 +48,6 @@ public:
 	const FAGX_ImportContext& GetContext() const;
 
 private:
-	FAGX_ImportResult ImportAGXArchive(const FAGX_ImportSettings& Settings);
-
 	EAGX_ImportResult AddComponents(
 		const FSimulationObjectCollection& SimObjects, AActor& OutActor);
 

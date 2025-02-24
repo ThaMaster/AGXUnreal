@@ -76,24 +76,42 @@ namespace AGX_Importer_helpers
 	}
 
 	bool CreateSimulationObjectCollection(
-		const FString& FilePath, FSimulationObjectCollection& OutSimObjects)
+		const FAGX_ImportSettings& Settings, FSimulationObjectCollection& OutSimObjects)
 	{
-		if (!FAGXSimObjectsReader::ReadAGXArchive(FilePath, OutSimObjects))
+		bool Result = false;
+		if (Settings.ImportType == EAGX_ImportType::Agx)
+		{
+			if (FAGXSimObjectsReader::ReadAGXArchive(Settings.FilePath, OutSimObjects))
+				Result = true;
+		}
+		else if (Settings.ImportType == EAGX_ImportType::Urdf)
+		{
+			if (FAGXSimObjectsReader::ReadUrdf(
+					Settings.FilePath, Settings.UrdfPackagePath, Settings.UrdfInitialJoints, OutSimObjects))
+			{
+				Result = true;
+			}
+		}
+		else
 		{
 			UE_LOG(
 				LogAGX, Warning,
-				TEXT("Unable to import file '%s'. Log category LogAGX in the "
-					 "Output Log may contain more information."),
-				*FilePath);
-			return false;
+				TEXT("Unsupported import type for file: '%s'. Import will not be possible."),
+				*Settings.FilePath);
 		}
 
-		return true;
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to import file '%s'. Log category LogAGX in the "
+				 "Output Log may contain more information."),
+			*Settings.FilePath);
+		return Result;
 	}
 
 	FString GetModelName(const FString& FilePath)
 	{
-		FString Name = FAGX_ObjectUtilities::SanitizeObjectName(FPaths::GetBaseFilename(FilePath), nullptr);
+		FString Name =
+			FAGX_ObjectUtilities::SanitizeObjectName(FPaths::GetBaseFilename(FilePath), nullptr);
 		if (Name.IsEmpty())
 		{
 			UE_LOG(
@@ -171,16 +189,6 @@ FAGX_Importer::FAGX_Importer()
 
 FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImportSettings& Settings)
 {
-	if (Settings.ImportType == EAGX_ImportType::Agx)
-		return ImportAGXArchive(Settings);
-
-	// Todo: impl urdf as well!
-	UE_LOG(LogAGX, Error, TEXT("Unsupported Import type. Import will not be possible."));
-	return FAGX_ImportResult(EAGX_ImportResult::FatalError);
-}
-
-FAGX_ImportResult FAGX_Importer::ImportAGXArchive(const FAGX_ImportSettings& Settings)
-{
 	using namespace AGX_Importer_helpers;
 
 	Context.Settings = &Settings;
@@ -195,7 +203,7 @@ FAGX_ImportResult FAGX_Importer::ImportAGXArchive(const FAGX_ImportSettings& Set
 		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 
 	FSimulationObjectCollection SimObjects;
-	if (!CreateSimulationObjectCollection(Settings.FilePath, SimObjects))
+	if (!CreateSimulationObjectCollection(Settings, SimObjects))
 		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 
 	EAGX_ImportResult Result = AddComponents(SimObjects, *Actor);
@@ -234,7 +242,7 @@ EAGX_ImportResult FAGX_Importer::AddComponent(
 
 	if constexpr (std::is_base_of_v<USceneComponent, TComponent>)
 		Component->AttachToComponent(&Parent, FAttachmentTransformRules::KeepRelativeTransform);
-	
+
 	return EAGX_ImportResult::Success;
 }
 
