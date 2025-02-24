@@ -16,7 +16,7 @@ class FShovelBarrier;
 class UAGX_ModelSourceComponent;
 class UAGX_RigidBodyComponent;
 
-struct FAGX_ImporterSettings;
+struct FAGX_ImportSettings;
 struct FSimulationObjectCollection;
 struct FObserverFrameData;
 
@@ -44,10 +44,12 @@ class AGXUNREAL_API FAGX_Importer
 public:
 	FAGX_Importer();
 
-	FAGX_ImportResult Import(const FAGX_ImporterSettings& Settings);
+	FAGX_ImportResult Import(const FAGX_ImportSettings& Settings);
 	const FAGX_ImportContext& GetContext() const;
 
 private:
+	FAGX_ImportResult ImportAGXArchive(const FAGX_ImportSettings& Settings);
+
 	EAGX_ImportResult AddComponents(
 		const FSimulationObjectCollection& SimObjects, AActor& OutActor);
 

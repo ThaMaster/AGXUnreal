@@ -3,7 +3,7 @@
 #include "Widgets/AGX_SynchronizeModelDialog.h"
 
 // AGX Dynamics for Unreal includes.
-#include "Import/AGX_ImporterSettings.h"
+#include "Import/AGX_ImportSettings.h"
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
@@ -65,7 +65,7 @@ void SAGX_SynchronizeModelDialog::Construct(const FArguments& InArgs)
 	// clang-format on
 }
 
-TOptional<FAGX_AGXReimportSettings> SAGX_SynchronizeModelDialog::ToReimportSettings()
+TOptional<FAGX_ReimportSettings> SAGX_SynchronizeModelDialog::ToReimportSettings()
 {
 	if (!bUserHasPressedImportOrSynchronize)
 	{
@@ -80,7 +80,8 @@ TOptional<FAGX_AGXReimportSettings> SAGX_SynchronizeModelDialog::ToReimportSetti
 		return {};
 	}
 
-	FAGX_AGXReimportSettings Settings;
+	FAGX_ReimportSettings Settings;
+	Settings.ImportType = ImportType;
 	Settings.FilePath = FilePath;
 	Settings.bIgnoreDisabledTrimeshes = bIgnoreDisabledTrimesh;
 	Settings.bForceOverwriteProperties = bForceOverwriteProperties;

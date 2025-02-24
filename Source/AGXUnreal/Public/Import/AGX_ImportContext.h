@@ -5,7 +5,7 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-struct FAGX_ImporterSettings;
+struct FAGX_ImportSettings;
 
 class UAGX_CollisionGroupDisablerComponent;
 class UAGX_ConstraintComponent;
@@ -69,5 +69,5 @@ struct AGXUNREAL_API FAGX_ImportContext
 
 	FGuid SessionGuid;
 
-	const FAGX_ImporterSettings* Settings {nullptr};
+	const FAGX_ImportSettings* Settings {nullptr};
 };

@@ -10,7 +10,7 @@
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Import/AGX_ImportContext.h"
 #include "Import/AGX_Importer.h"
-#include "Import/AGX_ImporterSettings.h"
+#include "Import/AGX_ImportSettings.h"
 #include "Import/AGX_ModelSourceComponent.h"
 #include "Import/AGX_SCSNodeCollection.h"
 #include "Materials/AGX_ContactMaterial.h"
@@ -416,7 +416,7 @@ namespace AGX_ImporterToEditor_helpers
 	}
 
 	bool ValidateImportResult(
-		const FAGX_ImportResult& Result, const FAGX_ImporterSettings& Settings)
+		const FAGX_ImportResult& Result, const FAGX_ImportSettings& Settings)
 	{
 		if (Result.Actor == nullptr)
 		{
@@ -430,6 +430,20 @@ namespace AGX_ImporterToEditor_helpers
 		}
 
 		return ValidateImportEnum(Result.Result);
+	}
+
+	bool ValidateReimportSettings(const FAGX_ReimportSettings& Settings)
+	{
+		if (Settings.ImportType != EAGX_ImportType::Agx)
+		{
+			const FString Text = FString::Printf(
+				TEXT("Reimport is only supported for AGX Archives (.agx) files."));
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+				Text, "Reimport model");
+			return false;
+		}
+
+		return true;
 	}
 
 	bool ValidateBlueprintForReimport(const UBlueprint& Bp)
@@ -886,7 +900,7 @@ namespace AGX_ImporterToEditor_helpers
 	}
 }
 
-UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
+UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImportSettings& Settings)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 	FAGX_Importer Importer;
@@ -912,9 +926,12 @@ UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImporterSettings& Settings)
 }
 
 bool FAGX_ImporterToEditor::Reimport(
-	UBlueprint& BaseBP, const FAGX_AGXReimportSettings& Settings, UBlueprint* OpenBlueprint)
+	UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings, UBlueprint* OpenBlueprint)
 {
 	using namespace AGX_ImporterToEditor_helpers;
+
+	if (!ValidateReimportSettings(Settings))
+		return false;
 
 	if (!ValidateBlueprintForReimport(BaseBP))
 		return false;
@@ -1007,7 +1024,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 }
 
 EAGX_ImportResult FAGX_ImporterToEditor::UpdateBlueprint(
-	UBlueprint& Blueprint, const FAGX_AGXReimportSettings& Settings,
+	UBlueprint& Blueprint, const FAGX_ReimportSettings& Settings,
 	const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
@@ -1134,7 +1151,7 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateAssets(
 }
 
 EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
-	UBlueprint& Blueprint, const FAGX_AGXReimportSettings& Settings,
+	UBlueprint& Blueprint, const FAGX_ReimportSettings& Settings,
 	const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;

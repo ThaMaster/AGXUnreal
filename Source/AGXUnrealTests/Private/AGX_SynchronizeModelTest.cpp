@@ -14,7 +14,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_ImporterToBlueprint.h"
-#include "AGX_ImportSettings.h"
+#include "Import/AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
@@ -117,7 +117,7 @@ namespace AGX_SynchronizeModelTest_helpers
 			return false;
 		}
 
-		FAGX_SynchronizeModelSettings Settigns;
+		FAGX_ReimportSettings Settigns;
 		Settigns.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
 		Settigns.FilePath = ArchiveFilePath;
 

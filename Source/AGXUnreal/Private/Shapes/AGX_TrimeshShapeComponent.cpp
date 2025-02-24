@@ -6,7 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_MeshWithTransform.h"
 #include "Import/AGX_ImportContext.h"
-#include "Import/AGX_ImporterSettings.h"
+#include "Import/AGX_ImportSettings.h"
 #include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
 

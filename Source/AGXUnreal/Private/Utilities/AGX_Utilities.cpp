@@ -6,7 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "Import/AGX_Importer.h"
-#include "Import/AGX_ImporterSettings.h"
+#include "Import/AGX_ImportSettings.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGXUtilities.h"
 
@@ -57,10 +57,11 @@ FVector UAGX_AGXUtilities::CalculateCenterOfMass(const TArray<UAGX_RigidBodyComp
 
 AActor* UAGX_AGXUtilities::ImportAGXArchive(const FString& FilePath, bool IgnoreDisabledTrimeshes)
 {
-	FAGX_AGXImporterSettings Settings;
+	FAGX_ImportSettings Settings;
+	Settings.ImportType = EAGX_ImportType::Agx;
 	Settings.FilePath = FilePath;
 	Settings.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
-	Settings.bOpenBlueprintEditorAfterImport = false; // Todo: remove this member.
+	Settings.bOpenBlueprintEditorAfterImport = false;
 	FAGX_Importer Importer;
 	FAGX_ImportResult Result = Importer.Import(Settings);
 	return Result.Actor;

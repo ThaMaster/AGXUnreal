@@ -4,7 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
-#include "AGX_ImportSettings.h"
+#include "Import/AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
 #include "AGX_ObserverFrameComponent.h"
 #include "AGX_RigidBodyComponent.h"
@@ -26,6 +26,7 @@
 #include "Constraints/PrismaticBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
 #include "Import/AGX_ImportEnums.h"
+#include "Import/AGX_ImportSettings.h"
 #include "Import/AGX_ModelSourceComponent.h"
 #include "Import/AGXSimObjectsReader.h"
 #include "Import/SimulationObjectCollection.h"
@@ -1345,7 +1346,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 	template <typename TBarrier, typename TComponent>
 	USCS_Node* AddOrUpdateShape(
-		const TBarrier& Barrier, UBlueprint& BaseBP, const FAGX_SynchronizeModelSettings& Settings,
+		const TBarrier& Barrier, UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings,
 		TMap<FGuid, USCS_Node*>& ExistingShapes, FAGX_SimObjectsImporterHelper& Helper,
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& MSTsOnDisk,
 		USCS_Node* OverrideAttachParent = nullptr)
@@ -1377,7 +1378,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void AddOrUpdateRenderData(
 		const FShapeBarrier& ShapeBarrier, USCS_Node& AttachParent, UBlueprint& BaseBP,
 		SCSNodeCollection& SCSNodes, FAGX_SimObjectsImporterHelper& Helper,
-		const FAGX_SynchronizeModelSettings& Settings)
+		const FAGX_ReimportSettings& Settings)
 	{
 		if (!ShapeBarrier.HasRenderData())
 			return;
@@ -1439,7 +1440,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void AddOrUpdateRigidBodiesAndOwnedShapes(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
-		const FAGX_SynchronizeModelSettings& Settings,
+		const FAGX_ReimportSettings& Settings,
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& ExistingMSTAssets)
 	{
 		for (const auto& RbBarrier : SimulationObjects.GetRigidBodies())
@@ -1543,7 +1544,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void AddOrUpdateBodilessShapes(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
-		const FAGX_SynchronizeModelSettings& Settings,
+		const FAGX_ReimportSettings& Settings,
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& ExistingMSTAssets)
 	{
 		for (const auto& Barrier : SimulationObjects.GetSphereShapes())
@@ -1619,7 +1620,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void AddOrUpdateConstraints(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
-		const FAGX_SynchronizeModelSettings& Settings,
+		const FAGX_ReimportSettings& Settings,
 		const TMap<FGuid, UAGX_MergeSplitThresholdsBase*>& ExistingMSTAssets)
 	{
 		USCS_Node* RootNode = BaseBP.SimpleConstructionScript->GetDefaultSceneRootNode();
@@ -1701,7 +1702,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void AddOrUpdateTwoBodyTires(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
-		const FAGX_SynchronizeModelSettings& Settings)
+		const FAGX_ReimportSettings& Settings)
 	{
 		for (const auto& Barrier : SimulationObjects.GetTwoBodyTires())
 		{
@@ -1757,7 +1758,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void AddOrUpdateObserverFrames(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
-		const FAGX_SynchronizeModelSettings& Settings)
+		const FAGX_ReimportSettings& Settings)
 	{
 		for (const auto& ObserverFrame : SimulationObjects.GetObserverFrames())
 		{
@@ -1798,7 +1799,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void AddOrUpdateShovels(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects, FAGX_SimObjectsImporterHelper& Helper,
-		const FAGX_SynchronizeModelSettings& Settings)
+		const FAGX_ReimportSettings& Settings)
 	{
 		for (const FShovelBarrier& ShovelBarrier : SimulationObjects.GetShovels())
 		{
@@ -1888,7 +1889,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void AddOrUpdateAll(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects,
-		const FAGX_SynchronizeModelSettings& Settings, FAGX_SimObjectsImporterHelper& Helper)
+		const FAGX_ReimportSettings& Settings, FAGX_SimObjectsImporterHelper& Helper)
 	{
 		FScopedSlowTask ImportTask(110.f, LOCTEXT("AddOrUpdateAll", "Adding new data"), true);
 		ImportTask.MakeDialog();
@@ -1963,7 +1964,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 	void DeleteRemovedShapes(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
-		const FAGX_SynchronizeModelSettings& Settings, const FShapeGuidsCollection& NewShapeGuids)
+		const FAGX_ReimportSettings& Settings, const FShapeGuidsCollection& NewShapeGuids)
 	{
 		auto RemoveUnmatched =
 			[&BaseBP](const TMap<FGuid, bool>& NewGuids, TMap<FGuid, USCS_Node*>& ExistingGuids)
@@ -2008,7 +2009,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 
 	void DeleteRemovedStaticMeshComponents(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes, const FShapeGuidsCollection& NewShapeGuids,
-		const FAGX_SynchronizeModelSettings& Settings)
+		const FAGX_ReimportSettings& Settings)
 	{
 		// Delete removed Render Data.
 		for (auto It = SCSNodes.RenderStaticMeshComponents.CreateIterator(); It; ++It)
@@ -2679,7 +2680,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 	void DeleteRemovedComponents(
 		UBlueprint& BaseBP, SCSNodeCollection& SCSNodes,
 		const FSimulationObjectCollection& SimulationObjects,
-		const FAGX_SynchronizeModelSettings& Settings)
+		const FAGX_ReimportSettings& Settings)
 	{
 		const FShapeGuidsCollection NewShapeGuids = GetShapeGuids(SimulationObjects);
 
@@ -2766,7 +2767,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 		// synchronization.
 	}
 
-	bool SynchronizeModel(UBlueprint& BaseBP, const FAGX_SynchronizeModelSettings& Settings)
+	bool SynchronizeModel(UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings)
 	{
 		FScopedSlowTask ImportTask(100.f, LOCTEXT("SynchronizeModel", "Synchronizing Model"), true);
 		ImportTask.MakeDialog();
@@ -2830,7 +2831,7 @@ namespace AGX_ImporterToBlueprint_SynchronizeModel_helpers
 }
 
 bool AGX_ImporterToBlueprint::SynchronizeModel(
-	UBlueprint& BaseBP, const FAGX_SynchronizeModelSettings& Settings, UBlueprint* OpenBlueprint)
+	UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings, UBlueprint* OpenBlueprint)
 {
 	// During Model Synchronization, old assets are deleted and references to these assets are
 	// automatically cleared. Having the Blueprint Editor opened while doing this causes

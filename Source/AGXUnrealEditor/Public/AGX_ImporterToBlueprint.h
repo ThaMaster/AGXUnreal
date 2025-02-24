@@ -8,7 +8,7 @@
 class UBlueprint;
 class FString;
 struct FAGX_ImportSettings;
-struct FAGX_SynchronizeModelSettings;
+struct FAGX_ReimportSettings;
 
 namespace AGX_ImporterToBlueprint
 {
@@ -35,6 +35,6 @@ namespace AGX_ImporterToBlueprint
 	 * @return True if the Model synchronization was successful, false otherwise.
 	 */
 	AGXUNREALEDITOR_API bool SynchronizeModel(
-		UBlueprint& BaseBP, const FAGX_SynchronizeModelSettings& Settings,
+		UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings,
 		UBlueprint* OpenBlueprint = nullptr);
 }

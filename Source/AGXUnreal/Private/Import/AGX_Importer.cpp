@@ -20,7 +20,7 @@
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
-#include "Import/AGX_ImporterSettings.h"
+#include "Import/AGX_ImportSettings.h"
 #include "Import/AGX_ModelSourceComponent.h"
 #include "Import/AGXSimObjectsReader.h"
 #include "Import/SimulationObjectCollection.h"
@@ -169,7 +169,17 @@ FAGX_Importer::FAGX_Importer()
 	Context.TrackMergeProperties = MakeUnique<TMap<FGuid, UAGX_TrackInternalMergeProperties*>>();
 }
 
-FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImporterSettings& Settings)
+FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImportSettings& Settings)
+{
+	if (Settings.ImportType == EAGX_ImportType::Agx)
+		return ImportAGXArchive(Settings);
+
+	// Todo: impl urdf as well!
+	UE_LOG(LogAGX, Error, TEXT("Unsupported Import type. Import will not be possible."));
+	return FAGX_ImportResult(EAGX_ImportResult::FatalError);
+}
+
+FAGX_ImportResult FAGX_Importer::ImportAGXArchive(const FAGX_ImportSettings& Settings)
 {
 	using namespace AGX_Importer_helpers;
 
