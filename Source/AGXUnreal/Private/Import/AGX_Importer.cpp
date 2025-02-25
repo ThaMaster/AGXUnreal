@@ -100,11 +100,15 @@ namespace AGX_Importer_helpers
 				*Settings.FilePath);
 		}
 
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Unable to import file '%s'. Log category LogAGX in the "
-				 "Output Log may contain more information."),
-			*Settings.FilePath);
+		if (!Result)
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Unable to import file '%s'. Log category LogAGX in the "
+					 "Output Log may contain more information."),
+				*Settings.FilePath);
+		}
+
 		return Result;
 	}
 
