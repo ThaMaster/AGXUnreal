@@ -353,9 +353,9 @@ namespace AGX_ImporterToEditor_helpers
 	template <typename T>
 	void FixupRenderMaterialImpl(const TMap<UObject*, UObject*>& TransientToAsset, T& OutMesh)
 	{
-		UMaterialInterface* Asset =
-			Cast<UMaterialInterface>(TransientToAsset.FindRef(OutMesh.GetMaterial(0)));
-		if (Asset != nullptr)
+		auto CurrMat = OutMesh.GetMaterial(0);
+		UMaterialInterface* Asset = Cast<UMaterialInterface>(TransientToAsset.FindRef(CurrMat));
+		if (Asset != nullptr && CurrMat != Asset)
 			OutMesh.SetMaterial(0, Asset);
 	}
 
@@ -369,6 +369,20 @@ namespace AGX_ImporterToEditor_helpers
 		FixupRenderMaterialImpl(TransientToAsset, OutMesh);
 	}
 
+	void FixupContactMaterial(
+		const TMap<UObject*, UObject*>& TransientToAsset, UAGX_ContactMaterial& Cm)
+	{
+		auto CurrMat1 = Cm.Material1;
+		auto CurrMat2 = Cm.Material2;
+		auto AssetMat1 = Cast<UAGX_ShapeMaterial>(TransientToAsset.FindRef(CurrMat1));
+		auto AssetMat2 = Cast<UAGX_ShapeMaterial>(TransientToAsset.FindRef(CurrMat2));
+		if (AssetMat1 != nullptr && CurrMat1 != AssetMat1)
+			Cm.Material1 = AssetMat1;
+
+		if (AssetMat2 != nullptr && CurrMat2 != AssetMat2)
+			Cm.Material2 = AssetMat2;
+	}
+
 	void FixupContactMaterialsImpl(
 		const TMap<UObject*, UObject*>& TransientToAsset,
 		UAGX_ContactMaterialRegistrarComponent& OutComp)
@@ -376,7 +390,7 @@ namespace AGX_ImporterToEditor_helpers
 		for (int32 i = 0; i < OutComp.ContactMaterials.Num(); i++)
 		{
 			if (auto Cm = TransientToAsset.FindRef(OutComp.ContactMaterials[i]))
-				OutComp.ContactMaterials[i] =	Cast<UAGX_ContactMaterial>(Cm);
+				OutComp.ContactMaterials[i] = Cast<UAGX_ContactMaterial>(Cm);
 		}
 	}
 
@@ -415,8 +429,7 @@ namespace AGX_ImporterToEditor_helpers
 		return true;
 	}
 
-	bool ValidateImportResult(
-		const FAGX_ImportResult& Result, const FAGX_ImportSettings& Settings)
+	bool ValidateImportResult(const FAGX_ImportResult& Result, const FAGX_ImportSettings& Settings)
 	{
 		if (Result.Actor == nullptr)
 		{
@@ -436,10 +449,9 @@ namespace AGX_ImporterToEditor_helpers
 	{
 		if (Settings.ImportType != EAGX_ImportType::Agx)
 		{
-			const FString Text = FString::Printf(
-				TEXT("Reimport is only supported for AGX Archives (.agx) files."));
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				Text, "Reimport model");
+			const FString Text =
+				FString::Printf(TEXT("Reimport is only supported for AGX Archives (.agx) files."));
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Text, "Reimport model");
 			return false;
 		}
 
@@ -610,8 +622,7 @@ namespace AGX_ImporterToEditor_helpers
 
 		if (Context->TrackProperties != nullptr)
 		{
-			const FString AssetType =
-				FAGX_ImportUtilities::GetImportTrackPropertiesDirectoryName();
+			const FString AssetType = FAGX_ImportUtilities::GetImportTrackPropertiesDirectoryName();
 			for (const auto& [Guid, Tp] : *Context->TrackProperties)
 			{
 				WriteAssetToDisk(RootDir, AssetType, *Tp);
@@ -620,7 +631,8 @@ namespace AGX_ImporterToEditor_helpers
 
 		if (Context->TrackMergeProperties != nullptr)
 		{
-			const FString AssetType = FAGX_ImportUtilities::GetImportTrackMergePropertiesDirectoryName();
+			const FString AssetType =
+				FAGX_ImportUtilities::GetImportTrackMergePropertiesDirectoryName();
 			for (const auto& [Guid, Tp] : *Context->TrackMergeProperties)
 			{
 				WriteAssetToDisk(RootDir, AssetType, *Tp);
@@ -814,6 +826,18 @@ namespace AGX_ImporterToEditor_helpers
 		const FName Name(*ReimportedComponent.GetName());
 		USCS_Node* Node =
 			FindNodeAndResolveConflicts(Guid, ReimportedComponent, OutGuidToNode, OutBlueprint);
+		if (Node != nullptr &&
+			ReimportedComponent.GetClass() != Node->ComponentTemplate->GetClass())
+		{
+			// The type of the object have changed. Ideally, this should never happen (an object
+			// with a GUID has a new type during reimport), but Momentum sometimes does this for
+			// shape primitives that may be converted to a Trimesh but keep it's GUID.
+			// Setting nullptr here, we say we don't have a valid match, and we will create a
+			// completely new object. The old object will be removed automatically during the
+			// RemoveDeletedComponents stage.
+			OutGuidToNode.Remove(Guid);
+			Node = nullptr;
+		}
 
 		USCS_Node* Parent = nullptr;
 		if constexpr (std::is_base_of_v<USceneComponent, TComponent>)
@@ -981,6 +1005,15 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 
 	if (Asset == nullptr)
 	{
+		// We got a new Asset type object during reimport and it will be written to disk.
+		// Before we do that we need to ensure the object does not reference any transient objects.
+		// This is the case only for some Asset types, and is specially handled here.
+		if constexpr (std::is_same_v<T, UStaticMesh>)
+			FixupRenderMaterial(TransientToAsset, Source);
+
+		if constexpr (std::is_same_v<T, UAGX_ContactMaterial>)
+			FixupContactMaterial(TransientToAsset, Source);
+
 		WriteAssetToDisk(RootDirectory, AssetType, Source);
 		return &Source; // We are done.
 	}
@@ -1024,8 +1057,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 }
 
 EAGX_ImportResult FAGX_ImporterToEditor::UpdateBlueprint(
-	UBlueprint& Blueprint, const FAGX_ReimportSettings& Settings,
-	const FAGX_ImportContext& Context)
+	UBlueprint& Blueprint, const FAGX_ReimportSettings& Settings, const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 	EAGX_ImportResult Result = UpdateAssets(Blueprint, Context);
@@ -1151,8 +1183,7 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateAssets(
 }
 
 EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
-	UBlueprint& Blueprint, const FAGX_ReimportSettings& Settings,
-	const FAGX_ImportContext& Context)
+	UBlueprint& Blueprint, const FAGX_ReimportSettings& Settings, const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 
@@ -1302,10 +1333,17 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 				CopyProperties(
 					*Component, *N->ComponentTemplate, TransientToAsset, RenderMaterialRule);
 
+				auto BPStaticMeshComp = Cast<UStaticMeshComponent>(N->ComponentTemplate);
+
+				// This fixes an issue where the Static Mesh Component of the Blueprint has nullptr
+				// "KnownStaticMesh" property after the CopyProperties call (for some reason) which
+				// causes a crash. The underlying reason and what KnownStaticMesh is used for is not
+				// clear, but this seems to reset the property and fix the crash.
+				BPStaticMeshComp->PostApplyToComponent();
+
 				// CopyProperties does not handle TransientToAsset mappings in arrays such as render
 				// materials.
-				FixupRenderMaterial(
-					TransientToAsset, *Cast<UStaticMeshComponent>(N->ComponentTemplate));
+				FixupRenderMaterial(TransientToAsset, *BPStaticMeshComp);
 			}
 		}
 	}
@@ -1326,10 +1364,17 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 				CopyProperties(
 					*Component, *N->ComponentTemplate, TransientToAsset, RenderMaterialRule);
 
+				auto BPStaticMeshComp = Cast<UStaticMeshComponent>(N->ComponentTemplate);
+
+				// This fixes an issue where the Static Mesh Component of the Blueprint has nullptr
+				// "KnownStaticMesh" property after the CopyProperties call (for some reason) which
+				// causes a crash. The underlying reason and what KnownStaticMesh is used for is not
+				// clear, but this seems to reset the property and fix the crash.
+				BPStaticMeshComp->PostApplyToComponent();
+
 				// CopyProperties does not handle TransientToAsset mappings in arrays such as render
 				// materials.
-				FixupRenderMaterial(
-					TransientToAsset, *Cast<UStaticMeshComponent>(N->ComponentTemplate));
+				FixupRenderMaterial(TransientToAsset, *BPStaticMeshComp);
 			}
 		}
 	}
