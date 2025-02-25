@@ -3,14 +3,14 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 // AGX Dynamics for Unreal includes.
-#include "AGX_ImporterToBlueprint.h"
-#include "Import/AGX_ImportSettings.h"
 #include "AGX_LogCategory.h"
 #include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "AgxAutomationCommon.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
 #include "Constraints/AGX_ConstraintComponent.h"
+#include "Import/AGX_ImporterToEditor.h"
+#include "Import/AGX_ImportSettings.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
@@ -82,7 +82,8 @@ bool FImportArchiveBlueprintCommand::Update()
 	Settings.ImportType = EAGX_ImportType::Agx;
 	Settings.bOpenBlueprintEditorAfterImport = false;
 
-	UBlueprint* ChildBlueprint = AGX_ImporterToBlueprint::Import(Settings);
+	FAGX_ImporterToEditor Importer;
+	UBlueprint* ChildBlueprint = Importer.Import(Settings);
 	Contents = FAGX_BlueprintUtilities::GetOutermostParent(ChildBlueprint);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
@@ -120,7 +121,9 @@ bool FImportURDFBlueprintCommand::Update()
 	Settings.ImportType = EAGX_ImportType::Urdf;
 	Settings.bOpenBlueprintEditorAfterImport = false;
 
-	UBlueprint* ChildBlueprint = AGX_ImporterToBlueprint::Import(Settings);
+	FAGX_ImporterToEditor Importer;
+
+	UBlueprint* ChildBlueprint = Importer.Import(Settings);
 	Contents = FAGX_BlueprintUtilities::GetOutermostParent(ChildBlueprint);
 	Test.TestNotNull(TEXT("Contents"), Contents);
 	return true;
