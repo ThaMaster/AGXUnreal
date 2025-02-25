@@ -2043,6 +2043,11 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	FStaticMeshAttributes Attributes(MeshDescription);
 	Attributes.Register();
 
+#if !WITH_EDITOR
+	// Needed for render materials to show up for runtime imported meshes.
+	StaticMesh->GetStaticMaterials().Add(FStaticMaterial());
+#endif
+
 	// Fill MeshDescription with vertex data.
 	TMap<int32, FVertexID> VertexIDMap;
 
