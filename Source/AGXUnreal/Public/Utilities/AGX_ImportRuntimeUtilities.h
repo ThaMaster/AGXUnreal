@@ -5,6 +5,7 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
+class AActor;
 class FShapeMaterialBarrier;
 class UAGX_ShapeMaterial;
 class UActorComponent;

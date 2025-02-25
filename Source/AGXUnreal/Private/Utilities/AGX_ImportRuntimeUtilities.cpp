@@ -9,6 +9,8 @@
 
 // Unreal Engine includes.
 #include "Components/ActorComponent.h"
+#include "GameFramework/Actor.h"
+#include "UObject/MetaData.h"
 
 void FAGX_ImportRuntimeUtilities::WriteSessionGuid(
 	UActorComponent& Component, const FGuid& SessionGuid)
@@ -20,8 +22,8 @@ void FAGX_ImportRuntimeUtilities::WriteSessionGuid(
 void FAGX_ImportRuntimeUtilities::WriteSessionGuidToAssetType(
 	UObject& Object, const FGuid& SessionGuid)
 {
-	UMetaData* MetaData = Object.GetOutermost()->GetMetaData();
-	MetaData->SetValue(&Object, TEXT("AGX_ImportSessionGuid"), *SessionGuid.ToString());
+	if (auto MetaData = Object.GetOutermost()->GetMetaData())
+		MetaData->SetValue(&Object, TEXT("AGX_ImportSessionGuid"), *SessionGuid.ToString());
 }
 
 void FAGX_ImportRuntimeUtilities::OnComponentCreated(
@@ -34,8 +36,7 @@ void FAGX_ImportRuntimeUtilities::OnComponentCreated(
 
 void FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(UObject& Object, const FGuid& SessionGuid)
 {
-	if (auto MetaData = Object.GetOutermost()->GetMetaData())
-		MetaData->SetValue(&Object, TEXT("AGX_ImportSessionGuid"), *SessionGuid.ToString());
+	WriteSessionGuidToAssetType(Object, SessionGuid);
 }
 
 UAGX_ShapeMaterial* FAGX_ImportRuntimeUtilities::GetOrCreateShapeMaterial(

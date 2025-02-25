@@ -12,6 +12,9 @@
 #include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 
+// Unreal Engine includes.
+#include "UObject/Package.h"
+
 template <typename T>
 void FAGX_ShapeContactMergeSplitProperties::OnBeginPlayInternal(T& Owner)
 {

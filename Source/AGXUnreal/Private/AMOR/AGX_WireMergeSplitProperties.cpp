@@ -12,6 +12,9 @@
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Wire/AGX_WireComponent.h"
 
+// Unreal Engine includes.
+#include "UObject/Package.h"
+
 void FAGX_WireMergeSplitProperties::OnBeginPlay(UAGX_WireComponent& Owner)
 {
 	AGX_CHECK(Owner.HasNative());

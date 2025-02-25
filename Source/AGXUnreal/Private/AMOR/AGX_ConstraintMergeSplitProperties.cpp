@@ -11,6 +11,9 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 
+// Unreal Engine includes.
+#include "UObject/Package.h"
+
 void FAGX_ConstraintMergeSplitProperties::OnBeginPlay(UAGX_ConstraintComponent& Owner)
 {
 	AGX_CHECK(Owner.HasNative());
