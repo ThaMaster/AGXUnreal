@@ -98,6 +98,20 @@ namespace AGX_ImporterToEditor_helpers
 		return DirectoryPath;
 	}
 
+	// When saving an asset to disk, Unreal sometimes creates a redirector object with TransientPackage
+	// as owner. This object may cause name collisions on multiple imports done in a row because
+	// it may linger between imports.
+	void DestroyRedirectorAfterSave(UObject* SavedAsset)
+	{
+		if (SavedAsset == nullptr)
+			return;
+
+		auto RedirectorObj =
+			StaticFindObjectFast(UObject::StaticClass(), GetTransientPackage(), *SavedAsset->GetName());
+		if (RedirectorObj != nullptr && RedirectorObj != SavedAsset)
+			RedirectorObj->ConditionalBeginDestroy();
+	}
+
 	template <typename T>
 	FString GetAssetTypeFromType(const UObject& Asset)
 	{
@@ -545,6 +559,7 @@ namespace AGX_ImporterToEditor_helpers
 		Object.SetFlags(RF_Public | RF_Standalone);
 
 		FAGX_ObjectUtilities::SaveAsset(Object);
+		DestroyRedirectorAfterSave(&Object);
 	}
 
 	void WriteAssetsToDisk(const FString& RootDir, const FAGX_ImportContext* Context)
@@ -1052,6 +1067,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 
 	bool Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
 	AGX_CHECK(Result);
+	DestroyRedirectorAfterSave(Asset);
 	TransientToAsset.Add(&Source, Asset);
 	return Asset;
 }
