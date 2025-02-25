@@ -954,7 +954,6 @@ UAGX_TerrainMaterial* UAGX_TerrainMaterial::CreateFromAsset(
 	UWorld* PlayingWorld, UAGX_TerrainMaterial* Source)
 {
 	check(Source);
-	check(!Source->IsInstance());
 	check(PlayingWorld);
 	check(PlayingWorld->IsGameWorld());
 
