@@ -1855,7 +1855,7 @@ public:
 		: FSynchronizeModelTest(
 			  TEXT("ModifyBallConstraint"),
 			  TEXT("AGXUnreal.Editor.AGX_SynchronizeModelTest.ModifyBallConstraint"),
-			  TEXT("ball_constraint__initial.agx"), TEXT("ball_constraint__updated.agx"))
+			  TEXT("ball_constraint__initial1.agx"), TEXT("ball_constraint__updated.agx"))
 	{
 	}
 
@@ -2004,7 +2004,7 @@ public:
 		: FSynchronizeModelTest(
 			  TEXT("RemoveBallConstraint"),
 			  TEXT("AGXUnreal.Editor.AGX_SynchronizeModelTest.RemoveBallConstraint"),
-			  TEXT("ball_constraint__initial.agx"), TEXT("ball_constraint__removed.agx"))
+			  TEXT("ball_constraint__initial2.agx"), TEXT("ball_constraint__removed.agx"))
 	{
 	}
 
