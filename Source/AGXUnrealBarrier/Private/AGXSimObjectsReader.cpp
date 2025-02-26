@@ -425,7 +425,7 @@ namespace
 			agxTerrain::ShovelAggregateContactMaterialContainer* MaterialContainer =
 				Shovel->getShovelTerrainContactMaterialContainer();
 			NonFreeContactMaterials.Add(
-					MaterialContainer->getContactMaterial(EExcavationMode::PRIMARY));
+				MaterialContainer->getContactMaterial(EExcavationMode::PRIMARY));
 			NonFreeContactMaterials.Add(
 				MaterialContainer->getContactMaterial(EExcavationMode::DEFORM_BACK));
 			NonFreeContactMaterials.Add(
@@ -488,11 +488,10 @@ namespace
 			}
 
 			// Each shovel holds a prismatic.
-			NonFreeConstraints.Add(
-				Shovel->getPenetrationResistance()->getPenetrationPrismatic());
+			NonFreeConstraints.Add(Shovel->getPenetrationResistance()->getPenetrationPrismatic());
 
 			agxTerrain::AggregateContactGenerator* ContactGenerator =
-					Shovel->getAggregateContactGenerator();
+				Shovel->getAggregateContactGenerator();
 			NonFreeContactMaterials.Add(ContactGenerator->getAggregateShovelContactMaterial());
 			NonFreeContactMaterials.Add(ContactGenerator->getAggregateTerrainContactMaterial());
 
@@ -667,7 +666,11 @@ namespace
 		TSet<const agx::ContactMaterial*> NonFreeContactMaterials;
 
 		ReadTireModels(Simulation, Filename, OutSimObjects, NonFreeConstraints);
+// TODO This should really be 2.40.0.0, but that hasn't been released yet so `agx_version.h`
+// still lists 2.39.1.1.
+#if AGX_VERSION_GREATER_OR_EQUAL(2, 39, 1, 1)
 		ReadTerrainMaterials(Simulation, NonFreeMaterials, NonFreeContactMaterials);
+#endif
 		ReadShovels(
 			Simulation, OutSimObjects, NonFreeBodies, NonFreeGeometries, NonFreeConstraints,
 			NonFreeMaterials, NonFreeContactMaterials);
