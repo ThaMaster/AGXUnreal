@@ -574,8 +574,7 @@ namespace AGX_ImporterToEditor_helpers
 				FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName();
 			for (const auto& [Guid, MST] : *Context->MSThresholds)
 			{
-				if (auto SCMST = Cast<UAGX_ShapeContactMergeSplitThresholds>(MST))
-					WriteAssetToDisk(RootDir, AssetType, *SCMST);
+				WriteAssetToDisk(RootDir, AssetType, *MST);
 			}
 		}
 

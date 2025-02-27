@@ -117,7 +117,7 @@ void FAGX_ShapeContactMergeSplitProperties::CopyFrom(
 	if (auto MST = Context->MSThresholds->FindRef(MSTGuid))
 	{
 		Thresholds = Cast<UAGX_ShapeContactMergeSplitThresholds>(MST);
-		return;
+		return; // We are done.
 	}
 
 	Thresholds = NewObject<UAGX_ShapeContactMergeSplitThresholds>(

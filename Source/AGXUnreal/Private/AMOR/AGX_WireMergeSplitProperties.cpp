@@ -163,7 +163,7 @@ void FAGX_WireMergeSplitProperties::CopyFrom(
 	if (auto MST = Context->MSThresholds->FindRef(MSTGuid))
 	{
 		Thresholds = Cast<UAGX_WireMergeSplitThresholds>(MST);
-		return;
+		return; // We are done.
 	}
 
 	Thresholds = NewObject<UAGX_WireMergeSplitThresholds>(
