@@ -1321,10 +1321,10 @@ bool FCheckRenderDataImportedCommand::Update()
 #endif
 
 	UAGX_SphereShapeComponent* Sphere = GetByName<UAGX_SphereShapeComponent>(
-		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Render Data Geometry"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("RenderDataGeometry"));
 	UStaticMeshComponent* Mesh = GetByName<UStaticMeshComponent>(
 		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(
-						"RenderMesh_944C2AF4E9279E2C61D073B86467F6BA"));
+						"RenderMesh_D44C9070444AF0CAF2336CC3F8526D95"));
 
 	Test.TestNotNull(TEXT("Sphere"), Sphere);
 	Test.TestNotNull(TEXT("Mesh"), Mesh);
