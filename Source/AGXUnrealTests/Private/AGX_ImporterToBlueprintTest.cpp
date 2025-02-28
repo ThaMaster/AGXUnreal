@@ -1854,17 +1854,17 @@ bool FCheckWireImportedCommand::Update()
 	UAGX_WireComponent* Wire = GetByName<UAGX_WireComponent>(
 		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Wire"));
 	UAGX_RigidBodyComponent* WinchBody = GetByName<UAGX_RigidBodyComponent>(
-		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Winch Body"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("WinchBody"));
 	UAGX_CylinderShapeComponent* WinchShape = GetByName<UAGX_CylinderShapeComponent>(
-		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Winch Shape"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("WinchShape"));
 	UAGX_RigidBodyComponent* EyeBody = GetByName<UAGX_RigidBodyComponent>(
-		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Eye Body"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("EyeBody"));
 	UAGX_SphereShapeComponent* EyeShape = GetByName<UAGX_SphereShapeComponent>(
-		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Eye Shape"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("EyeShape"));
 	UAGX_RigidBodyComponent* BeadBody = GetByName<UAGX_RigidBodyComponent>(
-		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Bead Body"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("BeadBody"));
 	UAGX_CapsuleShapeComponent* BeadShape = GetByName<UAGX_CapsuleShapeComponent>(
-		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Bead Shape"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("BeadShape"));
 
 	Test.TestNotNull(TEXT("Wire"), Wire);
 	Test.TestNotNull(TEXT("Winch Body"), WinchBody);
@@ -1930,7 +1930,7 @@ bool FCheckWireImportedCommand::Update()
 	RangeHasType(22, 23, EWireNodeType::BodyFixed);
 
 	const FString WinchBodyName = Winch.BodyAttachment.Name.ToString();
-	Test.TestEqual(TEXT("Winch Body Name"), WinchBodyName, FString("Winch Body"));
+	Test.TestEqual(TEXT("Winch Body Name"), WinchBodyName, FString("WinchBody"));
 
 	auto RangeHasBody =
 		[this, &Nodes = Wire->RouteNodes](int32 Begin, int32 End, const FString& BodyName)
@@ -1943,9 +1943,9 @@ bool FCheckWireImportedCommand::Update()
 	};
 
 	RangeHasBody(0, 11, "None");
-	RangeHasBody(11, 12, "Eye Body");
+	RangeHasBody(11, 12, "EyeBody");
 	RangeHasBody(12, 22, "None");
-	RangeHasBody(22, 23, "Bead Body");
+	RangeHasBody(22, 23, "BeadBody");
 
 	return true;
 }

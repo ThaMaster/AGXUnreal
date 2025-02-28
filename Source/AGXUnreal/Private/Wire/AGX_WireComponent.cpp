@@ -1367,6 +1367,7 @@ void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier, FAGX_ImportContex
 	const bool bHaveBeginWinch = ConfigureWinch(EWireSide::Begin, *this, Barrier, *Context);
 	const bool bHaveEndWinch = ConfigureWinch(EWireSide::End, *this, Barrier, *Context);
 
+	RouteNodes.Empty();
 	if (!bHaveBeginWinch)
 	{
 		// Configure initial Body Fixe node. Some Body Fixed nodes are owned by the winch on that
