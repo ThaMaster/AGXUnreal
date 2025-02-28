@@ -9,6 +9,7 @@
 #include "Import/AGX_ImportSettings.h"
 #include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
+#include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/StaticMesh.h"
@@ -125,8 +126,18 @@ namespace TrimshShapeComponent_helpers
 		TArray<FVector3f> Tangents;
 		Tangents.SetNumZeroed(Vertices.Num());
 
+		const FString SourceName = Barrier.GetSourceName();
+		const FString NameFromSourceName =
+			SourceName.IsEmpty()
+				? ""
+				: FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+					  GetTransientPackage(), FString::Printf(TEXT("SM_%s"), *SourceName),
+					  UStaticMesh::StaticClass());
 		const FString Name =
-			FString::Printf(TEXT("SM_CollisionMesh_%s"), *Barrier.GetGuid().ToString());
+			NameFromSourceName.IsEmpty()
+				? FString::Printf(TEXT("SM_CollisionMesh_%s"), *Barrier.GetGuid().ToString())
+				: NameFromSourceName;
+
 		UStaticMesh* Mesh = AGX_MeshUtilities::CreateStaticMesh(
 			Vertices, Indices, Normals, UVs, Tangents, Name, Material);
 

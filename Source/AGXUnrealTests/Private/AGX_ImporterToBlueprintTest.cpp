@@ -3769,7 +3769,7 @@ bool FCheckShovelImportedCommand::Update()
 	Test.TestEqual(TEXT("Number of imported Components"), Components.Num(), ExpectedNumComponents);
 
 	UAGX_RigidBodyComponent* ShovelBody = GetByName<UAGX_RigidBodyComponent>(
-		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Shovel Body"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("ShovelBody"));
 	Test.TestNotNull(TEXT("Shovel Body"), ShovelBody);
 	if (ShovelBody == nullptr)
 		return true;
@@ -3781,7 +3781,7 @@ bool FCheckShovelImportedCommand::Update()
 		TEXT("Shovel Body Position"), ShovelBody->GetRelativeLocation(), FVector(0.0, 0.0, 100.0));
 
 	UAGX_BoxShapeComponent* VerticalBox = GetByName<UAGX_BoxShapeComponent>(
-		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("Vertical Box"));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("VerticalBox"));
 	Test.TestNotNull(TEXT("Vertical Box"), VerticalBox);
 	if (VerticalBox == nullptr)
 		return true;
@@ -3793,7 +3793,7 @@ bool FCheckShovelImportedCommand::Update()
 		TEXT("Vertical Box Half Extent"), VerticalBox->HalfExtent, FVector(10.0, 100.0, 100.0));
 
 	UAGX_ShovelComponent* Shovel = GetByName<UAGX_ShovelComponent>(
-		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(TEXT("Shovel_Shovel Body")));
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName(TEXT("Shovel_ShovelBody")));
 	Test.TestNotNull(TEXT("Shovel Component"), Shovel);
 	if (Shovel == nullptr)
 		return true;
@@ -3807,25 +3807,25 @@ bool FCheckShovelImportedCommand::Update()
 		AgxToUnrealDisplacement(0.1, -1.0, 1.0));
 	Test.TestEqual(
 		TEXT("Top Edge Start Parent Name"), Shovel->TopEdge.Start.Parent.Name,
-		FName(TEXT("Shovel Body")));
+		FName(TEXT("ShovelBody")));
 	Test.TestEqual(
 		TEXT("Top Edge End Location"), Shovel->TopEdge.End.LocalLocation,
 		AgxToUnrealDisplacement(0.1, 1.0, 1.0));
 	Test.TestEqual(
 		TEXT("Top Edge End Parent Name"), Shovel->TopEdge.End.Parent.Name,
-		FName(TEXT("Shovel Body")));
+		FName(TEXT("ShovelBody")));
 	Test.TestEqual(
 		TEXT("Cutting Edge Start Location"), Shovel->CuttingEdge.Start.LocalLocation,
 		AgxToUnrealDisplacement(1.0, -1.0, 0.1));
 	Test.TestEqual(
 		TEXT("Cutting Edge Start Parent Name"), Shovel->CuttingEdge.Start.Parent.Name,
-		FName(TEXT("Shovel Body")));
+		FName(TEXT("ShovelBody")));
 	Test.TestEqual(
 		TEXT("Cutting Edge End Location"), Shovel->CuttingEdge.End.LocalLocation,
 		AgxToUnrealDisplacement(1.0, 1.0, 0.1));
 	Test.TestEqual(
 		TEXT("Cutting Edge End Parent Name"), Shovel->CuttingEdge.End.Parent.Name,
-		FName(TEXT("Shovel Body")));
+		FName(TEXT("ShovelBody")));
 	Test.TestEqual(
 		TEXT("Cutting Direction"), Shovel->CuttingDirection.LocalRotation,
 		FRotator(ForceInitToZero));
@@ -3942,7 +3942,7 @@ bool FClearShovelImportedCommand::Update()
 			*BaseBlueprintName,
 		TEXT("Blueprint"),
 		TEXT("ShovelProperties"),
-			TEXT("AGX_SP_ShovelBody.uasset")
+			TEXT("AGX_SP_Shovel_ShovelBody.uasset")
 	};
 	// clang-format on
 

@@ -609,7 +609,8 @@ namespace AGX_ShovelProperties_helpers
 		auto Shovel = Context.Shovels->FindRef(Barrier.GetGuid());
 		const FString BaseName = Shovel != nullptr ? Shovel->GetName() : "Unknown";
 		const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
-			GetTransientPackage(), FString::Printf(TEXT("AGX_SP_%s"), *BaseName), nullptr);
+			GetTransientPackage(), FString::Printf(TEXT("AGX_SP_%s"), *BaseName),
+			UAGX_ShovelProperties::StaticClass());
 
 		if (Shovel == nullptr)
 		{

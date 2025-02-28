@@ -350,8 +350,8 @@ void UAGX_ShapeMaterial::CopyFrom(const FShapeMaterialBarrier& Source, FAGX_Impo
 
 	ImportGuid = Source.GetGuid();
 
-	const FString Name =
-		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetOuter(), Source.GetName(), nullptr);
+	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+		GetOuter(), Source.GetName(), UAGX_ShapeMaterial::StaticClass());
 	Rename(*Name);
 
 	if (Context != nullptr && Context->ShapeMaterials != nullptr &&

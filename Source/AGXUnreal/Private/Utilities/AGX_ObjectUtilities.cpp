@@ -6,11 +6,13 @@
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/Level.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Misc/PackageName.h"
+#include "UObject/NameTypes.h"
 #include "UObject/SavePackage.h"
 #include "Engine/World.h"
 
@@ -160,8 +162,14 @@ FString FAGX_ObjectUtilities::SanitizeObjectName(FString Name, UClass* Class)
 	if (Class != nullptr && (Name.IsEmpty() || Name.Equals("None")))
 		Name = Class->GetName();
 
-	
-	Name.RemoveFromEnd("Component");
+	if (Class != nullptr)
+	{
+		if (Class->IsChildOf(UActorComponent::StaticClass()))
+			Name.RemoveFromEnd("Component");
+		else if (!Class->IsChildOf(AActor::StaticClass())) // Assume asset type.
+			Name = RemoveFromString(Name, FString(INVALID_LONGPACKAGE_CHARACTERS));
+	}
+
 	return MakeObjectNameFromDisplayLabel(Name, FName(*Name)).ToString();
 }
 
