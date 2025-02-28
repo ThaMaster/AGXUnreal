@@ -150,7 +150,8 @@ namespace TrimshShapeComponent_helpers
 		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*StaticMesh, Context.SessionGuid);
 
 		const FString ComponentName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
-			&Owner, FString::Printf(TEXT("CollisionMesh_%s"), *Barrier.GetGuid().ToString()), nullptr);
+			&Owner, FString::Printf(TEXT("CollisionMesh_%s"), *Barrier.GetGuid().ToString()),
+			nullptr);
 		UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(&Owner, *ComponentName);
 		FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, Owner, Context.SessionGuid);
 
@@ -196,15 +197,18 @@ void UAGX_TrimeshShapeComponent::CopyFrom(
 	}
 
 	// At this point, there might exists a StaticMeshComponent as a child to this Trimesh
-	// representing the RenderData. We want to create another StaticMeshComponent for representing
-	// the collision shape and make that parent to the RenderData StaticMeshComponent.
-	// I.e. we want a TrimeshComponent -> StaticMeshComponent (RenderData) -> StaticMeshComponent
-	// (collision) hierarchy.
+	// representing the RenderData (created in Super::CopyFrom). We want to create another
+	// StaticMeshComponent for representing the collision shape and make that parent to the
+	// RenderData StaticMeshComponent. I.e. we want a TrimeshComponent -> StaticMeshComponent
+	// (RenderData) -> StaticMeshComponent (collision) hierarchy.
 	UStaticMeshComponent* RenderMeshCom = GetRenderDataMesh(*this);
 
+	UMaterialInterface* Material = RenderMeshCom != nullptr
+									   ? RenderMeshCom->GetMaterial(0)
+									   : AGX_MeshUtilities::GetDefaultRenderMaterial(false);
+
 	UStaticMeshComponent* MeshCom = CreateStaticMeshComponent(
-		*static_cast<const FTrimeshShapeBarrier*>(&ShapeBarrier), *GetOwner(),
-		AGX_MeshUtilities::GetDefaultRenderMaterial(false), *Context);
+		*static_cast<const FTrimeshShapeBarrier*>(&ShapeBarrier), *GetOwner(), Material, *Context);
 	if (MeshCom == nullptr)
 		return;
 

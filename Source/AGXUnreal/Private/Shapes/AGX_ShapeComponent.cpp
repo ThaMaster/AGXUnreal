@@ -412,7 +412,8 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 	const bool Visible =
 		Barrier.GetEnableCollisions() && Barrier.GetEnabled() && !Barrier.HasRenderData();
 	SetVisibility(Visible);
-
+	
+	////// Render Material ///////
 	UMaterialInterface* Material =
 		GetOrCreateRenderMaterial(Barrier.GetRenderData(), Barrier.GetIsSensor(), *Context);
 	SetMaterial(0, Material);
