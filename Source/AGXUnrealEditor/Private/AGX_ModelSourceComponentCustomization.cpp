@@ -64,7 +64,7 @@ void FAGX_ModelSourceComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 
 	CustomizeMaterialReplacer(ModelSourceComponent);
 
-	InDetailBuilder.HideCategory(FName("AGX Synchronize Model Info"));
+	InDetailBuilder.HideCategory(FName("AGX Reimport Model Info"));
 	InDetailBuilder.HideCategory(FName("Activation"));
 	InDetailBuilder.HideCategory(FName("AssetUserData"));
 	InDetailBuilder.HideCategory(FName("Collision"));
