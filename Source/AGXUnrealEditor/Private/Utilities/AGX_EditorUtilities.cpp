@@ -117,6 +117,7 @@ void FAGX_EditorUtilities::ReimportModel(UBlueprint& Blueprint, bool bOpenBluepr
 
 			if (auto Settings = ReimportDialog->ToReimportSettings())
 			{
+				Settings->bOpenBlueprintEditorAfterImport = bOpenBlueprintEditorAfter;
 				const static FString Info =
 					"Model reimport may permanently remove or overwrite existing "
 					"data.\nIt is recommended to always backup your imported models.\n\nAll asset "
