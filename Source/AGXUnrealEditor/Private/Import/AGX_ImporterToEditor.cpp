@@ -121,19 +121,10 @@ namespace AGX_ImporterToEditor_helpers
 
 		if constexpr (std::is_same_v<T, UStaticMesh>)
 		{
-			if (Asset.GetName().Contains("Collision"))
-				return FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName();
-			else if (Asset.GetName().Contains("Render"))
+			if (Asset.GetName().StartsWith("SM_RenderMesh_"))
 				return FAGX_ImportUtilities::GetImportRenderStaticMeshDirectoryName();
 			else
-			{
-				UE_LOG(
-					LogAGX, Error,
-					TEXT("GetAssetTypeFromType called with StaticMesh with unsupported name '%s'. "
-						 "This may cause errors during import/reimport."),
-					*Asset.GetName());
-				return "Unsupported";
-			}
+				return FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName();
 		}
 
 		if constexpr (std::is_same_v<T, UMaterialInterface>)
@@ -1360,6 +1351,9 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 				// "KnownStaticMesh" property after the CopyProperties call (for some reason) which
 				// causes a crash. The underlying reason and what KnownStaticMesh is used for is not
 				// clear, but this seems to reset the property and fix the crash.
+				for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*BPStaticMeshComp))
+					Instance->PostApplyToComponent();
+
 				BPStaticMeshComp->PostApplyToComponent();
 
 				// CopyProperties does not handle TransientToAsset mappings in arrays such as render
@@ -1391,6 +1385,9 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 				// "KnownStaticMesh" property after the CopyProperties call (for some reason) which
 				// causes a crash. The underlying reason and what KnownStaticMesh is used for is not
 				// clear, but this seems to reset the property and fix the crash.
+				for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*BPStaticMeshComp))
+					Instance->PostApplyToComponent();
+
 				BPStaticMeshComp->PostApplyToComponent();
 
 				// CopyProperties does not handle TransientToAsset mappings in arrays such as render
