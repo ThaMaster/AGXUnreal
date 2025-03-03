@@ -99,16 +99,16 @@ namespace AGX_ImporterToEditor_helpers
 		return DirectoryPath;
 	}
 
-	// When saving an asset to disk, Unreal sometimes creates a redirector object with TransientPackage
-	// as owner. This object may cause name collisions on multiple imports done in a row because
-	// it may linger between imports.
+	// When saving an asset to disk, Unreal sometimes creates a redirector object with
+	// TransientPackage as owner. This object may cause name collisions on multiple imports done in
+	// a row because it may linger between imports.
 	void DestroyRedirectorAfterSave(UObject* SavedAsset)
 	{
 		if (SavedAsset == nullptr)
 			return;
 
-		auto RedirectorObj =
-			StaticFindObjectFast(UObject::StaticClass(), GetTransientPackage(), *SavedAsset->GetName());
+		auto RedirectorObj = StaticFindObjectFast(
+			UObject::StaticClass(), GetTransientPackage(), *SavedAsset->GetName());
 		if (RedirectorObj != nullptr && RedirectorObj != SavedAsset)
 			RedirectorObj->ConditionalBeginDestroy();
 	}
@@ -999,9 +999,14 @@ bool FAGX_ImporterToEditor::Reimport(
 		return false;
 
 	DestroyTransientAssets(*Result.Context);
+	FAGX_EditorUtilities::SaveAndCompile(BaseBP);
 
-	if (Settings.bOpenBlueprintEditorAfterImport && OpenBlueprint != nullptr)
-		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(OpenBlueprint);
+	if (OpenBlueprint != nullptr)
+	{
+		FAGX_EditorUtilities::SaveAndCompile(*OpenBlueprint);
+		if (Settings.bOpenBlueprintEditorAfterImport)
+			GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(OpenBlueprint);
+	}
 
 	return true;
 }
