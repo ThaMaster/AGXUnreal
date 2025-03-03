@@ -58,7 +58,7 @@ namespace AGX_ImporterToEditor_helpers
 
 	void PreReimportSetup()
 	{
-		// During Model Synchronization, old assets are deleted and references to these assets are
+		// During Model reimport, old assets are deleted and references to these assets are
 		// automatically cleared. Having the Blueprint Editor opened while doing this causes
 		// crashing during this process and the exact reason why is not clear. So we solve this
 		// by closing all asset editors here first.

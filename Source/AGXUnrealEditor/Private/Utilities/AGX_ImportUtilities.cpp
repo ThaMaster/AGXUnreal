@@ -308,7 +308,7 @@ namespace
 
 		// Find a suffix number that makes the name unique within the Blueprint. Start at 1 because
 		// that is what FComponentEditorUtils::GenerateValidVariableName does, and that function is
-		// called when the model is first imported, as opposed to synchronized which is what we're
+		// called when the model is first imported, as opposed to reimported which is what we're
 		// doing here.
 		for (int i = 1; FAGX_BlueprintUtilities::NameExists(*Blueprint, ComponentName); i++)
 		{
@@ -448,8 +448,8 @@ void FAGX_ImportUtilities::Rename(UActorComponent& Component, const FString& Nam
 		}
 
 		// For future reference: earlier we sometimes got crashes inside this function. This was
-		// when model synchronization was made with the Blueprint Editor opened. Now we always close
-		// all asset editors prior to doing model synchronization, and the issue seems resolved.
+		// when model reimport was made with the Blueprint Editor opened. Now we always close
+		// all asset editors prior to doing model reimport, and the issue seems resolved.
 		// However, if this function for some reason starts crashing on Existing object found, then
 		// look in the internal gitlab history for feature/model-synchronization, commit 50ea329b.
 		// It has a work-around for this. Basically, the issue was that on rare occasions, an

@@ -37,5 +37,5 @@ protected:
 	EAGX_ImportType ImportType = EAGX_ImportType::Invalid;
 	FString FilePath;
 	bool bIgnoreDisabledTrimesh = true;
-	bool bUserHasPressedImportOrSynchronize = false;
+	bool bUserHasPressedImportOrReimport = false;
 };

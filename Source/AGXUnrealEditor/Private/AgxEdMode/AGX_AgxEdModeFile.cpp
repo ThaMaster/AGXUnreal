@@ -99,7 +99,7 @@ void UAGX_AgxEdModeFile::ReimportModel_BP(UObject* Bp)
 	if (Blueprint == nullptr)
 		return;
 
-	FAGX_EditorUtilities::SynchronizeModel(*Blueprint, false);
+	FAGX_EditorUtilities::ReimportModel(*Blueprint, false);
 }
 
 void UAGX_AgxEdModeFile::SynchronizeModel_BP(UObject* Bp)

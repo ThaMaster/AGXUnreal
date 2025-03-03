@@ -112,7 +112,7 @@ void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 
 TOptional<FAGX_ImportSettings> SAGX_ImportDialog::ToImportSettings()
 {
-	if (!bUserHasPressedImportOrSynchronize)
+	if (!bUserHasPressedImportOrReimport)
 	{
 		// The Window containing this Widget was closed, the user never pressed Import.
 		return {};
@@ -327,7 +327,7 @@ FText SAGX_ImportDialog::GetUrdfInitJointsText() const
 
 FReply SAGX_ImportDialog::OnImportButtonClicked()
 {
-	bUserHasPressedImportOrSynchronize = true;
+	bUserHasPressedImportOrReimport = true;
 
 	// We are done, close the Window containing this Widget. The user of this Widget should get
 	// the user's input via the ToImportSettings function when the Window has closed.

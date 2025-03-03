@@ -64,9 +64,9 @@ class AGXUNREALEDITOR_API FAGX_EditorUtilities
 {
 public:
 	/**
-	 * Utility function for starting a model synchronization, with GUI Window etc.
+	 * Utility function for starting a model reimport, with GUI Window etc.
 	 */
-	static void SynchronizeModel(UBlueprint& Blueprint, bool bOpenBlueprintEditorAfter = false);
+	static void ReimportModel(UBlueprint& Blueprint, bool bOpenBlueprintEditorAfter = false);
 
 	/**
 	 * Renames an existing and previously saved asset. WantedName will be sanitized and if there

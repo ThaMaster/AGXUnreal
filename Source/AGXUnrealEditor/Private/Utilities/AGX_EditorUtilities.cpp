@@ -24,7 +24,7 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
-#include "Widgets/AGX_SynchronizeModelDialog.h"
+#include "Widgets/AGX_ReimportModelDialog.h"
 
 // Unreal Engine includes.
 #include "ActorEditorUtils.h"
@@ -56,11 +56,11 @@
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
-void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint, bool bOpenBlueprintEditorAfter)
+void FAGX_EditorUtilities::ReimportModel(UBlueprint& Blueprint, bool bOpenBlueprintEditorAfter)
 {
 	// The reason we use FTSTicker here is to ensure that this function returns before we do the
-	// actual Model Synchronization. This is important because we close all asset editors before
-	// doing the Model Synchronization, and if this function was called from the details panel of
+	// actual Model Reimport. This is important because we close all asset editors before
+	// doing the Model Reimport, and if this function was called from the details panel of
 	// the ModelSourceComponent, it may cause issues since it lives in the context of the blueprint
 	// editor (which will be closed).
 #if UE_VERSION_OLDER_THAN(5, 0, 0)
@@ -75,7 +75,7 @@ void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint, bool bOpenBlu
 			if (OuterMostParent == nullptr)
 			{
 				FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-					"Could not get the original parent Blueprint. Model synchronization will not "
+					"Could not get the original parent Blueprint. Model reimport will not "
 					"be performed.");
 				return false;
 			}
@@ -88,7 +88,7 @@ void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint, bool bOpenBlu
 			{
 				FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 					"Could not find an AGX Model Source Component in the selected Blueprint. The "
-					"selected Blueprint is not valid for Model Synchronization.");
+					"selected Blueprint is not valid for Model Reimport.");
 				return false;
 			}
 
@@ -99,7 +99,7 @@ void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint, bool bOpenBlu
 					.SupportsMaximize(false)
 					.SizingRule(ESizingRule::Autosized)
 					.Title(NSLOCTEXT(
-						"AGX", "AGXUnrealSynchronizeModel", "Synchronize model with source file"));
+						"AGX", "AGXUnrealReimportModel", "Reimport model from source file"));
 
 			const FString FilePath =
 				ModelSourceComponent != nullptr ? ModelSourceComponent->FilePath : "";
@@ -107,18 +107,18 @@ void FAGX_EditorUtilities::SynchronizeModel(UBlueprint& Blueprint, bool bOpenBlu
 				ModelSourceComponent != nullptr ? ModelSourceComponent->bIgnoreDisabledTrimeshes
 												: false;
 
-			TSharedRef<SAGX_SynchronizeModelDialog> SynchronizeDialog =
-				SNew(SAGX_SynchronizeModelDialog);
-			SynchronizeDialog->SetFilePath(FilePath);
-			SynchronizeDialog->SetIgnoreDisabledTrimeshes(IgnoreDisabledTrimeshes);
-			SynchronizeDialog->RefreshGui();
-			Window->SetContent(SynchronizeDialog);
+			TSharedRef<SAGX_ReimportModelDialog> ReimportDialog =
+				SNew(SAGX_ReimportModelDialog);
+			ReimportDialog->SetFilePath(FilePath);
+			ReimportDialog->SetIgnoreDisabledTrimeshes(IgnoreDisabledTrimeshes);
+			ReimportDialog->RefreshGui();
+			Window->SetContent(ReimportDialog);
 			FSlateApplication::Get().AddModalWindow(Window, nullptr);
 
-			if (auto Settings = SynchronizeDialog->ToReimportSettings())
+			if (auto Settings = ReimportDialog->ToReimportSettings())
 			{
 				const static FString Info =
-					"Model synchronization may permanently remove or overwrite existing "
+					"Model reimport may permanently remove or overwrite existing "
 					"data.\nIt is recommended to always backup your imported models.\n\nAll asset "
 					"editors will be closed.\nContinue?";
 				if (FMessageDialog::Open(EAppMsgType::YesNo, FText::FromString(Info)) !=
@@ -276,7 +276,7 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 	FAssetDeleteModel DeleteModel(ObjectsToDelete);
 
 	// Here the engine implementation uses GWarn to begin a slow task. The model
-	// synchronize code already have a progress bar created with FScopedSlowTask, not sure how
+	// reimport code already have a progress bar created with FScopedSlowTask, not sure how
 	// those would interact.
 
 	while (DeleteModel.GetState() != FAssetDeleteModel::Finished)
@@ -284,7 +284,7 @@ int32 FAGX_EditorUtilities::DeleteImportedAssets(const TArray<UObject*>& InAsset
 		DeleteModel.Tick(0);
 
 		// Here the engine implementation does stuff with GWarn status update and user canceling.
-		// The model synchronize code already have a progress bar created with FScopedSlowTask, not
+		// The model reimport code already have a progress bar created with FScopedSlowTask, not
 		// sure how those would interact.
 	}
 
