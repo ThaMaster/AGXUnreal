@@ -178,8 +178,13 @@ FString FAGX_ObjectUtilities::MakeObjectNameUnique(UObject* Owner, FString Name)
 	if (Owner == nullptr)
 		return Name;
 
-	if (StaticFindObjectFast(UObject::StaticClass(), Owner, FName(*Name)) != nullptr)
-		Name = MakeUniqueObjectName(Owner, UObject::StaticClass(), FName(*Name)).ToString();
+	const FString WantedName = Name;
+	int32 Suffix = 0;
+	while (StaticFindObjectFast(UObject::StaticClass(), Owner, FName(*Name)) != nullptr)
+	{
+		Suffix++;
+		Name = FString::Printf(TEXT("%s_%s"), *WantedName, *FString::FromInt(Suffix));
+	}
 
 	return Name;
 }
