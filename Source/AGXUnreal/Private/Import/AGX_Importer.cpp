@@ -61,7 +61,10 @@ namespace AGX_Importer_helpers
 			return nullptr;
 		}
 
-		AActor* NewActor = NewObject<AActor>(GetTransientPackage(), *Name);
+		const FString UniqueName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+			GetTransientPackage(), Name, AActor::StaticClass());
+
+		AActor* NewActor = NewObject<AActor>(GetTransientPackage(), *UniqueName);
 		if (!NewActor)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Failed to create new actor during import."));
