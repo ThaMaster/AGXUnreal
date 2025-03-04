@@ -15,7 +15,6 @@ class FShapeBarrier;
 class FShovelBarrier;
 class UAGX_ModelSourceComponent;
 class UAGX_RigidBodyComponent;
-class UWorld;
 
 struct FAGX_ImportSettings;
 struct FSimulationObjectCollection;

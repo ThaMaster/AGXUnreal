@@ -189,6 +189,8 @@ void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
 			return;
 		}
 
+		Instance->GetOrCreateNative(*this);
+
 		// The Contact Material assets in the ContactMaterials TArray are swapped to Instances
 		// during play.
 		ContactMaterial = Instance;
