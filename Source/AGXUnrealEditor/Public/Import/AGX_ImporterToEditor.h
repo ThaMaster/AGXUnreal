@@ -18,12 +18,12 @@ class AGXUNREALEDITOR_API FAGX_ImporterToEditor
 {
 public:
 	/**
-	 * Todo: Add comment.
+	 * Import an .agx archive or URDF model to a Blueprint.
 	 */
 	UBlueprint* Import(const FAGX_ImportSettings& Settings);
 
 	/**
-	 * Todo: Add comment.
+	 * Import an .agx archive to a Blueprint.
 	 */
 	bool Reimport(
 		UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings,

@@ -39,6 +39,11 @@ struct AGXUNREAL_API FAGX_ImportResult
 	FAGX_ImportContext* Context {nullptr};
 };
 
+/**
+* AGX_Importer with complete runtime support.
+* Import an .agx archive or Urdf file to an Actor that can either be instantiated
+* immediately in a world, or used to create a Blueprint from it.
+*/
 class AGXUNREAL_API FAGX_Importer
 {
 public:
