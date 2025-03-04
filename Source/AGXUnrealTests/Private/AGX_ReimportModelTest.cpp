@@ -333,8 +333,7 @@ bool FDeleteImportedAssets::Update()
 
 class FReimportModelTest;
 
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
-	FCallReimportModelTest, FReimportModelTest&, Test);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FCallReimportModelTest, FReimportModelTest&, Test);
 
 /**
  * Base class for tests that load a model and then reimports with an updated version of the
@@ -410,8 +409,7 @@ public:
 		SpawnParameters.Name = FName(ActorName);
 		InitialBlueprintInstance =
 			World->SpawnActor<AActor>(ChildBlueprint->GeneratedClass, SpawnParameters);
-		if (!TestNotNull(
-				TEXT("Blueprint instance before reimport"), InitialBlueprintInstance))
+		if (!TestNotNull(TEXT("Blueprint instance before reimport"), InitialBlueprintInstance))
 		{
 			return;
 		}
@@ -436,8 +434,7 @@ public:
 		{
 			return;
 		}
-		if (!TestTrue(
-				TEXT("Parent Blueprint is valid after reimport"), IsValid(ParentBlueprint)))
+		if (!TestTrue(TEXT("Parent Blueprint is valid after reimport"), IsValid(ParentBlueprint)))
 		{
 			return;
 		}
@@ -613,8 +610,7 @@ bool FReimportSameCommand::Update()
 		RenderMeshNamePreSync);
 
 	// Ensure we have the same number of nodes after the model Reimport as before.
-	const int NumNodesReimportModel =
-		BlueprintBase->SimpleConstructionScript->GetAllNodes().Num();
+	const int NumNodesReimportModel = BlueprintBase->SimpleConstructionScript->GetAllNodes().Num();
 	if (NumNodesReimportModel != NumNodesFirstImport)
 	{
 		Test.AddError(FString::Printf(
@@ -1217,8 +1213,7 @@ bool FIgnoreDisabledTrimeshFTCommand::Update()
  * against the same model but this time with IgnoreDisabledTrimesh true.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-	FIgnoreDisabledTrimeshFTTest,
-	"AGXUnreal.Editor.AGX_ReimportModelTest.IgnoreDisabledTrimeshFT",
+	FIgnoreDisabledTrimeshFTTest, "AGXUnreal.Editor.AGX_ReimportModelTest.IgnoreDisabledTrimeshFT",
 	EAutomationTestFlags::ProductFilter | AgxAutomationCommon::ETF_ApplicationContextMask)
 
 bool FIgnoreDisabledTrimeshFTTest::RunTest(const FString& Parameters)
@@ -1328,8 +1323,7 @@ bool FIgnoreDisabledTrimeshTFCommand::Update()
  * against the same model but this time with IgnoreDisabledTrimesh false.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-	FIgnoreDisabledTrimeshTFTest,
-	"AGXUnreal.Editor.AGX_ReimportModelTest.IgnoreDisabledTrimeshTF",
+	FIgnoreDisabledTrimeshTFTest, "AGXUnreal.Editor.AGX_ReimportModelTest.IgnoreDisabledTrimeshTF",
 	EAutomationTestFlags::ProductFilter | AgxAutomationCommon::ETF_ApplicationContextMask)
 
 bool FIgnoreDisabledTrimeshTFTest::RunTest(const FString& Parameters)
@@ -1357,8 +1351,7 @@ public:
 	FRemoveConstraintMergeSplitThresholdsTest()
 		: FReimportModelTest(
 			  TEXT("FRemoveConstraintMergeSplitThresholdsTest"),
-			  TEXT(
-				  "AGXUnreal.Editor.AGX_ReimportModelTest.RemoveConstraintMergeSplitThresholds"),
+			  TEXT("AGXUnreal.Editor.AGX_ReimportModelTest.RemoveConstraintMergeSplitThresholds"),
 			  TEXT("thresholds_remove__initial.agx"), TEXT("thresholds_remove__updated.agx"))
 	{
 	}
@@ -1494,8 +1487,7 @@ public:
 	FModifyConstraintMergeSplitThresholdsTest()
 		: FReimportModelTest(
 			  TEXT("FModifyConstraintMergeSplitThresholdsTest"),
-			  TEXT(
-				  "AGXUnreal.Editor.AGX_ReimportModelTest.ModifyConstraintMergeSplitThresholds"),
+			  TEXT("AGXUnreal.Editor.AGX_ReimportModelTest.ModifyConstraintMergeSplitThresholds"),
 			  TEXT("thresholds_modify__initial.agx"), TEXT("thresholds_modify__updated.agx"))
 	{
 	}
@@ -2212,8 +2204,7 @@ public:
 		// Check the Blueprint.
 		UAGX_ShapeComponent* ShapeTemplate = GetTemplateComponentByName<UAGX_ShapeComponent>(
 			InitialTemplateComponents, TEXT("SurfaceVelocity"));
-		if (!TestNotNull(
-				TEXT("Surface velocity geometry template before reimport"), ShapeTemplate))
+		if (!TestNotNull(TEXT("Surface velocity geometry template before reimport"), ShapeTemplate))
 		{
 			return false;
 		}
@@ -2227,8 +2218,7 @@ public:
 		UAGX_ShapeComponent* ShapeInstance =
 			AgxAutomationCommon::GetComponentByName<UAGX_ShapeComponent>(
 				*InitialBlueprintInstance, TEXT("SurfaceVelocity"));
-		if (!TestNotNull(
-				TEXT("Surface velocity geometry instance before reimport"), ShapeInstance))
+		if (!TestNotNull(TEXT("Surface velocity geometry instance before reimport"), ShapeInstance))
 		{
 			return false;
 		}
@@ -2257,8 +2247,7 @@ public:
 		// Check the Blueprint.
 		UAGX_ShapeComponent* ShapeTemplate = GetTemplateComponentByName<UAGX_ShapeComponent>(
 			UpdatedTemplateComponents, TEXT("SurfaceVelocity"));
-		if (!TestNotNull(
-				TEXT("Surface velocity geometry template after reimport"), ShapeTemplate))
+		if (!TestNotNull(TEXT("Surface velocity geometry template after reimport"), ShapeTemplate))
 		{
 			return false;
 		}
@@ -2272,14 +2261,13 @@ public:
 		UAGX_ShapeComponent* ShapeInstance =
 			AgxAutomationCommon::GetComponentByName<UAGX_ShapeComponent>(
 				*UpdatedBlueprintInstance, TEXT("SurfaceVelocity"));
-		if (!TestNotNull(
-				TEXT("Surface velocity geometry instance after reimport"), ShapeInstance))
+		if (!TestNotNull(TEXT("Surface velocity geometry instance after reimport"), ShapeInstance))
 		{
 			return false;
 		}
 		if (!TestEqual(
-				TEXT("Surface velocity on instance after reimport"),
-				ShapeInstance->SurfaceVelocity, UpdatedSurfaceVelocity))
+				TEXT("Surface velocity on instance after reimport"), ShapeInstance->SurfaceVelocity,
+				UpdatedSurfaceVelocity))
 		{
 			return false;
 		}
@@ -2291,4 +2279,79 @@ public:
 namespace
 {
 	FSurfaceVelocityTest SurfaceVelocityTest;
+}
+
+//
+// Shared Render Material test starts here.
+// This is mostly a sanity check test.
+// This reimport used to cause a crash in StaticMesh.cpp saying that the member KnownMesh
+// was not the expected one. It is unclear why. A fix for this crash was added in ImporterToEditor,
+// calling PostApplyToComponent on the Meshes. This test is mostly to ensure this fix always works
+// and we don't crash.
+//
+
+class FSharedRenderMaterialTest final : public FReimportModelTest
+{
+public:
+	FSharedRenderMaterialTest()
+		: FReimportModelTest(
+			  TEXT("SharedRenderMaterial"),
+			  TEXT("AGXUnreal.Editor.AGX_ReimportModelTest.SharedRenderMaterial"),
+			  TEXT("shared_render_material_initial.agx"), TEXT("shared_render_material_updated.agx"))
+	{
+	}
+
+	virtual bool PostImport() override
+	{
+		// Make sure we got the template Components we expect.
+		// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 2 Shapes.
+		if (!TestEqual(
+				TEXT("Number of imported components before reimport"),
+				InitialTemplateComponents.Num(), 5))
+		{
+			PrintComponentNames(InitialTemplateComponents, TEXT("Initial template components"));
+			return false;
+		}
+
+		return true;
+	}
+
+	virtual bool PostReimport() override
+	{
+		// Make sure we got the template Components we expect.
+		// 1 Default Scene Root, 1 Model Source, 1 Rigid Body, 2 shapes, one render static mesh.
+		if (!TestEqual(
+				TEXT("Number of imported components after reimport"),
+				UpdatedTemplateComponents.Num(), 6))
+		{
+			PrintComponentNames(UpdatedTemplateComponents, TEXT("Updated template components"));
+			return false;
+		}
+
+		UAGX_SphereShapeComponent* Sphere1 = GetTemplateComponentByName<UAGX_SphereShapeComponent>(
+				UpdatedTemplateComponents, TEXT("SphereGeom1"));
+		if (!TestNull(TEXT("Template SphereGeom1 after reimport"), Sphere1))
+			return false;
+
+		UAGX_SphereShapeComponent* Sphere2 = GetTemplateComponentByName<UAGX_SphereShapeComponent>(
+			UpdatedTemplateComponents, TEXT("SphereGeom2"));
+		if (!TestNull(TEXT("Template SphereGeom2 after reimport"), Sphere2))
+			return false;
+
+		UMaterialInterface* Mat1 = Sphere1->GetMaterial(0);
+		UMaterialInterface* Mat2 = Sphere2->GetMaterial(0);
+
+		if (!TestNull(TEXT("Material1 after reimport"), Mat1))
+			return false;
+
+		if (!TestEqual(TEXT("Material1 and Material2 equal"), Mat1, Mat2))
+			return false;
+
+		return true;
+	}
+};
+
+namespace
+{
+	FSharedRenderMaterialTest SharedRenderMaterialTest;
 }
