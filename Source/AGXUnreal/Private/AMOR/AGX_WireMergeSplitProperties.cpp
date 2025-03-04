@@ -167,7 +167,7 @@ void FAGX_WireMergeSplitProperties::CopyFrom(
 	}
 
 	Thresholds = NewObject<UAGX_WireMergeSplitThresholds>(
-		GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
+		Context->Outer, NAME_None, RF_Public | RF_Standalone);
 	FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Thresholds, Context->SessionGuid);
 	const FString THName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 		Thresholds->GetOuter(), FString::Printf(TEXT("AGX_WMST_%s"), *MSTGuid.ToString()), nullptr);

@@ -51,8 +51,11 @@ UAGX_ShapeMaterial* FAGX_ImportRuntimeUtilities::GetOrCreateShapeMaterial(
 			return Existing;
 	}
 	
-	auto Sm =
-		NewObject<UAGX_ShapeMaterial>(GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
+	UObject* Outer = GetTransientPackage();
+	if (Context != nullptr)
+		Outer = Context->Outer;
+
+	auto Sm = NewObject<UAGX_ShapeMaterial>(Outer, NAME_None, RF_Public | RF_Standalone);
 	Sm->CopyFrom(Barrier, Context);
 
 	if (Context != nullptr && Context->ShapeMaterials != nullptr)

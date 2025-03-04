@@ -55,8 +55,7 @@ FVector UAGX_AGXUtilities::CalculateCenterOfMass(const TArray<UAGX_RigidBodyComp
 	return Com;
 }
 
-AActor* UAGX_AGXUtilities::Import(
-	UObject* WorldContextObject, FAGX_ImportSettings Settings, FTransform Transform)
+AActor* UAGX_AGXUtilities::Import(UObject* WorldContextObject, FAGX_ImportSettings Settings)
 {
 	if (WorldContextObject == nullptr || WorldContextObject->GetWorld() == nullptr)
 	{
@@ -66,24 +65,50 @@ AActor* UAGX_AGXUtilities::Import(
 		return nullptr;
 	}
 
+	UWorld* World = WorldContextObject->GetWorld();
 	FAGX_Importer Importer;
-	FAGX_ImportResult Result = Importer.Import(Settings);
+	FAGX_ImportResult Result = Importer.Import(Settings, *World);
 	if (IsUnrecoverableError(Result.Result) || Result.Actor == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Got unrecoverable error from Importer result in UAGX_AGXUtilities::Import. The "
 				 "Output Log may contain more information."));
+		if (Result.Actor != nullptr)
+			Result.Actor->Destroy();
+
+		return nullptr;
+	}
+
+	return Result.Actor;
+}
+
+AActor* UAGX_AGXUtilities::InstantiateActor(
+	UObject* WorldContextObject, AActor* Template, const FTransform& Transform)
+{
+	if (WorldContextObject == nullptr || WorldContextObject->GetWorld() == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Could not get World object from call to UAGX_AGXUtilities::InstantiateActor."));
+		return nullptr;
+	}
+
+	if (!IsValid(Template))
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("UAGX_AGXUtilities::InstantiateActor got invalid TemplateActor."));
 		return nullptr;
 	}
 
 	UWorld* World = WorldContextObject->GetWorld();
 	FActorSpawnParameters Params;
 	Params.Name =
-		*FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(World, Result.Actor->GetName(), nullptr);
-	Params.Template = Result.Actor;
+		*FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(World, Template->GetName(), nullptr);
+	Params.NameMode = FActorSpawnParameters::ESpawnActorNameMode::Requested;
+	Params.Template = Template;
 	AActor* SpawnedActor = World->SpawnActor<AActor>(AActor::StaticClass(), Transform, Params);
 	SpawnedActor->SetActorLabel(Params.Name.ToString());
-	Result.Actor->Destroy();
 	return SpawnedActor;
 }

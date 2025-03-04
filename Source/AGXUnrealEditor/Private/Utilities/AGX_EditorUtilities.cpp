@@ -56,7 +56,8 @@
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
-void FAGX_EditorUtilities::ReimportModel(UBlueprint& Blueprint, bool bOpenBlueprintEditorAfter)
+void FAGX_EditorUtilities::ReimportModel(
+	UBlueprint& Blueprint, bool bOpenBlueprintEditorAfter)
 {
 	// The reason we use FTSTicker here is to ensure that this function returns before we do the
 	// actual Model Reimport. This is important because we close all asset editors before

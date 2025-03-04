@@ -133,10 +133,10 @@ namespace TrimshShapeComponent_helpers
 				: SourceName;
 
 		const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
-			GetTransientPackage(), WantedName, UStaticMesh::StaticClass());
+			Context.Outer, WantedName, UStaticMesh::StaticClass());
 
 		UStaticMesh* Mesh = AGX_MeshUtilities::CreateStaticMesh(
-			Vertices, Indices, Normals, UVs, Tangents, Name, Material);
+			Vertices, Indices, Normals, UVs, Tangents, Name, *Context.Outer, Material);
 
 		if (Mesh != nullptr)
 			Context.CollisionStaticMeshes->Add(Barrier.GetGuid(), Mesh);
@@ -195,7 +195,8 @@ void UAGX_TrimeshShapeComponent::CopyFrom(
 	using namespace TrimshShapeComponent_helpers;
 
 	Super::CopyFrom(ShapeBarrier, Context);
-	if (Context == nullptr || Context->CollisionStaticMeshes == nullptr || GetOwner() == nullptr)
+	if (Context == nullptr || Context->CollisionStaticMeshes == nullptr ||
+		Context->Outer == nullptr)
 		return; // We are done.
 
 	if (Context->Settings != nullptr && Context->Settings->bIgnoreDisabledTrimeshes &&

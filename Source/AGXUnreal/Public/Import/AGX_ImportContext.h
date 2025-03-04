@@ -28,6 +28,7 @@ class UMaterialInstanceConstant;
 class UMaterialInterface;
 class UStaticMesh;
 class UStaticMeshComponent;
+class UWorld;
 
 /*
  * Todo: add comment.
@@ -70,4 +71,7 @@ struct AGXUNREAL_API FAGX_ImportContext
 	FGuid SessionGuid;
 
 	const FAGX_ImportSettings* Settings {nullptr};
+
+	// TransientPackage for editor imports and UWorld for runtime imports.
+	UObject* Outer {nullptr};
 };

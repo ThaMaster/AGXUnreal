@@ -9,6 +9,7 @@
 #include "CoreMinimal.h"
 
 class UBlueprint;
+class UWorld;
 
 struct FAGX_ImportContext;
 struct FAGX_ImportSettings;

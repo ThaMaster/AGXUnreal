@@ -272,8 +272,7 @@ namespace AGX_ShovelComponent_helpers
 		const FGuid Guid = Barrier.GetGuid();
 		AGX_CHECK(!Context.ShovelProperties->Contains(Guid));
 
-		auto Properties = NewObject<UAGX_ShovelProperties>(
-			GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
+		auto Properties = NewObject<UAGX_ShovelProperties>(Context.Outer, NAME_None, RF_Public | RF_Standalone);
 		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Properties, Context.SessionGuid);
 		Properties->CopyFrom(Barrier, &Context);
 		return Properties;

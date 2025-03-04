@@ -107,8 +107,7 @@ namespace AGX_ContactMaterialRegistrarComponent_helpers
 		if (auto Existing = Context.ContactMaterials->FindRef(Barrier.GetGuid()))
 			return Existing;
 
-		auto Cm = NewObject<UAGX_ContactMaterial>(
-			GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
+		auto Cm = NewObject<UAGX_ContactMaterial>(Context.Outer, NAME_None, RF_Public | RF_Standalone);
 		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Cm, Context.SessionGuid);
 		Cm->CopyFrom(Barrier, &Context);
 

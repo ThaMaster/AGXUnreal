@@ -196,7 +196,7 @@ namespace AGX_TrackComponent_helpers
 			return Existing;
 
 		auto Properties = NewObject<UAGX_TrackProperties>(
-			GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
+			Context.Outer, NAME_None, RF_Public | RF_Standalone);
 		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Properties, Context.SessionGuid);
 		Properties->CopyFrom(PropertiesBarrier);
 		const FString TrackName = Barrier.GetName();
@@ -215,7 +215,7 @@ namespace AGX_TrackComponent_helpers
 			return Existing;
 
 		auto Properties = NewObject<UAGX_TrackInternalMergeProperties>(
-			GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
+			Context.Outer, NAME_None, RF_Public | RF_Standalone);
 		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Properties, Context.SessionGuid);
 		Properties->CopyFrom(Barrier);
 		const FString TrackName = Barrier.GetName();

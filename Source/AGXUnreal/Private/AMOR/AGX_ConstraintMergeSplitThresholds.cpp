@@ -321,7 +321,7 @@ UAGX_ConstraintMergeSplitThresholds* UAGX_ConstraintMergeSplitThresholds::Create
 bool UAGX_ConstraintMergeSplitThresholds::IsInstance() const
 {
 	// This is the case for runtime imported instances.
-	if (GetOuter() == GetTransientPackage())
+	if (GetOuter() == GetTransientPackage() || Cast<UWorld>(GetOuter()) != nullptr)
 		return true;
 
 	// A runtime non-imported instance of this class will always have a reference to it's

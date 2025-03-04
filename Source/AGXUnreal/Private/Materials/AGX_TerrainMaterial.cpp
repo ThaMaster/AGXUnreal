@@ -1116,7 +1116,7 @@ void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 bool UAGX_TerrainMaterial::IsInstance() const
 {   
     // This is the case for runtime imported instances.
-	if (GetOuter() == GetTransientPackage())
+	if (GetOuter() == GetTransientPackage() || Cast<UWorld>(GetOuter()) != nullptr)
 		return true;
 
 	// Cannot use a negated return value from IsAsset because sometimes we create runtime instances

@@ -167,7 +167,7 @@ void FAGX_ConstraintMergeSplitProperties::CopyFrom(
 	}
 
 	Thresholds = NewObject<UAGX_ConstraintMergeSplitThresholds>(
-		GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
+		Context->Outer, NAME_None, RF_Public | RF_Standalone);
 	FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Thresholds, Context->SessionGuid);
 	const FString THName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 		Thresholds->GetOuter(), FString::Printf(TEXT("AGX_CMST_%s"), *MSTGuid.ToString()), nullptr);

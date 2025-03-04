@@ -382,7 +382,7 @@ UAGX_ShovelProperties* UAGX_ShovelProperties::GetOrCreateInstance(UWorld* Playin
 bool UAGX_ShovelProperties::IsInstance() const
 {
 	// This is the case for runtime imported instances.
-	if (GetOuter() == GetTransientPackage())
+	if (GetOuter() == GetTransientPackage() || Cast<UWorld>(GetOuter()) != nullptr)
 		return true;
 
 	// A runtime non-imported instance of this class will always have a reference to it's
@@ -609,7 +609,7 @@ namespace AGX_ShovelProperties_helpers
 		auto Shovel = Context.Shovels->FindRef(Barrier.GetGuid());
 		const FString BaseName = Shovel != nullptr ? Shovel->GetName() : "Unknown";
 		const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
-			GetTransientPackage(), FString::Printf(TEXT("AGX_SP_%s"), *BaseName),
+			Context.Outer, FString::Printf(TEXT("AGX_SP_%s"), *BaseName),
 			UAGX_ShovelProperties::StaticClass());
 
 		if (Shovel == nullptr)

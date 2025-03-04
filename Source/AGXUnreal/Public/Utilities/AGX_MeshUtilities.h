@@ -351,7 +351,8 @@ public:
 	static UStaticMesh* CreateStaticMesh(
 		const TArray<FVector3f>& Vertices, const TArray<uint32>& Triangles,
 		const TArray<FVector3f>& Normals, const TArray<FVector2D>& UVs,
-		const TArray<FVector3f>& Tangents, const FString& Name, UMaterialInterface* Material);
+		const TArray<FVector3f>& Tangents, const FString& Name, UObject& Outer,
+		UMaterialInterface* Material);
 
 	/**
 	 * Copies triangle information and render material from one Static Mesh to another.
@@ -364,7 +365,7 @@ public:
 	 * This function supports runtime usage.
 	 */
 	static UStaticMesh* CreateStaticMesh(
-		const FRenderDataBarrier& RenderData, UMaterialInterface* Material);
+		const FRenderDataBarrier& RenderData, UObject& Outer, UMaterialInterface* Material);
 
 	static bool HasRenderDataMesh(const FShapeBarrier& Shape);
 
@@ -374,7 +375,7 @@ public:
 	 * This function supports runtime usage.
 	 */
 	static UMaterialInterface* CreateRenderMaterial(
-		const FAGX_RenderMaterial& MaterialBarrier, UMaterial* Base);
+		const FAGX_RenderMaterial& MaterialBarrier, UMaterial* Base, UObject& Owner);
 
 	/**
 	 * Returns the default (AGX) render material.
@@ -396,4 +397,11 @@ public:
 	 * Checks whether two Render Materials are equal.
 	 */
 	static bool AreImportedRenderMaterialsEqual(UMaterialInterface* MatA, UMaterialInterface* MatB);
+
+	/**
+	 * Copies imported material properties. Should only be called on Render materials that was
+	 * created during an Import/Reimport process.
+	 */
+	static bool CopyImportedRenderMaterial(
+		UMaterialInterface* Source, UMaterialInstanceConstant* Destination);
 };

@@ -15,6 +15,7 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
 #include "Materials/Material.h"
+#include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Math/UnrealMathUtility.h"
 #include "Misc/EngineVersionComparison.h"
@@ -2033,10 +2034,11 @@ TArray<FAGX_MeshWithTransform> AGX_MeshUtilities::ToMeshWithTransformArray(
 UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	const TArray<FVector3f>& Vertices, const TArray<uint32>& Indices,
 	const TArray<FVector3f>& Normals, const TArray<FVector2D>& UVs,
-	const TArray<FVector3f>& Tangents, const FString& Name, UMaterialInterface* Material)
+	const TArray<FVector3f>& Tangents, const FString& Name,
+	UObject& Outer, UMaterialInterface* Material)
 {
 	UStaticMesh* StaticMesh =
-		NewObject<UStaticMesh>(GetTransientPackage(), NAME_None, RF_Public | RF_Standalone);
+		NewObject<UStaticMesh>(&Outer, NAME_None, RF_Public | RF_Standalone);
 
 	// Create MeshDescription.
 	FMeshDescription MeshDescription;
@@ -2184,7 +2186,7 @@ bool AGX_MeshUtilities::CopyStaticMesh(UStaticMesh* Source, UStaticMesh* Destina
 }
 
 UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
-	const FRenderDataBarrier& RenderData, UMaterialInterface* Material)
+	const FRenderDataBarrier& RenderData, UObject& Outer, UMaterialInterface* Material)
 {
 	if (!RenderData.HasMesh() || !RenderData.HasNative())
 		return nullptr;
@@ -2219,9 +2221,9 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	TArray<FVector3f> Tangents;
 	Tangents.SetNumZeroed(Vertices.Num());
 
-	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetTransientPackage(),
+	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(&Outer,
 		FString::Printf(TEXT("SM_RenderMesh_%s"), *RenderData.GetGuid().ToString()), nullptr);
-	return CreateStaticMesh(Vertices, Indices, Normals, UVs, Tangents, Name, Material);
+	return CreateStaticMesh(Vertices, Indices, Normals, UVs, Tangents, Name, Outer, Material);
 }
 
 bool AGX_MeshUtilities::HasRenderDataMesh(const FShapeBarrier& Shape)
@@ -2234,18 +2236,18 @@ bool AGX_MeshUtilities::HasRenderDataMesh(const FShapeBarrier& Shape)
 }
 
 UMaterialInterface* AGX_MeshUtilities::CreateRenderMaterial(
-	const FAGX_RenderMaterial& MaterialBarrier, UMaterial* Base)
+	const FAGX_RenderMaterial& MaterialBarrier, UMaterial* Base, UObject& Owner)
 {
 	if (Base == nullptr)
 		return nullptr;
 
-	auto Material = UMaterialInstanceDynamic::Create(Base, GetTransientPackage());
+	auto Material = UMaterialInstanceDynamic::Create(Base, &Owner);
 	const FGuid Guid = MaterialBarrier.Guid;
 	const FString WantedName = MaterialBarrier.Name.IsNone()
 							 ? FString::Printf(TEXT("MI_RenderMaterial_%s"), *Guid.ToString())
 							 : FString::Printf(TEXT("MI_%s"), *MaterialBarrier.Name.ToString());
 	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
-		GetTransientPackage(), WantedName, UMaterialInterface::StaticClass());
+		&Owner, WantedName, UMaterialInterface::StaticClass());
 
 	Material->Rename(*Name);
 
@@ -2427,6 +2429,69 @@ bool AGX_MeshUtilities::AreImportedRenderMaterialsEqual(
 		if (!ColorA.Equals(ColorB, UE_KINDA_SMALL_NUMBER))
 			return false;
 	}
+
+	return true;
+}
+
+bool AGX_MeshUtilities::CopyImportedRenderMaterial(
+	UMaterialInterface* Source, UMaterialInstanceConstant* Destination)
+{
+	if (Source == nullptr || Destination == nullptr)
+		return false;
+
+	UMaterial* BaseMatSource = Source->GetBaseMaterial();
+	UMaterial* BaseMatDestination = Destination->GetBaseMaterial();
+
+	if (BaseMatSource != BaseMatDestination)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Source and Destination materials have different base materials."));
+		return false;
+	}
+
+	// Copy Scalar Parameters
+	TArray<FMaterialParameterInfo> ScalarParams;
+	TArray<FGuid> ScalarIds;
+	Source->GetAllScalarParameterInfo(ScalarParams, ScalarIds);
+
+	for (const FMaterialParameterInfo& ParamInfo : ScalarParams)
+	{
+		float Value;
+		if (Source->GetScalarParameterValue(ParamInfo, Value))
+		{
+			Destination->SetScalarParameterValueEditorOnly(ParamInfo, Value);
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("Failed to get scalar parameter '%s' from Source material."),
+				*ParamInfo.ToString());
+		}
+	}
+
+	// Copy Vector Parameters
+	TArray<FMaterialParameterInfo> VectorParams;
+	TArray<FGuid> VectorIds;
+	Source->GetAllVectorParameterInfo(VectorParams, VectorIds);
+
+	for (const FMaterialParameterInfo& ParamInfo : VectorParams)
+	{
+		FLinearColor Color;
+		if (Source->GetVectorParameterValue(ParamInfo, Color))
+		{
+			Destination->SetVectorParameterValueEditorOnly(ParamInfo, Color);
+		}
+		else
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("Failed to get vector parameter '%s' from Source material."),
+				*ParamInfo.ToString());
+		}
+	}
+
+	// Notify the material that it has been updated
+	Destination->PostEditChange();
 
 	return true;
 }

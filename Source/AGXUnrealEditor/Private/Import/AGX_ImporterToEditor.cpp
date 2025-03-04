@@ -102,13 +102,13 @@ namespace AGX_ImporterToEditor_helpers
 	// When saving an asset to disk, Unreal sometimes creates a redirector object with
 	// TransientPackage as owner. This object may cause name collisions on multiple imports done in
 	// a row because it may linger between imports.
-	void DestroyRedirectorAfterSave(UObject* SavedAsset)
+	void DestroyRedirectorAfterSave(UObject* SavedAsset, const FAGX_ImportContext& Context)
 	{
 		if (SavedAsset == nullptr)
 			return;
 
-		auto RedirectorObj = StaticFindObjectFast(
-			UObject::StaticClass(), GetTransientPackage(), *SavedAsset->GetName());
+		auto RedirectorObj =
+			StaticFindObjectFast(UObject::StaticClass(), Context.Outer, *SavedAsset->GetName());
 		if (RedirectorObj != nullptr && RedirectorObj != SavedAsset)
 			RedirectorObj->ConditionalBeginDestroy();
 	}
@@ -540,7 +540,9 @@ namespace AGX_ImporterToEditor_helpers
 		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
 	}
 
-	void WriteAssetToDisk(const FString& RootDir, const FString& AssetType, UObject& Object)
+	void WriteAssetToDisk(
+		const FString& RootDir, const FString& AssetType, UObject& Object,
+		const FAGX_ImportContext& Context)
 	{
 		const FString AssetName = Object.GetName();
 		const FString PackagePath =
@@ -551,7 +553,7 @@ namespace AGX_ImporterToEditor_helpers
 		Object.SetFlags(RF_Public | RF_Standalone);
 
 		FAGX_ObjectUtilities::SaveAsset(Object);
-		DestroyRedirectorAfterSave(&Object);
+		DestroyRedirectorAfterSave(&Object, Context);
 	}
 
 	void WriteAssetsToDisk(const FString& RootDir, const FAGX_ImportContext* Context)
@@ -565,7 +567,7 @@ namespace AGX_ImporterToEditor_helpers
 				FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName();
 			for (const auto& [Guid, MST] : *Context->MSThresholds)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *MST);
+				WriteAssetToDisk(RootDir, AssetType, *MST, *Context);
 			}
 		}
 
@@ -574,7 +576,7 @@ namespace AGX_ImporterToEditor_helpers
 			const FString AssetType = FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName();
 			for (const auto& [Guid, Rm] : *Context->RenderMaterials)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Rm);
+				WriteAssetToDisk(RootDir, AssetType, *Rm, *Context);
 			}
 		}
 
@@ -584,7 +586,7 @@ namespace AGX_ImporterToEditor_helpers
 				FAGX_ImportUtilities::GetImportRenderStaticMeshDirectoryName();
 			for (const auto& [Guid, Sm] : *Context->RenderStaticMeshes)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Sm);
+				WriteAssetToDisk(RootDir, AssetType, *Sm, *Context);
 			}
 		}
 
@@ -594,7 +596,7 @@ namespace AGX_ImporterToEditor_helpers
 				FAGX_ImportUtilities::GetImportCollisionStaticMeshDirectoryName();
 			for (const auto& [Guid, Sm] : *Context->CollisionStaticMeshes)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Sm);
+				WriteAssetToDisk(RootDir, AssetType, *Sm, *Context);
 			}
 		}
 
@@ -603,7 +605,7 @@ namespace AGX_ImporterToEditor_helpers
 			const FString AssetType = FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName();
 			for (const auto& [Guid, Sm] : *Context->ShapeMaterials)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Sm);
+				WriteAssetToDisk(RootDir, AssetType, *Sm, *Context);
 			}
 		}
 
@@ -612,7 +614,7 @@ namespace AGX_ImporterToEditor_helpers
 			const FString AssetType = FAGX_ImportUtilities::GetImportContactMaterialDirectoryName();
 			for (const auto& [Guid, Cm] : *Context->ContactMaterials)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Cm);
+				WriteAssetToDisk(RootDir, AssetType, *Cm, *Context);
 			}
 		}
 
@@ -622,7 +624,7 @@ namespace AGX_ImporterToEditor_helpers
 				FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName();
 			for (const auto& [Guid, Sp] : *Context->ShovelProperties)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Sp);
+				WriteAssetToDisk(RootDir, AssetType, *Sp, *Context);
 			}
 		}
 
@@ -631,7 +633,7 @@ namespace AGX_ImporterToEditor_helpers
 			const FString AssetType = FAGX_ImportUtilities::GetImportTrackPropertiesDirectoryName();
 			for (const auto& [Guid, Tp] : *Context->TrackProperties)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Tp);
+				WriteAssetToDisk(RootDir, AssetType, *Tp, *Context);
 			}
 		}
 
@@ -641,7 +643,7 @@ namespace AGX_ImporterToEditor_helpers
 				FAGX_ImportUtilities::GetImportTrackMergePropertiesDirectoryName();
 			for (const auto& [Guid, Tp] : *Context->TrackMergeProperties)
 			{
-				WriteAssetToDisk(RootDir, AssetType, *Tp);
+				WriteAssetToDisk(RootDir, AssetType, *Tp, *Context);
 			}
 		}
 	}
@@ -714,10 +716,9 @@ namespace AGX_ImporterToEditor_helpers
 
 	void DestroyTransientAssets(FAGX_ImportContext& Context)
 	{
-		auto TransientPackage = GetTransientPackage();
-		auto DestroyIfTransient = [TransientPackage](UObject* Obj)
+		auto DestroyIfTransient = [&Context](UObject* Obj)
 		{
-			if (Obj != nullptr && Obj->GetPackage() == TransientPackage)
+			if (Obj != nullptr && Obj->GetOuter() == Context.Outer)
 				Obj->ConditionalBeginDestroy();
 		};
 
@@ -934,7 +935,7 @@ UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImportSettings& Settings)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 	FAGX_Importer Importer;
-	FAGX_ImportResult Result = Importer.Import(Settings);
+	FAGX_ImportResult Result = Importer.Import(Settings, *GetTransientPackage());
 	if (!ValidateImportResult(Result, Settings))
 		return nullptr;
 
@@ -956,7 +957,8 @@ UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImportSettings& Settings)
 }
 
 bool FAGX_ImporterToEditor::Reimport(
-	UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings, UBlueprint* OpenBlueprint)
+	UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings,
+	UBlueprint* OpenBlueprint)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 
@@ -976,7 +978,7 @@ bool FAGX_ImporterToEditor::Reimport(
 
 	PreReimportSetup();
 	FAGX_Importer Importer;
-	FAGX_ImportResult Result = Importer.Import(Settings);
+	FAGX_ImportResult Result = Importer.Import(Settings, *GetTransientPackage());
 	if (!ValidateImportResult(Result, Settings))
 		return false;
 
@@ -1025,7 +1027,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 		if constexpr (std::is_same_v<T, UAGX_ContactMaterial>)
 			FixupContactMaterial(TransientToAsset, Source);
 
-		WriteAssetToDisk(RootDirectory, AssetType, Source);
+		WriteAssetToDisk(RootDirectory, AssetType, Source, Context);
 		return &Source; // We are done.
 	}
 
@@ -1049,7 +1051,19 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 			AGX_CHECK(Result);
 		}
 	}
-	else // Non Static Mesh Asset.
+	//else if constexpr (std::is_same_v<T, UMaterialInterface>)
+	//{
+	//	// Render Materials also needs some special handling unfortunately.
+	//	// Unknown engine crash if doing CopyProperties, something about EditorOnlyData being
+	//	// invalid.
+	//	if (!AGX_MeshUtilities::AreImportedRenderMaterialsEqual(&Source, Asset))
+	//	{
+	//		bool Result = AGX_MeshUtilities::CopyImportedRenderMaterial(
+	//			&Source, Cast<UMaterialInstanceConstant>(Asset));
+	//		AGX_CHECK(Result);
+	//	}
+	//}
+	else // All other Asset types.
 	{
 		// For shared assets, we might be copying and saving multiple times here, but we assume
 		// these operations are relatively cheap, and keep the code simple here.
@@ -1063,7 +1077,7 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 
 	bool Result = FAGX_ObjectUtilities::SaveAsset(*Asset);
 	AGX_CHECK(Result);
-	DestroyRedirectorAfterSave(Asset);
+	DestroyRedirectorAfterSave(Asset, Context);
 	TransientToAsset.Add(&Source, Asset);
 	return Asset;
 }

@@ -51,7 +51,7 @@
 
 namespace AGX_Importer_helpers
 {
-	AActor* CreateActor(const FString& Name, const FGuid& SessionGuid)
+	AActor* CreateActor(const FString& Name, const FAGX_ImportContext& Context)
 	{
 		if (Name.IsEmpty())
 		{
@@ -62,9 +62,9 @@ namespace AGX_Importer_helpers
 		}
 
 		const FString UniqueName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
-			GetTransientPackage(), Name, AActor::StaticClass());
+			Context.Outer, Name, AActor::StaticClass());
 
-		AActor* NewActor = NewObject<AActor>(GetTransientPackage(), *UniqueName);
+		AActor* NewActor = NewObject<AActor>(Context.Outer, *UniqueName);
 		if (!NewActor)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Failed to create new actor during import."));
@@ -72,7 +72,7 @@ namespace AGX_Importer_helpers
 		}
 
 		auto Root = NewObject<USceneComponent>(NewActor, FName(TEXT("DefaultSceneRoot")));
-		FAGX_ImportRuntimeUtilities::OnComponentCreated(*Root, *NewActor, SessionGuid);
+		FAGX_ImportRuntimeUtilities::OnComponentCreated(*Root, *NewActor, Context.SessionGuid);
 		NewActor->SetRootComponent(Root);
 
 		return NewActor;
@@ -90,7 +90,8 @@ namespace AGX_Importer_helpers
 		else if (Settings.ImportType == EAGX_ImportType::Urdf)
 		{
 			if (FAGXSimObjectsReader::ReadUrdf(
-					Settings.FilePath, Settings.UrdfPackagePath, Settings.UrdfInitialJoints, OutSimObjects))
+					Settings.FilePath, Settings.UrdfPackagePath, Settings.UrdfInitialJoints,
+					OutSimObjects))
 			{
 				Result = true;
 			}
@@ -194,10 +195,11 @@ FAGX_Importer::FAGX_Importer()
 	Context.TrackMergeProperties = MakeUnique<TMap<FGuid, UAGX_TrackInternalMergeProperties*>>();
 }
 
-FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImportSettings& Settings)
+FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImportSettings& Settings, UObject& Outer)
 {
 	using namespace AGX_Importer_helpers;
 
+	Context.Outer = &Outer;
 	Context.Settings = &Settings;
 	Context.SessionGuid = FGuid::NewGuid();
 
@@ -205,7 +207,7 @@ FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImportSettings& Settings)
 	if (Name.IsEmpty())
 		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 
-	AActor* Actor = CreateActor(Name, Context.SessionGuid);
+	AActor* Actor = CreateActor(Name, Context);
 	if (Actor == nullptr)
 		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 

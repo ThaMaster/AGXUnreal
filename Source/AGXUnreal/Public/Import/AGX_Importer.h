@@ -15,6 +15,7 @@ class FShapeBarrier;
 class FShovelBarrier;
 class UAGX_ModelSourceComponent;
 class UAGX_RigidBodyComponent;
+class UWorld;
 
 struct FAGX_ImportSettings;
 struct FSimulationObjectCollection;
@@ -40,16 +41,20 @@ struct AGXUNREAL_API FAGX_ImportResult
 };
 
 /**
-* AGX_Importer with complete runtime support.
-* Import an .agx archive or Urdf file to an Actor that can either be instantiated
-* immediately in a world, or used to create a Blueprint from it.
-*/
+ * AGX_Importer with complete runtime support.
+ */
 class AGXUNREAL_API FAGX_Importer
 {
 public:
 	FAGX_Importer();
 
-	FAGX_ImportResult Import(const FAGX_ImportSettings& Settings);
+	/**
+	 * Import an .agx archive or Urdf file to an Actor that can either be instantiated
+	 * immediately in a world, or used to create a Blueprint from it.
+	 * The Outer must be set to a World if doing runtime imports, otherwise it can be set to
+	 * TransientPackage.
+	 */
+	FAGX_ImportResult Import(const FAGX_ImportSettings& Settings, UObject& Outer);
 	const FAGX_ImportContext& GetContext() const;
 
 private:
@@ -65,7 +70,8 @@ private:
 		const FSimulationObjectCollection& SimObjects, AActor& OutActor);
 
 	EAGX_ImportResult AddObserverFrame(
-		const FObserverFrameData& Frame, const FSimulationObjectCollection& SimObjects, AActor& OutActor);
+		const FObserverFrameData& Frame, const FSimulationObjectCollection& SimObjects,
+		AActor& OutActor);
 
 	template <typename TComponent, typename TBarrier>
 	EAGX_ImportResult AddComponent(

@@ -305,7 +305,7 @@ namespace AGX_ShapeComponent_helpers
 			return Existing;
 
 		UMaterial* Base = AGX_MeshUtilities::GetDefaultRenderMaterial(IsSensor);
-		auto Result = AGX_MeshUtilities::CreateRenderMaterial(MBarrier, Base);
+		auto Result = AGX_MeshUtilities::CreateRenderMaterial(MBarrier, Base, *Context.Outer);
 		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Result, Context.SessionGuid);
 
 		if (Result != nullptr)
@@ -322,7 +322,7 @@ namespace AGX_ShapeComponent_helpers
 		if (auto Existing = Context.RenderStaticMeshes->FindRef(RenderData.GetGuid()))
 			return Existing;
 
-		UStaticMesh* Mesh = AGX_MeshUtilities::CreateStaticMesh(RenderData, Material);
+		UStaticMesh* Mesh = AGX_MeshUtilities::CreateStaticMesh(RenderData, *Context.Outer, Material);
 		if (Mesh != nullptr)
 			Context.RenderStaticMeshes->Add(RenderData.GetGuid(), Mesh);
 
@@ -389,7 +389,7 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 	if (Msp.HasNative())
 		MergeSplitProperties.CopyFrom(Msp, Context);
 
-	if (Context == nullptr || Context->Shapes == nullptr)
+	if (Context == nullptr || Context->Shapes == nullptr || Context->Outer == nullptr)
 		return; // We are done.
 
 	AGX_CHECK(!Context->Shapes->Contains(ImportGuid));
@@ -412,7 +412,7 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 	const bool Visible =
 		Barrier.GetEnableCollisions() && Barrier.GetEnabled() && !Barrier.HasRenderData();
 	SetVisibility(Visible);
-	
+
 	////// Render Material ///////
 	UMaterialInterface* Material =
 		GetOrCreateRenderMaterial(Barrier.GetRenderData(), Barrier.GetIsSensor(), *Context);
