@@ -9,6 +9,7 @@
 #include "AGX_Utilities.generated.h"
 
 class UAGX_RigidBodyComponent;
+struct FAGX_ImportSettings;
 
 /**
  * Helper type that calls the given callback when destructed. Useful when cleanup is needed
@@ -60,13 +61,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Utilities")
 	static FVector CalculateCenterOfMass(const TArray<UAGX_RigidBodyComponent*>& Bodies);
 
-	/*Todo: add description*/
-	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
-	static AActor* ImportAGXArchive(const FString& FilePath, bool IgnoreDisabledTrimeshes = true);
-
-	/*Todo: add description*/
+	/**
+	* Import an .agx archive or Urdf file and instantiate it in the world as an AActor.
+	* The Transform is used to set the Actor transform as it is spawned and added to the world.
+	*/
 	UFUNCTION(
-		BlueprintCallable, Category = "AGX Dynamics", meta = (WorldContext = "WorldContextObject"))
-	static AActor* InstantiateActor(
-		UObject* WorldContextObject, AActor* TemplateActor, FTransform Transform);
+		BlueprintCallable, Category = "AGX Import", meta = (WorldContext = "WorldContextObject"))
+	static AActor* Import(
+		UObject* WorldContextObject, FAGX_ImportSettings Settings, FTransform Transform);
 };

@@ -127,16 +127,13 @@ namespace TrimshShapeComponent_helpers
 		Tangents.SetNumZeroed(Vertices.Num());
 
 		const FString SourceName = Barrier.GetSourceName();
-		const FString NameFromSourceName =
+		const FString WantedName =
 			SourceName.IsEmpty()
-				? ""
-				: FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
-					  GetTransientPackage(), FString::Printf(TEXT("SM_%s"), *SourceName),
-					  UStaticMesh::StaticClass());
-		const FString Name =
-			NameFromSourceName.IsEmpty()
 				? FString::Printf(TEXT("SM_CollisionMesh_%s"), *Barrier.GetGuid().ToString())
-				: NameFromSourceName;
+				: SourceName;
+
+		const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+			GetTransientPackage(), WantedName, UStaticMesh::StaticClass());
 
 		UStaticMesh* Mesh = AGX_MeshUtilities::CreateStaticMesh(
 			Vertices, Indices, Normals, UVs, Tangents, Name, Material);

@@ -2219,8 +2219,8 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	TArray<FVector3f> Tangents;
 	Tangents.SetNumZeroed(Vertices.Num());
 
-	const FString Name =
-		FString::Printf(TEXT("SM_RenderMesh_%s"), *RenderData.GetGuid().ToString());
+	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(GetTransientPackage(),
+		FString::Printf(TEXT("SM_RenderMesh_%s"), *RenderData.GetGuid().ToString()), nullptr);
 	return CreateStaticMesh(Vertices, Indices, Normals, UVs, Tangents, Name, Material);
 }
 
