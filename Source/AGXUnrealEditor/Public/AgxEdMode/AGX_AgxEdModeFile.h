@@ -30,17 +30,14 @@ public:
 	static void ImportToBlueprint();
 	static void ExportAgxArchive();
 
-	UFUNCTION(
-		BlueprintCallable, Category = "AGX Dynamics", meta = (WorldContext = "WorldContextObject"))
-	static void ReimportModel_BP(UObject* WorldContextObject, UObject* Blueprint);
+	UFUNCTION(BlueprintCallable, Category = "AGX Dynamics")
+	static void ReimportModel_BP(UObject* Blueprint);
 
 	/**
 	 * Deprecated, use ReimportModel_BP instead.
 	 */
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Dynamics",
-		meta =
-			(DeprecatedFunction, DeprecationMessage = "Use ReimportModel_BP instead.",
-			 WorldContext = "WorldContextObject"))
-	static void SynchronizeModel_BP(UObject* WorldContextObject, UObject* Blueprint);
+		meta = (DeprecatedFunction, DeprecationMessage = "Use ReimportModel_BP instead."))
+	static void SynchronizeModel_BP(UObject* Blueprint);
 };
