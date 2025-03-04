@@ -1051,18 +1051,6 @@ T* FAGX_ImporterToEditor::UpdateOrCreateAsset(T& Source, const FAGX_ImportContex
 			AGX_CHECK(Result);
 		}
 	}
-	//else if constexpr (std::is_same_v<T, UMaterialInterface>)
-	//{
-	//	// Render Materials also needs some special handling unfortunately.
-	//	// Unknown engine crash if doing CopyProperties, something about EditorOnlyData being
-	//	// invalid.
-	//	if (!AGX_MeshUtilities::AreImportedRenderMaterialsEqual(&Source, Asset))
-	//	{
-	//		bool Result = AGX_MeshUtilities::CopyImportedRenderMaterial(
-	//			&Source, Cast<UMaterialInstanceConstant>(Asset));
-	//		AGX_CHECK(Result);
-	//	}
-	//}
 	else // All other Asset types.
 	{
 		// For shared assets, we might be copying and saving multiple times here, but we assume
