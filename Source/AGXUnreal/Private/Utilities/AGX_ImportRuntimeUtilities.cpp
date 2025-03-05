@@ -22,8 +22,10 @@ void FAGX_ImportRuntimeUtilities::WriteSessionGuid(
 void FAGX_ImportRuntimeUtilities::WriteSessionGuidToAssetType(
 	UObject& Object, const FGuid& SessionGuid)
 {
+#if WITH_EDITOR
 	if (auto MetaData = Object.GetOutermost()->GetMetaData())
 		MetaData->SetValue(&Object, TEXT("AGX_ImportSessionGuid"), *SessionGuid.ToString());
+#endif
 }
 
 void FAGX_ImportRuntimeUtilities::OnComponentCreated(
