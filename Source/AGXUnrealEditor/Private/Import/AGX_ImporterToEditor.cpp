@@ -335,7 +335,6 @@ namespace AGX_ImporterToEditor_helpers
 	bool RenderMaterialOverwriteRule(
 		const FProperty* Property, const void* ArchetypeVal, const void* DestinationVal)
 	{
-#if 1
 		if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
 		{
 			if (ObjectProperty->PropertyClass->IsChildOf(UMaterialInterface::StaticClass()))
@@ -351,7 +350,6 @@ namespace AGX_ImporterToEditor_helpers
 					return true; // Always overwrite arrays of material properties.
 			}
 		}
-#endif
 
 		// Default behavior for non-material properties.
 		return DefaultOverwriteRule(Property, ArchetypeVal, DestinationVal);
