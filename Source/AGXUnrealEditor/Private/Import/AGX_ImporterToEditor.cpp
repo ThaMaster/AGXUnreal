@@ -41,6 +41,7 @@
 #include "Engine/SCS_Node.h"
 #include "FileHelpers.h"
 #include "Materials/MaterialInterface.h"
+#include "Misc/ScopedSlowTask.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "PackageTools.h"
 #include "Subsystems/AssetEditorSubsystem.h"
@@ -938,10 +939,17 @@ namespace AGX_ImporterToEditor_helpers
 UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImportSettings& Settings)
 {
 	using namespace AGX_ImporterToEditor_helpers;
+
+	FScopedSlowTask ImportTask(100.f, FText::FromString("Importing model"), true);
+	ImportTask.MakeDialog();
+	ImportTask.EnterProgressFrame(20.f, FText::FromString("Importing from source file"));
+
 	FAGX_Importer Importer;
 	FAGX_ImportResult Result = Importer.Import(Settings, *GetTransientPackage());
 	if (!ValidateImportResult(Result, Settings))
 		return nullptr;
+
+	ImportTask.EnterProgressFrame(40.f, FText::FromString("Validating import"));
 
 	ModelName = AGX_ImporterToEditor_helpers::MakeModelName(Result.Actor->GetName());
 	RootDirectory = MakeRootDirectoryPath(ModelName);
@@ -949,10 +957,14 @@ UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImportSettings& Settings)
 	if (!ValidateImportEnum(FinalizeModelSourceComponent(*Result.Context, RootDirectory)))
 		return nullptr;
 
+	ImportTask.EnterProgressFrame(10.f, FText::FromString("Saving Assets"));
 	WriteAssetsToDisk(RootDirectory, Result.Context);
 
+	ImportTask.EnterProgressFrame(10.f, FText::FromString("Creating Blueprint"));
 	UBlueprint* BaseBlueprint = CreateBaseBlueprint(RootDirectory, ModelName, *Result.Actor);
 	UBlueprint* ChildBlueprint = CreateChildBlueprint(RootDirectory, ModelName, *BaseBlueprint);
+
+	ImportTask.EnterProgressFrame(20.f, FText::FromString("Finishing"));
 
 	if (Settings.bOpenBlueprintEditorAfterImport)
 		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(ChildBlueprint);
@@ -965,6 +977,10 @@ bool FAGX_ImporterToEditor::Reimport(
 	UBlueprint* OpenBlueprint)
 {
 	using namespace AGX_ImporterToEditor_helpers;
+
+	FScopedSlowTask ImportTask(100.f, FText::FromString("Reimport model"), true);
+	ImportTask.MakeDialog();
+	ImportTask.EnterProgressFrame(5.f, FText::FromString("Initializing"));
 
 	if (!ValidateReimportSettings(Settings))
 		return false;
@@ -981,8 +997,14 @@ bool FAGX_ImporterToEditor::Reimport(
 		FAGX_EditorUtilities::SaveAndCompile(*OpenBlueprint);
 
 	PreReimportSetup();
+
+	ImportTask.EnterProgressFrame(15.f, FText::FromString("Reading objects from source file"));
+
 	FAGX_Importer Importer;
 	FAGX_ImportResult Result = Importer.Import(Settings, *GetTransientPackage());
+
+	ImportTask.EnterProgressFrame(20.f, FText::FromString("Validating result"));
+
 	if (!ValidateImportResult(Result, Settings))
 		return false;
 
@@ -991,10 +1013,12 @@ bool FAGX_ImporterToEditor::Reimport(
 	if (!ValidateImportEnum(FinalizeModelSourceComponent(*Result.Context, RootDirectory)))
 		return false;
 
+	ImportTask.EnterProgressFrame(40.f, FText::FromString("Updating Blueprint"));
 	const auto UpdateResult = UpdateBlueprint(BaseBP, Settings, Importer.GetContext());
 	if (!ValidateImportEnum(UpdateResult))
 		return false;
 
+	ImportTask.EnterProgressFrame(20.f, FText::FromString("Finishing"));
 	DestroyTransientAssets(*Result.Context);
 	FAGX_EditorUtilities::SaveAndCompile(BaseBP);
 
@@ -1078,15 +1102,23 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateBlueprint(
 	UBlueprint& Blueprint, const FAGX_ReimportSettings& Settings, const FAGX_ImportContext& Context)
 {
 	using namespace AGX_ImporterToEditor_helpers;
+	FScopedSlowTask ImportTask(100.f, FText::FromString("Update Blueprint"));
+	ImportTask.MakeDialog();
+	ImportTask.EnterProgressFrame(30.f, FText::FromString("Updating Assets"));
+
 	EAGX_ImportResult Result = UpdateAssets(Blueprint, Context);
 	if (IsUnrecoverableError(Result))
 		return Result;
 
+	ImportTask.EnterProgressFrame(30.f, FText::FromString("Updating Components"));
 	Result |= UpdateComponents(Blueprint, Settings, Context);
 	if (IsUnrecoverableError(Result))
 		return Result;
 
+	ImportTask.EnterProgressFrame(20.f, FText::FromString("Removing old Components"));
 	RemoveDeletedComponents(Blueprint, Context.SessionGuid);
+
+	ImportTask.EnterProgressFrame(20.f, FText::FromString("Removing old Assets"));
 	RemoveDeletedAssets(RootDirectory, Context.SessionGuid);
 
 	return Result;

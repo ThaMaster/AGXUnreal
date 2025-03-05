@@ -47,6 +47,7 @@
 #include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
+#include "Misc/ScopedSlowTask.h"
 #include "UObject/Package.h"
 
 namespace AGX_Importer_helpers
@@ -355,64 +356,167 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	check(Root != nullptr);
 
 	for (const auto& Body : SimObjects.GetRigidBodies())
+	{
+		FScopedSlowTask T((float) SimObjects.GetRigidBodies().Num(), FText::FromString("Bodies"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *Body.GetName())));
 		Res |= AddComponent<UAGX_RigidBodyComponent, FRigidBodyBarrier>(Body, *Root, OutActor);
+	}
 
 	for (const auto& Shape : SimObjects.GetBoxShapes())
+	{
+		FScopedSlowTask T((float) SimObjects.GetBoxShapes().Num(), FText::FromString("Shapes"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *Shape.GetName())));
 		Res |= AddShape<UAGX_BoxShapeComponent>(Shape, OutActor);
+	}
 
 	for (const auto& Shape : SimObjects.GetCapsuleShapes())
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetCapsuleShapes().Num(), FText::FromString("Shapes"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *Shape.GetName())));
 		Res |= AddShape<UAGX_CapsuleShapeComponent>(Shape, OutActor);
+	}
 
 	for (const auto& Shape : SimObjects.GetCylinderShapes())
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetCylinderShapes().Num(), FText::FromString("Shapes"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *Shape.GetName())));
 		Res |= AddShape<UAGX_CylinderShapeComponent>(Shape, OutActor);
+	}
 
 	for (const auto& Shape : SimObjects.GetSphereShapes())
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetSphereShapes().Num(), FText::FromString("Shapes"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *Shape.GetName())));
 		Res |= AddShape<UAGX_SphereShapeComponent>(Shape, OutActor);
+	}
 
 	for (const auto& Shape : SimObjects.GetTrimeshShapes())
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetTrimeshShapes().Num(), FText::FromString("Shapes"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *Shape.GetName())));
 		Res |= AddTrimeshShape(Shape, OutActor);
+	}
 
 	for (const auto& C : SimObjects.GetBallConstraints())
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetBallConstraints().Num(), FText::FromString("Constraints"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *C.GetName())));
 		Res |= AddComponent<UAGX_BallConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
+	}
 
 	for (const auto& C : SimObjects.GetCylindricalConstraints())
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetCylindricalConstraints().Num(),
+			FText::FromString("Constraints"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *C.GetName())));
 		Res |= AddComponent<UAGX_CylindricalConstraintComponent, FConstraintBarrier>(
 			C, *Root, OutActor);
+	}
 
 	for (const auto& C : SimObjects.GetDistanceConstraints())
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetDistanceConstraints().Num(),
+			FText::FromString("Constraints"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *C.GetName())));
 		Res |=
 			AddComponent<UAGX_DistanceConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
+	}
 
 	for (const auto& C : SimObjects.GetHingeConstraints())
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetHingeConstraints().Num(), FText::FromString("Constraints"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *C.GetName())));
 		Res |= AddComponent<UAGX_HingeConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
+	}
 
 	for (const auto& C : SimObjects.GetLockConstraints())
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetLockConstraints().Num(), FText::FromString("Constraints"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *C.GetName())));
 		Res |= AddComponent<UAGX_LockConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
+	}
 
 	for (const auto& C : SimObjects.GetPrismaticConstraints())
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetPrismaticConstraints().Num(),
+			FText::FromString("Constraints"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *C.GetName())));
 		Res |=
 			AddComponent<UAGX_PrismaticConstraintComponent, FConstraintBarrier>(C, *Root, OutActor);
+	}
 
 	for (const auto& Tire : SimObjects.GetTwoBodyTires())
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetTwoBodyTires().Num(), FText::FromString("TwoBodyTires"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *Tire.GetName())));
 		Res |= AddComponent<UAGX_TwoBodyTireComponent, FTwoBodyTireBarrier>(Tire, *Root, OutActor);
+	}
 
 	for (const auto& Shovel : SimObjects.GetShovels())
+	{
+		FScopedSlowTask T((float) SimObjects.GetShovels().Num(), FText::FromString("Shovels"));
+		T.EnterProgressFrame(1.f); // Shovel lacks GetName().
 		Res |= AddShovel(Shovel, OutActor);
+	}
 
 	for (const auto& Wire : SimObjects.GetWires())
+	{
+		FScopedSlowTask T((float) SimObjects.GetWires().Num(), FText::FromString("Wires"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *Wire.GetName())));
 		Res |= AddComponent<UAGX_WireComponent, FWireBarrier>(Wire, *Root, OutActor);
+	}
 
 	for (const auto& Track : SimObjects.GetTracks())
+	{
+		FScopedSlowTask T((float) SimObjects.GetTracks().Num(), FText::FromString("Tracks"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *Track.GetName())));
 		Res |= AddComponent<UAGX_TrackComponent, FTrackBarrier>(Track, *Root, OutActor);
+	}
 
 	if (SimObjects.GetContactMaterials().Num() > 0)
+	{
 		Res |= AddContactMaterialRegistrarComponent(SimObjects, OutActor);
+	}
 
 	if (SimObjects.GetDisabledCollisionGroups().Num() > 0)
+	{
 		Res |= AddCollisionGroupDisablerComponent(SimObjects, OutActor);
+	}
 
 	for (const auto& Frame : SimObjects.GetObserverFrames())
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetObserverFrames().Num(), FText::FromString("ObserverFrames"));
+		T.EnterProgressFrame(
+			1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *Frame.Name)));
 		Res |= AddObserverFrame(Frame, SimObjects, OutActor);
+	}
 
 	Res |= AddModelSourceComponent(OutActor);
 
