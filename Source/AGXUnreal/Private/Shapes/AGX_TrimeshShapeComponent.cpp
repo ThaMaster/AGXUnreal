@@ -130,7 +130,7 @@ namespace TrimshShapeComponent_helpers
 		const FString WantedName =
 			SourceName.IsEmpty()
 				? FString::Printf(TEXT("SM_CollisionMesh_%s"), *Barrier.GetGuid().ToString())
-				: SourceName;
+				: FString::Printf(TEXT("SM_%s"), *SourceName);
 
 		const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 			Context.Outer, WantedName, UStaticMesh::StaticClass());

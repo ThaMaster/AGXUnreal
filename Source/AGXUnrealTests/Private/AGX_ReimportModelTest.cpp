@@ -2330,18 +2330,18 @@ public:
 
 		UAGX_SphereShapeComponent* Sphere1 = GetTemplateComponentByName<UAGX_SphereShapeComponent>(
 				UpdatedTemplateComponents, TEXT("SphereGeom1"));
-		if (!TestNull(TEXT("Template SphereGeom1 after reimport"), Sphere1))
+		if (!TestNotNull(TEXT("Template SphereGeom1 after reimport"), Sphere1))
 			return false;
 
 		UAGX_SphereShapeComponent* Sphere2 = GetTemplateComponentByName<UAGX_SphereShapeComponent>(
 			UpdatedTemplateComponents, TEXT("SphereGeom2"));
-		if (!TestNull(TEXT("Template SphereGeom2 after reimport"), Sphere2))
+		if (!TestNotNull(TEXT("Template SphereGeom2 after reimport"), Sphere2))
 			return false;
 
 		UMaterialInterface* Mat1 = Sphere1->GetMaterial(0);
 		UMaterialInterface* Mat2 = Sphere2->GetMaterial(0);
 
-		if (!TestNull(TEXT("Material1 after reimport"), Mat1))
+		if (!TestNotNull(TEXT("Material1 after reimport"), Mat1))
 			return false;
 
 		if (!TestEqual(TEXT("Material1 and Material2 equal"), Mat1, Mat2))
