@@ -15,7 +15,6 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
 #include "Materials/Material.h"
-#include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Math/UnrealMathUtility.h"
 #include "Misc/EngineVersionComparison.h"
@@ -2429,69 +2428,6 @@ bool AGX_MeshUtilities::AreImportedRenderMaterialsEqual(
 		if (!ColorA.Equals(ColorB, UE_KINDA_SMALL_NUMBER))
 			return false;
 	}
-
-	return true;
-}
-
-bool AGX_MeshUtilities::CopyImportedRenderMaterial(
-	UMaterialInterface* Source, UMaterialInstanceConstant* Destination)
-{
-	if (Source == nullptr || Destination == nullptr)
-		return false;
-
-	UMaterial* BaseMatSource = Source->GetBaseMaterial();
-	UMaterial* BaseMatDestination = Destination->GetBaseMaterial();
-
-	if (BaseMatSource != BaseMatDestination)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Source and Destination materials have different base materials."));
-		return false;
-	}
-
-	// Copy Scalar Parameters
-	TArray<FMaterialParameterInfo> ScalarParams;
-	TArray<FGuid> ScalarIds;
-	Source->GetAllScalarParameterInfo(ScalarParams, ScalarIds);
-
-	for (const FMaterialParameterInfo& ParamInfo : ScalarParams)
-	{
-		float Value;
-		if (Source->GetScalarParameterValue(ParamInfo, Value))
-		{
-			Destination->SetScalarParameterValueEditorOnly(ParamInfo, Value);
-		}
-		else
-		{
-			UE_LOG(
-				LogAGX, Warning, TEXT("Failed to get scalar parameter '%s' from Source material."),
-				*ParamInfo.ToString());
-		}
-	}
-
-	// Copy Vector Parameters
-	TArray<FMaterialParameterInfo> VectorParams;
-	TArray<FGuid> VectorIds;
-	Source->GetAllVectorParameterInfo(VectorParams, VectorIds);
-
-	for (const FMaterialParameterInfo& ParamInfo : VectorParams)
-	{
-		FLinearColor Color;
-		if (Source->GetVectorParameterValue(ParamInfo, Color))
-		{
-			Destination->SetVectorParameterValueEditorOnly(ParamInfo, Color);
-		}
-		else
-		{
-			UE_LOG(
-				LogAGX, Warning, TEXT("Failed to get vector parameter '%s' from Source material."),
-				*ParamInfo.ToString());
-		}
-	}
-
-	// Notify the material that it has been updated
-	Destination->PostEditChange();
 
 	return true;
 }

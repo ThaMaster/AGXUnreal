@@ -37,7 +37,6 @@ class FDynamicMeshIndexBuffer32;
 class FRenderDataBarrier;
 class FShapeBarrier;
 class UMaterial;
-class UMaterialInstanceConstant;
 class UMaterialInterface;
 class UStaticMesh;
 class UStaticMeshComponent;
@@ -398,11 +397,4 @@ public:
 	 * Checks whether two Render Materials are equal.
 	 */
 	static bool AreImportedRenderMaterialsEqual(UMaterialInterface* MatA, UMaterialInterface* MatB);
-
-	/**
-	 * Copies imported material properties. Should only be called on Render materials that was
-	 * created during an Import/Reimport process.
-	 */
-	static bool CopyImportedRenderMaterial(
-		UMaterialInterface* Source, UMaterialInstanceConstant* Destination);
 };
