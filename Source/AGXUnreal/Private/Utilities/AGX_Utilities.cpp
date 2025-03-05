@@ -109,6 +109,9 @@ AActor* UAGX_AGXUtilities::InstantiateActor(
 	Params.NameMode = FActorSpawnParameters::ESpawnActorNameMode::Requested;
 	Params.Template = Template;
 	AActor* SpawnedActor = World->SpawnActor<AActor>(AActor::StaticClass(), Transform, Params);
+
+#if WITH_EDITOR
 	SpawnedActor->SetActorLabel(Params.Name.ToString());
+#endif
 	return SpawnedActor;
 }
