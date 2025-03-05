@@ -1,7 +1,5 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-#pragma once
-
 #include "Import/AGX_SCSNodeCollection.h"
 
 // AGX Dynamics for Unreal includes.

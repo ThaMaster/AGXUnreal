@@ -47,6 +47,7 @@
 #include "Wire/WireBarrier.h"
 
 // Unreal Engine includes.
+#include "Misc/Paths.h"
 #include "Misc/ScopedSlowTask.h"
 #include "UObject/Package.h"
 
