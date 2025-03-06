@@ -211,43 +211,42 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("fastcdr*", LibSource.AGX);
 		RuntimeLibFiles.Add("fastrtps*", LibSource.AGX);
 
-    // OpenPLX runtime library files:
-    RuntimeLibFiles.Add("agxOpenPLX", LibSource.AGX);
-    RuntimeLibFiles.Add("abseil_dll", LibSource.AGX);
-    RuntimeLibFiles.Add("click", LibSource.AGX);
-    RuntimeLibFiles.Add("console_bridge", LibSource.AGX);
-    RuntimeLibFiles.Add("DriveTrain", LibSource.AGX);
-    RuntimeLibFiles.Add("fmt", LibSource.AGX);
-    RuntimeLibFiles.Add("hash-library", LibSource.AGX);
-    RuntimeLibFiles.Add("libprotobuf", LibSource.AGX);
-    RuntimeLibFiles.Add("libzmq-v143-mt-4_3_4", LibSource.AGX);
-    RuntimeLibFiles.Add("Math", LibSource.AGX);
-    RuntimeLibFiles.Add("openplx.analysis", LibSource.AGX);
-    RuntimeLibFiles.Add("openplx.bundle", LibSource.AGX);
-    RuntimeLibFiles.Add("openplx.core.api", LibSource.AGX);
-    RuntimeLibFiles.Add("openplx.error", LibSource.AGX);
-    RuntimeLibFiles.Add("openplx.eval", LibSource.AGX);
-    RuntimeLibFiles.Add("openplx.internal", LibSource.AGX);
-    RuntimeLibFiles.Add("openplx.nodes", LibSource.AGX);
-    RuntimeLibFiles.Add("openplx.parser", LibSource.AGX);
-    RuntimeLibFiles.Add("openplx.runtime", LibSource.AGX);
-    RuntimeLibFiles.Add("openplxurdfplugin", LibSource.AGX);
-    RuntimeLibFiles.Add("orocos-kdl", LibSource.AGX);
-    RuntimeLibFiles.Add("Physics", LibSource.AGX);
-    RuntimeLibFiles.Add("Physics1D", LibSource.AGX);
-    RuntimeLibFiles.Add("Physics3D", LibSource.AGX);
-    RuntimeLibFiles.Add("Robotics", LibSource.AGX);
-    RuntimeLibFiles.Add("Simulation", LibSource.AGX);
-    RuntimeLibFiles.Add("spdlog", LibSource.AGX);
-    RuntimeLibFiles.Add("Terrain", LibSource.AGX);
-    RuntimeLibFiles.Add("tinyxml2", LibSource.AGX);
-    RuntimeLibFiles.Add("Urdf", LibSource.AGX);
-    RuntimeLibFiles.Add("urdfdom_model", LibSource.AGX);
-    RuntimeLibFiles.Add("Vehicles", LibSource.AGX);
-    RuntimeLibFiles.Add("Visuals", LibSource.AGX);
-    RuntimeLibFiles.Add("zmqpp", LibSource.AGX);
+		// OpenPLX runtime library files:
+		RuntimeLibFiles.Add("agxOpenPLX", LibSource.AGX);
+		RuntimeLibFiles.Add("abseil_dll", LibSource.AGX);
+		RuntimeLibFiles.Add("click", LibSource.AGX);
+		RuntimeLibFiles.Add("console_bridge", LibSource.AGX);
+		RuntimeLibFiles.Add("DriveTrain", LibSource.AGX);
+		RuntimeLibFiles.Add("fmt", LibSource.AGX);
+		RuntimeLibFiles.Add("hash-library", LibSource.AGX);
+		RuntimeLibFiles.Add("libprotobuf", LibSource.AGX);
+		RuntimeLibFiles.Add("libzmq-v143-mt-4_3_4", LibSource.AGX);
+		RuntimeLibFiles.Add("Math", LibSource.AGX);
+		RuntimeLibFiles.Add("openplx.analysis", LibSource.AGX);
+		RuntimeLibFiles.Add("openplx.bundle", LibSource.AGX);
+		RuntimeLibFiles.Add("openplx.core.api", LibSource.AGX);
+		RuntimeLibFiles.Add("openplx.error", LibSource.AGX);
+		RuntimeLibFiles.Add("openplx.eval", LibSource.AGX);
+		RuntimeLibFiles.Add("openplx.internal", LibSource.AGX);
+		RuntimeLibFiles.Add("openplx.nodes", LibSource.AGX);
+		RuntimeLibFiles.Add("openplx.parser", LibSource.AGX);
+		RuntimeLibFiles.Add("openplx.runtime", LibSource.AGX);
+		RuntimeLibFiles.Add("openplxurdfplugin", LibSource.AGX);
+		RuntimeLibFiles.Add("Physics", LibSource.AGX);
+		RuntimeLibFiles.Add("Physics1D", LibSource.AGX);
+		RuntimeLibFiles.Add("Physics3D", LibSource.AGX);
+		RuntimeLibFiles.Add("Robotics", LibSource.AGX);
+		RuntimeLibFiles.Add("Simulation", LibSource.AGX);
+		RuntimeLibFiles.Add("spdlog", LibSource.AGX);
+		RuntimeLibFiles.Add("Terrain", LibSource.AGX);
+		RuntimeLibFiles.Add("tinyxml2", LibSource.AGX);
+		RuntimeLibFiles.Add("Urdf", LibSource.AGX);
+		RuntimeLibFiles.Add("urdfdom_model", LibSource.AGX);
+		RuntimeLibFiles.Add("Vehicles", LibSource.AGX);
+		RuntimeLibFiles.Add("Visuals", LibSource.AGX);
+		RuntimeLibFiles.Add("zmqpp", LibSource.AGX);
 
-    if (TargetAGXVersion.IsNewerOrEqualTo(2, 38, 0, 0))
+		if (TargetAGXVersion.IsNewerOrEqualTo(2, 38, 0, 0))
 		{
 			RuntimeLibFiles.Add("orocos*", LibSource.AGX);
 		}
@@ -392,8 +391,32 @@ public class AGXDynamicsLibrary : ModuleRules
 			DelayLoadLibraries.Add("agxModel", LibSource.AGX);
 			DelayLoadLibraries.Add("agxVehicle", LibSource.AGX);
 			DelayLoadLibraries.Add("agxROS2", LibSource.AGX);
-			DelayLoadLibraries.Add("agxOpenPLX", LibSource.AGX);
 			DelayLoadLibraries.Add("agx-nt-ros2", LibSource.AGX);
+
+			// OpenPLX: 
+			DelayLoadLibraries.Add("agxOpenPLX", LibSource.AGX);
+			DelayLoadLibraries.Add("click", LibSource.AGX);
+			DelayLoadLibraries.Add("DriveTrain", LibSource.AGX);
+			DelayLoadLibraries.Add("Math", LibSource.AGX);
+			DelayLoadLibraries.Add("openplx.analysis", LibSource.AGX);
+			DelayLoadLibraries.Add("openplx.bundle", LibSource.AGX);
+			DelayLoadLibraries.Add("openplx.core.api", LibSource.AGX);
+			DelayLoadLibraries.Add("openplx.error", LibSource.AGX);
+			DelayLoadLibraries.Add("openplx.eval", LibSource.AGX);
+			DelayLoadLibraries.Add("openplx.internal", LibSource.AGX);
+			DelayLoadLibraries.Add("openplx.nodes", LibSource.AGX);
+			DelayLoadLibraries.Add("openplx.parser", LibSource.AGX);
+			DelayLoadLibraries.Add("openplx.runtime", LibSource.AGX);
+			DelayLoadLibraries.Add("openplxurdfplugin", LibSource.AGX);
+			DelayLoadLibraries.Add("Physics", LibSource.AGX);
+			DelayLoadLibraries.Add("Physics1D", LibSource.AGX);
+			DelayLoadLibraries.Add("Physics3D", LibSource.AGX);
+			DelayLoadLibraries.Add("Robotics", LibSource.AGX);
+			DelayLoadLibraries.Add("Simulation", LibSource.AGX);
+			DelayLoadLibraries.Add("Terrain", LibSource.AGX);
+			DelayLoadLibraries.Add("Urdf", LibSource.AGX);
+			DelayLoadLibraries.Add("Vehicles", LibSource.AGX);
+			DelayLoadLibraries.Add("Visuals", LibSource.AGX);
 			AddDelayLoadDependencies(DelayLoadLibraries);
 		}
 
@@ -1475,8 +1498,8 @@ public class AGXDynamicsLibrary : ModuleRules
 			LibSources.Add(LibSource.OpenPLX, new LibSourceInfo(
 				null,
 				null,
-        Path.Combine(BaseDir, "openplxbundles")
-      ));
+				Path.Combine(BaseDir, "openplxbundles")
+			));
 			LibSources.Add(LibSource.Config, new LibSourceInfo(
 				null, null, null
 			));
@@ -1522,8 +1545,8 @@ public class AGXDynamicsLibrary : ModuleRules
 			LibSources.Add(LibSource.OpenPLX, new LibSourceInfo(
 				null,
 				null,
-        Path.Combine(BaseDir, "openplxbundles")
-      ));
+				Path.Combine(BaseDir, "openplxbundles")
+			));
 			LibSources.Add(LibSource.Config, new LibSourceInfo(
 				null, null, null
 			));
