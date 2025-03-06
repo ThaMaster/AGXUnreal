@@ -205,14 +205,49 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("agxModel", LibSource.AGX);
 		RuntimeLibFiles.Add("agxVehicle", LibSource.AGX);
 		RuntimeLibFiles.Add("agxROS2", LibSource.AGX);
-		RuntimeLibFiles.Add("agxOpenPLX", LibSource.AGX);
 		RuntimeLibFiles.Add("agx-nt-ros2", LibSource.AGX);
 		RuntimeLibFiles.Add("AlgoryxGPUSensorsImpl", LibSource.AGX);
 		RuntimeLibFiles.Add("colamd", LibSource.AGX);
 		RuntimeLibFiles.Add("fastcdr*", LibSource.AGX);
 		RuntimeLibFiles.Add("fastrtps*", LibSource.AGX);
 
-		if (TargetAGXVersion.IsNewerOrEqualTo(2, 38, 0, 0))
+    // OpenPLX runtime library files:
+    RuntimeLibFiles.Add("agxOpenPLX", LibSource.AGX);
+    RuntimeLibFiles.Add("abseil_dll", LibSource.AGX);
+    RuntimeLibFiles.Add("click", LibSource.AGX);
+    RuntimeLibFiles.Add("console_bridge", LibSource.AGX);
+    RuntimeLibFiles.Add("DriveTrain", LibSource.AGX);
+    RuntimeLibFiles.Add("fmt", LibSource.AGX);
+    RuntimeLibFiles.Add("hash-library", LibSource.AGX);
+    RuntimeLibFiles.Add("libprotobuf", LibSource.AGX);
+    RuntimeLibFiles.Add("libzmq-v143-mt-4_3_4", LibSource.AGX);
+    RuntimeLibFiles.Add("Math", LibSource.AGX);
+    RuntimeLibFiles.Add("openplx.analysis", LibSource.AGX);
+    RuntimeLibFiles.Add("openplx.bundle", LibSource.AGX);
+    RuntimeLibFiles.Add("openplx.core.api", LibSource.AGX);
+    RuntimeLibFiles.Add("openplx.error", LibSource.AGX);
+    RuntimeLibFiles.Add("openplx.eval", LibSource.AGX);
+    RuntimeLibFiles.Add("openplx.internal", LibSource.AGX);
+    RuntimeLibFiles.Add("openplx.nodes", LibSource.AGX);
+    RuntimeLibFiles.Add("openplx.parser", LibSource.AGX);
+    RuntimeLibFiles.Add("openplx.runtime", LibSource.AGX);
+    RuntimeLibFiles.Add("openplxurdfplugin", LibSource.AGX);
+    RuntimeLibFiles.Add("orocos-kdl", LibSource.AGX);
+    RuntimeLibFiles.Add("Physics", LibSource.AGX);
+    RuntimeLibFiles.Add("Physics1D", LibSource.AGX);
+    RuntimeLibFiles.Add("Physics3D", LibSource.AGX);
+    RuntimeLibFiles.Add("Robotics", LibSource.AGX);
+    RuntimeLibFiles.Add("Simulation", LibSource.AGX);
+    RuntimeLibFiles.Add("spdlog", LibSource.AGX);
+    RuntimeLibFiles.Add("Terrain", LibSource.AGX);
+    RuntimeLibFiles.Add("tinyxml2", LibSource.AGX);
+    RuntimeLibFiles.Add("Urdf", LibSource.AGX);
+    RuntimeLibFiles.Add("urdfdom_model", LibSource.AGX);
+    RuntimeLibFiles.Add("Vehicles", LibSource.AGX);
+    RuntimeLibFiles.Add("Visuals", LibSource.AGX);
+    RuntimeLibFiles.Add("zmqpp", LibSource.AGX);
+
+    if (TargetAGXVersion.IsNewerOrEqualTo(2, 38, 0, 0))
 		{
 			RuntimeLibFiles.Add("orocos*", LibSource.AGX);
 		}

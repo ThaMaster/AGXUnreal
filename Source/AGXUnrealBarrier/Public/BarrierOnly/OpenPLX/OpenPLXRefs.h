@@ -4,7 +4,7 @@
 #include "agxOpenPLX/AgxCache.h"
 #include "agxOpenPLX/InputSignalListener.h"
 #include "agxOpenPLX/OutputSignalListener.h"
-#include "OpenPLX/Physics3D/System.h"
+#include "Physics3D/System.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
