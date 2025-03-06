@@ -1,9 +1,9 @@
 #pragma once
 
 // OpenPLX includes.
-#include "OpenPLX/agx-openplx/AgxCache.h"
-#include "OpenPLX/agx-openplx/InputSignalListener.h"
-#include "OpenPLX/agx-openplx/OutputSignalListener.h"
+#include "agxOpenPLX/AgxCache.h"
+#include "agxOpenPLX/InputSignalListener.h"
+#include "agxOpenPLX/OutputSignalListener.h"
 #include "OpenPLX/Physics3D/System.h"
 
 // AGX Dynamics includes.

@@ -15,7 +15,7 @@
 #include "Utilities/PLXUtilities.h"
 
 // OpenPLX includes.
-#include "OpenPLX/agx-openplx/SignalListenerUtils.h"
+#include "agxOpenPLX/SignalListenerUtils.h"
 #include "OpenPLX/Physics/Signals/RealInputSignal.h"
 
 FPLXSignalHandler::FPLXSignalHandler()

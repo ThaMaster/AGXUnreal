@@ -16,7 +16,7 @@
 #include "Utilities/PLXUtilities.h"
 
 // OpenPLX includes.
-#include "OpenPLX/agx-openplx/OpenPlxToAgxMapper.h"
+#include "agxOpenPLX/OpenPlxToAgxMapper.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"

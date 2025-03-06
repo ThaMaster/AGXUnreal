@@ -7,10 +7,10 @@
 #include "TypeConversions.h"
 
 // OpenPLX includes.
-#include "OpenPLX/openplx/OpenPlxContext.h"
-#include "OpenPLX/openplx/OpenPlxContextInternal.h"
-#include "OpenPLX/openplx/OpenPlxCoreAPI.h"
-#include "OpenPLX/agx-openplx/AgxOpenPlxApi.h"
+#include "openplx/OpenPlxContext.h"
+#include "openplx/OpenPlxContextInternal.h"
+#include "openplx/OpenPlxCoreAPI.h"
+#include "agxOpenPLX/AgxOpenPlxApi.h"
 #include "OpenPLX/Math/Math_all.h"
 #include "OpenPLX/Physics/Physics_all.h"
 #include "OpenPLX/Physics1D/Physics1D_all.h"
