@@ -35,24 +35,25 @@ class FShapeMaterialBarrier;
 class FTwoBodyTireBarrier;
 class FTrackBarrier;
 
+struct AGXUNREALBARRIER_API FObserverFrameData
+{
+	FString Name;
+	FGuid BodyGuid;
+	FGuid ObserverGuid;
+	FTransform Transform;
+};
+
 struct AGXUNREALBARRIER_API FSimulationObjectCollection
 {
 public:
 	FSimulationObjectCollection() = default;
 	~FSimulationObjectCollection();
 
-	struct ObserverFrameData
-	{
-		FString Name;
-		FGuid BodyGuid;
-		FGuid ObserverGuid;
-		FTransform Transform;
-	};
-
 	TArray<FRigidBodyBarrier>& GetRigidBodies();
 	const TArray<FRigidBodyBarrier>& GetRigidBodies() const;
 
 	TArray<FAnyShapeBarrier> CollectAllShapes() const;
+	TArray<FAnyShapeBarrier> CollectAllPrimitiveShapes() const;
 
 	TArray<FSphereShapeBarrier>& GetSphereShapes();
 	const TArray<FSphereShapeBarrier>& GetSphereShapes() const;
@@ -95,8 +96,8 @@ public:
 	TArray<std::pair<FString, FString>>& GetDisabledCollisionGroups();
 	const TArray<std::pair<FString, FString>>& GetDisabledCollisionGroups() const;
 
-	TArray<ObserverFrameData>& GetObserverFrames();
-	const TArray<ObserverFrameData>& GetObserverFrames() const;
+	TArray<FObserverFrameData>& GetObserverFrames();
+	const TArray<FObserverFrameData>& GetObserverFrames() const;
 
 	TArray<FShapeMaterialBarrier>& GetShapeMaterials();
 	const TArray<FShapeMaterialBarrier>& GetShapeMaterials() const;
@@ -126,7 +127,7 @@ private:
 	// The Simulation from which all other Simulation Objects collected from.
 	FSimulationBarrier Simulation;
 
-	// These are "free" Shapes only, i.e. not owned by a RigidBody.
+	// These are all Shapes, even those owned by a RigidBody.
 	TArray<FSphereShapeBarrier> SphereShapes;
 	TArray<FBoxShapeBarrier> BoxShapes;
 	TArray<FCylinderShapeBarrier> CylinderShapes;
@@ -144,7 +145,7 @@ private:
 	TArray<FRigidBodyBarrier> RigidBodies;
 	TArray<FContactMaterialBarrier> ContactMaterials;
 	TArray<std::pair<FString, FString>> DisabledCollisionGroups;
-	TArray<ObserverFrameData> ObserverFrames;
+	TArray<FObserverFrameData> ObserverFrames;
 	TArray<FShapeMaterialBarrier> ShapeMaterials;
 	TArray<FTwoBodyTireBarrier> TwoBodyTires;
 	TArray<FWireBarrier> Wires;

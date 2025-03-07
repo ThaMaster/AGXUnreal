@@ -18,10 +18,10 @@ class AGXUNREAL_API UAGX_ModelSourceComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
+	UPROPERTY(EditAnywhere, Category = "AGX Reimport Model Info")
 	FString FilePath;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
+	UPROPERTY(EditAnywhere, Category = "AGX Reimport Model Info")
 	bool bIgnoreDisabledTrimeshes = false;
 
 	// The reason why these Guid maps are stored in this Component is
@@ -30,12 +30,12 @@ public:
 
 	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the guid
 	// of the owning Trimesh.
-	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
+	UPROPERTY(EditAnywhere, Category = "AGX Reimport Model Info")
 	TMap<FString, FGuid> StaticMeshComponentToOwningTrimesh;
 
 	// Key is the name of the imported Static Mesh Component's SCS Node and the value is the GUID
 	// of the owning Shape.
-	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
+	UPROPERTY(EditAnywhere, Category = "AGX Reimport Model Info")
 	TMap<FString, FGuid> StaticMeshComponentToOwningShape;
 
 	// Emulate an ImportGuid on Unreal's Materials.
@@ -44,7 +44,7 @@ public:
 	// 'my_model/RenderMaterial/Steel.Steel', to a Material Instance created
 	// by the import pipeline. The value is the Guid, originally Uuid, of the source AGX Dynamics
 	// Render Material.
-	UPROPERTY(EditAnywhere, Category = "AGX Synchronize Model Info")
+	UPROPERTY(EditAnywhere, Category = "AGX Reimport Model Info")
 	TMap<FString, FGuid> UnrealMaterialToImportGuid;
 
 	virtual void Serialize(FArchive& Archive) override;
