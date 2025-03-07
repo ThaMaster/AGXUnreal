@@ -19,7 +19,7 @@ struct AGXUNREAL_API FAGX_ImportSettings
 	EAGX_ImportType ImportType = EAGX_ImportType::Invalid;
 
 	/**
-	* Absolute file path to the .agx archive or urdf file.
+	* Absolute file path to the .agx archive, OpenPLX or Urdf file.
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AGX Import")
 	FString FilePath;

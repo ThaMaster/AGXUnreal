@@ -4,6 +4,9 @@
 
 #include "OpenPLX/PLX_ModelRegistry.h"
 
+// Unreal Engine includes.
+#include "Engine/World.h"
+
 
 UPLX_ModelRegistry* UPLX_ModelRegistry::GetFrom(UWorld* World)
 {

@@ -1,10 +1,12 @@
 #pragma once
 
 // OpenPLX includes.
+#include "BeginAGXIncludes.h"
 #include "agxOpenPLX/AgxCache.h"
 #include "agxOpenPLX/InputSignalListener.h"
 #include "agxOpenPLX/OutputSignalListener.h"
 #include "Physics3D/System.h"
+#include "EndAGXIncludes.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"

@@ -8,8 +8,10 @@
 #include "OpenPLX/PLX_Outputs.h"
 
 // OpenPLX includes.
+#include "BeginAGXIncludes.h"
 #include "openplx/Object.h"
 #include "agxOpenPLX/AgxCache.h"
+#include "EndAGXIncludes.h"
 
 namespace openplx
 {

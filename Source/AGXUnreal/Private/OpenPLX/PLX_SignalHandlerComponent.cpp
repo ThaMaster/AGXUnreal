@@ -3,6 +3,7 @@
 #include "OpenPLX/PLX_SignalHandlerComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Import/AGX_ModelSourceComponent.h"

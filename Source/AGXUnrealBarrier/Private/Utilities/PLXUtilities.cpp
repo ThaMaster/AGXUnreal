@@ -7,6 +7,7 @@
 #include "TypeConversions.h"
 
 // OpenPLX includes.
+#include "BeginAGXIncludes.h"
 #include "openplx/OpenPlxContext.h"
 #include "openplx/OpenPlxContextInternal.h"
 #include "openplx/OpenPlxCoreAPI.h"
@@ -23,8 +24,10 @@
 #include "Terrain/Terrain_all.h"
 #include "Visuals/Visuals_all.h"
 #include "Urdf/Urdf_all.h"
+#include "EndAGXIncludes.h"
 
 // Unreal Engine includes.
+#include "Misc/Paths.h"
 #include "Templates/UniquePtr.h"
 
 // Standard library includes.
