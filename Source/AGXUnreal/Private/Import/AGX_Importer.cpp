@@ -83,39 +83,45 @@ namespace AGX_Importer_helpers
 	bool CreateSimulationObjectCollection(
 		const FAGX_ImportSettings& Settings, FSimulationObjectCollection& OutSimObjects)
 	{
-		bool Result = false;
-		if (Settings.ImportType == EAGX_ImportType::Agx)
+		auto CheckResult = [&](bool Result) -> bool
 		{
-			if (FAGXSimObjectsReader::ReadAGXArchive(Settings.FilePath, OutSimObjects))
-				Result = true;
-		}
-		else if (Settings.ImportType == EAGX_ImportType::Urdf)
-		{
-			if (FAGXSimObjectsReader::ReadUrdf(
-					Settings.FilePath, Settings.UrdfPackagePath, Settings.UrdfInitialJoints,
-					OutSimObjects))
+			if (!Result)
 			{
-				Result = true;
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Unable to import file '%s'. Log category LogAGX in the "
+						 "Output Log may contain more information."),
+					*Settings.FilePath);
+			}
+
+			return Result;
+		};
+
+		switch (Settings.ImportType)
+		{
+			case EAGX_ImportType::Agx:
+			{
+				return CheckResult(
+					FAGXSimObjectsReader::ReadAGXArchive(Settings.FilePath, OutSimObjects));
+			}
+			case EAGX_ImportType::Urdf:
+			{
+				return CheckResult(FAGXSimObjectsReader::ReadUrdf(
+					Settings.FilePath, Settings.UrdfPackagePath, Settings.UrdfInitialJoints,
+					OutSimObjects));
+			}
+			case EAGX_ImportType::Plx:
+			{
+				return CheckResult(
+					FAGXSimObjectsReader::ReadOpenPLXFile(Settings.FilePath, OutSimObjects));
 			}
 		}
-		else
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Unsupported import type for file: '%s'. Import will not be possible."),
-				*Settings.FilePath);
-		}
 
-		if (!Result)
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Unable to import file '%s'. Log category LogAGX in the "
-					 "Output Log may contain more information."),
-				*Settings.FilePath);
-		}
-
-		return Result;
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unsupported import type for file: '%s'. Import will not be possible."),
+			*Settings.FilePath);
+		return false;
 	}
 
 	FString GetModelName(const FString& FilePath)
