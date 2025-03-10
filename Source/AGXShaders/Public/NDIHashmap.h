@@ -5,10 +5,10 @@
 #include "NiagaraTypes.h"
 #include "NiagaraDataInterface.h"
 #include "NiagaraDataInterfaceRW.h"
-#include "NiagaraDataInterface_ExampleComputeShader.generated.h"
+#include "NDIHashmap.generated.h"
 
-UCLASS(EditInlineNew, Category = "Compute Shader", CollapseCategories, meta = (DisplayName = "Example Compute Shader"))
-class AGXSHADERS_API UNiagaraDataInterface_ExampleComputeShader : public UNiagaraDataInterface
+UCLASS(EditInlineNew, Category = "Compute Shader", CollapseCategories, meta = (DisplayName = "Custom NDI Hashmap"))
+class AGXSHADERS_API UNDIHashmap : public UNiagaraDataInterface
 {
 	GENERATED_UCLASS_BODY()
 

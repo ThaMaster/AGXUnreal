@@ -1,4 +1,4 @@
-#include "NiagaraDataInterface_ExampleComputeShader.h"
+#include "NDIHashmap.h"
 #include "NiagaraCompileHashVisitor.h"
 #include "NiagaraTypes.h"
 #include "NiagaraSystemInstance.h"
@@ -11,12 +11,12 @@
 #endif
 #include "GameFramework/PlayerController.h" // REMOVE THIS LATER
 
-#define LOCTEXT_NAMESPACE "NiagaraDataInterfaceExampleComputeShader"
+#define LOCTEXT_NAMESPACE "NDIHashmap"
 
-const FName UNiagaraDataInterface_ExampleComputeShader::GetValueName(TEXT("GetValue"));
-const FName UNiagaraDataInterface_ExampleComputeShader::StoreValueName(TEXT("StoreValue"));
-const FName UNiagaraDataInterface_ExampleComputeShader::GetMousePositionName(TEXT("GetMousePosition"));
-static const TCHAR* ExampleTemplateShaderFile = TEXT("/AGXShadersShaders/NiagaraDataInterface_ExampleComputeShader.ush");
+const FName UNDIHashmap::GetValueName(TEXT("GetValue"));
+const FName UNDIHashmap::StoreValueName(TEXT("StoreValue"));
+const FName UNDIHashmap::GetMousePositionName(TEXT("GetMousePosition"));
+static const TCHAR* ExampleTemplateShaderFile = TEXT("/AGXShadersShaders/NDIHashmap.ush");
 
 // Struct to store our DI data
 struct FNDIMousePositionInstanceData
@@ -67,17 +67,19 @@ struct FNDIMousePositionProxy : public FNiagaraDataInterfaceProxy
 
 // creates a new data object to store our position in.
 // Don't keep transient data on the data interface object itself, only use per instance data!
-bool UNiagaraDataInterface_ExampleComputeShader::InitPerInstanceData(
+bool UNDIHashmap::InitPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
-	FNDIMousePositionInstanceData* InstanceData =
-		new (PerInstanceData) FNDIMousePositionInstanceData;
-	InstanceData->MousePos = FVector2f::ZeroVector;
+	[InstanceID = SystemInstance->GetId(), PID = PerInstanceData](FRHICommandListImmediate& CmdList) 
+		{
+		FNDIMousePositionInstanceData* InstanceData = new (PID) FNDIMousePositionInstanceData;
+		InstanceData->MousePos = FVector2f::ZeroVector;
+		};
 	return true;
 }
 
 // clean up RT instances
-void UNiagaraDataInterface_ExampleComputeShader::DestroyPerInstanceData(
+void UNDIHashmap::DestroyPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
 	FNDIMousePositionInstanceData* InstanceData =
@@ -92,7 +94,7 @@ void UNiagaraDataInterface_ExampleComputeShader::DestroyPerInstanceData(
 		});
 }
 
-int32 UNiagaraDataInterface_ExampleComputeShader::PerInstanceDataSize() const
+int32 UNDIHashmap::PerInstanceDataSize() const
 {
 	return sizeof(FNDIMousePositionInstanceData);
 }
@@ -100,7 +102,7 @@ int32 UNiagaraDataInterface_ExampleComputeShader::PerInstanceDataSize() const
 // This ticks on the game thread and lets us do work to initialize the instance data.
 // If you need to do work on the gathered instance data after the simulation is done, use
 // PerInstanceTickPostSimulate() instead.
-bool UNiagaraDataInterface_ExampleComputeShader::PerInstanceTick(
+bool UNDIHashmap::PerInstanceTick(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds)
 {
 	check(SystemInstance);
@@ -137,7 +139,7 @@ bool UNiagaraDataInterface_ExampleComputeShader::PerInstanceTick(
 	return false;
 }
 
-void UNiagaraDataInterface_ExampleComputeShader::ProvidePerInstanceDataForRenderThread(
+void UNDIHashmap::ProvidePerInstanceDataForRenderThread(
 	void* DataForRenderThread, void* PerInstanceData,
 	const FNiagaraSystemInstanceID& SystemInstance)
 {
@@ -151,14 +153,14 @@ void UNiagaraDataInterface_ExampleComputeShader::ProvidePerInstanceDataForRender
 // ---------------                                 --------------- //
 // --------------------------------------------------------------- //
 
-UNiagaraDataInterface_ExampleComputeShader::UNiagaraDataInterface_ExampleComputeShader(
+UNDIHashmap::UNDIHashmap(
 	FObjectInitializer const& ObjectInitializer)
 {
 	Proxy.Reset(new FNDIMousePositionProxy());
 }
 
 // this registers our custom DI with Niagara
-void UNiagaraDataInterface_ExampleComputeShader::PostInitProperties()
+void UNDIHashmap::PostInitProperties()
 {
 	Super::PostInitProperties();
 
@@ -172,7 +174,7 @@ void UNiagaraDataInterface_ExampleComputeShader::PostInitProperties()
 
 #if WITH_EDITORONLY_DATA
 // this lists all the functions our DI provides (currently only one)
-void UNiagaraDataInterface_ExampleComputeShader::GetFunctionsInternal(
+void UNDIHashmap::GetFunctionsInternal(
 	TArray<FNiagaraFunctionSignature>& OutFunctions) const
 {
 	FNiagaraFunctionSignature Sig;
@@ -196,7 +198,7 @@ void UNiagaraDataInterface_ExampleComputeShader::GetFunctionsInternal(
 #endif
 
 // this provides the cpu vm with the correct function to call
-void UNiagaraDataInterface_ExampleComputeShader::GetVMExternalFunction(
+void UNDIHashmap::GetVMExternalFunction(
 	const FVMExternalFunctionBindingInfo& BindingInfo, void* InstanceData,
 	FVMExternalFunction& OutFunc)
 {
@@ -216,7 +218,7 @@ void UNiagaraDataInterface_ExampleComputeShader::GetVMExternalFunction(
 }
 
 // implementation called by the vectorVM
-void UNiagaraDataInterface_ExampleComputeShader::GetMousePositionVM(
+void UNDIHashmap::GetMousePositionVM(
 	FVectorVMExternalFunctionContext& Context)
 {
 	VectorVM::FUserPtrHandler<FNDIMousePositionInstanceData> InstData(Context);
@@ -247,7 +249,7 @@ void UNiagaraDataInterface_ExampleComputeShader::GetMousePositionVM(
 
 // this lets the niagara compiler know that it needs to recompile an effect when our hlsl file
 // changes
-bool UNiagaraDataInterface_ExampleComputeShader::AppendCompileHash(
+bool UNDIHashmap::AppendCompileHash(
 	FNiagaraCompileHashVisitor* InVisitor) const
 {
 	if (!Super::AppendCompileHash(InVisitor))
@@ -265,7 +267,7 @@ bool UNiagaraDataInterface_ExampleComputeShader::AppendCompileHash(
 // here because we use a template file that gets appended in GetParameterDefinitionHLSL(). If the
 // hlsl function is so simple that it does not need bound shader parameters, then this method can be
 // used instead of GetParameterDefinitionHLSL.
-bool UNiagaraDataInterface_ExampleComputeShader::GetFunctionHLSL(
+bool UNDIHashmap::GetFunctionHLSL(
 	const FNiagaraDataInterfaceGPUParamInfo& ParamInfo,
 	const FNiagaraDataInterfaceGeneratedFunction& FunctionInfo, int FunctionInstanceIndex,
 	FString& OutHLSL)
@@ -274,7 +276,7 @@ bool UNiagaraDataInterface_ExampleComputeShader::GetFunctionHLSL(
 }
 
 // this loads our hlsl template script file and
-void UNiagaraDataInterface_ExampleComputeShader::GetParameterDefinitionHLSL(
+void UNDIHashmap::GetParameterDefinitionHLSL(
 	const FNiagaraDataInterfaceGPUParamInfo& ParamInfo, FString& OutHLSL)
 {
 	const TMap<FString, FStringFormatArg> TemplateArgs = {
@@ -286,14 +288,14 @@ void UNiagaraDataInterface_ExampleComputeShader::GetParameterDefinitionHLSL(
 #endif
 
 // This fills in the expected parameter bindings we use to send data to the GPU
-void UNiagaraDataInterface_ExampleComputeShader::BuildShaderParameters(
+void UNDIHashmap::BuildShaderParameters(
 	FNiagaraShaderParametersBuilder& ShaderParametersBuilder) const
 {
 	ShaderParametersBuilder.AddNestedStruct<FShaderParameters>();
 }
 
 // This fills in the parameters to send to the GPU
-void UNiagaraDataInterface_ExampleComputeShader::SetShaderParameters(
+void UNDIHashmap::SetShaderParameters(
 	const FNiagaraDataInterfaceSetShaderParametersContext& Context) const
 {
 	FNDIMousePositionProxy& DataInterfaceProxy = Context.GetProxy<FNDIMousePositionProxy>();
