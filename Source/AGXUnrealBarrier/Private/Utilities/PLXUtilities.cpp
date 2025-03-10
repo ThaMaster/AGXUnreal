@@ -176,7 +176,7 @@ void FPLXUtilities::GetNestedObjectFields(
 			continue;
 
 		Output.insert(Field);
-		GetNestedObjectFields(Object, Output);
+		GetNestedObjectFields(*Field, Output);
 	}
 }
 
@@ -184,6 +184,15 @@ std::vector<openplx::Core::ObjectPtr> FPLXUtilities::GetObjectFields(openplx::Co
 {
 	std::vector<openplx::Core::ObjectPtr> Result;
 	Result.reserve(100); // TODO: DONT MERGE! call freeContainerMemory instead once it is available.
+
+	if (auto System = dynamic_cast<openplx::Physics3D::System*>(&Object))
+	{
+		// See openplx::Physics3D::System::extractObjectFieldsTo.
+		Result.push_back(System->local_transform());
+		Result.push_back(System->reference_body());
+	}
+
+	
 	Object.extractObjectFieldsTo(Result);
 	return Result;
 }
