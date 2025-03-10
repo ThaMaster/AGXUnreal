@@ -13,11 +13,21 @@
 #include "agxOpenPLX/AgxCache.h"
 #include "EndAGXIncludes.h"
 
+// Standard library includes.
+#include <memory>
+#include <unordered_set>
+#include <vector>
+
 namespace openplx
 {
 	namespace Physics3D
 	{
 		class System;
+	}
+
+	namespace Core
+	{
+		class Object;
 	}
 }
 
@@ -32,4 +42,28 @@ public:
 
 	static TArray<TUniquePtr<FPLX_Input>> GetInputs(openplx::Physics3D::System* System);
 	static TArray<TUniquePtr<FPLX_Output>> GetOutputs(openplx::Physics3D::System* System);
+
+	/**
+	* Based on Object::getNestedObjects in OpenPLX, but calling that function crashes due to different allocators used.
+	*/
+	template <class T>
+	static std::vector<std::shared_ptr<T>> GetNestedObjects(openplx::Core::Object& Object);
+
+	static std::unordered_set<openplx::Core::ObjectPtr> GetNestedObjectFields(
+		openplx::Core::Object& Object);
+	static void GetNestedObjectFields(
+		openplx::Core::Object& Object, std::unordered_set<openplx::Core::ObjectPtr>& Output);
+	static std::vector<openplx::Core::ObjectPtr> GetObjectFields(openplx::Core::Object& Object);
 };
+
+template <class T>
+std::vector<std::shared_ptr<T>> FPLXUtilities::GetNestedObjects(openplx::Core::Object& Object)
+{
+	std::vector<std::shared_ptr<T>> Output;
+	std::unordered_set<openplx::Core::ObjectPtr> Objects = GetNestedObjectFields(Object);
+	for (auto& Obj : Objects)
+		if (auto Target = std::dynamic_pointer_cast<T>(Obj))
+			Output.push_back(Target);
+
+	return Output;
+}

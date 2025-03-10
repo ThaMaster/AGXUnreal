@@ -106,7 +106,7 @@ bool FPLXUtilities::HasInputs(openplx::Physics3D::System* System)
 	if (System == nullptr)
 		return false;
 
-	return System->getNestedObjects<openplx::Physics::Signals::Input>().size() > 0;
+	return GetNestedObjects<openplx::Physics::Signals::Input>(*System).size() > 0;
 }
 
 bool FPLXUtilities::HasOutputs(openplx::Physics3D::System* System)
@@ -114,7 +114,7 @@ bool FPLXUtilities::HasOutputs(openplx::Physics3D::System* System)
 	if (System == nullptr)
 		return false;
 
-	return System->getNestedObjects<openplx::Physics::Signals::Output>().size() > 0;
+	return GetNestedObjects<openplx::Physics::Signals::Output>(*System).size() > 0;
 }
 
 TArray<TUniquePtr<FPLX_Input>> FPLXUtilities::GetInputs(openplx::Physics3D::System* System)
@@ -123,7 +123,7 @@ TArray<TUniquePtr<FPLX_Input>> FPLXUtilities::GetInputs(openplx::Physics3D::Syst
 	if (System == nullptr)
 		return Inputs;
 
-	for (auto& Input : System->getNestedObjects<openplx::Physics::Signals::Input>())
+	for (auto& Input : GetNestedObjects<openplx::Physics::Signals::Input>(*System))
 	{
 		if (auto Lvmvi =
 				std::dynamic_pointer_cast<openplx::Physics::Signals::LinearVelocity1DInput>(Input))
@@ -143,7 +143,7 @@ TArray<TUniquePtr<FPLX_Output>> FPLXUtilities::GetOutputs(openplx::Physics3D::Sy
 	if (System == nullptr)
 		return Outputs;
 
-	for (auto& Output : System->getNestedObjects<openplx::Physics::Signals::Output>())
+	for (auto& Output : GetNestedObjects<openplx::Physics::Signals::Output>(*System))
 	{
 		if (auto Hao = std::dynamic_pointer_cast<openplx::Physics::Signals::AngleOutput>(Output))
 		{
@@ -154,4 +154,36 @@ TArray<TUniquePtr<FPLX_Output>> FPLXUtilities::GetOutputs(openplx::Physics3D::Sy
 		UE_LOG(LogAGX, Warning, TEXT("Unhandled PLX Output: %s"), *Convert(Output->getName()));
 	}
 	return Outputs;
+}
+
+std::unordered_set<openplx::Core::ObjectPtr> FPLXUtilities::GetNestedObjectFields(
+	openplx::Core::Object& Object)
+{
+	std::unordered_set<openplx::Core::ObjectPtr> ObjectFields;
+	GetNestedObjectFields(Object, ObjectFields);
+	return ObjectFields;
+}
+
+void FPLXUtilities::GetNestedObjectFields(
+	openplx::Core::Object& Object, std::unordered_set<openplx::Core::ObjectPtr>& Output)
+{
+	std::vector<openplx::Core::ObjectPtr> Fields = GetObjectFields(Object);
+	for (auto& Field : Fields)
+	{
+		if (Field == nullptr)
+			continue;
+		if (Output.find(Field) != Output.end())
+			continue;
+
+		Output.insert(Field);
+		GetNestedObjectFields(Object, Output);
+	}
+}
+
+std::vector<openplx::Core::ObjectPtr> FPLXUtilities::GetObjectFields(openplx::Core::Object& Object)
+{
+	std::vector<openplx::Core::ObjectPtr> Result;
+	Result.reserve(100); // TODO: DONT MERGE! call freeContainerMemory instead once it is available.
+	Object.extractObjectFieldsTo(Result);
+	return Result;
 }

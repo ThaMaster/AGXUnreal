@@ -62,7 +62,7 @@ namespace FPLXModelRegistry_helpers
 		if (System == nullptr)
 			return Inputs;
 
-		for (auto& Input : System->getNestedObjects<openplx::Physics::Signals::Input>())
+		for (auto& Input : FPLXUtilities::GetNestedObjects<openplx::Physics::Signals::Input>(*System))
 		{
 			if (Input == nullptr)
 				continue;
@@ -144,7 +144,7 @@ FPLXModelRegistry::Handle FPLXModelRegistry::LoadNewModel(const FString& PLXFile
 		return InvalidHandle;
 	}
 
-	NewModel.Inputs = FPLXModelRegistry_helpers::MapInputs(System.get());	
+	NewModel.Inputs = FPLXModelRegistry_helpers::MapInputs(System.get());
 	const Handle NewHandle = FPLXModelRegistry_helpers::Convert(Native->ModelData.size());
 	Native->ModelData.emplace_back(std::move(NewModel));
 	KnownModels.insert({Convert(PLXFile), NewHandle});

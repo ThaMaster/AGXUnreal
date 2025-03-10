@@ -36,8 +36,6 @@
 #include <agx/version.h>
 #include <agxUtil/agxUtil.h>
 
-
-
 // In 2.28 including Cable.h causes a preprocessor macro named DEPRECATED to be defined. This
 // conflicts with a macro with the same name in Unreal. Undeffing the Unreal one.
 /// \todo Remove this #undef once the macro has been removed from AGX Dynamics.
@@ -52,6 +50,7 @@
 #include <agxSDK/Simulation.h>
 #include <agxTerrain/Shovel.h>
 #include <agxTerrain/Terrain.h>
+#include <agxTerrain/Utils.h>
 #include <agxWire/Wire.h>
 #include <agxVehicle/Track.h>
 #include "EndAGXIncludes.h"
@@ -515,7 +514,7 @@ namespace
 			OutSimObjects.GetShovels().Add(FShovelBarrier(std::make_unique<FShovelRef>(Shovel)));
 		}
 
-		//agxUtil::freeContainerMemory(Shovels); TODO: add to agxTerrain utils and call it here!
+		agxTerrain::freeContainerMemory(Shovels);
 	}
 
 	void ReadObserverFrames(
@@ -635,7 +634,8 @@ bool FAGXSimObjectsReader::ReadOpenPLXFile(
 	{
 		UE_LOG(
 			LogAGX, Error,
-			TEXT("Could not read OpenPLX file '%s'. The Log category LogAGXDynamics may include more "
+			TEXT("Could not read OpenPLX file '%s'. The Log category LogAGXDynamics may include "
+				 "more "
 				 "details."),
 			*Filename);
 		return false;
