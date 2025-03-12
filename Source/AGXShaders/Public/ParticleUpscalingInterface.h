@@ -5,10 +5,10 @@
 #include "NiagaraTypes.h"
 #include "NiagaraDataInterface.h"
 #include "NiagaraDataInterfaceRW.h"
-#include "NDIHashmap.generated.h"
+#include "ParticleUpscalingInterface.generated.h"
 
-UCLASS(EditInlineNew, Category = "Compute Shader", CollapseCategories, meta = (DisplayName = "Custom NDI Hashmap"))
-class AGXSHADERS_API UNDIHashmap : public UNiagaraDataInterface
+UCLASS(EditInlineNew, Category = "Data Interface", CollapseCategories, meta = (DisplayName = "Particle Upscaling Interface"))
+class AGXSHADERS_API UParticleUpscalingInterface : public UNiagaraDataInterface
 {
 	GENERATED_UCLASS_BODY()
 
@@ -16,7 +16,6 @@ class AGXSHADERS_API UNDIHashmap : public UNiagaraDataInterface
 		SHADER_PARAMETER(FVector4f, MousePosition)
 	END_SHADER_PARAMETER_STRUCT()
 public:
-
 	// Runs once to set up the data interface
 	virtual void PostInitProperties() override;
 
@@ -30,18 +29,17 @@ public:
 	}
 #if WITH_EDITORONLY_DATA
 	virtual bool AppendCompileHash(FNiagaraCompileHashVisitor* InVisitor) const override;
+	virtual void GetParameterDefinitionHLSL(
+		const FNiagaraDataInterfaceGPUParamInfo& ParamInfo, FString& OutHLSL) override;
 	virtual bool GetFunctionHLSL(
 		const FNiagaraDataInterfaceGPUParamInfo& ParamInfo,
 		const FNiagaraDataInterfaceGeneratedFunction& FunctionInfo, int FunctionInstanceIndex,
 		FString& OutHLSL) override;
-	virtual void GetParameterDefinitionHLSL(
-		const FNiagaraDataInterfaceGPUParamInfo& ParamInfo, FString& OutHLSL) override;
 #endif
 	virtual void BuildShaderParameters(
 		FNiagaraShaderParametersBuilder& ShaderParametersBuilder) const override;
 	virtual void SetShaderParameters(
 		const FNiagaraDataInterfaceSetShaderParametersContext& Context) const override;
-
 	virtual bool InitPerInstanceData(
 		void* PerInstanceData, FNiagaraSystemInstance* SystemInstance) override;
 	virtual void DestroyPerInstanceData(
@@ -61,14 +59,12 @@ public:
 	void GetMousePositionVM(FVectorVMExternalFunctionContext& Context);
 
 protected:
-
 #if WITH_EDITORONLY_DATA
 	virtual void GetFunctionsInternal(
 		TArray<FNiagaraFunctionSignature>& OutFunctions) const override;
 	
 #endif
 private:
-	static const FName GetValueName;
-	static const FName StoreValueName;
+
 	static const FName GetMousePositionName;
 };

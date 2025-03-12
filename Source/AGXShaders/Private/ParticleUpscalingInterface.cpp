@@ -1,8 +1,11 @@
-#include "NDIHashmap.h"
+﻿#include "ParticleUpscalingInterface.h"
 #include "NiagaraCompileHashVisitor.h"
 #include "NiagaraTypes.h"
 #include "NiagaraSystemInstance.h"
 #include "NiagaraShaderParametersBuilder.h"
+#include "ShaderParameterUtils.h"
+#include "RHIStaticStates.h"
+
 
 #if WITH_EDITORONLY_DATA
 #include "LevelEditorViewport.h"
@@ -11,26 +14,44 @@
 #endif
 #include "GameFramework/PlayerController.h" // REMOVE THIS LATER
 
-#define LOCTEXT_NAMESPACE "NDIHashmap"
+#define LOCTEXT_NAMESPACE "NDIParticleUpscaling"
 
-const FName UNDIHashmap::GetValueName(TEXT("GetValue"));
-const FName UNDIHashmap::StoreValueName(TEXT("StoreValue"));
-const FName UNDIHashmap::GetMousePositionName(TEXT("GetMousePosition"));
-static const TCHAR* ExampleTemplateShaderFile = TEXT("/AGXShadersShaders/NDIHashmap.ush");
+const FName UParticleUpscalingInterface::GetMousePositionName(TEXT("GetMousePosition"));
+
+static const TCHAR* ParticleUpscalingTemplateShaderFile = TEXT("/AGXShadersShaders/ParticleUpscaling.ush");
+
+// CoarseParticleBuffer -> Fås av CPUn varje tidssteg
+// FineParticleBuffer -> Statisk, persistant, stor nog många bytes, byggs up i GPUn. (Se hur de hanteras i Unity/c#).
+// ActiveVoxels -> Buffer/Lista fås av CPUn varje tidsteg, AGX (kanske inte finns men skulle vara pog att ha)
+// ActiveVoxel Hashmappen -> byggs upp utifrån ActiveVoxel Buffern som skickas från CPUn
+
+/**
+* Hur arbetet ska gå nu:
+* 
+* Tänk om hur detta ska fungera, istället för att skapa en custom NDI som är en generisk hashmap, gör istället denna till en Particle Upscaling klass (men i form av en NDI) som kan köra några funktioner på GPUn.
+* Dessutom så kommer man inte behöva massa inputs i niagara vfx system editorn, utan istället sker det mesta automatiskt och man fetchar bara data från editorn istället. 
+* 
+* Se sedan över hur man ska ange trådar för compute shaders, eller om det blir tillräcklig bra prestanda!
+* 
+* Därefter, gör funktioner sådant att man kan skicka in en CoarseParticleBuffer och ActiveVoxelBuffer!
+* 
+* Det kommer bli mycket programmeing i .ush filer (tror jag)
+* Note: Unity hanterar detta på ett sätt som verkligen liknar hur det ska hanteras i Unreal!
+*/
 
 // Struct to store our DI data
-struct FNDIMousePositionInstanceData
+struct FNDIHashmapInstanceData
 {
 	FVector2f MousePos;
 	FIntPoint ScreenSize;
 };
 
 // Proxy used for safely copy data between the Game Thread (DT) and the Render Thread (RT)
-struct FNDIMousePositionProxy : public FNiagaraDataInterfaceProxy
+struct FNDIHashmapProxy : public FNiagaraDataInterfaceProxy
 {
 	virtual int32 PerInstanceDataPassedToRenderThreadSize() const override
 	{
-		return sizeof(FNDIMousePositionInstanceData);
+		return sizeof(FNDIHashmapInstanceData);
 	}
 
 	static void ProvidePerInstanceDataForRenderThread(
@@ -38,82 +59,108 @@ struct FNDIMousePositionProxy : public FNiagaraDataInterfaceProxy
 		const FNiagaraSystemInstanceID& SystemInstance)
 	{
 		// initialize the render thread instance data into the pre-allocated memory
-		FNDIMousePositionInstanceData* DataForRenderThread =
-			new (InDataForRenderThread) FNDIMousePositionInstanceData();
+		FNDIHashmapInstanceData* DataForRenderThread =
+			new (InDataForRenderThread) FNDIHashmapInstanceData();
 
 		// we're just copying the game thread data, but the render thread data can be initialized to
 		// anything here and can be another struct entirely
-		const FNDIMousePositionInstanceData* DataFromGameThread =
-			static_cast<FNDIMousePositionInstanceData*>(InDataFromGameThread);
+		const FNDIHashmapInstanceData* DataFromGameThread =
+			static_cast<FNDIHashmapInstanceData*>(InDataFromGameThread);
 		*DataForRenderThread = *DataFromGameThread;
 	}
 
 	virtual void ConsumePerInstanceDataFromGameThread(
 		void* PerInstanceData, const FNiagaraSystemInstanceID& InstanceID) override
 	{
-		FNDIMousePositionInstanceData* InstanceDataFromGT =
-			static_cast<FNDIMousePositionInstanceData*>(PerInstanceData);
-		FNDIMousePositionInstanceData& InstanceData =
+		FNDIHashmapInstanceData* InstanceDataFromGT =
+			static_cast<FNDIHashmapInstanceData*>(PerInstanceData);
+		FNDIHashmapInstanceData& InstanceData =
 			SystemInstancesToInstanceData_RT.FindOrAdd(InstanceID);
 		InstanceData = *InstanceDataFromGT;
 
 		// we call the destructor here to clean up the GT data. Without this we could be leaking
 		// memory.
-		InstanceDataFromGT->~FNDIMousePositionInstanceData();
+		InstanceDataFromGT->~FNDIHashmapInstanceData();
 	}
 
-	TMap<FNiagaraSystemInstanceID, FNDIMousePositionInstanceData> SystemInstancesToInstanceData_RT;
+	TMap<FNiagaraSystemInstanceID, FNDIHashmapInstanceData> SystemInstancesToInstanceData_RT;
 };
+
+
+// --------------------------------------------------------------- //
+// ---------------                                 --------------- //
+// --------------- THE ACTUAL DATA INTERFACE BELOW --------------- //
+// ---------------                                 --------------- //
+// --------------------------------------------------------------- //
+
+UParticleUpscalingInterface::UParticleUpscalingInterface(
+	FObjectInitializer const& ObjectInitializer)
+{
+	Proxy.Reset(new FNDIHashmapProxy());
+}
+
 
 // creates a new data object to store our position in.
 // Don't keep transient data on the data interface object itself, only use per instance data!
-bool UNDIHashmap::InitPerInstanceData(
+/**
+* INITIERA ALLA BUFFRAR HÄR!
+*/
+bool UParticleUpscalingInterface::InitPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
 	[InstanceID = SystemInstance->GetId(), PID = PerInstanceData](FRHICommandListImmediate& CmdList) 
 		{
-		FNDIMousePositionInstanceData* InstanceData = new (PID) FNDIMousePositionInstanceData;
+		FNDIHashmapInstanceData* InstanceData = new (PID) FNDIHashmapInstanceData;
 		InstanceData->MousePos = FVector2f::ZeroVector;
 		};
 	return true;
 }
 
 // clean up RT instances
-void UNDIHashmap::DestroyPerInstanceData(
+void UParticleUpscalingInterface::DestroyPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
-	FNDIMousePositionInstanceData* InstanceData =
-		static_cast<FNDIMousePositionInstanceData*>(PerInstanceData);
-	InstanceData->~FNDIMousePositionInstanceData();
+	FNDIHashmapInstanceData* InstanceData =
+		static_cast<FNDIHashmapInstanceData*>(PerInstanceData);
+	InstanceData->~FNDIHashmapInstanceData();
 
 	ENQUEUE_RENDER_COMMAND(RemoveProxy)
-	([RT_Proxy = GetProxyAs<FNDIMousePositionProxy>(), 
+	([RT_Proxy = GetProxyAs<FNDIHashmapProxy>(), 
 		InstanceID = SystemInstance->GetId()](FRHICommandListImmediate& CmdList)
 		{ 
 			RT_Proxy->SystemInstancesToInstanceData_RT.Remove(InstanceID); 
 		});
 }
 
-int32 UNDIHashmap::PerInstanceDataSize() const
+int32 UParticleUpscalingInterface::PerInstanceDataSize() const
 {
-	return sizeof(FNDIMousePositionInstanceData);
+	return sizeof(FNDIHashmapInstanceData);
 }
 
+/**
+* 
+* UPPDATERA BUFFRARNA MED DATAN FRÅN CPUn!
+*/
 // This ticks on the game thread and lets us do work to initialize the instance data.
 // If you need to do work on the gathered instance data after the simulation is done, use
 // PerInstanceTickPostSimulate() instead.
-bool UNDIHashmap::PerInstanceTick(
+bool UParticleUpscalingInterface::PerInstanceTick(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds)
 {
 	check(SystemInstance);
-	FNDIMousePositionInstanceData* InstanceData =
-		static_cast<FNDIMousePositionInstanceData*>(PerInstanceData);
+	FNDIHashmapInstanceData* InstanceData =
+		static_cast<FNDIHashmapInstanceData*>(PerInstanceData);
 	if (!InstanceData)
 	{
 		return true;
 	}
+	
 
-	InstanceData->MousePos = FVector2f::ZeroVector;
+	[InstanceID = SystemInstance->GetId(), PID = PerInstanceData](FRHICommandListImmediate& CmdList)
+	{
+		FNDIHashmapInstanceData* InstanceData = new (PID) FNDIHashmapInstanceData;
+		InstanceData->MousePos = FVector2f::ZeroVector;
+	};
 
 	// If we have a player controller we use it to capture the mouse position
 	UWorld* World = SystemInstance->GetWorld();
@@ -139,28 +186,16 @@ bool UNDIHashmap::PerInstanceTick(
 	return false;
 }
 
-void UNDIHashmap::ProvidePerInstanceDataForRenderThread(
+void UParticleUpscalingInterface::ProvidePerInstanceDataForRenderThread(
 	void* DataForRenderThread, void* PerInstanceData,
 	const FNiagaraSystemInstanceID& SystemInstance)
 {
-	FNDIMousePositionProxy::ProvidePerInstanceDataForRenderThread(
+	FNDIHashmapProxy::ProvidePerInstanceDataForRenderThread(
 		DataForRenderThread, PerInstanceData, SystemInstance);
 }
 
-// --------------------------------------------------------------- //
-// ---------------                                 --------------- //
-// --------------- THE ACTUAL DATA INTERFACE BELOW --------------- //
-// ---------------                                 --------------- //
-// --------------------------------------------------------------- //
-
-UNDIHashmap::UNDIHashmap(
-	FObjectInitializer const& ObjectInitializer)
-{
-	Proxy.Reset(new FNDIMousePositionProxy());
-}
-
 // this registers our custom DI with Niagara
-void UNDIHashmap::PostInitProperties()
+void UParticleUpscalingInterface::PostInitProperties()
 {
 	Super::PostInitProperties();
 
@@ -174,39 +209,44 @@ void UNDIHashmap::PostInitProperties()
 
 #if WITH_EDITORONLY_DATA
 // this lists all the functions our DI provides (currently only one)
-void UNDIHashmap::GetFunctionsInternal(
+void UParticleUpscalingInterface::GetFunctionsInternal(
 	TArray<FNiagaraFunctionSignature>& OutFunctions) const
 {
-	FNiagaraFunctionSignature Sig;
-	Sig.Name = GetMousePositionName;
-	Sig.Description = LOCTEXT(
-		"GetMousePositionNameFunctionDescription", "Returns the mouse position in screen space.");
-	Sig.bMemberFunction = true;
-	Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("MousePosition interface")));
-	Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("Normalized")));
-	Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("PosX")),
-		LOCTEXT(
-			"MousePosXDescription",
-			"Returns the x coordinates in pixels or 0-1 range if normalized"));
-	Sig.AddOutput(
-		FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("PosY")),
-		LOCTEXT(
-			"MousePosYDescription",
-			"Returns the y coordinates in pixels or 0-1 range if normalized"));
-	OutFunctions.Add(Sig);
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = GetMousePositionName;
+		Sig.Description = LOCTEXT(
+			"GetMousePositionNameFunctionDescription",
+			"Returns the mouse position in screen space.");
+		Sig.bMemberFunction = true;
+		Sig.AddInput(
+			FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("MousePosition interface")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("Normalized")));
+		Sig.AddOutput(
+			FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("PosX")),
+			LOCTEXT(
+				"MousePosXDescription",
+				"Returns the x coordinates in pixels or 0-1 range if normalized"));
+		Sig.AddOutput(
+			FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("PosY")),
+			LOCTEXT(
+				"MousePosYDescription",
+				"Returns the y coordinates in pixels or 0-1 range if normalized"));
+		OutFunctions.Add(Sig);
+	}
 }
 #endif
 
 // this provides the cpu vm with the correct function to call
-void UNDIHashmap::GetVMExternalFunction(
+DEFINE_NDI_DIRECT_FUNC_BINDER(UParticleUpscalingInterface, GetMousePositionVM);
+
+void UParticleUpscalingInterface::GetVMExternalFunction(
 	const FVMExternalFunctionBindingInfo& BindingInfo, void* InstanceData,
 	FVMExternalFunction& OutFunc)
 {
 	if (BindingInfo.Name == GetMousePositionName)
 	{
-		OutFunc =
-			FVMExternalFunction::CreateLambda([this](FVectorVMExternalFunctionContext& Context)
-											  { this->GetMousePositionVM(Context); });
+		NDI_FUNC_BINDER(UParticleUpscalingInterface, GetMousePositionVM)::Bind(this, OutFunc);
 	}
 	else
 	{
@@ -218,10 +258,10 @@ void UNDIHashmap::GetVMExternalFunction(
 }
 
 // implementation called by the vectorVM
-void UNDIHashmap::GetMousePositionVM(
+void UParticleUpscalingInterface::GetMousePositionVM(
 	FVectorVMExternalFunctionContext& Context)
 {
-	VectorVM::FUserPtrHandler<FNDIMousePositionInstanceData> InstData(Context);
+	VectorVM::FUserPtrHandler<FNDIHashmapInstanceData> InstData(Context);
 	FNDIInputParam<bool> InNormalized(Context);
 	FNDIOutputParam<float> OutPosX(Context);
 	FNDIOutputParam<float> OutPosY(Context);
@@ -249,7 +289,7 @@ void UNDIHashmap::GetMousePositionVM(
 
 // this lets the niagara compiler know that it needs to recompile an effect when our hlsl file
 // changes
-bool UNDIHashmap::AppendCompileHash(
+bool UParticleUpscalingInterface::AppendCompileHash(
 	FNiagaraCompileHashVisitor* InVisitor) const
 {
 	if (!Super::AppendCompileHash(InVisitor))
@@ -257,7 +297,7 @@ bool UNDIHashmap::AppendCompileHash(
 		return false;
 	}
 
-	InVisitor->UpdateShaderFile(ExampleTemplateShaderFile);
+	InVisitor->UpdateShaderFile(ParticleUpscalingTemplateShaderFile);
 	InVisitor->UpdateShaderParameters<FShaderParameters>();
 	return true;
 }
@@ -267,7 +307,7 @@ bool UNDIHashmap::AppendCompileHash(
 // here because we use a template file that gets appended in GetParameterDefinitionHLSL(). If the
 // hlsl function is so simple that it does not need bound shader parameters, then this method can be
 // used instead of GetParameterDefinitionHLSL.
-bool UNDIHashmap::GetFunctionHLSL(
+bool UParticleUpscalingInterface::GetFunctionHLSL(
 	const FNiagaraDataInterfaceGPUParamInfo& ParamInfo,
 	const FNiagaraDataInterfaceGeneratedFunction& FunctionInfo, int FunctionInstanceIndex,
 	FString& OutHLSL)
@@ -276,30 +316,30 @@ bool UNDIHashmap::GetFunctionHLSL(
 }
 
 // this loads our hlsl template script file and
-void UNDIHashmap::GetParameterDefinitionHLSL(
+void UParticleUpscalingInterface::GetParameterDefinitionHLSL(
 	const FNiagaraDataInterfaceGPUParamInfo& ParamInfo, FString& OutHLSL)
 {
 	const TMap<FString, FStringFormatArg> TemplateArgs = {
 		{TEXT("ParameterName"), ParamInfo.DataInterfaceHLSLSymbol},
 	};
-	AppendTemplateHLSL(OutHLSL, ExampleTemplateShaderFile, TemplateArgs);
+	AppendTemplateHLSL(OutHLSL, ParticleUpscalingTemplateShaderFile, TemplateArgs);
 }
 
 #endif
 
 // This fills in the expected parameter bindings we use to send data to the GPU
-void UNDIHashmap::BuildShaderParameters(
+void UParticleUpscalingInterface::BuildShaderParameters(
 	FNiagaraShaderParametersBuilder& ShaderParametersBuilder) const
 {
 	ShaderParametersBuilder.AddNestedStruct<FShaderParameters>();
 }
 
 // This fills in the parameters to send to the GPU
-void UNDIHashmap::SetShaderParameters(
+void UParticleUpscalingInterface::SetShaderParameters(
 	const FNiagaraDataInterfaceSetShaderParametersContext& Context) const
 {
-	FNDIMousePositionProxy& DataInterfaceProxy = Context.GetProxy<FNDIMousePositionProxy>();
-	FNDIMousePositionInstanceData& InstanceData =
+	FNDIHashmapProxy& DataInterfaceProxy = Context.GetProxy<FNDIHashmapProxy>();
+	FNDIHashmapInstanceData& InstanceData =
 		DataInterfaceProxy.SystemInstancesToInstanceData_RT.FindChecked(
 			Context.GetSystemInstanceID());
 
