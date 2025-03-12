@@ -114,11 +114,11 @@ public:
 	TArray<FTrackBarrier>& GetTracks();
 	const TArray<FTrackBarrier>& GetTracks() const;
 
-	TArray<TUniquePtr<FPLX_Input>>& GetPLXInputs();
-	const TArray<TUniquePtr<FPLX_Input>>& GetPLXInputs() const;
+	TArray<FPLX_Input>& GetPLXInputs();
+	const TArray<FPLX_Input>& GetPLXInputs() const;
 
-	TArray<TUniquePtr<FPLX_Output>>& GetPLXOutputs();
-	const TArray<TUniquePtr<FPLX_Output>>& GetPLXOutputs() const;
+	TArray<FPLX_Output>& GetPLXOutputs();
+	const TArray<FPLX_Output>& GetPLXOutputs() const;
 
 private:
 	FSimulationObjectCollection(const FSimulationObjectCollection&) = delete;
@@ -152,6 +152,6 @@ private:
 	TArray<FShovelBarrier> Shovels;
 	TArray<FTrackBarrier> Tracks;
 
-	TArray<TUniquePtr<FPLX_Input>> PLXInputs;
-	TArray<TUniquePtr<FPLX_Output>> PLXOutputs;
+	TArray<FPLX_Input> PLXInputs;
+	TArray<FPLX_Output> PLXOutputs;
 };

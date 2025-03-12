@@ -16,14 +16,6 @@ UPLX_SignalHandlerComponent::UPLX_SignalHandlerComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-bool UPLX_SignalHandlerComponent::Send(const FPLX_LinearVelocity1DInput& Input, double Value)
-{
-	if (!SignalHandler.IsInitialized())
-		return false;
-
-	return SignalHandler.Send(Input, Value);
-}
-
 namespace PLX_SignalHandlerComponent_helpers
 {
 	TArray<FConstraintBarrier*> CollectConstraintBarriers(AActor* Owner)
@@ -61,7 +53,15 @@ namespace PLX_SignalHandlerComponent_helpers
 	}
 }
 
-bool UPLX_SignalHandlerComponent::Receive(const FPLX_AngleOutput& Output, double& OutValue)
+bool UPLX_SignalHandlerComponent::SendScalar(const FPLX_Input& Input, double Value)
+{
+	if (!SignalHandler.IsInitialized())
+		return false;
+
+	return SignalHandler.Send(Input, Value);
+}
+
+bool UPLX_SignalHandlerComponent::ReceiveScalar(const FPLX_Output& Output, double& OutValue)
 {
 	return SignalHandler.Receive(Output, OutValue);
 }

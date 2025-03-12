@@ -26,11 +26,17 @@ class AGXUNREAL_API UPLX_SignalHandlerComponent : public UActorComponent
 public:
 	UPLX_SignalHandlerComponent();
 
-	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool Send(const FPLX_LinearVelocity1DInput& Input, double Value);
+	UPROPERTY(EditAnywhere, Category = "OpenPLX")
+	TMap<FString, FPLX_Input> Inputs;
+
+	UPROPERTY(EditAnywhere, Category = "OpenPLX")
+	TMap<FString, FPLX_Output> Outputs;
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool Receive(const FPLX_AngleOutput& Output, double& OutValue);
+	bool SendScalar(const FPLX_Input& Input, double Value);
+
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool ReceiveScalar(const FPLX_Output& Output, double& OutValue);
 
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;

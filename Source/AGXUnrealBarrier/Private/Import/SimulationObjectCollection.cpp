@@ -304,22 +304,22 @@ const TArray<FTrackBarrier>& FSimulationObjectCollection::GetTracks() const
 	return Tracks;
 }
 
-TArray<TUniquePtr<FPLX_Input>>& FSimulationObjectCollection::GetPLXInputs()
+TArray<FPLX_Input>& FSimulationObjectCollection::GetPLXInputs()
 {
 	return PLXInputs;
 }
 
-const TArray<TUniquePtr<FPLX_Input>>& FSimulationObjectCollection::GetPLXInputs() const
+const TArray<FPLX_Input>& FSimulationObjectCollection::GetPLXInputs() const
 {
 	return PLXInputs;
 }
 
-TArray<TUniquePtr<FPLX_Output>>& FSimulationObjectCollection::GetPLXOutputs()
+TArray<FPLX_Output>& FSimulationObjectCollection::GetPLXOutputs()
 {
 	return PLXOutputs;
 }
 
-const TArray<TUniquePtr<FPLX_Output>>& FSimulationObjectCollection::GetPLXOutputs() const
+const TArray<FPLX_Output>& FSimulationObjectCollection::GetPLXOutputs() const
 {
 	return PLXOutputs;
 }

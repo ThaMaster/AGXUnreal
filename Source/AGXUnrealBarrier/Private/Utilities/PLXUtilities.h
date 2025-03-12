@@ -40,8 +40,8 @@ public:
 	static bool HasInputs(openplx::Physics3D::System* System);
 	static bool HasOutputs(openplx::Physics3D::System* System);
 
-	static TArray<TUniquePtr<FPLX_Input>> GetInputs(openplx::Physics3D::System* System);
-	static TArray<TUniquePtr<FPLX_Output>> GetOutputs(openplx::Physics3D::System* System);
+	static TArray<FPLX_Input> GetInputs(openplx::Physics3D::System* System);
+	static TArray<FPLX_Output> GetOutputs(openplx::Physics3D::System* System);
 
 	/**
 	* Based on Object::getNestedObjects in OpenPLX, but calling that function crashes due to different allocators used.

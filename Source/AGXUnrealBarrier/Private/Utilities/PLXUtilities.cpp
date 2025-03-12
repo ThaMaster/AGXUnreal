@@ -117,41 +117,50 @@ bool FPLXUtilities::HasOutputs(openplx::Physics3D::System* System)
 	return GetNestedObjects<openplx::Physics::Signals::Output>(*System).size() > 0;
 }
 
-TArray<TUniquePtr<FPLX_Input>> FPLXUtilities::GetInputs(openplx::Physics3D::System* System)
+TArray<FPLX_Input> FPLXUtilities::GetInputs(openplx::Physics3D::System* System)
 {
-	TArray<TUniquePtr<FPLX_Input>> Inputs;
+	TArray<FPLX_Input> Inputs;
 	if (System == nullptr)
 		return Inputs;
 
-	for (auto& Input : GetNestedObjects<openplx::Physics::Signals::Input>(*System))
+	auto InputsPLX = GetNestedObjects<openplx::Physics::Signals::Input>(*System);
+	Inputs.Reserve(InputsPLX.size());
+	for (auto& Input : InputsPLX)
 	{
 		if (auto Lvmvi =
 				std::dynamic_pointer_cast<openplx::Physics::Signals::LinearVelocity1DInput>(Input))
 		{
-			Inputs.Emplace(MakeUnique<FPLX_LinearVelocity1DInput>(Convert(Input->getName())));
-			continue;
+			Inputs.Add(FPLX_Input(Convert(Input->getName()), EPLX_InputType::LinearVelocity1DInput));
 		}
-
-		UE_LOG(LogAGX, Warning, TEXT("Unhandled PLX Input: %s"), *Convert(Input->getName()));
+		else
+		{
+			UE_LOG(LogAGX, Warning, TEXT("Unsupported PLX Input: %s"), *Convert(Input->getName()));
+			Inputs.Add(
+				FPLX_Input(Convert(Input->getName()), EPLX_InputType::Invalid));
+		}
 	}
 	return Inputs;
 }
 
-TArray<TUniquePtr<FPLX_Output>> FPLXUtilities::GetOutputs(openplx::Physics3D::System* System)
+TArray<FPLX_Output> FPLXUtilities::GetOutputs(openplx::Physics3D::System* System)
 {
-	TArray<TUniquePtr<FPLX_Output>> Outputs;
+	TArray<FPLX_Output> Outputs;
 	if (System == nullptr)
 		return Outputs;
 
-	for (auto& Output : GetNestedObjects<openplx::Physics::Signals::Output>(*System))
+	auto OutputsPLX = GetNestedObjects<openplx::Physics::Signals::Output>(*System);
+	Outputs.Reserve(OutputsPLX.size());
+	for (auto& Output : OutputsPLX)
 	{
 		if (auto Hao = std::dynamic_pointer_cast<openplx::Physics::Signals::AngleOutput>(Output))
 		{
-			Outputs.Emplace(MakeUnique<FPLX_AngleOutput>(Convert(Output->getName())));
-			continue;
+			Outputs.Add(FPLX_Output(Convert(Output->getName()), EPLX_OutputType::AngleOutput));
 		}
-
-		UE_LOG(LogAGX, Warning, TEXT("Unhandled PLX Output: %s"), *Convert(Output->getName()));
+		else
+		{
+			UE_LOG(LogAGX, Warning, TEXT("Unsupported PLX Output: %s"), *Convert(Output->getName()));
+			Outputs.Add(FPLX_Output(Convert(Output->getName()), EPLX_OutputType::Invalid));
+		}
 	}
 	return Outputs;
 }
