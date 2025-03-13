@@ -69,9 +69,7 @@ void FPUData::Init(FNiagaraSystemInstance* SystemInstance)
 
 void FPUData::Update(FNiagaraSystemInstance* SystemInstance)
 {
-
 	MousePos = FVector2f::ZeroVector;
-
 
 	// If we have a player controller we use it to capture the mouse position
 	UWorld* World = SystemInstance->GetWorld();
@@ -108,12 +106,10 @@ void FParticleUpscalingProxy::ProvidePerInstanceDataForRenderThread(
 		void* InDataForRenderThread, void* InDataFromGameThread,
 		const FNiagaraSystemInstanceID& SystemInstance)
 {
-	// initialize the render thread instance data into the pre-allocated memory
-	FPUData* DataForRenderThread = new (InDataForRenderThread) FPUData();
+	FPUData* DataForRenderThread = static_cast<FPUData*>(InDataForRenderThread);
+	FPUData* DataFromGameThread = static_cast<FPUData*>(InDataFromGameThread);
 
-	// we're just copying the game thread data, but the render thread data can be initialized to
-	// anything here and can be another struct entirely
-	const FPUData* DataFromGameThread = static_cast<FPUData*>(InDataFromGameThread);
+	// Copy data from game thread to render thread
 	*DataForRenderThread = *DataFromGameThread;
 }
 
@@ -340,16 +336,13 @@ void UParticleUpscalingInterface::SetShaderParameters(
 	const FNiagaraDataInterfaceSetShaderParametersContext& Context) const
 {
 	FParticleUpscalingProxy& DataInterfaceProxy = Context.GetProxy<FParticleUpscalingProxy>();
-	FPUData& InstanceData =
-		DataInterfaceProxy.SystemInstancesToInstanceData_RT.FindChecked(
-			Context.GetSystemInstanceID());
+	FPUData& InstanceData = DataInterfaceProxy.SystemInstancesToInstanceData_RT.FindChecked(Context.GetSystemInstanceID());
 
 	FShaderParameters* ShaderParameters = Context.GetParameterNestedStruct<FShaderParameters>();
 	ShaderParameters->MousePosition.X = InstanceData.MousePos.X;
 	ShaderParameters->MousePosition.Y = InstanceData.MousePos.Y;
 	ShaderParameters->MousePosition.Z = InstanceData.ScreenSize.X;
 	ShaderParameters->MousePosition.W = InstanceData.ScreenSize.Y;
-
 	
 }
 
