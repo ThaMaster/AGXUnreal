@@ -5,7 +5,9 @@
 #include "NiagaraShaderParametersBuilder.h"
 #include "ShaderParameterUtils.h"
 #include "RHIStaticStates.h"
-
+#include "RHIUtilities.h"
+#include "RHIResources.h"
+#include "RHICommandList.h"
 
 #if WITH_EDITORONLY_DATA
 #include "LevelEditorViewport.h"
@@ -45,6 +47,10 @@ struct FNDIHashmapInstanceData
 	FVector2f MousePos;
 	FIntPoint ScreenSize;
 };
+
+//-----------------------------------------------
+
+//-----------------------------------------------
 
 // Proxy used for safely copy data between the Game Thread (DT) and the Render Thread (RT)
 struct FNDIHashmapProxy : public FNiagaraDataInterfaceProxy
@@ -348,6 +354,20 @@ void UParticleUpscalingInterface::SetShaderParameters(
 	ShaderParameters->MousePosition.Y = InstanceData.MousePos.Y;
 	ShaderParameters->MousePosition.Z = InstanceData.ScreenSize.X;
 	ShaderParameters->MousePosition.W = InstanceData.ScreenSize.Y;
+
+	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
+
+	TArray<PosStruct> MyDataArray;
+	MyDataArray.SetNumZeroed(1);
+	FResourceArrayUploadArrayView ResourceData(MyDataArray.GetData(), sizeof(PosStruct) * MyDataArray.Num());
+	
+	FRHIResourceCreateInfo CreateInfo(TEXT("StorageBuffer"), &ResourceData);
+	FBufferRHIRef BufferRef = RHICmdList.CreateStructuredBuffer(
+		sizeof(PosStruct), sizeof(PosStruct) * MyDataArray.Num(), BUF_UnorderedAccess, CreateInfo);
+
+	FUnorderedAccessViewRHIRef Buffer = RHICmdList.CreateUnorderedAccessView(
+		BufferRef, FRHIViewDesc::CreateBufferUAV().SetType(FRHIViewDesc::EBufferType::Structured));
+	ShaderParameters->StorageBuffer = Buffer;
 }
 
 #undef LOCTEXT_NAMESPACE

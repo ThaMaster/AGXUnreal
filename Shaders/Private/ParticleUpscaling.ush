@@ -1,7 +1,15 @@
 // when using a template ush file, we need the _{ParameterName} appendix on global functions and parameters, because the template can be included multiple times for different data interfaces in a system.
+struct PosStruct
+{
+    float PosX;
+    float PosY;
+};
+
 float4 {ParameterName}_MousePosition;
 
-float2 Dostuff(in bool norm, in float4 di_pos)
+RWStructuredBuffer<PosStruct> {ParameterName}_StorageBuffer;
+
+void Dostuff(in bool norm, in float4 di_pos)
 {
     float2 pos = float2(0.0, 0.0);
     if (norm)
@@ -14,14 +22,15 @@ float2 Dostuff(in bool norm, in float4 di_pos)
         pos.x = di_pos.x;
         pos.y = di_pos.y;
     }
-    return pos;
+    {ParameterName}_StorageBuffer[0].PosX = pos.x;
+    {ParameterName}_StorageBuffer[0].PosY = pos.y;
 }
 
 void GetMousePosition_{ParameterName}(in bool In_Normalized, out float Out_PosX, out float Out_PosY)
 {
 	float4 DIPosition = {ParameterName}_MousePosition;
-    float2 position = Dostuff(In_Normalized, DIPosition);
-    Out_PosX = position.x;
-    Out_PosY = position.y;
+    Dostuff(In_Normalized, DIPosition);
+    Out_PosX = {ParameterName}_StorageBuffer[0].PosX;
+    Out_PosY = {ParameterName}_StorageBuffer[0].PosY;
 }
 

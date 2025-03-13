@@ -3,9 +3,16 @@
 #include "CoreMinimal.h"
 #include "NiagaraCommon.h"
 #include "NiagaraTypes.h"
+
 #include "NiagaraDataInterface.h"
 #include "NiagaraDataInterfaceRW.h"
 #include "ParticleUpscalingInterface.generated.h"
+
+struct PosStruct
+{
+	float PosX;
+	float PosY;
+};
 
 UCLASS(EditInlineNew, Category = "Data Interface", CollapseCategories, meta = (DisplayName = "Particle Upscaling Interface"))
 class AGXSHADERS_API UParticleUpscalingInterface : public UNiagaraDataInterface
@@ -14,6 +21,7 @@ class AGXSHADERS_API UParticleUpscalingInterface : public UNiagaraDataInterface
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FShaderParameters, )
 		SHADER_PARAMETER(FVector4f, MousePosition)
+	SHADER_PARAMETER_UAV(RWStructuredBuffer<PosStruct>, StorageBuffer)
 	END_SHADER_PARAMETER_STRUCT()
 public:
 	// Runs once to set up the data interface
@@ -54,6 +62,7 @@ public:
 	virtual void ProvidePerInstanceDataForRenderThread(
 		void* DataForRenderThread, void* PerInstanceData,
 		const FNiagaraSystemInstanceID& SystemInstance) override;
+
 	// UNiagaraDataInterface Interface
 
 	void GetMousePositionVM(FVectorVMExternalFunctionContext& Context);
@@ -64,7 +73,7 @@ protected:
 		TArray<FNiagaraFunctionSignature>& OutFunctions) const override;
 	
 #endif
-private:
 
+private:
 	static const FName GetMousePositionName;
 };
