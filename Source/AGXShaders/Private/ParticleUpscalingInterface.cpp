@@ -41,68 +41,102 @@ static const TCHAR* ParticleUpscalingTemplateShaderFile = TEXT("/AGXShadersShade
 * Note: Unity hanterar detta på ett sätt som verkligen liknar hur det ska hanteras i Unreal!
 */
 
-// Struct to store our DI data
-struct FNDIHashmapInstanceData
+// --------------------------------------------------------------- //
+// ------------------------- DATA BUFFERS ------------------------ //
+// --------------------------------------------------------------- //
+void FPUBuffers::InitRHI(FRHICommandListBase& RHICmdList)
 {
-	FVector2f MousePos;
-	FIntPoint ScreenSize;
-};
 
-//-----------------------------------------------
+}
 
-//-----------------------------------------------
-
-// Proxy used for safely copy data between the Game Thread (DT) and the Render Thread (RT)
-struct FNDIHashmapProxy : public FNiagaraDataInterfaceProxy
+void FPUBuffers::ReleaseRHI()
 {
-	virtual int32 PerInstanceDataPassedToRenderThreadSize() const override
-	{
-		return sizeof(FNDIHashmapInstanceData);
-	}
 
-	static void ProvidePerInstanceDataForRenderThread(
-		void* InDataForRenderThread, void* InDataFromGameThread,
-		const FNiagaraSystemInstanceID& SystemInstance)
-	{
-		// initialize the render thread instance data into the pre-allocated memory
-		FNDIHashmapInstanceData* DataForRenderThread =
-			new (InDataForRenderThread) FNDIHashmapInstanceData();
-
-		// we're just copying the game thread data, but the render thread data can be initialized to
-		// anything here and can be another struct entirely
-		const FNDIHashmapInstanceData* DataFromGameThread =
-			static_cast<FNDIHashmapInstanceData*>(InDataFromGameThread);
-		*DataForRenderThread = *DataFromGameThread;
-	}
-
-	virtual void ConsumePerInstanceDataFromGameThread(
-		void* PerInstanceData, const FNiagaraSystemInstanceID& InstanceID) override
-	{
-		FNDIHashmapInstanceData* InstanceDataFromGT =
-			static_cast<FNDIHashmapInstanceData*>(PerInstanceData);
-		FNDIHashmapInstanceData& InstanceData =
-			SystemInstancesToInstanceData_RT.FindOrAdd(InstanceID);
-		InstanceData = *InstanceDataFromGT;
-
-		// we call the destructor here to clean up the GT data. Without this we could be leaking
-		// memory.
-		InstanceDataFromGT->~FNDIHashmapInstanceData();
-	}
-
-	TMap<FNiagaraSystemInstanceID, FNDIHashmapInstanceData> SystemInstancesToInstanceData_RT;
-};
-
+}
 
 // --------------------------------------------------------------- //
-// ---------------                                 --------------- //
-// --------------- THE ACTUAL DATA INTERFACE BELOW --------------- //
-// ---------------                                 --------------- //
+// ------------------------- DATA ARRAYS ------------------------- //
+// --------------------------------------------------------------- //
+
+// --------------------------------------------------------------- //
+// ------------------------- DATA STRUCT ------------------------- //
+// --------------------------------------------------------------- //
+
+void FPUData::Init(FNiagaraSystemInstance* SystemInstance)
+{
+	MousePos = FVector2f::ZeroVector;
+}
+
+void FPUData::Update(FNiagaraSystemInstance* SystemInstance)
+{
+
+	MousePos = FVector2f::ZeroVector;
+
+
+	// If we have a player controller we use it to capture the mouse position
+	UWorld* World = SystemInstance->GetWorld();
+	if (World && World->GetNumPlayerControllers() > 0)
+	{
+		APlayerController* Controller = World->GetFirstPlayerController();
+		Controller->GetMousePosition(MousePos.X, MousePos.Y);
+		Controller->GetViewportSize(ScreenSize.X, ScreenSize.Y);
+		return;
+	}
+
+#if WITH_EDITORONLY_DATA
+	// While in the editor we don't necessarily have a player controller, so we query the viewport
+	// object instead
+	if (GCurrentLevelEditingViewportClient)
+	{
+		MousePos.X = GCurrentLevelEditingViewportClient->Viewport->GetMouseX();
+		MousePos.Y = GCurrentLevelEditingViewportClient->Viewport->GetMouseY();
+		ScreenSize = GCurrentLevelEditingViewportClient->Viewport->GetSizeXY();
+	}
+#endif
+}
+
+void FPUData::Release()
+{
+}
+
+// --------------------------------------------------------------- //
+// ----------------------- INTERFACE PROXY ----------------------- //
+// --------------------------------------------------------------- //
+
+
+void FParticleUpscalingProxy::ProvidePerInstanceDataForRenderThread(
+		void* InDataForRenderThread, void* InDataFromGameThread,
+		const FNiagaraSystemInstanceID& SystemInstance)
+{
+	// initialize the render thread instance data into the pre-allocated memory
+	FPUData* DataForRenderThread = new (InDataForRenderThread) FPUData();
+
+	// we're just copying the game thread data, but the render thread data can be initialized to
+	// anything here and can be another struct entirely
+	const FPUData* DataFromGameThread = static_cast<FPUData*>(InDataFromGameThread);
+	*DataForRenderThread = *DataFromGameThread;
+}
+
+void FParticleUpscalingProxy::ConsumePerInstanceDataFromGameThread(
+		void* PerInstanceData, const FNiagaraSystemInstanceID& InstanceID)
+{
+	FPUData* InstanceDataFromGT = static_cast<FPUData*>(PerInstanceData);
+	FPUData& InstanceData = SystemInstancesToInstanceData_RT.FindOrAdd(InstanceID);
+	InstanceData = *InstanceDataFromGT;
+
+	// we call the destructor here to clean up the GT data. Without this we could be leaking
+	// memory.
+	InstanceDataFromGT->~FPUData();
+}
+
+// --------------------------------------------------------------- //
+// ---------------- PARTICLE UPSCALING INTERFACE ----------------- //
 // --------------------------------------------------------------- //
 
 UParticleUpscalingInterface::UParticleUpscalingInterface(
 	FObjectInitializer const& ObjectInitializer)
 {
-	Proxy.Reset(new FNDIHashmapProxy());
+	Proxy.Reset(new FParticleUpscalingProxy());
 }
 
 
@@ -114,11 +148,8 @@ UParticleUpscalingInterface::UParticleUpscalingInterface(
 bool UParticleUpscalingInterface::InitPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
-	[InstanceID = SystemInstance->GetId(), PID = PerInstanceData](FRHICommandListImmediate& CmdList) 
-		{
-		FNDIHashmapInstanceData* InstanceData = new (PID) FNDIHashmapInstanceData;
-		InstanceData->MousePos = FVector2f::ZeroVector;
-		};
+	FPUData* PUData = new (PerInstanceData) FPUData;
+	PUData->Init(SystemInstance);
 	return true;
 }
 
@@ -126,21 +157,16 @@ bool UParticleUpscalingInterface::InitPerInstanceData(
 void UParticleUpscalingInterface::DestroyPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
-	FNDIHashmapInstanceData* InstanceData =
-		static_cast<FNDIHashmapInstanceData*>(PerInstanceData);
-	InstanceData->~FNDIHashmapInstanceData();
+	FPUData* InstanceData =
+		static_cast<FPUData*>(PerInstanceData);
+	InstanceData->~FPUData();
 
 	ENQUEUE_RENDER_COMMAND(RemoveProxy)
-	([RT_Proxy = GetProxyAs<FNDIHashmapProxy>(), 
+	([RT_Proxy = GetProxyAs<FParticleUpscalingProxy>(), 
 		InstanceID = SystemInstance->GetId()](FRHICommandListImmediate& CmdList)
 		{ 
 			RT_Proxy->SystemInstancesToInstanceData_RT.Remove(InstanceID); 
 		});
-}
-
-int32 UParticleUpscalingInterface::PerInstanceDataSize() const
-{
-	return sizeof(FNDIHashmapInstanceData);
 }
 
 /**
@@ -154,40 +180,13 @@ bool UParticleUpscalingInterface::PerInstanceTick(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds)
 {
 	check(SystemInstance);
-	FNDIHashmapInstanceData* InstanceData =
-		static_cast<FNDIHashmapInstanceData*>(PerInstanceData);
-	if (!InstanceData)
+	FPUData* PUData =
+		static_cast<FPUData*>(PerInstanceData);
+	if (!PUData)
 	{
 		return true;
 	}
-	
-
-	[InstanceID = SystemInstance->GetId(), PID = PerInstanceData](FRHICommandListImmediate& CmdList)
-	{
-		FNDIHashmapInstanceData* InstanceData = new (PID) FNDIHashmapInstanceData;
-		InstanceData->MousePos = FVector2f::ZeroVector;
-	};
-
-	// If we have a player controller we use it to capture the mouse position
-	UWorld* World = SystemInstance->GetWorld();
-	if (World && World->GetNumPlayerControllers() > 0)
-	{
-		APlayerController* Controller = World->GetFirstPlayerController();
-		Controller->GetMousePosition(InstanceData->MousePos.X, InstanceData->MousePos.Y);
-		Controller->GetViewportSize(InstanceData->ScreenSize.X, InstanceData->ScreenSize.Y);
-		return false;
-	}
-
-#if WITH_EDITORONLY_DATA
-	// While in the editor we don't necessarily have a player controller, so we query the viewport
-	// object instead
-	if (GCurrentLevelEditingViewportClient)
-	{
-		InstanceData->MousePos.X = GCurrentLevelEditingViewportClient->Viewport->GetMouseX();
-		InstanceData->MousePos.Y = GCurrentLevelEditingViewportClient->Viewport->GetMouseY();
-		InstanceData->ScreenSize = GCurrentLevelEditingViewportClient->Viewport->GetSizeXY();
-	}
-#endif
+	PUData->Update(SystemInstance);
 
 	return false;
 }
@@ -196,7 +195,7 @@ void UParticleUpscalingInterface::ProvidePerInstanceDataForRenderThread(
 	void* DataForRenderThread, void* PerInstanceData,
 	const FNiagaraSystemInstanceID& SystemInstance)
 {
-	FNDIHashmapProxy::ProvidePerInstanceDataForRenderThread(
+	FParticleUpscalingProxy::ProvidePerInstanceDataForRenderThread(
 		DataForRenderThread, PerInstanceData, SystemInstance);
 }
 
@@ -267,7 +266,7 @@ void UParticleUpscalingInterface::GetVMExternalFunction(
 void UParticleUpscalingInterface::GetMousePositionVM(
 	FVectorVMExternalFunctionContext& Context)
 {
-	VectorVM::FUserPtrHandler<FNDIHashmapInstanceData> InstData(Context);
+	VectorVM::FUserPtrHandler<FPUData> InstData(Context);
 	FNDIInputParam<bool> InNormalized(Context);
 	FNDIOutputParam<float> OutPosX(Context);
 	FNDIOutputParam<float> OutPosY(Context);
@@ -298,14 +297,10 @@ void UParticleUpscalingInterface::GetMousePositionVM(
 bool UParticleUpscalingInterface::AppendCompileHash(
 	FNiagaraCompileHashVisitor* InVisitor) const
 {
-	if (!Super::AppendCompileHash(InVisitor))
-	{
-		return false;
-	}
-
-	InVisitor->UpdateShaderFile(ParticleUpscalingTemplateShaderFile);
-	InVisitor->UpdateShaderParameters<FShaderParameters>();
-	return true;
+	bool bSuccess = Super::AppendCompileHash(InVisitor);
+	bSuccess &= InVisitor->UpdateShaderFile(ParticleUpscalingTemplateShaderFile);
+	bSuccess &= InVisitor->UpdateShaderParameters<FShaderParameters>();
+	return bSuccess;
 }
 
 // This can be used to provide the hlsl code for gpu scripts. If the DI supports only cpu
@@ -344,8 +339,8 @@ void UParticleUpscalingInterface::BuildShaderParameters(
 void UParticleUpscalingInterface::SetShaderParameters(
 	const FNiagaraDataInterfaceSetShaderParametersContext& Context) const
 {
-	FNDIHashmapProxy& DataInterfaceProxy = Context.GetProxy<FNDIHashmapProxy>();
-	FNDIHashmapInstanceData& InstanceData =
+	FParticleUpscalingProxy& DataInterfaceProxy = Context.GetProxy<FParticleUpscalingProxy>();
+	FPUData& InstanceData =
 		DataInterfaceProxy.SystemInstancesToInstanceData_RT.FindChecked(
 			Context.GetSystemInstanceID());
 
@@ -355,19 +350,34 @@ void UParticleUpscalingInterface::SetShaderParameters(
 	ShaderParameters->MousePosition.Z = InstanceData.ScreenSize.X;
 	ShaderParameters->MousePosition.W = InstanceData.ScreenSize.Y;
 
-	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
-
-	TArray<PosStruct> MyDataArray;
-	MyDataArray.SetNumZeroed(1);
-	FResourceArrayUploadArrayView ResourceData(MyDataArray.GetData(), sizeof(PosStruct) * MyDataArray.Num());
 	
-	FRHIResourceCreateInfo CreateInfo(TEXT("StorageBuffer"), &ResourceData);
-	FBufferRHIRef BufferRef = RHICmdList.CreateStructuredBuffer(
-		sizeof(PosStruct), sizeof(PosStruct) * MyDataArray.Num(), BUF_UnorderedAccess, CreateInfo);
+}
 
-	FUnorderedAccessViewRHIRef Buffer = RHICmdList.CreateUnorderedAccessView(
-		BufferRef, FRHIViewDesc::CreateBufferUAV().SetType(FRHIViewDesc::EBufferType::Structured));
-	ShaderParameters->StorageBuffer = Buffer;
+bool UParticleUpscalingInterface::Equals(const UNiagaraDataInterface* Other) const
+{
+	if (!Super::Equals(Other))
+	{
+		return false;
+	}
+	const UParticleUpscalingInterface* OtherTyped =
+		CastChecked<const UParticleUpscalingInterface>(Other);
+
+	// COMPARE OTHER VARIABLES BELOW!
+	return true;
+}
+
+bool UParticleUpscalingInterface::CopyToInternal(
+	UNiagaraDataInterface* Destination) const
+{
+	if (!Super::CopyToInternal(Destination))
+	{
+		return false;
+	}
+
+	UParticleUpscalingInterface* OtherTyped = CastChecked<UParticleUpscalingInterface>(Destination);
+
+	// SET OTHER VARIABLES BEFORE RETURNING!
+	return true;
 }
 
 #undef LOCTEXT_NAMESPACE
