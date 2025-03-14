@@ -5,8 +5,21 @@
 #include "NiagaraTypes.h"
 
 #include "NiagaraDataInterface.h"
+
 #include "NiagaraDataInterfaceRW.h"
 #include "ParticleUpscalingInterface.generated.h"
+
+struct CoarseParticle
+{
+	FVector4f PositionAndRadius;
+	FVector4f VelocityAndMass;
+};
+
+struct FineParticle
+{
+	FVector4f PositionAndEase;
+	FVector4f VelocityAndMass;
+};
 
 struct FPUBuffers : public FRenderResource
 {
@@ -19,16 +32,19 @@ struct FPUBuffers : public FRenderResource
 	/** Get the resource name */
 	virtual FString GetFriendlyName() const override
 	{
-		return TEXT("FNDIGeometryCollectionBuffer");
+		return TEXT("FPUBuffers");
 	}
 
-	FUnorderedAccessViewRHIRef StorageBuffer;
+	FUnorderedAccessViewRHIRef CoarseParticleBufferRef;
 };
 
 struct FPUArrays
 {
 	FVector2f MousePos;
 	FIntPoint ScreenSize;
+
+	TArray<CoarseParticle> CoarseParticles;
+	TArray<FineParticle> FineParticles;
 };
 
 struct FPUData
@@ -39,6 +55,8 @@ struct FPUData
 
 	FPUBuffers* PUBuffers = nullptr;
 	FPUArrays* PUArrays = nullptr;
+
+	bool bNeedsBufferResize = false;
 };
 
 
@@ -74,7 +92,7 @@ class AGXSHADERS_API UParticleUpscalingInterface : public UNiagaraDataInterface
 	GENERATED_UCLASS_BODY()
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FShaderParameters, )
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>, StorageBuffer)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<CoarseParticle>, CoarseParticles)
 	END_SHADER_PARAMETER_STRUCT()
 public:
 	// Runs once to set up the data interface

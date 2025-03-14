@@ -1,5 +1,8 @@
 // when using a template ush file, we need the _{ParameterName} appendix on global functions and parameters, because the template can be included multiple times for different data interfaces in a system.
-RWStructuredBuffer<float4> {ParameterName}_StorageBuffer;
+
+#include "/AGXShadersShaders/ConstantsAndStructs.ush"
+
+RWStructuredBuffer<CoarseParticle> {ParameterName}_CoarseParticles;
 
 float2 Dostuff(in bool norm, in float4 di_pos)
 {
@@ -19,7 +22,7 @@ float2 Dostuff(in bool norm, in float4 di_pos)
 
 void GetMousePosition_{ParameterName}(in bool In_Normalized, out float Out_PosX, out float Out_PosY)
 {
-	float4 DIPosition = {ParameterName}_StorageBuffer[0];
+	float4 DIPosition = {ParameterName}_CoarseParticles[0].PositionAndRadius;
     float2 Position = Dostuff(In_Normalized, DIPosition);
     Out_PosX = Position.x;
     Out_PosY = Position.y;

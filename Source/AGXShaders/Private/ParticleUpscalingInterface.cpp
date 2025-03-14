@@ -19,6 +19,7 @@
 
 #define LOCTEXT_NAMESPACE "NDIParticleUpscaling"
 
+
 const FName UParticleUpscalingInterface::GetMousePositionName(TEXT("GetMousePosition"));
 
 static const TCHAR* ParticleUpscalingTemplateShaderFile = TEXT("/AGXShadersShaders/ParticleUpscaling.ush");
@@ -28,42 +29,29 @@ static const TCHAR* ParticleUpscalingTemplateShaderFile = TEXT("/AGXShadersShade
 // ActiveVoxels -> Buffer/Lista fås av CPUn varje tidsteg, AGX (kanske inte finns men skulle vara pog att ha)
 // ActiveVoxel Hashmappen -> byggs upp utifrån ActiveVoxel Buffern som skickas från CPUn
 
-/**
-* Hur arbetet ska gå nu:
-* 
-* Tänk om hur detta ska fungera, istället för att skapa en custom NDI som är en generisk hashmap, gör istället denna till en Particle Upscaling klass (men i form av en NDI) som kan köra några funktioner på GPUn.
-* Dessutom så kommer man inte behöva massa inputs i niagara vfx system editorn, utan istället sker det mesta automatiskt och man fetchar bara data från editorn istället. 
-* 
-* Se sedan över hur man ska ange trådar för compute shaders, eller om det blir tillräcklig bra prestanda!
-* 
-* Därefter, gör funktioner sådant att man kan skicka in en CoarseParticleBuffer och ActiveVoxelBuffer!
-* 
-* Det kommer bli mycket programmeing i .ush filer (tror jag)
-* Note: Unity hanterar detta på ett sätt som verkligen liknar hur det ska hanteras i Unreal!
-*/
-
 // --------------------------------------------------------------- //
 // ------------------------- DATA BUFFERS ------------------------ //
 // --------------------------------------------------------------- //
 
 void FPUBuffers::InitRHI(FRHICommandListBase& RHICmdList)
 {
-	TArray<float> MyDataArray;
+	TArray<CoarseParticle> MyDataArray;
 	MyDataArray.SetNumZeroed(1);
 	FResourceArrayUploadArrayView ResourceData(
-		MyDataArray.GetData(), sizeof(FVector4f) * MyDataArray.Num());
+		MyDataArray.GetData(), sizeof(CoarseParticle) * MyDataArray.Num());
 
 	FRHIResourceCreateInfo CreateInfo(TEXT("StorageBuffer"), &ResourceData);
 	FBufferRHIRef BufferRef = RHICmdList.CreateStructuredBuffer(
-		sizeof(FVector4f), sizeof(FVector4f) * MyDataArray.Num(), BUF_UnorderedAccess, CreateInfo);
+		sizeof(CoarseParticle), sizeof(CoarseParticle) * MyDataArray.Num(), BUF_UnorderedAccess,
+		CreateInfo);
 
-	StorageBuffer = RHICmdList.CreateUnorderedAccessView(
+	CoarseParticleBufferRef = RHICmdList.CreateUnorderedAccessView(
 		BufferRef, FRHIViewDesc::CreateBufferUAV().SetType(FRHIViewDesc::EBufferType::Structured));
 }
 
 void FPUBuffers::ReleaseRHI()
 {
-	StorageBuffer.SafeRelease();
+	CoarseParticleBufferRef.SafeRelease();
 }
 
 // --------------------------------------------------------------- //
@@ -160,17 +148,21 @@ void FParticleUpscalingProxy::PreStage(const FNDIGpuComputePreStageContext& Cont
 			FRHICommandListBase& RHICmdList = FRHICommandListImmediate::Get();
 			FVector2f MP = ProxyData->PUArrays->MousePos;
 			FIntPoint SS = ProxyData->PUArrays->ScreenSize;
+			CoarseParticle CP;
+			CP.PositionAndRadius = FVector4f(MP.X, MP.Y, static_cast<float>(SS.X), static_cast<float>(SS.Y));
+			CP.VelocityAndMass = FVector4f();
 
-			const TArray<FVector4f> Data = {FVector4f(MP.X, MP.Y, static_cast<float>(SS.X), static_cast<float>(SS.Y))};
+			const TArray<CoarseParticle> Data = {CP};
 
-			const uint32 BufferBytes = sizeof(FVector4f) * Data.Num();
+			const uint32 BufferBytes = sizeof(CoarseParticle) * Data.Num();
 
 			// Copy data to the buffer
 			void* OutputData = RHICmdList.LockBuffer(
-				ProxyData->PUBuffers->StorageBuffer->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+				ProxyData->PUBuffers->CoarseParticleBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
 
 			FMemory::Memcpy(OutputData, ProxyData->PUArrays, BufferBytes);
-			RHICmdList.UnlockBuffer(ProxyData->PUBuffers->StorageBuffer->GetBuffer());
+			RHICmdList.UnlockBuffer(ProxyData->PUBuffers->CoarseParticleBufferRef->GetBuffer());
+
 		}
 	}
 }
@@ -197,12 +189,6 @@ UParticleUpscalingInterface::UParticleUpscalingInterface(
 	Proxy.Reset(new FParticleUpscalingProxy());
 }
 
-
-// creates a new data object to store our position in.
-// Don't keep transient data on the data interface object itself, only use per instance data!
-/**
-* INITIERA ALLA BUFFRAR HÄR!
-*/
 bool UParticleUpscalingInterface::InitPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
@@ -227,23 +213,19 @@ void UParticleUpscalingInterface::DestroyPerInstanceData(
 		});
 }
 
-/**
-* 
-* UPPDATERA BUFFRARNA MED DATAN FRÅN CPUn!
-*/
-// This ticks on the game thread and lets us do work to initialize the instance data.
-// If you need to do work on the gathered instance data after the simulation is done, use
-// PerInstanceTickPostSimulate() instead.
+/** Ticks on the game thread PER INSTANCE */
 bool UParticleUpscalingInterface::PerInstanceTick(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds)
 {
 	check(SystemInstance);
 	FPUData* PUData =
 		static_cast<FPUData*>(PerInstanceData);
+	
 	if (!PUData)
 	{
 		return true;
 	}
+	
 	PUData->Update(SystemInstance);
 
 	return false;
@@ -407,7 +389,7 @@ void UParticleUpscalingInterface::SetShaderParameters(
 	FPUData& PUData = DataInterfaceProxy.SystemInstancesToInstanceData_RT.FindChecked(Context.GetSystemInstanceID());
 
 	FShaderParameters* ShaderParameters = Context.GetParameterNestedStruct<FShaderParameters>();
-	ShaderParameters->StorageBuffer = PUData.PUBuffers->StorageBuffer;
+	ShaderParameters->CoarseParticles = PUData.PUBuffers->CoarseParticleBufferRef;
 }
 
 bool UParticleUpscalingInterface::Equals(const UNiagaraDataInterface* Other) const
