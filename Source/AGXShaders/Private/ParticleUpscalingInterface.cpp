@@ -8,6 +8,7 @@
 #include "RHIUtilities.h"
 #include "RHIResources.h"
 #include "RHICommandList.h"
+#include "NiagaraSimStageData.h"
 
 #if WITH_EDITORONLY_DATA
 #include "LevelEditorViewport.h"
@@ -44,14 +45,25 @@ static const TCHAR* ParticleUpscalingTemplateShaderFile = TEXT("/AGXShadersShade
 // --------------------------------------------------------------- //
 // ------------------------- DATA BUFFERS ------------------------ //
 // --------------------------------------------------------------- //
+
 void FPUBuffers::InitRHI(FRHICommandListBase& RHICmdList)
 {
+	TArray<float> MyDataArray;
+	MyDataArray.SetNumZeroed(1);
+	FResourceArrayUploadArrayView ResourceData(
+		MyDataArray.GetData(), sizeof(FVector4f) * MyDataArray.Num());
 
+	FRHIResourceCreateInfo CreateInfo(TEXT("StorageBuffer"), &ResourceData);
+	FBufferRHIRef BufferRef = RHICmdList.CreateStructuredBuffer(
+		sizeof(FVector4f), sizeof(FVector4f) * MyDataArray.Num(), BUF_UnorderedAccess, CreateInfo);
+
+	StorageBuffer = RHICmdList.CreateUnorderedAccessView(
+		BufferRef, FRHIViewDesc::CreateBufferUAV().SetType(FRHIViewDesc::EBufferType::Structured));
 }
 
 void FPUBuffers::ReleaseRHI()
 {
-
+	StorageBuffer.SafeRelease();
 }
 
 // --------------------------------------------------------------- //
@@ -64,20 +76,27 @@ void FPUBuffers::ReleaseRHI()
 
 void FPUData::Init(FNiagaraSystemInstance* SystemInstance)
 {
-	MousePos = FVector2f::ZeroVector;
+	PUBuffers = nullptr;
+	if (SystemInstance)
+	{
+		PUArrays = new FPUArrays();
+		PUArrays->MousePos = FVector2f::ZeroVector;
+		PUBuffers = new FPUBuffers();
+		BeginInitResource(PUBuffers);
+	}
 }
 
 void FPUData::Update(FNiagaraSystemInstance* SystemInstance)
 {
-	MousePos = FVector2f::ZeroVector;
+	PUArrays->MousePos = FVector2f::ZeroVector;
 
 	// If we have a player controller we use it to capture the mouse position
 	UWorld* World = SystemInstance->GetWorld();
 	if (World && World->GetNumPlayerControllers() > 0)
 	{
 		APlayerController* Controller = World->GetFirstPlayerController();
-		Controller->GetMousePosition(MousePos.X, MousePos.Y);
-		Controller->GetViewportSize(ScreenSize.X, ScreenSize.Y);
+		Controller->GetMousePosition(PUArrays->MousePos.X, PUArrays->MousePos.Y);
+		Controller->GetViewportSize(PUArrays->ScreenSize.X, PUArrays->ScreenSize.Y);
 		return;
 	}
 
@@ -86,31 +105,74 @@ void FPUData::Update(FNiagaraSystemInstance* SystemInstance)
 	// object instead
 	if (GCurrentLevelEditingViewportClient)
 	{
-		MousePos.X = GCurrentLevelEditingViewportClient->Viewport->GetMouseX();
-		MousePos.Y = GCurrentLevelEditingViewportClient->Viewport->GetMouseY();
-		ScreenSize = GCurrentLevelEditingViewportClient->Viewport->GetSizeXY();
+		PUArrays->MousePos.X = GCurrentLevelEditingViewportClient->Viewport->GetMouseX();
+		PUArrays->MousePos.Y = GCurrentLevelEditingViewportClient->Viewport->GetMouseY();
+		PUArrays->ScreenSize = GCurrentLevelEditingViewportClient->Viewport->GetSizeXY();
 	}
 #endif
 }
 
 void FPUData::Release()
 {
+	if (PUBuffers)
+	{
+		ENQUEUE_RENDER_COMMAND(DeleteResource)(
+			[ParamPointerToRelease = PUBuffers](FRHICommandListImmediate& RHICmdList)
+			{
+				ParamPointerToRelease->ReleaseResource();
+				delete ParamPointerToRelease;
+			});
+		PUBuffers = nullptr;
+	}
 }
 
 // --------------------------------------------------------------- //
 // ----------------------- INTERFACE PROXY ----------------------- //
 // --------------------------------------------------------------- //
 
-
-void FParticleUpscalingProxy::ProvidePerInstanceDataForRenderThread(
-		void* InDataForRenderThread, void* InDataFromGameThread,
-		const FNiagaraSystemInstanceID& SystemInstance)
+void FParticleUpscalingProxy::InitializePerInstanceData(
+	const FNiagaraSystemInstanceID& SystemInstance)
 {
-	FPUData* DataForRenderThread = static_cast<FPUData*>(InDataForRenderThread);
-	FPUData* DataFromGameThread = static_cast<FPUData*>(InDataFromGameThread);
+	check(IsInRenderingThread());
+	check(!SystemInstancesToInstanceData_RT.Contains(SystemInstance));
 
-	// Copy data from game thread to render thread
-	*DataForRenderThread = *DataFromGameThread;
+	SystemInstancesToInstanceData_RT.Add(SystemInstance);
+}
+
+void FParticleUpscalingProxy::DestroyPerInstanceData(
+	const FNiagaraSystemInstanceID& SystemInstance)
+{
+	check(IsInRenderingThread());
+
+	SystemInstancesToInstanceData_RT.Remove(SystemInstance);
+}
+
+/** Update the buffers with the arrays here! */
+void FParticleUpscalingProxy::PreStage(const FNDIGpuComputePreStageContext& Context)
+{
+	check(SystemInstancesToInstanceData_RT.Contains(Context.GetSystemInstanceID()));
+
+	FPUData* ProxyData = SystemInstancesToInstanceData_RT.Find(Context.GetSystemInstanceID());
+	if (ProxyData != nullptr && ProxyData->PUBuffers)
+	{
+		if (Context.GetSimStageData().bFirstStage)
+		{
+			FRHICommandListBase& RHICmdList = FRHICommandListImmediate::Get();
+			FVector2f MP = ProxyData->PUArrays->MousePos;
+			FIntPoint SS = ProxyData->PUArrays->ScreenSize;
+
+			const TArray<FVector4f> Data = {FVector4f(MP.X, MP.Y, static_cast<float>(SS.X), static_cast<float>(SS.Y))};
+
+			const uint32 BufferBytes = sizeof(FVector4f) * Data.Num();
+
+			// Copy data to the buffer
+			void* OutputData = RHICmdList.LockBuffer(
+				ProxyData->PUBuffers->StorageBuffer->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+
+			FMemory::Memcpy(OutputData, ProxyData->PUArrays, BufferBytes);
+			RHICmdList.UnlockBuffer(ProxyData->PUBuffers->StorageBuffer->GetBuffer());
+		}
+	}
 }
 
 void FParticleUpscalingProxy::ConsumePerInstanceDataFromGameThread(
@@ -191,8 +253,14 @@ void UParticleUpscalingInterface::ProvidePerInstanceDataForRenderThread(
 	void* DataForRenderThread, void* PerInstanceData,
 	const FNiagaraSystemInstanceID& SystemInstance)
 {
-	FParticleUpscalingProxy::ProvidePerInstanceDataForRenderThread(
-		DataForRenderThread, PerInstanceData, SystemInstance);
+	FPUData* RenderThreadData = static_cast<FPUData*>(DataForRenderThread);
+	FPUData* GameThreadData = static_cast<FPUData*>(PerInstanceData);
+
+	if (RenderThreadData && GameThreadData)
+	{
+		// Copy data from game thread to render thread
+		*RenderThreadData = *GameThreadData;
+	}
 }
 
 // this registers our custom DI with Niagara
@@ -267,8 +335,8 @@ void UParticleUpscalingInterface::GetMousePositionVM(
 	FNDIOutputParam<float> OutPosX(Context);
 	FNDIOutputParam<float> OutPosY(Context);
 
-	FVector2f MousePos = InstData.Get()->MousePos;
-	FIntPoint ScreenSize = InstData.Get()->ScreenSize;
+	FVector2f MousePos = InstData.Get()->PUArrays->MousePos;
+	FIntPoint ScreenSize = InstData.Get()->PUArrays->ScreenSize;
 
 	// iterate over the particles
 	for (int32 i = 0; i < Context.GetNumInstances(); ++i)
@@ -336,14 +404,10 @@ void UParticleUpscalingInterface::SetShaderParameters(
 	const FNiagaraDataInterfaceSetShaderParametersContext& Context) const
 {
 	FParticleUpscalingProxy& DataInterfaceProxy = Context.GetProxy<FParticleUpscalingProxy>();
-	FPUData& InstanceData = DataInterfaceProxy.SystemInstancesToInstanceData_RT.FindChecked(Context.GetSystemInstanceID());
+	FPUData& PUData = DataInterfaceProxy.SystemInstancesToInstanceData_RT.FindChecked(Context.GetSystemInstanceID());
 
 	FShaderParameters* ShaderParameters = Context.GetParameterNestedStruct<FShaderParameters>();
-	ShaderParameters->MousePosition.X = InstanceData.MousePos.X;
-	ShaderParameters->MousePosition.Y = InstanceData.MousePos.Y;
-	ShaderParameters->MousePosition.Z = InstanceData.ScreenSize.X;
-	ShaderParameters->MousePosition.W = InstanceData.ScreenSize.Y;
-	
+	ShaderParameters->StorageBuffer = PUData.PUBuffers->StorageBuffer;
 }
 
 bool UParticleUpscalingInterface::Equals(const UNiagaraDataInterface* Other) const

@@ -8,16 +8,6 @@
 #include "NiagaraDataInterfaceRW.h"
 #include "ParticleUpscalingInterface.generated.h"
 
-struct FPUData
-{
-	void Init(FNiagaraSystemInstance* SystemInstance);
-	void Update(FNiagaraSystemInstance* SystemInstance);
-	void Release();
-
-	FVector2f MousePos;
-	FIntPoint ScreenSize;
-};
-
 struct FPUBuffers : public FRenderResource
 {
 	/** Init the buffer */
@@ -31,27 +21,49 @@ struct FPUBuffers : public FRenderResource
 	{
 		return TEXT("FNDIGeometryCollectionBuffer");
 	}
+
+	FUnorderedAccessViewRHIRef StorageBuffer;
 };
 
 struct FPUArrays
 {
-
+	FVector2f MousePos;
+	FIntPoint ScreenSize;
 };
+
+struct FPUData
+{
+	void Init(FNiagaraSystemInstance* SystemInstance);
+	void Update(FNiagaraSystemInstance* SystemInstance);
+	void Release();
+
+	FPUBuffers* PUBuffers = nullptr;
+	FPUArrays* PUArrays = nullptr;
+};
+
 
 struct FParticleUpscalingProxy : public FNiagaraDataInterfaceProxy
 {
+	/** Get the size of the data that will be passed to render*/
 	virtual int32 PerInstanceDataPassedToRenderThreadSize() const override
 	{
 		return sizeof(FPUData);
 	}
 
-	static void ProvidePerInstanceDataForRenderThread(
-		void* InDataForRenderThread, void* InDataFromGameThread,
-		const FNiagaraSystemInstanceID& SystemInstance);
-
+	/** Get the data that will be passed to render*/
 	virtual void ConsumePerInstanceDataFromGameThread(
 		void* PerInstanceData, const FNiagaraSystemInstanceID& InstanceID) override;
 
+	/** Initialize the Proxy data buffer */
+	void InitializePerInstanceData(const FNiagaraSystemInstanceID& SystemInstance);
+
+	/** Destroy the proxy data if necessary */
+	void DestroyPerInstanceData(const FNiagaraSystemInstanceID& SystemInstance);
+
+	/** Launch all pre stage functions */
+	virtual void PreStage(const FNDIGpuComputePreStageContext& Context) override;
+
+	/** List of proxy data for each system instances*/
 	TMap<FNiagaraSystemInstanceID, FPUData> SystemInstancesToInstanceData_RT;
 };
 
@@ -62,7 +74,7 @@ class AGXSHADERS_API UParticleUpscalingInterface : public UNiagaraDataInterface
 	GENERATED_UCLASS_BODY()
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FShaderParameters, )
-		SHADER_PARAMETER(FVector4f, MousePosition)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>, StorageBuffer)
 	END_SHADER_PARAMETER_STRUCT()
 public:
 	// Runs once to set up the data interface
