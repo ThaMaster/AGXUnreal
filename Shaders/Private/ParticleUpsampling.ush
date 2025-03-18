@@ -49,3 +49,8 @@ void GetFineParticlePosition_{ParameterName}(in int In_Index, out float3 Out_Fin
 {
     Out_FineParticlePosition = {ParameterName}_CoarseParticles[In_Index].PositionAndRadius.xyz;
 }
+
+void GetNumCoarseParticles_{ParameterName}(out int Out_NumCoarseParticles)
+{
+    Out_NumCoarseParticles = {ParameterName}_NumCoarseParticles;
+}

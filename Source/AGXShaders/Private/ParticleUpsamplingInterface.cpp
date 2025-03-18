@@ -23,8 +23,9 @@
 
 const FName UParticleUpsamplingInterface::GetMousePositionName(TEXT("GetMousePosition"));
 const FName UParticleUpsamplingInterface::GetFineParticlePositionName(TEXT("GetFineParticlePosition"));
-
-static const TCHAR* ParticleUpsamplingTemplateShaderFile =
+const FName UParticleUpsamplingInterface::GetNumCoarseParticlesName(TEXT("GetNumCoarseParticles"));
+static const
+	TCHAR* ParticleUpsamplingTemplateShaderFile =
 	TEXT("/AGXShadersShaders/ParticleUpsampling.ush");
 
 // CoarseParticleBuffer -> Fås av CPUn varje tidssteg
@@ -360,7 +361,7 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 			"Returns the mouse position in screen space.");
 		Sig.bMemberFunction = true;
 		Sig.AddInput(
-			FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("MousePosition interface")));
+			FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("Normalized")));
 		Sig.AddOutput(
 			FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("PosX")),
@@ -380,9 +381,20 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.Name = GetFineParticlePositionName;
 		Sig.bMemberFunction = true;
 		Sig.AddInput(
-			FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("MousePosition interface")));
+			FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Index")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("FineParticlePosition")));
+		OutFunctions.Add(Sig);
+	}
+
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = GetNumCoarseParticlesName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(
+			FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddOutput(
+			FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("NumCoarseParticles")));
 		OutFunctions.Add(Sig);
 	}
 }
@@ -459,7 +471,7 @@ bool UParticleUpsamplingInterface::GetFunctionHLSL(
 	const FNiagaraDataInterfaceGeneratedFunction& FunctionInfo, int FunctionInstanceIndex,
 	FString& OutHLSL)
 {
-	return FunctionInfo.DefinitionName == GetMousePositionName || FunctionInfo.DefinitionName == GetFineParticlePositionName;
+	return FunctionInfo.DefinitionName == GetMousePositionName || FunctionInfo.DefinitionName == GetFineParticlePositionName || FunctionInfo.DefinitionName == GetNumCoarseParticlesName;
 }
 
 // this loads our hlsl template script file and
@@ -490,22 +502,22 @@ void UParticleUpsamplingInterface::SetShaderParameters(
 	FShaderParameters* ShaderParameters = Context.GetParameterNestedStruct<FShaderParameters>();
 
 	// Particle Shader Parameters
-	ShaderParameters->ActiveVoxelIndices =		PUData.PUBuffers->ActiveVoxelIndicesBufferRef;
-	ShaderParameters->CoarseParticles =			PUData.PUBuffers->CoarseParticleBufferRef;
+	//ShaderParameters->ActiveVoxelIndices =		PUData.PUBuffers->ActiveVoxelIndicesBufferRef;
+	//ShaderParameters->CoarseParticles =			PUData.PUBuffers->CoarseParticleBufferRef;
 
-	ShaderParameters->NumActiveVoxels =			PUData.PUArrays->NumActiveVoxels;
+	//ShaderParameters->NumActiveVoxels =			PUData.PUArrays->NumActiveVoxels;
 	ShaderParameters->NumCoarseParticles =		PUData.PUArrays->CoarseParticles.Num();
-	ShaderParameters->Time =					PUData.PUArrays->Time;
-	ShaderParameters->TimeStep =				PUData.PUArrays->TimeStep;
-	ShaderParameters->VoxelSize =				PUData.PUArrays->VoxelSize;
-	ShaderParameters->FineParticleMass =		PUData.PUArrays->FineParticleMass;
-	ShaderParameters->AnimationSpeed =			PUData.PUArrays->EaseStepSize;
-	ShaderParameters->NominalRadius =			PUData.PUArrays->NominalRadius;
+	//ShaderParameters->Time =					PUData.PUArrays->Time;
+	//ShaderParameters->TimeStep =				PUData.PUArrays->TimeStep;
+	//ShaderParameters->VoxelSize =				PUData.PUArrays->VoxelSize;
+	//ShaderParameters->FineParticleMass =		PUData.PUArrays->FineParticleMass;
+	//ShaderParameters->AnimationSpeed =			PUData.PUArrays->EaseStepSize;
+	//ShaderParameters->NominalRadius =			PUData.PUArrays->NominalRadius;
 
 	// HashTable Shader Parameters
-	ShaderParameters->HashTableBuffer =			PUData.PUBuffers->HashTableBufferRef;
-	ShaderParameters->HashTableOccupancy =		PUData.PUBuffers->HashTableOccupancyBufferRef;
-	ShaderParameters->TableSize =				PUData.PUArrays->TableSize;
+	//ShaderParameters->HashTableBuffer =			PUData.PUBuffers->HashTableBufferRef;
+	//ShaderParameters->HashTableOccupancy =		PUData.PUBuffers->HashTableOccupancyBufferRef;
+	//ShaderParameters->TableSize =				PUData.PUArrays->TableSize;
 }
 
 bool UParticleUpsamplingInterface::Equals(const UNiagaraDataInterface* Other) const

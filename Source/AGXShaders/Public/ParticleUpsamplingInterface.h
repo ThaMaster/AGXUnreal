@@ -154,7 +154,6 @@ struct FParticleUpsamplingProxy : public FNiagaraDataInterfaceProxy
 	TMap<FNiagaraSystemInstanceID, FPUData> SystemInstancesToInstanceData_RT;
 };
 
-
 UCLASS(EditInlineNew, Category = "Data Interface", CollapseCategories, meta = (DisplayName = "Particle Upsampling Interface"))
 class AGXSHADERS_API UParticleUpsamplingInterface : public UNiagaraDataInterface
 {
@@ -162,20 +161,20 @@ class AGXSHADERS_API UParticleUpsamplingInterface : public UNiagaraDataInterface
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FShaderParameters, )
 		// Particle Buffers
-		SHADER_PARAMETER_SRV(StructuredBuffer<FIntVector4>,		ActiveVoxelIndices)
-		SHADER_PARAMETER_SRV(StructuredBuffer<CoarseParticle>,	CoarseParticles)
-		SHADER_PARAMETER(int,									NumActiveVoxels)
+		//SHADER_PARAMETER_SRV(StructuredBuffer<FIntVector4>,		ActiveVoxelIndices)
+		//SHADER_PARAMETER_SRV(StructuredBuffer<CoarseParticle>,	CoarseParticles)
+		//SHADER_PARAMETER(int,									NumActiveVoxels)
 		SHADER_PARAMETER(int,									NumCoarseParticles)
-		SHADER_PARAMETER(int,									Time)
-		SHADER_PARAMETER(float,									TimeStep)
-		SHADER_PARAMETER(float,									VoxelSize)
-		SHADER_PARAMETER(float,									FineParticleMass)
-		SHADER_PARAMETER(float,									AnimationSpeed)
-		SHADER_PARAMETER(float,									NominalRadius)
+		//SHADER_PARAMETER(int,									Time)
+		//SHADER_PARAMETER(float,									TimeStep)
+		//SHADER_PARAMETER(float,									VoxelSize)
+		//SHADER_PARAMETER(float,									FineParticleMass)
+		//SHADER_PARAMETER(float,									AnimationSpeed)
+		//SHADER_PARAMETER(float,									NominalRadius)
 		// HashTable Buffers
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<VoxelEntry>,	HashTableBuffer)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<unsigned int>,	HashTableOccupancy)
-		SHADER_PARAMETER(unsigned int,							TableSize)
+		//SHADER_PARAMETER_UAV(RWStructuredBuffer<VoxelEntry>,	HashTableBuffer)
+		//SHADER_PARAMETER_UAV(RWStructuredBuffer<unsigned int>,	HashTableOccupancy)
+		//SHADER_PARAMETER(unsigned int,							TableSize)
 	END_SHADER_PARAMETER_STRUCT()
 
 public:
@@ -238,6 +237,7 @@ public:
 	static void RecalculateFineParticleProperties(float Upsampling, float ElementSize, float ParticleDensity);
 	static void SetStaticVariables(float Upsampling, float VoxelSize, float EaseStepSize);
 
+
 protected:
 #if WITH_EDITORONLY_DATA
 	virtual void GetFunctionsInternal(
@@ -251,6 +251,7 @@ private:
 
 	static const FName GetMousePositionName;
 	static const FName GetFineParticlePositionName;
+	static const FName GetNumCoarseParticlesName;
 
 	const static float PACKING_RATIO;
 };
