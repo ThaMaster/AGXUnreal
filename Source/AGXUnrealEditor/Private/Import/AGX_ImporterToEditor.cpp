@@ -17,6 +17,7 @@
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
+#include "OpenPLX/PLX_SignalHandlerComponent.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Terrain/AGX_ShovelComponent.h"
 #include "Terrain/AGX_ShovelProperties.h"
@@ -452,10 +453,17 @@ namespace AGX_ImporterToEditor_helpers
 
 	bool ValidateReimportSettings(const FAGX_ReimportSettings& Settings)
 	{
-		if (Settings.ImportType != EAGX_ImportType::Agx)
+		auto IsReimportSupported = [&]()
+		{
+			return Settings.ImportType == EAGX_ImportType::Agx ||
+				   Settings.ImportType == EAGX_ImportType::Plx;
+		};
+
+		if (!IsReimportSupported())
 		{
 			const FString Text =
-				FString::Printf(TEXT("Reimport is only supported for AGX Archives (.agx) files."));
+				FString::Printf(TEXT("Reimport is only supported for AGX Archives (.agx) and "
+									 "OpenPLX (.openplx) files."));
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Text, "Reimport model");
 			return false;
 		}
@@ -971,8 +979,7 @@ UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImportSettings& Settings)
 }
 
 bool FAGX_ImporterToEditor::Reimport(
-	UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings,
-	UBlueprint* OpenBlueprint)
+	UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings, UBlueprint* OpenBlueprint)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 
@@ -1466,6 +1473,21 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 			CopyProperties(
 				*Component, *Nodes.CollisionGroupDisablerComponent->ComponentTemplate,
 				TransientToAsset, OverwriteRule);
+		}
+	}
+
+	if (auto Component = Context.SignalHandler)
+	{
+		FGuid UnusedGuid = FGuid::NewGuid();
+		TMap<FGuid, USCS_Node*> Unused;
+		USCS_Node* N = GetOrCreateNode(UnusedGuid, *Component, Nodes, Unused, Blueprint);
+		if (N == nullptr)
+			Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+		else
+		{
+			CopyProperties(
+				*Component, *Nodes.SignalHandler->ComponentTemplate, TransientToAsset,
+				OverwriteRule);
 		}
 	}
 

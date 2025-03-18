@@ -26,6 +26,7 @@
 #include "Import/SimulationObjectCollection.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "OpenPLX/PLX_SignalHandlerComponent.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
@@ -223,7 +224,7 @@ FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImportSettings& Settings, UOb
 	if (!CreateSimulationObjectCollection(Settings, SimObjects))
 		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 
-	EAGX_ImportResult Result = AddComponents(SimObjects, *Actor);
+	EAGX_ImportResult Result = AddComponents(Settings, SimObjects, *Actor);
 	if (IsUnrecoverableError(Result))
 		return FAGX_ImportResult(Result);
 
@@ -355,7 +356,8 @@ EAGX_ImportResult FAGX_Importer::AddObserverFrame(
 }
 
 EAGX_ImportResult FAGX_Importer::AddComponents(
-	const FSimulationObjectCollection& SimObjects, AActor& OutActor)
+	const FAGX_ImportSettings& Settings, const FSimulationObjectCollection& SimObjects,
+	AActor& OutActor)
 {
 	using namespace AGX_Importer_helpers;
 	EAGX_ImportResult Res = EAGX_ImportResult::Success;
@@ -559,6 +561,9 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	Res |= AddModelSourceComponent(OutActor);
 
+	if (Settings.ImportType == EAGX_ImportType::Plx)
+		Res |= AddSignalHandlerComponent(SimObjects, OutActor);
+
 	return Res;
 }
 
@@ -605,4 +610,24 @@ EAGX_ImportResult FAGX_Importer::AddShovel(const FShovelBarrier& Shovel, AActor&
 	using namespace AGX_Importer_helpers;
 	auto Parent = GetOwningRigidBodyOrRoot(Shovel, Context, OutActor);
 	return AddComponent<UAGX_ShovelComponent, FShovelBarrier>(Shovel, *Parent, OutActor);
+}
+
+EAGX_ImportResult FAGX_Importer::AddSignalHandlerComponent(
+	const FSimulationObjectCollection& SimObjects, AActor& OutActor)
+{
+	const FString Name = "PLX_SignalHandler";
+	if (Context.SignalHandler != nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_Importer::AddSignalHandlerComponent called, but a "
+				 "PLX_SignalHandler has already been added."));
+		return EAGX_ImportResult::RecoverableErrorsOccured;
+	}
+
+	auto Component = NewObject<UPLX_SignalHandlerComponent>(&OutActor);
+	Component->Rename(*Name);
+	Component->CopyFrom(SimObjects.GetPLXInputs(), SimObjects.GetPLXOutputs(), &Context);
+	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
+	return EAGX_ImportResult::Success;
 }

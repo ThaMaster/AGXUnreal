@@ -13,6 +13,8 @@
 
 #include "PLX_SignalHandlerComponent.generated.h"
 
+struct FAGX_ImportContext;
+
 /**
  * Todo: Add description.
  */
@@ -41,6 +43,8 @@ public:
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
 	//~ End UActorComponent Interface
+
+	void CopyFrom(const TArray<FPLX_Input>& Inputs, TArray<FPLX_Output> Outputs, FAGX_ImportContext* Context);
 
 private:
 	FPLXSignalHandler SignalHandler;

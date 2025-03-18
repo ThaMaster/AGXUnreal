@@ -27,6 +27,6 @@ struct AGXCOMMON_API FPLX_Output
 	FString Name;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPXL")
-	EPLX_OutputType Type;
+	EPLX_OutputType Type {EPLX_OutputType::Invalid};
 };
 

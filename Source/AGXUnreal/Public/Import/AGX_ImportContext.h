@@ -26,6 +26,7 @@ class UAGX_TwoBodyTireComponent;
 class UAGX_WireComponent;
 class UMaterialInstanceConstant;
 class UMaterialInterface;
+class UPLX_SignalHandlerComponent;
 class UStaticMesh;
 class UStaticMeshComponent;
 class UWorld;
@@ -67,6 +68,7 @@ struct AGXUNREAL_API FAGX_ImportContext
 	UAGX_ModelSourceComponent* ModelSourceComponent {nullptr};
 	UAGX_ContactMaterialRegistrarComponent* ContactMaterialRegistrar{nullptr};
 	UAGX_CollisionGroupDisablerComponent* CollisionGroupDisabler {nullptr};
+	UPLX_SignalHandlerComponent* SignalHandler {nullptr};
 
 	FGuid SessionGuid;
 

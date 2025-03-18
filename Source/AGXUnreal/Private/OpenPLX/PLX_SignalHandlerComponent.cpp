@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintComponent.h"
+#include "Import/AGX_ImportContext.h"
 #include "Import/AGX_ModelSourceComponent.h"
 #include "OpenPLX/PLX_ModelRegistry.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -104,4 +105,20 @@ void UPLX_SignalHandlerComponent::BeginPlay()
 
 	// Initialize SignalHandler in Barrier module.
 	SignalHandler.Init(*PLXFile, *SimulationBarrier, *PLXModelRegistryBarrier, ConstraintBarriers);
+}
+
+void UPLX_SignalHandlerComponent::CopyFrom(
+	const TArray<FPLX_Input>& InInputs, TArray<FPLX_Output> InOutputs, FAGX_ImportContext* Context)
+{
+	for (const auto& Input : InInputs)
+		Inputs.Add(Input.Name, Input);
+
+	for (const auto& Output : InOutputs)
+		Outputs.Add(Output.Name, Output);
+
+	if (Context != nullptr)
+	{
+		AGX_CHECK(Context->SignalHandler == nullptr);
+		Context->SignalHandler = this;
+	}
 }

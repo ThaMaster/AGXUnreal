@@ -58,6 +58,7 @@ public:
 
 private:
 	EAGX_ImportResult AddComponents(
+		const FAGX_ImportSettings& Settings,
 		const FSimulationObjectCollection& SimObjects, AActor& OutActor);
 
 	EAGX_ImportResult AddModelSourceComponent(AActor& OutActor);
@@ -82,6 +83,9 @@ private:
 	EAGX_ImportResult AddTrimeshShape(const FShapeBarrier& Shape, AActor& OutActor);
 
 	EAGX_ImportResult AddShovel(const FShovelBarrier& Shovel, AActor& OutActor);
+
+	EAGX_ImportResult AddSignalHandlerComponent(
+		const FSimulationObjectCollection& SimObjects, AActor& OutActor);
 
 	FAGX_ImportContext Context;
 };

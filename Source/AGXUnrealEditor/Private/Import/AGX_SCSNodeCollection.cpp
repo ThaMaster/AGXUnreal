@@ -18,6 +18,7 @@
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
+#include "OpenPLX/PLX_SignalHandlerComponent.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
 #include "Shapes/AGX_SphereShapeComponent.h"
 #include "Shapes/AGX_CapsuleShapeComponent.h"
@@ -159,6 +160,11 @@ FAGX_SCSNodeCollection::FAGX_SCSNodeCollection(const UBlueprint& Bp)
 			AGX_CHECK(!Tracks.Contains(Track->ImportGuid))
 			if (Track->ImportGuid.IsValid())
 				Tracks.Add(Track->ImportGuid, Node);
+		}
+		else if (auto Sh = Cast<UPLX_SignalHandlerComponent>(Component))
+		{
+			AGX_CHECK(SignalHandler == nullptr);
+			SignalHandler = Node;
 		}
 		else
 		{

@@ -43,4 +43,5 @@ struct AGXUNREALEDITOR_API FAGX_SCSNodeCollection
 	USCS_Node* ContactMaterialRegistrarComponent = nullptr;
 	USCS_Node* ModelSourceComponent = nullptr;
 	USCS_Node* RootComponent = nullptr;
+	USCS_Node* SignalHandler = nullptr;
 };

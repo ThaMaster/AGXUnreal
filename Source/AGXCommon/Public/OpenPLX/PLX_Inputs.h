@@ -28,5 +28,5 @@ struct AGXCOMMON_API FPLX_Input
 	FString Name;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPXL")
-	EPLX_InputType Type;
+	EPLX_InputType Type {EPLX_InputType::Invalid};
 };
