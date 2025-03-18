@@ -1,0 +1,44 @@
+#pragma once
+
+uint Hash(uint In_X)
+{
+    In_X += (In_X << 10u);
+    In_X ^= (In_X >> 6u);
+    In_X += (In_X << 3u);
+    In_X ^= (In_X >> 11u);
+    In_X += (In_X << 15u);
+    return In_X;
+}
+
+// Construct a float with half-open range [0:1] using low 23 bits.
+// All zeroes yields 0.0, all ones yields the next smallest representable value below 1.0.
+float FloatConstruct(uint In_M)
+{
+    const uint IeeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask
+    const uint IeeeOne = 0x3F800000u; // 1.0 in IEEE binary32
+
+    In_M &= IeeeMantissa; // Keep only mantissa bits (fractional part)
+    In_M |= IeeeOne; // Add fractional part to 1.0
+
+    float NewFloat = asfloat(In_M); // Range [1:2]
+    return NewFloat - 1.0; // Range [0:1]
+}
+
+float Random(uint In_X)
+{
+    return FloatConstruct(Hash(In_X));
+}
+
+float Distance2(float3 In_Point1, float3 In_Point2)
+{
+    float3 Vec = In_Point1 - In_Point2;
+    return dot(Vec, Vec);
+}
+
+int3 GetVoxelIndexFromWorldPos(float3 In_Position, float In_VoxelSize)
+{
+    In_Position /= In_VoxelSize;
+    In_Position += sign(In_Position) * 0.5;
+    
+    return int3((int) In_Position.x, (int) In_Position.y, (int) In_Position.z);
+}

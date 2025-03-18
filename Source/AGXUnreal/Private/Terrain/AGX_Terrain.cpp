@@ -26,6 +26,8 @@
 #include "Utilities/AGX_RenderUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
 
+#include "AGXShaders/Public/ParticleUpsamplingInterface.h"
+
 // Unreal Engine includes.
 #include "Landscape.h"
 #include "LandscapeComponent.h"
@@ -38,6 +40,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectIterator.h"
 #include "WorldPartition/WorldPartition.h"
+
 
 #ifdef LOCTEXT_NAMESPACE
 #error "LOCTEXT_NAMESPACE leakage."
@@ -92,7 +95,7 @@ AAGX_Terrain::AAGX_Terrain()
 								  "PS_SoilParticleSystem.PS_SoilParticleSystem'"));
 	AssignDefault(
 		ParticleUpsamplingAsset, TEXT("NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/"
-									  "ParticleUpsampling/PS_ParticleUpsampling.PS_ParticleUpsampling'"));
+									  "ParticleUpsampling/PS_ParticleUpsampling_V2.PS_ParticleUpsampling_V2'"));
 }
 
 void AAGX_Terrain::SetCanCollide(bool bInCanCollide)
@@ -1788,14 +1791,16 @@ void AAGX_Terrain::UpdateParticlesArrays()
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());
 
+
 	if (bEnableParticleUpsampling)
 	{
 		ParticleUpsamplingComponent->SetNiagaraVariableInt(
 			"User.Target Particle Count", Exists.Num());
 		ParticleUpsamplingComponent->SetNiagaraVariableInt(
-			"User.Upscaling", Upscaling);
+			"User.Upsampling", Upsampling);
 		ParticleUpsamplingComponent->SetNiagaraVariableFloat(
 			"User.Ease Step Size", EaseStepSize);
+		ParticleUpsamplingComponent->SetNiagaraVariableFloat("User.Voxel Size", VoxelSize);
 	}
 #else
 	ParticleSystemComponent->SetVariableInt(FName("User.Target Particle Count"), Exists.Num());
@@ -1804,12 +1809,12 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	{
 		ParticleUpsamplingComponent->SetVariableInt(
 			FName("User.Target Particle Count"), Exists.Num());
-		ParticleUpsamplingComponent->SetVariableInt(
-			FName("User.Upscaling"), Upscaling);
-		ParticleUpsamplingComponent->SetNiagaraVariableFloat(
-			"User.Ease Step Size", EaseStepSize);
-		ParticleUpsamplingComponent->SetNiagaraVariableBool(
-			"User.ShowDebugGrid", bShowDebugBounds);
+		ParticleUpsamplingComponent->SetVariableFloat(
+			FName("User.Upsampling"), Upsampling);
+		ParticleUpsamplingComponent->SetVariableFloat(FName("User.Ease Step Size"), EaseStepSize);
+		ParticleUpsamplingComponent->SetVariableFloat(FName("User.Voxel Size"), VoxelSize
+		);
+		ParticleUpsamplingComponent->SetNiagaraVariableBool("User.ShowDebugGrid", bShowDebugBounds);
 	}
 
 #endif
@@ -1820,7 +1825,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	PositionsAndScale.SetNum(NumParticles);
 	TArray<FVector4> Orientations;
 	Orientations.SetNum(NumParticles);
-
+	TArray<CoarseParticle> CoarseParticles;
 	for (int32 I = 0; I < NumParticles; ++I)
 	{
 		// The particle size slot in the PositionAndScale buffer is a scale and not the
@@ -1831,8 +1836,8 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		float UnitCubeScale = (Radii[I] * 2.0f) / 100.0f;
 		PositionsAndScale[I] = FVector4(Positions[I], UnitCubeScale);
 		Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
+		CoarseParticles.Add(CoarseParticle(PositionsAndScale[I], Velocities[I], Masses[I]));
 	}
-
 	// Set particle system data.
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
 		ParticleSystemComponent, "Positions And Scales", PositionsAndScale);
@@ -1846,6 +1851,11 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	// Set upsampling data.
 	if (bEnableParticleUpsampling)
 	{
+		UE_LOG(
+			LogTemp, Warning, TEXT("[Terrain] PosX: %f, PosY: %f, PosZ: %f"),
+			CoarseParticles[0].PositionAndRadius.X, CoarseParticles[0].PositionAndRadius.Y,
+			CoarseParticles[0].PositionAndRadius.Z);
+		UParticleUpsamplingInterface::SetCoarseParticles(CoarseParticles);
 		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
 			ParticleUpsamplingComponent, "Positions And Scales", PositionsAndScale);
 		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(

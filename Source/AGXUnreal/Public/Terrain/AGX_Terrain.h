@@ -321,14 +321,14 @@ public:
 	UNiagaraSystem* ParticleUpsamplingAsset;
 
 	/**
-	* The desired upscaling factor which the renderer will try to achieve.
+	* The desired upsampling factor which the renderer will try to achieve.
 	*/
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
 		Meta =
 			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling", ClampMin = "1", UIMin = "1", 
 				UIMax = "5000"))
-	int32 Upscaling = 100;
+	int32 Upsampling = 100;
 
 	/**
 	* Toggle between using the default voxel size or use user defined size.
