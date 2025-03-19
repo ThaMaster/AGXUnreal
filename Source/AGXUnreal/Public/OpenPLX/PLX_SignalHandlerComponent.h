@@ -31,10 +31,10 @@ class AGXUNREAL_API UPLX_SignalHandlerComponent : public UActorComponent
 public:
 	UPLX_SignalHandlerComponent();
 
-	UPROPERTY(EditAnywhere, Category = "OpenPLX")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OpenPLX")
 	TMap<FString, FPLX_Input> Inputs;
 
-	UPROPERTY(EditAnywhere, Category = "OpenPLX")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OpenPLX")
 	TMap<FString, FPLX_Output> Outputs;
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
