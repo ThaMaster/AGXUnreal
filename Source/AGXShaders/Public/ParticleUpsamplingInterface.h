@@ -7,20 +7,10 @@
 #include "NiagaraDataInterfaceRW.h"
 #include "ParticleUpsamplingInterface.generated.h"
 
-struct CoarseParticle
-{
-	CoarseParticle(FVector4 PositionAndScale, FVector Velocity, float Mass) { 
-		PositionAndRadius = PositionAndScale;
-		VelocityAndMass = FVector4(Velocity, Mass);
-	};
-	FVector4 PositionAndRadius;
-	FVector4 VelocityAndMass;
-};
-
 // This struct are not used to push data, only for calculating bytes when allocating buffers.
 struct VoxelEntry
 {
-	FIntVector4 IndexAndRoom;
+	FVector4f IndexAndRoom;
 	FVector4f PositionAndMass;
 	FVector4f Velocity;
 	FVector4f MinBound;
@@ -31,6 +21,9 @@ struct VoxelEntry
 
 struct FPUBuffers : public FRenderResource
 {
+	const int INITIAL_VOXEL_BUFFER_SIZE = 124;
+	const int INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1024;
+
 	/** Init the buffer */
 	virtual void InitRHI(FRHICommandListBase& RHICmdList) override;
 
@@ -46,46 +39,34 @@ struct FPUBuffers : public FRenderResource
 	template <typename T>
 	FShaderResourceViewRHIRef InitSRVBuffer(
 		FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, uint32 ElementCount);
-
-	template <typename BufferType>
-	void CreateInternalBuffer(
-		FRHICommandListBase& RHICmdList, FReadBuffer& OutputBuffer, uint32 ElementCount);
-	template <typename BufferType>
-	void UpdateInternalBuffer(
-		FRHICommandListBase& RHICmdList, const TArray<BufferType>& InputData,
-		FReadBuffer& OutputBuffer);
-	
 	template <typename T>
 	void UpdateSRVBuffer(
-		FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, TArray<T> DataArray,
-		FShaderResourceViewRHIRef& OutSRV);
+		FRHICommandListBase& RHICmdList, const TArray<T>& InputData,
+		FShaderResourceViewRHIRef& OutputBuffer);
 
 	template <typename T>
 	FUnorderedAccessViewRHIRef InitUAVBuffer(
 		FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, uint32 ElementCount);
 
 	FShaderResourceViewRHIRef ActiveVoxelIndicesBufferRef;
-	FShaderResourceViewRHIRef CoarseParticleBufferRef;
+	FShaderResourceViewRHIRef CPPositionsAndRadiusBufferRef;
+	FShaderResourceViewRHIRef CPVelocitiesAndMassesBufferRef;
 
 	FUnorderedAccessViewRHIRef HashTableBufferRef;
 	FUnorderedAccessViewRHIRef HashTableOccupancyBufferRef;
-
-private:
-	const static int INITIAL_VOXEL_BUFFER_SIZE;
-	const static int INITIAL_COARSE_PARTICLE_BUFFER_SIZE;
 };
 
 /** Struct that contains the data that exists on the CPU */
 struct FPUArrays
 {
-	FVector2f MousePos;
-	FIntPoint ScreenSize;
+	const int INITIAL_VOXEL_BUFFER_SIZE = 124;
+	const int INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1;
 
-	TArray<CoarseParticle> CoarseParticles;
-
+	TArray<FVector4f> CPPositionsAndRadius;
+	TArray<FVector4f> CPVelocitiesAndMasses;
+	TArray<FVector4f> ActiveVoxelIndices;
+	
 	int Time = 0;
-	int NumActiveVoxels = 0;
-	float Upsampling = 0;
 	float VoxelSize = 0;
 	float FineParticleMass = 0;
 	float FineParticleRadius = 0;
@@ -94,17 +75,21 @@ struct FPUArrays
 	float TimeStep = 0;
 	int TableSize = 0;
 
+	bool bCoarseParticlesBufferNeedsReisze = false;
+	bool bActiveVoxelIndicesBufferNeedsResize = false;
+
 	void CopyFrom(const FPUArrays* Other) 
 	{
-		MousePos = Other->MousePos;
-		ScreenSize = Other->ScreenSize;
+		CPPositionsAndRadius.SetNumZeroed(Other->CPPositionsAndRadius.Num());
+		CPPositionsAndRadius = Other->CPPositionsAndRadius;
 
-		CoarseParticles.SetNumZeroed(Other->CoarseParticles.Num());
-		CoarseParticles = Other->CoarseParticles;
+		CPVelocitiesAndMasses.SetNumZeroed(Other->CPVelocitiesAndMasses.Num());
+		CPVelocitiesAndMasses = Other->CPVelocitiesAndMasses;
+
+		ActiveVoxelIndices.SetNumZeroed(Other->ActiveVoxelIndices.Num());
+		ActiveVoxelIndices = Other->ActiveVoxelIndices;
 
 		Time = Other->Time;
-		NumActiveVoxels = Other->NumActiveVoxels;
-		Upsampling = Other->Upsampling;
 		VoxelSize = Other->VoxelSize;
 		FineParticleMass = Other->FineParticleMass;
 		FineParticleRadius = Other->FineParticleRadius;
@@ -119,15 +104,12 @@ struct FPUArrays
 struct FPUData
 {
 	void Init(FNiagaraSystemInstance* SystemInstance);
-	void Update(FNiagaraSystemInstance* SystemInstance, FPUArrays* OtherArray);
+	void Update(FNiagaraSystemInstance* SystemInstance, FPUArrays* OtherData);
 	void Release();
 
 	FPUBuffers* PUBuffers = nullptr;
 	FPUArrays* PUArrays = nullptr;
-
-	bool bNeedsBufferResize = false;
 };
-
 
 struct FParticleUpsamplingProxy : public FNiagaraDataInterfaceProxy
 {
@@ -161,18 +143,21 @@ class AGXSHADERS_API UParticleUpsamplingInterface : public UNiagaraDataInterface
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FShaderParameters, )
 		// Particle Buffers
-		//SHADER_PARAMETER_SRV(StructuredBuffer<FIntVector4>,		ActiveVoxelIndices)
-		//SHADER_PARAMETER_SRV(StructuredBuffer<CoarseParticle>,	CoarseParticles)
-		//SHADER_PARAMETER(int,									NumActiveVoxels)
+		SHADER_PARAMETER_SRV(StructuredBuffer<FVector4f>,		ActiveVoxelIndices)
+		SHADER_PARAMETER_SRV(StructuredBuffer<FVector4f>,		CPPositionsAndRadius)
+		SHADER_PARAMETER_SRV(StructuredBuffer<FVector4f>,		CPVelocitiesAndMasses)
+		SHADER_PARAMETER(int,									NumActiveVoxels)
 		SHADER_PARAMETER(int,									NumCoarseParticles)
-		//SHADER_PARAMETER(int,									Time)
-		//SHADER_PARAMETER(float,									TimeStep)
-		//SHADER_PARAMETER(float,									VoxelSize)
-		//SHADER_PARAMETER(float,									FineParticleMass)
+		SHADER_PARAMETER(float,									VoxelSize)
+		SHADER_PARAMETER(float,									FineParticleMass)
+		SHADER_PARAMETER(float,									FineParticleRadius)
+		SHADER_PARAMETER(float,									NominalRadius)
+
 		//SHADER_PARAMETER(float,									AnimationSpeed)
-		//SHADER_PARAMETER(float,									NominalRadius)
+		// SHADER_PARAMETER(int,									Time)
+		// SHADER_PARAMETER(float,									TimeStep)
 		// HashTable Buffers
-		//SHADER_PARAMETER_UAV(RWStructuredBuffer<VoxelEntry>,	HashTableBuffer)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<VoxelEntry>,	HashTableBuffer)
 		//SHADER_PARAMETER_UAV(RWStructuredBuffer<unsigned int>,	HashTableOccupancy)
 		//SHADER_PARAMETER(unsigned int,							TableSize)
 	END_SHADER_PARAMETER_STRUCT()
@@ -183,9 +168,6 @@ public:
 	virtual void PostInitProperties() override;
 
 	// UNiagaraDataInterface Interface
-	virtual void GetVMExternalFunction(
-		const FVMExternalFunctionBindingInfo& BindingInfo, void* InstanceData,
-		FVMExternalFunction& OutFunc) override;
 	virtual bool CanExecuteOnTarget(ENiagaraSimTarget Target) const override
 	{
 		return true;
@@ -208,14 +190,17 @@ public:
 		void* PerInstanceData, FNiagaraSystemInstance* SystemInstance) override;
 	virtual void DestroyPerInstanceData(
 		void* PerInstanceData, FNiagaraSystemInstance* SystemInstance) override;
+
 	virtual int32 PerInstanceDataSize() const override
 	{
 		return sizeof(FPUData);
 	};
+
 	virtual bool HasPreSimulateTick() const override
 	{
 		return true;
 	};
+
 	virtual bool HasPostSimulateTick() const override
 	{
 		return true;
@@ -231,12 +216,12 @@ public:
 	virtual bool Equals(const UNiagaraDataInterface* Other) const override;
 	// UNiagaraDataInterface Interface
 
-	void GetMousePositionVM(FVectorVMExternalFunctionContext& Context);
+	static void SetCoarseParticles(
+		TArray<FVector4f> PositionsAndRadius, TArray<FVector4f> VelocitiesAndMasses);
+	static void SetActiveVoxelIndices(TArray<FVector4f> AVIs);
 
-	static void SetCoarseParticles(TArray<CoarseParticle> CPs);
 	static void RecalculateFineParticleProperties(float Upsampling, float ElementSize, float ParticleDensity);
-	static void SetStaticVariables(float Upsampling, float VoxelSize, float EaseStepSize);
-
+	static void SetStaticVariables(float VoxelSize, float EaseStepSize);
 
 protected:
 #if WITH_EDITORONLY_DATA
@@ -249,9 +234,11 @@ protected:
 private:
 	static FPUArrays* LocalData;
 
-	static const FName GetMousePositionName;
-	static const FName GetFineParticlePositionName;
+	static const FName GetFineParticlePositionAndRadiusName;
+	static const FName GetFineParticleVelocityAndMassName;
 	static const FName GetNumCoarseParticlesName;
+	static const FName GetActiveVoxelIndexName;
+	static const FName GetFineParticleRadiusName;
 
 	const static float PACKING_RATIO;
 };

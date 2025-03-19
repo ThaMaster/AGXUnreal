@@ -4,53 +4,48 @@
 #include "/AGXShadersShaders/ParticleUpsamplingUtils.ush"
 
 // Particle Buffers
-StructuredBuffer<int4>              {ParameterName}_ActiveVoxelIndices;
-StructuredBuffer<CoarseParticle>    {ParameterName}_CoarseParticles;
+StructuredBuffer<float4>            {ParameterName}_ActiveVoxelIndices;
+StructuredBuffer<float4>            {ParameterName}_CPPositionsAndRadius;
+StructuredBuffer<float4>            {ParameterName}_CPVelocitiesAndMasses;
 int                                 {ParameterName}_NumActiveVoxels;
 int                                 {ParameterName}_NumCoarseParticles;
-int                                 {ParameterName}_Time;
-float                               {ParameterName}_TimeStep;
+
 float                               {ParameterName}_VoxelSize;
 float                               {ParameterName}_FineParticleMass;
-float                               {ParameterName}_AnimationSpeed;
+float                               {ParameterName}_FineParticleRadius;
 float                               {ParameterName}_NominalRadius;
 
+
+//int                                 {ParameterName}_Time;
+//float                               {ParameterName}_TimeStep;
+//float                               {ParameterName}_AnimationSpeed;
+
 // HashTable Buffers
-RWStructuredBuffer<VoxelEntry>      {ParameterName}_HashTableBuffer;
-RWStructuredBuffer<uint>            {ParameterName}_HashTableOccupancy;
-uint                                {ParameterName}_TableSize;
+//RWStructuredBuffer<VoxelEntry>      {ParameterName}_HashTableBuffer;
+//RWStructuredBuffer<uint>            {ParameterName}_HashTableOccupancy;
+//uint                                {ParameterName}_TableSize;
 
-
-float2 Dostuff(in bool norm, in float4 di_pos)
+void GetFineParticlePositionAndRadius_{ParameterName}(in int In_Index, out float4 Out_FineParticlePositionAndRadius)
 {
-    float2 pos = float2(0.0, 0.0);
-    if (norm)
-    {
-        pos.x = di_pos.x / di_pos.z;
-        pos.y = di_pos.y / di_pos.w;
-    }
-    else
-    {
-        pos.x = di_pos.x;
-        pos.y = di_pos.y;
-    }
-    return pos;
+    Out_FineParticlePositionAndRadius = {ParameterName}_CPPositionsAndRadius[In_Index];
 }
 
-void GetMousePosition_{ParameterName}(in bool In_Normalized, out float Out_PosX, out float Out_PosY)
+void GetFineParticleVelocityAndMass_{ParameterName}(in int In_Index, out float4 Out_FineParticleVelocityAndMass)
 {
-	float4 DIPosition = {ParameterName}_CoarseParticles[0].PositionAndRadius;
-    float2 Position = Dostuff(In_Normalized, DIPosition);
-    Out_PosX = Position.x;
-    Out_PosY = Position.y;
-}
-
-void GetFineParticlePosition_{ParameterName}(in int In_Index, out float3 Out_FineParticlePosition)
-{
-    Out_FineParticlePosition = {ParameterName}_CoarseParticles[In_Index].PositionAndRadius.xyz;
+    Out_FineParticleVelocityAndMass = {ParameterName}_CPVelocitiesAndMasses[In_Index];
 }
 
 void GetNumCoarseParticles_{ParameterName}(out int Out_NumCoarseParticles)
 {
     Out_NumCoarseParticles = {ParameterName}_NumCoarseParticles;
+}
+
+void GetActiveVoxelIndex_{ParameterName}(in int In_Index, out float3 Out_ActiveVoxelIndex)
+{
+    Out_ActiveVoxelIndex = {ParameterName}_ActiveVoxelIndices[In_Index].xyz;
+}
+
+void GetFineParticleRadius_{ParameterName}(out float Out_FineParticleRadius)
+{
+    Out_FineParticleRadius = {ParameterName}_FineParticleRadius;
 }

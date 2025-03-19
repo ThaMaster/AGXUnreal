@@ -1814,18 +1814,20 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		ParticleUpsamplingComponent->SetVariableFloat(FName("User.Ease Step Size"), EaseStepSize);
 		ParticleUpsamplingComponent->SetVariableFloat(FName("User.Voxel Size"), VoxelSize
 		);
-		ParticleUpsamplingComponent->SetNiagaraVariableBool("User.ShowDebugGrid", bShowDebugBounds);
 	}
 
 #endif
 
 	const int32 NumParticles = Positions.Num();
-
 	TArray<FVector4> PositionsAndScale;
 	PositionsAndScale.SetNum(NumParticles);
 	TArray<FVector4> Orientations;
 	Orientations.SetNum(NumParticles);
-	TArray<CoarseParticle> CoarseParticles;
+	TArray<FVector4f> ActiveVoxelIndices;
+
+	TArray<FVector4f> PositionsAndRadius;
+	TArray<FVector4f> VelocitiesAndMasses;
+
 	for (int32 I = 0; I < NumParticles; ++I)
 	{
 		// The particle size slot in the PositionAndScale buffer is a scale and not the
@@ -1836,7 +1838,14 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		float UnitCubeScale = (Radii[I] * 2.0f) / 100.0f;
 		PositionsAndScale[I] = FVector4(Positions[I], UnitCubeScale);
 		Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
-		CoarseParticles.Add(CoarseParticle(PositionsAndScale[I], Velocities[I], Masses[I]));
+		if (Exists[I] && bEnableParticleUpsampling)
+		{
+			PositionsAndRadius.Add(
+				FVector4f(Positions[I].X, Positions[I].Y, Positions[I].Z, Radii[I]));
+			VelocitiesAndMasses.Add(
+				FVector4f(Velocities[I].X, Velocities[I].Y, Velocities[I].Z, Masses[I]));
+			ActiveVoxelIndices.Add(FVector4f(I+1, I+1, I+1, I+1));
+		}
 	}
 	// Set particle system data.
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
@@ -1851,11 +1860,11 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	// Set upsampling data.
 	if (bEnableParticleUpsampling)
 	{
-		UE_LOG(
-			LogTemp, Warning, TEXT("[Terrain] PosX: %f, PosY: %f, PosZ: %f"),
-			CoarseParticles[0].PositionAndRadius.X, CoarseParticles[0].PositionAndRadius.Y,
-			CoarseParticles[0].PositionAndRadius.Z);
-		UParticleUpsamplingInterface::SetCoarseParticles(CoarseParticles);
+		UParticleUpsamplingInterface::SetActiveVoxelIndices(ActiveVoxelIndices);
+		UParticleUpsamplingInterface::SetCoarseParticles(PositionsAndRadius, VelocitiesAndMasses);
+		UParticleUpsamplingInterface::RecalculateFineParticleProperties(Upsampling, 2.0, 1.0);
+		UParticleUpsamplingInterface::SetStaticVariables(VoxelSize, EaseStepSize);
+
 		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
 			ParticleUpsamplingComponent, "Positions And Scales", PositionsAndScale);
 		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(

@@ -367,14 +367,6 @@ public:
 		Meta = (EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling"))
 	TEnumAsByte<enum EAGX_ParticleUpsamplingRenderMode> RenderMode;
 
-	/**
-	 * Toggle to showing the debug grid bounds or not.
-	 */
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
-		Meta = (EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling"))
-	bool bShowDebugBounds = false;
-
 	/** Whether shovel active zone should be rendered or not. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")
 	bool bEnableActiveZoneRendering = false;
