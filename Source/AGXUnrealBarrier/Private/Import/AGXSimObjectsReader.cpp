@@ -17,7 +17,7 @@
 
 // OpenPLX includes.
 #include "BeginAGXIncludes.h"
-#include "agxOpenPLX/OpenPlxToAgxMapper.h"
+#include "agxOpenPLX/AgxOpenPlxApi.h"
 #include "EndAGXIncludes.h"
 
 // AGX Dynamics includes.
@@ -628,28 +628,33 @@ AGXUNREALBARRIER_API bool FAGXSimObjectsReader::ReadUrdf(
 bool FAGXSimObjectsReader::ReadOpenPLXFile(
 	const FString& Filename, FSimulationObjectCollection& OutSimObjects)
 {
-	std::shared_ptr<agxopenplx::AgxCache> AGXCache;
-	openplx::Core::ObjectPtr PLXModel = FPLXUtilities::LoadModel(Filename, AGXCache);
-	if (PLXModel == nullptr)
+	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
+	const FString PLXBundlesPath = FPaths::Combine(
+		FAGX_Environment::GetPluginSourcePath(), "Thirdparty", "agx", "openplxbundles");
+
+	agx::Name Uuid("b753eefd-dea0-45c7-b28f-6394fcdc25f6");
+	agxopenplx::OptParams Params = agxopenplx::OptParams().with_uuidv5(Uuid);
+	agxopenplx::LoadResult Result =
+		agxopenplx::load_from_file(Simulation, Convert(Filename), Convert(PLXBundlesPath), Params);
+
+	if (Result.errors().size() > 0)
 	{
-		UE_LOG(
-			LogAGX, Error,
-			TEXT("Could not read OpenPLX file '%s'. The Log category LogAGXDynamics may include "
-				 "more "
-				 "details."),
-			*Filename);
+		for (auto Err : Result.errors())
+		{
+			UE_LOG(
+				LogAGX, Error, TEXT("Got Error Code: %d while reading OpenPLX file."),
+				Err->getErrorCode());
+		}
+
 		return false;
 	}
 
-	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
-	agxopenplx::OpenPlxToAgxMapper Mapper(Simulation, Convert(Filename), AGXCache);
-	agxSDK::AssemblyRef AssemblyAGX = Mapper.mapObject(PLXModel);
-
+	agxSDK::AssemblyRef AssemblyAGX = Result.assembly();
 	Simulation->add(AssemblyAGX);
 	::ReadAll(*Simulation, Filename, OutSimObjects);
 
 	// Read PLX inputs.
-	auto System = std::dynamic_pointer_cast<openplx::Physics3D::System>(PLXModel);
+	auto System = std::dynamic_pointer_cast<openplx::Physics3D::System>(Result.scene());
 	OutSimObjects.GetPLXInputs() = FPLXUtilities::GetInputs(System.get());
 	OutSimObjects.GetPLXOutputs() = FPLXUtilities::GetOutputs(System.get());
 
