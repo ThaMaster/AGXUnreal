@@ -131,13 +131,13 @@ TArray<FPLX_Input> FPLXUtilities::GetInputs(openplx::Physics3D::System* System)
 		if (auto Lvmvi =
 				std::dynamic_pointer_cast<openplx::Physics::Signals::LinearVelocity1DInput>(Input))
 		{
-			Inputs.Add(FPLX_Input(Convert(Input->getName()), EPLX_InputType::LinearVelocity1DInput));
+			Inputs.Add(
+				FPLX_Input(Convert(Input->getName()), EPLX_InputType::LinearVelocity1DInput));
 		}
 		else
 		{
 			UE_LOG(LogAGX, Warning, TEXT("Unsupported PLX Input: %s"), *Convert(Input->getName()));
-			Inputs.Add(
-				FPLX_Input(Convert(Input->getName()), EPLX_InputType::Unsupported));
+			Inputs.Add(FPLX_Input(Convert(Input->getName()), EPLX_InputType::Unsupported));
 		}
 	}
 	return Inputs;
@@ -159,7 +159,8 @@ TArray<FPLX_Output> FPLXUtilities::GetOutputs(openplx::Physics3D::System* System
 		}
 		else
 		{
-			UE_LOG(LogAGX, Warning, TEXT("Unsupported PLX Output: %s"), *Convert(Output->getName()));
+			UE_LOG(
+				LogAGX, Warning, TEXT("Unsupported PLX Output: %s"), *Convert(Output->getName()));
 			Outputs.Add(FPLX_Output(Convert(Output->getName()), EPLX_OutputType::Unsupported));
 		}
 	}
@@ -198,11 +199,9 @@ std::vector<openplx::Core::ObjectPtr> FPLXUtilities::GetObjectFields(openplx::Co
 	if (auto System = dynamic_cast<openplx::Physics3D::System*>(&Object))
 	{
 		// See openplx::Physics3D::System::extractObjectFieldsTo.
-		Result.push_back(System->local_transform());
-		Result.push_back(System->reference_body());
+		System->extractObjectFieldsTo(Result);
 	}
 
-	
 	Object.extractObjectFieldsTo(Result);
 	return Result;
 }
