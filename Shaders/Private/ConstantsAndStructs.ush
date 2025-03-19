@@ -13,33 +13,10 @@
 #define GRP_SIZE_PARTICLES 1024
 #define EXTRA_PARTICLES_IN_VOXEL 0
 
-#define VELOCITY(p) ((p).VelocityAndMass.xyz)
-#define MASS(p) ((p).VelocityAndMass.w)
+#define VELOCITY(p) ((p).xyz)
+#define MASS(p) ((p).w)
 
-#define CP_POSITION(p) ((p).PositionAndRadius.xyz)
-#define FP_POSITION(p) ((p).PositionAndEase.xyz)
-#define RADIUS(p) ((p).positionAndRadius.w)
-#define EASE(p) ((p).positionAndEase.w)
-
-struct CoarseParticle
-{
-    float4 PositionAndRadius; // xyz is position, w is particle radius
-    float4 VelocityAndMass; // xyz is velocity, w is mass
-};
-
-struct FineParticle
-{
-    float4 PositionAndEase; // xyz is position, w is particle ease
-    float4 VelocityAndMass; // xyz is velocity, w is particle mass
-};
-
-struct VoxelEntry
-{
-    int4 IndexAndRoom; // xyz is index, w is amount of particles that fit in the voxel
-    float4 PositionAndMass; // xyz is position, w is voxel mass
-    float4 Velocity; // xyz is velocity, w is padding
-    float4 MinBound; // xyz is min corner of the total spawning bound, w is padding
-    float4 MaxBound; // xyz is max corner of the inner spawning bound, w is padding
-    float4 InnerMinBound; // xyz is min corner of th einner spawning bound, w is padding
-    float4 InnerMaxBound; // xyz is max corner of the inner spawning bound, w is padding
-};
+#define CP_POSITION(p) ((p).xyz)
+#define FP_POSITION(p) ((p).xyz)
+#define RADIUS(p) ((p).w)
+#define EASE(p) ((p).w)

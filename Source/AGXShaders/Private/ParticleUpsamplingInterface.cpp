@@ -19,6 +19,9 @@ const FName UParticleUpsamplingInterface::GetFineParticleVelocityAndMassName(TEX
 const FName UParticleUpsamplingInterface::GetNumCoarseParticlesName(TEXT("GetNumCoarseParticles"));
 const FName UParticleUpsamplingInterface::GetActiveVoxelIndexName(TEXT("GetActiveVoxelIndex"));
 const FName UParticleUpsamplingInterface::GetFineParticleRadiusName(TEXT("GetFineParticleRadius"));
+const FName UParticleUpsamplingInterface::UpdateGridName(TEXT("UpdateGrid"));
+const FName UParticleUpsamplingInterface::LookupRoomName(TEXT("LookupRoom"));
+
 static const
 	TCHAR* ParticleUpsamplingTemplateShaderFile =
 	TEXT("/AGXShadersShaders/ParticleUpsampling.ush");
@@ -95,11 +98,17 @@ void FPUBuffers::InitRHI(FRHICommandListBase& RHICmdList)
 		RHICmdList, TEXT("CPPositionsAndRadiusBuffer"), INITIAL_COARSE_PARTICLE_BUFFER_SIZE);
 	CPVelocitiesAndMassesBufferRef = InitSRVBuffer<FVector4f>(
 		RHICmdList, TEXT("CPVelocitiesAndMassesBuffer"), INITIAL_COARSE_PARTICLE_BUFFER_SIZE);
+
 	// HashTable Buffers
-	//HashTableBufferRef =InitUAVBuffer<VoxelEntry>(
-	//	RHICmdList, TEXT("HashTableBuffer"), INITIAL_VOXEL_BUFFER_SIZE * 2);
-	//HashTableOccupancyBufferRef = InitUAVBuffer<unsigned int>(
-	//	RHICmdList, TEXT("HashTableOccupancyBuffer"), INITIAL_VOXEL_BUFFER_SIZE * 2);
+	HashTableSize = INITIAL_VOXEL_BUFFER_SIZE * 2;
+	HTIndexAndRoomBufferRef = InitUAVBuffer<FIntVector4>(RHICmdList, TEXT("HTIndexAndRoomBuffer"), HashTableSize);
+	HTPositionAndMassBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTPositionAndMassBuffer"), HashTableSize);
+	HTVelocityBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTVelocityBuffer"), HashTableSize);
+	HTMinBoundBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTMinBoundBuffer"), HashTableSize);
+	HTMaxBoundBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTMaxBoundBuffer"), HashTableSize);
+	HTInnerMinBoundBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTInnerMinBoundBuffer"), HashTableSize);
+	HTInnerMaxBoundBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTInnerMaxBoundBuffer"), HashTableSize);
+	HTOccupancyBufferRef = InitUAVBuffer<uint32>(RHICmdList, TEXT("HTOccupancy"), HashTableSize);
 }
 
 void FPUBuffers::ReleaseRHI()
@@ -110,8 +119,13 @@ void FPUBuffers::ReleaseRHI()
 	CPVelocitiesAndMassesBufferRef.SafeRelease();
 
 	// HashTable Buffers
-	//HashTableBufferRef.SafeRelease();
-	//HashTableOccupancyBufferRef.SafeRelease();
+	HTIndexAndRoomBufferRef.SafeRelease();
+	HTPositionAndMassBufferRef.SafeRelease();
+	HTVelocityBufferRef.SafeRelease();
+	HTMinBoundBufferRef.SafeRelease();
+	HTMaxBoundBufferRef.SafeRelease();
+	HTInnerMinBoundBufferRef.SafeRelease();
+	HTInnerMaxBoundBufferRef.SafeRelease();
 }
 
 // --------------------------------------------------------------- //
@@ -136,17 +150,49 @@ void FPUData::Update(FNiagaraSystemInstance* SystemInstance, FPUArrays* OtherDat
 		PUArrays->CopyFrom(OtherData);
 		PUArrays->TimeStep = SystemInstance->GetLastRenderTime();
 		PUArrays->Time = (int) std::time(0);
+
+		/** Enqueue a render command that resizes the buffers if it is needed. */
 		if (OtherData->bActiveVoxelIndicesBufferNeedsResize)
 		{
 			ENQUEUE_RENDER_COMMAND(FUpdateActiveVoxelIndicesBufferSize)
 			(
 				[Buffers = PUBuffers, Arrays = PUArrays](FRHICommandListImmediate& RHICmdList) {
 					Buffers->ActiveVoxelIndicesBufferRef.SafeRelease();
+					Buffers->HTIndexAndRoomBufferRef.SafeRelease();
+					Buffers->HTPositionAndMassBufferRef.SafeRelease();
+					Buffers->HTVelocityBufferRef.SafeRelease();
+					Buffers->HTMinBoundBufferRef.SafeRelease();
+					Buffers->HTMaxBoundBufferRef.SafeRelease();
+					Buffers->HTInnerMinBoundBufferRef.SafeRelease();
+					Buffers->HTInnerMaxBoundBufferRef.SafeRelease();
+
 					Buffers->ActiveVoxelIndicesBufferRef = Buffers->InitSRVBuffer<FVector4f>(
-						RHICmdList, TEXT("ActiveVoxelIndicesBuffer"),
-						Arrays->ActiveVoxelIndices.Num());
+						RHICmdList, TEXT("ActiveVoxelIndicesBuffer"), Arrays->ActiveVoxelIndices.Num());
+
+					Buffers->HashTableSize = Buffers->HashTableSize;
+
+					Buffers->HTIndexAndRoomBufferRef = Buffers->InitUAVBuffer<FIntVector4>(
+						RHICmdList, TEXT("HTIndexAndRoomBuffer"), Buffers->HashTableSize);
+
+					Buffers->HTPositionAndMassBufferRef = Buffers->InitUAVBuffer<FVector4f>(
+						RHICmdList, TEXT("HTPositionAndMassBuffer"), Buffers->HashTableSize);
+
+					Buffers->HTVelocityBufferRef = Buffers->InitUAVBuffer<FVector4f>(
+						RHICmdList, TEXT("HTVelocityBuffer"), Buffers->HashTableSize);
+
+					Buffers->HTMinBoundBufferRef = Buffers->InitUAVBuffer<FVector4f>(
+						RHICmdList, TEXT("HTMinBoundBuffer"), Buffers->HashTableSize);
+
+					Buffers->HTMaxBoundBufferRef = Buffers->InitUAVBuffer<FVector4f>(
+						RHICmdList, TEXT("HTMaxBoundBuffer"), Buffers->HashTableSize);
+
+					Buffers->HTInnerMinBoundBufferRef = Buffers->InitUAVBuffer<FVector4f>(
+						RHICmdList, TEXT("HTInnerMinBoundBuffer"), Buffers->HashTableSize);
+
+					Buffers->HTInnerMaxBoundBufferRef = Buffers->InitUAVBuffer<FVector4f>(
+						RHICmdList, TEXT("HTInnerMaxBoundBuffer"), Buffers->HashTableSize);
 				});
-			UE_LOG(LogTemp, Warning, TEXT("Active Voxel Indices Buffer needs resize!"));
+			UE_LOG(LogTemp, Warning, TEXT("HashTable Buffers needed resize!"));
 		}
 
 		if (OtherData->bCoarseParticlesBufferNeedsReisze)
@@ -165,6 +211,8 @@ void FPUData::Update(FNiagaraSystemInstance* SystemInstance, FPUArrays* OtherDat
 						Arrays->CPVelocitiesAndMasses.Num());
 				}
 			);
+			UE_LOG(LogTemp, Warning, TEXT("Coarse Particle Buffers needed resize!"));
+
 		}
 	}
 }
@@ -249,6 +297,7 @@ void FParticleUpsamplingProxy::ConsumePerInstanceDataFromGameThread(
 // ---------------- PARTICLE Upsampling INTERFACE ----------------- //
 // --------------------------------------------------------------- //
 
+/** NDI Constructor. */
 UParticleUpsamplingInterface::UParticleUpsamplingInterface(
 	FObjectInitializer const& ObjectInitializer)
 {
@@ -256,6 +305,10 @@ UParticleUpsamplingInterface::UParticleUpsamplingInterface(
 	LocalData = new FPUArrays();
 }
 
+/**
+ * This function initializes the PerInstanceData for each instance of this NDI.
+ * This means that this function will run when hitting the start button.
+ */
 bool UParticleUpsamplingInterface::InitPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
@@ -265,7 +318,10 @@ bool UParticleUpsamplingInterface::InitPerInstanceData(
 	return true;
 }
 
-// clean up RT instances
+/** 
+ * This function cleans the data on the RT for each instance of this NDI. 
+ * This means that this function will run hitting the pause button.
+ */
 void UParticleUpsamplingInterface::DestroyPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
@@ -287,7 +343,7 @@ void UParticleUpsamplingInterface::DestroyPerInstanceData(
 			}
 		});
 }
-
+/** This function runs every tick for every instance of this NDI. */
 bool UParticleUpsamplingInterface::PerInstanceTick(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds)
 {
@@ -299,13 +355,14 @@ bool UParticleUpsamplingInterface::PerInstanceTick(
 		return true;
 	}
 	PUData->Update(SystemInstance, LocalData);
-
+	
 	// Must reset these here!
 	LocalData->bActiveVoxelIndicesBufferNeedsResize = false;
 	LocalData->bCoarseParticlesBufferNeedsReisze = false;
 	return false;
 }
 
+/** This function runs every tick, post simulate, for every instance of this NDI. */
 bool UParticleUpsamplingInterface::PerInstanceTickPostSimulate(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds)
 {
@@ -334,7 +391,7 @@ void UParticleUpsamplingInterface::ProvidePerInstanceDataForRenderThread(
 	}
 }
 
-// this registers our custom DI with Niagara
+/** Funcition for registering our custom DI with Niagara */
 void UParticleUpsamplingInterface::PostInitProperties()
 {
 	Super::PostInitProperties();
@@ -348,7 +405,7 @@ void UParticleUpsamplingInterface::PostInitProperties()
 }
 
 #if WITH_EDITORONLY_DATA
-// this lists all the functions our DI provides (currently only one)
+/** This lists all the functions that will be visible when using the NDI. */
 void UParticleUpsamplingInterface::GetFunctionsInternal(
 	TArray<FNiagaraFunctionSignature>& OutFunctions) const
 {
@@ -408,6 +465,30 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 			FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("FineParticleRadius")));
 		OutFunctions.Add(Sig);
 	}
+
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = UpdateGridName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(
+			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddInput(
+			FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Index")));
+		OutFunctions.Add(Sig);
+	}
+
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = LookupRoomName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(
+			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("Index")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Room")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("Success")));
+
+		OutFunctions.Add(Sig);
+	}
 }
 #endif
 
@@ -424,11 +505,6 @@ bool UParticleUpsamplingInterface::AppendCompileHash(
 	return bSuccess;
 }
 
-// This can be used to provide the hlsl code for gpu scripts. If the DI supports only cpu
-// implementations, this is not needed. We don't need to actually print our function code to OutHLSL
-// here because we use a template file that gets appended in GetParameterDefinitionHLSL(). If the
-// hlsl function is so simple that it does not need bound shader parameters, then this method can be
-// used instead of GetParameterDefinitionHLSL.
 bool UParticleUpsamplingInterface::GetFunctionHLSL(
 	const FNiagaraDataInterfaceGPUParamInfo& ParamInfo,
 	const FNiagaraDataInterfaceGeneratedFunction& FunctionInfo, int FunctionInstanceIndex,
@@ -438,10 +514,12 @@ bool UParticleUpsamplingInterface::GetFunctionHLSL(
 			FunctionInfo.DefinitionName == GetFineParticleVelocityAndMassName ||
 			FunctionInfo.DefinitionName == GetNumCoarseParticlesName ||
 			FunctionInfo.DefinitionName == GetActiveVoxelIndexName ||
-			FunctionInfo.DefinitionName == GetFineParticleRadiusName;
+			FunctionInfo.DefinitionName == GetFineParticleRadiusName ||
+			FunctionInfo.DefinitionName == UpdateGridName ||
+			FunctionInfo.DefinitionName == LookupRoomName;
 }
 
-// this loads our hlsl template script file and
+/** Loads our hlsl template script file and replaces all template arguments accordingly. */
 void UParticleUpsamplingInterface::GetParameterDefinitionHLSL(
 	const FNiagaraDataInterfaceGPUParamInfo& ParamInfo, FString& OutHLSL)
 {
@@ -484,36 +562,15 @@ void UParticleUpsamplingInterface::SetShaderParameters(
 	//ShaderParameters->AnimationSpeed		=	PUData.PUArrays->EaseStepSize;
 
 	// HashTable Shader Parameters
-	//ShaderParameters->HashTableBuffer =			PUData.PUBuffers->HashTableBufferRef;
-	//ShaderParameters->HashTableOccupancy =		PUData.PUBuffers->HashTableOccupancyBufferRef;
-	//ShaderParameters->TableSize =				PUData.PUArrays->TableSize;
-}
-
-bool UParticleUpsamplingInterface::Equals(const UNiagaraDataInterface* Other) const
-{
-	if (!Super::Equals(Other))
-	{
-		return false;
-	}
-	const UParticleUpsamplingInterface* OtherTyped =
-		CastChecked<const UParticleUpsamplingInterface>(Other);
-
-	// COMPARE OTHER VARIABLES BELOW!
-	return true;
-}
-
-bool UParticleUpsamplingInterface::CopyToInternal(
-	UNiagaraDataInterface* Destination) const
-{
-	if (!Super::CopyToInternal(Destination))
-	{
-		return false;
-	}
-
-	UParticleUpsamplingInterface* OtherTyped = CastChecked<UParticleUpsamplingInterface>(Destination);
-
-	// SET OTHER VARIABLES BEFORE RETURNING!
-	return true;
+	ShaderParameters->HTIndexAndRoom		=	PUData.PUBuffers->HTIndexAndRoomBufferRef;
+	ShaderParameters->HTPositionAndMass		=	PUData.PUBuffers->HTPositionAndMassBufferRef;
+	ShaderParameters->HTVelocity			=	PUData.PUBuffers->HTVelocityBufferRef;
+	ShaderParameters->HTMinBound			=	PUData.PUBuffers->HTMinBoundBufferRef;
+	ShaderParameters->HTMaxBound			=	PUData.PUBuffers->HTMaxBoundBufferRef;
+	ShaderParameters->HTInnerMinBound		=	PUData.PUBuffers->HTInnerMinBoundBufferRef;
+	ShaderParameters->HTInnerMaxBound		=	PUData.PUBuffers->HTInnerMaxBoundBufferRef;
+	ShaderParameters->HTOccupancy			=	PUData.PUBuffers->HTOccupancyBufferRef;
+	ShaderParameters->TableSize				=	PUData.PUBuffers->HashTableSize;
 }
 
 // ---------- STATIC FUNCTIONALITY BELOW ----------

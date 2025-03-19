@@ -7,21 +7,9 @@
 #include "NiagaraDataInterfaceRW.h"
 #include "ParticleUpsamplingInterface.generated.h"
 
-// This struct are not used to push data, only for calculating bytes when allocating buffers.
-struct VoxelEntry
-{
-	FVector4f IndexAndRoom;
-	FVector4f PositionAndMass;
-	FVector4f Velocity;
-	FVector4f MinBound;
-	FVector4f MaxBound;
-	FVector4f InnerMinBound;
-	FVector4f InnerMaxBound;
-};
-
 struct FPUBuffers : public FRenderResource
 {
-	const int INITIAL_VOXEL_BUFFER_SIZE = 124;
+	const int INITIAL_VOXEL_BUFFER_SIZE = 128;
 	const int INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1024;
 
 	/** Init the buffer */
@@ -52,20 +40,29 @@ struct FPUBuffers : public FRenderResource
 	FShaderResourceViewRHIRef CPPositionsAndRadiusBufferRef;
 	FShaderResourceViewRHIRef CPVelocitiesAndMassesBufferRef;
 
-	FUnorderedAccessViewRHIRef HashTableBufferRef;
-	FUnorderedAccessViewRHIRef HashTableOccupancyBufferRef;
+	// HashTable RW Buffers
+	FUnorderedAccessViewRHIRef HTIndexAndRoomBufferRef;
+	FUnorderedAccessViewRHIRef HTPositionAndMassBufferRef;
+	FUnorderedAccessViewRHIRef HTVelocityBufferRef;
+	FUnorderedAccessViewRHIRef HTMinBoundBufferRef;
+	FUnorderedAccessViewRHIRef HTMaxBoundBufferRef;
+	FUnorderedAccessViewRHIRef HTInnerMinBoundBufferRef;
+	FUnorderedAccessViewRHIRef HTInnerMaxBoundBufferRef;
+	FUnorderedAccessViewRHIRef HTOccupancyBufferRef;
+
+	uint32 HashTableSize = 0;
 };
 
 /** Struct that contains the data that exists on the CPU */
 struct FPUArrays
 {
-	const int INITIAL_VOXEL_BUFFER_SIZE = 124;
-	const int INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1;
+	const int INITIAL_VOXEL_BUFFER_SIZE = 128;
+	const int INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1024;
 
 	TArray<FVector4f> CPPositionsAndRadius;
 	TArray<FVector4f> CPVelocitiesAndMasses;
 	TArray<FVector4f> ActiveVoxelIndices;
-	
+
 	int Time = 0;
 	float VoxelSize = 0;
 	float FineParticleMass = 0;
@@ -156,10 +153,17 @@ class AGXSHADERS_API UParticleUpsamplingInterface : public UNiagaraDataInterface
 		//SHADER_PARAMETER(float,									AnimationSpeed)
 		// SHADER_PARAMETER(int,									Time)
 		// SHADER_PARAMETER(float,									TimeStep)
+		
 		// HashTable Buffers
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<VoxelEntry>,	HashTableBuffer)
-		//SHADER_PARAMETER_UAV(RWStructuredBuffer<unsigned int>,	HashTableOccupancy)
-		//SHADER_PARAMETER(unsigned int,							TableSize)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FIntVector4>,	HTIndexAndRoom)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,		HTPositionAndMass)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,		HTVelocity)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,		HTMinBound)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,		HTMaxBound)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,		HTInnerMinBound)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,		HTInnerMaxBound)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<uint32>,		HTOccupancy)
+		SHADER_PARAMETER(uint32,								TableSize)
 	END_SHADER_PARAMETER_STRUCT()
 
 public:
@@ -213,7 +217,6 @@ public:
 	virtual void ProvidePerInstanceDataForRenderThread(
 		void* DataForRenderThread, void* PerInstanceData,
 		const FNiagaraSystemInstanceID& SystemInstance) override;
-	virtual bool Equals(const UNiagaraDataInterface* Other) const override;
 	// UNiagaraDataInterface Interface
 
 	static void SetCoarseParticles(
@@ -228,9 +231,6 @@ protected:
 	virtual void GetFunctionsInternal(
 		TArray<FNiagaraFunctionSignature>& OutFunctions) const override;
 #endif
-	/** Copy one niagara DI to this */
-	virtual bool CopyToInternal(UNiagaraDataInterface* Destination) const override;
-
 private:
 	static FPUArrays* LocalData;
 
@@ -239,6 +239,7 @@ private:
 	static const FName GetNumCoarseParticlesName;
 	static const FName GetActiveVoxelIndexName;
 	static const FName GetFineParticleRadiusName;
-
+	static const FName UpdateGridName;
+	static const FName LookupRoomName;
 	const static float PACKING_RATIO;
 };

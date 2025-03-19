@@ -1,5 +1,21 @@
 #pragma once
 
+uint ComputeHTHash(int3 In_Key, uint TableSize)
+{
+    int Prime = 2362873;
+    uint HashValue = 1;
+    
+    HashValue = (HashValue * Prime) + In_Key.x;
+    HashValue = (HashValue * Prime) + In_Key.y;
+    HashValue = (HashValue * Prime) + In_Key.z;
+    
+    HashValue = (HashValue ^ (HashValue >> 17)) * Prime;
+    HashValue = (HashValue ^ (HashValue >> 13)) * Prime;
+    HashValue = HashValue ^ (HashValue >> 16);
+    
+    return HashValue & (TableSize - 1);
+}
+
 uint Hash(uint In_X)
 {
     In_X += (In_X << 10u);
