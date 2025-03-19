@@ -213,14 +213,12 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		// OpenPLX runtime library files:
 		RuntimeLibFiles.Add("agxOpenPLX", LibSource.AGX);
-		RuntimeLibFiles.Add("abseil_dll", LibSource.AGX);
 		RuntimeLibFiles.Add("click", LibSource.AGX);
 		RuntimeLibFiles.Add("console_bridge", LibSource.AGX);
 		RuntimeLibFiles.Add("DriveTrain", LibSource.AGX);
 		RuntimeLibFiles.Add("fmt", LibSource.AGX);
 		RuntimeLibFiles.Add("hash-library", LibSource.AGX);
 		RuntimeLibFiles.Add("libprotobuf", LibSource.AGX);
-		RuntimeLibFiles.Add("libzmq-v143-mt-4_3_4", LibSource.AGX);
 		RuntimeLibFiles.Add("Math", LibSource.AGX);
 		RuntimeLibFiles.Add("openplx.analysis", LibSource.AGX);
 		RuntimeLibFiles.Add("openplx.bundle", LibSource.AGX);
@@ -244,24 +242,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("urdfdom_model", LibSource.AGX);
 		RuntimeLibFiles.Add("Vehicles", LibSource.AGX);
 		RuntimeLibFiles.Add("Visuals", LibSource.AGX);
-		RuntimeLibFiles.Add("zmqpp", LibSource.AGX);
-
-		if (TargetAGXVersion.IsNewerOrEqualTo(2, 38, 0, 0))
-		{
-			RuntimeLibFiles.Add("orocos*", LibSource.AGX);
-		}
-
-		if (TargetAGXVersion.IsOlderThan(2, 32, 0, 0))
-		{
-			RuntimeLibFiles.Add("vdbgrid", LibSource.AGX);
-			RuntimeLibFiles.Add("openvdb", LibSource.TerrainDependencies);
-			RuntimeLibFiles.Add("Half", LibSource.TerrainDependencies);
-			RuntimeLibFiles.Add("Iex-2_2", LibSource.TerrainDependencies);
-			RuntimeLibFiles.Add("Imath-2_2", LibSource.TerrainDependencies);
-			RuntimeLibFiles.Add("IlmImf-2_2", LibSource.TerrainDependencies);
-			RuntimeLibFiles.Add("IlmThread-2_2", LibSource.TerrainDependencies);
-			RuntimeLibFiles.Add("tbb", LibSource.TerrainDependencies);
-		}
+		RuntimeLibFiles.Add("orocos*", LibSource.AGX);
 
 		// List of link-time libraries from AGX Dynamics and its dependencies
 		// that we need. These will be added to the Unreal Engine

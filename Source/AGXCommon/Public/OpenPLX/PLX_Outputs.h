@@ -11,6 +11,9 @@
 
 #include "PLX_Outputs.generated.h"
 
+/**
+ * EXPERIMENTAL
+ */
 USTRUCT(BlueprintType)
 struct AGXCOMMON_API FPLX_Output
 {
@@ -27,6 +30,6 @@ struct AGXCOMMON_API FPLX_Output
 	FString Name;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPXL")
-	EPLX_OutputType Type {EPLX_OutputType::Invalid};
+	EPLX_OutputType Type {EPLX_OutputType::Unsupported};
 };
 

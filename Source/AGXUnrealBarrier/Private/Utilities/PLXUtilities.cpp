@@ -12,6 +12,7 @@
 #include "openplx/OpenPlxContextInternal.h"
 #include "openplx/OpenPlxCoreAPI.h"
 #include "agxOpenPLX/AgxOpenPlxApi.h"
+#include "agxOpenPLX/AllocationUtils.h"
 #include "Math/Math_all.h"
 #include "Physics/Physics_all.h"
 #include "Physics1D/Physics1D_all.h"
@@ -136,7 +137,7 @@ TArray<FPLX_Input> FPLXUtilities::GetInputs(openplx::Physics3D::System* System)
 		{
 			UE_LOG(LogAGX, Warning, TEXT("Unsupported PLX Input: %s"), *Convert(Input->getName()));
 			Inputs.Add(
-				FPLX_Input(Convert(Input->getName()), EPLX_InputType::Invalid));
+				FPLX_Input(Convert(Input->getName()), EPLX_InputType::Unsupported));
 		}
 	}
 	return Inputs;
@@ -159,7 +160,7 @@ TArray<FPLX_Output> FPLXUtilities::GetOutputs(openplx::Physics3D::System* System
 		else
 		{
 			UE_LOG(LogAGX, Warning, TEXT("Unsupported PLX Output: %s"), *Convert(Output->getName()));
-			Outputs.Add(FPLX_Output(Convert(Output->getName()), EPLX_OutputType::Invalid));
+			Outputs.Add(FPLX_Output(Convert(Output->getName()), EPLX_OutputType::Unsupported));
 		}
 	}
 	return Outputs;
@@ -187,13 +188,13 @@ void FPLXUtilities::GetNestedObjectFields(
 		Output.insert(Field);
 		GetNestedObjectFields(*Field, Output);
 	}
+
+	agxopenplx::freeContainerMemory(Fields);
 }
 
 std::vector<openplx::Core::ObjectPtr> FPLXUtilities::GetObjectFields(openplx::Core::Object& Object)
 {
 	std::vector<openplx::Core::ObjectPtr> Result;
-	Result.reserve(100); // TODO: DONT MERGE! call freeContainerMemory instead once it is available.
-
 	if (auto System = dynamic_cast<openplx::Physics3D::System*>(&Object))
 	{
 		// See openplx::Physics3D::System::extractObjectFieldsTo.

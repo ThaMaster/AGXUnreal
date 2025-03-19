@@ -16,10 +16,13 @@
 struct FAGX_ImportContext;
 
 /**
+ * EXPERIMENTAL
+ * 
  * Todo: Add description.
  */
 UCLASS(
-	ClassGroup = "OpenPLX", Category = "OpenPLX", Meta = (BlueprintSpawnableComponent),
+	ClassGroup = "OpenPLX", Category = "OpenPLX", Experimental,
+	Meta = (BlueprintSpawnableComponent),
 	Hidecategories = (Cooking, Collision, LOD, Physics, Rendering, Replication))
 class AGXUNREAL_API UPLX_SignalHandlerComponent : public UActorComponent
 {
@@ -44,7 +47,8 @@ public:
 	virtual void BeginPlay() override;
 	//~ End UActorComponent Interface
 
-	void CopyFrom(const TArray<FPLX_Input>& Inputs, TArray<FPLX_Output> Outputs, FAGX_ImportContext* Context);
+	void CopyFrom(
+		const TArray<FPLX_Input>& Inputs, TArray<FPLX_Output> Outputs, FAGX_ImportContext* Context);
 
 private:
 	FPLXSignalHandler SignalHandler;

@@ -11,6 +11,9 @@
 
 #include "PLX_Inputs.generated.h"
 
+/**
+ * EXPERIMENTAL
+ */
 USTRUCT(BlueprintType)
 struct AGXCOMMON_API FPLX_Input
 {
@@ -28,5 +31,5 @@ struct AGXCOMMON_API FPLX_Input
 	FString Name;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPXL")
-	EPLX_InputType Type {EPLX_InputType::Invalid};
+	EPLX_InputType Type {EPLX_InputType::Unsupported};
 };

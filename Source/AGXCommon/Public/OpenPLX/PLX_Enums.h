@@ -9,13 +9,13 @@
 UENUM()
 enum class EPLX_InputType
 {
-	Invalid,
+	Unsupported,
 	LinearVelocity1DInput
 };
 
 UENUM()
 enum class EPLX_OutputType
 {
-	Invalid,
+	Unsupported,
 	AngleOutput
 };
