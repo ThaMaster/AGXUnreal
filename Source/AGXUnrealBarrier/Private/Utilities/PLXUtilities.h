@@ -29,6 +29,15 @@ namespace openplx
 	{
 		class Object;
 	}
+
+	namespace Physics
+	{
+		namespace Signals
+		{
+			class Input;
+			class Output;
+		}
+	}
 }
 
 class FPLXUtilities
@@ -42,6 +51,9 @@ public:
 
 	static TArray<FPLX_Input> GetInputs(openplx::Physics3D::System* System);
 	static TArray<FPLX_Output> GetOutputs(openplx::Physics3D::System* System);
+
+	static EPLX_InputType GetInputType(const openplx::Physics::Signals::Input& Input);
+	static EPLX_OutputType GetOutputType(const openplx::Physics::Signals::Output& Output);
 
 	/**
 	* Based on Object::getNestedObjects in OpenPLX, but calling that function crashes due to different allocators used.

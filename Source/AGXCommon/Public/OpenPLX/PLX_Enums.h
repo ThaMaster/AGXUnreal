@@ -39,9 +39,7 @@ enum class EPLX_OutputType
 {
 	Unsupported,
 	/* Real Outputs */
-	Acceleration3DOutput,
 	AngleOutput,
-	AngularAcceleration3DOutput,
 	AngularVelocity1DOutput,
 	DurationOutput,
 	AutomaticClutchEngagementDurationOutput, // Child of DurationOutput
@@ -59,6 +57,10 @@ enum class EPLX_OutputType
 	/* Vec3 Real Outputs */
 	AngularVelocity3DOutput,
 	LinearVelocity3DOutput,
+	MateConnectorAcceleration3DOutput,
+	MateConnectorAngularAcceleration3DOutput,
+	MateConnectorPositionOutput,
+	MateConnectorRPYOutput,
 	/* Integer Outputs */
 	IntOutput,
 	/* Boolean Outputs */

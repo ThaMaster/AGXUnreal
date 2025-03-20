@@ -13,11 +13,30 @@
 #include "openplx/OpenPlxCoreAPI.h"
 #include "agxOpenPLX/AgxOpenPlxApi.h"
 #include "agxOpenPLX/AllocationUtils.h"
+#include "DriveTrain/Signals/AutomaticClutchEngagementDurationInput.h"
+#include "DriveTrain/Signals/AutomaticClutchDisengagementDurationInput.h"
+#include "DriveTrain/Signals/TorqueConverterPumpTorqueOutput.h"
+#include "DriveTrain/Signals/TorqueConverterTurbineTorqueOutput.h"
 #include "Math/Math_all.h"
+
 #include "Physics/Physics_all.h"
+#include "Physics/Signals/AngularVelocity1DInput.h"
+#include "Physics/Signals/EnableInteractionInput.h"
+#include "Physics/Signals/Force1DInput.h"
+#include "Physics/Signals/Force1DOutput.h"
+#include "Physics/Signals/IntInput.h"
+#include "Physics/Signals/LinearVelocity1DInput.h"
+#include "Physics/Signals/Position1DInput.h"
+#include "Physics/Signals/Position1DOutput.h"
+#include "Physics/Signals/Torque1DInput.h"
 #include "Physics1D/Physics1D_all.h"
 #include "Physics3D/Physics3D_all.h"
-#include "Physics/Signals/LinearVelocity1DInput.h"
+#include "Physics3D/Signals/AngularVelocity3DInput.h"
+#include "Physics3D/Signals/AngularVelocity3DOutput.h"
+#include "Physics3D/Signals/LinearVelocity3DOutput.h"
+#include "Physics3D/Signals/Position3DOutput.h"
+#include "Physics3D/Signals/RPYOutput.h"
+
 #include "DriveTrain/DriveTrain_all.h"
 #include "Robotics/Robotics_all.h"
 #include "Simulation/Simulation_all.h"
@@ -128,16 +147,17 @@ TArray<FPLX_Input> FPLXUtilities::GetInputs(openplx::Physics3D::System* System)
 	Inputs.Reserve(InputsPLX.size());
 	for (auto& Input : InputsPLX)
 	{
-		if (auto Lvmvi =
-				std::dynamic_pointer_cast<openplx::Physics::Signals::LinearVelocity1DInput>(Input))
+		if (Input == nullptr)
+			continue;
+
+		EPLX_InputType Type = GetInputType(*Input);
+		Inputs.Add(FPLX_Input(Convert(Input->getName()), Type));
+		if (Type == EPLX_InputType::Unsupported)
 		{
-			Inputs.Add(
-				FPLX_Input(Convert(Input->getName()), EPLX_InputType::LinearVelocity1DInput));
-		}
-		else
-		{
-			UE_LOG(LogAGX, Warning, TEXT("Unsupported PLX Input: %s"), *Convert(Input->getName()));
-			Inputs.Add(FPLX_Input(Convert(Input->getName()), EPLX_InputType::Unsupported));
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("Imported unsupported PLX Input: %s. The Input may not work as expected."),
+				*Convert(Input->getName()));
 		}
 	}
 	return Inputs;
@@ -153,18 +173,221 @@ TArray<FPLX_Output> FPLXUtilities::GetOutputs(openplx::Physics3D::System* System
 	Outputs.Reserve(OutputsPLX.size());
 	for (auto& Output : OutputsPLX)
 	{
-		if (auto Hao = std::dynamic_pointer_cast<openplx::Physics::Signals::AngleOutput>(Output))
-		{
-			Outputs.Add(FPLX_Output(Convert(Output->getName()), EPLX_OutputType::AngleOutput));
-		}
-		else
+		if (Output == nullptr)
+			continue;
+
+		EPLX_OutputType Type = GetOutputType(*Output);
+		Outputs.Add(FPLX_Output(Convert(Output->getName()), Type));
+		if (Type == EPLX_OutputType::Unsupported)
 		{
 			UE_LOG(
-				LogAGX, Warning, TEXT("Unsupported PLX Output: %s"), *Convert(Output->getName()));
-			Outputs.Add(FPLX_Output(Convert(Output->getName()), EPLX_OutputType::Unsupported));
+				LogAGX, Warning,
+				TEXT("Imported unsupported PLX Output: %s. The Output may not work as expected."),
+				*Convert(Output->getName()));
 		}
 	}
 	return Outputs;
+}
+
+EPLX_InputType FPLXUtilities::GetInputType(const openplx::Physics::Signals::Input& Input)
+{
+	using namespace openplx::Physics::Signals;
+	using namespace openplx::Physics3D::Signals;
+	using namespace openplx::DriveTrain::Signals;
+
+	if (dynamic_cast<const AutomaticClutchEngagementDurationInput*>(&Input))
+	{
+		return EPLX_InputType::AutomaticClutchEngagementDurationInput;
+	}
+	if (dynamic_cast<const AutomaticClutchDisengagementDurationInput*>(&Input))
+	{
+		return EPLX_InputType::AutomaticClutchDisengagementDurationInput;
+	}
+	if (dynamic_cast<const DurationInput*>(&Input))
+	{
+		return EPLX_InputType::DurationInput;
+	}
+	if (dynamic_cast<const AngleInput*>(&Input))
+	{
+		return EPLX_InputType::AngleInput;
+	}
+	if (dynamic_cast<const AngularVelocity1DInput*>(&Input))
+	{
+		return EPLX_InputType::AngularVelocity1DInput;
+	}
+	if (dynamic_cast<const FractionInput*>(&Input))
+	{
+		return EPLX_InputType::FractionInput;
+	}
+	if (dynamic_cast<const Force1DInput*>(&Input))
+	{
+		return EPLX_InputType::Force1DInput;
+	}
+	if (dynamic_cast<const LinearVelocity1DInput*>(&Input))
+	{
+		return EPLX_InputType::LinearVelocity1DInput;
+	}
+	if (dynamic_cast<const Position1DInput*>(&Input))
+	{
+		return EPLX_InputType::Position1DInput;
+	}
+	if (dynamic_cast<const Torque1DInput*>(&Input))
+	{
+		return EPLX_InputType::Torque1DInput;
+	}
+	if (dynamic_cast<const AngularVelocity3DInput*>(&Input))
+	{
+		return EPLX_InputType::AngularVelocity3DInput;
+	}
+	if (dynamic_cast<const LinearVelocity3DInput*>(&Input))
+	{
+		return EPLX_InputType::LinearVelocity3DInput;
+	}
+	if (dynamic_cast<const IntInput*>(&Input))
+	{
+		return EPLX_InputType::IntInput;
+	}
+	if (dynamic_cast<const TorqueConverterLockUpInput*>(&Input))
+	{
+		return EPLX_InputType::TorqueConverterLockUpInput;
+	}
+	if (dynamic_cast<const EngageInput*>(&Input))
+	{
+		return EPLX_InputType::EngageInput;
+	}
+	if (dynamic_cast<const ActivateInput*>(&Input))
+	{
+		return EPLX_InputType::ActivateInput;
+	}
+	if (dynamic_cast<const EnableInteractionInput*>(&Input))
+	{
+		return EPLX_InputType::EnableInteractionInput;
+	}
+	if (dynamic_cast<const BoolInput*>(&Input))
+	{
+		return EPLX_InputType::BoolInput;
+	}
+
+	return EPLX_InputType::Unsupported;
+}
+
+EPLX_OutputType FPLXUtilities::GetOutputType(const openplx::Physics::Signals::Output& Output)
+{
+	using namespace openplx::Physics::Signals;
+	using namespace openplx::Physics3D::Signals;
+	using namespace openplx::DriveTrain::Signals;
+
+	if (dynamic_cast<const AutomaticClutchEngagementDurationOutput*>(&Output))
+	{
+		return EPLX_OutputType::AutomaticClutchEngagementDurationOutput;
+	}
+	if (dynamic_cast<const AutomaticClutchDisengagementDurationOutput*>(
+			&Output))
+	{
+		return EPLX_OutputType::AutomaticClutchDisengagementDurationOutput;
+	}
+	if (dynamic_cast<const DurationOutput*>(&Output))
+	{
+		return EPLX_OutputType::DurationOutput;
+	}
+	if (dynamic_cast<const MateConnector::Acceleration3DOutput*>(&Output))
+	{
+		return EPLX_OutputType::MateConnectorAcceleration3DOutput;
+	}
+	if (dynamic_cast<const AngleOutput*>(&Output))
+	{
+		return EPLX_OutputType::AngleOutput;
+	}
+	if (dynamic_cast<const MateConnector::AngularAcceleration3DOutput*>(&Output))
+	{
+		return EPLX_OutputType::MateConnectorAngularAcceleration3DOutput;
+	}
+	if (dynamic_cast<const MateConnector::PositionOutput*>(&Output))
+	{
+		return EPLX_OutputType::MateConnectorPositionOutput;
+	}
+	if (dynamic_cast<const MateConnector::RPYOutput*>(&Output))
+	{
+		return EPLX_OutputType::MateConnectorRPYOutput;
+	}
+	if (dynamic_cast<const AngularVelocity1DOutput*>(&Output))
+	{
+		return EPLX_OutputType::AngularVelocity1DOutput;
+	}
+	if (dynamic_cast<const FractionOutput*>(&Output))
+	{
+		return EPLX_OutputType::FractionOutput;
+	}
+	if (dynamic_cast<const Force1DOutput*>(&Output))
+	{
+		return EPLX_OutputType::Force1DOutput;
+	}
+	if (dynamic_cast<const LinearVelocity1DOutput*>(&Output))
+	{
+		return EPLX_OutputType::LinearVelocity1DOutput;
+	}
+	if (dynamic_cast<const Position1DOutput*>(&Output))
+	{
+		return EPLX_OutputType::Position1DOutput;
+	}
+	if (dynamic_cast<const Position3DOutput*>(&Output))
+	{
+		return EPLX_OutputType::Position3DOutput;
+	}
+	if (dynamic_cast<const RelativeVelocity1DOutput*>(&Output))
+	{
+		return EPLX_OutputType::RelativeVelocity1DOutput;
+	}
+	if (dynamic_cast<const RPYOutput*>(&Output))
+	{
+		return EPLX_OutputType::RPYOutput;
+	}
+	if (dynamic_cast<const Torque1DOutput*>(&Output))
+	{
+		return EPLX_OutputType::Torque1DOutput;
+	}
+	if (dynamic_cast<const TorqueConverterPumpTorqueOutput*>(&Output))
+	{
+		return EPLX_OutputType::TorqueConverterPumpTorqueOutput;
+	}
+	if (dynamic_cast<const TorqueConverterTurbineTorqueOutput*>(&Output))
+	{
+		return EPLX_OutputType::TorqueConverterTurbineTorqueOutput;
+	}
+	if (dynamic_cast<const AngularVelocity3DOutput*>(&Output))
+	{
+		return EPLX_OutputType::AngularVelocity3DOutput;
+	}
+	if (dynamic_cast<const LinearVelocity3DOutput*>(&Output))
+	{
+		return EPLX_OutputType::LinearVelocity3DOutput;
+	}
+	if (dynamic_cast<const IntOutput*>(&Output))
+	{
+		return EPLX_OutputType::IntOutput;
+	}
+	if (dynamic_cast<const TorqueConverterLockedUpOutput*>(&Output))
+	{
+		return EPLX_OutputType::TorqueConverterLockedUpOutput;
+	}
+	if (dynamic_cast<const EngagedOutput*>(&Output))
+	{
+		return EPLX_OutputType::EngagedOutput;
+	}
+	if (dynamic_cast<const ActivatedOutput*>(&Output))
+	{
+		return EPLX_OutputType::ActivatedOutput;
+	}
+	if (dynamic_cast<const InteractionEnabledOutput*>(&Output))
+	{
+		return EPLX_OutputType::InteractionEnabledOutput;
+	}
+	if (dynamic_cast<const BoolOutput*>(&Output))
+	{
+		return EPLX_OutputType::BoolOutput;
+	}
+
+	return EPLX_OutputType::Unsupported;
 }
 
 std::unordered_set<openplx::Core::ObjectPtr> FPLXUtilities::GetNestedObjectFields(
