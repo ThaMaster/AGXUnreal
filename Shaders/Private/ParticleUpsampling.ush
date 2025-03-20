@@ -6,19 +6,6 @@
 
 #define VOLUME_MOD 1.6119919540164696407169668466392849389446140723238615
 
-#define NAN asfloat(0xffffffff)
-#define GRP_SIZE_VOXELS 128
-#define GRP_SIZE_PARTICLES 1024
-#define EXTRA_PARTICLES_IN_VOXEL 0
-
-#define VELOCITY(p) ((p).xyz)
-#define MASS(p) ((p).w)
-
-#define CP_POSITION(p) ((p).xyz)
-#define FP_POSITION(p) ((p).xyz)
-#define RADIUS(p) ((p).w)
-#define EASE(p) ((p).w)
-
 // Particle Buffers
 StructuredBuffer<float4>            {ParameterName}_ActiveVoxelIndices;
 StructuredBuffer<float4>            {ParameterName}_CPPositionsAndRadius;
@@ -35,118 +22,48 @@ float                               {ParameterName}_TimeStep;
 float                               {ParameterName}_AnimationSpeed;
 
 // HashTable Buffers
-RWStructuredBuffer<int4>            {ParameterName}_HTIndexAndRoom;
-RWStructuredBuffer<float4>          {ParameterName}_HTPositionAndMass;
-RWStructuredBuffer<float4>          {ParameterName}_HTVelocity;
-RWStructuredBuffer<float4>          {ParameterName}_HTMinBound;
-RWStructuredBuffer<float4>          {ParameterName}_HTMaxBound;
-RWStructuredBuffer<float4>          {ParameterName}_HTInnerMinBound;
-RWStructuredBuffer<float4>          {ParameterName}_HTInnerMaxBound;
+RWStructuredBuffer<float4>          {ParameterName}_HTIndexAndRoom;
+RWStructuredBuffer<int>             {ParameterName}_HTOccupancy;
+int                                 {ParameterName}_TableSize;
 
-RWStructuredBuffer<uint>            {ParameterName}_HTOccupancy;
-uint                                {ParameterName}_TableSize;
-
-uint ComputeHTHash_{ParameterName}(int3 In_Key, uint TableSize)
+void LookupRoom_{ParameterName}(in int In_Index, out int Out_Room, out bool Out_Success)
 {
-    int Prime = 2362873;
-    uint HashValue = 1;
-    
-    HashValue = (HashValue * Prime) + In_Key.x;
-    HashValue = (HashValue * Prime) + In_Key.y;
-    HashValue = (HashValue * Prime) + In_Key.z;
-    
-    HashValue = (HashValue ^ (HashValue >> 17)) * Prime;
-    HashValue = (HashValue ^ (HashValue >> 13)) * Prime;
-    HashValue = HashValue ^ (HashValue >> 16);
-    
-    return HashValue & (TableSize - 1);
-}
-
-uint Hash_{ParameterName}(uint In_X)
-{
-    In_X += (In_X << 10u);
-    In_X ^= (In_X >> 6u);
-    In_X += (In_X << 3u);
-    In_X ^= (In_X >> 11u);
-    In_X += (In_X << 15u);
-    return In_X;
-}
-
-// Construct a float with half-open range [0:1] using low 23 bits.
-// All zeroes yields 0.0, all ones yields the next smallest representable value below 1.0.
-float FloatConstruct_{ParameterName}(uint In_M)
-{
-    const uint IeeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask
-    const uint IeeeOne = 0x3F800000u; // 1.0 in IEEE binary32
-
-    In_M &= IeeeMantissa; // Keep only mantissa bits (fractional part)
-    In_M |= IeeeOne; // Add fractional part to 1.0
-
-    float NewFloat = asfloat(In_M); // Range [1:2]
-    return NewFloat - 1.0; // Range [0:1]
-}
-
-float Random_{ParameterName}(uint In_X)
-{
-    return FloatConstruct(Hash(In_X));
-}
-
-float Distance2_{ParameterName}(float3 In_Point1, float3 In_Point2)
-{
-    float3 Vec = In_Point1 - In_Point2;
-    return dot(Vec, Vec);
-}
-
-int3 GetVoxelIndexFromWorldPos_{ParameterName}(float3 In_Position, float In_VoxelSize)
-{
-    In_Position /= In_VoxelSize;
-    In_Position += sign(In_Position) * 0.5;
-    
-    return int3((int) In_Position.x, (int) In_Position.y, (int) In_Position.z);
-}
-
-void LookupRoom_{ParameterName}(in float3 In_Index, out int Out_Room, out bool Out_Success)
-{
-    int3 Index = int3(In_Index);
-    uint HashValue = ComputeHTHash_{ParameterName}(Index, {ParameterName}_TableSize);
+    int MyId = In_Index;
     Out_Room = UNDEFINED_INT;
-    for (int i = 0; i < (int){ParameterName}_TableSize; i++)
+    if ({ParameterName}_HTOccupancy[MyId] == TAKEN)
     {
-        if ({ParameterName}_HTOccupancy[HashValue] == TAKEN && all({ParameterName}_HTIndexAndRoom[HashValue].xyz == Index))
-        {
-            Out_Room = {ParameterName}_HTIndexAndRoom[HashValue].w;
-            Out_Success = true;
-        }
-        if ({ParameterName}_HTOccupancy[HashValue] == EMPTY)
-        {
-            Out_Success = false;
-        }
-        HashValue = (HashValue + 1) & ({ParameterName}_TableSize - 1);
+        Out_Room = {ParameterName}_HTIndexAndRoom[MyId].w;
+        Out_Success = true;
     }
-    Out_Success = false;
+    else
+    {
+        Out_Room = 1337;
+        Out_Success = false;
+    }
 }
 
-void InsertIndex_{ParameterName}(int3 In_Index, int In_Room, float3 In_Position, float In_OriginalMass, float3 In_Velocity, float3 In_MinBound, float3 In_MaxBound, float3 In_InnerMinBound, float3 In_InnerMaxBound)
+void InsertIndex_{ParameterName}(in int In_Index, in int In_Room, out int Out_Prev, out bool Out_Success)
 {
-    uint HashValue = ComputeHTHash_{ParameterName}(In_Index, {ParameterName}_TableSize);
+    int MyId = In_Index;
     
-    [allow_uav_condition]
-    for (int i = 0; i < (int){ParameterName}_TableSize; i++)
+    int Prev;    
+    InterlockedCompareExchange({ParameterName}_HTOccupancy[MyId], EMPTY, TAKEN, Prev);
+    if (Prev == EMPTY)
     {
-        uint prev;
-        InterlockedCompareExchange({ParameterName}_HTOccupancy[HashValue], EMPTY, TAKEN, prev);
-        if (prev == EMPTY)
-        {
-            {ParameterName}_HTIndexAndRoom[HashValue] = int4(In_Index.x, In_Index.y, In_Index.z, In_Room);
-            {ParameterName}_HTPositionAndMass[HashValue] = float4(In_Position.x, In_Position.y, In_Position.z, In_OriginalMass);
-            return;
-        }
-        // Linearly probe forward
-        HashValue = (HashValue + 1) & ({ParameterName}_TableSize - 1);
+        {ParameterName}_HTIndexAndRoom[MyId] = float4(MyId, MyId, MyId, In_Room);
+        Out_Success = true;
+        Out_Prev = 333;
     }
-
+    else
+    {
+        float Room = {ParameterName}_HTIndexAndRoom[MyId].w;
+        {ParameterName}_HTIndexAndRoom[MyId] = float4(MyId, MyId, MyId, Room+1);
+        Out_Success = false;
+        Out_Prev = 999;
+    }
 }
 
+// Updates the grid in the world, run PER VOXEL
 void UpdateGrid_{ParameterName}(in int In_Index)
 {
     uint MyId = In_Index;
@@ -156,73 +73,9 @@ void UpdateGrid_{ParameterName}(in int In_Index)
     int3 VoxelIndex = {ParameterName}_ActiveVoxelIndices[MyId].xyz;
     float VoxelSize = {ParameterName}_VoxelSize;
     float3 VoxelPos = VoxelIndex * VoxelSize;
-    
-    float3 MinBound;
-    float3 MaxBound;
-    float Mass = 0.0;
-    float3 Velocity = float3(0.0, 0.0, 0.0);
-    float TotalWeight = 0.0;
-    
-    bool First = true;
-    for (int i = 0; i < {ParameterName}_NumCoarseParticles; i++)
-    {
-        float3 CP_Position = {ParameterName}_CPPositionsAndRadius[i].xyz;
-        float3 CP_Radius = {ParameterName}_CPPositionsAndRadius[i].w;
-        
-        float AABBRadius = VOLUME_MOD * CP_Radius / 2;
-        float3 ToEdge = abs(CP_Position - VoxelPos) - AABBRadius;
-        
-        // If the current particle intersects my voxel
-        if (!all(VoxelSize/ 2 > ToEdge))
-        {
-            float3 CP_Velocity = {ParameterName}_CPVelocitiesAndMasses[i].xyz;
-            float CP_Mass = {ParameterName}_CPVelocitiesAndMasses[i].w;
-            
-            float3 AABBMax = CP_Position + AABBRadius;
-            float3 AABBMin = CP_Position - AABBRadius;
-            AABBMax = min(AABBMax, VoxelPos + VoxelSize / 2);
-            AABBMin = min(AABBMin, VoxelPos - VoxelSize / 2);
-            float3 IntersectingBox = AABBMax - AABBMin;
-            float Weight = IntersectingBox.x * IntersectingBox.y * IntersectingBox.z / (AABBRadius * AABBRadius * AABBRadius * 8);
-            TotalWeight += Weight;
-            Mass += CP_Mass * Weight;
-            Velocity += CP_Velocity * Weight;
-            if (First)
-            {
-                MinBound = AABBMin;
-                MaxBound = AABBMax;
-                First = false;
-            }
-            else
-            {
-                MinBound = min(MinBound, AABBMin);
-                MaxBound = max(MaxBound, AABBMax);
-            }
-        }   
-    }
-
-    if (!First)
-    {
-        MinBound = max(MinBound, VoxelPos - VoxelSize / 2);
-         MaxBound = min(MaxBound, VoxelPos + VoxelSize / 2);
-    }
-    else
-    {
-        MinBound = float3(0.0, 0.0, 0.0);
-        MaxBound = float3(0.0, 0.0, 0.0);
-    }
-        
-    if (TotalWeight > 0.0f)
-    {
-        Velocity /= TotalWeight;
-    }
-        
-    float3 NRadius = float3({ParameterName}_NominalRadius, {ParameterName}_NominalRadius, {ParameterName}_NominalRadius);
-    float3 InnerMaxBounds = MaxBound - (MaxBound < (VoxelPos + VoxelSize / 2)) * NRadius;
-    float3 InnerMinBounds = MinBound - (MinBound > (VoxelPos - VoxelSize / 2)) * NRadius;
-
-    int NumParticlesWhichFitInVoxel = ceil(Mass / {ParameterName}_FineParticleMass);
-    InsertIndex_{ParameterName}(VoxelIndex, NumParticlesWhichFitInVoxel, VoxelPos, Mass, Velocity, MinBound, MaxBound, InnerMinBounds, InnerMaxBounds);
+    bool _;
+    InsertIndex_{ParameterName}(VoxelIndex, 1, _);
+    return;
 }
 
 void GetFineParticlePositionAndRadius_{ParameterName}(in int In_Index, out float4 Out_FineParticlePositionAndRadius)

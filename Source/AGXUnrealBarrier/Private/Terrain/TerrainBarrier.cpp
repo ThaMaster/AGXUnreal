@@ -444,3 +444,30 @@ size_t FTerrainBarrier::GetNumParticles() const
 	check(HasNative());
 	return FTerrainUtilities::GetNumParticles(*this);
 }
+
+int FTerrainBarrier::GenerateVoxelGrid(int Size, double VoxelSize)
+{
+	check(HasNative());
+	agxTerrain::SoilParticleArray Granulars = NativeRef->Native->getSoilSimulationInterface()->getSoilParticles();
+	for (int GranuleIdx = 0; (size_t) (GranuleIdx) < Granulars.size(); GranuleIdx++)
+	{
+		auto Granule = Granulars.at(GranuleIdx);
+		auto Radius = Granule->getRadius();
+		auto AABBRadius = 1.6119919540164696407169668466392849389446140723238615 * Radius / 2;
+		auto VSPosition = Granule->getPosition() / VoxelSize;
+
+		agx::Vec3 OffsetPosition(
+			agx::sign(VSPosition.x()), 
+			agx::sign(VSPosition.y()), 
+			agx::sign(VSPosition.z()));
+
+		OffsetPosition *= 0.5;
+		OffsetPosition += VSPosition;
+
+		agx::Vec3 VSParticleVoxelPos(
+			(double) (int) OffsetPosition.x(), 
+			(double) (int) OffsetPosition.y(),
+			(double) (int) OffsetPosition.z());
+	}
+	return Granulars.size();
+}

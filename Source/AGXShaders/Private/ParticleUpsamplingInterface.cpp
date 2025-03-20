@@ -21,6 +21,7 @@ const FName UParticleUpsamplingInterface::GetActiveVoxelIndexName(TEXT("GetActiv
 const FName UParticleUpsamplingInterface::GetFineParticleRadiusName(TEXT("GetFineParticleRadius"));
 const FName UParticleUpsamplingInterface::UpdateGridName(TEXT("UpdateGrid"));
 const FName UParticleUpsamplingInterface::LookupRoomName(TEXT("LookupRoom"));
+const FName UParticleUpsamplingInterface::InsertIndexName(TEXT("InsertIndex"));
 
 static const
 	TCHAR* ParticleUpsamplingTemplateShaderFile =
@@ -101,14 +102,8 @@ void FPUBuffers::InitRHI(FRHICommandListBase& RHICmdList)
 
 	// HashTable Buffers
 	HashTableSize = INITIAL_VOXEL_BUFFER_SIZE * 2;
-	HTIndexAndRoomBufferRef = InitUAVBuffer<FIntVector4>(RHICmdList, TEXT("HTIndexAndRoomBuffer"), HashTableSize);
-	HTPositionAndMassBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTPositionAndMassBuffer"), HashTableSize);
-	HTVelocityBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTVelocityBuffer"), HashTableSize);
-	HTMinBoundBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTMinBoundBuffer"), HashTableSize);
-	HTMaxBoundBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTMaxBoundBuffer"), HashTableSize);
-	HTInnerMinBoundBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTInnerMinBoundBuffer"), HashTableSize);
-	HTInnerMaxBoundBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTInnerMaxBoundBuffer"), HashTableSize);
-	HTOccupancyBufferRef = InitUAVBuffer<uint32>(RHICmdList, TEXT("HTOccupancy"), HashTableSize);
+	HTIndexAndRoomBufferRef = InitUAVBuffer<FVector4f>(RHICmdList, TEXT("HTIndexAndRoomBuffer"), HashTableSize);
+	HTOccupancyBufferRef = InitUAVBuffer<int>(RHICmdList, TEXT("HTOccupancy"), HashTableSize);
 }
 
 void FPUBuffers::ReleaseRHI()
@@ -120,12 +115,6 @@ void FPUBuffers::ReleaseRHI()
 
 	// HashTable Buffers
 	HTIndexAndRoomBufferRef.SafeRelease();
-	HTPositionAndMassBufferRef.SafeRelease();
-	HTVelocityBufferRef.SafeRelease();
-	HTMinBoundBufferRef.SafeRelease();
-	HTMaxBoundBufferRef.SafeRelease();
-	HTInnerMinBoundBufferRef.SafeRelease();
-	HTInnerMaxBoundBufferRef.SafeRelease();
 }
 
 // --------------------------------------------------------------- //
@@ -152,6 +141,7 @@ void FPUData::Update(FNiagaraSystemInstance* SystemInstance, FPUArrays* OtherDat
 		PUArrays->Time = (int) std::time(0);
 
 		/** Enqueue a render command that resizes the buffers if it is needed. */
+		/**
 		if (OtherData->bActiveVoxelIndicesBufferNeedsResize)
 		{
 			ENQUEUE_RENDER_COMMAND(FUpdateActiveVoxelIndicesBufferSize)
@@ -159,41 +149,20 @@ void FPUData::Update(FNiagaraSystemInstance* SystemInstance, FPUArrays* OtherDat
 				[Buffers = PUBuffers, Arrays = PUArrays](FRHICommandListImmediate& RHICmdList) {
 					Buffers->ActiveVoxelIndicesBufferRef.SafeRelease();
 					Buffers->HTIndexAndRoomBufferRef.SafeRelease();
-					Buffers->HTPositionAndMassBufferRef.SafeRelease();
-					Buffers->HTVelocityBufferRef.SafeRelease();
-					Buffers->HTMinBoundBufferRef.SafeRelease();
-					Buffers->HTMaxBoundBufferRef.SafeRelease();
-					Buffers->HTInnerMinBoundBufferRef.SafeRelease();
-					Buffers->HTInnerMaxBoundBufferRef.SafeRelease();
 
 					Buffers->ActiveVoxelIndicesBufferRef = Buffers->InitSRVBuffer<FVector4f>(
 						RHICmdList, TEXT("ActiveVoxelIndicesBuffer"), Arrays->ActiveVoxelIndices.Num());
 
-					Buffers->HashTableSize = Buffers->HashTableSize;
+					Buffers->HashTableSize = Arrays->ActiveVoxelIndices.Num();
 
-					Buffers->HTIndexAndRoomBufferRef = Buffers->InitUAVBuffer<FIntVector4>(
+					Buffers->HTIndexAndRoomBufferRef = Buffers->InitUAVBuffer<FVector4f>(
 						RHICmdList, TEXT("HTIndexAndRoomBuffer"), Buffers->HashTableSize);
-
-					Buffers->HTPositionAndMassBufferRef = Buffers->InitUAVBuffer<FVector4f>(
-						RHICmdList, TEXT("HTPositionAndMassBuffer"), Buffers->HashTableSize);
-
-					Buffers->HTVelocityBufferRef = Buffers->InitUAVBuffer<FVector4f>(
-						RHICmdList, TEXT("HTVelocityBuffer"), Buffers->HashTableSize);
-
-					Buffers->HTMinBoundBufferRef = Buffers->InitUAVBuffer<FVector4f>(
-						RHICmdList, TEXT("HTMinBoundBuffer"), Buffers->HashTableSize);
-
-					Buffers->HTMaxBoundBufferRef = Buffers->InitUAVBuffer<FVector4f>(
-						RHICmdList, TEXT("HTMaxBoundBuffer"), Buffers->HashTableSize);
-
-					Buffers->HTInnerMinBoundBufferRef = Buffers->InitUAVBuffer<FVector4f>(
-						RHICmdList, TEXT("HTInnerMinBoundBuffer"), Buffers->HashTableSize);
-
-					Buffers->HTInnerMaxBoundBufferRef = Buffers->InitUAVBuffer<FVector4f>(
-						RHICmdList, TEXT("HTInnerMaxBoundBuffer"), Buffers->HashTableSize);
+					Buffers->HTOccupancyBufferRef = Buffers->InitUAVBuffer<int>(
+						RHICmdList, TEXT("HTOccupancy"), Buffers->HashTableSize);
 				});
 			UE_LOG(LogTemp, Warning, TEXT("HashTable Buffers needed resize!"));
 		}
+		*/
 
 		if (OtherData->bCoarseParticlesBufferNeedsReisze)
 		{
@@ -483,10 +452,22 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.bMemberFunction = true;
 		Sig.AddInput(FNiagaraVariable(
 			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
-		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("Index")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Index")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Room")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("Success")));
+		OutFunctions.Add(Sig);
+	}
 
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = InsertIndexName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(
+			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Index")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Room")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Prev")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("Success")));
 		OutFunctions.Add(Sig);
 	}
 }
@@ -516,7 +497,8 @@ bool UParticleUpsamplingInterface::GetFunctionHLSL(
 			FunctionInfo.DefinitionName == GetActiveVoxelIndexName ||
 			FunctionInfo.DefinitionName == GetFineParticleRadiusName ||
 			FunctionInfo.DefinitionName == UpdateGridName ||
-			FunctionInfo.DefinitionName == LookupRoomName;
+			FunctionInfo.DefinitionName == LookupRoomName ||
+			FunctionInfo.DefinitionName == InsertIndexName;
 }
 
 /** Loads our hlsl template script file and replaces all template arguments accordingly. */
@@ -557,18 +539,8 @@ void UParticleUpsamplingInterface::SetShaderParameters(
 	ShaderParameters->FineParticleRadius	=	PUData.PUArrays->FineParticleRadius;
 	ShaderParameters->NominalRadius			=	PUData.PUArrays->NominalRadius;
 
-	//ShaderParameters->Time =					PUData.PUArrays->Time;
-	//ShaderParameters->TimeStep =				PUData.PUArrays->TimeStep;
-	//ShaderParameters->AnimationSpeed		=	PUData.PUArrays->EaseStepSize;
-
 	// HashTable Shader Parameters
 	ShaderParameters->HTIndexAndRoom		=	PUData.PUBuffers->HTIndexAndRoomBufferRef;
-	ShaderParameters->HTPositionAndMass		=	PUData.PUBuffers->HTPositionAndMassBufferRef;
-	ShaderParameters->HTVelocity			=	PUData.PUBuffers->HTVelocityBufferRef;
-	ShaderParameters->HTMinBound			=	PUData.PUBuffers->HTMinBoundBufferRef;
-	ShaderParameters->HTMaxBound			=	PUData.PUBuffers->HTMaxBoundBufferRef;
-	ShaderParameters->HTInnerMinBound		=	PUData.PUBuffers->HTInnerMinBoundBufferRef;
-	ShaderParameters->HTInnerMaxBound		=	PUData.PUBuffers->HTInnerMaxBoundBufferRef;
 	ShaderParameters->HTOccupancy			=	PUData.PUBuffers->HTOccupancyBufferRef;
 	ShaderParameters->TableSize				=	PUData.PUBuffers->HashTableSize;
 }

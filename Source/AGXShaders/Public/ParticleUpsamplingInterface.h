@@ -9,7 +9,7 @@
 
 struct FPUBuffers : public FRenderResource
 {
-	const int INITIAL_VOXEL_BUFFER_SIZE = 128;
+	const int INITIAL_VOXEL_BUFFER_SIZE = 256;
 	const int INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1024;
 
 	/** Init the buffer */
@@ -42,21 +42,15 @@ struct FPUBuffers : public FRenderResource
 
 	// HashTable RW Buffers
 	FUnorderedAccessViewRHIRef HTIndexAndRoomBufferRef;
-	FUnorderedAccessViewRHIRef HTPositionAndMassBufferRef;
-	FUnorderedAccessViewRHIRef HTVelocityBufferRef;
-	FUnorderedAccessViewRHIRef HTMinBoundBufferRef;
-	FUnorderedAccessViewRHIRef HTMaxBoundBufferRef;
-	FUnorderedAccessViewRHIRef HTInnerMinBoundBufferRef;
-	FUnorderedAccessViewRHIRef HTInnerMaxBoundBufferRef;
 	FUnorderedAccessViewRHIRef HTOccupancyBufferRef;
 
-	uint32 HashTableSize = 0;
+	int HashTableSize = 0;
 };
 
 /** Struct that contains the data that exists on the CPU */
 struct FPUArrays
 {
-	const int INITIAL_VOXEL_BUFFER_SIZE = 128;
+	const int INITIAL_VOXEL_BUFFER_SIZE = 256;
 	const int INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1024;
 
 	TArray<FVector4f> CPPositionsAndRadius;
@@ -149,21 +143,11 @@ class AGXSHADERS_API UParticleUpsamplingInterface : public UNiagaraDataInterface
 		SHADER_PARAMETER(float,									FineParticleMass)
 		SHADER_PARAMETER(float,									FineParticleRadius)
 		SHADER_PARAMETER(float,									NominalRadius)
-
-		//SHADER_PARAMETER(float,									AnimationSpeed)
-		// SHADER_PARAMETER(int,									Time)
-		// SHADER_PARAMETER(float,									TimeStep)
 		
 		// HashTable Buffers
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FIntVector4>,	HTIndexAndRoom)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,		HTPositionAndMass)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,		HTVelocity)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,		HTMinBound)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,		HTMaxBound)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,		HTInnerMinBound)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,		HTInnerMaxBound)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<uint32>,		HTOccupancy)
-		SHADER_PARAMETER(uint32,								TableSize)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,	HTIndexAndRoom)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<int>,		HTOccupancy)
+		SHADER_PARAMETER(int,								TableSize)
 	END_SHADER_PARAMETER_STRUCT()
 
 public:
@@ -241,5 +225,6 @@ private:
 	static const FName GetFineParticleRadiusName;
 	static const FName UpdateGridName;
 	static const FName LookupRoomName;
+	static const FName InsertIndexName;
 	const static float PACKING_RATIO;
 };

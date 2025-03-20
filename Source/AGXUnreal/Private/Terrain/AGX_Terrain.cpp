@@ -1773,7 +1773,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 
 	
 
-#if 1
+#if 0
 	const TArray<FVector>& Positions = ParticleData.Positions;
 	const TArray<FQuat>& Rotations = ParticleData.Rotations;
 	const TArray<float>& Radii = ParticleData.Radii;
