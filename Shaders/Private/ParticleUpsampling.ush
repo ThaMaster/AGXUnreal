@@ -26,56 +26,89 @@ RWStructuredBuffer<float4>          {ParameterName}_HTIndexAndRoom;
 RWStructuredBuffer<int>             {ParameterName}_HTOccupancy;
 int                                 {ParameterName}_TableSize;
 
-void LookupRoom_{ParameterName}(in int In_Index, out int Out_Room, out bool Out_Success)
+uint ComputeHash_{ParameterName}(int3 In_Key, uint In_TableSize)
 {
-    int MyId = In_Index;
-    Out_Room = UNDEFINED_INT;
-    if ({ParameterName}_HTOccupancy[MyId] == TAKEN)
-    {
-        Out_Room = {ParameterName}_HTIndexAndRoom[MyId].w;
-        Out_Success = true;
-    }
-    else
-    {
-        Out_Room = 1337;
-        Out_Success = false;
-    }
-}
-
-void InsertIndex_{ParameterName}(in int In_Index, in int In_Room, out int Out_Prev, out bool Out_Success)
-{
-    int MyId = In_Index;
+    int Prime = 2362873;
+    uint HashValue = 1;
     
-    int Prev;    
-    InterlockedCompareExchange({ParameterName}_HTOccupancy[MyId], EMPTY, TAKEN, Prev);
-    if (Prev == EMPTY)
-    {
-        {ParameterName}_HTIndexAndRoom[MyId] = float4(MyId, MyId, MyId, In_Room);
-        Out_Success = true;
-        Out_Prev = 333;
-    }
-    else
-    {
-        float Room = {ParameterName}_HTIndexAndRoom[MyId].w;
-        {ParameterName}_HTIndexAndRoom[MyId] = float4(MyId, MyId, MyId, Room+1);
-        Out_Success = false;
-        Out_Prev = 999;
-    }
+    HashValue = (HashValue * Prime) + In_Key.x;
+    HashValue = (HashValue * Prime) + In_Key.y;
+    HashValue = (HashValue * Prime) + In_Key.z;
+    
+    HashValue = (HashValue ^ (HashValue >> 17)) * Prime;
+    HashValue = (HashValue ^ (HashValue >> 13)) * Prime;
+    HashValue = HashValue ^ (HashValue >> 16);
+    
+    return HashValue & (In_TableSize - 1);
 }
 
-// Updates the grid in the world, run PER VOXEL
-void UpdateGrid_{ParameterName}(in int In_Index)
+bool LookupRoom_{ParameterName}(int3 In_Index, out int Out_Room)
 {
-    uint MyId = In_Index;
+    uint TableSize = {ParameterName}_TableSize;
+    uint HashValue = ComputeHash_{ParameterName}(In_Index, TableSize);
+
+    Out_Room = UNDEFINED_INT;
+    for (int i = 0; i < (int) TableSize; i++) 
+    {
+        if ({ParameterName}_HTOccupancy[HashValue] == TAKEN && all(int3({ParameterName}_HTIndexAndRoom[HashValue].xyz) == In_Index))
+        {
+            Out_Room = (int) {ParameterName}_HTIndexAndRoom[HashValue].w;
+            return true;
+        }
+        if ({ParameterName}_HTOccupancy[HashValue] == EMPTY)
+        {
+            return false;
+        }
+        // Linearly probe forward
+        HashValue = (HashValue + 1) & (TableSize - 1);
+    }
+    return false;
+}
+
+void InsertIndex_{ParameterName}(in int3 In_Index, in int In_Room, out int Out_Prev, out bool Out_Success)
+{
+    uint TableSize = {ParameterName}_TableSize;
+    uint HashValue = ComputeHash_{ParameterName}(In_Index, TableSize);
+    
+    [allow_uav_condition]
+    for (int i = 0; i < (int) TableSize; i++) 
+    {
+        int Prev;
+        InterlockedCompareExchange({ParameterName}_HTOccupancy[HashValue], EMPTY, TAKEN, Prev);
+        if (Prev == EMPTY)
+        {
+            {ParameterName}_HTIndexAndRoom[HashValue] = float4(In_Index.x, In_Index.y, In_Index.z, In_Room);
+            return;
+        }
+        // Linearly probe forward
+        HashValue = (HashValue + 1) & (TableSize - 1);
+    }
+    
+}
+
+// Updates the grid in the world, runs PER VOXEL
+void UpdateGrid_{ParameterName}(int In_DPThreadId)
+{
+    uint MyId = In_DPThreadId;
     if ((int)MyId >= {ParameterName}_NumActiveVoxels)
         return;
     
     int3 VoxelIndex = {ParameterName}_ActiveVoxelIndices[MyId].xyz;
     float VoxelSize = {ParameterName}_VoxelSize;
     float3 VoxelPos = VoxelIndex * VoxelSize;
+    int _2;
     bool _;
-    InsertIndex_{ParameterName}(VoxelIndex, 1, _);
-    return;
+    InsertIndex_{ParameterName}(VoxelIndex, (int)MyId, _2, _);
+}
+
+void GetVoxelPositionAndRoom_{ParameterName}(in int In_DPThreadId, out float3 Out_VoxelPosition, out int Out_Room)
+{
+    uint MyId = In_DPThreadId;
+    if ((int)MyId >= {ParameterName}_NumActiveVoxels)
+        return;
+    int3 VoxelIndex = {ParameterName}_ActiveVoxelIndices[MyId].xyz;
+    Out_VoxelPosition = float3(VoxelIndex * {ParameterName}_VoxelSize);
+    LookupRoom_{ParameterName}(VoxelIndex, Out_Room);
 }
 
 void GetFineParticlePositionAndRadius_{ParameterName}(in int In_Index, out float4 Out_FineParticlePositionAndRadius)
@@ -88,9 +121,9 @@ void GetFineParticleVelocityAndMass_{ParameterName}(in int In_Index, out float4 
     Out_FineParticleVelocityAndMass = {ParameterName}_CPVelocitiesAndMasses[In_Index];
 }
 
-void GetNumCoarseParticles_{ParameterName}(out int Out_NumCoarseParticles)
+void GetNumActiveVoxels_{ParameterName}(out int Out_NumActiveVoxels)
 {
-    Out_NumCoarseParticles = {ParameterName}_NumCoarseParticles;
+    Out_NumActiveVoxels = {ParameterName}_NumActiveVoxels;
 }
 
 void GetActiveVoxelIndex_{ParameterName}(in int In_Index, out float3 Out_ActiveVoxelIndex)

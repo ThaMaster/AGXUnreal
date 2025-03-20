@@ -348,7 +348,7 @@ public:
 		Meta =
 			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling && bEnableVoxelSize", UIMin = "0.01",
 			 UIMax = "1000"))
-	double VoxelSize = 0.05;
+	double VoxelSize = 1.0;
 
 	/**
 	* This controls how quickly the particles are eased in/out when spawned/destroyed.

@@ -9,8 +9,8 @@
 
 struct FPUBuffers : public FRenderResource
 {
-	const int INITIAL_VOXEL_BUFFER_SIZE = 256;
-	const int INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1024;
+	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 4;
+	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 256;
 
 	/** Init the buffer */
 	virtual void InitRHI(FRHICommandListBase& RHICmdList) override;
@@ -28,34 +28,34 @@ struct FPUBuffers : public FRenderResource
 	FShaderResourceViewRHIRef InitSRVBuffer(
 		FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, uint32 ElementCount);
 	template <typename T>
-	void UpdateSRVBuffer(
-		FRHICommandListBase& RHICmdList, const TArray<T>& InputData,
+	uint32 UpdateSRVBuffer(
+		FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, const TArray<T>& InputData,
 		FShaderResourceViewRHIRef& OutputBuffer);
-
 	template <typename T>
 	FUnorderedAccessViewRHIRef InitUAVBuffer(
 		FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, uint32 ElementCount);
 
-	FShaderResourceViewRHIRef ActiveVoxelIndicesBufferRef;
 	FShaderResourceViewRHIRef CPPositionsAndRadiusBufferRef;
 	FShaderResourceViewRHIRef CPVelocitiesAndMassesBufferRef;
 
 	// HashTable RW Buffers
+	FShaderResourceViewRHIRef ActiveVoxelIndicesBufferRef;
 	FUnorderedAccessViewRHIRef HTIndexAndRoomBufferRef;
 	FUnorderedAccessViewRHIRef HTOccupancyBufferRef;
-
-	int HashTableSize = 0;
 };
 
 /** Struct that contains the data that exists on the CPU */
 struct FPUArrays
 {
-	const int INITIAL_VOXEL_BUFFER_SIZE = 256;
-	const int INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1024;
+	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 4;
+	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 256;
 
 	TArray<FVector4f> CPPositionsAndRadius;
 	TArray<FVector4f> CPVelocitiesAndMasses;
 	TArray<FVector4f> ActiveVoxelIndices;
+
+	uint32 NumElementsInCoarseParticleBuffers = INITIAL_COARSE_PARTICLE_BUFFER_SIZE * 2;
+	uint32 NumElementsInActiveVoxelBuffer = INITIAL_VOXEL_BUFFER_SIZE * 2;
 
 	int Time = 0;
 	float VoxelSize = 0;
@@ -65,9 +65,6 @@ struct FPUArrays
 	float NominalRadius = 0;
 	float TimeStep = 0;
 	int TableSize = 0;
-
-	bool bCoarseParticlesBufferNeedsReisze = false;
-	bool bActiveVoxelIndicesBufferNeedsResize = false;
 
 	void CopyFrom(const FPUArrays* Other) 
 	{
@@ -97,6 +94,8 @@ struct FPUData
 	void Init(FNiagaraSystemInstance* SystemInstance);
 	void Update(FNiagaraSystemInstance* SystemInstance, FPUArrays* OtherData);
 	void Release();
+	void IncreaseVoxelIndicesBufferSizes(int NewBufferSize);
+	void IncreaseParticleBufferSizes(int NewBufferSize);
 
 	FPUBuffers* PUBuffers = nullptr;
 	FPUArrays* PUArrays = nullptr;
@@ -220,11 +219,10 @@ private:
 
 	static const FName GetFineParticlePositionAndRadiusName;
 	static const FName GetFineParticleVelocityAndMassName;
-	static const FName GetNumCoarseParticlesName;
+	static const FName GetNumActiveVoxelsName;
 	static const FName GetActiveVoxelIndexName;
 	static const FName GetFineParticleRadiusName;
 	static const FName UpdateGridName;
-	static const FName LookupRoomName;
-	static const FName InsertIndexName;
+	static const FName GetVoxelPositionAndRoomName;
 	const static float PACKING_RATIO;
 };

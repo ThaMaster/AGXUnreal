@@ -1773,7 +1773,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 
 	
 
-#if 0
+#if 1
 	const TArray<FVector>& Positions = ParticleData.Positions;
 	const TArray<FQuat>& Rotations = ParticleData.Rotations;
 	const TArray<float>& Radii = ParticleData.Radii;
@@ -1787,7 +1787,10 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	const TArray<bool>& Exists {true, true};
 	const TArray<FVector>& Velocities {FVector::ZeroVector, FVector::ZeroVector};
 	const TArray<float>& Masses {1, 1};
+
 #endif
+	TArray<FVector4f> ActiveVoxelIndices;
+	int NumActiveVoxels = GetNative()->GenerateVoxelGrid(ActiveVoxelIndices, 1000, VoxelSize);
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());
 
@@ -1795,12 +1798,10 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	if (bEnableParticleUpsampling)
 	{
 		ParticleUpsamplingComponent->SetNiagaraVariableInt(
-			"User.Target Particle Count", Exists.Num());
+			"User.Target Particle Count", NumActiveVoxels);
 		ParticleUpsamplingComponent->SetNiagaraVariableInt(
-			"User.Upsampling", Upsampling);
-		ParticleUpsamplingComponent->SetNiagaraVariableFloat(
-			"User.Ease Step Size", EaseStepSize);
-		ParticleUpsamplingComponent->SetNiagaraVariableFloat("User.Voxel Size", VoxelSize);
+			"User.Active Voxels Count", NumActiveVoxels);
+		)
 	}
 #else
 	ParticleSystemComponent->SetVariableInt(FName("User.Target Particle Count"), Exists.Num());
@@ -1808,12 +1809,9 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	if (bEnableParticleUpsampling)
 	{
 		ParticleUpsamplingComponent->SetVariableInt(
-			FName("User.Target Particle Count"), Exists.Num());
-		ParticleUpsamplingComponent->SetVariableFloat(
-			FName("User.Upsampling"), Upsampling);
-		ParticleUpsamplingComponent->SetVariableFloat(FName("User.Ease Step Size"), EaseStepSize);
-		ParticleUpsamplingComponent->SetVariableFloat(FName("User.Voxel Size"), VoxelSize
-		);
+			FName("User.Target Particle Count"), NumActiveVoxels);
+		ParticleUpsamplingComponent->SetVariableInt(
+			FName("User.Active Voxels Count"), NumActiveVoxels);
 	}
 
 #endif
@@ -1823,11 +1821,9 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	PositionsAndScale.SetNum(NumParticles);
 	TArray<FVector4> Orientations;
 	Orientations.SetNum(NumParticles);
-	TArray<FVector4f> ActiveVoxelIndices;
-
 	TArray<FVector4f> PositionsAndRadius;
 	TArray<FVector4f> VelocitiesAndMasses;
-
+	int NumParticlesExisting = 0;
 	for (int32 I = 0; I < NumParticles; ++I)
 	{
 		// The particle size slot in the PositionAndScale buffer is a scale and not the
@@ -1844,37 +1840,42 @@ void AAGX_Terrain::UpdateParticlesArrays()
 				FVector4f(Positions[I].X, Positions[I].Y, Positions[I].Z, Radii[I]));
 			VelocitiesAndMasses.Add(
 				FVector4f(Velocities[I].X, Velocities[I].Y, Velocities[I].Z, Masses[I]));
-			ActiveVoxelIndices.Add(FVector4f(I+1, I+1, I+1, I+1));
+			NumParticlesExisting++;
 		}
 	}
+
+	TArray<FVector4> VoxelPositionsAndScales;
+	VoxelPositionsAndScales.SetNum(NumActiveVoxels);
+
+	for (int32 I = 0; I < NumActiveVoxels; ++I)
+	{
+		VoxelPositionsAndScales[I] = FVector4(
+			ActiveVoxelIndices[I].X * VoxelSize, 
+			ActiveVoxelIndices[I].Y * VoxelSize,
+			ActiveVoxelIndices[I].Z * VoxelSize,
+			VoxelSize);
+	}
+
 	// Set particle system data.
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
 		ParticleSystemComponent, "Positions And Scales", PositionsAndScale);
+	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
+		ParticleSystemComponent, TEXT("Velocities"), Velocities);
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
 		ParticleSystemComponent, "Orientations", Orientations);
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayBool(
 		ParticleSystemComponent, "Exists", Exists);
-	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
-		ParticleSystemComponent, TEXT("Velocities"), Velocities);
 
 	// Set upsampling data.
 	if (bEnableParticleUpsampling)
 	{
-		UParticleUpsamplingInterface::SetActiveVoxelIndices(ActiveVoxelIndices);
 		UParticleUpsamplingInterface::SetCoarseParticles(PositionsAndRadius, VelocitiesAndMasses);
+		UParticleUpsamplingInterface::SetActiveVoxelIndices(ActiveVoxelIndices);
 		UParticleUpsamplingInterface::RecalculateFineParticleProperties(Upsampling, 2.0, 1.0);
 		UParticleUpsamplingInterface::SetStaticVariables(VoxelSize, EaseStepSize);
 
 		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-			ParticleUpsamplingComponent, "Positions And Scales", PositionsAndScale);
-		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
-			ParticleUpsamplingComponent, TEXT("Velocities"), Velocities);
-		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-			ParticleUpsamplingComponent, "Orientations", Orientations);
-		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayBool(
-			ParticleUpsamplingComponent, "Exists", Exists);
-		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayFloat(
-			ParticleUpsamplingComponent, "Masses", Masses);
+			ParticleUpsamplingComponent, "Positions And Scales", VoxelPositionsAndScales);
 	}
 }
 

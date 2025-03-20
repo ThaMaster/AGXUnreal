@@ -445,29 +445,74 @@ size_t FTerrainBarrier::GetNumParticles() const
 	return FTerrainUtilities::GetNumParticles(*this);
 }
 
-int FTerrainBarrier::GenerateVoxelGrid(int Size, double VoxelSize)
+int FTerrainBarrier::GenerateVoxelGrid(TArray<FVector4f>& ActiveVoxels, int Size, double VoxelSize)
 {
+	// TODO: Change this to agx code or move it to the AGX_Terrain instead.
 	check(HasNative());
-	agxTerrain::SoilParticleArray Granulars = NativeRef->Native->getSoilSimulationInterface()->getSoilParticles();
-	for (int GranuleIdx = 0; (size_t) (GranuleIdx) < Granulars.size(); GranuleIdx++)
-	{
-		auto Granule = Granulars.at(GranuleIdx);
-		auto Radius = Granule->getRadius();
-		auto AABBRadius = 1.6119919540164696407169668466392849389446140723238615 * Radius / 2;
-		auto VSPosition = Granule->getPosition() / VoxelSize;
+	TArray<FIntVector> ActiveVoxelSet;
+	ActiveVoxelSet.Empty();
+	ActiveVoxels.Empty();
 
-		agx::Vec3 OffsetPosition(
-			agx::sign(VSPosition.x()), 
-			agx::sign(VSPosition.y()), 
-			agx::sign(VSPosition.z()));
+	EParticleDataFlags ToInclude = EParticleDataFlags::Positions | EParticleDataFlags::Radii;
+	const FParticleDataById ParticleData = GetParticleDataById(ToInclude);
+	const TArray<FVector>& Positions = ParticleData.Positions;
+	const TArray<float>& Radii = ParticleData.Radii;
+	const TArray<bool>& Exists = ParticleData.Exists;
+	const int32 NumParticles = Exists.Num();
+
+	for (int i = 0; i < NumParticles; i++)
+	{
+		if (!Exists[i])
+			continue;
+		float Radius = Radii[i];
+		float AABBRadius = 1.6119919540164696407169668466392849389446140723238615 * Radius / 2;
+		FVector VSPosition = Positions[i] / VoxelSize;
+		
+		FVector OffsetPosition(
+			FMath::Sign(VSPosition.X), 
+			FMath::Sign(VSPosition.Y), 
+			FMath::Sign(VSPosition.Z));
 
 		OffsetPosition *= 0.5;
 		OffsetPosition += VSPosition;
+		
+		FVector VSParticleVoxelPos(
+			(double) (int) OffsetPosition.X, 
+			(double) (int) OffsetPosition.Y,
+			(double) (int) OffsetPosition.Z);
 
-		agx::Vec3 VSParticleVoxelPos(
-			(double) (int) OffsetPosition.x(), 
-			(double) (int) OffsetPosition.y(),
-			(double) (int) OffsetPosition.z());
+		int n = (int) (AABBRadius / VoxelSize + 1);
+		for (int x = -n; x <= n; x++)
+		{
+			for (int y = -n; y <= n; y++)
+			{
+				for (int z = -n; z <= n; z++)
+				{
+					FVector VSVoxelPos = VSParticleVoxelPos + FVector(x, y, z);
+					FVector VSVoxelToParticle = VSPosition - VSVoxelPos;
+
+					FVector VSToEdge = FVector::Max(VSVoxelToParticle, -VSVoxelToParticle) - AABBRadius / VoxelSize;
+					FVector VSVoxelSize2(0.5);
+					if (FVector::Max(VSToEdge, VSVoxelSize2) == VSVoxelSize2)
+					{
+						VSVoxelPos += FVector(
+							FMath::Sign(VSVoxelPos.X), 
+							FMath::Sign(VSVoxelPos.Y), 
+							FMath::Sign(VSVoxelPos.Z)) * 0.5;
+						ActiveVoxelSet.Add(FIntVector(VSVoxelPos));
+					}
+				}
+			}
+		}
 	}
-	return Granulars.size();
+	int i = 0;
+	for (FIntVector ActiveVoxel : ActiveVoxelSet)
+	{
+		if (i < Size)
+		{
+			ActiveVoxels.Add(FVector4f(ActiveVoxel.X, ActiveVoxel.Y, ActiveVoxel.Z, 0.0));
+		}
+		i++;
+	}
+	return (int)ActiveVoxels.Num();
 }
