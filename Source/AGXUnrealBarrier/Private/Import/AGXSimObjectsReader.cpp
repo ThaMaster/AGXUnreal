@@ -632,7 +632,13 @@ bool FAGXSimObjectsReader::ReadOpenPLXFile(
 	const FString PLXBundlesPath = FPaths::Combine(
 		FAGX_Environment::GetPluginSourcePath(), "Thirdparty", "agx", "openplxbundles");
 
-	agx::Name Uuid("b753eefd-dea0-45c7-b28f-6394fcdc25f6");
+	// This Uuid is randomly generated, and should never be changed. By seeding the load-call below
+	// with the same Uuid, we get consistent Uuid's on the AGX objects, by design. We go via
+	// agx::Name here for technical reasons: agxopenplx::OptParams will std::move from the passed in
+	// std::string parameter, so that chunk of memory must be allocated inside AGX and not Unreal,
+	// otherwise we crash when the Params object goes out of scope due to different allocators used
+	// in Unreal vs AGX.
+	agx::Name Uuid("47de4303-16ef-408d-baf5-1c86f0fe4473");
 	agxopenplx::OptParams Params = agxopenplx::OptParams().with_uuidv5(Uuid);
 	agxopenplx::LoadResult Result =
 		agxopenplx::load_from_file(Simulation, Convert(Filename), Convert(PLXBundlesPath), Params);
