@@ -1,6 +1,14 @@
 #pragma once
 
-uint ComputeHTHash(int3 In_Key, uint TableSize)
+#define EMPTY 0
+#define TAKEN 1
+#define NAN asfloat(0xffffffff)
+#define UNDEFINED_INT -2147483647
+#define UNDEFINED_FLOAT3 float3(340000000000000000000000000000000.0f, 340000000000000000000000000000000.0f, 340000000000000000000000000000000.0f)
+#define VOLUME_MOD 1.6119919540164696407169668466392849389446140723238615
+#define ZEROING_GRP_SIZE 128
+
+uint ComputeHash(int3 In_Key, uint TableSize)
 {
     int Prime = 2362873;
     uint HashValue = 1;
@@ -14,6 +22,19 @@ uint ComputeHTHash(int3 In_Key, uint TableSize)
     HashValue = HashValue ^ (HashValue >> 16);
     
     return HashValue & (TableSize - 1);
+}
+
+float Distance2(float3 In_Point1, float3 In_Point2)
+{
+    float3 V = In_Point1 - In_Point2;
+    return dot(V, V);
+}
+
+int3 GetVoxelIndexFromWorldPosition(float3 In_Position, float In_VoxelSize)
+{
+    In_Position /= In_VoxelSize;
+    In_Position += sign(In_Position) * 0.5;
+    return int3((int) In_Position.x, (int) In_Position.y, (int) In_Position.z);
 }
 
 uint Hash(uint In_X)
@@ -36,25 +57,11 @@ float FloatConstruct(uint In_M)
     In_M &= IeeeMantissa; // Keep only mantissa bits (fractional part)
     In_M |= IeeeOne; // Add fractional part to 1.0
 
-    float NewFloat = asfloat(In_M); // Range [1:2]
-    return NewFloat - 1.0; // Range [0:1]
+    float F = asfloat(In_M); // Range [1:2]
+    return F - 1.0; // Range [0:1]
 }
 
 float Random(uint In_X)
 {
     return FloatConstruct(Hash(In_X));
-}
-
-float Distance2(float3 In_Point1, float3 In_Point2)
-{
-    float3 Vec = In_Point1 - In_Point2;
-    return dot(Vec, Vec);
-}
-
-int3 GetVoxelIndexFromWorldPos(float3 In_Position, float In_VoxelSize)
-{
-    In_Position /= In_VoxelSize;
-    In_Position += sign(In_Position) * 0.5;
-    
-    return int3((int) In_Position.x, (int) In_Position.y, (int) In_Position.z);
 }

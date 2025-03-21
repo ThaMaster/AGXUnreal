@@ -1791,29 +1791,11 @@ void AAGX_Terrain::UpdateParticlesArrays()
 #endif
 	TArray<FVector4f> ActiveVoxelIndices;
 	int NumActiveVoxels = GetNative()->GenerateVoxelGrid(ActiveVoxelIndices, 1000, VoxelSize);
+
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());
-
-
-	if (bEnableParticleUpsampling)
-	{
-		ParticleUpsamplingComponent->SetNiagaraVariableInt(
-			"User.Target Particle Count", NumActiveVoxels);
-		ParticleUpsamplingComponent->SetNiagaraVariableInt(
-			"User.Active Voxels Count", NumActiveVoxels);
-		)
-	}
 #else
 	ParticleSystemComponent->SetVariableInt(FName("User.Target Particle Count"), Exists.Num());
-
-	if (bEnableParticleUpsampling)
-	{
-		ParticleUpsamplingComponent->SetVariableInt(
-			FName("User.Target Particle Count"), NumActiveVoxels);
-		ParticleUpsamplingComponent->SetVariableInt(
-			FName("User.Active Voxels Count"), NumActiveVoxels);
-	}
-
 #endif
 
 	const int32 NumParticles = Positions.Num();
@@ -1823,7 +1805,6 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	Orientations.SetNum(NumParticles);
 	TArray<FVector4f> PositionsAndRadius;
 	TArray<FVector4f> VelocitiesAndMasses;
-	int NumParticlesExisting = 0;
 	for (int32 I = 0; I < NumParticles; ++I)
 	{
 		// The particle size slot in the PositionAndScale buffer is a scale and not the
@@ -1840,20 +1821,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 				FVector4f(Positions[I].X, Positions[I].Y, Positions[I].Z, Radii[I]));
 			VelocitiesAndMasses.Add(
 				FVector4f(Velocities[I].X, Velocities[I].Y, Velocities[I].Z, Masses[I]));
-			NumParticlesExisting++;
 		}
-	}
-
-	TArray<FVector4> VoxelPositionsAndScales;
-	VoxelPositionsAndScales.SetNum(NumActiveVoxels);
-
-	for (int32 I = 0; I < NumActiveVoxels; ++I)
-	{
-		VoxelPositionsAndScales[I] = FVector4(
-			ActiveVoxelIndices[I].X * VoxelSize, 
-			ActiveVoxelIndices[I].Y * VoxelSize,
-			ActiveVoxelIndices[I].Z * VoxelSize,
-			VoxelSize);
 	}
 
 	// Set particle system data.
@@ -1869,10 +1837,30 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	// Set upsampling data.
 	if (bEnableParticleUpsampling)
 	{
+		TArray<FVector4> VoxelPositionsAndScales;
+		for (int32 J = 0; J < ActiveVoxelIndices.Num(); ++J)
+		{
+			VoxelPositionsAndScales.Add(FVector4(
+				ActiveVoxelIndices[J].X * VoxelSize, ActiveVoxelIndices[J].Y * VoxelSize,
+				ActiveVoxelIndices[J].Z * VoxelSize, VoxelSize));
+		}
+
 		UParticleUpsamplingInterface::SetCoarseParticles(PositionsAndRadius, VelocitiesAndMasses);
 		UParticleUpsamplingInterface::SetActiveVoxelIndices(ActiveVoxelIndices);
 		UParticleUpsamplingInterface::RecalculateFineParticleProperties(Upsampling, 2.0, 1.0);
 		UParticleUpsamplingInterface::SetStaticVariables(VoxelSize, EaseStepSize);
+
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
+		ParticleUpsamplingComponent->SetNiagaraVariableInt(
+			"User.Target Particle Count", ActiveVoxelIndices.Num());
+		ParticleUpsamplingComponent->SetNiagaraVariableInt(
+			"User.Active Voxels Count", ActiveVoxelIndices.Num());
+#else
+		ParticleUpsamplingComponent->SetVariableInt(
+			FName("User.Target Particle Count"), ActiveVoxelIndices.Num());
+		ParticleUpsamplingComponent->SetVariableInt(
+			FName("User.Active Voxels Count"), ActiveVoxelIndices.Num());
+#endif
 
 		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
 			ParticleUpsamplingComponent, "Positions And Scales", VoxelPositionsAndScales);

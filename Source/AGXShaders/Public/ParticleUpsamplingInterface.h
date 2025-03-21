@@ -41,6 +41,10 @@ struct FPUBuffers : public FRenderResource
 	// HashTable RW Buffers
 	FShaderResourceViewRHIRef ActiveVoxelIndicesBufferRef;
 	FUnorderedAccessViewRHIRef HTIndexAndRoomBufferRef;
+	FUnorderedAccessViewRHIRef HTVelocityAndMassBufferRef;
+	FUnorderedAccessViewRHIRef HTMinBoundBufferRef;
+	FUnorderedAccessViewRHIRef HTMaxBoundBufferRef;
+
 	FUnorderedAccessViewRHIRef HTOccupancyBufferRef;
 };
 
@@ -94,8 +98,6 @@ struct FPUData
 	void Init(FNiagaraSystemInstance* SystemInstance);
 	void Update(FNiagaraSystemInstance* SystemInstance, FPUArrays* OtherData);
 	void Release();
-	void IncreaseVoxelIndicesBufferSizes(int NewBufferSize);
-	void IncreaseParticleBufferSizes(int NewBufferSize);
 
 	FPUBuffers* PUBuffers = nullptr;
 	FPUArrays* PUArrays = nullptr;
@@ -145,6 +147,10 @@ class AGXSHADERS_API UParticleUpsamplingInterface : public UNiagaraDataInterface
 		
 		// HashTable Buffers
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,	HTIndexAndRoom)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>, HTVelocityAndMass)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>, HTMaxBound)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>, HTMinBound)
+
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<int>,		HTOccupancy)
 		SHADER_PARAMETER(int,								TableSize)
 	END_SHADER_PARAMETER_STRUCT()
@@ -217,12 +223,12 @@ protected:
 private:
 	static FPUArrays* LocalData;
 
-	static const FName GetFineParticlePositionAndRadiusName;
-	static const FName GetFineParticleVelocityAndMassName;
-	static const FName GetNumActiveVoxelsName;
-	static const FName GetActiveVoxelIndexName;
-	static const FName GetFineParticleRadiusName;
 	static const FName UpdateGridName;
+	static const FName ApplyParticleMassName;
+	static const FName SpawnParticlesName; // Maybe change to get room?
+	static const FName MoveParticlesName;
+	static const FName ClearTableName;
 	static const FName GetVoxelPositionAndRoomName;
+
 	const static float PACKING_RATIO;
 };

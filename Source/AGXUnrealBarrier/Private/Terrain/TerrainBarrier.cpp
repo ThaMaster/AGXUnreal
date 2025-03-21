@@ -448,9 +448,9 @@ size_t FTerrainBarrier::GetNumParticles() const
 int FTerrainBarrier::GenerateVoxelGrid(TArray<FVector4f>& ActiveVoxels, int Size, double VoxelSize)
 {
 	// TODO: Change this to agx code or move it to the AGX_Terrain instead.
+	// TODO: Maybe put it in the loop so we dont iterate over the particles twice during one tick?
 	check(HasNative());
-	TArray<FIntVector> ActiveVoxelSet;
-	ActiveVoxelSet.Empty();
+	TSet<FIntVector> ActiveVoxelSet;
 	ActiveVoxels.Empty();
 
 	EParticleDataFlags ToInclude = EParticleDataFlags::Positions | EParticleDataFlags::Radii;
@@ -506,13 +506,14 @@ int FTerrainBarrier::GenerateVoxelGrid(TArray<FVector4f>& ActiveVoxels, int Size
 		}
 	}
 	int i = 0;
-	for (FIntVector ActiveVoxel : ActiveVoxelSet)
+	for (auto VoxelIndex : ActiveVoxelSet)
 	{
 		if (i < Size)
 		{
-			ActiveVoxels.Add(FVector4f(ActiveVoxel.X, ActiveVoxel.Y, ActiveVoxel.Z, 0.0));
+			ActiveVoxels.Add(FVector4f(VoxelIndex.X, VoxelIndex.Y, VoxelIndex.Z, 0));
 		}
 		i++;
 	}
-	return (int)ActiveVoxels.Num();
+
+	return i;
 }
