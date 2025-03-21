@@ -9,7 +9,7 @@
 
 struct FPUBuffers : public FRenderResource
 {
-	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 4;
+	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 128;
 	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 256;
 
 	/** Init the buffer */
@@ -51,12 +51,12 @@ struct FPUBuffers : public FRenderResource
 /** Struct that contains the data that exists on the CPU */
 struct FPUArrays
 {
-	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 4;
+	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 128;
 	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 256;
 
 	TArray<FVector4f> CPPositionsAndRadius;
 	TArray<FVector4f> CPVelocitiesAndMasses;
-	TArray<FVector4f> ActiveVoxelIndices;
+	TArray<FIntVector4> ActiveVoxelIndices;
 
 	uint32 NumElementsInCoarseParticleBuffers = INITIAL_COARSE_PARTICLE_BUFFER_SIZE * 2;
 	uint32 NumElementsInActiveVoxelBuffer = INITIAL_VOXEL_BUFFER_SIZE * 2;
@@ -135,24 +135,30 @@ class AGXSHADERS_API UParticleUpsamplingInterface : public UNiagaraDataInterface
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FShaderParameters, )
 		// Particle Buffers
-		SHADER_PARAMETER_SRV(StructuredBuffer<FVector4f>,		ActiveVoxelIndices)
 		SHADER_PARAMETER_SRV(StructuredBuffer<FVector4f>,		CPPositionsAndRadius)
 		SHADER_PARAMETER_SRV(StructuredBuffer<FVector4f>,		CPVelocitiesAndMasses)
-		SHADER_PARAMETER(int,									NumActiveVoxels)
 		SHADER_PARAMETER(int,									NumCoarseParticles)
-		SHADER_PARAMETER(float,									VoxelSize)
 		SHADER_PARAMETER(float,									FineParticleMass)
 		SHADER_PARAMETER(float,									FineParticleRadius)
 		SHADER_PARAMETER(float,									NominalRadius)
 		
 		// HashTable Buffers
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>,	HTIndexAndRoom)
+		SHADER_PARAMETER_SRV(StructuredBuffer<FIntVector4>, ActiveVoxelIndices)
+		SHADER_PARAMETER(int,								NumActiveVoxels)
+
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FIntVector4>,	HTIndexAndRoom)
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>, HTVelocityAndMass)
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>, HTMaxBound)
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>, HTMinBound)
-
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<int>,		HTOccupancy)
+
 		SHADER_PARAMETER(int,								TableSize)
+		SHADER_PARAMETER(float,								VoxelSize)
+
+		// Other Variables
+		SHADER_PARAMETER(int,								Time)
+		SHADER_PARAMETER(float,								TimeStep)
+		SHADER_PARAMETER(float,								AnimationSpeed)							
 	END_SHADER_PARAMETER_STRUCT()
 
 public:
@@ -210,7 +216,7 @@ public:
 
 	static void SetCoarseParticles(
 		TArray<FVector4f> PositionsAndRadius, TArray<FVector4f> VelocitiesAndMasses);
-	static void SetActiveVoxelIndices(TArray<FVector4f> AVIs);
+	static void SetActiveVoxelIndices(TArray<FIntVector4> AVIs);
 
 	static void RecalculateFineParticleProperties(float Upsampling, float ElementSize, float ParticleDensity);
 	static void SetStaticVariables(float VoxelSize, float EaseStepSize);

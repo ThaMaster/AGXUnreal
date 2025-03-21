@@ -1462,7 +1462,7 @@ void AAGX_Terrain::InitializeRendering()
 	if (bEnableParticleRendering)
 	{
 		InitializeParticleSystem();
-
+		// TODO: Make it possible to toggle during runtime?
 		if (bEnableParticleUpsampling)
 		{
 			InitializeParticleUpsamplingSystem();
@@ -1789,7 +1789,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	const TArray<float>& Masses {1, 1};
 
 #endif
-	TArray<FVector4f> ActiveVoxelIndices;
+	TArray<FIntVector4> ActiveVoxelIndices;
 	int NumActiveVoxels = GetNative()->GenerateVoxelGrid(ActiveVoxelIndices, 1000, VoxelSize);
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)

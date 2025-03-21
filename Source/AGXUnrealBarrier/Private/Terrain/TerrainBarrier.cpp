@@ -445,7 +445,7 @@ size_t FTerrainBarrier::GetNumParticles() const
 	return FTerrainUtilities::GetNumParticles(*this);
 }
 
-int FTerrainBarrier::GenerateVoxelGrid(TArray<FVector4f>& ActiveVoxels, int Size, double VoxelSize)
+int FTerrainBarrier::GenerateVoxelGrid(TArray<FIntVector4>& ActiveVoxels, int Size, double VoxelSize)
 {
 	// TODO: Change this to agx code or move it to the AGX_Terrain instead.
 	// TODO: Maybe put it in the loop so we dont iterate over the particles twice during one tick?
@@ -510,7 +510,7 @@ int FTerrainBarrier::GenerateVoxelGrid(TArray<FVector4f>& ActiveVoxels, int Size
 	{
 		if (i < Size)
 		{
-			ActiveVoxels.Add(FVector4f(VoxelIndex.X, VoxelIndex.Y, VoxelIndex.Z, 0));
+			ActiveVoxels.Add(FIntVector4(VoxelIndex, 0));
 		}
 		i++;
 	}
