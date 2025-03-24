@@ -243,6 +243,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("Vehicles", LibSource.AGX);
 		RuntimeLibFiles.Add("Visuals", LibSource.AGX);
 		RuntimeLibFiles.Add("orocos*", LibSource.AGX);
+		RuntimeLibFiles.Add("libzmq-v143-mt-4_3_5", LibSource.AGX);
 
 		// List of link-time libraries from AGX Dynamics and its dependencies
 		// that we need. These will be added to the Unreal Engine
