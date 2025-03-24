@@ -110,10 +110,19 @@ namespace PLXSignalHandler_helpers
 	{
 		switch (Input.Type)
 		{
+			case EPLX_InputType::AngleInput:
+			case EPLX_InputType::AngularVelocity1DInput:
+				return ConvertAngleToAGX(Value);
+			case EPLX_InputType::DurationInput:
+			case EPLX_InputType::AutomaticClutchEngagementDurationInput:
+			case EPLX_InputType::AutomaticClutchDisengagementDurationInput:
+			case EPLX_InputType::FractionInput:
+			case EPLX_InputType::Force1DInput:
+			case EPLX_InputType::Torque1DInput:
+				return Value;
+			case EPLX_InputType::Position1DInput:
 			case EPLX_InputType::LinearVelocity1DInput:
-			{
 				return ConvertDistanceToAGX(Value);
-			}
 		}
 
 		UE_LOG(
@@ -168,7 +177,7 @@ bool FPLXSignalHandler::Send(const FPLX_Input& Input, double Value)
 
 namespace PLXSignalHandler_helpers
 {
-	TOptional<double> GetValueFrom(
+	TOptional<double> GetScalarValueFrom(
 		const FPLX_Output& Output, openplx::Physics::Signals::ValueOutputSignal* Signal)
 	{
 		if (Signal == nullptr)
@@ -185,17 +194,30 @@ namespace PLXSignalHandler_helpers
 			return {};
 		};
 
+		auto Value =
+			std::dynamic_pointer_cast<openplx::Physics::Signals::RealValue>(Signal->value());
+		if (Value == nullptr)
+			return TypeMismatchResult();
+
 		switch (Output.Type)
 		{
+			
+			case EPLX_OutputType::DurationOutput:
+			case EPLX_OutputType::AutomaticClutchEngagementDurationOutput:
+			case EPLX_OutputType::AutomaticClutchDisengagementDurationOutput:
+			case EPLX_OutputType::FractionOutput:
+			case EPLX_OutputType::Force1DOutput:
+			case EPLX_OutputType::Torque1DOutput:
+			case EPLX_OutputType::TorqueConverterPumpTorqueOutput:
+			case EPLX_OutputType::TorqueConverterTurbineTorqueOutput:
+				return Value->value();
 			case EPLX_OutputType::AngleOutput:
-			{
-				auto Value = std::dynamic_pointer_cast<openplx::Physics::Signals::AngleValue>(
-					Signal->value());
-				if (Value == nullptr)
-					return TypeMismatchResult();
-
+			case EPLX_OutputType::AngularVelocity1DOutput:
 				return ConvertAngleToUnreal<double>(Value->value());
-			}
+			case EPLX_OutputType::LinearVelocity1DOutput:
+			case EPLX_OutputType::Position1DOutput:
+			case EPLX_OutputType::RelativeVelocity1DOutput:
+				return ConvertDistanceToUnreal<double>(Value->value());
 		}
 
 		UE_LOG(
@@ -228,7 +250,7 @@ bool FPLXSignalHandler::Receive(const FPLX_Output& Output, double& OutValue)
 	if (Signal == nullptr)
 		return false;
 
-	auto Value = PLXSignalHandler_helpers::GetValueFrom(Output, Signal.get());
+	auto Value = PLXSignalHandler_helpers::GetScalarValueFrom(Output, Signal.get());
 	if (!Value.IsSet())
 		return false;
 
