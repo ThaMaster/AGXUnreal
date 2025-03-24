@@ -48,9 +48,7 @@ enum class EPLX_OutputType
 	Force1DOutput,
 	LinearVelocity1DOutput,
 	Position1DOutput,
-	Position3DOutput,
 	RelativeVelocity1DOutput,
-	RPYOutput,
 	Torque1DOutput,
 	TorqueConverterPumpTorqueOutput,
 	TorqueConverterTurbineTorqueOutput,
@@ -61,6 +59,8 @@ enum class EPLX_OutputType
 	MateConnectorAngularAcceleration3DOutput,
 	MateConnectorPositionOutput,
 	MateConnectorRPYOutput,
+	Position3DOutput,
+	RPYOutput,
 	/* Integer Outputs */
 	IntOutput,
 	/* Boolean Outputs */
