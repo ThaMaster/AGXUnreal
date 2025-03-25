@@ -20,11 +20,10 @@ const FName UParticleUpsamplingInterface::SpawnParticlesName(TEXT("SpawnParticle
 const FName UParticleUpsamplingInterface::MoveParticlesName(TEXT("MoveParticles"));
 const FName UParticleUpsamplingInterface::ClearTableName(TEXT("ClearTable"));
 const FName UParticleUpsamplingInterface::GetVoxelPositionAndRoomName(TEXT("GetVoxelPositionAndRoom"));
-const FName UParticleUpsamplingInterface::RandomizeParticlePosName(TEXT("RandomizeParticlePos"));
 const FName UParticleUpsamplingInterface::GetFineParticleRadiusName(TEXT("GetFineParticleRadius"));
 const FName UParticleUpsamplingInterface::IsFineParticleAliveName(TEXT("IsFineParticleAlive"));
 const FName UParticleUpsamplingInterface::GetCoarseParticleInfoName(TEXT("GetCoarseParticleInfo"));
-
+const FName UParticleUpsamplingInterface::GetNominalRadiusName(TEXT("GetNominalRadius"));
 static const
 	TCHAR* ParticleUpsamplingTemplateShaderFile =
 	TEXT("/AGXShadersShaders/ParticleUpsampling.ush");
@@ -104,8 +103,6 @@ void FPUBuffers::InitRHI(FRHICommandListBase& RHICmdList)
 	// HashTable Buffers
 	ActiveVoxelIndicesBufferRef = InitSRVBuffer<FIntVector4>(
 		RHICmdList, TEXT("ActiveVoxelIndicesBuffer"), INITIAL_VOXEL_BUFFER_SIZE * 2);
-	HTIndexAndRoomBufferRef = InitUAVBuffer<FIntVector4>(
-		RHICmdList, TEXT("HTIndexAndRoomBuffer"), INITIAL_VOXEL_BUFFER_SIZE * 2);
 	HashTableBufferRef = InitUAVBuffer<FVoxelEntry>(
 		RHICmdList, TEXT("HashtableBuffer"), INITIAL_VOXEL_BUFFER_SIZE * 2);
 	HTOccupancyBufferRef =
@@ -120,7 +117,6 @@ void FPUBuffers::ReleaseRHI()
 	// HashTable Buffers
 	ActiveVoxelIndicesBufferRef.SafeRelease();
 
-	HTIndexAndRoomBufferRef.SafeRelease();
 	HashTableBufferRef.SafeRelease();
 	HTOccupancyBufferRef.SafeRelease();
 	
@@ -146,7 +142,6 @@ void FPUData::Update(FNiagaraSystemInstance* SystemInstance, FPUArrays* OtherDat
 	if (SystemInstance)
 	{
 		PUArrays->CopyFrom(OtherData);
-		PUArrays->TimeStep = SystemInstance->GetLastRenderTime();
 		PUArrays->Time = (int) std::time(0);
 	}
 }
@@ -213,13 +208,12 @@ void FParticleUpsamplingProxy::PreStage(const FNDIGpuComputePreStageContext& Con
 
 			if (ProxyData->PUArrays->NumElementsInActiveVoxelBuffer < NewVoxelElementCount)
 			{
-				ProxyData->PUBuffers->HTIndexAndRoomBufferRef.SafeRelease();
+				UE_LOG(
+					LogTemp, Warning, TEXT("NumElements: %d"),
+					ProxyData->PUArrays->NumElementsInActiveVoxelBuffer);
 				ProxyData->PUBuffers->HashTableBufferRef.SafeRelease();
 				ProxyData->PUBuffers->HTOccupancyBufferRef.SafeRelease();
 
-				ProxyData->PUBuffers->HTIndexAndRoomBufferRef =
-					ProxyData->PUBuffers->InitUAVBuffer<FIntVector4>(
-						RHICmdList, TEXT("HTIndexAndRoomBuffer"), NewVoxelElementCount);
 				ProxyData->PUBuffers->HashTableBufferRef =
 					ProxyData->PUBuffers->InitUAVBuffer<FVoxelEntry>(
 						RHICmdList, TEXT("HashTableBuffer"), NewVoxelElementCount);
@@ -382,7 +376,7 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticlePosition")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEase")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEaseNew")));
-
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("IsAlive")));
 		OutFunctions.Add(Sig);
 	}
 
@@ -397,6 +391,7 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("VoxelIndex")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MaxBounds")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MinBounds")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("ShouldSpawn")));
 		OutFunctions.Add(Sig);
 	}
 
@@ -408,9 +403,11 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticlePosition")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEase")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("DeltaTime")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticlePositionNew")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEaseNew")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticleVelocityNew")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("IsAlive")));
 		
 		OutFunctions.Add(Sig);
 	}
@@ -432,26 +429,10 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.AddInput(FNiagaraVariable(
 			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("VoxelId")));
-		Sig.AddOutput(
-			FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("VoxelPosition")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("VoxelPosition")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Room")));
-		OutFunctions.Add(Sig);
-	}
-
-	{
-		FNiagaraFunctionSignature Sig;
-		Sig.Name = RandomizeParticlePosName;
-		Sig.bMemberFunction = true;
-		Sig.AddInput(FNiagaraVariable(
-			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
-		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("ParticleId")));
-		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("VoxelIndex")));
-		Sig.AddInput(
-			FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MaxBounds")));
-		Sig.AddInput(
-			FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MinBounds")));
-		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticlePositionNew")));
-		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("IsAlive")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MaxBounds")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MinBounds")));
 		OutFunctions.Add(Sig);
 	}
 
@@ -488,6 +469,16 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticleVelocity")));
 		OutFunctions.Add(Sig);
 	}
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = GetNominalRadiusName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(
+			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddOutput(FNiagaraVariable(
+			FNiagaraTypeDefinition::GetFloatDef(), TEXT("NominalRadius")));
+		OutFunctions.Add(Sig);
+	}
 
 }
 #endif
@@ -515,10 +506,10 @@ bool UParticleUpsamplingInterface::GetFunctionHLSL(
 			FunctionInfo.DefinitionName == SpawnParticlesName ||
 			FunctionInfo.DefinitionName == MoveParticlesName ||
 			FunctionInfo.DefinitionName == GetVoxelPositionAndRoomName ||
-			FunctionInfo.DefinitionName == ClearTableName ||
-			FunctionInfo.DefinitionName == RandomizeParticlePosName || 
+			FunctionInfo.DefinitionName == ClearTableName || 
 			FunctionInfo.DefinitionName == GetFineParticleRadiusName ||
 			FunctionInfo.DefinitionName == IsFineParticleAliveName ||
+			FunctionInfo.DefinitionName == GetNominalRadiusName ||
 			FunctionInfo.DefinitionName == GetCoarseParticleInfoName;
 }
 
@@ -559,7 +550,6 @@ void UParticleUpsamplingInterface::SetShaderParameters(
 	ShaderParameters->ActiveVoxelIndices	=	PUData.PUBuffers->ActiveVoxelIndicesBufferRef;
 	ShaderParameters->NumActiveVoxels		=	PUData.PUArrays->ActiveVoxelIndices.Num();
 
-	ShaderParameters->HTIndexAndRoom		=	PUData.PUBuffers->HTIndexAndRoomBufferRef;
 	ShaderParameters->HashTable				=	PUData.PUBuffers->HashTableBufferRef;
 	ShaderParameters->HTOccupancy			=	PUData.PUBuffers->HTOccupancyBufferRef;
 
@@ -568,7 +558,6 @@ void UParticleUpsamplingInterface::SetShaderParameters(
 
 	// Other Variables
 	ShaderParameters->Time					=	PUData.PUArrays->Time;
-	ShaderParameters->TimeStep				=	PUData.PUArrays->TimeStep;
 	ShaderParameters->AnimationSpeed		=	PUData.PUArrays->EaseStepSize;
 }
 

@@ -1771,7 +1771,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		bEnableTerrainPaging ? NativeTerrainPagerBarrier.GetParticleDataById(ToInclude)
 							 : NativeBarrier.GetParticleDataById(ToInclude);
 
-#if 0
+#if 1
 	const TArray<FVector>& Positions = ParticleData.Positions;
 	const TArray<FQuat>& Rotations = ParticleData.Rotations;
 	const TArray<float>& Radii = ParticleData.Radii;

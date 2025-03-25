@@ -10,7 +10,7 @@
 USTRUCT()
 struct FCoarseParticle
 {
-	GENERATED_BODY()
+	GENERATED_BODY();
 
 	FVector4f PositionAndRadius;
 	FVector4f VelocityAndMass;
@@ -19,7 +19,7 @@ struct FCoarseParticle
 USTRUCT()
 struct FVoxelEntry
 {
-	GENERATED_BODY()
+	GENERATED_BODY();
 
 	FIntVector4 IndexAndRoom;
 	FVector4f VelocityAndMass;
@@ -60,7 +60,6 @@ struct FPUBuffers : public FRenderResource
 	FShaderResourceViewRHIRef ActiveVoxelIndicesBufferRef;
 
 	// RW Buffers
-	FUnorderedAccessViewRHIRef HTIndexAndRoomBufferRef;
 	FUnorderedAccessViewRHIRef HashTableBufferRef;
 	FUnorderedAccessViewRHIRef HTOccupancyBufferRef;
 };
@@ -83,7 +82,6 @@ struct FPUArrays
 	float FineParticleRadius = 0;
 	float EaseStepSize = 0;
 	float NominalRadius = 0;
-	float TimeStep = 0;
 	int TableSize = 0;
 
 	void CopyFrom(const FPUArrays* Other) 
@@ -100,7 +98,6 @@ struct FPUArrays
 		FineParticleRadius = Other->FineParticleRadius;
 		EaseStepSize = Other->EaseStepSize;
 		NominalRadius = Other->NominalRadius;
-		TimeStep = Other->TimeStep;
 		TableSize = Other->TableSize;
 	};
 };
@@ -148,7 +145,7 @@ class AGXSHADERS_API UParticleUpsamplingInterface : public UNiagaraDataInterface
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FShaderParameters, )
 		// Particle Buffers
-		SHADER_PARAMETER_SRV(StructuredBuffer<CoarseParticle>,	CoarseParticles)
+		SHADER_PARAMETER_SRV(StructuredBuffer<FCoarseParticle>,	CoarseParticles)
 		SHADER_PARAMETER(int,									NumCoarseParticles)
 		SHADER_PARAMETER(float,									FineParticleMass)
 		SHADER_PARAMETER(float,									FineParticleRadius)
@@ -158,8 +155,7 @@ class AGXSHADERS_API UParticleUpsamplingInterface : public UNiagaraDataInterface
 		SHADER_PARAMETER_SRV(StructuredBuffer<FIntVector4>,		ActiveVoxelIndices)
 		SHADER_PARAMETER(int,									NumActiveVoxels)
 
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FIntVector4>,	HTIndexAndRoom)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<VoxelEntry>,	HashTable)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVoxelEntry>,	HashTable)
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<int>,			HTOccupancy)
 
 		SHADER_PARAMETER(int,									TableSize)
@@ -167,7 +163,6 @@ class AGXSHADERS_API UParticleUpsamplingInterface : public UNiagaraDataInterface
 
 		// Other Variables
 		SHADER_PARAMETER(int,									Time)
-		SHADER_PARAMETER(float,									TimeStep)
 		SHADER_PARAMETER(float,									AnimationSpeed)							
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -244,7 +239,7 @@ private:
 	static const FName MoveParticlesName;
 	static const FName ClearTableName;
 	static const FName GetVoxelPositionAndRoomName;
-	static const FName RandomizeParticlePosName;
+	static const FName GetNominalRadiusName;
 	static const FName GetFineParticleRadiusName;
 	static const FName IsFineParticleAliveName;
 	static const FName GetCoarseParticleInfoName;
