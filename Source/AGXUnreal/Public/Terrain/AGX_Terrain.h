@@ -327,7 +327,7 @@ public:
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
 		Meta =
 			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling", ClampMin = "1", UIMin = "1", 
-				UIMax = "5000"))
+				UIMax = "50000"))
 	int32 Upsampling = 100;
 
 	/**

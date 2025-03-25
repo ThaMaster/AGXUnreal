@@ -30,7 +30,7 @@ struct FVoxelEntry
 struct FPUBuffers : public FRenderResource
 {
 	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 128;
-	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 256;
+	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 1024;
 
 	/** Init the buffer */
 	virtual void InitRHI(FRHICommandListBase& RHICmdList) override;
@@ -68,12 +68,11 @@ struct FPUBuffers : public FRenderResource
 struct FPUArrays
 {
 	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 128;
-	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 256;
+	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 1024;
 
 	TArray<FCoarseParticle> CoarseParticles;
 	TArray<FIntVector4> ActiveVoxelIndices;
 
-	uint32 NumElementsInCoarseParticleBuffers = INITIAL_COARSE_PARTICLE_BUFFER_SIZE * 2;
 	uint32 NumElementsInActiveVoxelBuffer = INITIAL_VOXEL_BUFFER_SIZE * 2;
 
 	int Time = 0;
@@ -84,13 +83,19 @@ struct FPUArrays
 	float NominalRadius = 0;
 	int TableSize = 0;
 
+	bool NeedsCPResize = false;
+	bool NeedsVoxelResize = false;
+
 	void CopyFrom(const FPUArrays* Other) 
 	{
+
 		CoarseParticles.SetNumZeroed(Other->CoarseParticles.Num());
 		CoarseParticles = Other->CoarseParticles;
 
 		ActiveVoxelIndices.SetNumZeroed(Other->ActiveVoxelIndices.Num());
 		ActiveVoxelIndices = Other->ActiveVoxelIndices;
+
+		NumElementsInActiveVoxelBuffer = Other->NumElementsInActiveVoxelBuffer;
 
 		Time = Other->Time;
 		VoxelSize = Other->VoxelSize;
@@ -99,6 +104,9 @@ struct FPUArrays
 		EaseStepSize = Other->EaseStepSize;
 		NominalRadius = Other->NominalRadius;
 		TableSize = Other->TableSize;
+
+		NeedsCPResize = Other->NeedsCPResize;
+		NeedsVoxelResize = Other->NeedsVoxelResize;
 	};
 };
 

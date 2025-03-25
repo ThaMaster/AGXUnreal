@@ -200,29 +200,28 @@ void FParticleUpsamplingProxy::PreStage(const FNDIGpuComputePreStageContext& Con
 				ProxyData->PUArrays->CoarseParticles,
 				ProxyData->PUBuffers->CoarseParticleBufferRef);
 
-			uint32 NewVoxelElementCount = ProxyData->PUBuffers->UpdateSRVBuffer<FIntVector4>(
+			ProxyData->PUBuffers->UpdateSRVBuffer<FIntVector4>(
 				RHICmdList, 
 				TEXT("ActiveVoxelIndicesBuffer"),
 				ProxyData->PUArrays->ActiveVoxelIndices,
 				ProxyData->PUBuffers->ActiveVoxelIndicesBufferRef);
 
-			if (ProxyData->PUArrays->NumElementsInActiveVoxelBuffer < NewVoxelElementCount)
+			if (ProxyData->PUArrays->NeedsVoxelResize)
 			{
 				UE_LOG(
-					LogTemp, Warning, TEXT("NumElements: %d"),
+					LogTemp, Warning, TEXT("Resizing to: %d"),
 					ProxyData->PUArrays->NumElementsInActiveVoxelBuffer);
 				ProxyData->PUBuffers->HashTableBufferRef.SafeRelease();
 				ProxyData->PUBuffers->HTOccupancyBufferRef.SafeRelease();
 
 				ProxyData->PUBuffers->HashTableBufferRef =
 					ProxyData->PUBuffers->InitUAVBuffer<FVoxelEntry>(
-						RHICmdList, TEXT("HashTableBuffer"), NewVoxelElementCount);
+						RHICmdList, TEXT("HashTableBuffer"),
+						ProxyData->PUArrays->NumElementsInActiveVoxelBuffer);
 				ProxyData->PUBuffers->HTOccupancyBufferRef =
 					ProxyData->PUBuffers->InitUAVBuffer<int>(
-						RHICmdList, TEXT("HTOccupancy"), NewVoxelElementCount);
-
-				ProxyData->PUArrays->NumElementsInActiveVoxelBuffer = NewVoxelElementCount;
-
+						RHICmdList, TEXT("HTOccupancy"),
+						ProxyData->PUArrays->NumElementsInActiveVoxelBuffer);
 			}
 		}
 	}
@@ -233,8 +232,9 @@ void FParticleUpsamplingProxy::ConsumePerInstanceDataFromGameThread(
 {
 	FPUData* InstanceDataFromGT = static_cast<FPUData*>(PerInstanceData);
 	FPUData& InstanceData = SystemInstancesToInstanceData_RT.FindOrAdd(InstanceID);
-	InstanceData.PUArrays = InstanceDataFromGT->PUArrays;
 	InstanceData.PUBuffers = InstanceDataFromGT->PUBuffers;
+	InstanceData.PUArrays = new FPUArrays();
+	InstanceData.PUArrays->CopyFrom(InstanceDataFromGT->PUArrays);
 
 	// we call the destructor here to clean up the GT data. Without this we could be leaking
 	// memory.
@@ -302,10 +302,10 @@ bool UParticleUpsamplingInterface::PerInstanceTick(
 	{
 		return true;
 	}
-	FIntVector2 BufferSizes(
-		LocalData->NumElementsInCoarseParticleBuffers, LocalData->NumElementsInActiveVoxelBuffer);
-	PUData->Update(SystemInstance, LocalData);
 
+	PUData->Update(SystemInstance, LocalData);
+	LocalData->NeedsVoxelResize = false;
+	LocalData->NeedsCPResize = false;
 	return false;
 }
 
@@ -574,6 +574,12 @@ void UParticleUpsamplingInterface::SetCoarseParticles(TArray<FCoarseParticle> Ne
 
 void UParticleUpsamplingInterface::SetActiveVoxelIndices(TArray<FIntVector4> AVIs)
 {
+	uint32 ArraySize = AVIs.Num();
+	if (LocalData->NumElementsInActiveVoxelBuffer < ArraySize)
+	{
+		LocalData->NumElementsInActiveVoxelBuffer *= 2;
+		LocalData->NeedsVoxelResize = true;
+	}
 	LocalData->ActiveVoxelIndices.SetNumZeroed(AVIs.Num());
 	LocalData->ActiveVoxelIndices = AVIs;
 }

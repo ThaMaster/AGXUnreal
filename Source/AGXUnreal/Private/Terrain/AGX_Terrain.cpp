@@ -1789,7 +1789,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 #endif
 	TArray<FIntVector4> ActiveVoxelIndices;
 
-	int NumActiveVoxels = GetNative()->GenerateVoxelGrid(ActiveVoxelIndices, 1000, VoxelSize);
+	int NumActiveVoxels = GetNative()->GenerateVoxelGrid(ActiveVoxelIndices, 100000, VoxelSize);
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());
