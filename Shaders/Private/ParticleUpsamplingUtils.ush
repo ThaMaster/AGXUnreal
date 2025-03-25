@@ -9,6 +9,20 @@
 #define ZEROING_GRP_SIZE 128
 #define EXTRA_PARTICLES_IN_VOXEL 0
 
+struct CoarseParticle
+{
+    float4 PositionAndRadius;
+    float4 VelocityAndMass;
+};
+
+struct VoxelEntry
+{
+    int4 IndexAndRoom;
+    float4 VelocityAndMass;
+    float4 MaxBounds;
+    float4 MinBounds;
+};
+
 uint ComputeHash(int3 In_Key, uint TableSize)
 {
     int Prime = 2362873;

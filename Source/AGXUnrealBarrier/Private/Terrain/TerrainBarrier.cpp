@@ -453,11 +453,17 @@ int FTerrainBarrier::GenerateVoxelGrid(TArray<FIntVector4>& ActiveVoxels, int Si
 	TSet<FIntVector> ActiveVoxelSet;
 	ActiveVoxels.Empty();
 
+	const TArray<FVector>& Positions {{0.0, 0.0, 300.0}, {20.0, 0.0, 300.0}};
+	const TArray<float>& Radii {5.0, 5.0};
+	const TArray<bool>& Exists {true, true};
+
+	/**
 	EParticleDataFlags ToInclude = EParticleDataFlags::Positions | EParticleDataFlags::Radii;
 	const FParticleDataById ParticleData = GetParticleDataById(ToInclude);
 	const TArray<FVector>& Positions = ParticleData.Positions;
 	const TArray<float>& Radii = ParticleData.Radii;
 	const TArray<bool>& Exists = ParticleData.Exists;
+	*/
 	const int32 NumParticles = Exists.Num();
 
 	for (int i = 0; i < NumParticles; i++)

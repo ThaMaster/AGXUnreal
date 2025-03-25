@@ -7,6 +7,26 @@
 #include "NiagaraDataInterfaceRW.h"
 #include "ParticleUpsamplingInterface.generated.h"
 
+USTRUCT()
+struct FCoarseParticle
+{
+	GENERATED_BODY()
+
+	FVector4f PositionAndRadius;
+	FVector4f VelocityAndMass;
+};
+
+USTRUCT()
+struct FVoxelEntry
+{
+	GENERATED_BODY()
+
+	FIntVector4 IndexAndRoom;
+	FVector4f VelocityAndMass;
+	FVector4f MaxBounds;
+	FVector4f MinBounds;
+};
+
 struct FPUBuffers : public FRenderResource
 {
 	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 128;
@@ -35,16 +55,13 @@ struct FPUBuffers : public FRenderResource
 	FUnorderedAccessViewRHIRef InitUAVBuffer(
 		FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, uint32 ElementCount);
 
-	FShaderResourceViewRHIRef CPPositionsAndRadiusBufferRef;
-	FShaderResourceViewRHIRef CPVelocitiesAndMassesBufferRef;
-
-	// HashTable RW Buffers
+	// SRV Buffers
+	FShaderResourceViewRHIRef CoarseParticleBufferRef;
 	FShaderResourceViewRHIRef ActiveVoxelIndicesBufferRef;
-	FUnorderedAccessViewRHIRef HTIndexAndRoomBufferRef;
-	FUnorderedAccessViewRHIRef HTVelocityAndMassBufferRef;
-	FUnorderedAccessViewRHIRef HTMinBoundBufferRef;
-	FUnorderedAccessViewRHIRef HTMaxBoundBufferRef;
 
+	// RW Buffers
+	FUnorderedAccessViewRHIRef HTIndexAndRoomBufferRef;
+	FUnorderedAccessViewRHIRef HashTableBufferRef;
 	FUnorderedAccessViewRHIRef HTOccupancyBufferRef;
 };
 
@@ -54,8 +71,7 @@ struct FPUArrays
 	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 128;
 	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 256;
 
-	TArray<FVector4f> CPPositionsAndRadius;
-	TArray<FVector4f> CPVelocitiesAndMasses;
+	TArray<FCoarseParticle> CoarseParticles;
 	TArray<FIntVector4> ActiveVoxelIndices;
 
 	uint32 NumElementsInCoarseParticleBuffers = INITIAL_COARSE_PARTICLE_BUFFER_SIZE * 2;
@@ -72,11 +88,8 @@ struct FPUArrays
 
 	void CopyFrom(const FPUArrays* Other) 
 	{
-		CPPositionsAndRadius.SetNumZeroed(Other->CPPositionsAndRadius.Num());
-		CPPositionsAndRadius = Other->CPPositionsAndRadius;
-
-		CPVelocitiesAndMasses.SetNumZeroed(Other->CPVelocitiesAndMasses.Num());
-		CPVelocitiesAndMasses = Other->CPVelocitiesAndMasses;
+		CoarseParticles.SetNumZeroed(Other->CoarseParticles.Num());
+		CoarseParticles = Other->CoarseParticles;
 
 		ActiveVoxelIndices.SetNumZeroed(Other->ActiveVoxelIndices.Num());
 		ActiveVoxelIndices = Other->ActiveVoxelIndices;
@@ -135,30 +148,27 @@ class AGXSHADERS_API UParticleUpsamplingInterface : public UNiagaraDataInterface
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FShaderParameters, )
 		// Particle Buffers
-		SHADER_PARAMETER_SRV(StructuredBuffer<FVector4f>,		CPPositionsAndRadius)
-		SHADER_PARAMETER_SRV(StructuredBuffer<FVector4f>,		CPVelocitiesAndMasses)
+		SHADER_PARAMETER_SRV(StructuredBuffer<CoarseParticle>,	CoarseParticles)
 		SHADER_PARAMETER(int,									NumCoarseParticles)
 		SHADER_PARAMETER(float,									FineParticleMass)
 		SHADER_PARAMETER(float,									FineParticleRadius)
 		SHADER_PARAMETER(float,									NominalRadius)
 		
 		// HashTable Buffers
-		SHADER_PARAMETER_SRV(StructuredBuffer<FIntVector4>, ActiveVoxelIndices)
-		SHADER_PARAMETER(int,								NumActiveVoxels)
+		SHADER_PARAMETER_SRV(StructuredBuffer<FIntVector4>,		ActiveVoxelIndices)
+		SHADER_PARAMETER(int,									NumActiveVoxels)
 
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<FIntVector4>,	HTIndexAndRoom)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>, HTVelocityAndMass)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>, HTMaxBound)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FVector4f>, HTMinBound)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<int>,		HTOccupancy)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<VoxelEntry>,	HashTable)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<int>,			HTOccupancy)
 
-		SHADER_PARAMETER(int,								TableSize)
-		SHADER_PARAMETER(float,								VoxelSize)
+		SHADER_PARAMETER(int,									TableSize)
+		SHADER_PARAMETER(float,									VoxelSize)
 
 		// Other Variables
-		SHADER_PARAMETER(int,								Time)
-		SHADER_PARAMETER(float,								TimeStep)
-		SHADER_PARAMETER(float,								AnimationSpeed)							
+		SHADER_PARAMETER(int,									Time)
+		SHADER_PARAMETER(float,									TimeStep)
+		SHADER_PARAMETER(float,									AnimationSpeed)							
 	END_SHADER_PARAMETER_STRUCT()
 
 public:
@@ -214,10 +224,9 @@ public:
 		const FNiagaraSystemInstanceID& SystemInstance) override;
 	// UNiagaraDataInterface Interface
 
-	static void SetCoarseParticles(
-		TArray<FVector4f> PositionsAndRadius, TArray<FVector4f> VelocitiesAndMasses);
+	static void SetCoarseParticles(TArray<FCoarseParticle> NewCoarseParticles);
 	static void SetActiveVoxelIndices(TArray<FIntVector4> AVIs);
-
+	static int GetHashTableSize();
 	static void RecalculateFineParticleProperties(float Upsampling, float ElementSize, float ParticleDensity);
 	static void SetStaticVariables(float VoxelSize, float EaseStepSize);
 
@@ -235,6 +244,9 @@ private:
 	static const FName MoveParticlesName;
 	static const FName ClearTableName;
 	static const FName GetVoxelPositionAndRoomName;
-
+	static const FName RandomizeParticlePosName;
+	static const FName GetFineParticleRadiusName;
+	static const FName IsFineParticleAliveName;
+	static const FName GetCoarseParticleInfoName;
 	const static float PACKING_RATIO;
 };
