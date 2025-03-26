@@ -30,8 +30,21 @@ public:
 
 	bool IsInitialized() const;
 
+	/// Scalars.
 	bool Send(const FPLX_Input& Input, double Value);
 	bool Receive(const FPLX_Output& Output, double& OutValue);
+
+	/// FVectors (Vec3 real).
+	bool Send(const FPLX_Input& Input, const FVector& Value);
+	bool Receive(const FPLX_Output& Output, FVector& OutValue);
+
+	/// Integers.
+	bool Send(const FPLX_Input& Input, int64 Value);
+	bool Receive(const FPLX_Output& Output, int64& OutValue);
+
+	/// Booleans.
+	bool Send(const FPLX_Input& Input, bool Value);
+	bool Receive(const FPLX_Output& Output, bool& OutValue);
 
 private:
 	bool bIsInitialized {false};
