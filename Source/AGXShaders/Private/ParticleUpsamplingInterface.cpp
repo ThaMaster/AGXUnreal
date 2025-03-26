@@ -364,6 +364,11 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
 		Sig.AddInput(
 			FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("VoxelId")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
 		OutFunctions.Add(Sig);
 	}
 
@@ -377,6 +382,11 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEase")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEaseNew")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("IsAlive")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
 		OutFunctions.Add(Sig);
 	}
 
@@ -387,11 +397,16 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.AddInput(FNiagaraVariable(
 			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("VoxelId")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("ShouldSpawn")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("ParticleRoom")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("VoxelIndex")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MaxBounds")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MinBounds")));
-		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("ShouldSpawn")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
 		OutFunctions.Add(Sig);
 	}
 
@@ -401,6 +416,7 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.bMemberFunction = true;
 		Sig.AddInput(FNiagaraVariable(
 			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("ParticleIndex")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticlePosition")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEase")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("DeltaTime")));
@@ -409,6 +425,10 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticleVelocityNew")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("IsAlive")));
 		
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
 		OutFunctions.Add(Sig);
 	}
 	
@@ -419,6 +439,11 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.AddInput(FNiagaraVariable(
 			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("VoxelId")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
 		OutFunctions.Add(Sig);
 	}
 
@@ -433,6 +458,11 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Room")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MaxBounds")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MinBounds")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
 		OutFunctions.Add(Sig);
 	}
 
@@ -443,6 +473,11 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.AddInput(FNiagaraVariable(
 			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("FineParticleRadius")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
 		OutFunctions.Add(Sig);
 	}
 
@@ -455,6 +490,11 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("Ease")));
 		Sig.AddOutput(
 			FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("IsAlive")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
 		OutFunctions.Add(Sig);
 	}
 
@@ -467,6 +507,11 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("CoarseParticleIndex")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec4Def(), TEXT("ParticlePositionAndRadius")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticleVelocity")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
 		OutFunctions.Add(Sig);
 	}
 	{
@@ -477,6 +522,11 @@ void UParticleUpsamplingInterface::GetFunctionsInternal(
 			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
 		Sig.AddOutput(FNiagaraVariable(
 			FNiagaraTypeDefinition::GetFloatDef(), TEXT("NominalRadius")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
 		OutFunctions.Add(Sig);
 	}
 
@@ -568,6 +618,12 @@ FPUArrays* UParticleUpsamplingInterface::LocalData = new FPUArrays();
 
 void UParticleUpsamplingInterface::SetCoarseParticles(TArray<FCoarseParticle> NewCoarseParticles)
 {
+	uint32 ArraySize = NewCoarseParticles.Num();
+	if (LocalData->NumElementsInCoarseParticleBuffer < ArraySize)
+	{
+		LocalData->NumElementsInCoarseParticleBuffer *= 2;
+		LocalData->NeedsCPResize = true;
+	}
 	LocalData->CoarseParticles.SetNumZeroed(NewCoarseParticles.Num());
 	LocalData->CoarseParticles = NewCoarseParticles;
 }

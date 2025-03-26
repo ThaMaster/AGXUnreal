@@ -526,5 +526,8 @@ private:
 	bool FetchHeights(
 		const FVector& WorldPosStart, int32 VertsX, int32 VertsY, TArray<float>& OutHeights);
 
+	void AppendIfActiveVoxel(TSet<FIntVector>& ActiveVoxelIndices, FVector CPPosition, float CPRadius);
+	TArray<FIntVector4> GetActiveVoxelsFromSet(TSet<FIntVector> VoxelSet);
+
 	FTransform GetNativeTransform() const;
 };

@@ -47,9 +47,10 @@ float Distance2(float3 In_Point1, float3 In_Point2)
 
 int3 GetVoxelIndexFromWorldPosition(float3 In_Position, float In_VoxelSize)
 {
-    In_Position /= In_VoxelSize;
-    In_Position += sign(In_Position) * 0.5;
-    return int3((int) In_Position.x, (int) In_Position.y, (int) In_Position.z);
+    float3 Pos = In_Position;
+    Pos /= In_VoxelSize;
+    Pos += sign(Pos) * 0.5;
+    return int3((int) Pos.x, (int) Pos.y, (int) Pos.z);
 }
 
 uint Hash(uint In_X)

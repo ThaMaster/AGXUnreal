@@ -143,8 +143,6 @@ public:
 	 */
 	size_t GetNumParticles() const;
 
-	int GenerateVoxelGrid(TArray<FIntVector4>& ActiveVoxels, int Size, double VoxelSize);
-
 private:
 	FTerrainBarrier(const FTerrainBarrier&) = delete;
 	void operator=(const FTerrainBarrier&) = delete;

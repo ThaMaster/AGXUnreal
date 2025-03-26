@@ -74,6 +74,7 @@ struct FPUArrays
 	TArray<FIntVector4> ActiveVoxelIndices;
 
 	uint32 NumElementsInActiveVoxelBuffer = INITIAL_VOXEL_BUFFER_SIZE * 2;
+	uint32 NumElementsInCoarseParticleBuffer = INITIAL_COARSE_PARTICLE_BUFFER_SIZE;
 
 	int Time = 0;
 	float VoxelSize = 0;
@@ -88,7 +89,6 @@ struct FPUArrays
 
 	void CopyFrom(const FPUArrays* Other) 
 	{
-
 		CoarseParticles.SetNumZeroed(Other->CoarseParticles.Num());
 		CoarseParticles = Other->CoarseParticles;
 
@@ -96,6 +96,7 @@ struct FPUArrays
 		ActiveVoxelIndices = Other->ActiveVoxelIndices;
 
 		NumElementsInActiveVoxelBuffer = Other->NumElementsInActiveVoxelBuffer;
+		NumElementsInCoarseParticleBuffer = Other->NumElementsInCoarseParticleBuffer;
 
 		Time = Other->Time;
 		VoxelSize = Other->VoxelSize;
