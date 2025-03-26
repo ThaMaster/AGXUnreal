@@ -246,14 +246,14 @@ void MoveParticles_{ParameterName}(in int In_ParticleIndex, in float3 In_Particl
                 // Reduce checked voxels to only one voxel in each direction of each axis
                 if (x + y + z != 0 && abs(x) + abs(y) + abs(z) != 1)
                     continue;
-
                 VoxelIndex = ParticleVoxelIndex + int3(x, y, z);
-                VoxelPos = float3(VoxelIndex * VOXEL_SIZE);
-                float VoxelWeight = pow(max(0.0f, 1.0f - (Distance2(VoxelPos, In_ParticlePosition) / (VOXEL_SIZE * VOXEL_SIZE))), 2);
-                WeightSum += VoxelWeight; 
-
                 if (LOOKUP_VELOCITY(VoxelIndex, VoxelVelocity))
-                    VelocitySum += VoxelWeight * VoxelVelocity;
+                {
+                    VoxelPos = float3(VoxelIndex * VOXEL_SIZE);
+                    float VoxelWeight = pow(max(0.0f, 1.0f - (Distance2(VoxelPos, In_ParticlePosition) / (VOXEL_SIZE* VOXEL_SIZE))), 2);
+                    WeightSum += VoxelWeight;
+                    VelocitySum+= VoxelWeight * VoxelVelocity;
+                }
             }
         }
     }

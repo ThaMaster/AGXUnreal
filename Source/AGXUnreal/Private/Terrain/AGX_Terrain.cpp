@@ -1801,6 +1801,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	Orientations.SetNum(NumParticles);
 	TArray<FCoarseParticle> NewCoarseParticles;
 	TSet<FIntVector> ActiveVoxelSet;
+	float ParticleDensity = 0.0f;
 	for (int32 I = 0; I < NumParticles; ++I)
 	{
 		// The particle size slot in the PositionAndScale buffer is a scale and not the
@@ -1813,6 +1814,12 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
 		if (Exists[I] && bEnableParticleUpsampling)
 		{
+			float Mass = Masses[I];
+			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radii[I], 3);
+			ParticleDensity = Mass / Volume;
+			UE_LOG(
+				LogTemp, Warning, TEXT("Particle Mass: %f kg, ParticleVolume: %f (cm), Particle Density: %f (kg/cm)"), 
+				Mass, Volume, ParticleDensity);
 			AppendIfActiveVoxel(ActiveVoxelSet, Positions[I], Radii[I]);
 			FCoarseParticle CP;
 			CP.PositionAndRadius = FVector4f(Positions[I].X, Positions[I].Y, Positions[I].Z, Radii[I]);
@@ -1838,12 +1845,10 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		TArray<FIntVector4> ActiveVoxelIndices = GetActiveVoxelsFromSet(ActiveVoxelSet);
 		UParticleUpsamplingInterface::SetCoarseParticles(NewCoarseParticles);
 		UParticleUpsamplingInterface::SetActiveVoxelIndices(ActiveVoxelIndices);
-		UParticleUpsamplingInterface::RecalculateFineParticleProperties(Upsampling, 2.0, 1.0);
+		UParticleUpsamplingInterface::RecalculateFineParticleProperties(Upsampling, VoxelSize, ParticleDensity);
 		UParticleUpsamplingInterface::SetStaticVariables(VoxelSize, EaseStepSize);
 		int HashTableSize = UParticleUpsamplingInterface::GetHashTableSize();
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
-		ParticleUpsamplingComponent->SetNiagaraVariableInt(
-			"User.Target Particle Count", Exists.Num());
 		ParticleUpsamplingComponent->SetNiagaraVariableInt(
 			"User.Active Voxels Count", ActiveVoxelIndices.Num());
 		ParticleUpsamplingComponent->SetNiagaraVariableInt(
@@ -1852,17 +1857,12 @@ void AAGX_Terrain::UpdateParticlesArrays()
 			"User.Voxel Size", VoxelSize);
 #else
 		ParticleUpsamplingComponent->SetVariableInt(
-			FName("User.Target Particle Count"), Exists.Num());
-		ParticleUpsamplingComponent->SetVariableInt(
 			FName("User.Active Voxels Count"), ActiveVoxelIndices.Num());
 		ParticleUpsamplingComponent->SetVariableInt(
 			FName("User.HashTable Size"), HashTableSize);
 		ParticleUpsamplingComponent->SetVariableFloat(
 			FName("User.Voxel Size"), VoxelSize);
 #endif
-
-		UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-			ParticleUpsamplingComponent, "Positions And Scales", PositionsAndScale);
 	}
 }
 

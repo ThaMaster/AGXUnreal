@@ -48,12 +48,15 @@ struct FPUBuffers : public FRenderResource
 	FShaderResourceViewRHIRef InitSRVBuffer(
 		FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, uint32 ElementCount);
 	template <typename T>
-	uint32 UpdateSRVBuffer(
-		FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, const TArray<T>& InputData,
-		FShaderResourceViewRHIRef& OutputBuffer);
-	template <typename T>
 	FUnorderedAccessViewRHIRef InitUAVBuffer(
 		FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, uint32 ElementCount);
+
+	void UpdateCoarseParticleBuffers(
+		FRHICommandListBase& RHICmdList, const TArray<FCoarseParticle> CoarseParticleData,
+		uint32 NewElementCount, bool NeedsResize);
+	void UpdateHashTableBuffers(
+		FRHICommandListBase& RHICmdList, const TArray<FIntVector4> ActiveVoxelIndices,
+		uint32 NewElementCount, bool NeedsResize);
 
 	// SRV Buffers
 	FShaderResourceViewRHIRef CoarseParticleBufferRef;

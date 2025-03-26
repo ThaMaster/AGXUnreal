@@ -66,32 +66,53 @@ FUnorderedAccessViewRHIRef FPUBuffers::InitUAVBuffer(
 		BufferRef, FRHIViewDesc::CreateBufferUAV().SetType(FRHIViewDesc::EBufferType::Structured));
 }
 
-template <typename T>
-uint32 FPUBuffers::UpdateSRVBuffer(
-	FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, const TArray<T>& InputData,
-	FShaderResourceViewRHIRef& OutputBuffer)
+void FPUBuffers::UpdateCoarseParticleBuffers(
+	FRHICommandListBase& RHICmdList, const TArray<FCoarseParticle> CoarseParticleData, uint32 NewElementCount, bool NeedsResize)
 {
-	uint32 newElementCount = 0;
-	uint32 ElementCount = InputData.Num();
-	if (ElementCount > 0 && OutputBuffer->GetBuffer()->IsValid())
+	uint32 ElementCount = CoarseParticleData.Num();
+	if (ElementCount > 0 && CoarseParticleBufferRef.IsValid() && CoarseParticleBufferRef->GetBuffer()->IsValid())
 	{
-		const uint32 BufferBytes = sizeof(T) * ElementCount;
-		uint32 BufferSize = OutputBuffer->GetBuffer()->GetSize();
-		newElementCount = (BufferSize / sizeof(T));
-		while (BufferSize < BufferBytes)
+		if (NeedsResize)
 		{
-			OutputBuffer.SafeRelease();
-			newElementCount = (BufferSize / sizeof(T)) * 2;
-			OutputBuffer = InitSRVBuffer<T>(RHICmdList, InDebugName, newElementCount);
-			BufferSize = OutputBuffer->GetBuffer()->GetSize();
+			CoarseParticleBufferRef.SafeRelease();
+			CoarseParticleBufferRef = InitSRVBuffer<FCoarseParticle>(
+				RHICmdList, TEXT("CPPositionsAndRadiusBuffer"), NewElementCount);
 		}
-		void* OutputData =
-			RHICmdList.LockBuffer(OutputBuffer->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
 
-		FMemory::Memcpy(OutputData, InputData.GetData(), BufferBytes);
-		RHICmdList.UnlockBuffer(OutputBuffer->GetBuffer());
+		const uint32 BufferBytes = sizeof(FCoarseParticle) * ElementCount;
+		void* OutputData = RHICmdList.LockBuffer(
+			CoarseParticleBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+
+		FMemory::Memcpy(OutputData, CoarseParticleData.GetData(), BufferBytes);
+		RHICmdList.UnlockBuffer(CoarseParticleBufferRef->GetBuffer());
 	}
-	return newElementCount;
+}
+
+void FPUBuffers::UpdateHashTableBuffers(
+	FRHICommandListBase& RHICmdList, const TArray<FIntVector4> ActiveVoxelIndices, uint32 NewElementCount, bool NeedsResize)
+{
+	uint32 ElementCount = ActiveVoxelIndices.Num();
+	if (ElementCount > 0 && ActiveVoxelIndicesBufferRef.IsValid() && ActiveVoxelIndicesBufferRef->GetBuffer()->IsValid())
+	{
+		if (NeedsResize)
+		{
+			ActiveVoxelIndicesBufferRef.SafeRelease();
+			HashTableBufferRef.SafeRelease();
+			HTOccupancyBufferRef.SafeRelease();
+			ActiveVoxelIndicesBufferRef = InitSRVBuffer<FIntVector4>(
+				RHICmdList, TEXT("ActiveVoxelIndicesBuffer"), NewElementCount);
+			HashTableBufferRef = InitUAVBuffer<FVoxelEntry>(
+				RHICmdList, TEXT("HashtableBuffer"), NewElementCount);
+			HTOccupancyBufferRef =
+				InitUAVBuffer<int>(RHICmdList, TEXT("HTOccupancy"), NewElementCount);
+		}
+		const uint32 BufferBytes = sizeof(FIntVector4) * ElementCount;
+		void* OutputData = RHICmdList.LockBuffer(
+			ActiveVoxelIndicesBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+
+		FMemory::Memcpy(OutputData, ActiveVoxelIndices.GetData(), BufferBytes);
+		RHICmdList.UnlockBuffer(ActiveVoxelIndicesBufferRef->GetBuffer());
+	}
 }
 
 void FPUBuffers::InitRHI(FRHICommandListBase& RHICmdList)
@@ -194,35 +215,17 @@ void FParticleUpsamplingProxy::PreStage(const FNDIGpuComputePreStageContext& Con
 		{
 			FRHICommandListBase& RHICmdList = FRHICommandListImmediate::Get();
 
-			ProxyData->PUBuffers->UpdateSRVBuffer<FCoarseParticle>(
+			ProxyData->PUBuffers->UpdateCoarseParticleBuffers(
 				RHICmdList, 
-				TEXT("CPPositionsAndRadiusBuffer"),
-				ProxyData->PUArrays->CoarseParticles,
-				ProxyData->PUBuffers->CoarseParticleBufferRef);
+				ProxyData->PUArrays->CoarseParticles, 
+				ProxyData->PUArrays->NumElementsInCoarseParticleBuffer,
+				ProxyData->PUArrays->NeedsCPResize);
 
-			ProxyData->PUBuffers->UpdateSRVBuffer<FIntVector4>(
-				RHICmdList, 
-				TEXT("ActiveVoxelIndicesBuffer"),
+			ProxyData->PUBuffers->UpdateHashTableBuffers(
+				RHICmdList,
 				ProxyData->PUArrays->ActiveVoxelIndices,
-				ProxyData->PUBuffers->ActiveVoxelIndicesBufferRef);
-
-			if (ProxyData->PUArrays->NeedsVoxelResize)
-			{
-				UE_LOG(
-					LogTemp, Warning, TEXT("Resizing to: %d"),
-					ProxyData->PUArrays->NumElementsInActiveVoxelBuffer);
-				ProxyData->PUBuffers->HashTableBufferRef.SafeRelease();
-				ProxyData->PUBuffers->HTOccupancyBufferRef.SafeRelease();
-
-				ProxyData->PUBuffers->HashTableBufferRef =
-					ProxyData->PUBuffers->InitUAVBuffer<FVoxelEntry>(
-						RHICmdList, TEXT("HashTableBuffer"),
-						ProxyData->PUArrays->NumElementsInActiveVoxelBuffer);
-				ProxyData->PUBuffers->HTOccupancyBufferRef =
-					ProxyData->PUBuffers->InitUAVBuffer<int>(
-						RHICmdList, TEXT("HTOccupancy"),
-						ProxyData->PUArrays->NumElementsInActiveVoxelBuffer);
-			}
+				ProxyData->PUArrays->NumElementsInActiveVoxelBuffer,
+				ProxyData->PUArrays->NeedsVoxelResize);
 		}
 	}
 }
@@ -652,6 +655,10 @@ void UParticleUpsamplingInterface::RecalculateFineParticleProperties(
 	LocalData->FineParticleRadius = LocalData->NominalRadius / FMath::Pow(Upsampling, 1.0f / 3.0f);
 	float NominalMass = ParticleDensity * 4.0f / 3.0f * PI * FMath::Pow(LocalData->NominalRadius, 3.0f);
 	LocalData->FineParticleMass = NominalMass / Upsampling;
+
+	UE_LOG(
+		LogTemp, Warning, TEXT("NominalRadius: %f, FineParticleRadius: %f, FineParticleMass: %f"),
+		LocalData->NominalRadius, LocalData->FineParticleRadius, LocalData->FineParticleMass);
 }
 
 void UParticleUpsamplingInterface::SetStaticVariables(float VoxelSize, float EaseStepSize)
