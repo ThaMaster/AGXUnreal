@@ -43,6 +43,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveScalar(const FPLX_Output& Output, double& OutValue);
 
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool SendVector(const FPLX_Input& Input, FVector Value);
+
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool ReceiveVector(const FPLX_Output& Output, FVector& OutValue);
+
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool SendInteger(const FPLX_Input& Input, int64 Value);
+
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool ReceiveInteger(const FPLX_Output& Output, int64& OutValue);
+
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool SendBoolean(const FPLX_Input& Input, bool Value);
+
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool ReceiveBoolean(const FPLX_Output& Output, bool& OutValue);
+
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;
 	//~ End UActorComponent Interface

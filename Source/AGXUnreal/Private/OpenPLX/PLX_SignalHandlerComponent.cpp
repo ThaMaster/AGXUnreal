@@ -64,6 +64,57 @@ bool UPLX_SignalHandlerComponent::SendScalar(const FPLX_Input& Input, double Val
 
 bool UPLX_SignalHandlerComponent::ReceiveScalar(const FPLX_Output& Output, double& OutValue)
 {
+	if (!SignalHandler.IsInitialized())
+		return false;
+
+	return SignalHandler.Receive(Output, OutValue);
+}
+
+bool UPLX_SignalHandlerComponent::SendVector(const FPLX_Input& Input, FVector Value)
+{
+	if (!SignalHandler.IsInitialized())
+		return false;
+
+	return SignalHandler.Send(Input, Value);
+}
+
+bool UPLX_SignalHandlerComponent::ReceiveVector(const FPLX_Output& Output, FVector& OutValue)
+{
+	if (!SignalHandler.IsInitialized())
+		return false;
+
+	return SignalHandler.Receive(Output, OutValue);
+}
+
+bool UPLX_SignalHandlerComponent::SendInteger(const FPLX_Input& Input, int64 Value)
+{
+	if (!SignalHandler.IsInitialized())
+		return false;
+
+	return SignalHandler.Send(Input, Value);
+}
+
+bool UPLX_SignalHandlerComponent::ReceiveInteger(const FPLX_Output& Output, int64& OutValue)
+{
+	if (!SignalHandler.IsInitialized())
+		return false;
+
+	return SignalHandler.Receive(Output, OutValue);
+}
+
+bool UPLX_SignalHandlerComponent::SendBoolean(const FPLX_Input& Input, bool Value)
+{
+	if (!SignalHandler.IsInitialized())
+		return false;
+
+	return SignalHandler.Send(Input, Value);
+}
+
+bool UPLX_SignalHandlerComponent::ReceiveBoolean(const FPLX_Output& Output, bool& OutValue)
+{
+	if (!SignalHandler.IsInitialized())
+		return false;
+
 	return SignalHandler.Receive(Output, OutValue);
 }
 
