@@ -1793,6 +1793,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 #else
 	ParticleSystemComponent->SetVariableInt(FName("User.Target Particle Count"), Exists.Num());
 #endif
+	// Terrain material finns particle density.
 
 	const int32 NumParticles = Positions.Num();
 	TArray<FVector4> PositionsAndScale;
@@ -1817,9 +1818,6 @@ void AAGX_Terrain::UpdateParticlesArrays()
 			float Mass = Masses[I];
 			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radii[I], 3);
 			ParticleDensity = Mass / Volume;
-			UE_LOG(
-				LogTemp, Warning, TEXT("Particle Mass: %f kg, ParticleVolume: %f (cm), Particle Density: %f (kg/cm)"), 
-				Mass, Volume, ParticleDensity);
 			AppendIfActiveVoxel(ActiveVoxelSet, Positions[I], Radii[I]);
 			FCoarseParticle CP;
 			CP.PositionAndRadius = FVector4f(Positions[I].X, Positions[I].Y, Positions[I].Z, Radii[I]);
