@@ -55,7 +55,7 @@ void FPLXSignalHandler::Init(
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT(
-				"Could not load OpenPLX model '%s'. The Console Log may contain more information."),
+				"Could not load OpenPLX model '%s'. The Output Log may contain more information."),
 			*PLXFile);
 		return;
 	}

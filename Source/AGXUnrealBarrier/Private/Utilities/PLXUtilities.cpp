@@ -58,8 +58,7 @@ namespace PLXUtilities_helpers
 	std::shared_ptr<openplx::Core::Api::OpenPlxContext> CreatePLXContext(
 		std::shared_ptr<agxopenplx::AgxCache> AGXCache)
 	{
-		const FString PLXBundlesPath = FPaths::Combine(
-			FAGX_Environment::GetPluginSourcePath(), "Thirdparty", "agx", "openplxbundles");
+		const FString PLXBundlesPath = FPLXUtilities::GetBundlePath();
 		auto PLXCtx = std::make_shared<openplx::Core::Api::OpenPlxContext>(
 			std::vector<std::string>({Convert(PLXBundlesPath)}));
 
@@ -281,8 +280,7 @@ EPLX_OutputType FPLXUtilities::GetOutputType(const openplx::Physics::Signals::Ou
 	{
 		return EPLX_OutputType::AutomaticClutchEngagementDurationOutput;
 	}
-	if (dynamic_cast<const AutomaticClutchDisengagementDurationOutput*>(
-			&Output))
+	if (dynamic_cast<const AutomaticClutchDisengagementDurationOutput*>(&Output))
 	{
 		return EPLX_OutputType::AutomaticClutchDisengagementDurationOutput;
 	}
@@ -388,6 +386,105 @@ EPLX_OutputType FPLXUtilities::GetOutputType(const openplx::Physics::Signals::Ou
 	}
 
 	return EPLX_OutputType::Unsupported;
+}
+
+FString FPLXUtilities::GetBundlePath()
+{
+	return FPaths::Combine(
+		FAGX_Environment::GetPluginSourcePath(), "Thirdparty", "agx", "openplxbundles");
+}
+
+FString FPLXUtilities::CreateUniqueModelDirectory(const FString& Filepath)
+{
+	const FString ProjectPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+	const FString ModelName = FPaths::GetBaseFilename(Filepath);
+	const FString BaseModelDir = FPaths::Combine(ProjectPath, TEXT("OpenPLXModels"), ModelName);
+
+	FString UniqueModelDir = BaseModelDir;
+	int32 Suffix = 1;
+	while (FPaths::DirectoryExists(UniqueModelDir))
+	{
+		UniqueModelDir = FString::Printf(TEXT("%s_%d"), *BaseModelDir, Suffix++);
+	}
+
+	if (IFileManager::Get().MakeDirectory(*UniqueModelDir, true))
+	{
+		return UniqueModelDir;
+	}
+
+	UE_LOG(
+		LogTemp, Error, TEXT("CreateUniqueModelDirectory: Failed to create directory: %s"),
+		*UniqueModelDir);
+	return "";
+}
+
+FString FPLXUtilities::CopyAllDependenciesToProject(
+	const FString& Filepath, const FString& Destination)
+{
+	const TArray<FString> Dependencies = GetFileDependencies(Filepath);
+	if (Dependencies.Num() == 0)
+		return ""; // Logging done in GetFileDependencies.
+
+	const FString SourceRoot = FPaths::GetPath(Filepath);
+	FString CopiedMainFilePath;
+
+	for (const FString& Dep : Dependencies)
+	{
+		const FString RelativePath = Dep.Replace(*SourceRoot, TEXT(""));
+		const FString TargetPath = FPaths::Combine(Destination, RelativePath);
+
+		const FString TargetDir = FPaths::GetPath(TargetPath);
+		if (!FPaths::DirectoryExists(TargetDir))
+			IFileManager::Get().MakeDirectory(*TargetDir, true);
+
+		if (!FPlatformFileManager::Get().GetPlatformFile().CopyFile(*TargetPath, *Dep))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to copy OpenPLX dependency: %s"), *Dep);
+		}
+
+		if (Dep == Filepath)
+		{
+			CopiedMainFilePath = TargetPath;
+		}
+	}
+
+	return CopiedMainFilePath;
+}
+
+TArray<FString> FPLXUtilities::GetFileDependencies(const FString& Filepath)
+{
+	using namespace PLXUtilities_helpers;
+	TArray<FString> Dependencies;
+
+	if (!FPaths::FileExists(Filepath))
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("GetFileDependencies: Could not read OpenPLX file '%s'. The file does not exist."),
+			*Filepath);
+		return Dependencies;
+	}
+
+	std::shared_ptr<agxopenplx::AgxCache> AGXCache;
+	auto Context = CreatePLXContext(AGXCache);
+	if (Context == nullptr)
+	{
+		UE_LOG(LogAGX, Error, TEXT("GetFileDependencies: Error Creating OpenPLX Context"));
+		return Dependencies;
+	}
+
+	const std::string FilepathStr = Convert(Filepath);
+	auto ContextInternal = openplx::Core::Api::OpenPlxContextInternal::fromContext(*Context);
+	ContextInternal->parseFile(FilepathStr);
+	const auto& Docs = ContextInternal->documents();
+	const FString BundlePath = GetBundlePath();
+	for (auto& D : Docs)
+	{
+		const FString Path = Convert(D->path.string());
+		if (!Path.StartsWith(BundlePath))
+			Dependencies.Add(Path);
+	}
+	return Dependencies;
 }
 
 std::unordered_set<openplx::Core::ObjectPtr> FPLXUtilities::GetNestedObjectFields(

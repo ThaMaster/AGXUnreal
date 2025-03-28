@@ -193,7 +193,7 @@ void FAGX_SimulationCustomization::OnRaytraceDeviceComboBoxChanged(
 	if (!Result)
 	{
 		FAGX_NotificationUtilities::ShowNotification(
-			"Unable to set Raytrace Device. The Console Log may contain more information.",
+			"Unable to set Raytrace Device. The Output Log may contain more information.",
 			SNotificationItem::CS_Fail);
 		return;
 	}
