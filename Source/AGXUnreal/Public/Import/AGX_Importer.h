@@ -48,10 +48,11 @@ public:
 	FAGX_Importer();
 
 	/**
-	 * Import an .agx archive or Urdf file to an Actor that can either be instantiated
+	 * Import an .agx archive, OpenPLX or Urdf model to an Actor that can either be instantiated
 	 * immediately in a world, or used to create a Blueprint from it.
 	 * The Outer must be set to a World if doing runtime imports, otherwise it can be set to
 	 * TransientPackage.
+	 * OpenPLX files must reside in the Unreal project/OpenPLXModels directory.
 	 */
 	FAGX_ImportResult Import(const FAGX_ImportSettings& Settings, UObject& Outer);
 	const FAGX_ImportContext& GetContext() const;

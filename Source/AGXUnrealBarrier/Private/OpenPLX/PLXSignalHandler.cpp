@@ -12,7 +12,7 @@
 #include "OpenPLX/PLX_Outputs.h"
 #include "SimulationBarrier.h"
 #include "TypeConversions.h"
-#include "Utilities/PLXUtilities.h"
+#include "Utilities/PLXUtilitiesInternal.h"
 
 // OpenPLX includes.
 #include "BeginAGXIncludes.h"
@@ -82,7 +82,7 @@ void FPLXSignalHandler::Init(
 		return;
 	}
 
-	if (FPLXUtilities::HasInputs(System.get()))
+	if (FPLXUtilitiesInternal::HasInputs(System.get()))
 	{
 		InputQueueRef =
 			std::make_shared<FInputSignalQueueRef>(agxopenplx::InputSignalQueue::create());
@@ -91,7 +91,7 @@ void FPLXSignalHandler::Init(
 		Simulation.GetNative()->Native->add(InputSignalHandlerRef->Native);
 	}
 
-	if (FPLXUtilities::HasOutputs(System.get()))
+	if (FPLXUtilitiesInternal::HasOutputs(System.get()))
 	{
 		OutputQueueRef =
 			std::make_shared<FOutputSignalQueueRef>(agxopenplx::OutputSignalQueue::create());

@@ -42,6 +42,7 @@
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/PLXUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/TrackBarrier.h"
 #include "Wire/AGX_WireComponent.h"
@@ -179,6 +180,30 @@ namespace AGX_Importer_helpers
 		check(Body != nullptr);
 		return Body;
 	}
+
+	bool CheckFilePath(const FAGX_ImportSettings& Settings)
+	{
+		bool Result = false;
+
+		if (Settings.ImportType == EAGX_ImportType::Plx)
+		{
+			Result = Settings.FilePath.StartsWith(FPLXUtilities::GetModelsDirectory());
+			if (!Result)
+				UE_LOG(
+					LogAGX, Error, TEXT("OpenPLX file must reside in '%s'."),
+					*FPLXUtilities::GetModelsDirectory());
+			Result &= FPaths::FileExists(Settings.FilePath);
+		}
+		else
+		{
+			Result = FPaths::FileExists(Settings.FilePath);
+		}
+
+		if (!Result)
+			UE_LOG(LogAGX, Error, TEXT("File path invalid: '%s'"), *Settings.FilePath);
+
+		return Result;
+	}
 }
 
 FAGX_Importer::FAGX_Importer()
@@ -207,6 +232,9 @@ FAGX_Importer::FAGX_Importer()
 FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImportSettings& Settings, UObject& Outer)
 {
 	using namespace AGX_Importer_helpers;
+
+	if (!CheckFilePath(Settings))
+		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 
 	Context.Outer = &Outer;
 	Context.Settings = &Settings;

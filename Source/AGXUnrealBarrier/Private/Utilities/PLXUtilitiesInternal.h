@@ -25,11 +25,6 @@ namespace openplx
 		class System;
 	}
 
-	namespace Core
-	{
-		class Object;
-	}
-
 	namespace Physics
 	{
 		namespace Signals
@@ -40,7 +35,7 @@ namespace openplx
 	}
 }
 
-class FPLXUtilities
+class FPLXUtilitiesInternal
 {
 public:
 	static openplx::Core::ObjectPtr LoadModel(
@@ -54,27 +49,6 @@ public:
 
 	static EPLX_InputType GetInputType(const openplx::Physics::Signals::Input& Input);
 	static EPLX_OutputType GetOutputType(const openplx::Physics::Signals::Output& Output);
-
-	static FString GetBundlePath();
-
-	/**
-	 * Given a OpenPLX file anywhere on the system, this function creates a directory with the same
-	 * name as the OpenPLX model inside the Project/OpenPLXModels/ directory. If there already
-	 * exists a directory with the same name, a _n suffix is added at the end where n goes from
-	 * 1...inf such that it becomes unique.
-	 * Returns the absolute path to the created directory.
-	 */
-	static FString CreateUniqueModelDirectory(const FString& Filepath);
-
-	/**
-	 * Given an OpenPLX file anywhere on the system, it, and all of it's dependencies are copied to
-	 * the given destination path, with preserved relative paths from the OpenPLX file.
-	 * All dependencies must be in the same directory or a subdirectory to the OpenPLX file.
-	 * If there exists files with the same name in the directory, the files are overwritten.
-	 * Returns the path to the copy of the main OpenPLX file.
-	 */
-	static FString CopyAllDependenciesToProject(
-		const FString& Filepath, const FString& Destination);
 
 	/**
 	 * Returns an array of paths to all dependencies of an OpenPLX file.
@@ -97,7 +71,7 @@ public:
 };
 
 template <class T>
-std::vector<std::shared_ptr<T>> FPLXUtilities::GetNestedObjects(openplx::Core::Object& Object)
+std::vector<std::shared_ptr<T>> FPLXUtilitiesInternal::GetNestedObjects(openplx::Core::Object& Object)
 {
 	std::vector<std::shared_ptr<T>> Output;
 	std::unordered_set<openplx::Core::ObjectPtr> Objects = GetNestedObjectFields(Object);

@@ -14,6 +14,7 @@
 #include "Shapes/SphereShapeBarrier.h"
 #include "TypeConversions.h"
 #include "Utilities/PLXUtilities.h"
+#include "Utilities/PLXUtilitiesInternal.h"
 
 // OpenPLX includes.
 #include "BeginAGXIncludes.h"
@@ -660,8 +661,8 @@ bool FAGXSimObjectsReader::ReadOpenPLXFile(
 
 	// Read PLX inputs.
 	auto System = std::dynamic_pointer_cast<openplx::Physics3D::System>(Result.scene());
-	OutSimObjects.GetPLXInputs() = FPLXUtilities::GetInputs(System.get());
-	OutSimObjects.GetPLXOutputs() = FPLXUtilities::GetOutputs(System.get());
+	OutSimObjects.GetPLXInputs() = FPLXUtilitiesInternal::GetInputs(System.get());
+	OutSimObjects.GetPLXOutputs() = FPLXUtilitiesInternal::GetOutputs(System.get());
 
 	return true;
 }

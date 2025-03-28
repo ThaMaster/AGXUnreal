@@ -8,7 +8,7 @@
 #include "BarrierOnly/OpenPLX/OpenPLXRefs.h"
 #include "SimulationBarrier.h"
 #include "TypeConversions.h"
-#include "Utilities/PLXUtilities.h"
+#include "Utilities/PLXUtilitiesInternal.h"
 
 
 // Standard library includes.
@@ -62,7 +62,7 @@ namespace FPLXModelRegistry_helpers
 		if (System == nullptr)
 			return Inputs;
 
-		for (auto& Input : FPLXUtilities::GetNestedObjects<openplx::Physics::Signals::Input>(*System))
+		for (auto& Input : FPLXUtilitiesInternal::GetNestedObjects<openplx::Physics::Signals::Input>(*System))
 		{
 			if (Input == nullptr)
 				continue;
@@ -123,7 +123,7 @@ FPLXModelRegistry::Handle FPLXModelRegistry::LoadNewModel(const FString& PLXFile
 	AGX_CHECK(GetFrom(PLXFile) == InvalidHandle);
 
 	FPLXModelData NewModel;
-	NewModel.PLXModel = FPLXUtilities::LoadModel(PLXFile, NewModel.AGXCache);
+	NewModel.PLXModel = FPLXUtilitiesInternal::LoadModel(PLXFile, NewModel.AGXCache);
 	if (NewModel.PLXModel == nullptr)
 	{
 		UE_LOG(

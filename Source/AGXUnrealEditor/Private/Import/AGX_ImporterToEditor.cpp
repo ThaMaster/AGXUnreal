@@ -30,6 +30,7 @@
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/PLXUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
@@ -58,7 +59,7 @@ namespace AGX_ImporterToEditor_helpers
 		GEditor->SelectNone(false, false);
 	}
 
-	void PreReimportSetup()
+	void CloseAssetEditors()
 	{
 		// During Model reimport, old assets are deleted and references to these assets are
 		// automatically cleared. Having the Blueprint Editor opened while doing this causes
@@ -942,13 +943,18 @@ namespace AGX_ImporterToEditor_helpers
 	}
 }
 
-UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImportSettings& Settings)
+UBlueprint* FAGX_ImporterToEditor::Import(FAGX_ImportSettings Settings)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 
 	FScopedSlowTask ImportTask(100.f, FText::FromString("Importing model"), true);
 	ImportTask.MakeDialog();
-	ImportTask.EnterProgressFrame(20.f, FText::FromString("Importing from source file"));
+
+	ImportTask.EnterProgressFrame(10.f, FText::FromString("Pre-import setup"));
+
+	PreImport(Settings);
+
+	ImportTask.EnterProgressFrame(10.f, FText::FromString("Importing from source file"));
 
 	FAGX_Importer Importer;
 	FAGX_ImportResult Result = Importer.Import(Settings, *GetTransientPackage());
@@ -979,13 +985,18 @@ UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImportSettings& Settings)
 }
 
 bool FAGX_ImporterToEditor::Reimport(
-	UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings, UBlueprint* OpenBlueprint)
+	UBlueprint& BaseBP, FAGX_ReimportSettings Settings, UBlueprint* OpenBlueprint)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 
 	FScopedSlowTask ImportTask(100.f, FText::FromString("Reimport model"), true);
 	ImportTask.MakeDialog();
-	ImportTask.EnterProgressFrame(5.f, FText::FromString("Initializing"));
+
+	ImportTask.EnterProgressFrame(3.f, FText::FromString("Pre-reimport setup"));
+
+	PreReimport(BaseBP, Settings);
+
+	ImportTask.EnterProgressFrame(2.f, FText::FromString("Initializing"));
 
 	if (!ValidateReimportSettings(Settings))
 		return false;
@@ -1001,7 +1012,7 @@ bool FAGX_ImporterToEditor::Reimport(
 	if (OpenBlueprint != nullptr)
 		FAGX_EditorUtilities::SaveAndCompile(*OpenBlueprint);
 
-	PreReimportSetup();
+	CloseAssetEditors();
 
 	ImportTask.EnterProgressFrame(15.f, FText::FromString("Reading objects from source file"));
 
@@ -1492,4 +1503,45 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 	}
 
 	return Result;
+}
+
+void FAGX_ImporterToEditor::PreImport(FAGX_ImportSettings& OutSettings)
+{
+	if (OutSettings.ImportType != EAGX_ImportType::Plx)
+		return;
+
+	if (OutSettings.FilePath.StartsWith(FPLXUtilities::GetModelsDirectory()))
+		return;
+
+	// We need to copy the OpenPLX file (and any dependency) to the OpenPLX ModelsDirectory.
+	// We also update the filepath in the ImportSettings to point to the new, copied OpenPLX file.
+	const FString DestinationDir = FPLXUtilities::CreateUniqueModelDirectory(OutSettings.FilePath);
+	const FString NewLocation =
+		FPLXUtilities::CopyAllDependenciesToProject(OutSettings.FilePath, DestinationDir);
+	OutSettings.FilePath = NewLocation;
+}
+
+void FAGX_ImporterToEditor::PreReimport(const UBlueprint& Blueprint, FAGX_ImportSettings& OutSettings)
+{
+	if (OutSettings.ImportType != EAGX_ImportType::Plx)
+		return;
+
+	if (OutSettings.FilePath.StartsWith(FPLXUtilities::GetModelsDirectory()))
+		return;
+
+	USCS_Node* MsNode = Blueprint.SimpleConstructionScript->FindSCSNode(TEXT("AGX_ModelSource"));
+	if (MsNode == nullptr)
+		return;
+
+	UAGX_ModelSourceComponent* Ms = Cast<UAGX_ModelSourceComponent>(MsNode->ComponentTemplate);
+	if (Ms == nullptr)
+		return;
+
+	const FString TargetDir = FPaths::GetPath(Ms->FilePath);
+	if (!TargetDir.StartsWith(FPLXUtilities::GetModelsDirectory()))
+		return;
+
+	const FString NewLocation =
+		FPLXUtilities::CopyAllDependenciesToProject(OutSettings.FilePath, TargetDir);
+	OutSettings.FilePath = NewLocation;
 }
