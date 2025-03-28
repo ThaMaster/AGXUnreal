@@ -62,7 +62,7 @@ public:
 	static FVector CalculateCenterOfMass(const TArray<UAGX_RigidBodyComponent*>& Bodies);
 
 	/**
-	 * Import an .agx archive or Urdf file and get a AActor template back.
+	 * Import an .agx archive, OpenPLX or Urdf model and get a AActor template back.
 	 * This template AActor must be instantiated to be part of the world, see InstantiateActor.
 	 */
 	UFUNCTION(

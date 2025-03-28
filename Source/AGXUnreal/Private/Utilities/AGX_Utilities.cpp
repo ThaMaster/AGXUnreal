@@ -9,6 +9,7 @@
 #include "Import/AGX_ImportSettings.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGXUtilities.h"
+#include "Utilities/PLXUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/World.h"
@@ -55,6 +56,27 @@ FVector UAGX_AGXUtilities::CalculateCenterOfMass(const TArray<UAGX_RigidBodyComp
 	return Com;
 }
 
+namespace AGX_AGXUtilities_helpers
+{
+	void PreOpenPLXImport(FAGX_ImportSettings& OutSettings)
+	{
+		if (OutSettings.ImportType != EAGX_ImportType::Plx)
+			return;
+
+		if (OutSettings.FilePath.StartsWith(FPLXUtilities::GetModelsDirectory()))
+			return;
+
+		// We need to copy the OpenPLX file (and any dependency) to the OpenPLX ModelsDirectory.
+		// We also update the filepath in the ImportSettings to point to the new, copied OpenPLX
+		// file.
+		const FString DestinationDir =
+			FPLXUtilities::CreateUniqueModelDirectory(OutSettings.FilePath);
+		const FString NewLocation =
+			FPLXUtilities::CopyAllDependenciesToProject(OutSettings.FilePath, DestinationDir);
+		OutSettings.FilePath = NewLocation;
+	}
+}
+
 AActor* UAGX_AGXUtilities::Import(UObject* WorldContextObject, FAGX_ImportSettings Settings)
 {
 	if (WorldContextObject == nullptr || WorldContextObject->GetWorld() == nullptr)
@@ -66,6 +88,9 @@ AActor* UAGX_AGXUtilities::Import(UObject* WorldContextObject, FAGX_ImportSettin
 	}
 
 	UWorld* World = WorldContextObject->GetWorld();
+	if (Settings.ImportType == EAGX_ImportType::Plx)
+		AGX_AGXUtilities_helpers::PreOpenPLXImport(Settings);
+
 	FAGX_Importer Importer;
 	FAGX_ImportResult Result = Importer.Import(Settings, *World);
 	if (IsUnrecoverableError(Result.Result) || Result.Actor == nullptr)

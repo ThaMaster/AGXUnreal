@@ -916,9 +916,6 @@ namespace AGX_ImporterToEditor_helpers
 			return EAGX_ImportResult::FatalError;
 		}
 
-		Component->FilePath = Context.Settings->FilePath;
-		Component->bIgnoreDisabledTrimeshes = Context.Settings->bIgnoreDisabledTrimeshes;
-
 		for (const auto& [Guid, CollisionComponent] : *Context.CollisionStaticMeshCom)
 		{
 			const FString Name = CollisionComponent->GetName();

@@ -32,5 +32,5 @@ public:
 	 * Returns the path to the copy of the main OpenPLX file.
 	 */
 	static FString CopyAllDependenciesToProject(
-		const FString& Filepath, const FString& Destination);
+		FString Filepath, const FString& Destination);
 };

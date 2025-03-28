@@ -305,6 +305,8 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(AActor& Owner)
 	}
 
 	UAGX_ModelSourceComponent* Component = NewObject<UAGX_ModelSourceComponent>(&Owner);
+	Component->FilePath = Context.Settings->FilePath;
+	Component->bIgnoreDisabledTrimeshes = Context.Settings->bIgnoreDisabledTrimeshes;
 	Component->Rename(*Name);
 
 	/*

@@ -44,18 +44,28 @@ FString FPLXUtilities::CreateUniqueModelDirectory(const FString& Filepath)
 	return "";
 }
 
-FString FPLXUtilities::CopyAllDependenciesToProject(
-	const FString& Filepath, const FString& Destination)
+FString FPLXUtilities::CopyAllDependenciesToProject(FString Filepath, const FString& Destination)
 {
 	const TArray<FString> Dependencies = FPLXUtilitiesInternal::GetFileDependencies(Filepath);
 	if (Dependencies.Num() == 0)
 		return ""; // Logging done in GetFileDependencies.
 
+	// Ensure consistent formatting of / and \\ in the path.
+	Filepath = FPaths::ConvertRelativePathToFull(Filepath);
 	const FString SourceRoot = FPaths::GetPath(Filepath);
 	FString CopiedMainFilePath;
 
 	for (const FString& Dep : Dependencies)
 	{
+		if (!Dep.StartsWith(SourceRoot))
+		{
+			UE_LOG(
+				LogAGX, Warning,
+				TEXT("OpenPLX dependency '%s' is not located in the same directory, or a "
+					 "subdirectory to the OpenPLX file '%s'. It cannot be copied."),
+				*Dep, *Filepath);
+		}
+
 		const FString RelativePath = Dep.Replace(*SourceRoot, TEXT(""));
 		const FString TargetPath = FPaths::Combine(Destination, RelativePath);
 
