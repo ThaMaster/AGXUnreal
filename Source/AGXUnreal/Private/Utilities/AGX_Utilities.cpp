@@ -55,6 +55,21 @@ FVector UAGX_AGXUtilities::CalculateCenterOfMass(const TArray<UAGX_RigidBodyComp
 	return Com;
 }
 
+namespace AGX_Utilties_helpers
+{
+	void ResolveImportPath(FAGX_ImportSettings& OutSettings)
+	{
+		if (FPaths::FileExists(OutSettings.FilePath))
+			return;
+
+		// Try relative to project dir.
+		const FString ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+		const FString FullPath = FPaths::Combine(ProjectDir, OutSettings.FilePath);
+		if (FPaths::FileExists(FullPath))
+			OutSettings.FilePath = FullPath;
+	}
+}
+
 AActor* UAGX_AGXUtilities::Import(UObject* WorldContextObject, FAGX_ImportSettings Settings)
 {
 	if (WorldContextObject == nullptr || WorldContextObject->GetWorld() == nullptr)
@@ -65,6 +80,7 @@ AActor* UAGX_AGXUtilities::Import(UObject* WorldContextObject, FAGX_ImportSettin
 		return nullptr;
 	}
 
+	AGX_Utilties_helpers::ResolveImportPath(Settings);
 	UWorld* World = WorldContextObject->GetWorld();
 	FAGX_Importer Importer;
 	FAGX_ImportResult Result = Importer.Import(Settings, *World);
