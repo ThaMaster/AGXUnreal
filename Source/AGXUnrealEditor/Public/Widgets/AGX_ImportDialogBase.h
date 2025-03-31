@@ -26,6 +26,7 @@ public:
 protected:
 	TSharedRef<SWidget> CreateBrowseFileGui();
 	TSharedRef<SBorder> CreateAGXFileGui();
+	TSharedRef<SBorder> CreatePLXFileGui();
 	TSharedRef<SWidget> CreateIgnoreDisabledTrimeshGui();
 
 	FReply OnBrowseFileButtonClicked();

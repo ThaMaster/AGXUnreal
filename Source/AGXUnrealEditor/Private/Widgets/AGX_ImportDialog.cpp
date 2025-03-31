@@ -85,6 +85,12 @@ void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 			.Padding(FMargin(5.0f, 0.0f))
 			.AutoHeight()
 			[
+				CreatePLXFileGui()
+			]
+			+ SVerticalBox::Slot()
+			.Padding(FMargin(5.0f, 0.0f))
+			.AutoHeight()
+			[
 				CreateURDFFileGui()
 			]
 			+ SVerticalBox::Slot()
