@@ -11,6 +11,7 @@
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_MaterialReplacer.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_SlateUtilities.h"
 #include "Widgets/AGX_ImportDialog.h"
 
 // Unreal Engine includes.
@@ -44,7 +45,25 @@ void FAGX_ModelSourceComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 
 	IDetailCategoryBuilder& CategoryBuilder = InDetailBuilder.EditCategory("AGX Reimport Model");
 
-	// clang-format off
+	if (ModelSourceComponent->FilePath.EndsWith("openplx"))
+	{
+		FString SourceFilePath = FPaths::ConvertRelativePathToFull(ModelSourceComponent->FilePath);
+		SourceFilePath.RemoveFromStart(FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()));
+
+		// clang-format off
+		CategoryBuilder.AddCustomRow(FText::GetEmpty())
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(FString::Printf(TEXT("Source File: '%s'"), *SourceFilePath)))
+				.Font(FAGX_SlateUtilities::CreateFont(8))
+			]
+		];
+	}
+
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
 	[
 		SNew(SHorizontalBox)
