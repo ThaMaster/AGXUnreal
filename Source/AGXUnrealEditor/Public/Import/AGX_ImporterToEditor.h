@@ -47,6 +47,7 @@ private:
 
 	void PreImport(FAGX_ImportSettings& OutSettings);
 	void PreReimport(const UBlueprint& Blueprint, FAGX_ImportSettings& OutSettings);
+	void PostImport(const FAGX_ImportSettings& Settings);
 
 	FString RootDirectory;
 	FString ModelName;

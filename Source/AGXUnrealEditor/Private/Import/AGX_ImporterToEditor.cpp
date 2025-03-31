@@ -978,6 +978,8 @@ UBlueprint* FAGX_ImporterToEditor::Import(FAGX_ImportSettings Settings)
 	if (Settings.bOpenBlueprintEditorAfterImport)
 		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(ChildBlueprint);
 
+	PostImport(Settings);
+
 	return ChildBlueprint;
 }
 
@@ -1518,7 +1520,8 @@ void FAGX_ImporterToEditor::PreImport(FAGX_ImportSettings& OutSettings)
 	OutSettings.FilePath = NewLocation;
 }
 
-void FAGX_ImporterToEditor::PreReimport(const UBlueprint& Blueprint, FAGX_ImportSettings& OutSettings)
+void FAGX_ImporterToEditor::PreReimport(
+	const UBlueprint& Blueprint, FAGX_ImportSettings& OutSettings)
 {
 	if (OutSettings.ImportType != EAGX_ImportType::Plx)
 		return;
@@ -1541,4 +1544,15 @@ void FAGX_ImporterToEditor::PreReimport(const UBlueprint& Blueprint, FAGX_Import
 	const FString NewLocation =
 		FPLXUtilities::CopyAllDependenciesToProject(OutSettings.FilePath, TargetDir);
 	OutSettings.FilePath = NewLocation;
+}
+
+void FAGX_ImporterToEditor::PostImport(const FAGX_ImportSettings& Settings)
+{
+	if (Settings.ImportType == EAGX_ImportType::Plx)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(FString::Printf(
+			TEXT("OpenPLX model files were copied to '%s'. These files are needed during runtime "
+				 "and should not be removed as long as the imported model is used."),
+			*FPaths::GetPath(Settings.FilePath)));
+	}
 }

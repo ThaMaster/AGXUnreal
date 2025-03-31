@@ -13,25 +13,18 @@
 
 namespace
 {
-	void ShowDialogBox(const FString& Text, const FString& InTitle)
+	void ShowDialogBox(const FString& Text, const FString& InTitle, EAppMsgCategory Category)
 	{
 		const FText Title = InTitle.IsEmpty() ? FText::FromString("AGX Dynamics for Unreal")
 											  : FText::FromString(InTitle);
-		FMessageDialog::Open(
-			EAppMsgType::Ok, FText::FromString(Text),
-#if UE_VERSION_OLDER_THAN(5, 3, 0)
-			&Title
-#else
-			Title
-#endif
-		);
+		FMessageDialog::Open(Category, EAppMsgType::Ok, FText::FromString(Text), Title);
 	}
 }
 
 void FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(const FString& Text, const FString& Title)
 {
 	UE_LOG(LogAGX, Log, TEXT("%s"), *Text);
-	ShowDialogBox(Text, Title);
+	ShowDialogBox(Text, Title, EAppMsgCategory::Info);
 }
 
 void FAGX_NotificationUtilities::ShowDialogBoxWithLogLogInEditor(
@@ -52,7 +45,7 @@ void FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(
 	const FString& Text, const FString& Title)
 {
 	UE_LOG(LogAGX, Warning, TEXT("%s"), *Text);
-	ShowDialogBox(Text, Title);
+	ShowDialogBox(Text, Title, EAppMsgCategory::Warning);
 }
 
 void FAGX_NotificationUtilities::ShowDialogBoxWithWarningLogInEditor(
@@ -73,7 +66,7 @@ void FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
 	const FString& Text, const FString& Title)
 {
 	UE_LOG(LogAGX, Error, TEXT("%s"), *Text);
-	ShowDialogBox(Text, Title);
+	ShowDialogBox(Text, Title, EAppMsgCategory::Error);
 }
 
 void FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
