@@ -443,7 +443,7 @@ namespace AGX_ImporterToEditor_helpers
 					 "category LogAGX in the Output Log may contain more information."),
 				*Settings.FilePath);
 			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				Text, "Import model to Blueprint");
+				Text, "Import Model to Blueprint");
 			return false;
 		}
 
