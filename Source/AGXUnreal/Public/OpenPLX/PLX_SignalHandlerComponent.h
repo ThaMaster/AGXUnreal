@@ -31,10 +31,10 @@ class AGXUNREAL_API UPLX_SignalHandlerComponent : public UActorComponent
 public:
 	UPLX_SignalHandlerComponent();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OpenPLX")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPLX")
 	TMap<FString, FPLX_Input> Inputs;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OpenPLX")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPLX")
 	TMap<FString, FPLX_Output> Outputs;
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
@@ -60,6 +60,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveBoolean(const FPLX_Output& Output, bool& OutValue);
+
+	UPROPERTY(Transient)
+	bool bShowDisabledOutputs {false};
 
 	//~ Begin UActorComponent Interface
 	virtual void BeginPlay() override;

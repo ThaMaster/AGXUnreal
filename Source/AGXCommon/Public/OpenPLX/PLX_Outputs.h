@@ -20,9 +20,10 @@ struct AGXCOMMON_API FPLX_Output
 	GENERATED_BODY()
 
 	FPLX_Output() = default;
-	FPLX_Output(const FString& InName, EPLX_OutputType InType)
+	FPLX_Output(const FString& InName, EPLX_OutputType InType, bool InEnabled)
 		: Name(InName)
 		, Type(InType)
+		, bEnabled(InEnabled)
 	{
 	}
 
@@ -31,5 +32,8 @@ struct AGXCOMMON_API FPLX_Output
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPXL")
 	EPLX_OutputType Type {EPLX_OutputType::Unsupported};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPXL")
+	bool bEnabled {false};
 };
 

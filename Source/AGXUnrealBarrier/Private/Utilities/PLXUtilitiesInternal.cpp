@@ -173,7 +173,7 @@ TArray<FPLX_Output> FPLXUtilitiesInternal::GetOutputs(openplx::Physics3D::System
 			continue;
 
 		EPLX_OutputType Type = GetOutputType(*Output);
-		Outputs.Add(FPLX_Output(Convert(Output->getName()), Type));
+		Outputs.Add(FPLX_Output(Convert(Output->getName()), Type, Output->enabled()));
 		if (Type == EPLX_OutputType::Unsupported)
 		{
 			UE_LOG(
