@@ -1815,7 +1815,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
 		if (Exists[I] && bEnableParticleUpsampling)
 		{
-			float Mass = Masses[I];
+			float Mass = Masses[I]; // Convert to gram 
 			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radii[I], 3);
 			ParticleDensity = Mass / Volume;
 			AppendIfActiveVoxel(ActiveVoxelSet, Positions[I], Radii[I]);
@@ -1849,10 +1849,12 @@ void AAGX_Terrain::UpdateParticlesArrays()
 
 		//UE_LOG(LogTemp, Warning, TEXT("SizeX: %d"), LandscapeDisplacementMap->SizeX)
 
+		// This is the element size in the unity version, only to be used when comparing implementations / for thesis work.
+		const float ElementSize = 14.76562;
 		TArray<FIntVector4> ActiveVoxelIndices = GetActiveVoxelsFromSet(ActiveVoxelSet);
 		UParticleUpsamplingInterface::SetCoarseParticles(NewCoarseParticles);
 		UParticleUpsamplingInterface::SetActiveVoxelIndices(ActiveVoxelIndices);
-		UParticleUpsamplingInterface::RecalculateFineParticleProperties(Upsampling, VoxelSize, ParticleDensity);
+		UParticleUpsamplingInterface::RecalculateFineParticleProperties(Upsampling, ElementSize, ParticleDensity);
 		UParticleUpsamplingInterface::SetStaticVariables(VoxelSize, EaseStepSize);
 		int HashTableSize = UParticleUpsamplingInterface::GetHashTableSize();
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
