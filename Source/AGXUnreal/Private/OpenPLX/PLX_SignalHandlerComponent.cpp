@@ -54,6 +54,35 @@ namespace PLX_SignalHandlerComponent_helpers
 	}
 }
 
+bool UPLX_SignalHandlerComponent::FindInput(EPLX_InputType Type, FString Name, FPLX_Input& OutInput)
+{
+	for (auto Elem : Inputs)
+	{
+		if (Elem.Value.Type == Type && Elem.Value.Name.Contains(Name))
+		{
+			OutInput = Elem.Value;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool UPLX_SignalHandlerComponent::FindOutput(
+	EPLX_OutputType Type, FString Name, FPLX_Output& OutOutput)
+{
+	for (auto Elem : Outputs)
+	{
+		if (Elem.Value.Type == Type && Elem.Value.Name.Contains(Name))
+		{
+			OutOutput = Elem.Value;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool UPLX_SignalHandlerComponent::SendScalar(const FPLX_Input& Input, double Value)
 {
 	if (!SignalHandler.IsInitialized())

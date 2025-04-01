@@ -7,7 +7,7 @@
 #include "UObject/ObjectMacros.h"
 
 UENUM()
-enum class EPLX_InputType
+enum class EPLX_InputType : uint8
 {
 	Unsupported,
 	/* Real Inputs */
@@ -35,7 +35,7 @@ enum class EPLX_InputType
 };
 
 UENUM()
-enum class EPLX_OutputType
+enum class EPLX_OutputType : uint8
 {
 	Unsupported,
 	/* Real Outputs */

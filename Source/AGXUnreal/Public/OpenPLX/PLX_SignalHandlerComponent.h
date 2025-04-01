@@ -17,7 +17,7 @@ struct FAGX_ImportContext;
 
 /**
  * EXPERIMENTAL
- * 
+ *
  * Todo: Add description.
  */
 UCLASS(
@@ -36,6 +36,20 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPLX")
 	TMap<FString, FPLX_Output> Outputs;
+
+	/**
+	 * Outputs the first found Input given a type and full or partial name. In other words, partial name
+	 * matching is supported. Returns true if an Input was found, returns false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool FindInput(EPLX_InputType Type, FString Name, FPLX_Input& OutInput);
+
+	/**
+	 * Outputs the first found Output given a type and full or partial name. In other words, partial name
+	 * matching is supported. Returns true if an Output was found, returns false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool FindOutput(EPLX_OutputType Type, FString Name, FPLX_Output& OutOutput);
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendScalar(const FPLX_Input& Input, double Value);
