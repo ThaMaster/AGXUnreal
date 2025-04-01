@@ -52,10 +52,10 @@ public:
 	bool FindOutput(EPLX_OutputType Type, FString Name, FPLX_Output& OutOutput);
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool SendScalar(const FPLX_Input& Input, double Value);
+	bool SendReal(const FPLX_Input& Input, double Value);
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool ReceiveScalar(const FPLX_Output& Output, double& OutValue);
+	bool ReceiveReal(const FPLX_Output& Output, double& OutValue);
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendVector(const FPLX_Input& Input, FVector Value);

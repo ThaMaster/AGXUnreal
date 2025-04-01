@@ -110,7 +110,7 @@ bool FPLXSignalHandler::IsInitialized() const
 
 namespace PLXSignalHandler_helpers
 {
-	TOptional<double> ConvertScalar(const FPLX_Input& Input, double Value)
+	TOptional<double> ConvertReal(const FPLX_Input& Input, double Value)
 	{
 		switch (Input.Type)
 		{
@@ -131,8 +131,8 @@ namespace PLXSignalHandler_helpers
 
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Tried to convert scalar value for Input '%s', but the type is either "
-				 "not of scalar type or is unsupported."),
+			TEXT("Tried to convert Real value for Input '%s', but the type is either "
+				 "not of Real type or is unsupported."),
 			*Input.Name);
 		return {};
 	}
@@ -259,7 +259,7 @@ namespace PLXSignalHandler_helpers
 		return {};
 	}
 
-	TOptional<double> GetScalarValueFrom(
+	TOptional<double> GetRealValueFrom(
 		const FPLX_Output& Output, openplx::Physics::Signals::ValueOutputSignal* Signal)
 	{
 		if (Signal == nullptr)
@@ -292,8 +292,8 @@ namespace PLXSignalHandler_helpers
 
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Tried to read scalar type from signal for Output '%s', but the type is either "
-				 "not of scalar type or is unsupported."),
+			TEXT("Tried to read Real type from signal for Output '%s', but the type is either "
+				 "not of Real type or is unsupported."),
 			*Output.Name);
 		return {};
 	}
@@ -434,7 +434,7 @@ bool FPLXSignalHandler::Send(const FPLX_Input& Input, double Value)
 	check(IsInitialized());
 	return PLXSignalHandler_helpers::Send<double, openplx::Physics::Signals::RealInputSignal>(
 		Input, Value, ModelRegistry, ModelHandle, InputQueueRef.get(),
-		PLXSignalHandler_helpers::ConvertScalar);
+		PLXSignalHandler_helpers::ConvertReal);
 }
 
 bool FPLXSignalHandler::Receive(const FPLX_Output& Output, double& OutValue)
@@ -442,7 +442,7 @@ bool FPLXSignalHandler::Receive(const FPLX_Output& Output, double& OutValue)
 	check(IsInitialized());
 	return PLXSignalHandler_helpers::Receive(
 		Output, OutValue, ModelRegistry, ModelHandle, OutputQueueRef.get(),
-		PLXSignalHandler_helpers::GetScalarValueFrom);
+		PLXSignalHandler_helpers::GetRealValueFrom);
 }
 
 bool FPLXSignalHandler::Send(const FPLX_Input& Input, const FVector& Value)

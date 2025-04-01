@@ -83,7 +83,7 @@ bool UPLX_SignalHandlerComponent::FindOutput(
 	return false;
 }
 
-bool UPLX_SignalHandlerComponent::SendScalar(const FPLX_Input& Input, double Value)
+bool UPLX_SignalHandlerComponent::SendReal(const FPLX_Input& Input, double Value)
 {
 	if (!SignalHandler.IsInitialized())
 		return false;
@@ -91,7 +91,7 @@ bool UPLX_SignalHandlerComponent::SendScalar(const FPLX_Input& Input, double Val
 	return SignalHandler.Send(Input, Value);
 }
 
-bool UPLX_SignalHandlerComponent::ReceiveScalar(const FPLX_Output& Output, double& OutValue)
+bool UPLX_SignalHandlerComponent::ReceiveReal(const FPLX_Output& Output, double& OutValue)
 {
 	if (!SignalHandler.IsInitialized())
 		return false;
