@@ -1827,6 +1827,8 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		}
 	}
 
+
+
 	// Set particle system data.
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
 		ParticleSystemComponent, "Positions And Scales", PositionsAndScale);
@@ -1838,8 +1840,15 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		ParticleSystemComponent, "Exists", Exists);
 
 	// Set upsampling data.
-	if (bEnableParticleUpsampling)
+	if (bEnableParticleUpsampling && ParticleDensity > 0.0f)
 	{
+
+		// This assumes that the Terrain and Landscape resolution (quad size) is the same.
+		//const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
+		//const double TerrainSizeX = static_cast<double>(NumVerticesX) * QuadSideSizeX;
+
+		//UE_LOG(LogTemp, Warning, TEXT("SizeX: %d"), LandscapeDisplacementMap->SizeX)
+
 		TArray<FIntVector4> ActiveVoxelIndices = GetActiveVoxelsFromSet(ActiveVoxelSet);
 		UParticleUpsamplingInterface::SetCoarseParticles(NewCoarseParticles);
 		UParticleUpsamplingInterface::SetActiveVoxelIndices(ActiveVoxelIndices);

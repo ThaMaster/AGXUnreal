@@ -327,7 +327,7 @@ public:
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
 		Meta =
 			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling", ClampMin = "1", UIMin = "1", 
-				UIMax = "50000"))
+				UIMax = "5000"))
 	int32 Upsampling = 100;
 
 	/**
@@ -346,16 +346,18 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
 		Meta =
-			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling && bEnableVoxelSize", UIMin = "0.01",
+			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling && bEnableVoxelSize", UIMin = "10",
 			 UIMax = "1000"))
-	double VoxelSize = 1.0;
+	double VoxelSize = 10.0;
 
 	/**
 	* This controls how quickly the particles are eased in/out when spawned/destroyed.
 	*/
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Terrain Particle Upsampling",
-		Meta = (EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling", UIMin = "0.1")
+		Meta =
+			(EditCondition = "bEnableParticleRendering && bEnableParticleUpsampling", UIMin = "0.1",
+			 UIMax = "1.0")
 	)
 	double EaseStepSize = 0.1;
 	
