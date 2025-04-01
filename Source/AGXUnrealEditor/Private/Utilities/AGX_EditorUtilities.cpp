@@ -75,7 +75,7 @@ void FAGX_EditorUtilities::ReimportModel(
 
 			if (OuterMostParent == nullptr)
 			{
-				FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+				FAGX_NotificationUtilities::ShowDialogBoxWithError(
 					"Could not get the original parent Blueprint. Model reimport will not "
 					"be performed.");
 				return false;
@@ -87,7 +87,7 @@ void FAGX_EditorUtilities::ReimportModel(
 					OuterMostParent);
 			if (ModelSourceComponent == nullptr)
 			{
-				FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+				FAGX_NotificationUtilities::ShowDialogBoxWithError(
 					"Could not find an AGX Model Source Component in the selected Blueprint. The "
 					"selected Blueprint is not valid for Model Reimport.");
 				return false;

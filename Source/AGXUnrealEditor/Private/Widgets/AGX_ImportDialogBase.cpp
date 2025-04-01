@@ -159,7 +159,7 @@ FReply SAGX_ImportDialogBase::OnBrowseFileButtonClicked()
 
 	if (ImportType == EAGX_ImportType::Invalid && !FilePath.IsEmpty())
 	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+		FAGX_NotificationUtilities::ShowDialogBoxWithError(
 			"Unable to detect file type for selected type.");
 		FilePath = "";
 		return FReply::Handled();

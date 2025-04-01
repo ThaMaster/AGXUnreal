@@ -1328,7 +1328,7 @@ void UAGX_TrackComponent::EnsureValidRenderMaterials()
 				"changes. It is recommended to make a copy and place the "
 				"material within the project Contents, that way the behavior will be the same "
 				"on any computer opening this project.";
-			FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(Message);
+			FAGX_NotificationUtilities::ShowDialogBoxWithInfo(Message);
 
 			// Clear the material selection.
 			for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))

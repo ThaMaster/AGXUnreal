@@ -112,7 +112,7 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 
 		if (!ModelSourceComponent->IsInBlueprint())
 		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			FAGX_NotificationUtilities::ShowDialogBoxWithError(
 				"Model reimport is only supported when in a Blueprint.");
 			return nullptr;
 		}
@@ -125,7 +125,7 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 			}
 		}
 
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+		FAGX_NotificationUtilities::ShowDialogBoxWithError(
 			"Unable to get the Blueprint from the AGX Model Source Component. Model "
 			"reimport will not be possible.");
 		return nullptr;

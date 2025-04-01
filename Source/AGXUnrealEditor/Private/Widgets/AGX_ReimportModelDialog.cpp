@@ -76,7 +76,7 @@ TOptional<FAGX_ReimportSettings> SAGX_ReimportModelDialog::ToReimportSettings()
 
 	if (FilePath.IsEmpty())
 	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+		FAGX_NotificationUtilities::ShowDialogBoxWithError(
 			"A file must be selected before synchronizing the model.");
 		return {};
 	}

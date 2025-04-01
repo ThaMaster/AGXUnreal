@@ -444,7 +444,7 @@ namespace AGX_ImporterToEditor_helpers
 				TEXT("Errors occurred during import. The file '%s' could not be imported. Log "
 					 "category LogAGX in the Output Log may contain more information."),
 				*Settings.FilePath);
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			FAGX_NotificationUtilities::ShowDialogBoxWithError(
 				Text, "Import model to Blueprint");
 			return false;
 		}
@@ -465,7 +465,7 @@ namespace AGX_ImporterToEditor_helpers
 			const FString Text =
 				FString::Printf(TEXT("Reimport is only supported for AGX Archives (.agx) and "
 									 "OpenPLX (.openplx) files."));
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Text, "Reimport model");
+			FAGX_NotificationUtilities::ShowDialogBoxWithError(Text, "Reimport model");
 			return false;
 		}
 
@@ -1550,7 +1550,7 @@ void FAGX_ImporterToEditor::PostImport(const FAGX_ImportSettings& Settings)
 {
 	if (Settings.ImportType == EAGX_ImportType::Plx)
 	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(FString::Printf(
+		FAGX_NotificationUtilities::ShowDialogBoxWithSuccess(FString::Printf(
 			TEXT("OpenPLX model files were copied to '%s'. These files are needed during runtime "
 				 "and should not be removed as long as the imported model is used."),
 			*FPaths::GetPath(Settings.FilePath)));

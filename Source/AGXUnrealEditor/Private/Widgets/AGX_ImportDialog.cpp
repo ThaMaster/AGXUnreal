@@ -126,7 +126,7 @@ TOptional<FAGX_ImportSettings> SAGX_ImportDialog::ToImportSettings()
 
 	if (FilePath.IsEmpty())
 	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+		FAGX_NotificationUtilities::ShowDialogBoxWithError(
 			"A file must be selected before importing.");
 		return {};
 	}
