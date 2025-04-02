@@ -98,16 +98,19 @@ namespace AGX_ConstraintCustomization_helpers
 			if (Constraint == nullptr)
 				continue;
 
-			const FName RB1Name = Constraint->BodyAttachment1.RigidBody.Name;
-			const AActor* RB1LocalScope = Constraint->BodyAttachment1.RigidBody.LocalScope;
-			const FName RB2Name = Constraint->BodyAttachment2.RigidBody.Name;
-			const AActor* RB2LocalScope = Constraint->BodyAttachment2.RigidBody.LocalScope;
+			const FAGX_RigidBodyReference& Attachment1 = Constraint->BodyAttachment1.RigidBody;
+			const FName Name1 = Attachment1.Name;
+			const AActor* Scope1 = Attachment1.GetScope();
 
-			if (RB1Name.IsNone())
+			const FAGX_RigidBodyReference& Attachment2 = Constraint->BodyAttachment2.RigidBody;
+			const FName Name2 = Attachment2.Name;
+			const AActor* Scope2 = Attachment2.GetScope();
+
+			if (Name1.IsNone())
 			{
 				Error |= EAGX_AttachmentSetupError::NoFirstBody;
 			}
-			else if (RB1Name == RB2Name && RB1LocalScope == RB2LocalScope)
+			else if (Name1 == Name2 && Scope1 == Scope2)
 			{
 				Error |= EAGX_AttachmentSetupError::SameBody;
 			}
