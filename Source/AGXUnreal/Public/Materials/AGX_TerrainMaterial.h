@@ -290,7 +290,6 @@ public:
 
 	void CopyTerrainMaterialProperties(const UAGX_TerrainMaterial* Source);
 	void UpdateTerrainMaterialNativeProperties();
-	void CopyFrom(const FTerrainMaterialBarrier& Source);
 
 	bool IsInstance() const;
 

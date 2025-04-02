@@ -517,56 +517,6 @@ void UAGX_TerrainMaterial::Serialize(FArchive& Archive)
 	TerrainCompaction.Serialize(Archive);
 }
 
-void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
-{
-	TerrainBulk = FAGX_TerrainBulkProperties();
-	TerrainBulk.AdhesionOverlapFactor = Source.GetAdhesionOverlapFactor();
-	TerrainBulk.Cohesion = Source.GetCohesion();
-	TerrainBulk.Density = Source.GetDensity();
-	TerrainBulk.DilatancyAngle = Source.GetDilatancyAngle();
-	TerrainBulk.FrictionAngle = Source.GetFrictionAngle();
-	TerrainBulk.MaxDensity = Source.GetMaxDensity();
-	TerrainBulk.PoissonsRatio = Source.GetPoissonsRatio();
-	TerrainBulk.SwellFactor = Source.GetSwellFactor();
-	TerrainBulk.YoungsModulus = Source.GetYoungsModulus();
-
-	TerrainCompaction = FAGX_TerrainCompactionProperties();
-	TerrainCompaction.AngleOfReposeCompactionRate = Source.GetAngleOfReposeCompactionRate();
-	TerrainCompaction.BankStatePhi0 = Source.GetBankStatePhi();
-	TerrainCompaction.CompactionTimeRelaxationConstant =
-		Source.GetCompactionTimeRelaxationConstant();
-	TerrainCompaction.CompressionIndex = Source.GetCompressionIndex();
-	TerrainCompaction.HardeningConstantKe = Source.GetHardeningConstantKe();
-	TerrainCompaction.HardeningConstantNe = Source.GetHardeningConstantNe();
-	TerrainCompaction.PreconsolidationStress = Source.GetPreconsolidationStress();
-	TerrainCompaction.StressCutOffFraction = Source.GetStressCutOffFraction();
-	TerrainCompaction.DilatancyAngleScalingFactor = Source.GetDilatancyAngleScalingFactor();
-
-	TerrainParticles = FAGX_TerrainParticleProperties();
-	TerrainParticles.AdhesionOverlapFactor = Source.GetParticleAdhesionOverlapFactor();
-	TerrainParticles.ParticleCohesion = Source.GetParticleCohesion();
-	TerrainParticles.ParticleRestitution = Source.GetParticleRestitution();
-	TerrainParticles.ParticleRollingResistance = Source.GetParticleRollingResistance();
-	TerrainParticles.ParticleSurfaceFriction = Source.GetParticleSurfaceFriction();
-	TerrainParticles.ParticleTerrainCohesion = Source.GetParticleTerrainCohesion();
-	TerrainParticles.ParticleTerrainRestitution = Source.GetParticleTerrainRestitution();
-	TerrainParticles.ParticleTerrainRollingResistance =
-		Source.GetParticleTerrainRollingResistance();
-	TerrainParticles.ParticleTerrainSurfaceFriction = Source.GetParticleTerrainSurfaceFriction();
-	TerrainParticles.ParticleTerrainYoungsModulus = Source.GetParticleTerrainYoungsModulus();
-	TerrainParticles.ParticleYoungsModulus = Source.GetParticleYoungsModulus();
-
-	TerrainExcavationContact = FAGX_TerrainExcavationContactProperties();
-	TerrainExcavationContact.AggregateStiffnessMultiplier =
-		Source.GetAggregateStiffnessMultiplier();
-	TerrainExcavationContact.ExcavationStiffnessMultiplier =
-		Source.GetExcavationStiffnessMultiplier();
-	TerrainExcavationContact.DepthDecayFactor = Source.GetDepthDecayFactor();
-	TerrainExcavationContact.DepthIncreaseFactor = Source.GetDepthIncreaseFactor();
-	TerrainExcavationContact.MaximumAggregateNormalForce = Source.GetMaximumAggregateNormalForce();
-	TerrainExcavationContact.MaximumContactDepth = Source.GetMaximumContactDepth();
-}
-
 #if WITH_EDITOR
 void UAGX_TerrainMaterial::PostEditChangeChainProperty(FPropertyChangedChainEvent& Event)
 {
