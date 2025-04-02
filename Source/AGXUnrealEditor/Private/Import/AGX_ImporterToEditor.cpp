@@ -717,8 +717,7 @@ namespace AGX_ImporterToEditor_helpers
 	{
 		auto DestroyIfTransient = [&Context](UObject* Obj)
 		{
-			if (!IsValid(Obj) || Obj->HasAnyFlags(EObjectFlags::RF_BeginDestroyed) ||
-				Obj->HasAnyFlags(EObjectFlags::RF_FinishDestroyed))
+			if (!IsValid(Obj) || Obj->HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed))
 				return;
 
 			if (Obj->GetOuter() == Context.Outer)
