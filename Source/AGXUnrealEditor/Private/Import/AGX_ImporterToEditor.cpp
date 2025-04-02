@@ -729,9 +729,9 @@ namespace AGX_ImporterToEditor_helpers
 		return Nodes.RootComponent; // Default.
 	}
 
-	void DestroyTransientAssets(FAGX_ImportContext& Context)
+	void DestroyContextOuterOwnedAssets(FAGX_ImportContext& Context)
 	{
-		auto DestroyIfTransient = [&Context](UObject* Obj)
+		auto DestroyIfOwnedByContextOuter = [&Context](UObject* Obj)
 		{
 			if (!IsValid(Obj) || Obj->HasAnyFlags(RF_BeginDestroyed | RF_FinishDestroyed))
 				return;
@@ -743,55 +743,55 @@ namespace AGX_ImporterToEditor_helpers
 		if (Context.RenderMaterials != nullptr)
 		{
 			for (auto& [Unused, Obj] : *Context.RenderMaterials)
-				DestroyIfTransient(Obj);
+				DestroyIfOwnedByContextOuter(Obj);
 		}
 
 		if (Context.RenderStaticMeshes != nullptr)
 		{
 			for (auto& [Unused, Obj] : *Context.RenderStaticMeshes)
-				DestroyIfTransient(Obj);
+				DestroyIfOwnedByContextOuter(Obj);
 		}
 
 		if (Context.CollisionStaticMeshes != nullptr)
 		{
 			for (auto& [Unused, Obj] : *Context.CollisionStaticMeshes)
-				DestroyIfTransient(Obj);
+				DestroyIfOwnedByContextOuter(Obj);
 		}
 
 		if (Context.MSThresholds != nullptr)
 		{
 			for (auto& [Unused, Obj] : *Context.MSThresholds)
-				DestroyIfTransient(Obj);
+				DestroyIfOwnedByContextOuter(Obj);
 		}
 
 		if (Context.ShapeMaterials != nullptr)
 		{
 			for (auto& [Unused, Obj] : *Context.ShapeMaterials)
-				DestroyIfTransient(Obj);
+				DestroyIfOwnedByContextOuter(Obj);
 		}
 
 		if (Context.ContactMaterials != nullptr)
 		{
 			for (auto& [Unused, Obj] : *Context.ContactMaterials)
-				DestroyIfTransient(Obj);
+				DestroyIfOwnedByContextOuter(Obj);
 		}
 
 		if (Context.ShovelProperties != nullptr)
 		{
 			for (auto& [Unused, Obj] : *Context.ShovelProperties)
-				DestroyIfTransient(Obj);
+				DestroyIfOwnedByContextOuter(Obj);
 		}
 
 		if (Context.TrackProperties != nullptr)
 		{
 			for (auto& [Unused, Obj] : *Context.TrackProperties)
-				DestroyIfTransient(Obj);
+				DestroyIfOwnedByContextOuter(Obj);
 		}
 
 		if (Context.TrackMergeProperties != nullptr)
 		{
 			for (auto& [Unused, Obj] : *Context.TrackMergeProperties)
-				DestroyIfTransient(Obj);
+				DestroyIfOwnedByContextOuter(Obj);
 		}
 	}
 
@@ -1031,7 +1031,7 @@ bool FAGX_ImporterToEditor::Reimport(
 		return false;
 
 	ImportTask.EnterProgressFrame(20.f, FText::FromString("Finishing"));
-	DestroyTransientAssets(*Result.Context);
+	DestroyContextOuterOwnedAssets(*Result.Context);
 	FAGX_EditorUtilities::SaveAndCompile(BaseBP);
 
 	if (OpenBlueprint != nullptr)
