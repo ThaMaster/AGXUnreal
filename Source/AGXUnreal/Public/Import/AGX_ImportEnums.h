@@ -23,7 +23,7 @@ enum class EAGX_ImportType : uint8
 	Urdf
 };
 
-/* TODO: add decription */
+/** Specifies the result of an Import of an .agx archive, OpenPLX or URDF model. */
 UENUM()
 enum class EAGX_ImportResult : uint8
 {
