@@ -69,8 +69,7 @@ namespace AGX_ImporterToEditor_helpers
 
 	FString MakeModelName(FString SourceFilename)
 	{
-		return FAGX_EditorUtilities::SanitizeName(
-			SourceFilename, FAGX_ImportUtilities::GetImportRootDirectoryName());
+		return FAGX_EditorUtilities::SanitizeName(SourceFilename, "ImportedModel");
 	}
 
 	FString MakeRootDirectoryPath(const FString ModelName)
