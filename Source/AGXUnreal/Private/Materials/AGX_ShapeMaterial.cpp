@@ -348,6 +348,12 @@ void UAGX_ShapeMaterial::CopyFrom(const FShapeMaterialBarrier& Source, FAGX_Impo
 	Surface.AdhesiveForce = Source.GetAdhesiveForce();
 	Surface.AdhesiveOverlap = Source.GetAdhesiveOverlap();
 
+	// Copy Wire properties.
+	Wire.YoungsModulusStretch = Source.GetYoungsModulusStretch();
+	Wire.YoungsModulusBend = Source.GetYoungsModulusBend();
+	Wire.SpookDampingStretch = Source.GetSpookDampingStretch();
+	Wire.SpookDampingBend = Source.GetSpookDampingBend();
+
 	ImportGuid = Source.GetGuid();
 
 	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
