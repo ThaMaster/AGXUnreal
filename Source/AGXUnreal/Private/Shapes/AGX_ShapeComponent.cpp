@@ -306,11 +306,12 @@ namespace AGX_ShapeComponent_helpers
 
 		UMaterial* Base = AGX_MeshUtilities::GetDefaultRenderMaterial(IsSensor);
 		auto Result = AGX_MeshUtilities::CreateRenderMaterial(MBarrier, Base, *Context.Outer);
+		AGX_CHECK(Result != nullptr);
+		if (Result == nullptr)
+			return nullptr;
+
 		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Result, Context.SessionGuid);
-
-		if (Result != nullptr)
-			Context.RenderMaterials->Add(MBarrier.Guid, Result);
-
+		Context.RenderMaterials->Add(MBarrier.Guid, Result);
 		return Result;
 	}
 
