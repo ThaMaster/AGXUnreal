@@ -30,8 +30,8 @@ class UStaticMesh;
 class UStaticMeshComponent;
 class UWorld;
 
-/*
- * Todo: add comment.
+/**
+ * This struct holds references to objects created during an Import process.
  */
 struct AGXUNREAL_API FAGX_ImportContext
 {
