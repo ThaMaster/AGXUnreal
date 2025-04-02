@@ -69,7 +69,7 @@ namespace AGX_Importer_helpers
 		AActor* NewActor = NewObject<AActor>(Context.Outer, *UniqueName);
 		if (!NewActor)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to create new actor during import."));
+			UE_LOG(LogAGX, Warning, TEXT("Failed to create new actor during import."));
 			return nullptr;
 		}
 
