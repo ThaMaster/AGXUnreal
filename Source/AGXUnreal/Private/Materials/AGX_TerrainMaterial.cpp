@@ -517,7 +517,7 @@ void UAGX_TerrainMaterial::Serialize(FArchive& Archive)
 	TerrainCompaction.Serialize(Archive);
 }
 
-void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source, FAGX_ImportContext* Context)
+void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 {
 	TerrainBulk = FAGX_TerrainBulkProperties();
 	TerrainBulk.AdhesionOverlapFactor = Source.GetAdhesionOverlapFactor();
