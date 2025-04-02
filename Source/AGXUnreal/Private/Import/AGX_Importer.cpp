@@ -73,7 +73,8 @@ namespace AGX_Importer_helpers
 			return nullptr;
 		}
 
-		auto Root = NewObject<USceneComponent>(NewActor, FName(TEXT("DefaultSceneRoot")));
+		auto Root = NewObject<USceneComponent>(
+			NewActor, USceneComponent::GetDefaultSceneRootVariableName());
 		FAGX_ImportRuntimeUtilities::OnComponentCreated(*Root, *NewActor, Context.SessionGuid);
 		NewActor->SetRootComponent(Root);
 
