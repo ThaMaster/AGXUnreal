@@ -521,6 +521,12 @@ namespace AGX_ImporterToEditor_helpers
 			}
 		};
 
+		CollectForRemoval(FAGX_EditorUtilities::FindAssets<UAGX_ShapeMaterial>(FPaths::Combine(
+			RootDirectory, FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName())));
+
+		CollectForRemoval(FAGX_EditorUtilities::FindAssets<UAGX_ContactMaterial>(FPaths::Combine(
+			RootDirectory, FAGX_ImportUtilities::GetImportContactMaterialDirectoryName())));
+
 		CollectForRemoval(FAGX_EditorUtilities::FindAssets<UMaterialInterface>(FPaths::Combine(
 			RootDirectory, FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName())));
 
@@ -534,6 +540,17 @@ namespace AGX_ImporterToEditor_helpers
 			FAGX_EditorUtilities::FindAssets<UAGX_MergeSplitThresholdsBase>(FPaths::Combine(
 				RootDirectory,
 				FAGX_ImportUtilities::GetImportMergeSplitThresholdsDirectoryName())));
+
+		CollectForRemoval(FAGX_EditorUtilities::FindAssets<UAGX_ShovelProperties>(FPaths::Combine(
+			RootDirectory, FAGX_ImportUtilities::GetImportShovelPropertiesDirectoryName())));
+
+		CollectForRemoval(FAGX_EditorUtilities::FindAssets<UAGX_TrackProperties>(FPaths::Combine(
+			RootDirectory, FAGX_ImportUtilities::GetImportTrackPropertiesDirectoryName())));
+
+		CollectForRemoval(
+			FAGX_EditorUtilities::FindAssets<UAGX_TrackInternalMergeProperties>(FPaths::Combine(
+				RootDirectory,
+				FAGX_ImportUtilities::GetImportTrackMergePropertiesDirectoryName())));
 
 		FAGX_EditorUtilities::DeleteImportedAssets(AssetsToDelete);
 	}
@@ -969,8 +986,7 @@ UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImportSettings& Settings)
 }
 
 bool FAGX_ImporterToEditor::Reimport(
-	UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings,
-	UBlueprint* OpenBlueprint)
+	UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings, UBlueprint* OpenBlueprint)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 
