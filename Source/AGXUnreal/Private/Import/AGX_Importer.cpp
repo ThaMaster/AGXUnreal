@@ -177,20 +177,20 @@ namespace AGX_Importer_helpers
 
 FAGX_Importer::FAGX_Importer()
 {
-	Context.RigidBodies = MakeUnique<decltype(FAGX_ImportContext::RigidBodies)::ElementType>();
-	Context.Shapes = MakeUnique<decltype(FAGX_ImportContext::Shapes)::ElementType>();
-	Context.Constraints = MakeUnique<decltype(FAGX_ImportContext::Constraints)::ElementType>();
-	Context.Tires = MakeUnique<decltype(FAGX_ImportContext::Tires)::ElementType>();
-	Context.Shovels = MakeUnique<decltype(FAGX_ImportContext::Shovels)::ElementType>();
-	Context.Wires = MakeUnique<decltype(FAGX_ImportContext::Wires)::ElementType>();
-	Context.Tracks = MakeUnique<decltype(FAGX_ImportContext::Tracks)::ElementType>();
+	Context.RigidBodies = MakeUnique<TMap<FGuid, UAGX_RigidBodyComponent*>>();
+	Context.Shapes = MakeUnique<TMap<FGuid, UAGX_ShapeComponent*>>();
+	Context.Constraints = MakeUnique<TMap<FGuid, UAGX_ConstraintComponent*>>();
+	Context.Tires = MakeUnique<TMap<FGuid, UAGX_TwoBodyTireComponent*>>();
+	Context.Shovels = MakeUnique<TMap<FGuid, UAGX_ShovelComponent*>>();
+	Context.Wires = MakeUnique<TMap<FGuid, UAGX_WireComponent*>>();
+	Context.Tracks = MakeUnique<TMap<FGuid, UAGX_TrackComponent*>>();
 	Context.ObserverFrames = MakeUnique<TMap<FGuid, UAGX_ObserverFrameComponent*>>();
 	Context.RenderStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.CollisionStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.RenderMaterials = MakeUnique<TMap<FGuid, UMaterialInterface*>>();
 	Context.RenderStaticMeshes = MakeUnique<TMap<FGuid, UStaticMesh*>>();
 	Context.CollisionStaticMeshes = MakeUnique<TMap<FGuid, UStaticMesh*>>();
-	Context.MSThresholds = MakeUnique<decltype(FAGX_ImportContext::MSThresholds)::ElementType>();
+	Context.MSThresholds = MakeUnique<TMap<FGuid, UAGX_MergeSplitThresholdsBase*>>();
 	Context.ShapeMaterials = MakeUnique<TMap<FGuid, UAGX_ShapeMaterial*>>();
 	Context.ContactMaterials = MakeUnique<TMap<FGuid, UAGX_ContactMaterial*>>();
 	Context.ShovelProperties = MakeUnique<TMap<FGuid, UAGX_ShovelProperties*>>();
