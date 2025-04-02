@@ -37,8 +37,8 @@ struct AGXUNREAL_API FAGX_ImportSettings
 	bool bOpenBlueprintEditorAfterImport = true;
 
 	/**
-	 * Only relevant for Urdf files.
-	 * The path to the URDF package directory.Corresponds to the `package` part of any filepath
+	 * Only relevant for URDF files.
+	 * The path to the URDF package directory. Corresponds to the `package` part of any filepath
 	 * in the .urdf file, typically used for pointing at mesh files. Can be left empty if the
 	 * URDF file does not have any file paths in it, or obviously, if ImportType is not Urdf.
 	 */
