@@ -154,8 +154,6 @@ public:
 	void SetbEnableInnerShapeCreateDynamicMass(bool InbEnableInnerShapeCreateDynamicMass);
 	void SetbEnableParticleForceFeedback(bool InbEnableParticleForceFeedback);
 
-	friend class FAGX_Importer;
-
 private:
 	FShovelBarrier(const FShovelBarrier&) = delete;
 	void operator=(const FShovelBarrier&) = delete;

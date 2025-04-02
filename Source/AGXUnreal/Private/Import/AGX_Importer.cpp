@@ -368,7 +368,7 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	}
 
 	{
-		FScopedSlowTask T((float) SimObjects.GetBoxShapes().Num(), FText::FromString("Shapes"));
+		FScopedSlowTask T((float) SimObjects.GetBoxShapes().Num(), FText::FromString("Box Shapes"));
 		for (const auto& Shape : SimObjects.GetBoxShapes())
 		{
 			T.EnterProgressFrame(
@@ -378,7 +378,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	}
 
 	{
-		FScopedSlowTask T((float) SimObjects.GetCapsuleShapes().Num(), FText::FromString("Shapes"));
+		FScopedSlowTask T(
+			(float) SimObjects.GetCapsuleShapes().Num(), FText::FromString("Capsule Shapes"));
 		for (const auto& Shape : SimObjects.GetCapsuleShapes())
 		{
 			T.EnterProgressFrame(
@@ -389,7 +390,7 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetCylinderShapes().Num(), FText::FromString("Shapes"));
+			(float) SimObjects.GetCylinderShapes().Num(), FText::FromString("Cylinder Shapes"));
 		for (const auto& Shape : SimObjects.GetCylinderShapes())
 		{
 			T.EnterProgressFrame(
@@ -399,7 +400,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	}
 
 	{
-		FScopedSlowTask T((float) SimObjects.GetSphereShapes().Num(), FText::FromString("Shapes"));
+		FScopedSlowTask T(
+			(float) SimObjects.GetSphereShapes().Num(), FText::FromString("Sphere Shapes"));
 		for (const auto& Shape : SimObjects.GetSphereShapes())
 		{
 			T.EnterProgressFrame(
@@ -409,7 +411,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	}
 
 	{
-		FScopedSlowTask T((float) SimObjects.GetTrimeshShapes().Num(), FText::FromString("Shapes"));
+		FScopedSlowTask T(
+			(float) SimObjects.GetTrimeshShapes().Num(), FText::FromString("Trimesh Shapes"));
 		for (const auto& Shape : SimObjects.GetTrimeshShapes())
 		{
 			T.EnterProgressFrame(
@@ -420,7 +423,7 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetBallConstraints().Num(), FText::FromString("Constraints"));
+			(float) SimObjects.GetBallConstraints().Num(), FText::FromString("Ball Constraints"));
 		for (const auto& C : SimObjects.GetBallConstraints())
 		{
 			T.EnterProgressFrame(
@@ -432,7 +435,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetCylindricalConstraints().Num(), FText::FromString("Constraints"));
+			(float) SimObjects.GetCylindricalConstraints().Num(),
+			FText::FromString("Cylindrical Constraints"));
 		for (const auto& C : SimObjects.GetCylindricalConstraints())
 		{
 			T.EnterProgressFrame(
@@ -444,7 +448,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetDistanceConstraints().Num(), FText::FromString("Constraints"));
+			(float) SimObjects.GetDistanceConstraints().Num(),
+			FText::FromString("Distance Constraints"));
 		for (const auto& C : SimObjects.GetDistanceConstraints())
 		{
 			T.EnterProgressFrame(
@@ -456,7 +461,7 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetHingeConstraints().Num(), FText::FromString("Constraints"));
+			(float) SimObjects.GetHingeConstraints().Num(), FText::FromString("Hinge Constraints"));
 		for (const auto& C : SimObjects.GetHingeConstraints())
 		{
 			T.EnterProgressFrame(
@@ -468,7 +473,7 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetLockConstraints().Num(), FText::FromString("Constraints"));
+			(float) SimObjects.GetLockConstraints().Num(), FText::FromString("Lock Constraints"));
 		for (const auto& C : SimObjects.GetLockConstraints())
 		{
 			T.EnterProgressFrame(
@@ -480,7 +485,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetPrismaticConstraints().Num(), FText::FromString("Constraints"));
+			(float) SimObjects.GetPrismaticConstraints().Num(),
+			FText::FromString("Prismatic Constraints"));
 		for (const auto& C : SimObjects.GetPrismaticConstraints())
 		{
 			T.EnterProgressFrame(
