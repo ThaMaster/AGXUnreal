@@ -40,7 +40,8 @@
 #include "UObject/ConstructorHelpers.h"
 #include "UObject/UObjectIterator.h"
 #include "WorldPartition/WorldPartition.h"
-
+#include "NiagaraSystemInstance.h"
+#include "NiagaraEmitterInstance.h"
 
 #ifdef LOCTEXT_NAMESPACE
 #error "LOCTEXT_NAMESPACE leakage."
@@ -1824,10 +1825,9 @@ void AAGX_Terrain::UpdateParticlesArrays()
 			CP.VelocityAndMass =
 				FVector4f(Velocities[I].X, Velocities[I].Y, Velocities[I].Z, Masses[I]);
 			NewCoarseParticles.Add(CP);
+
 		}
 	}
-
-
 
 	// Set particle system data.
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
@@ -1842,15 +1842,32 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	// Set upsampling data.
 	if (bEnableParticleUpsampling && ParticleDensity > 0.0f)
 	{
+		// Printing out the number of fine particles and coarse particles / for thesis work
+		FNiagaraSystemInstance* SystemInstance = ParticleUpsamplingComponent->GetSystemInstance();
+		if (SystemInstance)
+		{
+			// Loop through emitters and get particle counts
+			for (const TSharedRef<FNiagaraEmitterInstance>& EmitterInstance :
+				 SystemInstance->GetEmitters())
+			{
+				int32 FineParticleCount = EmitterInstance->GetNumParticles();
+				int32 CoarseParticleCount = NewCoarseParticles.Num();
 
-		// This assumes that the Terrain and Landscape resolution (quad size) is the same.
-		//const auto QuadSideSizeX = SourceLandscape->GetActorScale().X;
-		//const double TerrainSizeX = static_cast<double>(NumVerticesX) * QuadSideSizeX;
-
-		//UE_LOG(LogTemp, Warning, TEXT("SizeX: %d"), LandscapeDisplacementMap->SizeX)
-
+				// Print to screen
+				if (GEngine)
+				{
+					GEngine->AddOnScreenDebugMessage(
+						1, 2.0f, FColor::Green,
+						FString::Printf(TEXT("Num Fine Particles: %d"), FineParticleCount));
+					GEngine->AddOnScreenDebugMessage(
+						2, 2.0f, FColor::Green,
+						FString::Printf(
+							TEXT("Num Coarse Particles: %d"), CoarseParticleCount));
+				}
+			}
+		}
 		// This is the element size in the unity version, only to be used when comparing implementations / for thesis work.
-		const float ElementSize = 14.76562;
+		const float ElementSize = 15.0f;
 		TArray<FIntVector4> ActiveVoxelIndices = GetActiveVoxelsFromSet(ActiveVoxelSet);
 		UParticleUpsamplingInterface::SetCoarseParticles(NewCoarseParticles);
 		UParticleUpsamplingInterface::SetActiveVoxelIndices(ActiveVoxelIndices);

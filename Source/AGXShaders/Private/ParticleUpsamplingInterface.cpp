@@ -655,13 +655,6 @@ void UParticleUpsamplingInterface::RecalculateFineParticleProperties(
 	LocalData->FineParticleRadius = LocalData->NominalRadius / FMath::Pow(Upsampling, 1.0f / 3.0f);
 	float NominalMass = ParticleDensity * 4.0f / 3.0f * PI * FMath::Pow(LocalData->NominalRadius, 3.0f);
 	LocalData->FineParticleMass = NominalMass / Upsampling;
-
-	UE_LOG(
-		LogTemp, Warning,
-		TEXT("NominalRadius: %f, FineParticleRadius: %f, NominalMass: %f, FineParticleMass: %f, "
-			 "Upsampling: %f, ElementSize: %f, ParticleDensity: %f"),
-		LocalData->NominalRadius, LocalData->FineParticleRadius, NominalMass,
-		LocalData->FineParticleMass, Upsampling, ElementSize, ParticleDensity);
 }
 
 void UParticleUpsamplingInterface::SetStaticVariables(float VoxelSize, float EaseStepSize)
