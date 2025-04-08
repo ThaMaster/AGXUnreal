@@ -166,17 +166,6 @@ void UAGX_ContactMaterialRegistrarComponent::BeginPlay()
 			continue;
 		}
 
-		if (!ContactMaterial->Material1 || !ContactMaterial->Material2)
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Contact Material '%s' has at least one material that has not been set."),
-				*ContactMaterial->GetName());
-
-			ContactMaterial = nullptr;
-			continue;
-		}
-
 		UAGX_ContactMaterial* Instance = ContactMaterial->GetOrCreateInstance(*this);
 		if (Instance == nullptr)
 		{
