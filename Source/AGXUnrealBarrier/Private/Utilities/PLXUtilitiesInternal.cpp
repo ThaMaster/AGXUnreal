@@ -399,24 +399,42 @@ TArray<FString> FPLXUtilitiesInternal::GetFileDependencies(const FString& Filepa
 		return Dependencies;
 	}
 
-	std::shared_ptr<agxopenplx::AgxCache> AGXCache;
-	auto Context = CreatePLXContext(AGXCache);
-	if (Context == nullptr)
+	const FString PLXBundlesPath = FPLXUtilities::GetBundlePath();
+	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
+	agxopenplx::LoadResult Result =
+		agxopenplx::load_from_file(Simulation, Convert(Filepath), Convert(PLXBundlesPath));
+
+	auto System = std::dynamic_pointer_cast<openplx::Physics3D::System>(Result.scene());
+	if (System == nullptr)
 	{
-		UE_LOG(LogAGX, Error, TEXT("GetFileDependencies: Error Creating OpenPLX Context"));
+		UE_LOG(
+			LogAGX, Error,
+			TEXT("GetFileDependencies: Could not read OpenPLX file '%s'. The Log category LogAGX "
+				 "may include more details."),
+			*Filepath);
 		return Dependencies;
 	}
 
-	const std::string FilepathStr = Convert(Filepath);
-	auto ContextInternal = openplx::Core::Api::OpenPlxContextInternal::fromContext(*Context);
-	ContextInternal->parseFile(FilepathStr);
+	for (auto G : GetNestedObjects<openplx::Visuals::Geometries::ExternalTriMeshGeometry>(*System))
+	{
+		if (G == nullptr)
+			continue;
+
+		std::string PathPLX = G->path();
+		const FString Path = FPaths::ConvertRelativePathToFull(Convert(PathPLX));
+		agxUtil::freeContainerMemory(PathPLX); // Allocated in OpenPLX, deallocate safely.
+		Dependencies.AddUnique(Path);
+	}
+
+	// Get the dependencies from the OpenPLX context.
+	auto ContextInternal = openplx::Core::Api::OpenPlxContextInternal::fromContext(*Result.context());
 	const auto& Docs = ContextInternal->documents();
 	const FString BundlePath = FPLXUtilities::GetBundlePath();
 	for (auto& D : Docs)
 	{
-		const FString Path = Convert(D->path.string());
+		const FString Path = FPaths::ConvertRelativePathToFull(Convert(D->path.string()));
 		if (!Path.StartsWith(BundlePath))
-			Dependencies.Add(FPaths::ConvertRelativePathToFull(Path));
+			Dependencies.AddUnique(Path);
 	}
 	return Dependencies;
 }
