@@ -88,5 +88,7 @@ private:
 	EAGX_ImportResult AddSignalHandlerComponent(
 		const FSimulationObjectCollection& SimObjects, AActor& OutActor);
 
+	void PostImport();
+
 	FAGX_ImportContext Context;
 };

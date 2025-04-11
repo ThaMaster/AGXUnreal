@@ -204,6 +204,21 @@ namespace AGX_Importer_helpers
 
 		return Result;
 	}
+
+	void ConditionallyHideShapes(FAGX_ImportContext& Context)
+	{
+		// This is the same behavior as for AGXViewer, where if a loaded OpenPLX model has ANY
+		// visual geometries, all collision geometries are hidden.
+		AGX_CHECK(Context.Settings->ImportType == EAGX_ImportType::Plx);
+		if (Context.RenderStaticMeshCom == nullptr || Context.RenderStaticMeshCom->Num() == 0)
+			return;
+
+		for (const auto& [Guid, Shape] : *Context.Shapes)
+		{
+			if (Shape != nullptr)
+				Shape->SetVisibility(false, /*bPropagateToChildren*/ false);
+		}
+	}
 }
 
 FAGX_Importer::FAGX_Importer()
@@ -255,6 +270,8 @@ FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImportSettings& Settings, UOb
 	EAGX_ImportResult Result = AddComponents(Settings, SimObjects, *Actor);
 	if (IsUnrecoverableError(Result))
 		return FAGX_ImportResult(Result);
+
+	PostImport();
 
 	return FAGX_ImportResult(Result, Actor, &Context);
 }
@@ -660,4 +677,10 @@ EAGX_ImportResult FAGX_Importer::AddSignalHandlerComponent(
 	Component->CopyFrom(SimObjects.GetPLXInputs(), SimObjects.GetPLXOutputs(), &Context);
 	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
 	return EAGX_ImportResult::Success;
+}
+
+void FAGX_Importer::PostImport()
+{
+	if (Context.Settings->ImportType == EAGX_ImportType::Plx)
+		AGX_Importer_helpers::ConditionallyHideShapes(Context);
 }
