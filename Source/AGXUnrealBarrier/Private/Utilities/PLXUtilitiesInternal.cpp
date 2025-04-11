@@ -93,10 +93,10 @@ namespace PLXUtilities_helpers
 		if (Context->hasErrors())
 		{
 			LoadedModel = nullptr;
-			for (auto Error : Context->getErrors())
-				UE_LOG(LogAGX, Error, TEXT("Error in OpenPLX Context : %d"), Error->getErrorCode());
-
-			return nullptr;
+			for (auto Err : FPLXUtilitiesInternal::GetErrorStrings(Context->getErrors()))
+			{
+				UE_LOG(LogAGX, Error, TEXT("LoadModelFromFile: Got OpenPLX Error: %s"), *Err);
+			}
 		}
 
 		return LoadedModel;
@@ -404,6 +404,18 @@ TArray<FString> FPLXUtilitiesInternal::GetFileDependencies(const FString& Filepa
 	agxopenplx::LoadResult Result =
 		agxopenplx::load_from_file(Simulation, Convert(Filepath), Convert(PLXBundlesPath));
 
+	if (Result.errors().size() > 0)
+	{
+		for (auto Err : GetErrorStrings(Result.errors()))
+		{
+			UE_LOG(
+				LogAGX, Error,
+				TEXT("GetFileDependencies: Got OpenPLX Error: %s"),
+				*Err);
+		}
+		return Dependencies;
+	}
+
 	auto System = std::dynamic_pointer_cast<openplx::Physics3D::System>(Result.scene());
 	if (System == nullptr)
 	{
@@ -476,4 +488,18 @@ std::vector<openplx::Core::ObjectPtr> FPLXUtilitiesInternal::GetObjectFields(ope
 
 	Object.extractObjectFieldsTo(Result);
 	return Result;
+}
+
+TArray<FString> FPLXUtilitiesInternal::GetErrorStrings(const openplx::Errors& Errors)
+{
+	TArray<FString> ErrorStrs;
+	std::vector<std::string> ErrorStrsPlx = agxopenplx::get_error_strings(Errors);
+
+	for (auto& Err : ErrorStrsPlx)
+	{
+		ErrorStrs.Add(Convert(Err));
+	}
+
+	agxUtil::freeContainerMemory(ErrorStrsPlx);
+	return ErrorStrs;
 }

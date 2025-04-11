@@ -633,23 +633,18 @@ bool FAGXSimObjectsReader::ReadOpenPLXFile(
 	const FString PLXBundlesPath = FPLXUtilities::GetBundlePath();
 
 	// This Uuid is randomly generated, and should never be changed. By seeding the load-call below
-	// with the same Uuid, we get consistent Uuid's on the AGX objects, by design. We go via
-	// agx::Name here for technical reasons: agxopenplx::OptParams will std::move from the passed in
-	// std::string parameter, so that chunk of memory must be allocated inside AGX and not Unreal,
-	// otherwise we crash when the Params object goes out of scope due to different allocators used
-	// in Unreal vs AGX.
-	agx::Name Uuid("47de4303-16ef-408d-baf5-1c86f0fe4473");
-	agxopenplx::OptParams Params = agxopenplx::OptParams().with_uuidv5(Uuid);
+	// with the same Uuid, we get consistent Uuid's on the AGX objects, by design.
+	agxopenplx::OptParams Params = agxopenplx::OptParams()
+									   .with_uuidv5("47de4303-16ef-408d-baf5-1c86f0fe4473")
+									   .with_map_visuals(true);
 	agxopenplx::LoadResult Result =
 		agxopenplx::load_from_file(Simulation, Convert(Filename), Convert(PLXBundlesPath), Params);
 
 	if (Result.errors().size() > 0)
 	{
-		for (auto Err : Result.errors())
+		for (auto Err : FPLXUtilitiesInternal::GetErrorStrings(Result.errors()))
 		{
-			UE_LOG(
-				LogAGX, Error, TEXT("Got Error Code: %d while reading OpenPLX file."),
-				Err->getErrorCode());
+			UE_LOG(LogAGX, Error, TEXT("ReadOpenPLXFile: Got OpenPLX Error: %s"), *Err);
 		}
 
 		return false;

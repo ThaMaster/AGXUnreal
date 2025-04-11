@@ -9,6 +9,7 @@
 
 // OpenPLX includes.
 #include "BeginAGXIncludes.h"
+#include "openplx/Error.h"
 #include "openplx/Object.h"
 #include "agxOpenPLX/AgxCache.h"
 #include "EndAGXIncludes.h"
@@ -68,6 +69,8 @@ public:
 	static void GetNestedObjectFields(
 		openplx::Core::Object& Object, std::unordered_set<openplx::Core::ObjectPtr>& Output);
 	static std::vector<openplx::Core::ObjectPtr> GetObjectFields(openplx::Core::Object& Object);
+
+	static TArray<FString> GetErrorStrings(const openplx::Errors& Errors);
 };
 
 template <class T>
