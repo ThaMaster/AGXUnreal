@@ -22,8 +22,9 @@
 
 FAGX_SimulationCustomization::FAGX_SimulationCustomization()
 {
-	for (const auto& DeviceName : FSensorEnvironmentBarrier::GetRaytraceDevices())
-		RaytraceDevices.Add(MakeShared<FString>(DeviceName));
+	const TArray<FString> Devices = FSensorEnvironmentBarrier::GetRaytraceDevices();
+	for (int32 I = 0; I < Devices.Num(); I++)
+		RaytraceDevices.Add(MakeShared<FString>(FString::Printf(TEXT("[%d] %s"), I, *Devices[I])));
 }
 
 TSharedRef<IDetailCustomization> FAGX_SimulationCustomization::MakeInstance()
