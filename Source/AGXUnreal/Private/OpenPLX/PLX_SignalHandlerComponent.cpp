@@ -99,6 +99,22 @@ bool UPLX_SignalHandlerComponent::ReceiveReal(const FPLX_Output& Output, double&
 	return SignalHandler.Receive(Output, OutValue);
 }
 
+bool UPLX_SignalHandlerComponent::SendRangeReal(const FPLX_Input& Input, FVector2D Value)
+{
+	if (!SignalHandler.IsInitialized())
+		return false;
+
+	return SignalHandler.Send(Input, Value);
+}
+
+bool UPLX_SignalHandlerComponent::ReceiveRangeReal(const FPLX_Output& Output, FVector2D& OutValue)
+{
+	if (!SignalHandler.IsInitialized())
+		return false;
+
+	return SignalHandler.Receive(Output, OutValue);
+}
+
 bool UPLX_SignalHandlerComponent::SendVector(const FPLX_Input& Input, FVector Value)
 {
 	if (!SignalHandler.IsInitialized())

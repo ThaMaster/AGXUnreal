@@ -231,6 +231,10 @@ EPLX_InputType FPLXUtilitiesInternal::GetInputType(const openplx::Physics::Signa
 	{
 		return EPLX_InputType::Torque1DInput;
 	}
+	if (dynamic_cast<const ForceRangeInput*>(&Input))
+	{
+		return EPLX_InputType::ForceRangeInput;
+	}
 	if (dynamic_cast<const AngularVelocity3DInput*>(&Input))
 	{
 		return EPLX_InputType::AngularVelocity3DInput;
@@ -348,6 +352,10 @@ EPLX_OutputType FPLXUtilitiesInternal::GetOutputType(const openplx::Physics::Sig
 	if (dynamic_cast<const TorqueConverterTurbineTorqueOutput*>(&Output))
 	{
 		return EPLX_OutputType::TorqueConverterTurbineTorqueOutput;
+	}
+	if (dynamic_cast<const ForceRangeOutput*>(&Output))
+	{
+		return EPLX_OutputType::ForceRangeOutput;
 	}
 	if (dynamic_cast<const AngularVelocity3DOutput*>(&Output))
 	{

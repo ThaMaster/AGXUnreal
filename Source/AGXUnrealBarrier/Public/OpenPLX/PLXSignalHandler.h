@@ -34,6 +34,10 @@ public:
 	bool Send(const FPLX_Input& Input, double Value);
 	bool Receive(const FPLX_Output& Output, double& OutValue);
 
+	/// Ranges (Vec2 real).
+	bool Send(const FPLX_Input& Input, const FVector2D& Value);
+	bool Receive(const FPLX_Output& Output, FVector2D& OutValue);
+
 	/// FVectors (Vec3 real).
 	bool Send(const FPLX_Input& Input, const FVector& Value);
 	bool Receive(const FPLX_Output& Output, FVector& OutValue);

@@ -137,6 +137,23 @@ namespace PLXSignalHandler_helpers
 		return {};
 	}
 
+	TOptional<std::shared_ptr<openplx::Math::Vec2>> ConvertVector2D(
+		const FPLX_Input& Input, const FVector2D& Value)
+	{
+		switch (Input.Type)
+		{
+			case EPLX_InputType::ForceRangeInput:
+				return openplx::Math::Vec2::from_xy(Value.X, Value.Y);
+		}
+
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Tried to convert vec2 vector value for Input '%s', but the type is either "
+				 "not of vec2 vector type or is unsupported."),
+			*Input.Name);
+		return {};
+	}
+
 	TOptional<std::shared_ptr<openplx::Math::Vec3>> ConvertVector(
 		const FPLX_Input& Input, const FVector& Value)
 	{
@@ -298,6 +315,31 @@ namespace PLXSignalHandler_helpers
 		return {};
 	}
 
+	TOptional<FVector2D> GetVector2DValueFrom(
+		const FPLX_Output& Output, openplx::Physics::Signals::ValueOutputSignal* Signal)
+	{
+		if (Signal == nullptr)
+			return {};
+
+		auto Value =
+			std::dynamic_pointer_cast<openplx::Physics::Signals::Vec2Value>(Signal->value());
+		if (Value == nullptr)
+			return TypeMismatchResult<FVector2D>(Output);
+
+		switch (Output.Type)
+		{
+			case EPLX_OutputType::ForceRangeOutput:
+				return FVector2D(Value->value()->x(), Value->value()->y());
+		}
+
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Tried to read vec2 vector type from signal for Output '%s', but the type is "
+				 "either not of vec2 vector type or is unsupported."),
+			*Output.Name);
+		return {};
+	}
+
 	TOptional<FVector> GetVectorValueFrom(
 		const FPLX_Output& Output, openplx::Physics::Signals::ValueOutputSignal* Signal)
 	{
@@ -443,6 +485,23 @@ bool FPLXSignalHandler::Receive(const FPLX_Output& Output, double& OutValue)
 	return PLXSignalHandler_helpers::Receive(
 		Output, OutValue, ModelRegistry, ModelHandle, OutputQueueRef.get(),
 		PLXSignalHandler_helpers::GetRealValueFrom);
+}
+
+bool FPLXSignalHandler::Send(const FPLX_Input& Input, const FVector2D& Value)
+{
+	check(IsInitialized());
+	return PLXSignalHandler_helpers::Send<
+		FVector2D, openplx::Physics::Signals::RealRangeInputSignal>(
+		Input, Value, ModelRegistry, ModelHandle, InputQueueRef.get(),
+		PLXSignalHandler_helpers::ConvertVector2D);
+}
+
+bool FPLXSignalHandler::Receive(const FPLX_Output& Output, FVector2D& OutValue)
+{
+	check(IsInitialized());
+	return PLXSignalHandler_helpers::Receive(
+		Output, OutValue, ModelRegistry, ModelHandle, OutputQueueRef.get(),
+		PLXSignalHandler_helpers::GetVector2DValueFrom);
 }
 
 bool FPLXSignalHandler::Send(const FPLX_Input& Input, const FVector& Value)

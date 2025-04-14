@@ -58,6 +58,12 @@ public:
 	bool ReceiveReal(const FPLX_Output& Output, double& OutValue);
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool SendRangeReal(const FPLX_Input& Input, FVector2D Value);
+
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
+	bool ReceiveRangeReal(const FPLX_Output& Output, FVector2D& OutValue);
+
+	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendVector(const FPLX_Input& Input, FVector Value);
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
