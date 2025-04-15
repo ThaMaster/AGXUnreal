@@ -91,9 +91,6 @@ double FConstraintControllerBarrier::GetSpookDamping() const
 void FConstraintControllerBarrier::SetForceRange(FAGX_RealInterval ForceRange)
 {
 	check(HasNative());
-	/// \todo Should the ForceRange be in N or Unreal-newtons? Unreal-newtons
-	/// is kg cm s^-2 instead of kg m s^-2.
-	///       ^                     ^
 	const agx::RangeReal ForceRangeAGX = Convert(ForceRange);
 	NativeRef->Native->setForceRange(ForceRangeAGX);
 }
@@ -121,6 +118,13 @@ FString FConstraintControllerBarrier::GetName() const
 {
 	check(HasNative());
 	return Convert(NativeRef->Native->getName());
+}
+
+bool FConstraintControllerBarrier::IsRotational() const
+{
+	check(HasNative());
+	const bool bRotational = NativeRef->Native->getData().getAngle()->is<agx::RotationalAngle>();
+	return bRotational;
 }
 
 namespace
@@ -273,34 +277,23 @@ FLockControllerBarrier::FLockControllerBarrier(std::unique_ptr<FConstraintContro
 	check(NativeRef->Native->is<agx::LockController>());
 }
 
-void FLockControllerBarrier::SetPositionTranslational(double Position)
+void FLockControllerBarrier::SetPosition(double Position)
 {
 	check(HasNative());
-	const agx::Real PositionAGX = ConvertDistanceToAGX(Position);
+	const bool Rotational = IsRotational();
+	const agx::Real PositionAGX =
+		Rotational ? ConvertAngleToAGX(Position) : ConvertDistanceToAGX(Position);
 	GetController(*this)->setPosition(PositionAGX);
 }
 
-double FLockControllerBarrier::GetPositionTranslational() const
+double FLockControllerBarrier::GetPosition() const
 {
 	check(HasNative());
 	const agx::Real PositionAGX = GetController(*this)->getPosition();
-	const double PositionUnreal = ConvertDistanceToUnreal<double>(PositionAGX);
+	const bool Rotational = IsRotational();
+	const double PositionUnreal = Rotational ? ConvertAngleToUnreal<double>(PositionAGX)
+											 : ConvertDistanceToUnreal<double>(PositionAGX);
 	return PositionUnreal;
-}
-
-void FLockControllerBarrier::SetPositionRotational(double Degrees)
-{
-	check(HasNative());
-	const agx::Real Radians = ConvertAngleToAGX(Degrees);
-	GetController(*this)->setPosition(Radians);
-}
-
-double FLockControllerBarrier::GetPositionRotational() const
-{
-	check(HasNative());
-	const agx::Real Radians = GetController(*this)->getPosition();
-	const double Degrees = ConvertAngleToUnreal<double>(Radians);
-	return Degrees;
 }
 
 //
@@ -327,33 +320,20 @@ FRangeControllerBarrier::FRangeControllerBarrier(std::unique_ptr<FConstraintCont
 	check(NativeRef->Native->is<agx::RangeController>());
 }
 
-void FRangeControllerBarrier::SetRangeTranslational(FAGX_RealInterval Range)
+void FRangeControllerBarrier::SetRange(FAGX_RealInterval Range)
 {
 	check(HasNative());
-	agx::RangeReal RangeAGX = ConvertDistance(Range);
+	const bool Rotational = IsRotational();
+	agx::RangeReal RangeAGX = Rotational ? ConvertAngle(Range) : ConvertDistance(Range);
 	GetController(*this)->setRange(RangeAGX);
 }
 
-FAGX_RealInterval FRangeControllerBarrier::GetRangeTranslational() const
+FAGX_RealInterval FRangeControllerBarrier::GetRange() const
 {
 	check(HasNative());
 	agx::RangeReal RangeAGX = GetController(*this)->getRange();
-	FAGX_RealInterval RangeUnreal = ConvertDistance(RangeAGX);
-	return RangeUnreal;
-}
-
-void FRangeControllerBarrier::SetRangeRotational(FAGX_RealInterval Range)
-{
-	check(HasNative());
-	agx::RangeReal RangeAGX = ConvertAngle(Range);
-	GetController(*this)->setRange(RangeAGX);
-}
-
-FAGX_RealInterval FRangeControllerBarrier::GetRangeRotational() const
-{
-	check(HasNative());
-	agx::RangeReal RangeAGX = GetController(*this)->getRange();
-	FAGX_RealInterval RangeUnreal = ConvertAngle(RangeAGX);
+	const bool Rotational = IsRotational();
+	FAGX_RealInterval RangeUnreal = Rotational ? ConvertAngle(RangeAGX) : ConvertDistance(RangeAGX);
 	return RangeUnreal;
 }
 
@@ -420,33 +400,21 @@ FTargetSpeedControllerBarrier::FTargetSpeedControllerBarrier(
 	check(NativeRef->Native->is<agx::TargetSpeedController>());
 }
 
-void FTargetSpeedControllerBarrier::SetSpeedTranslational(double Speed)
+void FTargetSpeedControllerBarrier::SetSpeed(double Speed)
 {
 	check(HasNative());
-	const agx::Real SpeedAGX = ConvertDistanceToAGX(Speed);
+	const bool Rotational = IsRotational();
+	const agx::Real SpeedAGX = Rotational ? ConvertAngleToAGX(Speed) : ConvertDistanceToAGX(Speed);
 	GetController(*this)->setSpeed(SpeedAGX);
 }
 
-double FTargetSpeedControllerBarrier::GetSpeedTranslational() const
+double FTargetSpeedControllerBarrier::GetSpeed() const
 {
 	check(HasNative());
 	const agx::Real SpeedAGX = GetController(*this)->getSpeed();
-	const double SpeedUnreal = ConvertDistanceToUnreal<double>(SpeedAGX);
-	return SpeedUnreal;
-}
-
-void FTargetSpeedControllerBarrier::SetSpeedRotational(double Speed)
-{
-	check(HasNative());
-	const agx::Real SpeedAGX = ConvertAngleToAGX(Speed);
-	GetController(*this)->setSpeed(SpeedAGX);
-}
-
-double FTargetSpeedControllerBarrier::GetSpeedRotational() const
-{
-	check(HasNative());
-	const agx::Real SpeedAGX = GetController(*this)->getSpeed();
-	const double SpeedUnreal = ConvertAngleToUnreal<double>(SpeedAGX);
+	const bool Rotational = IsRotational();
+	const double SpeedUnreal = Rotational ? ConvertAngleToUnreal<double>(SpeedAGX)
+										  : ConvertDistanceToUnreal<double>(SpeedAGX);
 	return SpeedUnreal;
 }
 

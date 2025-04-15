@@ -84,11 +84,8 @@ public:
 	 */
 	double GetAngle(EAGX_Constraint2DOFFreeDOF Dof) const;
 
-	UAGX_Constraint2DofComponent();
-
-	UAGX_Constraint2DofComponent(
-		const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraint1Rotational,
-		bool bIsSecondaryConstraint2Rotational);
+	UAGX_Constraint2DofComponent() = default;
+	UAGX_Constraint2DofComponent(const TArray<EDofFlag>& LockedDofsOrdered);
 
 	virtual ~UAGX_Constraint2DofComponent() override;
 

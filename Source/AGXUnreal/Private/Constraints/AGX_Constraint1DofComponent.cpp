@@ -13,19 +13,10 @@
 #include "Import/AGX_ImportContext.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 
-UAGX_Constraint1DofComponent::UAGX_Constraint1DofComponent()
-{
-}
 
 UAGX_Constraint1DofComponent::UAGX_Constraint1DofComponent(
-	const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational,
-	bool bInIsLockControllerEditable)
+	const TArray<EDofFlag>& LockedDofsOrdered, bool bInIsLockControllerEditable)
 	: UAGX_ConstraintComponent(LockedDofsOrdered)
-	, ElectricMotorController(bIsSecondaryConstraintRotational)
-	, FrictionController(bIsSecondaryConstraintRotational)
-	, LockController(bIsSecondaryConstraintRotational)
-	, RangeController(bIsSecondaryConstraintRotational)
-	, TargetSpeedController(bIsSecondaryConstraintRotational)
 	, bIsLockControllerEditable(bInIsLockControllerEditable)
 {
 }

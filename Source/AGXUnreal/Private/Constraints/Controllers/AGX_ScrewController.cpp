@@ -5,10 +5,6 @@
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
-FAGX_ConstraintScrewController::FAGX_ConstraintScrewController(bool bRotational)
-	: FAGX_ConstraintController(bRotational)
-{
-}
 
 namespace
 {

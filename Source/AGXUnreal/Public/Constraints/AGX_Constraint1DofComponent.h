@@ -65,11 +65,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Constraint")
 	double GetSpeed() const;
 
-	UAGX_Constraint1DofComponent();
-
-	UAGX_Constraint1DofComponent(
-		const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational,
-		bool bIsLockControllerEditable = true);
+	UAGX_Constraint1DofComponent() = default;
+	UAGX_Constraint1DofComponent(const TArray<EDofFlag>& LockedDofsOrdered, bool bIsLockControllerEditable = true);
 
 	virtual ~UAGX_Constraint1DofComponent() override;
 

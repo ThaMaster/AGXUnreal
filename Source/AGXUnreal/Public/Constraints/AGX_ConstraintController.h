@@ -101,15 +101,9 @@ struct AGXUNREAL_API FAGX_ConstraintController
 	virtual void Serialize(FArchive& Archive);
 
 protected:
-	// Would like to have this const but Unreal provides default copy operations
-	// that don't compile when USTRUCT structs contains constant members.
-	// Perhaps there is a way to disable the default copy operations.
-	/// Whether the controller is on a Rotational or Translational DOF.
-	bool bRotational;
 
 public:
 	FAGX_ConstraintController();
-	FAGX_ConstraintController(bool bInRotational);
 	virtual ~FAGX_ConstraintController();
 
 	// We must provide an assignment operator because Unreal must be able to copy structs and we

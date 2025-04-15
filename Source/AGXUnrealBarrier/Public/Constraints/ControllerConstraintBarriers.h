@@ -42,6 +42,8 @@ public:
 	void SetName(const FString& Name);
 	FString GetName() const;
 
+	bool IsRotational() const;
+
 protected:
 	FConstraintControllerBarrier() = default;
 	FConstraintControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
@@ -86,11 +88,8 @@ class AGXUNREALBARRIER_API FLockControllerBarrier : public FConstraintController
 public:
 	FLockControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
-	void SetPositionTranslational(double Position);
-	double GetPositionTranslational() const;
-
-	void SetPositionRotational(double Position);
-	double GetPositionRotational() const;
+	void SetPosition(double Position);
+	double GetPosition() const;
 };
 
 class AGXUNREALBARRIER_API FRangeControllerBarrier : public FConstraintControllerBarrier
@@ -98,11 +97,8 @@ class AGXUNREALBARRIER_API FRangeControllerBarrier : public FConstraintControlle
 public:
 	FRangeControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
-	void SetRangeTranslational(FAGX_RealInterval Range);
-	FAGX_RealInterval GetRangeTranslational() const;
-
-	void SetRangeRotational(FAGX_RealInterval Range);
-	FAGX_RealInterval GetRangeRotational() const;
+	void SetRange(FAGX_RealInterval Range);
+	FAGX_RealInterval GetRange() const;
 };
 
 class AGXUNREALBARRIER_API FScrewControllerBarrier : public FConstraintControllerBarrier
@@ -119,11 +115,8 @@ class AGXUNREALBARRIER_API FTargetSpeedControllerBarrier : public FConstraintCon
 public:
 	FTargetSpeedControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native);
 
-	void SetSpeedTranslational(double Speed);
-	double GetSpeedTranslational() const;
-
-	void SetSpeedRotational(double Speed);
-	double GetSpeedRotational() const;
+	void SetSpeed(double Speed);
+	double GetSpeed() const;
 
 	void SetLockedAtZeroSpeed(bool LockedAtZeroSpeed);
 	bool GetLockedAtZeroSpeed() const;

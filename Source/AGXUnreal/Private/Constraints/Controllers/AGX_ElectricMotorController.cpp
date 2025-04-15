@@ -6,11 +6,6 @@
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
-FAGX_ConstraintElectricMotorController::FAGX_ConstraintElectricMotorController(bool bRotational)
-	: FAGX_ConstraintController(bRotational)
-{
-}
-
 void FAGX_ConstraintElectricMotorController::InitializeBarrier(
 	TUniquePtr<FElectricMotorControllerBarrier> Barrier)
 {

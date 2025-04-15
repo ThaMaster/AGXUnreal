@@ -8,20 +8,12 @@
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
-FAGX_ConstraintController::FAGX_ConstraintController()
-	// This 'false' here doesn't really make much sense, but we must have a
-	// default constructor and the default constructor must provide some value.
-	// Should never be called for an actual ConstraintController.
-	: FAGX_ConstraintController(false)
-{
-}
 
-FAGX_ConstraintController::FAGX_ConstraintController(bool bInRotational)
+FAGX_ConstraintController::FAGX_ConstraintController()
 	: bEnable(false)
 	, Compliance(ConstraintConstants::DefaultCompliance())
 	, SpookDamping(ConstraintConstants::DefaultSpookDamping())
 	, ForceRange(ConstraintConstants::DefaultForceRange())
-	, bRotational(bInRotational)
 	, NativeBarrier(nullptr)
 	, Elasticity_DEPRECATED(ConstraintConstants::DefaultElasticity())
 {
@@ -38,7 +30,6 @@ FAGX_ConstraintController& FAGX_ConstraintController::operator=(
 	Compliance = Other.Compliance;
 	SpookDamping = Other.SpookDamping;
 	ForceRange = Other.ForceRange;
-	bRotational = Other.bRotational;
 	Name = Other.Name;
 	return *this;
 }
