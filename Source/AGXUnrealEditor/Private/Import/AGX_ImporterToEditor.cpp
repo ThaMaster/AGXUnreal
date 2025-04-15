@@ -130,6 +130,9 @@ namespace AGX_ImporterToEditor_helpers
 		if constexpr (std::is_same_v<T, UMaterialInterface>)
 			return FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName();
 
+		if constexpr (std::is_same_v<T, UMaterialInstanceDynamic>)
+			return FAGX_ImportUtilities::GetImportRenderMaterialDirectoryName();
+
 		if constexpr (std::is_same_v<T, UAGX_ShapeMaterial>)
 			return FAGX_ImportUtilities::GetImportShapeMaterialDirectoryName();
 
@@ -501,22 +504,22 @@ namespace AGX_ImporterToEditor_helpers
 		}
 	}
 
+	bool HasMatchingSessionGuid(const UObject& Object, const FGuid& SessionGuid)
+	{
+		UMetaData* MetaData = Object.GetOutermost()->GetMetaData();
+		const FString GuidStr = MetaData->GetValue(&Object, TEXT("AGX_ImportSessionGuid"));
+		return FGuid(GuidStr) == SessionGuid;
+	}
+
 	void RemoveDeletedAssets(const FString& RootDirectory, const FGuid& SessionGuid)
 	{
-		auto HasMatchingSessionGuid = [&SessionGuid](const UObject& Object)
-		{
-			UMetaData* MetaData = Object.GetOutermost()->GetMetaData();
-			const FString GuidStr = MetaData->GetValue(&Object, TEXT("AGX_ImportSessionGuid"));
-			return FGuid(GuidStr) == SessionGuid;
-		};
-
 		TArray<UObject*> AssetsToDelete;
 
 		auto CollectForRemoval = [&](auto Assets)
 		{
 			for (auto Asset : Assets)
 			{
-				if (!HasMatchingSessionGuid(*Asset))
+				if (!HasMatchingSessionGuid(*Asset, SessionGuid))
 					AssetsToDelete.Add(Asset);
 			}
 		};
@@ -562,6 +565,22 @@ namespace AGX_ImporterToEditor_helpers
 		const FString AssetName = Object.GetName();
 		const FString PackagePath =
 			FPaths::Combine(FAGX_ImportUtilities::CreatePackagePath(RootDir, AssetType), AssetName);
+
+		// Handle asset with the name we want to use that is not part of this import session.
+		// If existing, rename it to an unset name. It will likely be removed at the end of the
+		// import/reimport process.
+		UObject* ExistingAsset = FAGX_ObjectUtilities::GetAssetFromPath<UObject>(*PackagePath);
+		if (ExistingAsset != nullptr &&
+			!HasMatchingSessionGuid(*ExistingAsset, Context.SessionGuid))
+		{
+			auto ExistingOuter = ExistingAsset->GetOuter();
+			ExistingAsset->Rename(*FAGX_ImportUtilities::GetUnsetUniqueImportName());
+			auto RedirectorObj =
+				StaticFindObjectFast(UObject::StaticClass(), ExistingOuter, *AssetName);
+			if (RedirectorObj != nullptr)
+				RedirectorObj->ConditionalBeginDestroy();
+		}
+
 		UPackage* Package = CreatePackage(*PackagePath);
 		Object.Rename(*AssetName, Package);
 		Package->MarkPackageDirty();
@@ -1157,7 +1176,32 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateAssets(
 	{
 		for (const auto& [Guid, Rm] : *Context.RenderMaterials)
 		{
-			const auto A = UpdateOrCreateAsset(*Rm, Context);
+			UMaterialInstanceDynamic* Mid = Cast<UMaterialInstanceDynamic>(Rm);
+			UMaterialInterface* A = nullptr;
+			if (Mid != nullptr)
+			{
+				// This is somewhat of a work-around.
+				// Before the AGX_ImporterToEditor class, we used an old import pipeline where
+				// Render Materials were written to disk as UMaterialInstanceConstant types.
+				// Now, we write them as UMaterialInstanceDynamic types.
+				// This means that if we do Reimport of an old imported model we will get a type
+				// mismatch in the CopyProperties function in UpdateOrCreateAsset (the new Render
+				// Material is of type UMaterialInstanceDynamic, and the asset is of type
+				// UMaterialInstanceConstant).
+				// To make our lives simple, we actually want to upgrade the asset so that it's type
+				// is of the new UMaterialInstanceDynamic type.
+				// We do this by forcing the type matching done by UpdateOrCreateAsset to be
+				// UMaterialInstanceDynamic, which means it will not find the old asset of type
+				// UMaterialInstanceConstant, and a new asset will be created (and the old asset
+				// will be removed).
+				// The next time the same model is Reimported, the asset type will be the correct
+				// one and we will get a match in UpdateOrCreateAsset and update the asset without
+				// removing it which is what we want.
+				A = UpdateOrCreateAsset<UMaterialInstanceDynamic>(*Mid, Context);
+			}
+			else
+				A = UpdateOrCreateAsset(*Rm, Context);
+
 			AGX_CHECK(A != nullptr);
 			if (A == nullptr)
 				Result |= EAGX_ImportResult::RecoverableErrorsOccured;
