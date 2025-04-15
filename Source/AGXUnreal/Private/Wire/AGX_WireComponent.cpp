@@ -1337,7 +1337,6 @@ void UAGX_WireComponent::CopyFrom(const FWireBarrier& Barrier, FAGX_ImportContex
 	MinSegmentLength = 1.0f / Barrier.GetResolutionPerUnitLength();
 	LinearVelocityDamping = static_cast<float>(Barrier.GetLinearVelocityDamping());
 	bCanCollide = Barrier.GetEnableCollisions();
-	WireParameterController.CopyFrom(Barrier.GetParameterController());
 
 	for (const FName& Group : Barrier.GetCollisionGroups())
 		AddCollisionGroup(Group);

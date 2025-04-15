@@ -71,11 +71,12 @@ namespace AGX_Importer_helpers
 		AActor* NewActor = NewObject<AActor>(Context.Outer, *UniqueName);
 		if (!NewActor)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to create new actor during import."));
+			UE_LOG(LogAGX, Warning, TEXT("Failed to create new actor during import."));
 			return nullptr;
 		}
 
-		auto Root = NewObject<USceneComponent>(NewActor, FName(TEXT("DefaultSceneRoot")));
+		auto Root = NewObject<USceneComponent>(
+			NewActor, USceneComponent::GetDefaultSceneRootVariableName());
 		FAGX_ImportRuntimeUtilities::OnComponentCreated(*Root, *NewActor, Context.SessionGuid);
 		NewActor->SetRootComponent(Root);
 
@@ -223,20 +224,20 @@ namespace AGX_Importer_helpers
 
 FAGX_Importer::FAGX_Importer()
 {
-	Context.RigidBodies = MakeUnique<decltype(FAGX_ImportContext::RigidBodies)::ElementType>();
-	Context.Shapes = MakeUnique<decltype(FAGX_ImportContext::Shapes)::ElementType>();
-	Context.Constraints = MakeUnique<decltype(FAGX_ImportContext::Constraints)::ElementType>();
-	Context.Tires = MakeUnique<decltype(FAGX_ImportContext::Tires)::ElementType>();
-	Context.Shovels = MakeUnique<decltype(FAGX_ImportContext::Shovels)::ElementType>();
-	Context.Wires = MakeUnique<decltype(FAGX_ImportContext::Wires)::ElementType>();
-	Context.Tracks = MakeUnique<decltype(FAGX_ImportContext::Tracks)::ElementType>();
+	Context.RigidBodies = MakeUnique<TMap<FGuid, UAGX_RigidBodyComponent*>>();
+	Context.Shapes = MakeUnique<TMap<FGuid, UAGX_ShapeComponent*>>();
+	Context.Constraints = MakeUnique<TMap<FGuid, UAGX_ConstraintComponent*>>();
+	Context.Tires = MakeUnique<TMap<FGuid, UAGX_TwoBodyTireComponent*>>();
+	Context.Shovels = MakeUnique<TMap<FGuid, UAGX_ShovelComponent*>>();
+	Context.Wires = MakeUnique<TMap<FGuid, UAGX_WireComponent*>>();
+	Context.Tracks = MakeUnique<TMap<FGuid, UAGX_TrackComponent*>>();
 	Context.ObserverFrames = MakeUnique<TMap<FGuid, UAGX_ObserverFrameComponent*>>();
 	Context.RenderStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.CollisionStaticMeshCom = MakeUnique<TMap<FGuid, UStaticMeshComponent*>>();
 	Context.RenderMaterials = MakeUnique<TMap<FGuid, UMaterialInterface*>>();
 	Context.RenderStaticMeshes = MakeUnique<TMap<FGuid, UStaticMesh*>>();
 	Context.CollisionStaticMeshes = MakeUnique<TMap<FGuid, UStaticMesh*>>();
-	Context.MSThresholds = MakeUnique<decltype(FAGX_ImportContext::MSThresholds)::ElementType>();
+	Context.MSThresholds = MakeUnique<TMap<FGuid, UAGX_MergeSplitThresholdsBase*>>();
 	Context.ShapeMaterials = MakeUnique<TMap<FGuid, UAGX_ShapeMaterial*>>();
 	Context.ContactMaterials = MakeUnique<TMap<FGuid, UAGX_ContactMaterial*>>();
 	Context.ShovelProperties = MakeUnique<TMap<FGuid, UAGX_ShovelProperties*>>();
@@ -422,7 +423,7 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	}
 
 	{
-		FScopedSlowTask T((float) SimObjects.GetBoxShapes().Num(), FText::FromString("Shapes"));
+		FScopedSlowTask T((float) SimObjects.GetBoxShapes().Num(), FText::FromString("Box Shapes"));
 		for (const auto& Shape : SimObjects.GetBoxShapes())
 		{
 			T.EnterProgressFrame(
@@ -432,7 +433,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	}
 
 	{
-		FScopedSlowTask T((float) SimObjects.GetCapsuleShapes().Num(), FText::FromString("Shapes"));
+		FScopedSlowTask T(
+			(float) SimObjects.GetCapsuleShapes().Num(), FText::FromString("Capsule Shapes"));
 		for (const auto& Shape : SimObjects.GetCapsuleShapes())
 		{
 			T.EnterProgressFrame(
@@ -443,7 +445,7 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetCylinderShapes().Num(), FText::FromString("Shapes"));
+			(float) SimObjects.GetCylinderShapes().Num(), FText::FromString("Cylinder Shapes"));
 		for (const auto& Shape : SimObjects.GetCylinderShapes())
 		{
 			T.EnterProgressFrame(
@@ -453,7 +455,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	}
 
 	{
-		FScopedSlowTask T((float) SimObjects.GetSphereShapes().Num(), FText::FromString("Shapes"));
+		FScopedSlowTask T(
+			(float) SimObjects.GetSphereShapes().Num(), FText::FromString("Sphere Shapes"));
 		for (const auto& Shape : SimObjects.GetSphereShapes())
 		{
 			T.EnterProgressFrame(
@@ -463,7 +466,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 	}
 
 	{
-		FScopedSlowTask T((float) SimObjects.GetTrimeshShapes().Num(), FText::FromString("Shapes"));
+		FScopedSlowTask T(
+			(float) SimObjects.GetTrimeshShapes().Num(), FText::FromString("Trimesh Shapes"));
 		for (const auto& Shape : SimObjects.GetTrimeshShapes())
 		{
 			T.EnterProgressFrame(
@@ -474,7 +478,7 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetBallConstraints().Num(), FText::FromString("Constraints"));
+			(float) SimObjects.GetBallConstraints().Num(), FText::FromString("Ball Constraints"));
 		for (const auto& C : SimObjects.GetBallConstraints())
 		{
 			T.EnterProgressFrame(
@@ -486,7 +490,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetCylindricalConstraints().Num(), FText::FromString("Constraints"));
+			(float) SimObjects.GetCylindricalConstraints().Num(),
+			FText::FromString("Cylindrical Constraints"));
 		for (const auto& C : SimObjects.GetCylindricalConstraints())
 		{
 			T.EnterProgressFrame(
@@ -498,7 +503,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetDistanceConstraints().Num(), FText::FromString("Constraints"));
+			(float) SimObjects.GetDistanceConstraints().Num(),
+			FText::FromString("Distance Constraints"));
 		for (const auto& C : SimObjects.GetDistanceConstraints())
 		{
 			T.EnterProgressFrame(
@@ -510,7 +516,7 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetHingeConstraints().Num(), FText::FromString("Constraints"));
+			(float) SimObjects.GetHingeConstraints().Num(), FText::FromString("Hinge Constraints"));
 		for (const auto& C : SimObjects.GetHingeConstraints())
 		{
 			T.EnterProgressFrame(
@@ -522,7 +528,7 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetLockConstraints().Num(), FText::FromString("Constraints"));
+			(float) SimObjects.GetLockConstraints().Num(), FText::FromString("Lock Constraints"));
 		for (const auto& C : SimObjects.GetLockConstraints())
 		{
 			T.EnterProgressFrame(
@@ -534,7 +540,8 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
-			(float) SimObjects.GetPrismaticConstraints().Num(), FText::FromString("Constraints"));
+			(float) SimObjects.GetPrismaticConstraints().Num(),
+			FText::FromString("Prismatic Constraints"));
 		for (const auto& C : SimObjects.GetPrismaticConstraints())
 		{
 			T.EnterProgressFrame(

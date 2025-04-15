@@ -747,26 +747,19 @@ namespace AGX_ContactMaterial_helpers
 	{
 		FShapeMaterialBarrier MBarrier1 = Barrier.GetMaterial1();
 		FShapeMaterialBarrier MBarrier2 = Barrier.GetMaterial2();
-		if (!MBarrier1.HasNative() || !MBarrier2.HasNative())
-			return;
 
-		const FString Name1 = MBarrier1.GetName();
-		const FString Name2 = MBarrier2.GetName();
+		const FString Name1 = MBarrier1.HasNative() ? MBarrier1.GetName() : "Default";
+		const FString Name2 = MBarrier2.HasNative() ? MBarrier2.GetName() : "Default";
 
 		const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
-			OutCm.GetOuter(),
-			FString::Printf(TEXT("CM_%s_%s"), *MBarrier1.GetName(), *MBarrier2.GetName()),
+			OutCm.GetOuter(), FString::Printf(TEXT("CM_%s_%s"), *Name1, *Name2),
 			UAGX_ContactMaterial::StaticClass());
 		OutCm.Rename(*Name);
 
-		UAGX_ShapeMaterial* Material1 =
-			FAGX_ImportRuntimeUtilities::GetOrCreateShapeMaterial(MBarrier1, &Context);
-		UAGX_ShapeMaterial* Material2 =
-			FAGX_ImportRuntimeUtilities::GetOrCreateShapeMaterial(MBarrier2, &Context);
-		AGX_CHECK(Material1 != nullptr && Material2 != nullptr);
-
-		OutCm.Material1 = Material1;
-		OutCm.Material2 = Material2;
+		OutCm.Material1 = MBarrier1.HasNative()
+			? FAGX_ImportRuntimeUtilities::GetOrCreateShapeMaterial(MBarrier1, &Context) : nullptr;
+		OutCm.Material2 = MBarrier2.HasNative()
+			? FAGX_ImportRuntimeUtilities::GetOrCreateShapeMaterial(MBarrier2, &Context) : nullptr;
 	}
 }
 

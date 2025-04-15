@@ -332,8 +332,7 @@ void UAGX_TrimeshShapeComponent::CreateNative()
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("TrimeshShapeComponent '%s' in '%s' does not have a StaticMeshComponent to read "
-				 "triangle "
-				 "data from. The generated native shape will be invalid."),
+				 "triangle data from. The generated native shape will be invalid."),
 			*GetName(), *GetLabelSafe(GetOwner()));
 		NativeBarrier.AllocateNative({}, {}, /*bClockwise*/ false, GetName());
 	}

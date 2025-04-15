@@ -4,7 +4,6 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "Import/AGX_ImportContext.h"
 
 // Unreal Engine includes.
 #include "UObject/Class.h"

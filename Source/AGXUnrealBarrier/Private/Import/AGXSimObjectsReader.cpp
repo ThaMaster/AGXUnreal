@@ -34,8 +34,7 @@
 #include <agx/LockJoint.h>
 #include <agx/Prismatic.h>
 #include <agx/RigidBody.h>
-#include <agx/version.h>
-#include <agxUtil/agxUtil.h>
+#include <agxTerrain/Utils.h>
 
 // In 2.28 including Cable.h causes a preprocessor macro named DEPRECATED to be defined. This
 // conflicts with a macro with the same name in Unreal. Undeffing the Unreal one.

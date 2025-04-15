@@ -1869,7 +1869,7 @@ namespace AGX_MeshUtilities_helpers
 						}
 						default:
 							UE_LOG(
-								LogTemp, Error,
+								LogAGX, Error,
 								TEXT("Unexpected index size %d, cannot read Static Mesh data."),
 								Buffer->GetStride());
 					}

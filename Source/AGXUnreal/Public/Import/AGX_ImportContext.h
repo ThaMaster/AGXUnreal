@@ -31,8 +31,8 @@ class UStaticMesh;
 class UStaticMeshComponent;
 class UWorld;
 
-/*
- * Todo: add comment.
+/**
+ * This struct holds references to objects created during an Import process.
  */
 struct AGXUNREAL_API FAGX_ImportContext
 {
@@ -45,17 +45,20 @@ struct AGXUNREAL_API FAGX_ImportContext
 	TUniquePtr<TMap<FGuid, UAGX_TrackComponent*>> Tracks;
 	TUniquePtr<TMap<FGuid, UAGX_ObserverFrameComponent*>> ObserverFrames;
 
-	// The key is the GUID of the Shape Component for which the render data Static Mesh
+	// The key is the GUID of the Shape for which the render data Static Mesh
 	// Component has been created.
 	TUniquePtr<TMap<FGuid, UStaticMeshComponent*>> RenderStaticMeshCom;
 
+	// The key is the GUID of the Trimesh Shape.
 	TUniquePtr<TMap<FGuid, UStaticMeshComponent*>> CollisionStaticMeshCom;
 
+	// The key is the GUID of the RenderMaterial.
 	TUniquePtr<TMap<FGuid, UMaterialInterface*>> RenderMaterials;
 
 	// For render meshes, the GUID is taken from the RenderData.
 	TUniquePtr<TMap<FGuid, UStaticMesh*>> RenderStaticMeshes;
 
+	// The key is the GUID of the Trimesh Shape.
 	TUniquePtr<TMap<FGuid, UStaticMesh*>> CollisionStaticMeshes;
 
 	TUniquePtr<TMap<FGuid, UAGX_MergeSplitThresholdsBase*>> MSThresholds;

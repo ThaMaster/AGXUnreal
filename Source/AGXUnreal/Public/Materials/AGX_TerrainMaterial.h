@@ -19,7 +19,6 @@
 #include "AGX_TerrainMaterial.generated.h"
 
 class UAGX_ShapeMaterial;
-struct FAGX_ImportContext;
 
 /**
  * Defines the material for a terrain.
@@ -271,16 +270,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Excavation Contact")
 	double GetMaximumContactDepth() const;
 
-	/**
-	 * The import Guid of this Component. Only used by the AGX Dynamics for Unreal import system.
-	 * Should never be assigned manually.
-	 */
-	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
-	FGuid ImportGuid;
-
 	virtual void Serialize(FArchive& Archive) override;
 
-	void CopyFrom(const FTerrainMaterialBarrier& Source, FAGX_ImportContext* Context);
+	void CopyFrom(const FTerrainMaterialBarrier& Source);
 
 	FTerrainMaterialBarrier* GetOrCreateTerrainMaterialNative(UWorld* PlayingWorld);
 	FTerrainMaterialBarrier* GetTerrainMaterialNative();
@@ -291,7 +283,6 @@ public:
 
 	void CopyTerrainMaterialProperties(const UAGX_TerrainMaterial* Source);
 	void UpdateTerrainMaterialNativeProperties();
-	void CopyFrom(const FTerrainMaterialBarrier& Source);
 
 	bool IsInstance() const;
 

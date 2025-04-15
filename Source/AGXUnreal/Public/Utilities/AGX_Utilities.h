@@ -64,6 +64,8 @@ public:
 	/**
 	 * Import an .agx archive, OpenPLX or Urdf model and get a AActor template back.
 	 * This template AActor must be instantiated to be part of the world, see InstantiateActor.
+	 * The FilePath of the ImportSettings struct may be absolute or relative to the current Projects
+	 * root directory or stand-alone application root directory.
 	 */
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Import", meta = (WorldContext = "WorldContextObject"))
