@@ -46,7 +46,6 @@ void FAGX_ConstraintScrewController::InitializeBarrier(TUniquePtr<FScrewControll
 {
 	check(!HasNative());
 	NativeBarrier = std::move(Barrier);
-	check(HasNative());
 }
 
 void FAGX_ConstraintScrewController::UpdateNativePropertiesImpl()

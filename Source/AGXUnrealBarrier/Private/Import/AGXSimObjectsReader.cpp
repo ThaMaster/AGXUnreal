@@ -33,6 +33,7 @@
 #include <agx/Hinge.h>
 #include <agx/LockJoint.h>
 #include <agx/Prismatic.h>
+#include <agx/SingleControllerConstraint1DOF.h>
 #include <agx/RigidBody.h>
 #include <agxTerrain/Utils.h>
 
@@ -349,6 +350,13 @@ namespace
 			{
 				OutSimObjects.GetLockConstraints().Add(
 					AGXBarrierFactories::CreateLockJointBarrier(LockJoint));
+			}
+			else if (
+				agx::SingleControllerConstraint1DOF* C =
+					Constraint->asSafe<agx::SingleControllerConstraint1DOF>())
+			{
+				OutSimObjects.GetSingleControllerConstraint1DOFs().Add(
+					AGXBarrierFactories::CreateSingleControllerConstraint1DOFBarrier(C));
 			}
 		}
 	}

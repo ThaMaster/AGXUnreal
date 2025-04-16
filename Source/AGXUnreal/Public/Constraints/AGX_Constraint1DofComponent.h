@@ -93,7 +93,7 @@ protected:
 	 * Call AllocateNative and then bind the constraint controllers to their native representations
 	 * within the allocated native constraint.
 	 */
-	virtual void CreateNativeImpl() override final;
+	virtual void CreateNativeImpl() override;
 
 	/**
 	 * Allocate the native constraint, of the appropriate type for the current subclass of

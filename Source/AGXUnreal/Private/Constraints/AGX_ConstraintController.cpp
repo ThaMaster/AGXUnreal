@@ -172,13 +172,11 @@ bool FAGX_ConstraintController::HasNative() const
 
 FConstraintControllerBarrier* FAGX_ConstraintController::GetNative()
 {
-	check(HasNative());
 	return NativeBarrier.Get();
 }
 
 const FConstraintControllerBarrier* FAGX_ConstraintController::GetNative() const
 {
-	check(HasNative());
 	return NativeBarrier.Get();
 }
 

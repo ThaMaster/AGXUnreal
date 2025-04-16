@@ -27,6 +27,7 @@
 #include <agx/CylindricalJoint.h>
 #include <agx/DistanceJoint.h>
 #include <agx/LockJoint.h>
+#include <agx/SingleControllerConstraint1DOF.h>
 #include <EndAGXIncludes.h>
 
 FSimulationObjectCollection::~FSimulationObjectCollection()
@@ -160,6 +161,7 @@ TArray<FAnyConstraintBarrier> FSimulationObjectCollection::CollectAllConstraints
 	AddConstraints(CylindricalConstraints);
 	AddConstraints(DistanceConstraints);
 	AddConstraints(LockConstraints);
+	AddConstraints(SingleControllerConstraint1DOFs);
 	return AllConstraints;
 }
 
@@ -222,6 +224,17 @@ TArray<FLockJointBarrier>& FSimulationObjectCollection::GetLockConstraints()
 const TArray<FLockJointBarrier>& FSimulationObjectCollection::GetLockConstraints() const
 {
 	return LockConstraints;
+}
+
+TArray<FSingleControllerConstraint1DOFBarrier>& FSimulationObjectCollection::GetSingleControllerConstraint1DOFs()
+{
+	return SingleControllerConstraint1DOFs;
+}
+
+const TArray<FSingleControllerConstraint1DOFBarrier>&
+FSimulationObjectCollection::GetSingleControllerConstraint1DOFs() const
+{
+	return SingleControllerConstraint1DOFs;
 }
 
 TArray<FContactMaterialBarrier>& FSimulationObjectCollection::GetContactMaterials()

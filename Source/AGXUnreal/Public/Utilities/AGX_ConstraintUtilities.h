@@ -157,6 +157,26 @@ public:
 		UAGX_RigidBodyComponent* RigidBody1, UAGX_RigidBodyComponent* RigidBody2,
 		bool ForceOverwriteInstances = false);
 
+	/**
+	 * Ensure that the attachment pair describe a valid constraint configuration. This means that
+	 * the first body exists and has a valid native body, and that if the second body exists then
+	 * it also has a native body.
+	 *
+	 * The native bodies are created if necessary.
+	 *
+	 * @param Attachment1 The attachment for the first body.
+	 * @param Attachment2 The attachment for the second body or the world.
+	 * @param ConstraintName Used only for error messages.
+	 * @return True if the required native bodies are now available, false otherwise.
+	 */
+	static bool EnsureValidConstraintAttachmentPair(
+		FAGX_ConstraintBodyAttachment& Attachment1, FAGX_ConstraintBodyAttachment& Attachment2,
+		const FName& ConstraintName);
+
+	static FTransform GetFrameTransform(
+		FAGX_ConstraintBodyAttachment& Attachment, const FName& ConstraintName,
+		const FString& ActorLabel);
+
 	static void CreateNative(
 		FConstraintBarrier* Barrier, FAGX_ConstraintBodyAttachment& Attachment1,
 		FAGX_ConstraintBodyAttachment& Attachment2, const FName& ConstraintName,

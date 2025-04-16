@@ -26,6 +26,7 @@ class FBallJointBarrier;
 class FCylindricalJointBarrier;
 class FDistanceJointBarrier;
 class FLockJointBarrier;
+class FSingleControllerConstraint1DOFBarrier;
 
 // Others.
 class FRigidBodyBarrier;
@@ -90,6 +91,11 @@ public:
 	TArray<FLockJointBarrier>& GetLockConstraints();
 	const TArray<FLockJointBarrier>& GetLockConstraints() const;
 
+	TArray<FSingleControllerConstraint1DOFBarrier>& GetSingleControllerConstraint1DOFs();
+
+	const TArray<FSingleControllerConstraint1DOFBarrier>& GetSingleControllerConstraint1DOFs()
+		const;
+
 	TArray<FContactMaterialBarrier>& GetContactMaterials();
 	const TArray<FContactMaterialBarrier>& GetContactMaterials() const;
 
@@ -141,6 +147,7 @@ private:
 	TArray<FCylindricalJointBarrier> CylindricalConstraints;
 	TArray<FDistanceJointBarrier> DistanceConstraints;
 	TArray<FLockJointBarrier> LockConstraints;
+	TArray<FSingleControllerConstraint1DOFBarrier> SingleControllerConstraint1DOFs;
 
 	TArray<FRigidBodyBarrier> RigidBodies;
 	TArray<FContactMaterialBarrier> ContactMaterials;

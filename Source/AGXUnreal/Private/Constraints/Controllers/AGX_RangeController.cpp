@@ -14,7 +14,6 @@ void FAGX_ConstraintRangeController::InitializeBarrier(TUniquePtr<FRangeControll
 {
 	check(!HasNative());
 	NativeBarrier = std::move(Barrier);
-	check(HasNative());
 }
 
 namespace

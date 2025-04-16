@@ -10,7 +10,6 @@ void FAGX_ConstraintFrictionController::InitializeBarrier(
 {
 	check(!HasNative());
 	NativeBarrier = std::move(Barrier);
-	check(HasNative());
 }
 
 namespace

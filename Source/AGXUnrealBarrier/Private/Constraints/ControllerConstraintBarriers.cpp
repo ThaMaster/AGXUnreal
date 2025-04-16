@@ -11,6 +11,11 @@
 #include <agx/Constraint.h>
 #include "EndAGXIncludes.h"
 
+FConstraintControllerBarrier::FConstraintControllerBarrier()
+	: NativeRef {std::make_unique<FConstraintControllerRef>()}
+{
+}
+
 FConstraintControllerBarrier::FConstraintControllerBarrier(
 	std::unique_ptr<FConstraintControllerRef> Native)
 	: NativeRef(std::move(Native))

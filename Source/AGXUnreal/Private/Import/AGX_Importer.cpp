@@ -13,6 +13,7 @@
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_LockConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
+#include "Constraints/AGX_SingleControllerConstraint1DofComponent.h"
 #include "Constraints/AnyConstraintBarrier.h"
 #include "Constraints/BallJointBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
@@ -20,6 +21,7 @@
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
+#include "Constraints/SingleControllerConstraint1DOFBarrier.h"
 #include "Import/AGX_ImportSettings.h"
 #include "Import/AGX_ModelSourceComponent.h"
 #include "Import/AGXSimObjectsReader.h"
@@ -547,6 +549,19 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 			T.EnterProgressFrame(
 				1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *C.GetName())));
 			Res |= AddComponent<UAGX_PrismaticConstraintComponent, FConstraintBarrier>(
+				C, *Root, OutActor);
+		}
+	}
+
+	{
+		FScopedSlowTask T(
+			(float) SimObjects.GetSingleControllerConstraint1DOFs().Num(),
+			FText::FromString("Single Controller Constraint 1DOF Constraints"));
+		for (const auto& C : SimObjects.GetSingleControllerConstraint1DOFs())
+		{
+			T.EnterProgressFrame(
+				1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *C.GetName())));
+			Res |= AddComponent<UAGX_SingleControllerConstraint1DofComponent, FConstraintBarrier>(
 				C, *Root, OutActor);
 		}
 	}

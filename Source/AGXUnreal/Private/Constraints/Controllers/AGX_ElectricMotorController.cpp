@@ -11,7 +11,6 @@ void FAGX_ConstraintElectricMotorController::InitializeBarrier(
 {
 	check(!HasNative());
 	NativeBarrier = std::move(Barrier);
-	check(HasNative());
 }
 
 namespace

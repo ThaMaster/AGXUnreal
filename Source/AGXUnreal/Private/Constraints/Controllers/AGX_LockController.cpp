@@ -9,7 +9,6 @@ void FAGX_ConstraintLockController::InitializeBarrier(TUniquePtr<FLockController
 {
 	check(!HasNative());
 	NativeBarrier = std::move(Barrier);
-	check(HasNative());
 }
 
 namespace
