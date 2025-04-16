@@ -26,16 +26,11 @@
 void FAGX_ConstraintUtilities::CopyControllersFrom(
 	UAGX_Constraint1DofComponent& Component, const FConstraint1DOFBarrier& Barrier)
 {
-	if (Component.ElectricMotorController.HasNative())
-		StoreElectricMotorController(Barrier, Component.ElectricMotorController);
-	if (Component.FrictionController.HasNative())
-		StoreFrictionController(Barrier, Component.FrictionController);
-	if (Component.LockController.HasNative())
-		StoreLockController(Barrier, Component.LockController);
-	if (Component.RangeController.HasNative())
-		StoreRangeController(Barrier, Component.RangeController);
-	if (Component.TargetSpeedController.HasNative())
-		StoreTargetSpeedController(Barrier, Component.TargetSpeedController);
+	StoreElectricMotorController(Barrier, Component.ElectricMotorController);
+	StoreFrictionController(Barrier, Component.FrictionController);
+	StoreLockController(Barrier, Component.LockController);
+	StoreRangeController(Barrier, Component.RangeController);
+	StoreTargetSpeedController(Barrier, Component.TargetSpeedController);
 }
 
 void FAGX_ConstraintUtilities::CopyControllersFrom(
@@ -71,7 +66,8 @@ void FAGX_ConstraintUtilities::CopyControllersFrom(
 void FAGX_ConstraintUtilities::StoreElectricMotorController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller)
 {
-	Controller.CopyFrom(*Barrier.GetElectricMotorController());
+	if (Barrier.GetElectricMotorController()->HasNative())
+		Controller.CopyFrom(*Barrier.GetElectricMotorController());
 }
 
 void FAGX_ConstraintUtilities::StoreElectricMotorController(
@@ -84,7 +80,8 @@ void FAGX_ConstraintUtilities::StoreElectricMotorController(
 void FAGX_ConstraintUtilities::StoreFrictionController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller)
 {
-	Controller.CopyFrom(*Barrier.GetFrictionController());
+	if (Barrier.GetFrictionController()->HasNative())
+		Controller.CopyFrom(*Barrier.GetFrictionController());
 }
 
 void FAGX_ConstraintUtilities::StoreFrictionController(
@@ -97,7 +94,8 @@ void FAGX_ConstraintUtilities::StoreFrictionController(
 void FAGX_ConstraintUtilities::StoreLockController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller)
 {
-	Controller.CopyFrom(*Barrier.GetLockController());
+	if (Barrier.GetLockController()->HasNative())
+		Controller.CopyFrom(*Barrier.GetLockController());
 }
 
 void FAGX_ConstraintUtilities::StoreLockController(
@@ -110,7 +108,8 @@ void FAGX_ConstraintUtilities::StoreLockController(
 void FAGX_ConstraintUtilities::StoreRangeController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller)
 {
-	Controller.CopyFrom(*Barrier.GetRangeController());
+	if (Barrier.GetRangeController()->HasNative())
+		Controller.CopyFrom(*Barrier.GetRangeController());
 }
 
 void FAGX_ConstraintUtilities::StoreRangeController(
@@ -123,7 +122,8 @@ void FAGX_ConstraintUtilities::StoreRangeController(
 void FAGX_ConstraintUtilities::StoreTargetSpeedController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller)
 {
-	Controller.CopyFrom(*Barrier.GetTargetSpeedController());
+	if (Barrier.GetTargetSpeedController()->HasNative())
+		Controller.CopyFrom(*Barrier.GetTargetSpeedController());
 }
 
 void FAGX_ConstraintUtilities::StoreTargetSpeedController(
@@ -213,7 +213,8 @@ void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, SpookDamping),
-		[GetController](UConstraintClass* EditedObject) {
+		[GetController](UConstraintClass* EditedObject)
+		{
 			GetController(EditedObject)->SetSpookDamping(GetController(EditedObject)->SpookDamping);
 		});
 
@@ -258,7 +259,8 @@ void FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintElectricMotorController, TorqueConstant),
-		[GetController](UConstraintClass* EditedObject) {
+		[GetController](UConstraintClass* EditedObject)
+		{
 			GetController(EditedObject)
 				->SetTorqueConstant(GetController(EditedObject)->TorqueConstant);
 		});

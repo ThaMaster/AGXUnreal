@@ -169,8 +169,10 @@ FElectricMotorControllerBarrier::FElectricMotorControllerBarrier(
 	std::unique_ptr<FConstraintControllerRef> Native)
 	: FConstraintControllerBarrier(std::move(Native))
 {
-	check(HasNative());
-	check(NativeRef->Native->is<agx::ElectricMotorController>());
+	if (Native != nullptr)
+	{
+		check(NativeRef->Native->is<agx::ElectricMotorController>());
+	}
 }
 
 void FElectricMotorControllerBarrier::SetVoltage(double Voltage)
@@ -230,8 +232,10 @@ FFrictionControllerBarrier::FFrictionControllerBarrier(
 	std::unique_ptr<FConstraintControllerRef> Native)
 	: FConstraintControllerBarrier(std::move(Native))
 {
-	check(HasNative());
-	check(NativeRef->Native->is<agx::FrictionController>());
+	if (Native != nullptr)
+	{
+		check(NativeRef->Native->is<agx::FrictionController>());
+	}
 }
 
 void FFrictionControllerBarrier::SetFrictionCoefficient(double FrictionCoefficient)
@@ -278,8 +282,10 @@ namespace
 FLockControllerBarrier::FLockControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native)
 	: FConstraintControllerBarrier(std::move(Native))
 {
-	check(HasNative());
-	check(NativeRef->Native->is<agx::LockController>());
+	if (Native != nullptr)
+	{
+		check(NativeRef->Native->is<agx::LockController>());
+	}
 }
 
 void FLockControllerBarrier::SetPosition(double Position)
@@ -321,8 +327,10 @@ namespace
 FRangeControllerBarrier::FRangeControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native)
 	: FConstraintControllerBarrier(std::move(Native))
 {
-	check(HasNative());
-	check(NativeRef->Native->is<agx::RangeController>());
+	if (Native != nullptr)
+	{
+		check(NativeRef->Native->is<agx::RangeController>());
+	}
 }
 
 void FRangeControllerBarrier::SetRange(FAGX_RealInterval Range)
@@ -362,8 +370,10 @@ namespace
 FScrewControllerBarrier::FScrewControllerBarrier(std::unique_ptr<FConstraintControllerRef> Native)
 	: FConstraintControllerBarrier(std::move(Native))
 {
-	check(HasNative());
-	check(NativeRef->Native->is<agx::ScrewController>());
+	if (Native != nullptr)
+	{
+		check(NativeRef->Native->is<agx::ScrewController>());
+	}
 }
 
 void FScrewControllerBarrier::SetLead(double Lead)
@@ -401,8 +411,10 @@ FTargetSpeedControllerBarrier::FTargetSpeedControllerBarrier(
 	std::unique_ptr<FConstraintControllerRef> Native)
 	: FConstraintControllerBarrier(std::move(Native))
 {
-	check(HasNative());
-	check(NativeRef->Native->is<agx::TargetSpeedController>());
+	if (Native != nullptr)
+	{
+		check(NativeRef->Native->is<agx::TargetSpeedController>());
+	}
 }
 
 void FTargetSpeedControllerBarrier::SetSpeed(double Speed)

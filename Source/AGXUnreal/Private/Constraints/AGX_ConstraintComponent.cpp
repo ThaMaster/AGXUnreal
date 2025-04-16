@@ -467,9 +467,7 @@ bool UAGX_ConstraintComponent::GetEnableComputeForces() const
 bool UAGX_ConstraintComponent::GetValid() const
 {
 	if (!HasNative())
-	{
 		return false;
-	}
 
 	return NativeBarrier->GetValid();
 }
