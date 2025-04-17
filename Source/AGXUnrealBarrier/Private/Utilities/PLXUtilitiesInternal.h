@@ -12,11 +12,14 @@
 #include "openplx/Error.h"
 #include "openplx/Object.h"
 #include "agxOpenPLX/AgxCache.h"
+#include "agxOpenPLX/AllocationUtils.h"
 #include "EndAGXIncludes.h"
 
 // Standard library includes.
 #include <memory>
 #include <unordered_set>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace openplx
@@ -64,6 +67,15 @@ public:
 	template <class T>
 	static std::vector<std::shared_ptr<T>> GetNestedObjects(openplx::Core::Object& Object);
 
+	/**
+	 * Based on Object::getEntries in OpenPLX, but calling that function crashes due to
+	 * different allocators used.
+	 * Return all attribute name,value pairs of the specified type T.
+	 */
+	template <class T>
+	static std::vector<std::pair<std::string, std::shared_ptr<T>>> GetEntries(
+		openplx::Core::Object& Object);
+
 	static std::unordered_set<openplx::Core::ObjectPtr> GetNestedObjectFields(
 		openplx::Core::Object& Object);
 	static void GetNestedObjectFields(
@@ -74,7 +86,8 @@ public:
 };
 
 template <class T>
-std::vector<std::shared_ptr<T>> FPLXUtilitiesInternal::GetNestedObjects(openplx::Core::Object& Object)
+std::vector<std::shared_ptr<T>> FPLXUtilitiesInternal::GetNestedObjects(
+	openplx::Core::Object& Object)
 {
 	std::vector<std::shared_ptr<T>> Output;
 	std::unordered_set<openplx::Core::ObjectPtr> Objects = GetNestedObjectFields(Object);
@@ -82,5 +95,27 @@ std::vector<std::shared_ptr<T>> FPLXUtilitiesInternal::GetNestedObjects(openplx:
 		if (auto Target = std::dynamic_pointer_cast<T>(Obj))
 			Output.push_back(Target);
 
+	return Output;
+}
+
+template <class T>
+std::vector<std::pair<std::string, std::shared_ptr<T>>> FPLXUtilitiesInternal::GetEntries(
+	openplx::Core::Object& Object)
+{
+	std::vector<std::pair<std::string, std::shared_ptr<T>>> Output;
+	std::vector<std::pair<std::string, openplx::Core::Any>> AllEntries;
+	Object.extractEntriesTo(AllEntries);
+	for (auto& Entry : AllEntries)
+	{
+		if (!Entry.second.isObject())
+			continue;
+		auto Obj = std::dynamic_pointer_cast<T>(Entry.second.asObject());
+		if (Obj == nullptr)
+			continue;
+
+		Output.push_back({Entry.first, Obj});
+	}
+
+	agxopenplx::freeContainerMemory(AllEntries);
 	return Output;
 }

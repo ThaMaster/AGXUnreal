@@ -13,7 +13,6 @@
 #include "openplx/OpenPlxContextInternal.h"
 #include "openplx/OpenPlxCoreAPI.h"
 #include "agxOpenPLX/AgxOpenPlxApi.h"
-#include "agxOpenPLX/AllocationUtils.h"
 #include "DriveTrain/Signals/AutomaticClutchEngagementDurationInput.h"
 #include "DriveTrain/Signals/AutomaticClutchDisengagementDurationInput.h"
 #include "DriveTrain/Signals/TorqueConverterPumpTorqueOutput.h"
@@ -29,6 +28,7 @@
 #include "Physics/Signals/LinearVelocity1DInput.h"
 #include "Physics/Signals/Position1DInput.h"
 #include "Physics/Signals/Position1DOutput.h"
+#include "Physics/Signals/SignalInterface.h"
 #include "Physics/Signals/Torque1DInput.h"
 #include "Physics1D/Physics1D_all.h"
 #include "Physics3D/Physics3D_all.h"
@@ -101,6 +101,19 @@ namespace PLXUtilities_helpers
 
 		return LoadedModel;
 	}
+
+	template <typename T>
+	std::optional<std::string> FindKeyByObject(
+		const std::vector<std::pair<std::string, T>>& Lookup, const T& Object)
+	{
+		for (const auto& Pair : Lookup)
+		{
+			if (Pair.second == Object)
+				return Pair.first;
+		}
+
+		return std::nullopt;
+	}
 }
 
 openplx::Core::ObjectPtr FPLXUtilitiesInternal::LoadModel(
@@ -139,6 +152,12 @@ TArray<FPLX_Input> FPLXUtilitiesInternal::GetInputs(openplx::Physics3D::System* 
 	if (System == nullptr)
 		return Inputs;
 
+	std::vector<std::pair<std::string, std::shared_ptr<openplx::Physics::Signals::Input>>>
+		SigInterfInputs;
+	auto SignalInterfaces = GetNestedObjects<openplx::Physics::Signals::SignalInterface>(*System);
+	if (SignalInterfaces.size() > 0)
+		SigInterfInputs = GetEntries<openplx::Physics::Signals::Input>(*SignalInterfaces[0]);
+
 	auto InputsPLX = GetNestedObjects<openplx::Physics::Signals::Input>(*System);
 	Inputs.Reserve(InputsPLX.size());
 	for (auto& Input : InputsPLX)
@@ -146,8 +165,10 @@ TArray<FPLX_Input> FPLXUtilitiesInternal::GetInputs(openplx::Physics3D::System* 
 		if (Input == nullptr)
 			continue;
 
+		auto OptionalAlias = PLXUtilities_helpers::FindKeyByObject(SigInterfInputs, Input);
+		const FString Alias = OptionalAlias.has_value() ? Convert(OptionalAlias.value()) : "";
 		EPLX_InputType Type = GetInputType(*Input);
-		Inputs.Add(FPLX_Input(Convert(Input->getName()), Type));
+		Inputs.Add(FPLX_Input(Convert(Input->getName()), Alias, Type));
 		if (Type == EPLX_InputType::Unsupported)
 		{
 			UE_LOG(
@@ -165,6 +186,12 @@ TArray<FPLX_Output> FPLXUtilitiesInternal::GetOutputs(openplx::Physics3D::System
 	if (System == nullptr)
 		return Outputs;
 
+	std::vector<std::pair<std::string, std::shared_ptr<openplx::Physics::Signals::Output>>>
+		SigInterfOutputs;
+	auto SignalInterfaces = GetNestedObjects<openplx::Physics::Signals::SignalInterface>(*System);
+	if (SignalInterfaces.size() > 0)
+		SigInterfOutputs = GetEntries<openplx::Physics::Signals::Output>(*SignalInterfaces[0]);
+
 	auto OutputsPLX = GetNestedObjects<openplx::Physics::Signals::Output>(*System);
 	Outputs.Reserve(OutputsPLX.size());
 	for (auto& Output : OutputsPLX)
@@ -172,8 +199,10 @@ TArray<FPLX_Output> FPLXUtilitiesInternal::GetOutputs(openplx::Physics3D::System
 		if (Output == nullptr)
 			continue;
 
+		auto OptionalAlias = PLXUtilities_helpers::FindKeyByObject(SigInterfOutputs, Output);
+		const FString Alias = OptionalAlias.has_value() ? Convert(OptionalAlias.value()) : "";
 		EPLX_OutputType Type = GetOutputType(*Output);
-		Outputs.Add(FPLX_Output(Convert(Output->getName()), Type, Output->enabled()));
+		Outputs.Add(FPLX_Output(Convert(Output->getName()), Alias, Type, Output->enabled()));
 		if (Type == EPLX_OutputType::Unsupported)
 		{
 			UE_LOG(
@@ -271,7 +300,8 @@ EPLX_InputType FPLXUtilitiesInternal::GetInputType(const openplx::Physics::Signa
 	return EPLX_InputType::Unsupported;
 }
 
-EPLX_OutputType FPLXUtilitiesInternal::GetOutputType(const openplx::Physics::Signals::Output& Output)
+EPLX_OutputType FPLXUtilitiesInternal::GetOutputType(
+	const openplx::Physics::Signals::Output& Output)
 {
 	using namespace openplx::Physics::Signals;
 	using namespace openplx::Physics3D::Signals;
@@ -416,10 +446,7 @@ TArray<FString> FPLXUtilitiesInternal::GetFileDependencies(const FString& Filepa
 	{
 		for (auto Err : GetErrorStrings(Result.errors()))
 		{
-			UE_LOG(
-				LogAGX, Error,
-				TEXT("GetFileDependencies: Got OpenPLX Error: %s"),
-				*Err);
+			UE_LOG(LogAGX, Error, TEXT("GetFileDependencies: Got OpenPLX Error: %s"), *Err);
 		}
 		return Dependencies;
 	}
@@ -447,7 +474,8 @@ TArray<FString> FPLXUtilitiesInternal::GetFileDependencies(const FString& Filepa
 	}
 
 	// Get the dependencies from the OpenPLX context.
-	auto ContextInternal = openplx::Core::Api::OpenPlxContextInternal::fromContext(*Result.context());
+	auto ContextInternal =
+		openplx::Core::Api::OpenPlxContextInternal::fromContext(*Result.context());
 	const auto& Docs = ContextInternal->documents();
 	const FString BundlePath = FPLXUtilities::GetBundlePath();
 	for (auto& D : Docs)
@@ -485,7 +513,8 @@ void FPLXUtilitiesInternal::GetNestedObjectFields(
 	agxopenplx::freeContainerMemory(Fields);
 }
 
-std::vector<openplx::Core::ObjectPtr> FPLXUtilitiesInternal::GetObjectFields(openplx::Core::Object& Object)
+std::vector<openplx::Core::ObjectPtr> FPLXUtilitiesInternal::GetObjectFields(
+	openplx::Core::Object& Object)
 {
 	std::vector<openplx::Core::ObjectPtr> Result;
 	if (auto System = dynamic_cast<openplx::Physics3D::System*>(&Object))

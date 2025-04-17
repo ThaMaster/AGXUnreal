@@ -32,13 +32,134 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 	InDetailBuilder.HideProperty(GET_MEMBER_NAME_CHECKED(UPLX_SignalHandlerComponent, Inputs));
 	InDetailBuilder.HideCategory(FName("Sockets"));
 
-	IDetailCategoryBuilder& CategoryBuilder =
-		InDetailBuilder.EditCategory("OpenPLX", FText::GetEmpty(), ECategoryPriority::Important);
+	IDetailCategoryBuilder& SignalInterfaceCategory =
+		InDetailBuilder.EditCategory("OpenPLX Signal Interface", FText::GetEmpty(), ECategoryPriority::Important);
 
 	// clang-format off
 
-  // Inputs.
-	CategoryBuilder.AddCustomRow(FText::FromString("Inputs"))
+	// SignalInterface Inputs.
+	SignalInterfaceCategory.AddCustomRow(FText::FromString("Signal Interface Inputs"))
+	.WholeRowContent()
+	[
+		SNew(STextBlock)
+		.Text(FText::FromString("Signal Interface Inputs"))
+		.Font(IDetailLayoutBuilder::GetDetailFontBold())
+	];
+
+	for (const auto& Pair : Component->InputAliases)
+	{
+		const FString& Alias = Pair.Key;
+		const FPLX_Input* Input = Component->Inputs.Find(Pair.Value);
+		if (Input == nullptr)
+			continue;
+
+		FString InputTypeName = UEnum::GetValueAsString(Input->Type);
+		InputTypeName = InputTypeName.RightChop(InputTypeName.Find(TEXT("::")) + 2);
+
+		SignalInterfaceCategory.AddCustomRow(FText::FromString("InputExpandable"))
+		.WholeRowContent()
+		[
+			SNew(SExpandableArea)
+			.InitiallyCollapsed(false)
+			.HeaderContent()
+			[
+				SNew(SEditableTextBox)
+				.Text(FText::FromString(Alias))
+				.IsReadOnly(true)
+				.Font(IDetailLayoutBuilder::GetDetailFont())
+			]
+			.BodyContent()
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(FMargin(32.f, 0.f, 0.f, 0.f))
+				[
+					SNew(SEditableTextBox)
+					.Text(FText::FromString(FString::Printf(TEXT("Type: %s"), *InputTypeName)))
+					.IsReadOnly(true)
+					.Font(IDetailLayoutBuilder::GetDetailFont())
+				]
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(32.f, 4.f, 32.f, 4.f)
+				[
+					SNew(SEditableTextBox)
+					.Text(FText::FromString(FString::Printf(TEXT("Full name: %s"), *Input->Name)))
+					.IsReadOnly(true)
+					.Font(IDetailLayoutBuilder::GetDetailFont())
+				]
+			]
+		];
+	}
+
+	// SignalInterface Outputs.
+	for (const auto& Pair : Component->OutputAliases)
+	{
+		const FString& Alias = Pair.Key;
+		const FPLX_Output* Output = Component->Outputs.Find(Pair.Value);
+		if (Output == nullptr)
+			continue;
+
+		if (!Component->bShowDisabledOutputs && !Output->bEnabled)
+			continue;
+
+		FString OutputTypeName = UEnum::GetValueAsString(Output->Type);
+		OutputTypeName = OutputTypeName.RightChop(OutputTypeName.Find(TEXT("::")) + 2);
+
+		SignalInterfaceCategory.AddCustomRow(FText::FromString("OutputExpandable"))
+		.WholeRowContent()
+		[
+			SNew(SExpandableArea)
+			.InitiallyCollapsed(true)
+			.HeaderContent()
+			[
+				SNew(SEditableTextBox)
+				.Text(FText::FromString(Alias))
+				.IsReadOnly(true)
+				.Font(IDetailLayoutBuilder::GetDetailFont())
+			]
+			.BodyContent()
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(FMargin(32.f, 0.f, 0.f, 0.f))
+				[
+					SNew(SEditableTextBox)
+					.Text(FText::FromString(FString::Printf(TEXT("Type: %s"), *OutputTypeName)))
+					.IsReadOnly(true)
+					.Font(IDetailLayoutBuilder::GetDetailFont())
+				]
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(32.f, 4.f, 32.f, 4.f)
+				[
+					SNew(SEditableTextBox)
+					.Text(FText::FromString(Output->bEnabled ? TEXT("Enabled") : TEXT("Disabled")))
+					.IsReadOnly(true)
+					.Font(IDetailLayoutBuilder::GetDetailFont())
+				]
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(32.f, 4.f, 32.f, 4.f)
+				[
+					SNew(SEditableTextBox)
+					.Text(FText::FromString(FString::Printf(TEXT("Full name: %s"), *Output->Name)))
+					.IsReadOnly(true)
+					.Font(IDetailLayoutBuilder::GetDetailFont())
+				]
+			]
+		];
+	}
+
+	IDetailCategoryBuilder& InputsCategory =
+		InDetailBuilder.EditCategory("OpenPLX Inputs", FText::GetEmpty(), ECategoryPriority::Important);
+	InputsCategory.InitiallyCollapsed(true);
+	InputsCategory.RestoreExpansionState(false);
+
+  // All Inputs.
+	InputsCategory.AddCustomRow(FText::FromString("All Inputs"))
 	.WholeRowContent()
 	[
 		SNew(STextBlock)
@@ -54,7 +175,7 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 		FString InputTypeName = UEnum::GetValueAsString(Input.Type);
 		InputTypeName = InputTypeName.RightChop(InputTypeName.Find(TEXT("::")) + 2);
 
-		CategoryBuilder.AddCustomRow(FText::FromString("InputExpandable"))
+		InputsCategory.AddCustomRow(FText::FromString("InputExpandable"))
 		.WholeRowContent()
 		[
 			SNew(SExpandableArea)
@@ -74,16 +195,34 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 				.Padding(FMargin(32.f, 0.f, 0.f, 0.f))
 				[
 					SNew(SEditableTextBox)
-					.Text(FText::FromString(InputTypeName))
+					.Text(FText::FromString(FString::Printf(TEXT("Type: %s"), *InputTypeName)))
 					.IsReadOnly(true)
 					.Font(IDetailLayoutBuilder::GetDetailFont())
+				]
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(FMargin(32.f, 4.f, 0.f, 0.f))
+				[
+					SNew(SBox)
+					.Visibility(Input.Alias.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible)
+					[
+						SNew(SEditableTextBox)
+						.Text(FText::FromString(FString::Printf(TEXT("Alias: %s"), *Input.Alias)))
+						.IsReadOnly(true)
+						.Font(IDetailLayoutBuilder::GetDetailFont())
+					]
 				]
 			]
 		];
 	}
 
-	// Outputs.
-	CategoryBuilder.AddCustomRow(FText::FromString("OutputsHeader"))
+	IDetailCategoryBuilder& OutputsCategory =
+		InDetailBuilder.EditCategory("OpenPLX Outputs", FText::GetEmpty(), ECategoryPriority::Important);
+	OutputsCategory.InitiallyCollapsed(true);
+	OutputsCategory.RestoreExpansionState(false);
+
+	// Hide disabled Outputs checkbox.
+	OutputsCategory.AddCustomRow(FText::FromString("OutputsHeader"))
 	.WholeRowContent()
 	[
 		SNew(SVerticalBox)
@@ -91,7 +230,7 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 		.AutoHeight()
 		[
 			SNew(STextBlock)
-			.Text(FText::FromString("Outputs"))
+			.Text(FText::FromString("All Outputs"))
 			.Font(IDetailLayoutBuilder::GetDetailFontBold())
 		]
 		+ SVerticalBox::Slot()
@@ -114,7 +253,7 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 		]
 	];
 
-	// Outputs List
+	// All Outputs.
 	for (const auto& Pair : Component->Outputs)
 	{
 		const FString& Key = Pair.Key;
@@ -126,7 +265,7 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 		FString OutputTypeName = UEnum::GetValueAsString(Output.Type);
 		OutputTypeName = OutputTypeName.RightChop(OutputTypeName.Find(TEXT("::")) + 2);
 
-		CategoryBuilder.AddCustomRow(FText::FromString("OutputExpandable"))
+		OutputsCategory.AddCustomRow(FText::FromString("OutputExpandable"))
 		.WholeRowContent()
 		[
 			SNew(SExpandableArea)
@@ -146,7 +285,7 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 				.Padding(FMargin(32.f, 0.f, 0.f, 0.f))
 				[
 					SNew(SEditableTextBox)
-					.Text(FText::FromString(OutputTypeName))
+					.Text(FText::FromString(FString::Printf(TEXT("Type: %s"), *OutputTypeName)))
 					.IsReadOnly(true)
 					.Font(IDetailLayoutBuilder::GetDetailFont())
 				]
@@ -158,6 +297,19 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 					.Text(FText::FromString(Output.bEnabled ? TEXT("Enabled") : TEXT("Disabled")))
 					.IsReadOnly(true)
 					.Font(IDetailLayoutBuilder::GetDetailFont())
+				]
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(FMargin(32.f, 4.f, 0.f, 0.f))
+				[
+					SNew(SBox)
+					.Visibility(Output.Alias.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible)
+					[
+						SNew(SEditableTextBox)
+						.Text(FText::FromString(FString::Printf(TEXT("Alias: %s"), *Output.Alias)))
+						.IsReadOnly(true)
+						.Font(IDetailLayoutBuilder::GetDetailFont())
+					]
 				]
 			]
 		];

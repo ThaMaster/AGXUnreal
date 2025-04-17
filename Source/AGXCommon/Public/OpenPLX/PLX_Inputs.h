@@ -21,14 +21,18 @@ struct AGXCOMMON_API FPLX_Input
 
 	FPLX_Input() = default;
 
-	FPLX_Input(const FString& InName, EPLX_InputType InType)
+	FPLX_Input(const FString& InName, const FString& InAlias, EPLX_InputType InType)
 		: Name(InName)
+		, Alias(InAlias)
 		, Type(InType)
 	{
 	}
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "OpenPXL")
 	FString Name;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "OpenPXL")
+	FString Alias;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "OpenPXL")
 	EPLX_InputType Type {EPLX_InputType::Unsupported};

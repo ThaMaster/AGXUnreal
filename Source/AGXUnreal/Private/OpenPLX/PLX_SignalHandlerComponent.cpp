@@ -207,10 +207,18 @@ void UPLX_SignalHandlerComponent::CopyFrom(
 	const TArray<FPLX_Input>& InInputs, TArray<FPLX_Output> InOutputs, FAGX_ImportContext* Context)
 {
 	for (const auto& Input : InInputs)
+	{
 		Inputs.Add(Input.Name, Input);
+		if (!Input.Alias.IsEmpty())
+			InputAliases.Add(Input.Alias, Input.Name);
+	}
 
 	for (const auto& Output : InOutputs)
+	{
 		Outputs.Add(Output.Name, Output);
+		if (!Output.Alias.IsEmpty())
+			OutputAliases.Add(Output.Alias, Output.Name);
+	}
 
 	if (Context != nullptr)
 	{

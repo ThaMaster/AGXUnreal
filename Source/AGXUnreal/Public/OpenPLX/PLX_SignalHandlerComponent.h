@@ -37,6 +37,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPLX")
 	TMap<FString, FPLX_Output> Outputs;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPLX")
+	TMap<FString, FString> InputAliases;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPLX")
+	TMap<FString, FString> OutputAliases;
+
 	/**
 	 * Outputs the first found Input given a type and full or partial name. In other words, partial name
 	 * matching is supported. Returns true if an Input was found, returns false otherwise.
