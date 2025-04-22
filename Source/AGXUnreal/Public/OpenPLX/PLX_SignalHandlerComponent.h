@@ -48,28 +48,28 @@ public:
 	 * name matching is supported. Returns true if an Input was found, returns false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool FindInput(FString NameOrAlias, FPLX_Input& OutInput);
+	bool GetInput(FString NameOrAlias, FPLX_Input& OutInput);
 
 	/**
 	 * Outputs the first found Input given a type and full or partial name or alias. In other words, partial name
 	 * matching is supported. Returns true if an Input was found, returns false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool FindInputFromType(EPLX_InputType Type, FString NameOrAlias, FPLX_Input& OutInput);
+	bool GetInputFromType(EPLX_InputType Type, FString NameOrAlias, FPLX_Input& OutInput);
 
 	/**
 	 * Outputs the first found Output given a full or partial name or alias. In other words, partial
 	 * name matching is supported. Returns true if an Output was found, returns false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool FindOutput(FString NameOrAlias, FPLX_Output& OutOutput);
+	bool GetOutput(FString NameOrAlias, FPLX_Output& OutOutput);
 
 	/**
 	 * Outputs the first found Output given a type and full or partial name or alias. In other words, partial name
 	 * matching is supported. Returns true if an Output was found, returns false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool FindOutputFromType(EPLX_OutputType Type, FString NameOrAlias, FPLX_Output& OutOutput);
+	bool GetOutputFromType(EPLX_OutputType Type, FString NameOrAlias, FPLX_Output& OutOutput);
 
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendReal(const FPLX_Input& Input, double Value);

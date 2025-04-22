@@ -48,13 +48,11 @@ namespace PLX_SignalHandlerComponent_helpers
 		if (ModelSource == nullptr)
 			return {};
 
-		// Todo: this must point to the corresponding PLX file in the project files, copied from
-		// import, not the source file itself. This is to ensure portability of standalone-projects.
 		return ModelSource->FilePath;
 	}
 }
 
-bool UPLX_SignalHandlerComponent::FindInput(FString Name, FPLX_Input& OutInput)
+bool UPLX_SignalHandlerComponent::GetInput(FString Name, FPLX_Input& OutInput)
 {
 	for (auto Elem : InputAliases)
 	{
@@ -81,7 +79,7 @@ bool UPLX_SignalHandlerComponent::FindInput(FString Name, FPLX_Input& OutInput)
 	return false;
 }
 
-bool UPLX_SignalHandlerComponent::FindInputFromType(
+bool UPLX_SignalHandlerComponent::GetInputFromType(
 	EPLX_InputType Type, FString Name, FPLX_Input& OutInput)
 {
 	for (auto Elem : InputAliases)
@@ -109,7 +107,7 @@ bool UPLX_SignalHandlerComponent::FindInputFromType(
 	return false;
 }
 
-bool UPLX_SignalHandlerComponent::FindOutput(FString Name, FPLX_Output& OutOutput)
+bool UPLX_SignalHandlerComponent::GetOutput(FString Name, FPLX_Output& OutOutput)
 {
 	for (auto Elem : OutputAliases)
 	{
@@ -136,7 +134,7 @@ bool UPLX_SignalHandlerComponent::FindOutput(FString Name, FPLX_Output& OutOutpu
 	return false;
 }
 
-bool UPLX_SignalHandlerComponent::FindOutputFromType(
+bool UPLX_SignalHandlerComponent::GetOutputFromType(
 	EPLX_OutputType Type, FString Name, FPLX_Output& OutOutput)
 {
 	for (auto Elem : OutputAliases)
@@ -264,7 +262,11 @@ void UPLX_SignalHandlerComponent::BeginPlay()
 	auto SimulationBarrier = Sim != nullptr ? Sim->GetNative() : nullptr;
 	if (SimulationBarrier == nullptr)
 	{
-		// todo: log warning.
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("PLX Signal Hander Component in '%s' was unable to get the native AGX Simulation. "
+				 "Signal handling may not work."),
+			*GetLabelSafe(GetOwner()));
 		return;
 	}
 
@@ -273,7 +275,11 @@ void UPLX_SignalHandlerComponent::BeginPlay()
 		PLXModelRegistry != nullptr ? PLXModelRegistry->GetNative() : nullptr;
 	if (PLXModelRegistryBarrier == nullptr)
 	{
-		// Todo: log warning.
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("PLX Signal Hander Component in '%s' was unable to get the model registry barrier "
+				 "object. Signal handling may not work."),
+			*GetLabelSafe(GetOwner()));
 		return;
 	}
 
