@@ -142,14 +142,13 @@ void FAGX_ShapeContactMergeSplitProperties::UpdateNativeProperties()
 void FAGX_ShapeContactMergeSplitProperties::CreateNativeThresholds(UWorld* PlayingWorld)
 {
 	if (Thresholds == nullptr)
-	{
 		return;
-	}
 
+	// This will be true if we are runtime imported and instantiated.
 	if (Thresholds->IsInstance())
 	{
-		// This will be true if we are runtime imported and instantiated.
-		Thresholds->CreateNative();
+		if (!Thresholds->HasNative())
+			Thresholds->CreateNative();		
 		return;
 	}
 
