@@ -94,6 +94,14 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 	}
 
 	// SignalInterface Outputs.
+	SignalInterfaceCategory.AddCustomRow(FText::FromString("Signal Interface Outputs"))
+	.WholeRowContent()
+	[
+		SNew(STextBlock)
+		.Text(FText::FromString("Signal Interface Outputs"))
+		.Font(IDetailLayoutBuilder::GetDetailFontBold())
+	];
+
 	for (const auto& Pair : Component->OutputAliases)
 	{
 		const FString& Alias = Pair.Key;
