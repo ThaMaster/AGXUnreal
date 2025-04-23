@@ -47,7 +47,9 @@ public class AGXUnreal : ModuleRules
 		}
 
 		UpdateEngineVersionInUPlugin();
-		CreateGitInfo();
+		GitInfo GitInfo = CreateGitInfo();
+		PluginDescriptor PluginDescriptor = GetPluginDescriptor();
+		WriteBuildInfo(PluginDescriptor, GitInfo);
 	}
 
 	/// Overwrite the EngineVersion attribute in AGXUnreal.uplugin with the
@@ -192,22 +194,75 @@ public class AGXUnreal : ModuleRules
 		return false;
 	}
 
-	private void WriteGitInfo(string Hash, string Name)
+	private void WriteBuildInfo(PluginDescriptor PluginDescriptor, GitInfo GitInfo)
 	{
-		List<string> GitInfo = new List<string>();
-		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_HASH {0}", (Hash != "" ? "1" : "0")));
-		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_HASH = TEXT(\"{0}\");", Hash));
-		GitInfo.Add("");
-		GitInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_NAME {0}", (Name != "" ? "1" : "0")));
-		GitInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_NAME = TEXT(\"{0}\");", Name));
-		GitInfo.Add("");
+		List<string> BuildInfo = new List<string>();
+
+		bool bWroteVersion = false;
+		if (PluginDescriptor != null)
+		{
+			string VersionName = PluginDescriptor.VersionName;
+			string[] Versions = VersionName.Split(".");
+			int VersionNumber = PluginDescriptor.Version;
+			if (Versions.Length == 3)
+			{
+				BuildInfo.Add("");
+				BuildInfo.Add("// Version info:");
+				BuildInfo.Add("#define AGXUNREAL_HAS_VERSIONS 1");
+				BuildInfo.Add(String.Format("#define AGXUNREAL_VERSION_NAME \"{0}\"", VersionName));
+				BuildInfo.Add(String.Format("#define AGXUNREAL_MAJOR_VERSION {0}", Versions[0]));
+				BuildInfo.Add(String.Format("#define AGXUNREAL_MINOR_VERSION {0}", Versions[1]));
+				BuildInfo.Add(String.Format("#define AGXUNREAL_PATCH_VERSION {0}", Versions[2]));
+				BuildInfo.Add(String.Format("#define AGXUNREAL_VERSION {0}", VersionNumber));
+				bWroteVersion = true;
+			}
+			else
+			{
+				Console.Error.WriteLine(String.Format("Could not split version name string '{0}' into three version numbers. AGX_BuildInfo.generated.h will not contain AGXUNREAL_MAJOR_VERSION, AGXUNREAL_MINOR_VERSION, nor AGXUNREAL_PATCH_VERSION."));
+			}
+		}
+		if (!bWroteVersion)
+		{
+			BuildInfo.Add("");
+			BuildInfo.Add("// Version info:");
+			BuildInfo.Add("#define AGXUNREAL_HAS_VERSIONS 0");
+			BuildInfo.Add("#define AGXUNREAL_VERSION_NAME \"0.0.0\"");
+			BuildInfo.Add("#define AGXUNREAL_MAJOR_VERSION 0");
+			BuildInfo.Add("#define AGXUNREAL_MINOR_VERSION 0");
+			BuildInfo.Add("#define AGXUNREAL_PATCH_VERSION 0");
+			BuildInfo.Add(String.Format("#define AGXUNREAL_VERSION 0"));
+		}
+
+		if (GitInfo != null)
+		{
+			string Hash = GitInfo.CommitHash;
+			string Name = GitInfo.BranchName;
+
+			BuildInfo.Add("");
+			BuildInfo.Add("// Git info:");
+			BuildInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_HASH {0}", (Hash != "" ? "1" : "0")));
+			BuildInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_HASH = TEXT(\"{0}\");", Hash));
+			BuildInfo.Add("");
+			BuildInfo.Add(String.Format("#define AGXUNREAL_HAS_GIT_NAME {0}", (Name != "" ? "1" : "0")));
+			BuildInfo.Add(String.Format("const TCHAR* const AGXUNREAL_GIT_NAME = TEXT(\"{0}\");", Name));
+			BuildInfo.Add("");
+		}
+		else
+		{
+			BuildInfo.Add("");
+			BuildInfo.Add("// Git info:");
+			BuildInfo.Add("#define AGXUNREAL_HAS_GIT_HASH 0");
+			BuildInfo.Add("const TCHAR* const AGXUNREAL_GIT_HASH = TEXT(\"\");");
+			BuildInfo.Add("");
+			BuildInfo.Add("#define AGXUNREAL_HAS_GIT_NAME 0");
+			BuildInfo.Add("const TCHAR* const AGXUNREAL_GIT_NAME = TEXT(\"\");");
+			BuildInfo.Add("");
+		}
 
 		string FilePath = Path.Combine(GetPluginRootPath(), "Source", "AGXUnrealBarrier", "Public", "AGX_BuildInfo.generated.h");
-
-
-		if (IsFileContentNew(GitInfo, FilePath))
+		if (IsFileContentNew(BuildInfo, FilePath))
 		{
-			File.WriteAllLines(FilePath, GitInfo);
+			File.WriteAllLines(FilePath, BuildInfo);
 		}
 	}
 
@@ -222,7 +277,13 @@ public class AGXUnreal : ModuleRules
 		return Name.StartsWith(Prefix) ? Name.Substring(Prefix.Length) : Name;
 	}
 
-	private void CreateGitInfo()
+	private class GitInfo
+	{
+		public string BranchName;
+		public string CommitHash;
+	}
+
+	private GitInfo CreateGitInfo()
 	{
 		// Don't write Git info if we can't run 'git'.
 		// Not writing empty because if the file already exists then we assume
@@ -231,7 +292,7 @@ public class AGXUnreal : ModuleRules
 		ProcessResult TestGitResult = RunProcess("git", "--version");
 		if (!TestGitResult.Success)
 		{
-			return;
+			return null;
 		}
 
 		// Determine if we are in an AGX Dynamics for Unreal working copy by
@@ -242,12 +303,12 @@ public class AGXUnreal : ModuleRules
 		ProcessResult GetRemoteResult = RunProcess("git", GitArgs("remote -v"));
 		if (!GetRemoteResult.IsValid())
 		{
-			return;
+			return null;
 		}
 		if (!GetRemoteResult.Output.Contains("github.com/Algoryx/AGXUnreal.git"))
 		{
 			// Not in an AGX Dynamics for Unreal working copy.
-			return;
+			return null;
 		}
 
 
@@ -353,10 +414,24 @@ public class AGXUnreal : ModuleRules
 		{
 			// When running a GitLab pipeline we get a non-descript branch name
 			// which should not be presented to the user. We should not get here,
-			// in this case we should use CI_COMMIT_REF_NAME directly.
+			// in this case we should use CI_COMMIT_REF_NAME instead.
 			Name = "";
 		}
 
-		WriteGitInfo(Hash, Name);
+		GitInfo Info = new ();
+		Info.BranchName = Name;
+		Info.CommitHash = Hash;
+		return Info;
+	}
+
+	private PluginDescriptor GetPluginDescriptor()
+	{
+		var Plugin = Plugins.GetPlugin("AGXUnreal");
+		if (Plugin == null)
+		{
+			return null;
+		}
+
+		return Plugin.Descriptor;
 	}
 }
