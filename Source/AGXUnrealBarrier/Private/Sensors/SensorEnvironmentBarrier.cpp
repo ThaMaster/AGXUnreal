@@ -191,7 +191,7 @@ bool FSensorEnvironmentBarrier::IsRaytraceSupported()
 
 	std::call_once(
 		InitFlag,
-		[]()
+		[&]()
 		{
 			bIsRaytraceSupported = agxSensor::RtConfig::isRaytraceSupported();
 			if (!bIsRaytraceSupported)
@@ -210,7 +210,6 @@ bool FSensorEnvironmentBarrier::IsRaytraceSupported()
 			catch (...)
 			{
 				UE_LOG(LogAGX, Log, TEXT("Caught exception after Lidar material initialization."));
-				Barrier.ReleaseNative();
 				bIsRaytraceSupported = false;
 			}
 		});
