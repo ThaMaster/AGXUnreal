@@ -4,6 +4,7 @@
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
+#include "UObject/Interface.h"
 
 // Standard library includes.
 #include <cstdint>
