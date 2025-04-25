@@ -143,6 +143,7 @@ namespace PLXSignalHandler_helpers
 		switch (Input.Type)
 		{
 			case EPLX_InputType::ForceRangeInput:
+			case EPLX_InputType::TorqueRangeInput:
 				return openplx::Math::Vec2::from_xy(Value.X, Value.Y);
 		}
 
@@ -154,7 +155,7 @@ namespace PLXSignalHandler_helpers
 		return {};
 	}
 
-	TOptional<std::shared_ptr<openplx::Math::Vec3>> ConvertVector(
+	TOptional<std::shared_ptr<openplx::Math::Vec3>> ConvertVector3D(
 		const FPLX_Input& Input, const FVector& Value)
 	{
 		switch (Input.Type)
@@ -329,6 +330,7 @@ namespace PLXSignalHandler_helpers
 		switch (Output.Type)
 		{
 			case EPLX_OutputType::ForceRangeOutput:
+			case EPLX_OutputType::TorqueRangeOutput:
 				return FVector2D(Value->value()->x(), Value->value()->y());
 		}
 
@@ -373,6 +375,11 @@ namespace PLXSignalHandler_helpers
 					-ConvertDistanceToUnreal<double>(Value->value()->y()),
 					ConvertDistanceToUnreal<double>(Value->value()->z()));
 			}
+			case EPLX_OutputType::Force3DOutput:
+				return ConvertVector(
+					agx::Vec3(Value->value()->x(), Value->value()->y(), Value->value()->z()));
+			case EPLX_OutputType::Torque3DOutput:
+				return ConvertTorque(agx::Vec3(Value->value()->x(), Value->value()->y(), Value->value()->z()));
 		}
 
 		UE_LOG(
@@ -509,7 +516,7 @@ bool FPLXSignalHandler::Send(const FPLX_Input& Input, const FVector& Value)
 	check(IsInitialized());
 	return PLXSignalHandler_helpers::Send<FVector, openplx::Physics::Signals::Vec3InputSignal>(
 		Input, Value, ModelRegistry, ModelHandle, InputQueueRef.get(),
-		PLXSignalHandler_helpers::ConvertVector);
+		PLXSignalHandler_helpers::ConvertVector3D);
 }
 
 bool FPLXSignalHandler::Receive(const FPLX_Output& Output, FVector& OutValue)

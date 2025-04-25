@@ -24,12 +24,18 @@
 #include "Physics/Signals/EnableInteractionInput.h"
 #include "Physics/Signals/Force1DInput.h"
 #include "Physics/Signals/Force1DOutput.h"
+#include "Physics/Signals/Force3DOutput.h"
+#include "Physics/Signals/ForceRangeInput.h"
+#include "Physics/Signals/ForceRangeOutput.h"
 #include "Physics/Signals/IntInput.h"
 #include "Physics/Signals/LinearVelocity1DInput.h"
 #include "Physics/Signals/Position1DInput.h"
 #include "Physics/Signals/Position1DOutput.h"
 #include "Physics/Signals/SignalInterface.h"
 #include "Physics/Signals/Torque1DInput.h"
+#include "Physics/Signals/Torque3DOutput.h"
+#include "Physics/Signals/TorqueRangeInput.h"
+#include "Physics/Signals/TorqueRangeOutput.h"
 #include "Physics1D/Physics1D_all.h"
 #include "Physics3D/Physics3D_all.h"
 #include "Physics3D/Signals/AngularVelocity3DInput.h"
@@ -276,6 +282,10 @@ EPLX_InputType FPLXUtilitiesInternal::GetInputType(const openplx::Physics::Signa
 	{
 		return EPLX_InputType::ForceRangeInput;
 	}
+	if (dynamic_cast<const TorqueRangeInput*>(&Input))
+	{
+		return EPLX_InputType::TorqueRangeInput;
+	}
 	if (dynamic_cast<const AngularVelocity3DInput*>(&Input))
 	{
 		return EPLX_InputType::AngularVelocity3DInput;
@@ -383,6 +393,10 @@ EPLX_OutputType FPLXUtilitiesInternal::GetOutputType(
 	{
 		return EPLX_OutputType::RPYOutput;
 	}
+	if (dynamic_cast<const openplx::Physics::Signals::Torque3DOutput*>(&Output))
+	{
+		return EPLX_OutputType::Torque3DOutput;
+	}
 	if (dynamic_cast<const Torque1DOutput*>(&Output))
 	{
 		return EPLX_OutputType::Torque1DOutput;
@@ -399,9 +413,17 @@ EPLX_OutputType FPLXUtilitiesInternal::GetOutputType(
 	{
 		return EPLX_OutputType::ForceRangeOutput;
 	}
+	if (dynamic_cast<const TorqueRangeOutput*>(&Output))
+	{
+		return EPLX_OutputType::TorqueRangeOutput;
+	}
 	if (dynamic_cast<const AngularVelocity3DOutput*>(&Output))
 	{
 		return EPLX_OutputType::AngularVelocity3DOutput;
+	}
+	if (dynamic_cast<const Force3DOutput*>(&Output))
+	{
+		return EPLX_OutputType::Force3DOutput;
 	}
 	if (dynamic_cast<const LinearVelocity3DOutput*>(&Output))
 	{

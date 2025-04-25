@@ -23,6 +23,7 @@ enum class EPLX_InputType : uint8
 	Torque1DInput,
 	/* Range Real Inputs */
 	ForceRangeInput,
+	TorqueRangeInput,
 	/* Vec3 Real Inputs */
 	AngularVelocity3DInput,
 	LinearVelocity3DInput,
@@ -56,8 +57,10 @@ enum class EPLX_OutputType : uint8
 	TorqueConverterTurbineTorqueOutput,
 	/* Range Real Outputs */
 	ForceRangeOutput,
+	TorqueRangeOutput,
 	/* Vec3 Real Outputs */
 	AngularVelocity3DOutput,
+	Force3DOutput,
 	LinearVelocity3DOutput,
 	MateConnectorAcceleration3DOutput,
 	MateConnectorAngularAcceleration3DOutput,
@@ -65,6 +68,7 @@ enum class EPLX_OutputType : uint8
 	MateConnectorRPYOutput,
 	Position3DOutput,
 	RPYOutput,
+	Torque3DOutput,
 	/* Integer Outputs */
 	IntOutput,
 	/* Boolean Outputs */
