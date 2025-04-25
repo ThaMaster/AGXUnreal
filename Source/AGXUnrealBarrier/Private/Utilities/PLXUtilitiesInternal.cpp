@@ -507,7 +507,15 @@ TArray<FString> FPLXUtilitiesInternal::GetFileDependencies(const FString& Filepa
 	{
 		const FString Path = FPaths::ConvertRelativePathToFull(Convert(D->path.string()));
 		if (!Path.StartsWith(BundlePath))
+		{
 			Dependencies.AddUnique(Path);
+			const FString BundleConfig =
+				FPaths::ConvertRelativePathToFull(Convert(D->bundle.config_file_path.string()));
+			if (!BundleConfig.StartsWith(BundlePath))
+			{
+				Dependencies.AddUnique(BundleConfig);
+			}
+		}
 	}
 	return Dependencies;
 }
