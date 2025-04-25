@@ -441,7 +441,8 @@ T* FAGX_ObjectUtilities::Get(const FComponentReference& Reference, const AActor*
 template <typename AssetType>
 inline AssetType* FAGX_ObjectUtilities::GetAssetFromPath(const TCHAR* AssetPath)
 {
-	UObject* LoadResult = StaticLoadObject(AssetType::StaticClass(), nullptr, AssetPath);
+	UObject* LoadResult =
+		StaticLoadObject(AssetType::StaticClass(), nullptr, AssetPath, nullptr, LOAD_NoWarn);
 	return Cast<AssetType>(LoadResult);
 }
 
