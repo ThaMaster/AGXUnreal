@@ -52,8 +52,10 @@ public class AGXUnreal : ModuleRules
 		WriteBuildInfo(PluginDescriptor, GitInfo);
 	}
 
-	/// Overwrite the EngineVersion attribute in AGXUnreal.uplugin with the
-	/// Major.Minor version of the currently running Unreal Engine.
+	/**
+	 * Overwrite the EngineVersion attribute in AGXUnreal.uplugin with the
+	 * Major.Minor version of the currently running Unreal Engine.
+	 */
 	private void UpdateEngineVersionInUPlugin()
 	{
 		// I would like to use System.Text.Json, but it seems Unreal Engine 4.26
@@ -122,9 +124,21 @@ public class AGXUnreal : ModuleRules
 	private string GetPluginRootPath()
 	{
 		// ModuleDirectory is the full path to Plugins/AGXUnreal/Source/AGXUnreal.
+		// This returns the full path to Plugins/AGXUnreal.
 		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", ".."));
 	}
 
+	private string GetProjectRootPath()
+	{
+		// ModuleDirectory is the full path to Plugins/AGXUnreal/Source/AGXUnreal.
+		// This returns the full path to the directory that contains the Plugins
+		// directory, which typically is an Unreal project root.
+		return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "..", ".."));
+	}
+
+	/**
+	 * The result of running a blocking external command.
+	 */
 	private struct ProcessResult
 	{
 		public bool Success;
@@ -144,6 +158,9 @@ public class AGXUnreal : ModuleRules
 		}
 	}
 
+	/**
+	 * Run an external command and wait for it to finish.
+	 */
 	private ProcessResult RunProcess(string Executable, string Arguments)
 	{
 		try
@@ -194,6 +211,10 @@ public class AGXUnreal : ModuleRules
 		return false;
 	}
 
+	/**
+	 * Write AGX_BuildInfo.generated.h with information about this particular
+	 * build, such as the plugin version and Git branch name.
+	 */
 	private void WriteBuildInfo(PluginDescriptor PluginDescriptor, GitInfo GitInfo)
 	{
 		List<string> BuildInfo = new List<string>();
@@ -266,9 +287,103 @@ public class AGXUnreal : ModuleRules
 		}
 	}
 
+	private bool IsGitRepository(string Path)
+	{
+		string Arguments = String.Format("-C {0} remote", Path);
+		ProcessResult Result = RunProcess("git", Arguments);
+		return Result.Success;
+	}
+
+	/// Path to the Git repository, either the plugin's or the project's.
+	/// Can be null.
+	private string RepositoryPath = null;
+
+	private string FindGitRepository()
+	{
+		// This used to use GetPluginRootPath instead, but this breaks when
+		// using Unreal Build Tool to build the plugin as a stand-alone package,
+		// i.e. "RunUAT -BuildPluing"
+
+		// We need to support several different use-cases:
+		//
+		// Internal Project Build
+		//
+		// The plugin is being built as part of the AGXUnrealDev project. This
+		// is the main development mode for the Algoryx team. In this case the
+		// build happens within the Git repository itself and the plugin path is
+		// returned. The generated AGX_BuildInfo.generated.h will include the
+		// branch name of the plugin working copy of the GitHub repository.
+		//
+		// Internal Plugin Build
+		//
+		// When building the plugin stand-alone, for example to produce a self-
+		// hosted plugin package, Unreal Build Tool copies the plugin files out
+		// of the Unreal project and builds it elsewhere. In this case the copy
+		// will contain .git data, it is included with the copy of the plugin
+		// files, but that data will not be valid from the new location so
+		// IsGitRepository for that location will fail. We will then fall back
+		// to the project's location. For builds on our development and GitLab
+		// CI machines this will be within the AGXUnrealDev project hosted on
+		// our internal GitLab server, so the generated
+		// AGX_BuildInfo.generated.h will include the branch name of the project
+		// working copy of the GiLab repository. We keep the GitLab and GitHub
+		// branches in sync so the name should be the same but the commit hash
+		// will be different.
+		//
+		// External Project Build With Plugin Package
+		//
+		// This is when a user builds their own projects that includes AGX
+		// Dynamics for Unreal installed from a self-hosted plugin package. In
+		// this case we have neither the GitHub nor the GitLab repository
+		// checked out, but we may be inside a Git repository owned by the user.
+		// In this case we will return a non-null path from here but the
+		// repository will be rejected later for not having one of the known AGX
+		// Dynamics for Unreal URLs and no AGX_BuildInfo.generated.h data will
+		// be generated.
+		//
+		// External Plugin Build With Plugin Clone
+		//
+		// This is when a user build their own projects that includes AGX
+		// Dynamics for Unreal installed by cloning the GitHub repository. This
+		// will behave exactly like Internal Project Build, we will find the
+		// GitHub working copy and use the branch name from there.
+		//
+		// External Plugin Build
+		//
+		// This is when a user builds the plugin stand-alone. This is currently
+		// unsupported, meaning that AGX_BuildInfo.generated.h will not contain
+		// a branch name. There is, as far as I know, no way to know where
+		// Unreal Build Tool copied the plugin files from before the build
+		// process was started.
+		//
+		// External Plugin Build Of Forked GitHub Repository
+		//
+		// People may chose to fork the GitHub repository to do their own
+		// additions and modifications. This is currently not supported, meaning
+		// that no branch name will be written to AGX_BuildInfo.generated.h. The
+		// reason for this is that we do not want to accidentally pick up a
+		// branch name from some unrelated Git repository, so we require that
+		// the URL points to a known AGXUnreal or AGXUnrealDev repository. If a
+		// user want to have branch name support in their forks then a possible
+		// workaround is to modify the URL check in CreateGitInfo.
+
+		string PluginPath = GetPluginRootPath();
+		if (IsGitRepository(PluginPath))
+		{
+			return PluginPath;
+		}
+
+		string ProjectPath = GetProjectRootPath();
+		if (IsGitRepository(ProjectPath))
+		{
+			return ProjectPath;
+		}
+
+		return null;
+	}
+
 	private string GitArgs(string Args)
 	{
-		string RepositoryPath = GetPluginRootPath();
 		return String.Format("-C \"{0}\" {1}", RepositoryPath, Args);
 	}
 
@@ -292,6 +407,14 @@ public class AGXUnreal : ModuleRules
 		ProcessResult TestGitResult = RunProcess("git", "--version");
 		if (!TestGitResult.Success)
 		{
+			Console.WriteLine("AGXUnreal: Git not installed, cannot generate Git info.");
+			return null;
+		}
+
+		RepositoryPath = FindGitRepository();
+		if (String.IsNullOrEmpty(RepositoryPath))
+		{
+			Console.WriteLine("AGXUnreal: Could not find Git repository, cannot generate Git info.");
 			return null;
 		}
 
@@ -303,11 +426,17 @@ public class AGXUnreal : ModuleRules
 		ProcessResult GetRemoteResult = RunProcess("git", GitArgs("remote -v"));
 		if (!GetRemoteResult.IsValid())
 		{
+			Console.WriteLine("AGXUnreal: Could not determine Git remote, cannot generate Git info.");
 			return null;
 		}
-		if (!GetRemoteResult.Output.Contains("github.com/Algoryx/AGXUnreal.git"))
+		if (!GetRemoteResult.Output.Contains("github.com/Algoryx/AGXUnreal.git")
+			&& !GetRemoteResult.Output.Contains("github.com:Algoryx/AGXUnreal.git")
+			&& !GetRemoteResult.Output.Contains("git.algoryx.se:algoryx/unreal/agxunreal.git")
+			&& !GetRemoteResult.Output.Contains("git.algoryx.se/algoryx/unreal/agxunreal.git"))
 		{
 			// Not in an AGX Dynamics for Unreal working copy.
+			Console.WriteLine("AGXUnreal: Not in a clone of the AGXUnreal Git repository, cannot generate Git info.");
+			Console.WriteLine("  {0}", GetRemoteResult.Output);
 			return null;
 		}
 
@@ -321,7 +450,7 @@ public class AGXUnreal : ModuleRules
 		}
 		else
 		{
-			Console.WriteLine("Failed to get Git commit hash:");
+			Console.WriteLine("AGXUnreal: Failed to get Git commit hash:");
 			Console.WriteLine(GetHashResult.Error);
 			Hash = "";
 		}
@@ -352,9 +481,9 @@ public class AGXUnreal : ModuleRules
 			}
 			else
 			{
-				if (!string.IsNullOrEmpty(GetTagResult.Error))
+				if (!String.IsNullOrEmpty(GetTagResult.Error))
 				{
-					Console.WriteLine("Failed to get Git tag:");
+					Console.WriteLine("AGXUnreal: Failed to get Git tag:");
 					Console.WriteLine(GetTagResult.Error);
 				}
 			}
@@ -371,7 +500,7 @@ public class AGXUnreal : ModuleRules
 			}
 			else
 			{
-				Console.Error.WriteLine("Failed to get Git branch:");
+				Console.Error.WriteLine("AGXUnreal: Failed to get Git branch:");
 				Console.WriteLine(GetBranchResult.Error);
 			}
 
