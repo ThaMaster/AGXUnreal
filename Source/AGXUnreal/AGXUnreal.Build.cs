@@ -259,7 +259,7 @@ public class AGXUnreal : ModuleRules
 			BuildInfo.Add("");
 		}
 
-		string FilePath = Path.Combine(GetPluginRootPath(), "Source", "AGXUnrealBarrier", "Public", "AGX_BuildInfo.generated.h");
+		string FilePath = Path.Combine(GetPluginRootPath(), "Source", "AGXCommon", "Public", "AGX_BuildInfo.generated.h");
 		if (IsFileContentNew(BuildInfo, FilePath))
 		{
 			File.WriteAllLines(FilePath, BuildInfo);
