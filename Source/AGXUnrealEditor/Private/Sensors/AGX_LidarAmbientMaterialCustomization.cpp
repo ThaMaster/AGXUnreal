@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
+#include "AGX_RealInterface.h"
 #include "Sensors/AGX_LidarAmbientMaterial.h"
 #include "Sensors/RtAmbientMaterialBarrier.h"
 #include "Sensors/SensorEnvironmentBarrier.h"
@@ -58,6 +59,7 @@ void FAGX_LidarAmbientMaterialCustomization::CustomizeDetails(IDetailLayoutBuild
 			+ SHorizontalBox::Slot().AutoWidth()
 			[
 				SNew(SSpinBox<double>)
+				.TypeInterface(MakeShareable(new FAGX_RealInterface))
 				.MinValue(0.0)
 				.MinDesiredWidth(80)
 				.Value_Lambda([this]() { return AirVisibility; })
@@ -97,6 +99,7 @@ void FAGX_LidarAmbientMaterialCustomization::CustomizeDetails(IDetailLayoutBuild
 			+ SHorizontalBox::Slot().AutoWidth()
 			[
 				SNew(SSpinBox<double>)
+				.TypeInterface(MakeShareable(new FAGX_RealInterface))
 				.MinValue(0.0)
 				.MinDesiredWidth(80)
 				.Value_Lambda([this]() { return FogVisibility; })
@@ -120,6 +123,7 @@ void FAGX_LidarAmbientMaterialCustomization::CustomizeDetails(IDetailLayoutBuild
 			+ SHorizontalBox::Slot().AutoWidth()
 			[
 				SNew(SSpinBox<double>)
+				.TypeInterface(MakeShareable(new FAGX_RealInterface))
 				.MinValue(0.0)
 				.MinDesiredWidth(80)
 				.Value_Lambda([this]() { return FogWavelength; })
@@ -158,6 +162,7 @@ void FAGX_LidarAmbientMaterialCustomization::CustomizeDetails(IDetailLayoutBuild
 			+ SHorizontalBox::Slot().AutoWidth()
 			[
 				SNew(SSpinBox<double>)
+				.TypeInterface(MakeShareable(new FAGX_RealInterface))
 				.MinValue(0.0)
 				.MinDesiredWidth(80)
 				.Value_Lambda([this]() { return RainRate; })
@@ -196,6 +201,7 @@ void FAGX_LidarAmbientMaterialCustomization::CustomizeDetails(IDetailLayoutBuild
 			+ SHorizontalBox::Slot().AutoWidth()
 			[
 				SNew(SSpinBox<double>)
+				.TypeInterface(MakeShareable(new FAGX_RealInterface))
 				.MinValue(0.0)
 				.MinDesiredWidth(80)
 				.Value_Lambda([this]() { return SnowfallRate; })
@@ -219,6 +225,7 @@ void FAGX_LidarAmbientMaterialCustomization::CustomizeDetails(IDetailLayoutBuild
 			+ SHorizontalBox::Slot().AutoWidth()
 			[
 				SNew(SSpinBox<double>)
+				.TypeInterface(MakeShareable(new FAGX_RealInterface))
 				.MinValue(0.0)
 				.MinDesiredWidth(80)
 				.Value_Lambda([this]() { return SnowfallWavelength; })
