@@ -64,7 +64,7 @@ public:
 	 * Based on Object::getNestedObjects in OpenPLX, but calling that function crashes due to
 	 * different allocators used.
 	 */
-	template <class T>
+	template <typename T>
 	static std::vector<std::shared_ptr<T>> GetNestedObjects(openplx::Core::Object& Object);
 
 	/**
@@ -72,7 +72,7 @@ public:
 	 * different allocators used.
 	 * Return all attribute name,value pairs of the specified type T.
 	 */
-	template <class T>
+	template <typename T>
 	static std::vector<std::pair<std::string, std::shared_ptr<T>>> GetEntries(
 		openplx::Core::Object& Object);
 
@@ -83,9 +83,12 @@ public:
 	static std::vector<openplx::Core::ObjectPtr> GetObjectFields(openplx::Core::Object& Object);
 
 	static TArray<FString> GetErrorStrings(const openplx::Errors& Errors);
+
+	// Returns true if errors was found.
+	static bool LogErrorsSafe(openplx::Errors&& Errors, const FString& ErrorMessagePostfix = "");
 };
 
-template <class T>
+template <typename T>
 std::vector<std::shared_ptr<T>> FPLXUtilitiesInternal::GetNestedObjects(
 	openplx::Core::Object& Object)
 {
@@ -98,7 +101,7 @@ std::vector<std::shared_ptr<T>> FPLXUtilitiesInternal::GetNestedObjects(
 	return Output;
 }
 
-template <class T>
+template <typename T>
 std::vector<std::pair<std::string, std::shared_ptr<T>>> FPLXUtilitiesInternal::GetEntries(
 	openplx::Core::Object& Object)
 {

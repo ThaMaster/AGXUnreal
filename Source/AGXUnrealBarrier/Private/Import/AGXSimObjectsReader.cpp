@@ -19,6 +19,7 @@
 // OpenPLX includes.
 #include "BeginAGXIncludes.h"
 #include "agxOpenPLX/AgxOpenPlxApi.h"
+#include "agxOpenPLX/AllocationUtils.h"
 #include "EndAGXIncludes.h"
 
 // AGX Dynamics includes.
@@ -644,18 +645,29 @@ bool FAGXSimObjectsReader::ReadOpenPLXFile(
 	agxopenplx::OptParams Params = agxopenplx::OptParams()
 									   .with_uuidv5("47de4303-16ef-408d-baf5-1c86f0fe4473")
 									   .with_map_visuals(true);
-	agxopenplx::LoadResult Result =
-		agxopenplx::load_from_file(Simulation, Convert(Filename), Convert(PLXBundlesPath), Params);
-
-	if (Result.errors().size() > 0)
+	agxopenplx::LoadResult Result;
+	auto LogErrors = [&]()
 	{
-		for (auto Err : FPLXUtilitiesInternal::GetErrorStrings(Result.errors()))
-		{
-			UE_LOG(LogAGX, Error, TEXT("ReadOpenPLXFile: Got OpenPLX Error: %s"), *Err);
-		}
+		return FPLXUtilitiesInternal::LogErrorsSafe(
+			Result.errors(), TEXT("ReadOpenPLXFile got OpenPLX Error: "));
+	};
 
+	try
+	{
+		Result = agxopenplx::load_from_file(
+			Simulation, Convert(Filename), Convert(PLXBundlesPath), Params);
+	}
+	catch (const std::runtime_error& Excep)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("ReadOpenPLXFile: Could not read OpenPLX file '%s':\n\n%s"),
+			*Filename, UTF8_TO_TCHAR(Excep.what()));
+		LogErrors();
 		return false;
 	}
+
+	if (LogErrors())
+		return false;
 
 	agxSDK::AssemblyRef AssemblyAGX = Result.assembly();
 	Simulation->add(AssemblyAGX);
