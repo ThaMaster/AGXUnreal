@@ -228,7 +228,8 @@ public:
 	bool GetValid() const;
 
 	/**
-	 * Get the current force [N] or torque [Nm] of the constraint along a particular degree of freedom.
+	 * Get the current force [N] or torque [Nm] of the constraint along a particular degree of
+	 * freedom.
 	 *
 	 * Only degrees of freedoms listed in the return value of GetLockedDofsBitmask may be passed.
 	 *
@@ -507,6 +508,11 @@ protected:
 	virtual void CreateNativeImpl() PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl, );
 
 private:
+	// Currently only needed for OpenPLX models, where Constraint names are used to lookup objects
+	// in agxopenplx::OutputSignalListener and agxopenplx::InputSignalListener.
+	UPROPERTY()
+	FString NativeName;
+
 	void InitPropertyDispatcher();
 
 	/**
