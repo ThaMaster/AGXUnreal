@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 /*
  * A collection of tests that test AGX Dynamics archive import and model synchronization.
