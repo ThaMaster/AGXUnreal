@@ -164,7 +164,6 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 	IDetailCategoryBuilder& InputsCategory =
 		InDetailBuilder.EditCategory("OpenPLX Inputs", FText::GetEmpty(), ECategoryPriority::Important);
 	InputsCategory.InitiallyCollapsed(true);
-	InputsCategory.RestoreExpansionState(false);
 
   // All Inputs.
 	InputsCategory.AddCustomRow(FText::FromString("All Inputs"))
@@ -227,7 +226,6 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 	IDetailCategoryBuilder& OutputsCategory =
 		InDetailBuilder.EditCategory("OpenPLX Outputs", FText::GetEmpty(), ECategoryPriority::Important);
 	OutputsCategory.InitiallyCollapsed(true);
-	OutputsCategory.RestoreExpansionState(false);
 
 	// Hide disabled Outputs checkbox.
 	OutputsCategory.AddCustomRow(FText::FromString("OutputsHeader"))

@@ -132,19 +132,24 @@ EAGX_ConstraintAngleControllerType FSingleControllerConstraint1DOFBarrier::GetCo
 	};
 
 	if (auto C = GetTargetSpeedController())
-		return ToAngleType(*C);
+		if (C->HasNative())
+			return ToAngleType(*C);
 
 	if (auto C = GetLockController())
-		return ToAngleType(*C);
+		if (C->HasNative())
+			return ToAngleType(*C);
 
 	if (auto C = GetRangeController())
-		return ToAngleType(*C);
+		if (C->HasNative())
+			return ToAngleType(*C);
 
 	if (auto C = GetFrictionController())
-		return ToAngleType(*C);
+		if (C->HasNative())
+			return ToAngleType(*C);
 
 	if (auto C = GetElectricMotorController())
-		return ToAngleType(*C);
+		if (C->HasNative())
+			return ToAngleType(*C);
 
 	UE_LOG(
 		LogAGX, Warning,

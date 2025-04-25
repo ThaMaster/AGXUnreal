@@ -200,7 +200,9 @@ namespace AGX_TrackComponent_helpers
 		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Properties, Context.SessionGuid);
 		Properties->CopyFrom(PropertiesBarrier);
 		const FString TrackName = Barrier.GetName();
-		const FString Name = FString("AGX_TP_") + TrackName;
+		const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+			Properties->GetOuter(), FString::Printf(TEXT("AGX_TP_%s"), *TrackName),
+			UAGX_TrackProperties::StaticClass());
 		Properties->Rename(*Name);
 
 		Context.TrackProperties->Add(PropertiesBarrier.GetGuid(), Properties);
@@ -219,7 +221,9 @@ namespace AGX_TrackComponent_helpers
 		FAGX_ImportRuntimeUtilities::OnAssetTypeCreated(*Properties, Context.SessionGuid);
 		Properties->CopyFrom(Barrier);
 		const FString TrackName = Barrier.GetName();
-		const FString Name = FString("AGX_TIMP_") + TrackName;
+		const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+			Properties->GetOuter(), FString::Printf(TEXT("AGX_TIMP_%s"), *TrackName),
+			UAGX_TrackInternalMergeProperties::StaticClass());
 		Properties->Rename(*Name);
 
 		Context.TrackMergeProperties->Add(Guid, Properties);
