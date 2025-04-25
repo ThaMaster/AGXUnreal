@@ -1,5 +1,7 @@
 // Copyright 2025, Algoryx Simulation AB.
 
+#pragma once
+
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 
