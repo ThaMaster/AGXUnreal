@@ -253,7 +253,7 @@ namespace AGX_LidarAmbientMaterial_helpers
 		Barrier.AllocateNative();
 		Func(Barrier);
 
-		bool HasCopied = false;
+		int32 NumCopied = 0;
 		TArray<TWeakObjectPtr<UObject>> Objects;
 		DetailBuilder.GetObjectsBeingCustomized(Objects);
 		for (auto& Object : Objects)
@@ -261,18 +261,21 @@ namespace AGX_LidarAmbientMaterial_helpers
 			if (auto* Material = Cast<UAGX_LidarAmbientMaterial>(Object.Get()))
 			{
 				Material->CopyFrom(Barrier);
-				HasCopied = true;
-				FAGX_NotificationUtilities::ShowNotification(
-					FString::Printf(
-						TEXT("Succesfully configured Material '%s'."), *Material->GetName()),
-					SNotificationItem::CS_Success);
+				NumCopied++;
 			}
 		}
 
-		if (!HasCopied)
+		if (NumCopied == 0)
 		{
 			FAGX_NotificationUtilities::ShowNotification(
 				"Failed to configure the selected Material.", SNotificationItem::CS_Fail);
+		}
+		else
+		{
+			const FString Suffix = NumCopied == 1 ? TEXT("") : TEXT("s");
+			FAGX_NotificationUtilities::ShowNotification(
+				FString::Printf(TEXT("Successfully configured Material%s."), *Suffix),
+				SNotificationItem::CS_Success);
 		}
 	}
 }
