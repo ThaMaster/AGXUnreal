@@ -428,6 +428,13 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
 	FGuid ImportGuid;
 
+	/*
+	 * The import name of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AGX Dynamics Import Name")
+	FString ImportName;
+
 public: // Deprecated functions.
 	UFUNCTION(
 		BlueprintCallable, Category = "AGX Constraint",
@@ -508,11 +515,6 @@ protected:
 	virtual void CreateNativeImpl() PURE_VIRTUAL(AAGX_Constraint::CreateNativeImpl, );
 
 private:
-	// Currently only needed for OpenPLX models, where Constraint names are used to lookup objects
-	// in agxopenplx::OutputSignalListener and agxopenplx::InputSignalListener.
-	UPROPERTY()
-	FString NativeName;
-
 	void InitPropertyDispatcher();
 
 	/**
