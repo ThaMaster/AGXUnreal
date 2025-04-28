@@ -1226,8 +1226,7 @@ void UAGX_ConstraintComponent::CreateNative()
 		return;
 	}
 
-	NativeBarrier->SetName(GetName());
-
+	UpdateNativeProperties();
 	if (!GetValid())
 	{
 		UE_LOG(
@@ -1238,7 +1237,7 @@ void UAGX_ConstraintComponent::CreateNative()
 			*GetName(), *GetLabelSafe(GetOwner()));
 	}
 
-	UpdateNativeProperties();
+
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
 	{

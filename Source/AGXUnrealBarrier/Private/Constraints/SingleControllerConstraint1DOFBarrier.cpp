@@ -97,20 +97,25 @@ EAGX_ConstraintControllerType FSingleControllerConstraint1DOFBarrier::GetControl
 {
 	check(HasNative());
 
-	if (GetTargetSpeedController() != nullptr)
-		return EAGX_ConstraintControllerType::ConstraintTargetSpeedController;
+	if (auto C = GetTargetSpeedController())
+		if (C->HasNative())
+			return EAGX_ConstraintControllerType::ConstraintTargetSpeedController;
 
-	if (GetLockController() != nullptr)
-		return EAGX_ConstraintControllerType::ConstraintLockController;
+	if (auto C = GetLockController())
+		if (C->HasNative())
+			return EAGX_ConstraintControllerType::ConstraintLockController;
 
-	if (GetRangeController() != nullptr)
-		return EAGX_ConstraintControllerType::ConstraintRangeController;
+	if (auto C = GetRangeController())
+		if (C->HasNative())
+			return EAGX_ConstraintControllerType::ConstraintRangeController;
 
-	if (GetFrictionController() != nullptr)
-		return EAGX_ConstraintControllerType::ConstraintFrictionController;
+	if (auto C = GetFrictionController())
+		if (C->HasNative())
+			return EAGX_ConstraintControllerType::ConstraintFrictionController;
 
-	if (GetElectricMotorController() != nullptr)
-		return EAGX_ConstraintControllerType::ConstraintElectricMotorController;
+	if (auto C = GetElectricMotorController())
+		if (C->HasNative())
+			return EAGX_ConstraintControllerType::ConstraintElectricMotorController;
 
 	UE_LOG(
 		LogAGX, Warning,
