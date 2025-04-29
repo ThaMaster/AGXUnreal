@@ -35,27 +35,13 @@ void FPLXSignalHandler::Init(
 	check(Simulation.HasNative());
 	check(InModelRegistry.HasNative());
 
-	AssemblyRef = std::make_shared<FAssemblyRef>(new agxSDK::Assembly());
-	for (FConstraintBarrier* Constraint : Constraints)
-	{
-		AGX_CHECK(Constraint->HasNative());
-		AssemblyRef->Native->add(Constraint->GetNative()->Native);
-	}
-
-	// OpenPLX OutputSignalListener requires the assembly to contain a PowerLine with a
-	// certain name. Remove once this has been cleaned up in OpenPLX, it's a bit hacky.
-	agxPowerLine::PowerLineRef RequiredDummyPowerLine = new agxPowerLine::PowerLine();
-	RequiredDummyPowerLine->setName(agx::Name("OpenPlxPowerLine"));
-	AssemblyRef->Native->add(RequiredDummyPowerLine);
-
 	ModelRegistry = &InModelRegistry;
 	ModelHandle = ModelRegistry->Register(PLXFile);
 	if (ModelHandle == FPLXModelRegistry::InvalidHandle)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT(
-				"Could not load OpenPLX model '%s'. The Output Log may contain more information."),
+			TEXT("Could not load OpenPLX model '%s'. The Output Log may contain more information."),
 			*PLXFile);
 		return;
 	}
@@ -82,12 +68,23 @@ void FPLXSignalHandler::Init(
 		return;
 	}
 
+	agxSDK::AssemblyRef Assembly = FPLXUtilitiesInternal::MapRuntimeObjects(System, Constraints);
+	if (Assembly == nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unable to get a valid AGX Assembly from simulated model instance for OpenPLX "
+				 "model '%s'. The Output Log may contain more details."),
+			*PLXFile);
+		return;
+	}
+
 	if (FPLXUtilitiesInternal::HasInputs(System.get()))
 	{
 		InputQueueRef =
 			std::make_shared<FInputSignalQueueRef>(agxopenplx::InputSignalQueue::create());
 		InputSignalHandlerRef =
-			std::make_shared<FInputSignalHandlerRef>(AssemblyRef->Native, InputQueueRef->Native);
+			std::make_shared<FInputSignalHandlerRef>(Assembly, InputQueueRef->Native);
 		Simulation.GetNative()->Native->add(InputSignalHandlerRef->Native);
 	}
 
@@ -96,7 +93,7 @@ void FPLXSignalHandler::Init(
 		OutputQueueRef =
 			std::make_shared<FOutputSignalQueueRef>(agxopenplx::OutputSignalQueue::create());
 		OutputSignalHandlerRef = std::make_shared<FOutputSignalHandlerRef>(
-			AssemblyRef->Native, ModelData->PLXModel, OutputQueueRef->Native);
+			Assembly, ModelData->PLXModel, OutputQueueRef->Native);
 		Simulation.GetNative()->Native->add(OutputSignalHandlerRef->Native);
 	}
 
@@ -379,7 +376,8 @@ namespace PLXSignalHandler_helpers
 				return ConvertVector(
 					agx::Vec3(Value->value()->x(), Value->value()->y(), Value->value()->z()));
 			case EPLX_OutputType::Torque3DOutput:
-				return ConvertTorque(agx::Vec3(Value->value()->x(), Value->value()->y(), Value->value()->z()));
+				return ConvertTorque(
+					agx::Vec3(Value->value()->x(), Value->value()->y(), Value->value()->z()));
 		}
 
 		UE_LOG(

@@ -7,6 +7,11 @@
 #include "OpenPLX/PLX_Inputs.h"
 #include "OpenPLX/PLX_Outputs.h"
 
+// AGX Dynamics includes.
+#include "BeginAGXIncludes.h"
+#include <agxSDK/Assembly.h>
+#include "EndAGXIncludes.h"
+
 // OpenPLX includes.
 #include "BeginAGXIncludes.h"
 #include "openplx/Error.h"
@@ -21,6 +26,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+class FConstraintBarrier;
 
 namespace openplx
 {
@@ -86,6 +93,16 @@ public:
 
 	// Returns true if errors was found.
 	static bool LogErrorsSafe(openplx::Errors&& Errors, const FString& ErrorMessagePostfix = "");
+
+	/**
+	 * Given an OpenPLX System, and all AGX Constraints part of the simulated model instance, this
+	 * function maps all runtime-mapped objects (such as DriveTrain) and returns an agxSDK::Assembly
+	 * containing all AGX Dynamics objects needed for the agxopenplx::IntputSignalListener and
+	 * agxopenplx::OutputSignalListener.
+	 */
+	static agxSDK::AssemblyRef MapRuntimeObjects(
+		std::shared_ptr<openplx::Physics3D::System> System,
+		TArray<FConstraintBarrier*>& Constraints);
 };
 
 template <typename T>

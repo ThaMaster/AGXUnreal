@@ -4,6 +4,8 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "BarrierOnly/AGXRefs.h"
+#include "Constraints/ConstraintBarrier.h"
 #include "TypeConversions.h"
 #include "Utilities/PLXUtilities.h"
 
@@ -13,6 +15,7 @@
 #include "openplx/OpenPlxContextInternal.h"
 #include "openplx/OpenPlxCoreAPI.h"
 #include "agxOpenPLX/AgxOpenPlxApi.h"
+#include "agxOpenPLX/OpenPlxDriveTrainMapper.h"
 #include "DriveTrain/Signals/AutomaticClutchEngagementDurationInput.h"
 #include "DriveTrain/Signals/AutomaticClutchDisengagementDurationInput.h"
 #include "DriveTrain/Signals/TorqueConverterPumpTorqueOutput.h"
@@ -497,7 +500,6 @@ TArray<FString> FPLXUtilitiesInternal::GetFileDependencies(const FString& Filepa
 	if (LogErrors())
 		return Dependencies;
 
-
 	auto System = std::dynamic_pointer_cast<openplx::Physics3D::System>(Result.scene());
 	if (System == nullptr)
 	{
@@ -610,4 +612,44 @@ bool FPLXUtilitiesInternal::LogErrorsSafe(
 	}
 
 	return false;
+}
+
+agxSDK::AssemblyRef FPLXUtilitiesInternal::MapRuntimeObjects(
+	std::shared_ptr<openplx::Physics3D::System> System, TArray<FConstraintBarrier*>& Constraints)
+{
+	AGX_CHECK(System != nullptr);
+	if (System == nullptr)
+	{
+		UE_LOG(LogAGX, Warning, TEXT("MapRuntimeObjects: Got nullptr System."));
+		return nullptr;
+	}
+
+	agxSDK::AssemblyRef Assembly = new agxSDK::Assembly();
+	for (FConstraintBarrier* Constraint : Constraints)
+	{
+		AGX_CHECK(Constraint->HasNative());
+		Assembly->add(Constraint->GetNative()->Native);
+	}
+
+	// OpenPLX OutputSignalListener requires the assembly to contain a PowerLine with a
+	// certain name. This is the PowerLine we will use to map the OpenPLX DriveTrain.
+	agxPowerLine::PowerLineRef RequiredPowerLine = new agxPowerLine::PowerLine();
+	RequiredPowerLine->setName(agx::Name("OpenPlxPowerLine"));
+	Assembly->add(RequiredPowerLine);
+
+	// Map DriveTrain.
+	auto ErrorReporter = std::make_shared<openplx::ErrorReporter>();
+	agxopenplx::OpenPlxDriveTrainMapper DriveTrainMapper(
+		ErrorReporter, agxopenplx::DriveTrainConstraintMapMode::Name);
+	DriveTrainMapper.mapDriveTrainIntoPowerLine(System, RequiredPowerLine, Assembly);
+
+	if (ErrorReporter->getErrorCount() > 0)
+	{
+		for (auto Err : FPLXUtilitiesInternal::GetErrorStrings(ErrorReporter->getErrors()))
+		{
+			UE_LOG(LogAGX, Error, TEXT("MapRuntimeObjects got error: %s"), *Err);
+		}
+	}
+
+	return Assembly;
 }
