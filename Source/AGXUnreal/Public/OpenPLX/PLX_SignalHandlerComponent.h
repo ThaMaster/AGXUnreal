@@ -18,7 +18,8 @@ struct FAGX_ImportContext;
 /**
  * EXPERIMENTAL
  *
- * Todo: Add description.
+ * The signal handler Component is used send and receive OpenPLX Signals. It keeps track of all
+ * Inputs and Outputs available in the model.
  */
 UCLASS(
 	ClassGroup = "OpenPLX", Category = "OpenPLX", Experimental,
@@ -51,8 +52,9 @@ public:
 	bool GetInput(FString NameOrAlias, FPLX_Input& OutInput);
 
 	/**
-	 * Outputs the first found Input given a type and full or partial name or alias. In other words, partial name
-	 * matching is supported. Returns true if an Input was found, returns false otherwise.
+	 * Outputs the first found Input given a type and full or partial name or alias. In other words,
+	 * partial name matching is supported. Returns true if an Input was found, returns false
+	 * otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool GetInputFromType(EPLX_InputType Type, FString NameOrAlias, FPLX_Input& OutInput);
@@ -65,8 +67,9 @@ public:
 	bool GetOutput(FString NameOrAlias, FPLX_Output& OutOutput);
 
 	/**
-	 * Outputs the first found Output given a type and full or partial name or alias. In other words, partial name
-	 * matching is supported. Returns true if an Output was found, returns false otherwise.
+	 * Outputs the first found Output given a type and full or partial name or alias. In other
+	 * words, partial name matching is supported. Returns true if an Output was found, returns false
+	 * otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool GetOutputFromType(EPLX_OutputType Type, FString NameOrAlias, FPLX_Output& OutOutput);
