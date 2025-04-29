@@ -225,7 +225,7 @@ public:
 	 * initialized.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
-	bool GetValid() const;
+	virtual bool GetValid() const;
 
 	/**
 	 * Get the current force [N] or torque [Nm] of the constraint along a particular degree of

@@ -46,6 +46,8 @@ public:
 
 	virtual void CopyFrom(const FConstraintBarrier& Barrier, FAGX_ImportContext* Context) override;
 
+	virtual bool GetValid() const override;
+
 protected:
 	virtual void CreateNativeImpl() override;
 };

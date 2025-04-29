@@ -44,6 +44,21 @@ void UAGX_SingleControllerConstraint1DofComponent::CopyFrom(
 	ControllerAngleType = BarrierSCC1DOF->GetControllerAngleType();
 }
 
+bool UAGX_SingleControllerConstraint1DofComponent::GetValid() const
+{
+	// The default implementation of GetValid() in UAGX_ConstraintComponent returns the
+	// Native->GetValid(). This functions is not really intended to check correct configuration but
+	// is more a way of stating "should this Constraint go to the solver or not". So the name is
+	// bad. But we have nothing better, so we use it currently because it will catch a bunch of
+	// cases we want it to catch.
+	// But here, for SingleControllerConstraint1DofComponent, we have a problem that GetValid can
+	// return false in situations where the Constraint is "valid". For example when using a
+	// SingleControllerConstraint1DofComponent with RangeController, for unclear reasons.
+	// So we handle this Constraint specially.
+	return HasNative() && BodyAttachment1.GetRigidBody() != nullptr &&
+		   BodyAttachment1.GetRigidBody() != BodyAttachment2.GetRigidBody();
+}
+
 void UAGX_SingleControllerConstraint1DofComponent::CreateNativeImpl()
 {
 	if (ControllerType == EAGX_ConstraintControllerType::Invalid)
