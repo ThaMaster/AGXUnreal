@@ -170,12 +170,44 @@ bool UPLX_SignalHandlerComponent::SendReal(const FPLX_Input& Input, double Value
 	return SignalHandler.Send(Input, Value);
 }
 
+bool UPLX_SignalHandlerComponent::SendRealByName(const FString& NameOrAlias, double Value)
+{
+	FPLX_Input Input;
+	const bool Found = GetInput(NameOrAlias, Input);
+	if (!Found)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("SendRealByname: Unable to find Input matching Name or Alias '%s'."),
+			*NameOrAlias);
+		return false;
+	}
+
+	return SendReal(Input, Value);
+}
+
 bool UPLX_SignalHandlerComponent::ReceiveReal(const FPLX_Output& Output, double& OutValue)
 {
 	if (!SignalHandler.IsInitialized())
 		return false;
 
 	return SignalHandler.Receive(Output, OutValue);
+}
+
+bool UPLX_SignalHandlerComponent::ReceiveRealByName(const FString& NameOrAlias, double& Value)
+{
+	FPLX_Output Output;
+	const bool Found = GetOutput(NameOrAlias, Output);
+	if (!Found)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("ReceiveRealByName: Unable to find Output matching Name or Alias '%s'."),
+			*NameOrAlias);
+		return false;
+	}
+
+	return ReceiveReal(Output, Value);
 }
 
 bool UPLX_SignalHandlerComponent::SendRangeReal(const FPLX_Input& Input, FVector2D Value)
@@ -186,12 +218,45 @@ bool UPLX_SignalHandlerComponent::SendRangeReal(const FPLX_Input& Input, FVector
 	return SignalHandler.Send(Input, Value);
 }
 
+bool UPLX_SignalHandlerComponent::SendRangeRealByName(const FString& NameOrAlias, FVector2D Value)
+{
+	FPLX_Input Input;
+	const bool Found = GetInput(NameOrAlias, Input);
+	if (!Found)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("SendRangeRealByName: Unable to find Input matching Name or Alias '%s'."),
+			*NameOrAlias);
+		return false;
+	}
+
+	return SendRangeReal(Input, Value);
+}
+
 bool UPLX_SignalHandlerComponent::ReceiveRangeReal(const FPLX_Output& Output, FVector2D& OutValue)
 {
 	if (!SignalHandler.IsInitialized())
 		return false;
 
 	return SignalHandler.Receive(Output, OutValue);
+}
+
+bool UPLX_SignalHandlerComponent::ReceiveRangeRealByName(
+	const FString& NameOrAlias, FVector2D& OutValue)
+{
+	FPLX_Output Output;
+	const bool Found = GetOutput(NameOrAlias, Output);
+	if (!Found)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("ReceiveRangeRealByName: Unable to find Output matching Name or Alias '%s'."),
+			*NameOrAlias);
+		return false;
+	}
+
+	return ReceiveRangeReal(Output, OutValue);
 }
 
 bool UPLX_SignalHandlerComponent::SendVector(const FPLX_Input& Input, FVector Value)
@@ -202,12 +267,44 @@ bool UPLX_SignalHandlerComponent::SendVector(const FPLX_Input& Input, FVector Va
 	return SignalHandler.Send(Input, Value);
 }
 
+bool UPLX_SignalHandlerComponent::SendVectorByName(const FString& NameOrAlias, FVector Value)
+{
+	FPLX_Input Input;
+	const bool Found = GetInput(NameOrAlias, Input);
+	if (!Found)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("SendVectorByName: Unable to find Input matching Name or Alias '%s'."),
+			*NameOrAlias);
+		return false;
+	}
+
+	return SendVector(Input, Value);
+}
+
 bool UPLX_SignalHandlerComponent::ReceiveVector(const FPLX_Output& Output, FVector& OutValue)
 {
 	if (!SignalHandler.IsInitialized())
 		return false;
 
 	return SignalHandler.Receive(Output, OutValue);
+}
+
+bool UPLX_SignalHandlerComponent::ReceiveVectorByName(const FString& NameOrAlias, FVector& OutValue)
+{
+	FPLX_Output Output;
+	const bool Found = GetOutput(NameOrAlias, Output);
+	if (!Found)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("ReceiveVectorByName: Unable to find Output matching Name or Alias '%s'."),
+			*NameOrAlias);
+		return false;
+	}
+
+	return ReceiveVector(Output, OutValue);
 }
 
 bool UPLX_SignalHandlerComponent::SendInteger(const FPLX_Input& Input, int64 Value)
@@ -218,12 +315,44 @@ bool UPLX_SignalHandlerComponent::SendInteger(const FPLX_Input& Input, int64 Val
 	return SignalHandler.Send(Input, Value);
 }
 
+bool UPLX_SignalHandlerComponent::SendIntegerByName(const FString& NameOrAlias, int64 Value)
+{
+	FPLX_Input Input;
+	const bool Found = GetInput(NameOrAlias, Input);
+	if (!Found)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("SendIntegerByName: Unable to find Input matching Name or Alias '%s'."),
+			*NameOrAlias);
+		return false;
+	}
+
+	return SendInteger(Input, Value);
+}
+
 bool UPLX_SignalHandlerComponent::ReceiveInteger(const FPLX_Output& Output, int64& OutValue)
 {
 	if (!SignalHandler.IsInitialized())
 		return false;
 
 	return SignalHandler.Receive(Output, OutValue);
+}
+
+bool UPLX_SignalHandlerComponent::ReceiveIntegerByName(const FString& NameOrAlias, int64& OutValue)
+{
+	FPLX_Output Output;
+	const bool Found = GetOutput(NameOrAlias, Output);
+	if (!Found)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("ReceiveIntegerByName: Unable to find Output matching Name or Alias '%s'."),
+			*NameOrAlias);
+		return false;
+	}
+
+	return ReceiveInteger(Output, OutValue);
 }
 
 bool UPLX_SignalHandlerComponent::SendBoolean(const FPLX_Input& Input, bool Value)
@@ -234,12 +363,44 @@ bool UPLX_SignalHandlerComponent::SendBoolean(const FPLX_Input& Input, bool Valu
 	return SignalHandler.Send(Input, Value);
 }
 
+bool UPLX_SignalHandlerComponent::SendBooleanByName(const FString& NameOrAlias, bool Value)
+{
+	FPLX_Input Input;
+	const bool Found = GetInput(NameOrAlias, Input);
+	if (!Found)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("SendBooleanByName: Unable to find Input matching Name or Alias '%s'."),
+			*NameOrAlias);
+		return false;
+	}
+
+	return SendBoolean(Input, Value);
+}
+
 bool UPLX_SignalHandlerComponent::ReceiveBoolean(const FPLX_Output& Output, bool& OutValue)
 {
 	if (!SignalHandler.IsInitialized())
 		return false;
 
 	return SignalHandler.Receive(Output, OutValue);
+}
+
+bool UPLX_SignalHandlerComponent::ReceiveBooleanByName(const FString& NameOrAlias, bool& OutValue)
+{
+	FPLX_Output Output;
+	const bool Found = GetOutput(NameOrAlias, Output);
+	if (!Found)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("ReceiveBooleanByName: Unable to find Output matching Name or Alias '%s'."),
+			*NameOrAlias);
+		return false;
+	}
+
+	return ReceiveBoolean(Output, OutValue);
 }
 
 void UPLX_SignalHandlerComponent::BeginPlay()
