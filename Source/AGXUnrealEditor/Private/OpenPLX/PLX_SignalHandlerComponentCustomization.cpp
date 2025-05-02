@@ -46,11 +46,14 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 		.Font(IDetailLayoutBuilder::GetDetailFontBold())
 	];
 
-	for (const auto& Pair : Component->InputAliases)
+	TArray<FString> SortedInputAliasKeys;
+	Component->InputAliases.GetKeys(SortedInputAliasKeys);
+	SortedInputAliasKeys.Sort();
+	for (const FString& Alias : SortedInputAliasKeys)
 	{
-		const FString& Alias = Pair.Key;
-		const FPLX_Input* Input = Component->Inputs.Find(Pair.Value);
-		if (Input == nullptr)
+		const FString& Key = Component->InputAliases[Alias];
+		const FPLX_Input* Input = Component->Inputs.Find(Key);
+		if (!Input)
 			continue;
 
 		FString InputTypeName = UEnum::GetValueAsString(Input->Type);
@@ -102,11 +105,14 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 		.Font(IDetailLayoutBuilder::GetDetailFontBold())
 	];
 
-	for (const auto& Pair : Component->OutputAliases)
+	TArray<FString> SortedOutputAliasKeys;
+	Component->OutputAliases.GetKeys(SortedOutputAliasKeys);
+	SortedOutputAliasKeys.Sort();
+	for (const FString& Alias : SortedOutputAliasKeys)
 	{
-		const FString& Alias = Pair.Key;
-		const FPLX_Output* Output = Component->Outputs.Find(Pair.Value);
-		if (Output == nullptr)
+		const FString& Key = Component->OutputAliases[Alias];
+		const FPLX_Output* Output = Component->Outputs.Find(Key);
+		if (!Output)
 			continue;
 
 		if (!Component->bShowDisabledOutputs && !Output->bEnabled)
@@ -174,11 +180,12 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 		.Font(IDetailLayoutBuilder::GetDetailFontBold())
 	];
 
-	for (const auto& Pair : Component->Inputs)
+	TArray<FString> SortedInputKeys;
+	Component->Inputs.GetKeys(SortedInputKeys);
+	SortedInputKeys.Sort();
+	for (const FString& Key : SortedInputKeys)
 	{
-		const FString& Key = Pair.Key;
-		const FPLX_Input& Input = Pair.Value;
-
+		const FPLX_Input& Input = Component->Inputs[Key];
 		FString InputTypeName = UEnum::GetValueAsString(Input.Type);
 		InputTypeName = InputTypeName.RightChop(InputTypeName.Find(TEXT("::")) + 2);
 
@@ -260,11 +267,12 @@ void FPLX_SignalHandlerComponentCustomization::CustomizeDetails(
 	];
 
 	// All Outputs.
-	for (const auto& Pair : Component->Outputs)
+	TArray<FString> SortedOutputKeys;
+	Component->Outputs.GetKeys(SortedOutputKeys);
+	SortedOutputKeys.Sort();
+	for (const FString& Key : SortedOutputKeys)
 	{
-		const FString& Key = Pair.Key;
-		const FPLX_Output& Output = Pair.Value;
-
+		const FPLX_Output& Output = Component->Outputs[Key];
 		if (!Component->bShowDisabledOutputs && !Output.bEnabled)
 			continue;
 
