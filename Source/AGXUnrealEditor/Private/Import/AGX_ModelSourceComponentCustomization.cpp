@@ -47,8 +47,8 @@ void FAGX_ModelSourceComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 
 	if (ModelSourceComponent->FilePath.EndsWith("openplx"))
 	{
-		FString SourceFilePath = FPaths::ConvertRelativePathToFull(ModelSourceComponent->FilePath);
-		SourceFilePath.RemoveFromStart(FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()));
+		FString ImportedFilePath = FPaths::ConvertRelativePathToFull(ModelSourceComponent->FilePath);
+		ImportedFilePath.RemoveFromStart(FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()));
 
 		// clang-format off
 		CategoryBuilder.AddCustomRow(FText::GetEmpty())
@@ -58,7 +58,19 @@ void FAGX_ModelSourceComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 			.AutoWidth()
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString(FString::Printf(TEXT("Source File: '%s'"), *SourceFilePath)))
+				.Text(FText::FromString(FString::Printf(TEXT("Imported File: '%s'"), *ImportedFilePath)))
+				.Font(FAGX_SlateUtilities::CreateFont(8))
+			]
+		];
+
+		CategoryBuilder.AddCustomRow(FText::GetEmpty())
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(FString::Printf(TEXT("Original Source File: '%s'"), *ModelSourceComponent->SourceFilePath)))
 				.Font(FAGX_SlateUtilities::CreateFont(8))
 			]
 		];

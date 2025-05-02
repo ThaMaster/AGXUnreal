@@ -84,6 +84,7 @@ TOptional<FAGX_ReimportSettings> SAGX_ReimportModelDialog::ToReimportSettings()
 	FAGX_ReimportSettings Settings;
 	Settings.ImportType = FAGX_ImportUtilities::GetFrom(FilePath);
 	Settings.FilePath = FilePath;
+	Settings.SourceFilePath = FilePath;
 	Settings.bIgnoreDisabledTrimeshes = bIgnoreDisabledTrimesh;
 	Settings.bForceOverwriteProperties = bForceOverwriteProperties;
 	Settings.bForceReassignRenderMaterials = bForceReassignRenderMaterials;

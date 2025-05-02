@@ -76,16 +76,19 @@ namespace AGX_AGXUtilities_helpers
 		OutSettings.FilePath = NewLocation;
 	}
 
-	void ResolveImportPath(FAGX_ImportSettings& OutSettings)
+	void ResolveImportPaths(FAGX_ImportSettings& OutSettings)
 	{
-		if (FPaths::FileExists(OutSettings.FilePath))
-			return;
+		if (!FPaths::FileExists(OutSettings.FilePath))
+		{
+			// Try relative to project dir.
+			const FString ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+			const FString FullPath = FPaths::Combine(ProjectDir, OutSettings.FilePath);
+			if (FPaths::FileExists(FullPath))
+				OutSettings.FilePath = FullPath;
+		}
 
-		// Try relative to project dir.
-		const FString ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
-		const FString FullPath = FPaths::Combine(ProjectDir, OutSettings.FilePath);
-		if (FPaths::FileExists(FullPath))
-			OutSettings.FilePath = FullPath;
+		if (OutSettings.SourceFilePath.IsEmpty())
+			OutSettings.SourceFilePath = OutSettings.FilePath;
 	}
 }
 
@@ -99,7 +102,7 @@ AActor* UAGX_AGXUtilities::Import(UObject* WorldContextObject, FAGX_ImportSettin
 		return nullptr;
 	}
 
-	AGX_AGXUtilities_helpers::ResolveImportPath(Settings);
+	AGX_AGXUtilities_helpers::ResolveImportPaths(Settings);
 	UWorld* World = WorldContextObject->GetWorld();
 	if (Settings.ImportType == EAGX_ImportType::Plx)
 		AGX_AGXUtilities_helpers::PreOpenPLXImport(Settings);

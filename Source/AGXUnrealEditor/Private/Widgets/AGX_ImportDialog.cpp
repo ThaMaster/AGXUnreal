@@ -133,6 +133,7 @@ TOptional<FAGX_ImportSettings> SAGX_ImportDialog::ToImportSettings()
 
 	FAGX_ImportSettings Settings;
 	Settings.FilePath = FilePath;
+	Settings.SourceFilePath = FilePath;
 	Settings.bIgnoreDisabledTrimeshes = bIgnoreDisabledTrimesh;
 	Settings.ImportType = ImportType;
 	Settings.bOpenBlueprintEditorAfterImport = true;

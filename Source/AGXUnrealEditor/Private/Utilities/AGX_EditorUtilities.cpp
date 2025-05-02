@@ -56,8 +56,7 @@
 
 #define LOCTEXT_NAMESPACE "FAGX_EditorUtilities"
 
-void FAGX_EditorUtilities::ReimportModel(
-	UBlueprint& Blueprint, bool bOpenBlueprintEditorAfter)
+void FAGX_EditorUtilities::ReimportModel(UBlueprint& Blueprint, bool bOpenBlueprintEditorAfter)
 {
 	// The reason we use FTSTicker here is to ensure that this function returns before we do the
 	// actual Model Reimport. This is important because we close all asset editors before
@@ -102,14 +101,16 @@ void FAGX_EditorUtilities::ReimportModel(
 					.Title(NSLOCTEXT(
 						"AGX", "AGXUnrealReimportModel", "Reimport model from source file"));
 
-			const FString FilePath =
-				ModelSourceComponent != nullptr ? ModelSourceComponent->FilePath : "";
+			const FString FilePath = ModelSourceComponent != nullptr
+										 ? !ModelSourceComponent->SourceFilePath.IsEmpty()
+											   ? ModelSourceComponent->SourceFilePath
+											   : ModelSourceComponent->FilePath
+										 : "";
 			const bool IgnoreDisabledTrimeshes =
 				ModelSourceComponent != nullptr ? ModelSourceComponent->bIgnoreDisabledTrimeshes
 												: false;
 
-			TSharedRef<SAGX_ReimportModelDialog> ReimportDialog =
-				SNew(SAGX_ReimportModelDialog);
+			TSharedRef<SAGX_ReimportModelDialog> ReimportDialog = SNew(SAGX_ReimportModelDialog);
 			ReimportDialog->SetFilePath(FilePath);
 			ReimportDialog->SetIgnoreDisabledTrimeshes(IgnoreDisabledTrimeshes);
 			ReimportDialog->RefreshGui();

@@ -186,26 +186,34 @@ namespace AGX_Importer_helpers
 
 	bool CheckFilePath(const FAGX_ImportSettings& Settings)
 	{
-		bool Result = false;
-
 		if (Settings.ImportType == EAGX_ImportType::Plx)
 		{
-			Result = Settings.FilePath.StartsWith(FPLXUtilities::GetModelsDirectory());
-			if (!Result)
+			if (!Settings.FilePath.StartsWith(FPLXUtilities::GetModelsDirectory()))
+			{
 				UE_LOG(
 					LogAGX, Error, TEXT("OpenPLX file must reside in '%s'."),
 					*FPLXUtilities::GetModelsDirectory());
-			Result &= FPaths::FileExists(Settings.FilePath);
+				return false;
+			}
+
+			if (Settings.SourceFilePath.StartsWith(FPLXUtilities::GetModelsDirectory()))
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Original OpenPLX Source File must NOT reside in '%s'. Do not store your original "
+						 "OpenPLX models in this directory."),
+					*FPLXUtilities::GetModelsDirectory());
+				return false;
+			}
 		}
-		else
+
+		if (!FPaths::FileExists(Settings.FilePath))
 		{
-			Result = FPaths::FileExists(Settings.FilePath);
+			UE_LOG(LogAGX, Error, TEXT("File: '%s' does not exist."), *Settings.FilePath);
+			return false;
 		}
 
-		if (!Result)
-			UE_LOG(LogAGX, Error, TEXT("File path invalid: '%s'"), *Settings.FilePath);
-
-		return Result;
+		return true;
 	}
 
 	void ConditionallyHideShapes(FAGX_ImportContext& Context)
@@ -326,6 +334,7 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(AActor& Owner)
 
 	UAGX_ModelSourceComponent* Component = NewObject<UAGX_ModelSourceComponent>(&Owner);
 	Component->FilePath = Context.Settings->FilePath;
+	Component->SourceFilePath = Context.Settings->SourceFilePath;
 	Component->bIgnoreDisabledTrimeshes = Context.Settings->bIgnoreDisabledTrimeshes;
 	Component->Rename(*Name);
 
