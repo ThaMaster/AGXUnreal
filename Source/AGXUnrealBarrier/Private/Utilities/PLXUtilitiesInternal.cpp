@@ -615,7 +615,8 @@ bool FPLXUtilitiesInternal::LogErrorsSafe(
 }
 
 agxSDK::AssemblyRef FPLXUtilitiesInternal::MapRuntimeObjects(
-	std::shared_ptr<openplx::Physics3D::System> System, TArray<FConstraintBarrier*>& Constraints)
+	std::shared_ptr<openplx::Physics3D::System> System,
+	TArray<FRigidBodyBarrier*>& Bodies, TArray<FConstraintBarrier*>& Constraints)
 {
 	AGX_CHECK(System != nullptr);
 	if (System == nullptr)
@@ -625,6 +626,12 @@ agxSDK::AssemblyRef FPLXUtilitiesInternal::MapRuntimeObjects(
 	}
 
 	agxSDK::AssemblyRef Assembly = new agxSDK::Assembly();
+	for (FRigidBodyBarrier* Body: Bodies)
+	{
+		AGX_CHECK(Body->HasNative());
+		Assembly->add(Body->GetNative()->Native);
+	}
+
 	for (FConstraintBarrier* Constraint : Constraints)
 	{
 		AGX_CHECK(Constraint->HasNative());

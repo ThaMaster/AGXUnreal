@@ -10,6 +10,7 @@
 #include "Constraints/ConstraintBarrier.h"
 #include "OpenPLX/PLX_Inputs.h"
 #include "OpenPLX/PLX_Outputs.h"
+#include "RigidBodyBarrier.h"
 #include "SimulationBarrier.h"
 #include "TypeConversions.h"
 #include "Utilities/PLXUtilitiesInternal.h"
@@ -24,13 +25,14 @@
 #include "Physics/Signals/Vec3InputSignal.h"
 #include "EndAGXIncludes.h"
 
+
 FPLXSignalHandler::FPLXSignalHandler()
 {
 }
 
 void FPLXSignalHandler::Init(
 	const FString& PLXFile, FSimulationBarrier& Simulation, FPLXModelRegistry& InModelRegistry,
-	TArray<FConstraintBarrier*>& Constraints)
+	TArray<FRigidBodyBarrier*>& Bodies,	TArray<FConstraintBarrier*>& Constraints)
 {
 	check(Simulation.HasNative());
 	check(InModelRegistry.HasNative());
@@ -68,7 +70,7 @@ void FPLXSignalHandler::Init(
 		return;
 	}
 
-	agxSDK::AssemblyRef Assembly = FPLXUtilitiesInternal::MapRuntimeObjects(System, Constraints);
+	agxSDK::AssemblyRef Assembly = FPLXUtilitiesInternal::MapRuntimeObjects(System, Bodies, Constraints);
 	if (Assembly == nullptr)
 	{
 		UE_LOG(

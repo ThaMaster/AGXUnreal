@@ -28,6 +28,7 @@
 #include <vector>
 
 class FConstraintBarrier;
+class FRigidBodyBarrier;
 
 namespace openplx
 {
@@ -102,7 +103,7 @@ public:
 	 */
 	static agxSDK::AssemblyRef MapRuntimeObjects(
 		std::shared_ptr<openplx::Physics3D::System> System,
-		TArray<FConstraintBarrier*>& Constraints);
+		TArray<FRigidBodyBarrier*>& Bodies, TArray<FConstraintBarrier*>& Constraints);
 };
 
 template <typename T>

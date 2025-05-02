@@ -576,7 +576,7 @@ void UAGX_ConstraintComponent::CopyFrom(
 	check(Barrier.HasNative());
 
 	ImportGuid = Barrier.GetGuid();
-	ImportName = Barrier.GetName();
+	ImportName = Barrier.GetName(); // Unmodifiled AGX name.
 	bEnable = Barrier.GetEnable();
 	EAGX_SolveType SolveTypeBarrier = static_cast<EAGX_SolveType>(Barrier.GetSolveType());
 	SolveType = SolveTypeBarrier;
@@ -1021,9 +1021,7 @@ void UAGX_ConstraintComponent::UpdateNativeProperties()
 		return;
 	}
 
-	if (!ImportName.IsEmpty())
-		NativeBarrier->SetName(ImportName);
-
+	NativeBarrier->SetName(!ImportName.IsEmpty() ? ImportName : GetName());
 	NativeBarrier->SetEnable(bEnable);
 	NativeBarrier->SetSolveType(SolveType);
 	SetEnableSelfCollision(bSelfCollision);

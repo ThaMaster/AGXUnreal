@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "AGX_RigidBodyComponent.h"
 #include "AGX_Simulation.h"
 #include "Constraints/AGX_ConstraintComponent.h"
 #include "Import/AGX_ImportContext.h"
@@ -19,24 +20,45 @@ UPLX_SignalHandlerComponent::UPLX_SignalHandlerComponent()
 
 namespace PLX_SignalHandlerComponent_helpers
 {
-	TArray<FConstraintBarrier*> CollectConstraintBarriers(AActor* Owner)
+	template <typename BarrierT, typename ComponentT>
+	TArray<BarrierT*> CollectBarriers(AActor* Owner)
 	{
 		if (Owner == nullptr)
-			return TArray<FConstraintBarrier*>();
+			return TArray<BarrierT*>();
 
-		TArray<UAGX_ConstraintComponent*> ConstraintsInThisActor =
-			FAGX_ObjectUtilities::Filter<UAGX_ConstraintComponent>(Owner->GetComponents());
-		TArray<FConstraintBarrier*> ConstraintBarriers;
-		for (UAGX_ConstraintComponent* Constraint : ConstraintsInThisActor)
+		TArray<ComponentT*> ComponentsInThisActor =
+			FAGX_ObjectUtilities::Filter<ComponentT>(Owner->GetComponents());
+		TArray<BarrierT*> Barriers;
+		for (ComponentT* Component : ComponentsInThisActor)
 		{
-			if (auto CBarrier = Constraint->GetOrCreateNative())
+			if (auto CBarrier = Component->GetOrCreateNative())
 			{
 				if (CBarrier->HasNative())
-					ConstraintBarriers.Add(CBarrier);
+					Barriers.Add(CBarrier);
 			}
 		}
 
-		return ConstraintBarriers;
+		return Barriers;
+	}
+
+	TArray<FRigidBodyBarrier*> CollectBodyBarriers(AActor* Owner)
+	{
+		if (Owner == nullptr)
+			return TArray<FRigidBodyBarrier*>();
+
+		TArray<UAGX_RigidBodyComponent*> RigidBodysInThisActor =
+			FAGX_ObjectUtilities::Filter<UAGX_RigidBodyComponent>(Owner->GetComponents());
+		TArray<FRigidBodyBarrier*> RigidBodyBarriers;
+		for (UAGX_RigidBodyComponent* RigidBody : RigidBodysInThisActor)
+		{
+			if (auto CBarrier = RigidBody->GetOrCreateNative())
+			{
+				if (CBarrier->HasNative())
+					RigidBodyBarriers.Add(CBarrier);
+			}
+		}
+
+		return RigidBodyBarriers;
 	}
 
 	TOptional<FString> GetPLXFilePath(AActor* Owner)
@@ -444,11 +466,16 @@ void UPLX_SignalHandlerComponent::BeginPlay()
 		return;
 	}
 
-	// Collect all Constraints in the same AActor as us.
-	TArray<FConstraintBarrier*> ConstraintBarriers = CollectConstraintBarriers(GetOwner());
+	// Collect all relevant AGX objects in the same AActor as us.
+	auto ConstraintBarriers =
+		CollectBarriers<FConstraintBarrier, UAGX_ConstraintComponent>(GetOwner());
+	auto RigidBodyBarriers =
+		CollectBarriers<FRigidBodyBarrier, UAGX_RigidBodyComponent>(GetOwner());
 
 	// Initialize SignalHandler in Barrier module.
-	SignalHandler.Init(*PLXFile, *SimulationBarrier, *PLXModelRegistryBarrier, ConstraintBarriers);
+	SignalHandler.Init(
+		*PLXFile, *SimulationBarrier, *PLXModelRegistryBarrier,
+		RigidBodyBarriers, ConstraintBarriers);
 }
 
 void UPLX_SignalHandlerComponent::CopyFrom(

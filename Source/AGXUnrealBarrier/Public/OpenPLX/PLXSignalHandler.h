@@ -9,6 +9,7 @@
 #include <memory>
 
 class FConstraintBarrier;
+class FRigidBodyBarrier;
 class FSimulationBarrier;
 
 struct FAssemblyRef;
@@ -26,7 +27,7 @@ public:
 
 	void Init(
 		const FString& PLXFile, FSimulationBarrier& Simulation, FPLXModelRegistry& InModelRegistry,
-		TArray<FConstraintBarrier*>& Constraints);
+		TArray<FRigidBodyBarrier*>& Bodies, TArray<FConstraintBarrier*>& Constraints);
 
 	bool IsInitialized() const;
 
