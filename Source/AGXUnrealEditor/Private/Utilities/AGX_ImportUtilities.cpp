@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
+#include "Import/AGX_ModelSourceComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
@@ -14,6 +15,7 @@
 #include "Terrain/AGX_ShovelProperties.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
@@ -22,6 +24,7 @@
 // Unreal Engine includes.
 #include "AssetToolsModule.h"
 #include "Components/ActorComponent.h"
+#include "Engine/Blueprint.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Misc/EngineVersionComparison.h"
@@ -230,6 +233,11 @@ FString FAGX_ImportUtilities::GetImportTrackMergePropertiesDirectoryName()
 	return FString("TrackInternalMergeProperties");
 }
 
+FString FAGX_ImportUtilities::GetImportBaseBlueprintNamePrefix()
+{
+	return "BP_Base_";
+}
+
 template <>
 AGXUNREALEDITOR_API_TEMPLATE FString
 FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeMaterial>()
@@ -328,4 +336,41 @@ EAGX_ImportType FAGX_ImportUtilities::GetFrom(const FString& FilePath)
 	}
 
 	return EAGX_ImportType::Invalid;
+}
+
+void FAGX_ImportUtilities::OnImportedBlueprintDeleted(const UBlueprint& Bp)
+{
+	auto ModelSource =
+		FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ModelSourceComponent>(&Bp, true);
+	if (ModelSource == nullptr)
+		return;
+
+	const FString& Path = ModelSource->FilePath;
+	const FString Marker = TEXT("/OpenPLXModels/");
+	int32 MarkerIndex = Path.Find(Marker, ESearchCase::IgnoreCase, ESearchDir::FromStart);
+	if (MarkerIndex == INDEX_NONE)
+		return;
+
+	int32 SubfolderStart = MarkerIndex + Marker.Len();
+	int32 NextSlashIndex =
+		Path.Find(TEXT("/"), ESearchCase::IgnoreCase, ESearchDir::FromStart, SubfolderStart);
+
+	// If there's no slash after the subfolder, take the full string
+	if (NextSlashIndex == INDEX_NONE)
+		NextSlashIndex = Path.Len();
+
+	FString FolderToDelete = Path.Left(NextSlashIndex);
+	FPaths::NormalizeDirectoryName(FolderToDelete); // Ensure no trailing slashes.
+
+	if (FPaths::DirectoryExists(FolderToDelete))
+	{
+		if (IFileManager::Get().DeleteDirectory(
+				*FolderToDelete, /*RequireExists=*/true, /*Tree=*/true))
+		{
+			FAGX_NotificationUtilities::ShowNotification(
+				FString::Printf(
+					TEXT("Automatically deleted folder and contents in: %s"), *FolderToDelete),
+				SNotificationItem::CS_Success);
+		}
+	}
 }

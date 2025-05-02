@@ -520,7 +520,8 @@ TArray<FString> FPLXUtilitiesInternal::GetFileDependencies(const FString& Filepa
 		std::string PathPLX = G->path();
 		const FString Path = FPaths::ConvertRelativePathToFull(Convert(PathPLX));
 		agxUtil::freeContainerMemory(PathPLX); // Allocated in OpenPLX, deallocate safely.
-		Dependencies.AddUnique(Path);
+		if (FPaths::FileExists(Path))
+			Dependencies.AddUnique(Path);
 	}
 
 	// Get the dependencies from the OpenPLX context.
@@ -533,12 +534,15 @@ TArray<FString> FPLXUtilitiesInternal::GetFileDependencies(const FString& Filepa
 		const FString Path = FPaths::ConvertRelativePathToFull(Convert(D->path.string()));
 		if (!Path.StartsWith(BundlePath))
 		{
-			Dependencies.AddUnique(Path);
+			if (FPaths::FileExists(Path))
+				Dependencies.AddUnique(Path);
+
 			const FString BundleConfig =
 				FPaths::ConvertRelativePathToFull(Convert(D->bundle.config_file_path.string()));
 			if (!BundleConfig.StartsWith(BundlePath))
 			{
-				Dependencies.AddUnique(BundleConfig);
+				if (FPaths::FileExists(BundleConfig))
+					Dependencies.AddUnique(BundleConfig);
 			}
 		}
 	}

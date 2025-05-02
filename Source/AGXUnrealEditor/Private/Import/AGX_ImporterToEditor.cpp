@@ -173,7 +173,9 @@ namespace AGX_ImporterToEditor_helpers
 		// Create a known unique name for the Blueprint package, but don't create the actual
 		// package yet.
 		const FString BlueprintName =
-			IsBase ? "BP_Base_" + FGuid::NewGuid().ToString() : TEXT("BP_") + ModelName;
+			IsBase ? FAGX_ImportUtilities::GetImportBaseBlueprintNamePrefix() +
+						 FGuid::NewGuid().ToString()
+				   : TEXT("BP_") + ModelName;
 		FString BasePackagePath = UPackageTools::SanitizePackageName(Path + "/" + BlueprintName);
 		FString PackagePath = BasePackagePath;
 

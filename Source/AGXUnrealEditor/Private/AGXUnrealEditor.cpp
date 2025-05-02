@@ -2,20 +2,6 @@
 
 #include "AGXUnrealEditor.h"
 
-// Unreal Engine includes.
-#include "AssetToolsModule.h"
-#include "AssetTypeCategories.h"
-#include "Editor/UnrealEdEngine.h"
-#include "Framework/Commands/Commands.h"
-#include "IAssetTools.h"
-#include "IAssetTypeActions.h"
-#include "IPlacementModeModule.h"
-#include "ISettingsModule.h"
-#include "LevelEditor.h"
-#include "Modules/ModuleManager.h"
-#include "PropertyEditorModule.h"
-#include "UnrealEdGlobals.h"
-
 // AGX Dynamics for Unreal includes.
 #include "AGX_ComponentReference.h"
 #include "AGX_ComponentReferenceCustomization.h"
@@ -117,6 +103,7 @@
 #include "Tires/AGX_TwoBodyTireActor.h"
 #include "Tires/AGX_TwoBodyTireComponentCustomization.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_ImportUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/AGX_TrackComponentDetails.h"
 #include "Vehicle/AGX_TrackComponentVisualizer.h"
@@ -132,6 +119,21 @@
 #include "Wire/AGX_WireWinchComponent.h"
 #include "Wire/AGX_WireWinchDetails.h"
 #include "Wire/AGX_WireWinchVisualizer.h"
+
+// Unreal Engine includes.
+#include "AssetToolsModule.h"
+#include "AssetTypeCategories.h"
+#include "Editor/UnrealEdEngine.h"
+#include "Engine/Blueprint.h"
+#include "Framework/Commands/Commands.h"
+#include "IAssetTools.h"
+#include "IAssetTypeActions.h"
+#include "IPlacementModeModule.h"
+#include "ISettingsModule.h"
+#include "LevelEditor.h"
+#include "Modules/ModuleManager.h"
+#include "PropertyEditorModule.h"
+#include "UnrealEdGlobals.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealEditorModule"
 
@@ -181,6 +183,12 @@ void FAGXUnrealEditorModule::StartupModule()
 	InitializeAssets();
 
 	AgxTopMenu = MakeShareable(new FAGX_TopMenu());
+
+	// Listen to Asset Removal events.
+	FAssetRegistryModule& AssetRegistryModule =
+		FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+	AssetRegistryModule.Get().OnAssetRemoved().AddRaw(
+		this, &FAGXUnrealEditorModule::OnAssetRemoved);
 }
 
 void FAGXUnrealEditorModule::ShutdownModule()
@@ -593,7 +601,8 @@ void FAGXUnrealEditorModule::UnregisterCustomizations()
 
 	PropertyModule.UnregisterCustomClassLayout(UAGX_WireWinchComponent::StaticClass()->GetFName());
 
-	PropertyModule.UnregisterCustomClassLayout(UPLX_SignalHandlerComponent::StaticClass()->GetFName());
+	PropertyModule.UnregisterCustomClassLayout(
+		UPLX_SignalHandlerComponent::StaticClass()->GetFName());
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
@@ -766,6 +775,25 @@ bool FAGXUnrealEditorModule::OnCanExecuteGrabModeCommand() const
 {
 	const UWorld* World = FAGX_EditorUtilities::GetCurrentWorld();
 	return World != nullptr && World->IsGameWorld();
+}
+
+void FAGXUnrealEditorModule::OnAssetRemoved(const FAssetData& AssetData)
+{
+	// Handle deletion of OpenPLX file copies.
+	if (!GetDefault<UAGX_Simulation>()->bDeletePLXFileCopyOnBlueprintDeletion)
+		return;
+
+	static const FString BaseBPPrefix = FAGX_ImportUtilities::GetImportBaseBlueprintNamePrefix();
+	if (!AssetData.AssetName.ToString().StartsWith(BaseBPPrefix))
+		return;
+
+	FString FullObjectPath =
+		FPaths::Combine(AssetData.PackagePath.ToString(), AssetData.AssetName.ToString());
+	auto Blueprint = FAGX_ObjectUtilities::GetAssetFromPath<UBlueprint>(*FullObjectPath);
+	if (Blueprint == nullptr)
+		return;
+
+	FAGX_ImportUtilities::OnImportedBlueprintDeleted(*Blueprint);
 }
 
 #undef LOCTEXT_NAMESPACE
