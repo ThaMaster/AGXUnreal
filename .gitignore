@@ -5,7 +5,7 @@
 /license/agx.lic
 /Source/AGXUnreal/Public/AGX_BuildInfo.h
 /Source/ThirdParty/agx
-/Source/AGXUnrealBarrier/Public/AGX_BuildInfo.generated.h
+/Source/AGXCommon/Public/AGX_BuildInfo.generated.h
 Binaries
 DerivedDataCache
 Intermediate
