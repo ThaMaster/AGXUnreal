@@ -17,6 +17,7 @@
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/PLXUtilities.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/TrackBarrier.h"
@@ -361,6 +362,7 @@ void FAGX_ImportUtilities::OnImportedBlueprintDeleted(const UBlueprint& Bp)
 
 	FString FolderToDelete = Path.Left(NextSlashIndex);
 	FPaths::NormalizeDirectoryName(FolderToDelete); // Ensure no trailing slashes.
+	check(FolderToDelete.StartsWith(FPLXUtilities::GetModelsDirectory()));
 
 	if (FPaths::DirectoryExists(FolderToDelete))
 	{
