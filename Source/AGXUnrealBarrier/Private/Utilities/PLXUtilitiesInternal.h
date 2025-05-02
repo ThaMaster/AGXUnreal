@@ -29,6 +29,7 @@
 
 class FConstraintBarrier;
 class FRigidBodyBarrier;
+class FSimulationBarrier;
 
 namespace openplx
 {
@@ -96,13 +97,15 @@ public:
 	static bool LogErrorsSafe(openplx::Errors&& Errors, const FString& ErrorMessagePostfix = "");
 
 	/**
-	 * Given an OpenPLX System, and all AGX Constraints part of the simulated model instance, this
-	 * function maps all runtime-mapped objects (such as DriveTrain) and returns an agxSDK::Assembly
+	 * Given an OpenPLX System, and all relevant AGX objects part of the simulated model instance, this
+	 * function creates all runtime-mapped objects (such as DriveTrain) and returns an agxSDK::Assembly
 	 * containing all AGX Dynamics objects needed for the agxopenplx::IntputSignalListener and
 	 * agxopenplx::OutputSignalListener.
+	 * This functions will also add objects that are created by it to the passed Simulation (as well
+	 * as to the returned Assembly).
 	 */
 	static agxSDK::AssemblyRef MapRuntimeObjects(
-		std::shared_ptr<openplx::Physics3D::System> System,
+		std::shared_ptr<openplx::Physics3D::System> System, FSimulationBarrier& Simulation,
 		TArray<FRigidBodyBarrier*>& Bodies, TArray<FConstraintBarrier*>& Constraints);
 };
 

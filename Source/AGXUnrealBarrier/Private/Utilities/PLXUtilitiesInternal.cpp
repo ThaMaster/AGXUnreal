@@ -6,6 +6,7 @@
 #include "AGX_LogCategory.h"
 #include "BarrierOnly/AGXRefs.h"
 #include "Constraints/ConstraintBarrier.h"
+#include "SimulationBarrier.h"
 #include "TypeConversions.h"
 #include "Utilities/PLXUtilities.h"
 
@@ -615,10 +616,11 @@ bool FPLXUtilitiesInternal::LogErrorsSafe(
 }
 
 agxSDK::AssemblyRef FPLXUtilitiesInternal::MapRuntimeObjects(
-	std::shared_ptr<openplx::Physics3D::System> System,
+	std::shared_ptr<openplx::Physics3D::System> System, FSimulationBarrier& Simulation,
 	TArray<FRigidBodyBarrier*>& Bodies, TArray<FConstraintBarrier*>& Constraints)
 {
 	AGX_CHECK(System != nullptr);
+	AGX_CHECK(Simulation.HasNative());
 	if (System == nullptr)
 	{
 		UE_LOG(LogAGX, Warning, TEXT("MapRuntimeObjects: Got nullptr System."));
@@ -626,16 +628,23 @@ agxSDK::AssemblyRef FPLXUtilitiesInternal::MapRuntimeObjects(
 	}
 
 	agxSDK::AssemblyRef Assembly = new agxSDK::Assembly();
-	for (FRigidBodyBarrier* Body: Bodies)
+
+	agx::RigidBodyRefSetVector OldBodiesAGX;
+	for (FRigidBodyBarrier* Body : Bodies)
 	{
 		AGX_CHECK(Body->HasNative());
-		Assembly->add(Body->GetNative()->Native);
+		auto BodyAGX = Body->GetNative()->Native;
+		Assembly->add(BodyAGX);
+		OldBodiesAGX.push_back(BodyAGX);
 	}
 
+	agx::ConstraintRefSetVector OldConstraintsAGX;
 	for (FConstraintBarrier* Constraint : Constraints)
 	{
 		AGX_CHECK(Constraint->HasNative());
-		Assembly->add(Constraint->GetNative()->Native);
+		auto ConstraintAGX = Constraint->GetNative()->Native;
+		Assembly->add(ConstraintAGX);
+		OldConstraintsAGX.push_back(ConstraintAGX);
 	}
 
 	// OpenPLX OutputSignalListener requires the assembly to contain a PowerLine with a
@@ -656,6 +665,21 @@ agxSDK::AssemblyRef FPLXUtilitiesInternal::MapRuntimeObjects(
 		{
 			UE_LOG(LogAGX, Error, TEXT("MapRuntimeObjects got error: %s"), *Err);
 		}
+	}
+
+	// All objects created within this function must be added to the Simulation.
+	Simulation.GetNative()->Native->add(RequiredPowerLine);
+
+	for (auto B : Assembly->getRigidBodies())
+	{
+		if (!OldBodiesAGX.contains(B))
+			Simulation.GetNative()->Native->add(B);
+	}
+
+	for (auto C : Assembly->getConstraints())
+	{
+		if (!OldConstraintsAGX.contains(C))
+			Simulation.GetNative()->Native->add(C);
 	}
 
 	return Assembly;

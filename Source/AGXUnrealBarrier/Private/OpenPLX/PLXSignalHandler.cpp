@@ -25,14 +25,13 @@
 #include "Physics/Signals/Vec3InputSignal.h"
 #include "EndAGXIncludes.h"
 
-
 FPLXSignalHandler::FPLXSignalHandler()
 {
 }
 
 void FPLXSignalHandler::Init(
 	const FString& PLXFile, FSimulationBarrier& Simulation, FPLXModelRegistry& InModelRegistry,
-	TArray<FRigidBodyBarrier*>& Bodies,	TArray<FConstraintBarrier*>& Constraints)
+	TArray<FRigidBodyBarrier*>& Bodies, TArray<FConstraintBarrier*>& Constraints)
 {
 	check(Simulation.HasNative());
 	check(InModelRegistry.HasNative());
@@ -70,7 +69,8 @@ void FPLXSignalHandler::Init(
 		return;
 	}
 
-	agxSDK::AssemblyRef Assembly = FPLXUtilitiesInternal::MapRuntimeObjects(System, Bodies, Constraints);
+	agxSDK::AssemblyRef Assembly =
+		FPLXUtilitiesInternal::MapRuntimeObjects(System, Simulation, Bodies, Constraints);
 	if (Assembly == nullptr)
 	{
 		UE_LOG(
@@ -409,7 +409,8 @@ namespace PLXSignalHandler_helpers
 
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Tried to read integer type from signal for Output '%s', but the type is either "
+			TEXT("Tried to read integer type from signal for Output '%s', but the type is "
+				 "either "
 				 "not of integer type or is unsupported."),
 			*Output.Name);
 		return {};
@@ -438,7 +439,8 @@ namespace PLXSignalHandler_helpers
 
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Tried to read boolean type from signal for Output '%s', but the type is either "
+			TEXT("Tried to read boolean type from signal for Output '%s', but the type is "
+				 "either "
 				 "not of boolean type or is unsupported."),
 			*Output.Name);
 		return {};
