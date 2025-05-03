@@ -57,9 +57,16 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Reimport Model Info")
 	FString SourceFilePath;
 
+	UPROPERTY(EditAnywhere, Category = "AGX Reimport Model Info")
+	bool bRuntimeImport {false};
+
 	virtual void Serialize(FArchive& Archive) override;
 
 	const TMap<FString, FGuid>& GetDeprecatedRenderDataTable() const;
+
+	//~ Begin UActorComponent Interface
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+	//~ End UActorComponent Interface
 
 private:
 #if WITH_EDITOR

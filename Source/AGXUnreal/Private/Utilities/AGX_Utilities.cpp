@@ -102,6 +102,7 @@ AActor* UAGX_AGXUtilities::Import(UObject* WorldContextObject, FAGX_ImportSettin
 		return nullptr;
 	}
 
+	Settings.bRuntimeImport = true;
 	AGX_AGXUtilities_helpers::ResolveImportPaths(Settings);
 	UWorld* World = WorldContextObject->GetWorld();
 	if (Settings.ImportType == EAGX_ImportType::Plx)

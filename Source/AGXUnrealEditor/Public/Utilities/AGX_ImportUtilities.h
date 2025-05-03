@@ -4,7 +4,6 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "Import/AGX_ImportEnums.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -151,8 +150,6 @@ public:
 	 */
 	template <typename TComponent>
 	static TComponent* CreateComponent(AActor& Owner, USceneComponent& AttachParent);
-
-	static EAGX_ImportType GetFrom(const FString& FilePath);
 
 	static void OnImportedBlueprintDeleted(const UBlueprint& Bp);
 };

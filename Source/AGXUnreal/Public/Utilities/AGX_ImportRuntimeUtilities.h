@@ -2,6 +2,9 @@
 
 #pragma once
 
+// AGX Dynamics for Unreal includes.
+#include "Import/AGX_ImportEnums.h"
+
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
@@ -31,4 +34,9 @@ public:
 
 	static UAGX_ShapeMaterial* GetOrCreateShapeMaterial(
 		const FShapeMaterialBarrier& Barrier, FAGX_ImportContext* Context);
+
+	static EAGX_ImportType GetFrom(const FString& FilePath);
+
+	/// Returns the deleted directory if any.
+	static FString RemoveImportedOpenPLXFiles(const FString& FilePath);
 };

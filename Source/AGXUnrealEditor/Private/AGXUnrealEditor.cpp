@@ -779,6 +779,9 @@ bool FAGXUnrealEditorModule::OnCanExecuteGrabModeCommand() const
 
 void FAGXUnrealEditorModule::OnAssetRemoved(const FAssetData& AssetData)
 {
+	if (AssetData.GetClass() != UBlueprint::StaticClass())
+		return;
+
 	// Handle deletion of OpenPLX file copies.
 	if (!GetDefault<UAGX_Simulation>()->bDeletePLXFileCopyOnBlueprintDeletion)
 		return;

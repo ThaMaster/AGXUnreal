@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
 #include "Utilities/AGX_EditorUtilities.h"
-#include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
 
@@ -153,7 +153,7 @@ FReply SAGX_ImportDialogBase::OnBrowseFileButtonClicked()
 	const FString CurrentSelectedDir = FPaths::GetPath(FilePath);
 	const FString StartDir = FPaths::DirectoryExists(CurrentSelectedDir) ? CurrentSelectedDir : "";
 	FilePath = FAGX_EditorUtilities::SelectExistingFileDialog("file", FileTypes, StartDir);
-	ImportType = FAGX_ImportUtilities::GetFrom(FilePath);
+	ImportType = FAGX_ImportRuntimeUtilities::GetFrom(FilePath);
 
 	RefreshGui();
 
@@ -187,7 +187,7 @@ void SAGX_ImportDialogBase::OnFilePathTextCommitted(
 	const FText& InNewText, ETextCommit::Type InCommitType)
 {
 	FilePath = InNewText.ToString();
-	ImportType = FAGX_ImportUtilities::GetFrom(FilePath);
+	ImportType = FAGX_ImportRuntimeUtilities::GetFrom(FilePath);
 	RefreshGui();
 }
 

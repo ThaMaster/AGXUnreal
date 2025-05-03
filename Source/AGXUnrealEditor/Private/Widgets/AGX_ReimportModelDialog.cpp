@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Import/AGX_ImportSettings.h"
 #include "Utilities/AGX_EditorUtilities.h"
-#include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
 
@@ -82,13 +82,13 @@ TOptional<FAGX_ReimportSettings> SAGX_ReimportModelDialog::ToReimportSettings()
 	}
 
 	FAGX_ReimportSettings Settings;
-	Settings.ImportType = FAGX_ImportUtilities::GetFrom(FilePath);
+	Settings.ImportType = FAGX_ImportRuntimeUtilities::GetFrom(FilePath);
 	Settings.FilePath = FilePath;
 	Settings.SourceFilePath = FilePath;
 	Settings.bIgnoreDisabledTrimeshes = bIgnoreDisabledTrimesh;
 	Settings.bForceOverwriteProperties = bForceOverwriteProperties;
 	Settings.bForceReassignRenderMaterials = bForceReassignRenderMaterials;
-	Settings.ImportType = FAGX_ImportUtilities::GetFrom(FilePath);
+	Settings.ImportType = FAGX_ImportRuntimeUtilities::GetFrom(FilePath);
 	return Settings;
 }
 

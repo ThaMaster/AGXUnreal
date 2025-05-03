@@ -60,6 +60,9 @@ struct AGXUNREAL_API FAGX_ImportSettings
 	 */
 	UPROPERTY()
 	FString SourceFilePath;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Reimport Model Info")
+	bool bRuntimeImport {false};
 };
 
 struct FAGX_ReimportSettings : public FAGX_ImportSettings

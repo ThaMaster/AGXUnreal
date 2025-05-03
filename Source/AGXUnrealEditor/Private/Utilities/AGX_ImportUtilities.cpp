@@ -15,6 +15,7 @@
 #include "Terrain/AGX_ShovelProperties.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/PLXUtilities.h"
@@ -320,25 +321,6 @@ FString FAGX_ImportUtilities::GetDefaultModelImportDirectory(const FString& Mode
 	return ImportsAbsolute;
 }
 
-EAGX_ImportType FAGX_ImportUtilities::GetFrom(const FString& FilePath)
-{
-	const FString FileExtension = FPaths::GetExtension(FilePath);
-	if (FileExtension.Equals("agx"))
-	{
-		return EAGX_ImportType::Agx;
-	}
-	else if (FileExtension.Equals("openplx"))
-	{
-		return EAGX_ImportType::Plx;
-	}
-	else if (FileExtension.Equals("urdf"))
-	{
-		return EAGX_ImportType::Urdf;
-	}
-
-	return EAGX_ImportType::Invalid;
-}
-
 void FAGX_ImportUtilities::OnImportedBlueprintDeleted(const UBlueprint& Bp)
 {
 	auto ModelSource =
@@ -346,33 +328,16 @@ void FAGX_ImportUtilities::OnImportedBlueprintDeleted(const UBlueprint& Bp)
 	if (ModelSource == nullptr)
 		return;
 
-	const FString& Path = ModelSource->FilePath;
-	const FString Marker = TEXT("/OpenPLXModels/");
-	int32 MarkerIndex = Path.Find(Marker, ESearchCase::IgnoreCase, ESearchDir::FromStart);
-	if (MarkerIndex == INDEX_NONE)
+	if (FAGX_ImportRuntimeUtilities::GetFrom(ModelSource->FilePath) != EAGX_ImportType::Plx)
 		return;
 
-	int32 SubfolderStart = MarkerIndex + Marker.Len();
-	int32 NextSlashIndex =
-		Path.Find(TEXT("/"), ESearchCase::IgnoreCase, ESearchDir::FromStart, SubfolderStart);
-
-	// If there's no slash after the subfolder, take the full string
-	if (NextSlashIndex == INDEX_NONE)
-		NextSlashIndex = Path.Len();
-
-	FString FolderToDelete = Path.Left(NextSlashIndex);
-	FPaths::NormalizeDirectoryName(FolderToDelete); // Ensure no trailing slashes.
-	check(FolderToDelete.StartsWith(FPLXUtilities::GetModelsDirectory()));
-
-	if (FPaths::DirectoryExists(FolderToDelete))
+	const FString DeletedFolder =
+		FAGX_ImportRuntimeUtilities::RemoveImportedOpenPLXFiles(ModelSource->FilePath);
+	if (!DeletedFolder.IsEmpty())
 	{
-		if (IFileManager::Get().DeleteDirectory(
-				*FolderToDelete, /*RequireExists=*/true, /*Tree=*/true))
-		{
-			FAGX_NotificationUtilities::ShowNotification(
-				FString::Printf(
-					TEXT("Automatically deleted folder and contents in: %s"), *FolderToDelete),
-				SNotificationItem::CS_Success);
-		}
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("Automatically deleted folder and contents in: %s"), *DeletedFolder),
+			SNotificationItem::CS_Success);
 	}
 }
