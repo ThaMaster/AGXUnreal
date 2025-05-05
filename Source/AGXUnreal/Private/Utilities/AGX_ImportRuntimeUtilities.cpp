@@ -13,6 +13,7 @@
 // Unreal Engine includes.
 #include "Components/ActorComponent.h"
 #include "GameFramework/Actor.h"
+#include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 #include "UObject/MetaData.h"
 
