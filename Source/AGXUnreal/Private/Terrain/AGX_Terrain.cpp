@@ -27,6 +27,7 @@
 #include "Utilities/AGX_StringUtilities.h"
 
 // Unreal Engine includes.
+#include "Containers/Ticker.h"
 #include "Landscape.h"
 #include "LandscapeComponent.h"
 #include "LandscapeStreamingProxy.h"
@@ -673,7 +674,27 @@ void AAGX_Terrain::InitPropertyDispatcher()
 		AGX_MEMBER_NAME(bEnableTerrainPaging),
 		[](ThisClass* This) { This->SetEnableTerrainPaging(This->bEnableTerrainPaging); });
 }
-#endif
+
+void AAGX_Terrain::PostLoad()
+{
+	Super::PostLoad();
+	if (bNeedsShapeMaterialWarning)
+	{
+		// We do this late to avoid issue with Editor not starting after showing the dialog.
+		FTSTicker::GetCoreTicker().AddTicker(
+			FTickerDelegate::CreateLambda(
+				[this](float DeltaTime)
+				{
+					if (!IsValid(this) || !bNeedsShapeMaterialWarning)
+						return false; // Returning false means run only once.
+
+					ShowShapeMaterialWarning();
+					bNeedsShapeMaterialWarning = false;
+					return false; // Returning false means run only once.
+				}));
+	}
+}
+#endif // WITH_EDITOR
 
 void AAGX_Terrain::BeginPlay()
 {
@@ -1827,27 +1848,33 @@ void AAGX_Terrain::Serialize(FArchive& Archive)
 		RootComponent = SpriteComponent;
 	}
 
-#if WITH_EDITOR
 	if (ShouldUpgradeTo(Archive, FAGX_CustomVersion::TerrainMaterialShapeMaterialSplit) &&
 		TerrainMaterial != nullptr && ShapeMaterial == nullptr)
 	{
-		const FString Msg = FString::Printf(
-			TEXT("Important!\n\nIt was detected that the AGX Terrain Actor '%s' references an AGX "
-				 "Terrain Material but no Shape Material. The surface properties of a Terrain is "
-				 "no longer described by the Terrain Material, but instead is described by a "
-				 "separate Shape Material that can be assigned from the Terrain Actor's Details "
-				 "Panel.\n\nIt is recommended to open the Terrain Material and use the 'Create "
-				 "Shape Material' button to generate a Shape Material containing the Terrain "
-				 "surface properties of the Terrain Material and then assign it to the Terrain "
-				 "Actor. Note that this also affects all Contact Materials referencing a Terrain "
-				 "Material; these should be updated to point to a Shape Material generated from "
-				 "the previously pointed to Terrain Material.\n\nThis information is also "
-				 "available in the Changelog in the User Manual.\n\nTo disable this warning, "
-				 "simply re-save the Level that contains this Terrain Actor."),
-			*GetName());
-		FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(Msg);
+		bNeedsShapeMaterialWarning = true;
 	}
-#endif // WITH_EDITOR
 }
+
+#if WITH_EDITOR
+void AAGX_Terrain::ShowShapeMaterialWarning() const
+{
+	const FString Msg = FString::Printf(
+		TEXT("Important!\n\nIt was detected that the AGX Terrain Actor '%s' references an AGX "
+			 "Terrain Material but no Shape Material. The surface properties of a Terrain is "
+			 "no longer described by the Terrain Material, but instead is described by a "
+			 "separate Shape Material that can be assigned from the Terrain Actor's Details "
+			 "Panel.\n\nIt is recommended to open the Terrain Material and use the 'Create "
+			 "Shape Material' button to generate a Shape Material containing the Terrain "
+			 "surface properties of the Terrain Material and then assign it to the Terrain "
+			 "Actor. Note that this also affects all Contact Materials referencing a Terrain "
+			 "Material; these should be updated to point to a Shape Material generated from "
+			 "the previously pointed to Terrain Material.\n\nThis information is also "
+			 "available in the Changelog in the User Manual.\n\nTo disable this warning, "
+			 "simply re-save the Level that contains this Terrain Actor."),
+		*GetName());
+
+	FAGX_NotificationUtilities::ShowDialogBoxWithWarning(Msg);
+}
+#endif // WITH_EDITOR
 
 #undef LOCTEXT_NAMESPACE
