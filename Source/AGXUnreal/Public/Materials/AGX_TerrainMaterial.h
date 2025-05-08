@@ -259,6 +259,12 @@ public:
 	double GetDepthIncreaseFactor() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Excavation Contact")
+	void SetDepthAngleThreshold(double DepthAngleThreshold);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Excavation Contact")
+	double GetDepthAngleThreshold() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Excavation Contact")
 	void SetMaximumAggregateNormalForce(double MaximumAggregateNormalForce);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Excavation Contact")
