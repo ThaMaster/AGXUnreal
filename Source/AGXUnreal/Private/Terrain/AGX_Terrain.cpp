@@ -691,7 +691,8 @@ void AAGX_Terrain::PostLoad()
 					ShowShapeMaterialWarning();
 					bNeedsShapeMaterialWarning = false;
 					return false; // Returning false means run only once.
-				}));
+				}),
+			/*delay*/ 5.f);
 	}
 }
 #endif // WITH_EDITOR
