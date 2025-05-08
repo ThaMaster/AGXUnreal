@@ -59,7 +59,7 @@ public:
 
 	/**
 	 * Angle threshold between the separation normal and the terrain-aggregate contact plane.
-	 * When the angle is **below** this threshold, additional depth within the contact plane
+	 * When the angle is below this threshold, additional depth within the contact plane
 	 * contributes to increasing the overall contact depth used in the terrain-aggregate contact
 	 * model [deg].
 	 */
