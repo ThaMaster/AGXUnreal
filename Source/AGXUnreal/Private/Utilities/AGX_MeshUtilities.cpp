@@ -19,13 +19,15 @@
 #include "Math/UnrealMathUtility.h"
 #include "Misc/EngineVersionComparison.h"
 #include "PhysicsEngine/BodySetup.h"
+#if WITH_EDITOR
+#include "RawMesh.h"
+#endif
 #include "Rendering/PositionVertexBuffer.h"
 #include "RenderingThread.h"
 #include "RHIGPUReadback.h"
 #include "StaticMeshAttributes.h"
 #include "StaticMeshResources.h"
 #include "UObject/Package.h"
-#include "RawMesh.h"
 
 // Standard library includes.
 #include <limits>
