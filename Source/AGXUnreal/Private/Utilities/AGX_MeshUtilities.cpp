@@ -2418,29 +2418,29 @@ UMaterial* AGX_MeshUtilities::GetDefaultRenderMaterial(bool bIsSensor)
 	return Material;
 }
 
-// Based on Engine code: GenerateBoxAsSimpleCollision in GeomFitUtils.h.
 bool AGX_MeshUtilities::AddBoxSimpleCollision(UStaticMesh& OutStaticMesh)
 {
-	UBodySetup* bs = OutStaticMesh.GetBodySetup();
-	if (bs == nullptr)
+	UBodySetup* BodySetup = OutStaticMesh.GetBodySetup();
+	if (!BodySetup)
 		return false;
 
-	// Calculate bounding Box.
-	FVector Center, Extents;
-	OutStaticMesh.GetMeshDescription(0)->ComputeBoundingBox().GetCenterAndExtents(Center, Extents);
-	Extents *= (FVector) bs->BuildScale3D;
+	const FBoxSphereBounds Bounds = OutStaticMesh.GetBounds();
+	const FVector Center = Bounds.Origin;
+	const FVector Extents = Bounds.BoxExtent * BodySetup->BuildScale3D;
 
-	// Create new GUID.
-	bs->InvalidatePhysicsData();
+	BodySetup->InvalidatePhysicsData();
 
 	FKBoxElem BoxElem;
 	BoxElem.Center = Center;
 	BoxElem.X = Extents.X * 2.0f;
 	BoxElem.Y = Extents.Y * 2.0f;
 	BoxElem.Z = Extents.Z * 2.0f;
-	bs->AggGeom.BoxElems.Add(BoxElem);
+	BodySetup->AggGeom.BoxElems.Add(BoxElem);
 
+#if WITH_EDITOR
 	OutStaticMesh.bCustomizedCollision = true;
+#endif
+
 	return true;
 }
 
