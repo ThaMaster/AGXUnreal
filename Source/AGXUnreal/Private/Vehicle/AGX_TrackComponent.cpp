@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 #include "Vehicle/AGX_TrackComponent.h"
 
@@ -1332,7 +1332,7 @@ void UAGX_TrackComponent::EnsureValidRenderMaterials()
 				"changes. It is recommended to make a copy and place the "
 				"material within the project Contents, that way the behavior will be the same "
 				"on any computer opening this project.";
-			FAGX_NotificationUtilities::ShowDialogBoxWithInfo(Message);
+			FAGX_NotificationUtilities::ShowDialogBoxWithLogLog(Message);
 
 			// Clear the material selection.
 			for (auto Instance : FAGX_ObjectUtilities::GetArchetypeInstances(*this))

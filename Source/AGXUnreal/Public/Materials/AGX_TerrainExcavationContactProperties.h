@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 #pragma once
 
@@ -56,6 +56,15 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Excavation Contact")
 	FAGX_Real DepthIncreaseFactor {1.0};
+
+	/**
+	 * Angle threshold between the separation normal and the terrain-aggregate contact plane.
+	 * When the angle is below this threshold, additional depth within the contact plane
+	 * contributes to increasing the overall contact depth used in the terrain-aggregate contact
+	 * model [deg].
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Terrain Material Excavation Contact")
+	FAGX_Real DepthAngleThreshold {45.0};
 
 	/**
 	 * The maximum force that the soil aggregate <-> terrain contacts are allowed to have. Default
