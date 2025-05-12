@@ -91,7 +91,7 @@ void UAGX_ShapeComponent::UpdateNativeProperties()
 		return;
 
 	FShapeBarrier* Barrier = GetNative();
-	Barrier->SetName(GetName());
+	Barrier->SetName(!ImportName.IsEmpty() ? ImportName : GetName());
 	Barrier->SetIsSensor(bIsSensor, SensorType == EAGX_ShapeSensorType::ContactsSensor);
 	Barrier->SetSurfaceVelocity(SurfaceVelocity);
 
@@ -376,6 +376,7 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 	bCanCollide = Barrier.GetEnableCollisions();
 	bIsSensor = Barrier.GetIsSensor();
 	ImportGuid = Barrier.GetShapeGuid();
+	ImportName = Barrier.GetName();
 	SurfaceVelocity = Barrier.GetSurfaceVelocity();
 	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 		GetOwner(), Barrier.GetName(), UAGX_ShapeComponent::StaticClass());
