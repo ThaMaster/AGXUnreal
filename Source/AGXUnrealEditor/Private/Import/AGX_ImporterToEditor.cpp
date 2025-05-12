@@ -448,8 +448,7 @@ namespace AGX_ImporterToEditor_helpers
 				TEXT("Errors occurred during import. The file '%s' could not be imported. Log "
 					 "category LogAGX in the Output Log may contain more information."),
 				*Settings.FilePath);
-			FAGX_NotificationUtilities::ShowDialogBoxWithError(
-				Text, "Import Model to Blueprint");
+			FAGX_NotificationUtilities::ShowDialogBoxWithError(Text, "Import Model to Blueprint");
 			return false;
 		}
 
@@ -1612,8 +1611,8 @@ void FAGX_ImporterToEditor::PostImport(const FAGX_ImportSettings& Settings)
 	if (Settings.ImportType == EAGX_ImportType::Plx)
 	{
 		FAGX_NotificationUtilities::ShowDialogBoxWithSuccess(FString::Printf(
-			TEXT("OpenPLX model files were copied to '%s'. These files are needed during runtime "
-				 "and should not be removed as long as the imported model is used."),
+			TEXT("OpenPLX model files were copied to: \n\n'%s'. \n\nThese files are needed during "
+				 "runtime and should not be removed as long as the imported model is used."),
 			*FPaths::GetPath(Settings.FilePath)));
 	}
 }
