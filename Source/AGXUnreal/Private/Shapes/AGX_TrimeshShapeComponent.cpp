@@ -135,8 +135,13 @@ namespace TrimshShapeComponent_helpers
 		const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 			Context.Outer, WantedName, UStaticMesh::StaticClass());
 
+#if WITH_EDITOR
+		UStaticMesh* Mesh = AGX_MeshUtilities::CreateStaticMeshNoBuild(
+			Vertices, Indices, Normals, UVs, Tangents, Name, *Context.Outer, Material);
+#else
 		UStaticMesh* Mesh = AGX_MeshUtilities::CreateStaticMesh(
 			Vertices, Indices, Normals, UVs, Tangents, Name, *Context.Outer, Material);
+#endif // WITH_EDITOR
 
 		if (Mesh != nullptr)
 			Context.CollisionStaticMeshes->Add(Barrier.GetGuid(), Mesh);

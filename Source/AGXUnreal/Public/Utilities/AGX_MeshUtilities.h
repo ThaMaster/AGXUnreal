@@ -345,8 +345,9 @@ public:
 		const TArray<AStaticMeshActor*> Actors);
 
 	/**
-	 * Creates and builds a new static mesh.
+	 * Creates and builds a new Static Mesh.
 	 * This function supports runtime usage.
+	 * Also adds a SimpleCollision (Box primitive) to the created Static Mesh.
 	 */
 	static UStaticMesh* CreateStaticMesh(
 		const TArray<FVector3f>& Vertices, const TArray<uint32>& Triangles,
@@ -354,18 +355,45 @@ public:
 		const TArray<FVector3f>& Tangents, const FString& Name, UObject& Outer,
 		UMaterialInterface* Material);
 
+#if WITH_EDITOR
+	/**
+	 * Similar to CreateStaticMesh but does no Mesh building and can only be used WITH_EDITOR.
+	 * Using this function makes it possible to run UStaticMesh::BatchBuild at a later stage on
+	 * several Meshes as an optimization. Note that the Static Mesh created by this function must be
+	 * built before it is used.
+	 */
+	static UStaticMesh* CreateStaticMeshNoBuild(
+		const TArray<FVector3f>& Vertices, const TArray<uint32>& Triangles,
+		const TArray<FVector3f>& Normals, const TArray<FVector2D>& UVs,
+		const TArray<FVector3f>& Tangents, const FString& Name, UObject& Outer,
+		UMaterialInterface* Material);
+#endif
+
 	/**
 	 * Copies triangle information and render material from one Static Mesh to another.
 	 * Does not copy other properties.
+	 * Always generates a new SimpleCollision (Box primitive) to the Destination Static Mesh.
 	 */
 	static bool CopyStaticMesh(UStaticMesh* Source, UStaticMesh* Destination);
 
 	/**
-	 * Creates and builds a new static mesh.
+	 * Creates and builds a new Static Mesh.
 	 * This function supports runtime usage.
+	 * Also adds a SimpleCollision (Box primitive) to the created Static Mesh.
 	 */
 	static UStaticMesh* CreateStaticMesh(
 		const FRenderDataBarrier& RenderData, UObject& Outer, UMaterialInterface* Material);
+
+#if WITH_EDITOR
+	/**
+	 * Similar to CreateStaticMesh but does no Mesh building and can only be used WITH_EDITOR.
+	 * Using this function makes it possible to run UStaticMesh::BatchBuild at a later stage on
+	 * several Meshes as an optimization. Note that the Static Mesh created by this function must be
+	 * built before it is used.
+	 */
+	static UStaticMesh* CreateStaticMeshNoBuild(
+		const FRenderDataBarrier& RenderData, UObject& Outer, UMaterialInterface* Material);
+#endif
 
 	static bool HasRenderDataMesh(const FShapeBarrier& Shape);
 
@@ -385,7 +413,7 @@ public:
 	/**
 	 * Add a Simple Collision Box to the given StaticMesh.
 	 */
-	static bool AddBoxSimpleCollision(const FBox& BoundingBox, UStaticMesh& OutStaticMesh);
+	static bool AddBoxSimpleCollision(UStaticMesh& OutStaticMesh);
 
 	/**
 	 * Simple comparison to test if two meshes are equal.

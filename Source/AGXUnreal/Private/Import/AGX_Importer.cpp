@@ -43,6 +43,7 @@
 #include "Tires/AGX_TwoBodyTireComponent.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Utilities/AGX_ImportRuntimeUtilities.h"
+#include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/PLXUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
@@ -83,6 +84,21 @@ namespace AGX_Importer_helpers
 		NewActor->SetRootComponent(Root);
 
 		return NewActor;
+	}
+
+	/// Also adds SimpleCollision (Box primitive).
+	void BatchBuildStaticMeshes(FAGX_ImportContext& Context)
+	{
+		TArray<UStaticMesh*> Meshes;
+		for (auto M : *Context.RenderStaticMeshes)
+			Meshes.Add(M.Value);
+
+		for (auto M : *Context.CollisionStaticMeshes)
+			Meshes.Add(M.Value);
+
+		UStaticMesh::BatchBuild(Meshes);
+		for (auto M : Meshes)
+			AGX_MeshUtilities::AddBoxSimpleCollision(*M);
 	}
 
 	bool CreateSimulationObjectCollection(
@@ -282,8 +298,15 @@ FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImportSettings& Settings, UOb
 	if (IsUnrecoverableError(Result))
 		return FAGX_ImportResult(Result);
 
-	PostImport();
+#if WITH_EDITOR
+	// When WITH_EDITOR, Static Meshes are created but not built during import.
+	// That allows us to Batch build them here in paralell.
+	// Static Meshes created during Imports in standalone applications (no-editor) are always built
+	// when they are created, so no need to Batch build them again here.
+	BatchBuildStaticMeshes(Context);
+#endif
 
+	PostImport();
 	return FAGX_ImportResult(Result, Actor, &Context);
 }
 
