@@ -42,7 +42,9 @@
 #include "Editor.h"
 #include "Engine/SCS_Node.h"
 #include "FileHelpers.h"
+#include "HAL/FileManager.h"
 #include "Materials/MaterialInterface.h"
+#include "Misc/Paths.h"
 #include "Misc/ScopedSlowTask.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "PackageTools.h"
@@ -1577,6 +1579,11 @@ void FAGX_ImporterToEditor::PreImport(FAGX_ImportSettings& OutSettings)
 	const FString DestinationDir = FPLXUtilities::CreateUniqueModelDirectory(OutSettings.FilePath);
 	const FString NewLocation =
 		FPLXUtilities::CopyAllDependenciesToProject(OutSettings.FilePath, DestinationDir);
+	if (NewLocation.IsEmpty() && FPaths::DirectoryExists(DestinationDir))
+	{
+		IFileManager::Get().DeleteDirectory(
+			*DestinationDir, /*RequireExists=*/true, /*Tree=*/false); // Cleanup.
+	}
 	OutSettings.FilePath = NewLocation;
 }
 

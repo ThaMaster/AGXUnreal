@@ -13,6 +13,8 @@
 
 // Unreal Engine includes.
 #include "Engine/World.h"
+#include "HAL/FileManager.h"
+#include "Misc/Paths.h"
 
 void UAGX_AGXUtilities::AddParentVelocity(
 	UAGX_RigidBodyComponent* Parent, UAGX_RigidBodyComponent* Body)
@@ -73,6 +75,13 @@ namespace AGX_AGXUtilities_helpers
 			FPLXUtilities::CreateUniqueModelDirectory(OutSettings.FilePath);
 		const FString NewLocation =
 			FPLXUtilities::CopyAllDependenciesToProject(OutSettings.FilePath, DestinationDir);
+
+		if (NewLocation.IsEmpty() && FPaths::DirectoryExists(DestinationDir))
+		{
+			IFileManager::Get().DeleteDirectory(
+				*DestinationDir, /*RequireExists=*/true, /*Tree=*/false); // Cleanup.
+		}
+
 		OutSettings.FilePath = NewLocation;
 	}
 
