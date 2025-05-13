@@ -15,6 +15,7 @@
 #include "Materials/ShapeMaterialBarrier.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/AnyShapeBarrier.h"
+#include "SimulationBarrier.h"
 #include "Terrain/TerrainBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Vehicle/TrackBarrier.h"
@@ -226,7 +227,8 @@ const TArray<FLockJointBarrier>& FSimulationObjectCollection::GetLockConstraints
 	return LockConstraints;
 }
 
-TArray<FSingleControllerConstraint1DOFBarrier>& FSimulationObjectCollection::GetSingleControllerConstraint1DOFs()
+TArray<FSingleControllerConstraint1DOFBarrier>&
+FSimulationObjectCollection::GetSingleControllerConstraint1DOFs()
 {
 	return SingleControllerConstraint1DOFs;
 }
@@ -315,6 +317,16 @@ TArray<FTrackBarrier>& FSimulationObjectCollection::GetTracks()
 const TArray<FTrackBarrier>& FSimulationObjectCollection::GetTracks() const
 {
 	return Tracks;
+}
+
+std::shared_ptr<FSimulationBarrier>& FSimulationObjectCollection::GetSimulation()
+{
+	return Simulation;
+}
+
+const std::shared_ptr<FSimulationBarrier>& FSimulationObjectCollection::GetSimulation() const
+{
+	return Simulation;
 }
 
 TArray<FPLX_Input>& FSimulationObjectCollection::GetPLXInputs()

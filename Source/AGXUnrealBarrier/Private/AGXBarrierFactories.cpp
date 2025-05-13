@@ -24,6 +24,7 @@
 #include <agxCollide/Box.h>
 #include <agxCollide/Trimesh.h>
 #include <agxModel/TwoBodyTire.h>
+#include <agxSDK/Simulation.h>
 #include <agxSensor/RaytraceAmbientMaterial.h>
 #include <agxTerrain/Shovel.h>
 #include <agxTerrain/TerrainMaterial.h>
@@ -37,6 +38,11 @@
 FRigidBodyBarrier AGXBarrierFactories::CreateRigidBodyBarrier(agx::RigidBody* Body)
 {
 	return {std::make_unique<FRigidBodyRef>(Body)};
+}
+
+FSimulationBarrier AGXBarrierFactories::CreateSimulationBarrier(agxSDK::Simulation* Simulation)
+{
+	return FSimulationBarrier(std::make_unique<FSimulationRef>(Simulation));
 }
 
 FAnyShapeBarrier AGXBarrierFactories::CreateAnyShapeBarrier(agxCollide::Shape* Shape)

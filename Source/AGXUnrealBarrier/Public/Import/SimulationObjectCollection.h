@@ -18,6 +18,9 @@
 // Unreal Engine includes.
 #include "Containers/Array.h"
 
+// Standard library includes.
+#include <memory>
+
 // Constraints.
 class FAnyConstraintBarrier;
 class FHingeBarrier;
@@ -33,6 +36,7 @@ class FRigidBodyBarrier;
 class FConstraintBarrier;
 class FContactMaterialBarrier;
 class FShapeMaterialBarrier;
+class FSimulationBarrier;
 class FTwoBodyTireBarrier;
 class FTrackBarrier;
 
@@ -120,6 +124,9 @@ public:
 	TArray<FTrackBarrier>& GetTracks();
 	const TArray<FTrackBarrier>& GetTracks() const;
 
+	std::shared_ptr<FSimulationBarrier>& GetSimulation();
+	const std::shared_ptr<FSimulationBarrier>& GetSimulation() const;
+
 	TArray<FPLX_Input>& GetPLXInputs();
 	const TArray<FPLX_Input>& GetPLXInputs() const;
 
@@ -131,7 +138,7 @@ private:
 	void operator=(const FSimulationObjectCollection&) = delete;
 
 	// The Simulation from which all other Simulation Objects collected from.
-	FSimulationBarrier Simulation;
+	std::shared_ptr<FSimulationBarrier> Simulation;
 
 	// These are all Shapes, even those owned by a RigidBody.
 	TArray<FSphereShapeBarrier> SphereShapes;

@@ -28,6 +28,7 @@
 #include "Shapes/CylinderShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
 #include "Shapes/TrimeshShapeBarrier.h"
+#include "SimulationBarrier.h"
 #include "Terrain/ShovelBarrier.h"
 #include "Tires/TwoBodyTireBarrier.h"
 #include "Vehicle/TrackBarrier.h"
@@ -75,6 +76,11 @@ namespace agxTerrain
 	class TerrainMaterial;
 }
 
+namespace agxSDK
+{
+	class Simulation;
+}
+
 namespace agxSensor
 {
 	class RtAmbientMaterial;
@@ -103,6 +109,8 @@ namespace agxVehicle
 namespace AGXBarrierFactories
 {
 	FRigidBodyBarrier AGXUNREALBARRIER_API CreateRigidBodyBarrier(agx::RigidBody* Body);
+
+	FSimulationBarrier CreateSimulationBarrier(agxSDK::Simulation* Simulation);
 
 	FAnyShapeBarrier CreateAnyShapeBarrier(agxCollide::Shape* Shape);
 

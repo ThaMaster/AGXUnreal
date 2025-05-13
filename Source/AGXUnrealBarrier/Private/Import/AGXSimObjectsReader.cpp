@@ -12,6 +12,7 @@
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
+#include "SimulationBarrier.h"
 #include "TypeConversions.h"
 #include "Utilities/PLXUtilities.h"
 #include "Utilities/PLXUtilitiesInternal.h"
@@ -559,6 +560,8 @@ namespace
 		TSet<const agx::Material*> NonFreeMaterials;
 		TSet<const agx::ContactMaterial*> NonFreeContactMaterials;
 
+		OutSimObjects.GetSimulation() = std::make_shared<FSimulationBarrier>(
+			AGXBarrierFactories::CreateSimulationBarrier(&Simulation));
 		ReadTireModels(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadTerrainMaterials(Simulation, NonFreeMaterials, NonFreeContactMaterials);
 		ReadShovels(
