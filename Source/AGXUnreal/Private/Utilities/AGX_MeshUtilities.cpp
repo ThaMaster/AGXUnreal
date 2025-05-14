@@ -1912,12 +1912,19 @@ namespace AGX_MeshUtilities_helpers
 	{
 		UStaticMesh* StaticMesh =
 			NewObject<UStaticMesh>(&Outer, FName(*Name), RF_Public | RF_Standalone);
+		StaticMesh->bAllowCPUAccess = true;
 
 		FStaticMeshSourceModel& SourceModel = StaticMesh->AddSourceModel();
 		SourceModel.SaveRawMesh(RawMesh);
 
-		StaticMesh->ImportVersion = EImportStaticMeshVersion::LastVersion;
-		StaticMesh->bAllowCPUAccess = true;
+		FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
+		BuildSettings.bRecomputeNormals = false;
+		BuildSettings.bRecomputeTangents = true;
+		BuildSettings.bUseMikkTSpace = true;
+		BuildSettings.bGenerateLightmapUVs = true;
+		BuildSettings.bBuildReversedIndexBuffer = false;
+		BuildSettings.bUseFullPrecisionUVs = false;
+		BuildSettings.bUseHighPrecisionTangentBasis = false;
 
 		if (Material)
 			StaticMesh->AddMaterial(Material);
