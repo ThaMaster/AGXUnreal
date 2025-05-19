@@ -14,11 +14,13 @@ class FSimulationBarrier;
 
 struct FAssemblyRef;
 struct FInputSignalHandlerRef;
-struct FOutputSignalHandlerRef;
 struct FInputSignalQueueRef;
+struct FOutputSignalHandlerRef;
 struct FOutputSignalQueueRef;
-struct FPLX_Output;
 struct FPLX_Input;
+struct FPLX_Output;
+struct FSignalSourceMapperRef;
+
 
 class AGXUNREALBARRIER_API FPLXSignalHandler
 {
@@ -59,6 +61,7 @@ private:
 	std::shared_ptr<FAssemblyRef> AssemblyRef;
 	std::shared_ptr<FInputSignalHandlerRef> InputSignalHandlerRef;
 	std::shared_ptr<FOutputSignalHandlerRef> OutputSignalHandlerRef;
+	std::shared_ptr<FSignalSourceMapperRef> SignalSourceMapper;
 	std::shared_ptr<FInputSignalQueueRef> InputQueueRef;
 	std::shared_ptr<FOutputSignalQueueRef> OutputQueueRef;
 };

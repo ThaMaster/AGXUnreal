@@ -81,12 +81,18 @@ void FPLXSignalHandler::Init(
 		return;
 	}
 
+	if (FPLXUtilitiesInternal::HasInputs(System.get()) || FPLXUtilitiesInternal::HasOutputs(System.get()))
+	{
+		SignalSourceMapper = std::make_shared<FSignalSourceMapperRef>(AssemblyRef->Native);
+	}
+
 	if (FPLXUtilitiesInternal::HasInputs(System.get()))
 	{
+
 		InputQueueRef =
 			std::make_shared<FInputSignalQueueRef>(agxopenplx::InputSignalQueue::create());
 		InputSignalHandlerRef =
-			std::make_shared<FInputSignalHandlerRef>(Assembly, InputQueueRef->Native);
+			std::make_shared<FInputSignalHandlerRef>(Assembly, InputQueueRef->Native, SignalSourceMapper->Native);
 		Simulation.GetNative()->Native->add(InputSignalHandlerRef->Native);
 	}
 
@@ -95,7 +101,7 @@ void FPLXSignalHandler::Init(
 		OutputQueueRef =
 			std::make_shared<FOutputSignalQueueRef>(agxopenplx::OutputSignalQueue::create());
 		OutputSignalHandlerRef = std::make_shared<FOutputSignalHandlerRef>(
-			Assembly, ModelData->PLXModel, OutputQueueRef->Native);
+			ModelData->PLXModel, OutputQueueRef->Native, SignalSourceMapper->Native);
 		Simulation.GetNative()->Native->add(OutputSignalHandlerRef->Native);
 	}
 
