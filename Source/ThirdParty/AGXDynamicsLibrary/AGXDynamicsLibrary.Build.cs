@@ -678,17 +678,17 @@ public class AGXDynamicsLibrary : ModuleRules
 			}
 		}
 
-	// Copy Material Library.
-	{
-		string Source = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.MaterialLibrary, true);
-		string Dest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.MaterialLibrary, true);
-
-		if (!CopyDirectoryRecursively(Source, Dest))
+		// Copy Material Library.
 		{
-			CleanBundledAGXDynamicsResources();
-			return;
+			string Source = InstalledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.MaterialLibrary, true);
+			string Dest = BundledAGXResources.RuntimeLibraryPath(string.Empty, LibSource.MaterialLibrary, true);
+
+			if (!CopyDirectoryRecursively(Source, Dest))
+			{
+				CleanBundledAGXDynamicsResources();
+				return;
+			}
 		}
-	}
 
 		// Copy needed AGX Dynamics Components/agx/... directories and files.
 		{
