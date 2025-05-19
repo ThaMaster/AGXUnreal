@@ -218,7 +218,10 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("DriveTrain", LibSource.AGX);
 		RuntimeLibFiles.Add("fmt", LibSource.AGX);
 		RuntimeLibFiles.Add("hash-library", LibSource.AGX);
-		RuntimeLibFiles.Add("libprotobuf", LibSource.AGX);
+		// TODO Determine if protobuf needs to be bundled on Linux as well.
+		if (Target.Platform == UnrealTargetPlatform.Win64) {
+			RuntimeLibFiles.Add("protobuf", LibSource.AGX);
+		}
 		RuntimeLibFiles.Add("Math", LibSource.AGX);
 		RuntimeLibFiles.Add("openplx.analysis", LibSource.AGX);
 		RuntimeLibFiles.Add("openplx.bundle", LibSource.AGX);
@@ -243,7 +246,10 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("Vehicles", LibSource.AGX);
 		RuntimeLibFiles.Add("Visuals", LibSource.AGX);
 		RuntimeLibFiles.Add("orocos*", LibSource.AGX);
-		RuntimeLibFiles.Add("libzmq-v143-mt-4_3_5", LibSource.AGX);
+		// TODO Determine if zmq needs to be bundled on Linux as well.
+		if (Target.Platform == UnrealTargetPlatform.Win64) {
+			RuntimeLibFiles.Add("libzmq-v143-mt-4_3_5", LibSource.AGX);
+		}
 
 		// List of link-time libraries from AGX Dynamics and its dependencies
 		// that we need. These will be added to the Unreal Engine
