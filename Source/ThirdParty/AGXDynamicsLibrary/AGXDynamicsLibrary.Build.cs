@@ -375,7 +375,7 @@ public class AGXDynamicsLibrary : ModuleRules
 			DelayLoadLibraries.Add("agxROS2", LibSource.AGX);
 			DelayLoadLibraries.Add("agx-nt-ros2", LibSource.AGX);
 
-			// OpenPLX: 
+			// OpenPLX:
 			DelayLoadLibraries.Add("agxOpenPLX", LibSource.AGX);
 			DelayLoadLibraries.Add("click", LibSource.AGX);
 			DelayLoadLibraries.Add("DriveTrain", LibSource.AGX);
@@ -1386,6 +1386,11 @@ public class AGXDynamicsLibrary : ModuleRules
 				Path.Combine(BaseDir, "lib"),
 				Path.Combine(BaseDir, "lib")
 			));
+			LibSources.Add(LibSource.OpenPLX, new LibSourceInfo(
+				null,
+				null,
+				Path.Combine(BaseDir, "openplxbundles")
+			));
 			LibSources.Add(LibSource.Config, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
 				null, null
@@ -1431,6 +1436,11 @@ public class AGXDynamicsLibrary : ModuleRules
 				Path.Combine(BaseDir, "lib", "Linux"),
 				Path.Combine(BaseDir, "lib", "Linux")
 			));
+			LibSources.Add(LibSource.OpenPLX, new LibSourceInfo(
+				null,
+				null,
+				Path.Combine(BaseDir, "openplxbundles")
+			));
 			LibSources.Add(LibSource.Config, new LibSourceInfo(
 				Path.Combine(BaseDir, "include"),
 				null, null
@@ -1458,7 +1468,7 @@ public class AGXDynamicsLibrary : ModuleRules
 				null, null,
 				Path.Combine(BaseDir, "data", "MaterialLibrary")
 			));
-			
+
 			LibSources.Add(LibSource.External, new LibSourceInfo(
 				Path.Combine(BaseDir, "include", "external"),
 				null, null
