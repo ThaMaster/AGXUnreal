@@ -14,7 +14,7 @@
 #include "BeginAGXIncludes.h"
 #include "openplx/OpenPlxContext.h"
 #include "openplx/OpenPlxContextInternal.h"
-#include "openplx/OpenPlxCoreAPI.h"
+#include "openplx/OpenPlxCoreApi.h"
 #include "agxOpenPLX/AgxOpenPlxApi.h"
 #include "agxOpenPLX/OpenPlxDriveTrainMapper.h"
 #include "DriveTrain/Signals/AutomaticClutchEngagementDurationInput.h"

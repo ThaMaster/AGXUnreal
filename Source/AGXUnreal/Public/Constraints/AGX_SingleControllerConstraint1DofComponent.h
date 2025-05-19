@@ -9,7 +9,7 @@
 // Unreal Engine includes.
 #include "CoreMinimal.h"
 
-#include "AGX_SingleControllerConstraint1DOFComponent.generated.h"
+#include "AGX_SingleControllerConstraint1DofComponent.generated.h"
 
 class FSingleControllerConstraint1DOFBarrier;
 
