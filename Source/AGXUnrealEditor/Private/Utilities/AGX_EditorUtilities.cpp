@@ -1048,7 +1048,7 @@ bool FAGX_EditorUtilities::IsSelected(const UActorComponent& Component)
 		}
 	}
 
-	// If the Component is part of a preview that we also want to consider it selected if the
+	// If the Component is part of a preview then we also want to consider it selected if the
 	// Component it is a preview of is selected. This happens when we are looking at the Component
 	// that exists within the viewport of a Blueprint editor. Then the Component we see isn't
 	// selected anywhere, but the CSC node template Component the preview Component was created from
