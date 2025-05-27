@@ -1020,6 +1020,12 @@ bool FAGX_EditorUtilities::IsSelected(const UActorComponent& Component)
 	// Check if the Component is owned by a Blueprint editor and if so if the Component is currently
 	// selected in that Blueprint editor.
 	TArray<TSharedPtr<IBlueprintEditor>> BlueprintEditors;
+
+	// For some situations the GetIBlueprintEditorForObject function fails to find the Blueprint Editor
+	// for a Component. This is true for example when a Component is owned by a parent Blueprint, and
+	//  we get a Component pointer in a ComponentVisualizer when editing a Child Bleprint.
+	// For that reason, below we use a fallback to search through all opened Blueprint Editors in case
+	// GetIBlueprintEditorForObject fails.
 	TSharedPtr<IBlueprintEditor> BlueprintEditor =
 		FKismetEditorUtilities::GetIBlueprintEditorForObject(&Component, false);
 
