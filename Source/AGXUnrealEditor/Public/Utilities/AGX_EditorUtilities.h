@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 #pragma once
 
@@ -381,6 +381,11 @@ public:
 	 * path, with matching path delimiters.
 	 */
 	static FString GetRelativePath(const FString& BasePath, FString FullPath);
+
+	/**
+	* Get all opened Blueprint Editors.
+	*/
+	static TArray<TSharedPtr<IBlueprintEditor>> GetBlueprintEditors();
 };
 
 template <typename T>

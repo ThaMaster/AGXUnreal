@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 #pragma once
 
@@ -257,6 +257,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Excavation Contact")
 	double GetDepthIncreaseFactor() const;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Excavation Contact")
+	void SetDepthAngleThreshold(double DepthAngleThreshold);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Excavation Contact")
+	double GetDepthAngleThreshold() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Terrain Material Excavation Contact")
 	void SetMaximumAggregateNormalForce(double MaximumAggregateNormalForce);

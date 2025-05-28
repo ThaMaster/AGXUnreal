@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 #include "Materials/AGX_TerrainMaterial.h"
 
@@ -482,6 +482,20 @@ double UAGX_TerrainMaterial::GetDepthIncreaseFactor() const
 		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
 }
 
+void UAGX_TerrainMaterial::SetDepthAngleThreshold(double DepthAngleThreshold)
+{
+	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.DepthAngleThreshold, DepthAngleThreshold, SetDepthAngleThreshold,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
+double UAGX_TerrainMaterial::GetDepthAngleThreshold() const
+{
+	AGX_ASSET_GETTER_DUAL_NATIVE_IMPL_VALUE(
+		TerrainExcavationContact.DepthAngleThreshold, GetDepthAngleThreshold,
+		HasTerrainMaterialNative, TerrainMaterialNativeBarrier);
+}
+
 void UAGX_TerrainMaterial::SetMaximumAggregateNormalForce(double MaximumAggregateNormalForce)
 {
 	AGX_ASSET_SETTER_DUAL_NATIVE_IMPL_VALUE(
@@ -542,15 +556,15 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, AdhesionOverlapFactor),
-		[](ThisClass* This) {
+		[](ThisClass* This)
+		{
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
 				TerrainBulk.AdhesionOverlapFactor, SetAdhesionOverlapFactor)
 		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
-		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, Cohesion),
-		[](ThisClass* This)
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, Cohesion), [](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainBulk.Cohesion, SetCohesion) });
 
 	PropertyDispatcher.Add(
@@ -560,38 +574,32 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
-		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, DilatancyAngle),
-		[](ThisClass* This)
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, DilatancyAngle), [](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainBulk.DilatancyAngle, SetDilatancyAngle) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
-		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, FrictionAngle),
-		[](ThisClass* This)
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, FrictionAngle), [](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainBulk.FrictionAngle, SetFrictionAngle) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
-		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, MaxDensity),
-		[](ThisClass* This)
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, MaxDensity), [](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainBulk.MaxDensity, SetMaxDensity) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
-		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, PoissonsRatio),
-		[](ThisClass* This)
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, PoissonsRatio), [](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainBulk.PoissonsRatio, SetPoissonsRatio) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
-		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, SwellFactor),
-		[](ThisClass* This)
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, SwellFactor), [](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainBulk.SwellFactor, SetSwellFactor) });
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainBulk),
-		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, YoungsModulus),
-		[](ThisClass* This)
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainBulkProperties, YoungsModulus), [](ThisClass* This)
 		{ AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainBulk.YoungsModulus, SetYoungsModulus) });
 
 	// Compaction properties.
@@ -623,7 +631,8 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainCompaction),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainCompactionProperties, CompressionIndex),
-		[](ThisClass* This) {
+		[](ThisClass* This)
+		{
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
 				TerrainCompaction.CompressionIndex, SetCompressionIndex)
 		});
@@ -686,14 +695,16 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleCohesion),
-		[](ThisClass* This) {
+		[](ThisClass* This)
+		{
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(TerrainParticles.ParticleCohesion, SetParticleCohesion)
 		});
 
 	PropertyDispatcher.Add(
 		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainParticles),
 		GET_MEMBER_NAME_CHECKED(FAGX_TerrainParticleProperties, ParticleRestitution),
-		[](ThisClass* This) {
+		[](ThisClass* This)
+		{
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
 				TerrainParticles.ParticleRestitution, SetParticleRestitution)
 		});
@@ -810,6 +821,15 @@ void UAGX_TerrainMaterial::InitPropertyDispatcher()
 		{
 			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
 				TerrainExcavationContact.DepthIncreaseFactor, SetDepthIncreaseFactor)
+		});
+
+	PropertyDispatcher.Add(
+		GET_MEMBER_NAME_CHECKED(UAGX_TerrainMaterial, TerrainExcavationContact),
+		GET_MEMBER_NAME_CHECKED(FAGX_TerrainExcavationContactProperties, DepthAngleThreshold),
+		[](ThisClass* This)
+		{
+			AGX_ASSET_DISPATCHER_LAMBDA_BODY(
+				TerrainExcavationContact.DepthAngleThreshold, SetDepthAngleThreshold)
 		});
 
 	PropertyDispatcher.Add(
@@ -1002,6 +1022,8 @@ void UAGX_TerrainMaterial::UpdateTerrainMaterialNativeProperties()
 		TerrainMaterialNativeBarrier.SetDepthDecayFactor(TerrainExcavationContact.DepthDecayFactor);
 		TerrainMaterialNativeBarrier.SetDepthIncreaseFactor(
 			TerrainExcavationContact.DepthIncreaseFactor);
+		TerrainMaterialNativeBarrier.SetDepthAngleThreshold(
+			TerrainExcavationContact.DepthAngleThreshold);
 		TerrainMaterialNativeBarrier.SetMaximumAggregateNormalForce(
 			TerrainExcavationContact.MaximumAggregateNormalForce);
 		TerrainMaterialNativeBarrier.SetMaximumContactDepth(
@@ -1059,6 +1081,7 @@ void UAGX_TerrainMaterial::CopyFrom(const FTerrainMaterialBarrier& Source)
 		Source.GetExcavationStiffnessMultiplier();
 	TerrainExcavationContact.DepthDecayFactor = Source.GetDepthDecayFactor();
 	TerrainExcavationContact.DepthIncreaseFactor = Source.GetDepthIncreaseFactor();
+	TerrainExcavationContact.DepthAngleThreshold = Source.GetDepthAngleThreshold();
 	TerrainExcavationContact.MaximumAggregateNormalForce = Source.GetMaximumAggregateNormalForce();
 	TerrainExcavationContact.MaximumContactDepth = Source.GetMaximumContactDepth();
 }

@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 #include "Sensors/AGX_LidarAmbientMaterial.h"
 
@@ -228,12 +228,11 @@ bool UAGX_LidarAmbientMaterial::IsInstance() const
 
 void UAGX_LidarAmbientMaterial::CopyFrom(const FRtAmbientMaterialBarrier& Source)
 {
-	RefractiveIndex = Source.GetRefractiveIndex();
-	AttenuationCoefficient = Source.GetAttenuationCoefficient();
-	ReturnProbabilityScaling =
-		Source.GetReturnProbabilityScaling();
-	ReturnGammaDistributionShapeParameter = Source.GetReturnGammaDistributionShapeParameter();
-	ReturnGammaDistributionScaleParameter = Source.GetReturnGammaDistributionScaleParameter();
+	SetRefractiveIndex(Source.GetRefractiveIndex());
+	SetAttenuationCoefficient(Source.GetAttenuationCoefficient());
+	SetReturnProbabilityScaling(Source.GetReturnProbabilityScaling());
+	SetReturnGammaDistributionShapeParameter(Source.GetReturnGammaDistributionShapeParameter());
+	SetReturnGammaDistributionScaleParameter(Source.GetReturnGammaDistributionScaleParameter());
 }
 
 void UAGX_LidarAmbientMaterial::CopyProperties(const UAGX_LidarAmbientMaterial& Source)

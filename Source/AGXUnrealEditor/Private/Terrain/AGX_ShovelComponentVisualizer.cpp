@@ -1,6 +1,6 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
-#include "AGX_ShovelComponentVisualizer.h"
+#include "Terrain/AGX_ShovelComponentVisualizer.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
