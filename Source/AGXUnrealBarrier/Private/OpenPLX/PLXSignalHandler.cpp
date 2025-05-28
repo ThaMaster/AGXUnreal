@@ -18,6 +18,7 @@
 // OpenPLX includes.
 #include "BeginAGXIncludes.h"
 #include "agxOpenPLX/SignalListenerUtils.h"
+#include "agxOpenPLX/SignalSourceMapper.h"
 #include "Math/Vec3.h"
 #include "Physics/Signals/BoolInputSignal.h"
 #include "Physics/Signals/IntInputSignal.h"
@@ -69,9 +70,9 @@ void FPLXSignalHandler::Init(
 		return;
 	}
 
-	agxSDK::AssemblyRef Assembly =
-		FPLXUtilitiesInternal::MapRuntimeObjects(System, Simulation, Bodies, Constraints);
-	if (Assembly == nullptr)
+	AssemblyRef =
+		std::make_shared<FAssemblyRef>(FPLXUtilitiesInternal::MapRuntimeObjects(System, Simulation, Bodies, Constraints));
+	if (AssemblyRef->Native == nullptr)
 	{
 		UE_LOG(
 			LogAGX, Warning,
@@ -83,16 +84,19 @@ void FPLXSignalHandler::Init(
 
 	if (FPLXUtilitiesInternal::HasInputs(System.get()) || FPLXUtilitiesInternal::HasOutputs(System.get()))
 	{
-		SignalSourceMapper = std::make_shared<FSignalSourceMapperRef>(AssemblyRef->Native);
+		auto PlxPowerLine =
+			dynamic_cast<agxPowerLine::PowerLine*>(AssemblyRef->Native->getAssembly("OpenPlxPowerLine"));
+
+		SignalSourceMapper = std::make_shared<FSignalSourceMapperRef>(agxopenplx::SignalSourceMapper::create(
+				AssemblyRef->Native, PlxPowerLine, agxopenplx::SignalSourceMapMode::Name));
 	}
 
 	if (FPLXUtilitiesInternal::HasInputs(System.get()))
 	{
-
 		InputQueueRef =
 			std::make_shared<FInputSignalQueueRef>(agxopenplx::InputSignalQueue::create());
 		InputSignalHandlerRef =
-			std::make_shared<FInputSignalHandlerRef>(Assembly, InputQueueRef->Native, SignalSourceMapper->Native);
+			std::make_shared<FInputSignalHandlerRef>(AssemblyRef->Native, InputQueueRef->Native, SignalSourceMapper->Native);
 		Simulation.GetNative()->Native->add(InputSignalHandlerRef->Native);
 	}
 

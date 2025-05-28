@@ -165,7 +165,8 @@ FAGX_TopMenu::~FAGX_TopMenu()
 			LOCTEXT("FileMenuLabel", "File"),
 			LOCTEXT(
 				"FileMenuTooltip",
-				"Interoperability with external file formats, such AGX Dynamics files (.agx) "
+				"Interoperability with external file formats, such AGX Dynamics files (.agx), "
+				"OpenPLX (.openplx) or URDF (.urdf) files. "
 				"or URDF files (.urdf)."),
 			FNewMenuDelegate::CreateRaw(this, &FAGX_TopMenu::FillFileMenu), false, FileIcon);
 	}
@@ -263,7 +264,8 @@ void FAGX_TopMenu::FillConstraintMenu(FMenuBuilder& Builder)
 			"CreateCylindricalConstraintTooltip",
 			"Create Cylindrical Constraint. \n\nInitially setup using currently selected Rigid "
 			"Body Actors, or empty."),
-		[&]() {
+		[&]()
+		{
 			FAGX_TopMenu::OnCreateConstraintClicked(AAGX_CylindricalConstraintActor::StaticClass());
 		});
 
@@ -310,7 +312,7 @@ void FAGX_TopMenu::FillFileMenu(FMenuBuilder& Builder)
 		Builder, LOCTEXT("FileMEnuEntryLabelImportBluePrint", "Import Model to Blueprint..."),
 		LOCTEXT(
 			"FileMenuEntryhTooltopImportBluePrint",
-			"Import an AGX Dynamics archive or URDF to a Blueprint."),
+			"Import an AGX Dynamics archive, OpenPLX or URDF file to a Blueprint."),
 		[]() { UAGX_AgxEdModeFile::ImportToBlueprint(); });
 
 	// Export AGX Archive menu item

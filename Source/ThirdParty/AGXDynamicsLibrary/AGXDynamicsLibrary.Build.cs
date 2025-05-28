@@ -220,7 +220,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("hash-library", LibSource.AGX);
 		// TODO Determine if protobuf needs to be bundled on Linux as well.
 		if (Target.Platform == UnrealTargetPlatform.Win64) {
-			RuntimeLibFiles.Add("protobuf", LibSource.AGX);
+			RuntimeLibFiles.Add("libprotobuf", LibSource.AGX);
 		}
 		RuntimeLibFiles.Add("Math", LibSource.AGX);
 		RuntimeLibFiles.Add("openplx.analysis", LibSource.AGX);
