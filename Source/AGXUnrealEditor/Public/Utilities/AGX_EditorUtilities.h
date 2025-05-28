@@ -381,6 +381,11 @@ public:
 	 * path, with matching path delimiters.
 	 */
 	static FString GetRelativePath(const FString& BasePath, FString FullPath);
+
+	/**
+	* Get all opened Blueprint Editors.
+	*/
+	static TArray<TSharedPtr<IBlueprintEditor>> GetBlueprintEditors();
 };
 
 template <typename T>
