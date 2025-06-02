@@ -50,6 +50,7 @@ struct FAssetToDiskInfo;
 // Unreal Engine classes.
 class AActor;
 class FText;
+class IBlueprintEditor;
 class IDetailLayoutBuilder;
 class UClass;
 class USceneComponent;
