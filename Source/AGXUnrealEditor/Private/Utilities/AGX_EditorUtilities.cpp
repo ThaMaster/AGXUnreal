@@ -28,6 +28,7 @@
 #include "ActorEditorUtils.h"
 #include "AssetDeleteModel.h"
 #include "AssetToolsModule.h"
+#include "BlueprintEditorModule.h"
 #include "Containers/Ticker.h"
 #include "ContentBrowserModule.h"
 #include "DesktopPlatformModule.h"
@@ -1040,7 +1041,13 @@ bool FAGX_EditorUtilities::IsSelected(const UActorComponent& Component)
 		{
 			for (auto& Selected : Editor->GetSelectedSubobjectEditorTreeNodes())
 			{
+				if (Selected == nullptr)
+					continue;
+
 				const UActorComponent* SelectedComponent = Selected->GetComponentTemplate();
+				if (SelectedComponent == nullptr)
+					continue;
+
 				if (SelectedComponent == &Component)
 					return true;
 
