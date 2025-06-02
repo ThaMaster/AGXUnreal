@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 using UnrealBuildTool;
@@ -218,10 +219,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("DriveTrain", LibSource.AGX);
 		RuntimeLibFiles.Add("fmt", LibSource.AGX);
 		RuntimeLibFiles.Add("hash-library", LibSource.AGX);
-		// TODO Determine if protobuf needs to be bundled on Linux as well.
-		if (Target.Platform == UnrealTargetPlatform.Win64) {
-			RuntimeLibFiles.Add("libprotobuf", LibSource.AGX);
-		}
 		RuntimeLibFiles.Add("Math", LibSource.AGX);
 		RuntimeLibFiles.Add("openplx.analysis", LibSource.AGX);
 		RuntimeLibFiles.Add("openplx.bundle", LibSource.AGX);
@@ -237,18 +234,32 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("Physics1D", LibSource.AGX);
 		RuntimeLibFiles.Add("Physics3D", LibSource.AGX);
 		RuntimeLibFiles.Add("Robotics", LibSource.AGX);
+		RuntimeLibFiles.Add("Sensors", LibSource.AGX);
 		RuntimeLibFiles.Add("Simulation", LibSource.AGX);
 		RuntimeLibFiles.Add("spdlog", LibSource.AGX);
 		RuntimeLibFiles.Add("Terrain", LibSource.AGX);
 		RuntimeLibFiles.Add("tinyxml2", LibSource.AGX);
 		RuntimeLibFiles.Add("Urdf", LibSource.AGX);
 		RuntimeLibFiles.Add("urdfdom_model", LibSource.AGX);
+		if (Target.Platform == UnrealTargetPlatform.Linux) {
+			// We must pass the full library file name for this one because
+			// it doesn't follow the regular prefix+name+postfix template due
+			// to the '.4.0' at the end.
+			RuntimeLibFiles.Add("liburdfdom_model_state.so.4.0", LibSource.AGX);
+			RuntimeLibFiles.Add("liburdfdom_model.so.4.0", LibSource.AGX);
+			RuntimeLibFiles.Add("liburdfdom_sensor.so.4.0", LibSource.AGX);
+			RuntimeLibFiles.Add("liburdfdom_world.so.4.0", LibSource.AGX);
+		}
 		RuntimeLibFiles.Add("Vehicles", LibSource.AGX);
 		RuntimeLibFiles.Add("Visuals", LibSource.AGX);
 		RuntimeLibFiles.Add("orocos*", LibSource.AGX);
-		// TODO Determine if zmq needs to be bundled on Linux as well.
 		if (Target.Platform == UnrealTargetPlatform.Win64) {
 			RuntimeLibFiles.Add("libzmq-v143-mt-4_3_5", LibSource.AGX);
+			RuntimeLibFiles.Add("libprotobuf", LibSource.AGX);
+		}
+		else if (Target.Platform == UnrealTargetPlatform.Linux) {
+			RuntimeLibFiles.Add("libzmq.so.5", LibSource.AGX);
+			RuntimeLibFiles.Add("protobuf", LibSource.AGX);
 		}
 
 		// List of link-time libraries from AGX Dynamics and its dependencies
@@ -462,7 +473,7 @@ public class AGXDynamicsLibrary : ModuleRules
 		if (FilesToAdd.Length == 0)
 		{
 			Console.Error.WriteLine(
-				"Error: File {0} did not match any file in {1}. The library will not be added in the build.",
+				"Error: AddLinkLibrary: File {0} did not match any file in {1}. The library will not be added in the build.",
 				FileName, Dir);
 			return;
 		}
@@ -622,7 +633,7 @@ public class AGXDynamicsLibrary : ModuleRules
 				// Note: the BundledAGXResources.RuntimeLibraryPath() function cannot be used here since
 				// the file name may have an added prefix that would then be added once again.
 				string Dest = Path.Combine(
-					BundledAGXResources.RuntimeLibraryDirectory(RuntimeLibFile.Value), Path.GetFileName(FilePath));
+					BundledAGXResources.RuntimeLibraryDirectory(LibrarySource), Path.GetFileName(FilePath));
 				if (!CopyFile(FilePath, Dest))
 				{
 					CleanBundledAGXDynamicsResources();
@@ -666,7 +677,14 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			string Source = InstalledAGXResources.IncludePath(IncludePath);
 			string Dest = BundledAGXResources.IncludePath(IncludePath);
-			if (!CopyDirectoryRecursively(Source, Dest))
+
+
+			// Todo: this is a temporary workaround for a compilation error caused by OpenPLX having
+			// very generic include paths, such as "Math/Quat.h" which collides with Unreal Quat.h.
+			// This ignore should be removed once it has been fixed in OpenPLX.
+			List<string> FilesToIgnore = new List<string> {"Math/Quat.h", "Math\\Quat.h" };
+
+			if (!CopyDirectoryRecursively(Source, Dest, FilesToIgnore))
 			{
 				CleanBundledAGXDynamicsResources();
 				return;
@@ -910,7 +928,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		foreach (string FilePath in Directory.GetFiles(SourceDir, "*", SearchOption.AllDirectories))
 		{
-			if (FilesToIgnore != null && FilesToIgnore.Contains(Path.GetFileName(FilePath)))
+			if (FilesToIgnore != null && FilesToIgnore.Any(Ignore => FilePath.Contains(Ignore)))
 			{
 				continue;
 			}
@@ -972,6 +990,23 @@ public class AGXDynamicsLibrary : ModuleRules
 	{
 		// List from OldName to NewName.
 		var Renamings = new List<Tuple<String, String>>();
+
+		// Don't touch files. There are libraries the don't follow the regular
+		// naming / symlink conventions. Not sure what the best solution for
+		// these are yet, so for now we don't touch them.
+		//
+		// The above description may be incorrect. More investigation needed.
+		var DontTouch = new HashSet<String>();
+		DontTouch.Add("liburdfdom_model_state.so.4.0");
+		DontTouch.Add("liburdfdom_model.so.4.0");
+		DontTouch.Add("liburdfdom_sensor.so.4.0");
+		DontTouch.Add("liburdfdom_world.so.4.0");
+		DontTouch.Add("libconsole_bridge.so.1.0");
+		DontTouch.Add("libtinyxml2.so.10");
+		DontTouch.Add("libprotobuf.so");
+		DontTouch.Add("libprotobuf.so.32");
+		DontTouch.Add("libprotobuf.so.3.21.12.0");
+		DontTouch.Add("libzmq.so.5");
 
 		// The following identifies all the library files that include version
 		// information in the name, i.e. the files we want to remove. Delete all
@@ -1040,6 +1075,12 @@ public class AGXDynamicsLibrary : ModuleRules
 			if (FileName.EndsWith(".so"))
 			{
 				// Not a versioned filename, ignore.
+				continue;
+			}
+			if (DontTouch.Contains(FileName))
+			{
+				// This is a special case that uses a versioned file name but
+				// doesn't have any symlinks. We want to keep this name as-is.
 				continue;
 			}
 
@@ -1263,6 +1304,18 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		public string RuntimeLibraryFileName(string LibraryName)
 		{
+			if (RuntimeLibraryPrefix != "" && LibraryName.StartsWith(RuntimeLibraryPrefix))
+			{
+				// Not all libraries follows the regular prefix+name+postfix
+				// template for filenames. If that is the case then the library
+				// name stored in the dirctionary is the full name of the library
+				// file. Just return it as-is.
+				//
+				// On Linux we detect this case by the library already having
+				// the prefix. Have not yet had a case like this on Windows.
+				return LibraryName;
+			}
+
 			return RuntimeLibraryPrefix + LibraryName + RuntimeLibraryPostfix;
 		}
 

@@ -44,6 +44,7 @@
 #include "FileHelpers.h"
 #include "HAL/FileManager.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/Paths.h"
 #include "Misc/ScopedSlowTask.h"
 #include "Kismet2/KismetEditorUtilities.h"
