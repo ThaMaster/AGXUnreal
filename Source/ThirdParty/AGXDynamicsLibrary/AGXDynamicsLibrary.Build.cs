@@ -218,7 +218,6 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("DriveTrain", LibSource.AGX);
 		RuntimeLibFiles.Add("fmt", LibSource.AGX);
 		RuntimeLibFiles.Add("hash-library", LibSource.AGX);
-		RuntimeLibFiles.Add("protobuf", LibSource.AGX);
 		RuntimeLibFiles.Add("Math", LibSource.AGX);
 		RuntimeLibFiles.Add("openplx.analysis", LibSource.AGX);
 		RuntimeLibFiles.Add("openplx.bundle", LibSource.AGX);
@@ -255,9 +254,11 @@ public class AGXDynamicsLibrary : ModuleRules
 		RuntimeLibFiles.Add("orocos*", LibSource.AGX);
 		if (Target.Platform == UnrealTargetPlatform.Win64) {
 			RuntimeLibFiles.Add("libzmq-v143-mt-4_3_5", LibSource.AGX);
+			RuntimeLibFiles.Add("libprotobuf", LibSource.AGX);
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Linux) {
 			RuntimeLibFiles.Add("libzmq.so.5", LibSource.AGX);
+			RuntimeLibFiles.Add("protobuf", LibSource.AGX);
 		}
 
 		// List of link-time libraries from AGX Dynamics and its dependencies
