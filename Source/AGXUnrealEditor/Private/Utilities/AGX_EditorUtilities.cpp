@@ -28,6 +28,7 @@
 #include "ActorEditorUtils.h"
 #include "AssetDeleteModel.h"
 #include "AssetToolsModule.h"
+#include "BlueprintEditorModule.h
 #include "Containers/Ticker.h"
 #include "ContentBrowserModule.h"
 #include "DesktopPlatformModule.h"
