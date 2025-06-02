@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 using UnrealBuildTool;
@@ -675,7 +676,14 @@ public class AGXDynamicsLibrary : ModuleRules
 		{
 			string Source = InstalledAGXResources.IncludePath(IncludePath);
 			string Dest = BundledAGXResources.IncludePath(IncludePath);
-			if (!CopyDirectoryRecursively(Source, Dest))
+
+
+			// Todo: this is a temporary workaround for a compilation error caused by OpenPLX having
+			// very generic include paths, such as "Math/Quat.h" which collides with Unreal Quat.h.
+			// This ignore should be removed once it has been fixed in OpenPLX.
+			List<string> FilesToIgnore = new List<string> {"Math/Quat.h", "Math\\Quat.h" };
+
+			if (!CopyDirectoryRecursively(Source, Dest, FilesToIgnore))
 			{
 				CleanBundledAGXDynamicsResources();
 				return;
@@ -919,7 +927,7 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		foreach (string FilePath in Directory.GetFiles(SourceDir, "*", SearchOption.AllDirectories))
 		{
-			if (FilesToIgnore != null && FilesToIgnore.Contains(Path.GetFileName(FilePath)))
+			if (FilesToIgnore != null && FilesToIgnore.Any(Ignore => FilePath.Contains(Ignore)))
 			{
 				continue;
 			}
