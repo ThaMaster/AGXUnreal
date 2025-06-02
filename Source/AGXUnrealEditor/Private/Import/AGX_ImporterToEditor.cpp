@@ -41,6 +41,7 @@
 #include "Engine/SCS_Node.h"
 #include "FileHelpers.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/ScopedSlowTask.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "PackageTools.h"
