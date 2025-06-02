@@ -19,6 +19,9 @@
 #include "Math/UnrealMathUtility.h"
 #include "Misc/EngineVersionComparison.h"
 #include "PhysicsEngine/BodySetup.h"
+#if WITH_EDITOR
+#include "RawMesh.h"
+#endif
 #include "Rendering/PositionVertexBuffer.h"
 #include "RenderingThread.h"
 #include "RHIGPUReadback.h"
@@ -1902,6 +1905,33 @@ namespace AGX_MeshUtilities_helpers
 			return CollisionVertexIndex;
 		}
 	}
+
+#if WITH_EDITOR
+	UStaticMesh* CreateStaticMeshFromRawMesh(
+		FRawMesh&& RawMesh, const FString& Name, UObject& Outer, UMaterialInterface* Material)
+	{
+		UStaticMesh* StaticMesh =
+			NewObject<UStaticMesh>(&Outer, FName(*Name), RF_Public | RF_Standalone);
+		StaticMesh->bAllowCPUAccess = true;
+
+		FStaticMeshSourceModel& SourceModel = StaticMesh->AddSourceModel();
+		SourceModel.SaveRawMesh(RawMesh);
+
+		FMeshBuildSettings& BuildSettings = SourceModel.BuildSettings;
+		BuildSettings.bRecomputeNormals = false;
+		BuildSettings.bRecomputeTangents = true;
+		BuildSettings.bUseMikkTSpace = true;
+		BuildSettings.bGenerateLightmapUVs = true;
+		BuildSettings.bBuildReversedIndexBuffer = false;
+		BuildSettings.bUseFullPrecisionUVs = false;
+		BuildSettings.bUseHighPrecisionTangentBasis = false;
+
+		if (Material)
+			StaticMesh->AddMaterial(Material);
+
+		return StaticMesh;
+	}
+#endif // WITH_EDITOR
 }
 
 bool AGX_MeshUtilities::GetStaticMeshCollisionData(
@@ -2033,11 +2063,10 @@ TArray<FAGX_MeshWithTransform> AGX_MeshUtilities::ToMeshWithTransformArray(
 UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	const TArray<FVector3f>& Vertices, const TArray<uint32>& Indices,
 	const TArray<FVector3f>& Normals, const TArray<FVector2D>& UVs,
-	const TArray<FVector3f>& Tangents, const FString& Name,
-	UObject& Outer, UMaterialInterface* Material)
+	const TArray<FVector3f>& Tangents, const FString& Name, UObject& Outer,
+	UMaterialInterface* Material)
 {
-	UStaticMesh* StaticMesh =
-		NewObject<UStaticMesh>(&Outer, NAME_None, RF_Public | RF_Standalone);
+	UStaticMesh* StaticMesh = NewObject<UStaticMesh>(&Outer, NAME_None, RF_Public | RF_Standalone);
 
 	// Create MeshDescription.
 	FMeshDescription MeshDescription;
@@ -2099,12 +2128,53 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 #else
 	Params.bFastBuild = true;
 #endif
-	Params.bBuildSimpleCollision = true;
+	Params.bBuildSimpleCollision = false; // Doesn't work for some reason, we do it manually below.
 	Params.bAllowCpuAccess = true;
 	StaticMesh->BuildFromMeshDescriptions({&MeshDescription}, Params);
-
+	AddBoxSimpleCollision(*StaticMesh);
 	return StaticMesh;
 }
+
+#if WITH_EDITOR
+UStaticMesh* AGX_MeshUtilities::CreateStaticMeshNoBuild(
+	const TArray<FVector3f>& Vertices, const TArray<uint32>& Indices,
+	const TArray<FVector3f>& Normals, const TArray<FVector2D>& UVs,
+	const TArray<FVector3f>& Tangents, const FString& Name, UObject& Outer,
+	UMaterialInterface* Material)
+{
+	using namespace AGX_MeshUtilities_helpers;
+	FRawMesh RawMesh;
+	RawMesh.VertexPositions = Vertices;
+	RawMesh.WedgeIndices = Indices;
+
+	const int32 NumIndices = Indices.Num();
+	const int32 NumTriangles = NumIndices / 3;
+
+	RawMesh.WedgeTangentZ.Reserve(NumIndices);
+	RawMesh.WedgeTexCoords[0].Reserve(NumIndices);
+	RawMesh.WedgeColors.Reserve(NumIndices);
+
+	RawMesh.FaceMaterialIndices.Reserve(NumTriangles);
+	RawMesh.FaceSmoothingMasks.Reserve(NumTriangles);
+
+	for (int32 i = 0; i < NumIndices; ++i)
+	{
+		const FVector3f Normal = Normals.IsValidIndex(i) ? Normals[i] : FVector3f::UpVector;
+		RawMesh.WedgeTangentZ.Add(Normal);
+
+		RawMesh.WedgeTexCoords[0].Add(FVector2f::ZeroVector);
+		RawMesh.WedgeColors.Add(FColor::White);
+	}
+
+	for (int32 i = 0; i < NumTriangles; ++i)
+	{
+		RawMesh.FaceMaterialIndices.Add(0);
+		RawMesh.FaceSmoothingMasks.Add(0x00000000);
+	}
+
+	return CreateStaticMeshFromRawMesh(MoveTemp(RawMesh), Name, Outer, Material);
+}
+#endif // WITH_EDITOR
 
 bool AGX_MeshUtilities::CopyStaticMesh(UStaticMesh* Source, UStaticMesh* Destination)
 {
@@ -2177,10 +2247,10 @@ bool AGX_MeshUtilities::CopyStaticMesh(UStaticMesh* Source, UStaticMesh* Destina
 #else
 	Params.bFastBuild = true;
 #endif
-	Params.bBuildSimpleCollision = true;
+	Params.bBuildSimpleCollision = false; // Doesn't work for some reason, we do it manually below.
 	Params.bAllowCpuAccess = true;
 	Destination->BuildFromMeshDescriptions({&MeshDescription}, Params);
-
+	AddBoxSimpleCollision(*Destination);
 	return true;
 }
 
@@ -2220,10 +2290,69 @@ UStaticMesh* AGX_MeshUtilities::CreateStaticMesh(
 	TArray<FVector3f> Tangents;
 	Tangents.SetNumZeroed(Vertices.Num());
 
-	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(&Outer,
-		FString::Printf(TEXT("SM_RenderMesh_%s"), *RenderData.GetGuid().ToString()), nullptr);
+	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
+		&Outer, FString::Printf(TEXT("SM_RenderMesh_%s"), *RenderData.GetGuid().ToString()),
+		UStaticMesh::StaticClass());
 	return CreateStaticMesh(Vertices, Indices, Normals, UVs, Tangents, Name, Outer, Material);
 }
+
+#if WITH_EDITOR
+UStaticMesh* AGX_MeshUtilities::CreateStaticMeshNoBuild(
+	const FRenderDataBarrier& RenderData, UObject& Outer, UMaterialInterface* Material)
+{
+	using namespace AGX_MeshUtilities_helpers;
+	if (!RenderData.HasMesh() || !RenderData.HasNative())
+		return nullptr;
+
+	const FString Name =
+		FString::Printf(TEXT("SM_RenderMesh_%s"), *RenderData.GetGuid().ToString());
+	FString UniqueName =
+		FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(&Outer, Name, UStaticMesh::StaticClass());
+
+	FRawMesh RawMesh;
+
+	const TArray<FVector>& Positions = RenderData.GetPositions();
+	RawMesh.VertexPositions.SetNum(Positions.Num());
+	for (int32 i = 0; i < Positions.Num(); ++i)
+		RawMesh.VertexPositions[i] = FVector3f(Positions[i]);
+
+	const TArray<uint32> Indices = RenderData.GetIndices();
+	RawMesh.WedgeIndices = Indices;
+
+	const int32 NumIndices = Indices.Num();
+	const int32 NumTriangles = NumIndices / 3;
+
+	RawMesh.WedgeTangentZ.Reserve(NumIndices);
+	RawMesh.WedgeColors.Reserve(NumIndices);
+	RawMesh.WedgeTexCoords[0].Reserve(NumIndices);
+
+	const TArray<FVector> Normals = RenderData.GetNormals();
+	const TArray<FVector2D> TexCoords = RenderData.GetTextureCoordinates();
+
+	for (int32 i = 0; i < NumIndices; ++i)
+	{
+		const int32 SourceIndex = Indices[i];
+
+		RawMesh.WedgeTangentZ.Add(
+			Normals.IsValidIndex(SourceIndex) ? FVector3f(Normals[SourceIndex])
+											  : FVector3f(FVector::UpVector));
+		RawMesh.WedgeTexCoords[0].Add(
+			TexCoords.IsValidIndex(SourceIndex) ? FVector2f(TexCoords[SourceIndex])
+												: FVector2f(FVector2D::ZeroVector));
+		RawMesh.WedgeColors.Add(FColor::White);
+	}
+
+	RawMesh.FaceMaterialIndices.SetNumZeroed(NumTriangles);
+	RawMesh.FaceSmoothingMasks.SetNumZeroed(NumTriangles);
+	for (int32 i = 0; i < NumTriangles; ++i)
+	{
+		RawMesh.FaceMaterialIndices[i] = 0;
+		RawMesh.FaceSmoothingMasks[i] = 0xFFFFFFFF;
+	}
+
+	return CreateStaticMeshFromRawMesh(MoveTemp(RawMesh), UniqueName, Outer, Material);
+}
+#endif // WITH_EDITOR
 
 bool AGX_MeshUtilities::HasRenderDataMesh(const FShapeBarrier& Shape)
 {
@@ -2242,15 +2371,17 @@ UMaterialInterface* AGX_MeshUtilities::CreateRenderMaterial(
 
 	auto Material = UMaterialInstanceDynamic::Create(Base, &Owner);
 	const FGuid Guid = MaterialBarrier.Guid;
-	const FString WantedName = MaterialBarrier.Name.IsNone()
-							 ? FString::Printf(TEXT("MI_RenderMaterial_%s"), *Guid.ToString())
-							 : FString::Printf(TEXT("MI_%s"), *MaterialBarrier.Name.ToString());
+	const FString WantedName =
+		MaterialBarrier.Name.IsNone()
+			? FString::Printf(TEXT("MI_RenderMaterial_%s"), *Guid.ToString())
+			: FString::Printf(TEXT("MI_%s"), *MaterialBarrier.Name.ToString());
 	const FString Name = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
 		&Owner, WantedName, UMaterialInterface::StaticClass());
 
 	Material->Rename(*Name);
 
-	auto SetVector = [&Material](const TCHAR* Name, const FVector4& Value) {
+	auto SetVector = [&Material](const TCHAR* Name, const FVector4& Value)
+	{
 		Material->SetVectorParameterValue(FName(Name), FAGX_RenderMaterial::ConvertToLinear(Value));
 	};
 
@@ -2294,23 +2425,29 @@ UMaterial* AGX_MeshUtilities::GetDefaultRenderMaterial(bool bIsSensor)
 	return Material;
 }
 
-bool AGX_MeshUtilities::AddBoxSimpleCollision(const FBox& BoundingBox, UStaticMesh& OutStaticMesh)
+bool AGX_MeshUtilities::AddBoxSimpleCollision(UStaticMesh& OutStaticMesh)
 {
 	UBodySetup* BodySetup = OutStaticMesh.GetBodySetup();
 	if (!BodySetup)
 		return false;
 
+	const FBoxSphereBounds Bounds = OutStaticMesh.GetBounds();
+	const FVector Center = Bounds.Origin;
+	const FVector Extents = Bounds.BoxExtent * BodySetup->BuildScale3D;
+
 	BodySetup->InvalidatePhysicsData();
 
 	FKBoxElem BoxElem;
-	BoxElem.Center = BoundingBox.GetCenter();
-	const FVector Extents = BoundingBox.GetExtent();
+	BoxElem.Center = Center;
 	BoxElem.X = Extents.X * 2.0f;
 	BoxElem.Y = Extents.Y * 2.0f;
 	BoxElem.Z = Extents.Z * 2.0f;
 	BodySetup->AggGeom.BoxElems.Add(BoxElem);
 
-	BodySetup->CreatePhysicsMeshes();
+#if WITH_EDITOR
+	OutStaticMesh.bCustomizedCollision = true;
+#endif
+
 	return true;
 }
 

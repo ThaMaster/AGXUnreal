@@ -297,7 +297,8 @@ namespace AGX_ShapeComponent_helpers
 	UMaterialInterface* GetOrCreateRenderMaterial(
 		const FRenderDataBarrier& RenderData, bool IsSensor, FAGX_ImportContext& Context)
 	{
-		if (Context.RenderMaterials == nullptr || !RenderData.HasNative() || !RenderData.HasMaterial())
+		if (Context.RenderMaterials == nullptr || !RenderData.HasNative() ||
+			!RenderData.HasMaterial())
 			return AGX_MeshUtilities::GetDefaultRenderMaterial(IsSensor);
 
 		const FAGX_RenderMaterial MBarrier = RenderData.GetMaterial();
@@ -323,7 +324,12 @@ namespace AGX_ShapeComponent_helpers
 		if (auto Existing = Context.RenderStaticMeshes->FindRef(RenderData.GetGuid()))
 			return Existing;
 
-		UStaticMesh* Mesh = AGX_MeshUtilities::CreateStaticMesh(RenderData, *Context.Outer, Material);
+		UStaticMesh* Mesh =
+#if WITH_EDITOR
+			AGX_MeshUtilities::CreateStaticMeshNoBuild(RenderData, *Context.Outer, Material);
+#else
+			AGX_MeshUtilities::CreateStaticMesh(RenderData, *Context.Outer, Material);
+#endif // WITH_EDITOR
 		if (Mesh != nullptr)
 			Context.RenderStaticMeshes->Add(RenderData.GetGuid(), Mesh);
 
@@ -331,8 +337,8 @@ namespace AGX_ShapeComponent_helpers
 	}
 
 	UStaticMeshComponent* CreateStaticMeshComponent(
-		const FShapeBarrier& Shape, AActor& Owner,
-		UMaterialInterface* Material, FAGX_ImportContext& Context)
+		const FShapeBarrier& Shape, AActor& Owner, UMaterialInterface* Material,
+		FAGX_ImportContext& Context)
 	{
 		AGX_CHECK(AGX_MeshUtilities::HasRenderDataMesh(Shape));
 		const FRenderDataBarrier RenderData = Shape.GetRenderData();
@@ -352,7 +358,8 @@ namespace AGX_ShapeComponent_helpers
 		const FTransform RelTransform = Shape.GetGeometryToShapeTransform().Inverse();
 
 		const FString ComponentName = FAGX_ObjectUtilities::SanitizeAndMakeNameUnique(
-			&Owner, FString::Printf(TEXT("RenderMesh_%s"), *Shape.GetShapeGuid().ToString()), nullptr);
+			&Owner, FString::Printf(TEXT("RenderMesh_%s"), *Shape.GetShapeGuid().ToString()),
+			nullptr);
 		UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(&Owner, *ComponentName);
 		FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, Owner, Context.SessionGuid);
 		Component->SetMaterial(0, Material);
@@ -423,7 +430,8 @@ void UAGX_ShapeComponent::CopyFrom(const FShapeBarrier& Barrier, FAGX_ImportCont
 	if (Context->RenderStaticMeshes != nullptr && GetOwner() != nullptr &&
 		AGX_MeshUtilities::HasRenderDataMesh(Barrier))
 	{
-		UStaticMeshComponent* Mesh = CreateStaticMeshComponent(Barrier, *GetOwner(), Material, *Context);
+		UStaticMeshComponent* Mesh =
+			CreateStaticMeshComponent(Barrier, *GetOwner(), Material, *Context);
 		AGX_CHECK(Mesh != nullptr);
 		if (Mesh != nullptr)
 		{
