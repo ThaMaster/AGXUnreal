@@ -10,6 +10,12 @@
 #include "DetailCategoryBuilder.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Styling/SlateTypes.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Layout/SBox.h"
+#include "Widgets/Input/SCheckBox.h"
+#include "Widgets/Layout/SExpandableArea.h"
 #include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "FPLX_SignalHandlerComponentCustomization"

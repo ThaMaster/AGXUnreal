@@ -4,6 +4,7 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "Constraints/ControllerConstraintBarriers.h"
 #include "Constraints/SingleControllerConstraint1DOFBarrier.h"
 #include "Import/AGX_ImportContext.h"
 #include "Utilities/AGX_ConstraintUtilities.h"

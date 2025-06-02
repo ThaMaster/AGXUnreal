@@ -7,6 +7,8 @@
 #include "Utilities/PLXUtilitiesInternal.h"
 
 // Unreal Engine includes.
+#include "HAL/FileManager.h"
+#include "HAL/PlatformFileManager.h"
 #include "Misc/Paths.h"
 
 FString FPLXUtilities::GetBundlePath()

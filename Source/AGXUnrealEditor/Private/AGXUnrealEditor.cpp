@@ -123,6 +123,7 @@
 #include "Wire/AGX_WireWinchVisualizer.h"
 
 // Unreal Engine includes.
+#include "AssetRegistry/AssetData.h"
 #include "AssetToolsModule.h"
 #include "AssetTypeCategories.h"
 #include "Editor/UnrealEdEngine.h"
