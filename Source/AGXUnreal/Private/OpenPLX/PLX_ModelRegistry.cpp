@@ -1,7 +1,5 @@
 // Copyright 2024, Algoryx Simulation AB.
 
-#pragma once
-
 #include "OpenPLX/PLX_ModelRegistry.h"
 
 // Unreal Engine includes.
