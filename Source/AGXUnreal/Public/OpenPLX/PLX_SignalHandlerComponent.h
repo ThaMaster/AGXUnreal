@@ -51,28 +51,28 @@ public:
 	TMap<FName, FName> OutputAliases;
 
 	/**
-	 * Returns the Input matching the given full name or alias. Returns true if an Input was found,
+	 * Get the Input matching the given full name or alias. Returns true if an Input was found,
 	 * returns false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool GetInput(FName NameOrAlias, FPLX_Input& OutInput);
 
 	/**
-	 * Returns the Input matching the given type as well as a full name or alias. Returns true if an
+	 * Get the Input matching the given type as well as a full name or alias. Returns true if an
 	 * Input was found, returns false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool GetInputFromType(EPLX_InputType Type, FName NameOrAlias, FPLX_Input& OutInput);
 
 	/**
-	 * Returns the Output matching the given full name or alias. Returns true if an Output was
+	 * Get the Output matching the given full name or alias. Returns true if an Output was
 	 * found, returns false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool GetOutput(FName NameOrAlias, FPLX_Output& OutOutput);
 
 	/**
-	 * Returns the Output matching the given type and a full name or alias. Returns true if an
+	 * Get the Output matching the given type and a full name or alias. Returns true if an
 	 * Output was found, returns false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
