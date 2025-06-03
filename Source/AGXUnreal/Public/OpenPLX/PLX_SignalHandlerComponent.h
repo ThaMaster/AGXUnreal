@@ -78,6 +78,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool GetOutputFromType(EPLX_OutputType Type, FName NameOrAlias, FPLX_Output& OutOutput);
 
+	/**
+	* Uses the given Input to send a Signal of Real type with the given Value.
+	*/
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendReal(const FPLX_Input& Input, double Value);
 
@@ -89,6 +92,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendRealByName(FName NameOrAlias, double Value);
 
+	/**
+	 * Uses the given Output to receive a Signal of Real type.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveReal(const FPLX_Output& Output, double& OutValue);
 
@@ -100,6 +106,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveRealByName(FName NameOrAlias, double& Value);
 
+	/**
+	 * Uses the given Input to send a Signal of Real Range type with the given Value.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendRangeReal(const FPLX_Input& Input, FVector2D Value);
 
@@ -111,6 +120,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendRangeRealByName(FName NameOrAlias, FVector2D Value);
 
+	/**
+	 * Uses the given Output to receive a Signal of Real Range type.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveRangeReal(const FPLX_Output& Output, FVector2D& OutValue);
 
@@ -122,6 +134,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveRangeRealByName(FName NameOrAlias, FVector2D& OutValue);
 
+	/**
+	 * Uses the given Input to send a Signal of Vector type with the given Value.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendVector(const FPLX_Input& Input, FVector Value);
 
@@ -133,6 +148,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendVectorByName(FName NameOrAlias, FVector Value);
 
+	/**
+	 * Uses the given Output to receive a Signal of Vector type.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveVector(const FPLX_Output& Output, FVector& OutValue);
 
@@ -144,6 +162,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveVectorByName(FName NameOrAlias, FVector& OutValue);
 
+	/**
+	 * Uses the given Input to send a Signal of Integer type with the given Value.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendInteger(const FPLX_Input& Input, int64 Value);
 
@@ -155,6 +176,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendIntegerByName(FName NameOrAlias, int64 Value);
 
+	/**
+	 * Uses the given Output to receive a Signal of Integer type.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveInteger(const FPLX_Output& Output, int64& OutValue);
 
@@ -166,6 +190,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveIntegerByName(FName NameOrAlias, int64& OutValue);
 
+	/**
+	 * Uses the given Input to send a Signal of Boolean type with the given Value.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendBoolean(const FPLX_Input& Input, bool Value);
 
@@ -177,6 +204,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendBooleanByName(FName NameOrAlias, bool Value);
 
+	/**
+	 * Uses the given Output to receive a Signal of Boolean type.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveBoolean(const FPLX_Output& Output, bool& OutValue);
 
