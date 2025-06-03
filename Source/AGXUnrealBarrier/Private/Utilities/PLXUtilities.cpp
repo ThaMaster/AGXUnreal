@@ -68,7 +68,7 @@ FString FPLXUtilities::CopyAllDependenciesToProject(FString Filepath, const FStr
 				*Dep, *Filepath);
 		}
 
-		const FString RelativePath = Dep.Replace(*SourceRoot, TEXT(""));
+		const FString RelativePath = Dep.RightChop(SourceRoot.Len());
 		const FString TargetPath = FPaths::Combine(Destination, RelativePath);
 
 		const FString TargetDir = FPaths::GetPath(TargetPath);
