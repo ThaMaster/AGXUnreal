@@ -23,7 +23,6 @@ FSingleControllerConstraint1DOFBarrier::FSingleControllerConstraint1DOFBarrier(
 	std::unique_ptr<FConstraintRef> Native)
 	: FConstraint1DOFBarrier(std::move(Native))
 {
-	/// \todo Should we allow nullptr hinge here?
 	check(NativeRef->Native->is<agx::SingleControllerConstraint1DOF>());
 }
 
