@@ -23,8 +23,9 @@ namespace PLX_SignalHandlerComponent_helpers
 	template <typename BarrierT, typename ComponentT>
 	TArray<BarrierT*> CollectBarriers(AActor* Owner)
 	{
+		TArray<BarrierT*> Barriers;
 		if (Owner == nullptr)
-			return TArray<BarrierT*>();
+			return Barriers;
 
 		TArray<ComponentT*> ComponentsInThisActor =
 			FAGX_ObjectUtilities::Filter<ComponentT>(Owner->GetComponents());
