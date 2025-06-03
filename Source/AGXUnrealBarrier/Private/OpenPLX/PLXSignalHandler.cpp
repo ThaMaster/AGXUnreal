@@ -26,6 +26,9 @@
 #include "Physics/Signals/Vec3InputSignal.h"
 #include "EndAGXIncludes.h"
 
+// Standard library includes.
+#include <cstdint>
+
 FPLXSignalHandler::FPLXSignalHandler()
 {
 }
@@ -192,12 +195,12 @@ namespace PLXSignalHandler_helpers
 		return {};
 	}
 
-	TOptional<int64> ConvertInteger(const FPLX_Input& Input, int64 Value)
+	TOptional<int64_t> ConvertInteger(const FPLX_Input& Input, int64 Value)
 	{
 		switch (Input.Type)
 		{
 			case EPLX_InputType::IntInput:
-				return static_cast<int>(Value);
+				return static_cast<int64_t>(Value);
 		}
 
 		UE_LOG(
