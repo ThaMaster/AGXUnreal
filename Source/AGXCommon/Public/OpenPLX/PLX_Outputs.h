@@ -20,7 +20,7 @@ struct AGXCOMMON_API FPLX_Output
 	GENERATED_BODY()
 
 	FPLX_Output() = default;
-	FPLX_Output(const FString& InName, const FString& InAlias, EPLX_OutputType InType, bool InEnabled)
+	FPLX_Output(const FName& InName, const FName& InAlias, EPLX_OutputType InType, bool InEnabled)
 		: Name(InName)
 		, Alias(InAlias)
 		, Type(InType)
@@ -29,10 +29,10 @@ struct AGXCOMMON_API FPLX_Output
 	}
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPXL")
-	FString Name;
+	FName Name;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "OpenPXL")
-	FString Alias;
+	FName Alias;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPXL")
 	EPLX_OutputType Type {EPLX_OutputType::Unsupported};

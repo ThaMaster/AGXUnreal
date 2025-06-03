@@ -74,42 +74,34 @@ namespace PLX_SignalHandlerComponent_helpers
 	}
 }
 
-bool UPLX_SignalHandlerComponent::GetInput(FString Name, FPLX_Input& OutInput)
+bool UPLX_SignalHandlerComponent::GetInput(FName Name, FPLX_Input& OutInput)
 {
-	for (auto Elem : InputAliases)
+	if (const FName* FullName = InputAliases.Find(Name))
 	{
-		if (Elem.Key.Contains(Name))
+		if (const FPLX_Input* Input = Inputs.Find(*FullName))
 		{
-			auto Input = Inputs.Find(Elem.Value);
-			if (Input != nullptr)
-			{
-				OutInput = *Input;
-				return true;
-			}
+			OutInput = *Input;
+			return true;
 		}
 	}
 
-	for (auto Elem : Inputs)
+	if (const FPLX_Input* Input = Inputs.Find(Name))
 	{
-		if (Elem.Value.Name.Contains(Name))
-		{
-			OutInput = Elem.Value;
-			return true;
-		}
+		OutInput = *Input;
+		return true;
 	}
 
 	return false;
 }
 
 bool UPLX_SignalHandlerComponent::GetInputFromType(
-	EPLX_InputType Type, FString Name, FPLX_Input& OutInput)
+	EPLX_InputType Type, FName Name, FPLX_Input& OutInput)
 {
-	for (auto Elem : InputAliases)
+	if (const FName* FullName = InputAliases.Find(Name))
 	{
-		if (Elem.Key.Contains(Name))
+		if (const FPLX_Input* Input = Inputs.Find(*FullName))
 		{
-			auto Input = Inputs.Find(Elem.Value);
-			if (Input != nullptr && Input->Type == Type)
+			if (Input->Type == Type)
 			{
 				OutInput = *Input;
 				return true;
@@ -117,11 +109,11 @@ bool UPLX_SignalHandlerComponent::GetInputFromType(
 		}
 	}
 
-	for (auto Elem : Inputs)
+	if (const FPLX_Input* Input = Inputs.Find(Name))
 	{
-		if (Elem.Value.Type == Type && Elem.Value.Name.Contains(Name))
+		if (Input->Type == Type)
 		{
-			OutInput = Elem.Value;
+			OutInput = *Input;
 			return true;
 		}
 	}
@@ -129,42 +121,34 @@ bool UPLX_SignalHandlerComponent::GetInputFromType(
 	return false;
 }
 
-bool UPLX_SignalHandlerComponent::GetOutput(FString Name, FPLX_Output& OutOutput)
+bool UPLX_SignalHandlerComponent::GetOutput(FName Name, FPLX_Output& OutOutput)
 {
-	for (auto Elem : OutputAliases)
+	if (const FName* FullName = OutputAliases.Find(Name))
 	{
-		if (Elem.Key.Contains(Name))
+		if (const FPLX_Output* Output = Outputs.Find(*FullName))
 		{
-			auto Output = Outputs.Find(Elem.Value);
-			if (Output != nullptr)
-			{
-				OutOutput = *Output;
-				return true;
-			}
+			OutOutput = *Output;
+			return true;
 		}
 	}
 
-	for (auto Elem : Outputs)
+	if (const FPLX_Output* Output = Outputs.Find(Name))
 	{
-		if (Elem.Value.Name.Contains(Name))
-		{
-			OutOutput = Elem.Value;
-			return true;
-		}
+		OutOutput = *Output;
+		return true;
 	}
 
 	return false;
 }
 
 bool UPLX_SignalHandlerComponent::GetOutputFromType(
-	EPLX_OutputType Type, FString Name, FPLX_Output& OutOutput)
+	EPLX_OutputType Type, FName Name, FPLX_Output& OutOutput)
 {
-	for (auto Elem : OutputAliases)
+	if (const FName* FullName = OutputAliases.Find(Name))
 	{
-		if (Elem.Key.Contains(Name))
+		if (const FPLX_Output* Output = Outputs.Find(*FullName))
 		{
-			auto Output = Outputs.Find(Elem.Value);
-			if (Output != nullptr && Output->Type == Type)
+			if (Output->Type == Type)
 			{
 				OutOutput = *Output;
 				return true;
@@ -172,11 +156,11 @@ bool UPLX_SignalHandlerComponent::GetOutputFromType(
 		}
 	}
 
-	for (auto Elem : Outputs)
+	if (const FPLX_Output* Output = Outputs.Find(Name))
 	{
-		if (Elem.Value.Type == Type && Elem.Value.Name.Contains(Name))
+		if (Output->Type == Type)
 		{
-			OutOutput = Elem.Value;
+			OutOutput = *Output;
 			return true;
 		}
 	}
@@ -192,7 +176,7 @@ bool UPLX_SignalHandlerComponent::SendReal(const FPLX_Input& Input, double Value
 	return SignalHandler.Send(Input, Value);
 }
 
-bool UPLX_SignalHandlerComponent::SendRealByName(const FString& NameOrAlias, double Value)
+bool UPLX_SignalHandlerComponent::SendRealByName(FName NameOrAlias, double Value)
 {
 	FPLX_Input Input;
 	const bool Found = GetInput(NameOrAlias, Input);
@@ -201,7 +185,7 @@ bool UPLX_SignalHandlerComponent::SendRealByName(const FString& NameOrAlias, dou
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("SendRealByname: Unable to find Input matching Name or Alias '%s'."),
-			*NameOrAlias);
+			*NameOrAlias.ToString());
 		return false;
 	}
 
@@ -216,7 +200,7 @@ bool UPLX_SignalHandlerComponent::ReceiveReal(const FPLX_Output& Output, double&
 	return SignalHandler.Receive(Output, OutValue);
 }
 
-bool UPLX_SignalHandlerComponent::ReceiveRealByName(const FString& NameOrAlias, double& Value)
+bool UPLX_SignalHandlerComponent::ReceiveRealByName(FName NameOrAlias, double& Value)
 {
 	FPLX_Output Output;
 	const bool Found = GetOutput(NameOrAlias, Output);
@@ -225,7 +209,7 @@ bool UPLX_SignalHandlerComponent::ReceiveRealByName(const FString& NameOrAlias, 
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("ReceiveRealByName: Unable to find Output matching Name or Alias '%s'."),
-			*NameOrAlias);
+			*NameOrAlias.ToString());
 		return false;
 	}
 
@@ -240,7 +224,7 @@ bool UPLX_SignalHandlerComponent::SendRangeReal(const FPLX_Input& Input, FVector
 	return SignalHandler.Send(Input, Value);
 }
 
-bool UPLX_SignalHandlerComponent::SendRangeRealByName(const FString& NameOrAlias, FVector2D Value)
+bool UPLX_SignalHandlerComponent::SendRangeRealByName(FName NameOrAlias, FVector2D Value)
 {
 	FPLX_Input Input;
 	const bool Found = GetInput(NameOrAlias, Input);
@@ -249,7 +233,7 @@ bool UPLX_SignalHandlerComponent::SendRangeRealByName(const FString& NameOrAlias
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("SendRangeRealByName: Unable to find Input matching Name or Alias '%s'."),
-			*NameOrAlias);
+			*NameOrAlias.ToString());
 		return false;
 	}
 
@@ -265,7 +249,7 @@ bool UPLX_SignalHandlerComponent::ReceiveRangeReal(const FPLX_Output& Output, FV
 }
 
 bool UPLX_SignalHandlerComponent::ReceiveRangeRealByName(
-	const FString& NameOrAlias, FVector2D& OutValue)
+	FName NameOrAlias, FVector2D& OutValue)
 {
 	FPLX_Output Output;
 	const bool Found = GetOutput(NameOrAlias, Output);
@@ -274,7 +258,7 @@ bool UPLX_SignalHandlerComponent::ReceiveRangeRealByName(
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("ReceiveRangeRealByName: Unable to find Output matching Name or Alias '%s'."),
-			*NameOrAlias);
+			*NameOrAlias.ToString());
 		return false;
 	}
 
@@ -289,7 +273,7 @@ bool UPLX_SignalHandlerComponent::SendVector(const FPLX_Input& Input, FVector Va
 	return SignalHandler.Send(Input, Value);
 }
 
-bool UPLX_SignalHandlerComponent::SendVectorByName(const FString& NameOrAlias, FVector Value)
+bool UPLX_SignalHandlerComponent::SendVectorByName(FName NameOrAlias, FVector Value)
 {
 	FPLX_Input Input;
 	const bool Found = GetInput(NameOrAlias, Input);
@@ -298,7 +282,7 @@ bool UPLX_SignalHandlerComponent::SendVectorByName(const FString& NameOrAlias, F
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("SendVectorByName: Unable to find Input matching Name or Alias '%s'."),
-			*NameOrAlias);
+			*NameOrAlias.ToString());
 		return false;
 	}
 
@@ -313,7 +297,7 @@ bool UPLX_SignalHandlerComponent::ReceiveVector(const FPLX_Output& Output, FVect
 	return SignalHandler.Receive(Output, OutValue);
 }
 
-bool UPLX_SignalHandlerComponent::ReceiveVectorByName(const FString& NameOrAlias, FVector& OutValue)
+bool UPLX_SignalHandlerComponent::ReceiveVectorByName(FName NameOrAlias, FVector& OutValue)
 {
 	FPLX_Output Output;
 	const bool Found = GetOutput(NameOrAlias, Output);
@@ -322,7 +306,7 @@ bool UPLX_SignalHandlerComponent::ReceiveVectorByName(const FString& NameOrAlias
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("ReceiveVectorByName: Unable to find Output matching Name or Alias '%s'."),
-			*NameOrAlias);
+			*NameOrAlias.ToString());
 		return false;
 	}
 
@@ -337,7 +321,7 @@ bool UPLX_SignalHandlerComponent::SendInteger(const FPLX_Input& Input, int64 Val
 	return SignalHandler.Send(Input, Value);
 }
 
-bool UPLX_SignalHandlerComponent::SendIntegerByName(const FString& NameOrAlias, int64 Value)
+bool UPLX_SignalHandlerComponent::SendIntegerByName(FName NameOrAlias, int64 Value)
 {
 	FPLX_Input Input;
 	const bool Found = GetInput(NameOrAlias, Input);
@@ -346,7 +330,7 @@ bool UPLX_SignalHandlerComponent::SendIntegerByName(const FString& NameOrAlias, 
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("SendIntegerByName: Unable to find Input matching Name or Alias '%s'."),
-			*NameOrAlias);
+			*NameOrAlias.ToString());
 		return false;
 	}
 
@@ -361,7 +345,7 @@ bool UPLX_SignalHandlerComponent::ReceiveInteger(const FPLX_Output& Output, int6
 	return SignalHandler.Receive(Output, OutValue);
 }
 
-bool UPLX_SignalHandlerComponent::ReceiveIntegerByName(const FString& NameOrAlias, int64& OutValue)
+bool UPLX_SignalHandlerComponent::ReceiveIntegerByName(FName NameOrAlias, int64& OutValue)
 {
 	FPLX_Output Output;
 	const bool Found = GetOutput(NameOrAlias, Output);
@@ -370,7 +354,7 @@ bool UPLX_SignalHandlerComponent::ReceiveIntegerByName(const FString& NameOrAlia
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("ReceiveIntegerByName: Unable to find Output matching Name or Alias '%s'."),
-			*NameOrAlias);
+			*NameOrAlias.ToString());
 		return false;
 	}
 
@@ -385,7 +369,7 @@ bool UPLX_SignalHandlerComponent::SendBoolean(const FPLX_Input& Input, bool Valu
 	return SignalHandler.Send(Input, Value);
 }
 
-bool UPLX_SignalHandlerComponent::SendBooleanByName(const FString& NameOrAlias, bool Value)
+bool UPLX_SignalHandlerComponent::SendBooleanByName(FName NameOrAlias, bool Value)
 {
 	FPLX_Input Input;
 	const bool Found = GetInput(NameOrAlias, Input);
@@ -394,7 +378,7 @@ bool UPLX_SignalHandlerComponent::SendBooleanByName(const FString& NameOrAlias, 
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("SendBooleanByName: Unable to find Input matching Name or Alias '%s'."),
-			*NameOrAlias);
+			*NameOrAlias.ToString());
 		return false;
 	}
 
@@ -409,7 +393,7 @@ bool UPLX_SignalHandlerComponent::ReceiveBoolean(const FPLX_Output& Output, bool
 	return SignalHandler.Receive(Output, OutValue);
 }
 
-bool UPLX_SignalHandlerComponent::ReceiveBooleanByName(const FString& NameOrAlias, bool& OutValue)
+bool UPLX_SignalHandlerComponent::ReceiveBooleanByName(FName NameOrAlias, bool& OutValue)
 {
 	FPLX_Output Output;
 	const bool Found = GetOutput(NameOrAlias, Output);
@@ -418,7 +402,7 @@ bool UPLX_SignalHandlerComponent::ReceiveBooleanByName(const FString& NameOrAlia
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("ReceiveBooleanByName: Unable to find Output matching Name or Alias '%s'."),
-			*NameOrAlias);
+			*NameOrAlias.ToString());
 		return false;
 	}
 
@@ -474,8 +458,8 @@ void UPLX_SignalHandlerComponent::BeginPlay()
 
 	// Initialize SignalHandler in Barrier module.
 	SignalHandler.Init(
-		*PLXFile, *SimulationBarrier, *PLXModelRegistryBarrier,
-		RigidBodyBarriers, ConstraintBarriers);
+		*PLXFile, *SimulationBarrier, *PLXModelRegistryBarrier, RigidBodyBarriers,
+		ConstraintBarriers);
 }
 
 void UPLX_SignalHandlerComponent::CopyFrom(
@@ -484,14 +468,14 @@ void UPLX_SignalHandlerComponent::CopyFrom(
 	for (const auto& Input : InInputs)
 	{
 		Inputs.Add(Input.Name, Input);
-		if (!Input.Alias.IsEmpty())
+		if (!Input.Alias.IsNone())
 			InputAliases.Add(Input.Alias, Input.Name);
 	}
 
 	for (const auto& Output : InOutputs)
 	{
 		Outputs.Add(Output.Name, Output);
-		if (!Output.Alias.IsEmpty())
+		if (!Output.Alias.IsNone())
 			OutputAliases.Add(Output.Alias, Output.Name);
 	}
 

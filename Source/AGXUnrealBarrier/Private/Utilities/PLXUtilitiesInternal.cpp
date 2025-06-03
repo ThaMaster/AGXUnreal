@@ -190,7 +190,7 @@ TArray<FPLX_Input> FPLXUtilitiesInternal::GetInputs(openplx::Physics3D::System* 
 		auto OptionalAlias = PLXUtilities_helpers::FindKeyByObject(SigInterfInputs, Input);
 		const FString Alias = OptionalAlias.has_value() ? Convert(OptionalAlias.value()) : "";
 		EPLX_InputType Type = GetInputType(*Input);
-		Inputs.Add(FPLX_Input(Convert(Input->getName()), Alias, Type));
+		Inputs.Add(FPLX_Input(ConvertStrToName(Input->getName()), FName(*Alias), Type));
 		if (Type == EPLX_InputType::Unsupported)
 		{
 			UE_LOG(
@@ -224,7 +224,8 @@ TArray<FPLX_Output> FPLXUtilitiesInternal::GetOutputs(openplx::Physics3D::System
 		auto OptionalAlias = PLXUtilities_helpers::FindKeyByObject(SigInterfOutputs, Output);
 		const FString Alias = OptionalAlias.has_value() ? Convert(OptionalAlias.value()) : "";
 		EPLX_OutputType Type = GetOutputType(*Output);
-		Outputs.Add(FPLX_Output(Convert(Output->getName()), Alias, Type, Output->enabled()));
+		Outputs.Add(
+			FPLX_Output(ConvertStrToName(Output->getName()), FName(*Alias), Type, Output->enabled()));
 		if (Type == EPLX_OutputType::Unsupported)
 		{
 			UE_LOG(
