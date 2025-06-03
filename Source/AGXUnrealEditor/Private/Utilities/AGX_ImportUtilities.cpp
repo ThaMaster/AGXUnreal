@@ -328,7 +328,8 @@ void FAGX_ImportUtilities::OnImportedBlueprintDeleted(const UBlueprint& Bp)
 	if (ModelSource == nullptr)
 		return;
 
-	if (FAGX_ImportRuntimeUtilities::GetFrom(ModelSource->FilePath) != EAGX_ImportType::Plx)
+	if (FAGX_ImportRuntimeUtilities::GetImportTypeFrom(ModelSource->FilePath) !=
+		EAGX_ImportType::Plx)
 		return;
 
 	const FString DeletedFolder =
