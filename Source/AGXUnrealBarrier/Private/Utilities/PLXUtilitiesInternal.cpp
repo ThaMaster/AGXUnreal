@@ -179,8 +179,14 @@ TArray<FPLX_Input> FPLXUtilitiesInternal::GetInputs(openplx::Physics3D::System* 
 	std::vector<std::pair<std::string, std::shared_ptr<openplx::Physics::Signals::Input>>>
 		SigInterfInputs;
 	auto SignalInterfaces = GetNestedObjects<openplx::Physics::Signals::SignalInterface>(*System);
-	if (SignalInterfaces.size() > 0)
-		SigInterfInputs = GetEntries<openplx::Physics::Signals::Input>(*SignalInterfaces[0]);
+	for (auto SignalInterface : SignalInterfaces)
+	{
+		if (SignalInterface == nullptr)
+			continue;
+
+		for (auto Entry : GetEntries<openplx::Physics::Signals::Input>(*SignalInterface))
+			SigInterfInputs.push_back(Entry);
+	}
 
 	auto InputsPLX = GetNestedObjects<openplx::Physics::Signals::Input>(*System);
 	Inputs.Reserve(InputsPLX.size());
@@ -215,8 +221,14 @@ TArray<FPLX_Output> FPLXUtilitiesInternal::GetOutputs(openplx::Physics3D::System
 	std::vector<std::pair<std::string, std::shared_ptr<openplx::Physics::Signals::Output>>>
 		SigInterfOutputs;
 	auto SignalInterfaces = GetNestedObjects<openplx::Physics::Signals::SignalInterface>(*System);
-	if (SignalInterfaces.size() > 0)
-		SigInterfOutputs = GetEntries<openplx::Physics::Signals::Output>(*SignalInterfaces[0]);
+	for (auto SignalInterface : SignalInterfaces)
+	{
+		if (SignalInterface == nullptr)
+			continue;
+
+		for (auto Entry : GetEntries<openplx::Physics::Signals::Output>(*SignalInterface))
+			SigInterfOutputs.push_back(Entry);
+	}
 
 	auto OutputsPLX = GetNestedObjects<openplx::Physics::Signals::Output>(*System);
 	Outputs.Reserve(OutputsPLX.size());
