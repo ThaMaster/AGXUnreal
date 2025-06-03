@@ -84,8 +84,8 @@ void FPLXSignalHandler::Init(
 
 	if (FPLXUtilitiesInternal::HasInputs(System.get()) || FPLXUtilitiesInternal::HasOutputs(System.get()))
 	{
-		auto PlxPowerLine =
-			dynamic_cast<agxPowerLine::PowerLine*>(AssemblyRef->Native->getAssembly("OpenPlxPowerLine"));
+		auto PlxPowerLine = dynamic_cast<agxPowerLine::PowerLine*>(
+			AssemblyRef->Native->getAssembly(FPLXUtilitiesInternal::GetDefaultPowerLineName()));
 
 		SignalSourceMapper = std::make_shared<FSignalSourceMapperRef>(agxopenplx::SignalSourceMapper::create(
 				AssemblyRef->Native, PlxPowerLine, agxopenplx::SignalSourceMapMode::Name));

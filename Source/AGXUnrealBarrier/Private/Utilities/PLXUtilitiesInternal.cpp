@@ -655,7 +655,7 @@ agxSDK::AssemblyRef FPLXUtilitiesInternal::MapRuntimeObjects(
 	// OpenPLX OutputSignalListener requires the assembly to contain a PowerLine with a
 	// certain name. This is the PowerLine we will use to map the OpenPLX DriveTrain.
 	agxPowerLine::PowerLineRef RequiredPowerLine = new agxPowerLine::PowerLine();
-	RequiredPowerLine->setName(agx::Name("OpenPlxPowerLine"));
+	RequiredPowerLine->setName(agx::Name(GetDefaultPowerLineName()));
 	Assembly->add(RequiredPowerLine);
 
 	// Map DriveTrain.
@@ -688,4 +688,9 @@ agxSDK::AssemblyRef FPLXUtilitiesInternal::MapRuntimeObjects(
 	}
 
 	return Assembly;
+}
+
+std::string FPLXUtilitiesInternal::GetDefaultPowerLineName()
+{
+	return "OpenPlxPowerLine";
 }
