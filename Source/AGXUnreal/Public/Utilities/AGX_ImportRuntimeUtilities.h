@@ -38,6 +38,10 @@ public:
 
 	static EAGX_ImportType GetImportTypeFrom(const FString& FilePath);
 
-	/// Returns the deleted directory if any.
+	/**
+	 * Given an absolute path to an OpenPLX file in
+	 * <project>/OpenPLXModels/<mymodel>/.../model.openplx, removes the <mymodel> directory and
+	 * everything inside it. Returns the deleted directory if any.
+	 */
 	static FString RemoveImportedOpenPLXFiles(const FString& FilePath);
 };
