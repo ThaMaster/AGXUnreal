@@ -170,6 +170,8 @@ bool FPLXUtilitiesInternal::HasOutputs(openplx::Physics3D::System* System)
 
 TArray<FPLX_Input> FPLXUtilitiesInternal::GetInputs(openplx::Physics3D::System* System)
 {
+	using namespace std::literals::string_literals;
+
 	TArray<FPLX_Input> Inputs;
 	if (System == nullptr)
 		return Inputs;
@@ -188,7 +190,7 @@ TArray<FPLX_Input> FPLXUtilitiesInternal::GetInputs(openplx::Physics3D::System* 
 			continue;
 
 		auto OptionalAlias = PLXUtilities_helpers::FindKeyByObject(SigInterfInputs, Input);
-		const FString Alias = OptionalAlias.has_value() ? Convert(OptionalAlias.value()) : "";
+		const FString Alias = Convert(OptionalAlias.value_or(""s));
 		EPLX_InputType Type = GetInputType(*Input);
 		Inputs.Add(FPLX_Input(ConvertStrToName(Input->getName()), FName(*Alias), Type));
 		if (Type == EPLX_InputType::Unsupported)
@@ -204,6 +206,8 @@ TArray<FPLX_Input> FPLXUtilitiesInternal::GetInputs(openplx::Physics3D::System* 
 
 TArray<FPLX_Output> FPLXUtilitiesInternal::GetOutputs(openplx::Physics3D::System* System)
 {
+	using namespace std::literals::string_literals;
+
 	TArray<FPLX_Output> Outputs;
 	if (System == nullptr)
 		return Outputs;
@@ -222,7 +226,7 @@ TArray<FPLX_Output> FPLXUtilitiesInternal::GetOutputs(openplx::Physics3D::System
 			continue;
 
 		auto OptionalAlias = PLXUtilities_helpers::FindKeyByObject(SigInterfOutputs, Output);
-		const FString Alias = OptionalAlias.has_value() ? Convert(OptionalAlias.value()) : "";
+		const FString Alias = Convert(OptionalAlias.value_or(""s));
 		EPLX_OutputType Type = GetOutputType(*Output);
 		Outputs.Add(
 			FPLX_Output(ConvertStrToName(Output->getName()), FName(*Alias), Type, Output->enabled()));
