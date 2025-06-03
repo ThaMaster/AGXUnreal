@@ -29,7 +29,6 @@ namespace PLX_SignalHandlerComponent_helpers
 
 		TArray<ComponentT*> ComponentsInThisActor =
 			FAGX_ObjectUtilities::Filter<ComponentT>(Owner->GetComponents());
-		TArray<BarrierT*> Barriers;
 		for (ComponentT* Component : ComponentsInThisActor)
 		{
 			if (auto CBarrier = Component->GetOrCreateNative())
