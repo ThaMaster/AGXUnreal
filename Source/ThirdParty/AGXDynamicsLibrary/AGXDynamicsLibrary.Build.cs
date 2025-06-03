@@ -480,7 +480,6 @@ public class AGXDynamicsLibrary : ModuleRules
 
 		foreach (string FilePath in FilesToAdd)
 		{
-			Console.WriteLine(FilePath);
 			PublicAdditionalLibraries.Add(FilePath);
 		}
 	}
