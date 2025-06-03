@@ -41,26 +41,6 @@ namespace PLX_SignalHandlerComponent_helpers
 		return Barriers;
 	}
 
-	TArray<FRigidBodyBarrier*> CollectBodyBarriers(AActor* Owner)
-	{
-		if (Owner == nullptr)
-			return TArray<FRigidBodyBarrier*>();
-
-		TArray<UAGX_RigidBodyComponent*> RigidBodysInThisActor =
-			FAGX_ObjectUtilities::Filter<UAGX_RigidBodyComponent>(Owner->GetComponents());
-		TArray<FRigidBodyBarrier*> RigidBodyBarriers;
-		for (UAGX_RigidBodyComponent* RigidBody : RigidBodysInThisActor)
-		{
-			if (auto CBarrier = RigidBody->GetOrCreateNative())
-			{
-				if (CBarrier->HasNative())
-					RigidBodyBarriers.Add(CBarrier);
-			}
-		}
-
-		return RigidBodyBarriers;
-	}
-
 	TOptional<FString> GetPLXFilePath(AActor* Owner)
 	{
 		if (Owner == nullptr)
