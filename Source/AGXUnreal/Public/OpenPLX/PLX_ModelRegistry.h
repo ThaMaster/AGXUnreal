@@ -12,9 +12,10 @@
 
 #include "PLX_ModelRegistry.generated.h"
 
-
 /**
- * Todo: add description.
+ * The PLX Model Registry is responsible for keeping track of runtime OpenPLX data generated from a
+ * specific OpenPLX model, which can be shared across all instances of that model in a
+ * Simulation.
  */
 UCLASS(ClassGroup = "PLX", Category = "PLX")
 class AGXUNREAL_API UPLX_ModelRegistry : public ULevelInstanceSubsystem
