@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 #pragma once
 
@@ -48,16 +48,18 @@ public:
 	FAGX_Importer();
 
 	/**
-	 * Import an .agx archive or Urdf file to an Actor that can either be instantiated
+	 * Import an .agx archive, OpenPLX or Urdf model to an Actor that can either be instantiated
 	 * immediately in a world, or used to create a Blueprint from it.
 	 * The Outer must be set to a World if doing runtime imports, otherwise it can be set to
 	 * TransientPackage.
+	 * OpenPLX files must reside in the Unreal project/OpenPLXModels directory.
 	 */
 	FAGX_ImportResult Import(const FAGX_ImportSettings& Settings, UObject& Outer);
 	const FAGX_ImportContext& GetContext() const;
 
 private:
 	EAGX_ImportResult AddComponents(
+		const FAGX_ImportSettings& Settings,
 		const FSimulationObjectCollection& SimObjects, AActor& OutActor);
 
 	EAGX_ImportResult AddModelSourceComponent(AActor& OutActor);
@@ -82,6 +84,11 @@ private:
 	EAGX_ImportResult AddTrimeshShape(const FShapeBarrier& Shape, AActor& OutActor);
 
 	EAGX_ImportResult AddShovel(const FShovelBarrier& Shovel, AActor& OutActor);
+
+	EAGX_ImportResult AddSignalHandlerComponent(
+		const FSimulationObjectCollection& SimObjects, AActor& OutActor);
+
+	void PostImport();
 
 	FAGX_ImportContext Context;
 };

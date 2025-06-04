@@ -56,8 +56,6 @@ struct AGXUNREAL_API FAGX_ConstraintFrictionController : public FAGX_ConstraintC
 
 public:
 	FAGX_ConstraintFrictionController() = default;
-	FAGX_ConstraintFrictionController(bool bRotational);
-
 	void InitializeBarrier(TUniquePtr<FFrictionControllerBarrier> Barrier);
 	void CopyFrom(const FFrictionControllerBarrier& Source);
 

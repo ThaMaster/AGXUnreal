@@ -51,7 +51,7 @@ namespace AGX_ImportDialog_helpers
 
 void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 {
-	FileTypes = ".agx;*.urdf";
+	FileTypes = ".agx;*.openplx;*.urdf";
 
 	// clang-format off
 	ChildSlot
@@ -80,6 +80,12 @@ void SAGX_ImportDialog::Construct(const FArguments& InArgs)
 			.AutoHeight()
 			[
 				CreateAGXFileGui()
+			]
+			+ SVerticalBox::Slot()
+			.Padding(FMargin(5.0f, 0.0f))
+			.AutoHeight()
+			[
+				CreatePLXFileGui()
 			]
 			+ SVerticalBox::Slot()
 			.Padding(FMargin(5.0f, 0.0f))
@@ -120,13 +126,14 @@ TOptional<FAGX_ImportSettings> SAGX_ImportDialog::ToImportSettings()
 
 	if (FilePath.IsEmpty())
 	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+		FAGX_NotificationUtilities::ShowDialogBoxWithError(
 			"A file must be selected before importing.");
 		return {};
 	}
 
 	FAGX_ImportSettings Settings;
 	Settings.FilePath = FilePath;
+	Settings.SourceFilePath = FilePath;
 	Settings.bIgnoreDisabledTrimeshes = bIgnoreDisabledTrimesh;
 	Settings.ImportType = ImportType;
 	Settings.bOpenBlueprintEditorAfterImport = true;

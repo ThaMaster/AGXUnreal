@@ -1,6 +1,6 @@
 // Copyright 2025, Algoryx Simulation AB.
 
-#include "AGX_ModelSourceComponentCustomization.h"
+#include "Import/AGX_ModelSourceComponentCustomization.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
@@ -11,6 +11,7 @@
 #include "Utilities/AGX_EditorUtilities.h"
 #include "Utilities/AGX_MaterialReplacer.h"
 #include "Utilities/AGX_NotificationUtilities.h"
+#include "Utilities/AGX_SlateUtilities.h"
 #include "Widgets/AGX_ImportDialog.h"
 
 // Unreal Engine includes.
@@ -44,7 +45,37 @@ void FAGX_ModelSourceComponentCustomization::CustomizeDetails(IDetailLayoutBuild
 
 	IDetailCategoryBuilder& CategoryBuilder = InDetailBuilder.EditCategory("AGX Reimport Model");
 
-	// clang-format off
+	if (ModelSourceComponent->FilePath.EndsWith("openplx"))
+	{
+		FString ImportedFilePath = FPaths::ConvertRelativePathToFull(ModelSourceComponent->FilePath);
+		ImportedFilePath.RemoveFromStart(FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()));
+
+		// clang-format off
+		CategoryBuilder.AddCustomRow(FText::GetEmpty())
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(FString::Printf(TEXT("Imported File: '%s'"), *ImportedFilePath)))
+				.Font(FAGX_SlateUtilities::CreateFont(8))
+			]
+		];
+
+		CategoryBuilder.AddCustomRow(FText::GetEmpty())
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(FString::Printf(TEXT("Original Source File: '%s'"), *ModelSourceComponent->SourceFilePath)))
+				.Font(FAGX_SlateUtilities::CreateFont(8))
+			]
+		];
+	}
+
 	CategoryBuilder.AddCustomRow(FText::GetEmpty())
 	[
 		SNew(SHorizontalBox)
@@ -93,7 +124,7 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 
 		if (!ModelSourceComponent->IsInBlueprint())
 		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+			FAGX_NotificationUtilities::ShowDialogBoxWithError(
 				"Model reimport is only supported when in a Blueprint.");
 			return nullptr;
 		}
@@ -106,7 +137,7 @@ namespace AGX_ModelSourceComponentCustomization_helpers
 			}
 		}
 
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+		FAGX_NotificationUtilities::ShowDialogBoxWithError(
 			"Unable to get the Blueprint from the AGX Model Source Component. Model "
 			"reimport will not be possible.");
 		return nullptr;

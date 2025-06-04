@@ -467,9 +467,7 @@ bool UAGX_ConstraintComponent::GetEnableComputeForces() const
 bool UAGX_ConstraintComponent::GetValid() const
 {
 	if (!HasNative())
-	{
 		return false;
-	}
 
 	return NativeBarrier->GetValid();
 }
@@ -578,6 +576,7 @@ void UAGX_ConstraintComponent::CopyFrom(
 	check(Barrier.HasNative());
 
 	ImportGuid = Barrier.GetGuid();
+	ImportName = Barrier.GetName(); // Unmodifiled AGX name.
 	bEnable = Barrier.GetEnable();
 	EAGX_SolveType SolveTypeBarrier = static_cast<EAGX_SolveType>(Barrier.GetSolveType());
 	SolveType = SolveTypeBarrier;
@@ -1022,6 +1021,7 @@ void UAGX_ConstraintComponent::UpdateNativeProperties()
 		return;
 	}
 
+	NativeBarrier->SetName(!ImportName.IsEmpty() ? ImportName : GetName());
 	NativeBarrier->SetEnable(bEnable);
 	NativeBarrier->SetSolveType(SolveType);
 	SetEnableSelfCollision(bSelfCollision);
@@ -1224,8 +1224,7 @@ void UAGX_ConstraintComponent::CreateNative()
 		return;
 	}
 
-	NativeBarrier->SetName(GetName());
-
+	UpdateNativeProperties();
 	if (!GetValid())
 	{
 		UE_LOG(
@@ -1236,7 +1235,7 @@ void UAGX_ConstraintComponent::CreateNative()
 			*GetName(), *GetLabelSafe(GetOwner()));
 	}
 
-	UpdateNativeProperties();
+
 	UAGX_Simulation* Simulation = UAGX_Simulation::GetFrom(this);
 	if (Simulation == nullptr)
 	{

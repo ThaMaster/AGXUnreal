@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 #pragma once
 
@@ -13,20 +13,24 @@ class UBlueprint;
 struct FAGX_ImportContext;
 struct FAGX_ImportSettings;
 struct FAGX_ReimportSettings;
+struct FAGX_SCSNodeCollection;
 
 class AGXUNREALEDITOR_API FAGX_ImporterToEditor
 {
 public:
 	/**
-	 * Import an .agx archive or URDF model to a Blueprint.
+	 * Import an .agx archive, OpenPLX or URDF model to a Blueprint.
+	 * For OpenPLX imports, it is allowed to pass a path to an OpenPLX file anywhere on the system,
+	 * but it will automatically be copied to the projects OpenPLXModels directory prior to being
+	 * imported.
 	 */
-	UBlueprint* Import(const FAGX_ImportSettings& Settings);
+	UBlueprint* Import(FAGX_ImportSettings Settings);
 
 	/**
-	 * Import an .agx archive to a Blueprint.
+	 * Reimport an .agx archive or OpenPLX model to an existing Blueprint.
 	 */
 	bool Reimport(
-		UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings,
+		UBlueprint& BaseBP, FAGX_ReimportSettings Settings,
 		UBlueprint* OpenBlueprint = nullptr);
 
 private:
@@ -40,6 +44,10 @@ private:
 
 	template <typename T>
 	T* UpdateOrCreateAsset(T& Source, const FAGX_ImportContext& Context);
+
+	void PreImport(FAGX_ImportSettings& OutSettings);
+	void PreReimport(const UBlueprint& Blueprint, FAGX_ImportSettings& OutSettings);
+	void PostImport(const FAGX_ImportSettings& Settings);
 
 	FString RootDirectory;
 	FString ModelName;

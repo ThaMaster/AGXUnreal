@@ -3,7 +3,9 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-// For some reason, these Shapes could not be forward declared without compiler error.
+// For some reason, these could not be forward declared without compiler error.
+#include "OpenPLX/PLX_Inputs.h"
+#include "OpenPLX/PLX_Outputs.h"
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/CylinderShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
@@ -16,6 +18,9 @@
 // Unreal Engine includes.
 #include "Containers/Array.h"
 
+// Standard library includes.
+#include <memory>
+
 // Constraints.
 class FAnyConstraintBarrier;
 class FHingeBarrier;
@@ -24,12 +29,14 @@ class FBallJointBarrier;
 class FCylindricalJointBarrier;
 class FDistanceJointBarrier;
 class FLockJointBarrier;
+class FSingleControllerConstraint1DOFBarrier;
 
 // Others.
 class FRigidBodyBarrier;
 class FConstraintBarrier;
 class FContactMaterialBarrier;
 class FShapeMaterialBarrier;
+class FSimulationBarrier;
 class FTwoBodyTireBarrier;
 class FTrackBarrier;
 
@@ -88,6 +95,11 @@ public:
 	TArray<FLockJointBarrier>& GetLockConstraints();
 	const TArray<FLockJointBarrier>& GetLockConstraints() const;
 
+	TArray<FSingleControllerConstraint1DOFBarrier>& GetSingleControllerConstraint1DOFs();
+
+	const TArray<FSingleControllerConstraint1DOFBarrier>& GetSingleControllerConstraint1DOFs()
+		const;
+
 	TArray<FContactMaterialBarrier>& GetContactMaterials();
 	const TArray<FContactMaterialBarrier>& GetContactMaterials() const;
 
@@ -112,12 +124,21 @@ public:
 	TArray<FTrackBarrier>& GetTracks();
 	const TArray<FTrackBarrier>& GetTracks() const;
 
+	std::shared_ptr<FSimulationBarrier>& GetSimulation();
+	const std::shared_ptr<FSimulationBarrier>& GetSimulation() const;
+
+	TArray<FPLX_Input>& GetPLXInputs();
+	const TArray<FPLX_Input>& GetPLXInputs() const;
+
+	TArray<FPLX_Output>& GetPLXOutputs();
+	const TArray<FPLX_Output>& GetPLXOutputs() const;
+
 private:
 	FSimulationObjectCollection(const FSimulationObjectCollection&) = delete;
 	void operator=(const FSimulationObjectCollection&) = delete;
 
 	// The Simulation from which all other Simulation Objects collected from.
-	FSimulationBarrier Simulation;
+	std::shared_ptr<FSimulationBarrier> Simulation;
 
 	// These are all Shapes, even those owned by a RigidBody.
 	TArray<FSphereShapeBarrier> SphereShapes;
@@ -133,6 +154,7 @@ private:
 	TArray<FCylindricalJointBarrier> CylindricalConstraints;
 	TArray<FDistanceJointBarrier> DistanceConstraints;
 	TArray<FLockJointBarrier> LockConstraints;
+	TArray<FSingleControllerConstraint1DOFBarrier> SingleControllerConstraint1DOFs;
 
 	TArray<FRigidBodyBarrier> RigidBodies;
 	TArray<FContactMaterialBarrier> ContactMaterials;
@@ -143,4 +165,7 @@ private:
 	TArray<FWireBarrier> Wires;
 	TArray<FShovelBarrier> Shovels;
 	TArray<FTrackBarrier> Tracks;
+
+	TArray<FPLX_Input> PLXInputs;
+	TArray<FPLX_Output> PLXOutputs;
 };

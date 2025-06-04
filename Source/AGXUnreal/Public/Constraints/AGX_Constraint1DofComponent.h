@@ -65,11 +65,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AGX Constraint")
 	double GetSpeed() const;
 
-	UAGX_Constraint1DofComponent();
-
-	UAGX_Constraint1DofComponent(
-		const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational,
-		bool bIsLockControllerEditable = true);
+	UAGX_Constraint1DofComponent() = default;
+	UAGX_Constraint1DofComponent(const TArray<EDofFlag>& LockedDofsOrdered, bool bIsLockControllerEditable = true);
 
 	virtual ~UAGX_Constraint1DofComponent() override;
 
@@ -96,7 +93,7 @@ protected:
 	 * Call AllocateNative and then bind the constraint controllers to their native representations
 	 * within the allocated native constraint.
 	 */
-	virtual void CreateNativeImpl() override final;
+	virtual void CreateNativeImpl() override;
 
 	/**
 	 * Allocate the native constraint, of the appropriate type for the current subclass of

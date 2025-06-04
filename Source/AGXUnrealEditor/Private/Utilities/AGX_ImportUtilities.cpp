@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_Check.h"
 #include "AGX_LogCategory.h"
+#include "Import/AGX_ModelSourceComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/ContactMaterialBarrier.h"
@@ -14,7 +15,10 @@
 #include "Terrain/AGX_ShovelProperties.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
 #include "Utilities/AGX_EditorUtilities.h"
+#include "Utilities/AGX_ImportRuntimeUtilities.h"
+#include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/PLXUtilities.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
 #include "Vehicle/TrackBarrier.h"
@@ -22,6 +26,7 @@
 // Unreal Engine includes.
 #include "AssetToolsModule.h"
 #include "Components/ActorComponent.h"
+#include "Engine/Blueprint.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Misc/EngineVersionComparison.h"
@@ -230,6 +235,11 @@ FString FAGX_ImportUtilities::GetImportTrackMergePropertiesDirectoryName()
 	return FString("TrackInternalMergeProperties");
 }
 
+FString FAGX_ImportUtilities::GetImportBaseBlueprintNamePrefix()
+{
+	return "BP_Base_";
+}
+
 template <>
 AGXUNREALEDITOR_API_TEMPLATE FString
 FAGX_ImportUtilities::GetImportAssetDirectoryName<UAGX_ShapeMaterial>()
@@ -311,17 +321,24 @@ FString FAGX_ImportUtilities::GetDefaultModelImportDirectory(const FString& Mode
 	return ImportsAbsolute;
 }
 
-EAGX_ImportType FAGX_ImportUtilities::GetFrom(const FString& FilePath)
+void FAGX_ImportUtilities::OnImportedBlueprintDeleted(const UBlueprint& Bp)
 {
-	const FString FileExtension = FPaths::GetExtension(FilePath);
-	if (FileExtension.Equals("agx"))
-	{
-		return EAGX_ImportType::Agx;
-	}
-	else if (FileExtension.Equals("urdf"))
-	{
-		return EAGX_ImportType::Urdf;
-	}
+	auto ModelSource =
+		FAGX_BlueprintUtilities::GetFirstComponentOfType<UAGX_ModelSourceComponent>(&Bp, true);
+	if (ModelSource == nullptr)
+		return;
 
-	return EAGX_ImportType::Invalid;
+	if (FAGX_ImportRuntimeUtilities::GetImportTypeFrom(ModelSource->FilePath) !=
+		EAGX_ImportType::Plx)
+		return;
+
+	const FString DeletedFolder =
+		FAGX_ImportRuntimeUtilities::RemoveImportedOpenPLXFiles(ModelSource->FilePath);
+	if (!DeletedFolder.IsEmpty())
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("Automatically deleted folder and contents in: %s"), *DeletedFolder),
+			SNotificationItem::CS_Success);
+	}
 }

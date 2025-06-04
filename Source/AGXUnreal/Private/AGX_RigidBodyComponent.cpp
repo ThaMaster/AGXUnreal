@@ -491,8 +491,9 @@ void UAGX_RigidBodyComponent::WritePropertiesToNative()
 	NativeBarrier.SetAngularVelocity(AngularVelocity);
 	NativeBarrier.SetLinearVelocityDamping(LinearVelocityDamping);
 	NativeBarrier.SetAngularVelocityDamping(AngularVelocityDamping);
-	NativeBarrier.SetName(GetName());
+	NativeBarrier.SetName(!ImportName.IsEmpty() ? ImportName : GetName());
 	NativeBarrier.SetEnabled(bEnabled);
+
 	InitializeMotionControl();
 }
 
@@ -503,6 +504,7 @@ void UAGX_RigidBodyComponent::CopyFrom(
 		GetOuter(), Barrier.GetName(), UAGX_RigidBodyComponent::StaticClass());
 	Rename(*Name);
 
+	ImportName = Barrier.GetName(); // Unmodifiled AGX name.
 	const FMassPropertiesBarrier& MassProperties = Barrier.GetMassProperties();
 	ImportGuid = Barrier.GetGuid();
 	Mass = MassProperties.GetMass();

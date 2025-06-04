@@ -101,6 +101,7 @@ namespace AGX_ReimportModelTest_helpers
 		ImportSettings.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
 		ImportSettings.bOpenBlueprintEditorAfterImport = false;
 		ImportSettings.FilePath = ArchiveFilePath;
+		ImportSettings.SourceFilePath = ArchiveFilePath;
 		ImportSettings.ImportType = EAGX_ImportType::Agx;
 
 		FAGX_ImporterToEditor Importer;
@@ -123,6 +124,7 @@ namespace AGX_ReimportModelTest_helpers
 		Settings.bForceReassignRenderMaterials = false;
 		Settings.bIgnoreDisabledTrimeshes = IgnoreDisabledTrimeshes;
 		Settings.FilePath = ArchiveFilePath;
+		Settings.SourceFilePath = ArchiveFilePath;
 		Settings.ImportType = EAGX_ImportType::Agx;
 		Settings.bOpenBlueprintEditorAfterImport = false;
 		FAGX_ImporterToEditor Importer;

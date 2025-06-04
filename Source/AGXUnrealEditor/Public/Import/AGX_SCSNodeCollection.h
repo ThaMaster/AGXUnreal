@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 #pragma once
 
@@ -43,4 +43,5 @@ struct AGXUNREALEDITOR_API FAGX_SCSNodeCollection
 	USCS_Node* ContactMaterialRegistrarComponent = nullptr;
 	USCS_Node* ModelSourceComponent = nullptr;
 	USCS_Node* RootComponent = nullptr;
+	USCS_Node* SignalHandler = nullptr;
 };

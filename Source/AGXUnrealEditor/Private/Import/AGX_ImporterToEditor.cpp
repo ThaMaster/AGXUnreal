@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 #include "Import/AGX_ImporterToEditor.h"
 
@@ -17,6 +17,7 @@
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/AGX_ShapeMaterial.h"
+#include "OpenPLX/PLX_SignalHandlerComponent.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Terrain/AGX_ShovelComponent.h"
 #include "Terrain/AGX_ShovelProperties.h"
@@ -29,6 +30,7 @@
 #include "Utilities/AGX_ImportUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/PLXUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/AGX_TrackInternalMergeProperties.h"
 #include "Vehicle/AGX_TrackProperties.h"
@@ -40,8 +42,10 @@
 #include "Editor.h"
 #include "Engine/SCS_Node.h"
 #include "FileHelpers.h"
+#include "HAL/FileManager.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Misc/Paths.h"
 #include "Misc/ScopedSlowTask.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "PackageTools.h"
@@ -58,7 +62,7 @@ namespace AGX_ImporterToEditor_helpers
 		GEditor->SelectNone(false, false);
 	}
 
-	void PreReimportSetup()
+	void CloseAssetEditors()
 	{
 		// During Model reimport, old assets are deleted and references to these assets are
 		// automatically cleared. Having the Blueprint Editor opened while doing this causes
@@ -172,7 +176,9 @@ namespace AGX_ImporterToEditor_helpers
 		// Create a known unique name for the Blueprint package, but don't create the actual
 		// package yet.
 		const FString BlueprintName =
-			IsBase ? "BP_Base_" + FGuid::NewGuid().ToString() : TEXT("BP_") + ModelName;
+			IsBase ? FAGX_ImportUtilities::GetImportBaseBlueprintNamePrefix() +
+						 FGuid::NewGuid().ToString()
+				   : TEXT("BP_") + ModelName;
 		FString BasePackagePath = UPackageTools::SanitizePackageName(Path + "/" + BlueprintName);
 		FString PackagePath = BasePackagePath;
 
@@ -445,8 +451,7 @@ namespace AGX_ImporterToEditor_helpers
 				TEXT("Errors occurred during import. The file '%s' could not be imported. Log "
 					 "category LogAGX in the Output Log may contain more information."),
 				*Settings.FilePath);
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
-				Text, "Import Model to Blueprint");
+			FAGX_NotificationUtilities::ShowDialogBoxWithError(Text, "Import Model to Blueprint");
 			return false;
 		}
 
@@ -455,11 +460,18 @@ namespace AGX_ImporterToEditor_helpers
 
 	bool ValidateReimportSettings(const FAGX_ReimportSettings& Settings)
 	{
-		if (Settings.ImportType != EAGX_ImportType::Agx)
+		auto IsReimportSupported = [&]()
+		{
+			return Settings.ImportType == EAGX_ImportType::Agx ||
+				   Settings.ImportType == EAGX_ImportType::Plx;
+		};
+
+		if (!IsReimportSupported())
 		{
 			const FString Text =
-				FString::Printf(TEXT("Reimport is only supported for AGX Archives (.agx) files."));
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(Text, "Reimport model");
+				FString::Printf(TEXT("Reimport is only supported for AGX Archives (.agx) and "
+									 "OpenPLX (.openplx) files."));
+			FAGX_NotificationUtilities::ShowDialogBoxWithError(Text, "Reimport model");
 			return false;
 		}
 
@@ -942,9 +954,6 @@ namespace AGX_ImporterToEditor_helpers
 			return EAGX_ImportResult::FatalError;
 		}
 
-		Component->FilePath = Context.Settings->FilePath;
-		Component->bIgnoreDisabledTrimeshes = Context.Settings->bIgnoreDisabledTrimeshes;
-
 		for (const auto& [Guid, CollisionComponent] : *Context.CollisionStaticMeshCom)
 		{
 			const FString Name = CollisionComponent->GetName();
@@ -969,13 +978,18 @@ namespace AGX_ImporterToEditor_helpers
 	}
 }
 
-UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImportSettings& Settings)
+UBlueprint* FAGX_ImporterToEditor::Import(FAGX_ImportSettings Settings)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 
 	FScopedSlowTask ImportTask(100.f, FText::FromString("Importing model"), true);
 	ImportTask.MakeDialog();
-	ImportTask.EnterProgressFrame(20.f, FText::FromString("Importing from source file"));
+
+	ImportTask.EnterProgressFrame(10.f, FText::FromString("Pre-import setup"));
+
+	PreImport(Settings);
+
+	ImportTask.EnterProgressFrame(10.f, FText::FromString("Importing from source file"));
 
 	FAGX_Importer Importer;
 	FAGX_ImportResult Result = Importer.Import(Settings, *GetTransientPackage());
@@ -1002,17 +1016,24 @@ UBlueprint* FAGX_ImporterToEditor::Import(const FAGX_ImportSettings& Settings)
 	if (Settings.bOpenBlueprintEditorAfterImport)
 		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(ChildBlueprint);
 
+	PostImport(Settings);
+
 	return ChildBlueprint;
 }
 
 bool FAGX_ImporterToEditor::Reimport(
-	UBlueprint& BaseBP, const FAGX_ReimportSettings& Settings, UBlueprint* OpenBlueprint)
+	UBlueprint& BaseBP, FAGX_ReimportSettings Settings, UBlueprint* OpenBlueprint)
 {
 	using namespace AGX_ImporterToEditor_helpers;
 
 	FScopedSlowTask ImportTask(100.f, FText::FromString("Reimport model"), true);
 	ImportTask.MakeDialog();
-	ImportTask.EnterProgressFrame(5.f, FText::FromString("Initializing"));
+
+	ImportTask.EnterProgressFrame(3.f, FText::FromString("Pre-reimport setup"));
+
+	PreReimport(BaseBP, Settings);
+
+	ImportTask.EnterProgressFrame(2.f, FText::FromString("Initializing"));
 
 	if (!ValidateReimportSettings(Settings))
 		return false;
@@ -1028,7 +1049,7 @@ bool FAGX_ImporterToEditor::Reimport(
 	if (OpenBlueprint != nullptr)
 		FAGX_EditorUtilities::SaveAndCompile(*OpenBlueprint);
 
-	PreReimportSetup();
+	CloseAssetEditors();
 
 	ImportTask.EnterProgressFrame(15.f, FText::FromString("Reading objects from source file"));
 
@@ -1528,5 +1549,78 @@ EAGX_ImportResult FAGX_ImporterToEditor::UpdateComponents(
 		}
 	}
 
+	if (auto Component = Context.SignalHandler)
+	{
+		FGuid UnusedGuid = FGuid::NewGuid();
+		TMap<FGuid, USCS_Node*> Unused;
+		USCS_Node* N = GetOrCreateNode(UnusedGuid, *Component, Nodes, Unused, Blueprint);
+		if (N == nullptr)
+			Result |= EAGX_ImportResult::RecoverableErrorsOccured;
+		else
+		{
+			CopyProperties(
+				*Component, *Nodes.SignalHandler->ComponentTemplate, TransientToAsset,
+				OverwriteRule);
+		}
+	}
+
 	return Result;
+}
+
+void FAGX_ImporterToEditor::PreImport(FAGX_ImportSettings& OutSettings)
+{
+	if (OutSettings.ImportType != EAGX_ImportType::Plx)
+		return;
+
+	if (OutSettings.FilePath.StartsWith(FPLXUtilities::GetModelsDirectory()))
+		return;
+
+	// We need to copy the OpenPLX file (and any dependency) to the OpenPLX ModelsDirectory.
+	// We also update the filepath in the ImportSettings to point to the new, copied OpenPLX file.
+	const FString DestinationDir = FPLXUtilities::CreateUniqueModelDirectory(OutSettings.FilePath);
+	const FString NewLocation =
+		FPLXUtilities::CopyAllDependenciesToProject(OutSettings.FilePath, DestinationDir);
+	if (NewLocation.IsEmpty() && FPaths::DirectoryExists(DestinationDir))
+	{
+		IFileManager::Get().DeleteDirectory(
+			*DestinationDir, /*RequireExists=*/true, /*Tree=*/false); // Cleanup.
+	}
+	OutSettings.FilePath = NewLocation;
+}
+
+void FAGX_ImporterToEditor::PreReimport(
+	const UBlueprint& Blueprint, FAGX_ImportSettings& OutSettings)
+{
+	if (OutSettings.ImportType != EAGX_ImportType::Plx)
+		return;
+
+	if (OutSettings.FilePath.StartsWith(FPLXUtilities::GetModelsDirectory()))
+		return;
+
+	USCS_Node* MsNode = Blueprint.SimpleConstructionScript->FindSCSNode(TEXT("AGX_ModelSource"));
+	if (MsNode == nullptr)
+		return;
+
+	UAGX_ModelSourceComponent* Ms = Cast<UAGX_ModelSourceComponent>(MsNode->ComponentTemplate);
+	if (Ms == nullptr)
+		return;
+
+	const FString TargetDir = FPaths::GetPath(Ms->FilePath);
+	if (!TargetDir.StartsWith(FPLXUtilities::GetModelsDirectory()))
+		return;
+
+	const FString NewLocation =
+		FPLXUtilities::CopyAllDependenciesToProject(OutSettings.FilePath, TargetDir);
+	OutSettings.FilePath = NewLocation;
+}
+
+void FAGX_ImporterToEditor::PostImport(const FAGX_ImportSettings& Settings)
+{
+	if (Settings.ImportType == EAGX_ImportType::Plx)
+	{
+		FAGX_NotificationUtilities::ShowDialogBoxWithSuccess(FString::Printf(
+			TEXT("OpenPLX model files were copied to: \n\n'%s'. \n\nThese files are needed during "
+				 "runtime and should not be removed as long as the imported model is used."),
+			*FPaths::GetPath(Settings.FilePath)));
+	}
 }

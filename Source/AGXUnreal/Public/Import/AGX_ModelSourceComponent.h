@@ -47,9 +47,26 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Reimport Model Info")
 	TMap<FString, FGuid> UnrealMaterialToImportGuid;
 
+	/**
+	 * Absolute file path to the original .agx archive, OpenPLX or Urdf file that was selected for
+	 * Import or Reimport. In most cases this is the same as the FilePath property, but may differ
+	 * in some cases, for example for OpenPLX models where the files are copied to the project dir
+	 * (which is what FilePath points to in that case). In that case, this points to the original
+	 * source file that was copied.
+	 */
+	UPROPERTY(EditAnywhere, Category = "AGX Reimport Model Info")
+	FString SourceFilePath;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Reimport Model Info")
+	bool bRuntimeImport {false};
+
 	virtual void Serialize(FArchive& Archive) override;
 
 	const TMap<FString, FGuid>& GetDeprecatedRenderDataTable() const;
+
+	//~ Begin UActorComponent Interface
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+	//~ End UActorComponent Interface
 
 private:
 #if WITH_EDITOR

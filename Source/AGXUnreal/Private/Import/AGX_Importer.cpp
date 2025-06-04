@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 #include "Import/AGX_Importer.h"
 
@@ -13,6 +13,7 @@
 #include "Constraints/AGX_HingeConstraintComponent.h"
 #include "Constraints/AGX_LockConstraintComponent.h"
 #include "Constraints/AGX_PrismaticConstraintComponent.h"
+#include "Constraints/AGX_SingleControllerConstraint1DofComponent.h"
 #include "Constraints/AnyConstraintBarrier.h"
 #include "Constraints/BallJointBarrier.h"
 #include "Constraints/CylindricalJointBarrier.h"
@@ -20,12 +21,14 @@
 #include "Constraints/HingeBarrier.h"
 #include "Constraints/LockJointBarrier.h"
 #include "Constraints/PrismaticBarrier.h"
+#include "Constraints/SingleControllerConstraint1DOFBarrier.h"
 #include "Import/AGX_ImportSettings.h"
 #include "Import/AGX_ModelSourceComponent.h"
 #include "Import/AGXSimObjectsReader.h"
 #include "Import/SimulationObjectCollection.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
 #include "Materials/ShapeMaterialBarrier.h"
+#include "OpenPLX/PLX_SignalHandlerComponent.h"
 #include "RigidBodyBarrier.h"
 #include "Shapes/AnyShapeBarrier.h"
 #include "Shapes/AGX_BoxShapeComponent.h"
@@ -42,6 +45,7 @@
 #include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_MeshUtilities.h"
 #include "Utilities/AGX_ObjectUtilities.h"
+#include "Utilities/PLXUtilities.h"
 #include "Vehicle/AGX_TrackComponent.h"
 #include "Vehicle/TrackBarrier.h"
 #include "Wire/AGX_WireComponent.h"
@@ -101,39 +105,45 @@ namespace AGX_Importer_helpers
 	bool CreateSimulationObjectCollection(
 		const FAGX_ImportSettings& Settings, FSimulationObjectCollection& OutSimObjects)
 	{
-		bool Result = false;
-		if (Settings.ImportType == EAGX_ImportType::Agx)
+		auto CheckResult = [&](bool Result) -> bool
 		{
-			if (FAGXSimObjectsReader::ReadAGXArchive(Settings.FilePath, OutSimObjects))
-				Result = true;
-		}
-		else if (Settings.ImportType == EAGX_ImportType::Urdf)
-		{
-			if (FAGXSimObjectsReader::ReadUrdf(
-					Settings.FilePath, Settings.UrdfPackagePath, Settings.UrdfInitialJoints,
-					OutSimObjects))
+			if (!Result)
 			{
-				Result = true;
+				UE_LOG(
+					LogAGX, Warning,
+					TEXT("Unable to import file '%s'. Log category LogAGX in the "
+						 "Output Log may contain more information."),
+					*Settings.FilePath);
+			}
+
+			return Result;
+		};
+
+		switch (Settings.ImportType)
+		{
+			case EAGX_ImportType::Agx:
+			{
+				return CheckResult(
+					FAGXSimObjectsReader::ReadAGXArchive(Settings.FilePath, OutSimObjects));
+			}
+			case EAGX_ImportType::Urdf:
+			{
+				return CheckResult(FAGXSimObjectsReader::ReadUrdf(
+					Settings.FilePath, Settings.UrdfPackagePath, Settings.UrdfInitialJoints,
+					OutSimObjects));
+			}
+			case EAGX_ImportType::Plx:
+			{
+				return CheckResult(
+					FAGXSimObjectsReader::ReadOpenPLXFile(Settings.FilePath, OutSimObjects));
 			}
 		}
-		else
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Unsupported import type for file: '%s'. Import will not be possible."),
-				*Settings.FilePath);
-		}
 
-		if (!Result)
-		{
-			UE_LOG(
-				LogAGX, Warning,
-				TEXT("Unable to import file '%s'. Log category LogAGX in the "
-					 "Output Log may contain more information."),
-				*Settings.FilePath);
-		}
-
-		return Result;
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Unsupported import type for file: '%s'. Import will not be possible."),
+			*Settings.FilePath);
+		return false;
 	}
 
 	FString GetModelName(const FString& FilePath)
@@ -190,6 +200,53 @@ namespace AGX_Importer_helpers
 		check(Body != nullptr);
 		return Body;
 	}
+
+	bool CheckFilePath(const FAGX_ImportSettings& Settings)
+	{
+		if (Settings.ImportType == EAGX_ImportType::Plx)
+		{
+			if (!Settings.FilePath.StartsWith(FPLXUtilities::GetModelsDirectory()))
+			{
+				UE_LOG(
+					LogAGX, Error, TEXT("OpenPLX file must reside in '%s'."),
+					*FPLXUtilities::GetModelsDirectory());
+				return false;
+			}
+
+			if (Settings.SourceFilePath.StartsWith(FPLXUtilities::GetModelsDirectory()))
+			{
+				UE_LOG(
+					LogAGX, Error,
+					TEXT("Original OpenPLX Source File must NOT reside in '%s'. Do not store your original "
+						 "OpenPLX models in this directory."),
+					*FPLXUtilities::GetModelsDirectory());
+				return false;
+			}
+		}
+
+		if (!FPaths::FileExists(Settings.FilePath))
+		{
+			UE_LOG(LogAGX, Error, TEXT("File: '%s' does not exist."), *Settings.FilePath);
+			return false;
+		}
+
+		return true;
+	}
+
+	void ConditionallyHideShapes(FAGX_ImportContext& Context)
+	{
+		// This is the same behavior as for AGXViewer, where if a loaded OpenPLX model has ANY
+		// visual geometries, all collision geometries are hidden.
+		AGX_CHECK(Context.Settings->ImportType == EAGX_ImportType::Plx);
+		if (Context.RenderStaticMeshCom == nullptr || Context.RenderStaticMeshCom->Num() == 0)
+			return;
+
+		for (const auto& [Guid, Shape] : *Context.Shapes)
+		{
+			if (Shape != nullptr)
+				Shape->SetVisibility(false, /*bPropagateToChildren*/ false);
+		}
+	}
 }
 
 FAGX_Importer::FAGX_Importer()
@@ -219,6 +276,9 @@ FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImportSettings& Settings, UOb
 {
 	using namespace AGX_Importer_helpers;
 
+	if (!CheckFilePath(Settings))
+		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
+
 	Context.Outer = &Outer;
 	Context.Settings = &Settings;
 	Context.SessionGuid = FGuid::NewGuid();
@@ -235,7 +295,7 @@ FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImportSettings& Settings, UOb
 	if (!CreateSimulationObjectCollection(Settings, SimObjects))
 		return FAGX_ImportResult(EAGX_ImportResult::FatalError);
 
-	EAGX_ImportResult Result = AddComponents(SimObjects, *Actor);
+	EAGX_ImportResult Result = AddComponents(Settings, SimObjects, *Actor);
 	if (IsUnrecoverableError(Result))
 		return FAGX_ImportResult(Result);
 
@@ -247,6 +307,7 @@ FAGX_ImportResult FAGX_Importer::Import(const FAGX_ImportSettings& Settings, UOb
 	BatchBuildStaticMeshes(Context);
 #endif
 
+	PostImport();
 	return FAGX_ImportResult(Result, Actor, &Context);
 }
 
@@ -296,6 +357,10 @@ EAGX_ImportResult FAGX_Importer::AddModelSourceComponent(AActor& Owner)
 	}
 
 	UAGX_ModelSourceComponent* Component = NewObject<UAGX_ModelSourceComponent>(&Owner);
+	Component->FilePath = Context.Settings->FilePath;
+	Component->SourceFilePath = Context.Settings->SourceFilePath;
+	Component->bRuntimeImport = Context.Settings->bRuntimeImport;
+	Component->bIgnoreDisabledTrimeshes = Context.Settings->bIgnoreDisabledTrimeshes;
 	Component->Rename(*Name);
 
 	/*
@@ -375,7 +440,8 @@ EAGX_ImportResult FAGX_Importer::AddObserverFrame(
 }
 
 EAGX_ImportResult FAGX_Importer::AddComponents(
-	const FSimulationObjectCollection& SimObjects, AActor& OutActor)
+	const FAGX_ImportSettings& Settings, const FSimulationObjectCollection& SimObjects,
+	AActor& OutActor)
 {
 	using namespace AGX_Importer_helpers;
 	EAGX_ImportResult Res = EAGX_ImportResult::Success;
@@ -523,6 +589,19 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	{
 		FScopedSlowTask T(
+			(float) SimObjects.GetSingleControllerConstraint1DOFs().Num(),
+			FText::FromString("Single Controller Constraint 1DOF Constraints"));
+		for (const auto& C : SimObjects.GetSingleControllerConstraint1DOFs())
+		{
+			T.EnterProgressFrame(
+				1.f, FText::FromString(FString::Printf(TEXT("Processing: %s"), *C.GetName())));
+			Res |= AddComponent<UAGX_SingleControllerConstraint1DofComponent, FConstraintBarrier>(
+				C, *Root, OutActor);
+		}
+	}
+
+	{
+		FScopedSlowTask T(
 			(float) SimObjects.GetTwoBodyTires().Num(), FText::FromString("TwoBodyTires"));
 		for (const auto& Tire : SimObjects.GetTwoBodyTires())
 		{
@@ -585,6 +664,9 @@ EAGX_ImportResult FAGX_Importer::AddComponents(
 
 	Res |= AddModelSourceComponent(OutActor);
 
+	if (Settings.ImportType == EAGX_ImportType::Plx)
+		Res |= AddSignalHandlerComponent(SimObjects, OutActor);
+
 	return Res;
 }
 
@@ -631,4 +713,30 @@ EAGX_ImportResult FAGX_Importer::AddShovel(const FShovelBarrier& Shovel, AActor&
 	using namespace AGX_Importer_helpers;
 	auto Parent = GetOwningRigidBodyOrRoot(Shovel, Context, OutActor);
 	return AddComponent<UAGX_ShovelComponent, FShovelBarrier>(Shovel, *Parent, OutActor);
+}
+
+EAGX_ImportResult FAGX_Importer::AddSignalHandlerComponent(
+	const FSimulationObjectCollection& SimObjects, AActor& OutActor)
+{
+	const FString Name = "PLX_SignalHandler";
+	if (Context.SignalHandler != nullptr)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("FAGX_Importer::AddSignalHandlerComponent called, but a "
+				 "PLX_SignalHandler has already been added."));
+		return EAGX_ImportResult::RecoverableErrorsOccured;
+	}
+
+	auto Component = NewObject<UPLX_SignalHandlerComponent>(&OutActor);
+	Component->Rename(*Name);
+	Component->CopyFrom(SimObjects.GetPLXInputs(), SimObjects.GetPLXOutputs(), &Context);
+	FAGX_ImportRuntimeUtilities::OnComponentCreated(*Component, OutActor, Context.SessionGuid);
+	return EAGX_ImportResult::Success;
+}
+
+void FAGX_Importer::PostImport()
+{
+	if (Context.Settings->ImportType == EAGX_ImportType::Plx)
+		AGX_Importer_helpers::ConditionallyHideShapes(Context);
 }

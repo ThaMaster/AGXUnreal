@@ -1880,7 +1880,7 @@ void AAGX_Terrain::ShowShapeMaterialWarning() const
 			 "simply re-save the Level that contains this Terrain Actor."),
 		*GetName());
 
-	FAGX_NotificationUtilities::ShowDialogBoxWithWarningLog(Msg);
+	FAGX_NotificationUtilities::ShowDialogBoxWithWarning(Msg);
 }
 #endif // WITH_EDITOR
 

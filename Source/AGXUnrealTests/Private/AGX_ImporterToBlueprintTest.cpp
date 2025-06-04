@@ -78,6 +78,7 @@ bool FImportArchiveBlueprintCommand::Update()
 
 	FAGX_ImportSettings Settings;
 	Settings.FilePath = ArchiveFilePath;
+	Settings.SourceFilePath = ArchiveFilePath;
 	Settings.bIgnoreDisabledTrimeshes = false;
 	Settings.ImportType = EAGX_ImportType::Agx;
 	Settings.bOpenBlueprintEditorAfterImport = false;
@@ -116,6 +117,7 @@ bool FImportURDFBlueprintCommand::Update()
 
 	FAGX_ImportSettings Settings;
 	Settings.FilePath = UrdfFilePath;
+	Settings.SourceFilePath = UrdfFilePath;
 	Settings.UrdfPackagePath = PackagePath;
 	Settings.bIgnoreDisabledTrimeshes = false;
 	Settings.ImportType = EAGX_ImportType::Urdf;
@@ -3947,6 +3949,119 @@ bool FClearShovelImportedCommand::Update()
 	// clang-format on
 
 	AgxAutomationCommon::DeleteImportDirectory(TEXT("terrain_build"), ExpectedFiles);
+
+	return true;
+}
+
+//
+// Nested Assemblies test starts here.
+//
+
+class FImporterToBlueprint_NestedAssembliesTest;
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FCheckNestedAssembliesImportedCommand, FImporterToBlueprint_NestedAssembliesTest&, Test);
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(
+	FClearNestedAssembliesImportedCommand, FImporterToBlueprint_NestedAssembliesTest&, Test);
+
+class FImporterToBlueprint_NestedAssembliesTest final
+	: public AgxAutomationCommon::FAgxAutomationTest
+{
+public:
+	FImporterToBlueprint_NestedAssembliesTest()
+		: AgxAutomationCommon::FAgxAutomationTest(
+			  TEXT("FImporterToBlueprint_NestedAssembliesTest"),
+			  TEXT("AGXUnreal.Editor.ImporterToBlueprint.NestedAssemblies"))
+	{
+	}
+
+public:
+	UWorld* World = nullptr;
+	UAGX_Simulation* Simulation = nullptr;
+	UBlueprint* Contents = nullptr;
+
+protected:
+	virtual bool RunTest(const FString&) override
+	{
+		BAIL_TEST_IF_NOT_EDITOR(false)
+		ADD_LATENT_AUTOMATION_COMMAND(
+			FImportArchiveBlueprintCommand(TEXT("nested_assemblies_build.agx"), Contents, *this))
+		ADD_LATENT_AUTOMATION_COMMAND(FCheckNestedAssembliesImportedCommand(*this))
+		ADD_LATENT_AUTOMATION_COMMAND(FClearNestedAssembliesImportedCommand(*this))
+		return true;
+	}
+};
+
+namespace
+{
+	FImporterToBlueprint_NestedAssembliesTest ImporterToBlueprint_NestedAssembliesTest;
+}
+
+/**
+ * This test would fail pre AGXUnreal 1.17. The reason is that the Simulation object would go out of
+ * scope in SimObjectReader before we read the Rigid Body properties (such as position). When the
+ * Simulation object went out of scope, the assemblies in the simulation were destroyed, so
+ * RigidBody::getPosition all of a sudden returned its "local" position.
+ */
+bool FCheckNestedAssembliesImportedCommand::Update()
+{
+	using namespace AgxAutomationCommon;
+	if (Test.Contents == nullptr)
+	{
+		Test.AddError(TEXT("Could not import NestedAssemblies test scene: No content created."));
+		return true;
+	}
+
+	// Get all the imported components.
+	TArray<UActorComponent*> Components =
+		FAGX_BlueprintUtilities::GetTemplateComponents(Test.Contents);
+
+	// One Rigid Bodies, one Geometry, one Default Scene Root and one Reimport Component.
+	Test.TestEqual(TEXT("Number of imported components"), Components.Num(), 4);
+
+	UAGX_RigidBodyComponent* SphereBody = GetByName<UAGX_RigidBodyComponent>(
+		Components, *FAGX_BlueprintUtilities::ToTemplateComponentName("SphereBody"));
+
+
+	// Position, base_assembly (1,0,0) -> sub_assembly (1,0,0) -> body (1,0,0)
+	{
+		FVector Actual = FAGX_BlueprintUtilities::GetTemplateComponentWorldLocation(SphereBody);
+		// The position, in AGX Dynamics' units, that was given to the sphere when created.
+		FVector ExpectedAgx(3.f, 0.f, 0.f);
+		FVector Expected = AgxToUnrealDisplacement(ExpectedAgx);
+		Test.TestEqual(TEXT("Sphere position"), Actual, Expected);
+	}
+
+	return true;
+}
+
+/**
+ * Remove everything created by the archive import.
+ * @return true when the clearing is complete. Never returns false.
+ */
+bool FClearNestedAssembliesImportedCommand::Update()
+{
+	if (Test.Contents == nullptr)
+	{
+		return true;
+	}
+
+#if defined(__linux__)
+	/// @todo Workaround for internal issue #213.
+	Test.AddExpectedError(
+		TEXT("inotify_rm_watch cannot remove descriptor"), EAutomationExpectedErrorFlags::Contains,
+		0);
+	Test.AddError(TEXT("inotify_rm_watch cannot remove descriptor"));
+#endif
+
+	TArray<const TCHAR*> ExpectedFiles {
+		TEXT("Blueprint"), TEXT("BP_nested_assemblies_build.uasset")};
+
+	const FString BaseBlueprintName = Test.Contents->GetName() + FString(".uasset");
+	ExpectedFiles.Add(*BaseBlueprintName);
+
+	AgxAutomationCommon::DeleteImportDirectory(TEXT("nested_assemblies_build"), ExpectedFiles);
 
 	return true;
 }

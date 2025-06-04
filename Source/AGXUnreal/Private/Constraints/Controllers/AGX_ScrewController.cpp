@@ -5,10 +5,6 @@
 #include "Constraints/AGX_ConstraintConstants.h"
 #include "Constraints/ControllerConstraintBarriers.h"
 
-FAGX_ConstraintScrewController::FAGX_ConstraintScrewController(bool bRotational)
-	: FAGX_ConstraintController(bRotational)
-{
-}
 
 namespace
 {
@@ -50,7 +46,6 @@ void FAGX_ConstraintScrewController::InitializeBarrier(TUniquePtr<FScrewControll
 {
 	check(!HasNative());
 	NativeBarrier = std::move(Barrier);
-	check(HasNative());
 }
 
 void FAGX_ConstraintScrewController::UpdateNativePropertiesImpl()

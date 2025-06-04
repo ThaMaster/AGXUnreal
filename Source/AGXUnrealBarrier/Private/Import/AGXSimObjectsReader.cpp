@@ -12,7 +12,16 @@
 #include "Shapes/BoxShapeBarrier.h"
 #include "Shapes/CapsuleShapeBarrier.h"
 #include "Shapes/SphereShapeBarrier.h"
+#include "SimulationBarrier.h"
 #include "TypeConversions.h"
+#include "Utilities/PLXUtilities.h"
+#include "Utilities/PLXUtilitiesInternal.h"
+
+// OpenPLX includes.
+#include "BeginAGXIncludes.h"
+#include "agxOpenPLX/AgxOpenPlxApi.h"
+#include "agxOpenPLX/AllocationUtils.h"
+#include "EndAGXIncludes.h"
 
 // AGX Dynamics includes.
 #include "BeginAGXIncludes.h"
@@ -26,6 +35,7 @@
 #include <agx/Hinge.h>
 #include <agx/LockJoint.h>
 #include <agx/Prismatic.h>
+#include <agx/SingleControllerConstraint1DOF.h>
 #include <agx/RigidBody.h>
 #include <agxTerrain/Utils.h>
 
@@ -43,9 +53,13 @@
 #include <agxSDK/Simulation.h>
 #include <agxTerrain/Shovel.h>
 #include <agxTerrain/Terrain.h>
+#include <agxTerrain/Utils.h>
 #include <agxWire/Wire.h>
 #include <agxVehicle/Track.h>
 #include "EndAGXIncludes.h"
+
+// Unreal Engine inludes.
+#include "Misc/Paths.h"
 
 namespace
 {
@@ -339,6 +353,13 @@ namespace
 				OutSimObjects.GetLockConstraints().Add(
 					AGXBarrierFactories::CreateLockJointBarrier(LockJoint));
 			}
+			else if (
+				agx::SingleControllerConstraint1DOF* C =
+					Constraint->asSafe<agx::SingleControllerConstraint1DOF>())
+			{
+				OutSimObjects.GetSingleControllerConstraint1DOFs().Add(
+					AGXBarrierFactories::CreateSingleControllerConstraint1DOFBarrier(C));
+			}
 		}
 	}
 
@@ -539,6 +560,8 @@ namespace
 		TSet<const agx::Material*> NonFreeMaterials;
 		TSet<const agx::ContactMaterial*> NonFreeContactMaterials;
 
+		OutSimObjects.GetSimulation() = std::make_shared<FSimulationBarrier>(
+			AGXBarrierFactories::CreateSimulationBarrier(&Simulation));
 		ReadTireModels(Simulation, Filename, OutSimObjects, NonFreeConstraints);
 		ReadTerrainMaterials(Simulation, NonFreeMaterials, NonFreeContactMaterials);
 		ReadShovels(
@@ -610,6 +633,53 @@ AGXUNREALBARRIER_API bool FAGXSimObjectsReader::ReadUrdf(
 	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
 	Simulation->add(Model);
 	::ReadAll(*Simulation, UrdfFilePath, OutSimObjects);
+
+	return true;
+}
+
+bool FAGXSimObjectsReader::ReadOpenPLXFile(
+	const FString& Filename, FSimulationObjectCollection& OutSimObjects)
+{
+	agxSDK::SimulationRef Simulation {new agxSDK::Simulation()};
+	const FString PLXBundlesPath = FPLXUtilities::GetBundlePath();
+
+	// This Uuid is randomly generated, and should never be changed. By seeding the load-call below
+	// with the same Uuid, we get consistent Uuid's on the AGX objects, by design.
+	agxopenplx::OptParams Params = agxopenplx::OptParams()
+									   .with_uuidv5("47de4303-16ef-408d-baf5-1c86f0fe4473")
+									   .with_map_visuals(true);
+	agxopenplx::LoadResult Result;
+	auto LogErrors = [&]()
+	{
+		return FPLXUtilitiesInternal::LogErrorsSafe(
+			Result.errors(), TEXT("ReadOpenPLXFile got OpenPLX Error: "));
+	};
+
+	try
+	{
+		Result = agxopenplx::load_from_file(
+			Simulation, Convert(Filename), Convert(PLXBundlesPath), Params);
+	}
+	catch (const std::runtime_error& Excep)
+	{
+		UE_LOG(
+			LogAGX, Error, TEXT("ReadOpenPLXFile: Could not read OpenPLX file '%s':\n\n%s"),
+			*Filename, UTF8_TO_TCHAR(Excep.what()));
+		LogErrors();
+		return false;
+	}
+
+	if (LogErrors())
+		return false;
+
+	agxSDK::AssemblyRef AssemblyAGX = Result.assembly();
+	Simulation->add(AssemblyAGX);
+	::ReadAll(*Simulation, Filename, OutSimObjects);
+
+	// Read PLX inputs.
+	auto System = std::dynamic_pointer_cast<openplx::Physics3D::System>(Result.scene());
+	OutSimObjects.GetPLXInputs() = FPLXUtilitiesInternal::GetInputs(System.get());
+	OutSimObjects.GetPLXOutputs() = FPLXUtilitiesInternal::GetOutputs(System.get());
 
 	return true;
 }

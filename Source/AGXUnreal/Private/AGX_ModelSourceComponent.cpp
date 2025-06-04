@@ -4,8 +4,10 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_CustomVersion.h"
+#include "AGX_LogCategory.h"
 #include "Shapes/AGX_ShapeComponent.h"
 #include "Utilities/AGX_BlueprintUtilities.h"
+#include "Utilities/AGX_ImportRuntimeUtilities.h"
 
 // Unreal Engine includes.
 #include "Serialization/Archive.h"
@@ -128,6 +130,21 @@ void UAGX_ModelSourceComponent::UpgradeRenderDataTableFromRenderDataUuidToShapeU
 const TMap<FString, FGuid>& UAGX_ModelSourceComponent::GetDeprecatedRenderDataTable() const
 {
 	return StaticMeshComponentToOwningRenderData_DEPRECATED;
+}
+
+void UAGX_ModelSourceComponent::EndPlay(const EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+	if (bRuntimeImport &&
+		FAGX_ImportRuntimeUtilities::GetImportTypeFrom(FilePath) == EAGX_ImportType::Plx)
+	{
+		if (FAGX_ImportRuntimeUtilities::RemoveImportedOpenPLXFiles(FilePath).IsEmpty())
+		{
+			UE_LOG(
+				LogAGX, Warning, TEXT("Failed to remove OpenPLX files for '%s'."),
+				*FilePath);
+		}
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

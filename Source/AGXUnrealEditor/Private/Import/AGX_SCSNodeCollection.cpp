@@ -1,4 +1,4 @@
-// Copyright 2024, Algoryx Simulation AB.
+// Copyright 2025, Algoryx Simulation AB.
 
 #include "Import/AGX_SCSNodeCollection.h"
 
@@ -8,21 +8,13 @@
 #include "AGX_ObserverFrameComponent.h"
 #include "AGX_RigidBodyComponent.h"
 #include "CollisionGroups/AGX_CollisionGroupDisablerComponent.h"
-#include "Constraints/AGX_BallConstraintComponent.h"
-#include "Constraints/AGX_CylindricalConstraintComponent.h"
-#include "Constraints/AGX_DistanceConstraintComponent.h"
-#include "Constraints/AGX_HingeConstraintComponent.h"
-#include "Constraints/AGX_LockConstraintComponent.h"
-#include "Constraints/AGX_PrismaticConstraintComponent.h"
+#include "Constraints/AGX_ConstraintComponent.h"
 #include "Import/AGX_ModelSourceComponent.h"
 #include "Materials/AGX_ContactMaterial.h"
 #include "Materials/AGX_ShapeMaterial.h"
 #include "Materials/AGX_ContactMaterialRegistrarComponent.h"
-#include "Shapes/AGX_BoxShapeComponent.h"
-#include "Shapes/AGX_SphereShapeComponent.h"
-#include "Shapes/AGX_CapsuleShapeComponent.h"
-#include "Shapes/AGX_CylinderShapeComponent.h"
-#include "Shapes/AGX_TrimeshShapeComponent.h"
+#include "OpenPLX/PLX_SignalHandlerComponent.h"
+#include "Shapes/AGX_ShapeComponent.h"
 #include "Terrain/AGX_ShovelComponent.h"
 #include "Terrain/AGX_ShovelProperties.h"
 #include "Tires/AGX_TwoBodyTireComponent.h"
@@ -159,6 +151,11 @@ FAGX_SCSNodeCollection::FAGX_SCSNodeCollection(const UBlueprint& Bp)
 			AGX_CHECK(!Tracks.Contains(Track->ImportGuid))
 			if (Track->ImportGuid.IsValid())
 				Tracks.Add(Track->ImportGuid, Node);
+		}
+		else if (auto Sh = Cast<UPLX_SignalHandlerComponent>(Component))
+		{
+			AGX_CHECK(SignalHandler == nullptr);
+			SignalHandler = Node;
 		}
 		else
 		{

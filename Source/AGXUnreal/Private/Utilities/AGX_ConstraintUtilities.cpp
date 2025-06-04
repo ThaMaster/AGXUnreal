@@ -66,7 +66,8 @@ void FAGX_ConstraintUtilities::CopyControllersFrom(
 void FAGX_ConstraintUtilities::StoreElectricMotorController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintElectricMotorController& Controller)
 {
-	Controller.CopyFrom(*Barrier.GetElectricMotorController());
+	if (Barrier.GetElectricMotorController()->HasNative())
+		Controller.CopyFrom(*Barrier.GetElectricMotorController());
 }
 
 void FAGX_ConstraintUtilities::StoreElectricMotorController(
@@ -79,7 +80,8 @@ void FAGX_ConstraintUtilities::StoreElectricMotorController(
 void FAGX_ConstraintUtilities::StoreFrictionController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintFrictionController& Controller)
 {
-	Controller.CopyFrom(*Barrier.GetFrictionController());
+	if (Barrier.GetFrictionController()->HasNative())
+		Controller.CopyFrom(*Barrier.GetFrictionController());
 }
 
 void FAGX_ConstraintUtilities::StoreFrictionController(
@@ -92,7 +94,8 @@ void FAGX_ConstraintUtilities::StoreFrictionController(
 void FAGX_ConstraintUtilities::StoreLockController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintLockController& Controller)
 {
-	Controller.CopyFrom(*Barrier.GetLockController());
+	if (Barrier.GetLockController()->HasNative())
+		Controller.CopyFrom(*Barrier.GetLockController());
 }
 
 void FAGX_ConstraintUtilities::StoreLockController(
@@ -105,7 +108,8 @@ void FAGX_ConstraintUtilities::StoreLockController(
 void FAGX_ConstraintUtilities::StoreRangeController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintRangeController& Controller)
 {
-	Controller.CopyFrom(*Barrier.GetRangeController());
+	if (Barrier.GetRangeController()->HasNative())
+		Controller.CopyFrom(*Barrier.GetRangeController());
 }
 
 void FAGX_ConstraintUtilities::StoreRangeController(
@@ -118,7 +122,8 @@ void FAGX_ConstraintUtilities::StoreRangeController(
 void FAGX_ConstraintUtilities::StoreTargetSpeedController(
 	const FConstraint1DOFBarrier& Barrier, FAGX_ConstraintTargetSpeedController& Controller)
 {
-	Controller.CopyFrom(*Barrier.GetTargetSpeedController());
+	if (Barrier.GetTargetSpeedController()->HasNative())
+		Controller.CopyFrom(*Barrier.GetTargetSpeedController());
 }
 
 void FAGX_ConstraintUtilities::StoreTargetSpeedController(
@@ -208,7 +213,8 @@ void FAGX_ConstraintUtilities::AddControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintController, SpookDamping),
-		[GetController](UConstraintClass* EditedObject) {
+		[GetController](UConstraintClass* EditedObject)
+		{
 			GetController(EditedObject)->SetSpookDamping(GetController(EditedObject)->SpookDamping);
 		});
 
@@ -253,7 +259,8 @@ void FAGX_ConstraintUtilities::AddElectricMotorControllerPropertyCallbacks(
 
 	PropertyDispatcher.Add(
 		Member, GET_MEMBER_NAME_CHECKED(FAGX_ConstraintElectricMotorController, TorqueConstant),
-		[GetController](UConstraintClass* EditedObject) {
+		[GetController](UConstraintClass* EditedObject)
+		{
 			GetController(EditedObject)
 				->SetTorqueConstant(GetController(EditedObject)->TorqueConstant);
 		});
@@ -548,79 +555,64 @@ FTransform FAGX_ConstraintUtilities::SetupConstraintAsFrameDefiningSource(
 	return NewWorldTransform;
 }
 
-namespace FAGX_ConstraintUtilities_helpers
+bool FAGX_ConstraintUtilities::EnsureValidConstraintAttachmentPair(
+	FAGX_ConstraintBodyAttachment& Attachment1, FAGX_ConstraintBodyAttachment& Attachment2,
+	const FName& ConstraintName)
 {
-	/**
-	 * Ensure that the attachment pair describe a valid constraint configuration. This means that
-	 * the first body exists and has a valid native body, and that if the second body exists then
-	 * it also has a native body.
-	 *
-	 * The native bodies are created if necessary.
-	 *
-	 * @param Attachment1 The attachment for the first body.
-	 * @param Attachment2 The attachment for the second body or the world.
-	 * @param ConstraintName Used only for error messages.
-	 * @return True if the required native bodies are now available, false otherwise.
-	 */
-	bool EnsureValidConstraintAttachmentPair(
-		FAGX_ConstraintBodyAttachment& Attachment1, FAGX_ConstraintBodyAttachment& Attachment2,
-		const FName& ConstraintName)
+	FRigidBodyBarrier* Body1 = Attachment1.GetOrCreateRigidBodyBarrier();
+	if (Body1 == nullptr)
 	{
-		FRigidBodyBarrier* Body1 = Attachment1.GetOrCreateRigidBodyBarrier();
-		if (Body1 == nullptr)
-		{
-			FAGX_NotificationUtilities::ShowNotification(
-				FString::Printf(
-					TEXT("Constraint %s: Could not get Rigid Body from Body Attachment 1. "
-						 "Constraint cannot be created."),
-					*ConstraintName.ToString()),
-				SNotificationItem::CS_Fail);
-			return false;
-		}
-
-		FRigidBodyBarrier* Body2 = Attachment2.GetOrCreateRigidBodyBarrier();
-		if (Body2 == nullptr && Attachment2.GetRigidBody() != nullptr)
-		{
-			FAGX_NotificationUtilities::ShowNotification(
-				FString::Printf(
-					TEXT("Constraint %s: A second body has been configured but it could not be "
-						 "fetched. Constraint cannot be created."),
-					*ConstraintName.ToString()),
-				SNotificationItem::CS_Fail);
-			return false;
-		}
-
-		return true;
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("Constraint %s: Could not get Rigid Body from Body Attachment 1. "
+					 "Constraint cannot be created."),
+				*ConstraintName.ToString()),
+			SNotificationItem::CS_Fail);
+		return false;
 	}
 
-	FTransform GetFrameTransform(
-		FAGX_ConstraintBodyAttachment& Attachment, const FName& ConstraintName,
-		const FString& ActorLabel)
+	FRigidBodyBarrier* Body2 = Attachment2.GetOrCreateRigidBodyBarrier();
+	if (Body2 == nullptr && Attachment2.GetRigidBody() != nullptr)
 	{
-		if (Attachment.FrameDefiningSource == EAGX_FrameDefiningSource::Other &&
-			Attachment.FrameDefiningComponent.GetSceneComponent() == nullptr)
-		{
-			FAGX_NotificationUtilities::ShowNotification(
-				FString::Printf(
-					TEXT("Constraint '%s' in Actor '%s' has Frame Defining Source set to Other but "
-						 "Frame Defining Component is not set to a valid Component. Constraint "
-						 "frames may be created incorrectly."),
-					*ConstraintName.ToString(), *ActorLabel),
-				SNotificationItem::CS_Fail);
-		}
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("Constraint %s: A second body has been configured but it could not be "
+					 "fetched. Constraint cannot be created."),
+				*ConstraintName.ToString()),
+			SNotificationItem::CS_Fail);
+		return false;
+	}
 
-		if (Attachment.GetRigidBody() != nullptr)
-		{
-			const FVector Location = Attachment.GetLocalFrameLocationFromBody();
-			const FQuat Rotation = Attachment.GetLocalFrameRotationFromBody();
-			return FTransform(Rotation, Location);
-		}
-		else
-		{
-			const FVector Location = Attachment.GetGlobalFrameLocation();
-			const FQuat Rotation = Attachment.GetGlobalFrameRotation();
-			return FTransform(Rotation, Location);
-		}
+	return true;
+}
+
+FTransform FAGX_ConstraintUtilities::GetFrameTransform(
+	FAGX_ConstraintBodyAttachment& Attachment, const FName& ConstraintName,
+	const FString& ActorLabel)
+{
+	if (Attachment.FrameDefiningSource == EAGX_FrameDefiningSource::Other &&
+		Attachment.FrameDefiningComponent.GetSceneComponent() == nullptr)
+	{
+		FAGX_NotificationUtilities::ShowNotification(
+			FString::Printf(
+				TEXT("Constraint '%s' in Actor '%s' has Frame Defining Source set to Other but "
+					 "Frame Defining Component is not set to a valid Component. Constraint "
+					 "frames may be created incorrectly."),
+				*ConstraintName.ToString(), *ActorLabel),
+			SNotificationItem::CS_Fail);
+	}
+
+	if (Attachment.GetRigidBody() != nullptr)
+	{
+		const FVector Location = Attachment.GetLocalFrameLocationFromBody();
+		const FQuat Rotation = Attachment.GetLocalFrameRotationFromBody();
+		return FTransform(Rotation, Location);
+	}
+	else
+	{
+		const FVector Location = Attachment.GetGlobalFrameLocation();
+		const FQuat Rotation = Attachment.GetGlobalFrameRotation();
+		return FTransform(Rotation, Location);
 	}
 }
 
@@ -629,8 +621,6 @@ void FAGX_ConstraintUtilities::CreateNative(
 	FAGX_ConstraintBodyAttachment& Attachment2, const FName& ConstraintName,
 	const FString& ActorLabel)
 {
-	using namespace FAGX_ConstraintUtilities_helpers;
-
 	if (Barrier == nullptr)
 	{
 		FAGX_NotificationUtilities::ShowNotification(

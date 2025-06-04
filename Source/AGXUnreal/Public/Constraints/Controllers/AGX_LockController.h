@@ -35,8 +35,6 @@ struct AGXUNREAL_API FAGX_ConstraintLockController : public FAGX_ConstraintContr
 
 public:
 	FAGX_ConstraintLockController() = default;
-	FAGX_ConstraintLockController(bool bRotational);
-
 	void InitializeBarrier(TUniquePtr<FLockControllerBarrier> Barrier);
 	void CopyFrom(const FLockControllerBarrier& Source);
 

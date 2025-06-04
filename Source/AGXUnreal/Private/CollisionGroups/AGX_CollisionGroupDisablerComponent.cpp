@@ -53,7 +53,7 @@ void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
 	{
 		if (!HideWarnings)
 		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorInEditor(
 				"A selected collision group may not be 'None'. Please select valid collision "
 				"groups.",
 				GetWorld());
@@ -65,7 +65,7 @@ void UAGX_CollisionGroupDisablerComponent::DisableCollisionGroupPair(
 	{
 		if (!HideWarnings)
 		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorInEditor(
 				"Collision has already been disabled for the selected collision groups.",
 				GetWorld());
 		}
@@ -94,7 +94,7 @@ void UAGX_CollisionGroupDisablerComponent::EnableCollisionGroupPair(
 	{
 		if (!HideWarnings)
 		{
-			FAGX_NotificationUtilities::ShowDialogBoxWithErrorLogInEditor(
+			FAGX_NotificationUtilities::ShowDialogBoxWithErrorInEditor(
 				"A selected collision group may not be 'None'. Please select valid collision "
 				"groups.",
 				GetWorld());

@@ -4,7 +4,6 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
-#include "Import/AGX_ImportEnums.h"
 
 // Unreal Engine includes.
 #include "CoreMinimal.h"
@@ -33,6 +32,7 @@ struct FAGX_RenderMaterial;
 class AActor;
 class FString;
 class UActorComponent;
+class UBlueprint;
 class UMaterialInterface;
 class UMaterialInstanceConstant;
 class UStaticMesh;
@@ -111,6 +111,8 @@ public:
 	static FString GetImportTrackPropertiesDirectoryName();
 	static FString GetImportTrackMergePropertiesDirectoryName();
 
+	static FString GetImportBaseBlueprintNamePrefix();
+
 	/**
 	 * Template version of the asset directory name getter.
 	 * Only specialized for the asset types listed above, except for StaticMesh/RenderMesh because
@@ -149,7 +151,7 @@ public:
 	template <typename TComponent>
 	static TComponent* CreateComponent(AActor& Owner, USceneComponent& AttachParent);
 
-	static EAGX_ImportType GetFrom(const FString& FilePath);
+	static void OnImportedBlueprintDeleted(const UBlueprint& Bp);
 };
 
 template <typename UAsset>

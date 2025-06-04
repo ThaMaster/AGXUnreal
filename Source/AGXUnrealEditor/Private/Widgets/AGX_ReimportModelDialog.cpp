@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "Import/AGX_ImportSettings.h"
 #include "Utilities/AGX_EditorUtilities.h"
-#include "Utilities/AGX_ImportUtilities.h"
+#include "Utilities/AGX_ImportRuntimeUtilities.h"
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_SlateUtilities.h"
 
@@ -18,7 +18,7 @@
 
 void SAGX_ReimportModelDialog::Construct(const FArguments& InArgs)
 {
-	FileTypes = ".agx";
+	FileTypes = ".agx;*.openplx";
 	ImportType = EAGX_ImportType::Agx;
 
 	// clang-format off
@@ -76,14 +76,15 @@ TOptional<FAGX_ReimportSettings> SAGX_ReimportModelDialog::ToReimportSettings()
 
 	if (FilePath.IsEmpty())
 	{
-		FAGX_NotificationUtilities::ShowDialogBoxWithErrorLog(
+		FAGX_NotificationUtilities::ShowDialogBoxWithError(
 			"A file must be selected before synchronizing the model.");
 		return {};
 	}
 
 	FAGX_ReimportSettings Settings;
-	Settings.ImportType = FAGX_ImportUtilities::GetFrom(FilePath);
+	Settings.ImportType = FAGX_ImportRuntimeUtilities::GetImportTypeFrom(FilePath);
 	Settings.FilePath = FilePath;
+	Settings.SourceFilePath = FilePath;
 	Settings.bIgnoreDisabledTrimeshes = bIgnoreDisabledTrimesh;
 	Settings.bForceOverwriteProperties = bForceOverwriteProperties;
 	Settings.bForceReassignRenderMaterials = bForceReassignRenderMaterials;

@@ -4,17 +4,12 @@
 
 #include "Constraints/ControllerConstraintBarriers.h"
 
-FAGX_ConstraintFrictionController::FAGX_ConstraintFrictionController(bool bRotational)
-	: FAGX_ConstraintController(bRotational)
-{
-}
 
 void FAGX_ConstraintFrictionController::InitializeBarrier(
 	TUniquePtr<FFrictionControllerBarrier> Barrier)
 {
 	check(!HasNative());
 	NativeBarrier = std::move(Barrier);
-	check(HasNative());
 }
 
 namespace

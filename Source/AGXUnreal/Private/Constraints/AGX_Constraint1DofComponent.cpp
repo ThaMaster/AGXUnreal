@@ -13,19 +13,9 @@
 #include "Import/AGX_ImportContext.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 
-UAGX_Constraint1DofComponent::UAGX_Constraint1DofComponent()
-{
-}
-
 UAGX_Constraint1DofComponent::UAGX_Constraint1DofComponent(
-	const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraintRotational,
-	bool bInIsLockControllerEditable)
+	const TArray<EDofFlag>& LockedDofsOrdered, bool bInIsLockControllerEditable)
 	: UAGX_ConstraintComponent(LockedDofsOrdered)
-	, ElectricMotorController(bIsSecondaryConstraintRotational)
-	, FrictionController(bIsSecondaryConstraintRotational)
-	, LockController(bIsSecondaryConstraintRotational)
-	, RangeController(bIsSecondaryConstraintRotational)
-	, TargetSpeedController(bIsSecondaryConstraintRotational)
 	, bIsLockControllerEditable(bInIsLockControllerEditable)
 {
 }
@@ -194,11 +184,16 @@ void UAGX_Constraint1DofComponent::UpdateNativeProperties()
 
 	Super::UpdateNativeProperties();
 
-	ElectricMotorController.UpdateNativeProperties();
-	FrictionController.UpdateNativeProperties();
-	LockController.UpdateNativeProperties();
-	RangeController.UpdateNativeProperties();
-	TargetSpeedController.UpdateNativeProperties();
+	if (ElectricMotorController.HasNative())
+		ElectricMotorController.UpdateNativeProperties();
+	if (FrictionController.HasNative())
+		FrictionController.UpdateNativeProperties();
+	if (LockController.HasNative())
+		LockController.UpdateNativeProperties();
+	if (RangeController.HasNative())
+		RangeController.UpdateNativeProperties();
+	if (TargetSpeedController.HasNative())
+		TargetSpeedController.UpdateNativeProperties();
 }
 
 void UAGX_Constraint1DofComponent::CopyFrom(

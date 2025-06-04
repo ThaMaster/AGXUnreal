@@ -11,25 +11,9 @@
 #include "Import/AGX_ImportContext.h"
 #include "Utilities/AGX_ConstraintUtilities.h"
 
-UAGX_Constraint2DofComponent::UAGX_Constraint2DofComponent()
-{
-}
-
 UAGX_Constraint2DofComponent::UAGX_Constraint2DofComponent(
-	const TArray<EDofFlag>& LockedDofsOrdered, bool bIsSecondaryConstraint1Rotational,
-	bool bIsSecondaryConstraint2Rotational)
+	const TArray<EDofFlag>& LockedDofsOrdered)
 	: UAGX_ConstraintComponent(LockedDofsOrdered)
-	, ElectricMotorController1(bIsSecondaryConstraint1Rotational)
-	, ElectricMotorController2(bIsSecondaryConstraint2Rotational)
-	, FrictionController1(bIsSecondaryConstraint1Rotational)
-	, FrictionController2(bIsSecondaryConstraint2Rotational)
-	, LockController1(bIsSecondaryConstraint1Rotational)
-	, LockController2(bIsSecondaryConstraint2Rotational)
-	, RangeController1(bIsSecondaryConstraint1Rotational)
-	, RangeController2(bIsSecondaryConstraint2Rotational)
-	, TargetSpeedController1(bIsSecondaryConstraint1Rotational)
-	, TargetSpeedController2(bIsSecondaryConstraint2Rotational)
-	, ScrewController()
 {
 }
 

@@ -9,9 +9,12 @@
 #include "Import/AGX_ImportSettings.h"
 #include "Utilities/AGX_ObjectUtilities.h"
 #include "Utilities/AGXUtilities.h"
+#include "Utilities/PLXUtilities.h"
 
 // Unreal Engine includes.
 #include "Engine/World.h"
+#include "HAL/FileManager.h"
+#include "Misc/Paths.h"
 
 void UAGX_AGXUtilities::AddParentVelocity(
 	UAGX_RigidBodyComponent* Parent, UAGX_RigidBodyComponent* Body)
@@ -55,18 +58,46 @@ FVector UAGX_AGXUtilities::CalculateCenterOfMass(const TArray<UAGX_RigidBodyComp
 	return Com;
 }
 
-namespace AGX_Utilties_helpers
+namespace AGX_AGXUtilities_helpers
 {
-	void ResolveImportPath(FAGX_ImportSettings& OutSettings)
+	void PreOpenPLXImport(FAGX_ImportSettings& OutSettings)
 	{
-		if (FPaths::FileExists(OutSettings.FilePath))
+		if (OutSettings.ImportType != EAGX_ImportType::Plx)
 			return;
 
-		// Try relative to project dir.
-		const FString ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
-		const FString FullPath = FPaths::Combine(ProjectDir, OutSettings.FilePath);
-		if (FPaths::FileExists(FullPath))
-			OutSettings.FilePath = FullPath;
+		if (OutSettings.FilePath.StartsWith(FPLXUtilities::GetModelsDirectory()))
+			return;
+
+		// We need to copy the OpenPLX file (and any dependency) to the OpenPLX ModelsDirectory.
+		// We also update the filepath in the ImportSettings to point to the new, copied OpenPLX
+		// file.
+		const FString DestinationDir =
+			FPLXUtilities::CreateUniqueModelDirectory(OutSettings.FilePath);
+		const FString NewLocation =
+			FPLXUtilities::CopyAllDependenciesToProject(OutSettings.FilePath, DestinationDir);
+
+		if (NewLocation.IsEmpty() && FPaths::DirectoryExists(DestinationDir))
+		{
+			IFileManager::Get().DeleteDirectory(
+				*DestinationDir, /*RequireExists=*/true, /*Tree=*/false); // Cleanup.
+		}
+
+		OutSettings.FilePath = NewLocation;
+	}
+
+	void ResolveImportPaths(FAGX_ImportSettings& OutSettings)
+	{
+		if (!FPaths::FileExists(OutSettings.FilePath))
+		{
+			// Try relative to project dir.
+			const FString ProjectDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+			const FString FullPath = FPaths::Combine(ProjectDir, OutSettings.FilePath);
+			if (FPaths::FileExists(FullPath))
+				OutSettings.FilePath = FullPath;
+		}
+
+		if (OutSettings.SourceFilePath.IsEmpty())
+			OutSettings.SourceFilePath = OutSettings.FilePath;
 	}
 }
 
@@ -80,8 +111,12 @@ AActor* UAGX_AGXUtilities::Import(UObject* WorldContextObject, FAGX_ImportSettin
 		return nullptr;
 	}
 
-	AGX_Utilties_helpers::ResolveImportPath(Settings);
+	Settings.bRuntimeImport = true;
+	AGX_AGXUtilities_helpers::ResolveImportPaths(Settings);
 	UWorld* World = WorldContextObject->GetWorld();
+	if (Settings.ImportType == EAGX_ImportType::Plx)
+		AGX_AGXUtilities_helpers::PreOpenPLXImport(Settings);
+
 	FAGX_Importer Importer;
 	FAGX_ImportResult Result = Importer.Import(Settings, *World);
 	if (IsUnrecoverableError(Result.Result) || Result.Actor == nullptr)

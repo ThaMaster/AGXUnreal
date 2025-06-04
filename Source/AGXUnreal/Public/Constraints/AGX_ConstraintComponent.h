@@ -225,10 +225,11 @@ public:
 	 * initialized.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Constraint")
-	bool GetValid() const;
+	virtual bool GetValid() const;
 
 	/**
-	 * Get the current force [N] or torque [Nm] of the constraint along a particular degree of freedom.
+	 * Get the current force [N] or torque [Nm] of the constraint along a particular degree of
+	 * freedom.
 	 *
 	 * Only degrees of freedoms listed in the return value of GetLockedDofsBitmask may be passed.
 	 *
@@ -426,6 +427,13 @@ public:
 	 */
 	UPROPERTY(BlueprintReadOnly, Category = "AGX Dynamics Import Guid")
 	FGuid ImportGuid;
+
+	/*
+	 * The import name of this Component. Only used by the AGX Dynamics for Unreal import system.
+	 * Should never be assigned manually.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AGX Dynamics Import Name")
+	FString ImportName;
 
 public: // Deprecated functions.
 	UFUNCTION(
