@@ -41,7 +41,7 @@ public:
 	UAGX_SingleControllerConstraint1DofComponent();
 	virtual ~UAGX_SingleControllerConstraint1DofComponent() override;
 
-	FSingleControllerConstraint1DOFBarrier* GetNativeFingleControllerConstraint1DOF();
+	FSingleControllerConstraint1DOFBarrier* GetNativeSingleControllerConstraint1DOF();
 	const FSingleControllerConstraint1DOFBarrier* GetNativeSingleControllerConstraint1DOF() const;
 
 	virtual void CopyFrom(const FConstraintBarrier& Barrier, FAGX_ImportContext* Context) override;

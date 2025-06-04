@@ -23,7 +23,7 @@ UAGX_SingleControllerConstraint1DofComponent::~UAGX_SingleControllerConstraint1D
 }
 
 FSingleControllerConstraint1DOFBarrier*
-UAGX_SingleControllerConstraint1DofComponent::GetNativeFingleControllerConstraint1DOF()
+UAGX_SingleControllerConstraint1DofComponent::GetNativeSingleControllerConstraint1DOF()
 {
 	return FAGX_ConstraintUtilities::GetNativeCast(this);
 }
