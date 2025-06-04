@@ -170,6 +170,8 @@ bool FPLXUtilitiesInternal::HasOutputs(openplx::Physics3D::System* System)
 
 TArray<FPLX_Input> FPLXUtilitiesInternal::GetInputs(openplx::Physics3D::System* System)
 {
+	using namespace std::literals::string_literals;
+
 	TArray<FPLX_Input> Inputs;
 	if (System == nullptr)
 		return Inputs;
@@ -177,8 +179,14 @@ TArray<FPLX_Input> FPLXUtilitiesInternal::GetInputs(openplx::Physics3D::System* 
 	std::vector<std::pair<std::string, std::shared_ptr<openplx::Physics::Signals::Input>>>
 		SigInterfInputs;
 	auto SignalInterfaces = GetNestedObjects<openplx::Physics::Signals::SignalInterface>(*System);
-	if (SignalInterfaces.size() > 0)
-		SigInterfInputs = GetEntries<openplx::Physics::Signals::Input>(*SignalInterfaces[0]);
+	for (auto SignalInterface : SignalInterfaces)
+	{
+		if (SignalInterface == nullptr)
+			continue;
+
+		for (auto Entry : GetEntries<openplx::Physics::Signals::Input>(*SignalInterface))
+			SigInterfInputs.push_back(Entry);
+	}
 
 	auto InputsPLX = GetNestedObjects<openplx::Physics::Signals::Input>(*System);
 	Inputs.Reserve(InputsPLX.size());
@@ -188,9 +196,9 @@ TArray<FPLX_Input> FPLXUtilitiesInternal::GetInputs(openplx::Physics3D::System* 
 			continue;
 
 		auto OptionalAlias = PLXUtilities_helpers::FindKeyByObject(SigInterfInputs, Input);
-		const FString Alias = OptionalAlias.has_value() ? Convert(OptionalAlias.value()) : "";
+		const FString Alias = Convert(OptionalAlias.value_or(""s));
 		EPLX_InputType Type = GetInputType(*Input);
-		Inputs.Add(FPLX_Input(Convert(Input->getName()), Alias, Type));
+		Inputs.Add(FPLX_Input(ConvertStrToName(Input->getName()), FName(*Alias), Type));
 		if (Type == EPLX_InputType::Unsupported)
 		{
 			UE_LOG(
@@ -204,6 +212,8 @@ TArray<FPLX_Input> FPLXUtilitiesInternal::GetInputs(openplx::Physics3D::System* 
 
 TArray<FPLX_Output> FPLXUtilitiesInternal::GetOutputs(openplx::Physics3D::System* System)
 {
+	using namespace std::literals::string_literals;
+
 	TArray<FPLX_Output> Outputs;
 	if (System == nullptr)
 		return Outputs;
@@ -211,8 +221,14 @@ TArray<FPLX_Output> FPLXUtilitiesInternal::GetOutputs(openplx::Physics3D::System
 	std::vector<std::pair<std::string, std::shared_ptr<openplx::Physics::Signals::Output>>>
 		SigInterfOutputs;
 	auto SignalInterfaces = GetNestedObjects<openplx::Physics::Signals::SignalInterface>(*System);
-	if (SignalInterfaces.size() > 0)
-		SigInterfOutputs = GetEntries<openplx::Physics::Signals::Output>(*SignalInterfaces[0]);
+	for (auto SignalInterface : SignalInterfaces)
+	{
+		if (SignalInterface == nullptr)
+			continue;
+
+		for (auto Entry : GetEntries<openplx::Physics::Signals::Output>(*SignalInterface))
+			SigInterfOutputs.push_back(Entry);
+	}
 
 	auto OutputsPLX = GetNestedObjects<openplx::Physics::Signals::Output>(*System);
 	Outputs.Reserve(OutputsPLX.size());
@@ -222,9 +238,10 @@ TArray<FPLX_Output> FPLXUtilitiesInternal::GetOutputs(openplx::Physics3D::System
 			continue;
 
 		auto OptionalAlias = PLXUtilities_helpers::FindKeyByObject(SigInterfOutputs, Output);
-		const FString Alias = OptionalAlias.has_value() ? Convert(OptionalAlias.value()) : "";
+		const FString Alias = Convert(OptionalAlias.value_or(""s));
 		EPLX_OutputType Type = GetOutputType(*Output);
-		Outputs.Add(FPLX_Output(Convert(Output->getName()), Alias, Type, Output->enabled()));
+		Outputs.Add(
+			FPLX_Output(ConvertStrToName(Output->getName()), FName(*Alias), Type, Output->enabled()));
 		if (Type == EPLX_OutputType::Unsupported)
 		{
 			UE_LOG(
@@ -654,7 +671,7 @@ agxSDK::AssemblyRef FPLXUtilitiesInternal::MapRuntimeObjects(
 	// OpenPLX OutputSignalListener requires the assembly to contain a PowerLine with a
 	// certain name. This is the PowerLine we will use to map the OpenPLX DriveTrain.
 	agxPowerLine::PowerLineRef RequiredPowerLine = new agxPowerLine::PowerLine();
-	RequiredPowerLine->setName(agx::Name("OpenPlxPowerLine"));
+	RequiredPowerLine->setName(agx::Name(GetDefaultPowerLineName()));
 	Assembly->add(RequiredPowerLine);
 
 	// Map DriveTrain.
@@ -687,4 +704,9 @@ agxSDK::AssemblyRef FPLXUtilitiesInternal::MapRuntimeObjects(
 	}
 
 	return Assembly;
+}
+
+std::string FPLXUtilitiesInternal::GetDefaultPowerLineName()
+{
+	return "OpenPlxPowerLine";
 }

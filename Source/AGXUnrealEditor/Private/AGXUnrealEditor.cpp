@@ -207,6 +207,13 @@ void FAGXUnrealEditorModule::ShutdownModule()
 	UnregisterPlacementCategory();
 
 	AgxTopMenu = nullptr;
+
+	if (FModuleManager::Get().IsModuleLoaded("AssetRegistry"))
+	{
+		FAssetRegistryModule& AssetRegistryModule =
+			FModuleManager::GetModuleChecked<FAssetRegistryModule>("AssetRegistry");
+		AssetRegistryModule.Get().OnAssetRemoved().RemoveAll(this);
+	}
 }
 
 const TSharedPtr<FAGX_TopMenu>& FAGXUnrealEditorModule::GetAgxTopMenu() const

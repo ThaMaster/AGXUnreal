@@ -33,47 +33,54 @@ public:
 	UPLX_SignalHandlerComponent();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPLX")
-	TMap<FString, FPLX_Input> Inputs;
+	TMap<FName, FPLX_Input> Inputs;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPLX")
-	TMap<FString, FPLX_Output> Outputs;
+	TMap<FName, FPLX_Output> Outputs;
 
+	/**
+	 * Key is the Signal Interface alias and the value is the full name.
+	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPLX")
-	TMap<FString, FString> InputAliases;
+	TMap<FName, FName> InputAliases;
 
+	/**
+	 * Key is the Signal Interface alias and the value is the full name.
+	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OpenPLX")
-	TMap<FString, FString> OutputAliases;
+	TMap<FName, FName> OutputAliases;
 
 	/**
-	 * Outputs the first found Input given a full or partial name or alias. In other words, partial
-	 * name matching is supported. Returns true if an Input was found, returns false otherwise.
+	 * Get the Input matching the given full name or alias. Returns true if an Input was found,
+	 * returns false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool GetInput(FString NameOrAlias, FPLX_Input& OutInput);
+	bool GetInput(FName NameOrAlias, FPLX_Input& OutInput);
 
 	/**
-	 * Outputs the first found Input given a type and full or partial name or alias. In other words,
-	 * partial name matching is supported. Returns true if an Input was found, returns false
-	 * otherwise.
+	 * Get the Input matching the given type as well as a full name or alias. Returns true if an
+	 * Input was found, returns false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool GetInputFromType(EPLX_InputType Type, FString NameOrAlias, FPLX_Input& OutInput);
+	bool GetInputFromType(EPLX_InputType Type, FName NameOrAlias, FPLX_Input& OutInput);
 
 	/**
-	 * Outputs the first found Output given a full or partial name or alias. In other words, partial
-	 * name matching is supported. Returns true if an Output was found, returns false otherwise.
+	 * Get the Output matching the given full name or alias. Returns true if an Output was
+	 * found, returns false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool GetOutput(FString NameOrAlias, FPLX_Output& OutOutput);
+	bool GetOutput(FName NameOrAlias, FPLX_Output& OutOutput);
 
 	/**
-	 * Outputs the first found Output given a type and full or partial name or alias. In other
-	 * words, partial name matching is supported. Returns true if an Output was found, returns false
-	 * otherwise.
+	 * Get the Output matching the given type and a full name or alias. Returns true if an
+	 * Output was found, returns false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool GetOutputFromType(EPLX_OutputType Type, FString NameOrAlias, FPLX_Output& OutOutput);
+	bool GetOutputFromType(EPLX_OutputType Type, FName NameOrAlias, FPLX_Output& OutOutput);
 
+	/**
+	* Uses the given Input to send a Signal of Real type with the given Value.
+	*/
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendReal(const FPLX_Input& Input, double Value);
 
@@ -83,8 +90,11 @@ public:
 	 * Input to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool SendRealByName(const FString& NameOrAlias, double Value);
+	bool SendRealByName(FName NameOrAlias, double Value);
 
+	/**
+	 * Uses the given Output to receive a Signal of Real type.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveReal(const FPLX_Output& Output, double& OutValue);
 
@@ -94,8 +104,11 @@ public:
 	 * Output to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool ReceiveRealByName(const FString& NameOrAlias, double& Value);
+	bool ReceiveRealByName(FName NameOrAlias, double& Value);
 
+	/**
+	 * Uses the given Input to send a Signal of Real Range type with the given Value.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendRangeReal(const FPLX_Input& Input, FVector2D Value);
 
@@ -105,8 +118,11 @@ public:
 	 * Input to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool SendRangeRealByName(const FString& NameOrAlias, FVector2D Value);
+	bool SendRangeRealByName(FName NameOrAlias, FVector2D Value);
 
+	/**
+	 * Uses the given Output to receive a Signal of Real Range type.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveRangeReal(const FPLX_Output& Output, FVector2D& OutValue);
 
@@ -116,8 +132,11 @@ public:
 	 * Output to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool ReceiveRangeRealByName(const FString& NameOrAlias, FVector2D& OutValue);
+	bool ReceiveRangeRealByName(FName NameOrAlias, FVector2D& OutValue);
 
+	/**
+	 * Uses the given Input to send a Signal of Vector type with the given Value.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendVector(const FPLX_Input& Input, FVector Value);
 
@@ -127,8 +146,11 @@ public:
 	 * Input to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool SendVectorByName(const FString& NameOrAlias, FVector Value);
+	bool SendVectorByName(FName NameOrAlias, FVector Value);
 
+	/**
+	 * Uses the given Output to receive a Signal of Vector type.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveVector(const FPLX_Output& Output, FVector& OutValue);
 
@@ -138,8 +160,11 @@ public:
 	 * Output to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool ReceiveVectorByName(const FString& NameOrAlias, FVector& OutValue);
+	bool ReceiveVectorByName(FName NameOrAlias, FVector& OutValue);
 
+	/**
+	 * Uses the given Input to send a Signal of Integer type with the given Value.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendInteger(const FPLX_Input& Input, int64 Value);
 
@@ -149,8 +174,11 @@ public:
 	 * Input to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool SendIntegerByName(const FString& NameOrAlias, int64 Value);
+	bool SendIntegerByName(FName NameOrAlias, int64 Value);
 
+	/**
+	 * Uses the given Output to receive a Signal of Integer type.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveInteger(const FPLX_Output& Output, int64& OutValue);
 
@@ -160,8 +188,11 @@ public:
 	 * Output to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool ReceiveIntegerByName(const FString& NameOrAlias, int64& OutValue);
+	bool ReceiveIntegerByName(FName NameOrAlias, int64& OutValue);
 
+	/**
+	 * Uses the given Input to send a Signal of Boolean type with the given Value.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool SendBoolean(const FPLX_Input& Input, bool Value);
 
@@ -171,8 +202,11 @@ public:
 	 * Input to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool SendBooleanByName(const FString& NameOrAlias, bool Value);
+	bool SendBooleanByName(FName NameOrAlias, bool Value);
 
+	/**
+	 * Uses the given Output to receive a Signal of Boolean type.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
 	bool ReceiveBoolean(const FPLX_Output& Output, bool& OutValue);
 
@@ -182,7 +216,7 @@ public:
 	 * Output to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenPLX")
-	bool ReceiveBooleanByName(const FString& NameOrAlias, bool& OutValue);
+	bool ReceiveBooleanByName(FName NameOrAlias, bool& OutValue);
 
 	UPROPERTY(Transient)
 	bool bShowDisabledOutputs {false};

@@ -153,7 +153,7 @@ FReply SAGX_ImportDialogBase::OnBrowseFileButtonClicked()
 	const FString CurrentSelectedDir = FPaths::GetPath(FilePath);
 	const FString StartDir = FPaths::DirectoryExists(CurrentSelectedDir) ? CurrentSelectedDir : "";
 	FilePath = FAGX_EditorUtilities::SelectExistingFileDialog("file", FileTypes, StartDir);
-	ImportType = FAGX_ImportRuntimeUtilities::GetFrom(FilePath);
+	ImportType = FAGX_ImportRuntimeUtilities::GetImportTypeFrom(FilePath);
 
 	RefreshGui();
 
@@ -187,7 +187,7 @@ void SAGX_ImportDialogBase::OnFilePathTextCommitted(
 	const FText& InNewText, ETextCommit::Type InCommitType)
 {
 	FilePath = InNewText.ToString();
-	ImportType = FAGX_ImportRuntimeUtilities::GetFrom(FilePath);
+	ImportType = FAGX_ImportRuntimeUtilities::GetImportTypeFrom(FilePath);
 	RefreshGui();
 }
 

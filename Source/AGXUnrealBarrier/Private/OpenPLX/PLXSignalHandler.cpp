@@ -26,6 +26,9 @@
 #include "Physics/Signals/Vec3InputSignal.h"
 #include "EndAGXIncludes.h"
 
+// Standard library includes.
+#include <cstdint>
+
 FPLXSignalHandler::FPLXSignalHandler()
 {
 }
@@ -84,8 +87,8 @@ void FPLXSignalHandler::Init(
 
 	if (FPLXUtilitiesInternal::HasInputs(System.get()) || FPLXUtilitiesInternal::HasOutputs(System.get()))
 	{
-		auto PlxPowerLine =
-			dynamic_cast<agxPowerLine::PowerLine*>(AssemblyRef->Native->getAssembly("OpenPlxPowerLine"));
+		auto PlxPowerLine = dynamic_cast<agxPowerLine::PowerLine*>(
+			AssemblyRef->Native->getAssembly(FPLXUtilitiesInternal::GetDefaultPowerLineName()));
 
 		SignalSourceMapper = std::make_shared<FSignalSourceMapperRef>(agxopenplx::SignalSourceMapper::create(
 				AssemblyRef->Native, PlxPowerLine, agxopenplx::SignalSourceMapMode::Name));
@@ -142,7 +145,7 @@ namespace PLXSignalHandler_helpers
 			LogAGX, Warning,
 			TEXT("Tried to convert Real value for Input '%s', but the type is either "
 				 "not of Real type or is unsupported."),
-			*Input.Name);
+			*Input.Name.ToString());
 		return {};
 	}
 
@@ -160,7 +163,7 @@ namespace PLXSignalHandler_helpers
 			LogAGX, Warning,
 			TEXT("Tried to convert vec2 vector value for Input '%s', but the type is either "
 				 "not of vec2 vector type or is unsupported."),
-			*Input.Name);
+			*Input.Name.ToString());
 		return {};
 	}
 
@@ -188,23 +191,23 @@ namespace PLXSignalHandler_helpers
 			LogAGX, Warning,
 			TEXT("Tried to convert vec3 vector value for Input '%s', but the type is either "
 				 "not of vec3 vector type or is unsupported."),
-			*Input.Name);
+			*Input.Name.ToString());
 		return {};
 	}
 
-	TOptional<int64> ConvertInteger(const FPLX_Input& Input, int64 Value)
+	TOptional<int64_t> ConvertInteger(const FPLX_Input& Input, int64 Value)
 	{
 		switch (Input.Type)
 		{
 			case EPLX_InputType::IntInput:
-				return static_cast<int>(Value);
+				return static_cast<int64_t>(Value);
 		}
 
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Tried to convert integer value for Input '%s', but the type is either "
 				 "not of integer type or is unsupported."),
-			*Input.Name);
+			*Input.Name.ToString());
 		return {};
 	}
 
@@ -224,7 +227,7 @@ namespace PLXSignalHandler_helpers
 			LogAGX, Warning,
 			TEXT("Tried to convert boolean value for Input '%s', but the type is either "
 				 "not of boolean type or is unsupported."),
-			*Input.Name);
+			*Input.Name.ToString());
 		return {};
 	}
 
@@ -243,7 +246,7 @@ namespace PLXSignalHandler_helpers
 				LogAGX, Warning,
 				TEXT("Tried to send OpenPLX Input signal for Input '%s', but the OpenPLX "
 					 "model does not have any registered Inputs."),
-				*Input.Name);
+				*Input.Name.ToString());
 			return false;
 		}
 
@@ -251,14 +254,14 @@ namespace PLXSignalHandler_helpers
 		if (ModelData == nullptr)
 			return false;
 
-		auto PLXInput = ModelData->Inputs.find(Convert(Input.Name));
+		auto PLXInput = ModelData->Inputs.find(Convert(Input.Name.ToString()));
 		if (PLXInput == ModelData->Inputs.end())
 		{
 			UE_LOG(
 				LogAGX, Warning,
 				TEXT("Tried to send OpenPLX signal, but the corresponding OpenPLX Input "
 					 "'%s' was not found in the model. The signal will not be sent."),
-				*Input.Name);
+				*Input.Name.ToString());
 			return false;
 		}
 
@@ -282,7 +285,7 @@ namespace PLXSignalHandler_helpers
 			TEXT("Unexpected error: Tried to cast OpenPLX Output '%s' to it's corresponding "
 				 "OpenPLX type but got nullptr. Possible type miss match. The signal will not "
 				 "be received."),
-			*Output.Name);
+			*Output.Name.ToString());
 		return {};
 	}
 
@@ -321,7 +324,7 @@ namespace PLXSignalHandler_helpers
 			LogAGX, Warning,
 			TEXT("Tried to read Real type from signal for Output '%s', but the type is either "
 				 "not of Real type or is unsupported."),
-			*Output.Name);
+			*Output.Name.ToString());
 		return {};
 	}
 
@@ -347,7 +350,7 @@ namespace PLXSignalHandler_helpers
 			LogAGX, Warning,
 			TEXT("Tried to read vec2 vector type from signal for Output '%s', but the type is "
 				 "either not of vec2 vector type or is unsupported."),
-			*Output.Name);
+			*Output.Name.ToString());
 		return {};
 	}
 
@@ -396,7 +399,7 @@ namespace PLXSignalHandler_helpers
 			LogAGX, Warning,
 			TEXT("Tried to read vec3 vector type from signal for Output '%s', but the type is "
 				 "either not of vec3 vector type or is unsupported."),
-			*Output.Name);
+			*Output.Name.ToString());
 		return {};
 	}
 
@@ -422,7 +425,7 @@ namespace PLXSignalHandler_helpers
 			TEXT("Tried to read integer type from signal for Output '%s', but the type is "
 				 "either "
 				 "not of integer type or is unsupported."),
-			*Output.Name);
+			*Output.Name.ToString());
 		return {};
 	}
 
@@ -452,7 +455,7 @@ namespace PLXSignalHandler_helpers
 			TEXT("Tried to read boolean type from signal for Output '%s', but the type is "
 				 "either "
 				 "not of boolean type or is unsupported."),
-			*Output.Name);
+			*Output.Name.ToString());
 		return {};
 	}
 
@@ -471,13 +474,13 @@ namespace PLXSignalHandler_helpers
 				LogAGX, Warning,
 				TEXT("Tried to receive OpenPLX Output signal for output '%s', but the OpenPLX "
 					 "model does not have any registered outputs."),
-				*Output.Name);
+				*Output.Name.ToString());
 			return false;
 		}
 
 		auto Signal =
 			agxopenplx::getSignalBySourceName<openplx::Physics::Signals::ValueOutputSignal>(
-				OutputQueue->Native->getSignals(), Convert(Output.Name));
+				OutputQueue->Native->getSignals(), Convert(Output.Name.ToString()));
 		if (Signal == nullptr)
 			return false;
 

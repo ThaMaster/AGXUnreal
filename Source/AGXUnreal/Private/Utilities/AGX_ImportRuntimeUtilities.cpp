@@ -74,7 +74,7 @@ UAGX_ShapeMaterial* FAGX_ImportRuntimeUtilities::GetOrCreateShapeMaterial(
 	return Sm;
 }
 
-EAGX_ImportType FAGX_ImportRuntimeUtilities::GetFrom(const FString& FilePath)
+EAGX_ImportType FAGX_ImportRuntimeUtilities::GetImportTypeFrom(const FString& FilePath)
 {
 	const FString FileExtension = FPaths::GetExtension(FilePath);
 	if (FileExtension.Equals("agx"))
