@@ -85,7 +85,6 @@ struct FSignalSourceMapperRef
 
 struct FPLXModelData
 {
-	std::shared_ptr<agxopenplx::AgxCache> AGXCache;
 	openplx::Core::ObjectPtr PLXModel;
 	std::unordered_map<std::string, std::shared_ptr<openplx::Physics::Signals::Input>> Inputs;
 };

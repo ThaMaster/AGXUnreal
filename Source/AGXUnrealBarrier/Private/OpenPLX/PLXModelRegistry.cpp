@@ -123,7 +123,7 @@ FPLXModelRegistry::Handle FPLXModelRegistry::LoadNewModel(const FString& PLXFile
 	AGX_CHECK(GetFrom(PLXFile) == InvalidHandle);
 
 	FPLXModelData NewModel;
-	NewModel.PLXModel = FPLXUtilitiesInternal::LoadModel(PLXFile, NewModel.AGXCache);
+	NewModel.PLXModel = FPLXUtilitiesInternal::LoadModel(PLXFile, nullptr);
 	if (NewModel.PLXModel == nullptr)
 	{
 		UE_LOG(
