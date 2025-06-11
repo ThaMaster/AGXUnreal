@@ -12,6 +12,33 @@
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 
+
+/**
+ * NOTES / TODO
+ * 
+ * - - - - - - - - -
+ * 
+ * Maybe need the code below?
+ * 
+ * PropertyDispatcher.Add(
+ *		AGX_MEMBER_NAME(ParticleSystemAsset),
+ *		[](ThisClass* This)
+ *		{
+ *			if (This->ParticleSystemAsset != nullptr)
+ *			{
+ * 				This->ParticleSystemAsset->RequestCompile(true);
+ *			}
+ *		});
+ * 
+ * - - - - - - - - -
+ * 
+ * Terrain no longer returns a particel system as in the below (now returns only nullptr):
+ *		GetSpawnedParticleSystemComponent()
+ * Should it, or should it be removed?
+ * 
+ * - - - - - - - - -
+ */
+
 UAGX_DefaultTerrainParticleRendererComponent::UAGX_DefaultTerrainParticleRendererComponent()
 {
 	const TCHAR* Path = TEXT(
@@ -43,6 +70,14 @@ void UAGX_DefaultTerrainParticleRendererComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!TerrainActor)
+	{
+		if (!InitializeParentTerrainActor())
+		{
+			return;
+		}
+	}
+
 	if (bEnableParticleRendering) // Maybe bad?
 	{
 		if(InitializeParticleSystem())
@@ -51,6 +86,8 @@ void UAGX_DefaultTerrainParticleRendererComponent::BeginPlay()
 		}
 	}
 
+	TerrainActor->UpdateParticleDataDelegate.AddLambda([this](FParticleDataById data)
+													   { UpdateParticleData(data);});
 }
 
 void UAGX_DefaultTerrainParticleRendererComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -58,6 +95,32 @@ void UAGX_DefaultTerrainParticleRendererComponent::EndPlay(const EEndPlayReason:
 	Super::EndPlay(EndPlayReason);
 }
 
+bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParentTerrainActor()
+{
+	AActor* Owner = GetOwner();
+	if (!Owner)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Particle Renderer '%s' could not fetch the parent actor"
+				 "particles"),
+			*GetName());
+		return false;
+	}
+
+	TerrainActor = Cast<AAGX_Terrain>(Owner);
+	if (!TerrainActor)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Particle Renderer '%s' does not have a particle system, cannot render "
+				 "particles"),
+			*GetName());
+		return false;
+	}
+
+	return TerrainActor != nullptr;
+}
 
 bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParticleSystem()
 {	
@@ -79,7 +142,7 @@ bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParticleSystemCompo
 	// it's world position becomes the same as the Terrain's. Otherwise it will be spawned at
 	// the world origin which in turn may result in particles being culled and not rendered if the
 	// terrain is located far away from the world origin (see Fixed Bounds in the Particle System).
-	/* ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+	 ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 		ParticleSystemAsset, TerrainActor->GetRootComponent(), NAME_None, FVector::ZeroVector,
 		FRotator::ZeroRotator,
 		FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset, false,
@@ -89,7 +152,6 @@ bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParticleSystemCompo
 		ENCPoolMethod::None
 #endif
 	);
-	*/
 #if WITH_EDITORONLY_DATA
 	// Must check for nullptr here because no particle system component is created with running
 	// as a unit test without graphics, i.e. with our run_unit_tests script in GitLab CI.

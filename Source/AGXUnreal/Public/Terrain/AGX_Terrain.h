@@ -284,26 +284,6 @@ public:
 		Meta = (EditCondition = "bEnableDisplacementRendering"))
 	UTextureRenderTarget2D* LandscapeDisplacementMap;
 
-	/** Whether soil particles should be rendered or not. */
-	UPROPERTY(EditAnywhere, Category = "AGX Terrain Rendering")
-	bool bEnableParticleRendering = true;
-
-	/**
-	 * Rough estimation of number of particles that will exist at once. Should not be too low,
-	 * or some particles might not be rendered.
-	 */
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Rendering",
-		Meta =
-			(EditCondition = "bEnableParticleRendering", ClampMin = "1", UIMin = "1",
-			 UIMax = "4096"))
-	int32 MaxNumRenderParticles = 2048;
-
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Terrain Rendering",
-		Meta = (EditCondition = "bEnableParticleRendering"))
-	UNiagaraSystem* ParticleSystemAsset;
-
 	/** Whether shovel active zone should be rendered or not. */
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain Debug Rendering")
 	bool bEnableActiveZoneRendering = false;
@@ -375,10 +355,7 @@ private:
 	void UpdateLandscapeMaterialParameters();
 	void UpdateDisplacementMap();
 	void ClearDisplacementMap();
-	bool InitializeParticleSystem();
-	bool InitializeParticleSystemComponent();
 	void UpdateParticlesArrays();
-	void TestFunction(FParticleDataById data);
 #if WITH_EDITOR
 	void InitPropertyDispatcher();
 	virtual void PostLoad() override;
@@ -453,9 +430,6 @@ private:
 	int32 NumVerticesX = 0;
 	int32 NumVerticesY = 0;
 	bool DisplacementMapInitialized = false;
-
-	// Particle related variables.
-	UNiagaraComponent* ParticleSystemComponent = nullptr;
 
 	/**
 	 * Thread safe convenience function for reading heights from the source Landscape.
