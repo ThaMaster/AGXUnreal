@@ -10,7 +10,6 @@
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
 
-
 #include "AGX_DefaultTerrainParticleRendererComponent.generated.h"
 
 class UNiagaraComponent;
@@ -53,8 +52,7 @@ private:
 	bool InitializeParticleSystem();
 	bool InitializeParticleSystemComponent();
 
-	void UpdateParticleData(FParticleDataById& data);
-
+	void UpdateParticleData(FParticleDataById data);
 
 	// TODO: Also add the movable terrain component!
 	AAGX_Terrain* TerrainActor = nullptr;

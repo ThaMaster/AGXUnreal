@@ -3,6 +3,7 @@
 #include "Terrain/ParticleRendering/AGX_DefaultTerrainParticleRendererComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_LogCategory.h"
 #include "Terrain/AGX_Terrain.h"
 #include "Utilities/AGX_ObjectUtilities.h"
@@ -36,7 +37,7 @@
  *		GetSpawnedParticleSystemComponent()
  * Should it, or should it be removed?
  * 
- * - - - - - - - - -
+ * 
  */
 
 UAGX_DefaultTerrainParticleRendererComponent::UAGX_DefaultTerrainParticleRendererComponent()
@@ -58,7 +59,6 @@ UAGX_DefaultTerrainParticleRendererComponent::UAGX_DefaultTerrainParticleRendere
 	}
 
 	ParticleSystemAsset = AssetFinder.Object;
-
 }
 
 UNiagaraComponent* UAGX_DefaultTerrainParticleRendererComponent::GetSpawnedParticleSystemComponent()
@@ -78,16 +78,17 @@ void UAGX_DefaultTerrainParticleRendererComponent::BeginPlay()
 		}
 	}
 
-	if (bEnableParticleRendering) // Maybe bad?
+	if (bEnableParticleRendering)
 	{
-		if(InitializeParticleSystem())
+		if(!InitializeParticleSystem())
 		{
 			return;
 		}
 	}
 
-	TerrainActor->UpdateParticleDataDelegate.AddLambda([this](FParticleDataById data)
-													   { UpdateParticleData(data);});
+	TerrainActor->UpdateParticleDataDelegate.AddLambda(
+		[this](FParticleDataById data){ UpdateParticleData(data);}
+	);
 }
 
 void UAGX_DefaultTerrainParticleRendererComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -117,7 +118,7 @@ bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParentTerrainActor(
 				 "particles"),
 			*GetName());
 		return false;
-	}
+	}	
 
 	return TerrainActor != nullptr;
 }
@@ -164,8 +165,9 @@ bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParticleSystemCompo
 	return ParticleSystemComponent != nullptr;
 }
 
-void UAGX_DefaultTerrainParticleRendererComponent::UpdateParticleData(FParticleDataById& data)
+void UAGX_DefaultTerrainParticleRendererComponent::UpdateParticleData(FParticleDataById data)
 {
+	UE_LOG(LogTemp, Warning, TEXT("ParticleRenderer: UpdateParticleData(data)"));
 	const TArray<FVector>& Positions = data.Positions;
 	const TArray<FQuat>& Rotations = data.Rotations;
 	const TArray<float>& Radii = data.Radii;
