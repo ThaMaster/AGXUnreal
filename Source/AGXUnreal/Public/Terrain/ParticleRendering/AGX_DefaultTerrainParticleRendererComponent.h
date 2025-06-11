@@ -33,12 +33,9 @@ public:
 		Meta = (EditCondition = "bEnableParticleRendering"))
 	UNiagaraSystem* ParticleSystemAsset;
 
-	/**
-	 * If a Particle System Component has been spawned by the Terrain, this function will return it.
-	 * Returns nullptr otherwise.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "AGX Terrain")
-	UNiagaraComponent* GetSpawnedParticleSystemComponent();
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Particle Rendering")
+	void SetEnableParticleRendering(bool bEnabled);
 
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -48,12 +45,22 @@ private:
 	// Particle related variables.
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
 
+	// TODO: Also add the movable terrain component!
+	AAGX_Terrain* TerrainActor = nullptr;
+	FDelegateHandle DelegateHandle;
+
 	bool InitializeParentTerrainActor();
-	bool InitializeParticleSystem();
 	bool InitializeParticleSystemComponent();
 
 	void UpdateParticleData(FParticleDataById data);
 
-	// TODO: Also add the movable terrain component!
-	AAGX_Terrain* TerrainActor = nullptr;
+#if WITH_EDITOR
+	virtual void PostInitProperties() override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
+
+	void InitPropertyDispatcher();
+#endif
+
+
 };

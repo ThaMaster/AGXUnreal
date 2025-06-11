@@ -61,15 +61,16 @@ UAGX_DefaultTerrainParticleRendererComponent::UAGX_DefaultTerrainParticleRendere
 	ParticleSystemAsset = AssetFinder.Object;
 }
 
-UNiagaraComponent* UAGX_DefaultTerrainParticleRendererComponent::GetSpawnedParticleSystemComponent()
-{
-	return ParticleSystemComponent;
-}
-
 void UAGX_DefaultTerrainParticleRendererComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!bEnableParticleRendering)
+	{
+		return;
+	}
+
+	// Fetch the parent terrain actor which holds the particle data
 	if (!TerrainActor)
 	{
 		if (!InitializeParentTerrainActor())
@@ -77,16 +78,14 @@ void UAGX_DefaultTerrainParticleRendererComponent::BeginPlay()
 			return;
 		}
 	}
-
-	if (bEnableParticleRendering)
+	
+	if (!InitializeParticleSystemComponent())
 	{
-		if(!InitializeParticleSystem())
-		{
-			return;
-		}
+		return;
 	}
 
-	TerrainActor->UpdateParticleDataDelegate.AddLambda(
+	// Add lambda function to terrain delegate function to fetch particle data
+	DelegateHandle = TerrainActor->UpdateParticleDataDelegate.AddLambda(
 		[this](FParticleDataById data){ UpdateParticleData(data);}
 	);
 }
@@ -94,6 +93,12 @@ void UAGX_DefaultTerrainParticleRendererComponent::BeginPlay()
 void UAGX_DefaultTerrainParticleRendererComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
+
+	// Remove delegate when ending play
+	if (DelegateHandle.IsValid())
+	{
+		TerrainActor->UpdateParticleDataDelegate.Remove(DelegateHandle);
+	}
 }
 
 bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParentTerrainActor()
@@ -123,18 +128,13 @@ bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParentTerrainActor(
 	return TerrainActor != nullptr;
 }
 
-bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParticleSystem()
-{	
-	return InitializeParticleSystemComponent();
-}
-
 bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParticleSystemComponent()
 {
 	if (!ParticleSystemAsset)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Particle Renderer '%s' does not have a particle system, cannot render particles"),
+			TEXT("Particle renderer '%s' does not have a particle system, cannot render particles"),
 			*GetName());
 		return false;
 	}
@@ -167,7 +167,6 @@ bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParticleSystemCompo
 
 void UAGX_DefaultTerrainParticleRendererComponent::UpdateParticleData(FParticleDataById data)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ParticleRenderer: UpdateParticleData(data)"));
 	const TArray<FVector>& Positions = data.Positions;
 	const TArray<FQuat>& Rotations = data.Rotations;
 	const TArray<float>& Radii = data.Radii;
@@ -208,3 +207,66 @@ void UAGX_DefaultTerrainParticleRendererComponent::UpdateParticleData(FParticleD
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
 		ParticleSystemComponent, TEXT("Velocities"), Velocities);
 }
+
+void UAGX_DefaultTerrainParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
+{
+	bEnableParticleRendering = bEnabled;
+}
+
+#if WITH_EDITOR
+
+void UAGX_DefaultTerrainParticleRendererComponent::PostEditChangeChainProperty(
+	FPropertyChangedChainEvent& Event)
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
+	Super::PostEditChangeChainProperty(Event);
+}
+
+
+void UAGX_DefaultTerrainParticleRendererComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+	InitPropertyDispatcher();
+}
+
+bool UAGX_DefaultTerrainParticleRendererComponent::CanEditChange(const FProperty* InProperty) const
+{
+	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
+	if (!SuperCanEditChange)
+		return false;
+
+	const FName Prop = InProperty->GetFName();
+
+	if (Prop == GET_MEMBER_NAME_CHECKED(UAGX_DefaultTerrainParticleRendererComponent, ParticleSystemAsset))
+	{
+		return false;
+	}
+
+	return SuperCanEditChange;
+}
+
+void UAGX_DefaultTerrainParticleRendererComponent::InitPropertyDispatcher()
+{
+	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
+		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
+	if (PropertyDispatcher.IsInitialized())
+	{
+		return;
+	}
+
+	PropertyDispatcher.Add(
+		AGX_MEMBER_NAME(ParticleSystemAsset),
+		[](ThisClass* This)
+		{
+			if (This->ParticleSystemAsset != nullptr)
+			{
+				This->ParticleSystemAsset->RequestCompile(true);
+			}
+		});
+
+	PropertyDispatcher.Add(
+		AGX_MEMBER_NAME(bEnableParticleRendering),
+		[](ThisClass* This) { This->SetEnableParticleRendering(This->bEnableParticleRendering); });
+}
+
+#endif
