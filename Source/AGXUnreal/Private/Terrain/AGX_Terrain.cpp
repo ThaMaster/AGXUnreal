@@ -91,6 +91,7 @@ AAGX_Terrain::AAGX_Terrain()
 	AssignDefault(
 		ParticleSystemAsset, TEXT("NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/"
 								  "PS_SoilParticleSystem.PS_SoilParticleSystem'"));
+	UpdateParticleDataDelegate.AddUObject(this, &AAGX_Terrain::TestFunction);
 }
 
 void AAGX_Terrain::SetCanCollide(bool bInCanCollide)
@@ -1726,6 +1727,10 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	{
 		return;
 	}
+	if (!UpdateParticleDataDelegate.IsBound())
+	{
+		return;
+	}
 
 	// Copy data with holes.
 	EParticleDataFlags ToInclude = EParticleDataFlags::Positions | EParticleDataFlags::Rotations |
@@ -1734,11 +1739,16 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		bEnableTerrainPaging ? NativeTerrainPagerBarrier.GetParticleDataById(ToInclude)
 							 : NativeBarrier.GetParticleDataById(ToInclude);
 
-	const TArray<FVector>& Positions = ParticleData.Positions;
-	const TArray<FQuat>& Rotations = ParticleData.Rotations;
-	const TArray<float>& Radii = ParticleData.Radii;
-	const TArray<bool>& Exists = ParticleData.Exists;
-	const TArray<FVector>& Velocities = ParticleData.Velocities;
+	UpdateParticleDataDelegate.Broadcast(ParticleData);
+}
+
+void AAGX_Terrain::TestFunction(FParticleDataById data)
+{
+	const TArray<FVector>& Positions = data.Positions;
+	const TArray<FQuat>& Rotations = data.Rotations;
+	const TArray<float>& Radii = data.Radii;
+	const TArray<bool>& Exists = data.Exists;
+	const TArray<FVector>& Velocities = data.Velocities;
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());

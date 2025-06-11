@@ -346,6 +346,9 @@ public:
 	FTerrainPagerBarrier* GetNativeTerrainPager();
 	const FTerrainPagerBarrier* GetNativeTerrainPager() const;
 
+	DECLARE_MULTICAST_DELEGATE_OneParam(FParticleDataMulticastDelegate, FParticleDataById)
+	FParticleDataMulticastDelegate UpdateParticleDataDelegate;
+
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
@@ -375,6 +378,7 @@ private:
 	bool InitializeParticleSystem();
 	bool InitializeParticleSystemComponent();
 	void UpdateParticlesArrays();
+	void TestFunction(FParticleDataById data);
 #if WITH_EDITOR
 	void InitPropertyDispatcher();
 	virtual void PostLoad() override;
