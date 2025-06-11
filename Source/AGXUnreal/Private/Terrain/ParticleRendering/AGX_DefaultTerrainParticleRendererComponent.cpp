@@ -13,33 +13,6 @@
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 
-
-/**
- * NOTES / TODO
- * 
- * - - - - - - - - -
- * 
- * Maybe need the code below?
- * 
- * PropertyDispatcher.Add(
- *		AGX_MEMBER_NAME(ParticleSystemAsset),
- *		[](ThisClass* This)
- *		{
- *			if (This->ParticleSystemAsset != nullptr)
- *			{
- * 				This->ParticleSystemAsset->RequestCompile(true);
- *			}
- *		});
- * 
- * - - - - - - - - -
- * 
- * Terrain no longer returns a particel system as in the below (now returns only nullptr):
- *		GetSpawnedParticleSystemComponent()
- * Should it, or should it be removed?
- * 
- * 
- */
-
 UAGX_DefaultTerrainParticleRendererComponent::UAGX_DefaultTerrainParticleRendererComponent()
 {
 	const TCHAR* Path = TEXT(
@@ -69,10 +42,10 @@ void UAGX_DefaultTerrainParticleRendererComponent::BeginPlay()
 	{
 		return;
 	}
-
-	// Fetch the parent terrain actor which holds the particle data
+	
 	if (!TerrainActor)
 	{
+		// Fetch the parent terrain actor which holds the particle data
 		if (!InitializeParentTerrainActor())
 		{
 			return;
@@ -103,6 +76,7 @@ void UAGX_DefaultTerrainParticleRendererComponent::EndPlay(const EEndPlayReason:
 
 bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParentTerrainActor()
 {
+	// First get parent actor
 	AActor* Owner = GetOwner();
 	if (!Owner)
 	{
@@ -114,12 +88,13 @@ bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParentTerrainActor(
 		return false;
 	}
 
+	// Then cast it to the proper type
 	TerrainActor = Cast<AAGX_Terrain>(Owner);
 	if (!TerrainActor)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Particle Renderer '%s' does not have a particle system, cannot render "
+			TEXT("Particle Renderer '%s' could not cast parent to 'AGX_Terrain' actor, cannot fetch particle data"
 				 "particles"),
 			*GetName());
 		return false;

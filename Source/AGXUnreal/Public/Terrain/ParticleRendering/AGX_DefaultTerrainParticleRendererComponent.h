@@ -31,7 +31,7 @@ public:
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Particle Rendering",
 		Meta = (EditCondition = "bEnableParticleRendering"))
-	UNiagaraSystem* ParticleSystemAsset;
+	UNiagaraSystem* ParticleSystemAsset = nullptr;
 
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Particle Rendering")
