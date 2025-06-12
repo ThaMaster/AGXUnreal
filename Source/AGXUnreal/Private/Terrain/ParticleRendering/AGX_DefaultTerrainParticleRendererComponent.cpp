@@ -5,8 +5,6 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_LogCategory.h"
-#include "Terrain/AGX_Terrain.h"
-#include "Utilities/AGX_ObjectUtilities.h"
 
 // Unreal Engine includes.
 #include "NiagaraComponent.h"
@@ -37,70 +35,11 @@ UAGX_DefaultTerrainParticleRendererComponent::UAGX_DefaultTerrainParticleRendere
 void UAGX_DefaultTerrainParticleRendererComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (!bEnableParticleRendering)
-	{
-		return;
-	}
-	
-	if (!TerrainActor)
-	{
-		// Fetch the parent terrain actor which holds the particle data
-		if (!InitializeParentTerrainActor())
-		{
-			return;
-		}
-	}
 	
 	if (!InitializeParticleSystemComponent())
 	{
 		return;
 	}
-
-	// Add lambda function to terrain delegate function to fetch particle data
-	DelegateHandle = TerrainActor->UpdateParticleDataDelegate.AddLambda(
-		[this](FParticleDataById data){ UpdateParticleData(data);}
-	);
-}
-
-void UAGX_DefaultTerrainParticleRendererComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-
-	// Remove delegate when ending play
-	if (DelegateHandle.IsValid())
-	{
-		TerrainActor->UpdateParticleDataDelegate.Remove(DelegateHandle);
-	}
-}
-
-bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParentTerrainActor()
-{
-	// First get parent actor
-	AActor* Owner = GetOwner();
-	if (!Owner)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Particle Renderer '%s' could not fetch the parent actor"
-				 "particles"),
-			*GetName());
-		return false;
-	}
-
-	// Then cast it to the proper type
-	TerrainActor = Cast<AAGX_Terrain>(Owner);
-	if (!TerrainActor)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Particle Renderer '%s' could not cast parent to 'AGX_Terrain' actor, cannot fetch particle data"
-				 "particles"),
-			*GetName());
-		return false;
-	}	
-
-	return TerrainActor != nullptr;
 }
 
 bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParticleSystemComponent()
@@ -119,7 +58,7 @@ bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParticleSystemCompo
 	// the world origin which in turn may result in particles being culled and not rendered if the
 	// terrain is located far away from the world origin (see Fixed Bounds in the Particle System).
 	 ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-		ParticleSystemAsset, TerrainActor->GetRootComponent(), NAME_None, FVector::ZeroVector,
+		ParticleSystemAsset, ParentTerrainActor->GetRootComponent(), NAME_None, FVector::ZeroVector,
 		FRotator::ZeroRotator,
 		FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset, false,
 #if UE_VERSION_OLDER_THAN(4, 24, 0)
@@ -140,7 +79,7 @@ bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParticleSystemCompo
 	return ParticleSystemComponent != nullptr;
 }
 
-void UAGX_DefaultTerrainParticleRendererComponent::UpdateParticleData(FParticleDataById data)
+void UAGX_DefaultTerrainParticleRendererComponent::HandleParticleData(FParticleDataById data)
 {
 	const TArray<FVector>& Positions = data.Positions;
 	const TArray<FQuat>& Rotations = data.Rotations;
@@ -183,26 +122,8 @@ void UAGX_DefaultTerrainParticleRendererComponent::UpdateParticleData(FParticleD
 		ParticleSystemComponent, TEXT("Velocities"), Velocities);
 }
 
-void UAGX_DefaultTerrainParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
-{
-	bEnableParticleRendering = bEnabled;
-}
 
 #if WITH_EDITOR
-
-void UAGX_DefaultTerrainParticleRendererComponent::PostEditChangeChainProperty(
-	FPropertyChangedChainEvent& Event)
-{
-	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
-	Super::PostEditChangeChainProperty(Event);
-}
-
-
-void UAGX_DefaultTerrainParticleRendererComponent::PostInitProperties()
-{
-	Super::PostInitProperties();
-	InitPropertyDispatcher();
-}
 
 bool UAGX_DefaultTerrainParticleRendererComponent::CanEditChange(const FProperty* InProperty) const
 {
@@ -218,6 +139,12 @@ bool UAGX_DefaultTerrainParticleRendererComponent::CanEditChange(const FProperty
 	}
 
 	return SuperCanEditChange;
+}
+
+void UAGX_DefaultTerrainParticleRendererComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+	InitPropertyDispatcher();
 }
 
 void UAGX_DefaultTerrainParticleRendererComponent::InitPropertyDispatcher()

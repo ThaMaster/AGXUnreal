@@ -9,7 +9,6 @@
 // Unreal Engine includes.
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
-#include "CoreTypes.h"
 
 #include "AGX_BaseTerrainParticleRendererComponent.generated.h"
 
@@ -23,7 +22,7 @@ public:
 	UAGX_BaseTerrainParticleRendererComponent();
 
 	/** Whether soil particles should be rendered or not. */
-	UPROPERTY(EditAnywhere, Category = "AGX Particle Rendering")
+	UPROPERTY(EditAnywhere, Category = "AGX Particle Rendering", meta = (DisplayPriority = "0"))
 	bool bEnableParticleRendering = true;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Particle Rendering")
@@ -32,21 +31,22 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-private:
-
+protected:
 	AAGX_Terrain* ParentTerrainActor = nullptr;
+
+#if WITH_EDITOR
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
+	virtual void PostInitProperties() override;
+	virtual void InitPropertyDispatcher();
+#endif
+
+private:
+	
 	FDelegateHandle DelegateHandle;
 	
 	bool InitializeParentTerrainActor();
-
-	virtual void HandleParticleData(FParticleDataById data);
-
 	void BindParticleHandler();
 	void UnbindParticleHandler();
 
-#if WITH_EDITOR
-	virtual void PostInitProperties() override;
-	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
-	void InitPropertyDispatcher();
-#endif
+	virtual void HandleParticleData(FParticleDataById data);
 };

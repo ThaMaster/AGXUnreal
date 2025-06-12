@@ -6,9 +6,6 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_LogCategory.h"
 
-// Unreal Engine includes.
-
-
 UAGX_BaseTerrainParticleRendererComponent::UAGX_BaseTerrainParticleRendererComponent()
 {
 	// Constructor
