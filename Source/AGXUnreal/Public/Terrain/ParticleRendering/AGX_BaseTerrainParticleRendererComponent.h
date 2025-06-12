@@ -35,6 +35,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	UNiagaraSystem* FindNiagaraSystemAsset(const TCHAR* AssetPath);
+
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 	virtual void PostInitProperties() override;

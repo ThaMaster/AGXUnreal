@@ -13,23 +13,10 @@
 
 UAGX_DefaultTerrainParticleRendererComponent::UAGX_DefaultTerrainParticleRendererComponent()
 {
-	const TCHAR* Path = TEXT(
-		"NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/"
-		"PS_SoilParticleSystem.PS_SoilParticleSystem'");
-
 	if (ParticleSystemAsset != nullptr)
 		return;
 
-	using Type = typename std::remove_reference<decltype(*ParticleSystemAsset)>::type;
-	auto AssetFinder = ConstructorHelpers::FObjectFinder<Type>(Path);
-	if (!AssetFinder.Succeeded())
-	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), Path);
-		return;
-	}
-
-	ParticleSystemAsset = AssetFinder.Object;
+	ParticleSystemAsset = FindNiagaraSystemAsset(NIAGARA_SYSTEM_PATH);
 }
 
 void UAGX_DefaultTerrainParticleRendererComponent::BeginPlay()

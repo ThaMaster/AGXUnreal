@@ -39,6 +39,19 @@ void UAGX_BaseTerrainParticleRendererComponent::EndPlay(const EEndPlayReason::Ty
 	UnbindParticleHandler();
 }
 
+UNiagaraSystem* UAGX_BaseTerrainParticleRendererComponent::FindNiagaraSystemAsset(const TCHAR* AssetPath)
+{
+	auto AssetFinder = ConstructorHelpers::FObjectFinder<UNiagaraSystem>(AssetPath);
+	if (!AssetFinder.Succeeded())
+	{
+		UE_LOG(
+			LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), AssetPath);
+		return nullptr;
+	}
+
+	return AssetFinder.Object;
+}
+
 void UAGX_BaseTerrainParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
 {
 	bEnableParticleRendering = bEnabled;

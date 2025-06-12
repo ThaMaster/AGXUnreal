@@ -34,6 +34,10 @@ protected:
 
 private:
 
+	const TCHAR* NIAGARA_SYSTEM_PATH = TEXT(
+		"NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/"
+		"PS_SoilParticleSystem.PS_SoilParticleSystem'");
+
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
 
 	bool InitializeParticleSystemComponent();
@@ -45,5 +49,7 @@ private:
 	virtual void PostInitProperties() override;
 	virtual void InitPropertyDispatcher() override;
 #endif
+
+	
 
 };
