@@ -28,11 +28,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Particle Rendering")
 	void SetEnableParticleRendering(bool bEnabled);
 
+protected:
+
+	AAGX_Terrain* ParentTerrainActor = nullptr;
+
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-protected:
-	AAGX_Terrain* ParentTerrainActor = nullptr;
 
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;

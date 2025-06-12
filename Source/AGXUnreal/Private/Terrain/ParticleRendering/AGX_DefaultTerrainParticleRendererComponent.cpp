@@ -42,6 +42,11 @@ void UAGX_DefaultTerrainParticleRendererComponent::BeginPlay()
 	}
 }
 
+UNiagaraComponent* UAGX_DefaultTerrainParticleRendererComponent::GetParticleSystemComponent()
+{
+	return ParticleSystemComponent;
+}
+
 bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParticleSystemComponent()
 {
 	if (!ParticleSystemAsset)
@@ -121,7 +126,6 @@ void UAGX_DefaultTerrainParticleRendererComponent::HandleParticleData(FParticleD
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
 		ParticleSystemComponent, TEXT("Velocities"), Velocities);
 }
-
 
 #if WITH_EDITOR
 

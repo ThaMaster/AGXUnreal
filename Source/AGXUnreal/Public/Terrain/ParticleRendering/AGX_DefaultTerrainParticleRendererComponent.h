@@ -25,11 +25,15 @@ public:
 		Meta = (EditCondition = "bEnableParticleRendering"))
 	UNiagaraSystem* ParticleSystemAsset = nullptr;
 
+	UFUNCTION(BlueprintCallable, Category = "AGX Particle Rendering")
+	UNiagaraComponent* GetParticleSystemComponent();
+
+protected:
+
 	virtual void BeginPlay() override;
 
 private:
 
-	// Particle related variables.
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
 
 	bool InitializeParticleSystemComponent();
@@ -41,6 +45,5 @@ private:
 	virtual void PostInitProperties() override;
 	virtual void InitPropertyDispatcher() override;
 #endif
-
 
 };
