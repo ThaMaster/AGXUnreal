@@ -22,57 +22,26 @@ UAGX_DefaultTerrainParticleRendererComponent::UAGX_DefaultTerrainParticleRendere
 void UAGX_DefaultTerrainParticleRendererComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if (!InitializeParticleSystemComponent())
+
+	if (!InitializeNiagaraParticleSystemComponent())
 	{
 		return;
 	}
-}
 
-UNiagaraComponent* UAGX_DefaultTerrainParticleRendererComponent::GetParticleSystemComponent()
-{
-	return ParticleSystemComponent;
-}
-
-bool UAGX_DefaultTerrainParticleRendererComponent::InitializeParticleSystemComponent()
-{
-	if (!ParticleSystemAsset)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Particle renderer '%s' does not have a particle system, cannot render particles"),
-			*GetName());
-		return false;
-	}
-
-	// It is important that we attach the ParticleSystemComponent using "KeepRelativeOffset" so that
-	// it's world position becomes the same as the Terrain's. Otherwise it will be spawned at
-	// the world origin which in turn may result in particles being culled and not rendered if the
-	// terrain is located far away from the world origin (see Fixed Bounds in the Particle System).
-	 ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-		ParticleSystemAsset, ParentTerrainActor->GetRootComponent(), NAME_None, FVector::ZeroVector,
-		FRotator::ZeroRotator,
-		FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset, false,
-#if UE_VERSION_OLDER_THAN(4, 24, 0)
-		EPSCPoolMethod::None
-#else
-		ENCPoolMethod::None
-#endif
+	// Attach lambda function to Function Delegate.
+	// HandleParticleData will always run when AGX_Terrain updates particle data.
+	DelegateHandle = ParentTerrainActor->UpdateParticleDataDelegate.AddLambda(
+		[this](FParticleDataById data) { HandleParticleData(data); }
 	);
-#if WITH_EDITORONLY_DATA
-	// Must check for nullptr here because no particle system component is created with running
-	// as a unit test without graphics, i.e. with our run_unit_tests script in GitLab CI.
-	if (ParticleSystemComponent != nullptr)
-	{
-		ParticleSystemComponent->bVisualizeComponent = true;
-	}
-#endif
-
-	return ParticleSystemComponent != nullptr;
 }
 
 void UAGX_DefaultTerrainParticleRendererComponent::HandleParticleData(FParticleDataById data)
 {
+	if (ParticleSystemComponent == nullptr)
+	{
+		return;
+	}
+
 	const TArray<FVector>& Positions = data.Positions;
 	const TArray<FQuat>& Rotations = data.Rotations;
 	const TArray<float>& Radii = data.Radii;
@@ -113,53 +82,3 @@ void UAGX_DefaultTerrainParticleRendererComponent::HandleParticleData(FParticleD
 	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
 		ParticleSystemComponent, TEXT("Velocities"), Velocities);
 }
-
-#if WITH_EDITOR
-
-bool UAGX_DefaultTerrainParticleRendererComponent::CanEditChange(const FProperty* InProperty) const
-{
-	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
-	if (!SuperCanEditChange)
-		return false;
-
-	const FName Prop = InProperty->GetFName();
-
-	if (Prop == GET_MEMBER_NAME_CHECKED(UAGX_DefaultTerrainParticleRendererComponent, ParticleSystemAsset))
-	{
-		return false;
-	}
-
-	return SuperCanEditChange;
-}
-
-void UAGX_DefaultTerrainParticleRendererComponent::PostInitProperties()
-{
-	Super::PostInitProperties();
-	InitPropertyDispatcher();
-}
-
-void UAGX_DefaultTerrainParticleRendererComponent::InitPropertyDispatcher()
-{
-	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
-		FAGX_PropertyChangedDispatcher<ThisClass>::Get();
-	if (PropertyDispatcher.IsInitialized())
-	{
-		return;
-	}
-
-	PropertyDispatcher.Add(
-		AGX_MEMBER_NAME(ParticleSystemAsset),
-		[](ThisClass* This)
-		{
-			if (This->ParticleSystemAsset != nullptr)
-			{
-				This->ParticleSystemAsset->RequestCompile(true);
-			}
-		});
-
-	PropertyDispatcher.Add(
-		AGX_MEMBER_NAME(bEnableParticleRendering),
-		[](ThisClass* This) { This->SetEnableParticleRendering(This->bEnableParticleRendering); });
-}
-
-#endif

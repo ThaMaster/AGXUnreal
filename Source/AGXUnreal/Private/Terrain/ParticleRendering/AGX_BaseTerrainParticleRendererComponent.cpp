@@ -6,10 +6,10 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_LogCategory.h"
 
-UAGX_BaseTerrainParticleRendererComponent::UAGX_BaseTerrainParticleRendererComponent()
-{
-	// Constructor
-}
+// Unreal Engine includes.
+#include "NiagaraComponent.h"
+#include "NiagaraDataInterfaceArrayFunctionLibrary.h"
+#include "NiagaraFunctionLibrary.h"
 
 void UAGX_BaseTerrainParticleRendererComponent::BeginPlay()
 {
@@ -28,15 +28,17 @@ void UAGX_BaseTerrainParticleRendererComponent::BeginPlay()
 			return;
 		}
 	}
-
-	// Maybe remove this to allow user to bind to whatever they want?
-	BindParticleHandler();
 }
 
 void UAGX_BaseTerrainParticleRendererComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-	UnbindParticleHandler();
+
+	// If delegate is has not been removed, remoe it
+	if (DelegateHandle.IsValid())
+	{
+		ParentTerrainActor->UpdateParticleDataDelegate.Remove(DelegateHandle);
+	}
 }
 
 UNiagaraSystem* UAGX_BaseTerrainParticleRendererComponent::FindNiagaraSystemAsset(const TCHAR* AssetPath)
@@ -55,6 +57,47 @@ UNiagaraSystem* UAGX_BaseTerrainParticleRendererComponent::FindNiagaraSystemAsse
 void UAGX_BaseTerrainParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
 {
 	bEnableParticleRendering = bEnabled;
+}
+
+UNiagaraComponent* UAGX_BaseTerrainParticleRendererComponent::GetParticleSystemComponent()
+{
+	return ParticleSystemComponent;
+}
+
+bool UAGX_BaseTerrainParticleRendererComponent::InitializeNiagaraParticleSystemComponent()
+{
+	if (!ParticleSystemAsset)
+	{
+		UE_LOG(
+			LogAGX, Warning,
+			TEXT("Particle renderer '%s' does not have a particle system, cannot render particles with Niagara"),
+			*GetName());
+		return false;
+	}
+
+	// It is important that we attach the ParticleSystemComponent using "KeepRelativeOffset" so that
+	// it's world position becomes the same as the Terrain's. Otherwise it will be spawned at
+	// the world origin which in turn may result in particles being culled and not rendered if the
+	// terrain is located far away from the world origin (see Fixed Bounds in the Particle System).
+	ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+		ParticleSystemAsset, ParentTerrainActor->GetRootComponent(), NAME_None, FVector::ZeroVector,
+		FRotator::ZeroRotator, FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset, false,
+#if UE_VERSION_OLDER_THAN(4, 24, 0)
+		EPSCPoolMethod::None
+#else
+		ENCPoolMethod::None
+#endif
+	);
+#if WITH_EDITORONLY_DATA
+	// Must check for nullptr here because no particle system component is created with running
+	// as a unit test without graphics, i.e. with our run_unit_tests script in GitLab CI.
+	if (ParticleSystemComponent != nullptr)
+	{
+		ParticleSystemComponent->bVisualizeComponent = true;
+	}
+#endif
+
+	return ParticleSystemComponent != nullptr;
 }
 
 bool UAGX_BaseTerrainParticleRendererComponent::InitializeParentTerrainActor()
@@ -87,28 +130,28 @@ bool UAGX_BaseTerrainParticleRendererComponent::InitializeParentTerrainActor()
 	return ParentTerrainActor != nullptr;
 }
 
-// TODO: Make it possible to choose which delegate and function to bind to!
-void UAGX_BaseTerrainParticleRendererComponent::BindParticleHandler()
-{
-	DelegateHandle = ParentTerrainActor->UpdateParticleDataDelegate.AddLambda(
-		[this](FParticleDataById data) { HandleParticleData(data); }
-	);
-}
-
-void UAGX_BaseTerrainParticleRendererComponent::UnbindParticleHandler()
-{
-	if (DelegateHandle.IsValid())
-	{
-		ParentTerrainActor->UpdateParticleDataDelegate.Remove(DelegateHandle);
-	}
-}
-
 void UAGX_BaseTerrainParticleRendererComponent::HandleParticleData(FParticleDataById data)
 {
 	return;
 }
 
 #if WITH_EDITOR
+
+bool UAGX_BaseTerrainParticleRendererComponent::CanEditChange(const FProperty* InProperty) const
+{
+	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
+	if (!SuperCanEditChange)
+		return false;
+
+	const FName Prop = InProperty->GetFName();
+
+	if (Prop == GET_MEMBER_NAME_CHECKED(UAGX_BaseTerrainParticleRendererComponent, ParticleSystemAsset))
+	{
+		return false;
+	}
+
+	return SuperCanEditChange;
+}
 
 void UAGX_BaseTerrainParticleRendererComponent::PostEditChangeChainProperty(
 	FPropertyChangedChainEvent& Event)
@@ -131,6 +174,17 @@ void UAGX_BaseTerrainParticleRendererComponent::InitPropertyDispatcher()
 	{
 		return;
 	}
+
+	PropertyDispatcher.Add(
+		AGX_MEMBER_NAME(ParticleSystemAsset),
+		[](ThisClass* This)
+		{
+			if (This->ParticleSystemAsset != nullptr)
+			{
+				This->ParticleSystemAsset->RequestCompile(true);
+			}
+		});
+
 	PropertyDispatcher.Add(
 		AGX_MEMBER_NAME(bEnableParticleRendering),
 		[](ThisClass* This) { This->SetEnableParticleRendering(This->bEnableParticleRendering); });

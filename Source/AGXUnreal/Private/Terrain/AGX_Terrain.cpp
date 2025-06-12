@@ -1656,7 +1656,6 @@ void AAGX_Terrain::ClearDisplacementMap()
 
 void AAGX_Terrain::UpdateParticlesArrays()
 {
-
 	if (!NativeBarrier.HasNative() || !UpdateParticleDataDelegate.IsBound())
 	{
 		return;
@@ -1668,7 +1667,6 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	const FParticleDataById ParticleData =
 		bEnableTerrainPaging ? NativeTerrainPagerBarrier.GetParticleDataById(ToInclude)
 							 : NativeBarrier.GetParticleDataById(ToInclude);
-	UE_LOG(LogTemp, Warning, TEXT("AGX_Terrain: UpdateParticlesArrays()"));
 	UpdateParticleDataDelegate.Broadcast(ParticleData);
 }
 

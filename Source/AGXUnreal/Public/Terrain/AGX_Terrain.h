@@ -11,6 +11,7 @@
 #include "Terrain/AGX_TerrainPagingSettings.h"
 #include "Terrain/AGX_Shovel.h"
 #include "AGX_ShovelReference.h"
+#include "Terrain/TerrainParticleTypes.h"
 
 // Unreal Engine includes.
 #include "Misc/EngineVersionComparison.h"
@@ -326,7 +327,7 @@ public:
 	FTerrainPagerBarrier* GetNativeTerrainPager();
 	const FTerrainPagerBarrier* GetNativeTerrainPager() const;
 
-	DECLARE_MULTICAST_DELEGATE_OneParam(FParticleDataMulticastDelegate, FParticleDataById)
+	DECLARE_MULTICAST_DELEGATE_OneParam(FParticleDataMulticastDelegate, FParticleDataById);
 	FParticleDataMulticastDelegate UpdateParticleDataDelegate;
 
 #if WITH_EDITOR

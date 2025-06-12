@@ -9,6 +9,7 @@
 // Unreal Engine includes.
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
+#include "CoreTypes.h"
 
 #include "AGX_BaseTerrainParticleRendererComponent.generated.h"
 
@@ -19,7 +20,7 @@ class AGXUNREAL_API UAGX_BaseTerrainParticleRendererComponent : public UActorCom
 
 public:
 
-	UAGX_BaseTerrainParticleRendererComponent();
+	UAGX_BaseTerrainParticleRendererComponent() {};
 
 	/** Whether soil particles should be rendered or not. */
 	UPROPERTY(EditAnywhere, Category = "AGX Particle Rendering", meta = (DisplayPriority = "0"))
@@ -28,28 +29,35 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Particle Rendering")
 	void SetEnableParticleRendering(bool bEnabled);
 
+	UPROPERTY(
+		EditAnywhere, Category = "AGX Particle Rendering",
+		Meta = (EditCondition = "bEnableParticleRendering"))
+	UNiagaraSystem* ParticleSystemAsset = nullptr;
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Particle Rendering")
+	UNiagaraComponent* GetParticleSystemComponent();
+
 protected:
 
 	AAGX_Terrain* ParentTerrainActor = nullptr;
+	UNiagaraComponent* ParticleSystemComponent = nullptr;
+	FDelegateHandle DelegateHandle;
 
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	bool InitializeNiagaraParticleSystemComponent();
 	UNiagaraSystem* FindNiagaraSystemAsset(const TCHAR* AssetPath);
 
 #if WITH_EDITOR
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 	virtual void PostInitProperties() override;
 	virtual void InitPropertyDispatcher();
 #endif
 
 private:
-	
-	FDelegateHandle DelegateHandle;
-	
-	bool InitializeParentTerrainActor();
-	void BindParticleHandler();
-	void UnbindParticleHandler();
 
+	bool InitializeParentTerrainActor();
 	virtual void HandleParticleData(FParticleDataById data);
 };

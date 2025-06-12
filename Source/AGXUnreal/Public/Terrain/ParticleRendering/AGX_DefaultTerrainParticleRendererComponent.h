@@ -20,14 +20,6 @@ public:
 
 	UAGX_DefaultTerrainParticleRendererComponent();
 
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Particle Rendering",
-		Meta = (EditCondition = "bEnableParticleRendering"))
-	UNiagaraSystem* ParticleSystemAsset = nullptr;
-
-	UFUNCTION(BlueprintCallable, Category = "AGX Particle Rendering")
-	UNiagaraComponent* GetParticleSystemComponent();
-
 protected:
 
 	virtual void BeginPlay() override;
@@ -38,18 +30,5 @@ private:
 		"NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/"
 		"PS_SoilParticleSystem.PS_SoilParticleSystem'");
 
-	UNiagaraComponent* ParticleSystemComponent = nullptr;
-
-	bool InitializeParticleSystemComponent();
-
 	virtual void HandleParticleData(FParticleDataById data) override;
-
-#if WITH_EDITOR
-	virtual bool CanEditChange(const FProperty* InProperty) const override;
-	virtual void PostInitProperties() override;
-	virtual void InitPropertyDispatcher() override;
-#endif
-
-	
-
 };
