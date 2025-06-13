@@ -31,10 +31,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Upsampling Particle Rendering")
 	bool bEnableParticleRendering = true;
 
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Upsampling Particle Rendering",
-		Meta = (EditCondition = "bEnableParticleRendering"))
-	UNiagaraSystem* ParticleSystemAsset = nullptr;
+	UPROPERTY(EditAnywhere, Category = "AGX Particle Rendering")
+	UNiagaraSystem* ParticleSystemAsset;
 
 	/**
 	 * The desired upsampling factor which the renderer will try to achieve.
@@ -136,7 +134,7 @@ private:
 
 	const TCHAR* NIAGARA_SYSTEM_PATH = TEXT(
 		"NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/UpsamplingParticleSystem"
-		"/PS_ParticleUpsampling_V2.PS_ParticleUpsampling_V2'");
+		"/PS_ParticleUpsamplingSystem.PS_ParticleUpsamplingSystem'");
 
 	UFUNCTION()
 	void HandleParticleData(FParticleDataById data);

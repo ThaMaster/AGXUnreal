@@ -17,7 +17,7 @@ class UNiagaraComponent;
 class UNiagaraSystem;
 
 UCLASS(
-	ClassGroup = "AGX_Terrain_Particle_Rendering",
+	ClassGroup = "AGX_Terrain_Particle_Rendering", Blueprintable,
 	meta = (BlueprintSpawnableComponent, ShortToolTip = "TODO: WRITE TOOL TIP"))
 class AGXUNREAL_API UAGX_SoilParticleRendererComponent : public UActorComponent
 {
@@ -31,10 +31,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Soil Particle Rendering")
 	bool bEnableParticleRendering = true;
 
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Soil Particle Rendering",
-		Meta = (EditCondition = "bEnableParticleRendering"))
-	UNiagaraSystem* ParticleSystemAsset = nullptr;
+	UPROPERTY(EditAnywhere, Category = "AGX Soil Particle Rendering")
+	UNiagaraSystem* ParticleSystemAsset; // THIS IS GRAY FOR SOME REASON?!?????
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Soil Particle Rendering")
 	bool SetEnableParticleRendering(bool bEnabled);
@@ -62,16 +60,14 @@ private:
 #endif
 
 	AAGX_Terrain* ParentTerrainActor = nullptr;
+
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
+
 	FDelegateHandle DelegateHandle;
 
 	bool InitializeParentTerrainActor();
 	bool InitializeNiagaraParticleSystemComponent();
-	UNiagaraSystem* FindNiagaraSystemAsset(const TCHAR* AssetPath);
-
-	const TCHAR* NIAGARA_SYSTEM_PATH = TEXT(
-		"NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/SoilParticleSystem/"
-		"PS_SoilParticleSystem.PS_SoilParticleSystem'");
+	void AssignDefaultNiagaraAsset(auto*& AssetRefProperty, const TCHAR* AssetPath);
 
 	UFUNCTION()
 	void HandleParticleData(FParticleDataById data);

@@ -13,10 +13,13 @@
 
 UAGX_SoilParticleRendererComponent::UAGX_SoilParticleRendererComponent()
 {
-	if (ParticleSystemAsset != nullptr)
-		return;
-
-	ParticleSystemAsset = FindNiagaraSystemAsset(NIAGARA_SYSTEM_PATH);
+	AssignDefaultNiagaraAsset(
+		ParticleSystemAsset,
+		TEXT(
+			"NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/SoilParticleSystem/"
+			"PS_SoilParticleSystem.PS_SoilParticleSystem'"
+		)
+	);
 }
 
 void UAGX_SoilParticleRendererComponent::BeginPlay()
@@ -65,17 +68,22 @@ UNiagaraComponent* UAGX_SoilParticleRendererComponent::GetParticleSystemComponen
 	return ParticleSystemComponent;
 }
 
-UNiagaraSystem* UAGX_SoilParticleRendererComponent::FindNiagaraSystemAsset(const TCHAR* AssetPath)
+void UAGX_SoilParticleRendererComponent::AssignDefaultNiagaraAsset(
+	auto*& AssetRefProperty, const TCHAR* AssetPath)
 {
-	auto AssetFinder = ConstructorHelpers::FObjectFinder<UNiagaraSystem>(AssetPath);
+	if (AssetRefProperty != nullptr)
+		return;
+
+	using Type = typename std::remove_reference<decltype(*AssetRefProperty)>::type;
+	auto AssetFinder = ConstructorHelpers::FObjectFinder<Type>(AssetPath);
 	if (!AssetFinder.Succeeded())
 	{
 		UE_LOG(
 			LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), AssetPath);
-		return nullptr;
+		return;
 	}
 
-	return AssetFinder.Object;
+	AssetRefProperty = AssetFinder.Object;
 }
 
 bool UAGX_SoilParticleRendererComponent::InitializeParentTerrainActor()
