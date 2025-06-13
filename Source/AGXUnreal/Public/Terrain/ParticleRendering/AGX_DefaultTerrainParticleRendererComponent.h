@@ -3,7 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "Terrain/ParticleRendering/AGX_BaseTerrainParticleRendererComponent.h"
+#include "Terrain/ParticleRendering/AGX_ParticleRendererComponentBase.h"
 
 #include "AGX_DefaultTerrainParticleRendererComponent.generated.h"
 
@@ -12,7 +12,7 @@ class UNiagaraSystem;
 
 UCLASS(ClassGroup = "AGX_Terrain_Particle_Rendering", meta = (BlueprintSpawnableComponent))
 class AGXUNREAL_API UAGX_DefaultTerrainParticleRendererComponent
-	: public UAGX_BaseTerrainParticleRendererComponent
+	: public UAGX_ParticleRendererComponentBase
 {
 	GENERATED_BODY()
 

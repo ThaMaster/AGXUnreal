@@ -1,6 +1,6 @@
 // Copyright 2025, Algoryx Simulation AB.
 
-#include "Terrain/ParticleRendering/AGX_BaseTerrainParticleRendererComponent.h"
+#include "Terrain/ParticleRendering/AGX_ParticleRendererComponentBase.h"
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_PropertyChangedDispatcher.h"
@@ -11,7 +11,7 @@
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 
-void UAGX_BaseTerrainParticleRendererComponent::BeginPlay()
+void UAGX_ParticleRendererComponentBase::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -28,20 +28,21 @@ void UAGX_BaseTerrainParticleRendererComponent::BeginPlay()
 			return;
 		}
 	}
+
+	ParentTerrainActor->UpdateParticleDataDelegate.AddDynamic(this, &UAGX_ParticleRendererComponentBase::HandleParticleData);
 }
 
-void UAGX_BaseTerrainParticleRendererComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+void UAGX_ParticleRendererComponentBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
 	// If delegate is has not been removed, remoe it
 	if (DelegateHandle.IsValid())
 	{
-		//ParentTerrainActor->UpdateParticleDataDelegate.Remove(DelegateHandle);
 	}
 }
 
-UNiagaraSystem* UAGX_BaseTerrainParticleRendererComponent::FindNiagaraSystemAsset(const TCHAR* AssetPath)
+UNiagaraSystem* UAGX_ParticleRendererComponentBase::FindNiagaraSystemAsset(const TCHAR* AssetPath)
 {
 	auto AssetFinder = ConstructorHelpers::FObjectFinder<UNiagaraSystem>(AssetPath);
 	if (!AssetFinder.Succeeded())
@@ -54,17 +55,17 @@ UNiagaraSystem* UAGX_BaseTerrainParticleRendererComponent::FindNiagaraSystemAsse
 	return AssetFinder.Object;
 }
 
-void UAGX_BaseTerrainParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
+void UAGX_ParticleRendererComponentBase::SetEnableParticleRendering(bool bEnabled)
 {
 	bEnableParticleRendering = bEnabled;
 }
 
-UNiagaraComponent* UAGX_BaseTerrainParticleRendererComponent::GetParticleSystemComponent()
+UNiagaraComponent* UAGX_ParticleRendererComponentBase::GetParticleSystemComponent()
 {
 	return ParticleSystemComponent;
 }
 
-bool UAGX_BaseTerrainParticleRendererComponent::InitializeNiagaraParticleSystemComponent()
+bool UAGX_ParticleRendererComponentBase::InitializeNiagaraParticleSystemComponent()
 {
 	if (!ParticleSystemAsset)
 	{
@@ -100,7 +101,7 @@ bool UAGX_BaseTerrainParticleRendererComponent::InitializeNiagaraParticleSystemC
 	return ParticleSystemComponent != nullptr;
 }
 
-bool UAGX_BaseTerrainParticleRendererComponent::InitializeParentTerrainActor()
+bool UAGX_ParticleRendererComponentBase::InitializeParentTerrainActor()
 {
 	// First get parent actor
 	AActor* Owner = GetOwner();
@@ -130,14 +131,14 @@ bool UAGX_BaseTerrainParticleRendererComponent::InitializeParentTerrainActor()
 	return ParentTerrainActor != nullptr;
 }
 
-void UAGX_BaseTerrainParticleRendererComponent::HandleParticleData(FParticleDataById data)
+void UAGX_ParticleRendererComponentBase::HandleParticleData(FParticleDataById data)
 {
 	return;
 }
 
 #if WITH_EDITOR
 
-bool UAGX_BaseTerrainParticleRendererComponent::CanEditChange(const FProperty* InProperty) const
+bool UAGX_ParticleRendererComponentBase::CanEditChange(const FProperty* InProperty) const
 {
 	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
 	if (!SuperCanEditChange)
@@ -145,7 +146,7 @@ bool UAGX_BaseTerrainParticleRendererComponent::CanEditChange(const FProperty* I
 
 	const FName Prop = InProperty->GetFName();
 
-	if (Prop == GET_MEMBER_NAME_CHECKED(UAGX_BaseTerrainParticleRendererComponent, ParticleSystemAsset))
+	if (Prop == GET_MEMBER_NAME_CHECKED(UAGX_ParticleRendererComponentBase, ParticleSystemAsset))
 	{
 		return false;
 	}
@@ -153,20 +154,20 @@ bool UAGX_BaseTerrainParticleRendererComponent::CanEditChange(const FProperty* I
 	return SuperCanEditChange;
 }
 
-void UAGX_BaseTerrainParticleRendererComponent::PostEditChangeChainProperty(
+void UAGX_ParticleRendererComponentBase::PostEditChangeChainProperty(
 	FPropertyChangedChainEvent& Event)
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>::Get().Trigger(Event);
 	Super::PostEditChangeChainProperty(Event);
 }
 
-void UAGX_BaseTerrainParticleRendererComponent::PostInitProperties()
+void UAGX_ParticleRendererComponentBase::PostInitProperties()
 {
 	Super::PostInitProperties();
 	InitPropertyDispatcher();
 }
 
-void UAGX_BaseTerrainParticleRendererComponent::InitPropertyDispatcher()
+void UAGX_ParticleRendererComponentBase::InitPropertyDispatcher()
 {
 	FAGX_PropertyChangedDispatcher<ThisClass>& PropertyDispatcher =
 		FAGX_PropertyChangedDispatcher<ThisClass>::Get();

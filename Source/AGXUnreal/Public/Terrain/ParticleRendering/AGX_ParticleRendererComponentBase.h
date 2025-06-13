@@ -11,16 +11,16 @@
 #include "CoreMinimal.h"
 #include "CoreTypes.h"
 
-#include "AGX_BaseTerrainParticleRendererComponent.generated.h"
+#include "AGX_ParticleRendererComponentBase.generated.h"
 
 UCLASS(meta=(ShortToolTip="This class is a reusable component for handling of rendering AGX_Terrain particles."))
-class AGXUNREAL_API UAGX_BaseTerrainParticleRendererComponent : public UActorComponent
+class AGXUNREAL_API UAGX_ParticleRendererComponentBase : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 
-	UAGX_BaseTerrainParticleRendererComponent() {};
+	UAGX_ParticleRendererComponentBase() {};
 
 	/** Whether soil particles should be rendered or not. */
 	UPROPERTY(EditAnywhere, Category = "AGX Particle Rendering", meta = (DisplayPriority = "0"))
@@ -59,5 +59,7 @@ protected:
 private:
 
 	bool InitializeParentTerrainActor();
+
+	UFUNCTION()
 	virtual void HandleParticleData(FParticleDataById data);
 };

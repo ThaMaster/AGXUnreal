@@ -1668,8 +1668,9 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	const FParticleDataById ParticleData =
 		bEnableTerrainPaging ? NativeTerrainPagerBarrier.GetParticleDataById(ToInclude)
 							 : NativeBarrier.GetParticleDataById(ToInclude);
-	//UpdateParticleDataDelegate.Broadcast(ParticleData);
-	UpdateParticleDataDelegate.Broadcast();
+
+	// Broadcast the data to all who is bound to the delegate.
+	UpdateParticleDataDelegate.Broadcast(ParticleData);
 }
 
 void AAGX_Terrain::UpdateLandscapeMaterialParameters()

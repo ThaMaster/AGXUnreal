@@ -58,6 +58,9 @@ class ALandscape;
 class UNiagaraComponent;
 class UNiagaraSystem;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FParticleDataMulticastDelegate, FParticleDataById, ParticleData);
+
+
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FShovelReferenceWithSettings
 {
@@ -326,8 +329,6 @@ public:
 	FTerrainPagerBarrier* GetOrCreateNativeTerrainPager();
 	FTerrainPagerBarrier* GetNativeTerrainPager();
 	const FTerrainPagerBarrier* GetNativeTerrainPager() const;
-
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FParticleDataMulticastDelegate);
 
 	UPROPERTY(BlueprintAssignable, Category = "AGX Terrain Particles")
 	FParticleDataMulticastDelegate UpdateParticleDataDelegate;
