@@ -19,8 +19,7 @@ class UNiagaraSystem;
 UCLASS(
 	ClassGroup = "AGX_Terrain_Particle_Rendering",
 	meta = (BlueprintSpawnableComponent, ShortToolTip = "TODO: WRITE TOOL TIP"))
-class AGXUNREAL_API UAGX_SoilParticleRendererComponent
-	: public UActorComponent
+class AGXUNREAL_API UAGX_SoilParticleRendererComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -29,18 +28,21 @@ public:
 	UAGX_SoilParticleRendererComponent();
 
 	/** Whether soil particles should be rendered or not. */
-	UPROPERTY(EditAnywhere, Category = "AGX Particle Rendering")
+	UPROPERTY(EditAnywhere, Category = "AGX Soil Particle Rendering")
 	bool bEnableParticleRendering = true;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Particle Rendering")
-	void SetEnableParticleRendering(bool bEnabled);
-
 	UPROPERTY(
-		EditAnywhere, Category = "AGX Particle Rendering",
+		EditAnywhere, Category = "AGX Soil Particle Rendering",
 		Meta = (EditCondition = "bEnableParticleRendering"))
 	UNiagaraSystem* ParticleSystemAsset = nullptr;
 
-	UFUNCTION(BlueprintCallable, Category = "AGX Particle Rendering")
+	UFUNCTION(BlueprintCallable, Category = "AGX Soil Particle Rendering")
+	bool SetEnableParticleRendering(bool bEnabled);
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Soil Particle Rendering")
+	bool GetEnableParticleRendering();
+
+	UFUNCTION(BlueprintCallable, Category = "AGX Soil Particle Rendering")
 	UNiagaraComponent* GetParticleSystemComponent();
 
 protected:
@@ -68,7 +70,7 @@ private:
 	UNiagaraSystem* FindNiagaraSystemAsset(const TCHAR* AssetPath);
 
 	const TCHAR* NIAGARA_SYSTEM_PATH = TEXT(
-		"NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/"
+		"NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/SoilParticleSystem/"
 		"PS_SoilParticleSystem.PS_SoilParticleSystem'");
 
 	UFUNCTION()

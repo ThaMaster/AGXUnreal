@@ -45,9 +45,19 @@ void UAGX_SoilParticleRendererComponent::BeginPlay()
 	ParentTerrainActor->UpdateParticleDataDelegate.AddDynamic(this, &UAGX_SoilParticleRendererComponent::HandleParticleData);
 }
 
-void UAGX_SoilParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
+void UAGX_SoilParticleRendererComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	bEnableParticleRendering = bEnabled;
+	Super::EndPlay(EndPlayReason);
+}
+
+bool UAGX_SoilParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
+{
+	return bEnableParticleRendering = bEnabled;
+}
+
+bool UAGX_SoilParticleRendererComponent::GetEnableParticleRendering()
+{
+	return bEnableParticleRendering;
 }
 
 UNiagaraComponent* UAGX_SoilParticleRendererComponent::GetParticleSystemComponent()
@@ -66,14 +76,6 @@ UNiagaraSystem* UAGX_SoilParticleRendererComponent::FindNiagaraSystemAsset(const
 	}
 
 	return AssetFinder.Object;
-}
-
-void UAGX_SoilParticleRendererComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-
-	// Unbind the function when ending play.
-	ParentTerrainActor->UpdateParticleDataDelegate.RemoveDynamic(this, HandleParticleData);
 }
 
 bool UAGX_SoilParticleRendererComponent::InitializeParentTerrainActor()
@@ -230,6 +232,9 @@ void UAGX_SoilParticleRendererComponent::InitPropertyDispatcher()
 	{
 		return;
 	}
+	PropertyDispatcher.Add(
+		AGX_MEMBER_NAME(bEnableParticleRendering),
+		[](ThisClass* This) { This->SetEnableParticleRendering(This->bEnableParticleRendering); });
 
 	PropertyDispatcher.Add(
 		AGX_MEMBER_NAME(ParticleSystemAsset),
@@ -241,9 +246,6 @@ void UAGX_SoilParticleRendererComponent::InitPropertyDispatcher()
 			}
 		});
 
-	PropertyDispatcher.Add(
-		AGX_MEMBER_NAME(bEnableParticleRendering),
-		[](ThisClass* This) { This->SetEnableParticleRendering(This->bEnableParticleRendering); });
 }
 
 #endif
