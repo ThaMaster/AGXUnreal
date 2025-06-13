@@ -327,7 +327,9 @@ public:
 	FTerrainPagerBarrier* GetNativeTerrainPager();
 	const FTerrainPagerBarrier* GetNativeTerrainPager() const;
 
-	DECLARE_MULTICAST_DELEGATE_OneParam(FParticleDataMulticastDelegate, FParticleDataById);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FParticleDataMulticastDelegate);
+
+	UPROPERTY(BlueprintAssignable, Category = "AGX Terrain Particles")
 	FParticleDataMulticastDelegate UpdateParticleDataDelegate;
 
 #if WITH_EDITOR

@@ -37,7 +37,7 @@ void UAGX_BaseTerrainParticleRendererComponent::EndPlay(const EEndPlayReason::Ty
 	// If delegate is has not been removed, remoe it
 	if (DelegateHandle.IsValid())
 	{
-		ParentTerrainActor->UpdateParticleDataDelegate.Remove(DelegateHandle);
+		//ParentTerrainActor->UpdateParticleDataDelegate.Remove(DelegateHandle);
 	}
 }
 

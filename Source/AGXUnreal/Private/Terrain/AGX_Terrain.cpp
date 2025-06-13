@@ -1648,6 +1648,7 @@ void AAGX_Terrain::ClearDisplacementMap()
 	{
 		Displacement = FFloat16();
 	}
+
 	uint8* PixelData = reinterpret_cast<uint8*>(DisplacementData.GetData());
 	FAGX_RenderUtilities::UpdateRenderTextureRegions(
 		*LandscapeDisplacementMap, 1, DisplacementMapRegions.GetData(),
@@ -1667,7 +1668,8 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	const FParticleDataById ParticleData =
 		bEnableTerrainPaging ? NativeTerrainPagerBarrier.GetParticleDataById(ToInclude)
 							 : NativeBarrier.GetParticleDataById(ToInclude);
-	UpdateParticleDataDelegate.Broadcast(ParticleData);
+	//UpdateParticleDataDelegate.Broadcast(ParticleData);
+	UpdateParticleDataDelegate.Broadcast();
 }
 
 void AAGX_Terrain::UpdateLandscapeMaterialParameters()

@@ -30,9 +30,9 @@ void UAGX_DefaultTerrainParticleRendererComponent::BeginPlay()
 
 	// Attach lambda function to Function Delegate.
 	// HandleParticleData will always run when AGX_Terrain updates particle data.
-	DelegateHandle = ParentTerrainActor->UpdateParticleDataDelegate.AddLambda(
-		[this](FParticleDataById data) { HandleParticleData(data); }
-	);
+	//DelegateHandle = ParentTerrainActor->UpdateParticleDataDelegate.AddLambda(
+	//	[this](FParticleDataById data) { HandleParticleData(data); }
+	//);
 }
 
 void UAGX_DefaultTerrainParticleRendererComponent::HandleParticleData(FParticleDataById data)
