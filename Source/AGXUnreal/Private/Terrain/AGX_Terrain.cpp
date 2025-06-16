@@ -1683,7 +1683,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	data.Orientations.SetNum(NumParticles);
 	data.VelocitiesAndMasses.SetNum(NumParticles);
 	data.Exists.SetNum(NumParticles);
-	data.TargetCount = NumParticles;
+	data.TargetParticleCount = NumParticles;
 
 	for (int32 I = 0; I < NumParticles; ++I)
 	{

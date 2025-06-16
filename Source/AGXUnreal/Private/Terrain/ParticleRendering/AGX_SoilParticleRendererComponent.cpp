@@ -179,18 +179,11 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleDat
 		return;
 	}
 
-	// TODO: Also check that this exists!
-#if UE_VERSION_OLDER_THAN(5, 3, 0)
-	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", data.TargetCount);
-#else
-	ParticleSystemComponent->SetVariableInt(FName("User.Target Particle Count"), data.TargetCount);
-#endif
-
 	const FNiagaraParameterStore& UserParams = ParticleSystemComponent->GetOverrideParameters();
 	TArray<FNiagaraVariable> Params;
 	UserParams.GetParameters(Params);
 
-	// TODO: Make this for-loop better
+	// Check for the default particle system parameters.
 	for (FNiagaraVariable& Param : Params)
 	{
 		FString ParamName = Param.GetName().ToString();
@@ -220,6 +213,19 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleDat
 		{
 			UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayBool(
 				ParticleSystemComponent, "Exists", data.Exists);
+		}
+		else if (
+			ParamName == "User.Target Particle Count" && 
+			ParamType == "NiagaraInt32")
+		{
+
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
+			ParticleSystemComponent->SetNiagaraVariableInt(
+				"User.Target Particle Count", data.TargetParticleCount);
+#else
+			ParticleSystemComponent->SetVariableInt(
+				FName("User.Target Particle Count"), data.TargetParticleCount);
+#endif
 		}
 	}
 }
