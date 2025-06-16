@@ -10,7 +10,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
-
+#include "NiagaraDataInterfaceArray.h"
 UAGX_SoilParticleRendererComponent::UAGX_SoilParticleRendererComponent()
 {
 	AssignDefaultNiagaraAsset(
@@ -172,6 +172,7 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FParticleDataById da
 	ParticleSystemComponent->SetVariableInt(FName("User.Target Particle Count"), Exists.Num());
 #endif
 
+	UE_LOG(LogTemp, Warning, TEXT("%d"), Exists.Num());
 	const int32 NumParticles = Positions.Num();
 
 	TArray<FVector4> PositionsAndScale;
@@ -191,33 +192,47 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FParticleDataById da
 		Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
 	}
 
-	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-		ParticleSystemComponent, "Positions And Scales", PositionsAndScale);
-	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-		ParticleSystemComponent, "Orientations", Orientations);
-	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayBool(
-		ParticleSystemComponent, "Exists", Exists);
-	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
-		ParticleSystemComponent, TEXT("Velocities"), Velocities);
+	const FNiagaraParameterStore& UserParams = ParticleSystemComponent->GetOverrideParameters();
+	TArray<FNiagaraVariable> Params;
+	UserParams.GetParameters(Params);
+
+	// TODO: Make this better
+	for (FNiagaraVariable& Param : Params)
+	{
+		FString ParamName = Param.GetName().ToString();
+		FString ParamType = Param.GetType().GetName();
+
+		if (ParamName == "User.Positions And Scales" &&
+			ParamType == "NiagaraDataInterfaceArrayFloat4")
+		{
+			UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
+				ParticleSystemComponent, "Positions And Scales", PositionsAndScale);
+		}
+		else if (
+			ParamName == "User.Orientations" && 
+			ParamType == "NiagaraDataInterfaceArrayFloat4")
+		{
+			UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
+				ParticleSystemComponent, "Orientations", Orientations);
+		}
+		else if (
+			ParamName == "User.Velocities" && 
+			ParamType == "NiagaraDataInterfaceArrayFloat3")
+		{
+			UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
+				ParticleSystemComponent, "Velocities", Velocities);
+		}
+		else if (
+			ParamName == "User.Exists" && 
+			ParamType == "NiagaraDataInterfaceArrayBool")
+		{
+			UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayBool(
+				ParticleSystemComponent, "Exists", Exists);
+		}
+	}
 }
 
 #if WITH_EDITOR
-
-bool UAGX_SoilParticleRendererComponent::CanEditChange(const FProperty* InProperty) const
-{
-	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
-	if (!SuperCanEditChange)
-		return false;
-
-	const FName Prop = InProperty->GetFName();
-
-	if (Prop == GET_MEMBER_NAME_CHECKED(UAGX_SoilParticleRendererComponent, ParticleSystemAsset))
-	{
-		return false;
-	}
-
-	return SuperCanEditChange;
-}
 
 void UAGX_SoilParticleRendererComponent::PostEditChangeChainProperty(
 	FPropertyChangedChainEvent& Event)
