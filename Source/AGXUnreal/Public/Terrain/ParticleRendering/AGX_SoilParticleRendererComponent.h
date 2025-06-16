@@ -91,5 +91,5 @@ private:
 	void AssignDefaultNiagaraAsset(auto*& AssetRefProperty, const TCHAR* AssetPath);
 
 	UFUNCTION()
-	void HandleParticleData(FParticleDataById data);
+	void HandleParticleData(FDelegateParticleData data);
 };

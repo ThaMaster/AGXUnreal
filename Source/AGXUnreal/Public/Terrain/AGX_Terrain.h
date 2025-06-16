@@ -58,8 +58,6 @@ class ALandscape;
 class UNiagaraComponent;
 class UNiagaraSystem;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FParticleDataMulticastDelegate, FParticleDataById, ParticleData);
-
 
 USTRUCT(BlueprintType)
 struct AGXUNREAL_API FShovelReferenceWithSettings
@@ -83,6 +81,29 @@ struct AGXUNREAL_API FShovelReferenceWithSettings
 	UPROPERTY(EditAnywhere, Category = "Paging Terrain")
 	FAGX_Real RequiredRadius {600.f};
 };
+
+USTRUCT(BlueprintType)
+struct AGXUNREAL_API FDelegateParticleData // Maybe skip this and only use the one in FParticleDataById
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "Particle Data")
+	TArray<FVector4> PositionsAndScale;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Particle Data")
+	TArray<FVector4> VelocitiesAndMasses;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Particle Data")
+	TArray<FVector4> Orientations;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Particle Data")
+	TArray<bool> Exists;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Particle Data")
+	int32 TargetCount;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FParticleDataMulticastDelegate, FDelegateParticleData, ParticleData);
 
 UCLASS(ClassGroup = "AGX_Terrain", Blueprintable, Category = "AGX")
 class AGXUNREAL_API AAGX_Terrain : public AActor

@@ -1664,13 +1664,44 @@ void AAGX_Terrain::UpdateParticlesArrays()
 
 	// Copy data with holes.
 	EParticleDataFlags ToInclude = EParticleDataFlags::Positions | EParticleDataFlags::Rotations |
-								   EParticleDataFlags::Radii | EParticleDataFlags::Velocities;
+								   EParticleDataFlags::Radii | EParticleDataFlags::Velocities | EParticleDataFlags::Masses;
 	const FParticleDataById ParticleData =
 		bEnableTerrainPaging ? NativeTerrainPagerBarrier.GetParticleDataById(ToInclude)
 							 : NativeBarrier.GetParticleDataById(ToInclude);
 
+	const TArray<FVector>& Positions = ParticleData.Positions;
+	const TArray<FQuat>& Rotations = ParticleData.Rotations;
+	const TArray<float>& Radii = ParticleData.Radii;
+	const TArray<bool>& Exists = ParticleData.Exists;
+	const TArray<FVector>& Velocities = ParticleData.Velocities;
+	const TArray<float>& Masses = ParticleData.Masses;
+
+	const int32 NumParticles = Positions.Num();
+
+	FDelegateParticleData data;
+	data.PositionsAndScale.SetNum(NumParticles);
+	data.Orientations.SetNum(NumParticles);
+	data.VelocitiesAndMasses.SetNum(NumParticles);
+	data.Exists.SetNum(NumParticles);
+	data.TargetCount = NumParticles;
+
+	for (int32 I = 0; I < NumParticles; ++I)
+	{
+		// The particle size slot in the PositionAndScale buffer is a scale and not the
+		// actual size. The scale is relative to a SI unit cube, meaning that a
+		// scale of 1.0 should render a particle that is 1x1x1 m large, or
+		// 100x100x100 Unreal units. We multiply by 2.0 to convert from radius
+		// to full width.
+		float UnitCubeScale = (Radii[I] * 2.0f) / 100.0f;
+		data.PositionsAndScale[I] = FVector4(Positions[I], UnitCubeScale);
+		data.Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
+		data.VelocitiesAndMasses[I] =
+			FVector4(Velocities[I].X, Velocities[I].Y, Velocities[I].Z, Masses[I]);
+		data.Exists[I] = Exists[I];
+	}
+	// Maybe process the data here instead of 
 	// Broadcast the data to all who is bound to the delegate.
-	UpdateParticleDataDelegate.Broadcast(ParticleData);
+	UpdateParticleDataDelegate.Broadcast(data);
 }
 
 void AAGX_Terrain::UpdateLandscapeMaterialParameters()

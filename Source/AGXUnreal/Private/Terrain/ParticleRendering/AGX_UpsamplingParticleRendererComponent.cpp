@@ -204,43 +204,27 @@ bool UAGX_UpsamplingParticleRendererComponent::InitializeNiagaraParticleSystemCo
 /**
  *
  */
-void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FParticleDataById data)
+void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParticleData data)
 {
 	if (ParticleSystemComponent == nullptr)
 	{
 		return;
 	}
 
-	const TArray<FVector>& Positions = data.Positions;
-	const TArray<FQuat>& Rotations = data.Rotations;
-	const TArray<float>& Radii = data.Radii;
-	const TArray<bool>& Exists = data.Exists;
-	const TArray<FVector>& Velocities = data.Velocities;
-
-	const int32 NumParticles = Positions.Num();
-	TArray<FVector4> PositionsAndScale;
-	PositionsAndScale.SetNum(NumParticles);
-	TArray<FVector4> Orientations;
-	Orientations.SetNum(NumParticles);
-	//TArray<FCoarseParticle> NewCoarseParticles;
 	TSet<FIntVector> ActiveVoxelSet;
 	float ParticleDensity = 0.0f;
-	for (int32 I = 0; I < NumParticles; ++I)
+	for (int32 I = 0; I < data.TargetCount; ++I)
 	{
-		// The particle size slot in the PositionAndScale buffer is a scale and not the
-		// actual size. The scale is relative to a SI unit cube, meaning that a
-		// scale of 1.0 should render a particle that is 1x1x1 m large, or
-		// 100x100x100 Unreal units. We multiply by 2.0 to convert from radius
-		// to full width.
-		float UnitCubeScale = (Radii[I] * 2.0f) / 100.0f;
-		PositionsAndScale[I] = FVector4(Positions[I], UnitCubeScale);
-		Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
-		if (Exists[I])
+		if (data.Exists[I])
 		{
-			//float Mass = Masses[I]; // Convert to gram
-			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radii[I], 3);
-			//ParticleDensity = Mass / Volume;
-			AppendIfActiveVoxel(ActiveVoxelSet, Positions[I], Radii[I]);
+			float Radii = (data.PositionsAndScale[I].W / 2 * 100);
+			FVector Position = FVector(
+				data.PositionsAndScale[I].X, data.PositionsAndScale[I].Y,
+				data.PositionsAndScale[I].Z);
+			float Mass = data.VelocitiesAndMasses[I].W; // Convert to gram
+			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radii, 3);
+			ParticleDensity = Mass / Volume;
+			AppendIfActiveVoxel(ActiveVoxelSet, Position, Radii);
 			//FCoarseParticle CP;
 			//CP.PositionAndRadius =
 			//	FVector4f(Positions[I].X, Positions[I].Y, Positions[I].Z, Radii[I]);
@@ -249,10 +233,11 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FParticleDataB
 			//NewCoarseParticles.Add(CP);
 		}
 	}
-	//if (ParticleDensity == 0.0f)
-	//{
-	//	return;
-	//}
+
+	if (ParticleDensity == 0.0f)
+	{
+		return;
+	}
 
 	const float ElementSize = 15.0f;
 	TArray<FIntVector4> ActiveVoxelIndices = GetActiveVoxelsFromSet(ActiveVoxelSet);

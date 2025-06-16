@@ -137,7 +137,7 @@ private:
 		"/PS_ParticleUpsamplingSystem.PS_ParticleUpsamplingSystem'");
 
 	UFUNCTION()
-	void HandleParticleData(FParticleDataById data);
+	void HandleParticleData(FDelegateParticleData data);
 
 	void AppendIfActiveVoxel(
 		TSet<FIntVector>& ActiveVoxelIndices, FVector CPPosition, float CPRadius);

@@ -74,7 +74,7 @@ UNiagaraComponent* UAGX_SoilParticleRendererComponent::GetParticleSystemComponen
 int32 UAGX_SoilParticleRendererComponent::GetNumParticles()
 {
 	int32 TotalNumParticles = 0;
-	FNiagaraSystemInstance* SystemInstance = ParticleSystemComponent->GetSystemInstance();
+	FNiagaraSystemInstance* SystemInstance = ParticleSystemComponent->GetSystemInstance(); // THIS IS DEPRECATED!
 	if (SystemInstance)
 	{
 		for (const TSharedRef<FNiagaraEmitterInstance>& EmitterInstance :
@@ -86,7 +86,6 @@ int32 UAGX_SoilParticleRendererComponent::GetNumParticles()
 
 	return TotalNumParticles;
 }
-
 
 void UAGX_SoilParticleRendererComponent::AssignDefaultNiagaraAsset(
 	auto*& AssetRefProperty, const TCHAR* AssetPath)
@@ -173,44 +172,19 @@ bool UAGX_SoilParticleRendererComponent::InitializeNiagaraParticleSystemComponen
 	return ParticleSystemComponent != nullptr;
 }
 
-void UAGX_SoilParticleRendererComponent::HandleParticleData(FParticleDataById data)
+void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleData data)
 {
 	if (ParticleSystemComponent == nullptr)
 	{
 		return;
 	}
 
-	const TArray<FVector>& Positions = data.Positions;
-	const TArray<FQuat>& Rotations = data.Rotations;
-	const TArray<float>& Radii = data.Radii;
-	const TArray<bool>& Exists = data.Exists;
-	const TArray<FVector>& Velocities = data.Velocities;
-
+	// TODO: Also check that this exists!
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
-	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", Exists.Num());
+	ParticleSystemComponent->SetNiagaraVariableInt("User.Target Particle Count", data.TargetCount);
 #else
-	ParticleSystemComponent->SetVariableInt(FName("User.Target Particle Count"), Exists.Num());
+	ParticleSystemComponent->SetVariableInt(FName("User.Target Particle Count"), data.TargetCount);
 #endif
-
-	UE_LOG(LogTemp, Warning, TEXT("%d"), Exists.Num());
-	const int32 NumParticles = Positions.Num();
-
-	TArray<FVector4> PositionsAndScale;
-	PositionsAndScale.SetNum(NumParticles);
-	TArray<FVector4> Orientations;
-	Orientations.SetNum(NumParticles);
-
-	for (int32 I = 0; I < NumParticles; ++I)
-	{
-		// The particle size slot in the PositionAndScale buffer is a scale and not the
-		// actual size. The scale is relative to a SI unit cube, meaning that a
-		// scale of 1.0 should render a particle that is 1x1x1 m large, or
-		// 100x100x100 Unreal units. We multiply by 2.0 to convert from radius
-		// to full width.
-		float UnitCubeScale = (Radii[I] * 2.0f) / 100.0f;
-		PositionsAndScale[I] = FVector4(Positions[I], UnitCubeScale);
-		Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
-	}
 
 	const FNiagaraParameterStore& UserParams = ParticleSystemComponent->GetOverrideParameters();
 	TArray<FNiagaraVariable> Params;
@@ -222,32 +196,30 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FParticleDataById da
 		FString ParamName = Param.GetName().ToString();
 		FString ParamType = Param.GetType().GetName();
 
-		if (ParamName == "User.Positions And Scales" &&
-			ParamType == "NiagaraDataInterfaceArrayFloat4")
+		if (ParamType == "NiagaraDataInterfaceArrayFloat4")
 		{
-			UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-				ParticleSystemComponent, "Positions And Scales", PositionsAndScale);
-		}
-		else if (
-			ParamName == "User.Orientations" && 
-			ParamType == "NiagaraDataInterfaceArrayFloat4")
-		{
-			UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-				ParticleSystemComponent, "Orientations", Orientations);
-		}
-		else if (
-			ParamName == "User.Velocities" && 
-			ParamType == "NiagaraDataInterfaceArrayFloat3")
-		{
-			UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector(
-				ParticleSystemComponent, "Velocities", Velocities);
+			if (ParamName == "User.Positions And Scales")
+			{
+				UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
+					ParticleSystemComponent, "Positions And Scales", data.PositionsAndScale);
+			}
+			else if (ParamName == "User.Orientations")
+			{
+				UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
+					ParticleSystemComponent, "Orientations", data.Orientations);
+			}
+			else if (ParamName == "User.Velocities And Masses")
+			{
+				UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
+					ParticleSystemComponent, "Velocities And Masses", data.VelocitiesAndMasses);
+			}
 		}
 		else if (
 			ParamName == "User.Exists" && 
 			ParamType == "NiagaraDataInterfaceArrayBool")
 		{
 			UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayBool(
-				ParticleSystemComponent, "Exists", Exists);
+				ParticleSystemComponent, "Exists", data.Exists);
 		}
 	}
 }
