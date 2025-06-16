@@ -11,6 +11,9 @@
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraDataInterfaceArray.h"
+#include "NiagaraSystemInstance.h"
+#include "NiagaraEmitterInstance.h"
+
 UAGX_SoilParticleRendererComponent::UAGX_SoilParticleRendererComponent()
 {
 	AssignDefaultNiagaraAsset(
@@ -67,6 +70,23 @@ UNiagaraComponent* UAGX_SoilParticleRendererComponent::GetParticleSystemComponen
 {
 	return ParticleSystemComponent;
 }
+
+int32 UAGX_SoilParticleRendererComponent::GetNumParticles()
+{
+	int32 TotalNumParticles = 0;
+	FNiagaraSystemInstance* SystemInstance = ParticleSystemComponent->GetSystemInstance();
+	if (SystemInstance)
+	{
+		for (const TSharedRef<FNiagaraEmitterInstance>& EmitterInstance :
+			 SystemInstance->GetEmitters())
+		{
+			TotalNumParticles += EmitterInstance->GetNumParticles();
+		}
+	}
+
+	return TotalNumParticles;
+}
+
 
 void UAGX_SoilParticleRendererComponent::AssignDefaultNiagaraAsset(
 	auto*& AssetRefProperty, const TCHAR* AssetPath)
@@ -196,7 +216,7 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FParticleDataById da
 	TArray<FNiagaraVariable> Params;
 	UserParams.GetParameters(Params);
 
-	// TODO: Make this better
+	// TODO: Make this for-loop better
 	for (FNiagaraVariable& Param : Params)
 	{
 		FString ParamName = Param.GetName().ToString();
