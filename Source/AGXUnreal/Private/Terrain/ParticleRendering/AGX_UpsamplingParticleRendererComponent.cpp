@@ -5,7 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_LogCategory.h"
-#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/AGX_ParticleUpsamplingData.h"
+#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingData.h"
 
 // Unreal Engine includes.
 #include "NiagaraComponent.h"
