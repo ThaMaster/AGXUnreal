@@ -11,7 +11,7 @@
 #include "NiagaraDataInterface.h"
 #include "NiagaraDataInterfaceRW.h"
 
-struct FPUData;
+struct FParticleUpsamplingData;
 
 struct FParticleUpsamplingDIProxy : FNiagaraDataInterfaceProxy
 {
@@ -30,7 +30,7 @@ public:
 	void DestroyPerInstanceData(const FNiagaraSystemInstanceID& SystemInstance);
 
 	/** List of proxy data for each system instances*/
-	TMap<FNiagaraSystemInstanceID, FPUData> SystemInstancesToInstanceData_RT;
+	TMap<FNiagaraSystemInstanceID, FParticleUpsamplingData> SystemInstancesToInstanceData_RT;
 
 protected:
 private:

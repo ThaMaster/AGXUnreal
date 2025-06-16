@@ -25,7 +25,6 @@ struct FVoxelEntry
 	FVector4f MinBounds;
 };
 
-
 struct FPUBuffers : public FRenderResource
 {
 public:
@@ -57,7 +56,7 @@ private:
 
 	// RW Buffers
 	FUnorderedAccessViewRHIRef HashTableBufferRef;
-	FUnorderedAccessViewRHIRef HTOccupancyBufferRef;
+	FUnorderedAccessViewRHIRef HashTableOccupancyBufferRef;
 };
 
 struct FPUArrays
@@ -70,7 +69,6 @@ public:
 	void CopyFrom(const FPUArrays* Other);
 	void SetNewTime(int NewTime);
 
-private:
 	TArray<FCoarseParticle> CoarseParticles;
 	TArray<FIntVector4> ActiveVoxelIndices;
 

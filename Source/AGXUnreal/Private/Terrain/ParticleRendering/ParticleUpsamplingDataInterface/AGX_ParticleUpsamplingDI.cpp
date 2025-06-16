@@ -55,12 +55,23 @@ void UAGX_ParticleUpsamplingDI::SetShaderParameters(
 {
 }
 
+/**
+ * This function initializes the PerInstanceData for each instance of this NDI.
+ * This means that this function will run when hitting the start button.
+ */
 bool UAGX_ParticleUpsamplingDI::InitPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
-	return false;
+	FParticleUpsamplingData* Data = static_cast<FParticleUpsamplingData*>(PerInstanceData);
+	Data->Init(SystemInstance);
+	LocalData = new FPUArrays();
+	return true;
 }
 
+/**
+ * This function cleans the data on the RT for each instance of this NDI.
+ * This means that this function will run hitting the pause button.
+ */
 void UAGX_ParticleUpsamplingDI::DestroyPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
@@ -68,18 +79,18 @@ void UAGX_ParticleUpsamplingDI::DestroyPerInstanceData(
 
 int32 UAGX_ParticleUpsamplingDI::PerInstanceDataSize() const
 {
-
+	return sizeof(FParticleUpsamplingData);
 }
 
 bool UAGX_ParticleUpsamplingDI::HasPreSimulateTick() const
 {
-	return false;
+	return true;
 
 }
 
 bool UAGX_ParticleUpsamplingDI::HasPostSimulateTick() const
 {
-	return false;
+	return true;
 }
 
 /** 
