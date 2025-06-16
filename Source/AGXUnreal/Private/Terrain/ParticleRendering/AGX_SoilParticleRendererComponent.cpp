@@ -13,6 +13,7 @@
 #include "NiagaraDataInterfaceArray.h"
 #include "NiagaraSystemInstance.h"
 #include "NiagaraEmitterInstance.h"
+#include "NiagaraSystemInstanceController.h"
 
 UAGX_SoilParticleRendererComponent::UAGX_SoilParticleRendererComponent()
 {
@@ -69,22 +70,6 @@ bool UAGX_SoilParticleRendererComponent::GetEnableParticleRendering()
 UNiagaraComponent* UAGX_SoilParticleRendererComponent::GetParticleSystemComponent()
 {
 	return ParticleSystemComponent;
-}
-
-int32 UAGX_SoilParticleRendererComponent::GetNumParticles()
-{
-	int32 TotalNumParticles = 0;
-	FNiagaraSystemInstance* SystemInstance = ParticleSystemComponent->GetSystemInstance(); // THIS IS DEPRECATED!
-	if (SystemInstance)
-	{
-		for (const TSharedRef<FNiagaraEmitterInstance>& EmitterInstance :
-			 SystemInstance->GetEmitters())
-		{
-			TotalNumParticles += EmitterInstance->GetNumParticles();
-		}
-	}
-
-	return TotalNumParticles;
 }
 
 void UAGX_SoilParticleRendererComponent::AssignDefaultNiagaraAsset(

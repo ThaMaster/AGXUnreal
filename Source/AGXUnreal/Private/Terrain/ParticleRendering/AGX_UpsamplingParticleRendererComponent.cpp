@@ -5,6 +5,7 @@
 // AGX Dynamics for Unreal includes.
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_LogCategory.h"
+#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/AGX_ParticleUpsamplingData.h"
 
 // Unreal Engine includes.
 #include "NiagaraComponent.h"
@@ -211,26 +212,29 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 		return;
 	}
 
+	TArray<FCoarseParticle> NewCoarseParticles;
 	TSet<FIntVector> ActiveVoxelSet;
 	float ParticleDensity = 0.0f;
 	for (int32 I = 0; I < data.TargetParticleCount; ++I)
 	{
 		if (data.Exists[I])
 		{
-			float Radii = (data.PositionsAndScale[I].W / 2 * 100);
+			float Radius = (data.PositionsAndScale[I].W / 2 * 100);
 			FVector Position = FVector(
 				data.PositionsAndScale[I].X, data.PositionsAndScale[I].Y,
 				data.PositionsAndScale[I].Z);
 			float Mass = data.VelocitiesAndMasses[I].W; // Convert to gram
-			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radii, 3);
+			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radius, 3);
 			ParticleDensity = Mass / Volume;
-			AppendIfActiveVoxel(ActiveVoxelSet, Position, Radii);
-			//FCoarseParticle CP;
-			//CP.PositionAndRadius =
-			//	FVector4f(Positions[I].X, Positions[I].Y, Positions[I].Z, Radii[I]);
-			//CP.VelocityAndMass =
-			//	FVector4f(Velocities[I].X, Velocities[I].Y, Velocities[I].Z, Masses[I]);
-			//NewCoarseParticles.Add(CP);
+			AppendIfActiveVoxel(ActiveVoxelSet, Position, Radius);
+			FCoarseParticle CP;
+			CP.PositionAndRadius = FVector4f(Position.X, Position.Y, Position.Z, Radius);
+			CP.VelocityAndMass = FVector4f(
+				data.VelocitiesAndMasses[I].X, 
+				data.VelocitiesAndMasses[I].Y, 
+				data.VelocitiesAndMasses[I].Z, 
+				data.VelocitiesAndMasses[I].W);
+			NewCoarseParticles.Add(CP);
 		}
 	}
 
