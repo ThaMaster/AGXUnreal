@@ -199,6 +199,8 @@ void UAGX_ParticleUpsamplingDI::ProvidePerInstanceDataForRenderThread(
 
 void UAGX_ParticleUpsamplingDI::SetCoarseParticles(TArray<FCoarseParticle> NewCoarseParticles)
 {
+	std::lock_guard<std::mutex> ScopedOrigHeightsLock(DataUpdateMutex);
+
 	uint32 ArraySize = NewCoarseParticles.Num();
 	if (LocalData->NumElementsInCoarseParticleBuffer < ArraySize)
 	{
@@ -211,6 +213,8 @@ void UAGX_ParticleUpsamplingDI::SetCoarseParticles(TArray<FCoarseParticle> NewCo
 
 void UAGX_ParticleUpsamplingDI::SetActiveVoxelIndices(TArray<FIntVector4> AVIs)
 {
+	std::lock_guard<std::mutex> ScopedOrigHeightsLock(DataUpdateMutex);
+
 	uint32 ArraySize = AVIs.Num();
 	if (LocalData->NumElementsInActiveVoxelBuffer < ArraySize)
 	{
@@ -243,7 +247,8 @@ void UAGX_ParticleUpsamplingDI::RecalculateFineParticleProperties(
 
 void UAGX_ParticleUpsamplingDI::SetStaticVariables(float VoxelSize, float EaseStepSize)
 {
-
+	LocalData->VoxelSize = VoxelSize;
+	LocalData->EaseStepSize = EaseStepSize;
 }
 
 #if WITH_EDITORONLY_DATA

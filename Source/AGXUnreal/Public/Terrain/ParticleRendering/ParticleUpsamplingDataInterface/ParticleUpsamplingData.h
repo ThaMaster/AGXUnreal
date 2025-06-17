@@ -27,7 +27,6 @@ struct FVoxelEntry
 
 struct FPUBuffers : public FRenderResource
 {
-public:
 	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1024;
 	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 1024;
 
@@ -60,7 +59,6 @@ public:
 
 struct FPUArrays
 {
-public:
 	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1024;
 	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 1024;
 

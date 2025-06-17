@@ -21,8 +21,7 @@ int32 FParticleUpsamplingDIProxy::PerInstanceDataPassedToRenderThreadSize() cons
 void FParticleUpsamplingDIProxy::ConsumePerInstanceDataFromGameThread(
 	void* PerInstanceData, const FNiagaraSystemInstanceID& InstanceID)
 {
-	FParticleUpsamplingData* InstanceDataFromGT =
-		static_cast<FParticleUpsamplingData*>(PerInstanceData);
+	FParticleUpsamplingData* InstanceDataFromGT = static_cast<FParticleUpsamplingData*>(PerInstanceData);
 	FParticleUpsamplingData* InstanceData = &SystemInstancesToInstanceData_RT.FindOrAdd(InstanceID);
 	InstanceData->PUBuffers = InstanceDataFromGT->PUBuffers;
 	InstanceData->PUArrays = new FPUArrays();

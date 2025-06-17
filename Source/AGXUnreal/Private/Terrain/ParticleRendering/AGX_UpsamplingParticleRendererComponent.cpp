@@ -6,11 +6,13 @@
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_LogCategory.h"
 #include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingData.h"
+#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/AGX_ParticleUpsamplingDI.h"
 
 // Unreal Engine includes.
 #include "NiagaraComponent.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystemInstanceController.h"
 
 /**
  *
@@ -213,7 +215,7 @@ bool UAGX_UpsamplingParticleRendererComponent::InitializeNiagaraParticleSystemCo
  */
 void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParticleData data)
 {
-	if (ParticleSystemComponent == nullptr)
+	if (!ParticleSystemComponent)
 	{
 		return;
 	}
@@ -232,7 +234,9 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 			float Mass = data.VelocitiesAndMasses[I].W; // Convert to gram
 			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radius, 3);
 			ParticleDensity = Mass / Volume;
+
 			AppendIfActiveVoxel(ActiveVoxelSet, Position, Radius);
+
 			FCoarseParticle CP;
 			CP.PositionAndRadius = FVector4f(Position.X, Position.Y, Position.Z, Radius);
 			CP.VelocityAndMass = FVector4f(
@@ -251,12 +255,38 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 
 	const float ElementSize = 15.0f;
 	TArray<FIntVector4> ActiveVoxelIndices = GetActiveVoxelsFromSet(ActiveVoxelSet);
+	FNiagaraSystemInstanceController* SystemController = ParticleSystemComponent->GetSystemInstanceController().Get();
+	if (!SystemController)
+	{
+		return;
+	}
 
-	// UParticleUpsamplingInterface::SetCoarseParticles(NewCoarseParticles);
-	// UParticleUpsamplingInterface::SetActiveVoxelIndices(ActiveVoxelIndices);
-	// UParticleUpsamplingInterface::RecalculateFineParticleProperties(Upsampling, ElementSize, ParticleDensity);
-	// UParticleUpsamplingInterface::SetStaticVariables(VoxelSize, EaseStepSize);
-	// int HashTableSize = UParticleUpsamplingInterface::GetHashTableSize();
+	FNiagaraSystemInstance* instance = SystemController->GetSystemInstance_Unsafe(); // Maybe not use.
+	UAGX_ParticleUpsamplingDI* PUInterface = nullptr;
+	for (TPair<TWeakObjectPtr<UNiagaraDataInterface>, int32> Pair : instance->GPUDataInterfaces)
+	{
+		UNiagaraDataInterface* Interface = Pair.Key.Get();
+		if (Interface->GetName().Contains("AGX_ParticleUpsampling"))
+		{
+			PUInterface = static_cast<UAGX_ParticleUpsamplingDI*>(Interface);
+		}
+	}
+	if (!PUInterface)
+	{
+		UE_LOG(
+			LogTemp, Warning,
+			TEXT("Could not find AGX_ParticleUpsamplingDataInterface in loaded Niagara system, can not render particles"));
+		return;
+	}
+
+	PUInterface->SetCoarseParticles(NewCoarseParticles);
+	PUInterface->SetActiveVoxelIndices(ActiveVoxelIndices);
+	PUInterface->RecalculateFineParticleProperties(Upsampling, ElementSize, ParticleDensity);
+	PUInterface->SetStaticVariables(VoxelSize, EaseStepSize);
+	int HashTableSize = PUInterface->GetHashTableSize();
+
+	UE_LOG(LogTemp, Warning, TEXT("ActiveVoxelsCount: %d"), ActiveVoxelIndices.Num());
+
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt(
 		"User.Active Voxels Count", ActiveVoxelIndices.Num());
@@ -265,7 +295,7 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 #else
 	ParticleSystemComponent->SetVariableInt(
 		FName("User.Active Voxels Count"), ActiveVoxelIndices.Num());
-	//ParticleSystemComponent->SetVariableInt(FName("User.HashTable Size"), HashTableSize);
+	ParticleSystemComponent->SetVariableInt(FName("User.HashTable Size"), HashTableSize);
 	ParticleSystemComponent->SetVariableFloat(FName("User.Voxel Size"), VoxelSize);
 #endif
 }

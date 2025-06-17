@@ -11,6 +11,9 @@
 #include "NiagaraDataInterface.h"
 #include "NiagaraDataInterfaceRW.h"
 
+// Standard library includes.
+#include <mutex>
+
 #include "AGX_ParticleUpsamplingDI.generated.h"
 
 struct FPUArrays;
@@ -92,6 +95,7 @@ protected:
 #endif
 
 private:
+	std::mutex DataUpdateMutex;
 	
 	FPUArrays* LocalData;
 
