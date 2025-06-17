@@ -9,6 +9,7 @@
 #include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/AGX_ParticleUpsamplingDI.h"
 
 // Unreal Engine includes.
+#include "Landscape.h"
 #include "NiagaraComponent.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
@@ -19,8 +20,6 @@
  */
 UAGX_UpsamplingParticleRendererComponent::UAGX_UpsamplingParticleRendererComponent()
 {
-	if (ParticleSystemAsset != nullptr)
-		return;
 	AssignDefaultNiagaraAsset(
 		ParticleSystemAsset,
 		TEXT("NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/UpsamplingParticleSystem"
@@ -49,6 +48,7 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 		return;
 	}
 
+	ElementSize = ParentTerrainActor->SourceLandscape->GetActorScale().X;
 	// Bind function to terrain delegate to handle particle data.
 	ParentTerrainActor->UpdateParticleDataDelegate.AddDynamic(
 		this, &UAGX_UpsamplingParticleRendererComponent::HandleParticleData);
@@ -229,9 +229,10 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 		{
 			float Radius = (data.PositionsAndScale[I].W / 2 * 100);
 			FVector Position = FVector(
-				data.PositionsAndScale[I].X, data.PositionsAndScale[I].Y,
+				data.PositionsAndScale[I].X, 
+				data.PositionsAndScale[I].Y,
 				data.PositionsAndScale[I].Z);
-			float Mass = data.VelocitiesAndMasses[I].W; // Convert to gram
+			float Mass = data.VelocitiesAndMasses[I].W;
 			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radius, 3);
 			ParticleDensity = Mass / Volume;
 
@@ -253,29 +254,15 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 		return;
 	}
 
-	const float ElementSize = 15.0f;
 	TArray<FIntVector4> ActiveVoxelIndices = GetActiveVoxelsFromSet(ActiveVoxelSet);
-	FNiagaraSystemInstanceController* SystemController = ParticleSystemComponent->GetSystemInstanceController().Get();
-	if (!SystemController)
-	{
-		return;
-	}
+	UAGX_ParticleUpsamplingDI* PUInterface =
+		static_cast<UAGX_ParticleUpsamplingDI*>(ParticleSystemComponent->GetDataInterface("Particle Upsampling DI"));
 
-	FNiagaraSystemInstance* instance = SystemController->GetSystemInstance_Unsafe(); // Maybe not use.
-	UAGX_ParticleUpsamplingDI* PUInterface = nullptr;
-	for (TPair<TWeakObjectPtr<UNiagaraDataInterface>, int32> Pair : instance->GPUDataInterfaces)
-	{
-		UNiagaraDataInterface* Interface = Pair.Key.Get();
-		if (Interface->GetName().Contains("AGX_ParticleUpsampling"))
-		{
-			PUInterface = static_cast<UAGX_ParticleUpsamplingDI*>(Interface);
-		}
-	}
 	if (!PUInterface)
 	{
 		UE_LOG(
 			LogTemp, Warning,
-			TEXT("Could not find AGX_ParticleUpsamplingDataInterface in loaded Niagara system, can not render particles"));
+			TEXT("Could not find Particle Upsampling Data Interface in loaded Niagara system, cannot render particles..."));
 		return;
 	}
 
@@ -284,8 +271,6 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 	PUInterface->RecalculateFineParticleProperties(Upsampling, ElementSize, ParticleDensity);
 	PUInterface->SetStaticVariables(VoxelSize, EaseStepSize);
 	int HashTableSize = PUInterface->GetHashTableSize();
-
-	UE_LOG(LogTemp, Warning, TEXT("ActiveVoxelsCount: %d"), ActiveVoxelIndices.Num());
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt(

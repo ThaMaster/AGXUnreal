@@ -132,9 +132,7 @@ private:
 	bool InitializeNiagaraParticleSystemComponent();
 	void AssignDefaultNiagaraAsset(auto*& AssetRefProperty, const TCHAR* AssetPath);
 
-	const TCHAR* NIAGARA_SYSTEM_PATH = TEXT(
-		"NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/UpsamplingParticleSystem"
-		"/PS_ParticleUpsamplingSystem.PS_ParticleUpsamplingSystem'");
+	float ElementSize = 0;
 
 	UFUNCTION()
 	void HandleParticleData(FDelegateParticleData data);
