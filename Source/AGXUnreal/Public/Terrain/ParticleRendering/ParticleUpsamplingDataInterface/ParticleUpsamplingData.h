@@ -49,7 +49,6 @@ public:
 		FRHICommandListBase& RHICmdList, const TArray<FIntVector4> ActiveVoxelIndices,
 		uint32 NewElementCount, bool NeedsResize);
 
-private:
 	// SRV Buffers
 	FShaderResourceViewRHIRef CoarseParticleBufferRef;
 	FShaderResourceViewRHIRef ActiveVoxelIndicesBufferRef;

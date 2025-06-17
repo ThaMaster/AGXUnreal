@@ -32,11 +32,19 @@ UAGX_ParticleUpsamplingDI::UAGX_ParticleUpsamplingDI(
  */
 void UAGX_ParticleUpsamplingDI::PostInitProperties()
 {
+	Super::PostInitProperties();
+
+	if (HasAnyFlags(RF_ClassDefaultObject))
+	{
+		ENiagaraTypeRegistryFlags Flags = 
+			ENiagaraTypeRegistryFlags::AllowAnyVariable | ENiagaraTypeRegistryFlags::AllowParameter;
+		FNiagaraTypeRegistry::Register(FNiagaraTypeDefinition(GetClass()), Flags);
+	}
 }
 
 bool UAGX_ParticleUpsamplingDI::CanExecuteOnTarget(ENiagaraSimTarget Target) const
 {
-	return false;
+	return true;
 }
 
 /**
@@ -45,6 +53,7 @@ bool UAGX_ParticleUpsamplingDI::CanExecuteOnTarget(ENiagaraSimTarget Target) con
 void UAGX_ParticleUpsamplingDI::BuildShaderParameters(
 	FNiagaraShaderParametersBuilder& ShaderParametersBuilder) const
 {
+	ShaderParametersBuilder.AddNestedStruct<FShaderParameters>();
 }
 
 /**
@@ -53,6 +62,31 @@ void UAGX_ParticleUpsamplingDI::BuildShaderParameters(
 void UAGX_ParticleUpsamplingDI::SetShaderParameters(
 	const FNiagaraDataInterfaceSetShaderParametersContext& Context) const
 {
+	FParticleUpsamplingDIProxy& DataInterfaceProxy = Context.GetProxy<FParticleUpsamplingDIProxy>();
+	FParticleUpsamplingData& Data = DataInterfaceProxy.SystemInstancesToInstanceData_RT.FindChecked(
+		Context.GetSystemInstanceID());
+	FShaderParameters* ShaderParameters = Context.GetParameterNestedStruct<FShaderParameters>();
+
+	// Particle Shader Parameters
+	ShaderParameters->CoarseParticles		= Data.PUBuffers->CoarseParticleBufferRef;
+	ShaderParameters->NumCoarseParticles	= Data.PUArrays->CoarseParticles.Num();
+	ShaderParameters->FineParticleMass		= Data.PUArrays->FineParticleMass;
+	ShaderParameters->FineParticleRadius	= Data.PUArrays->FineParticleRadius;
+	ShaderParameters->NominalRadius			= Data.PUArrays->NominalRadius;
+
+	// HashTable Shader Parameters
+	ShaderParameters->ActiveVoxelIndices	= Data.PUBuffers->ActiveVoxelIndicesBufferRef;
+	ShaderParameters->NumActiveVoxels		= Data.PUArrays->ActiveVoxelIndices.Num();
+
+	ShaderParameters->HashTable				= Data.PUBuffers->HashTableBufferRef;
+	ShaderParameters->HTOccupancy			=Data.PUBuffers->HashTableOccupancyBufferRef;
+
+	ShaderParameters->TableSize				= Data.PUArrays->NumElementsInActiveVoxelBuffer;
+	ShaderParameters->VoxelSize				= Data.PUArrays->VoxelSize;
+
+	// Other Variables
+	ShaderParameters->Time					= Data.PUArrays->Time;
+	ShaderParameters->AnimationSpeed		= Data.PUArrays->EaseStepSize;
 }
 
 /**
@@ -75,6 +109,23 @@ bool UAGX_ParticleUpsamplingDI::InitPerInstanceData(
 void UAGX_ParticleUpsamplingDI::DestroyPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
+	FParticleUpsamplingData* InstanceData = static_cast<FParticleUpsamplingData*>(PerInstanceData);
+
+	InstanceData->Release();
+	InstanceData->~FParticleUpsamplingData();
+	FParticleUpsamplingDIProxy* ThisProxy = GetProxyAs<FParticleUpsamplingDIProxy>();
+	ENQUEUE_RENDER_COMMAND(FNiagaraDIDestroyInstanceData)
+	(
+		[ThisProxy, InstanceID = SystemInstance->GetId()](FRHICommandListImmediate& CmdList)
+		{
+			FParticleUpsamplingData* ProxyData =
+				ThisProxy->SystemInstancesToInstanceData_RT.Find(InstanceID);
+			if (ProxyData != nullptr && ProxyData->PUArrays)
+			{
+				ThisProxy->SystemInstancesToInstanceData_RT.Remove(InstanceID);
+				delete ProxyData->PUArrays;
+			}
+		});
 }
 
 int32 UAGX_ParticleUpsamplingDI::PerInstanceDataSize() const
@@ -99,6 +150,16 @@ bool UAGX_ParticleUpsamplingDI::HasPostSimulateTick() const
 bool UAGX_ParticleUpsamplingDI::PerInstanceTick(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds)
 {
+	check(SystemInstance);
+	FParticleUpsamplingData* Data = static_cast<FParticleUpsamplingData*>(PerInstanceData);
+	if (!Data)
+	{
+		return true;
+	}
+
+	Data->Update(SystemInstance, LocalData);
+	LocalData->NeedsCPResize = false;
+	LocalData->NeedsVoxelResize = false;
 	return false;
 }
 
@@ -108,6 +169,14 @@ bool UAGX_ParticleUpsamplingDI::PerInstanceTick(
 bool UAGX_ParticleUpsamplingDI::PerInstanceTickPostSimulate(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds)
 {
+	check(SystemInstance);
+	FParticleUpsamplingData* Data = static_cast<FParticleUpsamplingData*>(PerInstanceData);
+
+	if (!Data)
+	{
+		return true;
+	}
+
 	return false;
 }
 
@@ -115,7 +184,17 @@ void UAGX_ParticleUpsamplingDI::ProvidePerInstanceDataForRenderThread(
 	void* DataForRenderThread, void* PerInstanceData,
 	const FNiagaraSystemInstanceID& SystemInstance)
 {
+	FParticleUpsamplingData* RenderThreadData =
+		static_cast<FParticleUpsamplingData*>(DataForRenderThread);
+	FParticleUpsamplingData* GameThreadData =
+		static_cast<FParticleUpsamplingData*>(PerInstanceData);
 
+	if (RenderThreadData && GameThreadData)
+	{
+		RenderThreadData->PUBuffers = GameThreadData->PUBuffers;
+		RenderThreadData->PUArrays = new FPUArrays();
+		RenderThreadData->PUArrays->CopyFrom(GameThreadData->PUArrays);
+	}
 }
 
 #if WITH_EDITORONLY_DATA
@@ -147,7 +226,16 @@ bool UAGX_ParticleUpsamplingDI::GetFunctionHLSL(
 	const FNiagaraDataInterfaceGeneratedFunction& FunctionInfo, int FunctionInstanceIndex,
 	FString& OutHLSL)
 {
-	return false;
+	return FunctionInfo.DefinitionName == UpdateGridName ||
+		   FunctionInfo.DefinitionName == ApplyParticleMassName ||
+		   FunctionInfo.DefinitionName == SpawnParticlesName ||
+		   FunctionInfo.DefinitionName == MoveParticlesName ||
+		   FunctionInfo.DefinitionName == GetVoxelPositionAndRoomName ||
+		   FunctionInfo.DefinitionName == ClearTableName ||
+		   FunctionInfo.DefinitionName == GetFineParticleRadiusName ||
+		   FunctionInfo.DefinitionName == IsFineParticleAliveName ||
+		   FunctionInfo.DefinitionName == GetNominalRadiusName ||
+		   FunctionInfo.DefinitionName == GetCoarseParticleInfoName;
 }
 
 /** 
@@ -156,6 +244,166 @@ bool UAGX_ParticleUpsamplingDI::GetFunctionHLSL(
 void UAGX_ParticleUpsamplingDI::GetFunctionsInternal(
 	TArray<FNiagaraFunctionSignature>& OutFunctions) const
 {
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = UpdateGridName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("VoxelId")));
 
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
+		OutFunctions.Add(Sig);
+	}
+
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = ApplyParticleMassName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticlePosition")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEase")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEaseNew")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("IsAlive")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
+		OutFunctions.Add(Sig);
+	}
+
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = SpawnParticlesName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("VoxelId")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("ShouldSpawn")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("ParticleRoom")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("VoxelIndex")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MaxBounds")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MinBounds")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
+		OutFunctions.Add(Sig);
+	}
+
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = MoveParticlesName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("ParticleIndex")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticlePosition")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEase")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("DeltaTime")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticlePositionNew")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEaseNew")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticleVelocityNew")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("IsAlive")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
+		OutFunctions.Add(Sig);
+	}
+
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = ClearTableName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("VoxelId")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
+		OutFunctions.Add(Sig);
+	}
+
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = GetVoxelPositionAndRoomName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("VoxelId")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("VoxelPosition")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Room")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MaxBounds")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("MinBounds")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
+		OutFunctions.Add(Sig);
+	}
+
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = GetFineParticleRadiusName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("FineParticleRadius")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
+		OutFunctions.Add(Sig);
+	}
+
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = IsFineParticleAliveName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("Ease")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("IsAlive")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
+		OutFunctions.Add(Sig);
+	}
+
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = GetCoarseParticleInfoName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("CoarseParticleIndex")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec4Def(), TEXT("ParticlePositionAndRadius")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticleVelocity")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
+		OutFunctions.Add(Sig);
+	}
+
+	{
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = GetNominalRadiusName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("NominalRadius")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
+		OutFunctions.Add(Sig);
+	}
 }
 #endif

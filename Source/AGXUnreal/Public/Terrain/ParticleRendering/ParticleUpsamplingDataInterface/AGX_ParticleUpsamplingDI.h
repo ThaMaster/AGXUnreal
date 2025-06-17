@@ -86,4 +86,18 @@ protected:
 
 private:
 	FPUArrays* LocalData;
+
+	// Function names
+	const FName UpdateGridName = TEXT("UpdateGrid");
+	const FName ApplyParticleMassName = TEXT("ApplyParticleMass");
+	const FName SpawnParticlesName = TEXT("SpawnParticles"); // Maybe change to get room?
+	const FName MoveParticlesName = TEXT("MoveParticles");
+	const FName ClearTableName = TEXT("ClearTable");
+	const FName GetVoxelPositionAndRoomName = TEXT("GetVoxelPositionAndRoom");
+	const FName GetNominalRadiusName = TEXT("GetNominalRadius");
+	const FName GetFineParticleRadiusName = TEXT("GetFineParticleRadius");
+	const FName IsFineParticleAliveName = TEXT("IsFineParticleAlive");
+	const FName GetCoarseParticleInfoName = TEXT("GetCoarseParticleInfo");
+
+	const TCHAR* PUUnrealShaderHeaderFile = TEXT("ParticleUpsampling.ush");
 };
