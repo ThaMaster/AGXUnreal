@@ -12,6 +12,10 @@
 
 // Unreal Engine includes.
 #include "UObject/CoreRedirects.h"
+#include "RenderGraphResources.h"
+#include "Interfaces/IPluginManager.h"
+#include "Misc/Paths.h"
+#include "ShaderCore.h"
 
 #define LOCTEXT_NAMESPACE "FAGXUnrealModule"
 
@@ -30,6 +34,18 @@ namespace AGXUnrealModule_helpers
 			*Revision);
 	}
 }
+
+static struct FShaderDirectoryMapping
+{
+	// TODO: ASK MARTIN HOW AND WHERE TO DO THIS PROPERLY!
+	FShaderDirectoryMapping()
+	{
+		FString PluginShaderDir = FPaths::Combine(
+			IPluginManager::Get().FindPlugin(TEXT("AGXUnreal"))->GetBaseDir(),
+			TEXT("Source/AGXUnreal/Private/Terrain/ParticleRendering/Shaders"));
+		AddShaderSourceDirectoryMapping(TEXT("/ParticleRenderingShaders"), PluginShaderDir);
+	}
+} GShaderDirectoryMapping;
 
 void FAGXUnrealModule::StartupModule()
 {

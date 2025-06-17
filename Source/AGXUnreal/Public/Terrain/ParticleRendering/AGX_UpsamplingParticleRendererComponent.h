@@ -130,7 +130,7 @@ private:
 
 	bool InitializeParentTerrainActor();
 	bool InitializeNiagaraParticleSystemComponent();
-	UNiagaraSystem* FindNiagaraSystemAsset(const TCHAR* AssetPath);
+	void AssignDefaultNiagaraAsset(auto*& AssetRefProperty, const TCHAR* AssetPath);
 
 	const TCHAR* NIAGARA_SYSTEM_PATH = TEXT(
 		"NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/UpsamplingParticleSystem"

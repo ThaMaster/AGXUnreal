@@ -14,6 +14,7 @@
 #include "AGX_ParticleUpsamplingDI.generated.h"
 
 struct FPUArrays;
+struct FCoarseParticle;
 
 UCLASS(EditInlineNew, Category = "Data Interface", CollapseCategories, meta = (DisplayName = "Particle Upsampling Data Interface"))
 class AGXUNREAL_API UAGX_ParticleUpsamplingDI : public UNiagaraDataInterface
@@ -67,6 +68,12 @@ public:
 		void* DataForRenderThread, void* PerInstanceData,
 		const FNiagaraSystemInstanceID& SystemInstance) override;
 
+	void SetCoarseParticles(TArray<FCoarseParticle> NewCoarseParticles);
+	void SetActiveVoxelIndices(TArray<FIntVector4> AVIs);
+	int GetHashTableSize();
+	void RecalculateFineParticleProperties(float Upsampling, float ElementSize, float ParticleDensity);
+	void SetStaticVariables(float VoxelSize, float EaseStepSize);
+
 #if WITH_EDITORONLY_DATA
 	virtual bool AppendCompileHash(FNiagaraCompileHashVisitor* InVisitor) const override;
 	virtual void GetParameterDefinitionHLSL(
@@ -85,6 +92,7 @@ protected:
 #endif
 
 private:
+	
 	FPUArrays* LocalData;
 
 	// Function names
@@ -99,5 +107,6 @@ private:
 	const FName IsFineParticleAliveName = TEXT("IsFineParticleAlive");
 	const FName GetCoarseParticleInfoName = TEXT("GetCoarseParticleInfo");
 
-	const TCHAR* PUUnrealShaderHeaderFile = TEXT("ParticleUpsampling.ush");
+	const TCHAR* PUUnrealShaderHeaderFile = TEXT("/ParticleRenderingShaders/ParticleUpsampling.ush");
+	const float PACKING_RATIO = 0.67f;
 };

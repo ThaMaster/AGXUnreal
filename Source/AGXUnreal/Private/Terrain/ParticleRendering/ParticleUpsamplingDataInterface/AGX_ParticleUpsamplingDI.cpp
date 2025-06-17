@@ -197,6 +197,55 @@ void UAGX_ParticleUpsamplingDI::ProvidePerInstanceDataForRenderThread(
 	}
 }
 
+void UAGX_ParticleUpsamplingDI::SetCoarseParticles(TArray<FCoarseParticle> NewCoarseParticles)
+{
+	uint32 ArraySize = NewCoarseParticles.Num();
+	if (LocalData->NumElementsInCoarseParticleBuffer < ArraySize)
+	{
+		LocalData->NumElementsInCoarseParticleBuffer *= 2;
+		LocalData->NeedsCPResize = true;
+	}
+	LocalData->CoarseParticles.SetNumZeroed(NewCoarseParticles.Num());
+	LocalData->CoarseParticles = NewCoarseParticles;
+}
+
+void UAGX_ParticleUpsamplingDI::SetActiveVoxelIndices(TArray<FIntVector4> AVIs)
+{
+	uint32 ArraySize = AVIs.Num();
+	if (LocalData->NumElementsInActiveVoxelBuffer < ArraySize)
+	{
+		LocalData->NumElementsInActiveVoxelBuffer *= 2;
+		LocalData->NeedsVoxelResize = true;
+		size_t NewSize = LocalData->NumElementsInActiveVoxelBuffer;
+		LocalData->ActiveVoxelIndices.SetNum(NewSize);
+	}
+	for (int i = 0; i < AVIs.Num(); i++)
+	{
+		LocalData->ActiveVoxelIndices[i] = AVIs[i];
+	}
+}
+
+int UAGX_ParticleUpsamplingDI::GetHashTableSize()
+{
+	return LocalData->NumElementsInActiveVoxelBuffer;
+}
+
+void UAGX_ParticleUpsamplingDI::RecalculateFineParticleProperties(
+	float Upsampling, float ElementSize, float ParticleDensity)
+{
+	LocalData->NominalRadius =
+		FMath::Pow(3.0f * PACKING_RATIO / (4.0f * PI), 1.0f / 3.0f) * ElementSize;
+	LocalData->FineParticleRadius = LocalData->NominalRadius / FMath::Pow(Upsampling, 1.0f / 3.0f);
+	float NominalMass =
+		ParticleDensity * 4.0f / 3.0f * PI * FMath::Pow(LocalData->NominalRadius, 3.0f);
+	LocalData->FineParticleMass = NominalMass / Upsampling;
+}
+
+void UAGX_ParticleUpsamplingDI::SetStaticVariables(float VoxelSize, float EaseStepSize)
+{
+
+}
+
 #if WITH_EDITORONLY_DATA
 
 /** 
@@ -206,7 +255,10 @@ void UAGX_ParticleUpsamplingDI::ProvidePerInstanceDataForRenderThread(
 bool UAGX_ParticleUpsamplingDI::AppendCompileHash(
 	FNiagaraCompileHashVisitor* InVisitor) const
 {
-	return false;
+	bool bSuccess = Super::AppendCompileHash(InVisitor);
+	bSuccess &= InVisitor->UpdateShaderFile(PUUnrealShaderHeaderFile);
+	bSuccess &= InVisitor->UpdateShaderParameters<FShaderParameters>();
+	return bSuccess;
 }
 
 /** 
@@ -215,7 +267,10 @@ bool UAGX_ParticleUpsamplingDI::AppendCompileHash(
 void UAGX_ParticleUpsamplingDI::GetParameterDefinitionHLSL(
 	const FNiagaraDataInterfaceGPUParamInfo& ParamInfo, FString& OutHLSL)
 {
-
+	const TMap<FString, FStringFormatArg> TemplateArgs = {
+		{TEXT("ParameterName"), ParamInfo.DataInterfaceHLSLSymbol},
+	};
+	AppendTemplateHLSL(OutHLSL, PUUnrealShaderHeaderFile, TemplateArgs);
 }
 
 /**
