@@ -352,7 +352,7 @@ public:
 	const FTerrainPagerBarrier* GetNativeTerrainPager() const;
 
 	UPROPERTY(BlueprintAssignable, Category = "AGX Terrain Particles")
-	FParticleDataMulticastDelegate UpdateParticleDataDelegate;
+	FParticleDataMulticastDelegate OnParticleData;
 
 #if WITH_EDITOR
 	virtual void PostInitProperties() override;

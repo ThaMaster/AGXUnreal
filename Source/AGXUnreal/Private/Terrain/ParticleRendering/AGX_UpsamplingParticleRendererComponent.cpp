@@ -50,14 +50,14 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 
 	ElementSize = ParentTerrainActor->SourceLandscape->GetActorScale().X;
 	// Bind function to terrain delegate to handle particle data.
-	ParentTerrainActor->UpdateParticleDataDelegate.AddDynamic(
+	ParentTerrainActor->OnParticleData.AddDynamic(
 		this, &UAGX_UpsamplingParticleRendererComponent::HandleParticleData);
 }
 
 void UAGX_UpsamplingParticleRendererComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-	ParentTerrainActor->UpdateParticleDataDelegate.RemoveDynamic(
+	ParentTerrainActor->OnParticleData.RemoveDynamic(
 		this, &UAGX_UpsamplingParticleRendererComponent::HandleParticleData);
 }
 

@@ -31,9 +31,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AGX Upsampling Particle Rendering")
 	bool bEnableParticleRendering = true;
 
-	UPROPERTY(EditAnywhere, Category = "AGX Particle Rendering")
-	UNiagaraSystem* ParticleSystemAsset;
-
 	/**
 	 * The desired upsampling factor which the renderer will try to achieve.
 	 */
@@ -74,6 +71,9 @@ public:
 			(EditCondition = "bEnableParticleRendering", UIMin = "0.1",
 			 UIMax = "1.0"))
 	double EaseStepSize = 0.1;
+
+	UPROPERTY(EditAnywhere, Category = "AGX Upsampling Particle Rendering")
+	UNiagaraSystem* ParticleSystemAsset;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
 	bool SetEnableParticleRendering(bool bEnabled);
