@@ -54,7 +54,6 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 		this, &UAGX_UpsamplingParticleRendererComponent::HandleParticleData);
 }
 
-
 void UAGX_UpsamplingParticleRendererComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
@@ -64,6 +63,11 @@ void UAGX_UpsamplingParticleRendererComponent::EndPlay(const EEndPlayReason::Typ
 
 bool UAGX_UpsamplingParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
 {
+	if (ParticleSystemComponent)
+	{
+		ParticleSystemComponent->DeactivateImmediate();
+		ParticleSystemComponent->SetActive(bEnabled);
+	}
 	return bEnableParticleRendering = bEnabled; 
 }
 
