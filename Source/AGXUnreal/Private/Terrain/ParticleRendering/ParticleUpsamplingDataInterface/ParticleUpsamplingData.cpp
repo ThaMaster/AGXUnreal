@@ -106,11 +106,16 @@ void FPUBuffers::UpdateHashTableBuffers(
 		}
 
 		const uint32 BufferBytes = sizeof(FIntVector4) * ElementCount;
-		void* OutputData = RHICmdList.LockBuffer(
-			ActiveVoxelIndicesBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
 
-		FMemory::Memcpy(OutputData, ActiveVoxelIndices.GetData(), BufferBytes);
-		RHICmdList.UnlockBuffer(ActiveVoxelIndicesBufferRef->GetBuffer());
+		if (BufferBytes < ActiveVoxelIndicesBufferRef->GetBuffer()->GetSize())
+		{
+			void* OutputData = RHICmdList.LockBuffer(
+				ActiveVoxelIndicesBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+
+			FMemory::Memcpy(OutputData, ActiveVoxelIndices.GetData(), BufferBytes);
+			RHICmdList.UnlockBuffer(ActiveVoxelIndicesBufferRef->GetBuffer());
+		}
+	
 	}
 }
 

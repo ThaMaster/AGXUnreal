@@ -51,6 +51,7 @@
 #include "AGX_Terrain.generated.h"
 
 class UAGX_HeightFieldBoundsComponent;
+class UAGX_SoilParticleRendererComponent;
 class UAGX_TerrainMaterial;
 class UAGX_TerrainSpriteComponent;
 class UAGX_ShapeMaterial;
@@ -119,6 +120,9 @@ public:
 
 	UPROPERTY(Category = "AGX Terrain", VisibleAnywhere, BlueprintReadOnly)
 	UAGX_HeightFieldBoundsComponent* TerrainBounds;
+
+	UPROPERTY(Category = "AGX Terrain", VisibleAnywhere, BlueprintReadOnly)
+	UAGX_SoilParticleRendererComponent* AGX_SoilParticleRenderer;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	bool bCanCollide {true};

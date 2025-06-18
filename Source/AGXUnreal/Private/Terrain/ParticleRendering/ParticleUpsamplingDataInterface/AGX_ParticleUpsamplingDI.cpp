@@ -205,7 +205,6 @@ void UAGX_ParticleUpsamplingDI::SetCoarseParticles(TArray<FCoarseParticle> NewCo
 		LocalData->NumElementsInCoarseParticleBuffer *= 2;
 		LocalData->NeedsCPResize = true;
 	}
-	LocalData->CoarseParticles.SetNumZeroed(NewCoarseParticles.Num());
 	LocalData->CoarseParticles = NewCoarseParticles;
 }
 
@@ -216,13 +215,8 @@ void UAGX_ParticleUpsamplingDI::SetActiveVoxelIndices(TArray<FIntVector4> AVIs)
 	{
 		LocalData->NumElementsInActiveVoxelBuffer *= 2;
 		LocalData->NeedsVoxelResize = true;
-		size_t NewSize = LocalData->NumElementsInActiveVoxelBuffer;
-		LocalData->ActiveVoxelIndices.SetNum(NewSize-1);
 	}
-	for (int i = 0; i < AVIs.Num(); i++)
-	{
-		LocalData->ActiveVoxelIndices[i] = AVIs[i];
-	}
+	LocalData->ActiveVoxelIndices = AVIs;
 }
 
 int UAGX_ParticleUpsamplingDI::GetHashTableSize()

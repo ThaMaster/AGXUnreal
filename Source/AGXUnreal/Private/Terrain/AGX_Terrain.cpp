@@ -25,6 +25,7 @@
 #include "Utilities/AGX_NotificationUtilities.h"
 #include "Utilities/AGX_RenderUtilities.h"
 #include "Utilities/AGX_StringUtilities.h"
+#include "Terrain/ParticleRendering/AGX_SoilParticleRendererComponent.h"
 
 // Unreal Engine includes.
 #include "Containers/Ticker.h"
@@ -63,6 +64,10 @@ AAGX_Terrain::AAGX_Terrain()
 	RootComponent = SpriteComponent;
 
 	TerrainBounds = CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("TerrainBounds"));
+	
+	AGX_SoilParticleRenderer =
+		CreateDefaultSubobject<UAGX_SoilParticleRendererComponent>(
+		TEXT("DefaultParticleRenderer"));
 
 	// Set render targets and niagara system from plugin by default to reduce manual steps when
 	// using Terrain.
@@ -1657,7 +1662,7 @@ void AAGX_Terrain::ClearDisplacementMap()
 
 void AAGX_Terrain::UpdateParticlesArrays()
 {
-	if (!NativeBarrier.HasNative() || !UpdateParticleDataDelegate.IsBound())
+	if (!NativeBarrier.HasNative() || !OnParticleData.IsBound())
 	{
 		return;
 	}
@@ -1701,7 +1706,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	}
 	// Maybe process the data here instead of 
 	// Broadcast the data to all who is bound to the delegate.
-	UpdateParticleDataDelegate.Broadcast(data);
+	OnParticleData.Broadcast(data);
 }
 
 void AAGX_Terrain::UpdateLandscapeMaterialParameters()

@@ -259,8 +259,11 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 	}
 
 	TArray<FIntVector4> ActiveVoxelIndices = GetActiveVoxelsFromSet(ActiveVoxelSet);
-	UAGX_ParticleUpsamplingDI* PUInterface =
-		static_cast<UAGX_ParticleUpsamplingDI*>(ParticleSystemComponent->GetDataInterface("Particle Upsampling DI"));
+	UAGX_ParticleUpsamplingDI* PUInterface = static_cast<UAGX_ParticleUpsamplingDI*>(
+		UNiagaraFunctionLibrary::GetDataInterface(
+			UAGX_ParticleUpsamplingDI::StaticClass(), 
+			ParticleSystemComponent,
+			"Particle Upsampling DI"));
 
 	if (!PUInterface)
 	{
@@ -349,25 +352,6 @@ TArray<FIntVector4> UAGX_UpsamplingParticleRendererComponent::GetActiveVoxelsFro
 }
 
 #if WITH_EDITOR
-
-/**
- *
- */
-bool UAGX_UpsamplingParticleRendererComponent::CanEditChange(const FProperty* InProperty) const
-{
-	const bool SuperCanEditChange = Super::CanEditChange(InProperty);
-	if (!SuperCanEditChange)
-		return false;
-
-	const FName Prop = InProperty->GetFName();
-
-	if (Prop == GET_MEMBER_NAME_CHECKED(UAGX_UpsamplingParticleRendererComponent, ParticleSystemAsset))
-	{
-		return false;
-	}
-
-	return SuperCanEditChange;
-}
 
 /**
  *

@@ -59,7 +59,7 @@ public:
 		Meta =
 			(EditCondition =
 				 "bEnableParticleRendering && bEnableVoxelSize",
-			 UIMin = "10", UIMax = "1000"))
+			 ClampMin=10, UIMin = "10", UIMax = "1000"))
 	double VoxelSize = 10.0;
 
 	/**
@@ -112,8 +112,8 @@ protected:
 
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 #if WITH_EDITOR
-	virtual bool CanEditChange(const FProperty* InProperty) const override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 	virtual void PostInitProperties() override;
 #endif
