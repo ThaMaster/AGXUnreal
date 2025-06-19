@@ -2,20 +2,14 @@
 
 #pragma once
 
-// AGX Dynamics for Unreal includes.
-
 // Unreal Engine includes.
-#include "CoreMinimal.h"
-#include "NiagaraCommon.h"
-#include "NiagaraTypes.h"
 #include "NiagaraDataInterface.h"
-#include "NiagaraDataInterfaceRW.h"
 
 struct FParticleUpsamplingData;
 
+/** This proxy is used to safely copy data between game thread and render thread*/
 struct FParticleUpsamplingDIProxy : FNiagaraDataInterfaceProxy
 {
-public:
 	/** Get the size of the data that will be passed to render*/
 	virtual int32 PerInstanceDataPassedToRenderThreadSize() const override;
 
@@ -31,7 +25,4 @@ public:
 
 	/** List of proxy data for each system instances*/
 	TMap<FNiagaraSystemInstanceID, FParticleUpsamplingData> SystemInstancesToInstanceData_RT;
-
-protected:
-private:
 };

@@ -3,33 +3,24 @@
 #include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/AGX_ParticleUpsamplingDI.h"
 
 // AGX Dynamics for Unreal includes.
-#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingData.h"
 #include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingDIProxy.h"
 
 // Unreal Engine includes.
-#include "NiagaraCompileHashVisitor.h"
-#include "NiagaraTypes.h"
-#include "NiagaraSystemInstance.h"
 #include "NiagaraShaderParametersBuilder.h"
-#include "NiagaraParameterStore.h"
-#include "NiagaraSimStageData.h"
-#include "ShaderParameterUtils.h"
-#include "RHIStaticStates.h"
-#include "RHIUtilities.h"
-#include "RHIResources.h"
-#include "RHICommandList.h"
-#include "NiagaraDataInterfaceArray.h"
+#include "NiagaraSystemInstance.h"
+
+#define LOCTEXT_NAMESPACE "ParticleUpsamplingDataInterface"
+
 
 UAGX_ParticleUpsamplingDI::UAGX_ParticleUpsamplingDI(
 	FObjectInitializer const& ObjectInitializer)
 {
 	Proxy.Reset(new FParticleUpsamplingDIProxy());
-	LocalData = new FPUArrays();
+	LocalData = new FPUArrays(
+		FParticleUpsamplingData::INITIAL_CP_BUFFER_SIZE, 
+		FParticleUpsamplingData::INITIAL_VOXEL_BUFFER_SIZE);
 }
 
-/**
- * Funcition for registering our custom DI with Niagara
- */
 void UAGX_ParticleUpsamplingDI::PostInitProperties()
 {
 	Super::PostInitProperties();
@@ -42,23 +33,12 @@ void UAGX_ParticleUpsamplingDI::PostInitProperties()
 	}
 }
 
-bool UAGX_ParticleUpsamplingDI::CanExecuteOnTarget(ENiagaraSimTarget Target) const
-{
-	return true;
-}
-
-/**
- * This fills in the expected parameter bindings we use to send data to the GPU.
- */
 void UAGX_ParticleUpsamplingDI::BuildShaderParameters(
 	FNiagaraShaderParametersBuilder& ShaderParametersBuilder) const
 {
 	ShaderParametersBuilder.AddNestedStruct<FShaderParameters>();
 }
 
-/**
- * This fills in the parameters with data to send to the GPU.
- */
 void UAGX_ParticleUpsamplingDI::SetShaderParameters(
 	const FNiagaraDataInterfaceSetShaderParametersContext& Context) const
 {
@@ -89,23 +69,17 @@ void UAGX_ParticleUpsamplingDI::SetShaderParameters(
 	ShaderParameters->AnimationSpeed		= Data.PUArrays->EaseStepSize;
 }
 
-/**
- * This function initializes the PerInstanceData for each instance of this NDI.
- * This means that this function will run when hitting the start button.
- */
 bool UAGX_ParticleUpsamplingDI::InitPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
 	FParticleUpsamplingData* Data = static_cast<FParticleUpsamplingData*>(PerInstanceData);
 	Data->Init(SystemInstance);
-	LocalData = new FPUArrays();
+	LocalData = new FPUArrays(
+		FParticleUpsamplingData::INITIAL_CP_BUFFER_SIZE,
+		FParticleUpsamplingData::INITIAL_VOXEL_BUFFER_SIZE);
 	return true;
 }
 
-/**
- * This function cleans the data on the RT for each instance of this NDI.
- * This means that this function will run hitting the pause button.
- */
 void UAGX_ParticleUpsamplingDI::DestroyPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
@@ -128,25 +102,6 @@ void UAGX_ParticleUpsamplingDI::DestroyPerInstanceData(
 		});
 }
 
-int32 UAGX_ParticleUpsamplingDI::PerInstanceDataSize() const
-{
-	return sizeof(FParticleUpsamplingData);
-}
-
-bool UAGX_ParticleUpsamplingDI::HasPreSimulateTick() const
-{
-	return true;
-
-}
-
-bool UAGX_ParticleUpsamplingDI::HasPostSimulateTick() const
-{
-	return true;
-}
-
-/** 
- * This function runs every tick for every instance of this NDI. 
- */
 bool UAGX_ParticleUpsamplingDI::PerInstanceTick(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds)
 {
@@ -163,23 +118,6 @@ bool UAGX_ParticleUpsamplingDI::PerInstanceTick(
 	return false;
 }
 
-/** 
- * This function runs every tick, post simulate, for every instance of this NDI. 
- */
-bool UAGX_ParticleUpsamplingDI::PerInstanceTickPostSimulate(
-	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds)
-{
-	check(SystemInstance);
-	FParticleUpsamplingData* Data = static_cast<FParticleUpsamplingData*>(PerInstanceData);
-
-	if (!Data)
-	{
-		return true;
-	}
-
-	return false;
-}
-
 void UAGX_ParticleUpsamplingDI::ProvidePerInstanceDataForRenderThread(
 	void* DataForRenderThread, void* PerInstanceData,
 	const FNiagaraSystemInstanceID& SystemInstance)
@@ -192,7 +130,9 @@ void UAGX_ParticleUpsamplingDI::ProvidePerInstanceDataForRenderThread(
 	if (RenderThreadData && GameThreadData)
 	{
 		RenderThreadData->PUBuffers = GameThreadData->PUBuffers;
-		RenderThreadData->PUArrays = new FPUArrays();
+		RenderThreadData->PUArrays = new FPUArrays(
+			FParticleUpsamplingData::INITIAL_CP_BUFFER_SIZE,
+			FParticleUpsamplingData::INITIAL_VOXEL_BUFFER_SIZE);
 		RenderThreadData->PUArrays->CopyFrom(GameThreadData->PUArrays);
 	}
 }
@@ -219,7 +159,7 @@ void UAGX_ParticleUpsamplingDI::SetActiveVoxelIndices(TArray<FIntVector4> AVIs)
 	LocalData->ActiveVoxelIndices = AVIs;
 }
 
-int UAGX_ParticleUpsamplingDI::GetHashTableSize()
+int UAGX_ParticleUpsamplingDI::GetElementsInActiveVoxelBuffer()
 {
 	return LocalData->NumElementsInActiveVoxelBuffer;
 }
@@ -243,10 +183,6 @@ void UAGX_ParticleUpsamplingDI::SetStaticVariables(float VoxelSize, float EaseSt
 
 #if WITH_EDITORONLY_DATA
 
-/** 
- * This lets the Niagara compiler know that it needs to recompile an effect when
- * our HLSL file changes.
- */
 bool UAGX_ParticleUpsamplingDI::AppendCompileHash(
 	FNiagaraCompileHashVisitor* InVisitor) const
 {
@@ -256,9 +192,6 @@ bool UAGX_ParticleUpsamplingDI::AppendCompileHash(
 	return bSuccess;
 }
 
-/** 
- * Loads our HLSL template script file and replaces all template arguments accordingly.
- */
 void UAGX_ParticleUpsamplingDI::GetParameterDefinitionHLSL(
 	const FNiagaraDataInterfaceGPUParamInfo& ParamInfo, FString& OutHLSL)
 {
@@ -268,9 +201,6 @@ void UAGX_ParticleUpsamplingDI::GetParameterDefinitionHLSL(
 	AppendTemplateHLSL(OutHLSL, PUUnrealShaderHeaderFile, TemplateArgs);
 }
 
-/**
- * 
- */ 
 bool UAGX_ParticleUpsamplingDI::GetFunctionHLSL(
 	const FNiagaraDataInterfaceGPUParamInfo& ParamInfo,
 	const FNiagaraDataInterfaceGeneratedFunction& FunctionInfo, int FunctionInstanceIndex,
@@ -288,19 +218,22 @@ bool UAGX_ParticleUpsamplingDI::GetFunctionHLSL(
 		   FunctionInfo.DefinitionName == GetCoarseParticleInfoName;
 }
 
-/** 
- * This lists all the functions that will be visible when using the NDI. 
- */
 void UAGX_ParticleUpsamplingDI::GetFunctionsInternal(
 	TArray<FNiagaraFunctionSignature>& OutFunctions) const
 {
+	Super::GetFunctionsInternal(OutFunctions);
+
 	{
 		FNiagaraFunctionSignature Sig;
 		Sig.Name = UpdateGridName;
-		Sig.bMemberFunction = true;
+
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("VoxelId")));
 
+		Sig.bMemberFunction = true;
+		Sig.Description = LOCTEXT(
+			"UpdateGridNameFunctionDescription",
+			"Updates the Voxel Grid with sampled values from the Coarse Particles.");
 		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
 		Sig.bExperimental = true;
 		Sig.bSupportsCPU = false;
@@ -311,13 +244,14 @@ void UAGX_ParticleUpsamplingDI::GetFunctionsInternal(
 	{
 		FNiagaraFunctionSignature Sig;
 		Sig.Name = ApplyParticleMassName;
-		Sig.bMemberFunction = true;
+
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetVec3Def(), TEXT("ParticlePosition")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEase")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEaseNew")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("IsAlive")));
-
+		
+		Sig.bMemberFunction = true;
 		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
 		Sig.bExperimental = true;
 		Sig.bSupportsCPU = false;
@@ -457,3 +391,5 @@ void UAGX_ParticleUpsamplingDI::GetFunctionsInternal(
 	}
 }
 #endif
+
+#undef LOCTEXT_NAMESPACE

@@ -2,45 +2,56 @@
 
 #pragma once
 
-// AGX Dynamics for Unreal includes.
-
 // Unreal Engine includes.
-#include "CoreMinimal.h"
 #include "NiagaraCommon.h"
-#include "NiagaraTypes.h"
-#include "NiagaraDataInterface.h"
-#include "NiagaraDataInterfaceRW.h"
 
+// Struct to store data from a single coarse particle. */
 struct FCoarseParticle
 {
+	// The position stored at XYZ, the particle radius stored at W.
 	FVector4f PositionAndRadius;
+
+	// The velocity stored at XYZ, the particle mass stored at W.
 	FVector4f VelocityAndMass;
 };
 
+// Struct to store data contained in a voxel of the voxel grid.
 struct FVoxelEntry
 {
+	// The voxel index stored at XYZ, the voxel room stored at W.
 	FIntVector4 IndexAndRoom;
+
+	// The voxel velocity stored at XYZ, the voxel mass stored at W.
 	FVector4f VelocityAndMass;
+
+	// The max coordinates of the bounding box surrounding coarse particles
+	// in this voxel stored at XYZ, W is empty.
 	FVector4f MaxBounds;
+
+	// The min coordinates of the bounding box surrounding coarse particles 
+	// in this voxel stored at XYZ, W is empty.
 	FVector4f MinBounds;
 };
 
 struct FPUBuffers : public FRenderResource
 {
-	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1024;
-	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 1024;
-
+	FPUBuffers(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBufferSize);
+	
 	virtual void InitRHI(FRHICommandListBase& RHICmdList) override;
 	virtual void ReleaseRHI() override;
-	virtual FString GetFriendlyName() const override;
+	virtual FString GetFriendlyName() const override { return TEXT("Particle Upsampling Render Resources") ;};
 
+	/** Function for initializing a new Read-only buffer on the GPU */
 	template <typename T>
 	FShaderResourceViewRHIRef InitSRVBuffer(
 		FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, uint32 ElementCount);
+
+	/** Function for initializing a new Read/Write buffer on the GPU */
 	template <typename T>
 	FUnorderedAccessViewRHIRef InitUAVBuffer(
 		FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, uint32 ElementCount);
 
+	//
 	void UpdateCoarseParticleBuffers(
 		FRHICommandListBase& RHICmdList, const TArray<FCoarseParticle> CoarseParticleData,
 		uint32 NewElementCount, bool NeedsResize);
@@ -48,29 +59,31 @@ struct FPUBuffers : public FRenderResource
 		FRHICommandListBase& RHICmdList, const TArray<FIntVector4> ActiveVoxelIndices,
 		uint32 NewElementCount, bool NeedsResize);
 
-	// SRV Buffers
+	// The reference to the SRV buffer containing Coarse Particles
 	FShaderResourceViewRHIRef CoarseParticleBufferRef;
+
+	// The reference to the SRV buffer containing Active Voxels
 	FShaderResourceViewRHIRef ActiveVoxelIndicesBufferRef;
 
-	// RW Buffers
+	// The reference to the UAV buffer containing the hashtable data.
 	FUnorderedAccessViewRHIRef HashTableBufferRef;
+
+	// The reference to the UAV buffer containing data on which indices are 
+	// occupied in the hashtable buffer.
 	FUnorderedAccessViewRHIRef HashTableOccupancyBufferRef;
+
+	uint32 NumElementsInCoarseParticleBuffer = 0;
+	uint32 NumElementsInActiveVoxelBuffer = 0;
 };
 
 struct FPUArrays
 {
-	const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1024;
-	const uint32 INITIAL_VOXEL_BUFFER_SIZE = 1024;
+	FPUArrays(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBuffer);
 
-	FPUArrays();
 	void CopyFrom(const FPUArrays* Other);
-	void SetNewTime(int NewTime);
 
 	TArray<FCoarseParticle> CoarseParticles;
 	TArray<FIntVector4> ActiveVoxelIndices;
-
-	uint32 NumElementsInActiveVoxelBuffer = INITIAL_VOXEL_BUFFER_SIZE;
-	uint32 NumElementsInCoarseParticleBuffer = INITIAL_COARSE_PARTICLE_BUFFER_SIZE;
 
 	int Time = 0;
 	float VoxelSize = 0;
@@ -82,6 +95,9 @@ struct FPUArrays
 
 	bool NeedsCPResize = false;
 	bool NeedsVoxelResize = false;
+
+	uint32 NumElementsInCoarseParticleBuffer = 0;
+	uint32 NumElementsInActiveVoxelBuffer = 0;
 };
 
 /** 
@@ -90,6 +106,9 @@ struct FPUArrays
  */
 struct FParticleUpsamplingData
 {
+	static const uint32 INITIAL_CP_BUFFER_SIZE = 1024;
+	static const uint32 INITIAL_VOXEL_BUFFER_SIZE = 1024;
+
 	void Init(FNiagaraSystemInstance* SystemInstance);
 	void Update(FNiagaraSystemInstance* SystemInstance, FPUArrays* OtherData);
 	void Release();

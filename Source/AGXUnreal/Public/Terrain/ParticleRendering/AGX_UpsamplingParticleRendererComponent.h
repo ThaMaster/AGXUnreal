@@ -15,6 +15,7 @@
 
 class UNiagaraComponent;
 class UNiagaraSystem;
+class UAGX_ParticleUpsamplingDI;
 
 UCLASS(
 	ClassGroup = "AGX_Terrain_Particle_Rendering",
@@ -111,7 +112,6 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
@@ -126,10 +126,18 @@ private:
 
 	AAGX_Terrain* ParentTerrainActor = nullptr;
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
-	FDelegateHandle DelegateHandle;
+	UAGX_ParticleUpsamplingDI* UpsamplingDataInterface = nullptr;
 
+	/**
+	 * Finds the parent terrain actor of the scene. Cannot render particles if the
+	 * terrain is not found since we cannot bind to the particle data delegate.
+	 */
 	bool InitializeParentTerrainActor();
+
+	/** Initializes the Niagara VFX System and attaches to the scene. */
 	bool InitializeNiagaraParticleSystemComponent();
+	
+	/** Assignes the default Niagara VFX System asset when adding the component to an actor. */
 	void AssignDefaultNiagaraAsset(auto*& AssetRefProperty, const TCHAR* AssetPath);
 
 	float ElementSize = 0;
@@ -137,7 +145,10 @@ private:
 	UFUNCTION()
 	void HandleParticleData(FDelegateParticleData data);
 
+	/** Appends the voxel indices that a coarse particle intersects with to the given array. */
 	void AppendIfActiveVoxel(
 		TSet<FIntVector>& ActiveVoxelIndices, FVector CPPosition, float CPRadius);
+
+	/** Converts the active voxels from the set to a TArray */
 	TArray<FIntVector4> GetActiveVoxelsFromSet(TSet<FIntVector> VoxelSet);
 };

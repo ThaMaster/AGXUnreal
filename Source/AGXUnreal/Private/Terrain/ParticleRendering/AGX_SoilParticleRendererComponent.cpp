@@ -53,13 +53,6 @@ void UAGX_SoilParticleRendererComponent::BeginPlay()
 		this, &UAGX_SoilParticleRendererComponent::HandleParticleData);
 }
 
-void UAGX_SoilParticleRendererComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-	ParentTerrainActor->OnParticleData.RemoveDynamic(
-		this, &UAGX_SoilParticleRendererComponent::HandleParticleData);
-}
-
 bool UAGX_SoilParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
 {
 	if (ParticleSystemComponent)

@@ -14,16 +14,14 @@
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystemInstanceController.h"
+#include "NiagaraRenderGraphUtils.h"
 
-/**
- *
- */
 UAGX_UpsamplingParticleRendererComponent::UAGX_UpsamplingParticleRendererComponent()
 {
 	AssignDefaultNiagaraAsset(
 		ParticleSystemAsset,
 		TEXT("NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/UpsamplingParticleSystem"
-			 "/PS_ParticleUpsamplingSystem.PS_ParticleUpsamplingSystem'"));
+			 "/PS_MeshPUSystem.PS_MeshPUSystem'"));
 }
 
 void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
@@ -48,16 +46,26 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 		return;
 	}
 
+	// Try to get the correct data interface.
+	UpsamplingDataInterface =
+		static_cast<UAGX_ParticleUpsamplingDI*>(UNiagaraFunctionLibrary::GetDataInterface(
+			UAGX_ParticleUpsamplingDI::StaticClass(), ParticleSystemComponent,
+			"Particle Upsampling DI"));
+
+	if (!UpsamplingDataInterface)
+	{
+		UE_LOG(
+			LogTemp, Warning,
+			TEXT("Particle renderer '%s' could not find Niagara Data Interface with name 'Particle "
+				 "Upsampling DI' in loaded Niagara system with name '%s', cannot render particles..."),
+			*GetName(), *ParticleSystemComponent->GetName());
+		return;
+	}
+
 	ElementSize = ParentTerrainActor->SourceLandscape->GetActorScale().X;
+	
 	// Bind function to terrain delegate to handle particle data.
 	ParentTerrainActor->OnParticleData.AddDynamic(
-		this, &UAGX_UpsamplingParticleRendererComponent::HandleParticleData);
-}
-
-void UAGX_UpsamplingParticleRendererComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-	ParentTerrainActor->OnParticleData.RemoveDynamic(
 		this, &UAGX_UpsamplingParticleRendererComponent::HandleParticleData);
 }
 
@@ -121,9 +129,6 @@ double UAGX_UpsamplingParticleRendererComponent::GetEaseStepSize()
 	return EaseStepSize;
 }
 
-/**
- *
- */
 void UAGX_UpsamplingParticleRendererComponent::AssignDefaultNiagaraAsset(
 	auto*& AssetRefProperty, const TCHAR* AssetPath)
 {
@@ -141,32 +146,29 @@ void UAGX_UpsamplingParticleRendererComponent::AssignDefaultNiagaraAsset(
 
 	AssetRefProperty = AssetFinder.Object;
 }
-/**
- *
- */
+
 bool UAGX_UpsamplingParticleRendererComponent::InitializeParentTerrainActor()
 {
-	// First get parent actor
+	// First get parent actor.
 	AActor* Owner = GetOwner();
 	if (!Owner)
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Particle Renderer '%s' could not fetch the parent actor"
-				 "particles"),
+				 "particles."),
 			*GetName());
 		return false;
 	}
 
-	// Then cast it to the proper type
+	// Then cast it to the AGX_Terrain actor.
 	ParentTerrainActor = Cast<AAGX_Terrain>(Owner);
 	if (!ParentTerrainActor)
 	{
 		UE_LOG(
 			LogAGX, Warning,
 			TEXT("Particle Renderer '%s' could not cast parent to 'AGX_Terrain' actor, cannot "
-				 "fetch particle data"
-				 "particles"),
+				 "bind component to delegate."),
 			*GetName());
 		return false;
 	}
@@ -174,9 +176,6 @@ bool UAGX_UpsamplingParticleRendererComponent::InitializeParentTerrainActor()
 	return ParentTerrainActor != nullptr;
 }
 
-/**
- *
- */
 bool UAGX_UpsamplingParticleRendererComponent::InitializeNiagaraParticleSystemComponent()
 {
 	if (!ParticleSystemAsset)
@@ -214,12 +213,9 @@ bool UAGX_UpsamplingParticleRendererComponent::InitializeNiagaraParticleSystemCo
 	return ParticleSystemComponent != nullptr;
 }
 
-/**
- *
- */
 void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParticleData data)
 {
-	if (!ParticleSystemComponent)
+	if (!ParticleSystemComponent || !UpsamplingDataInterface)
 	{
 		return;
 	}
@@ -231,14 +227,14 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 	{
 		if (data.Exists[I])
 		{
-			float Radius = (data.PositionsAndScale[I].W / 2 * 100);
+			float Radius = data.PositionsAndScale[I].W / 2 * 100;
+			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radius, 3);
+			ParticleDensity = data.VelocitiesAndMasses[I].W / Volume;
+
 			FVector Position = FVector(
 				data.PositionsAndScale[I].X, 
 				data.PositionsAndScale[I].Y,
 				data.PositionsAndScale[I].Z);
-			float Mass = data.VelocitiesAndMasses[I].W;
-			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radius, 3);
-			ParticleDensity = Mass / Volume;
 
 			AppendIfActiveVoxel(ActiveVoxelSet, Position, Radius);
 
@@ -259,25 +255,11 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 	}
 
 	TArray<FIntVector4> ActiveVoxelIndices = GetActiveVoxelsFromSet(ActiveVoxelSet);
-	UAGX_ParticleUpsamplingDI* PUInterface = static_cast<UAGX_ParticleUpsamplingDI*>(
-		UNiagaraFunctionLibrary::GetDataInterface(
-			UAGX_ParticleUpsamplingDI::StaticClass(), 
-			ParticleSystemComponent,
-			"Particle Upsampling DI"));
-
-	if (!PUInterface)
-	{
-		UE_LOG(
-			LogTemp, Warning,
-			TEXT("Could not find Particle Upsampling Data Interface in loaded Niagara system, cannot render particles..."));
-		return;
-	}
-
-	PUInterface->SetCoarseParticles(NewCoarseParticles);
-	PUInterface->SetActiveVoxelIndices(ActiveVoxelIndices);
-	PUInterface->RecalculateFineParticleProperties(Upsampling, ElementSize, ParticleDensity);
-	PUInterface->SetStaticVariables(VoxelSize, EaseStepSize);
-	int HashTableSize = PUInterface->GetHashTableSize();
+	UpsamplingDataInterface->SetCoarseParticles(NewCoarseParticles);
+	UpsamplingDataInterface->SetActiveVoxelIndices(ActiveVoxelIndices);
+	UpsamplingDataInterface->RecalculateFineParticleProperties(Upsampling, ElementSize, ParticleDensity);
+	UpsamplingDataInterface->SetStaticVariables(VoxelSize, EaseStepSize);
+	int HashTableSize = UpsamplingDataInterface->GetElementsInActiveVoxelBuffer();
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt(
@@ -292,9 +274,6 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 #endif
 }
 
-/**
- *
- */
 void UAGX_UpsamplingParticleRendererComponent::AppendIfActiveVoxel(
 	TSet<FIntVector>& ActiveVoxelIndices, FVector CPPosition, float CPRadius)
 {

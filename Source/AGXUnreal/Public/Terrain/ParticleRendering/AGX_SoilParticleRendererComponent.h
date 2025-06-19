@@ -59,7 +59,6 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
@@ -73,13 +72,18 @@ private:
 #endif
 
 	AAGX_Terrain* ParentTerrainActor = nullptr;
-
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
 
-	FDelegateHandle DelegateHandle;
-
+	/** 
+	 * Finds the parent terrain actor of the scene. Cannot render particles if the
+	 * terrain is not found since we cannot bind to the particle data delegate. 
+	 */
 	bool InitializeParentTerrainActor();
+
+	/** Initializes the Niagara VFX System and attaches to the scene. */
 	bool InitializeNiagaraParticleSystemComponent();
+
+	/** Assignes the default Niagara VFX System asset when adding the component to an actor. */
 	void AssignDefaultNiagaraAsset(auto*& AssetRefProperty, const TCHAR* AssetPath);
 
 	UFUNCTION()

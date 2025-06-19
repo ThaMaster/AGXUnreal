@@ -2,23 +2,26 @@
 
 #include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingData.h"
 
-// AGX Dynamics for Unreal includes.
-
-// Unreal Engine includes.
+FPUBuffers::FPUBuffers(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBuffer)
+{
+	NumElementsInCoarseParticleBuffer = InitialCPBufferSize;
+	NumElementsInActiveVoxelBuffer = InitialActiveVoxelBuffer;
+	FRenderResource::FRenderResource();
+}
 
 void FPUBuffers::InitRHI(FRHICommandListBase& RHICmdList)
 {
 	// Init SRV Buffers
 	CoarseParticleBufferRef = InitSRVBuffer<FCoarseParticle>(
-		RHICmdList, TEXT("CPPositionsAndRadiusBuffer"), INITIAL_COARSE_PARTICLE_BUFFER_SIZE);
+		RHICmdList, TEXT("CPPositionsAndRadiusBuffer"), NumElementsInCoarseParticleBuffer);
 	ActiveVoxelIndicesBufferRef = InitSRVBuffer<FIntVector4>(
-		RHICmdList, TEXT("ActiveVoxelIndicesBuffer"), INITIAL_VOXEL_BUFFER_SIZE);
+		RHICmdList, TEXT("ActiveVoxelIndicesBuffer"), NumElementsInActiveVoxelBuffer);
 	
 	// Init UAV Buffers
 	HashTableBufferRef = InitUAVBuffer<FVoxelEntry>(
-		RHICmdList, TEXT("HashTableBuffer"), INITIAL_VOXEL_BUFFER_SIZE * 2);
+		RHICmdList, TEXT("HashTableBuffer"), NumElementsInActiveVoxelBuffer * 2);
 	HashTableOccupancyBufferRef = InitUAVBuffer<int>(
-		RHICmdList, TEXT("HashTableOccupancyBuffer"), INITIAL_VOXEL_BUFFER_SIZE * 2);
+		RHICmdList, TEXT("HashTableOccupancyBuffer"), NumElementsInActiveVoxelBuffer * 2);
 }
 
 void FPUBuffers::ReleaseRHI()
@@ -27,11 +30,6 @@ void FPUBuffers::ReleaseRHI()
 	ActiveVoxelIndicesBufferRef.SafeRelease();
 	HashTableBufferRef.SafeRelease();
 	HashTableOccupancyBufferRef.SafeRelease();
-}
-
-FString FPUBuffers::GetFriendlyName() const
-{
-	return TEXT("Particle Upsampling Shader Resource");
 }
 
 template <typename T>
@@ -119,19 +117,22 @@ void FPUBuffers::UpdateHashTableBuffers(
 	}
 }
 
-FPUArrays::FPUArrays()
+FPUArrays::FPUArrays(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBuffer)
 {
-	CoarseParticles.SetNumZeroed(NumElementsInCoarseParticleBuffer);
-	ActiveVoxelIndices.SetNumZeroed(NumElementsInActiveVoxelBuffer);
+	CoarseParticles.SetNumZeroed(InitialCPBufferSize);
+	ActiveVoxelIndices.SetNumZeroed(InitialActiveVoxelBuffer);
+
+	NumElementsInCoarseParticleBuffer = InitialCPBufferSize;
+	NumElementsInActiveVoxelBuffer = InitialActiveVoxelBuffer;
 }
 
 void FPUArrays::CopyFrom(const FPUArrays* Other)
 {
 	CoarseParticles = Other->CoarseParticles;
 	ActiveVoxelIndices = Other->ActiveVoxelIndices;
-	
-	NumElementsInActiveVoxelBuffer = Other->NumElementsInActiveVoxelBuffer;
+
 	NumElementsInCoarseParticleBuffer = Other->NumElementsInCoarseParticleBuffer;
+	NumElementsInActiveVoxelBuffer = Other->NumElementsInActiveVoxelBuffer;
 
 	Time = Other->Time;
 	VoxelSize = Other->VoxelSize;
@@ -145,18 +146,13 @@ void FPUArrays::CopyFrom(const FPUArrays* Other)
 	NeedsVoxelResize = Other->NeedsVoxelResize;
 }
 
-void FPUArrays::SetNewTime(int NewTime)
-{
-	Time = NewTime;
-}
-
 void FParticleUpsamplingData::Init(FNiagaraSystemInstance* SystemInstance)
 {
 	PUBuffers = nullptr;
 	if (SystemInstance)
 	{
-		PUArrays = new FPUArrays();
-		PUBuffers = new FPUBuffers();
+		PUArrays = new FPUArrays(INITIAL_CP_BUFFER_SIZE, INITIAL_VOXEL_BUFFER_SIZE);
+		PUBuffers = new FPUBuffers(INITIAL_CP_BUFFER_SIZE, INITIAL_VOXEL_BUFFER_SIZE);
 		BeginInitResource(PUBuffers);
 	}
 }
@@ -167,7 +163,7 @@ void FParticleUpsamplingData::Update(
 	if (SystemInstance)
 	{
 		PUArrays->CopyFrom(OtherData);
-		PUArrays->SetNewTime((int) std::time(0));
+		PUArrays->Time = (int) std::time(0);
 	}
 }
 
