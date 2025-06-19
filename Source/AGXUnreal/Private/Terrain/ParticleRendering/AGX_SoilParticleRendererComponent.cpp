@@ -3,6 +3,7 @@
 #include "Terrain/ParticleRendering/AGX_SoilParticleRendererComponent.h"
 
 // AGX Dynamics for Unreal includes.
+#include "Terrain/ParticleRendering/AGX_ParticleRenderingUtilities.h"
 #include "AGX_PropertyChangedDispatcher.h"
 #include "AGX_LogCategory.h"
 
@@ -17,13 +18,10 @@
 
 UAGX_SoilParticleRendererComponent::UAGX_SoilParticleRendererComponent()
 {
-	AssignDefaultNiagaraAsset(
+	AGX_ParticleRenderingUtilities::AssignDefaultNiagaraAsset(
 		ParticleSystemAsset,
-		TEXT(
-			"NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/SoilParticleSystem/"
-			"PS_SoilParticleSystem.PS_SoilParticleSystem'"
-		)
-	);
+		TEXT("NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/SoilParticleSystem/"
+			 "PS_SoilParticleSystem.PS_SoilParticleSystem'"));
 }
 
 void UAGX_SoilParticleRendererComponent::BeginPlay()
@@ -34,16 +32,17 @@ void UAGX_SoilParticleRendererComponent::BeginPlay()
 		return;
 	}
 
+	AAGX_Terrain* ParentTerrainActor =
+		AGX_ParticleRenderingUtilities::InitializeParentTerrainActor(this);
 	if (!ParentTerrainActor)
 	{
-		// Fetch the parent terrain actor.
-		if (!InitializeParentTerrainActor())
-		{
-			return;
-		}
+		return;
 	}
 
-	if (!InitializeNiagaraParticleSystemComponent())
+	ParticleSystemComponent =
+		AGX_ParticleRenderingUtilities::InitializeNiagaraParticleSystemComponent(
+			ParticleSystemAsset, this);
+	if (!ParticleSystemComponent)
 	{
 		return;
 	}
@@ -71,91 +70,6 @@ bool UAGX_SoilParticleRendererComponent::GetEnableParticleRendering()
 UNiagaraComponent* UAGX_SoilParticleRendererComponent::GetParticleSystemComponent()
 {
 	return ParticleSystemComponent;
-}
-
-void UAGX_SoilParticleRendererComponent::AssignDefaultNiagaraAsset(
-	auto*& AssetRefProperty, const TCHAR* AssetPath)
-{
-	if (AssetRefProperty != nullptr)
-		return;
-
-	using Type = typename std::remove_reference<decltype(*AssetRefProperty)>::type;
-	auto AssetFinder = ConstructorHelpers::FObjectFinder<Type>(AssetPath);
-	if (!AssetFinder.Succeeded())
-	{
-		UE_LOG(
-			LogAGX, Warning, TEXT("Expected to find asset '%s' but it was not found."), AssetPath);
-		return;
-	}
-
-	AssetRefProperty = AssetFinder.Object;
-}
-
-bool UAGX_SoilParticleRendererComponent::InitializeParentTerrainActor()
-{
-	// First get parent actor
-	AActor* Owner = GetOwner();
-	if (!Owner)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Particle Renderer '%s' could not fetch the parent actor"
-				 "particles"),
-			*GetName());
-		return false;
-	}
-
-	// Then cast it to the proper type
-	ParentTerrainActor = Cast<AAGX_Terrain>(Owner);
-	if (!ParentTerrainActor)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Particle Renderer '%s' could not cast parent to 'AGX_Terrain' actor, cannot "
-				 "fetch particle data"
-				 "particles"),
-			*GetName());
-		return false;
-	}
-
-	return ParentTerrainActor != nullptr;
-}
-
-bool UAGX_SoilParticleRendererComponent::InitializeNiagaraParticleSystemComponent()
-{
-	if (!ParticleSystemAsset)
-	{
-		UE_LOG(
-			LogAGX, Warning,
-			TEXT("Particle renderer '%s' does not have a particle system, cannot render particles "
-				 "with Niagara"),
-			*GetName());
-		return false;
-	}
-
-	// It is important that we attach the ParticleSystemComponent using "KeepRelativeOffset" so that
-	// it's world position becomes the same as the Terrain's. Otherwise it will be spawned at
-	// the world origin which in turn may result in particles being culled and not rendered if the
-	// terrain is located far away from the world origin (see Fixed Bounds in the Particle System).
-	ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-		ParticleSystemAsset, ParentTerrainActor->GetRootComponent(), NAME_None, FVector::ZeroVector,
-		FRotator::ZeroRotator, FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset, false,
-#if UE_VERSION_OLDER_THAN(4, 24, 0)
-		EPSCPoolMethod::None
-#else
-		ENCPoolMethod::None
-#endif
-	);
-#if WITH_EDITORONLY_DATA
-	// Must check for nullptr here because no particle system component is created with running
-	// as a unit test without graphics, i.e. with our run_unit_tests script in GitLab CI.
-	if (ParticleSystemComponent != nullptr)
-	{
-		ParticleSystemComponent->bVisualizeComponent = true;
-	}
-#endif
-
-	return ParticleSystemComponent != nullptr;
 }
 
 void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleData data)

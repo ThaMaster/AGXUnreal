@@ -19,7 +19,7 @@ class UAGX_ParticleUpsamplingDI;
 
 UCLASS(
 	ClassGroup = "AGX_Terrain_Particle_Rendering",
-	meta = (BlueprintSpawnableComponent, ShortToolTip = "TODO: WRITE TOOL TIP"))
+	meta = (BlueprintSpawnableComponent, ShortToolTip = "Uses the particle data from AGX_Terrain to upsample the rendered particles, significantly increasing particle count."))
 class AGXUNREAL_API UAGX_UpsamplingParticleRendererComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -128,28 +128,10 @@ private:
 	void InitPropertyDispatcher();
 #endif
 
-	AAGX_Terrain* ParentTerrainActor = nullptr;
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
 	UAGX_ParticleUpsamplingDI* UpsamplingDataInterface = nullptr;
 
 	float ElementSize = 0;
-
-	/**
-	 * Finds the parent terrain actor of the scene. Cannot render particles if the
-	 * terrain is not found since we cannot bind to the particle data delegate.
-	 */
-	bool InitializeParentTerrainActor();
-
-	/** 
-	 * Initializes the Niagara VFX System and attaches to the scene. 
-	 */
-	bool InitializeNiagaraParticleSystemComponent();
-	
-	/** 
-	 * Assignes the default Niagara VFX System asset when adding the component to an actor. 
-	 */
-	void AssignDefaultNiagaraAsset(auto*& AssetRefProperty, const TCHAR* AssetPath);
-
 
 	UFUNCTION()
 	void HandleParticleData(FDelegateParticleData data);

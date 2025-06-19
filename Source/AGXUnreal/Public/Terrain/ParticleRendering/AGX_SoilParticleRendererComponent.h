@@ -16,7 +16,7 @@
 
 UCLASS(
 	ClassGroup = "AGX_Terrain_Particle_Rendering", Blueprintable,
-	meta = (BlueprintSpawnableComponent, ShortToolTip = "TODO: WRITE TOOL TIP"))
+	meta = (BlueprintSpawnableComponent, ShortToolTip = "Component for rendering the particles produced by AGX_Terrain."))
 class AGXUNREAL_API UAGX_SoilParticleRendererComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -73,20 +73,7 @@ protected:
 
 private:
 
-	AAGX_Terrain* ParentTerrainActor = nullptr;
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
-
-	/** 
-	 * Finds the parent terrain actor of the scene. Cannot render particles if the
-	 * terrain is not found since we cannot bind to the particle data delegate. 
-	 */
-	bool InitializeParentTerrainActor();
-
-	/** Initializes the Niagara VFX System and attaches to the scene. */
-	bool InitializeNiagaraParticleSystemComponent();
-
-	/** Assignes the default Niagara VFX System asset when adding the component to an actor. */
-	void AssignDefaultNiagaraAsset(auto*& AssetRefProperty, const TCHAR* AssetPath);
 
 	UFUNCTION()
 	void HandleParticleData(FDelegateParticleData data);
