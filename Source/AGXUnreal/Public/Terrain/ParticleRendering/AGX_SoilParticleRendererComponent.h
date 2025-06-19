@@ -25,7 +25,9 @@ public:
 
 	UAGX_SoilParticleRendererComponent();
 
-	/** Whether soil particles should be rendered or not. */
+	/** 
+	 * Whether soil particles should be rendered or not. 
+	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Soil Particle Rendering")
 	bool bEnableParticleRendering = true;
 
@@ -53,6 +55,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Soil Particle Rendering")
 	bool GetEnableParticleRendering();
 
+	/**
+	 * If a Particle System Component has been spawned by the Renderer Component, this function will
+	 * return it. Returns nullptr otherwise.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Soil Particle Rendering")
 	UNiagaraComponent* GetParticleSystemComponent();
 
@@ -66,10 +72,6 @@ protected:
 #endif
 
 private:
-
-#if WITH_EDITOR
-	void InitPropertyDispatcher();
-#endif
 
 	AAGX_Terrain* ParentTerrainActor = nullptr;
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
@@ -88,4 +90,8 @@ private:
 
 	UFUNCTION()
 	void HandleParticleData(FDelegateParticleData data);
+
+#if WITH_EDITOR
+	void InitPropertyDispatcher();
+#endif
 };

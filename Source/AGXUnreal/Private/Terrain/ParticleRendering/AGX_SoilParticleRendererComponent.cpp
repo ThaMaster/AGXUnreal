@@ -170,6 +170,7 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleDat
 	UserParams.GetParameters(Params);
 
 	// Check for the default particle system parameters.
+	// Otherwise the engine throws warnings each time we set them...
 	for (FNiagaraVariable& Param : Params)
 	{
 		FString ParamName = Param.GetName().ToString();

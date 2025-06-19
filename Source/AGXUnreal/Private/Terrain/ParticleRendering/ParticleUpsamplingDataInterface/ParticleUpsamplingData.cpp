@@ -64,17 +64,23 @@ void FPUBuffers::UpdateCoarseParticleBuffers(
 	{
 		if (NeedsResize)
 		{
+			// Release old buffer.
 			CoarseParticleBufferRef.SafeRelease();
+
+			// Create new, larger buffer.
 			CoarseParticleBufferRef = InitSRVBuffer<FCoarseParticle>(
 				RHICmdList, TEXT("CPPositionsAndRadiusBuffer"), NewElementCount);
 		}
 
 		const uint32 BufferBytes = sizeof(FCoarseParticle) * ElementCount;
-		void* OutputData = RHICmdList.LockBuffer(
-			CoarseParticleBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+		if (BufferBytes < CoarseParticleBufferRef->GetBuffer()->GetSize())
+		{
+			void* OutputData = RHICmdList.LockBuffer(
+				CoarseParticleBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
 
-		FMemory::Memcpy(OutputData, CoarseParticleData.GetData(), BufferBytes);
-		RHICmdList.UnlockBuffer(CoarseParticleBufferRef->GetBuffer());
+			FMemory::Memcpy(OutputData, CoarseParticleData.GetData(), BufferBytes);
+			RHICmdList.UnlockBuffer(CoarseParticleBufferRef->GetBuffer());
+		}
 	}
 }
 
@@ -86,7 +92,6 @@ void FPUBuffers::UpdateHashTableBuffers(
 	if (ElementCount > 0 && ActiveVoxelIndicesBufferRef.IsValid() &&
 		ActiveVoxelIndicesBufferRef->GetBuffer()->IsValid())
 	{
-		// Only resize buffers if needed.
 		if (NeedsResize)
 		{
 			// Release old buffers.
@@ -104,7 +109,6 @@ void FPUBuffers::UpdateHashTableBuffers(
 		}
 
 		const uint32 BufferBytes = sizeof(FIntVector4) * ElementCount;
-
 		if (BufferBytes < ActiveVoxelIndicesBufferRef->GetBuffer()->GetSize())
 		{
 			void* OutputData = RHICmdList.LockBuffer(

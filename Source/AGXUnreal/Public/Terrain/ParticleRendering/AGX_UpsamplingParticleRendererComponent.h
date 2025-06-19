@@ -82,6 +82,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
 	bool GetEnableParticleRendering();
 
+	/**
+	 * If a Particle System Component has been spawned by the Renderer Component, this function will return it.
+	 * Returns nullptr otherwise.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
 	UNiagaraComponent* GetParticleSystemComponent();
 	
@@ -128,27 +132,36 @@ private:
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
 	UAGX_ParticleUpsamplingDI* UpsamplingDataInterface = nullptr;
 
+	float ElementSize = 0;
+
 	/**
 	 * Finds the parent terrain actor of the scene. Cannot render particles if the
 	 * terrain is not found since we cannot bind to the particle data delegate.
 	 */
 	bool InitializeParentTerrainActor();
 
-	/** Initializes the Niagara VFX System and attaches to the scene. */
+	/** 
+	 * Initializes the Niagara VFX System and attaches to the scene. 
+	 */
 	bool InitializeNiagaraParticleSystemComponent();
 	
-	/** Assignes the default Niagara VFX System asset when adding the component to an actor. */
+	/** 
+	 * Assignes the default Niagara VFX System asset when adding the component to an actor. 
+	 */
 	void AssignDefaultNiagaraAsset(auto*& AssetRefProperty, const TCHAR* AssetPath);
 
-	float ElementSize = 0;
 
 	UFUNCTION()
 	void HandleParticleData(FDelegateParticleData data);
 
-	/** Appends the voxel indices that a coarse particle intersects with to the given array. */
+	/** 
+	 * Appends the voxel indices that a coarse particle intersects with to the given array. 
+	 */
 	void AppendIfActiveVoxel(
 		TSet<FIntVector>& ActiveVoxelIndices, FVector CPPosition, float CPRadius);
 
-	/** Converts the active voxels from the set to a TArray */
+	/** 
+	 * Converts the active voxels from the set to a TArray 
+	 */
 	TArray<FIntVector4> GetActiveVoxelsFromSet(TSet<FIntVector> VoxelSet);
 };
