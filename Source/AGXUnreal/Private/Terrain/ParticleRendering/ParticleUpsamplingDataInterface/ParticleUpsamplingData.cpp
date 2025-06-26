@@ -6,7 +6,6 @@ FPUBuffers::FPUBuffers(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBuff
 {
 	NumElementsInCoarseParticleBuffer = InitialCPBufferSize;
 	NumElementsInActiveVoxelBuffer = InitialActiveVoxelBuffer;
-	FRenderResource::FRenderResource();
 }
 
 void FPUBuffers::InitRHI(FRHICommandListBase& RHICmdList)
