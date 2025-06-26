@@ -51,14 +51,14 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 	UpsamplingDataInterface =
 		static_cast<UAGX_ParticleUpsamplingDI*>(UNiagaraFunctionLibrary::GetDataInterface(
 			UAGX_ParticleUpsamplingDI::StaticClass(), ParticleSystemComponent,
-			"Particle Upsampling DI"));
+			"PUDI"));
 
 	if (!UpsamplingDataInterface)
 	{
 		UE_LOG(
 			LogTemp, Warning,
-			TEXT("Particle renderer '%s' could not find Niagara Data Interface with name 'Particle "
-				 "Upsampling DI' in loaded Niagara system with name '%s', cannot render particles..."),
+			TEXT("Particle renderer '%s' could not find Niagara Data Interface with name 'PUDI' "
+				"in loaded Niagara system with name '%s', cannot render particles..."),
 			*GetName(), *ParticleSystemComponent->GetName());
 		return;
 	}

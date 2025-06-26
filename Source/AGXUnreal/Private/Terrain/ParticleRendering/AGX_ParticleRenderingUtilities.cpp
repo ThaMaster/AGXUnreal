@@ -1,4 +1,3 @@
-
 // Copyright 2025, Algoryx Simulation AB.
 
 #include "Terrain/ParticleRendering/AGX_ParticleRenderingUtilities.h"
@@ -26,7 +25,8 @@ void AGX_ParticleRenderingUtilities::AssignDefaultNiagaraAsset(
 	AssetRefProperty = AssetFinder.Object;
 }
 
-AAGX_Terrain* AGX_ParticleRenderingUtilities::InitializeParentTerrainActor(UActorComponent* ActorComponent)
+AAGX_Terrain* AGX_ParticleRenderingUtilities::InitializeParentTerrainActor(
+	UActorComponent* ActorComponent)
 {
 	// First get parent actor.
 	AActor* Owner = ActorComponent->GetOwner();
@@ -73,8 +73,9 @@ UNiagaraComponent* AGX_ParticleRenderingUtilities::InitializeNiagaraParticleSyst
 	// the world origin which in turn may result in particles being culled and not rendered if the
 	// terrain is located far away from the world origin (see Fixed Bounds in the Particle System).
 	UNiagaraComponent* ParticleSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-		ParticleSystemAsset, ActorComponent->GetOwner()->GetRootComponent(), NAME_None, FVector::ZeroVector,
-		FRotator::ZeroRotator, FVector::OneVector, EAttachLocation::Type::KeepRelativeOffset, false,
+		ParticleSystemAsset, ActorComponent->GetOwner()->GetRootComponent(), NAME_None,
+		FVector::ZeroVector, FRotator::ZeroRotator, FVector::OneVector,
+		EAttachLocation::Type::KeepRelativeOffset, false,
 #if UE_VERSION_OLDER_THAN(4, 24, 0)
 		EPSCPoolMethod::None
 #else

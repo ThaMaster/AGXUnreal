@@ -11,12 +11,10 @@ class UNiagaraComponent;
 
 class AGXUNREAL_API AGX_ParticleRenderingUtilities
 {
-
 public:
-
 	/**
-	 * Finds the parent terrain of the given component and returns it. Cannot 
-	 * render particles if the terrain is not found since we cannot bind to the 
+	 * Finds the parent terrain of the given component and returns it. Cannot
+	 * render particles if the terrain is not found since we cannot bind to the
 	 * particle data delegate.
 	 */
 	static AAGX_Terrain* InitializeParentTerrainActor(UActorComponent* ActorComponent);

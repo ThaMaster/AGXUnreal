@@ -8,6 +8,7 @@
 // Unreal Engine includes.
 #include "NiagaraCommon.h"
 #include "NiagaraDataInterface.h"
+#include "Misc/EngineVersionComparison.h"
 
 #include "AGX_ParticleUpsamplingDI.generated.h"
 
@@ -120,12 +121,18 @@ public:
 protected:
 
 #if WITH_EDITORONLY_DATA
+
 	/**
 	 * Lists all the functions that will be visible when using the NDI in the
 	 * Niagara Blueprint system.
 	 */
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
+	virtual void GetFunctions(TArray<FNiagaraFunctionSignature>& OutFunctions) override;
+#else
 	virtual void GetFunctionsInternal(
 		TArray<FNiagaraFunctionSignature>& OutFunctions) const override;
+#endif
+	
 #endif
 
 private:

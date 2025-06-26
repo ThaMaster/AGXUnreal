@@ -218,10 +218,16 @@ bool UAGX_ParticleUpsamplingDI::GetFunctionHLSL(
 		   FunctionInfo.DefinitionName == GetCoarseParticleInfoName;
 }
 
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
+void UAGX_ParticleUpsamplingDI::GetFunctions(TArray<FNiagaraFunctionSignature>& OutFunctions)
+{
+#else
 void UAGX_ParticleUpsamplingDI::GetFunctionsInternal(
 	TArray<FNiagaraFunctionSignature>& OutFunctions) const
 {
 	Super::GetFunctionsInternal(OutFunctions);
+
+#endif
 
 	{
 		FNiagaraFunctionSignature Sig;
@@ -250,7 +256,7 @@ void UAGX_ParticleUpsamplingDI::GetFunctionsInternal(
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEase")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("ParticleEaseNew")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("IsAlive")));
-		
+
 		Sig.bMemberFunction = true;
 		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
 		Sig.bExperimental = true;
