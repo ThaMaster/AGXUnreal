@@ -63,12 +63,16 @@ public:
 
 protected:
 
+	// ~Begin ActorComponent interface
 	virtual void BeginPlay() override;
-
+	// ~End ActorComponent interface
+	
+	// ~Begin UObject interface.
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 	virtual void PostInitProperties() override;
 #endif
+	// ~End UObject interface.
 
 private:
 

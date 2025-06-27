@@ -53,6 +53,8 @@ struct FPUBuffers : public FRenderResource
 {
 	FPUBuffers(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBufferSize);
 	
+	// ~Begin FRenderResource interface.
+
 	/**
 	 * Initialize the different buffers used in this render resource. 
 	 */
@@ -63,6 +65,8 @@ struct FPUBuffers : public FRenderResource
 	 */
 	virtual void ReleaseRHI() override;
 	virtual FString GetFriendlyName() const override { return TEXT("Particle Upsampling Render Resources") ;};
+
+	// ~End FRenderResource interface.
 
 	/** 
 	 * Function for initializing a new Read-only buffer on the GPU 

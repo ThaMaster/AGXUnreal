@@ -107,12 +107,17 @@ public:
 	
 protected:
 
+	// ~Begin UActorComponent interface.
 	virtual void BeginPlay() override;
+	// ~End UActorComponent interface.
 
+	// ~Begin UObject interface.
 #if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& Event) override;
 	virtual void PostInitProperties() override;
 #endif
+	// ~End UObject interface.
+
 
 private:
 

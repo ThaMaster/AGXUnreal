@@ -44,15 +44,17 @@ class AGXUNREAL_API UAGX_ParticleUpsamplingDI : public UNiagaraDataInterface
 	END_SHADER_PARAMETER_STRUCT()
 
 public:
-	
+
+	// ~Begin UObject Interface.
+
 	/** Funcition for registering our custom DI with Niagara. */
 	virtual void PostInitProperties() override;
 
-	virtual bool CanExecuteOnTarget(ENiagaraSimTarget Target) const override { return true; };
+	// ~End UObject Interface.
 
-	/** This fills in the expected parameter bindings we use to send data to the GPU. */
-	virtual void BuildShaderParameters(
-		FNiagaraShaderParametersBuilder& ShaderParametersBuilder) const override;
+	// ~Begin UNiagaraDataInterface interface.
+
+	virtual bool CanExecuteOnTarget(ENiagaraSimTarget Target) const override { return true; };
 
 	/** This fills in the parameters with data to send to the GPU. */
 	virtual void SetShaderParameters(
@@ -84,17 +86,6 @@ public:
 		void* DataForRenderThread, void* PerInstanceData,
 		const FNiagaraSystemInstanceID& SystemInstance) override;
 
-	/** Sets the CoarseParticles in local data storage. */
-	void SetCoarseParticles(TArray<FCoarseParticle> NewCoarseParticles);
-
-	/** Sets the Active Voxel Indices in local data storage. */
-	void SetActiveVoxelIndices(TArray<FIntVector4> AVIs);
-
-	/** Gets the elements in the active voxel buffer reference. */
-	int GetElementsInActiveVoxelBuffer();
-	void RecalculateFineParticleProperties(float Upsampling, float ElementSize, float ParticleDensity);
-	void SetStaticVariables(float VoxelSize, float EaseStepSize);
-
 #if WITH_EDITORONLY_DATA
 	/**
 	 * This lets the Niagara compiler know that it needs to recompile an effect when
@@ -117,11 +108,33 @@ public:
 		const FNiagaraDataInterfaceGeneratedFunction& FunctionInfo, int FunctionInstanceIndex,
 		FString& OutHLSL) override;
 #endif
+	// ~End UNiagaraDataInterface Interface.
+
+	// ~Begin UNiagaraDataInterfaceBase Interface.
+
+	/** This fills in the expected parameter bindings we use to send data to the GPU. */
+	virtual void BuildShaderParameters(
+		FNiagaraShaderParametersBuilder& ShaderParametersBuilder) const override;
+
+	// ~End UNiagaraDataInterfaceBase Interface.
+
+	/** Sets the CoarseParticles in local data storage. */
+	void SetCoarseParticles(TArray<FCoarseParticle> NewCoarseParticles);
+
+	/** Sets the Active Voxel Indices in local data storage. */
+	void SetActiveVoxelIndices(TArray<FIntVector4> AVIs);
+
+	/** Gets the elements in the active voxel buffer reference. */
+	int GetElementsInActiveVoxelBuffer();
+	void RecalculateFineParticleProperties(
+		float Upsampling, float ElementSize, float ParticleDensity);
+	void SetStaticVariables(float VoxelSize, float EaseStepSize);
 
 protected:
 
-#if WITH_EDITORONLY_DATA
+	// ~Begin UNiagaraDataInterface interface.
 
+#if WITH_EDITORONLY_DATA
 	/**
 	 * Lists all the functions that will be visible when using the NDI in the
 	 * Niagara Blueprint system.
@@ -132,10 +145,12 @@ protected:
 	virtual void GetFunctionsInternal(
 		TArray<FNiagaraFunctionSignature>& OutFunctions) const override;
 #endif
-	
 #endif
 
+	// ~End UNiagaraDataInterface interface.
+
 private:
+
 	FPUArrays* LocalData;
 
 	/** The names of the different functions this NDI will call on the GPU */
