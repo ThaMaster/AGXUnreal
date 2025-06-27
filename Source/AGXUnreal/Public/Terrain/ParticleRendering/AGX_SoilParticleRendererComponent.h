@@ -45,8 +45,7 @@ public:
 	 * - Array Bool:	Exists
 	 * - int32:			Target Particle Count
 	 */
-	UPROPERTY(EditAnywhere, Category = "AGX Soil Particle Rendering", 
-		Meta = (EditCondition = "bEnableParticleRendering"))
+	UPROPERTY(EditAnywhere, Category = "AGX Soil Particle Rendering")
 	UNiagaraSystem* ParticleSystemAsset;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Soil Particle Rendering")

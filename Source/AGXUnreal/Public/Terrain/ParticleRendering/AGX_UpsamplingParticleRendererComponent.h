@@ -37,17 +37,13 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Upsampling Particle Rendering",
-		Meta =
-			(EditCondition = "bEnableParticleRendering",
-			 ClampMin = "1", UIMin = "1", UIMax = "5000"))
+		Meta = (ClampMin = "1", UIMin = "1", UIMax = "5000"))
 	int32 Upsampling = 100;
 
 	/**
 	 * Toggle between using the default voxel size or use user defined size.
 	 */
-	UPROPERTY(
-		EditAnywhere, Category = "AGX Upsampling Particle Rendering",
-		Meta = (EditCondition = "bEnableParticleRendering"))
+	UPROPERTY(EditAnywhere, Category = "AGX Upsampling Particle Rendering")
 	bool bEnableVoxelSize = false;
 
 	/**
@@ -57,10 +53,8 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Upsampling Particle Rendering",
-		Meta =
-			(EditCondition =
-				 "bEnableParticleRendering && bEnableVoxelSize",
-			 ClampMin=10, UIMin = "10", UIMax = "1000"))
+		Meta = (EditCondition = "bEnableVoxelSize", ClampMin=10, UIMin = "10", 
+			UIMax = "1000"))
 	double VoxelSize = 10.0;
 
 	/**
@@ -68,9 +62,7 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Upsampling Particle Rendering",
-		Meta =
-			(EditCondition = "bEnableParticleRendering", UIMin = "0.1",
-			 UIMax = "1.0"))
+		Meta = (UIMin = "0.1", UIMax = "1.0"))
 	double EaseStepSize = 0.1;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Upsampling Particle Rendering")
