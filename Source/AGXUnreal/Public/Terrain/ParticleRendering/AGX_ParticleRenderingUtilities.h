@@ -26,7 +26,7 @@ public:
 		UNiagaraSystem* ParticleSystemAsset, UActorComponent* ActorComponent);
 
 	/**
-	 * Assignes the default Niagara VFX System asset when adding the component to an actor.
+	 * Assigns the default Niagara VFX System asset when adding the component to an actor.
 	 */
 	static void AssignDefaultNiagaraAsset(auto*& AssetRefProperty, const TCHAR* AssetPath);
 };
