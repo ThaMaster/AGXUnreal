@@ -130,7 +130,6 @@ struct FPUArrays
 	TArray<FCoarseParticle> CoarseParticles;
 	TArray<FIntVector4> ActiveVoxelIndices;
 
-	int Time = 0;
 	float VoxelSize = 0;
 	float FineParticleMass = 0;
 	float FineParticleRadius = 0;
@@ -140,7 +139,7 @@ struct FPUArrays
 
 	bool NeedsCPResize = false;
 	bool NeedsVoxelResize = false;
-
+	
 	uint32 NumElementsInCoarseParticleBuffer = 0;
 	uint32 NumElementsInActiveVoxelBuffer = 0;
 };

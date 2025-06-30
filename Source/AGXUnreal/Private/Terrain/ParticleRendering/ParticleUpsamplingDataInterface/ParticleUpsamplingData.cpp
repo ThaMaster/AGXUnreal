@@ -153,7 +153,6 @@ void FParticleUpsamplingData::Update(
 	if (SystemInstance)
 	{
 		PUArrays->CopyFrom(OtherData);
-		PUArrays->Time = (int) std::time(0);
 	}
 }
 

@@ -65,7 +65,6 @@ void UAGX_ParticleUpsamplingDI::SetShaderParameters(
 	ShaderParameters->VoxelSize				= Data.PUArrays->VoxelSize;
 
 	// Other Variables
-	ShaderParameters->Time					= Data.PUArrays->Time;
 	ShaderParameters->AnimationSpeed		= Data.PUArrays->EaseStepSize;
 }
 

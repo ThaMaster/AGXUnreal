@@ -24,7 +24,6 @@
 #define NUM_COARSE_PARTICLES ({ParameterName}_NumCoarseParticles)
 #define NOMINAL_RADIUS ({ParameterName}_NominalRadius)
 #define FINE_PARTICLE_MASS ({ParameterName}_FineParticleMass)
-#define TIME ({ParameterName}_Time)
 #define ANIMATION_SPEED ({ParameterName}_AnimationSpeed)
 #define FINE_PARTICLE_RADIUS ({ParameterName}_FineParticleRadius)
 
@@ -52,7 +51,6 @@ int                                 {ParameterName}_TableSize;
 float                               {ParameterName}_VoxelSize;
 
 // Other Variables
-int                                 {ParameterName}_Time;
 float                               {ParameterName}_AnimationSpeed;
 
 bool LookupRoomAndBounds_{ParameterName}(int3 In_Index, out int Out_Room, out float3 Out_MaxBound, out float3 Out_MinBound)

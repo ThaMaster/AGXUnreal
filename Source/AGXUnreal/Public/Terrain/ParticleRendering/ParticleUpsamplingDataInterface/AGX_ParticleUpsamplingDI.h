@@ -39,7 +39,6 @@ class AGXUNREAL_API UAGX_ParticleUpsamplingDI : public UNiagaraDataInterface
 		SHADER_PARAMETER(float,									VoxelSize)
 
 		// Other Variables
-		SHADER_PARAMETER(int,									Time)
 		SHADER_PARAMETER(float,									AnimationSpeed)
 	END_SHADER_PARAMETER_STRUCT()
 
