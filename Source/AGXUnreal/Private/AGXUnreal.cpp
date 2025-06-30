@@ -46,7 +46,7 @@ static struct FShaderDirectoryMapping
 			TEXT("Source/AGXUnreal/Private/Terrain/ParticleRendering/Shaders"));
 		AddShaderSourceDirectoryMapping(TEXT("/ParticleRenderingShaders"), PluginShaderDir);
 	}
-} GShaderDirectoryMapping;
+} GAGX_ShaderDirectoryMapping;
 
 void FAGXUnrealModule::StartupModule()
 {
