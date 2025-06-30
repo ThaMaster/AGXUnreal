@@ -58,28 +58,29 @@ void FPUBuffers::UpdateCoarseParticleBuffers(
 	uint32 NewElementCount, bool NeedsResize)
 {
 	uint32 ElementCount = CoarseParticleData.Num();
-	if (ElementCount > 0 && CoarseParticleBufferRef.IsValid() &&
-		CoarseParticleBufferRef->GetBuffer()->IsValid())
+	if (ElementCount == 0 && !CoarseParticleBufferRef.IsValid() &&
+		!CoarseParticleBufferRef->GetBuffer()->IsValid())
 	{
-		if (NeedsResize)
-		{
-			// Release old buffer.
-			CoarseParticleBufferRef.SafeRelease();
+		return;
+	}
+	if (NeedsResize)
+	{
+		// Release old buffer.
+		CoarseParticleBufferRef.SafeRelease();
 
-			// Create new, larger buffer.
-			CoarseParticleBufferRef = InitSRVBuffer<FCoarseParticle>(
-				RHICmdList, TEXT("CPPositionsAndRadiusBuffer"), NewElementCount);
-		}
+		// Create new, larger buffer.
+		CoarseParticleBufferRef = InitSRVBuffer<FCoarseParticle>(
+			RHICmdList, TEXT("CPPositionsAndRadiusBuffer"), NewElementCount);
+	}
 
-		const uint32 BufferBytes = sizeof(FCoarseParticle) * ElementCount;
-		if (BufferBytes < CoarseParticleBufferRef->GetBuffer()->GetSize())
-		{
-			void* OutputData = RHICmdList.LockBuffer(
-				CoarseParticleBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+	const uint32 BufferBytes = sizeof(FCoarseParticle) * ElementCount;
+	if (BufferBytes < CoarseParticleBufferRef->GetBuffer()->GetSize())
+	{
+		void* OutputData = RHICmdList.LockBuffer(
+			CoarseParticleBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
 
-			FMemory::Memcpy(OutputData, CoarseParticleData.GetData(), BufferBytes);
-			RHICmdList.UnlockBuffer(CoarseParticleBufferRef->GetBuffer());
-		}
+		FMemory::Memcpy(OutputData, CoarseParticleData.GetData(), BufferBytes);
+		RHICmdList.UnlockBuffer(CoarseParticleBufferRef->GetBuffer());
 	}
 }
 
@@ -88,35 +89,36 @@ void FPUBuffers::UpdateHashTableBuffers(
 	uint32 NewElementCount, bool NeedsResize)
 {
 	uint32 ElementCount = ActiveVoxelIndices.Num();
-	if (ElementCount > 0 && ActiveVoxelIndicesBufferRef.IsValid() &&
-		ActiveVoxelIndicesBufferRef->GetBuffer()->IsValid())
+	if (ElementCount == 0 && !ActiveVoxelIndicesBufferRef.IsValid() &&
+		!ActiveVoxelIndicesBufferRef->GetBuffer()->IsValid())
 	{
-		if (NeedsResize)
-		{
-			// Release old buffers.
-			ActiveVoxelIndicesBufferRef.SafeRelease();
-			HashTableBufferRef.SafeRelease();
-			HashTableOccupancyBufferRef.SafeRelease();
+		return;
+	}
 
-			// Create new, larger buffers.
-			ActiveVoxelIndicesBufferRef = InitSRVBuffer<FIntVector4>(
-				RHICmdList, TEXT("ActiveVoxelIndicesBuffer"), NewElementCount);
-			HashTableBufferRef = InitUAVBuffer<FVoxelEntry>(
-				RHICmdList, TEXT("HashtableBuffer"), NewElementCount * 2);
-			HashTableOccupancyBufferRef = InitUAVBuffer<int>(
-				RHICmdList, TEXT("HTOccupancy"), NewElementCount * 2);
-		}
+	if (NeedsResize)
+	{
+		// Release old buffers.
+		ActiveVoxelIndicesBufferRef.SafeRelease();
+		HashTableBufferRef.SafeRelease();
+		HashTableOccupancyBufferRef.SafeRelease();
 
-		const uint32 BufferBytes = sizeof(FIntVector4) * ElementCount;
-		if (BufferBytes < ActiveVoxelIndicesBufferRef->GetBuffer()->GetSize())
-		{
-			void* OutputData = RHICmdList.LockBuffer(
-				ActiveVoxelIndicesBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+		// Create new, larger buffers.
+		ActiveVoxelIndicesBufferRef = InitSRVBuffer<FIntVector4>(
+			RHICmdList, TEXT("ActiveVoxelIndicesBuffer"), NewElementCount);
+		HashTableBufferRef = InitUAVBuffer<FVoxelEntry>(
+			RHICmdList, TEXT("HashtableBuffer"), NewElementCount * 2);
+		HashTableOccupancyBufferRef = InitUAVBuffer<int>(
+			RHICmdList, TEXT("HTOccupancy"), NewElementCount * 2);
+	}
 
-			FMemory::Memcpy(OutputData, ActiveVoxelIndices.GetData(), BufferBytes);
-			RHICmdList.UnlockBuffer(ActiveVoxelIndicesBufferRef->GetBuffer());
-		}
-	
+	const uint32 BufferBytes = sizeof(FIntVector4) * ElementCount;
+	if (BufferBytes < ActiveVoxelIndicesBufferRef->GetBuffer()->GetSize())
+	{
+		void* OutputData = RHICmdList.LockBuffer(
+			ActiveVoxelIndicesBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+
+		FMemory::Memcpy(OutputData, ActiveVoxelIndices.GetData(), BufferBytes);
+		RHICmdList.UnlockBuffer(ActiveVoxelIndicesBufferRef->GetBuffer());
 	}
 }
 
