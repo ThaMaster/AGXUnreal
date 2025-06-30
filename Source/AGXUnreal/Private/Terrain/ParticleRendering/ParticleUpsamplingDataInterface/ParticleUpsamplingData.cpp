@@ -133,22 +133,7 @@ FPUArrays::FPUArrays(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBuffer
 
 void FPUArrays::CopyFrom(const FPUArrays* Other)
 {
-	CoarseParticles = Other->CoarseParticles;
-	ActiveVoxelIndices = Other->ActiveVoxelIndices;
-
-	NumElementsInCoarseParticleBuffer = Other->NumElementsInCoarseParticleBuffer;
-	NumElementsInActiveVoxelBuffer = Other->NumElementsInActiveVoxelBuffer;
-
-	Time = Other->Time;
-	VoxelSize = Other->VoxelSize;
-	FineParticleMass = Other->FineParticleMass;
-	FineParticleRadius = Other->FineParticleRadius;
-	EaseStepSize = Other->EaseStepSize;
-	NominalRadius = Other->NominalRadius;
-	TableSize = Other->TableSize;
-
-	NeedsCPResize = Other->NeedsCPResize;
-	NeedsVoxelResize = Other->NeedsVoxelResize;
+	*this = *Other;
 }
 
 void FParticleUpsamplingData::Init(FNiagaraSystemInstance* SystemInstance)
