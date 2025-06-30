@@ -44,7 +44,7 @@ static struct FShaderDirectoryMapping
 		FString PluginShaderDir = FPaths::Combine(
 			IPluginManager::Get().FindPlugin(TEXT("AGXUnreal"))->GetBaseDir(),
 			TEXT("Source/AGXUnreal/Private/Terrain/ParticleRendering/Shaders"));
-		AddShaderSourceDirectoryMapping(TEXT("/ParticleRenderingShaders"), PluginShaderDir);
+		AddShaderSourceDirectoryMapping(TEXT("/AGX_ParticleRenderingShaders"), PluginShaderDir);
 	}
 } GAGX_ShaderDirectoryMapping;
 

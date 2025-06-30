@@ -164,7 +164,7 @@ private:
 	const FName IsFineParticleAliveName = TEXT("IsFineParticleAlive");
 	const FName GetCoarseParticleInfoName = TEXT("GetCoarseParticleInfo");
 
-	const TCHAR* PUUnrealShaderHeaderFile = TEXT("/ParticleRenderingShaders/ParticleUpsampling.ush");
+	const TCHAR* PUUnrealShaderHeaderFile = TEXT("/AGX_ParticleRenderingShaders/ParticleUpsampling.ush");
 
 	const float PACKING_RATIO = 0.67f;
 };

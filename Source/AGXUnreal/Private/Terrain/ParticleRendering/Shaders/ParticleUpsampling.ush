@@ -1,4 +1,4 @@
-#include "/ParticleRenderingShaders/ParticleUpsamplingUtils.ush"
+#include "/AGX_ParticleRenderingShaders/ParticleUpsamplingUtils.ush"
 // clang-format off
 
 // HashTable Defines
