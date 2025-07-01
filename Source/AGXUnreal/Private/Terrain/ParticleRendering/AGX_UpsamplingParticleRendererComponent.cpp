@@ -140,28 +140,28 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 	float ParticleDensity = 0.0f;
 	for (int32 I = 0; I < Data.ParticleCount; ++I)
 	{
-		if (Data.Exists[I])
-		{
-			float Radius = Data.PositionsAndRadius[I].W;
-			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radius, 3);
-			ParticleDensity = Data.VelocitiesAndMasses[I].W / Volume;
+		if (!Data.Exists[I])
+			continue;
 
-			FVector Position = FVector(
-				Data.PositionsAndRadius[I].X, 
-				Data.PositionsAndRadius[I].Y,
-				Data.PositionsAndRadius[I].Z);
+		float Radius = Data.PositionsAndRadius[I].W;
+		float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radius, 3);
+		ParticleDensity = Data.VelocitiesAndMasses[I].W / Volume;
 
-			AppendIfActiveVoxel(ActiveVoxelSet, Position, Radius);
+		FVector Position = FVector(
+			Data.PositionsAndRadius[I].X, 
+			Data.PositionsAndRadius[I].Y,
+			Data.PositionsAndRadius[I].Z);
 
-			FCoarseParticle CP;
-			CP.PositionAndRadius = FVector4f(Position.X, Position.Y, Position.Z, Radius);
-			CP.VelocityAndMass = FVector4f(
-				Data.VelocitiesAndMasses[I].X, 
-				Data.VelocitiesAndMasses[I].Y, 
-				Data.VelocitiesAndMasses[I].Z, 
-				Data.VelocitiesAndMasses[I].W);
-			NewCoarseParticles.Add(CP);
-		}
+		AppendIfActiveVoxel(ActiveVoxelSet, Position, Radius);
+
+		FCoarseParticle CP;
+		CP.PositionAndRadius = FVector4f(Position.X, Position.Y, Position.Z, Radius);
+		CP.VelocityAndMass = FVector4f(
+			Data.VelocitiesAndMasses[I].X, 
+			Data.VelocitiesAndMasses[I].Y, 
+			Data.VelocitiesAndMasses[I].Z, 
+			Data.VelocitiesAndMasses[I].W);
+		NewCoarseParticles.Add(CP);
 	}
 
 	if (ParticleDensity == 0.0f)
