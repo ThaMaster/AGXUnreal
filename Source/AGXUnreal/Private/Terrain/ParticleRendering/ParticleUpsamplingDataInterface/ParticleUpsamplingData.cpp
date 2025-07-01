@@ -58,7 +58,7 @@ void FPUBuffers::UpdateCoarseParticleBuffers(
 	uint32 NewElementCount, bool NeedsResize)
 {
 	uint32 ElementCount = CoarseParticleData.Num();
-	if (ElementCount == 0 && !CoarseParticleBufferRef.IsValid() &&
+	if (ElementCount == 0 || !CoarseParticleBufferRef.IsValid() ||
 		!CoarseParticleBufferRef->GetBuffer()->IsValid())
 	{
 		return;
@@ -89,7 +89,7 @@ void FPUBuffers::UpdateHashTableBuffers(
 	uint32 NewElementCount, bool NeedsResize)
 {
 	uint32 ElementCount = ActiveVoxelIndices.Num();
-	if (ElementCount == 0 && !ActiveVoxelIndicesBufferRef.IsValid() &&
+	if (ElementCount == 0 || !ActiveVoxelIndicesBufferRef.IsValid() ||
 		!ActiveVoxelIndicesBufferRef->GetBuffer()->IsValid())
 	{
 		return;
