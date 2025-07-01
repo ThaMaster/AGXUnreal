@@ -45,7 +45,7 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 
 	ParticleSystemComponent->SetActive(bEnableParticleRendering);
 
-	// Try to get the correct data interface.
+	// Try to get the correct Data interface.
 	UpsamplingDataInterface =
 		static_cast<UAGX_ParticleUpsamplingDI*>(UNiagaraFunctionLibrary::GetDataInterface(
 			UAGX_ParticleUpsamplingDI::StaticClass(), ParticleSystemComponent,
@@ -63,7 +63,7 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 
 	ElementSize = ParentTerrainActor->SourceLandscape->GetActorScale().X;
 	
-	// Bind function to terrain delegate to handle particle data.
+	// Bind function to terrain delegate to handle particle Data.
 	ParentTerrainActor->OnParticleData.AddDynamic(
 		this, &UAGX_UpsamplingParticleRendererComponent::HandleParticleData);
 }
@@ -128,7 +128,7 @@ double UAGX_UpsamplingParticleRendererComponent::GetEaseStepSize()
 	return EaseStepSize;
 }
 
-void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParticleData& data)
+void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParticleData& Data)
 {
 	if (!ParticleSystemComponent || !UpsamplingDataInterface)
 	{
@@ -138,28 +138,28 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 	TArray<FCoarseParticle> NewCoarseParticles;
 	TSet<FIntVector> ActiveVoxelSet;
 	float ParticleDensity = 0.0f;
-	for (int32 I = 0; I < data.ParticleCount; ++I)
+	for (int32 I = 0; I < Data.ParticleCount; ++I)
 	{
-		if (data.Exists[I])
+		if (Data.Exists[I])
 		{
-			float Radius = data.PositionsAndRadius[I].W;
+			float Radius = Data.PositionsAndRadius[I].W;
 			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radius, 3);
-			ParticleDensity = data.VelocitiesAndMasses[I].W / Volume;
+			ParticleDensity = Data.VelocitiesAndMasses[I].W / Volume;
 
 			FVector Position = FVector(
-				data.PositionsAndRadius[I].X, 
-				data.PositionsAndRadius[I].Y,
-				data.PositionsAndRadius[I].Z);
+				Data.PositionsAndRadius[I].X, 
+				Data.PositionsAndRadius[I].Y,
+				Data.PositionsAndRadius[I].Z);
 
 			AppendIfActiveVoxel(ActiveVoxelSet, Position, Radius);
 
 			FCoarseParticle CP;
 			CP.PositionAndRadius = FVector4f(Position.X, Position.Y, Position.Z, Radius);
 			CP.VelocityAndMass = FVector4f(
-				data.VelocitiesAndMasses[I].X, 
-				data.VelocitiesAndMasses[I].Y, 
-				data.VelocitiesAndMasses[I].Z, 
-				data.VelocitiesAndMasses[I].W);
+				Data.VelocitiesAndMasses[I].X, 
+				Data.VelocitiesAndMasses[I].Y, 
+				Data.VelocitiesAndMasses[I].Z, 
+				Data.VelocitiesAndMasses[I].W);
 			NewCoarseParticles.Add(CP);
 		}
 	}

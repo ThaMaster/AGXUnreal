@@ -44,7 +44,7 @@ void UAGX_SoilParticleRendererComponent::BeginPlay()
 
 	ParticleSystemComponent->SetActive(bEnableParticleRendering);
 
-	// Bind function to terrain delegate to handle particle data.
+	// Bind function to terrain delegate to handle particle Data.
 	ParentTerrainActor->OnParticleData.AddDynamic(
 		this, &UAGX_SoilParticleRendererComponent::HandleParticleData);
 }
@@ -70,7 +70,7 @@ UNiagaraComponent* UAGX_SoilParticleRendererComponent::GetParticleSystemComponen
 	return ParticleSystemComponent;
 }
 
-void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleData& data)
+void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleData& Data)
 {
 	if (ParticleSystemComponent == nullptr)
 	{
@@ -103,30 +103,30 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleDat
 			if (ParamName == PositionsAndScalesName)
 			{
 				UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-					ParticleSystemComponent, ParamName, data.PositionsAndRadius);
+					ParticleSystemComponent, ParamName, Data.PositionsAndRadius);
 			}
 			else if (ParamName == OrientationsName)
 			{
 				UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-					ParticleSystemComponent, ParamName, data.Orientations);
+					ParticleSystemComponent, ParamName, Data.Orientations);
 			}
 			else if (ParamName == VelocitiesAndMassesName)
 			{
 				UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-					ParticleSystemComponent, ParamName, data.VelocitiesAndMasses);
+					ParticleSystemComponent, ParamName, Data.VelocitiesAndMasses);
 			}
 		}
 		else if (ParamName == ExistsName && ParamType == BoolArrayName)
 		{
 			UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayBool(
-				ParticleSystemComponent, ParamName, data.Exists);
+				ParticleSystemComponent, ParamName, Data.Exists);
 		}
 		else if (ParamName == ParticleCountName && ParamType == Int32Name)
 		{
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
-			ParticleSystemComponent->SetNiagaraVariableInt(ParamName, data.ParticleCount);
+			ParticleSystemComponent->SetNiagaraVariableInt(ParamName, Data.ParticleCount);
 #else
-			ParticleSystemComponent->SetVariableInt(ParamName, data.ParticleCount);
+			ParticleSystemComponent->SetVariableInt(ParamName, Data.ParticleCount);
 #endif
 		}
 	}
