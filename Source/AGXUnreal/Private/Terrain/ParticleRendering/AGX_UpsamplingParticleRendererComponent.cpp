@@ -22,7 +22,7 @@ UAGX_UpsamplingParticleRendererComponent::UAGX_UpsamplingParticleRendererCompone
 	AGX_ParticleRenderingUtilities::AssignDefaultNiagaraAsset(
 		ParticleSystemAsset,
 		TEXT("NiagaraSystem'/AGXUnreal/Terrain/Rendering/Particles/UpsamplingParticleSystem"
-			 "/PS_MeshPUSystem.PS_MeshPUSystem'"));
+			 "/PS_MeshPUSystem_UE_53_54.PS_MeshPUSystem_UE_53_54'"));
 }
 
 void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
