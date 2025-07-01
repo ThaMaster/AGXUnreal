@@ -84,7 +84,7 @@ struct AGXUNREAL_API FShovelReferenceWithSettings
 };
 
 USTRUCT(BlueprintType)
-struct AGXUNREAL_API FDelegateParticleData // Maybe skip this and only use the one in FParticleDataById
+struct AGXUNREAL_API FDelegateParticleData
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -101,7 +101,7 @@ struct AGXUNREAL_API FDelegateParticleData // Maybe skip this and only use the o
 	TArray<bool> Exists;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Particle Data")
-	int32 TargetParticleCount;
+	int32 ParticleCount;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FParticleDataMulticastDelegate, FDelegateParticleData, ParticleData);

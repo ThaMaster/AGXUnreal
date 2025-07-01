@@ -43,7 +43,7 @@ public:
 	 * - Array Float 4:	Orientations
 	 * - Array Float 4:	Velocities And Masses
 	 * - Array Bool:	Exists
-	 * - int32:			Target Particle Count
+	 * - int32:			Particle Count
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Soil Particle Rendering")
 	UNiagaraSystem* ParticleSystemAsset;

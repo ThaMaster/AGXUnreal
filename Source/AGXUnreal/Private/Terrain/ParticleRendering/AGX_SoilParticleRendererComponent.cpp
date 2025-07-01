@@ -116,16 +116,16 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleDat
 				ParticleSystemComponent, "Exists", data.Exists);
 		}
 		else if (
-			ParamName == "User.Target Particle Count" && 
+			ParamName == "User.Particle Count" && 
 			ParamType == "NiagaraInt32")
 		{
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 			ParticleSystemComponent->SetNiagaraVariableInt(
-				"User.Target Particle Count", data.TargetParticleCount);
+				"User.Particle Count", data.ParticleCount);
 #else
 			ParticleSystemComponent->SetVariableInt(
-				FName("User.Target Particle Count"), data.TargetParticleCount);
+				FName("User.Particle Count"), data.ParticleCount);
 #endif
 		}
 	}

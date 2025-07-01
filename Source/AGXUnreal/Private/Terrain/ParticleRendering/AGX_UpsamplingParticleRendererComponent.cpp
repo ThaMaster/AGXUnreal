@@ -140,7 +140,7 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 	TArray<FCoarseParticle> NewCoarseParticles;
 	TSet<FIntVector> ActiveVoxelSet;
 	float ParticleDensity = 0.0f;
-	for (int32 I = 0; I < data.TargetParticleCount; ++I)
+	for (int32 I = 0; I < data.ParticleCount; ++I)
 	{
 		if (data.Exists[I])
 		{
