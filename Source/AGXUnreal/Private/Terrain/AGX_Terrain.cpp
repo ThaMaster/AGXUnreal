@@ -1704,8 +1704,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 			FVector4(Velocities[I].X, Velocities[I].Y, Velocities[I].Z, Masses[I]);
 		data.Exists[I] = Exists[I];
 	}
-	// Maybe process the data here instead of 
-	// Broadcast the data to all who is bound to the delegate.
+
 	OnParticleData.Broadcast(data);
 }
 
