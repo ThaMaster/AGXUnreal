@@ -28,10 +28,6 @@ UAGX_UpsamplingParticleRendererComponent::UAGX_UpsamplingParticleRendererCompone
 void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	if (!bEnableParticleRendering)
-	{
-		return;
-	}
 
 	AAGX_Terrain* ParentTerrainActor = AGX_ParticleRenderingUtilities::GetParentTerrainActor(this);
 	if (!ParentTerrainActor)
@@ -46,6 +42,8 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 	{
 		return;
 	}
+
+	ParticleSystemComponent->SetActive(bEnableParticleRendering);
 
 	// Try to get the correct data interface.
 	UpsamplingDataInterface =

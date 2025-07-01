@@ -27,10 +27,6 @@ UAGX_SoilParticleRendererComponent::UAGX_SoilParticleRendererComponent()
 void UAGX_SoilParticleRendererComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	if (!bEnableParticleRendering)
-	{
-		return;
-	}
 
 	AAGX_Terrain* ParentTerrainActor = AGX_ParticleRenderingUtilities::GetParentTerrainActor(this);
 	if (!ParentTerrainActor)
@@ -46,6 +42,8 @@ void UAGX_SoilParticleRendererComponent::BeginPlay()
 		return;
 	}
 
+	ParticleSystemComponent->SetActive(bEnableParticleRendering);
+
 	// Bind function to terrain delegate to handle particle data.
 	ParentTerrainActor->OnParticleData.AddDynamic(
 		this, &UAGX_SoilParticleRendererComponent::HandleParticleData);
@@ -58,6 +56,7 @@ bool UAGX_SoilParticleRendererComponent::SetEnableParticleRendering(bool bEnable
 		ParticleSystemComponent->DeactivateImmediate();
 		ParticleSystemComponent->SetActive(bEnabled);
 	}
+
 	return bEnableParticleRendering = bEnabled;
 }
 
