@@ -52,7 +52,7 @@ public:
 	 */
 	UPROPERTY(
 		EditAnywhere, Category = "AGX Upsampling Particle Rendering",
-		Meta = (EditCondition = "bEnableVoxelSize", ClampMin=10, UIMin = "10", 
+		Meta = (EditCondition = "bOverrideVoxelSize", ClampMin=10, UIMin = "10", 
 			UIMax = "1000"))
 	double VoxelSize = 10.0;
 
