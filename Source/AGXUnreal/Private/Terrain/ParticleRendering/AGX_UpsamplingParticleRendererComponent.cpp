@@ -279,6 +279,9 @@ void UAGX_UpsamplingParticleRendererComponent::InitPropertyDispatcher()
 	PropertyDispatcher.Add(
 		AGX_MEMBER_NAME(bEnableParticleRendering),
 		[](ThisClass* This) { This->SetEnableParticleRendering(This->bEnableParticleRendering); });
+	PropertyDispatcher.Add(
+		AGX_MEMBER_NAME(bOverrideVoxelSize),
+		[](ThisClass* This) { This->SetOverrideVoxelSize(This->bOverrideVoxelSize); });
 }
 
 #endif
