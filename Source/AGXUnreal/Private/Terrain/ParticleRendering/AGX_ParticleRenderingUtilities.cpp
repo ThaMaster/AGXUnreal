@@ -43,13 +43,13 @@ AAGX_Terrain* AGX_ParticleRenderingUtilities::GetParentTerrainActor(
 		return nullptr;
 	}
 
-	// Then cast it to the AGX_Terrain actor.
+	// Then cast it to the AGX Terrain actor.
 	AAGX_Terrain* ParentTerrainActor = Cast<AAGX_Terrain>(Owner);
 	if (!ParentTerrainActor)
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Particle Renderer '%s', unable to cast its parent '%s' to a 'AGX_Terrain' actor. "
+			TEXT("Particle Renderer '%s', unable to cast its parent '%s' to a 'AGX Terrain' actor. "
 				"No particles will be rendered."),
 			*ActorComponent->GetName(), *GetLabelSafe(ActorComponent->GetOwner()));
 		return nullptr;
