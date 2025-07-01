@@ -142,14 +142,14 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 	{
 		if (data.Exists[I])
 		{
-			float Radius = data.PositionsAndScale[I].W / 2 * 100;
+			float Radius = data.PositionsAndRadius[I].W;
 			float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radius, 3);
 			ParticleDensity = data.VelocitiesAndMasses[I].W / Volume;
 
 			FVector Position = FVector(
-				data.PositionsAndScale[I].X, 
-				data.PositionsAndScale[I].Y,
-				data.PositionsAndScale[I].Z);
+				data.PositionsAndRadius[I].X, 
+				data.PositionsAndRadius[I].Y,
+				data.PositionsAndRadius[I].Z);
 
 			AppendIfActiveVoxel(ActiveVoxelSet, Position, Radius);
 

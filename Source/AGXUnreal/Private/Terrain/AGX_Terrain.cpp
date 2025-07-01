@@ -1684,7 +1684,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	const int32 NumParticles = Positions.Num();
 
 	FDelegateParticleData data;
-	data.PositionsAndScale.SetNum(NumParticles);
+	data.PositionsAndRadius.SetNum(NumParticles);
 	data.Orientations.SetNum(NumParticles);
 	data.VelocitiesAndMasses.SetNum(NumParticles);
 	data.Exists.SetNum(NumParticles);
@@ -1692,13 +1692,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 
 	for (int32 I = 0; I < NumParticles; ++I)
 	{
-		// The particle size slot in the PositionAndScale buffer is a scale and not the
-		// actual size. The scale is relative to a SI unit cube, meaning that a
-		// scale of 1.0 should render a particle that is 1x1x1 m large, or
-		// 100x100x100 Unreal units. We multiply by 2.0 to convert from radius
-		// to full width.
-		float UnitCubeScale = (Radii[I] * 2.0f) / 100.0f;
-		data.PositionsAndScale[I] = FVector4(Positions[I], UnitCubeScale);
+		data.PositionsAndRadius[I] = FVector4(Positions[I], Radii[I]);
 		data.Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
 		data.VelocitiesAndMasses[I] =
 			FVector4(Velocities[I].X, Velocities[I].Y, Velocities[I].Z, Masses[I]);
