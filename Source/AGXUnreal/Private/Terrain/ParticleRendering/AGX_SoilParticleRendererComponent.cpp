@@ -16,25 +16,6 @@
 #include "NiagaraEmitterInstance.h"
 #include "NiagaraSystemInstanceController.h"
 
-const FName UAGX_SoilParticleRendererComponent::PositionsAndScalesName(
-	TEXT("User.Positions And Scales"));
-const FName UAGX_SoilParticleRendererComponent::VelocitiesAndMassesName(
-	TEXT("User.Velocities And Masses"));
-const FName UAGX_SoilParticleRendererComponent::OrientationsName(
-	TEXT("User.Orientations"));
-const FName UAGX_SoilParticleRendererComponent::ExistsName(
-	TEXT("User.Exists"));
-const FName UAGX_SoilParticleRendererComponent::ParticleCountName(
-	TEXT("User.Particle Count"));
-
-const FName UAGX_SoilParticleRendererComponent::Vector4ArrayName(
-	TEXT("NiagaraDataInterfaceArrayFloat4"));
-const FName UAGX_SoilParticleRendererComponent::BoolArrayName(
-	TEXT("NiagaraDataInterfaceArrayBool"));
-const FName UAGX_SoilParticleRendererComponent::Int32Name(
-	TEXT("NiagaraInt32"));
-
-
 UAGX_SoilParticleRendererComponent::UAGX_SoilParticleRendererComponent()
 {
 	AGX_ParticleRenderingUtilities::AssignDefaultNiagaraAsset(
@@ -97,6 +78,16 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleDat
 		return;
 	}
 
+	static const FName PositionsAndScalesName {TEXT("User.Positions And Scales")};
+	static const FName VelocitiesAndMassesName {TEXT("User.Velocities And Masses")};
+	static const FName OrientationsName {TEXT("User.Orientations")};
+	static const FName ExistsName {TEXT("User.Exists")};
+	static const FName ParticleCountName {TEXT("User.Particle Count")};
+
+	static const FName Vector4ArrayName {TEXT("NiagaraDataInterfaceArrayFloat4")};
+	static const FName BoolArrayName {TEXT("NiagaraDataInterfaceArrayBool")};
+	static const FName Int32Name {TEXT("NiagaraInt32")};
+
 	const FNiagaraParameterStore& UserParams = ParticleSystemComponent->GetOverrideParameters();
 	TArray<FNiagaraVariable> Params;
 	UserParams.GetParameters(Params);
@@ -105,8 +96,8 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleDat
 	// Otherwise the engine throws warnings each time we set them...
 	for (FNiagaraVariable& Param : Params)
 	{
-		FName ParamName = Param.GetName();
-		FName ParamType = Param.GetType().GetFName();
+		const FName ParamName = Param.GetName();
+		const FName ParamType = Param.GetType().GetFName();
 
 		if (ParamType == Vector4ArrayName)
 		{

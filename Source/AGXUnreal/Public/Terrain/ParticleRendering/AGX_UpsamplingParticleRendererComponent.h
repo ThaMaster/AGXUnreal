@@ -10,7 +10,6 @@
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
 #include "CoreTypes.h"
-
 #include "AGX_UpsamplingParticleRendererComponent.generated.h"
 
 class UNiagaraComponent;

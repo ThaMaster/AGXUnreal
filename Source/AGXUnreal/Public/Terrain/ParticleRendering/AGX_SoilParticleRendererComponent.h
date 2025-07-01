@@ -78,16 +78,6 @@ private:
 
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
 
-	static const FName PositionsAndScalesName;
-	static const FName VelocitiesAndMassesName;
-	static const FName OrientationsName;
-	static const FName ExistsName;
-	static const FName ParticleCountName;
-
-	static const FName Vector4ArrayName;
-	static const FName BoolArrayName;
-	static const FName Int32Name;
-
 	UFUNCTION()
 	void HandleParticleData(FDelegateParticleData& data);
 
