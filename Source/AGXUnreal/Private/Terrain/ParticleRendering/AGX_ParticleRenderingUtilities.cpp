@@ -34,8 +34,8 @@ AAGX_Terrain* AGX_ParticleRenderingUtilities::InitializeParentTerrainActor(
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Particle Renderer '%s' could not fetch the parent actor"
-				 "particles."),
+			TEXT("Particle Renderer '%s' could not fetch the parent actor. "
+				"No particles will be rendered."),
 			*ActorComponent->GetName());
 		return nullptr;
 	}
@@ -46,8 +46,8 @@ AAGX_Terrain* AGX_ParticleRenderingUtilities::InitializeParentTerrainActor(
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Particle Renderer '%s' could not cast parent to 'AGX_Terrain' actor, cannot "
-				 "bind component to delegate."),
+			TEXT("Particle Renderer '%s' could not cast parent to 'AGX_Terrain' actor. "
+				"No particles will be rendered."),
 			*ActorComponent->GetName());
 		return nullptr;
 	}
@@ -62,8 +62,8 @@ UNiagaraComponent* AGX_ParticleRenderingUtilities::InitializeNiagaraParticleSyst
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Particle renderer '%s' does not have a particle system, cannot render particles "
-				 "with Niagara"),
+			TEXT("Particle renderer '%s' does not have a particle system assigned in the details panel. "
+				 "No particles will be rendered."),
 			*ActorComponent->GetName());
 		return nullptr;
 	}
