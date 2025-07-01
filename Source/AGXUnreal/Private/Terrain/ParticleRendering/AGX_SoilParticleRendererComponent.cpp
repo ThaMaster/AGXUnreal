@@ -60,12 +60,12 @@ bool UAGX_SoilParticleRendererComponent::SetEnableParticleRendering(bool bEnable
 	return bEnableParticleRendering = bEnabled;
 }
 
-bool UAGX_SoilParticleRendererComponent::GetEnableParticleRendering()
+bool UAGX_SoilParticleRendererComponent::GetEnableParticleRendering() const
 {
 	return bEnableParticleRendering;
 }
 
-UNiagaraComponent* UAGX_SoilParticleRendererComponent::GetParticleSystemComponent()
+UNiagaraComponent* UAGX_SoilParticleRendererComponent::GetParticleSystemComponent() const
 {
 	return ParticleSystemComponent;
 }

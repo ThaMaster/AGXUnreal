@@ -71,38 +71,38 @@ public:
 	bool SetEnableParticleRendering(bool bEnabled);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
-	bool GetEnableParticleRendering();
+	bool GetEnableParticleRendering() const;
 
 	/**
 	 * If a Particle System Component has been spawned by the Renderer Component, this function will return it.
 	 * Returns nullptr otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
-	UNiagaraComponent* GetParticleSystemComponent();
+	UNiagaraComponent* GetParticleSystemComponent() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
 	int32 SetUpsampling(int32 InUpsampling);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
-	int32 GetUpsampling();
+	int32 GetUpsampling() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
 	bool SetOverrideVoxelSize(bool bEnabled);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
-	bool GetOverrideVoxelSize();
+	bool GetOverrideVoxelSize() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
 	double SetVoxelSize(double InVoxelSize);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
-	double GetVoxelSize();
+	double GetVoxelSize() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
 	double SetEaseStepSize(double InEaseStepSize);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
-	double GetEaseStepSize();
+	double GetEaseStepSize() const;
 	
 protected:
 

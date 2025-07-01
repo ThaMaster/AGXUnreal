@@ -78,12 +78,12 @@ bool UAGX_UpsamplingParticleRendererComponent::SetEnableParticleRendering(bool b
 	return bEnableParticleRendering = bEnabled; 
 }
 
-bool UAGX_UpsamplingParticleRendererComponent::GetEnableParticleRendering()
+bool UAGX_UpsamplingParticleRendererComponent::GetEnableParticleRendering() const
 {
 	return bEnableParticleRendering;
 }
 
-UNiagaraComponent* UAGX_UpsamplingParticleRendererComponent::GetParticleSystemComponent()
+UNiagaraComponent* UAGX_UpsamplingParticleRendererComponent::GetParticleSystemComponent() const
 {
 	return ParticleSystemComponent;
 }
@@ -93,7 +93,7 @@ int32 UAGX_UpsamplingParticleRendererComponent::SetUpsampling(int32 InUpsampling
 	return Upsampling = InUpsampling;
 }
 
-int32 UAGX_UpsamplingParticleRendererComponent::GetUpsampling()
+int32 UAGX_UpsamplingParticleRendererComponent::GetUpsampling() const
 {
 	return Upsampling;
 }
@@ -103,7 +103,7 @@ bool UAGX_UpsamplingParticleRendererComponent::SetOverrideVoxelSize(bool bEnable
 	return bOverrideVoxelSize = bEnabled;
 }
 
-bool UAGX_UpsamplingParticleRendererComponent::GetOverrideVoxelSize()
+bool UAGX_UpsamplingParticleRendererComponent::GetOverrideVoxelSize() const
 {
 	return bOverrideVoxelSize;
 }
@@ -113,7 +113,7 @@ double UAGX_UpsamplingParticleRendererComponent::SetVoxelSize(double InVoxelSize
 	return VoxelSize = InVoxelSize;
 }
 
-double UAGX_UpsamplingParticleRendererComponent::GetVoxelSize()
+double UAGX_UpsamplingParticleRendererComponent::GetVoxelSize() const
 {
 	return VoxelSize;
 }
@@ -123,7 +123,7 @@ double UAGX_UpsamplingParticleRendererComponent::SetEaseStepSize(double InEaseSt
 	return EaseStepSize = InEaseStepSize;
 }
 
-double UAGX_UpsamplingParticleRendererComponent::GetEaseStepSize()
+double UAGX_UpsamplingParticleRendererComponent::GetEaseStepSize() const
 {
 	return EaseStepSize;
 }
