@@ -4,6 +4,9 @@
 
 // AGX Dynamics for Unreal includes.
 #include "AGX_LogCategory.h"
+#include "Utilities/AGX_StringUtilities.h"
+
+// Unreal Engine includes.
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
@@ -34,7 +37,7 @@ AAGX_Terrain* AGX_ParticleRenderingUtilities::InitializeParentTerrainActor(
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Particle Renderer '%s' could not fetch the parent actor. "
+			TEXT("Particle Renderer '%s', unable to fetch the parent actor. "
 				"No particles will be rendered."),
 			*ActorComponent->GetName());
 		return nullptr;
@@ -46,9 +49,9 @@ AAGX_Terrain* AGX_ParticleRenderingUtilities::InitializeParentTerrainActor(
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Particle Renderer '%s' could not cast parent to 'AGX_Terrain' actor. "
+			TEXT("Particle Renderer '%s', unable to cast its parent '%s' to a 'AGX_Terrain' actor. "
 				"No particles will be rendered."),
-			*ActorComponent->GetName());
+			*ActorComponent->GetName(), *GetLabelSafe(ActorComponent->GetOwner()));
 		return nullptr;
 	}
 
@@ -62,9 +65,9 @@ UNiagaraComponent* AGX_ParticleRenderingUtilities::InitializeNiagaraParticleSyst
 	{
 		UE_LOG(
 			LogAGX, Warning,
-			TEXT("Particle renderer '%s' does not have a particle system assigned in the details panel. "
+			TEXT("Particle renderer '%s' in Actor '%s', no particle system assigned in the details panel. "
 				 "No particles will be rendered."),
-			*ActorComponent->GetName());
+			*ActorComponent->GetName(), *GetLabelSafe(ActorComponent->GetOwner()));
 		return nullptr;
 	}
 
