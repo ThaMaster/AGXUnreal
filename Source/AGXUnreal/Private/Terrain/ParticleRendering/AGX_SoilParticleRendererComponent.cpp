@@ -113,31 +113,30 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleDat
 			if (ParamName == PositionsAndScalesName)
 			{
 				UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-					ParticleSystemComponent, PositionsAndScalesName, data.PositionsAndScale);
+					ParticleSystemComponent, ParamName, data.PositionsAndScale);
 			}
 			else if (ParamName == OrientationsName)
 			{
 				UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-					ParticleSystemComponent, OrientationsName, data.Orientations);
+					ParticleSystemComponent, ParamName, data.Orientations);
 			}
 			else if (ParamName == VelocitiesAndMassesName)
 			{
 				UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-					ParticleSystemComponent, VelocitiesAndMassesName, data.VelocitiesAndMasses);
+					ParticleSystemComponent, ParamName, data.VelocitiesAndMasses);
 			}
 		}
 		else if (ParamName == ExistsName && ParamType == BoolArrayName)
 		{
 			UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayBool(
-				ParticleSystemComponent, ExistsName, data.Exists);
+				ParticleSystemComponent, ParamName, data.Exists);
 		}
 		else if (ParamName == ParticleCountName && ParamType == Int32Name)
 		{
-
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
-			ParticleSystemComponent->SetNiagaraVariableInt(ParticleCountName, data.ParticleCount);
+			ParticleSystemComponent->SetNiagaraVariableInt(ParamName, data.ParticleCount);
 #else
-			ParticleSystemComponent->SetVariableInt(FName(ParticleCountName), data.ParticleCount);
+			ParticleSystemComponent->SetVariableInt(ParamName, data.ParticleCount);
 #endif
 		}
 	}
