@@ -17,7 +17,7 @@ public:
 	 * render particles if the terrain is not found since we cannot bind to the
 	 * particle data delegate.
 	 */
-	static AAGX_Terrain* InitializeParentTerrainActor(UActorComponent* ActorComponent);
+	static AAGX_Terrain* GetParentTerrainActor(UActorComponent* ActorComponent);
 
 	/**
 	 * Initializes the Niagara VFX System and attaches to the parent of the given component.

@@ -33,7 +33,7 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 		return;
 	}
 
-	AAGX_Terrain* ParentTerrainActor = AGX_ParticleRenderingUtilities::InitializeParentTerrainActor(this);
+	AAGX_Terrain* ParentTerrainActor = AGX_ParticleRenderingUtilities::GetParentTerrainActor(this);
 	if (!ParentTerrainActor)
 	{
 		return;

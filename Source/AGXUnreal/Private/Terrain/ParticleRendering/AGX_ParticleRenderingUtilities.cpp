@@ -28,7 +28,7 @@ void AGX_ParticleRenderingUtilities::AssignDefaultNiagaraAsset(
 	AssetRefProperty = AssetFinder.Object;
 }
 
-AAGX_Terrain* AGX_ParticleRenderingUtilities::InitializeParentTerrainActor(
+AAGX_Terrain* AGX_ParticleRenderingUtilities::GetParentTerrainActor(
 	UActorComponent* ActorComponent)
 {
 	// First get parent actor.
