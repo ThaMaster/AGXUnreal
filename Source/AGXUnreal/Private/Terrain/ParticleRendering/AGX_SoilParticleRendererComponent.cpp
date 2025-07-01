@@ -176,6 +176,7 @@ void UAGX_SoilParticleRendererComponent::InitPropertyDispatcher()
 			if (This->ParticleSystemAsset != nullptr)
 			{
 				This->ParticleSystemAsset->RequestCompile(true);
+				// TODO If we are in Play, replace the `ParticleSystemComponent` with a new one that uses the new particle system asset.
 			}
 		});
 
