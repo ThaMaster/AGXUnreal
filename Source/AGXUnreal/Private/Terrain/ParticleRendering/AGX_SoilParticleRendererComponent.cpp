@@ -71,7 +71,7 @@ UNiagaraComponent* UAGX_SoilParticleRendererComponent::GetParticleSystemComponen
 	return ParticleSystemComponent;
 }
 
-void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleData data)
+void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleData& data)
 {
 	if (ParticleSystemComponent == nullptr)
 	{

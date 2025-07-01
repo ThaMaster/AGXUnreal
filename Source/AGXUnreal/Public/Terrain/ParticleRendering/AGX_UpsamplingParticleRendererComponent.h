@@ -131,7 +131,7 @@ private:
 	float ElementSize = 0;
 
 	UFUNCTION()
-	void HandleParticleData(FDelegateParticleData data);
+	void HandleParticleData(FDelegateParticleData& data);
 
 	/** 
 	 * Appends the voxel indices that a coarse particle intersects with to the given array. 

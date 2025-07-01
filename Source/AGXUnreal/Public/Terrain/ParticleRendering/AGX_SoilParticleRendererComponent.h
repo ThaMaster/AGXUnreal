@@ -79,7 +79,7 @@ private:
 	UNiagaraComponent* ParticleSystemComponent = nullptr;
 
 	UFUNCTION()
-	void HandleParticleData(FDelegateParticleData data);
+	void HandleParticleData(FDelegateParticleData& data);
 
 #if WITH_EDITOR
 	void InitPropertyDispatcher();
