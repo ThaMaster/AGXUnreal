@@ -100,14 +100,14 @@ int32 UAGX_UpsamplingParticleRendererComponent::GetUpsampling()
 	return Upsampling;
 }
 
-bool UAGX_UpsamplingParticleRendererComponent::SetEnableVoxelSize(bool bEnabled)
+bool UAGX_UpsamplingParticleRendererComponent::SetOverrideVoxelSize(bool bEnabled)
 {
-	return bEnableVoxelSize = bEnabled;
+	return bOverrideVoxelSize = bEnabled;
 }
 
-bool UAGX_UpsamplingParticleRendererComponent::GetEnableVoxelSize()
+bool UAGX_UpsamplingParticleRendererComponent::GetOverrideVoxelSize()
 {
-	return bEnableVoxelSize;
+	return bOverrideVoxelSize;
 }
 
 double UAGX_UpsamplingParticleRendererComponent::SetVoxelSize(double InVoxelSize)

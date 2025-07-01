@@ -44,7 +44,7 @@ public:
 	 * Toggle between using the default voxel size or use user defined size.
 	 */
 	UPROPERTY(EditAnywhere, Category = "AGX Upsampling Particle Rendering")
-	bool bEnableVoxelSize = false;
+	bool bOverrideVoxelSize = false;
 
 	/**
 	 * The size of how large a singe voxel will be when setting up the data grids.
@@ -88,10 +88,10 @@ public:
 	int32 GetUpsampling();
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
-	bool SetEnableVoxelSize(bool bEnabled);
+	bool SetOverrideVoxelSize(bool bEnabled);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
-	bool GetEnableVoxelSize();
+	bool GetOverrideVoxelSize();
 	
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
 	double SetVoxelSize(double InVoxelSize);
