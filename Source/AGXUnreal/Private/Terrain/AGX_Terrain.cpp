@@ -200,8 +200,7 @@ void AAGX_Terrain::RemoveCollisionGroupIfExists(FName GroupName)
 
 UNiagaraComponent* AAGX_Terrain::GetSpawnedParticleSystemComponent()
 {
-	// TODO: Terrain should include a default particle renderer, as with Terrain Bounds component. This is where that renderer should return!
-	return nullptr;
+	return AGX_SoilParticleRenderer->GetSpawnedParticleSystemComponent();
 }
 
 int32 AAGX_Terrain::GetNumParticles() const

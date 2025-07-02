@@ -59,7 +59,7 @@ public:
 	 * return it. Returns nullptr otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Soil Particle Rendering")
-	UNiagaraComponent* GetParticleSystemComponent() const;
+	UNiagaraComponent* GetSpawnedParticleSystemComponent() const;
 
 protected:
 

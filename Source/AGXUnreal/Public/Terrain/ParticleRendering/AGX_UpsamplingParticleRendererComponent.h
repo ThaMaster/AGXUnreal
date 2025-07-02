@@ -78,7 +78,7 @@ public:
 	 * Returns nullptr otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
-	UNiagaraComponent* GetParticleSystemComponent() const;
+	UNiagaraComponent* GetSpawnedParticleSystemComponent() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
 	void SetUpsampling(int32 InUpsampling);
