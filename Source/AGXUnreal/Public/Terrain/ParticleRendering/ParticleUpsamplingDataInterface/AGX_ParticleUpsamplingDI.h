@@ -78,7 +78,11 @@ public:
 	virtual int32 PerInstanceDataSize() const override{ return sizeof(FParticleUpsamplingData); };
 	virtual bool HasPreSimulateTick() const override { return true; };
 
-	/** This function runs every tick for every instance of this NDI. */
+	/** 
+	 * This ticks on the game thread and lets us do work to initialize the instance data.
+	 * If work is needed to be performed on the gathered instance data after the simulation
+	 * is done, use PerInstanceTickPostSimulate() instead.
+	 */
 	virtual bool PerInstanceTick(
 		void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds) override;
 	virtual void ProvidePerInstanceDataForRenderThread(
@@ -150,7 +154,7 @@ protected:
 
 private:
 
-	FPUArrays* LocalData;
+	FPUArrays LocalData;
 
 	/** The names of the different functions this NDI will call on the GPU */
 	const FName UpdateGridName = TEXT("UpdateGrid");

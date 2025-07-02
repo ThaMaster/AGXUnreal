@@ -51,6 +51,10 @@ struct FVoxelEntry
 
 struct FPUBuffers : public FRenderResource
 {
+	FPUBuffers()
+	{
+	}
+
 	FPUBuffers(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBufferSize);
 	
 	// ~Begin FRenderResource interface.
@@ -123,9 +127,11 @@ struct FPUBuffers : public FRenderResource
 
 struct FPUArrays
 {
-	FPUArrays(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBuffer);
+	FPUArrays()
+	{
+	}
 
-	void CopyFrom(const FPUArrays* Other);
+	FPUArrays(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBuffer);
 
 	TArray<FCoarseParticle> CoarseParticles;
 	TArray<FIntVector4> ActiveVoxelIndices;
@@ -154,9 +160,10 @@ struct FParticleUpsamplingData
 	static const uint32 INITIAL_VOXEL_BUFFER_SIZE = 1024;
 
 	void Init(FNiagaraSystemInstance* SystemInstance);
-	void Update(FNiagaraSystemInstance* SystemInstance, FPUArrays* OtherData);
 	void Release();
 
-	FPUBuffers* PUBuffers = nullptr;
-	FPUArrays* PUArrays = nullptr;
+	FPUArrays PUArrays;
+
+	// We use shared pointer here since both the proxy and the NDI will reference this buffer.
+	std::shared_ptr<FPUBuffers> PUBuffers;
 };

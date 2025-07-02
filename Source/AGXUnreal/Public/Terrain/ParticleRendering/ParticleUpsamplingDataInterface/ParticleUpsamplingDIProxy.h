@@ -21,11 +21,10 @@ struct FParticleUpsamplingDIProxy : FNiagaraDataInterfaceProxy
 
 	// ~End FNiagaraDataInterfaceProxy interface.
 
-	/** Initialize the Proxy data buffer */
-	void InitializePerInstanceData(const FNiagaraSystemInstanceID& SystemInstance);
-
-	/** Destroy the proxy data if necessary */
-	void DestroyPerInstanceData(const FNiagaraSystemInstanceID& SystemInstance);
+	/** Initialize the render thread data. */
+	static void ProvidePerInstanceDataForRenderThread(
+		void* InDataForRenderThread, void* InDataFromGameThread,
+		const FNiagaraSystemInstanceID& SystemInstance);
 
 	/** List of proxy data for each system instances*/
 	TMap<FNiagaraSystemInstanceID, FParticleUpsamplingData> SystemInstancesToInstanceData_RT;

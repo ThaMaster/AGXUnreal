@@ -131,41 +131,22 @@ FPUArrays::FPUArrays(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBuffer
 	NumElementsInActiveVoxelBuffer = InitialActiveVoxelBuffer;
 }
 
-void FPUArrays::CopyFrom(const FPUArrays* Other)
-{
-	*this = *Other;
-}
-
 void FParticleUpsamplingData::Init(FNiagaraSystemInstance* SystemInstance)
 {
-	PUBuffers = nullptr;
-	if (SystemInstance)
+	if (!SystemInstance)
 	{
-		PUArrays = new FPUArrays(INITIAL_CP_BUFFER_SIZE, INITIAL_VOXEL_BUFFER_SIZE);
-		PUBuffers = new FPUBuffers(INITIAL_CP_BUFFER_SIZE, INITIAL_VOXEL_BUFFER_SIZE);
-		BeginInitResource(PUBuffers);
+		return;
 	}
-}
 
-void FParticleUpsamplingData::Update(
-	FNiagaraSystemInstance* SystemInstance, FPUArrays* OtherData)
-{
-	if (SystemInstance)
-	{
-		PUArrays->CopyFrom(OtherData);
-	}
+	PUArrays = FPUArrays(INITIAL_CP_BUFFER_SIZE, INITIAL_VOXEL_BUFFER_SIZE);
+	PUBuffers.reset(new FPUBuffers(INITIAL_CP_BUFFER_SIZE, INITIAL_VOXEL_BUFFER_SIZE));
+	BeginInitResource(PUBuffers.get());
 }
 
 void FParticleUpsamplingData::Release()
 {
 	if (PUBuffers)
 	{
-		ENQUEUE_RENDER_COMMAND(DeleteResource)(
-			[ParamPointerToRelease = PUBuffers](FRHICommandListImmediate& RHICmdList)
-			{
-				ParamPointerToRelease->ReleaseResource();
-				delete ParamPointerToRelease;
-			});
-		PUBuffers = nullptr;
+		ReleaseResourceAndFlush(PUBuffers.get());
 	}
 }

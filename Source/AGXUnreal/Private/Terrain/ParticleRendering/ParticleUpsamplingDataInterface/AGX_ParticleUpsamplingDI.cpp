@@ -16,7 +16,7 @@ UAGX_ParticleUpsamplingDI::UAGX_ParticleUpsamplingDI(
 	FObjectInitializer const& ObjectInitializer)
 {
 	Proxy.Reset(new FParticleUpsamplingDIProxy());
-	LocalData = new FPUArrays(
+	LocalData = FPUArrays(
 		FParticleUpsamplingData::INITIAL_CP_BUFFER_SIZE, 
 		FParticleUpsamplingData::INITIAL_VOXEL_BUFFER_SIZE);
 }
@@ -49,33 +49,30 @@ void UAGX_ParticleUpsamplingDI::SetShaderParameters(
 
 	// Particle Shader Parameters
 	ShaderParameters->CoarseParticles		= Data.PUBuffers->CoarseParticleBufferRef;
-	ShaderParameters->NumCoarseParticles	= Data.PUArrays->CoarseParticles.Num();
-	ShaderParameters->FineParticleMass		= Data.PUArrays->FineParticleMass;
-	ShaderParameters->FineParticleRadius	= Data.PUArrays->FineParticleRadius;
-	ShaderParameters->NominalRadius			= Data.PUArrays->NominalRadius;
+	ShaderParameters->NumCoarseParticles	= Data.PUArrays.CoarseParticles.Num();
+	ShaderParameters->FineParticleMass		= Data.PUArrays.FineParticleMass;
+	ShaderParameters->FineParticleRadius	= Data.PUArrays.FineParticleRadius;
+	ShaderParameters->NominalRadius			= Data.PUArrays.NominalRadius;
 
 	// HashTable Shader Parameters
 	ShaderParameters->ActiveVoxelIndices	= Data.PUBuffers->ActiveVoxelIndicesBufferRef;
-	ShaderParameters->NumActiveVoxels		= Data.PUArrays->ActiveVoxelIndices.Num();
+	ShaderParameters->NumActiveVoxels		= Data.PUArrays.ActiveVoxelIndices.Num();
 
 	ShaderParameters->HashTable				= Data.PUBuffers->HashTableBufferRef;
-	ShaderParameters->HTOccupancy			=Data.PUBuffers->HashTableOccupancyBufferRef;
+	ShaderParameters->HTOccupancy			= Data.PUBuffers->HashTableOccupancyBufferRef;
 
-	ShaderParameters->TableSize				= Data.PUArrays->NumElementsInActiveVoxelBuffer;
-	ShaderParameters->VoxelSize				= Data.PUArrays->VoxelSize;
+	ShaderParameters->TableSize				= Data.PUArrays.NumElementsInActiveVoxelBuffer;
+	ShaderParameters->VoxelSize				= Data.PUArrays.VoxelSize;
 
 	// Other Variables
-	ShaderParameters->AnimationSpeed		= Data.PUArrays->EaseStepSize;
+	ShaderParameters->AnimationSpeed		= Data.PUArrays.EaseStepSize;
 }
 
 bool UAGX_ParticleUpsamplingDI::InitPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
-	FParticleUpsamplingData* Data = static_cast<FParticleUpsamplingData*>(PerInstanceData);
+	FParticleUpsamplingData* Data = new (PerInstanceData) FParticleUpsamplingData;
 	Data->Init(SystemInstance);
-	LocalData = new FPUArrays(
-		FParticleUpsamplingData::INITIAL_CP_BUFFER_SIZE,
-		FParticleUpsamplingData::INITIAL_VOXEL_BUFFER_SIZE);
 	return true;
 }
 
@@ -93,10 +90,9 @@ void UAGX_ParticleUpsamplingDI::DestroyPerInstanceData(
 		{
 			FParticleUpsamplingData* ProxyData =
 				ThisProxy->SystemInstancesToInstanceData_RT.Find(InstanceID);
-			if (ProxyData != nullptr && ProxyData->PUArrays)
+			if (ProxyData != nullptr)
 			{
 				ThisProxy->SystemInstancesToInstanceData_RT.Remove(InstanceID);
-				delete ProxyData->PUArrays;
 			}
 		});
 }
@@ -111,9 +107,12 @@ bool UAGX_ParticleUpsamplingDI::PerInstanceTick(
 		return true;
 	}
 
-	Data->Update(SystemInstance, LocalData);
-	LocalData->NeedsCPResize = false;
-	LocalData->NeedsVoxelResize = false;
+	// Copy local data to data for instance.
+	Data->PUArrays = LocalData;
+
+	// Reset flags, otherwise will always resize buffers.
+	LocalData.NeedsCPResize = false;
+	LocalData.NeedsVoxelResize = false;
 	return false;
 }
 
@@ -121,63 +120,51 @@ void UAGX_ParticleUpsamplingDI::ProvidePerInstanceDataForRenderThread(
 	void* DataForRenderThread, void* PerInstanceData,
 	const FNiagaraSystemInstanceID& SystemInstance)
 {
-	FParticleUpsamplingData* RenderThreadData =
-		static_cast<FParticleUpsamplingData*>(DataForRenderThread);
-	FParticleUpsamplingData* GameThreadData =
-		static_cast<FParticleUpsamplingData*>(PerInstanceData);
-
-	if (RenderThreadData && GameThreadData)
-	{
-		RenderThreadData->PUBuffers = GameThreadData->PUBuffers;
-		RenderThreadData->PUArrays = new FPUArrays(
-			FParticleUpsamplingData::INITIAL_CP_BUFFER_SIZE,
-			FParticleUpsamplingData::INITIAL_VOXEL_BUFFER_SIZE);
-		RenderThreadData->PUArrays->CopyFrom(GameThreadData->PUArrays);
-	}
+	FParticleUpsamplingDIProxy::ProvidePerInstanceDataForRenderThread(DataForRenderThread, PerInstanceData, SystemInstance);
 }
 
 void UAGX_ParticleUpsamplingDI::SetCoarseParticles(TArray<FCoarseParticle> NewCoarseParticles)
 {
 	uint32 ArraySize = NewCoarseParticles.Num();
-	if (LocalData->NumElementsInCoarseParticleBuffer < ArraySize)
+	if (LocalData.NumElementsInCoarseParticleBuffer < ArraySize)
 	{
-		LocalData->NumElementsInCoarseParticleBuffer *= 2;
-		LocalData->NeedsCPResize = true;
+		LocalData.NumElementsInCoarseParticleBuffer *= 2;
+		LocalData.NeedsCPResize = true;
 	}
-	LocalData->CoarseParticles = NewCoarseParticles;
+	LocalData.CoarseParticles = NewCoarseParticles;
 }
 
 void UAGX_ParticleUpsamplingDI::SetActiveVoxelIndices(TArray<FIntVector4> AVIs)
 {
 	uint32 ArraySize = AVIs.Num();
-	if (LocalData->NumElementsInActiveVoxelBuffer < ArraySize)
+	if (LocalData.NumElementsInActiveVoxelBuffer < ArraySize)
 	{
-		LocalData->NumElementsInActiveVoxelBuffer *= 2;
-		LocalData->NeedsVoxelResize = true;
+		LocalData.NumElementsInActiveVoxelBuffer *= 2;
+		LocalData.NeedsVoxelResize = true;
 	}
-	LocalData->ActiveVoxelIndices = AVIs;
+	LocalData.ActiveVoxelIndices = AVIs;
 }
 
 int UAGX_ParticleUpsamplingDI::GetElementsInActiveVoxelBuffer()
 {
-	return LocalData->NumElementsInActiveVoxelBuffer;
+	return LocalData.NumElementsInActiveVoxelBuffer;
 }
 
 void UAGX_ParticleUpsamplingDI::RecalculateFineParticleProperties(
 	float Upsampling, float ElementSize, float ParticleDensity)
 {
-	LocalData->NominalRadius =
+	LocalData.NominalRadius =
 		FMath::Pow(3.0f * PACKING_RATIO / (4.0f * PI), 1.0f / 3.0f) * ElementSize;
-	LocalData->FineParticleRadius = LocalData->NominalRadius / FMath::Pow(Upsampling, 1.0f / 3.0f);
+	LocalData.FineParticleRadius = LocalData.NominalRadius / FMath::Pow(Upsampling, 1.0f / 3.0f);
 	float NominalMass =
-		ParticleDensity * 4.0f / 3.0f * PI * FMath::Pow(LocalData->NominalRadius, 3.0f);
-	LocalData->FineParticleMass = NominalMass / Upsampling;
+		ParticleDensity * 4.0f / 3.0f * PI * FMath::Pow(LocalData.NominalRadius, 3.0f);
+	LocalData.FineParticleMass = NominalMass / Upsampling;
 }
 
 void UAGX_ParticleUpsamplingDI::SetStaticVariables(float VoxelSize, float EaseStepSize)
 {
-	LocalData->VoxelSize = VoxelSize;
-	LocalData->EaseStepSize = EaseStepSize;
+	LocalData.VoxelSize = VoxelSize;
+	LocalData.EaseStepSize = EaseStepSize;
 }
 
 #if WITH_EDITORONLY_DATA
