@@ -55,9 +55,9 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 	{
 		UE_LOG(
 			LogTemp, Warning,
-			TEXT("Particle renderer '%s' could not find Niagara Data Interface with name 'PUDI' "
-				"in loaded Niagara system with name '%s', cannot render particles..."),
-			*GetName(), *ParticleSystemComponent->GetName());
+			TEXT("Particle renderer '%s' in Actor '%s', unable to to find Niagara Data Interface with name 'PUDI' "
+				"in loaded Niagara system with name '%s'. No particles will be rendered."),
+			*GetName(), *GetLabelSafe(ParentTerrainActor), *ParticleSystemComponent->GetName());
 		return;
 	}
 
