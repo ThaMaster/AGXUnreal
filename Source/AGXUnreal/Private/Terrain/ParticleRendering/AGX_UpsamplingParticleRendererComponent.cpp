@@ -68,14 +68,15 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 		this, &UAGX_UpsamplingParticleRendererComponent::HandleParticleData);
 }
 
-bool UAGX_UpsamplingParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
+void UAGX_UpsamplingParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
 {
 	if (ParticleSystemComponent)
 	{
 		ParticleSystemComponent->DeactivateImmediate();
 		ParticleSystemComponent->SetActive(bEnabled);
 	}
-	return bEnableParticleRendering = bEnabled; 
+	
+	bEnableParticleRendering = bEnabled; 
 }
 
 bool UAGX_UpsamplingParticleRendererComponent::GetEnableParticleRendering() const
@@ -88,9 +89,9 @@ UNiagaraComponent* UAGX_UpsamplingParticleRendererComponent::GetParticleSystemCo
 	return ParticleSystemComponent;
 }
 
-int32 UAGX_UpsamplingParticleRendererComponent::SetUpsampling(int32 InUpsampling)
+void UAGX_UpsamplingParticleRendererComponent::SetUpsampling(int32 InUpsampling)
 {
-	return Upsampling = InUpsampling;
+	Upsampling = InUpsampling;
 }
 
 int32 UAGX_UpsamplingParticleRendererComponent::GetUpsampling() const
@@ -98,9 +99,9 @@ int32 UAGX_UpsamplingParticleRendererComponent::GetUpsampling() const
 	return Upsampling;
 }
 
-bool UAGX_UpsamplingParticleRendererComponent::SetOverrideVoxelSize(bool bEnabled)
+void UAGX_UpsamplingParticleRendererComponent::SetOverrideVoxelSize(bool bEnabled)
 {
-	return bOverrideVoxelSize = bEnabled;
+	bOverrideVoxelSize = bEnabled;
 }
 
 bool UAGX_UpsamplingParticleRendererComponent::GetOverrideVoxelSize() const
@@ -108,9 +109,9 @@ bool UAGX_UpsamplingParticleRendererComponent::GetOverrideVoxelSize() const
 	return bOverrideVoxelSize;
 }
 
-double UAGX_UpsamplingParticleRendererComponent::SetVoxelSize(double InVoxelSize)
+void UAGX_UpsamplingParticleRendererComponent::SetVoxelSize(double InVoxelSize)
 {
-	return VoxelSize = InVoxelSize;
+	VoxelSize = InVoxelSize;
 }
 
 double UAGX_UpsamplingParticleRendererComponent::GetVoxelSize() const
@@ -118,9 +119,9 @@ double UAGX_UpsamplingParticleRendererComponent::GetVoxelSize() const
 	return VoxelSize;
 }
 
-double UAGX_UpsamplingParticleRendererComponent::SetEaseStepSize(double InEaseStepSize)
+void UAGX_UpsamplingParticleRendererComponent::SetEaseStepSize(double InEaseStepSize)
 {
-	return EaseStepSize = InEaseStepSize;
+	EaseStepSize = InEaseStepSize;
 }
 
 double UAGX_UpsamplingParticleRendererComponent::GetEaseStepSize() const

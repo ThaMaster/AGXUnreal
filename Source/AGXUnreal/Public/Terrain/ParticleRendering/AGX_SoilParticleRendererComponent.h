@@ -49,7 +49,7 @@ public:
 	UNiagaraSystem* ParticleSystemAsset;
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Soil Particle Rendering")
-	bool SetEnableParticleRendering(bool bEnabled);
+	void SetEnableParticleRendering(bool bEnabled);
 
 	UFUNCTION(BlueprintCallable, Category = "AGX Soil Particle Rendering")
 	bool GetEnableParticleRendering() const;

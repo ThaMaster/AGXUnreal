@@ -49,7 +49,7 @@ void UAGX_SoilParticleRendererComponent::BeginPlay()
 		this, &UAGX_SoilParticleRendererComponent::HandleParticleData);
 }
 
-bool UAGX_SoilParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
+void UAGX_SoilParticleRendererComponent::SetEnableParticleRendering(bool bEnabled)
 {
 	if (ParticleSystemComponent)
 	{
@@ -57,7 +57,7 @@ bool UAGX_SoilParticleRendererComponent::SetEnableParticleRendering(bool bEnable
 		ParticleSystemComponent->SetActive(bEnabled);
 	}
 
-	return bEnableParticleRendering = bEnabled;
+	bEnableParticleRendering = bEnabled;
 }
 
 bool UAGX_SoilParticleRendererComponent::GetEnableParticleRendering() const
