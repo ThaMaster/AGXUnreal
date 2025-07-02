@@ -11,7 +11,6 @@
 
 #define LOCTEXT_NAMESPACE "ParticleUpsamplingDataInterface"
 
-
 UAGX_ParticleUpsamplingDI::UAGX_ParticleUpsamplingDI(
 	FObjectInitializer const& ObjectInitializer)
 {
@@ -40,35 +39,35 @@ void UAGX_ParticleUpsamplingDI::SetShaderParameters(
 	const FNiagaraDataInterfaceSetShaderParametersContext& Context) const
 {
 	FParticleUpsamplingDIProxy& DataInterfaceProxy = Context.GetProxy<FParticleUpsamplingDIProxy>();
-	FParticleUpsamplingData& Data = DataInterfaceProxy.SystemInstancesToInstanceData_RT.FindChecked(
+	FParticleUpsamplingDataHandler& Data = DataInterfaceProxy.SystemInstancesToInstanceData_RT.FindChecked(
 		Context.GetSystemInstanceID());
 	FShaderParameters* ShaderParameters = Context.GetParameterNestedStruct<FShaderParameters>();
 
 	// Particle Shader Parameters
-	ShaderParameters->CoarseParticles		= Data.PUBuffers->CoarseParticleBufferRef;
-	ShaderParameters->NumCoarseParticles	= Data.PUArrays.CoarseParticles.Num();
-	ShaderParameters->FineParticleMass		= Data.PUArrays.FineParticleMass;
-	ShaderParameters->FineParticleRadius	= Data.PUArrays.FineParticleRadius;
-	ShaderParameters->NominalRadius			= Data.PUArrays.NominalRadius;
+	ShaderParameters->CoarseParticles		= Data.Buffers->CoarseParticleBufferRef;
+	ShaderParameters->NumCoarseParticles	= Data.Data.CoarseParticles.Num();
+	ShaderParameters->FineParticleMass		= Data.Data.FineParticleMass;
+	ShaderParameters->FineParticleRadius	= Data.Data.FineParticleRadius;
+	ShaderParameters->NominalRadius			= Data.Data.NominalRadius;
 
 	// HashTable Shader Parameters
-	ShaderParameters->ActiveVoxelIndices	= Data.PUBuffers->ActiveVoxelIndicesBufferRef;
-	ShaderParameters->NumActiveVoxels		= Data.PUArrays.ActiveVoxelIndices.Num();
+	ShaderParameters->ActiveVoxelIndices	= Data.Buffers->ActiveVoxelIndicesBufferRef;
+	ShaderParameters->NumActiveVoxels		= Data.Data.ActiveVoxelIndices.Num();
 
-	ShaderParameters->HashTable				= Data.PUBuffers->HashTableBufferRef;
-	ShaderParameters->HTOccupancy			= Data.PUBuffers->HashTableOccupancyBufferRef;
+	ShaderParameters->HashTable				= Data.Buffers->HashTableBufferRef;
+	ShaderParameters->HTOccupancy			= Data.Buffers->HashTableOccupancyBufferRef;
 
-	ShaderParameters->TableSize				= Data.PUBuffers->NumAllocatedElementsInActiveVoxelBuffer;
-	ShaderParameters->VoxelSize				= Data.PUArrays.VoxelSize;
+	ShaderParameters->TableSize				= Data.Buffers->NumAllocatedElementsInActiveVoxelBuffer;
+	ShaderParameters->VoxelSize				= Data.Data.VoxelSize;
 
 	// Other Variables
-	ShaderParameters->AnimationSpeed		= Data.PUArrays.EaseStepSize;
+	ShaderParameters->AnimationSpeed		= Data.Data.EaseStepSize;
 }
 
 bool UAGX_ParticleUpsamplingDI::InitPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
-	FParticleUpsamplingData* Data = new (PerInstanceData) FParticleUpsamplingData;
+	FParticleUpsamplingDataHandler* Data = new (PerInstanceData) FParticleUpsamplingDataHandler;
 	Data->Init(SystemInstance);
 	return true;
 }
@@ -76,16 +75,16 @@ bool UAGX_ParticleUpsamplingDI::InitPerInstanceData(
 void UAGX_ParticleUpsamplingDI::DestroyPerInstanceData(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance)
 {
-	FParticleUpsamplingData* InstanceData = static_cast<FParticleUpsamplingData*>(PerInstanceData);
+	FParticleUpsamplingDataHandler* InstanceData = static_cast<FParticleUpsamplingDataHandler*>(PerInstanceData);
 
 	InstanceData->Release();
-	InstanceData->~FParticleUpsamplingData();
+	InstanceData->~FParticleUpsamplingDataHandler();
 	FParticleUpsamplingDIProxy* ThisProxy = GetProxyAs<FParticleUpsamplingDIProxy>();
 	ENQUEUE_RENDER_COMMAND(FNiagaraDIDestroyInstanceData)
 	(
 		[ThisProxy, InstanceID = SystemInstance->GetId()](FRHICommandListImmediate& CmdList)
 		{
-			FParticleUpsamplingData* ProxyData =
+			FParticleUpsamplingDataHandler* ProxyData =
 				ThisProxy->SystemInstancesToInstanceData_RT.Find(InstanceID);
 			if (ProxyData != nullptr)
 			{
@@ -98,15 +97,15 @@ bool UAGX_ParticleUpsamplingDI::PerInstanceTick(
 	void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds)
 {
 	check(SystemInstance);
-	FParticleUpsamplingData* Data = static_cast<FParticleUpsamplingData*>(PerInstanceData);
+	FParticleUpsamplingDataHandler* Data = static_cast<FParticleUpsamplingDataHandler*>(PerInstanceData);
 	if (!Data)
 	{
 		return true;
 	}
 
 	// Copy local data to data for instance.
-	LocalData.TableSize = Data->PUBuffers->NumAllocatedElementsInActiveVoxelBuffer;
-	Data->PUArrays = LocalData;
+	LocalData.TableSize = Data->Buffers->NumAllocatedElementsInActiveVoxelBuffer;
+	Data->Data = LocalData;
 	return false;
 }
 

@@ -3,7 +3,7 @@
 #pragma once
 
 // AGX Dynamics for Unreal includes.
-#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingData.h"
+#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingDataHandler.h"
 
 // Unreal Engine includes.
 #include "NiagaraCommon.h"
@@ -11,9 +11,6 @@
 #include "Misc/EngineVersionComparison.h"
 
 #include "AGX_ParticleUpsamplingDI.generated.h"
-
-struct FPUArrays;
-struct FCoarseParticle;
 
 UCLASS(EditInlineNew, Category = "Data Interface", CollapseCategories, meta = (DisplayName = "Particle Upsampling Data Interface"))
 class AGXUNREAL_API UAGX_ParticleUpsamplingDI : public UNiagaraDataInterface
@@ -75,7 +72,10 @@ public:
 	virtual void DestroyPerInstanceData(
 		void* PerInstanceData, FNiagaraSystemInstance* SystemInstance) override;
 
-	virtual int32 PerInstanceDataSize() const override{ return sizeof(FParticleUpsamplingData); };
+	virtual int32 PerInstanceDataSize() const override
+	{
+		return sizeof(FParticleUpsamplingDataHandler);
+	};
 	virtual bool HasPreSimulateTick() const override { return true; };
 
 	/** 
@@ -154,7 +154,7 @@ protected:
 
 private:
 
-	FPUArrays LocalData;
+	FParticleUpsamplingSimulationData LocalData;
 
 	/** The names of the different functions this NDI will call on the GPU */
 	const FName UpdateGridName = TEXT("UpdateGrid");

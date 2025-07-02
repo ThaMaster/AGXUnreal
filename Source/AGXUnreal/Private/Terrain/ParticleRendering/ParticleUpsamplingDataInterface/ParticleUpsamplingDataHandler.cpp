@@ -1,8 +1,8 @@
 // Copyright 2025, Algoryx Simulation AB.
 
-#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingData.h"
+#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingDataHandler.h"
 
-void FPUBuffers::InitRHI(FRHICommandListBase& RHICmdList)
+void FParticleUpsamplingBuffers::InitRHI(FRHICommandListBase& RHICmdList)
 {
 	// Init SRV Buffers
 	CoarseParticleBufferRef = InitSRVBuffer<FCoarseParticle>(
@@ -17,7 +17,7 @@ void FPUBuffers::InitRHI(FRHICommandListBase& RHICmdList)
 		RHICmdList, TEXT("HashTableOccupancyBuffer"), NumAllocatedElementsInActiveVoxelBuffer * 2);
 }
 
-void FPUBuffers::ReleaseRHI()
+void FParticleUpsamplingBuffers::ReleaseRHI()
 {
 	CoarseParticleBufferRef.SafeRelease();
 	ActiveVoxelIndicesBufferRef.SafeRelease();
@@ -26,7 +26,7 @@ void FPUBuffers::ReleaseRHI()
 }
 
 template <typename T>
-FShaderResourceViewRHIRef FPUBuffers::InitSRVBuffer(
+FShaderResourceViewRHIRef FParticleUpsamplingBuffers::InitSRVBuffer(
 	FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, uint32 ElementCount)
 {
 	FRHIResourceCreateInfo CreateInfo(InDebugName);
@@ -37,7 +37,7 @@ FShaderResourceViewRHIRef FPUBuffers::InitSRVBuffer(
 }
 
 template <typename T>
-FUnorderedAccessViewRHIRef FPUBuffers::InitUAVBuffer(
+FUnorderedAccessViewRHIRef FParticleUpsamplingBuffers::InitUAVBuffer(
 	FRHICommandListBase& RHICmdList, const TCHAR* InDebugName, uint32 ElementCount)
 {
 	FRHIResourceCreateInfo CreateInfo(InDebugName);
@@ -47,7 +47,7 @@ FUnorderedAccessViewRHIRef FPUBuffers::InitUAVBuffer(
 		BufferRef, FRHIViewDesc::CreateBufferUAV().SetType(FRHIViewDesc::EBufferType::Structured));
 }
 
-void FPUBuffers::UpdateCoarseParticleBuffers(
+void FParticleUpsamplingBuffers::UpdateCoarseParticleBuffer(
 	FRHICommandListBase& RHICmdList, const TArray<FCoarseParticle> CoarseParticleData)
 {
 	uint32 ElementCount = CoarseParticleData.Num();
@@ -77,7 +77,7 @@ void FPUBuffers::UpdateCoarseParticleBuffers(
 	RHICmdList.UnlockBuffer(CoarseParticleBufferRef->GetBuffer());
 }
 
-void FPUBuffers::UpdateHashTableBuffers(
+void FParticleUpsamplingBuffers::UpdateHashTableBuffers(
 	FRHICommandListBase& RHICmdList, const TArray<FIntVector4> ActiveVoxelIndices)
 {
 	uint32 ElementCount = ActiveVoxelIndices.Num();
@@ -113,21 +113,22 @@ void FPUBuffers::UpdateHashTableBuffers(
 	RHICmdList.UnlockBuffer(ActiveVoxelIndicesBufferRef->GetBuffer());
 }
 
-void FParticleUpsamplingData::Init(FNiagaraSystemInstance* SystemInstance)
+void FParticleUpsamplingDataHandler::Init(FNiagaraSystemInstance* SystemInstance)
 {
 	if (!SystemInstance)
 	{
 		return;
 	}
 
-	PUBuffers.reset(new FPUBuffers(INITIAL_CP_BUFFER_SIZE, INITIAL_VOXEL_BUFFER_SIZE));
-	BeginInitResource(PUBuffers.get());
+	Buffers.reset(new FParticleUpsamplingBuffers(
+		INITIAL_COARSE_PARTICLE_BUFFER_SIZE, INITIAL_ACTIVE_VOXEL_BUFFER_SIZE));
+	BeginInitResource(Buffers.get());
 }
 
-void FParticleUpsamplingData::Release()
+void FParticleUpsamplingDataHandler::Release()
 {
-	if (PUBuffers)
+	if (Buffers)
 	{
-		ReleaseResourceAndFlush(PUBuffers.get());
+		ReleaseResourceAndFlush(Buffers.get());
 	}
 }

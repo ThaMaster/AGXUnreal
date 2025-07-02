@@ -5,7 +5,7 @@
 // Unreal Engine includes.
 #include "NiagaraDataInterface.h"
 
-struct FParticleUpsamplingData;
+struct FParticleUpsamplingDataHandler;
 
 /** This proxy is used to safely copy data between game thread and render thread*/
 struct FParticleUpsamplingDIProxy : FNiagaraDataInterfaceProxy
@@ -27,5 +27,5 @@ struct FParticleUpsamplingDIProxy : FNiagaraDataInterfaceProxy
 		const FNiagaraSystemInstanceID& SystemInstance);
 
 	/** List of proxy data for each system instances*/
-	TMap<FNiagaraSystemInstanceID, FParticleUpsamplingData> SystemInstancesToInstanceData_RT;
+	TMap<FNiagaraSystemInstanceID, FParticleUpsamplingDataHandler> SystemInstancesToInstanceData_RT;
 };

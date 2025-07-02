@@ -3,14 +3,14 @@
 #include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingDIProxy.h"
 
 // AGX Dynamics for Unreal includes.
-#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingData.h"
+#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingDataHandler.h"
 
 /** 
  * Get the size of the data that will be passed to render.
  */
 int32 FParticleUpsamplingDIProxy::PerInstanceDataPassedToRenderThreadSize() const
 {
-	return sizeof(FParticleUpsamplingData);
+	return sizeof(FParticleUpsamplingDataHandler);
 }
 
 void FParticleUpsamplingDIProxy::ProvidePerInstanceDataForRenderThread(
@@ -18,38 +18,42 @@ void FParticleUpsamplingDIProxy::ProvidePerInstanceDataForRenderThread(
 	const FNiagaraSystemInstanceID& SystemInstance)
 {
 	// Initialize the render thread instance data into the pre-allocated memory
-	FParticleUpsamplingData* DataForRenderThread = new (InDataForRenderThread) FParticleUpsamplingData;
+	FParticleUpsamplingDataHandler* DataForRenderThread =
+		new (InDataForRenderThread) FParticleUpsamplingDataHandler;
 
 	// Copy the game thread data to the render thread data
-	const FParticleUpsamplingData* DataFromGameThread = static_cast<FParticleUpsamplingData*>(InDataFromGameThread);
+	const FParticleUpsamplingDataHandler* DataFromGameThread =
+		static_cast<FParticleUpsamplingDataHandler*>(InDataFromGameThread);
 	*DataForRenderThread = *DataFromGameThread;
 }
 
 void FParticleUpsamplingDIProxy::ConsumePerInstanceDataFromGameThread(
 	void* PerInstanceData, const FNiagaraSystemInstanceID& InstanceID)
 {
-	FParticleUpsamplingData* InstanceDataFromGT = static_cast<FParticleUpsamplingData*>(PerInstanceData);
-	FParticleUpsamplingData* InstanceData = &SystemInstancesToInstanceData_RT.FindOrAdd(InstanceID);
-	InstanceData->PUBuffers = InstanceDataFromGT->PUBuffers;
-	InstanceData->PUArrays = InstanceDataFromGT->PUArrays;
+	FParticleUpsamplingDataHandler* InstanceDataFromGT =
+		static_cast<FParticleUpsamplingDataHandler*>(PerInstanceData);
+	FParticleUpsamplingDataHandler* InstanceData =
+		&SystemInstancesToInstanceData_RT.FindOrAdd(InstanceID);
+	InstanceData->Buffers = InstanceDataFromGT->Buffers;
+	InstanceData->Data = InstanceDataFromGT->Data;
 
-	if (InstanceData != nullptr && InstanceData->PUBuffers)
+	if (InstanceData != nullptr && InstanceData->Buffers)
 	{
-		if (InstanceData->PUArrays.CoarseParticles.Num() != 0 &&
-			InstanceData->PUArrays.ActiveVoxelIndices.Num() != 0)
+		if (InstanceData->Data.CoarseParticles.Num() != 0 &&
+			InstanceData->Data.ActiveVoxelIndices.Num() != 0)
 		{
 			FRHICommandListBase& RHICmdList = FRHICommandListImmediate::Get();
 
-			InstanceData->PUBuffers->UpdateCoarseParticleBuffers(
-				RHICmdList, InstanceData->PUArrays.CoarseParticles);
+			InstanceData->Buffers->UpdateCoarseParticleBuffer(
+				RHICmdList, InstanceData->Data.CoarseParticles);
 
-			InstanceData->PUBuffers->UpdateHashTableBuffers(
-				RHICmdList, InstanceData->PUArrays.ActiveVoxelIndices);
+			InstanceData->Buffers->UpdateHashTableBuffers(
+				RHICmdList, InstanceData->Data.ActiveVoxelIndices);
 		}
 	}
 
 	// we call the destructor here to clean up the GT data. Without this we could be leaking
 	// memory.
-	InstanceDataFromGT->~FParticleUpsamplingData();
+	InstanceDataFromGT->~FParticleUpsamplingDataHandler();
 }
 

@@ -49,15 +49,29 @@ struct FVoxelEntry
 	FVector4f MinBounds;
 };
 
-struct FPUBuffers : public FRenderResource
+/**
+ * Struct for managing GPU buffers used by the particle upsampling data interface.
+ * Extends render resources to enable initialization, release, and uploading data
+ * to Unordered Access View (UAV) and Shader Resource View (SRV) buffers.
+ *
+ * UAVs allow for unordered read/write access from multiple threads by supporting
+ * atomic operations. This makes it possible to implement data structures like
+ * hash tables directly on the GPU, where multiple threads can perform concurrent 
+ * inserts and lookups.
+ *
+ * SRVs provide read-only access to buffers from multiple threads. Although threads
+ * can read from the buffer in parallel without conflicts, writing is not allowed,
+ * as it would result in exceptions being thrown.
+ */
+struct FParticleUpsamplingBuffers : public FRenderResource
 {
-	FPUBuffers()
+	FParticleUpsamplingBuffers()
 		: NumAllocatedElementsInCoarseParticleBuffer(0)
 		, NumAllocatedElementsInActiveVoxelBuffer(0)
 	{
 	}
 
-	FPUBuffers(uint32 InitialCPElements, uint32 InitialActiveVoxelElements)
+	FParticleUpsamplingBuffers(uint32 InitialCPElements, uint32 InitialActiveVoxelElements)
 		: NumAllocatedElementsInCoarseParticleBuffer(InitialCPElements) 
 		, NumAllocatedElementsInActiveVoxelBuffer(InitialActiveVoxelElements)
 	{
@@ -95,7 +109,7 @@ struct FPUBuffers : public FRenderResource
 	/** 
 	 * Update the buffers for the coarse particles, releasing the old ones and creating new ones. 
 	 */
-	void UpdateCoarseParticleBuffers(
+	void UpdateCoarseParticleBuffer(
 		FRHICommandListBase& RHICmdList, const TArray<FCoarseParticle> CoarseParticleData);
 
 	/** 
@@ -129,9 +143,13 @@ struct FPUBuffers : public FRenderResource
 	uint32 NumAllocatedElementsInActiveVoxelBuffer;
 };
 
-struct FPUArrays
+/**
+ * Struct containing the data from the simulation that is used to be able to 
+ * perform particle upsampling.
+ */
+struct FParticleUpsamplingSimulationData
 {
-	FPUArrays()
+	FParticleUpsamplingSimulationData()
 	{
 	}
 
@@ -147,19 +165,20 @@ struct FPUArrays
 };
 
 /** 
- * Struct containing all the data which is needed for the Particle
- * Upsampling Data Interface.
+ * Struct for handling all the data and buffers for the particle upsampling
+ * data interface. This struct will be passed as the instanced data between
+ * the game thread and render thread.
  */
-struct FParticleUpsamplingData
+struct FParticleUpsamplingDataHandler
 {
-	static const uint32 INITIAL_CP_BUFFER_SIZE = 1024;
-	static const uint32 INITIAL_VOXEL_BUFFER_SIZE = 1024;
+	static const uint32 INITIAL_COARSE_PARTICLE_BUFFER_SIZE = 1024;
+	static const uint32 INITIAL_ACTIVE_VOXEL_BUFFER_SIZE = 1024;
 
 	void Init(FNiagaraSystemInstance* SystemInstance);
 	void Release();
 
-	FPUArrays PUArrays;
+	FParticleUpsamplingSimulationData Data;
 
 	// We use shared pointer here since both the proxy and the NDI will reference this buffer.
-	std::shared_ptr<FPUBuffers> PUBuffers;
+	std::shared_ptr<FParticleUpsamplingBuffers> Buffers;
 };

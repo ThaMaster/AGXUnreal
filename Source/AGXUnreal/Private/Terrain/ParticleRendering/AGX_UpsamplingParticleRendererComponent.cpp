@@ -3,7 +3,7 @@
 #include "Terrain/ParticleRendering/AGX_UpsamplingParticleRendererComponent.h"
 
 // AGX Dynamics for Unreal includes.
-#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingData.h"
+#include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/ParticleUpsamplingDataHandler.h"
 #include "Terrain/ParticleRendering/ParticleUpsamplingDataInterface/AGX_ParticleUpsamplingDI.h"
 #include "Terrain/ParticleRendering/AGX_ParticleRenderingUtilities.h"
 #include "AGX_PropertyChangedDispatcher.h"
