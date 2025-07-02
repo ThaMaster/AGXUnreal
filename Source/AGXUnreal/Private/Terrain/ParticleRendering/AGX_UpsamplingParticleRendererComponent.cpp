@@ -138,6 +138,8 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 	TArray<FCoarseParticle> NewCoarseParticles;
 	TSet<FIntVector> ActiveVoxelSet;
 	float ParticleDensity = 0.0f;
+	float UsedVoxelSize = (bOverrideVoxelSize ? VoxelSize : ElementSize);
+
 	for (int32 I = 0; I < Data.ParticleCount; ++I)
 	{
 		if (!Data.Exists[I])
@@ -152,7 +154,7 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 			Data.PositionsAndRadius[I].Y,
 			Data.PositionsAndRadius[I].Z);
 
-		AppendIfActiveVoxel(ActiveVoxelSet, Position, Radius);
+		AppendIfActiveVoxel(ActiveVoxelSet, Position, Radius, UsedVoxelSize);
 
 		FCoarseParticle CP;
 		CP.PositionAndRadius = FVector4f(Position.X, Position.Y, Position.Z, Radius);
@@ -169,31 +171,33 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 		return;
 	}
 
+
 	TArray<FIntVector4> ActiveVoxelIndices = GetActiveVoxelsFromSet(ActiveVoxelSet);
 	UpsamplingDataInterface->SetCoarseParticles(NewCoarseParticles);
 	UpsamplingDataInterface->SetActiveVoxelIndices(ActiveVoxelIndices);
 	UpsamplingDataInterface->RecalculateFineParticleProperties(Upsampling, ElementSize, ParticleDensity);
-	UpsamplingDataInterface->SetStaticVariables(VoxelSize, EaseStepSize);
+	UpsamplingDataInterface->SetStaticVariables(UsedVoxelSize, EaseStepSize);
 	int HashTableSize = UpsamplingDataInterface->GetElementsInActiveVoxelBuffer();
+
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 	ParticleSystemComponent->SetNiagaraVariableInt(
 		"User.Active Voxels Count", ActiveVoxelIndices.Num());
 	ParticleSystemComponent->SetNiagaraVariableInt("User.HashTable Size", HashTableSize);
-	ParticleSystemComponent->SetNiagaraVariableFloat("User.Voxel Size", VoxelSize);
+	ParticleSystemComponent->SetNiagaraVariableFloat("User.Voxel Size", UsedVoxelSize);
 #else
 	ParticleSystemComponent->SetVariableInt(
 		FName("User.Active Voxels Count"), ActiveVoxelIndices.Num());
 	ParticleSystemComponent->SetVariableInt(FName("User.HashTable Size"), HashTableSize);
-	ParticleSystemComponent->SetVariableFloat(FName("User.Voxel Size"), VoxelSize);
+	ParticleSystemComponent->SetVariableFloat(FName("User.Voxel Size"), UsedVoxelSize);
 #endif
 }
 
 void UAGX_UpsamplingParticleRendererComponent::AppendIfActiveVoxel(
-	TSet<FIntVector>& ActiveVoxelIndices, FVector CPPosition, float CPRadius)
+	TSet<FIntVector>& ActiveVoxelIndices, FVector CPPosition, float CPRadius, float SizeOfVoxel)
 {
 	float AABBRadius = 1.6119919540164696407169668466392849389446140723238615 * CPRadius / 2;
-	FVector VSPosition = CPPosition / VoxelSize;
+	FVector VSPosition = CPPosition / SizeOfVoxel;
 
 	FVector OffsetPosition(
 		FMath::Sign(VSPosition.X), FMath::Sign(VSPosition.Y), FMath::Sign(VSPosition.Z));
@@ -205,7 +209,7 @@ void UAGX_UpsamplingParticleRendererComponent::AppendIfActiveVoxel(
 		(double) (int) OffsetPosition.X, (double) (int) OffsetPosition.Y,
 		(double) (int) OffsetPosition.Z);
 
-	int n = (int) (AABBRadius / VoxelSize + 1);
+	int n = (int) (AABBRadius / SizeOfVoxel + 1);
 	for (int x = -n; x <= n; x++)
 	{
 		for (int y = -n; y <= n; y++)
@@ -216,7 +220,7 @@ void UAGX_UpsamplingParticleRendererComponent::AppendIfActiveVoxel(
 				FVector VSVoxelToParticle = VSPosition - VSVoxelPos;
 
 				FVector VSToEdge =
-					FVector::Max(VSVoxelToParticle, -VSVoxelToParticle) - AABBRadius / VoxelSize;
+					FVector::Max(VSVoxelToParticle, -VSVoxelToParticle) - AABBRadius / SizeOfVoxel;
 				FVector VSVoxelSize2(0.5);
 				if (FVector::Max(VSToEdge, VSVoxelSize2) == VSVoxelSize2)
 				{

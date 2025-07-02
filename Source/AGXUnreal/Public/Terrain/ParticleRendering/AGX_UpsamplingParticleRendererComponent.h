@@ -54,7 +54,7 @@ public:
 		EditAnywhere, Category = "AGX Upsampling Particle Rendering",
 		Meta = (EditCondition = "bOverrideVoxelSize", ClampMin=10, UIMin = "10", 
 			UIMax = "1000"))
-	double VoxelSize = 10.0;
+	float VoxelSize = 10.0;
 
 	/**
 	 * This controls how quickly the particles are eased in/out when spawned/destroyed.
@@ -136,7 +136,7 @@ private:
 	 * Appends the voxel indices that a coarse particle intersects with to the given array. 
 	 */
 	void AppendIfActiveVoxel(
-		TSet<FIntVector>& ActiveVoxelIndices, FVector CPPosition, float CPRadius);
+		TSet<FIntVector>& ActiveVoxelIndices, FVector CPPosition, float CPRadius, float SizeOfVoxel);
 
 	/** 
 	 * Converts the active voxels from the set to a TArray 
