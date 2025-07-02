@@ -147,8 +147,8 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 			continue;
 
 		float Radius = Data.PositionsAndRadius[I].W;
-		float Volume = (4.0 / 3.0) * PI * FMath::Pow(Radius, 3);
-		ParticleDensity = Data.VelocitiesAndMasses[I].W / Volume;
+		UE::Geometry::TSphere<float> Sphere(UE::Math::TVector<float>::ZeroVector, Radius);
+		ParticleDensity = Data.VelocitiesAndMasses[I].W / Sphere.GetVolume();
 
 		FVector Position = FVector(
 			Data.PositionsAndRadius[I].X, 
