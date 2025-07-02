@@ -28,5 +28,6 @@ public:
 	/**
 	 * Assigns the default Niagara VFX System asset when adding the component to an actor.
 	 */
-	static void AssignDefaultNiagaraAsset(auto*& AssetRefProperty, const TCHAR* AssetPath);
+	static void AssignDefaultNiagaraAsset(
+		UNiagaraSystem*& AssetRefProperty, const TCHAR* AssetPath);
 };

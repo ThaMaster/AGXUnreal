@@ -11,7 +11,7 @@
 #include "NiagaraFunctionLibrary.h"
 
 void AGX_ParticleRenderingUtilities::AssignDefaultNiagaraAsset(
-	auto*& AssetRefProperty, const TCHAR* AssetPath)
+	UNiagaraSystem*& AssetRefProperty, const TCHAR* AssetPath)
 {
 	if (AssetRefProperty != nullptr)
 		return;
