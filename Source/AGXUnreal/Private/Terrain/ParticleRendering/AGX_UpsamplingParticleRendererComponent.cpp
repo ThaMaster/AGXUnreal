@@ -16,6 +16,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystemInstanceController.h"
 #include "NiagaraRenderGraphUtils.h"
+#include "SphereTypes.h"
 
 UAGX_UpsamplingParticleRendererComponent::UAGX_UpsamplingParticleRendererComponent()
 {
@@ -147,8 +148,8 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 			continue;
 
 		float Radius = Data.PositionsAndRadius[I].W;
-		UE::Geometry::TSphere<float> Sphere(UE::Math::TVector<float>::ZeroVector, Radius);
-		ParticleDensity = Data.VelocitiesAndMasses[I].W / Sphere.GetVolume();
+		ParticleDensity =
+			Data.VelocitiesAndMasses[I].W / UE::Geometry::TSphere3<float>::Volume(Radius);
 
 		FVector Position = FVector(
 			Data.PositionsAndRadius[I].X, 
