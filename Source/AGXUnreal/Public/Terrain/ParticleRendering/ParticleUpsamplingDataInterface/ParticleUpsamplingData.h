@@ -52,10 +52,16 @@ struct FVoxelEntry
 struct FPUBuffers : public FRenderResource
 {
 	FPUBuffers()
+		: NumAllocatedElementsInCoarseParticleBuffer(0)
+		, NumAllocatedElementsInActiveVoxelBuffer(0)
 	{
 	}
 
-	FPUBuffers(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBufferSize);
+	FPUBuffers(uint32 InitialCPElements, uint32 InitialActiveVoxelElements)
+		: NumAllocatedElementsInCoarseParticleBuffer(InitialCPElements) 
+		, NumAllocatedElementsInActiveVoxelBuffer(InitialActiveVoxelElements)
+	{
+	}
 	
 	// ~Begin FRenderResource interface.
 
@@ -90,15 +96,13 @@ struct FPUBuffers : public FRenderResource
 	 * Update the buffers for the coarse particles, releasing the old ones and creating new ones. 
 	 */
 	void UpdateCoarseParticleBuffers(
-		FRHICommandListBase& RHICmdList, const TArray<FCoarseParticle> CoarseParticleData,
-		uint32 NewElementCount, bool NeedsResize);
+		FRHICommandListBase& RHICmdList, const TArray<FCoarseParticle> CoarseParticleData);
 
 	/** 
 	 * Update the buffers for the hashtable, releasing the old ones and creating new ones. 
 	 */
 	void UpdateHashTableBuffers(
-		FRHICommandListBase& RHICmdList, const TArray<FIntVector4> ActiveVoxelIndices,
-		uint32 NewElementCount, bool NeedsResize);
+		FRHICommandListBase& RHICmdList, const TArray<FIntVector4> ActiveVoxelIndices);
 
 	/** 
 	 * The reference to the SRV buffer containing Coarse Particles. 
@@ -121,8 +125,8 @@ struct FPUBuffers : public FRenderResource
 	 */
 	FUnorderedAccessViewRHIRef HashTableOccupancyBufferRef;
 
-	uint32 NumElementsInCoarseParticleBuffer = 0;
-	uint32 NumElementsInActiveVoxelBuffer = 0;
+	uint32 NumAllocatedElementsInCoarseParticleBuffer;
+	uint32 NumAllocatedElementsInActiveVoxelBuffer;
 };
 
 struct FPUArrays
@@ -130,8 +134,6 @@ struct FPUArrays
 	FPUArrays()
 	{
 	}
-
-	FPUArrays(uint32 InitialCPBufferSize, uint32 InitialActiveVoxelBuffer);
 
 	TArray<FCoarseParticle> CoarseParticles;
 	TArray<FIntVector4> ActiveVoxelIndices;
@@ -142,12 +144,6 @@ struct FPUArrays
 	float EaseStepSize = 0;
 	float NominalRadius = 0;
 	int TableSize = 0;
-
-	bool NeedsCPResize = false;
-	bool NeedsVoxelResize = false;
-	
-	uint32 NumElementsInCoarseParticleBuffer = 0;
-	uint32 NumElementsInActiveVoxelBuffer = 0;
 };
 
 /** 

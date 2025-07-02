@@ -41,14 +41,10 @@ void FParticleUpsamplingDIProxy::ConsumePerInstanceDataFromGameThread(
 			FRHICommandListBase& RHICmdList = FRHICommandListImmediate::Get();
 
 			InstanceData->PUBuffers->UpdateCoarseParticleBuffers(
-				RHICmdList, InstanceData->PUArrays.CoarseParticles,
-				InstanceData->PUArrays.NumElementsInCoarseParticleBuffer,
-				InstanceData->PUArrays.NeedsCPResize);
+				RHICmdList, InstanceData->PUArrays.CoarseParticles);
 
 			InstanceData->PUBuffers->UpdateHashTableBuffers(
-				RHICmdList, InstanceData->PUArrays.ActiveVoxelIndices,
-				InstanceData->PUArrays.NumElementsInActiveVoxelBuffer,
-				InstanceData->PUArrays.NeedsVoxelResize);
+				RHICmdList, InstanceData->PUArrays.ActiveVoxelIndices);
 		}
 	}
 

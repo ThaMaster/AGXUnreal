@@ -16,9 +16,6 @@ UAGX_ParticleUpsamplingDI::UAGX_ParticleUpsamplingDI(
 	FObjectInitializer const& ObjectInitializer)
 {
 	Proxy.Reset(new FParticleUpsamplingDIProxy());
-	LocalData = FPUArrays(
-		FParticleUpsamplingData::INITIAL_CP_BUFFER_SIZE, 
-		FParticleUpsamplingData::INITIAL_VOXEL_BUFFER_SIZE);
 }
 
 void UAGX_ParticleUpsamplingDI::PostInitProperties()
@@ -61,7 +58,7 @@ void UAGX_ParticleUpsamplingDI::SetShaderParameters(
 	ShaderParameters->HashTable				= Data.PUBuffers->HashTableBufferRef;
 	ShaderParameters->HTOccupancy			= Data.PUBuffers->HashTableOccupancyBufferRef;
 
-	ShaderParameters->TableSize				= Data.PUArrays.NumElementsInActiveVoxelBuffer;
+	ShaderParameters->TableSize				= Data.PUBuffers->NumAllocatedElementsInActiveVoxelBuffer;
 	ShaderParameters->VoxelSize				= Data.PUArrays.VoxelSize;
 
 	// Other Variables
@@ -108,11 +105,8 @@ bool UAGX_ParticleUpsamplingDI::PerInstanceTick(
 	}
 
 	// Copy local data to data for instance.
+	LocalData.TableSize = Data->PUBuffers->NumAllocatedElementsInActiveVoxelBuffer;
 	Data->PUArrays = LocalData;
-
-	// Reset flags, otherwise will always resize buffers.
-	LocalData.NeedsCPResize = false;
-	LocalData.NeedsVoxelResize = false;
 	return false;
 }
 
@@ -125,29 +119,17 @@ void UAGX_ParticleUpsamplingDI::ProvidePerInstanceDataForRenderThread(
 
 void UAGX_ParticleUpsamplingDI::SetCoarseParticles(TArray<FCoarseParticle> NewCoarseParticles)
 {
-	uint32 ArraySize = NewCoarseParticles.Num();
-	if (LocalData.NumElementsInCoarseParticleBuffer < ArraySize)
-	{
-		LocalData.NumElementsInCoarseParticleBuffer *= 2;
-		LocalData.NeedsCPResize = true;
-	}
 	LocalData.CoarseParticles = NewCoarseParticles;
 }
 
 void UAGX_ParticleUpsamplingDI::SetActiveVoxelIndices(TArray<FIntVector4> AVIs)
 {
-	uint32 ArraySize = AVIs.Num();
-	if (LocalData.NumElementsInActiveVoxelBuffer < ArraySize)
-	{
-		LocalData.NumElementsInActiveVoxelBuffer *= 2;
-		LocalData.NeedsVoxelResize = true;
-	}
 	LocalData.ActiveVoxelIndices = AVIs;
 }
 
 int UAGX_ParticleUpsamplingDI::GetElementsInActiveVoxelBuffer()
 {
-	return LocalData.NumElementsInActiveVoxelBuffer;
+	return LocalData.TableSize;
 }
 
 void UAGX_ParticleUpsamplingDI::RecalculateFineParticleProperties(
