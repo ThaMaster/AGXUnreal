@@ -45,7 +45,7 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 
 	ParticleSystemComponent->SetActive(bEnableParticleRendering);
 
-	// Try to get the correct Data interface.
+	// Try to get the correct data interface.
 	UpsamplingDataInterface =
 		static_cast<UAGX_ParticleUpsamplingDI*>(UNiagaraFunctionLibrary::GetDataInterface(
 			UAGX_ParticleUpsamplingDI::StaticClass(), ParticleSystemComponent,
@@ -63,7 +63,7 @@ void UAGX_UpsamplingParticleRendererComponent::BeginPlay()
 
 	ElementSize = ParentTerrainActor->SourceLandscape->GetActorScale().X;
 	
-	// Bind function to terrain delegate to handle particle Data.
+	// Bind function to terrain delegate to handle particle data.
 	ParentTerrainActor->OnParticleData.AddDynamic(
 		this, &UAGX_UpsamplingParticleRendererComponent::HandleParticleData);
 }

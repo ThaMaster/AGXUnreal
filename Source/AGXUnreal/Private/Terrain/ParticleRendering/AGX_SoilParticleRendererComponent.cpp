@@ -44,7 +44,7 @@ void UAGX_SoilParticleRendererComponent::BeginPlay()
 
 	ParticleSystemComponent->SetActive(bEnableParticleRendering);
 
-	// Bind function to terrain delegate to handle particle Data.
+	// Bind function to terrain delegate to handle particle data.
 	ParentTerrainActor->OnParticleData.AddDynamic(
 		this, &UAGX_SoilParticleRendererComponent::HandleParticleData);
 }
