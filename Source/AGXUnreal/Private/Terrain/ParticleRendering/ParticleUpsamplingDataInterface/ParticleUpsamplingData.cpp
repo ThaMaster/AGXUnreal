@@ -70,14 +70,11 @@ void FPUBuffers::UpdateCoarseParticleBuffers(
 	}
 
 	const uint32 BufferBytes = sizeof(FCoarseParticle) * ElementCount;
-	if (BufferBytes < CoarseParticleBufferRef->GetBuffer()->GetSize())
-	{
-		void* OutputData = RHICmdList.LockBuffer(
-			CoarseParticleBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+	void* OutputData = RHICmdList.LockBuffer(
+		CoarseParticleBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
 
-		FMemory::Memcpy(OutputData, CoarseParticleData.GetData(), BufferBytes);
-		RHICmdList.UnlockBuffer(CoarseParticleBufferRef->GetBuffer());
-	}
+	FMemory::Memcpy(OutputData, CoarseParticleData.GetData(), BufferBytes);
+	RHICmdList.UnlockBuffer(CoarseParticleBufferRef->GetBuffer());
 }
 
 void FPUBuffers::UpdateHashTableBuffers(
@@ -109,14 +106,11 @@ void FPUBuffers::UpdateHashTableBuffers(
 	}
 
 	const uint32 BufferBytes = sizeof(FIntVector4) * ElementCount;
-	if (BufferBytes < ActiveVoxelIndicesBufferRef->GetBuffer()->GetSize())
-	{
-		void* OutputData = RHICmdList.LockBuffer(
-			ActiveVoxelIndicesBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+	void* OutputData = RHICmdList.LockBuffer(
+		ActiveVoxelIndicesBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
 
-		FMemory::Memcpy(OutputData, ActiveVoxelIndices.GetData(), BufferBytes);
-		RHICmdList.UnlockBuffer(ActiveVoxelIndicesBufferRef->GetBuffer());
-	}
+	FMemory::Memcpy(OutputData, ActiveVoxelIndices.GetData(), BufferBytes);
+	RHICmdList.UnlockBuffer(ActiveVoxelIndicesBufferRef->GetBuffer());
 }
 
 void FParticleUpsamplingData::Init(FNiagaraSystemInstance* SystemInstance)
