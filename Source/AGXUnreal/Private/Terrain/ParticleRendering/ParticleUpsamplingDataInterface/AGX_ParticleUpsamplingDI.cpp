@@ -178,9 +178,9 @@ bool UAGX_ParticleUpsamplingDI::GetFunctionHLSL(
 			FunctionInfo.DefinitionName == SpawnParticlesName ||
 			FunctionInfo.DefinitionName == MoveParticlesName ||
 			FunctionInfo.DefinitionName == ClearTableName ||
+			FunctionInfo.DefinitionName == GetNominalRadiusName ||
 			FunctionInfo.DefinitionName == GetFineParticleRadiusName ||
-			FunctionInfo.DefinitionName == IsFineParticleAliveName ||
-			FunctionInfo.DefinitionName == GetNominalRadiusName;
+			FunctionInfo.DefinitionName == IsFineParticleAliveName;
 }
 
 #if UE_VERSION_OLDER_THAN(5, 4, 0)
@@ -286,6 +286,22 @@ void UAGX_ParticleUpsamplingDI::GetFunctionsInternal(
 
 	{
 		FNiagaraFunctionSignature Sig;
+		Sig.Name = GetNominalRadiusName;
+		Sig.bMemberFunction = true;
+		Sig.AddInput(FNiagaraVariable(
+			FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
+		Sig.AddOutput(
+			FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("NominalRadius")));
+
+		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
+		Sig.bExperimental = true;
+		Sig.bSupportsCPU = false;
+		Sig.bSupportsGPU = true;
+		OutFunctions.Add(Sig);
+	}
+
+	{
+		FNiagaraFunctionSignature Sig;
 		Sig.Name = GetFineParticleRadiusName;
 		Sig.bMemberFunction = true;
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
@@ -305,20 +321,6 @@ void UAGX_ParticleUpsamplingDI::GetFunctionsInternal(
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
 		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("Ease")));
 		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("IsAlive")));
-
-		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
-		Sig.bExperimental = true;
-		Sig.bSupportsCPU = false;
-		Sig.bSupportsGPU = true;
-		OutFunctions.Add(Sig);
-	}
-
-	{
-		FNiagaraFunctionSignature Sig;
-		Sig.Name = GetNominalRadiusName;
-		Sig.bMemberFunction = true;
-		Sig.AddInput(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("ParticleUpsamplingInterface")));
-		Sig.AddOutput(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("NominalRadius")));
 
 		Sig.ModuleUsageBitmask = ENiagaraScriptUsageMask::Particle;
 		Sig.bExperimental = true;
