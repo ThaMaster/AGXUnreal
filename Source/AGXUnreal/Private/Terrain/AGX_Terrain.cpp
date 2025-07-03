@@ -65,7 +65,7 @@ AAGX_Terrain::AAGX_Terrain()
 
 	TerrainBounds = CreateDefaultSubobject<UAGX_HeightFieldBoundsComponent>(TEXT("TerrainBounds"));
 	
-	AGX_SoilParticleRenderer =
+	DefaultParticleRenderer =
 		CreateDefaultSubobject<UAGX_SoilParticleRendererComponent>(
 		TEXT("DefaultParticleRenderer"));
 
@@ -200,7 +200,7 @@ void AAGX_Terrain::RemoveCollisionGroupIfExists(FName GroupName)
 
 UNiagaraComponent* AAGX_Terrain::GetSpawnedParticleSystemComponent()
 {
-	return AGX_SoilParticleRenderer->GetSpawnedParticleSystemComponent();
+	return DefaultParticleRenderer->GetSpawnedParticleSystemComponent();
 }
 
 int32 AAGX_Terrain::GetNumParticles() const

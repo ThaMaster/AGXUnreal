@@ -122,7 +122,7 @@ public:
 	UAGX_HeightFieldBoundsComponent* TerrainBounds;
 
 	UPROPERTY(Category = "AGX Terrain", VisibleAnywhere, BlueprintReadOnly)
-	UAGX_SoilParticleRendererComponent* AGX_SoilParticleRenderer;
+	UAGX_SoilParticleRendererComponent* DefaultParticleRenderer;
 
 	UPROPERTY(EditAnywhere, Category = "AGX Terrain")
 	bool bCanCollide {true};
