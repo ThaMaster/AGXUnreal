@@ -186,6 +186,7 @@ bool UAGX_ParticleUpsamplingDI::GetFunctionHLSL(
 #if UE_VERSION_OLDER_THAN(5, 4, 0)
 void UAGX_ParticleUpsamplingDI::GetFunctions(TArray<FNiagaraFunctionSignature>& OutFunctions)
 {
+	Super::GetFunctions(OutFunctions);
 #else
 void UAGX_ParticleUpsamplingDI::GetFunctionsInternal(
 	TArray<FNiagaraFunctionSignature>& OutFunctions) const
