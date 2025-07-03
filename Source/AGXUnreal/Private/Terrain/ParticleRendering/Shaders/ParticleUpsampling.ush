@@ -362,32 +362,9 @@ void SpawnParticles_{ParameterName}(in int In_VoxelId, out bool Out_ShouldSpawn,
     Out_ShouldSpawn = ParticleRoom > 0;
 }
 
-void GetVoxelPositionAndRoom_{ParameterName}(in int In_VoxelId, out float3 Out_VoxelPosition, out int Out_Room, out float3 Out_MaxBounds, out float3 Out_MinBounds)
-{
-    uint MyId = In_VoxelId;
-    if ((int)MyId >= NUM_ACTIVE_VOXELS)
-        return;
-    int3 VoxelIndex = ID_TO_VOXEL_INDEX(MyId);
-
-    Out_VoxelPosition = float3(VoxelIndex * VOXEL_SIZE);
-    LOOKUP_ROOM_AND_BOUNDS(VoxelIndex, Out_Room, Out_MaxBounds, Out_MinBounds);
-    uint HashValue = COMPUTE_HASH(VoxelIndex);
-    Out_Room = VELOCITY_AT_HASH(HashValue);
-}
-
 void GetFineParticleRadius_{ParameterName}(out float Out_FineParticleRadius)
 {
     Out_FineParticleRadius = FINE_PARTICLE_RADIUS;
-}
-
-void GetCoarseParticleInfo_{ParameterName}(in int In_CoarseParticleIndex, out float4 Out_ParticlePositionAndRadius, out float3 Out_ParticleVelocity)
-{
-    uint MyId = In_CoarseParticleIndex;
-    if ((int)MyId >= NUM_COARSE_PARTICLES)
-        return;
-    
-    Out_ParticlePositionAndRadius = {ParameterName}_CoarseParticles[MyId].PositionAndRadius;
-    Out_ParticleVelocity = {ParameterName}_CoarseParticles[MyId].VelocityAndMass.xyz;
 }
 
 void GetNominalRadius_{ParameterName}(out float Out_NominalRadius)

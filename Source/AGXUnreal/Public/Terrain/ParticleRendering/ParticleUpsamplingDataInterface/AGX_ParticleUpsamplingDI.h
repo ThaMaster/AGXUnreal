@@ -162,11 +162,9 @@ private:
 	const FName SpawnParticlesName = TEXT("SpawnParticles");
 	const FName MoveParticlesName = TEXT("MoveParticles");
 	const FName ClearTableName = TEXT("ClearTable");
-	const FName GetVoxelPositionAndRoomName = TEXT("GetVoxelPositionAndRoom");
 	const FName GetNominalRadiusName = TEXT("GetNominalRadius");
 	const FName GetFineParticleRadiusName = TEXT("GetFineParticleRadius");
 	const FName IsFineParticleAliveName = TEXT("IsFineParticleAlive");
-	const FName GetCoarseParticleInfoName = TEXT("GetCoarseParticleInfo");
 
 	const TCHAR* PUUnrealShaderHeaderFile = TEXT("/AGX_ParticleRenderingShaders/ParticleUpsampling.ush");
 
