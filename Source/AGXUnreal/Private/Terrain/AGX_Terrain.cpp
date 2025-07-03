@@ -1666,7 +1666,13 @@ void AAGX_Terrain::UpdateParticlesArrays()
 		return;
 	}
 
+
 	// Copy data with holes.
+	// 
+	// TODO: Change the way this data broadcasting is done by letting the user
+	// request only the subset of data that the user wants.This is to avoid fetching, 
+	// converting, packing, and passing data that will never be looked at. Right now
+	// we fetch everything but may not look at everything. 
 	EParticleDataFlags ToInclude = EParticleDataFlags::Positions | EParticleDataFlags::Rotations |
 								   EParticleDataFlags::Radii | EParticleDataFlags::Velocities | EParticleDataFlags::Masses;
 	const FParticleDataById ParticleData =
