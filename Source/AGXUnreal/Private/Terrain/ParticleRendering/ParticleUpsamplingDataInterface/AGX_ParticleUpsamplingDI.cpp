@@ -127,7 +127,7 @@ void UAGX_ParticleUpsamplingDI::SetActiveVoxelIndices(TArray<FIntVector4> AVIs)
 	LocalData.ActiveVoxelIndices = AVIs;
 }
 
-int UAGX_ParticleUpsamplingDI::GetElementsInActiveVoxelBuffer()
+int UAGX_ParticleUpsamplingDI::GetHashTableCapacity()
 {
 	return LocalData.TableSize;
 }

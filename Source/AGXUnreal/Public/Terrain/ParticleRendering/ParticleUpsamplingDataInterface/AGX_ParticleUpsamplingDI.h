@@ -127,8 +127,8 @@ public:
 	/** Sets the Active Voxel Indices in local data storage. */
 	void SetActiveVoxelIndices(TArray<FIntVector4> AVIs);
 
-	/** Gets the elements in the active voxel buffer reference. */
-	int GetElementsInActiveVoxelBuffer();
+	/** Get the number of elements that are currently allocated for in the hash table. */
+	int GetHashTableCapacity();
 	void RecalculateFineParticleProperties(
 		float Upsampling, float ElementSize, float ParticleDensity);
 	void SetStaticVariables(float VoxelSize, float EaseStepSize);

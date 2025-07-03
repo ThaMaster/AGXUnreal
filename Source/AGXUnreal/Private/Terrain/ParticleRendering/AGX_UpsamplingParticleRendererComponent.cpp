@@ -178,9 +178,10 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 	TArray<FIntVector4> ActiveVoxelIndices = GetActiveVoxelsFromSet(ActiveVoxelSet);
 	UpsamplingDataInterface->SetCoarseParticles(NewCoarseParticles);
 	UpsamplingDataInterface->SetActiveVoxelIndices(ActiveVoxelIndices);
-	UpsamplingDataInterface->RecalculateFineParticleProperties(Upsampling, ElementSize, ParticleDensity);
+	UpsamplingDataInterface->RecalculateFineParticleProperties(
+		Upsampling, ElementSize, ParticleDensity);
 	UpsamplingDataInterface->SetStaticVariables(UsedVoxelSize, EaseStepSize);
-	int HashTableSize = UpsamplingDataInterface->GetElementsInActiveVoxelBuffer();
+	int HashTableSize = UpsamplingDataInterface->GetHashTableCapacity();
 
 
 #if UE_VERSION_OLDER_THAN(5, 3, 0)

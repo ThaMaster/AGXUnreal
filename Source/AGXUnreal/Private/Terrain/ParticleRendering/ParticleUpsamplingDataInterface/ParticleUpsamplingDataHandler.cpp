@@ -12,9 +12,9 @@ void FParticleUpsamplingBuffers::InitRHI(FRHICommandListBase& RHICmdList)
 	
 	// Init UAV Buffers
 	HashTableBufferRef = InitUAVBuffer<FVoxelEntry>(
-		RHICmdList, TEXT("HashTableBuffer"), NumAllocatedElementsInActiveVoxelBuffer * 2);
+		RHICmdList, TEXT("HashTableBuffer"), NumAllocatedElementsInActiveVoxelBuffer);
 	HashTableOccupancyBufferRef = InitUAVBuffer<int>(
-		RHICmdList, TEXT("HashTableOccupancyBuffer"), NumAllocatedElementsInActiveVoxelBuffer * 2);
+		RHICmdList, TEXT("HashTableOccupancyBuffer"), NumAllocatedElementsInActiveVoxelBuffer);
 }
 
 void FParticleUpsamplingBuffers::ReleaseRHI()
@@ -100,9 +100,9 @@ void FParticleUpsamplingBuffers::UpdateHashTableBuffers(
 		ActiveVoxelIndicesBufferRef = InitSRVBuffer<FIntVector4>(
 			RHICmdList, TEXT("ActiveVoxelIndicesBuffer"), NumAllocatedElementsInActiveVoxelBuffer);
 		HashTableBufferRef = InitUAVBuffer<FVoxelEntry>(
-			RHICmdList, TEXT("HashtableBuffer"), NumAllocatedElementsInActiveVoxelBuffer * 2);
+			RHICmdList, TEXT("HashtableBuffer"), NumAllocatedElementsInActiveVoxelBuffer );
 		HashTableOccupancyBufferRef = InitUAVBuffer<int>(
-			RHICmdList, TEXT("HTOccupancy"), NumAllocatedElementsInActiveVoxelBuffer * 2);
+			RHICmdList, TEXT("HTOccupancy"), NumAllocatedElementsInActiveVoxelBuffer);
 	}
 
 	const uint32 BufferBytes = sizeof(FIntVector4) * ElementCount;
