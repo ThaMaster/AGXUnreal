@@ -45,20 +45,20 @@ void UAGX_ParticleUpsamplingDI::SetShaderParameters(
 	FShaderParameters* ShaderParameters = Context.GetParameterNestedStruct<FShaderParameters>();
 
 	// Particle Shader Parameters
-	ShaderParameters->CoarseParticles		= Data.Buffers->CoarseParticleBufferRef;
+	ShaderParameters->CoarseParticles		= Data.Buffers->CoarseParticles;
 	ShaderParameters->NumCoarseParticles	= Data.Data.CoarseParticles.Num();
 	ShaderParameters->FineParticleMass		= Data.Data.FineParticleMass;
 	ShaderParameters->FineParticleRadius	= Data.Data.FineParticleRadius;
 	ShaderParameters->NominalRadius			= Data.Data.NominalRadius;
 
 	// HashTable Shader Parameters
-	ShaderParameters->ActiveVoxelIndices	= Data.Buffers->ActiveVoxelIndicesBufferRef;
+	ShaderParameters->ActiveVoxelIndices	= Data.Buffers->ActiveVoxelIndices;
 	ShaderParameters->NumActiveVoxels		= Data.Data.ActiveVoxelIndices.Num();
 
-	ShaderParameters->HashTable				= Data.Buffers->HashTableBufferRef;
-	ShaderParameters->HTOccupancy			= Data.Buffers->HashTableOccupancyBufferRef;
+	ShaderParameters->HashTable				= Data.Buffers->ActiveVoxelsTable;
+	ShaderParameters->HTOccupancy			= Data.Buffers->ActiveVoxelsTableOccupancy;
 
-	ShaderParameters->TableSize				= Data.Buffers->NumAllocatedElementsInActiveVoxelBuffer;
+	ShaderParameters->TableSize				= Data.Buffers->ActiveVoxelsCapacity;
 	ShaderParameters->VoxelSize				= Data.Data.VoxelSize;
 
 	// Other Variables
@@ -105,7 +105,7 @@ bool UAGX_ParticleUpsamplingDI::PerInstanceTick(
 	}
 
 	// Copy local data to data for instance.
-	LocalData.TableSize = Data->Buffers->NumAllocatedElementsInActiveVoxelBuffer;
+	LocalData.TableSize = Data->Buffers->ActiveVoxelsCapacity;
 	Data->Data = LocalData;
 	return false;
 }

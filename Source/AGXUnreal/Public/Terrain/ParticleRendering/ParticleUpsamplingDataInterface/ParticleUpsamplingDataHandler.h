@@ -66,14 +66,14 @@ struct FVoxelEntry
 struct FParticleUpsamplingBuffers : public FRenderResource
 {
 	FParticleUpsamplingBuffers()
-		: NumAllocatedElementsInCoarseParticleBuffer(0)
-		, NumAllocatedElementsInActiveVoxelBuffer(0)
+		: CoarseParticlesCapacity(0)
+		, ActiveVoxelsCapacity(0)
 	{
 	}
 
-	FParticleUpsamplingBuffers(uint32 InitialCPElements, uint32 InitialActiveVoxelElements)
-		: NumAllocatedElementsInCoarseParticleBuffer(InitialCPElements) 
-		, NumAllocatedElementsInActiveVoxelBuffer(InitialActiveVoxelElements)
+	FParticleUpsamplingBuffers(uint32 InitialCoarseParticleCapacity, uint32 InitialActiveVoxelsCapacity)
+		: CoarseParticlesCapacity(InitialCoarseParticleCapacity) 
+		, ActiveVoxelsCapacity(InitialActiveVoxelsCapacity)
 	{
 	}
 	
@@ -119,28 +119,35 @@ struct FParticleUpsamplingBuffers : public FRenderResource
 		FRHICommandListBase& RHICmdList, const TArray<FIntVector4> ActiveVoxelIndices);
 
 	/** 
-	 * The reference to the SRV buffer containing Coarse Particles. 
+	 * Reference to the SRV buffer containing Coarse Particles. 
 	 */
-	FShaderResourceViewRHIRef CoarseParticleBufferRef;
-
-	/** 
-	 * The reference to the SRV buffer containing Active Voxels. 
-	 */
-	FShaderResourceViewRHIRef ActiveVoxelIndicesBufferRef;
-
-	/** 
-	 * The reference to the UAV buffer containing the hashtable data. 
-	 */
-	FUnorderedAccessViewRHIRef HashTableBufferRef;
+	FShaderResourceViewRHIRef CoarseParticles;
 
 	/**
-	 * The reference to the UAV buffer containing data on which indices are 
+	 * The number of allocated elements that the coarse particle buffer can store.
+	 */
+	uint32 CoarseParticlesCapacity;
+
+	/** 
+	 * Reference to the SRV buffer containing Active Voxels. 
+	 */
+	FShaderResourceViewRHIRef ActiveVoxelIndices;
+
+	/** 
+	 * Reference to the UAV buffer containing data for each voxel in the voxel grid. 
+	 */
+	FUnorderedAccessViewRHIRef ActiveVoxelsTable;
+
+	/**
+	 * Reference to the UAV buffer containing data on which indices are 
 	 * occupied in the hashtable buffer.
 	 */
-	FUnorderedAccessViewRHIRef HashTableOccupancyBufferRef;
+	FUnorderedAccessViewRHIRef ActiveVoxelsTableOccupancy;
 
-	uint32 NumAllocatedElementsInCoarseParticleBuffer;
-	uint32 NumAllocatedElementsInActiveVoxelBuffer;
+	/**
+	 * The number of elements the buffers hanlding active voxels can store.
+	 */
+	uint32 ActiveVoxelsCapacity;
 };
 
 /**

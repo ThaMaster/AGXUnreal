@@ -5,24 +5,24 @@
 void FParticleUpsamplingBuffers::InitRHI(FRHICommandListBase& RHICmdList)
 {
 	// Init SRV Buffers
-	CoarseParticleBufferRef = InitSRVBuffer<FCoarseParticle>(
-		RHICmdList, TEXT("CPPositionsAndRadiusBuffer"), NumAllocatedElementsInCoarseParticleBuffer);
-	ActiveVoxelIndicesBufferRef = InitSRVBuffer<FIntVector4>(
-		RHICmdList, TEXT("ActiveVoxelIndicesBuffer"), NumAllocatedElementsInActiveVoxelBuffer);
+	CoarseParticles = InitSRVBuffer<FCoarseParticle>(
+		RHICmdList, TEXT("CoarseParticles"), CoarseParticlesCapacity);
+	ActiveVoxelIndices = InitSRVBuffer<FIntVector4>(
+		RHICmdList, TEXT("ActiveVoxelIndices"), ActiveVoxelsCapacity);
 	
 	// Init UAV Buffers
-	HashTableBufferRef = InitUAVBuffer<FVoxelEntry>(
-		RHICmdList, TEXT("HashTableBuffer"), NumAllocatedElementsInActiveVoxelBuffer);
-	HashTableOccupancyBufferRef = InitUAVBuffer<int>(
-		RHICmdList, TEXT("HashTableOccupancyBuffer"), NumAllocatedElementsInActiveVoxelBuffer);
+	ActiveVoxelsTable = InitUAVBuffer<FVoxelEntry>(
+		RHICmdList, TEXT("ActiveVoxelsTable"), ActiveVoxelsCapacity);
+	ActiveVoxelsTableOccupancy = InitUAVBuffer<int>(
+		RHICmdList, TEXT("ActiveVoxelsTableOccupancy"), ActiveVoxelsCapacity);
 }
 
 void FParticleUpsamplingBuffers::ReleaseRHI()
 {
-	CoarseParticleBufferRef.SafeRelease();
-	ActiveVoxelIndicesBufferRef.SafeRelease();
-	HashTableBufferRef.SafeRelease();
-	HashTableOccupancyBufferRef.SafeRelease();
+	CoarseParticles.SafeRelease();
+	ActiveVoxelIndices.SafeRelease();
+	ActiveVoxelsTable.SafeRelease();
+	ActiveVoxelsTableOccupancy.SafeRelease();
 }
 
 template <typename T>
@@ -51,66 +51,66 @@ void FParticleUpsamplingBuffers::UpdateCoarseParticleBuffer(
 	FRHICommandListBase& RHICmdList, const TArray<FCoarseParticle> CoarseParticleData)
 {
 	uint32 ElementCount = CoarseParticleData.Num();
-	if (ElementCount == 0 || !CoarseParticleBufferRef.IsValid() ||
-		!CoarseParticleBufferRef->GetBuffer()->IsValid())
+	if (ElementCount == 0 || !CoarseParticles.IsValid() ||
+		!CoarseParticles->GetBuffer()->IsValid())
 	{
 		return;
 	}
 
-	if (NumAllocatedElementsInCoarseParticleBuffer < ElementCount)
+	if (CoarseParticlesCapacity < ElementCount)
 	{
 		// Release old buffer.
-		CoarseParticleBufferRef.SafeRelease();
+		CoarseParticles.SafeRelease();
 
 		// Create new, larger buffer.
-		NumAllocatedElementsInCoarseParticleBuffer *= 2;
-		CoarseParticleBufferRef = InitSRVBuffer<FCoarseParticle>(
-			RHICmdList, TEXT("CPPositionsAndRadiusBuffer"),
-			NumAllocatedElementsInCoarseParticleBuffer);
+		CoarseParticlesCapacity *= 2;
+		CoarseParticles = InitSRVBuffer<FCoarseParticle>(
+			RHICmdList, TEXT("CoarseParticles"),
+			CoarseParticlesCapacity);
 	}
 
 	const uint32 BufferBytes = sizeof(FCoarseParticle) * ElementCount;
 	void* OutputData = RHICmdList.LockBuffer(
-		CoarseParticleBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+		CoarseParticles->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
 
 	FMemory::Memcpy(OutputData, CoarseParticleData.GetData(), BufferBytes);
-	RHICmdList.UnlockBuffer(CoarseParticleBufferRef->GetBuffer());
+	RHICmdList.UnlockBuffer(CoarseParticles->GetBuffer());
 }
 
 void FParticleUpsamplingBuffers::UpdateHashTableBuffers(
-	FRHICommandListBase& RHICmdList, const TArray<FIntVector4> ActiveVoxelIndices)
+	FRHICommandListBase& RHICmdList, const TArray<FIntVector4> ActiveVoxelIndicesArray)
 {
-	uint32 ElementCount = ActiveVoxelIndices.Num();
-	if (ElementCount == 0 || !ActiveVoxelIndicesBufferRef.IsValid() ||
-		!ActiveVoxelIndicesBufferRef->GetBuffer()->IsValid())
+	uint32 ElementCount = ActiveVoxelIndicesArray.Num();
+	if (ElementCount == 0 || !ActiveVoxelIndices.IsValid() ||
+		!ActiveVoxelIndices->GetBuffer()->IsValid())
 	{
 		return;
 	}
 
-	if (NumAllocatedElementsInActiveVoxelBuffer < ElementCount)
+	if (ActiveVoxelsCapacity < ElementCount)
 	{
 		// Release old buffers.
-		ActiveVoxelIndicesBufferRef.SafeRelease();
-		HashTableBufferRef.SafeRelease();
-		HashTableOccupancyBufferRef.SafeRelease();
+		ActiveVoxelIndices.SafeRelease();
+		ActiveVoxelsTable.SafeRelease();
+		ActiveVoxelsTableOccupancy.SafeRelease();
 
 		// Create new, larger buffers.
-		NumAllocatedElementsInActiveVoxelBuffer *= 2;
+		ActiveVoxelsCapacity *= 2;
 
-		ActiveVoxelIndicesBufferRef = InitSRVBuffer<FIntVector4>(
-			RHICmdList, TEXT("ActiveVoxelIndicesBuffer"), NumAllocatedElementsInActiveVoxelBuffer);
-		HashTableBufferRef = InitUAVBuffer<FVoxelEntry>(
-			RHICmdList, TEXT("HashtableBuffer"), NumAllocatedElementsInActiveVoxelBuffer );
-		HashTableOccupancyBufferRef = InitUAVBuffer<int>(
-			RHICmdList, TEXT("HTOccupancy"), NumAllocatedElementsInActiveVoxelBuffer);
+		ActiveVoxelIndices = InitSRVBuffer<FIntVector4>(
+			RHICmdList, TEXT("ActiveVoxelIndices"), ActiveVoxelsCapacity);
+		ActiveVoxelsTable = InitUAVBuffer<FVoxelEntry>(
+			RHICmdList, TEXT("ActiveVoxelsTable"), ActiveVoxelsCapacity );
+		ActiveVoxelsTableOccupancy = InitUAVBuffer<int>(
+			RHICmdList, TEXT("ActiveVoxelsTableOccupancy"), ActiveVoxelsCapacity);
 	}
 
 	const uint32 BufferBytes = sizeof(FIntVector4) * ElementCount;
 	void* OutputData = RHICmdList.LockBuffer(
-		ActiveVoxelIndicesBufferRef->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
+		ActiveVoxelIndices->GetBuffer(), 0, BufferBytes, RLM_WriteOnly);
 
-	FMemory::Memcpy(OutputData, ActiveVoxelIndices.GetData(), BufferBytes);
-	RHICmdList.UnlockBuffer(ActiveVoxelIndicesBufferRef->GetBuffer());
+	FMemory::Memcpy(OutputData, ActiveVoxelIndicesArray.GetData(), BufferBytes);
+	RHICmdList.UnlockBuffer(ActiveVoxelIndices->GetBuffer());
 }
 
 void FParticleUpsamplingDataHandler::Init(FNiagaraSystemInstance* SystemInstance)
