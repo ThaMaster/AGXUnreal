@@ -57,7 +57,7 @@ void FParticleUpsamplingBuffers::UpdateCoarseParticleBuffer(
 		return;
 	}
 
-	if (NumAllocatedElementsInCoarseParticleBuffer <= ElementCount)
+	if (NumAllocatedElementsInCoarseParticleBuffer < ElementCount)
 	{
 		// Release old buffer.
 		CoarseParticleBufferRef.SafeRelease();
@@ -87,7 +87,7 @@ void FParticleUpsamplingBuffers::UpdateHashTableBuffers(
 		return;
 	}
 
-	if (NumAllocatedElementsInActiveVoxelBuffer <= ElementCount)
+	if (NumAllocatedElementsInActiveVoxelBuffer < ElementCount)
 	{
 		// Release old buffers.
 		ActiveVoxelIndicesBufferRef.SafeRelease();
