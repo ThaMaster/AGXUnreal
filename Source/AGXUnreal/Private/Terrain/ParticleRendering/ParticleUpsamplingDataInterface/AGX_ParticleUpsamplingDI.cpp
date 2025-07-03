@@ -8,6 +8,7 @@
 // Unreal Engine includes.
 #include "NiagaraShaderParametersBuilder.h"
 #include "NiagaraSystemInstance.h"
+#include "SphereTypes.h"
 
 #define LOCTEXT_NAMESPACE "ParticleUpsamplingDataInterface"
 
@@ -137,8 +138,7 @@ void UAGX_ParticleUpsamplingDI::RecalculateFineParticleProperties(
 	LocalData.NominalRadius =
 		FMath::Pow(3.0f * PACKING_RATIO / (4.0f * PI), 1.0f / 3.0f) * ElementSize;
 	LocalData.FineParticleRadius = LocalData.NominalRadius / FMath::Pow(Upsampling, 1.0f / 3.0f);
-	float NominalMass =
-		ParticleDensity * 4.0f / 3.0f * PI * FMath::Pow(LocalData.NominalRadius, 3.0f);
+	float NominalMass = ParticleDensity * UE::Geometry::TSphere3<float>::Volume(LocalData.NominalRadius);
 	LocalData.FineParticleMass = NominalMass / Upsampling;
 }
 
