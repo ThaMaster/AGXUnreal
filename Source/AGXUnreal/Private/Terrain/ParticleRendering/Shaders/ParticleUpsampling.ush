@@ -29,8 +29,10 @@
 
 // Function Defines
 #define COMPUTE_HASH(key) (ComputeHash(key, {ParameterName}_TableSize))
-#define LOOKUP_ROOM_AND_BOUNDS(key, room, maxbound, minbound) (LookupRoomAndBounds_{ParameterName}(key, room, maxbound, minbound))
-#define ADD_TO_ROOM_AT_INDEX(index, amount, result) (AddToRoomAtIndex_{ParameterName}(index, amount, result))
+#define LOOKUP_ROOM_AND_BOUNDS(key, room, maxbound, minbound) \
+    (LookupRoomAndBounds_{ParameterName}(key, room, maxbound, minbound))
+#define ADD_TO_ROOM_AT_INDEX(index, amount, result) \
+    (AddToRoomAtIndex_{ParameterName}(index, amount, result))
 #define LOOKUP_VELOCITY(key, vel) (LookupVelocity_{ParameterName}(key, vel))
 
 // Particle Buffers
@@ -53,7 +55,8 @@ float                               {ParameterName}_VoxelSize;
 // Other Variables
 float                               {ParameterName}_AnimationSpeed;
 
-bool LookupRoomAndBounds_{ParameterName}(int3 In_Index, out int Out_Room, out float3 Out_MaxBound, out float3 Out_MinBound)
+bool LookupRoomAndBounds_{ParameterName}(int3 In_Index, out int Out_Room, 
+    out float3 Out_MaxBound, out float3 Out_MinBound)
 {
     // Compute the hash value
     uint HashValue = COMPUTE_HASH(In_Index);
@@ -122,7 +125,8 @@ void AddToRoomAtIndex_{ParameterName}(in int3 In_Index, in int In_Amount, out in
     }
 }
 
-void InsertIndex_{ParameterName}(in int3 In_Index, in int In_Room, in float3 In_Velocity, in float In_Mass, in float3 In_MaxBound, in float3 In_MinBound)
+void InsertIndex_{ParameterName}(in int3 In_Index, in int In_Room, in float3 In_Velocity, 
+    in float In_Mass, in float3 In_MaxBound, in float3 In_MinBound)
 {
     // Compute the hash value
     uint HashValue = COMPUTE_HASH(In_Index);
@@ -185,7 +189,9 @@ void UpdateGrid_{ParameterName}(int In_VoxelId)
             AABBMax = min(AABBMax, VoxelPos + VOXEL_SIZE/ 2);
             AABBMin = max(AABBMin, VoxelPos - VOXEL_SIZE/ 2);
             float3 IntersectingBox = AABBMax - AABBMin;
-            float Weight = IntersectingBox.x * IntersectingBox.y * IntersectingBox.z / (AABBRadius * AABBRadius * AABBRadius * 8);
+            float AABBVolume = AABBRadius * AABBRadius * AABBRadius;
+            float IntersectingVolume = IntersectingBox.x * IntersectingBox.y * IntersectingBox.z;
+            float Weight = IntersectingVolume / (AABBVolume * 8);
 
             TotalWeight += Weight;
             Mass += CP_MASS(i) * Weight;
@@ -220,12 +226,15 @@ void UpdateGrid_{ParameterName}(int In_VoxelId)
     }
 
     int NumParticlesWhichFitInVoxel = ceil(Mass / FINE_PARTICLE_MASS);
-    InsertIndex_{ParameterName}(VoxelIndex, NumParticlesWhichFitInVoxel, Velocity, Mass, MaxBounds, MinBounds);
+    InsertIndex_{ParameterName}(VoxelIndex, NumParticlesWhichFitInVoxel, Velocity, 
+        Mass, MaxBounds, MinBounds);
 }
 
 // Moves the fine particles by interpolating the velocity of the grid
 // Runs Per Fine Particle
-void MoveParticles_{ParameterName}(in int In_ParticleIndex, in float3 In_ParticlePosition, in float In_ParticleEase, in float In_DeltaTime, out float3 Out_ParticlePositionNew, out float Out_ParticleEaseNew, out float3 Out_ParticleVelocityNew, out bool Out_IsAlive)
+void MoveParticles_{ParameterName}(in int In_ParticleIndex, in float3 In_ParticlePosition, 
+    in float In_ParticleEase, in float In_DeltaTime, out float3 Out_ParticlePositionNew, 
+    out float Out_ParticleEaseNew, out float3 Out_ParticleVelocityNew, out bool Out_IsAlive)
 {
     int3 ParticleVoxelIndex = GetVoxelIndexFromWorldPosition(In_ParticlePosition, VOXEL_SIZE);
     
@@ -239,25 +248,33 @@ void MoveParticles_{ParameterName}(in int In_ParticleIndex, in float3 In_Particl
     {
         for (int y = -1; y < 2; y++)
         {
-            for (int z = -1; z < 2; z++)
+            for (int z = -1;z < 2; z++)
             {
                 // Reduce checked voxels to only one voxel in each direction of each axis
                 if (x + y + z != 0 && abs(x) + abs(y) + abs(z) != 1)
                     continue;
+                
                 VoxelIndex = ParticleVoxelIndex + int3(x, y, z);
-                if (LOOKUP_VELOCITY(VoxelIndex, VoxelVelocity))
-                {
-                    VoxelPos = float3(VoxelIndex * VOXEL_SIZE);
-                    float VoxelWeight = pow(max(0.0f, 1.0f - (Distance2(VoxelPos, In_ParticlePosition) / (VOXEL_SIZE* VOXEL_SIZE))), 2);
-                    WeightSum += VoxelWeight;
-                    VelocitySum+= VoxelWeight * VoxelVelocity;
-                }
+                if (!LOOKUP_VELOCITY(VoxelIndex, VoxelVelocity))
+                    continue;
+
+                VoxelPos = float3(VoxelIndex * VOXEL_SIZE);
+                float ParticleToVoxel = Distance2(VoxelPos, In_ParticlePosition);
+                float VOXEL_AREA = VOXEL_SIZE * VOXEL_SIZE;
+                float VoxelWeight = pow(max(0.0f, 1.0f - (ParticleToVoxel / VOXEL_AREA)), 2);
+                WeightSum += VoxelWeight;
+                VelocitySum += VoxelWeight * VoxelVelocity;
+                
             }
         }
     }
 
     float3 Velocity = float3(0.0, 0.0, 0.0);
-    float3 RandomOffset = float3(Random(In_ParticleIndex + 1) * 0.02f - 0.01f, Random(In_ParticleIndex + 2) * 0.02f - 0.01f, Random(In_ParticleIndex + 3) * 0.02f - 0.01f);
+    float3 RandomOffset = float3(
+            Random(In_ParticleIndex + 1) * 0.02f - 0.01f, 
+            Random(In_ParticleIndex + 2) * 0.02f - 0.01f, 
+            Random(In_ParticleIndex + 3) * 0.02f - 0.01f);
+
     if (WeightSum != 0.0f)
     {
         Velocity = (1.0f / WeightSum) * VelocitySum;
@@ -266,7 +283,9 @@ void MoveParticles_{ParameterName}(in int In_ParticleIndex, in float3 In_Particl
     Out_ParticlePositionNew = In_ParticlePosition + ((Velocity + RandomOffset) * In_DeltaTime);
     Out_ParticleVelocityNew = (Velocity + RandomOffset);
     In_ParticleEase += ANIMATION_SPEED;
-    // Clamp ease to be at most 1.0 and to avoid dead particles hanging in mid air, mark particles with negative ease and negligible velocity (not counting random offset) for removal next synch
+    // Clamp ease to be at most 1.0 and to avoid dead particles hanging in mid air, 
+    // mark particles with negative ease and negligible velocity (not counting random offset) 
+    // for removal next synch
     if (In_ParticleEase < 0 && all(Velocity < 0.001))
     {
         Out_ParticleEaseNew = NAN;
@@ -281,7 +300,8 @@ void MoveParticles_{ParameterName}(in int In_ParticleIndex, in float3 In_Particl
 
 // Applies the particle to the voxel grid, reducing the room for each particle in the voxel
 // Runs Per Fine Particle
-void ApplyParticleMass_{ParameterName}(in float3 In_ParticlePosition, in float In_ParticleEase, out float Out_ParticleEaseNew, out bool Out_IsAlive)
+void ApplyParticleMass_{ParameterName}(in float3 In_ParticlePosition, in float In_ParticleEase, 
+    out float Out_ParticleEaseNew, out bool Out_IsAlive)
 {
     Out_IsAlive = true;
     if (!isnan(In_ParticleEase))
@@ -313,10 +333,13 @@ void ApplyParticleMass_{ParameterName}(in float3 In_ParticlePosition, in float I
             float3 R = float3(NOMINAL_RADIUS, NOMINAL_RADIUS, NOMINAL_RADIUS);
             float3 InnerMaxBounds = MaxBounds - (MaxBounds < (VoxelPos + VOXEL_SIZE / 2)) * R;
             float3 InnerMinBounds = MinBounds + (MinBounds > (VoxelPos - VOXEL_SIZE / 2)) * R;
-            float3 InnerBoundsSize = InnerMaxBounds - InnerMinBounds;
-            float3 InnerBoundsSizeHalf = InnerBoundsSize / 2;
+
+            float3 InnerBoundsSizeHalf = (InnerMaxBounds - InnerMinBounds) / 2;
             float3 InnerBoundsCenter = InnerMinBounds + InnerBoundsSizeHalf;
-            if (length(max(abs(In_ParticlePosition - InnerBoundsCenter) - InnerBoundsSizeHalf, float3(0.0, 0.0, 0.0))) >= NOMINAL_RADIUS)
+
+            float3 InnerBoundsDist = 
+                abs(In_ParticlePosition - InnerBoundsCenter) - InnerBoundsSizeHalf;
+            if (length(max(InnerBoundsDist, float3(0, 0, 0))) >= NOMINAL_RADIUS)
             {
                 // Ease out particle
                 Out_ParticleEaseNew = -In_ParticleEase;
@@ -335,7 +358,9 @@ void ApplyParticleMass_{ParameterName}(in float3 In_ParticlePosition, in float I
 
 // Calculates the number of particles to spawn in this voxels, 
 // Runs Per Voxel
-void SpawnParticles_{ParameterName}(in int In_VoxelId, out bool Out_ShouldSpawn, out int Out_ParticleRoom, out float3 Out_VoxelIndex, out float3 Out_MaxBounds, out float3 Out_MinBounds)
+void SpawnParticles_{ParameterName}(in int In_VoxelId, out bool Out_ShouldSpawn, 
+    out int Out_ParticleRoom, out float3 Out_VoxelIndex, out float3 Out_MaxBounds, 
+    out float3 Out_MinBounds)
 {
     Out_ShouldSpawn = false;
     Out_ParticleRoom = 0;
