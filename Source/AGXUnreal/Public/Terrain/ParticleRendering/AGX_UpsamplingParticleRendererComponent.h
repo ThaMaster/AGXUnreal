@@ -18,6 +18,17 @@ class UNiagaraComponent;
 class UNiagaraSystem;
 class UAGX_ParticleUpsamplingDI;
 
+/**
+ * AGXUpsamplingParticleRendererComponent provides real-time visualization of AGX Terrain particles
+ * using an upsampling method. Unlike AGXSoilParticleRendererComponent, this component performs
+ * an additional particle simulation on top of the existing AGX Terrain particles. This process
+ * generates a higher number of finer particles to improve visual resolution, allowing for
+ * more detailed rendering of materials like fine sand or dust.
+ *
+ * The core approach involves sampling attributes from the base AGX Terrain particles to build
+ * a velocity grid. The finer particles then interpolate their motion linearly based on this grid,
+ * resulting in smoother and more realistic particle movement.
+ */
 UCLASS(
 	ClassGroup = "AGX_Terrain_Particle_Rendering",
 	meta = (BlueprintSpawnableComponent, ShortToolTip = "Uses the particle data from AGX_Terrain to upsample the rendered particles, significantly increasing particle count."))
