@@ -162,6 +162,14 @@ bool UAGX_ParticleUpsamplingDI::AppendCompileHash(
 void UAGX_ParticleUpsamplingDI::GetParameterDefinitionHLSL(
 	const FNiagaraDataInterfaceGPUParamInfo& ParamInfo, FString& OutHLSL)
 {
+	/**
+	 * Since the same data interface can be instantiated multiple times, Niagara needs to know
+	 * which functions referes to which instance when it generates the code from the template file. 
+	 *
+	 * This replaces the text {ParameterName} with the unique HLSL symbol name of each instance of
+	 * the data interface. This ensures that the generated functions and variables are correctly 
+	 * scoped and does not clash with each other.
+	 */
 	const TMap<FString, FStringFormatArg> TemplateArgs = {
 		{TEXT("ParameterName"), ParamInfo.DataInterfaceHLSLSymbol},
 	};
