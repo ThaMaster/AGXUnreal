@@ -131,10 +131,12 @@ private:
 	void HandleParticleData(FDelegateParticleData& data);
 
 	/** 
-	 * Appends the voxel indices that a coarse particle intersects with to the given array. 
+	 * Appends the voxel indices that a coarse particle intersects with to the given array.
+	 * The Position and Radius refers to the position and radius of a coarse particle in the
+	 * simulation.
 	 */
 	void AppendIfActiveVoxel(
-		TSet<FIntVector>& ActiveVoxelIndices, FVector CPPosition, float CPRadius, float SizeOfVoxel);
+		TSet<FIntVector>& ActiveVoxelIndices, FVector Position, float Radius, float SizeOfVoxel);
 
 	/** 
 	 * Converts the active voxels from the set to a TArray 
