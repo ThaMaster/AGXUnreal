@@ -218,7 +218,8 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 void UAGX_UpsamplingParticleRendererComponent::AppendIfActiveVoxel(
 	TSet<FIntVector>& ActiveVoxelIndices, FVector Position, float Radius, float SizeOfVoxel)
 {
-	float AABBRadius = 1.6119919540164696407169668466392849389446140723238615 * Radius / 2;
+
+	float AABBRadius = VOLUME_MOD * Radius / 2;
 	FVector VSPosition = Position / SizeOfVoxel;
 
 	FVector OffsetPosition(

@@ -12,6 +12,8 @@
 #include "CoreTypes.h"
 #include "AGX_UpsamplingParticleRendererComponent.generated.h"
 
+#define VOLUME_MOD 1.611992
+
 class UNiagaraComponent;
 class UNiagaraSystem;
 class UAGX_ParticleUpsamplingDI;
