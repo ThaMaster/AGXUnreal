@@ -73,12 +73,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
 	bool GetEnableParticleRendering() const;
 
-	/**
-	 * If a Particle System Component has been spawned by the Renderer Component, this function will return it.
-	 * Returns nullptr otherwise.
-	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
-	UNiagaraComponent* GetSpawnedParticleSystemComponent() const;
+	UNiagaraComponent* GetParticleSystemComponent();
+
+	const UNiagaraComponent* GetParticleSystemComponent() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "AGX Upsampling Particle Rendering")
 	void SetUpsampling(int32 InUpsampling);

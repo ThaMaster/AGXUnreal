@@ -54,12 +54,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AGX Soil Particle Rendering")
 	bool GetEnableParticleRendering() const;
 
-	/**
-	 * If a Particle System Component has been spawned by the Renderer Component, this function will
-	 * return it. Returns nullptr otherwise.
-	 */
 	UFUNCTION(BlueprintCallable, Category = "AGX Soil Particle Rendering")
-	UNiagaraComponent* GetSpawnedParticleSystemComponent() const;
+	UNiagaraComponent* GetParticleSystemComponent();
+
+	const UNiagaraComponent* GetParticleSystemComponent() const;
 
 protected:
 

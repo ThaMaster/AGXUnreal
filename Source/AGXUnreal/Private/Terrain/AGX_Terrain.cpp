@@ -200,7 +200,7 @@ void AAGX_Terrain::RemoveCollisionGroupIfExists(FName GroupName)
 
 UNiagaraComponent* AAGX_Terrain::GetSpawnedParticleSystemComponent()
 {
-	return DefaultParticleRenderer->GetSpawnedParticleSystemComponent();
+	return DefaultParticleRenderer->GetParticleSystemComponent();
 }
 
 int32 AAGX_Terrain::GetNumParticles() const

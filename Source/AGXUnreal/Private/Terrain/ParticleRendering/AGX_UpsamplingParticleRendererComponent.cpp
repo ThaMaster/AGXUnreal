@@ -90,7 +90,12 @@ bool UAGX_UpsamplingParticleRendererComponent::GetEnableParticleRendering() cons
 	return bEnableParticleRendering;
 }
 
-UNiagaraComponent* UAGX_UpsamplingParticleRendererComponent::GetSpawnedParticleSystemComponent()
+UNiagaraComponent* UAGX_UpsamplingParticleRendererComponent::GetParticleSystemComponent()
+{
+	return ParticleSystemComponent;
+}
+
+const UNiagaraComponent* UAGX_UpsamplingParticleRendererComponent::GetParticleSystemComponent()
 	const
 {
 	return ParticleSystemComponent;
