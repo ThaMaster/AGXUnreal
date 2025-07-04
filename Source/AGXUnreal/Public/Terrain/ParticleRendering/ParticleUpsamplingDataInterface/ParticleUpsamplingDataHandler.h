@@ -27,7 +27,8 @@ struct FCoarseParticle
 struct FVoxelEntry
 {
 	/**
-	 * The voxel index stored at XYZ, the voxel room stored at W.
+	 * The voxel index stored at XYZ, W represents the voxel's capacity, i.e.,
+	 * how many particles can fit in that voxel.
 	 */
 	FIntVector4 IndexAndRoom;
 
