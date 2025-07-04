@@ -14,6 +14,19 @@
 
 #include "AGX_SoilParticleRendererComponent.generated.h"
 
+
+/**
+ * AGX SoilParticleRendererComponent is a component that enables real-time visualization 
+ * of AGX Terrain soil particles within Unreal Engine using a Niagara particle system. 
+ * This component comes with a default Niagara system that renders the particle data 
+ * directly but it can be changed to a custom niagara system for customized particle 
+ * rendering.
+ *
+ * The Niagara System can declare specific user parameters to enable the component
+ * to populate them with specific particle data from the AGX Terrain. Because of
+ * this, this component must be a child of an AGX Terrain actor, otherwise it will
+ * not be able to fetch the particle data and supply it to the Niagara System.
+ */
 UCLASS(
 	ClassGroup = "AGX_Terrain_Particle_Rendering", Blueprintable,
 	meta = (BlueprintSpawnableComponent, ShortToolTip = "Component for rendering the particles produced by AGX_Terrain."))
