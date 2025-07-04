@@ -158,7 +158,15 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 		if (!Data.Exists[I])
 			continue;
 
+
+
 		float Radius = Data.PositionsAndRadius[I].W;
+		
+		/**
+		 * TODO: The density of the particles should be fetched by the terrain and not 
+		 * computed here. Maybe particles have seperate densities that could be used 
+		 * for improved motion of the upsampling simulations, maybe worth investigating.
+		 */
 		ParticleDensity =
 			Data.VelocitiesAndMasses[I].W / UE::Geometry::TSphere3<float>::Volume(Radius);
 
