@@ -89,7 +89,7 @@ struct AGXUNREAL_API FDelegateParticleData
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(BlueprintReadOnly, Category = "Particle Data")
-	TArray<FVector4> PositionsAndRadius;
+	TArray<FVector4> PositionsAndRadii;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Particle Data")
 	TArray<FVector4> VelocitiesAndMasses;

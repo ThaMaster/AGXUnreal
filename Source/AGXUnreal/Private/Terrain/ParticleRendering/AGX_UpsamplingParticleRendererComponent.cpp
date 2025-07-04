@@ -160,7 +160,7 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 
 
 
-		float Radius = Data.PositionsAndRadius[I].W;
+		float Radius = Data.PositionsAndRadii[I].W;
 		
 		/**
 		 * TODO: The density of the particles should be fetched by the terrain and not 
@@ -171,9 +171,9 @@ void UAGX_UpsamplingParticleRendererComponent::HandleParticleData(FDelegateParti
 			Data.VelocitiesAndMasses[I].W / UE::Geometry::TSphere3<float>::Volume(Radius);
 
 		FVector Position = FVector(
-			Data.PositionsAndRadius[I].X, 
-			Data.PositionsAndRadius[I].Y,
-			Data.PositionsAndRadius[I].Z);
+			Data.PositionsAndRadii[I].X, 
+			Data.PositionsAndRadii[I].Y, 
+			Data.PositionsAndRadii[I].Z);
 
 		AppendIfActiveVoxel(ActiveVoxelSet, Position, Radius, UsedVoxelSize);
 

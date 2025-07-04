@@ -52,7 +52,7 @@ public:
 	 * 
 	 * Available Input:
 	 * 
-	 * - Array Float 4:	Positions And Scales
+	 * - Array Float 4:	Positions And Radii
 	 * - Array Float 4:	Orientations
 	 * - Array Float 4:	Velocities And Masses
 	 * - Array Bool:	Exists

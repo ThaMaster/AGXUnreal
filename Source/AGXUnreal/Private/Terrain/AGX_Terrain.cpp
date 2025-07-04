@@ -1689,7 +1689,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 	const int32 NumParticles = Positions.Num();
 
 	FDelegateParticleData data;
-	data.PositionsAndRadius.SetNum(NumParticles);
+	data.PositionsAndRadii.SetNum(NumParticles);
 	data.Orientations.SetNum(NumParticles);
 	data.VelocitiesAndMasses.SetNum(NumParticles);
 	data.Exists.SetNum(NumParticles);
@@ -1697,7 +1697,7 @@ void AAGX_Terrain::UpdateParticlesArrays()
 
 	for (int32 I = 0; I < NumParticles; ++I)
 	{
-		data.PositionsAndRadius[I] = FVector4(Positions[I], Radii[I]);
+		data.PositionsAndRadii[I] = FVector4(Positions[I], Radii[I]);
 		data.Orientations[I] = FVector4(Rotations[I].X, Rotations[I].Y, Rotations[I].Z, Rotations[I].W);
 		data.VelocitiesAndMasses[I] =
 			FVector4(Velocities[I].X, Velocities[I].Y, Velocities[I].Z, Masses[I]);

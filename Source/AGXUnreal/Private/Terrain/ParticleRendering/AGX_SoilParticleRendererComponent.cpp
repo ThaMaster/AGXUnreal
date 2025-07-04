@@ -82,7 +82,7 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleDat
 		return;
 	}
 
-	static const FName PositionsAndScalesName {TEXT("User.Positions And Radii")};
+	static const FName PositionsAndRadiiName {TEXT("User.Positions And Radii")};
 	static const FName VelocitiesAndMassesName {TEXT("User.Velocities And Masses")};
 	static const FName OrientationsName {TEXT("User.Orientations")};
 	static const FName ExistsName {TEXT("User.Exists")};
@@ -105,10 +105,10 @@ void UAGX_SoilParticleRendererComponent::HandleParticleData(FDelegateParticleDat
 
 		if (ParamType == Vector4ArrayName)
 		{
-			if (ParamName == PositionsAndScalesName)
+			if (ParamName == PositionsAndRadiiName)
 			{
 				UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(
-					ParticleSystemComponent, ParamName, Data.PositionsAndRadius);
+					ParticleSystemComponent, ParamName, Data.PositionsAndRadii);
 			}
 			else if (ParamName == OrientationsName)
 			{
