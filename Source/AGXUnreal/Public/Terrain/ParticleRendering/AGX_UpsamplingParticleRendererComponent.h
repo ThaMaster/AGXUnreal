@@ -46,7 +46,7 @@ public:
 	bool bOverrideVoxelSize = false;
 
 	/**
-	 * The size of how large a singe voxel will be when setting up the data grids.
+	 * The size of how large a singe voxel will be when setting up the data grids [cm].
 	 *
 	 * Really small voxel size will decrease performance singificantly.
 	 */
